@@ -21,7 +21,6 @@ const STARTER_PROMPTS_MULTI = [
 
 // ─── String helpers ────────────────────────────────────────────────────────────
 function norm(v) { return String(v || '').trim().toLowerCase(); }
-function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 function daysSince(d) {
   if (!d) return null;
   const ts = new Date(d).getTime();
@@ -36,51 +35,33 @@ function extractNamedEntity(text, records = []) {
 }
 
 // ─── Evidence Classification ────────────────────────────────────────────────────
-// evidenceClass: STRONG | MODERATE | WEAK | CONFLICTING | INSUFFICIENT
-
-/**
- * Evaluate evidence strength for a session-based inference.
- * Returns { evidenceClass, evidenceReason, confidence }
- */
 function evaluateEvidenceStrength({ sessionCount = 0, dominantCount = 0, hasConflict = false, hasMeta = false }) {
   if (hasConflict) return { evidenceClass: 'CONFLICTING', evidenceReason: 'user-provided information contradicts stored signal', confidence: 0.1 };
   if (sessionCount === 0 && !hasMeta) return { evidenceClass: 'INSUFFICIENT', evidenceReason: 'no session history and no reliable metadata', confidence: 0.0 };
   if (sessionCount === 0) return { evidenceClass: 'WEAK', evidenceReason: 'inferred from metadata only — no session history', confidence: 0.2 };
   const ratio = sessionCount > 0 ? dominantCount / sessionCount : 0;
-  if (sessionCount >= 6 && ratio >= 0.7) return { evidenceClass: 'STRONG', evidenceReason: `${sessionCount} sessions, ${Math.round(ratio * 100)}% consistent signal`, confidence: 0.85 + Math.min(ratio * 0.1, 0.12) };
-  if (sessionCount >= 3 && ratio >= 0.5) return { evidenceClass: 'MODERATE', evidenceReason: `${sessionCount} sessions with a ${Math.round(ratio * 100)}% lean — plausible but not conclusive`, confidence: 0.5 + ratio * 0.25 };
-  if (sessionCount >= 1) return { evidenceClass: 'WEAK', evidenceReason: `only ${sessionCount} session${sessionCount > 1 ? 's' : ''} — too sparse for a firm conclusion`, confidence: 0.15 + sessionCount * 0.05 };
+  if (sessionCount >= 6 && ratio >= 0.7) return { evidenceClass: 'STRONG', evidenceReason: `${sessionCount} sessions, ${Math.round(ratio * 100)}% consistent signal`, confidence: 0.9 };
+  if (sessionCount >= 3 && ratio >= 0.5) return { evidenceClass: 'MODERATE', evidenceReason: `${sessionCount} sessions with a ${Math.round(ratio * 100)}% lean`, confidence: 0.6 };
+  if (sessionCount >= 1) return { evidenceClass: 'WEAK', evidenceReason: `only ${sessionCount} session${sessionCount > 1 ? 's' : ''} — too sparse for a firm conclusion`, confidence: 0.2 };
   return { evidenceClass: 'INSUFFICIENT', evidenceReason: 'insufficient data', confidence: 0.0 };
 }
 
-/**
- * Returns language prefix appropriate for the evidence class.
- */
-function evidencePreamble(evidenceClass) {
+// Natural qualifiers embedded in prose — not labeled sections
+function evidenceQualifier(evidenceClass) {
   switch (evidenceClass) {
-    case 'STRONG':      return '';  // speak directly
-    case 'MODERATE':    return 'This is a reasonable candidate, though I would treat it as a review call rather than automatic. ';
-    case 'WEAK':        return 'I would not treat this as a firm conclusion yet — the evidence is still thin. ';
-    case 'CONFLICTING': return 'The stored signal and what you know from direct experience are not lining up. ';
-    case 'INSUFFICIENT': return 'I do not have enough data to make a confident call here. ';
-    default:            return '';
+    case 'STRONG':       return '';
+    case 'MODERATE':     return 'That said, the picture here is plausible rather than definitive — ';
+    case 'WEAK':         return 'The session history is still thin, so this is more of an early signal than a settled conclusion — ';
+    case 'CONFLICTING':  return 'The stored data and what you know from direct experience are pointing in opposite directions — ';
+    case 'INSUFFICIENT': return 'There is not enough data yet for a confident read — ';
+    default: return '';
   }
-}
-
-function confidenceSuffix(evidenceClass, reason) {
-  if (evidenceClass === 'STRONG') return '';
-  if (evidenceClass === 'MODERATE') return `\n\n*Evidence quality: moderate — ${reason}.*`;
-  if (evidenceClass === 'WEAK') return `\n\n*Evidence quality: weak — ${reason}. Log more sessions to strengthen this signal.*`;
-  if (evidenceClass === 'CONFLICTING') return `\n\n*Evidence conflict: ${reason}.*`;
-  if (evidenceClass === 'INSUFFICIENT') return `\n\n*Not enough data: ${reason}.*`;
-  return '';
 }
 
 // ─── Intent classifier ─────────────────────────────────────────────────────────
 function classifyIntent(message) {
   const t = message.toLowerCase().trim();
 
-  // USER_CORRECTION — must fire before follow-up pronouns
   const correctionPatterns = [
     /\bbut (i have it|i use it|i don't|it never|it isn't|it is not|i already)\b/i,
     /\b(that'?s? not right|that'?s? wrong|that'?s? incorrect|that'?s? not accurate)\b/i,
@@ -103,28 +84,20 @@ function classifyIntent(message) {
   if (/\b(pairing|pair with|pair together|combine|combination|explain why .+ work together)\b/i.test(t)) return 'EXPLAIN_PAIRING';
   if (/\b(tonight|enjoy|smoke|drink|open next|session|use|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(t)) return 'SESSION_RECOMMENDATION';
   if (/\b(restock|running low|running out|buy next|replenish)\b/i.test(t)) return 'RESTOCK_ADVICE';
-  if (/\b(gap|missing|biggest gap|collection gap|what.?s? (missing|absent|lacking))\b/i.test(t)) return 'GAP_ANALYSIS';
+  if (/\b(gap|missing|biggest gap|collection gap)\b/i.test(t)) return 'GAP_ANALYSIS';
+  if (/\b(redundant|most redundant|overlap)\b/i.test(t)) return 'COLLECTION_ANALYSIS';
 
-  // PIPE_REASSIGNMENT_ANALYSIS — explicit ranking/query intent
   const reassignPatterns = [
-    /\b(reassign(ed|ment)?|respecializ|re-specializ)\b/i,
+    /\b(reassign|reassignment|respecializ|re-specializ)\b/i,
     /\b(change (specialization|focus|role)|new role|different role|better suited elsewhere|better specialization)\b/i,
     /\b(no longer fits|doesn.?t fit).*(specializ|focus|role|lane)/i,
     /\b(benefit.*(reassign|respecializ|new role|different role))/i,
     /\b(strongest|best).*(reassignment|respecializ|candidate)/i,
-    /\b(which|what) pipe.*(reassign|respecializ|should change|new specializ|no longer fits|would benefit|is a candidate)/i,
-    /\bpipe.*(needs? (a |new )?specializ|should (be )?reassign|should (be )?respecializ)/i,
-    /\b(switch|move|migrate).*(pipe|specializ|focus|lane)/i,
+    /\b(which|what) pipe.*(reassign|respecializ|should change|new specializ|no longer fits)/i,
   ];
   if (reassignPatterns.some((p) => p.test(t))) return 'PIPE_REASSIGNMENT_ANALYSIS';
 
-  // COLLECTION_ANALYSIS — redundancy and general collection questions
-  if (/\b(redundant|most redundant)\b/i.test(t)) return 'COLLECTION_ANALYSIS';
-
-  // EVALUATE_OWNED_ITEM — named-item evaluation
-  if (/\b(evaluate|assess|review|analyze)\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
-  if (/\b(how does .+ (fit|work|sit|compare)|where does .+ sit|role of .+ in)\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
-  if (/\b(tell me about|what (is|do you think of|about)) .+\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
+  if (/\b(evaluate|assess|how does .+ fit|where does .+ sit|role of)\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
 
   return 'UNKNOWN';
 }
@@ -137,24 +110,20 @@ function evaluateOwnedBottle(bottle, bottles = [], tastingLogs = []) {
   const tastings = tastingLogs.filter((l) => l?.bottle_id === bottle.id || l?.bottleId === bottle.id);
   const tastingCount = tastings.length;
   const evidence = evaluateEvidenceStrength({ sessionCount: tastingCount, dominantCount: tastingCount, hasMeta: !!bottle.type });
-
+  const overlapLevel = sameType.length >= 3 ? 'high' : sameType.length >= 1 ? 'moderate' : 'none';
   const role =
     sameType.length >= 3 ? 'overlapping — multiple similar bottles compete for the same lane' :
     sameType.length === 2 ? 'one of three in its style — moderate overlap' :
     sameType.length === 1 ? 'one of two in its lane — some overlap' :
     'sole representative of its type — no direct overlap';
-
-  const overlapLevel = sameType.length >= 3 ? 'high' : sameType.length >= 1 ? 'moderate' : 'none';
   const usageState =
     tastingCount === 0 ? 'untasted — no tasting sessions logged' :
     tastingCount >= 5 ? `actively used — ${tastingCount} tasting sessions logged` :
     `lightly used — ${tastingCount} tasting session${tastingCount > 1 ? 's' : ''} logged`;
-
   const recommendation =
     tastingCount === 0 ? 'open it and log your first tasting — you have context for it but no session data' :
     overlapLevel === 'high' ? 'consider whether this lane needs all its occupants — this is a candidate for focused evaluation' :
     'keep it in rotation and log tasting notes to anchor its position in the collection';
-
   return { role, adjacentComparables: adjacent, overlapLevel, usageState, recommendation, evidence };
 }
 
@@ -167,23 +136,19 @@ function evaluateOwnedBlend(blend, blends = [], smokingLogs = []) {
   const lastDate = usage.map((l) => l?.date || l?.created_date).filter(Boolean).sort().reverse()[0];
   const lastDays = daysSince(lastDate);
   const evidence = evaluateEvidenceStrength({ sessionCount, dominantCount: sessionCount, hasMeta: !!blend.blend_type });
-
+  const overlapLevel = sameType.length >= 3 ? 'high' : sameType.length >= 1 ? 'moderate' : 'none';
   const role =
     sameType.length >= 3 ? `one of many ${type} blends — significant overlap in this family` :
     sameType.length >= 1 ? `one of ${sameType.length + 1} in the ${type} family` :
     `the only ${type} blend in your cellar`;
-
-  const overlapLevel = sameType.length >= 3 ? 'high' : sameType.length >= 1 ? 'moderate' : 'none';
   const usageState =
     sessionCount === 0 ? 'never smoked — no sessions logged' :
     (lastDays !== null && lastDays > 60) ? `stale — ${sessionCount} sessions, last smoked ${lastDays} days ago` :
     `active — ${sessionCount} sessions logged`;
-
   const recommendation =
     sessionCount === 0 ? 'smoke it and log the session — it needs usage data before Curator can position it accurately' :
     overlapLevel === 'high' ? 'this family has coverage — decide if this blend is earning a distinct role or is redundant' :
     'continue rotating it — its position in the family is clear';
-
   return { role, adjacentComparables: adjacent, overlapLevel, usageState, recommendation, evidence };
 }
 
@@ -197,24 +162,20 @@ function evaluateOwnedPipe(pipe, pipes = [], smokingLogs = []) {
   const lastDays = daysSince(lastDate);
   const focus = pipe.focus?.[0] || pipe.specialization || null;
   const evidence = evaluateEvidenceStrength({ sessionCount, dominantCount: sessionCount, hasMeta: !!pipe.shape });
-
+  const overlapLevel = sameShape.length >= 2 ? 'high' : sameShape.length === 1 ? 'moderate' : 'none';
   const role =
     sameShape.length >= 2 ? `one of ${sameShape.length + 1} ${shape} pipes — crowded shape lane` :
     sameShape.length === 1 ? `one of two ${shape} pipes` :
     `the only ${shape} in your collection`;
-
-  const overlapLevel = sameShape.length >= 2 ? 'high' : sameShape.length === 1 ? 'moderate' : 'none';
   const usageState =
     sessionCount === 0 ? 'no sessions logged' :
     (lastDays !== null && lastDays > 45) ? `underused — ${sessionCount} sessions, last smoked ${lastDays} days ago` :
     `active — ${sessionCount} sessions`;
-
   const recommendation =
     sessionCount === 0 ? 'log a session to begin building its profile' :
     (overlapLevel === 'high' && sessionCount < 5) ? 'low usage in a crowded shape lane — evaluate whether it earns a distinct specialization' :
     focus ? `keep it assigned to ${focus} — usage data supports that focus` :
     'consider assigning a focus — its usage pattern suggests a natural specialization';
-
   return { role, adjacentComparables: adjacent, overlapLevel, usageState, recommendation, evidence };
 }
 
@@ -277,17 +238,17 @@ function biggestGap(blends = [], bottles = [], activeModules = {}) {
   const blendFamilies = new Set(blends.map((b) => b.blend_type || b.blend_family || '').filter(Boolean));
 
   if (whiskeyOnly) {
-    if (![...bottleTypes].some((t) => t.includes('rye'))) return { gap: 'A rye lane is absent. Rye adds pepper and grip that bourbon and Scotch do not replicate — it is one of the most practical gaps to close.', evidenceClass: 'STRONG' };
-    if (![...bottleTypes].some((t) => t.includes('scotch') || t.includes('single malt') || t.includes('islay') || t.includes('speyside') || t.includes('highland'))) return { gap: 'Scotch is missing. It brings smoke, fruit, and complexity that no American whiskey replicates.', evidenceClass: 'STRONG' };
-    if (![...bottleTypes].some((t) => t.includes('irish'))) return { gap: 'Irish whiskey is absent — the most approachable style for guests and a clean contrast to bourbon and Scotch.', evidenceClass: 'STRONG' };
-    if (![...bottleTypes].some((t) => t.includes('bourbon'))) return { gap: 'Bourbon is the American reference point — its absence leaves a real gap in the tasting range.', evidenceClass: 'STRONG' };
-    return { gap: 'Your next gap is depth: log tasting notes on every bottle and add pricing on your highest-value pours.', evidenceClass: 'MODERATE' };
+    if (![...bottleTypes].some((t) => t.includes('rye'))) return { gap: 'A rye is the most useful addition right now. It adds dry spice and grip that bourbon and Scotch do not replicate, and it opens pairing territory neither of them can cover.', evidenceClass: 'STRONG' };
+    if (![...bottleTypes].some((t) => t.includes('scotch') || t.includes('single malt') || t.includes('islay') || t.includes('speyside') || t.includes('highland'))) return { gap: 'Scotch is missing from the shelf. It brings smoke, dried fruit, and malt complexity that no American whiskey comes close to replicating — and those characteristics pair in completely different ways.', evidenceClass: 'STRONG' };
+    if (![...bottleTypes].some((t) => t.includes('irish'))) return { gap: 'Irish whiskey has no seat at the table yet. It is the most approachable style, easy for guests, and a clean contrast to both bourbon and Scotch.', evidenceClass: 'STRONG' };
+    if (![...bottleTypes].some((t) => t.includes('bourbon'))) return { gap: 'Bourbon is the American reference point and it is absent. Without it, the collection is missing its most versatile pairing partner.', evidenceClass: 'STRONG' };
+    return { gap: 'The main gap at this point is depth rather than breadth — logging tasting notes on each bottle and adding pricing to the high-value pours would give the collection a more complete picture.', evidenceClass: 'MODERATE' };
   }
 
-  if (!blendFamilies.has('Virginia/Burley')) return { gap: 'A Virginia/Burley lane is thin. It provides a reliable middle ground between brighter Virginia sweetness and drier Burley structure.', evidenceClass: 'STRONG' };
-  if (![...blendFamilies].some((f) => f.includes('English') || f.includes('Balkan'))) return { gap: 'Your cellar is light on English/Balkan territory — a real gap in smoky, savory session options.', evidenceClass: 'STRONG' };
-  if (![...bottleTypes].some((t) => t.includes('rye'))) return { gap: 'A rye lane is absent. Rye adds pepper and contrast that bourbon and Irish whiskey do not handle the same way.', evidenceClass: 'STRONG' };
-  return { gap: 'Your next gap is specialization: get each pipe and each blend family into a cleaner lane so the collection is easier to use, not just larger. This is speculative without more data.', evidenceClass: 'MODERATE' };
+  if (!blendFamilies.has('Virginia/Burley')) return { gap: 'A Virginia/Burley is the clearest gap. It sits between the brightness of straight Virginia and the drier structure of Burley, and it is a lane that almost every pipe collection eventually needs.', evidenceClass: 'STRONG' };
+  if (![...blendFamilies].some((f) => f.includes('English') || f.includes('Balkan'))) return { gap: 'English and Balkan territory is uncovered — that is a real gap in smoky, savory options that no other family fills the same way.', evidenceClass: 'STRONG' };
+  if (![...bottleTypes].some((t) => t.includes('rye'))) return { gap: 'A rye lane is missing on the whiskey side. Rye adds dry pepper and contrast that bourbon and Irish simply do not handle the same way, and it pairs differently with most pipe blends.', evidenceClass: 'STRONG' };
+  return { gap: 'The bigger opportunity now is specialization rather than adding new items — getting each pipe into a cleaner lane and each blend family into a more defined role. It is more of a refinement than a hard gap, but it is where the collection would benefit most.', evidenceClass: 'MODERATE' };
 }
 
 // ─── Pairing explanation ───────────────────────────────────────────────────────
@@ -307,55 +268,53 @@ function pairingExplanationEngine(message, context = {}, entityContext = {}) {
 
   if (!pipe || !blend || !bottle) {
     return {
-      reply: 'A pairing explanation needs a pipe, a blend, and a bottle. Name the three items or log more collection data so I can suggest a strong starting point.',
+      reply: 'To explain a pairing I need a pipe, a blend, and a bottle from your collection. Name the three items, or log more sessions so I have a starting point to work from.',
       updatedEntityContext: entityContext,
     };
   }
 
-  // Assess pairing evidence quality from logs
   const pipeLogs = smokingLogs.filter((l) => l?.pipe_id === pipe.id || l?.pipeId === pipe.id);
   const blendLogs = smokingLogs.filter((l) => l?.blend_id === blend.id || l?.blendId === blend.id);
   const combinedLogs = pipeLogs.filter((l) => blendLogs.some((b) => b.id === l.id)).length;
   const pairingEvidence = evaluateEvidenceStrength({ sessionCount: combinedLogs, dominantCount: combinedLogs, hasMeta: true });
-  const pairingFraming = pairingEvidence.evidenceClass === 'STRONG'
-    ? 'This is one of your validated combinations — the session history supports it.'
-    : pairingEvidence.evidenceClass === 'INSUFFICIENT' || combinedLogs === 0
-    ? 'This is a plausible fit from the way the items line up, but it is not yet one of your proven combinations.'
-    : 'This pairing has some history behind it, though not enough to call it firmly established.';
+
+  const validationLine = pairingEvidence.evidenceClass === 'STRONG'
+    ? 'This is one of your proven combinations — the session history backs it up.'
+    : combinedLogs === 0
+    ? 'These two have not been logged together yet, so think of this as a plausible fit rather than a confirmed one.'
+    : 'There is some history here, though not quite enough sessions to call it firmly established.';
 
   const blendType = blend.blend_type || blend.blend_family || 'Unknown';
   const bottleType = bottle.type || bottle.whiskey_type || 'Unknown';
 
   let whyItWorks, whatToExpect;
   if ((blendType.includes('English') || blendType.includes('Balkan')) && norm(bottleType).includes('peated')) {
-    whyItWorks = `${blendType} tobacco layers dark, phenolic smoke that reinforces ${bottleType}'s own peat rather than competing with it.`;
-    whatToExpect = 'A dense, meditative session. Take your time with both.';
+    whyItWorks = `${blendType} tobacco layers dark, phenolic smoke in a way that reinforces the peat in ${bottleType} rather than competing with it — both elements push in the same direction.`;
+    whatToExpect = 'The session lands as depth rather than contrast. Take your time with both.';
   } else if (blendType.includes('Aromatic') && norm(bottleType).includes('irish')) {
-    whyItWorks = `${bottleType}'s clean grain cuts through ${blendType}'s topping sweetness before it becomes cloying.`;
-    whatToExpect = 'A lighter, social session. The whiskey acts as a bridge, not a statement.';
+    whyItWorks = `The clean grain character of ${bottleType} cuts through ${blendType}'s topping sweetness before it becomes cloying — the whiskey does useful work here.`;
+    whatToExpect = 'It reads as a lighter, social session. The whiskey acts as a bridge rather than a statement.';
   } else if ((blendType.includes('Burley') || blendType.includes('Virginia/Burley')) && norm(bottleType).includes('bourbon')) {
-    whyItWorks = `${blendType} earth and ${bottleType} caramel occupy adjacent registers — warm, full, without direct competition.`;
-    whatToExpect = 'Comfort. A session where both elements settle into their best selves.';
+    whyItWorks = `${blendType} earth and ${bottleType} caramel occupy adjacent registers — warm and full without directly competing.`;
+    whatToExpect = 'Pure comfort. A session where both elements settle into their best selves without either one demanding attention.';
   } else if (blendType.includes('Virginia/Perique') && norm(bottleType).includes('rye')) {
-    whyItWorks = `Perique's peppery snap finds its match in ${bottleType}'s grain bite.`;
-    whatToExpect = 'A session with real edges — not soft, but rewarding in proportion to attention.';
+    whyItWorks = `Perique's pepper finds a match in ${bottleType}'s grain bite — they open texture in each other rather than flattening it.`;
+    whatToExpect = 'A session with real edges. Rewarding in proportion to the attention you bring to it.';
   } else if (blendType.includes('Virginia') && (norm(bottleType).includes('highland') || norm(bottleType).includes('speyside'))) {
-    whyItWorks = `${blendType}'s bright fruit pairs with ${bottleType}'s fruity middle palate — balance rather than boldness.`;
-    whatToExpect = 'A brighter session. Natural sweetness stays front-and-center.';
+    whyItWorks = `${blendType}'s bright fruit character finds a natural partner in ${bottleType}'s fruity middle palate — balance rather than boldness defines this one.`;
+    whatToExpect = 'Natural sweetness stays front-and-center from start to finish.';
   } else {
-    whyItWorks = `${blendType} and ${bottleType} hold their character alongside each other — neither dominates.`;
+    whyItWorks = `${blendType} and ${bottleType} hold their own character alongside each other without either one dominating the other.`;
     whatToExpect = 'A balanced session where both keep their voice.';
   }
 
-  const reply = `**${pipe.name} · ${blend.name} · ${bottle.name}**\n\n*${pairingFraming}*\n\n**Why it works:**\n${whyItWorks}\n\n**${pipe.name}'s role:**\nThe bowl geometry determines whether the session stays focused or gets muddy. A well-rested pipe in this pairing keeps both tobacco character and whiskey finish clear.\n\n**What to expect:**\n${whatToExpect}${confidenceSuffix(pairingEvidence.evidenceClass, pairingEvidence.evidenceReason)}`;
+  const reply = `${pipe.name} with ${blend.name} and ${bottle.name}. ${validationLine} ${whyItWorks} The bowl geometry matters here — a well-rested pipe keeps both the tobacco character and the whiskey finish clean and distinct from each other. ${whatToExpect}`;
 
   return {
     reply,
     updatedEntityContext: {
       ...entityContext,
-      pipe,
-      blend,
-      bottle,
+      pipe, blend, bottle,
       topicIntent: 'explain_pairing',
       lastClaimType: 'pairing_explanation',
       lastEvidenceClass: pairingEvidence.evidenceClass,
@@ -385,10 +344,9 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     const subject = entityContext.subject;
     const topicIntent = entityContext.topicIntent;
     const lastEvidenceClass = entityContext.lastEvidenceClass || 'UNKNOWN';
-    const lastConclusion = entityContext.lastConclusion;
     const msg = message;
 
-    const isSpecialization = /specializ|reassign|assign|lane|vaper|virginia|aromatic|english|burley/i.test(msg) || topicIntent === 'collection_analysis';
+    const isSpecialization = /specializ|reassign|assign|lane|virginia|aromatic|english|burley/i.test(msg) || topicIntent === 'collection_analysis';
     const isOwnership      = /already (have|own|in my)|already (owns?|have it)/i.test(msg) || topicIntent === 'evaluate_recommendation';
     const isRestock        = /already (on my (list|shopping|want)|tracked|listed)/i.test(msg) || topicIntent === 'restock_advice';
     const isUsage          = /never (smoked|used|had|seen)|only (used|smoked) for|i (use|don't use) it (for|that way)/i.test(msg);
@@ -401,11 +359,12 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     const virginiaOnly     = /virginia/i.test(msg);
 
     const subjectName = subject?.name || 'that item';
-    const priorConfidenceNote = lastEvidenceClass === 'WEAK'
-      ? 'That makes the earlier conclusion too confident for the quality of evidence behind it.'
+
+    const sparseDataLine = lastEvidenceClass === 'WEAK'
+      ? 'With only a handful of sessions logged, the data can easily point in the wrong direction — especially if blend tags are inconsistent or the sample is too small to establish a real pattern.'
       : lastEvidenceClass === 'MODERATE'
-      ? 'The stored signal was already uncertain, and your correction confirms that.'
-      : 'The stored signal and your direct experience are not lining up.';
+      ? 'The stored signal was already uncertain, and what you are describing confirms it is not reliable here.'
+      : 'What you know from direct experience is overriding what the session logs were suggesting.';
 
     let reply;
     let updatedCtx = { ...entityContext, lastEvidenceClass: 'CONFLICTING', lastConclusion: null };
@@ -413,25 +372,24 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     if (isSpecialization || isUsage) {
       const inferredFamily = aromaticOnly ? 'aromatic' : englishOnly ? 'English/Latakia' : virginiaOnly ? 'Virginia' : null;
       const correctionLine = inferredFamily
-        ? `If ${subjectName} has only been used for ${inferredFamily}, then it is not a real reassignment candidate for a different family.`
-        : `If that pipe has not been used in the inferred pattern, then the earlier recommendation is not supported by the evidence.`;
-
-      reply = `Then I would revise that.\n\n${correctionLine} ${priorConfidenceNote}\n\n**Why I got it wrong:** The inference came from session logs — if those sessions are sparse, stale, or tagged to the wrong blend type, the signal will point in the wrong direction. That is a data-quality problem, not a confirmation that the pipe should change lanes.\n\n**Revised conclusion:** ${subjectName} is low-confidence for reassignment. If it is genuinely ${inferredFamily || 'its current designation'}-designated, leave it there.\n\n**Next step:** I can re-run the analysis skipping ${subjectName} to find the next best reassignment candidate. Want me to do that?`;
+        ? `If ${subjectName} has only ever been used for ${inferredFamily} blends, it is not a real candidate for reassignment to a different family.`
+        : `If the actual usage pattern is different from what the logs show, then the earlier recommendation was working from bad premises.`;
+      reply = `That changes the picture. ${correctionLine} ${sparseDataLine} In that case, the reassignment signal was a data-quality issue rather than a real mismatch — and I would not act on it. I would leave ${subjectName} where it is and let a few more sessions confirm how it is actually being used. If you want, I can look for the next strongest candidate instead, skipping this one.`;
       updatedCtx = { ...entityContext, correctionApplied: true, excludedFromAnalysis: subject, lastEvidenceClass: 'CONFLICTING', lastClaimType: 'correction_specialization', lastConclusion: null };
     } else if (alreadyOwned || isOwnership) {
-      reply = `Understood — if you already own that, then evaluating it as a gap-fill or outside recommendation was incorrect.\n\n${priorConfidenceNote}\n\n**Revised:** That item should be evaluated as an owned piece, not an acquisition target. The relevant question is whether it has a clear role or overlaps with something else you own.\n\n**Next step:** Want me to evaluate it in the context of your owned collection instead?`;
+      reply = `Good to know. If you already own that, then evaluating it as something to acquire was the wrong frame entirely. ${sparseDataLine} The relevant question becomes how it fits within what you already have — whether it earns a distinct role or overlaps with something else in the collection. Want me to look at it from that angle instead?`;
       updatedCtx = { ...entityContext, topicIntent: 'evaluate_owned_item', correctionApplied: true, lastEvidenceClass: 'CONFLICTING', lastClaimType: 'correction_ownership', lastConclusion: null };
     } else if (alreadyTracked || isRestock) {
-      reply = `Got it — if it is already tracked, then the recommendation was redundant.\n\n**Revised:** Rather than adding it, the question is whether it should move up in priority on your existing list. If inventory is low and it is already on your shopping list, the next step is acting on that item, not re-adding it.\n\n**Next step:** Want me to look at what else might need attention ahead of it?`;
+      reply = `Understood — if it is already tracked, then recommending it again was redundant. Rather than re-adding it, the more useful question is whether it should move up in priority on your existing list. If inventory is low and it is already flagged for shopping, the next move is acting on it rather than logging it a second time. Want me to look at what else might need attention ahead of it?`;
       updatedCtx = { ...entityContext, correctionApplied: true, lastEvidenceClass: 'CONFLICTING', lastClaimType: 'correction_restock', lastConclusion: null };
     } else if (alreadyUsed) {
-      reply = `Noted — if ${subjectName} is already one of your most active items, then any framing around it being idle or underused was wrong. ${priorConfidenceNote}\n\n**Revised:** ${subjectName} has earned its place. The relevant question now is whether it has enough focus for its usage level, or whether logging more structured notes would sharpen its role.\n\n**Next step:** I can look at the rest of the collection for items that are genuinely underused instead.`;
+      reply = `Then the earlier framing was off. If ${subjectName} is already one of your most active pieces, any suggestion that it is sitting idle is working from stale or incomplete data. ${sparseDataLine} It has clearly earned its place, so the more useful question is whether its usage level is matched by a clear enough specialization, or whether logging more structured notes would sharpen its role. I can look at the rest of the collection for items that are genuinely underused if that would be more helpful.`;
       updatedCtx = { ...entityContext, correctionApplied: true, lastEvidenceClass: 'CONFLICTING', lastClaimType: 'correction_usage', lastConclusion: null };
     } else if (isPairing) {
-      reply = `If my pairing logic assumed the wrong profile for that item, then the explanation was built on bad premises.\n\n**Revised:** Give me the actual flavor profile or usage pattern you experience with it, and I will re-run the pairing reasoning from there.`;
+      reply = `If the pairing logic was built on the wrong profile for that item, the explanation was not reliable. Tell me how you actually experience it — the flavor character, the usage pattern, whatever is relevant — and I can reconstruct the reasoning from there.`;
       updatedCtx = { ...entityContext, correctionApplied: true, lastEvidenceClass: 'CONFLICTING', lastClaimType: 'correction_pairing', lastConclusion: null };
     } else {
-      reply = `Then I would revise that.\n\nIf my earlier conclusion does not match what you know about ${subjectName} from direct experience, then the inference was working from weak or incorrect data. First-hand knowledge overrides sparse session signals. ${priorConfidenceNote}\n\n**Next step:** Tell me what you would like to look at next, or ask me to compare the next best candidate.`;
+      reply = `That is worth revising. If what you know from direct experience does not line up with the earlier conclusion, the inference was working from weak or misread data — and first-hand knowledge overrides sparse session signals. ${sparseDataLine} Tell me what you would like to look at from here, or I can find the next best candidate instead.`;
       updatedCtx = { ...entityContext, correctionApplied: true, lastEvidenceClass: 'CONFLICTING', lastConclusion: null };
     }
 
@@ -442,7 +400,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   if (intent === 'FOLLOW_UP') {
     const subjectEntity = entityContext.subject;
     if (!subjectEntity) {
-      return { reply: 'Could you name the specific item you are asking about? I do not have a subject from our previous exchange.', updatedEntityContext: entityContext };
+      return { reply: 'Could you name the specific item you are asking about? I do not have a clear subject from the last exchange.', updatedEntityContext: entityContext };
     }
     const subject = subjectEntity;
     const topicIntent = entityContext.topicIntent;
@@ -458,17 +416,18 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 
       if (evalData) {
         const nearby = evalData.adjacentComparables;
+        const qualifier = evidenceQualifier(evalData.evidence.evidenceClass);
         const nearbyText = nearby.length > 0
-          ? `The closest items in your collection are ${nearby.map((x) => x.name).join(', ')}. ${subject.name} is ${evalData.role}.`
-          : `${subject.name} has no close neighbors in its lane — it stands alone.`;
+          ? `The closest items in the collection are ${nearby.map((x) => x.name).join(' and ')}, and it sits as ${evalData.role}.`
+          : `It has no close neighbors in its lane — it stands alone.`;
         return {
-          reply: `**${subject.name} — Comparison**\n\n${nearbyText}\n\n**Usage:** ${evalData.usageState}\n\n**What I would do:** ${evalData.recommendation}${confidenceSuffix(evalData.evidence.evidenceClass, evalData.evidence.evidenceReason)}`,
+          reply: `${nearbyText} Right now it is ${evalData.usageState}. ${qualifier}I would ${evalData.recommendation}.`,
           updatedEntityContext: entityContext,
         };
       }
     }
     return {
-      reply: `I am still focused on **${subject.name}**. What specifically would you like to know — redundancy, specialization, tonight's use, or how it compares?`,
+      reply: `Still focused on ${subject.name}. What specifically would be most useful — redundancy, specialization, how it fits tonight's session, or a comparison against something else?`,
       updatedEntityContext: entityContext,
     };
   }
@@ -499,14 +458,15 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       else { evalData = evaluateOwnedPipe(ownedPipe, pipes, smokingLogs); itemLabel = ownedPipe.shape || 'pipe'; }
 
       const nearbyNames = evalData.adjacentComparables.map((x) => x.name);
+      const qualifier = evidenceQualifier(evalData.evidence.evidenceClass);
       const comparisonText = nearbyNames.length > 0
-        ? `It sits alongside ${nearbyNames.join(' and ')} in your collection — ${evalData.role}.`
-        : `It is the only ${itemLabel} of its kind in your collection — ${evalData.role}.`;
+        ? `It sits alongside ${nearbyNames.join(' and ')} — ${evalData.role}.`
+        : `It is the only ${itemLabel} of its kind in the collection — ${evalData.role}.`;
 
       const subjectForContext = { id: resolvedOwned.id, name: resolvedOwned.name, type: ownedBottle ? 'bottle' : ownedBlend ? 'blend' : 'pipe' };
 
       return {
-        reply: `**${resolvedOwned.name}** already has a place in your collection.\n\n**What it does:**\n${evalData.role}.\n\n**How it compares:**\n${comparisonText}\n\n**Usage:** ${evalData.usageState}\n\n**What I would do next:**\nI would ${evalData.recommendation}.${confidenceSuffix(evalData.evidence.evidenceClass, evalData.evidence.evidenceReason)}`,
+        reply: `${resolvedOwned.name} already has a place in the collection. ${comparisonText} It is ${evalData.usageState}. ${qualifier}I would ${evalData.recommendation}.`,
         updatedEntityContext: {
           ...entityContext,
           subject: subjectForContext,
@@ -519,23 +479,56 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       };
     }
 
-    // Not found in collection
     const fallbackName = rawName || entityContext.subject?.name || 'that item';
+
+    // Detect module context from the query text to avoid crossing module lanes
+    const isPipeTerm = /\b(dublin|billiard|bent|pot|apple|churchwarden|freehand|pipe|bowl|briar|stem|shape|meerschaum|corn cob)\b/i.test(message);
+    const isBlendTerm = /\b(virginia|aromatic|english|burley|latakia|perique|blend|tobacco|flake|ribbon)\b/i.test(message);
+
+    if (isPipeTerm && pipeActive) {
+      const ownedShapes = new Set(pipes.map((p) => (p.shape || '').toLowerCase()).filter(Boolean));
+      const queryShapeMatch = message.match(/\b(dublin|billiard|bent|pot|apple|churchwarden|freehand|bulldog|rhodesian|canadian|lovat|prince|author|brandy|egg|acorn)\b/i);
+      const queriedShape = queryShapeMatch?.[1] || null;
+      const alreadyOwned = queriedShape && ownedShapes.has(queriedShape.toLowerCase());
+      if (alreadyOwned) {
+        return {
+          reply: `A ${queriedShape} is already in the collection. Ask me how it fits in the current rotation, or whether it has earned a distinct specialization.`,
+          updatedEntityContext: { ...entityContext, topicIntent: 'evaluate_owned_item', lastClaimType: 'owned_pipe_redirect', lastEvidenceClass: 'STRONG' },
+        };
+      }
+      const shapeContext = queriedShape
+        ? `A ${queriedShape} is not currently in the pipe collection. ${pipes.length > 0 ? `With ${pipes.length} pipe${pipes.length > 1 ? 's' : ''} already in rotation, a ${queriedShape} would introduce a different bowl geometry and smoking character.` : 'Adding one would give a starting reference point for this shape.'}`
+        : `That pipe shape does not appear in the current collection.`;
+      return {
+        reply: `${shapeContext} If it is on the radar, adding it to the Want List will let Curator factor it into future pipe rotation and session planning.`,
+        updatedEntityContext: { ...entityContext, topicIntent: 'evaluate_recommendation', lastClaimType: 'outside_pipe_recommendation', lastEvidenceClass: 'MODERATE', lastConclusion: 'add to want list' },
+      };
+    }
+
+    if (isBlendTerm && tobaccoActive) {
+      const blendFamilies = new Set(blends.map((b) => b.blend_type || b.blend_family).filter(Boolean));
+      return {
+        reply: `${fallbackName} does not appear in the tobacco collection. ${blendFamilies.size > 0 ? `The cellar currently covers ${[...blendFamilies].join(', ')}.` : ''} If it is worth considering, adding it to the Want List will bring it into blend family balance and pairing recommendations going forward.`,
+        updatedEntityContext: { ...entityContext, topicIntent: 'evaluate_recommendation', lastClaimType: 'outside_blend_recommendation', lastEvidenceClass: 'MODERATE', lastConclusion: 'add to want list' },
+      };
+    }
+
+    // Whiskey fallback only when whiskey context is clear
     const dominantBottleType = bottles.length
       ? Object.entries(bottles.reduce((acc, b) => { const t = b.type || b.whiskey_type || 'Unknown'; acc[t] = (acc[t] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1])[0]?.[0]
       : null;
     const gapContext = dominantBottleType
-      ? `Your shelf leans toward ${dominantBottleType}. ${fallbackName} would add contrast from a different lane.`
-      : 'Your collection does not yet have a strong reference point in this style.';
+      ? `The shelf leans toward ${dominantBottleType}, so ${fallbackName} would add contrast from a different lane.`
+      : 'The collection does not yet have a strong reference point in this style.';
     return {
-      reply: `**${fallbackName}** — Not currently in your collection.\n\n${gapContext}\n\nIf this is something you are considering, add it to your Want List so Curator can factor it into future recommendations. Ask me to compare it to something you own if you want a side-by-side.`,
+      reply: `${fallbackName} is not currently in the collection. ${gapContext} If it is worth tracking, adding it to the Want List will fold it into future gap and pairing recommendations.`,
       updatedEntityContext: { ...entityContext, topicIntent: 'evaluate_recommendation', lastClaimType: 'outside_recommendation', lastEvidenceClass: 'MODERATE', lastConclusion: 'add to want list' },
     };
   }
 
   // ── EXPLAIN_PAIRING ────────────────────────────────────────────────────────
   if (intent === 'EXPLAIN_PAIRING') {
-    if (isSingleModuleMode) return { reply: 'Pairings require at least two active modules. Ask me what to enjoy tonight instead.', updatedEntityContext: entityContext };
+    if (isSingleModuleMode) return { reply: 'Pairing explanations need at least two active modules. Ask me what to enjoy tonight instead.', updatedEntityContext: entityContext };
     return pairingExplanationEngine(message, context, entityContext);
   }
 
@@ -546,11 +539,11 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     const targetModule   = whiskeyFocused ? 'whiskey' : pipeFocused ? 'pipe' : 'any';
     const candidates = buildSessionPlan(context, activeModules, targetModule);
     if (!candidates.length) {
-      return { reply: 'Not enough collection data yet to make a confident session suggestion. Log some sessions to help Curator learn your rotation.', updatedEntityContext: entityContext };
+      return { reply: 'Not enough data in the collection yet to make a confident session suggestion. Log a few sessions and the picture will fill in quickly.', updatedEntityContext: entityContext };
     }
     const top = candidates[0];
     const others = candidates.slice(1, 3).map((c) => c.title).filter(Boolean);
-    const othersText = others.length ? ` Other strong options: ${others.join(', ')}.` : '';
+    const othersText = others.length ? ` Other strong options right now: ${others.join(', ')}.` : '';
     const entityKey = { bottle: 'bottle', pipe: 'pipe', blend: 'blend' }[top.itemType];
     const newCtx = entityKey
       ? { ...entityContext, subject: { id: top.item?.id, name: top.item?.name, type: entityKey }, topicIntent: 'recommend_session', lastClaimType: 'session_recommendation', lastEvidenceClass: 'MODERATE', lastConclusion: top.reason }
@@ -564,32 +557,31 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       const s = norm(i.status || i.category || '');
       return s === 'restock' || s === 'shopping_list' || s === 'wishlist';
     });
-    if (tracked) return { reply: `**${tracked.name}** is already tracked in your purchase workflow — I would start there.`, updatedEntityContext: { ...entityContext, lastEvidenceClass: 'STRONG', lastConclusion: 'already tracked' } };
+    if (tracked) return { reply: `${tracked.name} is already in the purchase workflow — that is the most logical starting point before adding anything new.`, updatedEntityContext: { ...entityContext, lastEvidenceClass: 'STRONG', lastConclusion: 'already tracked' } };
     const lowBlend = blends.find((b) => {
       const oz = typeof b.quantity_oz === 'number' ? b.quantity_oz : typeof b.total_oz === 'number' ? b.total_oz : null;
       return oz !== null && oz <= 2.0;
     });
-    if (lowBlend) return { reply: `**${lowBlend.name}** is the clearest restock candidate — stock looks thin and it is already part of your rotation.`, updatedEntityContext: { ...entityContext, subject: { id: lowBlend.id, name: lowBlend.name, type: 'blend' }, topicIntent: 'restock_advice', lastEvidenceClass: 'STRONG', lastClaimType: 'restock_recommendation', lastConclusion: 'restock' } };
-    return { reply: 'No critical restock signals right now. Check your Want List for items you have been tracking.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+    if (lowBlend) return { reply: `${lowBlend.name} is the clearest restock target right now — stock is thin and it is already part of the active rotation. It is the one most likely to be missed first.`, updatedEntityContext: { ...entityContext, subject: { id: lowBlend.id, name: lowBlend.name, type: 'blend' }, topicIntent: 'restock_advice', lastEvidenceClass: 'STRONG', lastClaimType: 'restock_recommendation', lastConclusion: 'restock' } };
+    return { reply: 'No critical restock signals at the moment. The Want List is the better place to check for items that have already been flagged.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
   }
 
   // ── GAP_ANALYSIS ───────────────────────────────────────────────────────────
   if (intent === 'GAP_ANALYSIS') {
     const { gap, evidenceClass } = biggestGap(blends, bottles, activeModules);
-    const preamble = evidencePreamble(evidenceClass);
+    const qualifier = evidenceQualifier(evidenceClass);
     return {
-      reply: `${preamble}${gap}`,
+      reply: `${qualifier}${gap}`,
       updatedEntityContext: { ...entityContext, topicIntent: 'gap_analysis', lastClaimType: 'gap_analysis', lastEvidenceClass: evidenceClass, lastConclusion: gap },
     };
   }
 
-  // ── PIPE_REASSIGNMENT_ANALYSIS ───────────────────────────────────────────
+  // ── PIPE_REASSIGNMENT_ANALYSIS ─────────────────────────────────────────────
   if (intent === 'PIPE_REASSIGNMENT_ANALYSIS') {
     const usageAll = buildPipeUsage(pipes, smokingLogs, blends);
     if (!usageAll.length) {
-      return { reply: 'I do not have enough data yet to rank reassignment candidates. Add some pipes and log sessions first.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+      return { reply: 'Not enough data yet to rank reassignment candidates. Add some pipes and log sessions and the picture will become clear quickly.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
     }
-    // Score: pipes whose dominant family differs from their recorded focus/specialization
     const scored = usageAll
       .filter((p) => p.sessionCount >= 1)
       .map((p) => {
@@ -600,40 +592,32 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
         return { ...p, mismatch, ratio };
       })
       .sort((a, b) => {
-        // Mismatched pipes first, then by ratio strength
         if (a.mismatch !== b.mismatch) return a.mismatch ? -1 : 1;
         return b.ratio - a.ratio;
       });
 
-    // Fall back to ratio-only if no mismatch found
     const candidate = scored[0] || usageAll.sort((a, b) => (b.dominantCount / (b.sessionCount || 1)) - (a.dominantCount / (a.sessionCount || 1)))[0];
 
     if (!candidate) {
-      return { reply: 'Not enough session history to recommend a confident reassignment. Log more sessions across your pipes first.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+      return { reply: 'Session history is not deep enough yet to make a confident reassignment call. Log more sessions across the collection and the signal will sharpen.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
     }
 
     const evidence = candidate.evidence || evaluateEvidenceStrength({ sessionCount: candidate.sessionCount, dominantCount: candidate.dominantCount });
     const confidence = Math.round((candidate.dominantCount / (candidate.sessionCount || 1)) * 100);
-    const currentFocusLabel = candidate.focus?.[0] || candidate.specialization || 'its current lane';
+    const currentFocusLabel = candidate.focus?.[0] || candidate.specialization || 'its current designation';
     const targetFamily = candidate.dominantFamily || 'a different family';
+    const qualifier = evidenceQualifier(evidence.evidenceClass);
 
     const whyLine = candidate.mismatch
-      ? `Its recorded sessions are leaning toward **${targetFamily}**, which is away from its current designation as **${currentFocusLabel}** — a signal worth reviewing.`
-      : `${confidence}% of its sessions point toward **${targetFamily}**. That is the clearest cross-family signal in your collection right now.`;
-
-    const confidenceLine =
-      evidence.evidenceClass === 'STRONG'   ? 'The session evidence is strong enough to treat this as a firm reassignment candidate.' :
-      evidence.evidenceClass === 'MODERATE' ? 'I would treat this as a moderate-confidence call rather than an automatic move — the session sample supports the direction but is not conclusive.' :
-      `The evidence is still thin (${evidence.evidenceReason}). I would not act on this without logging more sessions first.`;
+      ? `The logged sessions are pointing toward ${targetFamily}, which is a different lane from its current designation as ${currentFocusLabel} — that kind of divergence is worth a closer look.`
+      : `${confidence}% of its sessions have landed in ${targetFamily}, which is the clearest cross-family signal in the collection right now.`;
 
     const nextStep = candidate.mismatch
-      ? `Review the underlying sessions first. If the mismatch holds, update its focus from **${currentFocusLabel}** to **${targetFamily}**.`
-      : `Log a few more intentional sessions to confirm the pattern, then decide whether a specialization update is warranted.`;
-
-    const preamble = evidencePreamble(evidence.evidenceClass);
+      ? `The first move is checking the underlying sessions directly. If the mismatch holds up on review, updating the specialization from ${currentFocusLabel} to ${targetFamily} makes sense.`
+      : `A few more intentional sessions would help confirm the pattern before making a formal specialization change.`;
 
     return {
-      reply: `${preamble}**${candidate.name}** is the strongest reassignment candidate right now. ${whyLine} ${confidenceLine} ${nextStep}`,
+      reply: `${candidate.name} is the strongest candidate right now. ${whyLine} ${qualifier}${nextStep} If you want, I can flag the next strongest option in case this one turns out to be a data-quality issue.`,
       updatedEntityContext: {
         ...entityContext,
         subject: { id: candidate.id, name: candidate.name, type: 'pipe' },
@@ -648,71 +632,17 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 
   // ── COLLECTION_ANALYSIS ────────────────────────────────────────────────────
   if (intent === 'COLLECTION_ANALYSIS') {
-    if (/redundant/i.test(message)) {
-      const candidate = mostRedundantPipe(pipes, smokingLogs, blends);
-      if (!candidate) return { reply: 'Not enough pipe and session data yet to identify redundancy. Log more sessions first.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
-      const preamble = evidencePreamble(candidate.evidence?.evidenceClass || 'WEAK');
-      const suffix = confidenceSuffix(candidate.evidence?.evidenceClass || 'WEAK', candidate.evidence?.evidenceReason || 'sparse data');
-      return {
-        reply: `${preamble}**${candidate.name}** is the strongest redundancy candidate. It sits in a crowded ${candidate.shape || 'shape'} lane with only ${candidate.sessionCount || 0} logged sessions.${suffix}`,
-        updatedEntityContext: { ...entityContext, subject: { id: candidate.id, name: candidate.name, type: 'pipe' }, topicIntent: 'collection_analysis', lastClaimType: 'redundancy_recommendation', lastEvidenceClass: candidate.evidence?.evidenceClass || 'WEAK', lastConclusion: `${candidate.name} is most redundant` },
-      };
-    }
+    const candidate = mostRedundantPipe(pipes, smokingLogs, blends);
+    if (!candidate) return { reply: 'Not enough pipe and session data yet to identify redundancy with any confidence. Log more sessions across the collection first.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+    const qualifier = evidenceQualifier(candidate.evidence?.evidenceClass || 'WEAK');
+    return {
+      reply: `${candidate.name} is the most likely candidate. It shares the ${candidate.shape || 'same shape'} lane with other pipes in the collection and has only ${candidate.sessionCount || 0} logged sessions — a low contribution for a crowded lane. ${qualifier}If the pattern holds after a few more sessions, it is worth deciding whether it earns a distinct specialization or whether the lane needs consolidating.`,
+      updatedEntityContext: { ...entityContext, subject: { id: candidate.id, name: candidate.name, type: 'pipe' }, topicIntent: 'collection_analysis', lastClaimType: 'redundancy_recommendation', lastEvidenceClass: candidate.evidence?.evidenceClass || 'WEAK', lastConclusion: `${candidate.name} is most redundant` },
+    };
   }
 
   // ── UNKNOWN ────────────────────────────────────────────────────────────────
-  // Attempt to extract a named entity before falling back to clarification.
-  const allEntities = [...bottles, ...blends, ...pipes];
-  const mentionedEntity = allEntities.find((e) => {
-    const n = (e.name || '').toLowerCase().trim();
-    if (n.length < 3) return false;
-    // Use word-boundary-aware match: entity name must appear as whole words
-    return new RegExp(`\\b${escapeRegex(n)}\\b`).test(message.toLowerCase());
-  });
-  if (mentionedEntity) {
-    // Re-route as owned-item evaluation
-    const isBottle = bottles.some((b) => b.id === mentionedEntity.id);
-    const isBlend  = blends.some((b) => b.id === mentionedEntity.id);
-    const isPipe   = pipes.some((p) => p.id === mentionedEntity.id);
-    let evalData = null;
-    let itemLabel = '';
-    if (isBottle) {
-      evalData = evaluateOwnedBottle(mentionedEntity, bottles, tastingLogs);
-      itemLabel = mentionedEntity.type || mentionedEntity.whiskey_type || 'whiskey bottle';
-    } else if (isBlend) {
-      evalData = evaluateOwnedBlend(mentionedEntity, blends, smokingLogs);
-      itemLabel = mentionedEntity.blend_type || 'tobacco blend';
-    } else if (isPipe) {
-      evalData = evaluateOwnedPipe(mentionedEntity, pipes, smokingLogs);
-      itemLabel = mentionedEntity.shape || 'pipe';
-    }
-    if (evalData) {
-      const nearby = evalData.adjacentComparables.map((x) => x.name);
-      const nearbyText = nearby.length > 0
-        ? `It sits alongside ${nearby.join(' and ')} in your collection — ${evalData.role}.`
-        : `It is the only ${itemLabel} of its kind — ${evalData.role}.`;
-      return {
-        reply: `**${mentionedEntity.name}** is already in your collection.\n\n**Role:** ${evalData.role}.\n\n${nearbyText}\n\n**Usage:** ${evalData.usageState}\n\n**Next step:** ${evalData.recommendation}${confidenceSuffix(evalData.evidence.evidenceClass, evalData.evidence.evidenceReason)}`,
-        updatedEntityContext: {
-          ...entityContext,
-          subject: { id: mentionedEntity.id, name: mentionedEntity.name, type: isBottle ? 'bottle' : isBlend ? 'blend' : 'pipe' },
-          topicIntent: 'evaluate_owned_item',
-          lastClaimType: 'owned_item_evaluation',
-          lastEvidenceClass: evalData.evidence.evidenceClass,
-          lastConclusion: evalData.recommendation,
-          relatedEntities: evalData.adjacentComparables,
-        },
-      };
-    }
-  }
-
-  const examples = [
-    pipes.length   ? `"What pipe should be reassigned?"` : null,
-    blends.length  ? `"What is my biggest tobacco gap?"` : null,
-    bottles.length ? `"What whiskey should I open tonight?"` : null,
-  ].filter(Boolean);
-  const exampleText = examples.length ? ` For example: ${examples.join(', ')}.` : '';
-  return { reply: `I can answer specific questions about your collection — pairings, gaps, redundancy, reassignment candidates, or what to enjoy tonight.${exampleText}`, updatedEntityContext: entityContext };
+  return { reply: 'Can you be a bit more specific? Ask about a particular item, a pairing, tonight\'s session, a gap in the collection, or which pipe might be worth reassigning.', updatedEntityContext: entityContext };
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -763,15 +693,24 @@ export default function ExpertTobacconistChat({
     setMessages((prev) => [...prev, { id: `user-${Date.now()}`, role: 'user', content: text }]);
     setInput('');
     try {
-      const { reply, updatedEntityContext } = answerQuestion(
-        text,
-        collectionContext,
-        entityContext,
-        isSingleModuleMode,
+      const { reply, updatedEntityContext } = answerQuestion(text, collectionContext, entityContext, isSingleModuleMode, activeModules);
+      // PHASE 7: Debug instrumentation
+      console.log('CURATOR_CHAT', {
+        intent: classifyIntent(text),
+        subject: updatedEntityContext.subject?.name || null,
+        lastEvidenceClass: updatedEntityContext.lastEvidenceClass || null,
+        lastClaimType: updatedEntityContext.lastClaimType || null,
+        correctionApplied: updatedEntityContext.correctionApplied || false,
         activeModules,
-      );
+        contextCounts: {
+          pipes: collectionContext?.pipes?.length || 0,
+          blends: collectionContext?.blends?.length || 0,
+          bottles: collectionContext?.bottles?.length || 0,
+          smokingLogs: collectionContext?.smokingLogs?.length || 0,
+        },
+      });
       setEntityContext(updatedEntityContext);
-      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: reply || 'I could not generate a response. Please try rephrasing.' }]);
+      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: reply || 'Something went wrong generating a response. Please try rephrasing.' }]);
     } catch (err) {
       console.error('[Curator] answerQuestion error:', err);
       setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: 'Something went wrong. Please try again.' }]);
