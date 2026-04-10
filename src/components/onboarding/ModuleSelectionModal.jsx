@@ -55,18 +55,18 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
           {/* PipeKeeper */}
           <button
             onClick={() => handleToggle('pipekeeper')}
-            className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-              selected.pipekeeper
-                ? 'bg-stone-800/60 border-[#D4A574]'
-                : 'bg-stone-800/20 border-stone-700'
-            }`}
+            className={`w-full p-4 rounded-xl border-2 transition-all text-left ${selected.pipekeeper ? 'bg-stone-800/60 border-[#D4A574]' : 'bg-stone-800/20 border-stone-700'}`}
           >
             <div className="flex items-start gap-4">
               <input
                 type="checkbox"
                 checked={selected.pipekeeper}
-                onChange={() => handleToggle('pipekeeper')}
-                className="w-5 h-5 mt-1"
+                onChange={(e) => {
+                  e.stopPropagation();
+                  handleToggle('pipekeeper');
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-5 h-5 mt-1 cursor-pointer"
               />
               <div className="flex-1">
                 <h3 className="font-semibold text-[#F5F1E7] flex items-center gap-2">
@@ -90,18 +90,18 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
           {/* WhiskeyKeeper */}
           <button
             onClick={() => handleToggle('whiskeykeeper')}
-            className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-              selected.whiskeykeeper
-                ? 'bg-stone-800/60 border-[#D4A574]'
-                : 'bg-stone-800/20 border-stone-700'
-            }`}
+            className={`w-full p-4 rounded-xl border-2 transition-all text-left ${selected.whiskeykeeper ? 'bg-stone-800/60 border-[#D4A574]' : 'bg-stone-800/20 border-stone-700'}`}
           >
             <div className="flex items-start gap-4">
               <input
                 type="checkbox"
                 checked={selected.whiskeykeeper}
-                onChange={() => handleToggle('whiskeykeeper')}
-                className="w-5 h-5 mt-1"
+                onChange={(e) => {
+                  e.stopPropagation();
+                  handleToggle('whiskeykeeper');
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-5 h-5 mt-1 cursor-pointer"
               />
               <div className="flex-1">
                 <h3 className="font-semibold text-[#F5F1E7] flex items-center gap-2">
