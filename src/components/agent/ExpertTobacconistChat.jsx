@@ -614,14 +614,14 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 
     if (!rankedCandidates || rankedCandidates.length === 0) {
       return {
-        reply: 'I haven\'t retained the ranked list from that last answer, so I should re-run the analysis. Ask me the question again and I\'ll generate a fresh ranked set.',
+        reply: `I haven't retained the ranked list from that last answer, so I should re-run the analysis. Ask me the question again and I'll generate a fresh ranked set.`,
         updatedEntityContext: { ...entityContext, rankedCandidates: [], rankedCursor: 0 },
       };
     }
 
     if (nextCursor >= rankedCandidates.length) {
       return {
-        reply: 'After that, the signal drops off. I don\'t see another candidate that I\'d treat seriously without more logging.',
+        reply: `After that, the signal drops off. I don't see another candidate that I'd treat seriously without more logging.`,
         updatedEntityContext: { ...entityContext, rankedCursor: nextCursor },
       };
     }
