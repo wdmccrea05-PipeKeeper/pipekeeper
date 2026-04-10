@@ -3,7 +3,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { isInternalModuleTester, isModuleLaunched } from "@/components/utils/moduleReleaseState";
+import {
+  isInternalModuleTester,
+  isModuleLaunched,
+  isModuleBlocked,
+  isModuleInternal,
+} from "@/components/utils/moduleReleaseState";
 import { useCanonicalProfile } from "@/utils/getCanonicalUserProfile";
 
 const MODULE_KEYS = ["pipekeeper", "whiskeykeeper", "winekeeper", "cigarkeeper"];
@@ -12,24 +17,38 @@ function normalizeBoolean(value) {
   return typeof value === "boolean" ? value : undefined;
 }
 
+function getLaunchedToggleableModules(user) {
+  return MODULE_KEYS.filter((key) => {
+    if (isModuleBlocked(key, user)) return false;
+    if (isModuleInternal(key, user)) return isInternalModuleTester(user);
+    return isModuleLaunched(key, user);
+  });
+}
+
 function buildAccessibleModules(profile, activeModules, user) {
-  const accessible = new Set(activeModules || []);
+  const accessible = new Set();
 
-  // Tester override
-  if (isInternalModuleTester(user)) {
-    accessible.add("pipekeeper");
-    accessible.add("whiskeykeeper");
-    accessible.add("winekeeper");
-    accessible.add("cigarkeeper");
-  }
-
-  // If user has set module preferences, make all launched modules toggleable
-  // This allows users to enable/disable any launched module in Profile settings
-  if (profile?.module_preferences_set === true) {
-    for (const key of ["pipekeeper", "whiskeykeeper", "winekeeper", "cigarkeeper"]) {
-      if (isModuleLaunched(key, user)) {
+  // Paid access / subscription-derived access
+  for (const key of activeModules || []) {
+    if (!isModuleBlocked(key, user)) {
+      if (!isModuleInternal(key, user) || isInternalModuleTester(user)) {
         accessible.add(key);
       }
+    }
+  }
+
+  // Internal tester override
+  if (isInternalModuleTester(user)) {
+    for (const key of MODULE_KEYS) {
+      if (!isModuleBlocked(key, user)) accessible.add(key);
+    }
+  }
+
+  // After first-run module setup, all launched production modules should be
+  // toggleable in Profile by free or paid users.
+  if (profile?.module_preferences_set === true) {
+    for (const key of getLaunchedToggleableModules(user)) {
+      accessible.add(key);
     }
   }
 
@@ -37,8 +56,8 @@ function buildAccessibleModules(profile, activeModules, user) {
 }
 
 function buildVisibility({ profile, user, activeModules }) {
-  const prefsSet = profile?.module_preferences_set === true;
   const accessible = buildAccessibleModules(profile, activeModules, user);
+  const prefsSet = profile?.module_preferences_set === true;
 
   const prefMap = {
     pipekeeper: normalizeBoolean(profile?.pipekeeper_enabled),
@@ -50,11 +69,20 @@ function buildVisibility({ profile, user, activeModules }) {
   const visibility = {};
 
   for (const key of MODULE_KEYS) {
-    if (prefsSet) {
-      visibility[key] = accessible.has(key) && prefMap[key] !== false;
-    } else {
-      visibility[key] = accessible.has(key);
+    if (!accessible.has(key)) {
+      visibility[key] = false;
+      continue;
     }
+
+    if (!prefsSet) {
+      // Before first module selection, only explicitly entitled modules should show.
+      visibility[key] = (activeModules || []).includes(key);
+      continue;
+    }
+
+    // After prefs are set, saved booleans drive visibility.
+    // Undefined means false unless explicitly enabled.
+    visibility[key] = prefMap[key] === true;
   }
 
   return visibility;
@@ -63,6 +91,7 @@ function buildVisibility({ profile, user, activeModules }) {
 function buildModuleStates({ profile, user, activeModules, visibility }) {
   const accessible = buildAccessibleModules(profile, activeModules, user);
   const tester = isInternalModuleTester(user);
+  const launchedToggleable = new Set(getLaunchedToggleableModules(user));
 
   return {
     pipekeeper: {
@@ -70,7 +99,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.pipekeeper,
       accessible: accessible.has("pipekeeper"),
       visible: accessible.has("pipekeeper"),
-      canToggle: accessible.has("pipekeeper") || isModuleLaunched("pipekeeper", user),
+      canToggle: launchedToggleable.has("pipekeeper"),
       testerOnly: false,
     },
     whiskeykeeper: {
@@ -78,24 +107,24 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.whiskeykeeper,
       accessible: accessible.has("whiskeykeeper"),
       visible: accessible.has("whiskeykeeper"),
-      canToggle: accessible.has("whiskeykeeper") || isModuleLaunched("whiskeykeeper", user),
-      testerOnly: false, // WhiskeyKeeper is publicly launched
+      canToggle: launchedToggleable.has("whiskeykeeper"),
+      testerOnly: false,
     },
     winekeeper: {
       key: "winekeeper",
       enabled: !!visibility.winekeeper,
       accessible: accessible.has("winekeeper"),
       visible: accessible.has("winekeeper"),
-      canToggle: accessible.has("winekeeper") || isModuleLaunched("winekeeper", user),
-      testerOnly: tester,
+      canToggle: tester && accessible.has("winekeeper"),
+      testerOnly: true,
     },
     cigarkeeper: {
       key: "cigarkeeper",
       enabled: !!visibility.cigarkeeper,
       accessible: accessible.has("cigarkeeper"),
       visible: accessible.has("cigarkeeper"),
-      canToggle: accessible.has("cigarkeeper") || isModuleLaunched("cigarkeeper", user),
-      testerOnly: tester,
+      canToggle: tester && accessible.has("cigarkeeper"),
+      testerOnly: true,
     },
   };
 }
@@ -122,10 +151,7 @@ export function useModuleVisibility(passedProfile = null, passedUser = null) {
     [profile, user, activeModules, visibility]
   );
 
-  const isModuleEnabled = useCallback(
-    (moduleKey) => !!visibility[moduleKey],
-    [visibility]
-  );
+  const isModuleEnabled = useCallback((moduleKey) => !!visibility[moduleKey], [visibility]);
 
   const persistPreferences = useCallback(
     async (payload) => {
@@ -182,9 +208,11 @@ export function useModuleVisibility(passedProfile = null, passedUser = null) {
           });
         }
 
-        await queryClient.invalidateQueries({ queryKey: ["canonical-profile"] });
-        await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-        await queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["canonical-profile"] }),
+          queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+          queryClient.invalidateQueries({ queryKey: ["current-user"] }),
+        ]);
       } finally {
         setIsSaving(false);
       }
@@ -214,27 +242,15 @@ export function useModuleVisibility(passedProfile = null, passedUser = null) {
   const saveModulePreferences = useCallback(
     async (moduleSelections) => {
       const normalized = {
-        pipekeeper:
-          typeof moduleSelections?.pipekeeper === "boolean"
-            ? moduleSelections.pipekeeper
-            : visibility.pipekeeper,
-        whiskeykeeper:
-          typeof moduleSelections?.whiskeykeeper === "boolean"
-            ? moduleSelections.whiskeykeeper
-            : visibility.whiskeykeeper,
-        winekeeper:
-          typeof moduleSelections?.winekeeper === "boolean"
-            ? moduleSelections.winekeeper
-            : visibility.winekeeper,
-        cigarkeeper:
-          typeof moduleSelections?.cigarkeeper === "boolean"
-            ? moduleSelections.cigarkeeper
-            : visibility.cigarkeeper,
+        pipekeeper: typeof moduleSelections?.pipekeeper === "boolean" ? moduleSelections.pipekeeper : false,
+        whiskeykeeper: typeof moduleSelections?.whiskeykeeper === "boolean" ? moduleSelections.whiskeykeeper : false,
+        winekeeper: typeof moduleSelections?.winekeeper === "boolean" ? moduleSelections.winekeeper : false,
+        cigarkeeper: typeof moduleSelections?.cigarkeeper === "boolean" ? moduleSelections.cigarkeeper : false,
       };
 
       await persistPreferences(normalized);
     },
-    [persistPreferences, visibility]
+    [persistPreferences]
   );
 
   return {
