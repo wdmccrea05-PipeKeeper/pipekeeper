@@ -73,7 +73,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.pipekeeper,
       accessible: accessible.has("pipekeeper"),
       visible: accessible.has("pipekeeper"),
-      canToggle: accessible.has("pipekeeper") || isModuleLaunched("pipekeeper"),
+      canToggle: accessible.has("pipekeeper") || isModuleLaunched("pipekeeper", user),
       testerOnly: false,
     },
     whiskeykeeper: {
@@ -81,7 +81,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.whiskeykeeper,
       accessible: accessible.has("whiskeykeeper"),
       visible: accessible.has("whiskeykeeper"),
-      canToggle: accessible.has("whiskeykeeper") || isModuleLaunched("whiskeykeeper"),
+      canToggle: accessible.has("whiskeykeeper") || isModuleLaunched("whiskeykeeper", user),
       testerOnly: false, // WhiskeyKeeper is publicly launched
     },
     winekeeper: {
@@ -89,7 +89,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.winekeeper,
       accessible: accessible.has("winekeeper"),
       visible: accessible.has("winekeeper"),
-      canToggle: accessible.has("winekeeper") || isModuleLaunched("winekeeper"),
+      canToggle: accessible.has("winekeeper") || isModuleLaunched("winekeeper", user),
       testerOnly: tester,
     },
     cigarkeeper: {
@@ -97,7 +97,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.cigarkeeper,
       accessible: accessible.has("cigarkeeper"),
       visible: accessible.has("cigarkeeper"),
-      canToggle: accessible.has("cigarkeeper") || isModuleLaunched("cigarkeeper"),
+      canToggle: accessible.has("cigarkeeper") || isModuleLaunched("cigarkeeper", user),
       testerOnly: tester,
     },
   };
