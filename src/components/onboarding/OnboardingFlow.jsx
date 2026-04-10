@@ -39,9 +39,13 @@ function safeSetOnboarding(key, value) {
 }
 
 export default function OnboardingFlow({ onComplete, onSkip }) {
-  const [currentStep, setCurrentStep] = useState(0);
   const { user } = useCurrentUser();
+  const { profile } = useModuleVisibility();
   const isTester = isInternalModuleTester(user);
+  
+  // Skip module selection if already selected in ModuleSelectionModal
+  const modulesAlreadySelected = profile?.module_preferences_set === true;
+  const [currentStep, setCurrentStep] = useState(modulesAlreadySelected ? 2 : 0);
   // No module pre-selected — user explicitly chooses during onboarding.
   // Normal users will be guided to PipeKeeper (their entitlement).
   // Admin/internal testers can choose any accessible module.
@@ -414,11 +418,13 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       console.warn('[Onboarding] Could not save module preferences:', e);
     }
 
-    if (currentStep === steps.length - 1) {
+    // Skip module step if already selected
+    const nextStep = modulesAlreadySelected ? currentStep + 2 : currentStep + 1;
+    if (nextStep >= steps.length) {
       markPipeOnboardingComplete();
       onComplete();
     } else {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep(nextStep);
     }
   };
 
