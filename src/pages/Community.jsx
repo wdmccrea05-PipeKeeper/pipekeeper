@@ -1049,7 +1049,7 @@ function CommunityPageInner() {
               </div>
               <div className="p-6">
                 <p className="mb-4" style={{ color: "rgba(224, 216, 200, 0.8)" }}>
-                  {t("communityExtended.inviteFriendsDesc")}
+                  {t("communityExtended.inviteFriendsDesc", "Invite friends and enthusiasts to join CollectionKeeper.")}
                 </p>
                 <a href={createPageUrl('Invite')}>
                   <Button>
