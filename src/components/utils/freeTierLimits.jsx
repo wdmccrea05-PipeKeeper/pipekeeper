@@ -10,7 +10,7 @@ const FREE_TIER_LIMITS = {
     smokingLogs: 100,
   },
   whiskeykeeper: {
-    bottles: 5,
+    bottles: 10,
     tastingLogs: 50,
   },
 };
