@@ -103,7 +103,18 @@ function classifyIntent(message) {
   if (/\b(tonight|enjoy|smoke|drink|open next|session|use|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(t)) return 'SESSION_RECOMMENDATION';
   if (/\b(restock|running low|running out|buy next|replenish)\b/i.test(t)) return 'RESTOCK_ADVICE';
   if (/\b(gap|missing|need|biggest gap|collection gap)\b/i.test(t)) return 'GAP_ANALYSIS';
-  if (/\b(redundant|most redundant|overlap|specializ|reassign)\b/i.test(t)) return 'COLLECTION_ANALYSIS';
+  if (/\b(redundant|most redundant|overlap)\b/i.test(t)) return 'COLLECTION_ANALYSIS';
+
+  // PIPE_REASSIGNMENT_ANALYSIS — explicit ranking/query intent, must fire before COLLECTION_ANALYSIS
+  const reassignPatterns = [
+    /\b(reassign|reassignment|respecializ|re-specializ)\b/i,
+    /\b(change (specialization|focus|role)|new role|different role|better suited elsewhere|better specialization)\b/i,
+    /\b(no longer fits|doesn.?t fit).*(specializ|focus|role|lane)/i,
+    /\b(benefit.*(reassign|respecializ|new role|different role))/i,
+    /\b(strongest|best).*(reassignment|respecializ|candidate)/i,
+    /\b(which|what) pipe.*(reassign|respecializ|should change|new specializ|no longer fits)/i,
+  ];
+  if (reassignPatterns.some((p) => p.test(t))) return 'PIPE_REASSIGNMENT_ANALYSIS';
   if (/\b(evaluate|assess|how does .+ fit|where does .+ sit|role of)\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
 
   return 'UNKNOWN';
@@ -563,6 +574,79 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     };
   }
 
+  // ── PIPE_REASSIGNMENT_ANALYSIS ───────────────────────────────────────────
+  if (intent === 'PIPE_REASSIGNMENT_ANALYSIS') {
+    const usageAll = buildPipeUsage(pipes, smokingLogs, blends);
+    if (!usageAll.length) {
+      return { reply: 'I do not have enough data yet to rank reassignment candidates. Add some pipes and log sessions first.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+    }
+    // Score: pipes whose dominant family differs from their recorded focus/specialization
+    const scored = usageAll
+      .filter((p) => p.sessionCount >= 1)
+      .map((p) => {
+        const currentFocus = norm(p.focus?.[0] || p.specialization || '');
+        const dominantFamily = norm(p.dominantFamily || '');
+        const mismatch = currentFocus && dominantFamily && !dominantFamily.includes(currentFocus) && !currentFocus.includes(dominantFamily);
+        const ratio = p.sessionCount > 0 ? p.dominantCount / p.sessionCount : 0;
+        return { ...p, mismatch, ratio };
+      })
+      .sort((a, b) => {
+        // Mismatched pipes first, then by ratio strength
+        if (a.mismatch !== b.mismatch) return a.mismatch ? -1 : 1;
+        return b.ratio - a.ratio;
+      });
+
+    // Fall back to ratio-only if no mismatch found
+    const candidate = scored[0] || usageAll.sort((a, b) => (b.dominantCount / (b.sessionCount || 1)) - (a.dominantCount / (a.sessionCount || 1)))[0];
+
+    if (!candidate) {
+      return { reply: 'Not enough session history to recommend a confident reassignment. Log more sessions across your pipes first.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+    }
+
+    const evidence = candidate.evidence || evaluateEvidenceStrength({ sessionCount: candidate.sessionCount, dominantCount: candidate.dominantCount });
+    const confidence = Math.round((candidate.dominantCount / (candidate.sessionCount || 1)) * 100);
+    const currentFocusLabel = candidate.focus?.[0] || candidate.specialization || 'its current lane';
+    const targetFamily = candidate.dominantFamily || 'a different family';
+
+    const whyLine = candidate.mismatch
+      ? `Its recorded sessions are leaning toward **${targetFamily}**, which is away from its current designation as **${currentFocusLabel}** — a signal worth reviewing.`
+      : `${confidence}% of its sessions point toward **${targetFamily}**. That is the clearest cross-family signal in your collection right now.`;
+
+    const confidenceLine =
+      evidence.evidenceClass === 'STRONG'   ? 'The session evidence is strong enough to treat this as a firm reassignment candidate.' :
+      evidence.evidenceClass === 'MODERATE' ? 'I would treat this as a moderate-confidence call rather than an automatic move — the session sample supports the direction but is not conclusive.' :
+      `The evidence is still thin (${evidence.evidenceReason}). I would not act on this without logging more sessions first.`;
+
+    const nextStep = candidate.mismatch
+      ? `Review the underlying sessions first. If the mismatch holds, update its focus from **${currentFocusLabel}** to **${targetFamily}**.`
+      : `Log a few more intentional sessions to confirm the pattern, then decide whether a specialization update is warranted.`;
+
+    const preamble = evidencePreamble(evidence.evidenceClass);
+    const suffix = confidenceSuffix(evidence.evidenceClass, evidence.evidenceReason);
+
+    return {
+      reply: `${preamble}**${candidate.name}** is the strongest reassignment candidate right now.
+
+**Why:**
+${whyLine}
+
+**Confidence:**
+${confidenceLine}
+
+**What I would do next:**
+${nextStep}${suffix}`,
+      updatedEntityContext: {
+        ...entityContext,
+        subject: { id: candidate.id, name: candidate.name, type: 'pipe' },
+        topicIntent: 'collection_analysis',
+        lastClaimType: 'reassignment_recommendation',
+        lastEvidenceClass: evidence.evidenceClass,
+        lastConclusion: `reassign ${candidate.name} to ${targetFamily}`,
+        relatedEntities: scored.slice(1, 3),
+      },
+    };
+  }
+
   // ── COLLECTION_ANALYSIS ────────────────────────────────────────────────────
   if (intent === 'COLLECTION_ANALYSIS') {
     if (/redundant/i.test(message)) {
@@ -573,19 +657,6 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       return {
         reply: `${preamble}**${candidate.name}** is the strongest redundancy candidate. It sits in a crowded ${candidate.shape || 'shape'} lane with only ${candidate.sessionCount || 0} logged sessions.${suffix}`,
         updatedEntityContext: { ...entityContext, subject: { id: candidate.id, name: candidate.name, type: 'pipe' }, topicIntent: 'collection_analysis', lastClaimType: 'redundancy_recommendation', lastEvidenceClass: candidate.evidence?.evidenceClass || 'WEAK', lastConclusion: `${candidate.name} is most redundant` },
-      };
-    }
-    if (/reassign|specializ/i.test(message)) {
-      const usageAll = buildPipeUsage(pipes, smokingLogs, blends).filter((p) => p.sessionCount >= 1);
-      if (!usageAll.length) return { reply: 'Not enough session history to recommend a confident reassignment.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
-      const candidate = usageAll.sort((a, b) => (b.dominantCount / (b.sessionCount || 1)) - (a.dominantCount / (a.sessionCount || 1)))[0];
-      const evidence = candidate.evidence || evaluateEvidenceStrength({ sessionCount: candidate.sessionCount, dominantCount: candidate.dominantCount });
-      const confidence = Math.round((candidate.dominantCount / (candidate.sessionCount || 1)) * 100);
-      const preamble = evidencePreamble(evidence.evidenceClass);
-      const suffix = confidenceSuffix(evidence.evidenceClass, evidence.evidenceReason);
-      return {
-        reply: `${preamble}**${candidate.name}** is the ${evidence.evidenceClass === 'STRONG' ? 'clearest' : evidence.evidenceClass === 'WEAK' ? 'tentative' : 'strongest'} reassignment candidate — ${confidence}% of its sessions point toward ${candidate.dominantFamily}.${suffix}`,
-        updatedEntityContext: { ...entityContext, subject: { id: candidate.id, name: candidate.name, type: 'pipe' }, topicIntent: 'collection_analysis', lastClaimType: 'reassignment_recommendation', lastEvidenceClass: evidence.evidenceClass, lastConclusion: `reassign ${candidate.name} to ${candidate.dominantFamily}` },
       };
     }
   }
