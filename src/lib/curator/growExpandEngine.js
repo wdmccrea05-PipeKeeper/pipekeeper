@@ -236,6 +236,17 @@ function inferTasteProfile(blends, bottles, smokingLogs, preferences = {}) {
 /**
  * Check if an item name or type is already in the collection.
  */
+/** Tokenize a string into meaningful words (length > 2). */
+function tokenize(str) {
+  return (str || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter((w) => w.length > 2);
+}
+
+/** True if two strings share at least one meaningful word token. */
+function hasWordOverlap(a, b) {
+  const tokensA = new Set(tokenize(a));
+  return tokenize(b).some((t) => tokensA.has(t));
+}
+
 function isAlreadyOwned(targetType, blends, bottles) {
   const normalizedTarget = targetType.toLowerCase().trim();
   if (!normalizedTarget) return false;
@@ -248,6 +259,18 @@ function isAlreadyOwned(targetType, blends, bottles) {
     const t = (bottle.type || bottle.whiskey_type || '').toLowerCase().trim();
     if (!t) continue;
     if (t === normalizedTarget || t.includes(normalizedTarget) || normalizedTarget.includes(t)) return true;
+  }
+  return false;
+}
+
+/** Check if a suggested product name is already in the user's collection by name (fuzzy). */
+function isProductNameOwned(candidateProductName, blends, bottles) {
+  if (!candidateProductName) return false;
+  for (const blend of blends) {
+    if (hasWordOverlap(candidateProductName, blend.name || '')) return true;
+  }
+  for (const bottle of bottles) {
+    if (hasWordOverlap(candidateProductName, bottle.name || '')) return true;
   }
   return false;
 }
@@ -273,10 +296,6 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
   }
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
 
-  const ownedBlendNames = new Set(
-    blends.map((b) => (b.name || '').toLowerCase().trim()).filter(Boolean)
-  );
-
   // 1. Generate progression-based suggestions from owned families
   for (const [dominantType, count] of sortedTypes) {
     if (results.length >= 3) break;
@@ -289,9 +308,9 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
     if (!nextType) continue;
     if (dislikes.some((d) => nextType.toLowerCase().includes(d.toLowerCase()))) continue;
 
-    // Skip if the specific suggested product is already owned by name
-    const candidateProductName = (BLEND_PROGRESSION_PRODUCTS[nextType] || '').toLowerCase();
-    if (candidateProductName && ownedBlendNames.has(candidateProductName)) continue;
+    // Skip if the specific suggested product is already owned by name (fuzzy)
+    const candidateProductName = BLEND_PROGRESSION_PRODUCTS[nextType] || '';
+    if (isProductNameOwned(candidateProductName, blends, [])) continue;
 
     seenNextTypes.add(nextType);
     const isWellEstablished = count >= 3;
@@ -353,15 +372,12 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
     const ownedFamilies = new Set(
       blends.map((b) => (b.blend_type || b.blend_family || '').trim()).filter(Boolean)
     );
-    const ownedNames = new Set(
-      blends.map((b) => (b.name || '').toLowerCase().trim()).filter(Boolean)
-    );
     for (const family of ALL_BLEND_FAMILIES) {
       if (results.length >= 3) break;
       if (ownedFamilies.has(family) || seenNextTypes.has(family)) continue;
-      // Also skip if the suggested product name is already in the collection
-      const candidateProduct = (BLEND_PROGRESSION_PRODUCTS[family] || '').toLowerCase();
-      if (candidateProduct && ownedNames.has(candidateProduct)) continue;
+      // Also skip if the suggested product name is already in the collection (fuzzy)
+      const candidateProduct = BLEND_PROGRESSION_PRODUCTS[family] || '';
+      if (isProductNameOwned(candidateProduct, blends, [])) continue;
       if (dislikes.some((d) => family.toLowerCase().includes(d.toLowerCase()))) continue;
 
       seenNextTypes.add(family);
@@ -443,8 +459,11 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
   if (!nextType) return results;
 
   const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
-  const peatedTypes = ['Islay', 'Peated'];
-  let finalNextType = nextType;
+
+  // Skip if the specific product is already owned
+  const whiskeyCandidate = WHISKEY_PROGRESSION_PRODUCTS[nextType] || '';
+  if (isProductNameOwned(whiskeyCandidate, [], bottles)) return results;
+
   if (peatedTypes.some((p) => nextType.includes(p)) &&
       dislikes.some((d) => d.toLowerCase().includes('peat') || d.toLowerCase().includes('smoke'))) {
     const altNextType = progression.next.find((t) =>
