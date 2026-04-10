@@ -12,11 +12,10 @@ export function useModuleOnboarding() {
   useEffect(() => {
     if (isLoading || !user?.email) return;
 
-    // Show modal if user hasn't set module preferences yet
-    const shouldShow = !user?.module_preferences_set;
-    if (shouldShow) {
-      setShowModal(true);
-    }
+    // Show modal if user hasn't set module preferences yet (including undefined for new users)
+    // Only close if explicitly set to true
+    const shouldShow = user?.module_preferences_set !== true;
+    setShowModal(shouldShow);
   }, [user?.email, user?.module_preferences_set, isLoading]);
 
   return { showModal, setShowModal };
