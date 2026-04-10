@@ -195,18 +195,36 @@ export default function FAQFull() {
           </Q>
         </Section>
 
-        <Section title={t("helpCenter.topicWhiskeyKeeper")}>
-          <Q id="whiskey-getting-started" q={t("help.whiskeyGettingStarted")}>
-            <p>{t("helpCenter.whiskeyGettingStartedDesc")}</p>
+        <Section title="Curator Chat">
+          <Q id="curator-chat-overview" q="What can I ask the Curator?">
+            <p>The Curator is an AI advisor that understands your entire collection — pipes, blends, bottles, and session history. You can ask it:</p>
+            <ul className="list-disc list-inside space-y-1 mt-2">
+              <li>"Which pipe should I reassign?" — identifies pipes whose real usage diverges from their focus.</li>
+              <li>"What is my most redundant pipe?" — finds crowded shape lanes with low usage.</li>
+              <li>"What should I smoke tonight?" — generates a curated pipe + blend pairing.</li>
+              <li>"What's the biggest gap in my collection?" — identifies missing blend families or styles.</li>
+              <li>"Explain this pairing" — rationale for why a pipe and blend work together.</li>
+            </ul>
           </Q>
-          <Q id="whiskey-adding-bottles" q={t("help.whiskeyAddingBottles")}>
-            <p>{t("helpCenter.whiskeyAddingBottlesDesc")}</p>
+          <Q id="curator-follow-ups" q="How do I follow up in Curator conversations?">
+            <p className="mb-2">After the Curator gives a recommendation, you can ask natural follow-ups:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li><strong>Next best option:</strong> Ask "what comes next?", "and then?", or "next candidate" to explore ranked alternatives without losing the original context.</li>
+              <li><strong>Apply a constraint:</strong> Say "I want to keep it non-aromatic" or "I prefer English blends only". The Curator will re-evaluate whether the recommendation still holds given your constraint.</li>
+              <li><strong>Correct something:</strong> If the Curator misunderstood your collection, say "actually, I use it for..." The Curator will flag the discrepancy and adjust future recommendations.</li>
+            </ul>
           </Q>
-          <Q id="whiskey-logging-tastings" q={t("help.whiskeyLoggingTastings")}>
-            <p>{t("helpCenter.whiskeyLoggingTastingsDesc")}</p>
+          <Q id="curator-confidence" q="What do confidence levels mean in Curator recommendations?">
+            <p className="mb-2">Confidence reflects the strength of the underlying evidence:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li><strong>Strong:</strong> 6+ sessions with 70%+ consistent signal. The recommendation is well-supported by usage data.</li>
+              <li><strong>Moderate:</strong> 3-5 sessions with a lean in one direction. The pattern is visible but still building.</li>
+              <li><strong>Weak:</strong> Early signal with limited data. More usage history would sharpen the picture.</li>
+            </ul>
+            <p className="mt-2">Higher confidence recommendations are safer to act on. Lower confidence suggestions are exploratory.</p>
           </Q>
-          <Q id="whiskey-viewing-insights" q={t("help.whiskeyViewingInsights")}>
-            <p>{t("helpCenter.whiskeyViewingInsightsDesc")}</p>
+          <Q id="curator-constraints" q="What happens when I apply a constraint?">
+            <p>When you mention a constraint like "I want to keep it non-aromatic", the Curator re-evaluates the previous recommendation. If the constraint contradicts the signal (e.g., the pipe is pulling toward Aromatic but you want non-aromatic), the Curator will exclude it and suggest the next best candidate instead. If the constraint aligns with the signal, the Curator confirms that the recommendation still holds. Constraints stay active throughout the conversation so you can explore alternatives while keeping your preferences in mind.</p>
           </Q>
         </Section>
 
@@ -260,17 +278,34 @@ export default function FAQFull() {
           </Q>
         </Section>
 
-        <Section title="Collector's Snapshot">
-          <Q id="snapshot-what" q="What is the Collector's Snapshot?">
-            <p>The Collector’s Snapshot is a fullscreen story slideshow accessible from the Hub. It generates a curated set of visual highlight cards from your collection data. It is <strong>module-aware</strong>: if you only use PipeKeeper it shows pipe and tobacco-specific cards; if you only use WhiskeyKeeper it shows whiskey-focused cards; if both are active it combines highlights from both modules with no placeholder gaps.</p>
+        <Section title="Pipe Reassignment & Collection Analysis">
+          <Q id="pipe-reassignment-what" q="What is pipe reassignment?">
+            <p className="mb-2">Pipe reassignment is when the Curator detects that a pipe's real-world usage pattern diverges from its recorded specialization. For example:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>A pipe labeled "English-Only" but 70% of its sessions are Virginia blends.</li>
+              <li>A pipe with no focus but consistently pulls toward a single blend family.</li>
+            </ul>
+            <p className="mt-2">The Curator ranks reassignment candidates by confidence (strong = 6+ sessions with consistent lean; moderate = 3-5 sessions; weak = early signal). You can ask "Which pipe should I reassign?" to see the top candidate.</p>
           </Q>
-          <Q id="snapshot-navigate" q="How do I navigate the Snapshot?">
-            <p>Tap the right or left side of the current card, swipe left or right on mobile, or use the arrow keys on a keyboard. A progress bar along the bottom tracks your position. Tap the X button or press Escape to close. Navigation buttons at the bottom also let you step forward and back.</p>
+          <Q id="pipe-reassignment-action" q="What should I do with a reassignment recommendation?">
+            <p className="mb-2">You have three options:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li><strong>Accept it:</strong> Update the pipe's focus field to the recommended blend family. This improves future pairing accuracy.</li>
+              <li><strong>Apply a constraint:</strong> If you want to keep the pipe in its current family, say "I want to leave it non-aromatic" (or whatever the constraint is). The Curator will re-evaluate — if the constraint contradicts the usage signal, it will exclude this pipe and show the next candidate instead.</li>
+              <li><strong>Skip it:</strong> Ignore the recommendation. Ask for the next candidate or explore a different topic.</li>
+            </ul>
           </Q>
-          <Q id="snapshot-regenerate" q="How do I regenerate my Collection Story?">
-            <p>On the Hub, find the Collection Story card and click <strong>Regenerate</strong>. The story is rebuilt from your current collection data, reflecting your newest acquisitions, most-used items, and updated values. It also regenerates automatically when significant changes are detected in your collection.</p>
+          <Q id="collection-redundancy" q="How do I know if a pipe is redundant?">
+            <p className="mb-2">A pipe is redundant when it occupies a crowded shape lane with low usage. For example:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>You have 3 Billard pipes but one has only 2 logged sessions.</li>
+              <li>The low-usage pipe doesn't have a distinct specialization to justify its place.</li>
+            </ul>
+            <p className="mt-2">Ask the Curator "What's my most redundant pipe?" to identify candidates. You can keep it if it earns a specialization, or consider consolidating the shape lane.</p>
           </Q>
         </Section>
+
+        <Section title="Collector's Snapshot">
 
         <Section title={t("helpCenter.topicSupport")}>
           <Q id="contact-support" q={t("help.contactSupport")}>
@@ -289,58 +324,57 @@ export default function FAQFull() {
               </ul>
             </div>
           </Q>
-        </Section>
-        </div>
+          </Section>
 
-        {showTutorial && (
-        <TutorialSystemPreview onClose={() => setShowTutorial(false)} />
-        )}
-        </div>
-        );
-        }
+          {showTutorial && (
+          <TutorialSystemPreview onClose={() => setShowTutorial(false)} />
+          )}
+          </div>
+          );
+          }
 
-        function TutorialSystemPreview({ onClose }) {
+          function TutorialSystemPreview({ onClose }) {
           const { t } = useTranslation();
           const navigate = useNavigate();
 
           const handleStartTutorial = async () => {
-            try {
-              // Get current user to clear skip flag
-              const user = await (await import("@/api/base44Client")).base44.auth.me();
-              if (user?.email) {
-                localStorage.removeItem(`pk_quickstart_skipped_${user.email}`);
-                localStorage.removeItem(`pk_quickstart_completed_${user.email}`);
-                // Signal Home to force show tutorial
-                localStorage.setItem(`pk_force_tutorial_${user.email}`, 'true');
-              }
-            } catch (e) {
-              console.error('Error clearing tutorial state:', e);
-            }
+          try {
+          // Get current user to clear skip flag
+          const user = await (await import("@/api/base44Client")).base44.auth.me();
+          if (user?.email) {
+          localStorage.removeItem(`pk_quickstart_skipped_${user.email}`);
+          localStorage.removeItem(`pk_quickstart_completed_${user.email}`);
+          // Signal Home to force show tutorial
+          localStorage.setItem(`pk_force_tutorial_${user.email}`, 'true');
+          }
+          } catch (e) {
+          console.error('Error clearing tutorial state:', e);
+          }
 
-            // Navigate to Home where tutorial system is active
-            navigate(createPageUrl("Home"));
-            onClose();
+          // Navigate to Home where tutorial system is active
+          navigate(createPageUrl("Home"));
+          onClose();
           };
 
           return (
-            <div className="fixed inset-0 bg-stone-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="w-full max-w-2xl bg-gradient-to-br from-[#2a1f18] to-[#1f1510] rounded-2xl border border-[rgba(140,105,65,0.35)] p-8 text-center space-y-4">
-                <h2 className="text-2xl font-bold text-[#F5F1E7]">{t("help.tutorialModalTitle", "Start Your Tutorial?")}</h2>
-                <p className="text-[#D8C7A6]/80">
-                  {t("help.tutorialModalDesc", "The Quick Start guide will walk you through adding your first pipes, blends, and more.")}
-                </p>
-                <div className="flex gap-3 justify-center pt-4">
-                  <Button variant="outline" onClick={onClose} className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7]">
-                    {t("common.cancel", "Cancel")}
-                  </Button>
-                  <Button 
-                    onClick={handleStartTutorial}
-                    className="bg-amber-700 hover:bg-amber-600 text-[#F5F1E7]"
-                  >
-                    {t("help.startTutorial", "Start Tutorial")}
-                  </Button>
-                </div>
-              </div>
-            </div>
+          <div className="fixed inset-0 bg-stone-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-gradient-to-br from-[#2a1f18] to-[#1f1510] rounded-2xl border border-[rgba(140,105,65,0.35)] p-8 text-center space-y-4">
+          <h2 className="text-2xl font-bold text-[#F5F1E7]">{t("help.tutorialModalTitle", "Start Your Tutorial?")}</h2>
+          <p className="text-[#D8C7A6]/80">
+           {t("help.tutorialModalDesc", "The Quick Start guide will walk you through adding your first pipes, blends, and more.")}
+          </p>
+          <div className="flex gap-3 justify-center pt-4">
+           <Button variant="outline" onClick={onClose} className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7]">
+             {t("common.cancel", "Cancel")}
+           </Button>
+           <Button 
+             onClick={handleStartTutorial}
+             className="bg-amber-700 hover:bg-amber-600 text-[#F5F1E7]"
+           >
+             {t("help.startTutorial", "Start Tutorial")}
+           </Button>
+          </div>
+          </div>
+          </div>
           );
-        }
+          }
