@@ -664,18 +664,28 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   const allEntities = [...bottles, ...blends, ...pipes];
   const mentionedEntity = allEntities.find((e) => {
     const n = (e.name || '').toLowerCase().trim();
-    return n.length >= 3 && message.toLowerCase().includes(n);
+    if (n.length < 3) return false;
+    // Use word-boundary-aware match: entity name must appear as whole words
+    const escaped = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`\\b${escaped}\\b`).test(message.toLowerCase());
   });
   if (mentionedEntity) {
     // Re-route as owned-item evaluation
     const isBottle = bottles.some((b) => b.id === mentionedEntity.id);
     const isBlend  = blends.some((b) => b.id === mentionedEntity.id);
     const isPipe   = pipes.some((p) => p.id === mentionedEntity.id);
-    let evalData;
-    let itemLabel;
-    if (isBottle) { evalData = evaluateOwnedBottle(mentionedEntity, bottles, tastingLogs); itemLabel = mentionedEntity.type || mentionedEntity.whiskey_type || 'whiskey bottle'; }
-    else if (isBlend) { evalData = evaluateOwnedBlend(mentionedEntity, blends, smokingLogs); itemLabel = mentionedEntity.blend_type || 'tobacco blend'; }
-    else if (isPipe) { evalData = evaluateOwnedPipe(mentionedEntity, pipes, smokingLogs); itemLabel = mentionedEntity.shape || 'pipe'; }
+    let evalData = null;
+    let itemLabel = '';
+    if (isBottle) {
+      evalData = evaluateOwnedBottle(mentionedEntity, bottles, tastingLogs);
+      itemLabel = mentionedEntity.type || mentionedEntity.whiskey_type || 'whiskey bottle';
+    } else if (isBlend) {
+      evalData = evaluateOwnedBlend(mentionedEntity, blends, smokingLogs);
+      itemLabel = mentionedEntity.blend_type || 'tobacco blend';
+    } else if (isPipe) {
+      evalData = evaluateOwnedPipe(mentionedEntity, pipes, smokingLogs);
+      itemLabel = mentionedEntity.shape || 'pipe';
+    }
     if (evalData) {
       const nearby = evalData.adjacentComparables.map((x) => x.name);
       const nearbyText = nearby.length > 0
