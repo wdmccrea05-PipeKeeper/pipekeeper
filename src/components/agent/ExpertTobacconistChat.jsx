@@ -821,7 +821,10 @@ export default function ExpertTobacconistChat({ preFillMessage, onPreFillConsume
     try {
       const { reply, updatedEntityContext } = answerQuestion(text, collectionContext, entityContext, isSingleModuleMode, activeModules);
       setEntityContext(updatedEntityContext);
-      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: reply }]);
+      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: reply || 'I could not generate a response. Please try rephrasing your question.' }]);
+    } catch (err) {
+      console.error('[Curator] answerQuestion error:', err);
+      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: 'Something went wrong while processing your question. Please try again.' }]);
     } finally {
       setIsSending(false);
     }
