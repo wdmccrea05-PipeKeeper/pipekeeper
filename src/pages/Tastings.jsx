@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 function TastingsInner() {

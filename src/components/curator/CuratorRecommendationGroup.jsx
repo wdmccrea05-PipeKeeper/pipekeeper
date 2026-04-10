@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import {
   Check, Eye, Loader2, CheckCircle2,
   RotateCcw, CalendarClock, TrendingUp, HelpCircle,
-  ChevronDown, ChevronUp, X,
+  X,
 } from 'lucide-react';
 import { ACTION_TYPE, PRIORITY_STYLES, MODULE_KEY, CATEGORY } from '@/lib/curator/recommendationSchema.js';
 import CuratorItemPreviewList from './CuratorItemPreviewList';
