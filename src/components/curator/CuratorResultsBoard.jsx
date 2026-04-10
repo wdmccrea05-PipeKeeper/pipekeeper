@@ -145,7 +145,10 @@ export default function CuratorResultsBoard(props) {
   } = props;
 
   const sectionsInput = rawSections || recommendationSections || [];
-  const activeScope = normalizeScope(controlledScope || selectedScope || 'all');
+
+  // Internal scope state — used when parent doesn't control it
+  const [internalScope, setInternalScope] = React.useState('all');
+  const activeScope = normalizeScope(controlledScope || selectedScope || internalScope);
 
   const filteredSections = useMemo(() => {
     return (sectionsInput || [])
@@ -171,6 +174,7 @@ export default function CuratorResultsBoard(props) {
   }, [filteredSections, activeScope]);
 
   const changeScope = (nextScope) => {
+    setInternalScope(nextScope);
     if (typeof onScopeChange === 'function') onScopeChange(nextScope);
     if (typeof onFilterChange === 'function') onFilterChange(nextScope);
   };
