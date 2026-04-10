@@ -59,8 +59,8 @@ Deno.serve(async (req) => {
         if (!existingProfile || existingProfile.length === 0) {
           await base44.asServiceRole.entities.UserProfile.create({
             user_email: emailLower,
-            pipekeeper_enabled: true,
-            whiskeykeeper_enabled: true,
+            pipekeeper_enabled: false,
+            whiskeykeeper_enabled: false,
             winekeeper_enabled: false,
             cigarkeeper_enabled: false,
             module_preferences_set: false
@@ -100,8 +100,8 @@ Deno.serve(async (req) => {
       if (!existingProfile || existingProfile.length === 0) {
         await base44.asServiceRole.entities.UserProfile.create({
           user_email: emailLower,
-          pipekeeper_enabled: true,
-          whiskeykeeper_enabled: true,
+          pipekeeper_enabled: false,
+          whiskeykeeper_enabled: false,
           winekeeper_enabled: false,
           cigarkeeper_enabled: false,
           module_preferences_set: false
