@@ -6,7 +6,7 @@ import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
-  const { saveModulePreferences, isLoading } = useModuleVisibility();
+  const { saveModulePreferences } = useModuleVisibility();
   const { t } = useTranslation();
   const [selected, setSelected] = useState({ pipekeeper: false, whiskeykeeper: false });
   const [saving, setSaving] = useState(false);
@@ -126,14 +126,6 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
         </div>
 
         <div className="flex gap-3 justify-end">
-          <Button
-            variant="ghost"
-            onClick={() => onComplete?.()}
-            disabled={saving}
-            className="text-[#E0D8C8]"
-          >
-            Skip for now
-          </Button>
           <Button
             onClick={handleContinue}
             disabled={saving || (!selected.pipekeeper && !selected.whiskeykeeper)}
