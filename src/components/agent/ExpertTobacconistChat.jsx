@@ -62,6 +62,13 @@ function evidenceQualifier(evidenceClass) {
 function classifyIntent(message) {
   const t = message.toLowerCase().trim();
 
+  // FOLLOW_UP_CONSTRAINT — check for user preference constraints
+  const constraintPatterns = [
+    /\b(i want to|i don't want to|i don't want|i prefer|i prefer to|i use it for|i keep it for|i only use|it's only for|only for|never for|never used for|leave it|keep it as)\b/i,
+    /\b(non-aromatic|aromatic-only|english-only|virginia-only|burley-only|constraint|exclude|don't suggest)\b/i,
+  ];
+  if (constraintPatterns.some((p) => p.test(t))) return 'FOLLOW_UP_CONSTRAINT';
+
   // FOLLOW_UP_NEXT_CANDIDATE — check before other patterns
   const nextCandidatePatterns = [
     /\b(what is the next|what's the next|what's next|next best|next one|next strongest|next candidate|second.?best|after that|who's next|what comes after)\b/i,
@@ -404,6 +411,90 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     return { reply, updatedEntityContext: updatedCtx };
   }
 
+  // ── FOLLOW_UP_CONSTRAINT ───────────────────────────────────────────────────
+  if (intent === 'FOLLOW_UP_CONSTRAINT') {
+    const lastIntent = entityContext.topicIntent || entityContext.lastClaimType;
+    const subject = entityContext.subject;
+
+    // Extract constraint from message
+    let constraintType = 'generic';
+    let constraintValue = '';
+    if (/non-aromatic|^i want to leave it non-aromatic|keep it non-aromatic/i.test(message)) {
+      constraintType = 'non-aromatic';
+      constraintValue = 'non-aromatic';
+    } else if (/aromatic-only|only (as )?aromatic/i.test(message)) {
+      constraintType = 'aromatic-only';
+      constraintValue = 'aromatic-only';
+    } else if (/english-only|only english/i.test(message)) {
+      constraintType = 'english-only';
+      constraintValue = 'english-only';
+    } else if (/virginia-only|only virginia/i.test(message)) {
+      constraintType = 'virginia-only';
+      constraintValue = 'virginia-only';
+    } else if (/burley-only|only burley/i.test(message)) {
+      constraintType = 'burley-only';
+      constraintValue = 'burley-only';
+    }
+
+    // If in reassignment context, re-evaluate against constraint
+    if ((lastIntent === 'collection_analysis' || lastIntent === 'reassignment_recommendation') && subject) {
+      const ownedPipe = pipes.find((p) => p.id === subject.id || norm(p.name) === norm(subject.name));
+      if (ownedPipe) {
+        const usage = buildPipeUsage([ownedPipe], smokingLogs, blends)[0];
+        const dominantFamily = usage?.dominantFamily || '';
+        const isDomainViolation = (
+          (constraintType === 'non-aromatic' && dominantFamily === 'Aromatic') ||
+          (constraintType === 'aromatic-only' && dominantFamily !== 'Aromatic') ||
+          (constraintType === 'english-only' && !dominantFamily.includes('English')) ||
+          (constraintType === 'virginia-only' && !dominantFamily.includes('Virginia')) ||
+          (constraintType === 'burley-only' && !dominantFamily.includes('Burley'))
+        );
+
+        if (isDomainViolation) {
+          return {
+            reply: `Understood — ${ownedPipe.name} should stay ${constraintValue}. That invalidates the reassignment signal, because the sessions are pointing toward a family that violates this constraint. Let me look at the next candidate instead.`,
+            updatedEntityContext: {
+              ...entityContext,
+              constraints: { [constraintType]: constraintValue },
+              excludedFromAnalysis: subject,
+              lastConclusion: `${subject.name} excluded due to ${constraintType} constraint`,
+            },
+          };
+        } else {
+          return {
+            reply: `Got it — keeping ${ownedPipe.name} in ${constraintValue} focus. The signal actually holds up under this constraint. No change to the recommendation.`,
+            updatedEntityContext: {
+              ...entityContext,
+              constraints: { [constraintType]: constraintValue },
+              lastConclusion: `constraint applied: ${constraintType}`,
+            },
+          };
+        }
+      }
+    }
+
+    // If in owned evaluation context
+    if ((lastIntent === 'evaluate_owned_item' || lastIntent === 'owned_item_evaluation') && subject) {
+      return {
+        reply: `Noted — ${subject.name} should stay ${constraintValue}. That framing changes how I would approach its role in the collection. It is not a candidate for reassignment, and that narrows its specialization scope. With that constraint, it fits more cleanly into a defined lane.`,
+        updatedEntityContext: {
+          ...entityContext,
+          constraints: { [constraintType]: constraintValue },
+          lastConclusion: `${subject.name} with ${constraintType} constraint`,
+        },
+      };
+    }
+
+    // Generic constraint acknowledgment
+    return {
+      reply: `Understood — ${constraintValue} constraint applied. Tell me what you want to evaluate or ask about, and I will keep that in mind.`,
+      updatedEntityContext: {
+        ...entityContext,
+        constraints: { [constraintType]: constraintValue },
+      },
+    };
+  }
+
   // ── FOLLOW_UP_NEXT_CANDIDATE ───────────────────────────────────────────────
   if (intent === 'FOLLOW_UP_NEXT_CANDIDATE') {
     const rankedCandidates = entityContext.rankedCandidates || [];
@@ -427,7 +518,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     const nextCandidate = rankedCandidates[nextCursor];
     const priorCandidate = rankedCandidates[currentCursor];
     const confidenceLevel = nextCandidate.evidenceClass === 'STRONG' ? 'high' : nextCandidate.evidenceClass === 'MODERATE' ? 'moderate' : 'low';
-    const nextAction = nextCandidate.evidenceClass === 'STRONG' 
+    const nextAction = nextCandidate.evidenceClass === 'STRONG'
       ? 'I would evaluate this one carefully.'
       : nextCandidate.evidenceClass === 'MODERATE'
       ? 'I would monitor it and confirm with a few more sessions before deciding.'
@@ -448,6 +539,42 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
         rankedCursor: nextCursor,
         lastConclusion: `next candidate: ${nextCandidate.name}`,
       },
+    };
+  }
+
+  // ── FOLLOW_UP ──────────────────────────────────────────────────────────────
+  if (intent === 'FOLLOW_UP') {
+    const subjectEntity = entityContext.subject;
+    if (!subjectEntity) {
+      return { reply: 'Could you name the specific item you are asking about? I do not have a clear subject from the last exchange.', updatedEntityContext: entityContext };
+    }
+    const subject = subjectEntity;
+    const topicIntent = entityContext.topicIntent;
+
+    if (topicIntent === 'evaluate_owned_item') {
+      const ownedBottle = bottles.find((b) => b.id === subject.id || norm(b.name) === norm(subject.name));
+      const ownedBlend  = blends.find((b) => b.id === subject.id || norm(b.name) === norm(subject.name));
+      const ownedPipe   = pipes.find((p) => p.id === subject.id || norm(p.name) === norm(subject.name));
+      let evalData;
+      if (ownedBottle) evalData = evaluateOwnedBottle(ownedBottle, bottles, tastingLogs);
+      else if (ownedBlend) evalData = evaluateOwnedBlend(ownedBlend, blends, smokingLogs);
+      else if (ownedPipe) evalData = evaluateOwnedPipe(ownedPipe, pipes, smokingLogs);
+
+      if (evalData) {
+        const nearby = evalData.adjacentComparables;
+        const qualifier = evidenceQualifier(evalData.evidence.evidenceClass);
+        const nearbyText = nearby.length > 0
+          ? `The closest items in the collection are ${nearby.map((x) => x.name).join(' and ')}, and it sits as ${evalData.role}.`
+          : `It has no close neighbors in its lane — it stands alone.`;
+        return {
+          reply: `${nearbyText} Right now it is ${evalData.usageState}. ${qualifier}I would ${evalData.recommendation}.`,
+          updatedEntityContext: entityContext,
+        };
+      }
+    }
+    return {
+      reply: `Still focused on ${subject.name}. What specifically would be most useful — redundancy, specialization, how it fits tonight's session, or a comparison against something else?`,
+      updatedEntityContext: entityContext,
     };
   }
 
@@ -676,6 +803,17 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     };
   }
 
+  // ── COLLECTION_ANALYSIS ────────────────────────────────────────────────────
+  if (intent === 'COLLECTION_ANALYSIS') {
+    const candidate = mostRedundantPipe(pipes, smokingLogs, blends);
+    if (!candidate) return { reply: 'Not enough pipe and session data yet to identify redundancy with any confidence. Log more sessions across the collection first.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+    const qualifier = evidenceQualifier(candidate.evidence?.evidenceClass || 'WEAK');
+    return {
+      reply: `${candidate.name} is the most likely candidate. It shares the ${candidate.shape || 'same shape'} lane with other pipes in the collection and has only ${candidate.sessionCount || 0} logged sessions — a low contribution for a crowded lane. ${qualifier}If the pattern holds after a few more sessions, it is worth deciding whether it earns a distinct specialization or whether the lane needs consolidating.`,
+      updatedEntityContext: { ...entityContext, subject: { id: candidate.id, name: candidate.name, type: 'pipe' }, topicIntent: 'collection_analysis', lastClaimType: 'redundancy_recommendation', lastEvidenceClass: candidate.evidence?.evidenceClass || 'WEAK', lastConclusion: `${candidate.name} is most redundant` },
+    };
+  }
+
   // ── UNKNOWN ────────────────────────────────────────────────────────────────
   return { reply: 'Can you be a bit more specific? Ask about a particular item, a pairing, tonight\'s session, a gap in the collection, or which pipe might be worth reassigning.', updatedEntityContext: entityContext };
 }
@@ -738,6 +876,7 @@ export default function ExpertTobacconistChat({
         lastEvidenceClass: updatedEntityContext.lastEvidenceClass || null,
         lastClaimType: updatedEntityContext.lastClaimType || null,
         correctionApplied: updatedEntityContext.correctionApplied || false,
+        constraints: updatedEntityContext.constraints || null,
         activeModules,
         contextCounts: {
           pipes: collectionContext?.pipes?.length || 0,
