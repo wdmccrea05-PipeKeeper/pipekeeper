@@ -239,6 +239,29 @@ function mostRedundantPipe(pipes = [], smokingLogs = [], blends = []) {
   return crowded.slice().sort((a, b) => a.sessionCount - b.sessionCount)[0];
 }
 
+// PATCH 2+4: Safe fallback functions
+function safeCuratorFallback(context, question) {
+  const bottles = context?.bottles || [];
+  const blends = context?.blends || [];
+
+  if (bottles.length || blends.length) {
+    return `I wasn't able to resolve that cleanly, but looking at your collection, there are still strong directions to explore. If you want, I can walk through your current lineup and highlight where it can expand or improve.`;
+  }
+
+  return "I wasn't able to resolve that from the current data. Try asking about a specific item, session, or gap and I'll walk through it with you.";
+}
+
+function fallbackGapAnalysis(context = {}) {
+  const bottles = context?.bottles || [];
+  const blends = context?.blends || [];
+
+  if (!bottles.length && !blends.length) {
+    return { gap: "Your collection is still taking shape. Once a few items are logged, I can identify structural gaps with precision.", evidenceClass: 'INSUFFICIENT' };
+  }
+
+  return { gap: "Your collection is established, but I was not able to resolve a clean gap classification from the current data. This usually points to incomplete metadata — once types and categories are fully defined, the gaps become much clearer.", evidenceClass: 'INSUFFICIENT' };
+}
+
 function pairingExplanationEngine(message, context = {}, entityContext = {}) {
   const pipes = context?.pipes || [];
   const blends = context?.blends || [];
@@ -688,12 +711,22 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 
   // ── GAP_ANALYSIS ───────────────────────────────────────────────────────────
   if (intent === 'GAP_ANALYSIS') {
-    const { gap, evidenceClass } = biggestGap(blends, bottles, activeModules);
-    const qualifier = evidenceQualifier(evidenceClass);
-    return {
-      reply: `${qualifier}${gap}`,
-      updatedEntityContext: { ...entityContext, topicIntent: 'gap_analysis', lastClaimType: 'gap_analysis', lastEvidenceClass: evidenceClass, lastConclusion: gap },
-    };
+    try {
+      const { gap, evidenceClass } = biggestGap(blends, bottles, activeModules);
+      const qualifier = evidenceQualifier(evidenceClass);
+      return {
+        reply: `${qualifier}${gap}`,
+        updatedEntityContext: { ...entityContext, topicIntent: 'gap_analysis', lastClaimType: 'gap_analysis', lastEvidenceClass: evidenceClass, lastConclusion: gap },
+      };
+    } catch (err) {
+      console.error('[Curator][GAP_ANALYSIS]', err);
+      const { gap, evidenceClass } = fallbackGapAnalysis(context);
+      const qualifier = evidenceQualifier(evidenceClass);
+      return {
+        reply: `${qualifier}${gap}`,
+        updatedEntityContext: { ...entityContext, topicIntent: 'gap_analysis', lastClaimType: 'gap_analysis', lastEvidenceClass: evidenceClass, lastConclusion: gap },
+      };
+    }
   }
 
   // ── PIPE_REASSIGNMENT_ANALYSIS ─────────────────────────────────────────────
@@ -781,8 +814,8 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     };
   }
 
-  // ── UNKNOWN ────────────────────────────────────────────────────────────────
-  return { reply: 'Can you be a bit more specific? Ask about a particular item, a pairing, tonight\'s session, a gap in the collection, or which pipe might be worth reassigning.', updatedEntityContext: entityContext };
+  // ── GLOBAL FALLBACK (PATCH 4)
+  return { reply: safeCuratorFallback(context, message), updatedEntityContext: entityContext };
 }
 
 export default function ExpertTobacconistChat({
@@ -854,7 +887,8 @@ export default function ExpertTobacconistChat({
       setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: reply || 'Something went wrong generating a response. Please try rephrasing.' }]);
     } catch (err) {
       console.error('[Curator] answerQuestion error:', err);
-      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: 'Something went wrong. Please try again.' }]);
+      const fallbackReply = safeCuratorFallback(collectionContext, text);
+      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: fallbackReply }]);
     } finally {
       setIsSending(false);
     }
