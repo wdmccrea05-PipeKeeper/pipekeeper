@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SendHorizontal } from 'lucide-react';
 import { buildSessionPlan } from '@/lib/curator/sessionPlanner.js';
 
@@ -61,6 +61,14 @@ function evidenceQualifier(evidenceClass) {
 // ─── Intent classifier ─────────────────────────────────────────────────────────
 function classifyIntent(message) {
   const t = message.toLowerCase().trim();
+
+  // FOLLOW_UP_NEXT_CANDIDATE — check before other patterns
+  const nextCandidatePatterns = [
+    /\b(what is the next|what's the next|what's next|next best|next one|next strongest|next candidate|second.?best|after that|who's next|what comes after)\b/i,
+    /^(and )?next[?.]?$/i,
+    /\bwhat about the next\b/i,
+  ];
+  if (nextCandidatePatterns.some((p) => p.test(t))) return 'FOLLOW_UP_NEXT_CANDIDATE';
 
   const correctionPatterns = [
     /\bbut (i have it|i use it|i don't|it never|it isn't|it is not|i already)\b/i,
@@ -396,6 +404,44 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     return { reply, updatedEntityContext: updatedCtx };
   }
 
+  // ── FOLLOW_UP_NEXT_CANDIDATE ───────────────────────────────────────────────
+  if (intent === 'FOLLOW_UP_NEXT_CANDIDATE') {
+    const rankedCandidates = entityContext.rankedCandidates || [];
+    const currentCursor = entityContext.rankedCursor || 0;
+    const nextCursor = currentCursor + 1;
+
+    if (!rankedCandidates || rankedCandidates.length === 0) {
+      return {
+        reply: 'I haven\'t retained the ranked list from that last answer, so I should re-run the analysis. Ask me the question again and I\'ll generate a fresh ranked set.',
+        updatedEntityContext: { ...entityContext, rankedCandidates: [], rankedCursor: 0 },
+      };
+    }
+
+    if (nextCursor >= rankedCandidates.length) {
+      return {
+        reply: 'After that, the signal drops off. I don\'t see another candidate that I\'d treat seriously without more logging.',
+        updatedEntityContext: { ...entityContext, rankedCursor: nextCursor },
+      };
+    }
+
+    const nextCandidate = rankedCandidates[nextCursor];
+    const priorCandidate = rankedCandidates[currentCursor];
+    const reason = nextCandidate.reason || `${nextCandidate.name} ranks next in the analysis`;
+    const comparison = priorCandidate
+      ? `It is not as strong a signal as ${priorCandidate.name}, but it is the next place where the pattern shifts.`
+      : 'This is the next candidate in the ranked set.';
+
+    return {
+      reply: `${nextCandidate.name} would be the next one I'd look at. ${comparison} ${reason}`,
+      updatedEntityContext: {
+        ...entityContext,
+        subject: { id: nextCandidate.id, name: nextCandidate.name, type: nextCandidate.type },
+        rankedCursor: nextCursor,
+        lastConclusion: `next candidate: ${nextCandidate.name}`,
+      },
+    };
+  }
+
   // ── FOLLOW_UP ──────────────────────────────────────────────────────────────
   if (intent === 'FOLLOW_UP') {
     const subjectEntity = entityContext.subject;
@@ -546,7 +592,16 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     const othersText = others.length ? ` Other strong options right now: ${others.join(', ')}.` : '';
     const entityKey = { bottle: 'bottle', pipe: 'pipe', blend: 'blend' }[top.itemType];
     const newCtx = entityKey
-      ? { ...entityContext, subject: { id: top.item?.id, name: top.item?.name, type: entityKey }, topicIntent: 'recommend_session', lastClaimType: 'session_recommendation', lastEvidenceClass: 'MODERATE', lastConclusion: top.reason }
+      ? {
+          ...entityContext,
+          subject: { id: top.item?.id, name: top.item?.name, type: entityKey },
+          topicIntent: 'recommend_session',
+          lastClaimType: 'session_recommendation',
+          lastEvidenceClass: 'MODERATE',
+          lastConclusion: top.reason,
+          rankedCandidates: candidates.map((c) => ({ id: c.item?.id, name: c.item?.name || c.title, type: c.itemType, reason: c.reason })),
+          rankedCursor: 0,
+        }
       : entityContext;
     return { reply: `${top.reason}${othersText}`, updatedEntityContext: newCtx };
   }
@@ -617,7 +672,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       : `A few more intentional sessions would help confirm the pattern before making a formal specialization change.`;
 
     return {
-      reply: `${candidate.name} is the strongest candidate right now. ${whyLine} ${qualifier}${nextStep} If you want, I can flag the next strongest option in case this one turns out to be a data-quality issue.`,
+      reply: `${candidate.name} is the strongest candidate right now. ${whyLine} ${qualifier}${nextStep}`,
       updatedEntityContext: {
         ...entityContext,
         subject: { id: candidate.id, name: candidate.name, type: 'pipe' },
@@ -625,7 +680,8 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
         lastClaimType: 'reassignment_recommendation',
         lastEvidenceClass: evidence.evidenceClass,
         lastConclusion: `reassign ${candidate.name} to ${targetFamily}`,
-        relatedEntities: scored.slice(1, 3),
+        rankedCandidates: scored.map((p) => ({ id: p.id, name: p.name, type: 'pipe', reason: `${p.dominantFamily} signals` })),
+        rankedCursor: 0,
       },
     };
   }
@@ -671,6 +727,8 @@ export default function ExpertTobacconistChat({
           lastClaimType: null,
           lastConclusion: null,
           relatedEntities: [],
+          rankedCandidates: [],
+          rankedCursor: 0,
         }));
       }
     }
