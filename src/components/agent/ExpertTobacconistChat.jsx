@@ -622,19 +622,9 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       : `Log a few more intentional sessions to confirm the pattern, then decide whether a specialization update is warranted.`;
 
     const preamble = evidencePreamble(evidence.evidenceClass);
-    const suffix = confidenceSuffix(evidence.evidenceClass, evidence.evidenceReason);
 
     return {
-      reply: `${preamble}**${candidate.name}** is the strongest reassignment candidate right now.
-
-**Why:**
-${whyLine}
-
-**Confidence:**
-${confidenceLine}
-
-**What I would do next:**
-${nextStep}${suffix}`,
+      reply: `${preamble}**${candidate.name}** is the strongest reassignment candidate right now. ${whyLine} ${confidenceLine} ${nextStep}`,
       updatedEntityContext: {
         ...entityContext,
         subject: { id: candidate.id, name: candidate.name, type: 'pipe' },
