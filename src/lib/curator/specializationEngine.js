@@ -57,9 +57,7 @@ function getChamberLabel(pipe) {
  * @returns {string|null}
  */
 function extractPipeSpecValue(pipe) {
-  const focusVal = Array.isArray(pipe.focus) && pipe.focus.length > 0
-    ? (pipe.focus[0] || '').trim()
-    : '';
+  const focusVal = (pipe.focus?.[0] || '').trim();
   if (focusVal) return focusVal;
   const specVal = Array.isArray(pipe.specialization)
     ? (pipe.specialization[0] || '').trim()

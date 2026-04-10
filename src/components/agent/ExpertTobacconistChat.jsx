@@ -21,6 +21,7 @@ const STARTER_PROMPTS_MULTI = [
 
 // ─── String helpers ────────────────────────────────────────────────────────────
 function norm(v) { return String(v || '').trim().toLowerCase(); }
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 function daysSince(d) {
   if (!d) return null;
   const ts = new Date(d).getTime();
@@ -666,8 +667,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     const n = (e.name || '').toLowerCase().trim();
     if (n.length < 3) return false;
     // Use word-boundary-aware match: entity name must appear as whole words
-    const escaped = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`\\b${escaped}\\b`).test(message.toLowerCase());
+    return new RegExp(`\\b${escapeRegex(n)}\\b`).test(message.toLowerCase());
   });
   if (mentionedEntity) {
     // Re-route as owned-item evaluation
