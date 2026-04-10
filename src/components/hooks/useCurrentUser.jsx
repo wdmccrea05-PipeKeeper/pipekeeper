@@ -10,6 +10,7 @@ import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/componen
 import { useEffect } from "react";
 import { useQuery as useQueryRQ, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/AuthContext";
+import { getCanonicalUserProfile } from "@/utils/getCanonicalUserProfile";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -88,12 +89,11 @@ export function useCurrentUser() {
     isLoading: profileLoading,
     refetch: refetchProfile,
   } = useQueryRQ({
-    queryKey: ["user-profile", email],
+    queryKey: ["user-profile", userId || email],
     queryFn: async () => {
-      if (!email) return null;
+      if (!userId && !email) return null;
       try {
-        const profiles = await base44.entities.UserProfile.filter({ user_email: email });
-        const profile = profiles?.[0] || null;
+        const { profile } = await getCanonicalUserProfile({ userId, userEmail: email });
         if (import.meta?.env?.DEV) {
           console.log('[useCurrentUser] UserProfile loaded:', profile?.id ? 'found' : 'not found');
         }
@@ -105,7 +105,7 @@ export function useCurrentUser() {
         return null;
       }
     },
-    enabled: !!email,
+    enabled: !!(userId || email),
     staleTime: 5 * 60 * 1000,
   });
 
