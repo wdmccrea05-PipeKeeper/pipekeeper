@@ -491,22 +491,11 @@ export default function ProfilePage() {
                 <Button
                   className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
                   onClick={async () => {
-                    // If user has exactly one paid module and a valid Stripe subscription, open customer portal
-                    const hasOnePaidModule =
-                      (user?.pipekeeper_paid ? 1 : 0) + (user?.whiskeykeeper_paid ? 1 : 0) === 1;
-                    const hasStripeSubscription = provider === 'stripe' && subscription?.id;
-
-                    if (hasOnePaidModule && hasStripeSubscription) {
+                    // Single-module users go to Stripe portal to upgrade bundles
+                    const paidCount = (user?.pipekeeper_paid ? 1 : 0) + (user?.whiskeykeeper_paid ? 1 : 0);
+                    if (paidCount === 1 && provider === 'stripe') {
                       try {
-                        const res = await base44.functions.invoke(
-                          'createCustomerPortalSessionForMe',
-                          { return_url: window.location.href }
-                        );
-                        if (res?.data?.url) {
-                          window.location.href = res.data.url;
-                        } else if (res?.data?.client_secret) {
-                          window.location.href = res.data.client_secret;
-                        }
+                        await base44.functions.invoke('createCustomerPortalSessionForMe', { return_url: window.location.href });
                       } catch (err) {
                         console.error('Portal error:', err);
                         navigate(createPageUrl('Subscription'));
