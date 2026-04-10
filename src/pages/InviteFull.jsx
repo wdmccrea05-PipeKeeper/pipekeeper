@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,9 +22,7 @@ export default function InviteFull() {
     queryFn: () => base44.auth.me(),
   });
 
-  const addEmailField = () => {
-    setEmailFields([...emailFields, '']);
-  };
+  const addEmailField = () => setEmailFields([...emailFields, '']);
 
   const removeEmailField = (index) => {
     setEmailFields(emailFields.filter((_, i) => i !== index));
@@ -50,33 +47,33 @@ export default function InviteFull() {
         setIsSubmitting(false);
         return;
       }
-      
+
       for (const email of validEmails) {
         const emailBody = `
 Hello!
 
-${user?.full_name || 'A friend'} has invited you to join PipeKeeper - the ultimate app for managing your pipe and tobacco collection.
+${user?.full_name || 'A friend'} has invited you to join CollectionKeeper — the ultimate app for managing your pipe, tobacco, and whiskey collections.
 
 ${personalMessage ? `Personal message:\n${personalMessage}\n\n` : ''}
 
-PipeKeeper helps you:
-• Catalog your pipes and tobacco blends
-• Track smoking sessions and preferences
-• Get AI-powered pairing recommendations
-• Identify pipes and estimate values
-• Optimize your collection
+CollectionKeeper helps you:
+• Catalog your pipes, tobacco blends, and whiskey bottles
+• Track smoking sessions, tasting notes, and preferences
+• Get AI-powered pairing and session recommendations
+• Identify pipes and estimate collection values
+• Optimize your collection with the Curator
 
-Invitation link: https://base44.com/invite?ref=pipekeeper
+Get started at: https://collectionkeeper.app
 
-Happy piping!
-The PipeKeeper Team
+Happy collecting!
+The CollectionKeeper Team
         `;
 
         await base44.integrations.Core.SendEmail({
           to: email,
-          subject: `${user?.full_name || 'Your friend'} invited you to PipeKeeper`,
+          subject: `${user?.full_name || 'Your friend'} invited you to CollectionKeeper`,
           body: emailBody,
-          from_name: 'PipeKeeper'
+          from_name: 'CollectionKeeper'
         });
       }
 
@@ -90,119 +87,131 @@ The PipeKeeper Team
     }
   };
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <a href={createPageUrl('Home')}>
-            <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t("inviteFull.backToHome")}
-            </Button>
-          </a>
-
-          <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
-            <CardContent className="p-12 text-center">
-              <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-green-900 mb-2">{t("inviteFull.successTitle")}</h2>
-              <p className="text-green-700 mb-6">
-                {t("inviteFull.successMessage")}
-              </p>
-              <Button onClick={() => setSubmitted(false)} variant="outline">
-                {t("inviteFull.inviteMore")}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a2c42] via-[#243548] to-[#1a2c42]">
+  const pageWrapper = (children) => (
+    <div className="min-h-screen" style={{ backgroundColor: '#140f0c' }}>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <a href={createPageUrl('Home')}>
-          <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
+          <Button variant="ghost" className="mb-6" style={{ color: '#E0D8C8' }}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             {t("inviteFull.backToHome")}
           </Button>
         </a>
+        {children}
+      </div>
+    </div>
+  );
 
-        <Card className="border-[#e8d5b7]/30">
-          <CardHeader>
-            <CardTitle className="text-3xl text-stone-900 flex items-center gap-3">
-              <UserPlus className="w-8 h-8 text-[#8b3a3a]" />
-              {t("inviteFull.pageTitle")}
-            </CardTitle>
-            <CardDescription className="text-stone-600">
-              {t("inviteFull.pageSubtitle")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label className="text-stone-700 font-medium mb-2 block">
-                  {t("inviteFull.emailLabel")} *
-                </Label>
-                <div className="space-y-3">
-                  {emailFields.map((email, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        type="email"
-                        value={email}
-                        onChange={(e) => updateEmailField(index, e.target.value)}
-                        placeholder={t("inviteFull.emailPlaceholder")}
-                        required
-                      />
-                      {emailFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeEmailField(index)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
+  if (submitted) {
+    return pageWrapper(
+      <div className="rounded-2xl p-10 text-center" style={{
+        background: 'linear-gradient(145deg, rgba(44,30,22,0.98), rgba(27,20,16,0.98))',
+        border: '1px solid rgba(180,140,75,0.2)',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+      }}>
+        <CheckCircle className="w-14 h-14 mx-auto mb-4" style={{ color: '#2e7d5c' }} />
+        <h2 className="text-2xl font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+          {t("inviteFull.successTitle")}
+        </h2>
+        <p className="mb-6" style={{ color: 'rgba(224,216,200,0.75)' }}>
+          {t("inviteFull.successMessage")}
+        </p>
+        <Button onClick={() => setSubmitted(false)} style={{ background: '#A35C5C', color: '#fff' }}>
+          {t("inviteFull.inviteMore")}
+        </Button>
+      </div>
+    );
+  }
+
+  return pageWrapper(
+    <div className="rounded-2xl overflow-hidden" style={{
+      background: 'linear-gradient(145deg, rgba(44,30,22,0.98), rgba(27,20,16,0.98))',
+      border: '1px solid rgba(180,140,75,0.18)',
+      boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+    }}>
+      {/* Header */}
+      <div className="px-8 py-6 border-b" style={{
+        borderBottomColor: 'rgba(180,140,75,0.15)',
+        background: 'linear-gradient(to bottom, rgba(60,42,28,0.4), transparent)',
+      }}>
+        <div className="flex items-center gap-3 mb-1">
+          <UserPlus className="w-7 h-7" style={{ color: '#D4A574' }} />
+          <h1 className="text-2xl font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+            Invite Friends to CollectionKeeper
+          </h1>
+        </div>
+        <p style={{ color: 'rgba(224,216,200,0.7)' }}>
+          Share CollectionKeeper with fellow collectors and help them discover a better way to manage their collection.
+        </p>
+      </div>
+
+      {/* Form */}
+      <div className="p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label className="font-medium mb-2 block" style={{ color: '#E0D8C8' }}>
+              {t("inviteFull.emailLabel")} *
+            </Label>
+            <div className="space-y-3">
+              {emailFields.map((email, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => updateEmailField(index, e.target.value)}
+                    placeholder={t("inviteFull.emailPlaceholder")}
+                    required
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] placeholder:text-[#E0D8C8]/40"
+                  />
+                  {emailFields.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => removeEmailField(index)}
+                      style={{ borderColor: 'rgba(180,140,75,0.2)', color: '#E0D8C8' }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addEmailField}
-                  className="mt-3"
-                >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  {t("inviteFull.addAnother")}
-                </Button>
-              </div>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addEmailField}
+              className="mt-3"
+              style={{ borderColor: 'rgba(180,140,75,0.25)', color: '#E0D8C8' }}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              {t("inviteFull.addAnother")}
+            </Button>
+          </div>
 
-              <div>
-                <Label htmlFor="message" className="text-stone-700 font-medium">
-                  {t("inviteFull.personalMessage")}
-                </Label>
-                <Textarea
-                  id="message"
-                  value={personalMessage}
-                  onChange={(e) => setPersonalMessage(e.target.value)}
-                  placeholder={t("inviteFull.messagePlaceholder")}
-                  className="mt-2 min-h-[100px]"
-                />
-              </div>
+          <div>
+            <Label htmlFor="message" className="font-medium" style={{ color: '#E0D8C8' }}>
+              {t("inviteFull.personalMessage")}
+            </Label>
+            <Textarea
+              id="message"
+              value={personalMessage}
+              onChange={(e) => setPersonalMessage(e.target.value)}
+              placeholder={t("inviteFull.messagePlaceholder")}
+              className="mt-2 min-h-[120px] bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] placeholder:text-[#E0D8C8]/40"
+            />
+          </div>
 
-              <Button
-                type="submit"
-                disabled={isSubmitting || emailFields.every(email => email.trim() === '')}
-                className="w-full bg-[#8b3a3a] hover:bg-[#6d2e2e]"
-              >
-                <Mail className="w-4 h-4 mr-2" />
-                {isSubmitting ? t("inviteFull.sending") : t("inviteFull.sendInvitations")}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+          <Button
+            type="submit"
+            disabled={isSubmitting || emailFields.every(email => email.trim() === '')}
+            className="w-full"
+            style={{ background: '#A35C5C', color: '#fff' }}
+          >
+            <Mail className="w-4 h-4 mr-2" />
+            {isSubmitting ? t("inviteFull.sending") : t("inviteFull.sendInvitations")}
+          </Button>
+        </form>
       </div>
     </div>
   );
