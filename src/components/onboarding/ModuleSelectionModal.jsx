@@ -5,11 +5,20 @@ import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
+function Badge({ children, className }) {
+  return <span className={`px-2 py-1 rounded text-xs font-medium ${className}`}>{children}</span>;
+}
+
 export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
-  const { saveModulePreferences } = useModuleVisibility();
+  const { saveModulePreferences, user } = useModuleVisibility();
   const { t } = useTranslation();
-  const [selected, setSelected] = useState({ pipekeeper: false, whiskeykeeper: false });
+  const [selected, setSelected] = useState({ pipekeeper: true, whiskeykeeper: false });
   const [saving, setSaving] = useState(false);
+
+  const userHasAnyPaid =
+    !!user?.pipekeeper_paid ||
+    !!user?.whiskeykeeper_paid ||
+    String(user?.entitlement_tier || '').toLowerCase() === 'pro';
 
   const handleToggle = (moduleId) => {
     setSelected((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
@@ -17,23 +26,23 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
 
   const handleContinue = async () => {
     if (!selected.pipekeeper && !selected.whiskeykeeper) {
-      toast.error('Please select at least one module');
+      toast.error('Please select at least one module.');
       return;
     }
 
     setSaving(true);
     try {
-      // Save module selections through canonical UserProfile path
       await saveModulePreferences(selected);
-      toast.success('Modules configured successfully');
-      
-      // Set session flag to auto-launch onboarding after module selection
+
       try {
         sessionStorage.setItem('pk_auto_launch_onboarding', 'true');
       } catch {}
-      
-      // Pass selected modules to onComplete so OnboardingRouter can act on them
-      onComplete?.(selected);
+
+      toast.success('Modules configured successfully.');
+      onComplete?.({
+        ...selected,
+        userHasAnyPaid,
+      });
     } catch (error) {
       console.error('[ModuleSelection] Error:', error);
       toast.error('Failed to save module preferences');
@@ -143,8 +152,4 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
       </div>
     </div>
   );
-}
-
-function Badge({ children, className }) {
-  return <span className={`px-2 py-1 rounded text-xs font-medium ${className}`}>{children}</span>;
 }
