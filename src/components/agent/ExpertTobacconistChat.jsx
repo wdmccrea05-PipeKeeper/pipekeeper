@@ -1,6 +1,20 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SendHorizontal } from 'lucide-react';
 import { buildSessionPlan } from '@/lib/curator/sessionPlanner.js';
+import {
+  pick,
+  buildDirectAnswer,
+  buildReasoning,
+  buildInsight,
+  buildNextStep,
+  structureResponse,
+  buildSessionRecommendation,
+  buildGapAnalysis,
+  buildReassignmentCandidate,
+  buildRedundancyFinding,
+  buildCorrection,
+  noDataResponses,
+} from '@/components/curator/curatorVoiceLayer';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -381,7 +395,7 @@ function pairingExplanationEngine(message, context = {}, entityContext = {}) {
 
   if (!pipe || !blend || !bottle) {
     return {
-      reply: 'To explain a pairing I need a pipe, a blend, and a bottle from your collection. Name the three items, or log more sessions so I have a starting point to work from.',
+      reply: buildDirectAnswer('a clear reference point', 'weak') + ' To explain a pairing, name a pipe, blend, and bottle, or log more sessions so the collection has enough signal to work from.',
       updatedEntityContext: entityContext,
     };
   }
@@ -400,28 +414,28 @@ function pairingExplanationEngine(message, context = {}, entityContext = {}) {
   const blendType = blend.blend_type || blend.blend_family || 'Unknown';
   const bottleType = bottle.type || bottle.whiskey_type || 'Unknown';
 
-  let whyItWorks, whatToExpect;
+  let interactionDescription;
   if ((blendType.includes('English') || blendType.includes('Balkan')) && norm(bottleType).includes('peated')) {
-    whyItWorks = `${blendType} tobacco layers dark, phenolic smoke in a way that reinforces the peat in ${bottleType} rather than competing with it — both elements push in the same direction.`;
-    whatToExpect = 'The session lands as depth rather than contrast. Take your time with both.';
+    interactionDescription = `${blendType} layers dark, phenolic smoke in a way that reinforces the peat in ${bottleType}. Both elements push the same direction.`;
   } else if (blendType.includes('Aromatic') && norm(bottleType).includes('irish')) {
-    whyItWorks = `The clean grain character of ${bottleType} cuts through ${blendType}'s topping sweetness before it becomes cloying — the whiskey does useful work here.`;
-    whatToExpect = 'It reads as a lighter, social session. The whiskey acts as a bridge rather than a statement.';
+    interactionDescription = `The clean grain of ${bottleType} cuts through ${blendType}'s topping sweetness before it becomes cloying. The whiskey does useful structural work.`;
   } else if ((blendType.includes('Burley') || blendType.includes('Virginia/Burley')) && norm(bottleType).includes('bourbon')) {
-    whyItWorks = `${blendType} earth and ${bottleType} caramel occupy adjacent registers — warm and full without directly competing.`;
-    whatToExpect = 'Pure comfort. A session where both elements settle into their best selves without either one demanding attention.';
+    interactionDescription = `${blendType} earth and ${bottleType} caramel sit at adjacent registers — warm and full without direct competition.`;
   } else if (blendType.includes('Virginia/Perique') && norm(bottleType).includes('rye')) {
-    whyItWorks = `Perique's pepper finds a match in ${bottleType}'s grain bite — they open texture in each other rather than flattening it.`;
-    whatToExpect = 'A session with real edges. Rewarding in proportion to the attention you bring to it.';
+    interactionDescription = `Perique's pepper finds its match in ${bottleType}'s grain bite. They open texture in each other.`;
   } else if (blendType.includes('Virginia') && (norm(bottleType).includes('highland') || norm(bottleType).includes('speyside'))) {
-    whyItWorks = `${blendType}'s bright fruit character finds a natural partner in ${bottleType}'s fruity middle palate — balance rather than boldness defines this one.`;
-    whatToExpect = 'Natural sweetness stays front-and-center from start to finish.';
+    interactionDescription = `${blendType}'s bright fruit aligns with ${bottleType}'s fruity palate. Balance over boldness.`;
   } else {
-    whyItWorks = `${blendType} and ${bottleType} hold their own character alongside each other without either one dominating the other.`;
-    whatToExpect = 'A balanced session where both keep their voice.';
+    interactionDescription = `${blendType} and ${bottleType} maintain their own character without either one dominating.`;
   }
 
-  const reply = `${pipe.name} with ${blend.name} and ${bottle.name}. ${validationLine} ${whyItWorks} The bowl geometry matters here — a well-rested pipe keeps both the tobacco character and the whiskey finish clean and distinct from each other. ${whatToExpect}`;
+  const sessionContext = pairingEvidence.evidenceClass === 'STRONG'
+    ? 'This pairing has session history backing it.'
+    : combinedLogs === 0
+    ? `You haven't logged these together yet — think of this as a plausible direction.`
+    : `The pairing is emerging, though the signal isn't ironclad yet.`;
+
+  const reply = `${pipe.name} with ${blend.name} and ${bottle.name}. ${sessionContext} What makes it work: ${interactionDescription} The bowl geometry matters — a well-rested piece keeps both elements clean and distinct.`;
 
   return {
     reply,
@@ -781,11 +795,11 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       const targetModule   = whiskeyFocused ? 'whiskey' : pipeFocused ? 'pipe' : 'any';
       const candidates = buildSessionPlan(context, activeModules, targetModule);
       if (!candidates.length) {
-        return { reply: 'Start with something that has been sitting idle for a while — logging that session will sharpen what comes next.', updatedEntityContext: entityContext };
+        return { reply: noDataResponses.sparse, updatedEntityContext: entityContext };
       }
       const top = candidates[0];
       const second = candidates[1];
-      const secondLine = second ? ` If you want a different angle, ${second.title} ${pickRandom(tentativePhrases)}.` : '';
+      const { direct, insight } = buildSessionRecommendation(top, second, top.reason);
       const entityKey = { bottle: 'bottle', pipe: 'pipe', blend: 'blend' }[top.itemType];
       const newCtx = entityKey
         ? {
@@ -799,7 +813,8 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
             rankedCursor: 0,
           }
         : entityContext;
-      return { reply: `${top.reason}${secondLine}`, updatedEntityContext: newCtx };
+      const reply = structureResponse({ direct, insight });
+      return { reply, updatedEntityContext: newCtx };
     } catch (err) {
       console.error('[Curator][SESSION_RECOMMENDATION]', { error: String(err), dataCounts });
       return { reply: 'I can see strong directions for tonight, even if the session history is still thin. The best move is to open something that has not been logged yet to build clearer signals.', updatedEntityContext: entityContext };
@@ -835,15 +850,17 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   if (intent === 'GAP_ANALYSIS') {
     try {
       const { gap, direction } = biggestGapWithDirectionality(blends, bottles, activeModules);
+      const reply = buildGapAnalysis(gap, direction);
       return {
-        reply: gap,
+        reply,
         updatedEntityContext: { ...entityContext, topicIntent: 'gap_analysis', lastClaimType: 'gap_analysis', lastEvidenceClass: 'MODERATE', lastConclusion: gap },
       };
     } catch (err) {
       console.error('[Curator][GAP_ANALYSIS]', err);
       const { gap, evidenceClass } = fallbackGapAnalysis(context);
+      const reply = buildGapAnalysis(gap, 'unknown');
       return {
-        reply: gap,
+        reply,
         updatedEntityContext: { ...entityContext, topicIntent: 'gap_analysis', lastClaimType: 'gap_analysis', lastEvidenceClass: evidenceClass, lastConclusion: gap },
       };
     }
@@ -881,23 +898,16 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       const targetFamily = candidate.dominantFamily || 'a different family';
       const qualifier = evidenceQualifier(evidence.evidenceClass);
 
-      const whyLine = candidate.mismatch
-        ? `Sessions are pulling toward ${targetFamily}, drifting away from its designated ${currentFocusLabel} lane.`
-        : `The session history clusters heavily in ${targetFamily} — a clear pattern worth acting on.`;
-
-      const nextStep = candidate.mismatch
-        ? `${pickRandom(nextStepPhrases)} a direct review of those sessions. If the shift holds, updating the specialization makes sense.`
-        : `${pickRandom(nextStepPhrases)} a few more deliberate sessions in ${targetFamily} to cement the specialization.`;
+      const { direct, reasoning, nextStep } = buildReassignmentCandidate(
+        candidate,
+        targetFamily,
+        currentFocusLabel,
+        evidence.evidenceClass
+      );
 
       const rankedNarratives = scored.slice(0, 5).map((p) => {
         const pEvidence = p.evidence || evaluateEvidenceStrength({ sessionCount: p.sessionCount, dominantCount: p.dominantCount });
-        const pConfidence = Math.round((p.dominantCount / (p.sessionCount || 1)) * 100);
         const pTargetFamily = p.dominantFamily || 'a different family';
-        const reasonPhrase = pEvidence.evidenceClass === 'STRONG'
-          ? `${pConfidence}% of sessions lean this way — a clear pattern.`
-          : pEvidence.evidenceClass === 'MODERATE'
-          ? `${pConfidence}% of sessions suggest ${pTargetFamily}, but the sample is still building.`
-          : `${pTargetFamily} is showing up, though the signal is early.`;
         return {
           id: p.id,
           name: p.name,
@@ -905,12 +915,12 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
           dominantFamily: pTargetFamily,
           evidenceClass: pEvidence.evidenceClass,
           sessionCount: p.sessionCount,
-          reason: reasonPhrase,
         };
       });
 
+      const reply = structureResponse({ direct, reasoning, nextStep });
       return {
-        reply: `${candidate.name} is the strongest candidate right now. ${whyLine} ${qualifier}${nextStep}`,
+        reply,
         updatedEntityContext: {
           ...entityContext,
           subject: { id: candidate.id, name: candidate.name, type: 'pipe' },
@@ -932,10 +942,16 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   if (intent === 'COLLECTION_ANALYSIS') {
     try {
       const candidate = mostRedundantPipe(pipes, smokingLogs, blends);
-      if (!candidate) return { reply: 'More session history is needed to identify which pipes in crowded shape lanes are truly earning their place.', updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
-      const nextLine = candidate.evidence?.evidenceClass === 'WEAK' ? `${pickRandom(nextStepPhrases)} intentional rotation through your ${candidate.shape || 'same shape'} pipes to see whether this one pulls its weight.` : `${pickRandom(nextStepPhrases)} deciding whether it has a distinct specialization or is redundant.`;
+      if (!candidate) return { reply: noDataResponses.sparse, updatedEntityContext: { ...entityContext, lastEvidenceClass: 'INSUFFICIENT' } };
+      const { direct, reasoning, nextStep } = buildRedundancyFinding(
+        candidate,
+        candidate.shape || 'same shape',
+        candidate.sessionCount || 0,
+        candidate.evidence?.evidenceClass || 'WEAK'
+      );
+      const reply = structureResponse({ direct, reasoning, nextStep });
       return {
-        reply: `${candidate.name} stands out as the least active in its shape lane. With only ${candidate.sessionCount || 0} logged sessions among other ${candidate.shape || 'same shape'} pipes, it is not earning heavy use. ${nextLine}`,
+        reply,
         updatedEntityContext: { ...entityContext, subject: { id: candidate.id, name: candidate.name, type: 'pipe' }, topicIntent: 'collection_analysis', lastClaimType: 'redundancy_recommendation', lastEvidenceClass: candidate.evidence?.evidenceClass || 'WEAK', lastConclusion: `${candidate.name} is most redundant` },
       };
     } catch (err) {
