@@ -40,7 +40,6 @@ import {
   seedInitialSnapshotIfMissing,
   refreshItemValue,
 } from '@/components/valuation/valueRefreshService';
-import { ReplacementDifficultyPanel } from '@/components/tobacco/TobaccoValuation';
 import { selectTobaccoReplacementDifficulty, selectTobaccoStrategy } from '@/lib/tobacco/tobaccoSelectors';
 
 // ── Valuation modals ──────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import React from 'react';
-import { HelpCircle, BookOpen, Star, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 
 const TYPE_COLORS = {

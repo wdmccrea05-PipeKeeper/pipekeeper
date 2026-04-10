@@ -21,7 +21,6 @@ import { Plus, Search, Grid3X3, List, Cigarette, SortAsc, Filter, Package2 } fro
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
-import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarCard from '@/components/cigars/CigarCard';
 import CigarListItem from '@/components/cigars/CigarListItem';
 import CigarForm from '@/components/cigars/CigarForm';

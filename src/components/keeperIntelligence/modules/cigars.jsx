@@ -10,7 +10,6 @@ import {
   summarizeCigarReadiness,
   generateCollectionInsights,
   getHumidorHealth,
-  INSIGHT_TYPES,
 } from '../../platform/agingReadiness.js';
 
 export const CigarsModule = {

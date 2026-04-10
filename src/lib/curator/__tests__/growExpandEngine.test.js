@@ -59,7 +59,7 @@ describe('generateGrowExpandRecommendations — blend expansion', () => {
       bottles: [],
       smokingLogs: [],
     });
-    const expandRec = result.find((r) => r.goal === 'blend_family_expansion');
+    const expandRec = result.find((r) => r.goal?.startsWith('blend_family_expansion'));
     expect(expandRec).toBeDefined();
     expect(expandRec.category).toBe(CATEGORY.GROW_EXPAND);
     expect(expandRec.items[0].suggestedFamily).toBe('Virginia');
@@ -78,7 +78,7 @@ describe('generateGrowExpandRecommendations — blend expansion', () => {
       bottles: [],
       smokingLogs: [],
     });
-    const expandRec = result.find((r) => r.goal === 'blend_family_expansion');
+    const expandRec = result.find((r) => r.goal?.startsWith('blend_family_expansion'));
     // Should either suggest the next non-owned type or not produce a rec
     if (expandRec) {
       expect(expandRec.items[0].suggestedFamily).not.toBe('Virginia');
@@ -98,7 +98,7 @@ describe('generateGrowExpandRecommendations — blend expansion', () => {
       bottles: [],
       preferences,
     });
-    const expandRec = result.find((r) => r.goal === 'blend_family_expansion');
+    const expandRec = result.find((r) => r.goal?.startsWith('blend_family_expansion'));
     if (expandRec) {
       const family = expandRec.items[0].suggestedFamily;
       expect(family).not.toBe('Virginia/Perique');
@@ -111,7 +111,7 @@ describe('generateGrowExpandRecommendations — blend expansion', () => {
       blends: [makeBlend()],
       bottles: [makeBottle(), makeBottle({ id: 'bot2' })],
     });
-    const expandRec = result.find((r) => r.goal === 'blend_family_expansion');
+    const expandRec = result.find((r) => r.goal?.startsWith('blend_family_expansion'));
     expect(expandRec).toBeUndefined();
   });
 });
@@ -271,7 +271,7 @@ describe('generateGrowExpandRecommendations — scoring', () => {
       blends,
       bottles: [],
     });
-    const expandRec = result.find((r) => r.goal === 'blend_family_expansion');
+    const expandRec = result.find((r) => r.goal?.startsWith('blend_family_expansion'));
     if (expandRec) {
       // Well-established collection should get medium or high confidence
       expect(['medium', 'high']).toContain(expandRec.confidence);

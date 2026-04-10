@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { Cigarette, DollarSign, Box, Heart, Clock, Flame, TrendingDown, ShieldAlert, AlertTriangle } from 'lucide-react';
-import { getCigarRiskFlags, summarizeCigarReadiness } from '@/platform/agingReadiness';
 import { humidorNeedsAttention } from './humidorMaintenanceUtils';
 import { getCollectionInsights } from '@/platform/cigarInsights';
 

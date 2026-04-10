@@ -288,6 +288,7 @@ const ALL_BLEND_FAMILIES = [
 ];
 
 function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
+  if (blends.length < 2) return [];
   const results = [];
   const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
   const seenNextTypes = new Set();

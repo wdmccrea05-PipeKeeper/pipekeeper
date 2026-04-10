@@ -12,7 +12,6 @@ import {
   TrendingUp,
   GlassWater,
   Cigarette,
-  ClipboardList,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
@@ -34,7 +33,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { safeUpdate } from '@/components/utils/safeUpdate';
 import QuickActions from '@/components/home/QuickActions';
-import OnboardingRouter from '@/components/onboarding/OnboardingRouter';
 import {
   selectWhiskeyMetrics,
   getBottleUnitValue as getBottleValue,
