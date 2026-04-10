@@ -275,6 +275,10 @@ export function useCurrentUser() {
   const isAdmin = user?.role === "admin";
   const isFounding = isFoundingMember(user);
 
+  // CRITICAL FIX: Per-module entitlements (canonical source of truth)
+  const pipekeeper_paid = !!user?.pipekeeper_paid;
+  const whiskeykeeper_paid = !!user?.whiskeykeeper_paid;
+
   // Merge user with userProfile for module fields
   const mergedUser = userProfile ? { ...user, ...userProfile } : user;
 
@@ -298,6 +302,8 @@ export function useCurrentUser() {
     planLabel, // Canonical plan label
     isAdmin,
     isFoundingMember: isFounding,
+    pipekeeper_paid, // CRITICAL: Per-module entitlements
+    whiskeykeeper_paid, // CRITICAL: Per-module entitlements
     refetch,
   };
 }

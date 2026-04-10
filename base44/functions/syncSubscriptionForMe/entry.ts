@@ -196,10 +196,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    // CRITICAL FIX: Set per-module entitlements
+    const pipekeeper_paid = activeModules.includes('pipekeeper');
+    const whiskeykeeper_paid = activeModules.includes('whiskeykeeper');
+
     await base44.asServiceRole.entities.User.update(userId, {
       stripe_customer_id: customerId,
       entitlement_tier: hasPaidAccess ? 'pro' : 'free',
       has_paid_access: hasPaidAccess,
+      pipekeeper_paid,
+      whiskeykeeper_paid,
       paid_modules_csv: hasPaidAccess ? activeModules.join(',') : '',
       subscription_status: mapStripeStatus(subscription.status),
       updated_date: new Date().toISOString(),

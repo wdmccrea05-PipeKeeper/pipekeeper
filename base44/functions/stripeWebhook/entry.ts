@@ -138,12 +138,18 @@ async function syncUserEntitlements(base44: any, userEmail: string) {
       )
     : 0;
 
+  // CRITICAL FIX: Per-module entitlements (no fallback to both modules)
+  const pipekeeper_paid = paidModules.includes('pipekeeper');
+  const whiskeykeeper_paid = paidModules.includes('whiskeykeeper');
+
   const updatePayload = {
     stripe_customer_id:
       activeSubs.find((s: any) => s.stripe_customer_id)?.stripe_customer_id || user.stripe_customer_id || null,
     // Always use "pro" as the entitlement tier — no "premium" in the system
     entitlement_tier: hasPaidAccess ? 'pro' : 'free',
-    paid_modules_csv: hasPaidAccess ? (paidModules.length > 0 ? paidModules.join(',') : 'pipekeeper,whiskeykeeper') : '',
+    paid_modules_csv: paidModules.length > 0 ? paidModules.join(',') : '',
+    pipekeeper_paid,
+    whiskeykeeper_paid,
     has_paid_access: hasPaidAccess,
     updated_date: new Date().toISOString(),
   };

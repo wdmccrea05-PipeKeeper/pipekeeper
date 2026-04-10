@@ -41,11 +41,13 @@ Deno.serve(async (req) => {
       const existing = existingUsers[0];
       console.log('[ensureUserRecord] User exists, updating last_login...');
 
-      // Only set entitlement_tier if not already set — never downgrade
+      // Only set entitlement fields if not already set — never downgrade
       const existingTier = existing.entitlement_tier || null;
       const patch = { last_login: new Date().toISOString() };
       if (!existingTier) {
         patch.entitlement_tier = 'free';
+        patch.pipekeeper_paid = false;
+        patch.whiskeykeeper_paid = false;
       }
 
       // Single update — no double-write
@@ -85,6 +87,8 @@ Deno.serve(async (req) => {
       full_name: authUser.full_name || authUser.name || null,
       entitlement_tier: 'free',
       has_paid_access: false,
+      pipekeeper_paid: false,
+      whiskeykeeper_paid: false,
       last_login: new Date().toISOString(),
       role: authUser.role || 'user'
     });

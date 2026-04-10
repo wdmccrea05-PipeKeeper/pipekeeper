@@ -1,0 +1,164 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "isFreeGrandfathered": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if user exceeded free limits before enforcement - can keep existing items but not add more"
+    },
+    "freeGrandfatheredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the user was flagged as grandfathered"
+    },
+    "foundingMemberAcknowledged": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if user has seen the founding member thank you popup"
+    },
+    "isFoundingMember": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if user became a paid Premium subscriber before Feb 1, 2026"
+    },
+    "foundingMemberSince": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the user became a founding member (their subscription start date)"
+    },
+    "subscription_level": {
+      "type": "string",
+      "enum": [
+        "free",
+        "paid"
+      ],
+      "default": "free",
+      "description": "User's subscription level"
+    },
+    "subscription_status": {
+      "type": "string",
+      "description": "Current subscription status from Stripe"
+    },
+    "subscription_tier": {
+      "type": "string",
+      "enum": [
+        "premium",
+        "pro"
+      ],
+      "description": "Subscription tier - premium or pro"
+    },
+    "subscription_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple"
+      ],
+      "description": "Subscription provider - inferred and backfilled by system"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID - canonical customer for this user"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "web",
+        "ios",
+        "android"
+      ],
+      "default": "web",
+      "description": "Platform the user signed up from"
+    },
+    "merged_into_user_id": {
+      "type": "string",
+      "description": "If this user is a duplicate, ID of the canonical user it was merged into"
+    },
+    "is_disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this is a duplicate/shadow account that has been merged and disabled"
+    },
+    "billing_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple",
+        "none"
+      ],
+      "description": "Inferred billing provider for display and routing"
+    },
+    "billing_source_of_truth": {
+      "type": "string",
+      "enum": [
+        "cloudflare",
+        "apple",
+        "stripe",
+        "manual",
+        "unknown"
+      ],
+      "description": "Source system for billing data"
+    },
+    "entitlement_tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "premium",
+        "pro"
+      ],
+      "default": "free",
+      "description": "Computed entitlement tier"
+    },
+    "entitlement_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "trialing",
+        "canceled",
+        "past_due",
+        "incomplete",
+        "unknown"
+      ],
+      "description": "Computed entitlement status"
+    },
+    "entitlement_last_synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When entitlements were last synchronized"
+    },
+    "entitlement_sync_state": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "needs_sync",
+        "error"
+      ],
+      "default": "ok",
+      "description": "Current sync state"
+    },
+    "entitlement_sync_error": {
+      "type": "string",
+      "description": "Last sync error message"
+    },
+    "pipekeeper_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "User has active PipeKeeper subscription"
+    },
+    "whiskeykeeper_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "User has active WhiskeyKeeper subscription"
+    },
+    "has_paid_access": {
+      "type": "boolean",
+      "default": false,
+      "description": "User has any paid subscription (pipekeeper_paid OR whiskeykeeper_paid)"
+    },
+    "paid_modules_csv": {
+      "type": "string",
+      "description": "Comma-separated list of paid modules (pipekeeper, whiskeykeeper, etc.)"
+    }
+  },
+  "required": []
+}

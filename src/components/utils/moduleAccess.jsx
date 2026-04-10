@@ -69,30 +69,28 @@ export function getEnabledModules(moduleStates) {
 // ─── C. Module PAID ──────────────────────────────────────────────────────────
 
 /**
- * PipeKeeper is always included (core module).
- * WhiskeyKeeper is available free (basic) or paid (full features).
- * In practice, "paid" means the user has premium/pro entitlement.
- *
- * For now, this is a pass-through — entitlement is handled by useCurrentUser.
- * This utility exists to make the concept explicit and allow future per-module pricing.
+ * Check if user has paid access to a specific module.
  *
  * @param {string} moduleId
- * @param {object} entitlements — { hasPaid, hasPro, hasPremium }
+ * @param {object} user — user object with pipekeeper_paid and whiskeykeeper_paid flags
  */
-export function isModulePaid(moduleId, entitlements) {
-  if (!entitlements) return false;
-  const { hasPaid, hasPro, hasPremium } = entitlements;
-  // All launched modules are accessible free; paid = premium/pro unlocks advanced features
-  // PipeKeeper core is always free; whiskey is also accessible free (basic)
-  return !!(hasPaid || hasPro || hasPremium);
+export function isModulePaid(moduleId, user) {
+  if (!user) return false;
+  const normalized = String(moduleId || '').toLowerCase();
+  if (normalized === 'pipekeeper') return !!user.pipekeeper_paid;
+  if (normalized === 'whiskeykeeper') return !!user.whiskeykeeper_paid;
+  return false;
 }
 
 /**
  * Returns IDs of modules the user has paid access for.
  */
-export function getPaidModuleIds(entitlements) {
-  if (!entitlements || !(entitlements.hasPaid || entitlements.hasPro || entitlements.hasPremium)) return [];
-  return getLaunchedModuleIds(); // All modules share the same subscription tier currently
+export function getPaidModuleIds(user) {
+  if (!user) return [];
+  const paid = [];
+  if (user.pipekeeper_paid) paid.push('pipekeeper');
+  if (user.whiskeykeeper_paid) paid.push('whiskeykeeper');
+  return paid;
 }
 
 // ─── D. Module AI-ELIGIBLE ───────────────────────────────────────────────────
@@ -104,6 +102,7 @@ export function getPaidModuleIds(entitlements) {
  *   - NOT locked/hidden
  *
  * NOTE: Free modules CAN be AI-eligible. The rule is enablement, not payment.
+ * PipeKeeper and WhiskeyKeeper are both FREE by default for new users.
  *
  * @param {string} moduleId
  * @param {object} moduleStates — from deriveModuleStates(profile) or useModuleVisibility
