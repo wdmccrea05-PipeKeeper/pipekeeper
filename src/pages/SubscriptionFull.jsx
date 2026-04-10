@@ -189,11 +189,8 @@ export default function SubscriptionFull() {
         interval: interval || selectedInterval,
       });
       if (response.data?.url) {
-        const opened = window.open(response.data.url, "_blank", "noopener,noreferrer");
-        if (!opened || opened.closed) {
-          toast.error(t("subscriptionFull.checkoutError"));
-          navigate(createPageUrl("Subscription"));
-        }
+        const w = window.open(response.data.url, "_blank", "noopener,noreferrer");
+        if (!w) window.location.assign(response.data.url);
       } else {
         setMessage(t("subscriptionFull.checkoutError"));
       }

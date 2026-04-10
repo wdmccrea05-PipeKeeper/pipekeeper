@@ -96,7 +96,14 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   ].filter((mod) => !mod.hidden);
 
   async function handleSetTierAndEnable(moduleId, isPaid) {
-    if (isPaid && !hasPaid) {
+    const hasPipePro = !!effectiveUser?.pipekeeper_paid;
+    const hasWhiskeyPro = !!effectiveUser?.whiskeykeeper_paid;
+
+    const hasEntitlement =
+      (moduleId === "pipekeeper" && hasPipePro) ||
+      (moduleId === "whiskeykeeper" && hasWhiskeyPro);
+
+    if (isPaid && !hasEntitlement) {
       navigate("/Subscription");
       return;
     }
