@@ -22,6 +22,15 @@ import { CATEGORY } from '@/lib/curator/recommendationSchema';
 const LOAD_TIMEOUT_MS = 10000;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function withTimeout(promise, label, ms = LOAD_TIMEOUT_MS) {
   return Promise.race([
     promise,
@@ -275,7 +284,7 @@ export default function CuratorWorkspace({
     [buildContext, publishCounts, user?.email]
   );
 
-  const loadPairings = useCallback(async () => {
+  const loadPairings = useCallback(async ({ reshuffle = false } = {}) => {
     // §9.2 + pairings rule: skip entirely in single-module mode
     if (isSingleModuleMode || !user?.email) {
       setPairings([]);
@@ -288,7 +297,20 @@ export default function CuratorWorkspace({
       const context = contextRef.current || (await buildContext());
       if (!contextRef.current) contextRef.current = context;
 
-      const nextPairings = generatePairingRecommendations(context) || [];
+      // When user clicks "New Pairings", shuffle input arrays so the engine
+      // produces a different combination ordering each time.
+      const pairingContext = reshuffle
+        ? {
+            ...context,
+            pipes:       shuffleArray(context.pipes       || []),
+            blends:      shuffleArray(context.blends      || []),
+            bottles:     shuffleArray(context.bottles     || []),
+            smokingLogs: shuffleArray(context.smokingLogs || []),
+            tastingLogs: shuffleArray(context.tastingLogs || []),
+          }
+        : context;
+
+      const nextPairings = generatePairingRecommendations(pairingContext) || [];
 
       if (!mountedRef.current) return;
 
@@ -329,7 +351,6 @@ export default function CuratorWorkspace({
       }
 
       if (actionKey === 'build_session') {
-        // Spec: Build Session must open the correct modal, NOT chat.
         const candidate = payload?._sessionCandidate;
         const moduleKey = candidate?.moduleKey || '';
         if (moduleKey === 'whiskey' || candidate?.itemType === 'bottle') {
@@ -339,7 +360,6 @@ export default function CuratorWorkspace({
           const blendId = (moduleKey === 'tobacco' ? candidate?.item?.id : '') || payload?.blendBridge?.id || '';
           setSessionModal({ pipeId, blendId });
         } else {
-          // Indeterminate — fall back to chat prefill
           setPreFillMessage(buildSessionPrompt(payload));
           onSurfaceChange?.('chat');
         }
@@ -407,7 +427,7 @@ export default function CuratorWorkspace({
 
   const handleRefresh = useCallback(async () => {
     if (activeSurface === 'pairings') {
-      await loadPairings();
+      await loadPairings({ reshuffle: true });
       return;
     }
     await loadPrimaryData({ silent: true });
