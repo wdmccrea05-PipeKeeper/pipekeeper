@@ -197,7 +197,9 @@ function RecordOptimizationActions({ rec, onAction }) {
     const hasPayload = hasNonEmptyPayload(item);
     const path = singleItemPath(item);
     const proposedSummary = hasPayload
-      ? Object.entries(item.proposedChange.payload).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')
+      ? item.issueType === 'reclassification'
+        ? Object.values(item.proposedChange.payload).join(' · ')
+        : Object.entries(item.proposedChange.payload).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')
       : null;
 
     const handleApplyItem = async () => {
@@ -212,9 +214,13 @@ function RecordOptimizationActions({ rec, onAction }) {
           <div className="text-sm font-medium truncate" style={{ color: '#F5F5F7' }}>
             {item.itemName || item.recordName || '—'}
           </div>
-          {item.missingFields?.length > 0 && (
+          {item.issueType === 'reclassification' ? (
+            <div className="text-xs" style={{ color: '#71717A' }}>
+              Currently: <span style={{ color: '#A1A1AA' }}>{item.currentClassification || '—'}</span>
+            </div>
+          ) : item.missingFields?.length > 0 ? (
             <div className="text-xs" style={{ color: '#71717A' }}>Missing: {item.missingFields.join(', ')}</div>
-          )}
+          ) : null}
           {proposedSummary && !done && (
             <div className="text-xs mt-0.5" style={{ color: '#C6A15B' }}>→ {proposedSummary}</div>
           )}

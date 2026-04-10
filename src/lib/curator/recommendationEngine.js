@@ -892,6 +892,144 @@ function analyzeMetadata(context) {
     }));
   }
 
+  // ── Blend reclassification — detect wrong family for already-classified blends ──
+  // Only inspects blends that already HAVE a blend_type but the catalog disagrees.
+  const classifiedBlends = blends.filter(
+    (b) => b.blend_type && b.blend_type !== '' && b.blend_type !== 'Unknown'
+  );
+  if (classifiedBlends.length > 0) {
+    const reclassItems = [];
+    for (const blend of classifiedBlends) {
+      if (reclassItems.length >= MAX_ITEMS_PER_REC) break;
+      const nameLower = (blend.name || '').toLowerCase().trim();
+      if (!nameLower) continue;
+      let catalogData = null;
+      let confidence  = 0;
+      // Exact match first
+      for (const [key, data] of Object.entries(KNOWN_BLENDS)) {
+        if (nameLower === key.toLowerCase()) { catalogData = data; confidence = 0.90; break; }
+      }
+      // Partial match
+      if (!catalogData) {
+        for (const [key, data] of Object.entries(KNOWN_BLENDS)) {
+          const keyLower = key.toLowerCase();
+          if (nameLower.includes(keyLower) || keyLower.includes(nameLower)) {
+            catalogData = data; confidence = 0.80; break;
+          }
+        }
+      }
+      if (!catalogData) continue;
+      const payload = {};
+      const currentValues = {};
+      if (catalogData.blend_type && blend.blend_type !== catalogData.blend_type) {
+        payload.blend_type     = catalogData.blend_type;
+        currentValues.blend_type = blend.blend_type;
+      }
+      if (catalogData.strength && blend.strength && blend.strength !== catalogData.strength) {
+        payload.strength     = catalogData.strength;
+        currentValues.strength = blend.strength;
+      }
+      if (!Object.keys(payload).length) continue;
+      reclassItems.push({
+        id: blend.id,
+        recordId: blend.id,
+        recordType: 'blend',
+        recordName: blend.name,
+        itemName: blend.name,
+        manufacturer: blend.manufacturer || null,
+        ownershipStatus: 'owned',
+        issueType: 'reclassification',
+        // Raw entity fields so the review panel can resolve current values
+        blend_type: blend.blend_type,
+        strength:   blend.strength || null,
+        currentClassification: blend.blend_type,
+        proposedClassification: catalogData.blend_type,
+        proposedChange: {
+          confidence,
+          payload,
+          currentValues,
+          rationale: `The product catalog documents "${blend.name}" as ${catalogData.blend_type}. The current classification (${blend.blend_type}) differs from the documented product specification.`,
+        },
+      });
+    }
+
+    if (reclassItems.length > 0) {
+      const autoFixCount = reclassItems.filter((i) => i.proposedChange.confidence >= 0.85).length;
+      recommendations.push(createRecommendation({
+        category:           CATEGORY.RECORD_OPTIMIZATION,
+        goal:               'blend_reclassification',
+        actionType:         autoFixCount > 0 ? ACTION_TYPE.AUTO_FIX : ACTION_TYPE.REVIEW_REQUIRED,
+        title:              'Blends with Incorrect Family Classification',
+        summary:            `${reclassItems.length} blend${reclassItems.length > 1 ? 's are' : ' is'} currently classified in the wrong family. Curator has identified the correct assignment from the product catalog.`,
+        whyItMatters:       'These blends are currently classified too broadly or placed in the wrong lane. A more precise family assignment improves pairing accuracy, session planning, and collection balance analysis.',
+        recommendationText: autoFixCount > 0
+          ? `${autoFixCount} blend${autoFixCount > 1 ? 's' : ''} can be reclassified automatically with high confidence. Apply Fix to update, or Review to confirm each change before committing.`
+          : 'Review the proposed reclassification for each blend. The current and proposed families are displayed side by side for comparison.',
+        moduleKey:          MODULE_KEY.TOBACCO,
+        ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+        priority:           reclassItems.length >= 3 ? PRIORITY.MEDIUM : PRIORITY.LOW,
+        confidence:         'high',
+        items:              reclassItems,
+        actionPayload:      { type: 'reclassify_blend', field: 'blend_type' },
+      }));
+    }
+  }
+
+  // ── Bottle spirit type normalization — detect type/distillery mismatches ──
+  const classifiedBottles = bottles.filter((b) => b.type || b.whiskey_type);
+  if (classifiedBottles.length > 0) {
+    const normItems = [];
+    for (const bottle of classifiedBottles) {
+      if (normItems.length >= MAX_ITEMS_PER_REC) break;
+      const currentType = bottle.type || bottle.whiskey_type;
+      const searchStr   = ((bottle.distillery || '') + ' ' + (bottle.name || '')).toLowerCase().trim();
+      if (!searchStr) continue;
+      let catalogType = null;
+      for (const [key, data] of Object.entries(KNOWN_DISTILLERIES)) {
+        if (searchStr.includes(key.toLowerCase())) {
+          if (data.type && data.type !== currentType) { catalogType = data.type; break; }
+        }
+      }
+      if (!catalogType) continue;
+      normItems.push({
+        id: bottle.id,
+        recordId: bottle.id,
+        recordType: 'bottle',
+        recordName: bottle.name,
+        itemName: bottle.name,
+        ownershipStatus: 'owned',
+        issueType: 'reclassification',
+        type: currentType,
+        currentClassification: currentType,
+        proposedClassification: catalogType,
+        proposedChange: {
+          confidence: 0.85,
+          payload: { type: catalogType },
+          currentValues: { type: currentType },
+          rationale: `The distillery catalog documents this spirit as ${catalogType}. The recorded type (${currentType}) does not match — this affects pairing logic, session planning, and gap analysis.`,
+        },
+      });
+    }
+
+    if (normItems.length > 0) {
+      recommendations.push(createRecommendation({
+        category:           CATEGORY.RECORD_OPTIMIZATION,
+        goal:               'bottle_type_normalization',
+        actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+        title:              'Bottles with Spirit Type Discrepancy',
+        summary:            `${normItems.length} bottle${normItems.length > 1 ? 's have' : ' has'} a recorded spirit type that does not align with the known distillery classification.`,
+        whyItMatters:       'Spirit type determines which pairings, session profiles, and gap analysis recommendations apply to each bottle. An incorrect type propagates errors throughout the recommendation system.',
+        recommendationText: 'Review each proposed correction. This record still has one manual field remaining after enrichment — confirm the distillery-based classification before applying.',
+        moduleKey:          MODULE_KEY.WHISKEY,
+        ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+        priority:           PRIORITY.LOW,
+        confidence:         'medium',
+        items:              normItems,
+        actionPayload:      { type: 'normalize_bottle_type', field: 'type' },
+      }));
+    }
+  }
+
   return recommendations;
 }
 
