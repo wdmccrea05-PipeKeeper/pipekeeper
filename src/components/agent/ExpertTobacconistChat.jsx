@@ -52,7 +52,12 @@ function detectEntityType(text) {
 
 function isFollowUpReference(text) {
   const pronouns = /\b(it|that|this one|this pipe|that pipe|this blend|that blend|this bottle|that bottle|the one|the pipe|the blend|the bottle|how do i|how should i|what should i do with)\b/i;
-  return pronouns.test(text);
+  const comparisons = /\b(how does it compare|where does it sit|is it redundant|what would you do with it|compare to others|how does that compare|how does this compare)\b/i;
+  return pronouns.test(text) || comparisons.test(text);
+}
+
+function isComparisonFollowUp(text) {
+  return /\b(how does it compare|where does it sit|is it redundant|what would you do with it|compare to others|how does that compare|how does this compare)\b/i.test(text);
 }
 
 function extractNamedEntity(text, records = []) {
@@ -65,54 +70,104 @@ function extractNamedEntity(text, records = []) {
 }
 
 function emptyEntityContext() {
-  return { pipe: null, blend: null, bottle: null, acquisition: null };
+  return { pipe: null, blend: null, bottle: null, acquisition: null, topicIntent: null, lastComparisonSet: [] };
 }
 
-function updateEntityContext(currentContext, entityType, entityRecord) {
-  if (!entityType || !entityRecord) return currentContext;
-  return { ...currentContext, [entityType]: entityRecord };
+function updateEntityContext(currentContext, entityType, entityRecord, topicIntent = null, lastComparisonSet = null) {
+  const next = { ...currentContext, [entityType]: entityRecord };
+  if (topicIntent) next.topicIntent = topicIntent;
+  if (lastComparisonSet) next.lastComparisonSet = lastComparisonSet;
+  return next;
+}
+
+// --- OWNED ITEM EVALUATION HELPERS
+
+function evaluateOwnedBottle(bottle, bottles, tastingLogs = []) {
+  const type = (bottle.type || bottle.whiskey_type || 'unknown').toLowerCase();
+  const name = bottle.name || 'This bottle';
+
+  // Find nearby bottles by style
+  const nearby = bottles.filter(b => {
+    if (b.id === bottle.id) return false;
+    const bt = (b.type || b.whiskey_type || '').toLowerCase();
+    return bt && bt.split(' ').some(word => type.includes(word) || bt.includes(type.split(' ')[0]));
+  }).slice(0, 3);
+
+  // Usage data
+  const tastedIds = new Set(tastingLogs.map(l => l?.bottle_id).filter(Boolean));
+  const isTasted = tastedIds.has(bottle.id);
+  const tastingCount = tastingLogs.filter(l => l?.bottle_id === bottle.id).length;
+
+  // Role determination
+  const sameTypeCount = bottles.filter(b => b.id !== bottle.id && (b.type || '').toLowerCase().includes(type.split(' ')[0])).length;
+  const role = sameTypeCount >= 2 ? 'potentially overlapping' : sameTypeCount === 1 ? 'a paired lane' : 'the only example of its type';
+
+  // Recommendation
+  let action = 'revisit deliberately — it deserves focused attention rather than casual pours';
+  if (!isTasted) action = 'open and log your first tasting — you have not recorded a session with it yet';
+  else if (tastingCount >= 3) action = 'continue rotating it — it is already part of your active tasting rhythm';
+
+  const comparisonText = nearby.length > 0
+    ? `Compared to ${nearby[0].name}, it ${type === (nearby[0].type || '').toLowerCase() ? 'occupies a similar lane' : 'offers a different character'}. ${nearby.length > 1 ? `It sits between ${nearby[0].name} and ${nearby[1].name} in terms of style weight.` : ''}`
+    : 'It stands without close neighbors in your current shelf — it is covering territory nothing else does.';
+
+  return {
+    role,
+    comparisonText,
+    action,
+    nearbyItems: nearby,
+  };
+}
+
+function evaluateOwnedBlend(blend, blends, smokingLogs = []) {
+  const type = blend.blend_type || 'unknown';
+  const name = blend.name || 'This blend';
+
+  const nearby = blends.filter(b => {
+    if (b.id === blend.id) return false;
+    return b.blend_type === type;
+  }).slice(0, 3);
+
+  const usageLogs = smokingLogs.filter(l => l?.blend_id === blend.id);
+  const sessionCount = usageLogs.length;
+  const role = nearby.length >= 2 ? 'overlapping with others in the same family' : nearby.length === 1 ? 'one of two in its family' : 'the only blend in its family';
+
+  let action = 'prioritize for your next session — it is underused relative to its position';
+  if (sessionCount >= 10) action = 'continue rotating it freely — it is already a core blend in your rotation';
+  else if (sessionCount >= 4) action = 'keep it in regular rotation — it is contributing meaningfully';
+
+  const comparisonText = nearby.length > 0
+    ? `Within your ${type} selection, it sits alongside ${nearby.map(b => b.name).join(' and ')}. ${nearby.length === 1 ? 'There is some overlap — consider whether both are earning their place.' : 'The group gives you range within the family.'}`
+    : `It is the only ${type} in your cellar — it is doing unique work.`;
+
+  return { role, comparisonText, action, nearbyItems: nearby };
+}
+
+function evaluateOwnedPipe(pipe, pipes, smokingLogs = []) {
+  const shape = (pipe.shape || 'unknown').toLowerCase();
+  const name = pipe.name || 'This pipe';
+
+  const nearby = pipes.filter(p => {
+    if (p.id === pipe.id) return false;
+    return (p.shape || '').toLowerCase() === shape;
+  }).slice(0, 3);
+
+  const usageLogs = smokingLogs.filter(l => l?.pipe_id === pipe.id);
+  const sessionCount = usageLogs.length;
+  const role = nearby.length >= 2 ? 'one of several in the same shape lane' : nearby.length === 1 ? 'one of two in its shape' : 'the only pipe of its shape';
+
+  let action = 'log a session with it — build more history before judging its place';
+  if (sessionCount >= 10) action = 'keep it central — it is already one of your most-used pipes';
+  else if (sessionCount >= 4) action = 'continue rotating it — it is earning its position';
+
+  const comparisonText = nearby.length > 0
+    ? `Among your ${shape} pipes — ${nearby.map(p => p.name).join(', ')} — it ${sessionCount > (nearby[0]?._sessions || 0) ? 'is the more active choice' : 'is the less-used alternative'}. That may indicate redundancy or simply a preference hierarchy.`
+    : `It is the only ${shape} in your collection — it has a clear role with no overlap.`;
+
+  return { role, comparisonText, action, nearbyItems: nearby };
 }
 
 // --- INTENT CLASSIFICATION (MANDATORY)
-
-function classifyIntent(message) {
-  const text = norm(message);
-
-  // EVALUATE_RECOMMENDATION: "help me evaluate", "evaluate", "should I get", "is this a good"
-  if (/\b(help me evaluate|evaluate|should i get|is this a good|is this worth|tell me about|what do you think of|assess)\b/i.test(text)) {
-    return 'EVALUATE_RECOMMENDATION';
-  }
-
-  // PAIRING_EXPLANATION: "why do these work", "explain why", "how do they work"
-  if (/\b(why|explain why|why do|how do they|what makes|what's the connection)\b/i.test(text) &&
-      (/\b(pair|pairing|work|together|combination)\b/i.test(text) ||
-       /\b(pipe|blend|bottle|whiskey|tobacco)\b/i.test(text))) {
-    return 'PAIRING_EXPLANATION';
-  }
-
-  // SESSION_RECOMMENDATION: "what should I", "build me", "tonight", "smoke", "drink"
-  if (/\b(what should i|build me|tonight|enjoy|smoke|drink|open)\b/i.test(text)) {
-    return 'SESSION_RECOMMENDATION';
-  }
-
-  // COLLECTION_ANALYSIS: "redundant", "overlap", "most", "crowded"
-  if (/\b(redundant|overlap|most|crowded|duplicate)\b/i.test(text)) {
-    return 'COLLECTION_ANALYSIS';
-  }
-
-  // RESTOCK_ADVICE: "buy", "restock", "purchase", "gap"
-  if (/\b(buy|restock|purchase|next|gap)\b/i.test(text)) {
-    return 'RESTOCK_ADVICE';
-  }
-
-  // FOLLOW_UP: pronoun references without action
-  if (/\b(it|that|this|the one)\b/i.test(text) &&
-      !/\b(why|explain|redundant|buy|restock|tonight|smoke|drink)\b/i.test(text)) {
-    return 'FOLLOW_UP';
-  }
-
-  return 'UNKNOWN';
-}
 
 // --- Collection analysis helpers
 
@@ -343,42 +398,55 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
 
   // CRITICAL: Enforce intent matching
   if (intent === 'EVALUATE_RECOMMENDATION') {
-    // Pre-fill format: "Evaluate [item name] in my collection"
-    const evalMatch = message.match(/evaluate\s+(.+?)(?:\s+in my collection|$)/i);
+    const evalMatch = message.match(/evaluate\s+(.+?)(?:\s+in my collection|\s+for my collection|$)/i);
     const itemTitle = evalMatch ? evalMatch[1].trim() : null;
 
-    // Use already-seeded entity context first, then try name extraction
-    const seededBottle = entityContext.bottle;
-    const seededBlend  = entityContext.blend;
-    const seededPipe   = entityContext.pipe;
-    const namedBlend   = extractNamedEntity(text, blends)  || seededBlend;
-    const namedBottle  = extractNamedEntity(text, bottles) || seededBottle;
-    const namedPipe    = extractNamedEntity(text, pipes)   || seededPipe;
-    const subject = namedBottle || namedBlend || namedPipe;
-    const subjectName = subject?.name || itemTitle;
+    // Try to resolve from owned collection first
+    const namedBottle  = extractNamedEntity(text, bottles) || extractNamedEntity(itemTitle ? norm(itemTitle) : '', bottles);
+    const namedBlend   = !namedBottle ? (extractNamedEntity(text, blends) || extractNamedEntity(itemTitle ? norm(itemTitle) : '', blends)) : null;
+    const namedPipe    = !namedBottle && !namedBlend ? (extractNamedEntity(text, pipes) || extractNamedEntity(itemTitle ? norm(itemTitle) : '', pipes)) : null;
 
-    if (subjectName) {
-      const isBottle = !!namedBottle;
-      const isBlend  = !isBottle && !!namedBlend;
-      const collectionRef = isBottle
-        ? `You currently have ${bottles.length} bottle${bottles.length !== 1 ? 's' : ''} in your collection.`
-        : `You currently have ${blends.length} blend${blends.length !== 1 ? 's' : ''} in your cellar.`;
+    const ownedSubject = namedBottle || namedBlend || namedPipe;
+
+    if (ownedSubject) {
+      // OWNED ITEM EVALUATION MODE
+      const entityKey = namedBottle ? 'bottle' : namedBlend ? 'blend' : 'pipe';
+      let evalData;
+      if (namedBottle) evalData = evaluateOwnedBottle(namedBottle, bottles, tastingLogs);
+      else if (namedBlend) evalData = evaluateOwnedBlend(namedBlend, blends, smokingLogs);
+      else evalData = evaluateOwnedPipe(namedPipe, pipes, smokingLogs);
 
       const updatedCtx = {
         ...entityContext,
-        ...(namedBottle ? { bottle: namedBottle } : {}),
-        ...(namedBlend  ? { blend:  namedBlend  } : {}),
-        ...(namedPipe   ? { pipe:   namedPipe   } : {}),
+        [entityKey]: ownedSubject,
+        topicIntent: 'evaluate_owned_item',
+        lastComparisonSet: evalData.nearbyItems,
       };
 
+      const reply = `**${ownedSubject.name}** already has a place in your collection.\n\n**What it does:**\nIt is ${evalData.role} in your collection — ${entityKey === 'bottle' ? `a ${(ownedSubject.type || ownedSubject.whiskey_type || 'spirit')} pour` : entityKey === 'blend' ? `a ${(ownedSubject.blend_type || 'blend')} in your cellar` : `a ${(ownedSubject.shape || 'pipe')} in your rotation`} with a defined but potentially underexploited position.\n\n**How it compares:**\n${evalData.comparisonText}\n\n**What I would do next:**\n${ownedSubject.name} — I would ${evalData.action}.`;
+
+      return { reply, updatedEntityContext: updatedCtx };
+    }
+
+    // OUTSIDE RECOMMENDATION MODE — item not found in collection
+    const subjectName = itemTitle;
+    if (subjectName) {
+      // Compare against owned items to explain the gap it fills
+      const dominantBottleType = bottles.length > 0
+        ? Object.entries(bottles.reduce((acc, b) => { const t = b.type || b.whiskey_type || 'Unknown'; acc[t] = (acc[t] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1])[0]?.[0]
+        : null;
+      const gapContext = dominantBottleType
+        ? `Your shelf currently leans toward ${dominantBottleType}. Adding ${subjectName} would ${dominantBottleType.toLowerCase().includes('bourbon') ? 'introduce contrast from a different grain tradition' : 'add depth to an underrepresented style'}.`
+        : `Your collection does not yet have a strong reference point in this style. ${subjectName} would begin covering that territory.`;
+
       return {
-        reply: `**${subjectName}** — Evaluation\n\nThis addresses a gap or addition to your collection that your existing stock does not cover. ${collectionRef}\n\nThe suggestion is specific rather than generic — a concrete product grounded in what you already own. If the family it represents is absent from your collection, adding it opens new session and pairing options your current rotation can't support.\n\nTo act on it: add it to your Want List from the Grow & Expand card. Or ask me how it compares to something else in your collection.`,
-        updatedEntityContext: updatedCtx,
+        reply: `**${subjectName}** — Outside Recommendation\n\n${gapContext}\n\nIf this is a style you have been exploring, it is worth tracking. Add it to your Want List so Curator can factor it into future session and pairing recommendations. If you want to compare it directly against something you already own, name the bottle and I will run the comparison.`,
+        updatedEntityContext: { ...entityContext, topicIntent: 'evaluate_recommendation' },
       };
     }
 
     return {
-      reply: 'I can evaluate a specific recommendation if you name the item. What are you considering adding?',
+      reply: 'I can evaluate a specific item if you name it. Is it something already in your collection or a recommendation you are considering?',
       updatedEntityContext: entityContext,
     };
   }
@@ -427,6 +495,28 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
       reply: `${top.reason}${othersText}`,
       updatedEntityContext: updatedCtx,
     };
+  }
+
+  // FOLLOW-UP COMPARISON: keep subject from prior owned evaluation
+  if (isComparisonFollowUp(text) && entityContext.topicIntent === 'evaluate_owned_item') {
+    const subject = entityContext.bottle || entityContext.blend || entityContext.pipe;
+    if (subject) {
+      const entityKey = entityContext.bottle ? 'bottle' : entityContext.blend ? 'blend' : 'pipe';
+      let evalData;
+      if (entityKey === 'bottle') evalData = evaluateOwnedBottle(entityContext.bottle, bottles, tastingLogs);
+      else if (entityKey === 'blend') evalData = evaluateOwnedBlend(entityContext.blend, blends, smokingLogs);
+      else evalData = evaluateOwnedPipe(entityContext.pipe, pipes, smokingLogs);
+
+      const nearby = evalData.nearbyItems;
+      const nearbyText = nearby.length > 0
+        ? `The most direct comparisons from your collection are ${nearby.map(x => x.name).join(', ')}. ${evalData.comparisonText}`
+        : `There are no close neighbors in your collection for direct comparison — ${subject.name} stands alone in its lane.`;
+
+      return {
+        reply: `**${subject.name}** — Comparison\n\n${nearbyText}\n\nIn terms of what I would do differently: ${evalData.action}.`,
+        updatedEntityContext: entityContext,
+      };
+    }
   }
 
   const followUp = isFollowUpReference(text);
