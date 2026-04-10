@@ -4,6 +4,8 @@ export default {
     loading: "Loading...",
     save: "Save",
     cancel: "Cancel",
+    upgrade: "Upgrade",
+    upgradeNow: "Upgrade Now",
     delete: "Delete",
     confirmDelete: "Delete this item?",
     edit: "Edit",
@@ -984,8 +986,13 @@ export default {
     workspaceSubtitleRouted: "Opening Curator with your selected prompt…",
   },
 
+  freeTier: {
+    upgradePrompt: "Upgrade to Pro",
+  },
+
   profile: {
     pipeTobaccoPreferences: "Pipe & Tobacco Preferences",
+    unlock: "Unlock",
     whiskeyPreferences: "Whiskey Preferences",
     cigarPreferences: "Cigar Preferences",
     usedByCuratorPipe: "Personalize your AI recommendations",

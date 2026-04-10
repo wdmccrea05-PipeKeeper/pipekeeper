@@ -25,6 +25,8 @@ import {
   getBottleUnitValue,
   getEffectiveBottleCount,
 } from '@/components/utils/whiskeyValueHelpers';
+import { checkFreeTierLimit } from '@/components/utils/freeTierLimits';
+import FreeTierUpgradePrompt from '@/components/subscription/FreeTierUpgradePrompt';
 
 function normalizeText(value) {
   return String(value || '').trim().toLowerCase();
@@ -164,12 +166,24 @@ export default function WhiskeyKeeperModule({
       .slice(0, 4);
   }, [bottles]);
 
+  // Check free tier limits
+  const bottleLimit = checkFreeTierLimit('whiskeykeeper', 'bottles', bottleTypes, user);
+
   const handleBottleUpdated = async () => {
     await loadData();
   };
 
   return (
     <div className="space-y-6">
+      {/* Free Tier Limit Warning */}
+      {bottleLimit.atLimit && !user?.whiskeykeeper_paid && (
+        <FreeTierUpgradePrompt
+          moduleId="whiskeykeeper"
+          title="Bottle Collection Limit Reached"
+          description={`You've reached the ${bottleLimit.limit} bottle limit on your free tier. Upgrade to WhiskeyKeeper Pro for unlimited storage.`}
+        />
+      )}
+
       <div
         className="rounded-2xl p-5 md:p-6"
         style={{

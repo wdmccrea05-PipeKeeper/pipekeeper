@@ -10,12 +10,14 @@ import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
 import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
 import { calculateCellaredOzFromBlend } from '@/components/utils/tobaccoQuantityHelpers';
+import { checkFreeTierLimit } from '@/components/utils/freeTierLimits';
 import PipeKeeperModuleNav from './PipeKeeperModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
 import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import LogSessionModal from '@/components/home/LogSessionModal';
+import FreeTierUpgradePrompt from '@/components/subscription/FreeTierUpgradePrompt';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -80,6 +82,10 @@ export default function PipeKeeperModule() {
   }, [pipes]);
 
   const totalCellaredOz = useMemo(() => blends.reduce((sum, b) => sum + calculateCellaredOzFromBlend(b), 0), [blends]);
+
+  // Check free tier limits
+  const pipeLimit = checkFreeTierLimit('pipekeeper', 'pipes', pipes.length, user);
+  const blendLimit = checkFreeTierLimit('pipekeeper', 'blends', blends.length, user);
   
   const mostSmokedPipe = useMemo(() => {
     if (!smokingLogs.length || !pipes.length) return null;
@@ -192,6 +198,22 @@ export default function PipeKeeperModule() {
 
       {/* Module Navigation - landing has no active tab */}
       <PipeKeeperModuleNav currentPageName={null} />
+
+      {/* Free Tier Limit Warnings */}
+      {pipeLimit.atLimit && !user?.pipekeeper_paid && (
+        <FreeTierUpgradePrompt
+          moduleId="pipekeeper"
+          title="Pipe Collection Limit Reached"
+          description={`You've reached the ${pipeLimit.limit} pipe limit on your free tier. Upgrade to PipeKeeper Pro for unlimited storage.`}
+        />
+      )}
+      {blendLimit.atLimit && !user?.pipekeeper_paid && (
+        <FreeTierUpgradePrompt
+          moduleId="pipekeeper"
+          title="Blend Collection Limit Reached"
+          description={`You've reached the ${blendLimit.limit} blend limit on your free tier. Upgrade to PipeKeeper Pro for unlimited storage.`}
+        />
+      )}
 
       {/* Summary Cards */}
       <div className="rounded-lg p-5" style={{
