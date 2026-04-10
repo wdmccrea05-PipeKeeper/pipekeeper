@@ -1,22 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useCurrentUser } from './useCurrentUser';
+import { useEffect, useState } from "react";
+import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 
-/**
- * Hook to determine if module selection onboarding should be shown
- * Shows only on first login/signup when module_preferences_set is false
- */
 export function useModuleOnboarding() {
-  const { user, isLoading } = useCurrentUser();
+  const { profile, isLoading } = useModuleVisibility();
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (isLoading || !user?.email) return;
-
-    // Show modal if user hasn't set module preferences yet (including undefined for new users)
-    // Only close if explicitly set to true
-    const shouldShow = user?.module_preferences_set !== true;
+    if (isLoading) return;
+    const shouldShow = profile?.module_preferences_set !== true;
     setShowModal(shouldShow);
-  }, [user?.email, user?.module_preferences_set, isLoading]);
+  }, [profile?.module_preferences_set, isLoading]);
 
   return { showModal, setShowModal };
 }
