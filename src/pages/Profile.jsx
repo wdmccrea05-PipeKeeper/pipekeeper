@@ -490,20 +490,52 @@ export default function ProfilePage() {
               <div className="w-full md:w-auto flex flex-col gap-2">
                 <Button
                   className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                  onClick={() => navigate(createPageUrl("Subscription"))}
+                  onClick={async () => {
+                    // If user has exactly one paid module and a valid Stripe subscription, open customer portal
+                    const hasOnePaidModule =
+                      (user?.pipekeeper_paid ? 1 : 0) + (user?.whiskeykeeper_paid ? 1 : 0) === 1;
+                    const hasStripeSubscription = provider === 'stripe' && subscription?.id;
+
+                    if (hasOnePaidModule && hasStripeSubscription) {
+                      try {
+                        const res = await base44.functions.invoke(
+                          'createCustomerPortalSessionForMe',
+                          { return_url: window.location.href }
+                        );
+                        if (res?.data?.url) {
+                          window.location.href = res.data.url;
+                        } else if (res?.data?.client_secret) {
+                          window.location.href = res.data.client_secret;
+                        }
+                      } catch (err) {
+                        console.error('Portal error:', err);
+                        navigate(createPageUrl('Subscription'));
+                      }
+                    } else {
+                      navigate(createPageUrl('Subscription'));
+                    }
+                  }}
                 >
                   {t("profile.manageSubscription")}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="border-red-800/40 text-red-400 hover:bg-red-900/20 hover:border-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Profile
+                </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+              </CardContent>
+              </Card>
 
-        {/* Profile */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
+              {/* Profile */}
+              <Card>
+              <CardHeader>
+              <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(100,70,45,0.4), rgba(80,55,35,0.5))', border: '1px solid rgba(120,90,65,0.45)' }}>
                 <User className="w-6 h-6" style={{ color: '#D4A574' }} />
               </div>
@@ -528,10 +560,10 @@ export default function ProfilePage() {
                   Delete Profile
                 </Button>
               </div>
-            </div>
-          </CardHeader>
+              </div>
+              </CardHeader>
 
-          <CardContent className="space-y-6">
+              <CardContent className="space-y-6">
             {/* Badges */}
             <div className="flex gap-2 flex-wrap">
               <Badge className={hasPro ? "bg-purple-600 text-white border-0" : "bg-[#A35C5C] text-white border-0"}>
