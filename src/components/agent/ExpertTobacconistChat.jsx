@@ -78,6 +78,11 @@ function updateEntityContext(currentContext, entityType, entityRecord) {
 function classifyIntent(message) {
   const text = norm(message);
 
+  // EVALUATE_RECOMMENDATION: "help me evaluate", "evaluate", "should I get", "is this a good"
+  if (/\b(help me evaluate|evaluate|should i get|is this a good|is this worth|tell me about|what do you think of|assess)\b/i.test(text)) {
+    return 'EVALUATE_RECOMMENDATION';
+  }
+
   // PAIRING_EXPLANATION: "why do these work", "explain why", "how do they work"
   if (/\b(why|explain why|why do|how do they|what makes|what's the connection)\b/i.test(text) &&
       (/\b(pair|pairing|work|together|combination)\b/i.test(text) ||
@@ -337,6 +342,43 @@ function answerQuestion(message, context = {}, entityContext = emptyEntityContex
   const acquisitionItems = context?.acquisitionItems || context?.wantListItems || [];
 
   // CRITICAL: Enforce intent matching
+  if (intent === 'EVALUATE_RECOMMENDATION') {
+    // Extract what's being evaluated from the message
+    // The pre-fill format is: "Help me evaluate [title]. [rationale text]"
+    const evalMatch = message.match(/evaluate\s+(.+?)(?:\.|$)/i);
+    const itemTitle = evalMatch ? evalMatch[1].trim() : null;
+
+    // Try to find it as a named blend or bottle
+    const namedBlend  = extractNamedEntity(text, blends);
+    const namedBottle = extractNamedEntity(text, bottles);
+    const subject = namedBlend || namedBottle;
+
+    // Extract the gap reason from the message (text after the first sentence)
+    const sentences = message.split(/\.\s+/);
+    const gapContext = sentences.slice(1).join('. ').trim();
+
+    if (itemTitle) {
+      const moduleGuess = namedBottle ? 'whiskey' : 'tobacco';
+      const collectionRef = moduleGuess === 'whiskey'
+        ? `You currently have ${bottles.length} bottle${bottles.length !== 1 ? 's' : ''} in your collection.`
+        : `You currently have ${blends.length} blend${blends.length !== 1 ? 's' : ''} in your cellar.`;
+
+      const verdict = gapContext
+        ? `The recommendation is grounded in a real gap: ${gapContext}`
+        : `This addresses a gap that your current collection does not cover.`;
+
+      return {
+        reply: `**${itemTitle}** — Evaluation\n\n${verdict}\n\n${collectionRef} If this family is absent, adding it opens new session and pairing options that your existing stock cannot support. The suggestion is specific rather than generic for that reason — a concrete product to research rather than a vague category.\n\nIf you want to act on it: add it to your Want List from the Grow & Expand card, or ask me to compare it to something else in your collection.`,
+        updatedEntityContext: subject ? { ...entityContext, [namedBlend ? 'blend' : 'bottle']: subject } : entityContext,
+      };
+    }
+
+    return {
+      reply: 'I can evaluate a specific recommendation if you name the item or paste the suggestion text. What are you considering adding?',
+      updatedEntityContext: entityContext,
+    };
+  }
+
   if (intent === 'PAIRING_EXPLANATION') {
     if (isSingleModuleMode) {
       return {
