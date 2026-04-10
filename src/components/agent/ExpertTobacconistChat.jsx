@@ -19,7 +19,6 @@ const STARTER_PROMPTS_MULTI = [
   'Explain one good pairing from my collection.',
 ];
 
-// ─── String helpers ────────────────────────────────────────────────────────────
 function norm(v) { return String(v || '').trim().toLowerCase(); }
 function daysSince(d) {
   if (!d) return null;
@@ -34,7 +33,6 @@ function extractNamedEntity(text, records = []) {
   }) || null;
 }
 
-// ─── Evidence Classification ────────────────────────────────────────────────────
 function evaluateEvidenceStrength({ sessionCount = 0, dominantCount = 0, hasConflict = false, hasMeta = false }) {
   if (hasConflict) return { evidenceClass: 'CONFLICTING', evidenceReason: 'user-provided information contradicts stored signal', confidence: 0.1 };
   if (sessionCount === 0 && !hasMeta) return { evidenceClass: 'INSUFFICIENT', evidenceReason: 'no session history and no reliable metadata', confidence: 0.0 };
@@ -46,7 +44,6 @@ function evaluateEvidenceStrength({ sessionCount = 0, dominantCount = 0, hasConf
   return { evidenceClass: 'INSUFFICIENT', evidenceReason: 'insufficient data', confidence: 0.0 };
 }
 
-// Natural qualifiers embedded in prose — not labeled sections
 function evidenceQualifier(evidenceClass) {
   switch (evidenceClass) {
     case 'STRONG':       return '';
@@ -58,18 +55,15 @@ function evidenceQualifier(evidenceClass) {
   }
 }
 
-// ─── Intent classifier ─────────────────────────────────────────────────────────
 function classifyIntent(message) {
   const t = message.toLowerCase().trim();
 
-  // FOLLOW_UP_CONSTRAINT — check for user preference constraints
   const constraintPatterns = [
     /\b(i want to|i don't want to|i don't want|i prefer|i prefer to|i use it for|i keep it for|i only use|it's only for|only for|never for|never used for|leave it|keep it as)\b/i,
     /\b(non-aromatic|aromatic-only|english-only|virginia-only|burley-only|constraint|exclude|don't suggest)\b/i,
   ];
   if (constraintPatterns.some((p) => p.test(t))) return 'FOLLOW_UP_CONSTRAINT';
 
-  // FOLLOW_UP_NEXT_CANDIDATE — check before other patterns
   const nextCandidatePatterns = [
     /\b(what is the next|what's the next|what's next|next best|next one|next strongest|next candidate|second.?best|after that|who's next|what comes after)\b/i,
     /^(and )?next[?.]?$/i,
@@ -117,7 +111,6 @@ function classifyIntent(message) {
   return 'UNKNOWN';
 }
 
-// ─── Owned-item evaluation helpers ────────────────────────────────────────────
 function evaluateOwnedBottle(bottle, bottles = [], tastingLogs = []) {
   const type = norm(bottle.type || bottle.whiskey_type || 'unknown');
   const sameType = bottles.filter((b) => b.id !== bottle.id && norm(b.type || b.whiskey_type || '').split(' ').some((w) => type.includes(w) || type.split(' ').some((tw) => tw === w)));
@@ -194,7 +187,6 @@ function evaluateOwnedPipe(pipe, pipes = [], smokingLogs = []) {
   return { role, adjacentComparables: adjacent, overlapLevel, usageState, recommendation, evidence };
 }
 
-// ─── Collection analysis helpers ───────────────────────────────────────────────
 function buildPipeUsage(pipes = [], smokingLogs = [], blends = []) {
   return pipes.map((pipe) => {
     const logs = smokingLogs.filter((l) => l?.pipe_id === pipe.id || l?.pipeId === pipe.id);
@@ -247,26 +239,6 @@ function mostRedundantPipe(pipes = [], smokingLogs = [], blends = []) {
   return crowded.slice().sort((a, b) => a.sessionCount - b.sessionCount)[0];
 }
 
-function biggestGap(blends = [], bottles = [], activeModules = {}) {
-  const whiskeyOnly = activeModules.whiskeykeeper !== false && activeModules.pipekeeper === false;
-  const bottleTypes = new Set(bottles.map((b) => norm(b.type || b.whiskey_type || '')).filter(Boolean));
-  const blendFamilies = new Set(blends.map((b) => b.blend_type || b.blend_family || '').filter(Boolean));
-
-  if (whiskeyOnly) {
-    if (![...bottleTypes].some((t) => t.includes('rye'))) return { gap: 'A rye is the most useful addition right now. It adds dry spice and grip that bourbon and Scotch do not replicate, and it opens pairing territory neither of them can cover.', evidenceClass: 'STRONG' };
-    if (![...bottleTypes].some((t) => t.includes('scotch') || t.includes('single malt') || t.includes('islay') || t.includes('speyside') || t.includes('highland'))) return { gap: 'Scotch is missing from the shelf. It brings smoke, dried fruit, and malt complexity that no American whiskey comes close to replicating — and those characteristics pair in completely different ways.', evidenceClass: 'STRONG' };
-    if (![...bottleTypes].some((t) => t.includes('irish'))) return { gap: 'Irish whiskey has no seat at the table yet. It is the most approachable style, easy for guests, and a clean contrast to both bourbon and Scotch.', evidenceClass: 'STRONG' };
-    if (![...bottleTypes].some((t) => t.includes('bourbon'))) return { gap: 'Bourbon is the American reference point and it is absent. Without it, the collection is missing its most versatile pairing partner.', evidenceClass: 'STRONG' };
-    return { gap: 'The main gap at this point is depth rather than breadth — logging tasting notes on each bottle and adding pricing to the high-value pours would give the collection a more complete picture.', evidenceClass: 'MODERATE' };
-  }
-
-  if (!blendFamilies.has('Virginia/Burley')) return { gap: 'A Virginia/Burley is the clearest gap. It sits between the brightness of straight Virginia and the drier structure of Burley, and it is a lane that almost every pipe collection eventually needs.', evidenceClass: 'STRONG' };
-  if (![...blendFamilies].some((f) => f.includes('English') || f.includes('Balkan'))) return { gap: 'English and Balkan territory is uncovered — that is a real gap in smoky, savory options that no other family fills the same way.', evidenceClass: 'STRONG' };
-  if (![...bottleTypes].some((t) => t.includes('rye'))) return { gap: 'A rye lane is missing on the whiskey side. Rye adds dry pepper and contrast that bourbon and Irish simply do not handle the same way, and it pairs differently with most pipe blends.', evidenceClass: 'STRONG' };
-  return { gap: 'The bigger opportunity now is specialization rather than adding new items — getting each pipe into a cleaner lane and each blend family into a more defined role. It is more of a refinement than a hard gap, but it is where the collection would benefit most.', evidenceClass: 'MODERATE' };
-}
-
-// ─── Pairing explanation ───────────────────────────────────────────────────────
 function pairingExplanationEngine(message, context = {}, entityContext = {}) {
   const pipes = context?.pipes || [];
   const blends = context?.blends || [];
@@ -339,7 +311,6 @@ function pairingExplanationEngine(message, context = {}, entityContext = {}) {
   };
 }
 
-// ─── Main answer function ──────────────────────────────────────────────────────
 function answerQuestion(message, context = {}, entityContext = {}, isSingleModuleMode = false, activeModules = {}) {
   const intent = classifyIntent(message);
 
@@ -416,7 +387,6 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     const lastIntent = entityContext.topicIntent || entityContext.lastClaimType;
     const subject = entityContext.subject;
 
-    // Extract constraint from message
     let constraintType = 'generic';
     let constraintValue = '';
     if (/non-aromatic|^i want to leave it non-aromatic|keep it non-aromatic/i.test(message)) {
@@ -436,7 +406,6 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       constraintValue = 'burley-only';
     }
 
-    // If in reassignment context, re-evaluate against constraint
     if ((lastIntent === 'collection_analysis' || lastIntent === 'reassignment_recommendation') && subject) {
       const ownedPipe = pipes.find((p) => p.id === subject.id || norm(p.name) === norm(subject.name));
       if (ownedPipe) {
@@ -452,7 +421,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 
         if (isDomainViolation) {
           return {
-            reply: `Understood — ${ownedPipe.name} should stay ${constraintValue}. That invalidates the reassignment signal, because the sessions are pointing toward a family that violates this constraint. Let me look at the next candidate instead.`,
+            reply: `Understood — ${ownedPipe.name} should stay ${constraintValue}. The sessions point toward a different family entirely, so the earlier reassignment signal doesn't hold. Let me look at what comes next instead.`,
             updatedEntityContext: {
               ...entityContext,
               constraints: { [constraintType]: constraintValue },
@@ -462,7 +431,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
           };
         } else {
           return {
-            reply: `Got it — keeping ${ownedPipe.name} in ${constraintValue} focus. The signal actually holds up under this constraint. No change to the recommendation.`,
+            reply: `Got it — keeping ${ownedPipe.name} in ${constraintValue} focus. That constraint actually reinforces the pattern, so the earlier assessment stands.`,
             updatedEntityContext: {
               ...entityContext,
               constraints: { [constraintType]: constraintValue },
@@ -473,7 +442,6 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       }
     }
 
-    // If in owned evaluation context
     if ((lastIntent === 'evaluate_owned_item' || lastIntent === 'owned_item_evaluation') && subject) {
       return {
         reply: `Noted — ${subject.name} should stay ${constraintValue}. That framing changes how I would approach its role in the collection. It is not a candidate for reassignment, and that narrows its specialization scope. With that constraint, it fits more cleanly into a defined lane.`,
@@ -485,7 +453,6 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       };
     }
 
-    // Generic constraint acknowledgment
     return {
       reply: `Understood — ${constraintValue} constraint applied. Tell me what you want to evaluate or ask about, and I will keep that in mind.`,
       updatedEntityContext: {
@@ -517,19 +484,19 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 
     const nextCandidate = rankedCandidates[nextCursor];
     const priorCandidate = rankedCandidates[currentCursor];
-    const confidenceLevel = nextCandidate.evidenceClass === 'STRONG' ? 'high' : nextCandidate.evidenceClass === 'MODERATE' ? 'moderate' : 'low';
+
     const nextAction = nextCandidate.evidenceClass === 'STRONG'
-      ? 'I would evaluate this one carefully.'
+      ? 'The data here is solid, so I would evaluate it carefully.'
       : nextCandidate.evidenceClass === 'MODERATE'
-      ? 'I would monitor it and confirm with a few more sessions before deciding.'
-      : 'This is exploratory — more data is needed before drawing conclusions.';
+      ? 'Log a few more sessions before committing, but the direction is clear.'
+      : 'At this point the signal is exploratory — more usage data would sharpen the picture.';
 
     const comparison = priorCandidate
-      ? `It is not as strong a signal as ${priorCandidate.name}, but it is the next place where the usage pattern begins to diverge from its current role.`
+      ? `The signal drops off after ${priorCandidate.name}, but ${nextCandidate.name} still shows movement in the same direction — just with less evidence behind it.`
       : 'This is the next candidate in the ranked set.';
 
-    const reason = nextCandidate.reason || `Signal confidence: ${confidenceLevel}.`;
-    const fullReply = `${nextCandidate.name} would be the next one I'd look at. ${comparison} ${reason} ${nextAction}`;
+    const reason = nextCandidate.reason || '';
+    const fullReply = `${nextCandidate.name} would be the next one I'd look at. ${comparison} ${reason && reason + ' '}${nextAction}`.trim();
 
     return {
       reply: fullReply,
@@ -627,7 +594,6 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 
     const fallbackName = rawName || entityContext.subject?.name || 'that item';
 
-    // Detect module context from the query text to avoid crossing module lanes
     const isPipeTerm = /\b(dublin|billiard|bent|pot|apple|churchwarden|freehand|pipe|bowl|briar|stem|shape|meerschaum|corn cob)\b/i.test(message);
     const isBlendTerm = /\b(virginia|aromatic|english|burley|latakia|perique|blend|tobacco|flake|ribbon)\b/i.test(message);
 
@@ -659,7 +625,6 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       };
     }
 
-    // Whiskey fallback only when whiskey context is clear
     const dominantBottleType = bottles.length
       ? Object.entries(bottles.reduce((acc, b) => { const t = b.type || b.whiskey_type || 'Unknown'; acc[t] = (acc[t] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1])[0]?.[0]
       : null;
@@ -758,25 +723,27 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     }
 
     const evidence = candidate.evidence || evaluateEvidenceStrength({ sessionCount: candidate.sessionCount, dominantCount: candidate.dominantCount });
-    const confidence = Math.round((candidate.dominantCount / (candidate.sessionCount || 1)) * 100);
     const currentFocusLabel = candidate.focus?.[0] || candidate.specialization || 'its current designation';
     const targetFamily = candidate.dominantFamily || 'a different family';
     const qualifier = evidenceQualifier(evidence.evidenceClass);
 
     const whyLine = candidate.mismatch
-      ? `The logged sessions are pointing toward ${targetFamily}, which is a different lane from its current designation as ${currentFocusLabel} — that kind of divergence is worth a closer look.`
-      : `${confidence}% of its sessions have landed in ${targetFamily}, which is the clearest cross-family signal in the collection right now.`;
+      ? `The sessions are pulling toward ${targetFamily}, away from its current lane as ${currentFocusLabel}. That kind of drift is worth watching.`
+      : `Nearly all its sessions cluster in ${targetFamily} — the strongest pattern in the data right now.`;
 
     const nextStep = candidate.mismatch
       ? `The first move is checking the underlying sessions directly. If the mismatch holds up on review, updating the specialization from ${currentFocusLabel} to ${targetFamily} makes sense.`
       : `A few more intentional sessions would help confirm the pattern before making a formal specialization change.`;
 
-    // Build complete reason narratives for ranked candidates
-    const rankedNarratives = scored.slice(0, 5).map((p, idx) => {
+    const rankedNarratives = scored.slice(0, 5).map((p) => {
       const pEvidence = p.evidence || evaluateEvidenceStrength({ sessionCount: p.sessionCount, dominantCount: p.dominantCount });
       const pConfidence = Math.round((p.dominantCount / (p.sessionCount || 1)) * 100);
-      const pRatio = p.dominantCount / (p.sessionCount || 1);
       const pTargetFamily = p.dominantFamily || 'a different family';
+      const reasonPhrase = pEvidence.evidenceClass === 'STRONG'
+        ? `${pConfidence}% of sessions lean this way — a clear pattern.`
+        : pEvidence.evidenceClass === 'MODERATE'
+        ? `${pConfidence}% of sessions suggest ${pTargetFamily}, but the sample is still building.`
+        : `${pTargetFamily} is showing up, though the signal is early.`;
       return {
         id: p.id,
         name: p.name,
@@ -784,7 +751,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
         dominantFamily: pTargetFamily,
         evidenceClass: pEvidence.evidenceClass,
         sessionCount: p.sessionCount,
-        reason: `${pConfidence}% of sessions point toward ${pTargetFamily}. Evidence strength: ${pEvidence.evidenceClass.toLowerCase()}.`,
+        reason: reasonPhrase,
       };
     });
 
@@ -818,7 +785,6 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   return { reply: 'Can you be a bit more specific? Ask about a particular item, a pairing, tonight\'s session, a gap in the collection, or which pipe might be worth reassigning.', updatedEntityContext: entityContext };
 }
 
-// ─── Component ─────────────────────────────────────────────────────────────────
 export default function ExpertTobacconistChat({
   preFillMessage,
   onPreFillConsumed,
@@ -869,7 +835,6 @@ export default function ExpertTobacconistChat({
     setInput('');
     try {
       const { reply, updatedEntityContext } = answerQuestion(text, collectionContext, entityContext, isSingleModuleMode, activeModules);
-      // PHASE 7: Debug instrumentation
       console.log('CURATOR_CHAT', {
         intent: classifyIntent(text),
         subject: updatedEntityContext.subject?.name || null,
