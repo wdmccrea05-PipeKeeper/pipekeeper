@@ -158,7 +158,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
         {MODULE_CONFIG.map((mod) => {
           const state = moduleStates[mod.id];
           const enabled = state?.enabled === true;
-          const canToggle = mod.allowToggle && state?.canToggle;
+          // Allow toggle for launched modules that are accessible (already enabled or entitlements met)
+          const canToggle = (mod.id === 'pipekeeper' || mod.id === 'whiskeykeeper') ? (mod.launched && state?.accessible) : (mod.allowToggle && state?.canToggle);
           const isSavingThis = saving === mod.id;
 
           return (
