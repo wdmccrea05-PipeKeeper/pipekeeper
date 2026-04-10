@@ -26,6 +26,7 @@ const PLAN_TO_STRIPE_PRICE = {
   'four_module_bundle_monthly': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY'),
   'four_module_bundle_annual': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL'),
   'founders_bundle_annual': Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL'),
+  'founders_bundle_monthly': Deno.env.get('VITE_STRIPE_FOUNDERS_MONTHLY'),
 };
 
 /**
