@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const MODULES = [
   {
@@ -23,6 +24,7 @@ export default function ModuleSelectionStep({
 }) {
   const { activeModules = [] } = useAccessSummary();
   const tester = isInternalModuleTester(user);
+  const { t } = useTranslation();
 
   const accessibleModules = useMemo(() => {
     const set = new Set(activeModules || []);
@@ -68,10 +70,10 @@ export default function ModuleSelectionStep({
           className="text-2xl font-bold"
           style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}
         >
-          Choose Your Modules
+          {t("onboarding.moduleSelectionTitle", "Choose Your Modules")}
         </h2>
-        <p className="text-sm mt-2" style={{ color: "rgba(224,216,200,0.7)" }}>
-          CollectionKeeper is your main shell. Turn on the modules you want to use.
+        <p className="text-sm mt-2" style={{ color: "#E0D8C8" }}>
+          {t("onboarding.moduleSelectionDesc", "CollectionKeeper is your main shell. Turn on the modules you want to use.")}
         </p>
       </div>
 
@@ -116,10 +118,10 @@ export default function ModuleSelectionStep({
                     background: selected
                       ? "rgba(46,125,92,0.22)"
                       : "rgba(255,255,255,0.06)",
-                    color: selected ? "#9BE3B5" : "rgba(224,216,200,0.6)",
+                    color: selected ? "#9BE3B5" : "#E0D8C8",
                   }}
                 >
-                  {selected ? "Selected" : "Off"}
+                  {selected ? t("common.selected", "Selected") : t("common.off", "Off")}
                 </div>
               </div>
             </button>
@@ -128,8 +130,8 @@ export default function ModuleSelectionStep({
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs" style={{ color: "rgba(224,216,200,0.5)" }}>
-          Select at least one accessible module to continue.
+        <p className="text-xs" style={{ color: "#E0D8C8" }}>
+          {t("onboarding.moduleSelectionHint", "Select at least one accessible module to continue.")}
         </p>
 
         <button
@@ -142,7 +144,7 @@ export default function ModuleSelectionStep({
             color: "#F5F1E7",
           }}
         >
-          Continue
+          {t("common.continue", "Continue")}
         </button>
       </div>
     </div>

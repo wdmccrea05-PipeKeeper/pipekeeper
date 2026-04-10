@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
   const { saveModulePreferences, isLoading } = useModuleVisibility();
+  const { t } = useTranslation();
   const [selected, setSelected] = useState({ pipekeeper: false, whiskeykeeper: false });
   const [saving, setSaving] = useState(false);
 
@@ -46,9 +48,9 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
           boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
         }}
       >
-        <h2 className="text-2xl font-bold mb-2 text-[#F5F1E7]">Welcome to CollectionKeeper</h2>
-        <p className="text-sm text-[#E0D8C8]/70 mb-6">
-          Choose which collection modules you'd like to start with. You can enable or upgrade these anytime.
+        <h2 className="text-2xl font-bold mb-2 text-[#F5F1E7]">{t("onboarding.welcomeTitle", "Welcome to CollectionKeeper")}</h2>
+        <p className="text-sm text-[#E0D8C8] mb-6">
+          {t("onboarding.moduleSelectionDesc", "Choose which collection modules you'd like to start with. You can enable or upgrade these anytime.")}
         </p>
 
         <div className="space-y-3 mb-8">
@@ -73,12 +75,12 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                   <img
                     src={MODULE_ICONS.pipekeeper}
                     alt="PipeKeeper"
-                    className="w-5 h-5 object-contain"
+                    className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
                   />
                   PipeKeeper
                 </h3>
-                <p className="text-xs text-[#E0D8C8]/60 mt-1">
-                  Organize and track your pipe and tobacco collection. Free tier: 5 pipes, 10 blends.
+                <p className="text-xs text-[#E0D8C8] mt-1">
+                  {t("onboarding.pipekeeperDesc", "Organize and track your pipe and tobacco collection. Free tier: 5 pipes, 10 blends.")}
                 </p>
               </div>
               <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
@@ -108,12 +110,12 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                   <img
                     src={MODULE_ICONS.whiskeykeeper}
                     alt="WhiskeyKeeper"
-                    className="w-5 h-5 object-contain"
+                    className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
                   />
                   WhiskeyKeeper
                 </h3>
-                <p className="text-xs text-[#E0D8C8]/60 mt-1">
-                  Track your whiskey collection with tasting notes and inventory. Free tier: 10 bottles.
+                <p className="text-xs text-[#E0D8C8] mt-1">
+                  {t("onboarding.whiskeykeeperDesc", "Track your whiskey collection with tasting notes and inventory. Free tier: 10 bottles.")}
                 </p>
               </div>
               <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">

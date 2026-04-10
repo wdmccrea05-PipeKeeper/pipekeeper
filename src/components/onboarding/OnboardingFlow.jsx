@@ -17,6 +17,7 @@ import { markPipeOnboardingComplete } from './onboardingState';
 import { usePaywall } from '@/components/subscription/usePaywall';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { isInternalModuleTester } from '@/components/utils/moduleReleaseState';
+import PaywallModal from '@/components/subscription/PaywallModal';
 const PIPE_ICON = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/d2be37fcd_IMG_4833.jpeg';
 
 // Safe localStorage wrapper for onboarding state
@@ -72,11 +73,11 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       icon: PIPE_ICON,
       content: (
         <div className="space-y-4 text-center">
-          <img 
-            src={PIPE_ICON}
-            alt="PipeKeeper"
-            className="w-24 h-24 mx-auto object-contain mix-blend-multiply"
-          />
+           <img 
+             src={PIPE_ICON}
+             alt="PipeKeeper"
+             className="w-24 h-24 mx-auto object-contain bg-[#2a1f18] rounded-lg p-2"
+           />
           <p className="text-[#E0D8C8]/70 text-lg">
             {t("onboarding.welcomeBody")}
           </p>
