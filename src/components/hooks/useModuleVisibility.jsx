@@ -67,17 +67,13 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
   const accessible = buildAccessibleModules(profile, activeModules, user);
   const tester = isInternalModuleTester(user);
 
-  // For free users with preferences set: a launched module they explicitly enabled
-  // becomes toggleable even without paid entitlement
-  const isFreeTierWithPrefs = profile?.module_preferences_set === true;
-
   return {
     pipekeeper: {
       key: "pipekeeper",
       enabled: !!visibility.pipekeeper,
       accessible: accessible.has("pipekeeper"),
       visible: accessible.has("pipekeeper"),
-      canToggle: accessible.has("pipekeeper") || (isFreeTierWithPrefs && isModuleLaunched("pipekeeper") && profile?.pipekeeper_enabled),
+      canToggle: accessible.has("pipekeeper") || isModuleLaunched("pipekeeper"),
       testerOnly: false,
     },
     whiskeykeeper: {
@@ -85,7 +81,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.whiskeykeeper,
       accessible: accessible.has("whiskeykeeper"),
       visible: accessible.has("whiskeykeeper"),
-      canToggle: accessible.has("whiskeykeeper") || (isFreeTierWithPrefs && isModuleLaunched("whiskeykeeper") && profile?.whiskeykeeper_enabled),
+      canToggle: accessible.has("whiskeykeeper") || isModuleLaunched("whiskeykeeper"),
       testerOnly: false, // WhiskeyKeeper is publicly launched
     },
     winekeeper: {
@@ -93,7 +89,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.winekeeper,
       accessible: accessible.has("winekeeper"),
       visible: accessible.has("winekeeper"),
-      canToggle: accessible.has("winekeeper") || (isFreeTierWithPrefs && isModuleLaunched("winekeeper") && profile?.winekeeper_enabled),
+      canToggle: accessible.has("winekeeper") || isModuleLaunched("winekeeper"),
       testerOnly: tester,
     },
     cigarkeeper: {
@@ -101,7 +97,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.cigarkeeper,
       accessible: accessible.has("cigarkeeper"),
       visible: accessible.has("cigarkeeper"),
-      canToggle: accessible.has("cigarkeeper") || (isFreeTierWithPrefs && isModuleLaunched("cigarkeeper") && profile?.cigarkeeper_enabled),
+      canToggle: accessible.has("cigarkeeper") || isModuleLaunched("cigarkeeper"),
       testerOnly: tester,
     },
   };
