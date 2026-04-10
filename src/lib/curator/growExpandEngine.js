@@ -459,10 +459,7 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
   if (!nextType) return results;
 
   const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
-
-  // Skip if the specific product is already owned
-  const whiskeyCandidate = WHISKEY_PROGRESSION_PRODUCTS[nextType] || '';
-  if (isProductNameOwned(whiskeyCandidate, [], bottles)) return results;
+  let finalNextType = nextType;
 
   if (peatedTypes.some((p) => nextType.includes(p)) &&
       dislikes.some((d) => d.toLowerCase().includes('peat') || d.toLowerCase().includes('smoke'))) {
@@ -473,6 +470,10 @@ function generateWhiskeyExpansion(bottles, blends, preferences = {}) {
     if (!altNextType) return results;
     finalNextType = altNextType;
   }
+
+  // Skip if the specific product is already owned by name (fuzzy)
+  const whiskeyCandidate = WHISKEY_PROGRESSION_PRODUCTS[finalNextType] || '';
+  if (isProductNameOwned(whiskeyCandidate, [], bottles)) return results;
 
   const confidence = computeConfidence({
     preferenceAlignment:   0.75,
