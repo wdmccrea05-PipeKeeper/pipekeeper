@@ -451,7 +451,7 @@ function pairingExplanationEngine(message, context = {}, entityContext = {}) {
   };
 }
 
-function answerQuestion(message, context = {}, entityContext = {}, isSingleModuleMode = false, activeModules = {}) {
+function answerQuestion(message, context = {}, entityContext = {}, isSingleModuleMode = false, activeModules = {}, continueAnalysisFn = null) {
   const intent = classifyIntent(message);
   
   // PHASE 5: Validate context before processing
@@ -655,6 +655,10 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 
   // ── FOLLOW_UP ──────────────────────────────────────────────────────────────
   if (intent === 'FOLLOW_UP') {
+    const analysisCtx = entityContext.analysisContext;
+    if (analysisCtx && analysisCtx.type === 'pipe_reassignment' && continueAnalysisFn) {
+      return continueAnalysisFn(analysisCtx);
+    }
     const subjectEntity = entityContext.subject;
     if (!subjectEntity) {
       return { reply: 'Could you name the specific item you are asking about? I do not have a clear subject from the last exchange.', updatedEntityContext: entityContext };
@@ -919,6 +923,12 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       });
 
       const reply = structureResponse({ direct, reasoning, nextStep });
+      const newAnalysisCtx = {
+        type: 'pipe_reassignment',
+        excludedIds: [],
+        lastResults: rankedNarratives,
+        lastIndex: 0,
+      };
       return {
         reply,
         updatedEntityContext: {
@@ -931,6 +941,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
           rankedCandidates: rankedNarratives,
           rankedCursor: 0,
         },
+        newAnalysisContext: newAnalysisCtx,
       };
     } catch (err) {
       console.error('[Curator][PIPE_REASSIGNMENT_ANALYSIS]', { error: String(err), dataCounts });
@@ -976,6 +987,7 @@ export default function ExpertTobacconistChat({
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [entityContext, setEntityContext] = useState({});
+  const [analysisContext, setAnalysisContext] = useState(null);
 
   useEffect(() => {
     if (initialEntityContext) {
@@ -999,6 +1011,22 @@ export default function ExpertTobacconistChat({
   const starterPrompts = isSingleModuleMode ? STARTER_PROMPTS_SINGLE : STARTER_PROMPTS_MULTI;
   const canSend = useMemo(() => !!input.trim() && !isSending, [input, isSending]);
 
+  const continueAnalysis = (ctx) => {
+    if (!ctx || !ctx.lastResults || ctx.lastResults.length === 0) return null;
+    const nextIdx = (ctx.lastIndex || 0) + 1;
+    if (nextIdx >= ctx.lastResults.length) {
+      return { reply: 'After that, the signal drops off. I don\'t see another candidate that I\'d treat seriously without more logging.' };
+    }
+    const next = ctx.lastResults[nextIdx];
+    const newCtx = { ...ctx, lastIndex: nextIdx };
+    setAnalysisContext(newCtx);
+    return {
+      reply: `${next.name} would be next. The signal is weaker here, but it's where usage starts to diverge from the current role. Log a few more sessions and the picture will sharpen.`,
+      updatedEntityContext: entityContext,
+      newAnalysisContext: newCtx,
+    };
+  };
+
   useEffect(() => {
     if (preFillMessage) {
       setInput(preFillMessage);
@@ -1013,7 +1041,10 @@ export default function ExpertTobacconistChat({
     setMessages((prev) => [...prev, { id: `user-${Date.now()}`, role: 'user', content: text }]);
     setInput('');
     try {
-      const { reply, updatedEntityContext } = answerQuestion(text, collectionContext, entityContext, isSingleModuleMode, activeModules);
+      const result = answerQuestion(text, collectionContext, { ...entityContext, analysisContext }, isSingleModuleMode, activeModules, continueAnalysis);
+      const { reply, updatedEntityContext, newAnalysisContext } = result || {};
+      if (newAnalysisContext) setAnalysisContext(newAnalysisContext);
+      else if (result?.reply && !newAnalysisContext) setAnalysisContext(null);
       console.log('CURATOR_CHAT', {
         intent: classifyIntent(text),
         subject: updatedEntityContext.subject?.name || null,
@@ -1038,7 +1069,7 @@ export default function ExpertTobacconistChat({
     } finally {
       setIsSending(false);
     }
-  }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules]);
+  }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules, continueAnalysis]);
 
   return (
     <div className="rounded-[18px] p-8" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}>
