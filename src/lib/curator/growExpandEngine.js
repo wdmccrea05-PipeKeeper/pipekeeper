@@ -273,6 +273,10 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
   }
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
 
+  const ownedBlendNames = new Set(
+    blends.map((b) => (b.name || '').toLowerCase().trim()).filter(Boolean)
+  );
+
   // 1. Generate progression-based suggestions from owned families
   for (const [dominantType, count] of sortedTypes) {
     if (results.length >= 3) break;
@@ -284,6 +288,10 @@ function generateBlendExpansion(blends, smokingLogs, preferences = {}) {
     );
     if (!nextType) continue;
     if (dislikes.some((d) => nextType.toLowerCase().includes(d.toLowerCase()))) continue;
+
+    // Skip if the specific suggested product is already owned by name
+    const candidateProductName = (BLEND_PROGRESSION_PRODUCTS[nextType] || '').toLowerCase();
+    if (candidateProductName && ownedBlendNames.has(candidateProductName)) continue;
 
     seenNextTypes.add(nextType);
     const isWellEstablished = count >= 3;
