@@ -1,9 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 /**
- * Check if user is eligible for Founders Bundle
- * Eligible if: existing PipeKeeper user (paid subscription before cutoff date)
- */
+  * Check if user is eligible for Founders Bundle
+  * Eligible if: offer is active. All users (new and existing) can access the bundle.
+  */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -23,15 +23,14 @@ Deno.serve(async (req) => {
       return Response.json({ isEligible: false, reason: 'offer_not_yet_active' });
     }
 
-    const FOUNDERS_CUTOFF = new Date(cutoffStr);
-    const accountCreatedDate = new Date(user.created_date);
-    const isEligible = accountCreatedDate < FOUNDERS_CUTOFF;
+    // All users are eligible if the offer is active
+    const isEligible = true;
 
     const subscriptions = await base44.entities.Subscription.filter({ user_email: email });
 
     return Response.json({
       isEligible,
-      eligibleDate: FOUNDERS_CUTOFF.toISOString(),
+      eligibleDate: new Date(cutoffStr).toISOString(),
       subscriptionCount: subscriptions.length,
     });
   } catch (error) {
