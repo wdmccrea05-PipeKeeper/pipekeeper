@@ -68,7 +68,7 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       accessible: accessible.has("whiskeykeeper"),
       visible: accessible.has("whiskeykeeper"),
       canToggle: accessible.has("whiskeykeeper"),
-      testerOnly: tester,
+      testerOnly: false, // WhiskeyKeeper is publicly launched
     },
     winekeeper: {
       key: "winekeeper",

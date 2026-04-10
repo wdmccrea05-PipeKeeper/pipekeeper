@@ -3,11 +3,10 @@
  *
  * Rules:
  * - activeModules only contains modules that are BOTH entitled AND released
- * - WhiskeyKeeper (and any other non-launched module) is filtered out for normal users
- *   regardless of plan tier, until it is officially launched
+ * - Only modules whose effective release state is 'launched' pass through for normal users
+ * - WhiskeyKeeper is now publicly launched — paid subscribers gain full access
  * - Admin/internal testers bypass release-state gating
- * - Founding members are subject to the same release-state gate as normal users
- *   (they will automatically gain WhiskeyKeeper access when it launches)
+ * - Founding members get all 4 modules (subject to release-state gate)
  * - Never fabricate module access from CollectionKeeper shell presence
  * - Never infer all modules from tier === 'pro' alone
  */

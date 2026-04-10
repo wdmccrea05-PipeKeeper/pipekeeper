@@ -12,7 +12,7 @@ import { MODULES, MODULE_LIST, getActiveModules } from './moduleRegistry';
 import { isModuleLaunched } from './moduleReleaseState';
 
 // Only modules with canonical 'launched' state are granted to normal users.
-// WhiskeyKeeper is 'internal' until official release — excluded here.
+// WhiskeyKeeper is publicly launched — it is now included for paid subscribers.
 function getLaunchedActiveModules() {
   return getActiveModules().filter((m) => isModuleLaunched(m));
 }
