@@ -3,13 +3,14 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Eye, Lock, Unlock } from "lucide-react";
+import { Eye, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useModuleVisibility } from "@/components/hooks/useModuleVisibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { MODULE_ICONS } from "@/components/branding/moduleAssets";
 import { isModuleLaunched, isModuleInternal, isInternalModuleTester } from "@/components/utils/moduleReleaseState";
 import { base44 } from "@/api/base44Client";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 function ModuleIcon({ src, alt, className }) {
   return (
@@ -30,6 +31,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { moduleStates, setModuleEnabled, isLoading, user } = useModuleVisibility(profile, passedUser);
+  const { hasPaid: userHasPaidSub } = useCurrentUser();
   const [saving, setSaving] = useState(null);
 
   const effectiveUser = passedUser || user;
@@ -78,7 +80,32 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     },
   ].filter((mod) => !mod.hidden);
 
-  async function handleToggle(moduleId, enabled) {
+
+
+  async function handleSetTierAndEnable(moduleId, isPaid) {
+    setSaving(moduleId);
+    try {
+      // If Pro selected and no paid subscription, redirect to checkout
+      if (isPaid && !userHasPaidSub) {
+        navigate('/Subscription');
+        return;
+      }
+
+      // Otherwise update tier and enable module
+      const key = moduleId === 'pipekeeper' ? 'pipekeeper_paid' : 'whiskeykeeper_paid';
+      await base44.auth.updateMe({ [key]: isPaid });
+      await setModuleEnabled(moduleId, true);
+      const tier = isPaid ? 'Pro' : 'Free';
+      toast.success(`Switched to ${tier} version`);
+    } catch (e) {
+      console.error("[ModuleVisibility] tier toggle error:", e);
+      toast.error('Could not update module settings');
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function handleModuleVisibility(moduleId, enabled) {
     setSaving(moduleId);
     try {
       await setModuleEnabled(moduleId, enabled);
@@ -89,26 +116,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
           : `${moduleLabel} ${t("profile.hiddenSuffix", "hidden")}`
       );
     } catch (e) {
-      console.error("[ModuleVisibility] toggle error:", e);
+      console.error("[ModuleVisibility] visibility toggle error:", e);
       toast.error(e?.message || t("profile.moduleSaveError", "Could not save module preference."));
-    } finally {
-      setSaving(null);
-    }
-  }
-
-  async function handleAccessToggle(moduleId, isPaid) {
-    setSaving(moduleId);
-    try {
-      const key = moduleId === 'pipekeeper' ? 'pipekeeper_paid' : 'whiskeykeeper_paid';
-      await base44.auth.updateMe({ [key]: isPaid });
-      if (isPaid) {
-        navigate('/Subscription');
-      } else {
-        toast.success('Switched to free version');
-      }
-    } catch (e) {
-      console.error("[ModuleVisibility] access toggle error:", e);
-      toast.error('Could not update module access');
     } finally {
       setSaving(null);
     }
@@ -184,19 +193,22 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0">
-                {canToggle ? (
-                  <Switch
-                    checked={enabled}
-                    onCheckedChange={(value) => handleToggle(mod.id, value)}
-                    disabled={isSaving}
-                  />
-                ) : null}
                 {mod.launched && (mod.id === "pipekeeper" || mod.id === "whiskeykeeper") ? (
-                  <div className="flex gap-1 flex-shrink-0">
+                  <div className="flex gap-2 flex-shrink-0">
                     <Button
                       size="sm"
-                      variant={mod.id === "pipekeeper" ? pipekeeperPaid ? "default" : "ghost" : whiskeykeeperPaid ? "default" : "ghost"}
-                      onClick={() => handleAccessToggle(mod.id, true)}
+                      variant={enabled ? "default" : "ghost"}
+                      onClick={() => handleModuleVisibility(mod.id, !enabled)}
+                      disabled={isSaving}
+                      className="text-xs"
+                      title={enabled ? "Hide module" : "Show module"}
+                    >
+                      {enabled ? "On" : "Off"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={mod.id === "pipekeeper" ? pipekeeperPaid ? "default" : "outline" : whiskeykeeperPaid ? "default" : "outline"}
+                      onClick={() => handleSetTierAndEnable(mod.id, true)}
                       disabled={isSaving}
                       className="text-xs"
                     >
@@ -204,8 +216,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                     </Button>
                     <Button
                       size="sm"
-                      variant={mod.id === "pipekeeper" ? !pipekeeperPaid ? "default" : "ghost" : !whiskeykeeperPaid ? "default" : "ghost"}
-                      onClick={() => handleAccessToggle(mod.id, false)}
+                      variant={mod.id === "pipekeeper" ? !pipekeeperPaid && enabled ? "default" : "outline" : !whiskeykeeperPaid && enabled ? "default" : "outline"}
+                      onClick={() => handleSetTierAndEnable(mod.id, false)}
                       disabled={isSaving}
                       className="text-xs"
                     >
