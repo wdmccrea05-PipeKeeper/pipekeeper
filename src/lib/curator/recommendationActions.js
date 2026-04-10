@@ -268,9 +268,12 @@ export async function executeRecommendationAction(recommendation, action, opts =
           } else {
             // move_to_shopping_list without acquisitionId → create AcquisitionItem in shopping_list state
             const rows = await base44.entities.AcquisitionItem.filter({ created_by: userEmail }).catch(() => []);
+            const itemName = (item.recordName || item.itemName || item.name || '').toLowerCase().trim();
             const existing = recordId
               ? rows.find((r) => r.record_id === recordId || r.source_record_id === recordId)
-              : null;
+              : itemName
+                ? rows.find((r) => (r.name || '').toLowerCase().trim() === itemName && r.status !== 'archived')
+                : null;
 
             if (existing) {
               if (existing.status !== 'shopping_list') {

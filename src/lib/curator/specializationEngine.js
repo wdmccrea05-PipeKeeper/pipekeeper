@@ -217,9 +217,11 @@ export function generateSpecializationRecommendations(pipes = [], blends = [], s
 
   // Pipes that have no specialization set (check both canonical 'focus' and legacy 'specialization')
   const pipesWithoutSpec = pipes.filter((p) => {
-    const hasFocus = Array.isArray(p.focus) && p.focus.length > 0 && p.focus[0];
-    const hasSpecialization = p.specialization && (Array.isArray(p.specialization) ? p.specialization.length > 0 : true) && p.specialization !== '';
-    return !hasFocus && !hasSpecialization;
+    const focusVal = Array.isArray(p.focus) && p.focus.length > 0 ? (p.focus[0] || '').trim() : '';
+    const specVal  = Array.isArray(p.specialization)
+      ? (p.specialization[0] || '').trim()
+      : (String(p.specialization || '').trim());
+    return !focusVal && !specVal;
   });
 
   // Build candidate items for the recommendation
@@ -242,7 +244,9 @@ export function generateSpecializationRecommendations(pipes = [], blends = [], s
       recordName:           pipe.name,
       itemName:             pipe.name,
       maker:                pipe.maker || null,
-      currentSpec:          (Array.isArray(pipe.focus) && pipe.focus[0]) || pipe.specialization || null,
+      currentSpec:          (Array.isArray(pipe.focus) && (pipe.focus[0] || '').trim()) ||
+                            (Array.isArray(pipe.specialization) ? (pipe.specialization[0] || '').trim() : String(pipe.specialization || '').trim()) ||
+                            null,
       suggestedSpec:        hasLogData ? logData.suggestedSpec : null,
       totalSessions:        logData?.totalSessions ?? 0,
       dominanceRatio:       logData?.dominanceRatio ?? 0,
