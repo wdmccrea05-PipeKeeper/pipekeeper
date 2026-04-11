@@ -177,14 +177,14 @@ export default function UserReport() {
   if (isLoadingUser) return <LoadingSpinner />;
   if (userError) return <ErrorCard message={`${t("userReport.errorLoadingUser")}: ${userError.message}`} />;
   if (!isAdmin) return (
-    <div className="max-w-7xl mx-auto p-6">
-      <Card className="bg-white/95 border-rose-200">
-        <CardContent className="p-6">
-          <p className="text-rose-800 font-semibold">{t("userReport.unauthorized")}</p>
-          <p className="text-rose-700 text-sm mt-2">{t("userReport.adminAccessRequired")}</p>
-        </CardContent>
-      </Card>
-    </div>
+  <div className="max-w-7xl mx-auto p-6">
+    <Card style={{ background: 'rgba(180,40,40,0.15)', border: '1px solid rgba(180,40,40,0.3)' }}>
+      <CardContent className="p-6">
+        <p className="text-[#F5A5A5] font-semibold">{t("userReport.unauthorized")}</p>
+        <p className="text-[#F5A5A5]/70 text-sm mt-2">{t("userReport.adminAccessRequired")}</p>
+      </CardContent>
+    </Card>
+  </div>
   );
   if (isLoading) {
     return (
@@ -561,18 +561,21 @@ export default function UserReport() {
             <CollapsibleContent>
               <CardContent>
                 <UserTable
-                  rows={filteredData.paid}
-                  columns={['full_name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'created_date']}
-                  headers={[t("userReport.name"), t("userReport.email"), t("userReport.status"), t("userReport.billing"), t("userReport.periodEnd"), t("userReport.joined")]}
-                  sortColumn={sortColumn}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  emptyMessage={searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
+                    rows={filteredData.paid}
+                    columns={['full_name', 'email', 'product', 'billing_interval', 'subscribe_date', 'renewal_date', 'renewal_amount', 'subscription_status', 'created_date']}
+                    headers={[t("userReport.name"), t("userReport.email"), 'Product', 'Interval', 'Subscribed', 'Renews', 'Renewal $', t("userReport.status"), t("userReport.joined")]}
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                    emptyMessage={searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
                   renderCell={(col, user) => {
                     if (col === 'subscription_status') return <Badge className="bg-[#B48C4B]/20 text-[#F5F1E7] border border-[#B48C4B]/40">{user.subscription_status}</Badge>;
-                    if (col === 'billing_interval')    return <span className="capitalize">{user.billing_interval || '-'}</span>;
-                    if (col === 'subscription_end')    return user.subscription_end ? new Date(user.subscription_end).toLocaleDateString() : '-';
-                    if (col === 'created_date')        return new Date(user.created_date).toLocaleDateString();
+                    if (col === 'billing_interval')    return <span className="capitalize text-[#E0D8C8]">{user.billing_interval || '-'}</span>;
+                    if (col === 'product')             return <span className="text-[#D4A574] font-medium">{user.product || '-'}</span>;
+                    if (col === 'subscribe_date')      return user.subscribe_date ? new Date(user.subscribe_date).toLocaleDateString() : '-';
+                    if (col === 'renewal_date')        return user.renewal_date   ? new Date(user.renewal_date).toLocaleDateString()   : '-';
+                    if (col === 'renewal_amount')      return user.renewal_amount != null ? <span className="text-[#86EFAC] font-medium">${user.renewal_amount.toFixed(2)}</span> : '-';
+                    if (col === 'created_date')        return user.created_date ? new Date(user.created_date).toLocaleDateString() : '-';
                     return user[col] || '-';
                   }}
                 />
@@ -695,9 +698,9 @@ function ErrorCard({ message, onRetry }) {
   const { t } = useTranslation();
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <Card className="border-rose-200 bg-rose-50">
+      <Card style={{ background: 'rgba(180,40,40,0.15)', border: '1px solid rgba(180,40,40,0.3)' }}>
         <CardContent className="p-6">
-          <p className="text-rose-800">{message}</p>
+          <p className="text-[#F5A5A5]">{message}</p>
           {onRetry && (
             <Button
               type="button"
