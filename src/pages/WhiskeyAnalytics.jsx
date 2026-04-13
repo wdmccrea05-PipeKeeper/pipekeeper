@@ -9,10 +9,13 @@ import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { BarChart3 } from 'lucide-react';
 import WhiskeyValueIntelligence from '@/components/whiskey/WhiskeyValueIntelligence';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 function WhiskeyAnalyticsInner() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
 
 
 

@@ -10,6 +10,7 @@ import {
   getEffectiveBottleCount,
   getInventoryStatusSummary,
 } from '@/components/utils/whiskeyValueHelpers';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 function Badge({ children, tone = 'default' }) {
   const tones = {
@@ -55,6 +56,8 @@ export default function BottleCard({
   onClick,
 }) {
   const { t } = useTranslation();
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
 
   const hasInventoryUnits = inventoryUnits.length > 0;
 

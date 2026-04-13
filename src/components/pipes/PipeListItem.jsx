@@ -6,9 +6,12 @@ import { Heart, Calendar, MapPin, Pencil } from "lucide-react";
 import PipeShapeIcon from "./PipeShapeIcon";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
+import { useCurrency } from "@/lib/currency/useCurrency";
 
 export default function PipeListItem({ pipe, onClick, onToggleFavorite, onEdit }) {
   const { t } = useTranslation();
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
   const mainPhoto = pipe.photos?.[0];
   
   return (

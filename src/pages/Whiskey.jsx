@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCurrency } from "@/lib/currency/useCurrency";
 
 function getBottlePhoto(bottle) {
   return (
@@ -168,6 +169,8 @@ function WhiskeyInner() {
   const location = useLocation();
   const { user, isLoading: userLoading } = useCurrentUser();
   const { t } = useTranslation();
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
 
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
