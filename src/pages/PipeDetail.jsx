@@ -34,8 +34,8 @@ import RotationPlanner from '@/components/pipes/RotationPlanner';
 import InterchangeableBowls from '@/components/pipes/InterchangeableBowls';
 import ValueLookup from '@/components/ai/ValueLookup';
 import ValuationCredibility, { computePipeValuation } from '@/components/valuation/ValuationCredibility';
-import ValuationBreakdown from '@/components/valuation/ValuationBreakdown';
-import ValueStrategySection from '@/components/whiskey/ValueStrategySection';
+import UnifiedValuationCard from '@/components/valuation/UnifiedValuationCard';
+
 import {
   buildValuationSnapshot,
   resolveValueTrend,
@@ -872,59 +872,26 @@ export default function PipeDetail() {
               />
             </div>
 
-            {/* Estimated Value / Appraisal Section */}
-            <div
-              className="rounded-2xl p-5"
-              style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(180,140,75,0.14)',
-              }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <CircleDollarSign className="w-4 h-4 text-[#D4A574]" />
-                  <p className="text-sm font-semibold text-[#F5F1E7]">Estimated Value</p>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => setShowAppraisal((v) => !v)}
-                  style={{
-                    background: showAppraisal
-                      ? 'rgba(180,140,75,0.2)'
-                      : 'rgba(180,140,75,0.1)',
-                    border: '1px solid rgba(180,140,75,0.3)',
-                    color: '#D4A574',
-                  }}
-                >
-                  {showAppraisal ? 'Hide Appraisal' : 'Run Appraisal'}
-                </Button>
-              </div>
-              {computedValuation && (
-                <ValuationCredibility valuation={computedValuation} />
-              )}
-              <ValuationBreakdown item={pipe} itemType="pipe" />
-              {showAppraisal && (
-                <div className="mt-4">
-                  <ValueLookup
-                    pipe={pipe}
-                    onUpdateValue={(newValue) =>
-                      handlePipeUpdate({ estimated_value: newValue })
-                    }
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Value & Strategy Section — full feature parity with BottleDetail */}
+            {/* UNIFIED VALUATION CARD */}
             {pipeStrategy && (
-              <ValueStrategySection
+              <UnifiedValuationCard
+                item={pipe}
+                itemType="pipe"
+                moduleKey="pipekeeper"
                 valuationSnapshot={pipeStrategy}
                 valueTrend={valueTrend}
                 valueSnapshots={valueSnapshots}
                 priceObservations={priceObservations}
-                item={pipe}
-                moduleKey="pipekeeper"
-                itemType="pipe"
+                onRunAppraisal={() => setShowAppraisal(v => !v)}
+                appraisalContent={showAppraisal ? (
+                  <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
+                    {computedValuation && <ValuationCredibility valuation={computedValuation} />}
+                    <ValueLookup
+                      pipe={pipe}
+                      onUpdateValue={(newValue) => handlePipeUpdate({ estimated_value: newValue })}
+                    />
+                  </div>
+                ) : null}
                 onAddSnapshot={() => setShowSnapshotModal(true)}
                 onAddObservation={() => setShowObservationModal(true)}
                 onEditValuation={() => setShowEditValuationModal(true)}

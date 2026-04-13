@@ -31,8 +31,8 @@ import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { scopedEntities } from '@/components/api/scopedEntities';
 import { base44 } from '@/api/base44Client';
-import ValueStrategySection from '@/components/whiskey/ValueStrategySection';
-import ValuationBreakdown from '@/components/valuation/ValuationBreakdown';
+import UnifiedValuationCard from '@/components/valuation/UnifiedValuationCard';
+
 import {
   buildValuationSnapshot,
   resolveValueTrend,
@@ -41,7 +41,7 @@ import {
   seedInitialSnapshotIfMissing,
   refreshItemValue,
 } from '@/components/valuation/valueRefreshService';
-import { selectTobaccoReplacementDifficulty, selectTobaccoStrategy } from '@/lib/tobacco/tobaccoSelectors';
+
 
 // ── Valuation modals ──────────────────────────────────────────────────────────
 
@@ -799,63 +799,22 @@ export default function TobaccoDetail() {
       <TobaccoInventoryManager blend={blend} onUpdate={handleBlendUpdate} isUpdating={isUpdatingInventory} />
       <CellarLog blend={blend} />
 
-      {/* Value & Strategy Section — full feature parity with BottleDetail */}
-      {tobaccoStrategy ? (
-        <ValueStrategySection
+      {/* UNIFIED VALUATION CARD */}
+      {tobaccoStrategy && (
+        <UnifiedValuationCard
+          item={blend}
+          itemType="tobacco"
+          moduleKey="pipekeeper"
           valuationSnapshot={tobaccoStrategy}
           valueTrend={valueTrend}
           valueSnapshots={valueSnapshots}
           priceObservations={priceObservations}
-          item={blend}
-          moduleKey="pipekeeper"
-          itemType="tobacco"
           onAddSnapshot={() => setShowSnapshotModal(true)}
           onAddObservation={() => setShowObservationModal(true)}
           onEditValuation={() => setShowEditValuationModal(true)}
           onRefreshNow={handleRefreshValueNow}
           isRefreshing={isRefreshingValue}
         />
-      ) : (
-        /* Fallback: multi-layer valuation breakdown + standalone replacement difficulty + strategy */
-        <div className="space-y-4 mt-6">
-          <ValuationBreakdown item={blend} itemType="blend" />
-          {(() => {
-            const replacementDifficulty = selectTobaccoReplacementDifficulty(blend);
-            const strategy = selectTobaccoStrategy(blend);
-            return (
-              <div className="rounded-[18px] p-6" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}>
-                <div className="text-[13px] uppercase tracking-[0.16em] mb-2" style={{ color: '#A1A1AA' }}>
-                  Strategy
-                </div>
-                <div className="text-[28px] font-semibold mb-2" style={{ color: '#F5F5F7' }}>
-                  {strategy.state}
-                </div>
-                <div className="text-[16px] mb-6" style={{ color: '#D8D0C2' }}>
-                  {strategy.reason}
-                </div>
-
-                <div className="text-[13px] uppercase tracking-[0.16em] mb-3" style={{ color: '#A1A1AA' }}>
-                  Replacement Difficulty
-                </div>
-                <div className="flex gap-2 mb-3">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <div
-                      key={n}
-                      className="h-2 flex-1 rounded-full"
-                      style={{ background: n <= replacementDifficulty.level ? '#22C55E' : 'rgba(255,255,255,0.10)' }}
-                    />
-                  ))}
-                </div>
-                <div className="text-[18px] font-medium" style={{ color: '#22C55E' }}>
-                  {replacementDifficulty.label}
-                </div>
-                <div className="text-[15px] mt-2" style={{ color: '#A1A1AA' }}>
-                  {replacementDifficulty.reason}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
       )}
 
       <ShareRecordModal

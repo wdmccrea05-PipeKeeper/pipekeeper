@@ -42,8 +42,8 @@ import {
   resolveBottleUnitValue,
   resolveBottleValueSource,
 } from "@/components/whiskey/utils/bottleValue";
-import ValueStrategySection from "@/components/whiskey/ValueStrategySection";
-import ValuationBreakdown from "@/components/valuation/ValuationBreakdown";
+import UnifiedValuationCard from "@/components/valuation/UnifiedValuationCard";
+
 import {
   buildValuationSnapshot,
   resolveValueTrend,
@@ -939,17 +939,15 @@ function BottleDetailInner() {
                 </div>
               ) : null}
 
-              {/* VALUE & STRATEGY SECTION */}
-              <ValuationBreakdown item={bottle} itemType="bottle" />
-              <ValueStrategySection
+              {/* UNIFIED VALUATION CARD */}
+              <UnifiedValuationCard
+                item={bottle}
+                itemType="bottle"
+                moduleKey="whiskeykeeper"
                 valuationSnapshot={valuationSnapshot}
                 valueTrend={valueTrend}
                 valueSnapshots={valueSnapshots}
                 priceObservations={priceObservations}
-                item={bottle}
-                bottle={bottle}
-                moduleKey="whiskeykeeper"
-                itemType="bottle"
                 onAddSnapshot={() => setShowSnapshotModal(true)}
                 onAddObservation={() => setShowObservationModal(true)}
                 onRefreshNow={handleRefreshValueNow}
