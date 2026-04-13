@@ -43,7 +43,13 @@ export function defaultCurrencyForCountry(countryCode) {
     // CAD
     CA: 'CAD',
     // AUD
-    AU: 'AUD',
+    AU: 'AUD', NZ: 'AUD',
+    // JPY
+    JP: 'JPY',
+    // ZAR
+    ZA: 'ZAR',
+    // SGD
+    SG: 'SGD',
     // USD
     US: 'USD',
   };
@@ -67,10 +73,10 @@ export const SUPPORTED_COUNTRIES = [
   { code: 'AT', name: 'Austria',          currency: 'EUR' },
   { code: 'CA', name: 'Canada',           currency: 'CAD' },
   { code: 'AU', name: 'Australia',        currency: 'AUD' },
-  { code: 'JP', name: 'Japan',            currency: 'USD' },
+  { code: 'JP', name: 'Japan',            currency: 'JPY' },
   { code: 'NZ', name: 'New Zealand',      currency: 'AUD' },
-  { code: 'ZA', name: 'South Africa',     currency: 'USD' },
-  { code: 'SG', name: 'Singapore',        currency: 'USD' },
+  { code: 'ZA', name: 'South Africa',     currency: 'ZAR' },
+  { code: 'SG', name: 'Singapore',        currency: 'SGD' },
 ];
 
 // ---------------------------------------------------------------------------

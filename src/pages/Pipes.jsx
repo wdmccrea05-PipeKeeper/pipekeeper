@@ -29,6 +29,7 @@ import { useNavigate } from "@/components/utils/navigation";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatCurrency } from "@/components/utils/localeFormatters";
 import AddFlowModal from "@/components/addflow/AddFlowModal";
+import { useCurrency } from "@/lib/currency/useCurrency";
 
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
@@ -38,6 +39,8 @@ const ALL_MATERIALS = "__ALL_MATERIALS__";
 
 export default function PipesPage() {
   const { t } = useTranslation();
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
   const [showForm, setShowForm] = useState(false);
   const [editingPipe, setEditingPipe] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');

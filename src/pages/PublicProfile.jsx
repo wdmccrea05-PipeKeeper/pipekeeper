@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar, Leaf, MessageSquare, Eye, Globe, Settings, Flag, ShieldOff, Star } from "lucide-react";
+import { useCurrency } from "@/lib/currency/useCurrency";
 
 function WhiskeyBottleIcon({ className, style }) {
   return (
@@ -57,6 +58,8 @@ const formatLogDate = (dateStr) => {
 export default function PublicProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
   const urlParams = new URLSearchParams(window.location.search);
   const profileEmail = urlParams.get('email');
   const isPreview = urlParams.get('preview') === 'true';

@@ -618,11 +618,10 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           />
         )}
 
-        {/* Trusted image suggestions — shown when no image has been chosen yet */}
-        {!imageUrl && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
+        {(itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
           <div style={{ height: 1, background: 'rgba(180,140,75,0.1)' }} />
         )}
-        {!imageUrl && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
+        {(itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
           <ImageSuggestions
             itemType={itemType}
             data={data}

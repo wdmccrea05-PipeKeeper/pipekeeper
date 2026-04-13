@@ -2,9 +2,12 @@ import React from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { Badge } from '@/components/ui/badge';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 export default function PricingBreakdown({ bottle }) {
   const { t } = useTranslation();
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
 
   const getPurchaseTypeLabel = (type) => {
     const typeMap = {

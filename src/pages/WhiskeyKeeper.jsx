@@ -13,6 +13,7 @@ import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 
 import { getWhiskeyHighlights } from '@/components/whiskey/getWhiskeyHighlights';
 import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -21,6 +22,8 @@ function WhiskeyKeeperInner() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const [showAddModal, setShowAddModal] = useState(false);
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
 
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles-summary', user?.email],

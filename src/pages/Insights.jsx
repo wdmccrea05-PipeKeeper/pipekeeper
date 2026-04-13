@@ -28,6 +28,7 @@ import {
   X,
   Sparkles,
 } from "lucide-react";
+import { useCurrency } from "@/lib/currency/useCurrency";
 import {
   differenceInCalendarDays,
   subDays,
@@ -992,6 +993,8 @@ export default function Insights() {
   const { t } = useTranslation();
   const { user, hasPaid } = useCurrentUser();
   const navigate = useNavigate();
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
   const initialTab = getTabFromUrl();
 
   const highlightRefs = useRef({});

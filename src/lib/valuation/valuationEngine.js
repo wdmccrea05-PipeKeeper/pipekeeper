@@ -123,13 +123,19 @@ export function computeGlobalBenchmark(item, itemType) {
 // ---------------------------------------------------------------------------
 
 /**
- * Compute the estimated local market value (USD) for the user's market profile.
+ * Compute the estimated local market value for the user's market profile.
  * Applies a regional price multiplier to the global benchmark.
+ *
+ * IMPORTANT: valueUSD is always denominated in the app base currency (USD).
+ * marketCurrency indicates the native currency of the user's local market.
+ * Callers must use convertFromBase() / formatFromBase() to display the value
+ * in the user's chosen display currency — do NOT interpret valueUSD as
+ * already being in marketCurrency.
  *
  * @param {Object} item
  * @param {'bottle'|'blend'|'tobacco'|'pipe'} itemType
  * @param {{ country: string, region: string, currency: string }} [profileOverride]
- * @returns {{ value: number, currency: string, country: string, region: string, confidence: string }|null}
+ * @returns {{ valueUSD: number, marketCurrency: string, country: string, region: string, confidence: string, multiplier: number }|null}
  */
 export function computeLocalMarketValue(item, itemType, profileOverride) {
   const global = computeGlobalBenchmark(item, itemType);
@@ -143,10 +149,10 @@ export function computeLocalMarketValue(item, itemType, profileOverride) {
   const confidence = global.confidence === 'high' ? 'high' : global.confidence === 'medium' ? 'medium' : 'low';
 
   return {
-    value:      Math.round(localValueUSD * 100) / 100,
-    currency:   profile.currency,
-    country:    profile.country,
-    region:     profile.region || '',
+    valueUSD:       Math.round(localValueUSD * 100) / 100,
+    marketCurrency: profile.currency,
+    country:        profile.country,
+    region:         profile.region || '',
     confidence,
     multiplier,
   };
@@ -329,7 +335,7 @@ function computeConfidence(costBasis, globalBenchmark, difficulty) {
  * @param {{ country?: string, region?: string, currency?: string }} [marketProfileOverride]
  * @returns {{
  *   costBasis:         { value, currency, date, location, country }|null,
- *   localMarketValue:  { value, currency, country, region, confidence, multiplier }|null,
+ *   localMarketValue:  { valueUSD, marketCurrency, country, region, confidence, multiplier }|null,
  *   globalBenchmark:   { value, source, confidence }|null,
  *   replacementDifficulty: { score, label, color, reason },
  *   strategy:          { recommendation, reason, bullets },

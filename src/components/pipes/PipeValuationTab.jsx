@@ -14,6 +14,7 @@ import { selectPipeCollectionValue, selectTotalQuantityOz as _selectTobaccoOz } 
 import { selectCellarValue } from '@/lib/collection/tobaccoSelectors';
 import { TrendingUp, Award, Flame, ShieldAlert, Leaf, RotateCw } from 'lucide-react';
 import PipeShapeIcon from '@/components/pipes/PipeShapeIcon';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 // ── Analytics helpers ──────────────────────────────────────────────────────
 
@@ -143,6 +144,8 @@ function ItemRow({ name, sub, badge, value, rarity, recommendation, recommendati
 export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp }) {
   const { user } = useCurrentUser();
   const [activeSubTab, setActiveSubTab] = React.useState('pipes');
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
 
   // Use props if provided (already fetched), otherwise fetch independently
   const { data: pipesData = [] } = useQuery({

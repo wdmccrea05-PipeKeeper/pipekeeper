@@ -18,6 +18,7 @@ import {
 import { formatCurrency } from '@/components/utils/localeFormatters';
 import { subMonths, format } from 'date-fns';
 import { computeCurrentValue, computeRarityScore, computeReplacementDifficulty } from '@/components/valuation/valueEngine';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 /**
  * WhiskeyInsightsAnalytics
@@ -343,6 +344,8 @@ export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
 
 export function WhiskeyAnalyticsTab({ bottles }) {
   const { t } = useTranslation();
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
 
   const typeDistribution = useMemo(() => getBottleTypeDistribution(bottles), [bottles]);
   const countryDistribution = useMemo(() => getCountryDistribution(bottles), [bottles]);

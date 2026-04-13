@@ -134,7 +134,7 @@ export default function ValuationBreakdown({ item, itemType, compact = false }) 
 
   // ── Compact mode ─────────────────────────────────────────────────────────────
   if (compact) {
-    const displayValue = localMarketValue?.value || globalBenchmark?.value || costBasis?.value;
+    const displayValue = localMarketValue?.valueUSD || globalBenchmark?.value || costBasis?.value;
     if (!displayValue) return null;
     return (
       <div className="flex items-center gap-2">
@@ -195,11 +195,11 @@ export default function ValuationBreakdown({ item, itemType, compact = false }) 
           />
         )}
 
-        {localMarketValue?.value > 0 && (
+        {localMarketValue?.valueUSD > 0 && (
           <ValueRow
             icon={MapPin}
             label={`Local Value${localMarketValue.country ? ` (${localMarketValue.country})` : ''}`}
-            formattedValue={formatValue(localMarketValue.value)}
+            formattedValue={formatValue(localMarketValue.valueUSD)}
             highlight
           />
         )}

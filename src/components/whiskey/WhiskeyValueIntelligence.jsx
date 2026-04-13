@@ -12,6 +12,7 @@ import {
   DIFFICULTY_LABELS,
 } from '@/components/valuation/valueEngine';
 import { formatCurrency } from '@/components/whiskey/utils/bottleValue';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 function getBottleCount(bottle) {
   const n = Number(bottle?.bottle_count || bottle?.total_bottles || 1);
@@ -60,6 +61,8 @@ function BottleRow({ bottle, value, badge, badgeColor }) {
 }
 
 export default function WhiskeyValueIntelligence({ bottles = [] }) {
+  // Subscribe to currency context so the component re-renders when the user changes currency
+  useCurrency();
   const enriched = useMemo(() => {
     if (!bottles.length) return [];
     return bottles.map(b => ({
