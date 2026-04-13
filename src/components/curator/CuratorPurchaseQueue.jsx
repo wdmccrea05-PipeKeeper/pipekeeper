@@ -183,11 +183,13 @@ export default function CuratorPurchaseQueue({ sections = [], onAction, onRefres
   const queueGroups = useMemo(() => buildQueueGroups(sections), [sections]);
 
   const counts = useMemo(() => {
-    const lookup = (id) => (queueGroups.find((group) => group.id === id)?.recommendations || []).flatMap((rec) => rec.items || []).length;
+    const restockNow = queueGroups.find((g) => g.id === 'restock')?.recommendations || [];
+    const wishlistReady = queueGroups.find((g) => g.id === 'wishlist')?.recommendations || [];
+    const gapFillBuys = queueGroups.find((g) => g.id === 'gap_fill')?.recommendations || [];
     return {
-      restock: lookup('restock'),
-      wishlist: lookup('wishlist'),
-      gapFill: lookup('gap_fill'),
+      restock: restockNow.length,
+      wishlist: wishlistReady.length,
+      gapFill: gapFillBuys.length,
     };
   }, [queueGroups]);
 

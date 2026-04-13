@@ -2,7 +2,6 @@ import {
   computeCurrentValue,
   buildValuationSnapshot,
 } from '@/components/valuation/valueEngine';
-import { formatCurrency as _formatCurrencyLocale } from '@/components/utils/localeFormatters';
 
 export function toNumber(value) {
   const n = Number(value);
@@ -50,8 +49,14 @@ export function resolveBottleValueSource(bottle) {
   };
 }
 
+/**
+ * @deprecated Use useCurrency().formatFromBase() in React components instead.
+ * Kept for backward compatibility but should not be used for new code.
+ */
 export function formatCurrency(value) {
-  return _formatCurrencyLocale(value);
+  // Fallback: just round and return — reactive formatting requires useCurrency()
+  const n = Number(value);
+  return Number.isFinite(n) ? `$${Math.round(n)}` : '—';
 }
 
 /**

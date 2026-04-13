@@ -8,7 +8,8 @@ import { Leaf, BookOpen, TrendingUp, Sparkles, List } from 'lucide-react';
 import PipeIdentifier from '@/components/ai/PipeIdentifier';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
-import { formatCurrency, formatWeight } from '@/components/utils/localeFormatters';
+import { formatWeight } from '@/components/utils/localeFormatters';
+import { useCurrency } from '@/lib/currency/useCurrency';
 import { calculateCellaredOzFromBlend } from '@/components/utils/tobaccoQuantityHelpers';
 import { checkFreeTierLimit } from '@/components/utils/freeTierLimits';
 import PipeKeeperModuleNav from './PipeKeeperModuleNav';
@@ -23,6 +24,7 @@ const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc4971
 
 export default function PipeKeeperModule() {
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -231,7 +233,7 @@ export default function PipeKeeperModule() {
               {t('home.totalValue') || 'Total Value'}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {hideValues ? '—' : formatCurrency(Math.round(totalPipeValue))}
+              {hideValues ? '—' : formatFromBase(Math.round(totalPipeValue))}
             </p>
           </div>
           <div className="space-y-2">
@@ -285,7 +287,7 @@ export default function PipeKeeperModule() {
             {mostValuablePipe && !hideValues && (
               <CatalogPlate
                 title={t('home.mostValuable') || 'Most Valuable'}
-                value={formatCurrency(mostValuablePipe.estimated_value)}
+                value={formatFromBase(mostValuablePipe.estimated_value)}
                 subtitle={mostValuablePipe.name}
                 heroImage={mostValuablePipe.photos?.[0]}
                 bgImage={mostValuablePipe.photos?.[0]}

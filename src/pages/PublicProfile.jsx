@@ -38,7 +38,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatWeight, formatCurrency } from "@/components/utils/localeFormatters";
+import { formatWeight } from "@/components/utils/localeFormatters";
 
 const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
@@ -58,8 +58,7 @@ const formatLogDate = (dateStr) => {
 export default function PublicProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
   const urlParams = new URLSearchParams(window.location.search);
   const profileEmail = urlParams.get('email');
   const isPreview = urlParams.get('preview') === 'true';
@@ -494,7 +493,7 @@ export default function PublicProfilePage() {
                             )}
                             {!profile.privacy_hide_values && pipe.estimated_value && (
                               <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">
-                                {formatCurrency(+pipe.estimated_value)}
+                                {formatFromBase(+pipe.estimated_value)}
                               </Badge>
                             )}
                           </div>
@@ -684,7 +683,7 @@ export default function PublicProfilePage() {
                           )}
                           {!profile.privacy_hide_values && (bottle.purchase_price || bottle.estimated_value) > 0 && (
                             <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">
-                              {formatCurrency(bottle.purchase_price || bottle.estimated_value)}
+                              {formatFromBase(bottle.purchase_price || bottle.estimated_value)}
                             </Badge>
                           )}
                         </div>

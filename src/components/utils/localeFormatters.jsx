@@ -2,8 +2,8 @@
  * Locale-aware formatting utilities for numbers, dates, and currency
  * Respects user's selected language (pk_lang from localStorage)
  */
-import { getEffectiveRates, getCurrentDisplayCurrency } from '@/lib/currency/exchangeRateStore';
-import { convertFromBase } from '@/lib/currency/convertCurrency';
+import { formatMoneyFromBase } from '@/lib/currency/formatCurrency';
+import { getCachedRates, getCurrentDisplayCurrency } from '@/lib/currency/exchangeRateStore';
 
 /**
  * Get locale code from pk_lang localStorage key
@@ -85,25 +85,23 @@ export function formatDateTime(date, includeTime = true) {
 }
 
 /**
- * Format currency with locale-specific format (always 2 decimal places).
- * Values are assumed to be stored in USD; they are automatically converted
- * to the user's preferred currency using the shared exchange rate store.
- * @param {number} value    - Amount in USD
- * @param {string} currency - Override currency code (skips user preference)
+ * Format currency with locale-specific format.
+ * Thin compatibility wrapper only — delegates to the shared currency stack.
+ * Values are assumed to be stored in USD (base currency).
+ * @param {number} value      - Amount in base currency (USD)
+ * @param {Object|string} options - Options object or legacy currency string override
  */
-export function formatCurrency(value, currency) {
-  if (value === null || value === undefined || isNaN(value)) return '—';
+export function formatCurrency(value, options = {}) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
 
-  const cur = currency || getCurrentDisplayCurrency();
-  const ratePayload = getEffectiveRates();
-  const converted = convertFromBase(Number(value), cur, ratePayload);
+  // Support legacy call-sites that pass a currency string as second arg
+  const opts = typeof options === 'string' ? { currency: options } : options;
+  const currency = opts.currency || getCurrentDisplayCurrency();
+  const locale = opts.locale || getLocale();
+  const baseCurrency = opts.baseCurrency || 'USD';
+  const rates = getCachedRates();
 
-  return new Intl.NumberFormat(getLocale(), {
-    style: 'currency',
-    currency: cur,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(converted);
+  return formatMoneyFromBase(Number(value), currency, locale, rates, baseCurrency);
 }
 
 /**

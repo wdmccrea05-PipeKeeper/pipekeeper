@@ -6,7 +6,6 @@
  * { key, title, value, subtitle, accent, photo }
  */
 
-import { formatCurrency } from '@/components/utils/localeFormatters';
 import {
   getBottleUnitValue,
   getBottleTotalValue,
@@ -25,9 +24,11 @@ function getBottlePhoto(bottle) {
  * Main highlight generator
  * @param {Array} bottles - Array of bottle records
  * @param {Array} inventoryUnits - Array of inventory units
+ * @param {Function} [formatFromBase] - Optional currency formatter from useCurrency()
  * @returns {Array} Array of highlight objects (max 4)
  */
-export function getWhiskeyHighlights(bottles, inventoryUnits = []) {
+export function getWhiskeyHighlights(bottles, inventoryUnits = [], formatFromBase) {
+  const fmt = typeof formatFromBase === 'function' ? formatFromBase : (v) => `$${Math.round(Number(v) || 0)}`;
   if (!Array.isArray(bottles) || bottles.length === 0) {
     return getEmptyCollectionFallbacks();
   }
@@ -105,7 +106,7 @@ function findMostValuable(bottles, inventoryCountByBottleId, hasInventoryUnits) 
   return {
     key: 'most_valuable',
     title: 'Most Valuable',
-    value: formatCurrency(bottle.__unitValue),
+    value: fmt(bottle.__unitValue),
     subtitle: bottle.name,
     accent: '#B4824B',
     photo: getBottlePhoto(bottle),
@@ -238,7 +239,7 @@ function getCollectionStatsFallbacks(bottles, inventoryCountByBottleId, hasInven
     fallbacks.push({
       key: 'total_value',
       title: 'Total Collection Value',
-      value: formatCurrency(Math.round(totalValue)),
+      value: fmt(Math.round(totalValue)),
       subtitle: `${bottles.length} unique bottle${bottles.length !== 1 ? 's' : ''}`,
       accent: '#B4824B',
       photo: null,

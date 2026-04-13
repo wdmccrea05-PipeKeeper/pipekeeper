@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, TrendingUp, AlertCircle } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/components/utils/localeFormatters';
+import { formatDate } from '@/components/utils/localeFormatters';
 import { buildValuationSnapshot, PIPE_PREMIUM_MAKERS } from '@/components/valuation/valueEngine';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 /**
  * ValuationCredibility - Transparent valuation display with reference signals,
@@ -159,6 +160,7 @@ export function computeBottleValuation(bottle) {
 
 export default function ValuationCredibility({ valuation, compact = false }) {
   const [expanded, setExpanded] = useState(false);
+  const { formatFromBase } = useCurrency();
 
   if (!valuation || valuation.value === 0) return null;
 
@@ -168,7 +170,7 @@ export default function ValuationCredibility({ valuation, compact = false }) {
     return (
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold" style={{ color: '#D4A574' }}>
-          {formatCurrency(valuation.value)}
+          {formatFromBase(valuation.value)}
         </span>
         <span
           className="text-xs px-1.5 py-0.5 rounded-full"
@@ -209,7 +211,7 @@ export default function ValuationCredibility({ valuation, compact = false }) {
       {/* Value + Confidence */}
       <div className="flex items-center gap-3">
         <span className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-          {formatCurrency(valuation.value)}
+          {formatFromBase(valuation.value)}
         </span>
         <span
           className="text-xs px-2 py-1 rounded-full font-medium"

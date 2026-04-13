@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { formatCurrency } from '@/components/utils/localeFormatters';
+import { useCurrency } from '@/lib/currency/useCurrency';
 import { rankSearchResults } from '@/utils/search/SmartSearchEngine';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function QuickSearchPipe({ open, onOpenChange, onAdd }) {
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
@@ -227,9 +228,9 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
                             <div>
                               <p className="text-xs font-medium text-stone-600">{t("quickSearch.typicalValue")}</p>
                               <p className="font-semibold text-emerald-800 text-sm">
-                                {pipe.price_range_low != null && formatCurrency(pipe.price_range_low)}
+                                {pipe.price_range_low != null && formatFromBase(pipe.price_range_low)}
                                 {pipe.price_range_high != null && pipe.price_range_high !== pipe.price_range_low && 
-                                  ` - ${formatCurrency(pipe.price_range_high)}`}
+                                  ` - ${formatFromBase(pipe.price_range_high)}`}
                               </p>
                             </div>
                           )}

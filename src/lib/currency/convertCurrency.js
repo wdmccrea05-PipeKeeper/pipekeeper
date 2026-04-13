@@ -61,6 +61,11 @@ export function convertFromBase(amount, toCurrency, ratePayload, baseCurrency = 
  * @param {{base: string, rates: Object}} ratePayload
  * @returns {{ value: number, ok: boolean }}
  */
+/**
+ * Alias for convertAmount — allows callers to import by either name.
+ */
+export const convertCurrencyAmount = convertAmount;
+
 export function safeConvertAmount(amount, fromCurrency, toCurrency, ratePayload) {
   try {
     const num = Number(amount);

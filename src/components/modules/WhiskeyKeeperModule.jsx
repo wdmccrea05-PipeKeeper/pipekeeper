@@ -20,13 +20,13 @@ import {
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import {
   buildInventoryCountByBottleId,
-  formatCurrency,
   getBottleTotalValue,
   getBottleUnitValue,
   getEffectiveBottleCount,
 } from '@/components/utils/whiskeyValueHelpers';
 import { checkFreeTierLimit } from '@/components/utils/freeTierLimits';
 import FreeTierUpgradePrompt from '@/components/subscription/FreeTierUpgradePrompt';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 function normalizeText(value) {
   return String(value || '').trim().toLowerCase();
@@ -59,6 +59,7 @@ export default function WhiskeyKeeperModule({
   onDeleteBottle,
 }) {
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
   const navigate = useNavigate();
   const { user, hasPaid } = useCurrentUser();
 
@@ -253,7 +254,7 @@ export default function WhiskeyKeeperModule({
               {t('whiskey.collectionValue') || 'Collection Value'}
             </div>
             <div className="text-3xl font-bold text-[#F5F1E7] mt-2">
-              {formatCurrency(totalBottleValue)}
+              {formatFromBase(totalBottleValue)}
             </div>
             <p className="text-xs mt-1 text-[#E0D8C8]/60">
               {t('whiskey.basedOnBestKnownValues') || 'Based on best known value per bottle'}
@@ -281,7 +282,7 @@ export default function WhiskeyKeeperModule({
       {mostValuableBottle && (
         <CatalogPlate
           title={t('home.mostValuable') || 'Most Valuable'}
-          value={formatCurrency(mostValuableBottle.__unitValue || 0)}
+          value={formatFromBase(mostValuableBottle.__unitValue || 0)}
           subtitle={mostValuableBottle.name}
           heroImage={mostValuableBottle.photo}
           bgImage={mostValuableBottle.photo}

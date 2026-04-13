@@ -2,7 +2,7 @@ import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import CollectorDisplayCard from '@/components/ui/CollectorDisplayCard';
 import { Badge } from '@/components/ui/badge';
-import { formatCurrency } from '@/components/utils/localeFormatters';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 export default function CollectorGridView({
   items = [],
@@ -21,6 +21,7 @@ export default function CollectorGridView({
   columns = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
   gap = 'gap-8',
 }) {
+  const { formatFromBase } = useCurrency();
   return (
     <div className={`${columns} ${gap}`}>
       <AnimatePresence>
@@ -45,7 +46,7 @@ export default function CollectorGridView({
                       color: '#fff',
                     }}
                   >
-                    {formatCurrency(+getValue(item))}
+                    {formatFromBase(+getValue(item))}
                   </Badge>
                 ) : null
               }
