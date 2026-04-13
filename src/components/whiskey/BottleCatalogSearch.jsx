@@ -105,7 +105,7 @@ export default function BottleCatalogSearch({ onSelect, onManualAdd }) {
             >
               <div className="w-8 h-10 rounded flex-shrink-0 flex items-center justify-center"
                 style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.15)" }}>
-                <span className="text-[10px] text-[#D4AF37]/60">🥃</span>
+                <span className="text-[10px] text-[#D4AF37]/60" aria-hidden="true">🥃</span>
               </div>
               <div>
                 <p className="text-sm font-medium text-[#F5F1E7]">{entry.name}</p>
