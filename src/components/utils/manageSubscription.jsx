@@ -1,8 +1,9 @@
 import { isIOSWebView, openAppleSubscriptions } from "@/components/utils/nativeIAPBridge";
+import { base44 } from "@/api/base44Client";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
+import { hasPaidAccess } from "@/components/utils/premiumAccess";
 
 const APPLE_SUBSCRIPTIONS_URL = "https://apps.apple.com/account/subscriptions";
-const STRIPE_PORTAL_URL = "https://billing.stripe.com/p/login/28EbJ1f03b5B2Krabvgbm00";
 
 function openUrlSafely(url) {
   try {
@@ -26,10 +27,27 @@ export async function handleManageSubscription(user, subscription, navigate, cre
     return { ok: true, provider: "apple", native: true };
   }
 
+  const paid = hasPaidAccess(user, subscription);
+  if (!paid) {
+    navigate(createPageUrl("Subscription"));
+    return { ok: true, redirectedToSubscription: true, freeUser: true };
+  }
+
   const provider = resolveSubscriptionProvider(subscription) || resolveProviderFromUser(user);
 
   if (provider === "stripe") {
-    return openUrlSafely(STRIPE_PORTAL_URL);
+    try {
+      const response = await base44.functions.invoke("createCustomerPortalSessionForMe", {});
+      const url = response?.data?.url || response?.url;
+      if (!url) {
+        throw new Error("No customer portal URL returned");
+      }
+      return openUrlSafely(url);
+    } catch (e) {
+      console.error("[manageSubscription] Stripe portal error:", e);
+      navigate(createPageUrl("Subscription"));
+      return { ok: false, provider: "stripe", reason: "portal_failed" };
+    }
   }
 
   if (provider === "apple") {

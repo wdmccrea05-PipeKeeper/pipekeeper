@@ -184,17 +184,20 @@ export default function SubscriptionFull() {
 
     setMessage("");
     try {
-      const response = await base44.functions.invoke('createCheckoutSessionV2', {
-        tier: tier || selectedTier,
-        interval: interval || selectedInterval,
+      const billingInterval = (interval || selectedInterval) === "annual" ? "annual" : "monthly";
+      const planKey = billingInterval === "annual" ? "founders_bundle_annual" : "founders_bundle_monthly";
+
+      const response = await base44.functions.invoke("createCheckoutSession", {
+        planKey,
+        selectedModules: ["pipekeeper", "whiskeykeeper"],
+        successUrl: `${window.location.origin}/Subscription?success=1`,
+        cancelUrl: `${window.location.origin}/Subscription?canceled=1`,
       });
 
       const url =
         response?.data?.url ||
-        response?.data?.checkoutUrl ||
         response?.data?.sessionUrl ||
         response?.url ||
-        response?.checkoutUrl ||
         response?.sessionUrl;
 
       if (!url) {
@@ -204,7 +207,7 @@ export default function SubscriptionFull() {
       }
 
       const popup = window.open(url, "_blank", "noopener,noreferrer");
-      if (popup === null) {
+      if (!popup || popup.closed || typeof popup.closed === "undefined") {
         window.location.assign(url);
       }
     } catch (e) {
