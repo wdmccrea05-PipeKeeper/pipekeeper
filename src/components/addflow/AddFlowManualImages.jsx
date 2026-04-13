@@ -87,11 +87,18 @@ const CONFIDENCE_CHIP_STYLES = {
   Low:    { background: 'rgba(120,80,60,0.18)',  color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(120,80,60,0.3)' },
 };
 
+function proxyImageUrl(url) {
+  if (!url) return null;
+  // Proxy through weserv.nl to bypass hotlink protection and CORS issues
+  return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=112&h=112&fit=contain&we`;
+}
+
 /** Thumbnail that shows a placeholder when the image fails to load */
 function SuggestionThumb({ imageUrl, title }) {
   const [failed, setFailed] = useState(false);
+  const proxied = proxyImageUrl(imageUrl);
 
-  if (!imageUrl || failed) {
+  if (!imageUrl || (failed && !proxied)) {
     return (
       <div
         className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center"
@@ -104,7 +111,7 @@ function SuggestionThumb({ imageUrl, title }) {
 
   return (
     <img
-      src={imageUrl}
+      src={failed ? imageUrl : proxied}
       alt={title || 'Suggested image'}
       className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
       style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
