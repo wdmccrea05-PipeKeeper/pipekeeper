@@ -18,6 +18,7 @@ import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
 import CigarPreferencesSection from "@/components/profile/CigarPreferencesSection";
 import ModuleVisibilitySettings from "@/components/profile/ModuleVisibilitySettings";
+import CurrencyPreferenceSetting from "@/components/profile/CurrencyPreferenceSetting";
 import FormSection from "@/components/forms/FormSection";
 
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -896,6 +897,9 @@ export default function ProfilePage() {
                 <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.4)' }}>
                   {t("profile.whiskeyNotesHint", "This note is shared with the Curator AI to improve whiskey recommendations.")}
                 </p>
+              </div>
+              <div className="mt-4">
+                <CurrencyPreferenceSetting />
               </div>
             </FormSection>
 

@@ -178,6 +178,8 @@ const AuthenticatedApp = () => {
         }
       />
 
+      <Route path="/upgrade" element={<LayoutWrapper currentPageName="Subscription"><Subscription /></LayoutWrapper>} />
+
       <Route path="/SubscriptionSuccessFlow" element={<SubscriptionSuccessFlow />} />
 
       <Route

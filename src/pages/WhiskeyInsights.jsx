@@ -279,10 +279,10 @@ export default function WhiskeyInsightsPage() {
         }}
       >
         <div className="text-[20px] font-semibold mb-3" style={{ color: '#F5F5F7' }}>
-          No insights yet
+          No Insights Yet
         </div>
         <div className="text-[16px]" style={{ color: '#A1A1AA' }}>
-          Add bottles or tastings to your collection to see insights.
+          Add bottles to reveal trends, value, and opportunities.
         </div>
       </div>
     );
@@ -456,7 +456,7 @@ export default function WhiskeyInsightsPage() {
                   ))}
                 </div>
               ) : (
-                <p style={{ color: 'rgba(224,216,200,0.6)' }}>No tastings logged</p>
+                <p style={{ color: 'rgba(224,216,200,0.6)' }}>No Tastings Logged</p>
               )}
             </div>
           )}

@@ -115,9 +115,9 @@ function TastingsInner() {
               }}
             >
               <BookOpen className="w-10 h-10 mx-auto text-[#B48C4B] mb-4" />
-              <p className="text-2xl font-semibold">No tasting notes yet</p>
+              <p className="text-2xl font-semibold">No Tastings Yet</p>
               <p className="text-[#D8C7A6]/76 mt-2">
-                Log your first tasting to track your whiskey journey
+                Log your first pour to unlock tasting insights.
               </p>
               <Button
                 className="mt-5"

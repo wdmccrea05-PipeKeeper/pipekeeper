@@ -89,10 +89,16 @@ export function formatDateTime(date, includeTime = true) {
  */
 export function formatCurrency(value, currency = 'USD') {
   if (value === null || value === undefined || isNaN(value)) return '—';
-  
+
+  let cur = currency;
+  try {
+    const stored = typeof window !== 'undefined' && window?.localStorage?.getItem('pk_currency');
+    if (stored) cur = stored;
+  } catch {}
+
   return new Intl.NumberFormat(getLocale(), {
     style: 'currency',
-    currency: currency,
+    currency: cur,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
