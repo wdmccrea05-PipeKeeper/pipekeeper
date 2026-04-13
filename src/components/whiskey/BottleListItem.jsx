@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, ExternalLink, Heart } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import {
-  formatCurrency,
   getBottleDisplayValueLabel,
   getBottleTotalValue,
   getBottleUnitValue,
@@ -39,7 +38,7 @@ export default function BottleListItem({
 }) {
   const { t } = useTranslation();
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
 
   const hasInventoryUnits = inventoryUnits.length > 0;
 
@@ -113,10 +112,10 @@ export default function BottleListItem({
                 {valueLabel}
               </div>
               <div className="text-2xl font-bold text-[#F5F1E7] mt-1">
-                {formatCurrency(unitValue)}
+                {formatFromBase(unitValue)}
               </div>
               <div className="text-sm text-[#D8C7A6] mt-1">
-                Total: {formatCurrency(totalValue)}
+                Total: {formatFromBase(totalValue)}
               </div>
             </div>
           </div>

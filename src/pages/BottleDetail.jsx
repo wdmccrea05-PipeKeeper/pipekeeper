@@ -37,7 +37,6 @@ import InventoryManager from "@/components/whiskey/InventoryManager";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import {
-  formatCurrency,
   resolveBottleTotalValue,
   resolveBottleUnitValue,
   resolveBottleValueSource,
@@ -413,7 +412,7 @@ function BottleDetailInner() {
   const [params] = useSearchParams();
   const { user, isLoading: userLoading } = useCurrentUser();
   // Subscribe to currency context so component re-renders when currency changes
-  useCurrency();
+  const { formatFromBase } = useCurrency();
 
   const bottleId = params.get("id") || params.get("bottleId");
   const userEmail = user?.email || null;
@@ -849,7 +848,7 @@ function BottleDetailInner() {
                 {unitValue > 0 ? (
                   <DetailStat
                     label={valueSourceMeta.label || "Value"}
-                    value={formatCurrency(unitValue)}
+                    value={formatFromBase(unitValue)}
                     icon={DollarSign}
                     helperText={
                       valueSourceMeta.confidence
@@ -877,7 +876,7 @@ function BottleDetailInner() {
                   <DetailStat label={t('whiskey.fillLevel', 'Fill Level')} value={safePrimitive(bottle.fill_level)} icon={Package} />
                 ) : null}
                 {totalValue > 0 && bottle.bottle_count > 1 ? (
-                  <DetailStat label={t('hub.totalValue', 'Total Value')} value={formatCurrency(totalValue)} icon={WhiskeyKeeperIcon} />
+                  <DetailStat label={t('hub.totalValue', 'Total Value')} value={formatFromBase(totalValue)} icon={WhiskeyKeeperIcon} />
                 ) : null}
               </div>
 
@@ -904,7 +903,7 @@ function BottleDetailInner() {
                   {bottle.purchase_price ? (
                     <p className="text-sm text-[#E0D8C8]">
                       <span className="text-[#D8C7A6]/60">Purchase price: </span>
-                      {formatCurrency(bottle.purchase_price)}
+                      {formatFromBase(bottle.purchase_price)}
                     </p>
                   ) : null}
                   {bottle.purchase_location ? (

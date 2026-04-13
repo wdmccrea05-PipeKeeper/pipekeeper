@@ -9,7 +9,6 @@ import {
   PIPE_RECOMMENDATION_LABELS,
   TOBACCO_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
-import { formatCurrency } from '@/components/utils/localeFormatters';
 import { selectPipeCollectionValue, selectTotalQuantityOz as _selectTobaccoOz } from '@/lib/collection';
 import { selectCellarValue } from '@/lib/collection/tobaccoSelectors';
 import { TrendingUp, Award, Flame, ShieldAlert, Leaf, RotateCw } from 'lucide-react';
@@ -107,7 +106,7 @@ function StatCard({ label, value, sub }) {
   );
 }
 
-function ItemRow({ name, sub, badge, value, rarity, recommendation, recommendationLabel, recommendationColor = '#4ade80' }) {
+function ItemRow({ name, sub, badge, value, rarity, recommendation, recommendationLabel, recommendationColor = '#4ade80', formatFromBase }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3"
       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.1)' }}>
@@ -132,7 +131,7 @@ function ItemRow({ name, sub, badge, value, rarity, recommendation, recommendati
           </span>
         )}
         {value != null && value > 0 && (
-          <span className="text-sm font-semibold" style={{ color: '#D4A574' }}>{formatCurrency(value)}</span>
+          <span className="text-sm font-semibold" style={{ color: '#D4A574' }}>{formatFromBase(value)}</span>
         )}
       </div>
     </div>
@@ -145,7 +144,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
   const { user } = useCurrentUser();
   const [activeSubTab, setActiveSubTab] = React.useState('pipes');
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
 
   // Use props if provided (already fetched), otherwise fetch independently
   const { data: pipesData = [] } = useQuery({
@@ -193,9 +192,9 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Pipes" value={pipes.length} />
-        <StatCard label="Pipe Value" value={totalPipeValue > 0 ? formatCurrency(Math.round(totalPipeValue)) : '—'} />
+        <StatCard label="Pipe Value" value={totalPipeValue > 0 ? formatFromBase(Math.round(totalPipeValue)) : '—'} />
         <StatCard label="Blends" value={blends.length} sub={`${totalOz.toFixed(1)} oz total`} />
-        <StatCard label="Cellar Value" value={totalCellarValue > 0 ? formatCurrency(Math.round(totalCellarValue)) : '—'} />
+        <StatCard label="Cellar Value" value={totalCellarValue > 0 ? formatFromBase(Math.round(totalCellarValue)) : '—'} />
       </div>
 
       {/* Sub-tabs */}
@@ -223,7 +222,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
               <SectionHeader icon={TrendingUp} title="Most Valuable Pipes" />
               <div className="space-y-2">
                 {mostValuablePipes.map(p => (
-                  <ItemRow key={p.id} name={p.name} sub={[p.maker, p.bowl_material].filter(Boolean).join(' · ')} value={p._value} rarity={computeRarityScore(p, 'pipekeeper')} />
+                  <ItemRow key={p.id} name={p.name} sub={[p.maker, p.bowl_material].filter(Boolean).join(' · ')} value={p._value} rarity={computeRarityScore(p, 'pipekeeper')} formatFromBase={formatFromBase} />
                 ))}
               </div>
             </div>
@@ -247,7 +246,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
               <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>These pipes have notable value. Consider whether to rotate them into regular use or preserve them.</p>
               <div className="space-y-2">
                 {underutilizedPipes.map(p => (
-                  <ItemRow key={p.id} name={p.name} sub={[p.maker, p.condition].filter(Boolean).join(' · ')} value={p._value} recommendation={p._rec} recommendationLabel={PIPE_RECOMMENDATION_LABELS[p._rec] || p._rec} recommendationColor="#a78bfa" />
+                  <ItemRow key={p.id} name={p.name} sub={[p.maker, p.condition].filter(Boolean).join(' · ')} value={p._value} recommendation={p._rec} recommendationLabel={PIPE_RECOMMENDATION_LABELS[p._rec] || p._rec} recommendationColor="#a78bfa" formatFromBase={formatFromBase} />
                 ))}
               </div>
             </div>
@@ -269,7 +268,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
               <SectionHeader icon={TrendingUp} title="Highest Cellar Value" />
               <div className="space-y-2">
                 {mostValuableTobaccos.map(b => (
-                  <ItemRow key={b.id} name={b.name} sub={[b.manufacturer, b.blend_type].filter(Boolean).join(' · ')} value={b._value} rarity={computeRarityScore(b, 'pipekeeper')} />
+                  <ItemRow key={b.id} name={b.name} sub={[b.manufacturer, b.blend_type].filter(Boolean).join(' · ')} value={b._value} rarity={computeRarityScore(b, 'pipekeeper')} formatFromBase={formatFromBase} />
                 ))}
               </div>
             </div>

@@ -1,13 +1,12 @@
 import React from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { formatCurrency } from '@/components/utils/localeFormatters';
 import { Badge } from '@/components/ui/badge';
 import { useCurrency } from '@/lib/currency/useCurrency';
 
 export default function PricingBreakdown({ bottle }) {
   const { t } = useTranslation();
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
 
   const getPurchaseTypeLabel = (type) => {
     const typeMap = {
@@ -76,7 +75,7 @@ export default function PricingBreakdown({ bottle }) {
               </p>
             </div>
             <p className="text-xl font-bold" style={{ color: '#D4A574' }}>
-              {formatCurrency(bottle.purchase_price)}
+              {formatFromBase(bottle.purchase_price)}
             </p>
           </div>
         )}
@@ -88,7 +87,7 @@ export default function PricingBreakdown({ bottle }) {
               {t('whiskey.retailPrice')}
             </p>
             <p className="text-lg font-bold" style={{ color: '#D4A574' }}>
-              {formatCurrency(bottle.retail_price)}
+              {formatFromBase(bottle.retail_price)}
             </p>
           </div>
         )}
@@ -100,7 +99,7 @@ export default function PricingBreakdown({ bottle }) {
               {t('whiskey.aftermarketPrice')}
             </p>
             <p className="text-lg font-bold" style={{ color: '#D4A574' }}>
-              {formatCurrency(bottle.aftermarket_price)}
+              {formatFromBase(bottle.aftermarket_price)}
             </p>
           </div>
         )}
@@ -112,7 +111,7 @@ export default function PricingBreakdown({ bottle }) {
               {t('whiskey.collectorValue')}
             </p>
             <p className="text-lg font-bold" style={{ color: '#D4AF37' }}>
-              {formatCurrency(bottle.collector_value)}
+              {formatFromBase(bottle.collector_value)}
             </p>
           </div>
         )}

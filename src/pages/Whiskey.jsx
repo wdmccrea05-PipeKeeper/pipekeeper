@@ -15,7 +15,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import WhiskeyKeeperModuleNav from "@/components/modules/WhiskeyKeeperModuleNav";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { formatCurrency, resolveBottleUnitValue } from "@/components/whiskey/utils/bottleValue";
+import { resolveBottleUnitValue } from "@/components/whiskey/utils/bottleValue";
 import {
   Select,
   SelectContent,
@@ -92,7 +92,7 @@ function BottleGridCard({ bottle, onOpen }) {
 
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm text-[#E0D8C8]">
-            {unitValue > 0 ? formatCurrency(unitValue) : t('common.noValue')}
+            {unitValue > 0 ? formatFromBase(unitValue) : t('common.noValue')}
           </div>
           {bottle.favorite ? (
             <Star className="w-4 h-4 text-[#D4A574]" fill="currentColor" />
@@ -149,7 +149,7 @@ function BottleListRow({ bottle, onOpen }) {
 
           <div className="text-right shrink-0">
             <div className="text-sm text-[#E0D8C8]">
-              {unitValue > 0 ? formatCurrency(unitValue) : t('common.noValue')}
+              {unitValue > 0 ? formatFromBase(unitValue) : t('common.noValue')}
             </div>
             {bottle.favorite ? (
               <Star
@@ -170,7 +170,7 @@ function WhiskeyInner() {
   const { user, isLoading: userLoading } = useCurrentUser();
   const { t } = useTranslation();
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
 
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
