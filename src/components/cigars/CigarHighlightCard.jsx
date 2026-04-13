@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Cigarette, DollarSign, Box, Heart, Clock, Flame, TrendingDown, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { humidorNeedsAttention } from './humidorMaintenanceUtils';
 import { getCollectionInsights } from '@/platform/cigarInsights';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 function StatCard({ icon: Icon, label, value, sub, alert }) {
   return (
@@ -37,6 +38,7 @@ function StatCard({ icon: Icon, label, value, sub, alert }) {
 export default function CigarHighlightCard({ cigars = [], sessions = [], humidors = [] }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const { formatFromBase } = useCurrency();
 
   const totalQty = cigars.reduce((sum, c) => sum + (c.singles_equivalent || c.quantity || 0), 0);
 
@@ -97,7 +99,7 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
         <StatCard
           icon={DollarSign}
           label="Est. Value"
-          value={`$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+          value={formatFromBase(totalValue)}
         />
         <StatCard icon={Box} label="Humidors" value={humidors.length} />
         <StatCard icon={Heart} label="Favorites" value={favoriteCount} />

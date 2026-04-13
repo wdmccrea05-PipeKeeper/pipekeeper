@@ -8,6 +8,7 @@ import { Plus, Trash2, Shield, Droplets, X } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { toast } from 'sonner';
 import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 const STATUS_CONFIG = {
   reserve: {
@@ -50,6 +51,7 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [status, setStatus] = useState(unit.status || 'drinking');
   const [fillLevel, setFillLevel] = useState(unit.fill_level || 'Full');
+  const { formatFromBase } = useCurrency();
   const cfg = STATUS_CONFIG[unit.status] || STATUS_CONFIG.drinking;
   const Icon = cfg.Icon;
 
@@ -116,7 +118,7 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         {unitValue != null && (
-          <span className="text-xs font-semibold" style={{ color: 'rgba(212,175,55,0.8)' }}>${unitValue.toLocaleString()}</span>
+          <span className="text-xs font-semibold" style={{ color: 'rgba(212,175,55,0.8)' }}>{formatFromBase(unitValue)}</span>
         )}
         {!editing && (
           <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setEditing(true)}>Edit</Button>
@@ -134,6 +136,7 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
 
 export default function InventoryManager({ bottle, onClose }) {
   const queryClient = useQueryClient();
+  const { formatFromBase } = useCurrency();
   const [addStatus, setAddStatus] = useState('drinking');
   const [addFill, setAddFill] = useState('Full');
   const [addPrice, setAddPrice] = useState('');
@@ -265,7 +268,7 @@ export default function InventoryManager({ bottle, onClose }) {
           style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}
         >
           <span className="text-sm" style={{ color: 'rgba(212,175,55,0.8)' }}>Inventory Value</span>
-          <span className="text-lg font-bold" style={{ color: '#D4AF37' }}>${Math.round(totalValue).toLocaleString()}</span>
+          <span className="text-lg font-bold" style={{ color: '#D4AF37' }}>{formatFromBase(Math.round(totalValue))}</span>
         </div>
       )}
 

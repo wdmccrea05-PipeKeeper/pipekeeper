@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import BrandLogo from '@/components/branding/BrandLogo';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 const TONE = {
   pipes: '#A35C5C',
@@ -74,6 +75,7 @@ function HighlightRow({ label, value }) {
 
 const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hub' }, ref) => {
   if (!summary) return null;
+  const { formatFromBase } = useCurrency();
 
   const pipeStats = [
     { label: 'Pipes', value: summary?.pipes?.count ?? 0, color: TONE.pipes },
@@ -93,7 +95,7 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
     { label: 'Tastings', value: summary?.total?.tastings ?? 0, color: TONE.sessions },
     {
       label: 'Value',
-      value: `$${Number(summary?.whiskey?.value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      value: formatFromBase(Number(summary?.whiskey?.value || 0)),
       color: TONE.value,
     },
     { label: 'Avg Rating', value: summary?.whiskey?.avgRating || '—', color: '#F59E0B' },
@@ -105,7 +107,7 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
     { label: 'Bottles', value: summary?.whiskey?.count ?? 0, color: TONE.bottles },
     {
       label: 'Total Value',
-      value: `$${Number(summary?.total?.value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      value: formatFromBase(Number(summary?.total?.value || 0)),
       color: TONE.value,
     },
   ];
@@ -243,10 +245,10 @@ export function CollectionInsightsShareModal({ isOpen, onClose, summary, userPro
     const value = Math.round(summary?.total?.value || summary?.whiskey?.value || 0);
 
     const text = variant === 'whiskey'
-      ? `My WhiskeyKeeper collection:\n${bottles} bottle${bottles !== 1 ? 's' : ''}, ${summary?.total?.tastings || 0} tasting${(summary?.total?.tastings || 0) !== 1 ? 's' : ''}.\nCollection value: $${value.toLocaleString()}.`
+      ? `My WhiskeyKeeper collection:\n${bottles} bottle${bottles !== 1 ? 's' : ''}, ${summary?.total?.tastings || 0} tasting${(summary?.total?.tastings || 0) !== 1 ? 's' : ''}.\nCollection value: ${formatFromBase(value)}.`
       : variant === 'pipekeeper'
       ? `My PipeKeeper collection:\n${pipes} pipe${pipes !== 1 ? 's' : ''}, ${blends} blend${blends !== 1 ? 's' : ''}, ${summary?.total?.sessions || 0} sessions logged.`
-      : `My CollectionKeeper stats:\n${pipes} pipe${pipes !== 1 ? 's' : ''}, ${blends} blend${blends !== 1 ? 's' : ''}, ${bottles} bottle${bottles !== 1 ? 's' : ''}.\nTotal collection value: $${value.toLocaleString()}.`;
+      : `My CollectionKeeper stats:\n${pipes} pipe${pipes !== 1 ? 's' : ''}, ${blends} blend${blends !== 1 ? 's' : ''}, ${bottles} bottle${bottles !== 1 ? 's' : ''}.\nTotal collection value: ${formatFromBase(value)}.`;
 
     try {
       await navigator.clipboard.writeText(text);

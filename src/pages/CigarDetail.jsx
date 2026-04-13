@@ -35,6 +35,7 @@ import { getCigarReadinessWithContext } from '@/platform/agingReadiness';
 import { getCigarInventoryMetrics } from '@/platform/cigarInventory';
 import EnrichButton from '@/components/shared/EnrichButton';
 import { calculateCigarValue } from '@/utils/cigarValuation';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -56,11 +57,6 @@ function formatDate(value) {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function formatCurrency(val) {
-  if (!val && val !== 0) return '—';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
 }
 
 function calcAgeMonths(startDate) {
@@ -406,6 +402,7 @@ function CigarDetailInner() {
   const [searchParams] = useSearchParams();
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
+  const { formatFromBase } = useCurrency();
   const id = searchParams.get('id');
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -470,9 +467,9 @@ function CigarDetailInner() {
   const valuation = useMemo(() => (cigar ? calculateCigarValue(cigar) : null), [cigar]);
 
   const displayValue = useMemo(() => {
-    if (valuation?.totalValue) return formatCurrency(valuation.totalValue);
+    if (valuation?.totalValue) return formatFromBase(valuation.totalValue);
     return '—';
-  }, [valuation]);
+  }, [valuation, formatFromBase]);
   const inventoryMetrics = useMemo(
     () => (cigar ? getCigarInventoryMetrics(cigar, sessions) : null),
     [cigar, sessions]

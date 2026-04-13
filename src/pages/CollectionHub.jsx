@@ -28,6 +28,7 @@ import CollectionStoryCard from '@/components/hub/CollectionStoryCard';
 import CombinedSessionModal from '@/components/session/CombinedSessionModal';
 import SmokingLogEditor from '@/components/home/SmokingLogEditor';
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
+import { useCurrency } from '@/lib/currency/useCurrency';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -74,15 +75,6 @@ const MODULE_META = {
     taglineKey: 'hub.cigarkeeperTagline',
   },
 };
-
-function currency(value) {
-  const amount = Number(value) || 0;
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 function SectionTitle({ children, muted = false }) {
   return (
@@ -276,6 +268,7 @@ export default function CollectionHub() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
 
   const [showLogSelector, setShowLogSelector] = useState(false);
   const [showCombinedModal, setShowCombinedModal] = useState(false);
@@ -479,7 +472,7 @@ export default function CollectionHub() {
   const whiskeyStats = [
     { label: t('hub.bottleTypes'), value: isLoading ? '—' : whiskeyMetrics.bottle_types },
     { label: t('hub.totalBottles'), value: isLoading ? '—' : whiskeyMetrics.total_bottles },
-    { label: t('whiskey.collectionValue', 'Est. value'), value: isLoading ? '—' : currency(whiskeyMetrics.collection_value) },
+    { label: t('whiskey.collectionValue', 'Est. value'), value: isLoading ? '—' : formatFromBase(whiskeyMetrics.collection_value) },
   ];
 
   const cigarStats = [
@@ -539,7 +532,7 @@ export default function CollectionHub() {
           <StatCard
             icon={TrendingUp}
             label={t('hub.totalValue')}
-            value={isLoading ? '—' : currency(metrics.totalValue)}
+            value={isLoading ? '—' : formatFromBase(metrics.totalValue)}
             sub={t('hub.acrossActiveCollections')}
             accent="#C89752"
           />
@@ -735,7 +728,7 @@ export default function CollectionHub() {
               <CatalogPlate
                 title={t('hub.mostValuablePipe')}
                 value={metrics.mostValuablePipe.name}
-                subtitle={currency(getPipeValue(metrics.mostValuablePipe))}
+                subtitle={formatFromBase(getPipeValue(metrics.mostValuablePipe))}
                 heroImage={metrics.mostValuablePipe.photos?.[0]}
                 bgImage={metrics.mostValuablePipe.photos?.[0]}
                 accent="#B4824B"
@@ -747,7 +740,7 @@ export default function CollectionHub() {
               <CatalogPlate
                 title={t('hub.topWhiskey')}
                 value={metrics.mostValuableBottle.name}
-                subtitle={currency(getBottleValue(metrics.mostValuableBottle))}
+                subtitle={formatFromBase(getBottleValue(metrics.mostValuableBottle))}
                 heroImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
                 bgImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
                 accent="#B66565"

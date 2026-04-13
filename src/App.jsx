@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { initExchangeRates } from "@/utils/currency";
+import { CurrencyProvider } from "@/lib/currency/useCurrency";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientInstance } from "@/lib/query-client";
 import NavigationTracker from "@/lib/NavigationTracker";
@@ -373,19 +373,17 @@ const AuthenticatedApp = () => {
 };
 
 function App() {
-  useEffect(() => {
-    initExchangeRates();
-  }, []);
-
   return (
     <GlobalErrorBoundary>
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router basename="/">
             <NavigationTracker />
-            <MeasurementProvider>
-              <AuthenticatedApp />
-            </MeasurementProvider>
+            <CurrencyProvider>
+              <MeasurementProvider>
+                <AuthenticatedApp />
+              </MeasurementProvider>
+            </CurrencyProvider>
           </Router>
         </QueryClientProvider>
       </AuthProvider>

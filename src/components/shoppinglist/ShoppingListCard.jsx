@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Share2, Archive, Tag, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
+import { useCurrency } from "@/lib/currency/useCurrency";
 
 const SHOPPING_TYPE_LABEL = {
   restock: "Restock",
@@ -16,6 +17,7 @@ const SHOPPING_TYPE_COLOR = {
 
 export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
   const [isLoading, setIsLoading] = useState(false);
+  const { formatFromBase } = useCurrency();
 
   const typeLabel = {
     blend: "Tobacco Blend",
@@ -118,7 +120,7 @@ export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
 
       {(item.target_price) && (
         <p className="text-xs text-[#E0D8C8]/70 mb-2">
-          <strong>Target Price:</strong> ${item.target_price}
+          <strong>Target Price:</strong> {formatFromBase(item.target_price)}
         </p>
       )}
 
