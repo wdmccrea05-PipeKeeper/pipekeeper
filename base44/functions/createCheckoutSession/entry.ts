@@ -94,6 +94,12 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
 }
 
 Deno.serve(async (req) => {
+  // Validate env vars up-front and log exact missing items
+  if (!Deno.env.get('STRIPE_SECRET_KEY')) {
+    console.error('[createCheckoutSession] FATAL: STRIPE_SECRET_KEY is missing');
+    return Response.json({ error: 'Stripe configuration error. Please contact support.' }, { status: 500 });
+  }
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -110,6 +116,7 @@ Deno.serve(async (req) => {
 
     const priceId = PLAN_TO_STRIPE_PRICE[planKey];
     if (!priceId) {
+      console.error(`[createCheckoutSession] Missing price ID for planKey="${planKey}". Check VITE_STRIPE_* env vars.`);
       return Response.json(
         {
           error: 'Checkout not available for this plan. Please select a different option.',
@@ -158,7 +165,14 @@ Deno.serve(async (req) => {
       customer_update: { address: 'auto' },
     });
 
+    if (!session?.url) {
+      console.error('[createCheckoutSession] Stripe session created but no URL returned. Session ID:', session?.id);
+      throw new Error('Stripe checkout session created without URL');
+    }
+
     return Response.json({
+      ok: true,
+      url: session.url,
       sessionUrl: session.url,
       sessionId: session.id,
       planKey,
