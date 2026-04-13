@@ -2,6 +2,7 @@ import {
   computeCurrentValue,
   buildValuationSnapshot,
 } from '@/components/valuation/valueEngine';
+import { formatCurrency as _formatCurrencyLocale } from '@/components/utils/localeFormatters';
 
 export function toNumber(value) {
   const n = Number(value);
@@ -50,14 +51,7 @@ export function resolveBottleValueSource(bottle) {
 }
 
 export function formatCurrency(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return '$0.00';
-  return n.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return _formatCurrencyLocale(value);
 }
 
 /**

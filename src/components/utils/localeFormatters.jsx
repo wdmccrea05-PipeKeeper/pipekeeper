@@ -2,6 +2,7 @@
  * Locale-aware formatting utilities for numbers, dates, and currency
  * Respects user's selected language (pk_lang from localStorage)
  */
+import { FALLBACK_RATES } from '@/utils/currency';
 
 /**
  * Get locale code from pk_lang localStorage key
@@ -83,25 +84,46 @@ export function formatDateTime(date, includeTime = true) {
 }
 
 /**
- * Format currency with locale-specific format (always 2 decimal places)
- * @param {number} value - Amount to format
- * @param {string} currency - Currency code (default: 'USD')
+ * Format currency with locale-specific format (always 2 decimal places).
+ * Values are assumed to be stored in USD; they are automatically converted
+ * to the user's preferred currency (pk_currency in localStorage) before display.
+ * @param {number} value    - Amount in USD
+ * @param {string} currency - Override currency code (skips user preference)
  */
-export function formatCurrency(value, currency = 'USD') {
+export function formatCurrency(value, currency) {
   if (value === null || value === undefined || isNaN(value)) return '—';
 
   let cur = currency;
-  try {
-    const stored = typeof window !== 'undefined' && window?.localStorage?.getItem('pk_currency');
-    if (stored) cur = stored;
-  } catch {}
+  if (!cur) {
+    try {
+      cur = (typeof window !== 'undefined' && window?.localStorage?.getItem('pk_currency')) || 'USD';
+    } catch {
+      cur = 'USD';
+    }
+  }
+
+  // Convert from USD to the target currency using cached exchange rates
+  let converted = Number(value);
+  if (cur !== 'USD') {
+    try {
+      const raw = typeof window !== 'undefined' && window?.localStorage?.getItem('pk_exchange_rates');
+      if (raw) {
+        const { rates } = JSON.parse(raw);
+        if (rates && rates[cur]) converted = Number(value) * rates[cur];
+      }
+    } catch {}
+    // If no cached rate, apply well-known fallback rates
+    if (converted === Number(value)) {
+      if (FALLBACK_RATES[cur]) converted = Number(value) * FALLBACK_RATES[cur];
+    }
+  }
 
   return new Intl.NumberFormat(getLocale(), {
     style: 'currency',
     currency: cur,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(converted);
 }
 
 /**

@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { initExchangeRates } from "@/utils/currency";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientInstance } from "@/lib/query-client";
 import NavigationTracker from "@/lib/NavigationTracker";
@@ -372,6 +373,10 @@ const AuthenticatedApp = () => {
 };
 
 function App() {
+  useEffect(() => {
+    initExchangeRates();
+  }, []);
+
   return (
     <GlobalErrorBoundary>
       <AuthProvider>
