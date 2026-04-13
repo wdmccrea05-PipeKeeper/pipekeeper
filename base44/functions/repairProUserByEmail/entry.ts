@@ -9,6 +9,34 @@ import { getStripeClient, safeStripeError, stripeSanityCheck } from "./_utils/st
 const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
 const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 
+// All known paid plan price IDs (per-module and bundle keys)
+function getKnownPaidPriceIds() {
+  const vars = [
+    "STRIPE_PRICE_ID_PRO_MONTHLY", "STRIPE_PRICE_ID_PRO_ANNUAL",
+    "VITE_STRIPE_PIPEKEEPER_MONTHLY", "VITE_STRIPE_PIPEKEEPER_ANNUAL",
+    "VITE_STRIPE_WHISKEYKEEPER_MONTHLY", "VITE_STRIPE_WHISKEYKEEPER_ANNUAL",
+    "VITE_STRIPE_CIGARKEEPER_MONTHLY", "VITE_STRIPE_CIGARKEEPER_ANNUAL",
+    "VITE_STRIPE_WINEKEEPER_MONTHLY", "VITE_STRIPE_WINEKEEPER_ANNUAL",
+    "VITE_STRIPE_FOUNDERS_MONTHLY", "VITE_STRIPE_FOUNDERS_ANNUAL",
+    "VITE_STRIPE_THREE_BUNDLE_MONTHLY", "VITE_STRIPE_THREE_BUNDLE_ANNUAL",
+    "VITE_STRIPE_FOUR_BUNDLE_MONTHLY", "VITE_STRIPE_FOUR_BUNDLE_ANNUAL",
+  ];
+  return new Set(vars.map(v => (Deno.env.get(v) || "").trim()).filter(Boolean));
+}
+
+// Derive which modules the plan covers from the plan key or price lookup key
+function modulesFromPlanKey(planKey: string): string[] {
+  const key = String(planKey || "").toLowerCase();
+  if (key.startsWith("pipekeeper_")) return ["pipekeeper"];
+  if (key.startsWith("whiskeykeeper_")) return ["whiskeykeeper"];
+  if (key.startsWith("cigarkeeper_")) return ["cigarkeeper"];
+  if (key.startsWith("winekeeper_")) return ["winekeeper"];
+  if (key.includes("four_module")) return ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"];
+  if (key.includes("three_module")) return ["pipekeeper", "whiskeykeeper", "cigarkeeper"];
+  if (key.includes("founders")) return ["pipekeeper", "whiskeykeeper"];
+  return ["pipekeeper"]; // safe default: at minimum grant pipekeeper access
+}
+
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
 async function isProSubscription(stripeSub, stripe) {
@@ -20,17 +48,20 @@ async function isProSubscription(stripeSub, stripe) {
     const priceId = stripeSub.items?.data?.[0]?.price?.id;
     if (!priceId) return false;
 
-    if (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL) {
-      return true;
-    }
+    // Check against all known paid price IDs (legacy and modern per-module)
+    const knownPaidIds = getKnownPaidPriceIds();
+    if (knownPaidIds.has(priceId)) return true;
 
     const price = await stripe.prices.retrieve(priceId);
 
     const lookupKey = (price.lookup_key || "").toLowerCase();
-    if (lookupKey.includes("pro")) return true;
+    if (lookupKey.includes("pro") || lookupKey.includes("pipekeeper") ||
+        lookupKey.includes("whiskeykeeper") || lookupKey.includes("founders") ||
+        lookupKey.includes("bundle")) return true;
 
     const nickname = (price.nickname || "").toLowerCase();
-    if (nickname.includes("pro")) return true;
+    if (nickname.includes("pro") || nickname.includes("pipekeeper") ||
+        nickname.includes("whiskeykeeper")) return true;
 
     const productId = typeof price.product === "string" ? price.product : price.product?.id;
     if (productId) {
@@ -40,7 +71,9 @@ async function isProSubscription(stripeSub, stripe) {
       if (productMetadataTier === "pro") return true;
 
       const productName = (product.name || "").toLowerCase();
-      if (productName.includes("pro")) return true;
+      if (productName.includes("pro") || productName.includes("pipekeeper") ||
+          productName.includes("whiskeykeeper") || productName.includes("founders") ||
+          productName.includes("bundle")) return true;
     }
 
     return false;
@@ -180,12 +213,32 @@ Deno.serve(async (req) => {
 
     const isPaid = stripeSub.status === "active" || stripeSub.status === "trialing";
 
+    // Determine which modules this subscription covers
+    const priceId = stripeSub.items?.data?.[0]?.price?.id || null;
+    let planKey: string | null = null;
+    try {
+      const price = await stripe.prices.retrieve(priceId || "");
+      planKey = price.lookup_key || null;
+    } catch { /* planKey stays null */ }
+    const activeModules = modulesFromPlanKey(planKey || "");
+    const pipekeeper_paid = activeModules.includes("pipekeeper");
+    const whiskeykeeper_paid = activeModules.includes("whiskeykeeper");
+
     const userPayload = {
+      // Canonical entitlement field — primary source checked by getEntitlementTier
+      entitlement_tier: "pro",
+      // Per-module paid flags — checked by checkFreeTierLimit and isModulePaid
+      pipekeeper_paid,
+      whiskeykeeper_paid,
+      paid_modules_csv: activeModules.join(","),
+      has_paid_access: isPaid,
+      // Legacy fields kept for backward compatibility
       subscription_level: isPaid ? "paid" : "free",
       subscription_status: stripeSub.status,
       subscription_tier: "pro",
       stripe_customer_id: customer.id,
       subscription_provider: "stripe",
+      updated_date: new Date().toISOString(),
     };
 
     // 6. Find or create local Subscription
@@ -214,6 +267,9 @@ Deno.serve(async (req) => {
       stripe_customer_id: customer.id,
       status: stripeSub.status,
       tier: "pro",
+      planKey,
+      modules_csv: activeModules.join(","),
+      primary_module: activeModules[0] || null,
       current_period_start: stripeSub.current_period_start
         ? new Date(stripeSub.current_period_start * 1000).toISOString()
         : null,
@@ -225,6 +281,7 @@ Deno.serve(async (req) => {
       amount: stripeSub.items?.data?.[0]?.price?.unit_amount
         ? stripeSub.items.data[0].price.unit_amount / 100
         : null,
+      updated_date: new Date().toISOString(),
     };
 
     const before = {
