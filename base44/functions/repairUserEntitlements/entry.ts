@@ -347,18 +347,25 @@ Deno.serve(async (req) => {
 
       // ── Step 8: Log repair event (non-fatal) ─────────────────────────────────
       try {
-        await base44.asServiceRole.entities.RepairLog?.create?.({
-          email,
-          user_id: userId,
-          repaired_by: me?.email || "admin",
-          repair_type: "repairUserEntitlements",
-          provider_used: providerUsed,
-          subscription_id: subId,
-          before: JSON.stringify(before),
-          after: JSON.stringify(after),
-          created_date: new Date().toISOString(),
-        });
-      } catch { /* RepairLog entity may not exist — non-fatal */ }
+        const repairLogEntity = base44.asServiceRole.entities.RepairLog;
+        if (repairLogEntity && typeof repairLogEntity.create === "function") {
+          await repairLogEntity.create({
+            email,
+            user_id: userId,
+            repaired_by: me?.email || "admin",
+            repair_type: "repairUserEntitlements",
+            provider_used: providerUsed,
+            subscription_id: subId,
+            before: JSON.stringify(before),
+            after: JSON.stringify(after),
+            created_date: new Date().toISOString(),
+          });
+        } else {
+          console.warn("[repairUserEntitlements] RepairLog entity not available — skipping event log");
+        }
+      } catch (logErr) {
+        console.warn("[repairUserEntitlements] Failed to write repair log (non-fatal):", logErr?.message);
+      }
     }
 
     return Response.json({
