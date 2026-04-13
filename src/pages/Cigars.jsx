@@ -27,6 +27,7 @@ import CigarForm from '@/components/cigars/CigarForm';
 import AddCigarModal from '@/components/cigars/AddCigarModal';
 import HumidorManager from '@/components/cigars/HumidorManager';
 import CollectorGridView from '@/components/ui/CollectorGridView';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 const TABS = ['collection', 'humidors', 'wishlist', 'restock'];
 
@@ -91,6 +92,8 @@ function CigarsInner() {
   const location = useLocation();
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
+  // Subscribe to currency context so value displays re-render when currency changes
+  useCurrency();
 
   const TAB_LABELS = {
     collection: t('cigars.tabCollection', 'Collection'),

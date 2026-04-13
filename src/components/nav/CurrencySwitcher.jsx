@@ -4,7 +4,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { CURRENCY_LABELS, SUPPORTED_CURRENCIES } from '@/lib/currency/currencyConstants';

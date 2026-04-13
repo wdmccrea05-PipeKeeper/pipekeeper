@@ -12,6 +12,7 @@ import { Wrench, Plus, DollarSign, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { parseLocalCalendarDate } from '@/components/utils/schemaCompatibility';
+import { formatCurrency } from '@/components/utils/localeFormatters';
 
 export default function MaintenanceLog({ pipeId, pipeName }) {
   const { t } = useTranslation();
@@ -148,7 +149,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
                   {log.cost && (
                     <span className="flex items-center gap-1">
                       <DollarSign className="w-3 h-3" />
-                      {Number(log.cost).toFixed(2)}
+                      {formatCurrency(Number(log.cost))}
                     </span>
                   )}
                 </div>

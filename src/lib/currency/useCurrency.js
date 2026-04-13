@@ -116,7 +116,7 @@ export function CurrencyProvider({ children }) {
       window.removeEventListener('focus', onFocus);
       clearInterval(timer);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // intentionally empty — this effect runs once on mount to initialize
 
   // -------------------------------------------------------------------------
   // Currency selection

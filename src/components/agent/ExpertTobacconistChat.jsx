@@ -2,17 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SendHorizontal } from 'lucide-react';
 import { buildSessionPlan } from '@/lib/curator/sessionPlanner.js';
 import {
-  pick,
   buildDirectAnswer,
-  buildReasoning,
-  buildInsight,
-  buildNextStep,
   structureResponse,
   buildSessionRecommendation,
   buildGapAnalysis,
   buildReassignmentCandidate,
   buildRedundancyFinding,
-  buildCorrection,
   noDataResponses,
 } from '@/components/curator/curatorVoiceLayer';
 

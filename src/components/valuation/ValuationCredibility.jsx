@@ -92,7 +92,7 @@ export function computeTobaccoValuation(blend) {
   const signals = [];
   if (Number(blend.manual_market_value) > 0) signals.push('Manual market value');
   if (Number(blend.ai_estimated_value) > 0) signals.push('AI-estimated value per oz');
-  if (Number(blend.price_per_oz) > 0) signals.push(`Price per oz: $${Number(blend.price_per_oz).toFixed(2)}`);
+  if (Number(blend.price_per_oz) > 0) signals.push(`Price per oz: ${formatCurrency(Number(blend.price_per_oz))}`);
   if (totalOz > 0) signals.push(`Total quantity: ${totalOz.toFixed(1)} oz`);
   if (blend.production_status) signals.push(`Production: ${blend.production_status}`);
   if (blend.aging_potential) signals.push(`Aging potential: ${blend.aging_potential}`);
