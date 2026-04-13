@@ -15,7 +15,6 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import { formatCurrency } from '@/components/utils/localeFormatters';
 import { subMonths, format } from 'date-fns';
 import { computeCurrentValue, computeRarityScore, computeReplacementDifficulty } from '@/components/valuation/valueEngine';
 import { useCurrency } from '@/lib/currency/useCurrency';
@@ -345,7 +344,7 @@ export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
 export function WhiskeyAnalyticsTab({ bottles }) {
   const { t } = useTranslation();
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
 
   const typeDistribution = useMemo(() => getBottleTypeDistribution(bottles), [bottles]);
   const countryDistribution = useMemo(() => getCountryDistribution(bottles), [bottles]);
@@ -405,15 +404,15 @@ export function WhiskeyAnalyticsTab({ bottles }) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.15)' }}>
             <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Retail Value</p>
-            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatCurrency(Math.round(collectionValue.retail))}</p>
+            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatFromBase(Math.round(collectionValue.retail))}</p>
           </div>
           <div className="p-4 rounded-lg" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}>
             <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Aftermarket Value</p>
-            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatCurrency(Math.round(collectionValue.aftermarket))}</p>
+            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatFromBase(Math.round(collectionValue.aftermarket))}</p>
           </div>
           <div className="p-4 rounded-lg" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}>
             <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Collector Value</p>
-            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatCurrency(Math.round(collectionValue.collector))}</p>
+            <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatFromBase(Math.round(collectionValue.collector))}</p>
           </div>
         </div>
       </div>

@@ -5,7 +5,6 @@ import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { formatCurrency } from "@/components/utils/localeFormatters";
 import {
   calculateCellaredOzFromBlend,
   calculateTobaccoCollectionValue,
@@ -994,7 +993,7 @@ export default function Insights() {
   const { user, hasPaid } = useCurrentUser();
   const navigate = useNavigate();
   // Subscribe to currency context so the component re-renders when the user changes currency
-  const { selectedCurrency } = useCurrency();
+  const { selectedCurrency, formatFromBase } = useCurrency();
   const initialTab = getTabFromUrl();
 
   const highlightRefs = useRef({});
@@ -1129,7 +1128,7 @@ export default function Insights() {
       blends,
       smokingLogs,
       totalCollectionValue,
-      formatCurrency,
+      formatFromBase,
       t
     );
   }, [pipes, blends, smokingLogs, totalCollectionValue, t, selectedCurrency]);
@@ -1325,7 +1324,7 @@ export default function Insights() {
         <StatusCard
           icon={TrendingUp}
           label={t("home.totalValue")}
-          value={formatCurrency(Math.round(totalCollectionValue))}
+          value={formatFromBase(Math.round(totalCollectionValue))}
           accent={CATEGORY_COLORS.value}
           bgImage={analyticsImages.snapshotValue}
         />
@@ -1552,7 +1551,7 @@ export default function Insights() {
                   <HighlightCard
                     title={t("insights.highlightMostValuable")}
                     value={mostValuablePipe.name}
-                    sub={formatCurrency(mostValuablePipe.estimated_value)}
+                    sub={formatFromBase(mostValuablePipe.estimated_value)}
                     accent="#C0392B"
                     icon={Award}
                     patternIndex={3}
@@ -1567,7 +1566,7 @@ export default function Insights() {
                       setActiveStory({
                         title: t("insights.highlightMostValuable"),
                         value: mostValuablePipe.name,
-                        sub: formatCurrency(mostValuablePipe.estimated_value),
+                        sub: formatFromBase(mostValuablePipe.estimated_value),
                         accent: "#C0392B",
                         icon: Award,
                         artifactImage: img,
@@ -1612,7 +1611,7 @@ export default function Insights() {
             {blends.length > 0 && (
               <HighlightCard
                 title={t("insights.highlightCellarValue")}
-                value={formatCurrency(Math.round(totalCollectionValue))}
+                value={formatFromBase(Math.round(totalCollectionValue))}
                 sub={`${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`}
                 accent="#10B981"
                 icon={TrendingUp}
@@ -1627,7 +1626,7 @@ export default function Insights() {
                 onStory={() =>
                   setActiveStory({
                     title: t("insights.highlightCellarValue"),
-                    value: formatCurrency(Math.round(totalCollectionValue)),
+                    value: formatFromBase(Math.round(totalCollectionValue)),
                     sub: `${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`,
                     accent: "#10B981",
                     icon: TrendingUp,

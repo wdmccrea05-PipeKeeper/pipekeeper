@@ -11,7 +11,6 @@ import {
   computeRarityScore,
   DIFFICULTY_LABELS,
 } from '@/components/valuation/valueEngine';
-import { formatCurrency } from '@/components/whiskey/utils/bottleValue';
 import { useCurrency } from '@/lib/currency/useCurrency';
 
 function getBottleCount(bottle) {
@@ -37,7 +36,7 @@ function ValueCard({ title, icon: Icon, iconColor, borderColor, children, emptyM
   );
 }
 
-function BottleRow({ bottle, value, badge, badgeColor }) {
+function BottleRow({ bottle, value, badge, badgeColor, formatFromBase }) {
   return (
     <div className="flex items-center justify-between gap-3 py-2.5 border-b border-white/[0.04] last:border-0 min-w-0">
       <div className="min-w-0 flex-1">
@@ -48,7 +47,7 @@ function BottleRow({ bottle, value, badge, badgeColor }) {
       </div>
       <div className="shrink-0 text-right">
         {value > 0 ? (
-          <p className="text-sm font-bold text-[#F5F1E7] tabular-nums">{formatCurrency(value)}</p>
+          <p className="text-sm font-bold text-[#F5F1E7] tabular-nums">{formatFromBase(value)}</p>
         ) : null}
         {badge && (
           <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: badgeColor?.bg || 'rgba(180,140,75,0.12)', color: badgeColor?.text || '#D4A574', border: `1px solid ${badgeColor?.border || 'rgba(180,140,75,0.22)'}` }}>
@@ -62,7 +61,7 @@ function BottleRow({ bottle, value, badge, badgeColor }) {
 
 export default function WhiskeyValueIntelligence({ bottles = [] }) {
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
   const enriched = useMemo(() => {
     if (!bottles.length) return [];
     return bottles.map(b => ({
@@ -133,10 +132,10 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
       {/* Overview summary row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Value', val: formatCurrency(totalValue), color: '#D4A574' },
+          { label: 'Total Value', val: formatFromBase(totalValue), color: '#D4A574' },
           { label: 'Top 3 Concentration', val: `${concentrationPct}%`, color: concentrationPct >= 70 ? '#f87171' : '#fbbf24' },
-          { label: 'Sealed Value', val: sealedValue > 0 ? formatCurrency(sealedValue) : '—', color: '#4ade80' },
-          { label: 'Open Value', val: openValue > 0 ? formatCurrency(openValue) : '—', color: '#93C5FD' },
+          { label: 'Sealed Value', val: sealedValue > 0 ? formatFromBase(sealedValue) : '—', color: '#4ade80' },
+          { label: 'Open Value', val: openValue > 0 ? formatFromBase(openValue) : '—', color: '#93C5FD' },
         ].map(({ label, val, color }) => (
           <div key={label} className="rounded-xl p-3 min-w-0" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
             <p className="text-xs uppercase tracking-[0.1em] text-[#D8C7A6]/55 mb-1 truncate">{label}</p>
@@ -155,6 +154,7 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
               value={b._value}
               badge={DIFFICULTY_LABELS[b._difficulty]}
               badgeColor={{ bg: 'rgba(239,68,68,0.1)', text: '#fca5a5', border: 'rgba(239,68,68,0.25)' }}
+              formatFromBase={formatFromBase}
             />
           )) : (
             <p className="text-xs text-[#D8C7A6]/50 text-center py-4">No strong hold candidates in your collection</p>
@@ -170,6 +170,7 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
               value={b._value}
               badge={b._rarity <= 15 ? 'Common' : 'Low Risk'}
               badgeColor={{ bg: 'rgba(16,185,129,0.1)', text: '#6ee7b7', border: 'rgba(16,185,129,0.25)' }}
+              formatFromBase={formatFromBase}
             />
           )) : (
             <p className="text-xs text-[#D8C7A6]/50 text-center py-4">All bottles have moderate to high hold signals</p>
@@ -185,6 +186,7 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
               value={b._value}
               badge={DIFFICULTY_LABELS[b._difficulty]}
               badgeColor={{ bg: 'rgba(251,191,36,0.1)', text: '#fbbf24', border: 'rgba(251,191,36,0.25)' }}
+              formatFromBase={formatFromBase}
             />
           )) : (
             <p className="text-xs text-[#D8C7A6]/50 text-center py-4">No bottles with high replacement risk</p>
@@ -209,7 +211,7 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
                 <div key={b.id} className="flex items-center justify-between gap-2 min-w-0">
                   <span className="text-xs text-[#D8C7A6]/65 shrink-0">#{i + 1}</span>
                   <span className="text-xs text-[#F5F1E7] flex-1 min-w-0 truncate">{b.name}</span>
-                  <span className="text-xs font-semibold text-[#93C5FD] tabular-nums shrink-0">{formatCurrency(b._value * b._qty)}</span>
+                  <span className="text-xs font-semibold text-[#93C5FD] tabular-nums shrink-0">{formatFromBase(b._value * b._qty)}</span>
                 </div>
               ))}
             </div>
@@ -223,14 +225,14 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
               <p className="text-xs uppercase tracking-[0.1em] text-[#4ade80]/70 mb-1">Sealed</p>
-              <p className="text-2xl font-bold text-[#4ade80] tabular-nums">{formatCurrency(sealedValue)}</p>
+              <p className="text-2xl font-bold text-[#4ade80] tabular-nums">{formatFromBase(sealedValue)}</p>
               <p className="text-xs text-[#D8C7A6]/50 mt-1">
                 {totalValue > 0 ? `${Math.round((sealedValue / totalValue) * 100)}% of collection value` : '—'}
               </p>
             </div>
             <div className="text-center">
               <p className="text-xs uppercase tracking-[0.1em] text-[#93C5FD]/70 mb-1">Open</p>
-              <p className="text-2xl font-bold text-[#93C5FD] tabular-nums">{formatCurrency(openValue)}</p>
+              <p className="text-2xl font-bold text-[#93C5FD] tabular-nums">{formatFromBase(openValue)}</p>
               <p className="text-xs text-[#D8C7A6]/50 mt-1">
                 {totalValue > 0 ? `${Math.round((openValue / totalValue) * 100)}% of collection value` : '—'}
               </p>

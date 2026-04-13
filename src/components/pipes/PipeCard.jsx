@@ -6,14 +6,13 @@ import { Heart, Pencil } from "lucide-react";
 import { motion } from "framer-motion";
 import PipeShapeIcon from "./PipeShapeIcon";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatCurrency } from "@/components/utils/localeFormatters";
 import LuxuryObjectFrame from "@/components/ui/LuxuryObjectFrame";
 import { useCurrency } from "@/lib/currency/useCurrency";
 
 export default function PipeCard({ pipe, onClick, onToggleFavorite, onEdit }) {
   const { t } = useTranslation();
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
   const mainPhoto = pipe.photos?.[0];
   
   return (
@@ -83,7 +82,7 @@ export default function PipeCard({ pipe, onClick, onToggleFavorite, onEdit }) {
                 color: "#fff"
               }}
             >
-              {formatCurrency(+pipe.estimated_value)}
+              {formatFromBase(+pipe.estimated_value)}
             </Badge>
           </div>
         )}

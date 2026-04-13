@@ -6,7 +6,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Plus, Flame, Glasses, BarChart3 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { formatCurrency } from '@/components/utils/localeFormatters';
+
 import { selectWhiskeyMetrics } from '@/lib/collection/whiskeySelectors';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
@@ -23,7 +23,7 @@ function WhiskeyKeeperInner() {
   const { user } = useCurrentUser();
   const [showAddModal, setShowAddModal] = useState(false);
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
 
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles-summary', user?.email],
@@ -119,7 +119,7 @@ function WhiskeyKeeperInner() {
               {t('whiskey.collectionValue', 'Total Value')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {formatCurrency(Math.round(whiskeyMetrics.collection_value))}
+              {formatFromBase(Math.round(whiskeyMetrics.collection_value))}
             </p>
           </div>
           <div className="space-y-2">

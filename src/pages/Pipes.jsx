@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useNavigate } from "@/components/utils/navigation";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatCurrency } from "@/components/utils/localeFormatters";
+
 import AddFlowModal from "@/components/addflow/AddFlowModal";
 import { useCurrency } from "@/lib/currency/useCurrency";
 
@@ -40,7 +40,7 @@ const ALL_MATERIALS = "__ALL_MATERIALS__";
 export default function PipesPage() {
   const { t } = useTranslation();
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
   const [showForm, setShowForm] = useState(false);
   const [editingPipe, setEditingPipe] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -219,7 +219,7 @@ export default function PipesPage() {
           <div>
             <PkPageTitle>{t("pipesPage.myPipes")}</PkPageTitle>
             <PkText className="mt-1">
-              {pipes.length} {t("pipesPage.pipes")} {totalValue > 0 && `• ${formatCurrency(totalValue)} ${t("pipesPage.totalValue")}`}
+              {pipes.length} {t("pipesPage.pipes")} {totalValue > 0 && `• ${formatFromBase(totalValue)} ${t("pipesPage.totalValue")}`}
             </PkText>
           </div>
           <div className="flex flex-wrap gap-2">

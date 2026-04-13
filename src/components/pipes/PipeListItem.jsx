@@ -5,13 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Heart, Calendar, MapPin, Pencil } from "lucide-react";
 import PipeShapeIcon from "./PipeShapeIcon";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatCurrency } from "@/components/utils/localeFormatters";
 import { useCurrency } from "@/lib/currency/useCurrency";
 
 export default function PipeListItem({ pipe, onClick, onToggleFavorite, onEdit }) {
   const { t } = useTranslation();
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { formatFromBase } = useCurrency();
   const mainPhoto = pipe.photos?.[0];
   
   return (
@@ -63,7 +62,7 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite, onEdit }
               {pipe.estimated_value && (
                 <div className="text-right shrink-0">
                   <p className="text-xs text-emerald-400">{t("forms.value")}</p>
-                  <p className="font-semibold text-emerald-300">{formatCurrency(+pipe.estimated_value)}</p>
+                  <p className="font-semibold text-emerald-300">{formatFromBase(+pipe.estimated_value)}</p>
                 </div>
               )}
             </div>
