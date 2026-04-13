@@ -147,15 +147,16 @@ Deno.serve(async (req) => {
       },
     });
 
+    if (!session?.url) {
+      console.error("[createCheckoutSessionV2] Stripe session created but no URL returned. Session ID:", session?.id);
+      throw new Error("Stripe checkout session created without URL");
+    }
+
     return Response.json({ ok: true, url: session.url });
   } catch (error) {
     const msg = error?.message || String(error);
     console.error("[createCheckoutSessionV2] Error:", msg);
-    
-    // Return fallback flag
-    return Response.json({
-      ok: false,
-      fallback: true
-    });
+
+    return Response.json({ ok: false, error: "Unable to start checkout. Please try again." });
   }
 });

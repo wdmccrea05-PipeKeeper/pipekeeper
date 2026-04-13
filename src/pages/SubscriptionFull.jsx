@@ -184,15 +184,28 @@ export default function SubscriptionFull() {
 
     setMessage("");
     try {
-      const response = await base44.functions.invoke('createCheckoutSession', {
+      const response = await base44.functions.invoke('createCheckoutSessionV2', {
         tier: tier || selectedTier,
         interval: interval || selectedInterval,
       });
-      if (response.data?.url) {
-        const w = window.open(response.data.url, "_blank", "noopener,noreferrer");
-        if (!w) window.location.assign(response.data.url);
-      } else {
+
+      const url =
+        response?.data?.url ||
+        response?.data?.checkoutUrl ||
+        response?.data?.sessionUrl ||
+        response?.url ||
+        response?.checkoutUrl ||
+        response?.sessionUrl;
+
+      if (!url) {
+        console.error("[SubscriptionFull] No checkout URL in response:", response);
         setMessage(t("subscriptionFull.checkoutError"));
+        return;
+      }
+
+      const popup = window.open(url, "_blank", "noopener,noreferrer");
+      if (popup === null) {
+        window.location.assign(url);
       }
     } catch (e) {
       console.error("[SubscriptionFull] Checkout error:", e);
