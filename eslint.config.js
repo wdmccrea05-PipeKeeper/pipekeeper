@@ -5,6 +5,21 @@ import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginUnusedImports from "eslint-plugin-unused-imports";
 
 export default [
+  // Test files — declare Vitest globals so linters don't flag describe/test/expect/etc.
+  {
+    files: [
+      "src/components/**/__tests__/**/*.{js,mjs,cjs,jsx}",
+      "src/pages/**/__tests__/**/*.{js,mjs,cjs,jsx}",
+      "src/components/**/*.test.{js,mjs,cjs,jsx}",
+      "src/pages/**/*.test.{js,mjs,cjs,jsx}",
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.vitest,
+      },
+    },
+  },
   {
     files: [
       "src/components/**/*.{js,mjs,cjs,jsx}",
