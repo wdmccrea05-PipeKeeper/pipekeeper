@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, BookImage, Check, Globe, Loader2, Search, Upload, X } from 'lucide-react';
+import { ArrowLeft, BookImage, Check, Globe, Image as ImageIcon, Loader2, Search, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
@@ -86,6 +86,32 @@ const CONFIDENCE_CHIP_STYLES = {
   Medium: { background: 'rgba(180,140,75,0.18)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.35)' },
   Low:    { background: 'rgba(120,80,60,0.18)',  color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(120,80,60,0.3)' },
 };
+
+/** Thumbnail that shows a placeholder when the image fails to load */
+function SuggestionThumb({ imageUrl, title }) {
+  const [failed, setFailed] = useState(false);
+
+  if (!imageUrl || failed) {
+    return (
+      <div
+        className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center"
+        style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
+      >
+        <ImageIcon className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.25)' }} />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      alt={title || 'Suggested image'}
+      className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
+      style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 /**
  * Inline component that fetches and displays trusted image suggestions for the
@@ -180,23 +206,8 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                 borderRadius: 18,
               }}
             >
-              {/* Thumbnail */}
-              {img.imageUrl ? (
-                <img
-                  src={img.imageUrl}
-                  alt={img.title || 'Suggested image'}
-                  className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
-                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                />
-              ) : (
-                <div
-                  className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center"
-                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
-                >
-                  <Search className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.2)' }} />
-                </div>
-              )}
+              {/* Thumbnail — stateful so failed loads show a placeholder */}
+              <SuggestionThumb imageUrl={img.imageUrl} title={img.title} />
 
               {/* Info */}
               <div className="flex-1 min-w-0">
@@ -449,8 +460,6 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
       // If we have a quick record ID, update it instead of creating a new one
       if (finalData._quickRecord?.id) {
-        // For bottles: only update fields that exist in the Bottle entity schema
-        // (bottle_status, bottle_storage, bottles_owned etc. are not Bottle entity fields)
         const bottleSafeInventory = itemType === 'bottle'
           ? cleanObject({ purchase_price: inventoryPayload.purchase_price })
           : inventoryPayload;
