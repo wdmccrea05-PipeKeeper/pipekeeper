@@ -190,6 +190,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
         </div>
         {fetched && (
           <button
+            type="button"
             onClick={handleSearchAgain}
             className="text-xs px-2.5 py-1 rounded-full hover:bg-white/10 transition-colors"
             style={{ color: 'rgba(180,140,75,0.8)', border: '1px solid rgba(180,140,75,0.2)' }}
@@ -269,6 +270,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
 
               {/* Action button */}
               <Button
+                type="button"
                 size="sm"
                 onClick={() => onSelectImage(img.imageUrl)}
                 style={{
@@ -326,7 +328,7 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
     >
       <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(180,140,75,0.12)' }}>
         <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>Browse Logo Library</p>
-        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10">
+        <button type="button" onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10">
           <X className="w-3.5 h-3.5" style={{ color: 'rgba(224,216,200,0.6)' }} />
         </button>
       </div>
@@ -358,6 +360,7 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
         <div className="grid grid-cols-3 gap-2 p-3 max-h-52 overflow-y-auto">
           {logos.map((logo) => (
             <button
+              type="button"
               key={logo.id}
               onClick={() => onSelect(logo.logo_url)}
               className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-white/[0.06] transition-colors"
