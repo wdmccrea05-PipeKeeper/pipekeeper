@@ -911,7 +911,7 @@ export function computeOpenVsHoldDecision(item, moduleKey, collectionContext = {
     if (status === 'discontinued') rationale.push('Discontinued production — sealed examples are increasingly scarce');
     if (status === 'vintage') rationale.push('Vintage release with fixed supply');
     if (inputs?.age >= 25) rationale.push(`${inputs.age}-year age statement commands a significant hold premium`);
-    if (isHighValue) rationale.push(`Value (${currentValue > 0 ? '$' + Math.round(currentValue) : '—'}) is above your collection median — holding preserves maximum optionality`);
+    if (isHighValue) rationale.push(`Value (${currentValue > 0 ? Math.round(currentValue) + ' USD' : '—'}) is above your collection median — holding preserves maximum optionality`);
     if (rarity >= 70) rationale.push(`High rarity score (${rarity}/100) — collector demand may increase over time`);
 
     // Strong open signals
