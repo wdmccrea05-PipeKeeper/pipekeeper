@@ -209,7 +209,7 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   if (totalValue > 0) {
     cards.push({
       title: 'Collection Value',
-      value: totalValue >= 1000 ? `$${(totalValue / 1000).toFixed(1)}k` : fmt(totalValue),
+      value: fmt(totalValue),
       sub: 'Estimated total collection value',
       accent: '#10B981',
       icon: TrendingUp,

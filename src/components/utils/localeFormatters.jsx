@@ -3,7 +3,6 @@
  * Respects user's selected language (pk_lang from localStorage)
  */
 import { getEffectiveRates, getCurrentDisplayCurrency } from '@/lib/currency/exchangeRateStore';
-import { FALLBACK_RATES } from '@/lib/currency/currencyConstants';
 import { convertFromBase } from '@/lib/currency/convertCurrency';
 
 /**

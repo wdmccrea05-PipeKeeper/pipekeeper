@@ -7,6 +7,7 @@ import jsPDF from 'jspdf';
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from 'sonner';
+import { formatCurrency } from '@/components/utils/localeFormatters';
 
 export default function PipeExporter() {
   const { t } = useTranslation();
@@ -106,7 +107,7 @@ export default function PipeExporter() {
       // Summary
       const totalValue = pipes.reduce((sum, p) => sum + (Number(p.estimated_value) || 0), 0);
       const totalPurchase = pipes.reduce((sum, p) => sum + (Number(p.purchase_price) || 0), 0);
-      const fmtMoney = (n) => `$${Number(n).toFixed(2)}`;
+      const fmtMoney = (n) => formatCurrency(Number(n));
 
       doc.text(`${t("pipeExporter.totalPurchaseValue")} ${fmtMoney(totalPurchase)}`, 20, 58);
       doc.text(`${t("pipeExporter.currentEstimatedValue")} ${fmtMoney(totalValue)}`, 20, 64);

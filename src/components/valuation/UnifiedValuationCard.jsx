@@ -25,7 +25,7 @@
 import React, { useState } from 'react';
 import {
   TrendingUp, TrendingDown, Minus, ShieldCheck, Unlock, HelpCircle,
-  PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle,
+  PlusCircle, Eye, ChevronDown, ChevronUp, Zap, AlertTriangle,
   RefreshCw, Settings, MapPin, Globe, AlertCircle, Loader2, Sparkles,
 } from 'lucide-react';
 import { useCurrency } from '@/lib/currency/useCurrency';

@@ -9,10 +9,12 @@ import { DollarSign, Loader2, CheckCircle2, XCircle, Info } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isLegacyPremium } from "@/components/utils/premiumAccess";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { useCurrency } from "@/lib/currency/useCurrency";
 
 export default function TobaccoValueEstimator({ blends, user, onComplete }) {
   const { subscription, hasPro } = useCurrentUser();
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
   const [selectedBlends, setSelectedBlends] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState(null);
@@ -177,7 +179,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
                               </p>
                             </div>
                             <p className="text-emerald-400 font-semibold ml-2">
-                              ${r.estimated_value?.toFixed(2)}
+                              {formatFromBase(r.estimated_value)}
                             </p>
                           </div>
                         ))}

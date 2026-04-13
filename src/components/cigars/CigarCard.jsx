@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Cigarette, Heart, Package, Star } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 const BODY_LABELS = {
   mild: 'Mild',
@@ -41,6 +42,7 @@ function MiniTag({ children, tone = 'default' }) {
 export default function CigarCard({ cigar, onToggleFavorite }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
 
   const photo = Array.isArray(cigar?.photos) ? cigar.photos[0] : cigar?.photos || '';
 
@@ -142,7 +144,7 @@ export default function CigarCard({ cigar, onToggleFavorite }) {
               {cigar?.estimated_value > 0 ? 'Est. Value' : 'Purchase'}
             </span>
             <span className="text-sm font-bold text-[#D4A574]">
-              ${(cigar?.estimated_value || cigar?.purchase_price || 0).toFixed(2)}
+              {formatFromBase(cigar?.estimated_value || cigar?.purchase_price || 0)}
             </span>
           </div>
         )}

@@ -994,7 +994,7 @@ export default function Insights() {
   const { user, hasPaid } = useCurrentUser();
   const navigate = useNavigate();
   // Subscribe to currency context so the component re-renders when the user changes currency
-  useCurrency();
+  const { selectedCurrency } = useCurrency();
   const initialTab = getTabFromUrl();
 
   const highlightRefs = useRef({});
@@ -1132,7 +1132,7 @@ export default function Insights() {
       formatCurrency,
       t
     );
-  }, [pipes, blends, smokingLogs, totalCollectionValue, t]);
+  }, [pipes, blends, smokingLogs, totalCollectionValue, t, selectedCurrency]);
 
   const analyticsImages = useMemo(() => {
     const { pipeImgs, blendImgs, allImgs } = gatherCollectionImages(pipes, blends);
