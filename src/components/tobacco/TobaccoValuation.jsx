@@ -11,7 +11,7 @@ import ProUpgradeModal from "@/components/subscription/ProUpgradeModal";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatCurrency } from "@/components/utils/localeFormatters";
+import { useCurrency } from "@/lib/currency/useCurrency";
 import {
   computeBlendReplacementDifficulty,
   computeBlendStrategy,
@@ -139,6 +139,7 @@ export { ReplacementDifficultyPanel };
 export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
   const { t } = useTranslation();
   const { subscription, hasPro, hasPremium } = useCurrentUser();
+  const { formatFromBase } = useCurrency();
   const [showProModal, setShowProModal] = useState(false);
   const [estimating, setEstimating] = useState(false);
   const normalizedSources = normalizeEvidenceSources(blend?.ai_evidence_sources);
@@ -287,7 +288,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
               <div className="space-y-4 rounded-lg p-4" style={INNER_PANEL_STYLE}>
                 <div>
                   <p className="text-xs text-[#e8d5b7]/50 mb-1">{t("tobaccoValuation.estimatedValuePerOz")}</p>
-                  <p className="text-2xl font-bold text-[#e8d5b7]">{formatCurrency(blend.ai_estimated_value)}</p>
+                  <p className="text-2xl font-bold text-[#e8d5b7]">{formatFromBase(blend.ai_estimated_value)}</p>
                   <p className="text-xs text-[#e8d5b7]/40 mt-1">{t("tobaccoValuation.aiAssistedEstimate")}</p>
                 </div>
 
@@ -295,7 +296,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                   <div>
                     <p className="text-xs text-[#e8d5b7]/50 mb-1">{t("tobaccoValuation.estimatedRange")}</p>
                     <p className="text-lg text-[#e8d5b7]">
-                      {formatCurrency(blend.ai_value_range_low)} - {formatCurrency(blend.ai_value_range_high)}
+                      {formatFromBase(blend.ai_value_range_low)} - {formatFromBase(blend.ai_value_range_high)}
                     </p>
                   </div>
                 ) : null}
@@ -356,7 +357,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                         {blend.ai_projection_12m ? (
                           <div className="rounded-lg p-3 bg-black/15 border border-[rgba(140,105,65,0.22)]">
                             <p className="text-xs text-[#e8d5b7]/50 mb-1">12 {t("tobaccoValuation.months")}</p>
-                            <p className="text-lg font-bold text-emerald-400">{formatCurrency(blend.ai_projection_12m)}</p>
+                            <p className="text-lg font-bold text-emerald-400">{formatFromBase(blend.ai_projection_12m)}</p>
                             <p className="text-xs text-[#e8d5b7]/30 mt-1">{t("tobaccoValuation.notGuaranteed")}</p>
                           </div>
                         ) : null}
@@ -364,7 +365,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
                         {blend.ai_projection_36m ? (
                           <div className="rounded-lg p-3 bg-black/15 border border-[rgba(140,105,65,0.22)]">
                             <p className="text-xs text-[#e8d5b7]/50 mb-1">36 {t("tobaccoValuation.months")}</p>
-                            <p className="text-lg font-bold text-emerald-400">{formatCurrency(blend.ai_projection_36m)}</p>
+                            <p className="text-lg font-bold text-emerald-400">{formatFromBase(blend.ai_projection_36m)}</p>
                             <p className="text-xs text-[#e8d5b7]/30 mt-1">{t("tobaccoValuation.notGuaranteed")}</p>
                           </div>
                         ) : null}
