@@ -74,8 +74,8 @@ function HighlightRow({ label, value }) {
 }
 
 const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hub' }, ref) => {
-  if (!summary) return null;
   const { formatFromBase } = useCurrency();
+  if (!summary) return null;
 
   const pipeStats = [
     { label: 'Pipes', value: summary?.pipes?.count ?? 0, color: TONE.pipes },
@@ -215,6 +215,7 @@ CollectionInsightsCard.displayName = 'CollectionInsightsCard';
 
 export function CollectionInsightsShareModal({ isOpen, onClose, summary, userProfile, variant = 'hub' }) {
   const cardRef = React.useRef(null);
+  const { formatFromBase } = useCurrency();
 
   if (!isOpen) return null;
 
