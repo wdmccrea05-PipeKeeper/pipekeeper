@@ -30,7 +30,7 @@ export default function WhiskeyInsightsPage() {
   const [activeTab, setActiveTab] = useState('summary');
   const highlightRefs = useRef({});
 
-  const { data: bottles = [] } = useQuery({
+  const { data: bottles = [], isLoading: bottlesLoading } = useQuery({
     queryKey: ['bottles', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
@@ -43,7 +43,7 @@ export default function WhiskeyInsightsPage() {
     staleTime: 30_000,
   });
 
-  const { data: tastingLogs = [] } = useQuery({
+  const { data: tastingLogs = [], isLoading: logsLoading } = useQuery({
     queryKey: ['tasting-logs', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
@@ -56,7 +56,7 @@ export default function WhiskeyInsightsPage() {
     staleTime: 30_000,
   });
 
-  const { data: inventoryUnits = [] } = useQuery({
+  const { data: inventoryUnits = [], isLoading: inventoryLoading } = useQuery({
     queryKey: ['whiskey-inventory', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
@@ -68,6 +68,8 @@ export default function WhiskeyInsightsPage() {
     enabled: !!user?.email,
     staleTime: 30_000,
   });
+
+  const isDataLoading = !!user?.email && (bottlesLoading || logsLoading || inventoryLoading);
 
   // Canonical whiskey metrics via shared selector layer — single source of truth
   const whiskeyMetrics = useMemo(
@@ -271,7 +273,7 @@ export default function WhiskeyInsightsPage() {
     return null;
   }
 
-  if (bottles.length === 0 && tastingLogs.length === 0 && inventoryUnits.length === 0) {
+  if (bottles.length === 0 && tastingLogs.length === 0 && inventoryUnits.length === 0 && !isDataLoading) {
     return (
       <div
         className="rounded-[24px] p-12 text-center"

@@ -25,8 +25,8 @@ export default function OnlineImageSearchModal({
     >
       <div
         className="w-full max-w-4xl rounded-2xl overflow-hidden flex flex-col"
-        style={{ maxHeight: 'min(85vh, 680px)' }}
         style={{
+          maxHeight: 'min(85vh, 680px)',
           background:
             'linear-gradient(135deg, rgba(42, 31, 24, 0.98), rgba(24, 17, 12, 0.99))',
           border: '1px solid rgba(180,140,75,0.25)',
