@@ -20,7 +20,7 @@ export default function CurrencySwitcher({ className = '' }) {
   return (
     <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
       <SelectTrigger
-        className={`h-9 min-w-[90px] sm:min-w-[110px]
+        className={`h-9 min-w-[72px]
           bg-[rgba(28,21,16,0.9)]
           text-[#F5F1E7]
           border border-[rgba(180,140,75,0.35)]
@@ -29,7 +29,7 @@ export default function CurrencySwitcher({ className = '' }) {
           focus:ring-1 focus:ring-[#D4A574]
           ${className}`}
       >
-        <SelectValue />
+        <span className="truncate text-sm font-medium">{selectedCurrency}</span>
       </SelectTrigger>
       <SelectContent className="bg-[#111] border-[rgba(212,175,55,0.2)]">
         {SUPPORTED_CURRENCIES.map((code) => (
