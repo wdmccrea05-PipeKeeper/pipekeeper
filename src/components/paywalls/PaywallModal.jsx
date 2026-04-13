@@ -138,6 +138,7 @@ function BundleUserView({ onClose, onManage }) {
 
 function ExistingSubscriberView({
   subscriptionState,
+  user,
   onClose,
   onManage,
 }) {
@@ -166,9 +167,11 @@ function ExistingSubscriberView({
         // handleBundleUpgrade cancels the existing sub before we open bundle checkout.
         // We import base44 lazily to avoid circular deps.
         const { base44 } = await import('@/api/base44Client');
-        const subs = await base44.entities.Subscription.filter({
-          user_id: undefined,
-        }).catch(() => []);
+        const userId = user?.id || user?.auth_user_id;
+        const email = user?.email;
+        let subs = [];
+        if (userId) subs = await base44.entities.Subscription.filter({ user_id: userId }).catch(() => []);
+        if (subs.length === 0 && email) subs = await base44.entities.Subscription.filter({ user_email: email }).catch(() => []);
 
         // find cancelable Stripe subscription IDs
         const cancelableIds = (Array.isArray(subs) ? subs : [])
@@ -468,6 +471,7 @@ export default function PaywallModal({
           {!subscriptionState.hasBundle && !freeUser && (
             <ExistingSubscriberView
               subscriptionState={subscriptionState}
+              user={user}
               onClose={onClose}
               onManage={onManage}
             />

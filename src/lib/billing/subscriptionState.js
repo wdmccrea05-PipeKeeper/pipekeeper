@@ -98,9 +98,7 @@ export function getUserSubscriptionState({
     const hasBundlePlanKey = planKey && BUNDLE_PLAN_KEYS.has(planKey);
     const hasFounderEntitlement =
       entitlements?.pro_founders_pipe_whiskey === true ||
-      Array.isArray(user?.entitlements)
-        ? user?.entitlements?.includes?.('pro_founders_pipe_whiskey')
-        : false;
+      (Array.isArray(user?.entitlements) && user.entitlements.includes('pro_founders_pipe_whiskey'));
 
     if (isFoundingMember || hasBundlePlanKey || hasFounderEntitlement) {
       hasBundle = true;

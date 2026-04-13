@@ -25,9 +25,10 @@ function pickCurrentPlanKey(activePlanKeys, moduleKey) {
  * Matches the billing term of the user's existing plan when possible.
  */
 function pickBundlePlanKey(activePlanKeys) {
-  // If the user is on an annual plan, prefer annual bundle
-  const hasAnnual = activePlanKeys.some((k) => k.endsWith('_annual'));
-  return hasAnnual ? 'founders_bundle_annual' : 'founders_bundle_annual'; // always annual for bundle
+  // If the user is on a monthly plan, offer monthly bundle; otherwise prefer annual
+  const hasMonthlyOnly =
+    activePlanKeys.length > 0 && activePlanKeys.every((k) => k.endsWith('_monthly'));
+  return hasMonthlyOnly ? 'founders_bundle_monthly' : 'founders_bundle_annual';
 }
 
 /**

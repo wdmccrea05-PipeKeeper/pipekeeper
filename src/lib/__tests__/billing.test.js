@@ -210,6 +210,24 @@ describe('getAvailableUpgradeOptions', () => {
     expect(addOpt.actionType).toBe('add_complementary_module');
   });
 
+  it('upgrade_to_bundle option for PK monthly Pro uses founders_bundle_monthly', () => {
+    const state = stateFor([makeSub('pipekeeper_pro_monthly')]);
+    const options = getAvailableUpgradeOptions(state);
+    const bundleOpt = options.find((o) => o.action === 'upgrade_to_bundle');
+
+    expect(bundleOpt).toBeDefined();
+    expect(bundleOpt.targetPlanKey).toBe('founders_bundle_monthly');
+  });
+
+  it('upgrade_to_bundle option for PK annual Pro uses founders_bundle_annual', () => {
+    const state = stateFor([makeSub('pipekeeper_pro_annual')]);
+    const options = getAvailableUpgradeOptions(state);
+    const bundleOpt = options.find((o) => o.action === 'upgrade_to_bundle');
+
+    expect(bundleOpt).toBeDefined();
+    expect(bundleOpt.targetPlanKey).toBe('founders_bundle_annual');
+  });
+
   it('bundle option has correct description for WK Pro user', () => {
     const state = stateFor([makeSub('whiskeykeeper_pro_annual')]);
     const options = getAvailableUpgradeOptions(state);
