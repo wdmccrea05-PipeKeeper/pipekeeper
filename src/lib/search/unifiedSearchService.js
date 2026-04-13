@@ -19,6 +19,7 @@ import { base44 } from '@/api/base44Client';
 import {
   buildQuickAddPrompt,
   buildImageSearchPrompt,
+  buildImageSearchFallbackPrompt,
   QUICK_ADD_RESPONSE_SCHEMA,
   IMAGE_SEARCH_RESPONSE_SCHEMA,
 } from './searchQueries.js';
@@ -100,7 +101,7 @@ export async function searchForRecord(query, itemType, options = {}) {
  * @returns {Promise<{ results: Object[], noResults: boolean }>}
  */
 export async function searchForImages(entityType, fields = {}, options = {}) {
-  const { maxResults = 5 } = options;
+  const { maxResults = 6 } = options;
 
   const hasMinimumFields =
     fields.name || fields.distillery || fields.maker || fields.manufacturer;
@@ -111,14 +112,26 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
 
   const llmResult = await callLLM(prompt, IMAGE_SEARCH_RESPONSE_SCHEMA);
 
-  if (!llmResult || !Array.isArray(llmResult.images) || llmResult.images.length === 0) {
-    return { results: [], noResults: true };
+  let rawImages = (llmResult?.images || []).filter((img) => img?.image_url);
+
+  // Fallback: if fewer than 3 results were returned, run a broader query and merge
+  if (rawImages.length < 3) {
+    const fallbackPrompt = buildImageSearchFallbackPrompt(entityType, fields);
+    const fallbackResult = await callLLM(fallbackPrompt, IMAGE_SEARCH_RESPONSE_SCHEMA);
+    const fallbackImages = (fallbackResult?.images || []).filter((img) => img?.image_url);
+    rawImages = [...rawImages, ...fallbackImages];
   }
 
-  // Filter out results that lack an image_url
-  const validImages = llmResult.images.filter((img) => img?.image_url);
+  if (rawImages.length === 0) return { results: [], noResults: true };
 
-  if (validImages.length === 0) return { results: [], noResults: true };
+  // Deduplicate by exact image URL (case-insensitive)
+  const seenUrls = new Set();
+  const dedupedImages = rawImages.filter((img) => {
+    const key = img.image_url.toLowerCase();
+    if (seenUrls.has(key)) return false;
+    seenUrls.add(key);
+    return true;
+  });
 
   // Build a query string for ranking from the available fields
   const rankQuery = [
@@ -130,7 +143,12 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
     .filter(Boolean)
     .join(' ');
 
-  const normalized = validImages.map((img) => normalizeImageResult(img));
+  const normalized = dedupedImages.map((img) => {
+    const result = normalizeImageResult(img);
+    // Honour the LLM's is_exact_match hint (rankResults may override it upward too)
+    if (img.is_exact_match) result.isExactMatch = true;
+    return result;
+  });
   const ranked = rankResults(rankQuery, normalized, 'image');
 
   // For pipes, always mark results as reference images

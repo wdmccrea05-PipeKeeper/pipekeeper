@@ -293,40 +293,76 @@ export const QUICK_ADD_RESPONSE_SCHEMA = {
  * @param {Object} fields
  * @returns {string}
  */
-export function buildImageSearchPrompt(entityType, fields = {}) {
-  const { name, distillery, maker, manufacturer, region, country } = fields;
+export function buildImageSearchPrompt(entityType, fields = {}, { broad = false } = {}) {
+  const { name, distillery, maker, manufacturer, region, country, shape } = fields;
 
   const subject =
     entityType === 'bottle'
       ? [distillery, name].filter(Boolean).join(' ')
       : entityType === 'blend'
         ? [manufacturer, name].filter(Boolean).join(' ')
-        : [maker, name].filter(Boolean).join(' ');
+        : [maker, name || shape].filter(Boolean).join(' ');
 
   const internationalHint =
     region || country ? ` (${[region, country].filter(Boolean).join(', ')})` : '';
 
-  const sourceHint =
-    entityType === 'bottle'
-      ? 'masterofmalt.com, thewhiskyexchange.com, whiskybase.com, or an official distillery page'
-      : entityType === 'blend'
-        ? 'smokingpipes.com, tobaccoreviews.com, or an official manufacturer page'
-        : 'smokingpipes.com, pipedia.org, or an official maker page';
+  let queryVariants = '';
+  let sourceHint = '';
 
-  return `Find up to 5 high-quality product images for the ${entityType} "${subject}"${internationalHint}.
+  if (entityType === 'bottle') {
+    const base = [distillery, name].filter(Boolean).join(' ');
+    queryVariants = broad
+      ? `Use any of these searches to find at least 3 more images:\n- "${base} bottle"\n- "${base} whisky product"\n- "${base} image"\n- "${base}"`
+      : `Run all of these searches and aggregate the results:\n1. "${base} bottle front"\n2. "${base} whisky bottle"\n3. "${base} official"\n4. "${base} product image"\n5. "${base} label"\n6. "${base} retailer"`;
+    sourceHint = 'official distillery/brand pages, whiskybase.com, masterofmalt.com, thewhiskyexchange.com, finedrams.com, totalwine.com, reservebar.com';
+  } else if (entityType === 'blend') {
+    const base = [manufacturer, name].filter(Boolean).join(' ');
+    queryVariants = broad
+      ? `Use any of these searches to find at least 3 more images:\n- "${base} tobacco"\n- "${base} tin"\n- "${base} product"\n- "${base}"`
+      : `Run all of these searches and aggregate the results:\n1. "${base} tin label"\n2. "${base} tobacco tin"\n3. "${base} official"\n4. "${base} product image"\n5. "${base} smokingpipes"\n6. "${base} pouch label"`;
+    sourceHint = 'official manufacturer pages, smokingpipes.com, pipesandcigars.com, tobaccopipes.com, cupojoes.com, tobaccoreviews.com';
+  } else {
+    const base = [maker, name || shape].filter(Boolean).join(' ');
+    queryVariants = broad
+      ? `Use any of these searches to find at least 3 more images:\n- "${base} pipe"\n- "${maker} pipe"\n- "${maker} tobacco pipe"\n- "${maker}"`
+      : `Run all of these searches and aggregate the results:\n1. "${base} pipe"\n2. "${[maker, name].filter(Boolean).join(' ')} pipe"\n3. "${[maker, shape].filter(Boolean).join(' ')} pipe"\n4. "${maker} pipe official"\n5. "${maker} pipe retailer"\n6. "${maker} stamping pipe"`;
+    sourceHint = 'official maker pages, smokingpipes.com, pipedia.org, trusted pipe retailers, pipesandcigars.com';
+  }
 
-IMPORTANT:
-- Prefer images from ${sourceHint}.
+  return `Find at least 6 high-quality product images for the ${entityType} "${subject}"${internationalHint}.
+
+${queryVariants}
+
+CRITICAL RULES:
+- Return a MINIMUM of 3 results, TARGET 4–6 results.
+- Even if you find an exact title match, CONTINUE gathering results from other trusted sources. Do NOT stop at 1 result.
+- Try to include images from different source domains for variety (1 official, 1–3 trusted retailers, 1–2 fallback references).
+- Prefer images from: ${sourceHint}.
 - For non-US products, prefer images from international specialist sources over US-only retailers.
-- For pipes, label results as reference images only (not guaranteed to match a user's specific pipe).
-- Return only product/tin/bottle images, not review thumbnails or forum posts.
+- For pipes, these are reference images only (not guaranteed to match a user's specific pipe).
+- Return only product/tin/bottle images — not review thumbnails, forum post images, or placeholder graphics.
+- Remove duplicate image URLs before returning.
+- Set is_exact_match=true only for the single strongest exact title+brand match.
 
 Return JSON with an "images" array. Each item:
 - title (string) — product name as shown on source page
 - image_url (string) — direct URL to the product image
 - source_url (string) — URL of the page where the image appears
 - source_domain (string) — bare domain (e.g. "masterofmalt.com")
-- alt_text (string or null)`;
+- alt_text (string or null)
+- is_exact_match (boolean) — true only for the strongest exact match`;
+}
+
+/**
+ * Build a broad fallback image search prompt used when the primary search
+ * returns fewer than 3 results.
+ *
+ * @param {'bottle'|'blend'|'pipe'} entityType
+ * @param {Object} fields
+ * @returns {string}
+ */
+export function buildImageSearchFallbackPrompt(entityType, fields = {}) {
+  return buildImageSearchPrompt(entityType, fields, { broad: true });
 }
 
 /**
@@ -340,11 +376,12 @@ export const IMAGE_SEARCH_RESPONSE_SCHEMA = {
       items: {
         type: 'object',
         properties: {
-          title:         { type: 'string' },
-          image_url:     { type: 'string' },
-          source_url:    { type: 'string' },
-          source_domain: { type: 'string' },
-          alt_text:      { type: 'string' },
+          title:          { type: 'string' },
+          image_url:      { type: 'string' },
+          source_url:     { type: 'string' },
+          source_domain:  { type: 'string' },
+          alt_text:       { type: 'string' },
+          is_exact_match: { type: 'boolean' },
         },
       },
     },

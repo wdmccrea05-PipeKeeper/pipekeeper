@@ -82,15 +82,26 @@ function buildBaseRecord(itemType, data) {
 }
 
 const CONFIDENCE_CHIP_STYLES = {
-  High:   { background: 'rgba(46,125,92,0.22)',  color: '#6ee7b7', border: '1px solid rgba(46,125,92,0.4)' },
-  Medium: { background: 'rgba(180,140,75,0.18)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.35)' },
-  Low:    { background: 'rgba(120,80,60,0.18)',  color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(120,80,60,0.3)' },
+  'Exact Match':      { background: 'rgba(180,140,75,0.28)',  color: '#F5D87A', border: '1px solid rgba(180,140,75,0.55)' },
+  'High Confidence':  { background: 'rgba(46,125,92,0.22)',   color: '#6ee7b7', border: '1px solid rgba(46,125,92,0.4)' },
+  'Medium Confidence':{ background: 'rgba(180,140,75,0.18)',  color: '#D4A574', border: '1px solid rgba(180,140,75,0.35)' },
+  'Reference':        { background: 'rgba(59,130,246,0.15)',  color: 'rgba(147,197,253,0.9)', border: '1px solid rgba(59,130,246,0.25)' },
+  'Low Confidence':   { background: 'rgba(120,80,60,0.18)',   color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(120,80,60,0.3)' },
 };
 
 function proxyImageUrl(url) {
   if (!url) return null;
   // Proxy through weserv.nl to bypass hotlink protection and CORS issues
-  return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=112&h=112&fit=contain&we`;
+  return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=200&h=200&fit=contain&we`;
+}
+
+/** Map raw confidence label + flags to the display label for image suggestion cards */
+function imageConfidenceLabel(img) {
+  if (img.isExactMatch) return 'Exact Match';
+  if (img.isReferenceImage) return 'Reference';
+  if (img.confidenceLabel === 'High') return 'High Confidence';
+  if (img.confidenceLabel === 'Medium') return 'Medium Confidence';
+  return 'Low Confidence';
 }
 
 /** Thumbnail that shows a placeholder when the image fails to load */
@@ -101,10 +112,10 @@ function SuggestionThumb({ imageUrl, title }) {
   if (!imageUrl || (failed && !proxied)) {
     return (
       <div
-        className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center"
+        className="w-full aspect-[4/3] rounded-xl flex items-center justify-center"
         style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
       >
-        <ImageIcon className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.25)' }} />
+        <ImageIcon className="w-6 h-6" style={{ color: 'rgba(255,255,255,0.25)' }} />
       </div>
     );
   }
@@ -113,7 +124,7 @@ function SuggestionThumb({ imageUrl, title }) {
     <img
       src={failed ? imageUrl : proxied}
       alt={title || 'Suggested image'}
-      className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
+      className="w-full aspect-[4/3] rounded-xl object-contain"
       style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
       onError={() => setFailed(true)}
     />
@@ -144,7 +155,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
     setLoading(true);
     setFetched(false);
     try {
-      const { results } = await searchForImages(itemType, fields, { maxResults: 5 });
+      const { results } = await searchForImages(itemType, fields, { maxResults: 6 });
       setSuggestions(results.filter((r) => r.imageUrl));
     } catch {
       setSuggestions([]);
@@ -197,83 +208,80 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
 
       {!loading && fetched && suggestions.length === 0 && (
         <p className="text-xs py-2" style={{ color: 'rgba(224,216,200,0.35)' }}>
-          No trusted matches found. Upload your own image above.
+          No trusted image matches found. Try Search Again, paste an image URL, or upload your own.
         </p>
       )}
 
       {!loading && suggestions.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {suggestions.map((img) => (
-            <div
-              key={img.id}
-              className="flex items-center gap-3 p-3 rounded-xl"
-              style={{
-                background: 'linear-gradient(180deg, #111111 0%, #0b0b0b 100%)',
-                border: '1px solid rgba(212,175,55,0.15)',
-                borderRadius: 18,
-              }}
-            >
-              {/* Thumbnail — stateful so failed loads show a placeholder */}
-              <SuggestionThumb imageUrl={img.imageUrl} title={img.title} />
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.92)' }}>
-                  {img.imageLabel || (itemType === 'pipe' ? 'Reference Image' : 'Suggested Match')}
-                </p>
-                {img.title && (
-                  <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                    {img.title}
-                  </p>
-                )}
-
-                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                  {/* Source chip */}
-                  {img.sourceDomain && (
-                    <span
-                      className="text-[10px] px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
-                      style={{
-                        background: img.isInternationalSource ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.07)',
-                        color: img.isInternationalSource ? 'rgba(147,197,253,0.9)' : 'rgba(224,216,200,0.5)',
-                        border: img.isInternationalSource ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(255,255,255,0.1)',
-                      }}
-                    >
-                      {img.isInternationalSource && <Globe className="w-2.5 h-2.5" />}
-                      {img.sourceDomain}
-                    </span>
-                  )}
-
-                  {/* Confidence chip */}
-                  {img.confidenceLabel && (
-                    <span
-                      className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
-                      style={CONFIDENCE_CHIP_STYLES[img.confidenceLabel] || CONFIDENCE_CHIP_STYLES.Low}
-                    >
-                      {img.confidenceLabel === 'High' ? '✓ ' : img.confidenceLabel === 'Medium' ? '~ ' : '? '}
-                      {img.confidenceLabel}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Action button */}
-              <Button
-                size="sm"
-                onClick={() => onSelectImage(img.imageUrl)}
+        <div className="grid grid-cols-2 gap-3">
+          {suggestions.map((img) => {
+            const chipLabel = imageConfidenceLabel(img);
+            const chipStyle = CONFIDENCE_CHIP_STYLES[chipLabel] || CONFIDENCE_CHIP_STYLES['Low Confidence'];
+            return (
+              <div
+                key={img.id}
+                className="flex flex-col rounded-2xl overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(212,175,55,0.85), rgba(180,140,50,0.85))',
-                  color: '#1a1008',
-                  fontWeight: 700,
-                  fontSize: 11,
-                  flexShrink: 0,
-                  minWidth: 72,
-                  borderRadius: 10,
+                  background: 'linear-gradient(180deg, #111111 0%, #0b0b0b 100%)',
+                  border: img.isExactMatch ? '1px solid rgba(245,216,122,0.45)' : '1px solid rgba(212,175,55,0.15)',
                 }}
               >
-                Use This
-              </Button>
-            </div>
-          ))}
+                {/* Thumbnail */}
+                <SuggestionThumb imageUrl={img.imageUrl} title={img.title} />
+
+                {/* Info */}
+                <div className="flex flex-col gap-2 p-2.5 flex-1">
+                  {img.title && (
+                    <p className="text-xs font-medium leading-snug line-clamp-2" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                      {img.title}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap gap-1">
+                    {/* Confidence chip */}
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
+                      style={chipStyle}
+                    >
+                      {chipLabel === 'Exact Match' ? '★ ' : chipLabel === 'High Confidence' ? '✓ ' : chipLabel === 'Reference' ? '◎ ' : chipLabel === 'Medium Confidence' ? '~ ' : '? '}
+                      {chipLabel}
+                    </span>
+
+                    {/* Source chip */}
+                    {img.sourceDomain && (
+                      <span
+                        className="text-[10px] px-1.5 py-0.5 rounded-full inline-flex items-center gap-1 truncate max-w-full"
+                        style={{
+                          background: img.isInternationalSource ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.07)',
+                          color: img.isInternationalSource ? 'rgba(147,197,253,0.9)' : 'rgba(224,216,200,0.5)',
+                          border: img.isInternationalSource ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(255,255,255,0.1)',
+                        }}
+                      >
+                        {img.isInternationalSource && <Globe className="w-2.5 h-2.5 flex-shrink-0" />}
+                        <span className="truncate">{img.sourceDomain}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Use This button */}
+                  <Button
+                    size="sm"
+                    onClick={() => onSelectImage(img.imageUrl)}
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(212,175,55,0.85), rgba(180,140,50,0.85))',
+                      color: '#1a1008',
+                      fontWeight: 700,
+                      fontSize: 11,
+                      width: '100%',
+                      borderRadius: 10,
+                    }}
+                  >
+                    Use This
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
