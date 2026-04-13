@@ -8,6 +8,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import FormSection from '@/components/forms/FormSection';
+import BottleCatalogSearch from './BottleCatalogSearch';
 
 import PhotoUploader from '@/components/PhotoUploader';
 import { toast } from 'sonner';
@@ -249,6 +250,26 @@ export default function BottleForm({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* QUICK ADD FROM CATALOG */}
+            <FormSection title="Quick Add from Catalog" defaultOpen={true}>
+              <BottleCatalogSearch
+                onSelect={(entry) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    name: entry.name ?? prev.name,
+                    distillery: entry.distillery ?? prev.distillery,
+                    region: entry.region ?? prev.region,
+                    country: entry.country ?? prev.country,
+                    type: entry.type ?? prev.type,
+                    abv: entry.abv != null ? String(entry.abv) : prev.abv,
+                    age: entry.age != null ? String(entry.age) : prev.age,
+                    retail_price: entry.retail_price != null ? String(entry.retail_price) : prev.retail_price,
+                  }));
+                }}
+                onManualAdd={() => {}}
+              />
+            </FormSection>
 
             {/* IDENTITY SECTION */}
             <FormSection

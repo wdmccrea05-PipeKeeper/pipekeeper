@@ -1,3 +1,5 @@
+import { formatCurrency as _formatCurrencyLocale } from '@/components/utils/localeFormatters';
+
 export function toNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -30,12 +32,7 @@ export function getBottleCount(bottle) {
 }
 
 export function formatCurrency(value) {
-  const n = toNumber(value, 0);
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(n);
+  return _formatCurrencyLocale(value);
 }
 
 export function buildInventoryCountByBottleId(inventoryUnits = []) {

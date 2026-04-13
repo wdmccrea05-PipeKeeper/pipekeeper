@@ -345,9 +345,9 @@ function WhiskeyInner() {
           }}
         >
           <Sparkles className="w-10 h-10 mx-auto text-[#B48C4B] mb-4" />
-          <p className="text-2xl font-semibold">No bottles yet</p>
+          <p className="text-2xl font-semibold">No Bottles Yet</p>
           <p className="text-[#D8C7A6]/76 mt-2">
-            Add your first bottle to start tracking your whiskey collection
+            Add your first bottle to start building your whiskey vault.
           </p>
           <Button className="mt-5" onClick={() => navigate("/BottleForm")}>
             Add Whiskey
