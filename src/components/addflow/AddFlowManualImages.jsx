@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
-import { ArrowLeft, BookImage, Check, Loader2, Search, Upload, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, BookImage, Check, Globe, Loader2, Search, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { createInventoryEngine } from '@/components/inventory/InventoryEngine';
+import { searchForImages } from '@/lib/search/unifiedSearchService';
 
 const ENTITIES = {
   blend: 'TobaccoBlend',
@@ -78,6 +79,187 @@ function buildBaseRecord(itemType, data) {
   }
 
   return cleanObject({ name: data.name });
+}
+
+const CONFIDENCE_CHIP_STYLES = {
+  High:   { background: 'rgba(46,125,92,0.22)',  color: '#6ee7b7', border: '1px solid rgba(46,125,92,0.4)' },
+  Medium: { background: 'rgba(180,140,75,0.18)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.35)' },
+  Low:    { background: 'rgba(120,80,60,0.18)',  color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(120,80,60,0.3)' },
+};
+
+/**
+ * Inline component that fetches and displays trusted image suggestions for the
+ * current record. Fires automatically on mount when no image is present.
+ */
+function ImageSuggestions({ itemType, data, onSelectImage }) {
+  const [loading, setLoading]   = useState(false);
+  const [fetched, setFetched]   = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const hasFetchedRef = useRef(false);
+
+  const fields = {
+    name:         data.name,
+    distillery:   data.distillery,
+    maker:        data.maker,
+    manufacturer: data.manufacturer,
+    region:       data.region,
+    country:      data.country || data.country_of_origin,
+  };
+
+  const fetchSuggestions = async () => {
+    if (loading) return;
+    setLoading(true);
+    setFetched(false);
+    try {
+      const { results } = await searchForImages(itemType, fields, { maxResults: 5 });
+      setSuggestions(results.filter((r) => r.imageUrl));
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+      setFetched(true);
+    }
+  };
+
+  // Auto-fetch once on mount
+  useEffect(() => {
+    if (!hasFetchedRef.current && (fields.name || fields.distillery || fields.maker || fields.manufacturer)) {
+      hasFetchedRef.current = true;
+      fetchSuggestions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!loading && !fetched) return null;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Section header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
+            Suggested Images
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
+            Choose a trusted image match or upload your own.
+          </p>
+        </div>
+        {fetched && (
+          <button
+            onClick={fetchSuggestions}
+            className="text-xs px-2.5 py-1 rounded-full hover:bg-white/10 transition-colors"
+            style={{ color: 'rgba(180,140,75,0.8)', border: '1px solid rgba(180,140,75,0.2)' }}
+          >
+            Search Again
+          </button>
+        )}
+      </div>
+
+      {loading && (
+        <div className="flex items-center gap-2 py-3" style={{ color: 'rgba(224,216,200,0.4)' }}>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span className="text-xs">Finding trusted images…</span>
+        </div>
+      )}
+
+      {!loading && fetched && suggestions.length === 0 && (
+        <p className="text-xs py-2" style={{ color: 'rgba(224,216,200,0.35)' }}>
+          No trusted matches found. Upload your own image above.
+        </p>
+      )}
+
+      {!loading && suggestions.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {suggestions.map((img) => (
+            <div
+              key={img.id}
+              className="flex items-center gap-3 p-3 rounded-xl"
+              style={{
+                background: 'linear-gradient(180deg, #111111 0%, #0b0b0b 100%)',
+                border: '1px solid rgba(212,175,55,0.15)',
+                borderRadius: 18,
+              }}
+            >
+              {/* Thumbnail */}
+              {img.imageUrl ? (
+                <img
+                  src={img.imageUrl}
+                  alt={img.title || 'Suggested image'}
+                  className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
+                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+              ) : (
+                <div
+                  className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center"
+                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
+                >
+                  <Search className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.2)' }} />
+                </div>
+              )}
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                  {img.imageLabel || (itemType === 'pipe' ? 'Reference Image' : 'Suggested Match')}
+                </p>
+                {img.title && (
+                  <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    {img.title}
+                  </p>
+                )}
+
+                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                  {/* Source chip */}
+                  {img.sourceDomain && (
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
+                      style={{
+                        background: img.isInternationalSource ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.07)',
+                        color: img.isInternationalSource ? 'rgba(147,197,253,0.9)' : 'rgba(224,216,200,0.5)',
+                        border: img.isInternationalSource ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(255,255,255,0.1)',
+                      }}
+                    >
+                      {img.isInternationalSource && <Globe className="w-2.5 h-2.5" />}
+                      {img.sourceDomain}
+                    </span>
+                  )}
+
+                  {/* Confidence chip */}
+                  {img.confidenceLabel && (
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
+                      style={CONFIDENCE_CHIP_STYLES[img.confidenceLabel] || CONFIDENCE_CHIP_STYLES.Low}
+                    >
+                      {img.confidenceLabel === 'High' ? '✓ ' : img.confidenceLabel === 'Medium' ? '~ ' : '? '}
+                      {img.confidenceLabel}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Action button */}
+              <Button
+                size="sm"
+                onClick={() => onSelectImage(img.imageUrl)}
+                style={{
+                  background: 'linear-gradient(135deg, rgba(212,175,55,0.85), rgba(180,140,50,0.85))',
+                  color: '#1a1008',
+                  fontWeight: 700,
+                  fontSize: 11,
+                  flexShrink: 0,
+                  minWidth: 72,
+                  borderRadius: 10,
+                }}
+              >
+                Use This
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
@@ -406,6 +588,18 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
               setShowLibrary(false);
             }}
             onClose={() => setShowLibrary(false)}
+          />
+        )}
+
+        {/* Trusted image suggestions — shown when no image has been chosen yet */}
+        {!imageUrl && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
+          <div style={{ height: 1, background: 'rgba(180,140,75,0.1)' }} />
+        )}
+        {!imageUrl && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
+          <ImageSuggestions
+            itemType={itemType}
+            data={data}
+            onSelectImage={(url) => setImageUrl(url)}
           />
         )}
 
