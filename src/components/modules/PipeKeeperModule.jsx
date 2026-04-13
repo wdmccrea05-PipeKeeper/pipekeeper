@@ -27,7 +27,7 @@ export default function PipeKeeperModule() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
 
-  const { user, isLoading: isUserLoading } = useCurrentUser();
+  const { user, hasPaid, isLoading: isUserLoading } = useCurrentUser();
   const { hideValues, hideCollectionCounts } = useProfilePrivacy();
   const queryClient = useQueryClient();
   
@@ -83,9 +83,10 @@ export default function PipeKeeperModule() {
 
   const totalCellaredOz = useMemo(() => blends.reduce((sum, b) => sum + calculateCellaredOzFromBlend(b), 0), [blends]);
 
-  // Check free tier limits
-  const pipeLimit = checkFreeTierLimit('pipekeeper', 'pipes', pipes.length, user);
-  const blendLimit = checkFreeTierLimit('pipekeeper', 'blends', blends.length, user);
+  // Check free tier limits — treat any paid user as having pipekeeper access
+  const effectiveUser = (hasPaid || user?.pipekeeper_paid) ? { ...user, pipekeeper_paid: true } : user;
+  const pipeLimit = checkFreeTierLimit('pipekeeper', 'pipes', pipes.length, effectiveUser);
+  const blendLimit = checkFreeTierLimit('pipekeeper', 'blends', blends.length, effectiveUser);
   
   const mostSmokedPipe = useMemo(() => {
     if (!smokingLogs.length || !pipes.length) return null;
@@ -200,14 +201,14 @@ export default function PipeKeeperModule() {
       <PipeKeeperModuleNav currentPageName={null} />
 
       {/* Free Tier Limit Warnings */}
-      {pipeLimit.atLimit && !user?.pipekeeper_paid && (
+      {pipeLimit.atLimit && !hasPaid && !user?.pipekeeper_paid && (
         <FreeTierUpgradePrompt
           moduleId="pipekeeper"
           title="Pipe Collection Limit Reached"
           description={`You've reached the ${pipeLimit.limit} pipe limit on your free tier. Upgrade to PipeKeeper Pro for unlimited storage.`}
         />
       )}
-      {blendLimit.atLimit && !user?.pipekeeper_paid && (
+      {blendLimit.atLimit && !hasPaid && !user?.pipekeeper_paid && (
         <FreeTierUpgradePrompt
           moduleId="pipekeeper"
           title="Blend Collection Limit Reached"
