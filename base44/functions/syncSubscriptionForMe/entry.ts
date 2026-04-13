@@ -36,8 +36,10 @@ function modulesFromPlanKey(planKey: string): string[] {
   if (key.startsWith('cigarkeeper_')) return ['cigarkeeper'];
   if (key.startsWith('winekeeper_')) return ['winekeeper'];
   if (key.includes('three_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
-  if (key.includes('four_module') || key.includes('founders')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
-  return ['pipekeeper'];
+  if (key.includes('four_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+  // Founders bundle = PipeKeeper + WhiskeyKeeper ONLY (2 modules, not 4)
+  if (key.includes('founders')) return ['pipekeeper', 'whiskeykeeper'];
+  return [];
 }
 
 function determinePlanKeyFromPrice(priceId: string | null) {
@@ -54,6 +56,7 @@ function determinePlanKeyFromPrice(priceId: string | null) {
     [Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL') || '']: 'three_module_bundle_annual',
     [Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY') || '']: 'four_module_bundle_monthly',
     [Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL') || '']: 'four_module_bundle_annual',
+    [Deno.env.get('VITE_STRIPE_FOUNDERS_MONTHLY') || '']: 'founders_bundle_monthly',
     [Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL') || '']: 'founders_bundle_annual',
   };
   return priceId ? (priceMap[priceId] || null) : null;
@@ -141,7 +144,7 @@ Deno.serve(async (req) => {
     const customerId = best.customerId;
     const item = subscription.items?.data?.[0];
     const priceId = item?.price?.id || null;
-    const planKey = determinePlanKeyFromPrice(priceId) || 'unknown';
+    const planKey = determinePlanKeyFromPrice(priceId) || null;
     const activeModules = extractModulesFromMetadata(subscription, planKey);
     const normalizedStatus = String(subscription.status || '').toLowerCase();
     const hasPaidAccess = ['active', 'trialing', 'past_due', 'incomplete'].includes(normalizedStatus);
@@ -152,6 +155,37 @@ Deno.serve(async (req) => {
       ? new Date(subscription.current_period_end * 1000).toISOString()
       : null;
 
+    // Determine product kind and bundle metadata
+    const isBundle = activeModules.length > 1;
+    const productKind = isBundle ? 'bundle' : (activeModules.length === 1 ? 'single' : 'unknown');
+
+    // Bundle name from plan key
+    function bundleNameFromKey(key: string | null): string | null {
+      if (!key) return null;
+      if (key.includes('founders')) return 'Founders Bundle';
+      if (key.includes('three_module')) return '3-Module Bundle';
+      if (key.includes('four_module')) return '4-Module Bundle';
+      return null;
+    }
+    const bundleName = isBundle ? (bundleNameFromKey(planKey) || 'Bundle') : null;
+
+    // Product label from plan key
+    function productLabelFromKey(key: string | null, modules: string[]): string {
+      if (!key) return modules.length > 0 ? modules[0] : 'Unknown';
+      if (key.includes('founders')) return 'Founders Bundle (PK+WK)';
+      if (key.includes('three_module')) return '3-Module Bundle';
+      if (key.includes('four_module')) return '4-Module Bundle';
+      const m = modules[0];
+      if (m === 'pipekeeper') return 'PipeKeeper';
+      if (m === 'whiskeykeeper') return 'WhiskeyKeeper';
+      if (m === 'cigarkeeper') return 'CigarKeeper';
+      if (m === 'winekeeper') return 'WineKeeper';
+      return modules[0] || 'Unknown';
+    }
+
+    const billingIntervalRaw = item?.price?.recurring?.interval || null;
+    const renewalAmount = item?.price?.unit_amount ? item.price.unit_amount / 100 : null;
+
     const subscriptionData = {
       user_id: userId,
       user_email: email,
@@ -159,16 +193,22 @@ Deno.serve(async (req) => {
       provider_subscription_id: subscription.id,
       stripe_customer_id: customerId,
       stripe_subscription_id: subscription.id,
+      price_id: priceId,
       status: mapStripeStatus(subscription.status),
       tier: hasPaidAccess ? 'pro' : 'free',
       planKey,
       current_period_start: currentPeriodStart,
       current_period_end: currentPeriodEnd,
-      billing_interval: item?.price?.recurring?.interval || 'month',
+      billing_interval: billingIntervalRaw,
+      billing_period: subscription.metadata?.billing_period || billingIntervalRaw,
       modules_csv: activeModules.join(','),
-      checkout_type: subscription.metadata?.checkout_type || (activeModules.length > 1 ? `bundle_${activeModules.length}` : 'single_module'),
-      billing_period: subscription.metadata?.billing_period || item?.price?.recurring?.interval || 'month',
-      primary_module: subscription.metadata?.primary_module || activeModules[0] || 'pipekeeper',
+      module_count: activeModules.length,
+      product_kind: productKind,
+      primary_module: activeModules[0] || null,
+      bundle_name: bundleName,
+      product_label: productLabelFromKey(planKey, activeModules),
+      checkout_type: subscription.metadata?.checkout_type || (isBundle ? `bundle_${activeModules.length}` : 'single_module'),
+      renewal_amount: renewalAmount,
       updated_date: new Date().toISOString(),
     };
 

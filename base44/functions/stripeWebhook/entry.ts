@@ -161,6 +161,40 @@ async function syncUserEntitlements(base44: any, userEmail: string) {
   }
 }
 
+// Canonical price ID → planKey map (built from env vars at call time)
+function buildPriceIdToPlanKeyMap(): Record<string, string> {
+  const e = Deno.env;
+  return {
+    [e.get('VITE_STRIPE_PIPEKEEPER_MONTHLY') || '']:    'pipekeeper_pro_monthly',
+    [e.get('VITE_STRIPE_PIPEKEEPER_ANNUAL') || '']:     'pipekeeper_pro_annual',
+    [e.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY') || '']: 'whiskeykeeper_pro_monthly',
+    [e.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL') || '']:  'whiskeykeeper_pro_annual',
+    [e.get('VITE_STRIPE_CIGARKEEPER_MONTHLY') || '']:   'cigarkeeper_pro_monthly',
+    [e.get('VITE_STRIPE_CIGARKEEPER_ANNUAL') || '']:    'cigarkeeper_pro_annual',
+    [e.get('VITE_STRIPE_WINEKEEPER_MONTHLY') || '']:    'winekeeper_pro_monthly',
+    [e.get('VITE_STRIPE_WINEKEEPER_ANNUAL') || '']:     'winekeeper_pro_annual',
+    [e.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY') || '']:  'three_module_bundle_monthly',
+    [e.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL') || '']:   'three_module_bundle_annual',
+    [e.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY') || '']:   'four_module_bundle_monthly',
+    [e.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL') || '']:    'four_module_bundle_annual',
+    [e.get('VITE_STRIPE_FOUNDERS_MONTHLY') || '']:      'founders_bundle_monthly',
+    [e.get('VITE_STRIPE_FOUNDERS_ANNUAL') || '']:       'founders_bundle_annual',
+  };
+}
+
+// Resolve modules from planKey. Founders = PK+WK ONLY (2 modules).
+function modulesFromPlanKey(planKey: string): string[] {
+  const key = String(planKey || '').toLowerCase();
+  if (key.startsWith('pipekeeper_')) return ['pipekeeper'];
+  if (key.startsWith('whiskeykeeper_')) return ['whiskeykeeper'];
+  if (key.startsWith('cigarkeeper_')) return ['cigarkeeper'];
+  if (key.startsWith('winekeeper_')) return ['winekeeper'];
+  if (key.includes('three_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+  if (key.includes('four_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+  if (key.includes('founders')) return ['pipekeeper', 'whiskeykeeper']; // 2 modules, not 4
+  return [];
+}
+
 async function upsertSubscriptionFromStripe(
   base44: any,
   stripeSub: Stripe.Subscription,
@@ -177,7 +211,6 @@ async function upsertSubscriptionFromStripe(
 
   const customerEmail = normEmail(metadata.user_email || fallbackEmail || '');
 
-  const modules = splitModulesCsv(metadata.modules_csv);
   const currentPeriodStart = stripeSub.current_period_start
     ? new Date(stripeSub.current_period_start * 1000).toISOString()
     : null;
@@ -187,6 +220,37 @@ async function upsertSubscriptionFromStripe(
 
   const existing = await findExistingSubscriptionRow(base44, stripeSub.id);
 
+  // ── Resolve planKey from price ID ─────────────────────────────────────────
+  const priceIdFromStripe = stripeSub.items?.data?.[0]?.price?.id || null;
+  const priceMap = buildPriceIdToPlanKeyMap();
+  const planKeyFromPrice = priceIdFromStripe ? (priceMap[priceIdFromStripe] || null) : null;
+  const planKey = metadata.plan_key || metadata.planKey || planKeyFromPrice || existing?.planKey || null;
+
+  // ── Resolve modules from planKey (authoritative) or metadata ─────────────
+  const metadataModules = splitModulesCsv(metadata.modules_csv);
+  const planKeyModules = planKey ? modulesFromPlanKey(planKey) : [];
+  const modules = planKeyModules.length > 0 ? planKeyModules : metadataModules;
+
+  // ── Normalize product fields ───────────────────────────────────────────────
+  const isBundle = modules.length > 1;
+  const productKind = isBundle ? 'bundle' : (modules.length === 1 ? 'single' : 'unknown');
+
+  function bundleNameFromKey(key: string | null): string | null {
+    if (!key) return null;
+    if (key.includes('founders')) return 'Founders Bundle';
+    if (key.includes('three_module')) return '3-Module Bundle';
+    if (key.includes('four_module')) return '4-Module Bundle';
+    return null;
+  }
+  const bundleName = isBundle
+    ? (metadata.bundle_name || bundleNameFromKey(planKey) || existing?.bundle_name || 'Bundle')
+    : null;
+
+  const billingIntervalRaw = stripeSub.items?.data?.[0]?.price?.recurring?.interval || null;
+  const renewalAmount = stripeSub.items?.data?.[0]?.price?.unit_amount
+    ? stripeSub.items.data[0].price.unit_amount / 100
+    : null;
+
   const payload = {
     provider: 'stripe',
     provider_subscription_id: stripeSub.id,
@@ -195,13 +259,17 @@ async function upsertSubscriptionFromStripe(
     user_id: metadata.user_id || existing?.user_id || null,
     user_email: normEmail(customerEmail || existing?.user_email || ''),
     status: stripeSub.status,
-    checkout_type: metadata.checkout_type || existing?.checkout_type || null,
-    billing_period: metadata.billing_period || existing?.billing_period || null,
-    modules_csv: modules.join(','),
-    module_count: Number(metadata.module_count || modules.length || 0),
-    product_kind: metadata.product_kind || existing?.product_kind || null,
-    primary_module: metadata.primary_module || existing?.primary_module || null,
-    bundle_name: metadata.bundle_name || existing?.bundle_name || null,
+    planKey,
+    price_id: priceIdFromStripe || existing?.price_id || null,
+    billing_interval: billingIntervalRaw,
+    billing_period: metadata.billing_period || billingIntervalRaw || existing?.billing_period || null,
+    checkout_type: metadata.checkout_type || (isBundle ? `bundle_${modules.length}` : 'single_module') || existing?.checkout_type || null,
+    modules_csv: modules.length > 0 ? modules.join(',') : existing?.modules_csv || '',
+    module_count: modules.length > 0 ? modules.length : Number(metadata.module_count || existing?.module_count || 0),
+    product_kind: productKind !== 'unknown' ? productKind : (metadata.product_kind || existing?.product_kind || null),
+    primary_module: modules[0] || metadata.primary_module || existing?.primary_module || null,
+    bundle_name: bundleName,
+    renewal_amount: renewalAmount,
     cancel_at_period_end: !!stripeSub.cancel_at_period_end,
     current_period_start: currentPeriodStart,
     current_period_end: currentPeriodEnd,
@@ -209,7 +277,6 @@ async function upsertSubscriptionFromStripe(
       typeof stripeSub.latest_invoice === 'string'
         ? stripeSub.latest_invoice
         : stripeSub.latest_invoice?.id || null,
-    price_id: stripeSub.items?.data?.[0]?.price?.id || existing?.price_id || null,
     currency: stripeSub.currency || existing?.currency || null,
     metadata_json: JSON.stringify(metadata),
     updated_date: new Date().toISOString(),

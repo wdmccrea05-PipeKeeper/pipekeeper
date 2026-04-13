@@ -10,6 +10,40 @@ const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") 
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
+// Canonical price ID → planKey map from env vars
+function buildPriceIdToPlanKeyMap(): Record<string, string> {
+  const e = Deno.env;
+  return {
+    [e.get("VITE_STRIPE_PIPEKEEPER_MONTHLY") || ""]:    "pipekeeper_pro_monthly",
+    [e.get("VITE_STRIPE_PIPEKEEPER_ANNUAL") || ""]:     "pipekeeper_pro_annual",
+    [e.get("VITE_STRIPE_WHISKEYKEEPER_MONTHLY") || ""]: "whiskeykeeper_pro_monthly",
+    [e.get("VITE_STRIPE_WHISKEYKEEPER_ANNUAL") || ""]:  "whiskeykeeper_pro_annual",
+    [e.get("VITE_STRIPE_CIGARKEEPER_MONTHLY") || ""]:   "cigarkeeper_pro_monthly",
+    [e.get("VITE_STRIPE_CIGARKEEPER_ANNUAL") || ""]:    "cigarkeeper_pro_annual",
+    [e.get("VITE_STRIPE_WINEKEEPER_MONTHLY") || ""]:    "winekeeper_pro_monthly",
+    [e.get("VITE_STRIPE_WINEKEEPER_ANNUAL") || ""]:     "winekeeper_pro_annual",
+    [e.get("VITE_STRIPE_THREE_BUNDLE_MONTHLY") || ""]:  "three_module_bundle_monthly",
+    [e.get("VITE_STRIPE_THREE_BUNDLE_ANNUAL") || ""]:   "three_module_bundle_annual",
+    [e.get("VITE_STRIPE_FOUR_BUNDLE_MONTHLY") || ""]:   "four_module_bundle_monthly",
+    [e.get("VITE_STRIPE_FOUR_BUNDLE_ANNUAL") || ""]:    "four_module_bundle_annual",
+    [e.get("VITE_STRIPE_FOUNDERS_MONTHLY") || ""]:      "founders_bundle_monthly",
+    [e.get("VITE_STRIPE_FOUNDERS_ANNUAL") || ""]:       "founders_bundle_annual",
+  };
+}
+
+// Resolve modules from planKey. Founders = PK+WK (2 modules), NOT 4.
+function modulesFromPlanKey(planKey: string): string[] {
+  const key = String(planKey || "").toLowerCase();
+  if (key.startsWith("pipekeeper_"))    return ["pipekeeper"];
+  if (key.startsWith("whiskeykeeper_")) return ["whiskeykeeper"];
+  if (key.startsWith("cigarkeeper_"))   return ["cigarkeeper"];
+  if (key.startsWith("winekeeper_"))    return ["winekeeper"];
+  if (key.includes("three_module"))     return ["pipekeeper", "whiskeykeeper", "cigarkeeper"];
+  if (key.includes("four_module"))      return ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"];
+  if (key.includes("founders"))         return ["pipekeeper", "whiskeykeeper"]; // 2 modules, NOT 4
+  return [];
+}
+
 async function resolveTierFromStripe(stripeSub: any, stripe: any) {
   try {
     // Priority 1: Subscription metadata
@@ -320,6 +354,42 @@ Deno.serve(async (req: Request) => {
               : stripeSub.customer?.id;
             if (customerId) {
               updatePayload.stripe_customer_id = customerId;
+            }
+
+            // Backfill normalized reporting fields from Stripe data
+            const priceId = stripeSub.items?.data?.[0]?.price?.id || null;
+            const priceMap = buildPriceIdToPlanKeyMap();
+            const planKey = priceId ? (priceMap[priceId] || null) : null;
+            const planKeyModules = planKey ? modulesFromPlanKey(planKey) : [];
+            const metadataModules = String(stripeSub.metadata?.modules_csv || "")
+              .split(",").map((m: string) => m.trim().toLowerCase()).filter(Boolean);
+            const activeModules = planKeyModules.length > 0 ? planKeyModules : metadataModules;
+            const isBundle = activeModules.length > 1;
+            const billingIntervalRaw = stripeSub.items?.data?.[0]?.price?.recurring?.interval || null;
+            const renewalAmount = stripeSub.items?.data?.[0]?.price?.unit_amount
+              ? stripeSub.items.data[0].price.unit_amount / 100 : null;
+
+            if (priceId) updatePayload.price_id = priceId;
+            if (planKey) updatePayload.planKey = planKey;
+            if (activeModules.length > 0) {
+              updatePayload.modules_csv = activeModules.join(",");
+              updatePayload.module_count = activeModules.length;
+              updatePayload.primary_module = activeModules[0];
+              updatePayload.product_kind = isBundle ? "bundle" : "single";
+              if (isBundle) {
+                updatePayload.bundle_name = planKey?.includes("founders") ? "Founders Bundle"
+                  : planKey?.includes("three_module") ? "3-Module Bundle"
+                  : planKey?.includes("four_module") ? "4-Module Bundle"
+                  : "Bundle";
+              }
+            }
+            if (billingIntervalRaw) updatePayload.billing_interval = billingIntervalRaw;
+            if (renewalAmount !== null) updatePayload.renewal_amount = renewalAmount;
+            if (stripeSub.current_period_start) {
+              updatePayload.current_period_start = new Date(stripeSub.current_period_start * 1000).toISOString();
+            }
+            if (stripeSub.current_period_end) {
+              updatePayload.current_period_end = new Date(stripeSub.current_period_end * 1000).toISOString();
             }
           }
           
