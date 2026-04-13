@@ -102,7 +102,6 @@ export default function TobaccoCollectionStats({ user: userProp }) {
 
   const handleThresholdSave = () => {
     localStorage.setItem('lowInventoryThreshold', lowInventoryThreshold.toString());
-    setShowSettings(false);
   };
 
   // Check for low inventory blends

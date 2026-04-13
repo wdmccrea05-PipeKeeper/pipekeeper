@@ -74,6 +74,7 @@ function CollapsibleSection({ label, defaultOpen = false, children }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const now = new Date();
 
   const overduePipes = pipes.filter((p) => {
@@ -164,6 +165,7 @@ function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function InsightCard({ insight, onAction }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const iconMap = {
     clock: RotateCcw,
     leaf: Leaf,
@@ -277,6 +279,7 @@ function RecommendationCard({ rec, t }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function UpdateFeedItem({ update }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   let timeLabel = "";
   try {
     if (update.timeAgo) {

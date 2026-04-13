@@ -18,13 +18,13 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function MetricCard({ label, value, sub, uncertain = false }) {
   return (
-    <div className="ck-stat-card min-w-0">
-      <p className="ck-stat-label break-words flex items-center gap-1.5">
+    <div className="min-w-0 rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(180,140,75,0.18)' }}>
+      <p className="text-xs font-semibold uppercase tracking-wider break-words flex items-center gap-1.5" style={{ color: 'rgba(224,216,200,0.65)' }}>
         {label}
         {uncertain && <AlertTriangle className="w-3 h-3 text-amber-400/70 shrink-0" />}
       </p>
-      <p className={`ck-stat-value ${uncertain ? 'opacity-70' : ''}`}>{value}</p>
-      {sub && <p className="ck-stat-note break-words">{sub}</p>}
+      <p className={`text-2xl font-bold mt-1 ${uncertain ? 'opacity-70' : ''}`} style={{ color: '#F5F1E7' }}>{value}</p>
+      {sub && <p className="text-xs mt-1 break-words" style={{ color: 'rgba(224,216,200,0.5)' }}>{sub}</p>}
     </div>
   );
 }
@@ -422,7 +422,7 @@ export default function UserReport() {
 
         {/* Signup sources */}
         <div>
-          <p className="text-sm font-medium text-[#E0D8C8] mb-2">Signup Sources</p>
+          <p className="text-sm font-medium mb-2" style={{ color: '#E0D8C8' }}>Signup Sources</p>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <MetricCard label="Web"         value={accounts.signupSources?.web         ?? 0} />
             <MetricCard label="Apple / iOS" value={accounts.signupSources?.apple       ?? 0} />
@@ -436,8 +436,8 @@ export default function UserReport() {
           SECTION 2 — NEW ACCOUNTS
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="New Accounts" icon={CalendarDays} accentColor="#818CF8">
-        <p className="text-xs text-[#E0D8C8]/50 mb-4">
-          Based on account <code className="text-[#E0D8C8]/70">created_at</code> only.
+        <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.7)' }}>
+          Based on account <code style={{ color: 'rgba(224,216,200,0.85)' }}>created_at</code> only.
           Each period is an independent UTC calendar window — counts are not necessarily cumulative.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
@@ -462,7 +462,7 @@ export default function UserReport() {
         </div>
 
         <SectionDivider label="By Product" />
-        <p className="text-xs text-[#E0D8C8]/50 mb-3">
+        <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.7)' }}>
           Active paid subscriptions grouped by product. Single-module subs count toward their module; bundles are counted separately.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -478,7 +478,7 @@ export default function UserReport() {
           SECTION 4 — CURRENT RUN RATE
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Current Run Rate" icon={DollarSign} accentColor="#34D399">
-        <p className="text-xs text-[#E0D8C8]/50 mb-4">
+        <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.7)' }}>
           MRR = sum(monthly prices) + sum(annual prices ÷ 12). ARR = MRR × 12.
           Only subs with known billing interval and non-zero price are included.
         </p>
@@ -492,13 +492,13 @@ export default function UserReport() {
           SECTION 5 — RENEWAL REVENUE
       ═══════════════════════════════════════════════════════════════════ */}
       <SectionCard title="Renewal Revenue" icon={TrendingUp} accentColor="#F59E0B">
-        <p className="text-xs text-[#E0D8C8]/50 mb-4">
+        <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.7)' }}>
           Actual billed price for subscriptions whose renewal date falls in each calendar period.
           This is upcoming charges — not run-rate.
         </p>
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-            <p className="text-sm font-medium text-[#E0D8C8]">Period</p>
+            <p className="text-sm font-medium" style={{ color: '#E0D8C8' }}>Period</p>
             <div className="flex flex-wrap gap-1">
               {['week', 'month', 'quarter', 'year'].map((p) => (
                 <Button key={p} variant={renewalsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setRenewalsPeriod(p)} className="text-xs">
