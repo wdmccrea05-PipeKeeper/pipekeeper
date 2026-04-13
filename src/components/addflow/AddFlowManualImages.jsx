@@ -89,16 +89,15 @@ const CONFIDENCE_CHIP_STYLES = {
 
 function proxyImageUrl(url) {
   if (!url) return null;
-  // Proxy through weserv.nl to bypass hotlink protection and CORS issues
   return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=112&h=112&fit=contain&we`;
 }
 
 /** Thumbnail that shows a placeholder when the image fails to load */
 function SuggestionThumb({ imageUrl, title }) {
-  const [failed, setFailed] = useState(false);
-  const proxied = proxyImageUrl(imageUrl);
+  // 0 = try raw, 1 = try proxy, 2 = give up
+  const [attempt, setAttempt] = useState(0);
 
-  if (!imageUrl || (failed && !proxied)) {
+  if (!imageUrl || attempt >= 2) {
     return (
       <div
         className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center"
@@ -109,13 +108,15 @@ function SuggestionThumb({ imageUrl, title }) {
     );
   }
 
+  const src = attempt === 0 ? imageUrl : proxyImageUrl(imageUrl);
+
   return (
     <img
-      src={failed ? imageUrl : proxied}
+      src={src}
       alt={title || 'Suggested image'}
       className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
       style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
-      onError={() => setFailed(true)}
+      onError={() => setAttempt((a) => a + 1)}
     />
   );
 }
