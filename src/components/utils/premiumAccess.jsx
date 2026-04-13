@@ -40,11 +40,31 @@ function getSubscriptionStartDate(subscription) {
 
 /**
  * Canonical tier resolver. Returns "free" or "pro" only.
+ *
+ * Priority order (FIX RULE #1):
+ *   1. Admin role — always pro
+ *   2. Active subscription record — if subscriptionGrantsPaidAccess(subscription) is true,
+ *      the user is paid regardless of any stale cached flags on the User entity.
+ *   3. User entity entitlement fields (set by webhook / syncSubscriptionForMe)
+ *   4. Legacy user fields (subscription_tier, plan, etc.)
+ *   5. Fallback free tier
+ *
+ * Placing the live subscription check at priority #2 ensures that a valid active
+ * subscription is never overridden by stale user-level cache, which was the root
+ * cause of paid users being blocked by free-tier limits.
  */
 export function getEntitlementTier(user, subscription) {
   const role = String(user?.role || "").toLowerCase();
   if (role === "admin" || role === "owner" || user?.is_admin === true) return "pro";
 
+  // FIX RULE #1: Active subscription record is the highest-priority source of truth.
+  // If the subscription is active/trialing/grace-period, the user is paid — full stop.
+  // This prevents stale cached user fields from ever blocking a paid subscriber.
+  if (subscription && subscriptionGrantsPaidAccess(subscription)) {
+    return "pro";
+  }
+
+  // No live active subscription — fall back to synced user entity fields.
   const topLevel =
     user?.entitlement_tier ??
     user?.entitlementTier ??
@@ -67,12 +87,6 @@ export function getEntitlementTier(user, subscription) {
 
   const t3 = normalizeTier(legacyUser);
   if (t3 !== "free") return t3;
-
-  if (subscription && subscriptionGrantsPaidAccess(subscription)) {
-    const fromSub = subscription?.tier ?? subscription?.subscription_tier ?? subscription?.plan;
-    const t4 = normalizeTier(fromSub);
-    return t4 !== "free" ? t4 : "pro";
-  }
 
   return "free";
 }
