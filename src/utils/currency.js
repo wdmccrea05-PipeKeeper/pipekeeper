@@ -1,50 +1,50 @@
 /**
- * Currency utilities — backward-compatible re-exports.
+ * Currency utilities — canonical wrapper over the shared currency stack.
  *
- * The canonical implementation now lives in src/lib/currency/.
- * This file keeps legacy exports alive for any call-sites that have not yet
- * been migrated.  New code should import directly from the lib modules or use
- * the useCurrency() hook.
+ * All active formatting and conversion logic now lives in src/lib/currency/.
+ * This file is the single entry-point for legacy and new call-sites.
+ *
+ * New code should use the useCurrency() hook directly.
  */
 
-export { FALLBACK_RATES } from '@/lib/currency/currencyConstants';
-export { getCurrentDisplayCurrency as getUserCurrency } from '@/lib/currency/exchangeRateStore';
-
-import { BASE_CURRENCY, FALLBACK_RATES } from '@/lib/currency/currencyConstants';
+import { convertAmount, convertFromBase } from '@/lib/currency/convertCurrency';
 import {
-  getCachedRates,
-  getCurrentDisplayCurrency,
-  getEffectiveRates,
-  isRatePayloadFresh,
-  saveCachedRates,
-} from '@/lib/currency/exchangeRateStore';
-import { fetchLatestRates } from '@/lib/currency/exchangeRateProvider';
-import { convertFromBase } from '@/lib/currency/convertCurrency';
-import { formatMoneyFromBase } from '@/lib/currency/formatCurrency';
+  formatMoneyFromBase,
+  formatMoney as _formatMoney,
+} from '@/lib/currency/formatCurrency';
+import { getEffectiveRates, getCurrentDisplayCurrency } from '@/lib/currency/exchangeRateStore';
+import { FALLBACK_RATES } from '@/lib/currency/currencyConstants';
 
-/**
- * Detect the appropriate currency code from a BCP-47 locale string.
- */
-export function getCurrencyFromLocale(locale) {
-  if (!locale) return 'USD';
-  if (locale.includes('GB')) return 'GBP';
-  if (locale.includes('AU')) return 'AUD';
-  if (locale.includes('CA')) return 'CAD';
-  if (locale.includes('DE') || locale.includes('FR') || locale.includes('ES')) return 'EUR';
-  return 'USD';
+export { FALLBACK_RATES };
+
+export function getCurrentCurrency() {
+  return getCurrentDisplayCurrency();
 }
 
-/**
- * Convert a USD amount to the target currency using the latest cached rates.
- * Returns the converted number (not formatted).
- */
-export function convertFromUSD(usdAmount, currency) {
-  const cur = currency || getCurrentDisplayCurrency();
-  return convertFromBase(usdAmount, cur, getEffectiveRates());
+export function convertCurrency(value, fromCurrency = 'USD', toCurrency = getCurrentDisplayCurrency()) {
+  const rates = getEffectiveRates();
+  return convertAmount(value, fromCurrency, toCurrency, rates);
+}
+
+export function formatCurrencyAmount(value, options = {}) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+
+  const currency = options.currency || getCurrentDisplayCurrency();
+  const locale = options.locale;
+  const baseCurrency = options.baseCurrency || 'USD';
+  const rates = getEffectiveRates();
+
+  if (options.fromCurrency && options.fromCurrency !== baseCurrency) {
+    const converted = convertAmount(Number(value), options.fromCurrency, currency, rates);
+    return _formatMoney(converted, currency, locale);
+  }
+
+  return formatMoneyFromBase(Number(value), currency, locale, rates, baseCurrency);
 }
 
 /**
  * Format a USD amount in the user's preferred (or specified) currency.
+ * @deprecated Use useCurrency().formatFromBase() in React components.
  */
 export function formatMoney(usdValue, currency) {
   const cur = currency || getCurrentDisplayCurrency();
@@ -52,17 +52,9 @@ export function formatMoney(usdValue, currency) {
 }
 
 /**
- * Initialise exchange rates on app boot.
- * The CurrencyProvider handles this automatically; this shim is kept for
- * call-sites in App.jsx that haven't been removed yet.
+ * Convert a USD amount to the target currency.
  */
-export async function initExchangeRates() {
-  const cached = getCachedRates();
-  if (cached && isRatePayloadFresh(cached)) return;
-  try {
-    const payload = await fetchLatestRates(BASE_CURRENCY);
-    saveCachedRates(payload);
-  } catch {
-    // Silently fall back to cached or static rates
-  }
+export function convertFromUSD(usdAmount, currency) {
+  const cur = currency || getCurrentDisplayCurrency();
+  return convertFromBase(usdAmount, cur, getEffectiveRates());
 }

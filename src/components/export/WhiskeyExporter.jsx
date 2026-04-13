@@ -7,11 +7,12 @@ import jsPDF from 'jspdf';
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { toast } from 'sonner';
 import { getBottleUnitValue, getBottleDisplayValueLabel } from '@/components/utils/whiskeyValueHelpers';
-import { formatCurrency } from '@/components/utils/localeFormatters';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 export default function WhiskeyExporter() {
   const [loading, setLoading] = useState(false);
   const { user } = useCurrentUser();
+  const { formatFromBase } = useCurrency();
 
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles-export', user?.email],
@@ -127,7 +128,7 @@ export default function WhiskeyExporter() {
       const unopened = bottles.filter(b => !b.opened_date).length;
       const avgRating = bottles.filter(b => b.rating).reduce((s, b, _, a) => s + b.rating / a.length, 0);
 
-      const fmtMoney = (n) => formatCurrency(Number(n));
+      const fmtMoney = (n) => formatFromBase(Number(n));
 
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');

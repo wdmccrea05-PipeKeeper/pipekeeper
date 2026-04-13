@@ -53,8 +53,8 @@ function WhiskeyKeeperInner() {
   );
 
   const highlights = useMemo(() => {
-    return getWhiskeyHighlights(bottles, inventoryUnits);
-  }, [bottles, inventoryUnits]);
+    return getWhiskeyHighlights(bottles, inventoryUnits, formatFromBase);
+  }, [bottles, inventoryUnits, formatFromBase]);
 
   const quickLaunchActions = [
     {

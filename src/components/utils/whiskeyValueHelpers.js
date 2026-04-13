@@ -1,5 +1,3 @@
-import { formatCurrency as _formatCurrencyLocale } from '@/components/utils/localeFormatters';
-
 export function toNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -31,8 +29,12 @@ export function getBottleCount(bottle) {
   return 1;
 }
 
+/**
+ * @deprecated Use useCurrency().formatFromBase() in React components instead.
+ */
 export function formatCurrency(value) {
-  return _formatCurrencyLocale(value);
+  const n = Number(value);
+  return Number.isFinite(n) ? `$${Math.round(n)}` : '—';
 }
 
 export function buildInventoryCountByBottleId(inventoryUnits = []) {

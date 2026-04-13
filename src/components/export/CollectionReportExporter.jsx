@@ -15,11 +15,13 @@ import { useEntitlements } from "@/components/hooks/useEntitlements";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { calculateTotalOzFromBlend, calculateCellaredOzFromBlend } from "@/components/utils/tobaccoQuantityHelpers";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatCurrency, formatWeight, formatDate } from "@/components/utils/localeFormatters";
+import { formatWeight, formatDate } from "@/components/utils/localeFormatters";
+import { useCurrency } from "@/lib/currency/useCurrency";
 
 export default function CollectionReportExporter({ user }) {
   const { t } = useTranslation();
   const entitlements = useEntitlements();
+  const { formatFromBase: formatCurrency } = useCurrency();
   const [isExporting, setIsExporting] = useState(false);
   const [pdfPreview, setPdfPreview] = useState(null);
   const [previewTitle, setPreviewTitle] = useState("");

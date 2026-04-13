@@ -6,13 +6,14 @@ import { Loader2, Search, DollarSign, TrendingUp, AlertCircle } from "lucide-rea
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatCurrency } from "@/components/utils/localeFormatters";
+import { useCurrency } from "@/lib/currency/useCurrency";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 
 export default function ValueLookup({ pipe, onUpdateValue }) {
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
   const { hasPremium } = useCurrentUser();
   const [loading, setLoading] = useState(false);
   const [valuation, setValuation] = useState(null);
@@ -208,10 +209,10 @@ Provide a detailed valuation in JSON format with:
               <CardContent>
                 <div className="text-center py-4">
                   <div className="text-4xl font-bold text-emerald-700 mb-2">
-                    {formatCurrency(valuation.estimated_value_mid)}
+                    {formatFromBase(valuation.estimated_value_mid)}
                   </div>
                   <div className="text-sm text-stone-500">
-                    {t("matching.range")} {formatCurrency(valuation.estimated_value_low)} - {formatCurrency(valuation.estimated_value_high)}
+                    {t("matching.range")} {formatFromBase(valuation.estimated_value_low)} - {formatFromBase(valuation.estimated_value_high)}
                   </div>
                 </div>
                 <Button 

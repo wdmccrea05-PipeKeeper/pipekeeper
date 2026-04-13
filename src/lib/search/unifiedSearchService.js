@@ -87,6 +87,33 @@ export async function searchForRecord(query, itemType, options = {}) {
 // ── Image suggestion search ───────────────────────────────────────────────────
 
 /**
+ * Deduplicate image results by imageUrl + sourceDomain + title.
+ * Filters out results without an imageUrl or with placeholder URLs.
+ *
+ * @param {Object[]} results
+ * @returns {Object[]}
+ */
+function dedupeImageResults(results = []) {
+  const seen = new Set();
+  return results.filter((item) => {
+    const key = [
+      item.imageUrl || '',
+      item.sourceDomain || '',
+      (item.title || '').toLowerCase().trim(),
+    ].join('|');
+
+    if (!item.imageUrl) return false;
+    if (seen.has(key)) return false;
+    seen.add(key);
+
+    const url = String(item.imageUrl).toLowerCase();
+    if (url.includes('placeholder') || url.includes('no-image')) return false;
+
+    return true;
+  });
+}
+
+/**
  * Fetch image suggestions for a record using the trusted-source strategy.
  *
  * For pipes the results are always marked as reference images.
@@ -97,7 +124,7 @@ export async function searchForRecord(query, itemType, options = {}) {
  * @param {'bottle'|'blend'|'pipe'} entityType
  * @param {Object} fields - Record fields (name, distillery, maker, manufacturer, region, country)
  * @param {{ maxResults?: number }} [options]
- * @returns {Promise<{ results: Object[], noResults: boolean }>}
+ * @returns {Promise<{ results: Object[], exactMatch: Object|null, totalCandidates: number, noResults: boolean }>}
  */
 export async function searchForImages(entityType, fields = {}, options = {}) {
   const { maxResults = 6, seed } = options;
@@ -105,20 +132,20 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
   const hasMinimumFields =
     fields.name || fields.distillery || fields.maker || fields.manufacturer;
 
-  if (!hasMinimumFields) return { results: [], noResults: true };
+  if (!hasMinimumFields) return { results: [], exactMatch: null, totalCandidates: 0, noResults: true };
 
   const prompt = buildImageSearchPrompt(entityType, fields, { seed });
 
   const llmResult = await callLLM(prompt, IMAGE_SEARCH_RESPONSE_SCHEMA);
 
   if (!llmResult || !Array.isArray(llmResult.images) || llmResult.images.length === 0) {
-    return { results: [], noResults: true };
+    return { results: [], exactMatch: null, totalCandidates: 0, noResults: true };
   }
 
   // Filter out results that lack an image_url
   const validImages = llmResult.images.filter((img) => img?.image_url);
 
-  if (validImages.length === 0) return { results: [], noResults: true };
+  if (validImages.length === 0) return { results: [], exactMatch: null, totalCandidates: 0, noResults: true };
 
   // Build a query string for ranking from the available fields
   const rankQuery = [
@@ -140,9 +167,34 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
     imageLabel: entityType === 'pipe' ? 'Reference Image' : 'Suggested Match',
   }));
 
+  let finalResults = dedupeImageResults(withReferenceLabel).slice(0, maxResults);
+
+  // If fewer than 3 trusted results, run a broader fallback query
+  if (finalResults.length < 3) {
+    const broadSeed = seed ?? Date.now();
+    const broadPrompt = buildImageSearchPrompt(entityType, fields, { seed: broadSeed, broad: true });
+    const broadResult = await callLLM(broadPrompt, IMAGE_SEARCH_RESPONSE_SCHEMA);
+
+    if (broadResult && Array.isArray(broadResult.images) && broadResult.images.length > 0) {
+      const broadValid = broadResult.images.filter((img) => img?.image_url);
+      const broadNormalized = broadValid.map((img) => normalizeImageResult(img));
+      const broadRanked = rankResults(rankQuery, broadNormalized, 'image');
+      const broadWithLabel = broadRanked.map((r) => ({
+        ...r,
+        isReferenceImage: entityType === 'pipe',
+        imageLabel: entityType === 'pipe' ? 'Reference Image' : 'Suggested Match',
+      }));
+      finalResults = dedupeImageResults([...finalResults, ...broadWithLabel]).slice(0, maxResults);
+    }
+  }
+
+  const exactMatch = finalResults.find((r) => r.confidenceLabel === 'Exact Match') || null;
+
   return {
-    results: withReferenceLabel.slice(0, maxResults),
-    noResults: withReferenceLabel.length === 0,
+    results: finalResults,
+    exactMatch,
+    totalCandidates: ranked.length,
+    noResults: finalResults.length === 0,
   };
 }
 

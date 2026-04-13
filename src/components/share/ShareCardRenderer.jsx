@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatCurrency } from "@/components/utils/localeFormatters";
+import { useCurrency } from "@/lib/currency/useCurrency";
 
 const LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
 
@@ -16,6 +16,7 @@ function Meta({ label, value }) {
 
 export const PipeShareCard = React.forwardRef(({ pipe }, ref) => {
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
   const photo = pipe?.photos?.[0] || pipe?.primary_photo || pipe?.image;
   return (
     <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
@@ -37,7 +38,7 @@ export const PipeShareCard = React.forwardRef(({ pipe }, ref) => {
           <Meta label={t("pipes.origin", { defaultValue: "Origin" })} value={pipe?.country_of_origin} />
           <Meta label={t("pipes.year", { defaultValue: "Year" })} value={pipe?.year_made} />
           <Meta label={t("pipes.condition", { defaultValue: "Condition" })} value={pipe?.condition} />
-          {pipe?.estimated_value ? <Meta label={t("share.value", { defaultValue: "Value" })} value={formatCurrency(pipe.estimated_value)} /> : null}
+          {pipe?.estimated_value ? <Meta label={t("share.value", { defaultValue: "Value" })} value={formatFromBase(pipe.estimated_value)} /> : null}
         </div>
         {pipe?.notes ? <div className="border-t border-[rgba(180,140,75,0.15)] pt-4"><p style={{ color: "rgba(224,216,200,0.8)", fontSize: 13, lineHeight: 1.5, overflowWrap: "anywhere" }}>{String(pipe.notes).slice(0,150)}</p></div> : null}
       </div>
@@ -47,6 +48,7 @@ export const PipeShareCard = React.forwardRef(({ pipe }, ref) => {
 
 export const WhiskeyShareCard = React.forwardRef(({ bottle }, ref) => {
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
   const photo = bottle?.photo || bottle?.image || bottle?.image_url;
   return (
     <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
@@ -67,7 +69,7 @@ export const WhiskeyShareCard = React.forwardRef(({ bottle }, ref) => {
           <Meta label={t("whiskey.abv", { defaultValue: "ABV" })} value={bottle?.abv ? `${bottle.abv}%` : null} />
           <Meta label={t("whiskey.vintage", { defaultValue: "Vintage" })} value={bottle?.vintage} />
           <Meta label={t("whiskey.country", { defaultValue: "Country" })} value={bottle?.country} />
-          {bottle?.estimated_value ? <Meta label={t("share.value", { defaultValue: "Value" })} value={formatCurrency(bottle.estimated_value)} /> : null}
+          {bottle?.estimated_value ? <Meta label={t("share.value", { defaultValue: "Value" })} value={formatFromBase(bottle.estimated_value)} /> : null}
           {bottle?.rating ? <Meta label={t("common.rating", { defaultValue: "Rating" })} value={`${bottle.rating}/5`} /> : null}
         </div>
         {bottle?.notes ? <div className="border-t border-[rgba(180,140,75,0.15)] pt-4"><p style={{ color: "rgba(224,216,200,0.8)", fontSize: 13, lineHeight: 1.5, overflowWrap: "anywhere" }}>{String(bottle.notes).slice(0, 150)}</p></div> : null}
@@ -78,6 +80,7 @@ export const WhiskeyShareCard = React.forwardRef(({ bottle }, ref) => {
 
 export const TobaccoShareCard = React.forwardRef(({ tobacco }, ref) => {
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
   const photo = tobacco?.photo || tobacco?.logo || tobacco?.tin_image || tobacco?.brand_logo;
   return (
     <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
@@ -96,7 +99,7 @@ export const TobaccoShareCard = React.forwardRef(({ tobacco }, ref) => {
           <Meta label={t("tobaccoExtended.cut", { defaultValue: "Cut" })} value={tobacco?.cut} />
           <Meta label={t("tobaccoExtended.strength", { defaultValue: "Strength" })} value={tobacco?.strength} />
           <Meta label={t("tobaccoExtended.roomNote", { defaultValue: "Room Note" })} value={tobacco?.room_note} />
-          {tobacco?.estimated_value ? <Meta label={t("share.value", { defaultValue: "Value" })} value={formatCurrency(tobacco.estimated_value)} /> : null}
+          {tobacco?.estimated_value ? <Meta label={t("share.value", { defaultValue: "Value" })} value={formatFromBase(tobacco.estimated_value)} /> : null}
           {typeof tobacco?.total_quantity_oz === 'number' && tobacco.total_quantity_oz > 0 ? <Meta label={t("share.inventory", { defaultValue: "Inventory" })} value={`${tobacco.total_quantity_oz.toFixed(1)} oz`} /> : null}
         </div>
         {Array.isArray(tobacco?.tobacco_components) && tobacco.tobacco_components.length > 0 ? <div><p style={{ color: "rgba(180,140,75,0.6)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>{t("tobaccoExtended.tobaccoComponents", { defaultValue: "Components" })}</p><div className="flex flex-wrap gap-2">{tobacco.tobacco_components.slice(0,5).map((c)=><span key={c} className="px-2 py-1 rounded-full text-[11px]" style={{ background:"rgba(180,140,75,0.12)", border:"1px solid rgba(180,140,75,0.18)", color:"#E0D8C8", overflowWrap:"anywhere" }}>{c}</span>)}</div></div> : null}
