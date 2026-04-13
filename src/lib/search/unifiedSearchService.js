@@ -100,14 +100,14 @@ export async function searchForRecord(query, itemType, options = {}) {
  * @returns {Promise<{ results: Object[], noResults: boolean }>}
  */
 export async function searchForImages(entityType, fields = {}, options = {}) {
-  const { maxResults = 5 } = options;
+  const { maxResults = 6, seed } = options;
 
   const hasMinimumFields =
     fields.name || fields.distillery || fields.maker || fields.manufacturer;
 
   if (!hasMinimumFields) return { results: [], noResults: true };
 
-  const prompt = buildImageSearchPrompt(entityType, fields);
+  const prompt = buildImageSearchPrompt(entityType, fields, { seed });
 
   const llmResult = await callLLM(prompt, IMAGE_SEARCH_RESPONSE_SCHEMA);
 

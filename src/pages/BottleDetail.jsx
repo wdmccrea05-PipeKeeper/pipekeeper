@@ -43,6 +43,7 @@ import {
   resolveBottleValueSource,
 } from "@/components/whiskey/utils/bottleValue";
 import ValueStrategySection from "@/components/whiskey/ValueStrategySection";
+import ValuationBreakdown from "@/components/valuation/ValuationBreakdown";
 import {
   buildValuationSnapshot,
   resolveValueTrend,
@@ -939,6 +940,7 @@ function BottleDetailInner() {
               ) : null}
 
               {/* VALUE & STRATEGY SECTION */}
+              <ValuationBreakdown item={bottle} itemType="bottle" />
               <ValueStrategySection
                 valuationSnapshot={valuationSnapshot}
                 valueTrend={valueTrend}

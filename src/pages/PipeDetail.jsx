@@ -34,6 +34,7 @@ import RotationPlanner from '@/components/pipes/RotationPlanner';
 import InterchangeableBowls from '@/components/pipes/InterchangeableBowls';
 import ValueLookup from '@/components/ai/ValueLookup';
 import ValuationCredibility, { computePipeValuation } from '@/components/valuation/ValuationCredibility';
+import ValuationBreakdown from '@/components/valuation/ValuationBreakdown';
 import ValueStrategySection from '@/components/whiskey/ValueStrategySection';
 import {
   buildValuationSnapshot,
@@ -901,6 +902,7 @@ export default function PipeDetail() {
               {computedValuation && (
                 <ValuationCredibility valuation={computedValuation} />
               )}
+              <ValuationBreakdown item={pipe} itemType="pipe" />
               {showAppraisal && (
                 <div className="mt-4">
                   <ValueLookup

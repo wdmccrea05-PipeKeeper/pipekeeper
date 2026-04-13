@@ -293,8 +293,9 @@ export const QUICK_ADD_RESPONSE_SCHEMA = {
  * @param {Object} fields
  * @returns {string}
  */
-export function buildImageSearchPrompt(entityType, fields = {}) {
-  const { name, distillery, maker, manufacturer, region, country } = fields;
+export function buildImageSearchPrompt(entityType, fields = {}, options = {}) {
+  const { name, distillery, maker, manufacturer, region, country, shape } = fields;
+  const { seed } = options; // optional seed for Search Again variation
 
   const subject =
     entityType === 'bottle'
@@ -306,22 +307,70 @@ export function buildImageSearchPrompt(entityType, fields = {}) {
   const internationalHint =
     region || country ? ` (${[region, country].filter(Boolean).join(', ')})` : '';
 
+  // Per-type source lists and query strategies
   const sourceHint =
     entityType === 'bottle'
-      ? 'masterofmalt.com, thewhiskyexchange.com, whiskybase.com, or an official distillery page'
+      ? 'masterofmalt.com, thewhiskyexchange.com, whiskybase.com, finedrams.com, reservebar.com, totalwine.com, or an official distillery page'
       : entityType === 'blend'
-        ? 'smokingpipes.com, tobaccoreviews.com, or an official manufacturer page'
-        : 'smokingpipes.com, pipedia.org, or an official maker page';
+        ? 'smokingpipes.com, pipesandcigars.com, tobaccopipes.com, cupojoes.com, tobaccoreviews.com, or an official manufacturer page'
+        : 'smokingpipes.com, pipedia.org, smokingpipesjp.com, or an official maker page';
 
-  return `Find up to 5 high-quality product images for the ${entityType} "${subject}"${internationalHint}.
+  // Per-type query variants to improve coverage
+  let queryVariants = '';
+  if (entityType === 'bottle') {
+    const base = subject;
+    queryVariants = `
+Query variants to try (use all):
+1. "${base} bottle front"
+2. "${base} whisky bottle"
+3. "${base} official product image"
+4. "${base} label"
+5. "${base} retailer"
+6. "${base} ${region || country || 'spirits'}"`;
+  } else if (entityType === 'blend') {
+    const base = subject;
+    queryVariants = `
+Query variants to try (use all):
+1. "${base} tin label"
+2. "${base} tobacco tin"
+3. "${base} official product image"
+4. "${base} smokingpipes"
+5. "${base} pouch label"
+6. "${base} pipe tobacco"`;
+  } else if (entityType === 'pipe') {
+    const base = subject;
+    const shapeHint = shape ? ` ${shape}` : '';
+    queryVariants = `
+Query variants to try (use all):
+1. "${base}${shapeHint} pipe"
+2. "${base} pipe official"
+3. "${maker || base} ${shape || ''} pipe"
+4. "${maker || base} pipe retailer"
+5. "${base} stamping pipe"
+6. "${base} pipe reference"`;
+  }
 
-IMPORTANT:
-- Prefer images from ${sourceHint}.
-- For non-US products, prefer images from international specialist sources over US-only retailers.
-- For pipes, label results as reference images only (not guaranteed to match a user's specific pipe).
-- Return only product/tin/bottle images, not review thumbnails or forum posts.
+  // Optional variation instruction for Search Again
+  const variationNote = seed
+    ? '\n- This is a re-search request. Return DIFFERENT images from a previous attempt — use alternative sources or query angles.'
+    : '';
 
-Return JSON with an "images" array. Each item:
+  return `Find 6 to 8 high-quality product images for the ${entityType} "${subject}"${internationalHint}.
+
+TARGET: Return at least 6 images. Minimum acceptable: 3. Even if an exact match exists, include alternatives from different sources.
+${queryVariants}
+
+SOURCES: Prefer images from ${sourceHint}.
+${variationNote}
+
+RULES:
+- Do NOT return review thumbnails, forum post images, or low-resolution placeholders.
+- Do NOT return the same image from different URL variants (deduplicate).
+- For non-US products, strongly prefer international specialist sources.
+- For pipes, label results as reference images (not guaranteed to match the exact pipe).
+- Return only product/bottle/tin/label images in good resolution.
+
+Return JSON with an "images" array of 6–8 entries. Each item:
 - title (string) — product name as shown on source page
 - image_url (string) — direct URL to the product image
 - source_url (string) — URL of the page where the image appears

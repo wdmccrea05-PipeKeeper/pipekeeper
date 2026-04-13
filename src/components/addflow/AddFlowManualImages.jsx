@@ -128,6 +128,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
   const [loading, setLoading]   = useState(false);
   const [fetched, setFetched]   = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [searchCount, setSearchCount] = useState(0);
   const hasFetchedRef = useRef(false);
 
   const fields = {
@@ -137,14 +138,17 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
     manufacturer: data.manufacturer,
     region:       data.region,
     country:      data.country || data.country_of_origin,
+    shape:        data.shape,
   };
 
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = async (isRetry = false) => {
     if (loading) return;
     setLoading(true);
     setFetched(false);
     try {
-      const { results } = await searchForImages(itemType, fields, { maxResults: 5 });
+      // Pass a seed on retries so the LLM uses alternative sources/angles
+      const seed = isRetry ? Date.now() : undefined;
+      const { results } = await searchForImages(itemType, fields, { maxResults: 6, seed });
       setSuggestions(results.filter((r) => r.imageUrl));
     } catch {
       setSuggestions([]);
@@ -158,10 +162,15 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
   useEffect(() => {
     if (!hasFetchedRef.current && (fields.name || fields.distillery || fields.maker || fields.manufacturer)) {
       hasFetchedRef.current = true;
-      fetchSuggestions();
+      fetchSuggestions(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleSearchAgain = () => {
+    setSearchCount(c => c + 1);
+    fetchSuggestions(true);
+  };
 
   if (!loading && !fetched) return null;
 
@@ -174,12 +183,14 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
             Suggested Images
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
-            Choose a trusted image match or upload your own.
+            {suggestions.length > 0
+              ? `${suggestions.length} trusted image${suggestions.length === 1 ? '' : 's'} found.`
+              : 'Choose a trusted image match or upload your own.'}
           </p>
         </div>
         {fetched && (
           <button
-            onClick={fetchSuggestions}
+            onClick={handleSearchAgain}
             className="text-xs px-2.5 py-1 rounded-full hover:bg-white/10 transition-colors"
             style={{ color: 'rgba(180,140,75,0.8)', border: '1px solid rgba(180,140,75,0.2)' }}
           >
@@ -191,13 +202,13 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
       {loading && (
         <div className="flex items-center gap-2 py-3" style={{ color: 'rgba(224,216,200,0.4)' }}>
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-xs">Finding trusted images…</span>
+          <span className="text-xs">{searchCount > 0 ? 'Broadening search…' : 'Finding trusted images…'}</span>
         </div>
       )}
 
       {!loading && fetched && suggestions.length === 0 && (
         <p className="text-xs py-2" style={{ color: 'rgba(224,216,200,0.35)' }}>
-          No trusted matches found. Upload your own image above.
+          No trusted image matches found. Try Search Again, paste an image URL, or upload your own.
         </p>
       )}
 
