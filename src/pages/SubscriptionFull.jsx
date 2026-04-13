@@ -3,7 +3,7 @@ import { useNavigate } from "@/components/utils/navigation";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Crown, AlertCircle } from "lucide-react";
 import {
   isIOSWebView,
   openNativePaywall,
@@ -19,6 +19,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { handleManageSubscription } from "@/components/utils/manageSubscription";
 import { toast } from "sonner";
+import { getUserSubscriptionState, isFreeUser, getCurrentPlanLabel } from "@/lib/billing/subscriptionState";
+import { getAvailableUpgradeOptions } from "@/lib/billing/upgradePaths";
+import { SUBSCRIPTION_PLANS } from "@/lib/billing/subscriptionPlans";
+import { initiateCheckoutWithIntent } from "@/components/subscription/subscriptionHandler";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading, t }) {
   return (
@@ -70,6 +74,26 @@ export default function SubscriptionFull() {
 
   const alreadySubscribed = hasPaidAccess(user, subscription);
   const alreadyPro = hasProAccess(user, subscription);
+
+  // Compute normalized billing state from subscription records
+  const subscriptionState = useMemo(
+    () =>
+      getUserSubscriptionState({
+        activeSubscriptions: subscription ? [subscription] : [],
+        entitlements: user?.entitlements || {},
+        user,
+      }),
+    [user, subscription]
+  );
+
+  const upgradeOptions = useMemo(
+    () => getAvailableUpgradeOptions(subscriptionState),
+    [subscriptionState]
+  );
+
+  const [selectedUpgradeOption, setSelectedUpgradeOption] = useState(null);
+  const [upgradeError, setUpgradeError] = useState(null);
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   useEffect(() => {
     if (!isIOSApp) return;
@@ -185,34 +209,83 @@ export default function SubscriptionFull() {
     setMessage("");
     try {
       const billingInterval = (interval || selectedInterval) === "annual" ? "annual" : "monthly";
-      const planKey = billingInterval === "annual" ? "founders_bundle_annual" : "founders_bundle_monthly";
+      const targetPlanKey = billingInterval === "annual" ? "founders_bundle_annual" : "founders_bundle_monthly";
 
-      const response = await base44.functions.invoke("createCheckoutSession", {
-        planKey,
-        selectedModules: ["pipekeeper", "whiskeykeeper"],
-        successUrl: `${window.location.origin}/Subscription?success=1`,
-        cancelUrl: `${window.location.origin}/Subscription?canceled=1`,
-      });
-
-      const url =
-        response?.data?.url ||
-        response?.data?.sessionUrl ||
-        response?.url ||
-        response?.sessionUrl;
-
-      if (!url) {
-        console.error("[SubscriptionFull] No checkout URL in response:", response);
-        setMessage(t("subscriptionFull.checkoutError"));
-        return;
-      }
-
-      const popup = window.open(url, "_blank", "noopener,noreferrer");
-      if (!popup || popup.closed || typeof popup.closed === "undefined") {
-        window.location.assign(url);
-      }
+      await initiateCheckoutWithIntent(
+        {
+          actionType: "new_purchase",
+          currentPlanKey: null,
+          targetPlanKey,
+        },
+        `/SubscriptionSuccessFlow?next=${encodeURIComponent("/CollectionHub")}`,
+        "/Subscription"
+      );
     } catch (e) {
-      console.error("[SubscriptionFull] Checkout error:", e);
-      setMessage(t("subscriptionFull.checkoutError"));
+      if (e?.message === "popup_blocked_or_redirect_disallowed") {
+        toast.error("Unable to open checkout here. Please try again.");
+      } else {
+        console.error("[SubscriptionFull] Checkout error:", e);
+        setMessage(t("subscriptionFull.checkoutError"));
+      }
+    }
+  };
+
+  const handleUpgradeWithIntent = async (option) => {
+    if (!option || isUpgrading) return;
+    setIsUpgrading(true);
+    setUpgradeError(null);
+    setMessage("");
+
+    try {
+      // For bundle upgrades, cancel existing subscription first
+      if (option.actionType === "upgrade_existing") {
+        const userId = user?.id || user?.auth_user_id;
+        const email = user?.email;
+        let subs = [];
+        if (userId) subs = await base44.entities.Subscription.filter({ user_id: userId }).catch(() => []);
+        if (subs.length === 0 && email) subs = await base44.entities.Subscription.filter({ user_email: email }).catch(() => []);
+
+        const cancelableIds = (Array.isArray(subs) ? subs : [])
+          .filter(
+            (s) =>
+              ["active", "trialing", "past_due"].includes(String(s?.status || "").toLowerCase()) &&
+              (String(s?.provider || "").toLowerCase() === "stripe" || !s?.provider) &&
+              (s?.provider_subscription_id || s?.stripe_subscription_id)
+          )
+          .map((s) => s?.provider_subscription_id || s?.stripe_subscription_id)
+          .filter(Boolean);
+
+        if (cancelableIds.length > 0) {
+          const upgradeRes = await base44.functions.invoke("handleBundleUpgrade", {
+            currentSubscriptionIds: cancelableIds,
+            targetBundleType: "founders",
+            billingPeriod: option.targetPlanKey?.includes("monthly") ? "monthly" : "annual",
+          });
+          if (!upgradeRes?.data?.success) {
+            setUpgradeError(upgradeRes?.data?.error || upgradeRes?.error || "Failed to prepare upgrade.");
+            setIsUpgrading(false);
+            return;
+          }
+        }
+      }
+
+      await initiateCheckoutWithIntent(
+        {
+          actionType: option.actionType,
+          currentPlanKey: option.currentPlanKey,
+          targetPlanKey: option.targetPlanKey,
+        },
+        `/SubscriptionSuccessFlow?next=${encodeURIComponent("/CollectionHub")}`,
+        "/Subscription"
+      );
+    } catch (e) {
+      if (e?.message === "popup_blocked_or_redirect_disallowed") {
+        toast.error("Unable to open checkout here. Please try again from the Subscription page.");
+      } else {
+        setUpgradeError(e?.message || "An unexpected error occurred.");
+      }
+    } finally {
+      setIsUpgrading(false);
     }
   };
 
@@ -278,6 +351,127 @@ export default function SubscriptionFull() {
   }
 
   if (alreadySubscribed) {
+    const planLabel = getCurrentPlanLabel(subscriptionState);
+    const hasUpgradePaths = upgradeOptions.length > 0;
+
+    // Bundle users — already have everything
+    if (subscriptionState.hasBundle) {
+      return (
+        <div className="w-full max-w-3xl mx-auto p-4 space-y-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mx-auto"
+            style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37", border: "1px solid rgba(212,175,55,0.3)" }}>
+            <Crown className="w-4 h-4" />
+            You already have the Founders Bundle
+          </div>
+          <h1 className="text-2xl font-bold text-[#e8d5b7]">
+            {t("subscriptionFull.alreadySubscribed")}
+          </h1>
+          <p className="text-[#e8d5b7]/70">
+            PipeKeeper + WhiskeyKeeper are both included in your Founders Bundle.
+          </p>
+          <div className="flex flex-col gap-3 max-w-xs mx-auto">
+            <Button className="w-full" onClick={handleManage}>
+              {t("subscriptionFull.manageSubscription")}
+            </Button>
+            <Button variant="secondary" className="w-full" onClick={handleManualRefresh}>
+              {t("subscriptionFull.refreshStatus")}
+            </Button>
+          </div>
+          {message && (
+            <div className={`text-center text-sm ${message.includes("✅") ? "text-emerald-500" : "text-red-500"}`}>
+              {message}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Single-module subscribers — show upgrade paths
+    if (hasUpgradePaths) {
+      return (
+        <div className="w-full max-w-3xl mx-auto p-4 space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-[#e8d5b7] mb-1">Your Subscription</h1>
+            {planLabel && (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold"
+                style={{ background: "rgba(163,92,92,0.15)", color: "#D4A574", border: "1px solid rgba(163,92,92,0.3)" }}>
+                Current Plan: {planLabel}
+              </div>
+            )}
+          </div>
+
+          <p className="text-[#e8d5b7]/70 text-sm">
+            Choose what you'd like to do next:
+          </p>
+
+          {upgradeError && (
+            <div className="p-3 rounded-lg flex gap-2 items-start text-sm"
+              style={{ background: "rgba(224,93,93,0.1)", border: "1px solid rgba(224,93,93,0.3)" }}>
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "#E05D5D" }} />
+              <span style={{ color: "#E05D5D" }}>{upgradeError}</span>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {upgradeOptions.map((option) => {
+              const isBundle = option.action === "upgrade_to_bundle";
+              const planDef = SUBSCRIPTION_PLANS[option.targetPlanKey];
+              return (
+                <div
+                  key={option.action}
+                  onClick={() => !isUpgrading && setSelectedUpgradeOption(selectedUpgradeOption?.action === option.action ? null : option)}
+                  className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                    selectedUpgradeOption?.action === option.action
+                      ? "border-[#A35C5C] bg-[#A35C5C]/10"
+                      : "border-[#8b6239]/30 hover:border-[#A35C5C]/50 bg-[#2a1f18]/50"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {isBundle && <Crown className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#D4AF37" }} />}
+                    <div className="flex-1">
+                      <h3 className="font-bold text-[#F5F1E7]">{option.label}</h3>
+                      {planDef?.displayPrice != null && (
+                        <p className="text-sm text-[#D4A574] mt-0.5">
+                          ${planDef.displayPrice}/{planDef.term === "annual" ? "yr" : "mo"}
+                        </p>
+                      )}
+                      <p className="text-sm text-[#e8d5b7]/70 mt-1">{option.description}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {selectedUpgradeOption && (
+            <Button
+              className="w-full"
+              onClick={() => handleUpgradeWithIntent(selectedUpgradeOption)}
+              disabled={isUpgrading}
+            >
+              {isUpgrading ? "Processing…" : `Continue — ${selectedUpgradeOption.label}`}
+            </Button>
+          )}
+
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" className="flex-1" onClick={handleManage}>
+              {t("subscriptionFull.manageSubscription")}
+            </Button>
+            <Button variant="secondary" className="flex-1" onClick={handleManualRefresh}>
+              {t("subscriptionFull.refreshStatus")}
+            </Button>
+          </div>
+
+          {message && (
+            <div className={`text-center text-sm ${message.includes("✅") ? "text-emerald-500" : "text-red-500"}`}>
+              {message}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Fallback for any other paid state — generic already-subscribed view
     return (
       <div className="w-full max-w-3xl mx-auto p-4 space-y-6 text-center">
         <h1 className="text-2xl font-bold text-[#e8d5b7]">

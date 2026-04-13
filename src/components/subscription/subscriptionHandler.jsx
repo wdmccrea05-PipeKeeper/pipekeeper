@@ -1,5 +1,6 @@
 import { base44 } from '@/api/base44Client';
 import { getStripeConfig, getRequiredStripePlan } from './stripeConfig';
+import { SUBSCRIPTION_PLANS } from '@/lib/billing/subscriptionPlans';
 
 // Export config getter for compatibility
 export const PLAN_CONFIG = getStripeConfig();
@@ -168,4 +169,73 @@ export function getModulesFromPlanKey(planKey, metadata) {
   if (planKey.includes('winekeeper')) return ['winekeeper'];
 
   return [];
+}
+
+/**
+ * Initiate Stripe checkout with an explicit billing intent.
+ *
+ * This is the preferred checkout entry point for all state-aware billing flows.
+ * It replaces ad-hoc calls to initiateCheckout() with explicit intent information.
+ *
+ * @param {object} intent
+ * @param {string} intent.actionType  - 'new_purchase' | 'upgrade_existing' | 'add_complementary_module'
+ * @param {string|null} intent.currentPlanKey - User's existing plan key (null for new purchases)
+ * @param {string} intent.targetPlanKey - Plan key to purchase
+ * @param {string} [successUrl]
+ * @param {string} [cancelUrl]
+ */
+export async function initiateCheckoutWithIntent(
+  intent,
+  successUrl = '/',
+  cancelUrl = '/'
+) {
+  const { actionType, currentPlanKey = null, targetPlanKey } = intent || {};
+
+  // Hard validation — never silently fall back to a wrong plan
+  if (!targetPlanKey) {
+    throw new Error(`Checkout cannot start: no targetPlanKey provided.`);
+  }
+
+  const plan = SUBSCRIPTION_PLANS[targetPlanKey];
+  if (!plan) {
+    throw new Error(`Unknown target plan key: ${targetPlanKey}`);
+  }
+
+  if (!actionType || !['new_purchase', 'upgrade_existing', 'add_complementary_module'].includes(actionType)) {
+    throw new Error(`Invalid actionType: ${actionType}`);
+  }
+
+  // Validate the Stripe price ID is configured
+  const stripeConfig = getStripeConfig();
+  const stripePlan = stripeConfig[targetPlanKey];
+  if (!stripePlan?.priceId) {
+    throw new Error('This subscription option is not currently available. Please contact support.');
+  }
+
+  try {
+    const response = await base44.functions.invoke('createCheckoutSession', {
+      planKey: targetPlanKey,
+      actionType,
+      currentPlanKey,
+      selectedModules: plan.modules || [],
+      successUrl: `${window.location.origin}${successUrl}`,
+      cancelUrl: `${window.location.origin}${cancelUrl}`,
+    });
+
+    const checkoutUrl = response?.data?.sessionUrl || response?.data?.url;
+
+    if (checkoutUrl) {
+      const opened = window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+      if (!opened || opened?.closed) {
+        throw new Error('popup_blocked_or_redirect_disallowed');
+      }
+    } else {
+      const errorMsg = response?.data?.error || 'Could not start checkout. Please try again.';
+      throw new Error(errorMsg);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Checkout is temporarily unavailable.';
+    console.error('[Checkout] initiateCheckoutWithIntent error:', message, error);
+    throw new Error(message);
+  }
 }
