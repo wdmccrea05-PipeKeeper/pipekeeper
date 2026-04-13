@@ -401,7 +401,9 @@ export function getProductFamilyKey(sub) {
     return 'bundle::' + [...sub.modules].sort().join(',');
   }
   if (sub.module === 'unknown') {
-    return 'unknown::' + (sub.rawId || Math.random().toString(36));
+    // Unknown products do not collapse — use rawId as unique identifier.
+    // If rawId is also empty (malformed row), fall back to other deterministic fields.
+    return 'unknown::' + (sub.rawId || sub.userEmail || sub.planKey || sub.userId || 'empty');
   }
   return 'single::' + sub.module;
 }

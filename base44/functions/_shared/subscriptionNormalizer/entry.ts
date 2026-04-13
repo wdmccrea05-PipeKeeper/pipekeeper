@@ -351,7 +351,10 @@ export function mrrContribution(sub: NormalizedSubscription): number {
  */
 export function getProductFamilyKey(sub: NormalizedSubscription): string {
   if (sub.isBundle) return 'bundle::' + [...sub.modules].sort().join(',');
-  if (sub.module === 'unknown') return 'unknown::' + (sub.rawId || Math.random().toString(36));
+  if (sub.module === 'unknown') {
+    // Unknown products do not collapse — use rawId as unique identifier.
+    return 'unknown::' + (sub.rawId || sub.userEmail || sub.planKey || sub.userId || 'empty');
+  }
   return 'single::' + sub.module;
 }
 
