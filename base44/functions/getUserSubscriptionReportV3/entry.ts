@@ -37,9 +37,9 @@ interface CalendarRange {
 
 const PLAN_CATALOG: Record<string, { modules: string[]; billingInterval: IntervalKind; price: number; label: string }> = {
   // ── Legacy "premium" single-module plans ──────────────────────────────────
-  pipekeeper_premium_monthly:    { modules: ['pipekeeper'],              billingInterval: 'monthly', price: 1.99,  label: 'PipeKeeper (Legacy)' },
-  pipekeeper_premium_annual:     { modules: ['pipekeeper'],              billingInterval: 'annual',  price: 19.99, label: 'PipeKeeper (Legacy Annual)' },
-  whiskeykeeper_premium_monthly: { modules: ['whiskeykeeper'],           billingInterval: 'monthly', price: 1.99,  label: 'WhiskeyKeeper (Legacy)' },
+  pipekeeper_premium_monthly:    { modules: ['pipekeeper'],              billingInterval: 'monthly', price: 1.99,  label: 'PipeKeeper (Legacy)'           },
+  pipekeeper_premium_annual:     { modules: ['pipekeeper'],              billingInterval: 'annual',  price: 19.99, label: 'PipeKeeper (Legacy Annual)'    },
+  whiskeykeeper_premium_monthly: { modules: ['whiskeykeeper'],           billingInterval: 'monthly', price: 1.99,  label: 'WhiskeyKeeper (Legacy)'        },
   whiskeykeeper_premium_annual:  { modules: ['whiskeykeeper'],           billingInterval: 'annual',  price: 19.99, label: 'WhiskeyKeeper (Legacy Annual)' },
 
   // ── Current "pro" single-module plans ─────────────────────────────────────
@@ -52,7 +52,8 @@ const PLAN_CATALOG: Record<string, { modules: string[]; billingInterval: Interva
   winekeeper_pro_monthly:        { modules: ['winekeeper'],              billingInterval: 'monthly', price: 2.99,  label: 'WineKeeper Pro' },
   winekeeper_pro_annual:         { modules: ['winekeeper'],              billingInterval: 'annual',  price: 29.99, label: 'WineKeeper Pro Annual' },
 
-  // ── Founders bundle: PipeKeeper + WhiskeyKeeper ───────────────────────────
+  // ── Founders bundle: PipeKeeper + WhiskeyKeeper ONLY ($4.99/mo, $49.99/yr) ─
+  // Canonical definition: 2 modules. Do NOT map founders to 4 modules.
   founders_bundle_monthly:       { modules: ['pipekeeper','whiskeykeeper'], billingInterval: 'monthly', price: 4.99,  label: 'Founders Bundle (PK+WK)' },
   founders_bundle_annual:        { modules: ['pipekeeper','whiskeykeeper'], billingInterval: 'annual',  price: 49.99, label: 'Founders Bundle Annual (PK+WK)' },
 
@@ -69,41 +70,33 @@ function lookupPlan(planKey: string | null) {
 }
 
 // ─── Amount-based plan inference ──────────────────────────────────────────────
-// When plan_key is missing or unknown, derive plan attributes from the stored amount.
-// Module is resolved separately from user entitlement flags.
+// Valid prices: 1.99/19.99, 2.99/29.99, 4.99/49.99, 7.99/79.99, 8.99/89.99
+// INVALID: 9.99/99.99 — do not infer from these amounts.
 
 interface AmountInference {
   billingInterval: IntervalKind;
-  price: number;
+  modules: string[] | null; // null for singles (module can't be determined from price alone)
   isBundle: boolean;
-  isSingleModule: boolean;
   label: string;
 }
 
 function inferFromAmount(amount: number): AmountInference | null {
-  const a = parseFloat(amount.toFixed(2));
-  if (a === 1.99)  return { billingInterval: 'monthly', price: 1.99,  isBundle: false, isSingleModule: true,  label: 'Legacy Premium' };
-  if (a === 19.99) return { billingInterval: 'annual',  price: 19.99, isBundle: false, isSingleModule: true,  label: 'Legacy Premium Annual' };
-  if (a === 2.99)  return { billingInterval: 'monthly', price: 2.99,  isBundle: false, isSingleModule: true,  label: 'Pro' };
-  if (a === 29.99) return { billingInterval: 'annual',  price: 29.99, isBundle: false, isSingleModule: true,  label: 'Pro Annual' };
-  if (a === 4.99)  return { billingInterval: 'monthly', price: 4.99,  isBundle: true,  isSingleModule: false, label: 'Founders Bundle (PK+WK)' };
-  if (a === 49.99) return { billingInterval: 'annual',  price: 49.99, isBundle: true,  isSingleModule: false, label: 'Founders Bundle Annual (PK+WK)' };
-  if (a === 7.99)  return { billingInterval: 'monthly', price: 7.99,  isBundle: true,  isSingleModule: false, label: '3-Module Bundle' };
-  if (a === 79.99) return { billingInterval: 'annual',  price: 79.99, isBundle: true,  isSingleModule: false, label: '3-Module Bundle Annual' };
-  if (a === 8.99)  return { billingInterval: 'monthly', price: 8.99,  isBundle: true,  isSingleModule: false, label: '4-Module Bundle' };
-  if (a === 89.99) return { billingInterval: 'annual',  price: 89.99, isBundle: true,  isSingleModule: false, label: '4-Module Bundle Annual' };
+  const a = parseFloat(Number(amount).toFixed(2));
+  // Single-module plans: interval known, module unknown
+  if (a === 1.99)  return { billingInterval: 'monthly', modules: null, isBundle: false, label: 'Legacy Premium' };
+  if (a === 19.99) return { billingInterval: 'annual',  modules: null, isBundle: false, label: 'Legacy Premium Annual' };
+  if (a === 2.99)  return { billingInterval: 'monthly', modules: null, isBundle: false, label: 'Pro' };
+  if (a === 29.99) return { billingInterval: 'annual',  modules: null, isBundle: false, label: 'Pro Annual' };
+  // Founders bundle: PK + WK ONLY (2 modules)
+  if (a === 4.99)  return { billingInterval: 'monthly', modules: ['pipekeeper', 'whiskeykeeper'], isBundle: true, label: 'Founders Bundle (PK+WK)' };
+  if (a === 49.99) return { billingInterval: 'annual',  modules: ['pipekeeper', 'whiskeykeeper'], isBundle: true, label: 'Founders Bundle Annual (PK+WK)' };
+  // 3-module bundle
+  if (a === 7.99)  return { billingInterval: 'monthly', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], isBundle: true, label: '3-Module Bundle' };
+  if (a === 79.99) return { billingInterval: 'annual',  modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], isBundle: true, label: '3-Module Bundle Annual' };
+  // 4-module bundle
+  if (a === 8.99)  return { billingInterval: 'monthly', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], isBundle: true, label: '4-Module Bundle' };
+  if (a === 89.99) return { billingInterval: 'annual',  modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], isBundle: true, label: '4-Module Bundle Annual' };
   return null;
-}
-
-// Resolve which modules a single-module subscriber has from user entitlement flags.
-// Falls back to pipekeeper when flags are absent.
-function resolveModulesFromUser(user: any | null): string[] {
-  if (!user) return ['pipekeeper'];
-  const pk = !!user.pipekeeper_paid;
-  const wk = !!user.whiskeykeeper_paid;
-  if (pk && wk) return ['pipekeeper', 'whiskeykeeper'];
-  if (wk) return ['whiskeykeeper'];
-  return ['pipekeeper'];
 }
 
 function buildProductLabel(modules: string[], baseLabel: string): string {
@@ -210,10 +203,12 @@ function isActivePaid(raw: any): boolean {
 }
 
 // ─── Normalization: raw → NormalizedSub ──────────────────────────────────────
-// Source of truth priority:
-//   1. plan_key → PLAN_CATALOG (exact match)
-//   2. stored amount → inferFromAmount → modules from user entitlement flags
-//   3. billing_interval field for interval (overrides catalog when present)
+// Module resolution priority (NEVER defaults to 'pipekeeper'):
+//   1. planKey → PLAN_CATALOG (authoritative)
+//   2. modules_csv stored field
+//   3. primary_module stored field
+//   4. Amount inference for bundle prices (resolves modules from price)
+//   5. 'unknown' — truly unresolvable products stay unknown
 
 function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   const planKey = norm(raw.planKey || raw.plan_key || '') || null;
@@ -228,7 +223,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     catalog   ? catalog.price :
     null;
 
-  const renewalAmount = price; // renewal amount = same price per cycle
+  const renewalAmount = price;
 
   // ── Interval resolution: field → catalog → amount inference ──────────────
   const fieldInterval = normalizeInterval(raw);
@@ -237,35 +232,37 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     (catalog?.billingInterval ?? null) ??
     (amountInference?.billingInterval ?? null);
 
-  // ── Module resolution ─────────────────────────────────────────────────────
+  // ── Module resolution (never defaults to 'pipekeeper') ───────────────────
   let modules: string[];
   let productLabel: string;
 
   if (catalog) {
+    // 1. Authoritative catalog match via planKey
     modules = catalog.modules;
     productLabel = buildProductLabel(catalog.modules, catalog.label);
-  } else if (amountInference) {
-    if (amountInference.isBundle) {
-      // Founders or larger bundle — determine by price
-      if (rawAmount === 4.99 || rawAmount === 49.99) {
-        modules = ['pipekeeper', 'whiskeykeeper'];
-      } else if (rawAmount === 7.99 || rawAmount === 79.99) {
-        modules = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
-      } else if (rawAmount === 8.99 || rawAmount === 89.99) {
-        modules = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
-      } else {
-        modules = ['pipekeeper', 'whiskeykeeper'];
-      }
+  } else {
+    // 2. modules_csv stored field
+    const csvModules = String(raw.modules_csv || '')
+      .split(',')
+      .map((m: string) => m.trim().toLowerCase())
+      .filter(Boolean);
+
+    if (csvModules.length > 0) {
+      modules = csvModules;
+      productLabel = buildProductLabel(modules, modules.length > 1 ? 'Bundle' : modules[0]);
+    } else if (norm(raw.primary_module || '')) {
+      // 3. primary_module stored field
+      modules = [norm(raw.primary_module)];
+      productLabel = buildProductLabel(modules, modules[0]);
+    } else if (amountInference?.modules) {
+      // 4. Amount inference for bundle amounts (resolves modules definitively)
+      modules = amountInference.modules;
       productLabel = amountInference.label;
     } else {
-      // Single module — resolve from user entitlement flags
-      modules = resolveModulesFromUser(user);
-      productLabel = buildProductLabel(modules, amountInference.label);
+      // 5. Truly unresolvable — mark as unknown, NOT pipekeeper
+      modules = ['unknown'];
+      productLabel = 'Unknown';
     }
-  } else {
-    // No catalog, no recognizable amount — fall back to user flags or pipekeeper
-    modules = resolveModulesFromUser(user);
-    productLabel = buildProductLabel(modules, 'Unknown Plan');
   }
 
   const module = modules[0];
@@ -373,12 +370,20 @@ Deno.serve(async (req) => {
       year:    getCalendarRange('year',    now),
     };
 
-    // ── Deduplicate users by email (first occurrence wins) ────────────────────
+    // ── Deduplicate users by email (most recent wins) ─────────────────────────
     const uniqueUsersMap = new Map<string, any>();
     for (const u of allUsers) {
       const email = norm(u.email || '');
       if (!email) continue;
-      if (!uniqueUsersMap.has(email)) uniqueUsersMap.set(email, u);
+      const existing = uniqueUsersMap.get(email);
+      if (!existing) {
+        uniqueUsersMap.set(email, u);
+      } else {
+        // Keep the most recently created/updated user record
+        const existingTs = new Date(existing.updated_date || existing.created_date || 0).getTime();
+        const uTs = new Date(u.updated_date || u.created_date || 0).getTime();
+        if (uTs > existingTs) uniqueUsersMap.set(email, u);
+      }
     }
     const uniqueUsers = [...uniqueUsersMap.values()];
 
@@ -433,13 +438,25 @@ Deno.serve(async (req) => {
       allActivePaidNorm.push(normalizeSub(raw, user));
     }
 
-    // ── Phase 2: Dedup per (userKey, module) — keep most recent ──────────────
+    // ── Phase 2: Dedup per (userKey, productFamily) — keep most recent ───────
+    // Use product-family key, NOT first module, so bundles dedup correctly.
+    function getProductFamilyKey(sub: NormalizedSub): string {
+      if (sub.modules.length > 1) {
+        return 'bundle::' + [...sub.modules].sort().join(',');
+      }
+      if (sub.module === 'unknown') {
+        // Unknown products do not collapse — use rawId as unique identifier.
+        return 'unknown::' + (sub.rawId || sub.userEmail || sub.planKey || sub.userId || 'empty');
+      }
+      return 'single::' + sub.module;
+    }
+
     const paidSubsByKey = new Map<string, NormalizedSub>();
     let duplicatesRemoved = 0;
     for (const sub of allActivePaidNorm) {
       const userKey = sub.userId || sub.userEmail;
       if (!userKey) continue;
-      const dedupKey = `${userKey}::${sub.module}`;
+      const dedupKey = `${userKey}::${getProductFamilyKey(sub)}`;
       const existing = paidSubsByKey.get(dedupKey);
       if (!existing) {
         paidSubsByKey.set(dedupKey, sub);
@@ -451,35 +468,48 @@ Deno.serve(async (req) => {
     }
     const paidSubs = [...paidSubsByKey.values()];
 
+
     // ── Warning counts ────────────────────────────────────────────────────────
     let warningMissingPrice    = 0;
     let warningMissingInterval = 0;
     let warningMissingPlatform = 0;
     let warningMissingPlanKey  = 0;
+    let warningUnknownProduct  = 0;
     for (const sub of paidSubs) {
       if (sub.price === null)           warningMissingPrice++;
       if (sub.billingInterval === null) warningMissingInterval++;
       if (sub.platform === null)        warningMissingPlatform++;
       if (sub.planKey === null)         warningMissingPlanKey++;
+      if (sub.module === 'unknown')     warningUnknownProduct++;
     }
 
     // ── Subscription counts ───────────────────────────────────────────────────
     const totalActivePaid = paidSubs.length;
     const monthlyCount    = paidSubs.filter((s) => s.billingInterval === 'monthly').length;
     const annualCount     = paidSubs.filter((s) => s.billingInterval === 'annual').length;
+    const bundleCount     = paidSubs.filter((s) => s.modules.length > 1).length;
+    const singleCount     = paidSubs.filter((s) => s.modules.length === 1 && s.module !== 'unknown').length;
 
     // ── By-product breakdown ──────────────────────────────────────────────────
-    const byProductCounts = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundles: 0 };
+    // Bundles count as 1 subscription. Module breakdown shows:
+    //   directSingle: directly subscribed to that module
+    //   viaBundle: module included through a bundle
+    const byProductCounts: Record<string, number> = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundles: 0, unknown: 0 };
+    const moduleViaBundle: Record<string, number> = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0 };
     for (const sub of paidSubs) {
       if (sub.modules.length > 1) {
         byProductCounts.bundles++;
+        // Count each module as accessible via bundle
+        for (const m of sub.modules) {
+          if (m in moduleViaBundle) moduleViaBundle[m as keyof typeof moduleViaBundle]++;
+        }
       } else {
         const m = sub.modules[0] ?? sub.module;
         if      (m === 'pipekeeper')    byProductCounts.pipekeeper++;
         else if (m === 'whiskeykeeper') byProductCounts.whiskeykeeper++;
         else if (m === 'cigarkeeper')   byProductCounts.cigarkeeper++;
         else if (m === 'winekeeper')    byProductCounts.winekeeper++;
-        else                            byProductCounts.pipekeeper++;
+        else                            byProductCounts.unknown++;
       }
     }
 
@@ -609,10 +639,19 @@ Deno.serve(async (req) => {
         missingInterval:   warningMissingInterval,
         missingPlatform:   warningMissingPlatform,
         missingPlanKey:    warningMissingPlanKey,
+        unknownProduct:    warningUnknownProduct,
         duplicatesRemoved: duplicatesRemoved,
       },
       accounts: { total: totalUsers, paid: paidUsersCount, free: freeUsersCount, paidPct, signupSources, newAccounts },
-      subscriptions: { totalActivePaid, monthly: monthlyCount, annual: annualCount, byProduct: byProductCounts },
+      subscriptions: {
+        totalActivePaid,
+        monthly: monthlyCount,
+        annual: annualCount,
+        bundles: bundleCount,
+        singleModule: singleCount,
+        byProduct: byProductCounts,
+        moduleViaBundle,
+      },
       runRate: { mrr, arr },
       renewalRevenue: { week: renewalWeek, month: renewalMonth, quarter: renewalQuarter, year: renewalYear },
       paid_users: paidUsersList,

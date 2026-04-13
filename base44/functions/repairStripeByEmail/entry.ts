@@ -13,6 +13,40 @@ const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") 
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
+// Canonical price ID → planKey mapping
+function buildPriceIdToPlanKeyMap() {
+  const e = Deno.env;
+  return {
+    [e.get("VITE_STRIPE_PIPEKEEPER_MONTHLY") || ""]:    "pipekeeper_pro_monthly",
+    [e.get("VITE_STRIPE_PIPEKEEPER_ANNUAL") || ""]:     "pipekeeper_pro_annual",
+    [e.get("VITE_STRIPE_WHISKEYKEEPER_MONTHLY") || ""]: "whiskeykeeper_pro_monthly",
+    [e.get("VITE_STRIPE_WHISKEYKEEPER_ANNUAL") || ""]:  "whiskeykeeper_pro_annual",
+    [e.get("VITE_STRIPE_CIGARKEEPER_MONTHLY") || ""]:   "cigarkeeper_pro_monthly",
+    [e.get("VITE_STRIPE_CIGARKEEPER_ANNUAL") || ""]:    "cigarkeeper_pro_annual",
+    [e.get("VITE_STRIPE_WINEKEEPER_MONTHLY") || ""]:    "winekeeper_pro_monthly",
+    [e.get("VITE_STRIPE_WINEKEEPER_ANNUAL") || ""]:     "winekeeper_pro_annual",
+    [e.get("VITE_STRIPE_THREE_BUNDLE_MONTHLY") || ""]:  "three_module_bundle_monthly",
+    [e.get("VITE_STRIPE_THREE_BUNDLE_ANNUAL") || ""]:   "three_module_bundle_annual",
+    [e.get("VITE_STRIPE_FOUR_BUNDLE_MONTHLY") || ""]:   "four_module_bundle_monthly",
+    [e.get("VITE_STRIPE_FOUR_BUNDLE_ANNUAL") || ""]:    "four_module_bundle_annual",
+    [e.get("VITE_STRIPE_FOUNDERS_MONTHLY") || ""]:      "founders_bundle_monthly",
+    [e.get("VITE_STRIPE_FOUNDERS_ANNUAL") || ""]:       "founders_bundle_annual",
+  };
+}
+
+// Resolve modules from planKey. Founders = PK+WK ONLY (2 modules).
+function modulesFromPlanKey(planKey) {
+  const key = String(planKey || "").toLowerCase();
+  if (key.startsWith("pipekeeper_")) return ["pipekeeper"];
+  if (key.startsWith("whiskeykeeper_")) return ["whiskeykeeper"];
+  if (key.startsWith("cigarkeeper_")) return ["cigarkeeper"];
+  if (key.startsWith("winekeeper_")) return ["winekeeper"];
+  if (key.includes("three_module")) return ["pipekeeper", "whiskeykeeper", "cigarkeeper"];
+  if (key.includes("four_module")) return ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"];
+  if (key.includes("founders")) return ["pipekeeper", "whiskeykeeper"]; // 2 modules, not 4
+  return [];
+}
+
 async function resolveTier(stripeSub, stripe) {
   try {
     const metadataTier = (stripeSub.metadata?.tier || "").toLowerCase();
@@ -212,6 +246,33 @@ Deno.serve(async (req) => {
 
     const isPaid = stripeSub.status === "active" || stripeSub.status === "trialing";
 
+    // Resolve planKey from price ID
+    const priceId = stripeSub.items?.data?.[0]?.price?.id || null;
+    const priceMap = buildPriceIdToPlanKeyMap();
+    const planKey = priceId ? (priceMap[priceId] || null) : null;
+
+    // Resolve modules from planKey (canonical) or metadata fallback
+    const planKeyModules = planKey ? modulesFromPlanKey(planKey) : [];
+    const metadataModules = String(stripeSub.metadata?.modules_csv || "")
+      .split(",")
+      .map((m) => m.trim().toLowerCase())
+      .filter(Boolean);
+    const activeModules = planKeyModules.length > 0 ? planKeyModules : metadataModules;
+
+    const isBundle = activeModules.length > 1;
+    const productKind = isBundle ? "bundle" : (activeModules.length === 1 ? "single" : "unknown");
+    const bundleName = isBundle
+      ? (planKey?.includes("founders") ? "Founders Bundle"
+        : planKey?.includes("three_module") ? "3-Module Bundle"
+        : planKey?.includes("four_module") ? "4-Module Bundle"
+        : "Bundle")
+      : null;
+
+    const billingIntervalRaw = stripeSub.items?.data?.[0]?.price?.recurring?.interval || null;
+    const renewalAmount = stripeSub.items?.data?.[0]?.price?.unit_amount
+      ? stripeSub.items.data[0].price.unit_amount / 100
+      : null;
+
     const subscriptionPayload = {
       user_id: userRow.id,
       user_email: email,
@@ -219,8 +280,10 @@ Deno.serve(async (req) => {
       provider_subscription_id: stripeSub.id,
       stripe_subscription_id: stripeSub.id,
       stripe_customer_id: customer.id,
+      price_id: priceId,
       status: stripeSub.status,
       tier: tier || "premium",
+      planKey,
       current_period_start: stripeSub.current_period_start 
         ? new Date(stripeSub.current_period_start * 1000).toISOString() 
         : null,
@@ -228,10 +291,15 @@ Deno.serve(async (req) => {
         ? new Date(stripeSub.current_period_end * 1000).toISOString() 
         : null,
       cancel_at_period_end: !!stripeSub.cancel_at_period_end,
-      billing_interval: stripeSub.items?.data?.[0]?.price?.recurring?.interval || "year",
-      amount: stripeSub.items?.data?.[0]?.price?.unit_amount
-        ? stripeSub.items.data[0].price.unit_amount / 100
-        : null,
+      billing_interval: billingIntervalRaw,
+      billing_period: billingIntervalRaw,
+      modules_csv: activeModules.length > 0 ? activeModules.join(",") : null,
+      module_count: activeModules.length || null,
+      product_kind: productKind !== "unknown" ? productKind : null,
+      primary_module: activeModules[0] || null,
+      bundle_name: bundleName,
+      renewal_amount: renewalAmount,
+      amount: renewalAmount,
     };
 
     const userPayload = {

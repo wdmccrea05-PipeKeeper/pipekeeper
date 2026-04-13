@@ -10,12 +10,21 @@
  *   isPaid              ← derived via isActivePaid(raw)
  *   billingInterval     ← billing_interval / billing_period → PLAN_CATALOG fallback ('monthly' | 'annual' | null)
  *   price               ← raw.amount → PLAN_CATALOG fallback (null when neither source has a known price)
+ *   inferredPrice       ← true when price came from catalog inference (not raw.amount)
  *   createdAt           ← started_at || created_date || current_period_start
  *   renewalAt           ← current_period_end
  *   planKey             ← raw.planKey / raw.plan_key (null when unknown)
- *   module              ← primary module derived from planKey → primary_module field → 'pipekeeper'
+ *   module              ← primary module: planKey→catalog → modules_csv → primary_module → amount-bundle inference → 'unknown'
  *   modules             ← all modules for this subscription (e.g. ['pipekeeper','whiskeykeeper','cigarkeeper'] for a bundle)
+ *   isBundle            ← true when modules.length > 1
  *   platform            ← derived from subscription provider or user record ('ios'|'web'|'google'|null)
+ *
+ * Module resolution priority (NEVER defaults to 'pipekeeper'):
+ *   1. PLAN_CATALOG via planKey (authoritative)
+ *   2. modules_csv stored field
+ *   3. primary_module stored field
+ *   4. Amount-based inference for recognized BUNDLE prices (4.99/49.99/7.99/79.99/8.99/89.99)
+ *   5. 'unknown' — products that cannot be recovered stay unknown; they are NOT assumed to be PipeKeeper
  *
  * Required fields for revenue: billingInterval, price.
  * Required fields for renewal: billingInterval, price, renewalAt.
@@ -58,21 +67,32 @@ export function inRange(d, range) {
  * cannot import from the src/ tree. Keep them in sync when editing either.
  */
 export const PLAN_CATALOG = {
-  // Single-module plans
-  pipekeeper_pro_monthly:      { modules: ['pipekeeper'],                                                      billingInterval: 'monthly', price: 2.99  },
-  pipekeeper_pro_annual:       { modules: ['pipekeeper'],                                                      billingInterval: 'annual',  price: 29.99 },
-  whiskeykeeper_pro_monthly:   { modules: ['whiskeykeeper'],                                                   billingInterval: 'monthly', price: 2.99  },
-  whiskeykeeper_pro_annual:    { modules: ['whiskeykeeper'],                                                   billingInterval: 'annual',  price: 29.99 },
-  cigarkeeper_pro_monthly:     { modules: ['cigarkeeper'],                                                     billingInterval: 'monthly', price: 2.99  },
-  cigarkeeper_pro_annual:      { modules: ['cigarkeeper'],                                                     billingInterval: 'annual',  price: 29.99 },
-  winekeeper_pro_monthly:      { modules: ['winekeeper'],                                                      billingInterval: 'monthly', price: 2.99  },
-  winekeeper_pro_annual:       { modules: ['winekeeper'],                                                      billingInterval: 'annual',  price: 29.99 },
-  // Bundle plans
-  three_module_bundle_monthly: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],                      billingInterval: 'monthly', price: 7.99  },
-  three_module_bundle_annual:  { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],                      billingInterval: 'annual',  price: 79.99 },
-  four_module_bundle_monthly:  { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],        billingInterval: 'monthly', price: 8.99  },
-  four_module_bundle_annual:   { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],        billingInterval: 'annual',  price: 89.99 },
-  founders_bundle_annual:      { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],        billingInterval: 'annual',  price: 49.99 },
+  // ── Legacy "premium" single-module plans ─────────────────────────────────
+  pipekeeper_premium_monthly:    { modules: ['pipekeeper'],                                                 billingInterval: 'monthly', price: 1.99,  label: 'PipeKeeper (Legacy)'          },
+  pipekeeper_premium_annual:     { modules: ['pipekeeper'],                                                 billingInterval: 'annual',  price: 19.99, label: 'PipeKeeper (Legacy Annual)'   },
+  whiskeykeeper_premium_monthly: { modules: ['whiskeykeeper'],                                              billingInterval: 'monthly', price: 1.99,  label: 'WhiskeyKeeper (Legacy)'       },
+  whiskeykeeper_premium_annual:  { modules: ['whiskeykeeper'],                                              billingInterval: 'annual',  price: 19.99, label: 'WhiskeyKeeper (Legacy Annual)'},
+
+  // ── Current "pro" single-module plans ────────────────────────────────────
+  pipekeeper_pro_monthly:        { modules: ['pipekeeper'],                                                 billingInterval: 'monthly', price: 2.99,  label: 'PipeKeeper Pro'               },
+  pipekeeper_pro_annual:         { modules: ['pipekeeper'],                                                 billingInterval: 'annual',  price: 29.99, label: 'PipeKeeper Pro Annual'         },
+  whiskeykeeper_pro_monthly:     { modules: ['whiskeykeeper'],                                              billingInterval: 'monthly', price: 2.99,  label: 'WhiskeyKeeper Pro'            },
+  whiskeykeeper_pro_annual:      { modules: ['whiskeykeeper'],                                              billingInterval: 'annual',  price: 29.99, label: 'WhiskeyKeeper Pro Annual'      },
+  cigarkeeper_pro_monthly:       { modules: ['cigarkeeper'],                                                billingInterval: 'monthly', price: 2.99,  label: 'CigarKeeper Pro'              },
+  cigarkeeper_pro_annual:        { modules: ['cigarkeeper'],                                                billingInterval: 'annual',  price: 29.99, label: 'CigarKeeper Pro Annual'        },
+  winekeeper_pro_monthly:        { modules: ['winekeeper'],                                                 billingInterval: 'monthly', price: 2.99,  label: 'WineKeeper Pro'               },
+  winekeeper_pro_annual:         { modules: ['winekeeper'],                                                 billingInterval: 'annual',  price: 29.99, label: 'WineKeeper Pro Annual'         },
+
+  // ── Founders bundle: PipeKeeper + WhiskeyKeeper only ($4.99/mo, $49.99/yr) ─
+  // Canonical definition: 2 modules. Do NOT map founders to 4 modules.
+  founders_bundle_monthly:       { modules: ['pipekeeper', 'whiskeykeeper'],                               billingInterval: 'monthly', price: 4.99,  label: 'Founders Bundle (PK+WK)'      },
+  founders_bundle_annual:        { modules: ['pipekeeper', 'whiskeykeeper'],                               billingInterval: 'annual',  price: 49.99, label: 'Founders Bundle Annual (PK+WK)'},
+
+  // ── Larger bundles ────────────────────────────────────────────────────────
+  three_module_bundle_monthly:   { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],                billingInterval: 'monthly', price: 7.99,  label: '3-Module Bundle'              },
+  three_module_bundle_annual:    { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],                billingInterval: 'annual',  price: 79.99, label: '3-Module Bundle Annual'        },
+  four_module_bundle_monthly:    { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],  billingInterval: 'monthly', price: 8.99,  label: '4-Module Bundle'              },
+  four_module_bundle_annual:     { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],  billingInterval: 'annual',  price: 89.99, label: '4-Module Bundle Annual'        },
 };
 
 /**
@@ -80,14 +100,55 @@ export const PLAN_CATALOG = {
  * Returns null when the planKey is unknown.
  *
  * @param {string|null} planKey
- * @returns {{ modules: string[], billingInterval: 'monthly'|'annual', price: number } | null}
+ * @returns {{ modules: string[], billingInterval: 'monthly'|'annual', price: number, label: string } | null}
  */
 export function lookupPlanCatalog(planKey) {
   if (!planKey) return null;
   return PLAN_CATALOG[norm(planKey)] ?? null;
 }
 
-// ─── Calendar ranges ──────────────────────────────────────────────────────────
+// ─── Amount-based inference ───────────────────────────────────────────────────
+
+/**
+ * Infer billing attributes from a known subscription amount.
+ *
+ * Valid prices (current and legacy):
+ *   1.99 / 19.99  → legacy single-module
+ *   2.99 / 29.99  → current single-module pro
+ *   4.99 / 49.99  → Founders Bundle (PK + WK, 2 modules)
+ *   7.99 / 79.99  → 3-module bundle
+ *   8.99 / 89.99  → 4-module bundle
+ *
+ * INVALID (do not treat as known plans):
+ *   9.99 / 99.99  → not a valid current plan
+ *
+ * For single-module amounts (1.99/19.99/2.99/29.99), modules cannot be
+ * determined from price alone — only interval is inferred.
+ * For bundle amounts, modules are fully resolved from the price.
+ *
+ * @param {number} amount
+ * @returns {{ billingInterval: 'monthly'|'annual', modules: string[]|null, isBundle: boolean } | null}
+ */
+export function inferFromAmount(amount) {
+  const a = parseFloat(Number(amount).toFixed(2));
+  // Single-module plans: interval known, module unknown
+  if (a === 1.99)  return { billingInterval: 'monthly', modules: null, isBundle: false };
+  if (a === 19.99) return { billingInterval: 'annual',  modules: null, isBundle: false };
+  if (a === 2.99)  return { billingInterval: 'monthly', modules: null, isBundle: false };
+  if (a === 29.99) return { billingInterval: 'annual',  modules: null, isBundle: false };
+  // Founders bundle: PK + WK only
+  if (a === 4.99)  return { billingInterval: 'monthly', modules: ['pipekeeper', 'whiskeykeeper'], isBundle: true };
+  if (a === 49.99) return { billingInterval: 'annual',  modules: ['pipekeeper', 'whiskeykeeper'], isBundle: true };
+  // 3-module bundle
+  if (a === 7.99)  return { billingInterval: 'monthly', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], isBundle: true };
+  if (a === 79.99) return { billingInterval: 'annual',  modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], isBundle: true };
+  // 4-module bundle
+  if (a === 8.99)  return { billingInterval: 'monthly', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], isBundle: true };
+  if (a === 89.99) return { billingInterval: 'annual',  modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], isBundle: true };
+  return null;
+}
+
+
 
 /**
  * Returns UTC-aligned calendar boundaries.
@@ -236,29 +297,25 @@ export function normalizePlatform(raw, user = null) {
 // ─── Normalization ────────────────────────────────────────────────────────────
 
 /**
- * Normalize ONE raw subscription record into the V3 canonical shape:
- * {
- *   rawId, userId, userEmail,
- *   isPaid,
- *   planKey: string | null,
- *   billingInterval: 'monthly' | 'annual' | null,
- *   price: number | null,
- *   createdAt: Date | null,
- *   renewalAt: Date | null,
- *   module: string,
- *   modules: string[],
- *   platform: 'ios' | 'web' | 'google' | null,
- * }
+ * Normalize ONE raw subscription record into the V3 canonical shape.
+ *
+ * Module resolution priority (NEVER defaults to 'pipekeeper'):
+ *   1. PLAN_CATALOG via planKey → authoritative (modules + interval + price)
+ *   2. modules_csv stored field → explicit
+ *   3. primary_module stored field → explicit single module
+ *   4. inferFromAmount for BUNDLE amounts → resolves modules from price
+ *   5. 'unknown' — products that cannot be recovered stay unknown
  *
  * Price resolution order:
  *   1. raw.amount (actual billed amount if present and > 0)
- *   2. PLAN_CATALOG[planKey].price (known catalog price when amount is missing/zero)
+ *   2. PLAN_CATALOG[planKey].price (known catalog price when amount is missing/zero; inferredPrice=true)
  *   3. null (excluded from revenue and renewal metrics; counted in warnings)
  *
  * Billing interval resolution order:
  *   1. raw.billing_interval / raw.billing_period (field-based normalization)
  *   2. PLAN_CATALOG[planKey].billingInterval (catalog fallback)
- *   3. null
+ *   3. inferFromAmount (amount-based fallback)
+ *   4. null
  *
  * @param {object}      raw   Raw subscription record
  * @param {object|null} user  Associated user record (optional, used for platform fallback)
@@ -270,33 +327,122 @@ export function normalizeSub(raw, user = null) {
 
   // Price: actual billed amount first, then catalog price as fallback
   const rawPrice = Math.max(0, Number(raw.amount || 0));
+  const inferredPrice = rawPrice === 0 && catalog != null;
   const price = rawPrice > 0 ? rawPrice : (catalog?.price ?? null);
 
-  // Billing interval: field-based normalization first, then catalog fallback
-  const fieldInterval = normalizeInterval(raw);
-  const billingInterval = fieldInterval ?? (catalog?.billingInterval ?? null);
+  // Amount inference (for interval and bundle-module resolution when catalog/fields are missing)
+  const amountInference = rawPrice > 0 ? inferFromAmount(rawPrice) : null;
 
-  // Module(s): use catalog when available, fall back to primary_module field, then 'pipekeeper'
-  const modules = catalog?.modules ?? (norm(raw.primary_module || '') ? [norm(raw.primary_module)] : ['pipekeeper']);
-  const module  = modules[0];
+  // Billing interval: field → catalog → amount inference → null
+  const fieldInterval = normalizeInterval(raw);
+  const billingInterval = fieldInterval ?? (catalog?.billingInterval ?? (amountInference?.billingInterval ?? null));
+
+  // Module(s) resolution — NEVER defaults to 'pipekeeper'
+  let modules;
+  if (catalog) {
+    // 1. Authoritative catalog match via planKey
+    modules = catalog.modules;
+  } else {
+    // 2. modules_csv stored field
+    const csvModules = String(raw.modules_csv || '')
+      .split(',')
+      .map((m) => m.trim().toLowerCase())
+      .filter(Boolean);
+    if (csvModules.length > 0) {
+      modules = csvModules;
+    } else if (norm(raw.primary_module || '')) {
+      // 3. primary_module stored field
+      modules = [norm(raw.primary_module)];
+    } else if (amountInference?.modules) {
+      // 4. Amount inference resolves bundle modules
+      modules = amountInference.modules;
+    } else {
+      // 5. Truly unknown — do NOT default to 'pipekeeper'
+      modules = ['unknown'];
+    }
+  }
+
+  const module   = modules[0];
+  const isBundle = modules.length > 1;
 
   return {
-    rawId:           String(raw.id || raw.stripe_subscription_id || ''),
-    userId:          String(raw.user_id || ''),
-    userEmail:       norm(raw.user_email || ''),
-    isPaid:          isActivePaid(raw),
+    rawId:          String(raw.id || raw.stripe_subscription_id || ''),
+    userId:         String(raw.user_id || ''),
+    userEmail:      norm(raw.user_email || ''),
+    isPaid:         isActivePaid(raw),
     planKey,
     billingInterval,
     price,
-    createdAt:       parseDate(raw.started_at || raw.created_date || raw.current_period_start),
-    renewalAt:       parseDate(raw.current_period_end),
+    inferredPrice,
+    createdAt:      parseDate(raw.started_at || raw.created_date || raw.current_period_start),
+    renewalAt:      parseDate(raw.current_period_end),
     module,
     modules,
-    platform:        normalizePlatform(raw, user),
+    isBundle,
+    platform:       normalizePlatform(raw, user),
   };
 }
 
-// ─── MRR math ─────────────────────────────────────────────────────────────────
+// ─── Subscription deduplication ──────────────────────────────────────────────
+
+/**
+ * Compute the product-family key used to detect duplicate subscriptions.
+ *
+ * Rules:
+ *  - Bundles: keyed on sorted module list (same modules = same product)
+ *  - Single modules: keyed on module name
+ *  - Unknown products: each gets a unique key (no collapsing of unknowns)
+ *
+ * @param {object} sub  Normalized subscription
+ * @returns {string}
+ */
+export function getProductFamilyKey(sub) {
+  if (sub.isBundle) {
+    return 'bundle::' + [...sub.modules].sort().join(',');
+  }
+  if (sub.module === 'unknown') {
+    // Unknown products do not collapse — use rawId as unique identifier.
+    // If rawId is also empty (malformed row), fall back to other deterministic fields.
+    return 'unknown::' + (sub.rawId || sub.userEmail || sub.planKey || sub.userId || 'empty');
+  }
+  return 'single::' + sub.module;
+}
+
+/**
+ * Deduplicate normalized active-paid subscriptions by (userIdentity, productFamily).
+ * For each group, keeps the most recent active row.
+ *
+ * Business rules:
+ *  - Dedupe key = user identity (userId or email) + canonical product family
+ *  - Keep the most recent row per grouping (by createdAt, then rawId as tiebreak)
+ *  - Unknown products are never collapsed with each other
+ *
+ * @param {object[]} normalizedSubs  Array of normalized active-paid subscriptions
+ * @returns {{ deduped: object[], duplicatesRemoved: number }}
+ */
+export function deduplicateActivePaidSubs(normalizedSubs) {
+  const byKey = new Map();
+  let duplicatesRemoved = 0;
+
+  for (const sub of normalizedSubs) {
+    const userKey = sub.userId || sub.userEmail;
+    if (!userKey) continue;
+    const dedupKey = `${userKey}::${getProductFamilyKey(sub)}`;
+    const existing = byKey.get(dedupKey);
+    if (!existing) {
+      byKey.set(dedupKey, sub);
+    } else {
+      duplicatesRemoved++;
+      const existingTs = existing.createdAt?.getTime() ?? 0;
+      const subTs = sub.createdAt?.getTime() ?? 0;
+      if (subTs > existingTs) byKey.set(dedupKey, sub);
+    }
+  }
+
+  return { deduped: [...byKey.values()], duplicatesRemoved };
+}
+
+
 
 /**
  * MRR contribution for a single normalized subscription:

@@ -28,6 +28,9 @@ import {
   runSanityChecks,
   PLAN_CATALOG,
   lookupPlanCatalog,
+  inferFromAmount,
+  getProductFamilyKey,
+  deduplicateActivePaidSubs,
 } from '../lib/reportingV3Utils.js';
 
 // ─── Helpers used across tests ────────────────────────────────────────────────
@@ -133,21 +136,21 @@ describe('isActivePaid', () => {
 
 describe('normalizeSub', () => {
   it('maps canonical fields correctly for a monthly paid sub', () => {
-    const raw = makeSub({ billing_interval: 'monthly', amount: 9.99 });
+    const raw = makeSub({ planKey: 'pipekeeper_pro_monthly', billing_interval: 'monthly', amount: 2.99 });
     const sub = normalizeSub(raw);
     expect(sub.userId).toBe('user_001');
     expect(sub.isPaid).toBe(true);
     expect(sub.billingInterval).toBe('monthly');
-    expect(sub.price).toBe(9.99);
+    expect(sub.price).toBe(2.99);
     expect(sub.module).toBe('pipekeeper');
     expect(sub.renewalAt).toBeInstanceOf(Date);
   });
 
   it('maps canonical fields correctly for an annual paid sub', () => {
-    const raw = makeSub({ billing_interval: 'annual', amount: 99.99 });
+    const raw = makeSub({ planKey: 'pipekeeper_pro_annual', billing_interval: 'annual', amount: 29.99 });
     const sub = normalizeSub(raw);
     expect(sub.billingInterval).toBe('annual');
-    expect(sub.price).toBe(99.99);
+    expect(sub.price).toBe(29.99);
     expect(sub.module).toBe('pipekeeper');
   });
 
@@ -175,11 +178,12 @@ describe('normalizeSub', () => {
     expect(sub.renewalAt).toBeNull();
   });
 
-  it('always sets module to pipekeeper when no planKey or primary_module', () => {
-    // product_kind is not a recognized field — module falls back to 'pipekeeper'
+  it('sets module to unknown when no planKey, no modules_csv, no primary_module, and unrecognized amount', () => {
+    // 9.99 is not a valid known plan price, so no product can be resolved
     const raw = makeSub({ product_kind: 'whiskeykeeper' });
     const sub = normalizeSub(raw);
-    expect(sub.module).toBe('pipekeeper');
+    expect(sub.module).toBe('unknown');
+    expect(sub.modules).toEqual(['unknown']);
   });
 
   it('uses started_at for createdAt when available', () => {
@@ -221,9 +225,9 @@ describe('PLAN_CATALOG', () => {
       'whiskeykeeper_pro_monthly', 'whiskeykeeper_pro_annual',
       'cigarkeeper_pro_monthly', 'cigarkeeper_pro_annual',
       'winekeeper_pro_monthly', 'winekeeper_pro_annual',
+      'founders_bundle_monthly', 'founders_bundle_annual',
       'three_module_bundle_monthly', 'three_module_bundle_annual',
       'four_module_bundle_monthly', 'four_module_bundle_annual',
-      'founders_bundle_annual',
     ];
     for (const key of expectedKeys) {
       expect(PLAN_CATALOG).toHaveProperty(key);
@@ -250,7 +254,11 @@ describe('PLAN_CATALOG', () => {
   it('bundle plans have multiple modules', () => {
     expect(PLAN_CATALOG.three_module_bundle_monthly.modules).toHaveLength(3);
     expect(PLAN_CATALOG.four_module_bundle_annual.modules).toHaveLength(4);
-    expect(PLAN_CATALOG.founders_bundle_annual.modules).toHaveLength(4);
+    // Founders bundle = PipeKeeper + WhiskeyKeeper ONLY (2 modules, not 4)
+    expect(PLAN_CATALOG.founders_bundle_annual.modules).toHaveLength(2);
+    expect(PLAN_CATALOG.founders_bundle_monthly.modules).toHaveLength(2);
+    expect(PLAN_CATALOG.founders_bundle_annual.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
+    expect(PLAN_CATALOG.founders_bundle_monthly.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
   });
 });
 
@@ -795,5 +803,348 @@ describe('missing field handling', () => {
     const result = calcRenewalPeriod([pricelessSub], range);
     expect(result.subscriptions).toBe(0);    // excluded from renewals
     expect(result.revenue).toBe(0);
+  });
+});
+
+// ─── inferFromAmount ──────────────────────────────────────────────────────────
+
+describe('inferFromAmount', () => {
+  it('infers monthly interval from 1.99 (legacy single)', () => {
+    const r = inferFromAmount(1.99);
+    expect(r).not.toBeNull();
+    expect(r.billingInterval).toBe('monthly');
+    expect(r.isBundle).toBe(false);
+    expect(r.modules).toBeNull(); // single: module unknown from amount alone
+  });
+
+  it('infers annual interval from 19.99 (legacy single annual)', () => {
+    const r = inferFromAmount(19.99);
+    expect(r).not.toBeNull();
+    expect(r.billingInterval).toBe('annual');
+    expect(r.isBundle).toBe(false);
+  });
+
+  it('infers monthly pro from 2.99', () => {
+    const r = inferFromAmount(2.99);
+    expect(r).not.toBeNull();
+    expect(r.billingInterval).toBe('monthly');
+    expect(r.isBundle).toBe(false);
+  });
+
+  it('infers founders bundle monthly from 4.99', () => {
+    const r = inferFromAmount(4.99);
+    expect(r).not.toBeNull();
+    expect(r.billingInterval).toBe('monthly');
+    expect(r.isBundle).toBe(true);
+    expect(r.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
+  });
+
+  it('infers founders bundle annual from 49.99', () => {
+    const r = inferFromAmount(49.99);
+    expect(r).not.toBeNull();
+    expect(r.billingInterval).toBe('annual');
+    expect(r.isBundle).toBe(true);
+    expect(r.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
+  });
+
+  it('infers 3-module bundle monthly from 7.99', () => {
+    const r = inferFromAmount(7.99);
+    expect(r).not.toBeNull();
+    expect(r.billingInterval).toBe('monthly');
+    expect(r.modules).toEqual(['pipekeeper', 'whiskeykeeper', 'cigarkeeper']);
+  });
+
+  it('infers 4-module bundle annual from 89.99', () => {
+    const r = inferFromAmount(89.99);
+    expect(r).not.toBeNull();
+    expect(r.billingInterval).toBe('annual');
+    expect(r.modules).toEqual(['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']);
+  });
+
+  it('returns null for invalid legacy 9.99', () => {
+    expect(inferFromAmount(9.99)).toBeNull();
+  });
+
+  it('returns null for invalid legacy 99.99', () => {
+    expect(inferFromAmount(99.99)).toBeNull();
+  });
+
+  it('returns null for completely unknown amounts', () => {
+    expect(inferFromAmount(0)).toBeNull();
+    expect(inferFromAmount(5.00)).toBeNull();
+    expect(inferFromAmount(100)).toBeNull();
+  });
+});
+
+// ─── getProductFamilyKey ──────────────────────────────────────────────────────
+
+describe('getProductFamilyKey', () => {
+  it('single pipekeeper gets single:: key', () => {
+    const sub = normalizeSub(makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 2.99, billing_interval: 'monthly' }));
+    expect(getProductFamilyKey(sub)).toBe('single::pipekeeper');
+  });
+
+  it('bundle sub gets bundle:: key with sorted modules', () => {
+    const sub = normalizeSub(makeSub({ planKey: 'founders_bundle_annual', amount: 49.99, billing_interval: 'annual' }));
+    expect(getProductFamilyKey(sub)).toMatch(/^bundle::/);
+    expect(getProductFamilyKey(sub)).toBe('bundle::pipekeeper,whiskeykeeper');
+  });
+
+  it('three-module bundle key includes all three modules sorted', () => {
+    const sub = normalizeSub(makeSub({ planKey: 'three_module_bundle_monthly', amount: 7.99, billing_interval: 'monthly' }));
+    expect(getProductFamilyKey(sub)).toBe('bundle::cigarkeeper,pipekeeper,whiskeykeeper');
+  });
+
+  it('unknown product gets unique key (not collapsed)', () => {
+    const sub = normalizeSub(makeSub({ amount: 0, billing_interval: 'monthly' }));
+    expect(getProductFamilyKey(sub)).toMatch(/^unknown::/);
+  });
+});
+
+// ─── deduplicateActivePaidSubs ────────────────────────────────────────────────
+
+describe('deduplicateActivePaidSubs', () => {
+  it('keeps a single subscription unchanged', () => {
+    const subs = [normalizeSub(makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 2.99, id: 'sub_1' }))];
+    const { deduped, duplicatesRemoved } = deduplicateActivePaidSubs(subs);
+    expect(deduped).toHaveLength(1);
+    expect(duplicatesRemoved).toBe(0);
+  });
+
+  it('deduplicates two subscriptions for the same user and product, keeping the most recent', () => {
+    const older = normalizeSub(makeSub({
+      planKey: 'pipekeeper_pro_monthly', amount: 2.99, id: 'sub_old',
+      started_at: '2024-01-01T00:00:00Z',
+    }));
+    const newer = normalizeSub(makeSub({
+      planKey: 'pipekeeper_pro_monthly', amount: 2.99, id: 'sub_new',
+      started_at: '2025-01-01T00:00:00Z',
+    }));
+    const { deduped, duplicatesRemoved } = deduplicateActivePaidSubs([older, newer]);
+    expect(deduped).toHaveLength(1);
+    expect(duplicatesRemoved).toBe(1);
+    expect(deduped[0].rawId).toBe('sub_new');
+  });
+
+  it('does not collapse different products for the same user', () => {
+    const pk = normalizeSub(makeSub({ planKey: 'pipekeeper_pro_monthly',    amount: 2.99, id: 'sub_pk' }));
+    const wk = normalizeSub(makeSub({ planKey: 'whiskeykeeper_pro_monthly', amount: 2.99, id: 'sub_wk' }));
+    const { deduped, duplicatesRemoved } = deduplicateActivePaidSubs([pk, wk]);
+    expect(deduped).toHaveLength(2);
+    expect(duplicatesRemoved).toBe(0);
+  });
+
+  it('does not collapse different users with the same product', () => {
+    const user1 = normalizeSub(makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 2.99, id: 'sub_1', user_id: 'user_1', user_email: 'a@example.com' }));
+    const user2 = normalizeSub(makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 2.99, id: 'sub_2', user_id: 'user_2', user_email: 'b@example.com' }));
+    const { deduped } = deduplicateActivePaidSubs([user1, user2]);
+    expect(deduped).toHaveLength(2);
+  });
+
+  it('does not collapse two bundle subscriptions with different module sets', () => {
+    const founders = normalizeSub(makeSub({ planKey: 'founders_bundle_monthly',     amount: 4.99, id: 'sub_f' }));
+    const three    = normalizeSub(makeSub({ planKey: 'three_module_bundle_monthly',  amount: 7.99, id: 'sub_3' }));
+    const { deduped } = deduplicateActivePaidSubs([founders, three]);
+    expect(deduped).toHaveLength(2);
+  });
+
+  it('does not collapse unknown products with each other', () => {
+    const unk1 = normalizeSub(makeSub({ amount: 0, id: 'unk_1', billing_interval: 'monthly' }));
+    const unk2 = normalizeSub(makeSub({ amount: 0, id: 'unk_2', billing_interval: 'monthly' }));
+    // Both are 'unknown', but should not collapse
+    const { deduped } = deduplicateActivePaidSubs([unk1, unk2]);
+    expect(deduped).toHaveLength(2);
+  });
+});
+
+// ─── Edge cases A–J (from subscription reporting requirements) ────────────────
+
+describe('Edge cases: subscription normalization correctness', () => {
+  // A. single PipeKeeper monthly with full data
+  it('A: single PipeKeeper monthly with full data normalizes correctly', () => {
+    const raw = makeSub({
+      planKey: 'pipekeeper_pro_monthly',
+      amount: 2.99,
+      billing_interval: 'monthly',
+      user_id: 'user_pk',
+      user_email: 'pk@example.com',
+      status: 'active',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.module).toBe('pipekeeper');
+    expect(sub.modules).toEqual(['pipekeeper']);
+    expect(sub.billingInterval).toBe('monthly');
+    expect(sub.price).toBe(2.99);
+    expect(sub.inferredPrice).toBe(false);
+    expect(sub.isPaid).toBe(true);
+    expect(sub.isBundle).toBe(false);
+    expect(sub.planKey).toBe('pipekeeper_pro_monthly');
+  });
+
+  // B. single PipeKeeper annual missing amount but known planKey → price inferred from catalog
+  it('B: single PipeKeeper annual — missing amount, known planKey → price inferred from catalog', () => {
+    const raw = makeSub({
+      planKey: 'pipekeeper_pro_annual',
+      amount: 0,
+      billing_interval: undefined,
+      billing_period: undefined,
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.price).toBe(29.99);
+    expect(sub.inferredPrice).toBe(true);
+    expect(sub.billingInterval).toBe('annual');
+    expect(sub.module).toBe('pipekeeper');
+    // sub still counts as paid (status=active)
+    expect(sub.isPaid).toBe(true);
+    expect(mrrContribution(sub)).toBeCloseTo(29.99 / 12, 4);
+  });
+
+  // C. single WhiskeyKeeper annual — missing interval but known planKey → interval inferred
+  it('C: single WhiskeyKeeper annual — missing billing_interval, known planKey → interval from catalog', () => {
+    const raw = makeSub({
+      planKey: 'whiskeykeeper_pro_annual',
+      amount: 29.99,
+      billing_interval: undefined,
+      billing_period: undefined,
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.billingInterval).toBe('annual');
+    expect(sub.module).toBe('whiskeykeeper');
+    expect(sub.modules).toEqual(['whiskeykeeper']);
+  });
+
+  // D. founders bundle monthly → PK + WK (2 modules, not 4)
+  it('D: founders bundle monthly → PipeKeeper + WhiskeyKeeper only (2 modules)', () => {
+    const raw = makeSub({
+      planKey: 'founders_bundle_monthly',
+      amount: 4.99,
+      billing_interval: 'monthly',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.isBundle).toBe(true);
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
+    expect(sub.modules).toHaveLength(2);
+    expect(sub.billingInterval).toBe('monthly');
+    expect(sub.price).toBe(4.99);
+  });
+
+  // E. founders bundle annual → PK + WK (2 modules, not 4)
+  it('E: founders bundle annual → PipeKeeper + WhiskeyKeeper only (2 modules, $49.99)', () => {
+    const raw = makeSub({
+      planKey: 'founders_bundle_annual',
+      amount: 49.99,
+      billing_interval: 'annual',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.isBundle).toBe(true);
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
+    expect(sub.modules).toHaveLength(2);
+    expect(sub.billingInterval).toBe('annual');
+    expect(sub.price).toBe(49.99);
+  });
+
+  // F. duplicate active rows same user same product → keep most recent
+  it('F: duplicate active rows for same user+product → dedup keeps most recent', () => {
+    const olderSub = makeSub({
+      id: 'sub_old', planKey: 'pipekeeper_pro_monthly', amount: 2.99,
+      started_at: '2023-06-01T00:00:00Z', user_id: 'user_dup', user_email: 'dup@example.com',
+    });
+    const newerSub = makeSub({
+      id: 'sub_new', planKey: 'pipekeeper_pro_monthly', amount: 2.99,
+      started_at: '2025-03-01T00:00:00Z', user_id: 'user_dup', user_email: 'dup@example.com',
+    });
+    const normalized = [normalizeSub(olderSub), normalizeSub(newerSub)];
+    const { deduped, duplicatesRemoved } = deduplicateActivePaidSubs(normalized);
+    expect(deduped).toHaveLength(1);
+    expect(duplicatesRemoved).toBe(1);
+    expect(deduped[0].rawId).toBe('sub_new');
+  });
+
+  // G. active row with unknown product → module='unknown', NOT 'pipekeeper'
+  it('G: active row with unknown product (no planKey, no primary_module, unrecognized amount) → module=unknown', () => {
+    const raw = makeSub({ amount: 0, billing_interval: 'monthly' });
+    const sub = normalizeSub(raw);
+    expect(sub.module).toBe('unknown');
+    expect(sub.modules).toEqual(['unknown']);
+    expect(sub.isPaid).toBe(true); // status=active, still counts as paid
+  });
+
+  // H. row with no amount but known product + interval → infer amount, count in MRR/ARR
+  it('H: no amount + known planKey+interval → catalog price inferred, counts in MRR', () => {
+    const raw = makeSub({
+      planKey: 'pipekeeper_pro_monthly',
+      amount: 0,
+      billing_interval: 'monthly',
+      status: 'active',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.price).toBe(2.99);
+    expect(sub.inferredPrice).toBe(true);
+    expect(sub.billingInterval).toBe('monthly');
+    const { mrr } = computeMRRARR([sub]);
+    expect(mrr).toBeCloseTo(2.99, 2);
+  });
+
+  // I. row with invalid legacy 9.99/99.99 → not treated as a valid catalog plan
+  it('I: amount 9.99 is not a valid catalog price → no interval or module inferred from amount', () => {
+    const raw = makeSub({ amount: 9.99, billing_interval: undefined, billing_period: undefined });
+    const sub = normalizeSub(raw);
+    // Price is still stored (raw billed amount)
+    expect(sub.price).toBe(9.99);
+    // But interval cannot be inferred from 9.99 (invalid price)
+    expect(sub.billingInterval).toBeNull();
+    // Module is unknown (9.99 maps to no known plan)
+    expect(sub.module).toBe('unknown');
+  });
+
+  it('I: amount 99.99 is not a valid catalog price → module unknown, interval null', () => {
+    const raw = makeSub({ amount: 99.99, billing_interval: undefined, billing_period: undefined });
+    const sub = normalizeSub(raw);
+    expect(sub.price).toBe(99.99);
+    expect(sub.billingInterval).toBeNull();
+    expect(sub.module).toBe('unknown');
+  });
+
+  // J. multi-module bundle counts as 1 subscription, modules visible in breakdown
+  it('J: 3-module bundle counts as 1 subscription, all 3 modules reflected', () => {
+    const raw = makeSub({
+      planKey: 'three_module_bundle_monthly',
+      amount: 7.99,
+      billing_interval: 'monthly',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.isBundle).toBe(true);
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper', 'cigarkeeper']);
+    expect(sub.modules).toHaveLength(3);
+    // Subscription contributes as 1 to MRR
+    const { mrr } = computeMRRARR([sub]);
+    expect(mrr).toBeCloseTo(7.99, 2);
+    // Dedup: 1 bundle counts as 1 subscription (not 3)
+    const { deduped } = deduplicateActivePaidSubs([sub]);
+    expect(deduped).toHaveLength(1);
+  });
+
+  // Additional: founders bundle identified by amount when planKey missing
+  it('founders bundle inferred by amount 4.99 when no planKey', () => {
+    const raw = makeSub({ amount: 4.99, billing_interval: 'monthly', planKey: undefined });
+    const sub = normalizeSub(raw);
+    expect(sub.isBundle).toBe(true);
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
+  });
+
+  // Additional: modules_csv field respected
+  it('modules_csv field provides explicit module list when no planKey', () => {
+    const raw = makeSub({ modules_csv: 'pipekeeper,cigarkeeper', amount: 0, billing_interval: 'monthly' });
+    const sub = normalizeSub(raw);
+    expect(sub.modules).toEqual(['pipekeeper', 'cigarkeeper']);
+    expect(sub.isBundle).toBe(true);
+  });
+
+  // Additional: primary_module field respected
+  it('primary_module field provides module when no planKey and no modules_csv', () => {
+    const raw = makeSub({ primary_module: 'whiskeykeeper', amount: 2.99, billing_interval: 'monthly', planKey: undefined });
+    const sub = normalizeSub(raw);
+    expect(sub.module).toBe('whiskeykeeper');
+    expect(sub.modules).toEqual(['whiskeykeeper']);
   });
 });
