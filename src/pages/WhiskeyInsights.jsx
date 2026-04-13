@@ -10,11 +10,11 @@ import { WhiskeyAnalyticsTab, WhiskeyTrendsTab, getTopBottlesToHold, getBottlesS
 import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
 import { TrendingUp, Award, Trophy, Star, Zap, ShieldCheck, Sparkles, AlertTriangle, DollarSign } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
-import { formatCurrency } from '@/components/utils/localeFormatters';
 import { toast } from 'sonner';
 import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'date-fns';
 import { StatusCard, CATEGORY_COLORS } from '@/components/ui/HeroCard';
 import { DIFFICULTY_LABELS } from '@/components/valuation/valueEngine';
+import { useCurrency } from '@/lib/currency/useCurrency';
 import {
   selectWhiskeyMetrics,
   getBottleUnitValue,
@@ -25,6 +25,8 @@ import {
 export default function WhiskeyInsightsPage() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
+  const { formatFromBase } = useCurrency();
+  const formatCurrency = formatFromBase;
   const [activeTab, setActiveTab] = useState('summary');
   const highlightRefs = useRef({});
 
@@ -724,7 +726,7 @@ export default function WhiskeyInsightsPage() {
                           const doc = new jsPDF();
                           const pw = doc.internal.pageSize.getWidth();
                           const ph = doc.internal.pageSize.getHeight();
-                          const fmtMoney = (n) => n > 0 ? `$${Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—';
+                          const fmtMoney = (n) => n > 0 ? formatFromBase(n) : '—';
 
                           doc.setFontSize(20);
                           doc.setTextColor(40, 20, 10);

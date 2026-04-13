@@ -9,6 +9,7 @@ import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
 import { aggregateCollection } from '@/components/keeper-core/aggregation/collectionAggregation';
 import BrandLogo from '@/components/branding/BrandLogo';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 function Divider() {
   return (
@@ -69,6 +70,7 @@ function CardShell({ children, cardRef }) {
 
 // Card 1 — Cover
 function CoverCard({ summary, userProfile, cardRef }) {
+  const { formatFromBase } = useCurrency();
   const pipes = summary?.pipes?.count ?? 0;
   const blends = summary?.tobacco?.count ?? 0;
   const bottles = summary?.whiskey?.count ?? 0;
@@ -97,7 +99,7 @@ function CoverCard({ summary, userProfile, cardRef }) {
           {value > 0 && (
             <StatPill
               label="Total Value"
-              value={`$${value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value.toLocaleString()}`}
+              value={formatFromBase(value)}
               color="#10B981"
             />
           )}
@@ -166,6 +168,7 @@ function PipeCard({ summary, cardRef }) {
 
 // Card 3 — WhiskeyKeeper highlights
 function WhiskeyCard({ summary, cardRef }) {
+  const { formatFromBase } = useCurrency();
   const bottles = summary?.whiskey?.count ?? 0;
   const tastings = summary?.total?.tastings ?? 0;
   const value = Math.round(summary?.whiskey?.value || 0);
@@ -192,7 +195,7 @@ function WhiskeyCard({ summary, cardRef }) {
           {value > 0 && (
             <StatPill
               label="Value"
-              value={`$${value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value.toLocaleString()}`}
+              value={formatFromBase(value)}
               color="#10B981"
             />
           )}
@@ -226,6 +229,7 @@ const STORY_CARDS = [
 export default function CollectionInsightsSharePage() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
+  const { formatFromBase } = useCurrency();
   const location = useLocation();
   const variant = location.state?.variant || 'hub';
 
@@ -282,7 +286,7 @@ export default function CollectionInsightsSharePage() {
     const blends = summary?.tobacco?.count || 0;
     const bottles = summary?.whiskey?.count || 0;
     const value = Math.round(summary?.total?.value || 0);
-    const text = `My CollectionKeeper collection:\n${pipes} pipes, ${blends} blends, ${bottles} bottles.\nTotal collection value: $${value.toLocaleString()}.`;
+    const text = `My CollectionKeeper collection:\n${pipes} pipes, ${blends} blends, ${bottles} bottles.\nTotal collection value: ${formatFromBase(value)}.`;
     try {
       await navigator.clipboard.writeText(text);
       toast.success('Summary copied');

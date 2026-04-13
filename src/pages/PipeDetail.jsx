@@ -46,7 +46,6 @@ import {
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { formatCurrency } from '@/components/utils/localeFormatters';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import PipeShapeIcon from '@/components/pipes/PipeShapeIcon';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
@@ -54,6 +53,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { scopedEntities } from '@/components/api/scopedEntities';
+import { useCurrency } from '@/lib/currency/useCurrency';
 import EnrichButton from '@/components/shared/EnrichButton';
 
 function DetailStat({ label, value, icon: Icon }) {
@@ -472,6 +472,7 @@ export default function PipeDetail() {
   const navigate = useNavigate();
   const { user, hasPremium: isPaidUser } = useCurrentUser();
   const { formatLength, formatWeight } = useMeasurement();
+  const { formatFromBase } = useCurrency();
   const [params] = useSearchParams();
   const pipeId = params.get('id') || params.get('pipeId');
 
@@ -724,7 +725,7 @@ export default function PipeDetail() {
 
   const money = (value) => {
     const num = Number(value);
-    return Number.isFinite(num) && value !== '' && value != null ? formatCurrency(num) : '—';
+    return Number.isFinite(num) && value !== '' && value != null ? formatFromBase(num) : '—';
   };
 
   const conditionSummary = normalized.condition

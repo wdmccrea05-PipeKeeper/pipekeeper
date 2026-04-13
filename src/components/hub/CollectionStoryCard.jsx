@@ -10,6 +10,7 @@ import { useEnabledKeeperModules } from '@/components/hooks/useEnabledKeeperModu
 import { WHISKEYKEEPER_BLOCKED } from '@/components/utils/moduleReleaseState';
 import CollectionStoryViewer from '@/components/story/CollectionStoryViewer';
 import { generateCollectionStoryCards } from '@/components/story/generateCollectionStoryCards';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 function resolvePhoto(record, recordType) {
   if (!record) return null;
@@ -188,6 +189,7 @@ export default function CollectionStoryCard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isModuleEnabled, enabledModuleKeys } = useEnabledKeeperModules();
+  const { formatFromBase } = useCurrency();
   const whiskeyVisible = !WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper'); // gated
   const pipeVisible = isModuleEnabled('pipekeeper');
   const cigarVisible = isModuleEnabled('cigarkeeper');
@@ -385,7 +387,7 @@ export default function CollectionStoryCard() {
 
       {showStoryViewer && story && (
         <CollectionStoryViewer
-          cards={generateCollectionStoryCards(story, undefined, enabledModules)}
+          cards={generateCollectionStoryCards(story, formatFromBase, enabledModules)}
           onClose={() => setShowStoryViewer(false)}
         />
       )}

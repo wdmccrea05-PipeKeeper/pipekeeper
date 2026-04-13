@@ -2,6 +2,10 @@
  * Keeper Core — Value Aggregation Service
  */
 
+import { getEffectiveRates, getCurrentDisplayCurrency } from '@/lib/currency/exchangeRateStore';
+import { convertFromBase } from '@/lib/currency/convertCurrency';
+import { formatMoney } from '@/lib/currency/formatCurrency';
+
 export function getPipeValue(pipe) {
   if (!pipe) return 0;
   return pipe.estimated_value || pipe.purchase_price || 0;
@@ -51,18 +55,17 @@ export function getValueByModuleType(moduleType, entity) {
 }
 
 export function formatCurrencyValue(value, options = {}) {
-  const { fallback = '—', locale = 'en-US', currency = 'USD' } = options;
+  const { fallback = '—' } = options;
 
   if (!value || value <= 0) {
     return fallback;
   }
 
   try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-      maximumFractionDigits: 0,
-    }).format(value);
+    const currency = options.currency || getCurrentDisplayCurrency();
+    const ratePayload = getEffectiveRates();
+    const converted = convertFromBase(value, currency, ratePayload);
+    return formatMoney(converted, currency, options.locale);
   } catch {
     return fallback;
   }

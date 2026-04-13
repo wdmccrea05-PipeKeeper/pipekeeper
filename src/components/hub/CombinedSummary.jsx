@@ -1,9 +1,11 @@
 import React from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { getEnabledModuleCount } from './keeperModuleRegistry';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 export default function CombinedSummary({ pipeCount, tobaccoCount, bottleCount, totalValue, enabledModuleCount }) {
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
 
   const totalItems = pipeCount + tobaccoCount + bottleCount;
   const moduleCount = enabledModuleCount || getEnabledModuleCount();
@@ -15,7 +17,7 @@ export default function CombinedSummary({ pipeCount, tobaccoCount, bottleCount, 
     },
     {
       label: t('hub.totalValue'),
-      value: totalValue > 0 ? `$${totalValue.toLocaleString()}` : '—',
+      value: totalValue > 0 ? formatFromBase(totalValue) : '—',
     },
     {
       label: t('hub.modules'),

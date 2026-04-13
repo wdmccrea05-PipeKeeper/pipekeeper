@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useCurrency } from "@/lib/currency/useCurrency";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,7 @@ export default function AcquisitionItemCard({
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState(item.notes || "");
   const [isLoading, setIsLoading] = useState(false);
+  const { formatFromBase } = useCurrency();
   const { updateStatus, updatePriority, updateNotes, archiveItem } =
     useWantListActions();
 
@@ -120,7 +122,7 @@ export default function AcquisitionItemCard({
           <p className="text-xs text-[#E0D8C8]/60 mt-1 capitalize">{item.item_type}</p>
           {item.estimated_price && (
             <p className="text-xs text-[#E0D8C8]/50 mt-1">
-              Est: ${item.estimated_price.toFixed(2)}
+              Est: {formatFromBase(item.estimated_price)}
             </p>
           )}
         </div>

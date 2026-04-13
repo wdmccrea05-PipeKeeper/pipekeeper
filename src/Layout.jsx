@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import BrandLogo from "@/components/branding/BrandLogo";
 import ModuleNav from "@/components/modules/ModuleNav";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import CurrencySwitcher from "@/components/nav/CurrencySwitcher";
 import BackButton from "@/components/navigation/BackButton";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               <div className="flex items-center gap-2">
+                <CurrencySwitcher className="w-[80px] sm:w-[100px]" />
                 <LanguageSwitcher className="w-[90px] sm:w-[110px] sm:min-w-[130px]" />
 
                 <Button

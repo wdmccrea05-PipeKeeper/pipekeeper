@@ -53,6 +53,7 @@ import {
 } from "@/components/valuation/valueRefreshService";
 import { toast } from "sonner";
 import EnrichButton from "@/components/shared/EnrichButton";
+import { useCurrency } from "@/lib/currency/useCurrency";
 
 function safePrimitive(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -410,6 +411,8 @@ function BottleDetailInner() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { user, isLoading: userLoading } = useCurrentUser();
+  // Subscribe to currency context so component re-renders when currency changes
+  useCurrency();
 
   const bottleId = params.get("id") || params.get("bottleId");
   const userEmail = user?.email || null;

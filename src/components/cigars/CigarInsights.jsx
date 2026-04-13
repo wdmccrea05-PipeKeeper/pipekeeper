@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { Cigarette, DollarSign, BookOpen, Heart, ShieldAlert, Flame, Clock3 } from 'lucide-react';
 import { summarizeCigarReadiness, generateCollectionInsights, INSIGHT_TYPES } from '@/platform/agingReadiness';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 const GOLD_PALETTE = ['#D4A574', '#B48C4B', '#8C6B3F', '#6B4F2E', '#F5D4A0', '#C4904A', '#A07840'];
 const BODY_LABELS = {
@@ -165,6 +166,7 @@ const INSIGHT_CONFIG = {
 export default function CigarInsights({ cigars = [], sessions = [], humidors = [] }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const { formatFromBase } = useCurrency();
 
   const totalQty = cigars.reduce((s, c) => s + (c.singles_equivalent || c.quantity || 0), 0);
   const totalValue = cigars.reduce((s, c) => {
@@ -204,7 +206,7 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
         <StatTile
           icon={DollarSign}
           label="Est. Value"
-          value={`$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+          value={formatFromBase(totalValue)}
         />
         <StatTile icon={BookOpen} label="Sessions" value={sessions.length} />
         <StatTile icon={Heart} label="Favorites" value={favorites} />
