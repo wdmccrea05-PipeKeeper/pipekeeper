@@ -10,7 +10,7 @@ import {
   PIPE_RECOMMENDATION_LABELS,
   TOBACCO_RECOMMENDATION_LABELS,
 } from '@/components/valuation/valueEngine';
-import { formatCurrency } from '@/components/utils/localeFormatters';
+import { useCurrency } from '@/lib/currency/useCurrency';
 import { selectPipeCollectionValue, selectTotalQuantityOz as _selectTobaccoOz } from '@/lib/collection';
 import { selectCellarValue } from '@/lib/collection/tobaccoSelectors';
 import {
@@ -128,7 +128,7 @@ function StatCard({ label, value, sub }) {
   );
 }
 
-function ItemRow({ name, sub, badge, value, rarity, recommendation, recommendationLabel, recommendationColor = '#4ade80' }) {
+function ItemRow({ name, sub, badge, value, rarity, recommendation, recommendationLabel, recommendationColor = '#4ade80', formatFn }) {
   return (
     <div
       className="flex items-center justify-between gap-3 rounded-xl px-4 py-3"
@@ -156,7 +156,7 @@ function ItemRow({ name, sub, badge, value, rarity, recommendation, recommendati
         )}
         {value != null && value > 0 && (
           <span className="text-sm font-semibold" style={{ color: '#D4A574' }}>
-            {formatCurrency(value)}
+            {formatFn ? formatFn(value) : value}
           </span>
         )}
       </div>
@@ -172,6 +172,7 @@ export default function PipeKeeperInsights() {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('pipes');
+  const { formatFromBase } = useCurrency();
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes-insights', user?.email],
@@ -243,9 +244,9 @@ export default function PipeKeeperInsights() {
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Pipes" value={pipes.length} />
-        <StatCard label="Pipe Value" value={totalPipeValue > 0 ? formatCurrency(Math.round(totalPipeValue)) : '—'} />
+        <StatCard label="Pipe Value" value={totalPipeValue > 0 ? formatFromBase(Math.round(totalPipeValue)) : '—'} />
         <StatCard label="Blends" value={blends.length} sub={`${totalOz.toFixed(1)} oz total`} />
-        <StatCard label="Cellar Value" value={totalCellarValue > 0 ? formatCurrency(Math.round(totalCellarValue)) : '—'} />
+        <StatCard label="Cellar Value" value={totalCellarValue > 0 ? formatFromBase(Math.round(totalCellarValue)) : '—'} />
       </div>
 
       {/* Tabs */}
@@ -280,6 +281,7 @@ export default function PipeKeeperInsights() {
                     sub={[p.maker, p.bowl_material].filter(Boolean).join(' · ')}
                     value={p._value}
                     rarity={computeRarityScore(p, 'pipekeeper')}
+                    formatFn={formatFromBase}
                   />
                 ))}
               </div>
@@ -323,6 +325,7 @@ export default function PipeKeeperInsights() {
                     sub={[p.maker, p.condition].filter(Boolean).join(' · ')}
                     value={p._value}
                     recommendation={p._rec}
+                    formatFn={formatFromBase}
                     recommendationLabel={PIPE_RECOMMENDATION_LABELS[p._rec] || p._rec}
                     recommendationColor="#a78bfa"
                   />
@@ -355,6 +358,7 @@ export default function PipeKeeperInsights() {
                     sub={[b.manufacturer, b.blend_type].filter(Boolean).join(' · ')}
                     value={b._value}
                     rarity={computeRarityScore(b, 'pipekeeper')}
+                    formatFn={formatFromBase}
                   />
                 ))}
               </div>

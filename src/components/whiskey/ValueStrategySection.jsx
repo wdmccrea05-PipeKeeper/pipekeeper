@@ -8,7 +8,7 @@ import {
   TrendingUp, TrendingDown, Minus, ShieldCheck, Unlock, HelpCircle,
   PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle, RefreshCw, Settings,
 } from 'lucide-react';
-import { formatCurrency } from '@/components/whiskey/utils/bottleValue';
+import { useCurrency } from '@/lib/currency/useCurrency';
 
 // -- tiny helpers ---------------------------------------------------------------
 
@@ -253,7 +253,7 @@ function ReplacementDifficultyDots({ level }) {
   );
 }
 
-function SnapshotHistoryList({ snapshots }) {
+function SnapshotHistoryList({ snapshots, formatFn }) {
   const [expanded, setExpanded] = useState(false);
   const displayed = expanded ? snapshots : snapshots.slice(0, 3);
   if (snapshots.length === 0) {
@@ -269,7 +269,7 @@ function SnapshotHistoryList({ snapshots }) {
       {displayed.map((snap, i) => (
         <div key={snap.id || i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-xs min-w-0" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.1)' }}>
           <span className="text-[#D8C7A6]/65 shrink-0">{formatDate(snap.snapshot_date)}</span>
-          <span className="font-semibold text-[#F5F1E7] tabular-nums">{snap.computed_current_value > 0 ? formatCurrency(snap.computed_current_value) : '--'}</span>
+          <span className="font-semibold text-[#F5F1E7] tabular-nums">{snap.computed_current_value > 0 ? formatFn(snap.computed_current_value) : '--'}</span>
           <span className="text-[#D8C7A6]/45 truncate min-w-0">{snap.source || snap.price_type || '--'}</span>
           {snap.value_confidence && <ConfidenceBadge level={snap.value_confidence} />}
         </div>
@@ -288,7 +288,7 @@ function SnapshotHistoryList({ snapshots }) {
   );
 }
 
-function ObservationList({ observations }) {
+function ObservationList({ observations, formatFn }) {
   const [expanded, setExpanded] = useState(false);
   const displayed = expanded ? observations : observations.slice(0, 3);
   if (observations.length === 0) {
@@ -304,7 +304,7 @@ function ObservationList({ observations }) {
       {displayed.map((obs, i) => (
         <div key={obs.id || i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-xs min-w-0" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(59,130,246,0.12)' }}>
           <span className="text-[#D8C7A6]/65 shrink-0">{formatDate(obs.observed_date)}</span>
-          <span className="font-semibold text-[#F5F1E7] tabular-nums">{obs.observed_price > 0 ? formatCurrency(obs.observed_price) : '--'}</span>
+          <span className="font-semibold text-[#F5F1E7] tabular-nums">{obs.observed_price > 0 ? formatFn(obs.observed_price) : '--'}</span>
           <span className="text-[#93C5FD]/70 truncate min-w-0">{obs.source_name || '--'}</span>
           <span className="text-[#D8C7A6]/45 shrink-0 uppercase tracking-wide">{obs.price_type || '--'}</span>
         </div>
@@ -360,6 +360,7 @@ export default function ValueStrategySection({
   isRefreshing = false,
 }) {
   const [showSettings, setShowSettings] = useState(false);
+  const { formatFromBase } = useCurrency();
 
   if (!valuationSnapshot) return null;
 
@@ -492,7 +493,7 @@ export default function ValueStrategySection({
             <div className="min-w-0 flex-1">
               <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-1">Current Value</p>
               <p className="text-3xl font-bold text-[#F5F1E7] break-words tabular-nums">
-                {currentValue > 0 ? formatCurrency(currentValue) : '--'}
+                {currentValue > 0 ? formatFromBase(currentValue) : '--'}
               </p>
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 <span className="text-xs text-[#D8C7A6]/65">{source}</span>
@@ -563,13 +564,13 @@ export default function ValueStrategySection({
           {/* E -- Value History */}
           <div>
             <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">Value History</p>
-            <SnapshotHistoryList snapshots={valueSnapshots} />
+            <SnapshotHistoryList snapshots={valueSnapshots} formatFn={formatFromBase} />
           </div>
 
           {/* F -- Market Observations */}
           <div>
             <p className="text-xs uppercase tracking-[0.12em] text-[#93C5FD]/60 mb-2.5">Market Observations</p>
-            <ObservationList observations={priceObservations} />
+            <ObservationList observations={priceObservations} formatFn={formatFromBase} />
           </div>
         </div>
       </div>
