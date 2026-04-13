@@ -36,7 +36,7 @@ export const TRUSTED_DOMAINS = {
 
   // ── Tobacco blends — Tier 1: manufacturer/official ────────────────────────────
   'cornellanddiehl.com':     { tier: 1, type: 'official',  entityTypes: ['blend'], isInternational: false },
-  'samualgawith.com':        { tier: 1, type: 'official',  entityTypes: ['blend'], isInternational: true },
+  'samuelgawith.com':        { tier: 1, type: 'official',  entityTypes: ['blend'], isInternational: true },
   'gawith-hoggarth.co.uk':   { tier: 1, type: 'official',  entityTypes: ['blend'], isInternational: true },
   'petersontobacco.com':     { tier: 1, type: 'official',  entityTypes: ['blend'], isInternational: true },
   'glpease.com':             { tier: 1, type: 'official',  entityTypes: ['blend'], isInternational: false },

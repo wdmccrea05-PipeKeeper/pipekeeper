@@ -162,13 +162,9 @@ export function scoreResult(query, result, entityType) {
 
   // ── Brand / maker match ──────────────────────────────────────────────────────
   const brandField =
-    entityType === 'bottle'
-      ? result.matchedBrand || result.subtitle
-      : entityType === 'blend'
-        ? result.matchedBrand || result.subtitle
-        : entityType === 'pipe'
-          ? result.matchedBrand || result.subtitle
-          : result.matchedBrand;
+    entityType === 'image'
+      ? result.matchedBrand
+      : result.matchedBrand || result.subtitle;
 
   const brandScore = scoreBrandMatch(query, brandField);
 
