@@ -25,7 +25,9 @@
  *       productUrl,
  *       candidateImageUrl,
  *       cachedImageUrl,        — stable internal URL (null if ingestion failed)
+ *       storedImageUrl,        — alias of cachedImageUrl (preferred going forward)
  *       imageStatus,           — "ready" | "failed" | "unavailable"
+ *       matchStatus,           — "image_ready" | "image_failed" | "match_only"
  *     }
  *   ],
  *   totalCandidates: number,
@@ -185,6 +187,12 @@ export async function getProductImageSuggestions({
       }
     }
 
+    // Derive matchStatus from imageStatus for explicit UI branching
+    const matchStatus =
+      imageStatus === 'ready'       ? 'image_ready'  :
+      imageStatus === 'failed'      ? 'image_failed' :
+                                      'match_only';
+
     return {
       id:                    candidate.id,
       title:                 candidate.title,
@@ -198,7 +206,9 @@ export async function getProductImageSuggestions({
       productUrl:            candidate.productUrl,
       candidateImageUrl:     candidate.candidateImageUrl,
       cachedImageUrl,
+      storedImageUrl:        cachedImageUrl,  // preferred alias going forward
       imageStatus,
+      matchStatus,
     };
   });
 
@@ -219,6 +229,7 @@ export async function getProductImageSuggestions({
       title:         r.title,
       sourceDomain:  r.sourceDomain,
       imageStatus:   r.imageStatus,
+      matchStatus:   r.matchStatus,
       cachedImageUrl: r.cachedImageUrl,
       confidenceLabel: r.confidenceLabel,
     })));

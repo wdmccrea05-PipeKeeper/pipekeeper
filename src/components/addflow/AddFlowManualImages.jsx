@@ -227,13 +227,13 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
-            Suggested Images
+            {suggestions.length > 0 && readyCount === 0 ? 'Matched Products' : 'Suggested Images'}
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {suggestions.length > 0
               ? readyCount > 0
                 ? `${readyCount} image preview${readyCount === 1 ? '' : 's'} available.`
-                : `${suggestions.length} product match${suggestions.length === 1 ? '' : 'es'} found. No usable image previews acquired yet.`
+                : `${suggestions.length} likely match${suggestions.length === 1 ? '' : 'es'} found — no verified image previews available yet.`
               : 'Choose a trusted image match or upload your own.'}
           </p>
         </div>
@@ -252,14 +252,34 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
       {loading && (
         <div className="flex items-center gap-2 py-3" style={{ color: 'rgba(224,216,200,0.4)' }}>
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-xs">{searchCount > 0 ? 'Broadening search…' : 'Finding trusted images…'}</span>
+          <span className="text-xs">{searchCount > 0 ? 'Broadening search…' : 'Finding trusted matches…'}</span>
         </div>
       )}
 
       {!loading && fetched && suggestions.length === 0 && (
-        <p className="text-xs py-2" style={{ color: 'rgba(224,216,200,0.35)' }}>
-          No trusted image matches found. Try Search Again, paste an image URL, or upload your own.
-        </p>
+        <div className="flex flex-col gap-2 py-2">
+          <p className="text-xs" style={{ color: 'rgba(224,216,200,0.35)' }}>
+            No trusted matches found.
+          </p>
+          <div className="flex flex-wrap gap-2 mt-1">
+            <button
+              type="button"
+              onClick={handleSearchAgain}
+              className="text-xs px-3 py-1.5 rounded-full transition-colors hover:bg-white/10"
+              style={{ color: 'rgba(180,140,75,0.8)', border: '1px solid rgba(180,140,75,0.2)' }}
+            >
+              Search Again
+            </button>
+            <button
+              type="button"
+              onClick={() => document.querySelector('input[type="file"]')?.click()}
+              className="text-xs px-3 py-1.5 rounded-full transition-colors hover:bg-white/10"
+              style={{ color: 'rgba(224,216,200,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              Upload your own photo
+            </button>
+          </div>
+        </div>
       )}
 
       {!loading && suggestions.length > 0 && (
@@ -334,6 +354,12 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                     </p>
                   )}
 
+                  {!isImageReady && (
+                    <p className="text-[10px] mt-0.5" style={{ color: 'rgba(224,216,200,0.3)' }}>
+                      No verified image preview available
+                    </p>
+                  )}
+
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     {/* Source chip */}
                     {img.sourceDomain && (
@@ -360,30 +386,35 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                   </div>
                 </div>
 
-                {/* Action button — only enabled when a real internal image exists */}
+                {/* Action button:
+                     - image_ready  → enabled "Use This Image" (saves internal URL)
+                     - match_only   → enabled "Use This Match" (saves metadata, no image URL)
+                     - image_failed → disabled "Image Failed" */}
                 <Button
                   type="button"
                   size="sm"
-                  disabled={!isImageReady}
+                  disabled={isImageFailed}
                   onClick={() => {
-                    const useUrl = getImageUrlForSave(img);
-                    if (!useUrl) return;
-                    onSelectImage(useUrl, {
-                      image_source_domain:    img.sourceDomain    || null,
-                      image_source_type:      img.sourceType      || null,
-                      image_confidence:       img.confidenceLabel || null,
-                      image_verified_by_user: true,
-                    });
+                    if (isImageReady) {
+                      const useUrl = getImageUrlForSave(img);
+                      if (!useUrl) return;
+                      onSelectImage(useUrl, {
+                        image_source_domain:    img.sourceDomain    || null,
+                        image_source_type:      img.sourceType      || null,
+                        image_confidence:       img.confidenceLabel || null,
+                        image_verified_by_user: true,
+                      });
+                    } else {
+                      // Match-only: save product metadata, no image URL
+                      onSelectImage(null, {
+                        image_source_domain:    img.sourceDomain    || null,
+                        image_source_type:      img.sourceType      || null,
+                        image_confidence:       img.confidenceLabel || null,
+                        image_verified_by_user: false,
+                      });
+                    }
                   }}
-                  style={isImageReady ? {
-                    background: 'linear-gradient(135deg, rgba(212,175,55,0.85), rgba(180,140,50,0.85))',
-                    color: '#1a1008',
-                    fontWeight: 700,
-                    fontSize: 11,
-                    flexShrink: 0,
-                    minWidth: 72,
-                    borderRadius: 10,
-                  } : {
+                  style={isImageFailed ? {
                     background: 'rgba(255,255,255,0.05)',
                     color: 'rgba(224,216,200,0.25)',
                     fontWeight: 600,
@@ -393,9 +424,26 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                     borderRadius: 10,
                     cursor: 'not-allowed',
                     border: '1px solid rgba(255,255,255,0.08)',
+                  } : isImageReady ? {
+                    background: 'linear-gradient(135deg, rgba(212,175,55,0.85), rgba(180,140,50,0.85))',
+                    color: '#1a1008',
+                    fontWeight: 700,
+                    fontSize: 11,
+                    flexShrink: 0,
+                    minWidth: 72,
+                    borderRadius: 10,
+                  } : {
+                    background: 'rgba(255,255,255,0.08)',
+                    color: 'rgba(224,216,200,0.65)',
+                    fontWeight: 600,
+                    fontSize: 11,
+                    flexShrink: 0,
+                    minWidth: 80,
+                    borderRadius: 10,
+                    border: '1px solid rgba(255,255,255,0.12)',
                   }}
                 >
-                  {isImageReady ? 'Use This' : 'No Image'}
+                  {isImageFailed ? 'Image Failed' : isImageReady ? 'Use This Image' : 'Use This Match'}
                 </Button>
               </div>
             );
@@ -754,7 +802,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             itemType={itemType}
             data={data}
             onSelectImage={(url, meta) => {
-              setImageUrl(url);
+              if (url) setImageUrl(url);
               setImageMeta(meta || null);
             }}
           />
