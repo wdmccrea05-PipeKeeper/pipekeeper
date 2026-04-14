@@ -163,8 +163,8 @@ function TastingsInner() {
           bottles={bottles}
           editLog={editingTasting}
           onClose={closeModal}
-          onDeleted={async () => { await loadData(); }}
-          onSaved={async () => { await loadData(); }}
+          onDeleted={async () => { closeModal(); await loadData(); }}
+          onSaved={async () => { closeModal(); await loadData(); }}
         />
       ) : null}
     </>

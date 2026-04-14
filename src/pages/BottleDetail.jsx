@@ -1010,11 +1010,22 @@ function BottleDetailInner() {
       {showTastingModal ? (
         <LogTastingModal
           bottle={bottle}
-          editingTasting={editingTasting}
+          bottles={allBottles}
+          editLog={editingTasting}
           onClose={() => {
             setShowTastingModal(false);
             setEditingTasting(null);
             loadTastings();
+          }}
+          onSaved={async () => {
+            setShowTastingModal(false);
+            setEditingTasting(null);
+            await loadTastings();
+          }}
+          onDeleted={async () => {
+            setShowTastingModal(false);
+            setEditingTasting(null);
+            await loadTastings();
           }}
         />
       ) : null}
