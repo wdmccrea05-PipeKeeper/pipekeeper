@@ -264,7 +264,7 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
     imageUrl: sanitizeImageUrl(r.imageUrl),
   }));
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (import.meta.env?.DEV) {
     // eslint-disable-next-line no-console
     console.log('[ImageSearch] Suggested image results:', sanitizedResults.map((r) => ({
       title: r.title,
