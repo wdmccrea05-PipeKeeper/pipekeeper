@@ -26,6 +26,7 @@
  */
 
 import { getImageDomainInfo } from './trustedImageSources.js';
+import { isImageUrl } from './imageProxyService.js';
 
 let _idCounter = 0;
 function nextId() {
@@ -129,9 +130,15 @@ export function normalizeImageResult(raw, entityType = 'bottle', context = {}) {
 
   // Extract and sanitize image URL
   const directImageUrl = extractImageUrl(raw);
-  // Fall back to source_url so we can proxy it when no CDN image URL is present
-  const rawImageUrl = directImageUrl || raw.source_url || raw.sourceUrl || null;
-  const imageUrl = isPlaceholderUrl(rawImageUrl) ? null : sanitizeImageUrl(rawImageUrl);
+
+  // Only fall back to source_url when it actually looks like an image asset URL
+  // (not an HTML product page). This prevents non-image page URLs from being
+  // passed to the proxy, which would silently fail and show a placeholder.
+  const sourceUrlCandidate = raw.source_url || raw.sourceUrl || null;
+  const sourceUrlAsImage   = isImageUrl(sourceUrlCandidate) ? sourceUrlCandidate : null;
+
+  const rawImageUrl = directImageUrl || sourceUrlAsImage || null;
+  const imageUrl    = isPlaceholderUrl(rawImageUrl) ? null : sanitizeImageUrl(rawImageUrl);
 
   // Source URL (the product page, distinct from the image asset URL)
   const sourceUrl = sanitizeImageUrl(raw.source_url || raw.sourceUrl || null);
@@ -161,6 +168,8 @@ export function normalizeImageResult(raw, entityType = 'bottle', context = {}) {
     url:             sourceUrl,
     imageUrl,
     isDirectImageUrl: !!(directImageUrl && sanitizeImageUrl(directImageUrl)),
+    proxiedImageUrl:  null, // populated later by imageResolver
+    renderableImageUrl: null, // populated later by imageResolver
     matchedName:     context.matchedName  || title,
     matchedBrand:    context.matchedBrand || null,
     confidenceScore:  0,

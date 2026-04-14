@@ -50,6 +50,7 @@ import { runTier1LLMSearch, runTier2FallbackSearch } from './imageSearchProvider
 import { normalizeImageResults } from './imageResultNormalizer.js';
 import { rankImageResults } from './imageResultRanker.js';
 import { dedupeImageResults } from './imageResultDedupe.js';
+import { resolveRenderableImages } from './imageResolver.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -182,7 +183,12 @@ export async function searchProductImages({
   const withLabels = applyPipeLabeling(merged, entityType);
 
   // Final slice: preferred 6, minimum 3
-  const finalResults = withLabels.slice(0, preferredResults);
+  const sliced = withLabels.slice(0, preferredResults);
+
+  // Resolve renderableImageUrl for each result (uses imageProxyService + cache)
+  // Results with a renderableImageUrl are sorted to the front, preserving
+  // relative score order within each group.
+  const finalResults = resolveRenderableImages(sliced);
 
   const exactMatch = finalResults.find((r) => r.isExactMatch) || null;
 
@@ -192,6 +198,8 @@ export async function searchProductImages({
       title: r.title,
       sourceDomain: r.sourceDomain,
       imageUrl: r.imageUrl,
+      proxiedImageUrl: r.proxiedImageUrl,
+      renderableImageUrl: r.renderableImageUrl,
       confidenceLabel: r.confidenceLabel,
     })));
   }
