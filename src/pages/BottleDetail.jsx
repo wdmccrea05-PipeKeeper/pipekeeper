@@ -791,6 +791,9 @@ function BottleDetailInner() {
                 photos={bottle.photos?.length ? bottle.photos : (bottle.photo ? [bottle.photo] : [])}
                 maxPhotos={2}
                 label={t('common.photos', 'Photos')}
+                entityType="bottle"
+                recordName={bottle.name || ''}
+                brand={bottle.distillery || ''}
                 onUpdate={async (newPhotos) => {
                   await base44.entities.Bottle.update(bottle.id, {
                     photos: newPhotos,

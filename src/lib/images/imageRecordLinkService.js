@@ -69,7 +69,9 @@ export async function linkImageToRecord({
 
     // Increment library verified count when user confirmed from library
     if (libraryImageId && verifiedByUser) {
-      markLibraryImageVerified(libraryImageId).catch(() => {});
+      markLibraryImageVerified(libraryImageId).catch((e) => {
+        if (import.meta.env.DEV) console.warn('[ImageLibrary] markLibraryImageVerified failed:', e);
+      });
     }
 
     return link;
