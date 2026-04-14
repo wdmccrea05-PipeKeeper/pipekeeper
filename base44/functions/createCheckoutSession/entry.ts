@@ -108,10 +108,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { planKey, selectedModules, successUrl, cancelUrl } = await req.json();
+    const {
+      planKey,
+      selectedModules,
+      successUrl,
+      cancelUrl,
+      // Billing intent fields — explicit action context from the UI
+      actionType = 'new_purchase',
+      currentPlanKey = null,
+    } = await req.json();
 
     if (!planKey) {
       return Response.json({ error: 'Plan key is required' }, { status: 400 });
+    }
+
+    // Validate actionType — no silent fallback to a wrong checkout type
+    const validActionTypes = ['new_purchase', 'upgrade_existing', 'add_complementary_module'];
+    if (!validActionTypes.includes(actionType)) {
+      console.error(`[createCheckoutSession] Invalid actionType="${actionType}" for planKey="${planKey}"`);
+      return Response.json(
+        { error: `Invalid action type: ${actionType}. Cannot start checkout.` },
+        { status: 400 }
+      );
     }
 
     const priceId = PLAN_TO_STRIPE_PRICE[planKey];
@@ -125,6 +143,20 @@ Deno.serve(async (req) => {
         },
         { status: 400 }
       );
+    }
+
+    // For upgrade_existing: validate that currentPlanKey is provided and makes sense.
+    // The actual subscription cancellation is handled by the client via handleBundleUpgrade
+    // before calling this endpoint. We just log the intent here for audit purposes.
+    if (actionType === 'upgrade_existing' && !currentPlanKey) {
+      console.warn(`[createCheckoutSession] upgrade_existing called without currentPlanKey for planKey="${planKey}"`);
+    }
+
+    // For add_complementary_module: we create a new subscription checkout without
+    // canceling the user's existing subscription. This is intentional — the user
+    // keeps their current plan and adds a second one.
+    if (actionType === 'add_complementary_module') {
+      console.log(`[createCheckoutSession] add_complementary_module: adding "${planKey}" alongside "${currentPlanKey}"`);
     }
 
     // Get or create Stripe customer
@@ -146,6 +178,12 @@ Deno.serve(async (req) => {
 
     // Build canonical metadata — same object goes on session AND subscription
     const metadata = buildCheckoutMetadata(planKey, selectedModules || [], user);
+
+    // Include billing intent in metadata for audit / webhook processing
+    metadata.action_type = actionType;
+    if (currentPlanKey) {
+      metadata.current_plan_key = currentPlanKey;
+    }
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
