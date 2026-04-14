@@ -1,0 +1,77 @@
+{
+  "name": "BottleValueSnapshot",
+  "type": "object",
+  "description": "A point-in-time valuation snapshot for a whiskey bottle. Used to track value history over time.",
+  "properties": {
+    "bottle_id": {
+      "type": "string",
+      "description": "ID of the Bottle this snapshot belongs to"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this snapshot"
+    },
+    "snapshot_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the valuation snapshot (YYYY-MM-DD)"
+    },
+    "retail_price": {
+      "type": "number",
+      "description": "Known retail price at time of snapshot"
+    },
+    "aftermarket_price": {
+      "type": "number",
+      "description": "Secondary / aftermarket price at time of snapshot"
+    },
+    "collector_value": {
+      "type": "number",
+      "description": "Collector-community value estimate at time of snapshot"
+    },
+    "computed_current_value": {
+      "type": "number",
+      "description": "Engine-computed canonical current value at time of snapshot"
+    },
+    "value_confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Confidence level of the computed value"
+    },
+    "source": {
+      "type": "string",
+      "description": "What data source drove the primary value"
+    },
+    "rarity_score": {
+      "type": "number",
+      "description": "Engine-computed rarity score 0\u2013100 at time of snapshot"
+    },
+    "replacement_difficulty": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "moderate",
+        "hard",
+        "very_hard"
+      ],
+      "description": "Estimated difficulty of replacing this bottle at time of snapshot"
+    },
+    "is_auto_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this snapshot was created automatically by the system"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional free-text notes about this valuation"
+    }
+  },
+  "required": [
+    "bottle_id",
+    "created_by",
+    "snapshot_date"
+  ]
+}

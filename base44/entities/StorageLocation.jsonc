@@ -1,0 +1,64 @@
+{
+  "name": "StorageLocation",
+  "type": "object",
+  "description": "A shared storage location entity for cigars (humidors) and wine (cellars, racks).",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name or label for this storage location"
+    },
+    "location_type": {
+      "type": "string",
+      "enum": [
+        "humidor",
+        "cellar",
+        "rack",
+        "bin",
+        "cabinet",
+        "other"
+      ],
+      "description": "Type of storage location"
+    },
+    "module": {
+      "type": "string",
+      "enum": [
+        "cigars",
+        "wine",
+        "shared"
+      ],
+      "description": "Which module this location belongs to"
+    },
+    "capacity_count": {
+      "type": "number",
+      "description": "Maximum number of items this location can hold"
+    },
+    "current_count": {
+      "type": "number",
+      "description": "Current number of items stored in this location"
+    },
+    "target_humidity_rh": {
+      "type": "number",
+      "description": "Target relative humidity percentage"
+    },
+    "target_temp_f": {
+      "type": "number",
+      "description": "Target storage temperature in degrees Fahrenheit"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description of this storage location"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes about this location"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
+    }
+  },
+  "required": [
+    "name",
+    "created_by"
+  ]
+}

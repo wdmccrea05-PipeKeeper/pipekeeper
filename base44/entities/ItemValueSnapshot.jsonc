@@ -1,0 +1,128 @@
+{
+  "name": "ItemValueSnapshot",
+  "type": "object",
+  "description": "A point-in-time valuation snapshot for any collectible item. Supports all modules (pipekeeper, whiskeykeeper, cigarkeeper, winekeeper) and all item types (pipe, tobacco, bottle, cigar, wine).",
+  "properties": {
+    "module_key": {
+      "type": "string",
+      "enum": [
+        "whiskeykeeper",
+        "pipekeeper",
+        "cigarkeeper",
+        "winekeeper",
+        "other"
+      ],
+      "description": "Module this snapshot belongs to (e.g. pipekeeper, whiskeykeeper)"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "pipe",
+        "tobacco",
+        "bottle",
+        "cigar",
+        "wine",
+        "other"
+      ],
+      "description": "The type of item this snapshot belongs to within the module"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "ID of the item (pipe, tobacco blend, bottle, etc.) this snapshot belongs to"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this snapshot"
+    },
+    "snapshot_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the valuation snapshot (YYYY-MM-DD)"
+    },
+    "retail_value": {
+      "type": "number",
+      "description": "Known retail/list price at time of snapshot"
+    },
+    "market_value": {
+      "type": "number",
+      "description": "Secondary market / aftermarket price at time of snapshot"
+    },
+    "collector_value": {
+      "type": "number",
+      "description": "Collector-community value estimate at time of snapshot"
+    },
+    "computed_current_value": {
+      "type": "number",
+      "description": "Engine-computed canonical current value at time of snapshot"
+    },
+    "computed_value": {
+      "type": "number",
+      "description": "Alias for computed_current_value \u2014 kept for backward compatibility"
+    },
+    "value_confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Confidence level of the computed value"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Alias for value_confidence \u2014 kept for backward compatibility"
+    },
+    "source": {
+      "type": "string",
+      "description": "What data source drove the primary value"
+    },
+    "rarity_score": {
+      "type": "number",
+      "description": "Engine-computed rarity score 0\u2013100 at time of snapshot"
+    },
+    "replacement_difficulty": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "moderate",
+        "hard",
+        "very_hard"
+      ],
+      "description": "Estimated difficulty of replacing this item at time of snapshot"
+    },
+    "trend_basis": {
+      "type": "string",
+      "enum": [
+        "up",
+        "down",
+        "flat",
+        "unknown"
+      ],
+      "description": "Value trend at time of snapshot based on recent snapshot history"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Strategy recommendation at time of snapshot"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional free-text notes about this valuation"
+    },
+    "is_auto_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this snapshot was created automatically by the system"
+    }
+  },
+  "required": [
+    "module_key",
+    "item_id",
+    "created_by",
+    "snapshot_date"
+  ]
+}

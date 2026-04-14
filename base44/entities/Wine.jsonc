@@ -1,0 +1,120 @@
+{
+  "name": "Wine",
+  "type": "object",
+  "description": "A wine bottle in a user's WineKeeper collection.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the wine"
+    },
+    "producer": {
+      "type": "string",
+      "description": "Winery, ch\u00e2teau, or producer name"
+    },
+    "region": {
+      "type": "string",
+      "description": "Wine region (e.g. Napa Valley, Bordeaux, Tuscany)"
+    },
+    "appellation": {
+      "type": "string",
+      "description": "Appellation or sub-region"
+    },
+    "varietal": {
+      "type": "string",
+      "description": "Primary grape variety"
+    },
+    "blend_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Grape varieties in the blend"
+    },
+    "vintage": {
+      "type": "number",
+      "description": "Vintage year (e.g. 2018)"
+    },
+    "style": {
+      "type": "string",
+      "enum": [
+        "red",
+        "white",
+        "ros\u00e9",
+        "sparkling",
+        "dessert",
+        "fortified",
+        "orange",
+        "other"
+      ],
+      "description": "Style or color category of the wine"
+    },
+    "bottle_size": {
+      "type": "string",
+      "description": "Bottle format (e.g. 750ml, Magnum)"
+    },
+    "abv": {
+      "type": "number",
+      "description": "Alcohol by volume percentage"
+    },
+    "country_of_origin": {
+      "type": "string",
+      "description": "Country of origin"
+    },
+    "drink_window_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Start of the recommended drinking window"
+    },
+    "drink_window_end": {
+      "type": "string",
+      "format": "date",
+      "description": "End of the recommended drinking window"
+    },
+    "storage_location_id": {
+      "type": "string",
+      "description": "Foreign key to a StorageLocation record"
+    },
+    "purchase_price": {
+      "type": "number",
+      "description": "Price paid at purchase"
+    },
+    "estimated_value": {
+      "type": "number",
+      "description": "Current estimated market value"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Number of bottles in inventory"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text personal notes about this wine"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of photo URLs"
+    },
+    "is_favorite": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this wine is marked as a favorite"
+    },
+    "ai_excluded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this wine is excluded from AI recommendations"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
+    }
+  },
+  "required": [
+    "name",
+    "producer",
+    "created_by"
+  ]
+}

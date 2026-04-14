@@ -1,0 +1,67 @@
+{
+  "name": "HumidorMaintenanceLog",
+  "type": "object",
+  "description": "A single maintenance event recorded for a humidor.",
+  "properties": {
+    "humidor_id": {
+      "type": "string",
+      "description": "ID of the HumidorLocation this event belongs to"
+    },
+    "humidor_name": {
+      "type": "string",
+      "description": "Snapshot of the humidor name at time of logging"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "humidity_check",
+        "temperature_check",
+        "aid_replaced",
+        "aid_refilled",
+        "humidor_cleaned",
+        "seasonal_adjustment",
+        "other"
+      ],
+      "description": "Type of maintenance event"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the maintenance event occurred"
+    },
+    "humidity_reading": {
+      "type": "number",
+      "description": "Optional humidity reading recorded during this event (% RH)"
+    },
+    "temperature_reading": {
+      "type": "number",
+      "description": "Optional temperature reading recorded during this event (\u00b0F)"
+    },
+    "aid_type": {
+      "type": "string",
+      "description": "Type of humidity aid involved in this event"
+    },
+    "aid_brand": {
+      "type": "string",
+      "description": "Brand of humidity aid involved in this event"
+    },
+    "aid_specification": {
+      "type": "string",
+      "description": "Size/specification of humidity aid (e.g. '60g', '69%')"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional free-text notes about this maintenance event"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
+    }
+  },
+  "required": [
+    "humidor_id",
+    "event_type",
+    "date",
+    "created_by"
+  ]
+}

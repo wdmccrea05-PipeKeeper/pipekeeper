@@ -1,0 +1,40 @@
+{
+  "name": "SharedItemBundle",
+  "type": "object",
+  "properties": {
+    "sender_user_id": {
+      "type": "string",
+      "description": "Email of sender"
+    },
+    "recipient_user_id": {
+      "type": "string",
+      "description": "Email of recipient"
+    },
+    "message": {
+      "type": "string",
+      "description": "Optional message from sender"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Array of item payloads"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "dismissed"
+      ],
+      "default": "pending",
+      "description": "Bundle status"
+    }
+  },
+  "required": [
+    "sender_user_id",
+    "recipient_user_id",
+    "items"
+  ]
+}
