@@ -51,7 +51,6 @@ import { runTier1LLMSearch, runTier2FallbackSearch } from './imageSearchProvider
 import { normalizeImageResults } from './imageResultNormalizer.js';
 import { rankImageResults } from './imageResultRanker.js';
 import { dedupeImageResults } from './imageResultDedupe.js';
-import { resolveRenderableImages } from './imageResolver.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -186,30 +185,23 @@ export async function searchProductImages({
   // Final slice: preferred 6, minimum 3
   const sliced = withLabels.slice(0, preferredResults);
 
-  // Resolve renderableImageUrl for each result (uses imageProxyService + imageRenderVerifier + cache)
-  // All verifications run in parallel via Promise.all; verified results sort to front.
-  const finalResults = await resolveRenderableImages(sliced);
-
-  const exactMatch = finalResults.find((r) => r.isExactMatch) || null;
+  const exactMatch = sliced.find((r) => r.isExactMatch) || null;
 
   if (import.meta.env?.DEV) {
     // eslint-disable-next-line no-console
-    console.log('[ImageSearchService] Results:', finalResults.map((r) => ({
+    console.log('[ImageSearchService] Discovery results:', sliced.map((r) => ({
       title: r.title,
       sourceDomain: r.sourceDomain,
       imageUrl: r.imageUrl,
-      proxiedImageUrl: r.proxiedImageUrl,
-      renderableImageUrl: r.renderableImageUrl,
-      thumbnailStatus: r.thumbnailStatus,
       confidenceLabel: r.confidenceLabel,
     })));
   }
 
   return {
-    results:         finalResults,
+    results:         sliced,
     exactMatch,
     totalCandidates: merged.length,
     sourceSummary:   { trusted: trustedCount, fallback: fallbackCount },
-    noResults:       finalResults.length === 0,
+    noResults:       sliced.length === 0,
   };
 }
