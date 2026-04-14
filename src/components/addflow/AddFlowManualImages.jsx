@@ -97,19 +97,14 @@ const CONFIDENCE_CHIP_STYLES = {
 
 /**
  * Determine the best URL to save when the user clicks "Use This".
- * Priority: cachedImageUrl (stable internal URL) → candidateImageUrl (fallback only).
- *
- * Prefer the ingested internal URL. Only fall back to the raw candidate URL
- * when no internal URL was produced (graceful degradation).
+ * Only returns a cachedImageUrl (stable internal URL from ingestion).
+ * Never saves raw external candidate URLs as the record image.
  *
  * @param {Object} result - PipelineResult
  * @returns {string|null}
  */
 function getImageUrlForSave(result) {
-  if (result.cachedImageUrl) return result.cachedImageUrl;
-  // Graceful fallback: external URL if no internal URL was ingested
-  if (result.candidateImageUrl) return result.candidateImageUrl;
-  return null;
+  return result.cachedImageUrl || null;
 }
 
 /**
@@ -238,7 +233,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
             {suggestions.length > 0
               ? readyCount > 0
                 ? `${readyCount} image preview${readyCount === 1 ? '' : 's'} available.`
-                : `${suggestions.length} suggested match${suggestions.length === 1 ? '' : 'es'} found.`
+                : `${suggestions.length} product match${suggestions.length === 1 ? '' : 'es'} found. No usable image previews acquired yet.`
               : 'Choose a trusted image match or upload your own.'}
           </p>
         </div>
@@ -278,12 +273,31 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
               chipLabel === 'Medium Confidence' ? '~ ' :
               chipLabel === 'Reference'         ? '◈ ' : '? ';
 
+            // imageStatus drives the row label and action button behaviour.
+            // Only rows with imageStatus === 'ready' have an acquired internal image.
+            const isImageReady    = img.imageStatus === 'ready';
+            const isImageFailed   = img.imageStatus === 'failed';
+
             const rowLabel =
-              img.isReferenceImage
-                ? 'Reference Image'
-                : img.isExactMatch
-                  ? 'Exact Match'
-                  : 'Suggested Match';
+              isImageReady
+                ? img.isReferenceImage
+                  ? 'Reference Image'
+                  : img.isExactMatch
+                    ? 'Exact Match'
+                    : 'Suggested Image'
+                : isImageFailed
+                  ? 'Matched Product'
+                  : img.isReferenceImage
+                    ? 'Reference Match'
+                    : 'Matched Product';
+
+            // Status badge shown next to the row label
+            const statusBadge =
+              isImageReady
+                ? { label: 'Image Ready',  color: 'rgba(46,125,92,0.9)',    bg: 'rgba(46,125,92,0.15)',    border: '1px solid rgba(46,125,92,0.35)' }
+                : isImageFailed
+                  ? { label: 'Image Failed', color: 'rgba(224,216,200,0.35)', bg: 'rgba(60,40,30,0.35)',   border: '1px solid rgba(120,80,60,0.3)' }
+                  : { label: 'Match Only',   color: 'rgba(180,140,75,0.8)',  bg: 'rgba(180,140,75,0.1)',   border: '1px solid rgba(180,140,75,0.25)' };
 
             return (
               <div
@@ -291,20 +305,29 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                 className="flex items-center gap-3 p-3 rounded-xl"
                 style={{
                   background: 'linear-gradient(180deg, #111111 0%, #0b0b0b 100%)',
-                  border: img.isExactMatch
+                  border: isImageReady && img.isExactMatch
                     ? '1px solid rgba(46,125,92,0.35)'
                     : '1px solid rgba(212,175,55,0.15)',
                   borderRadius: 18,
                 }}
               >
-                {/* Thumbnail — uses renderableImageUrl from imageResolver; shows placeholder when unavailable */}
+                {/* Thumbnail — only renders when ingestion produced a cachedImageUrl */}
                 <SuggestionThumb result={img} />
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.92)' }}>
-                    {rowLabel}
-                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                      {rowLabel}
+                    </p>
+                    {/* Image acquisition status badge */}
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-full font-medium flex-shrink-0"
+                      style={{ background: statusBadge.bg, color: statusBadge.color, border: statusBadge.border }}
+                    >
+                      {statusBadge.label}
+                    </span>
+                  </div>
                   {img.title && (
                     <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
                       {img.title}
@@ -337,12 +360,15 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                   </div>
                 </div>
 
-                {/* Action button */}
+                {/* Action button — only enabled when a real internal image exists */}
                 <Button
                   type="button"
                   size="sm"
+                  disabled={!isImageReady}
                   onClick={() => {
+                    if (!isImageReady) return;
                     const useUrl = getImageUrlForSave(img);
+                    if (!useUrl) return;
                     onSelectImage(useUrl, {
                       image_source_domain:    img.sourceDomain    || null,
                       image_source_type:      img.sourceType      || null,
@@ -350,7 +376,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                       image_verified_by_user: true,
                     });
                   }}
-                  style={{
+                  style={isImageReady ? {
                     background: 'linear-gradient(135deg, rgba(212,175,55,0.85), rgba(180,140,50,0.85))',
                     color: '#1a1008',
                     fontWeight: 700,
@@ -358,9 +384,19 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                     flexShrink: 0,
                     minWidth: 72,
                     borderRadius: 10,
+                  } : {
+                    background: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(224,216,200,0.25)',
+                    fontWeight: 600,
+                    fontSize: 11,
+                    flexShrink: 0,
+                    minWidth: 72,
+                    borderRadius: 10,
+                    cursor: 'not-allowed',
+                    border: '1px solid rgba(255,255,255,0.08)',
                   }}
                 >
-                  Use This
+                  {isImageReady ? 'Use This' : 'No Image'}
                 </Button>
               </div>
             );

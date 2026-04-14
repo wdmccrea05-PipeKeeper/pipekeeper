@@ -86,6 +86,48 @@ function extensionFromMime(contentType: string): string {
   return MIME_TO_EXT[base] || '.jpg';
 }
 
+// ── HTML og:image extractor ───────────────────────────────────────────────────
+
+/**
+ * Given the HTML body of a product page, attempt to extract the best image URL.
+ * Checks (in priority order):
+ *   1. og:image meta property
+ *   2. twitter:image meta name
+ *
+ * Resolves relative/protocol-relative URLs against baseUrl.
+ *
+ * @param html   - Raw HTML string
+ * @param baseUrl - The URL the HTML was fetched from (used to resolve relative URLs)
+ * @returns Absolute image URL, or null if nothing was found
+ */
+function extractImageUrlFromHtml(html: string, baseUrl: string): string | null {
+  // Match <meta property="og:image" content="..."> in any attribute order
+  const patterns: RegExp[] = [
+    /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i,
+    /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i,
+    /<meta[^>]+name=["']og:image["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']og:image["']/i,
+  ];
+
+  for (const re of patterns) {
+    const m = html.match(re);
+    if (m?.[1]) {
+      const raw = m[1].trim();
+      if (!raw) continue;
+      // Resolve URL
+      if (raw.startsWith('//')) return `https:${raw}`;
+      if (raw.startsWith('/')) {
+        try { return new URL(raw, baseUrl).toString(); } catch { continue; }
+      }
+      return raw;
+    }
+  }
+
+  return null;
+}
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -149,9 +191,98 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, reason: 'fetch-failed' }, { status: 502 });
     }
 
-    // ── Content-type validation ───────────────────────────────────────────────
+    // ── Content-type validation (with HTML og:image fallback) ────────────────
 
     const contentType = imageResponse.headers.get('content-type') || '';
+
+    // When the response is an HTML page (common when discovery returns a product
+    // page URL rather than a direct image asset URL), attempt to extract the
+    // og:image or twitter:image meta tag and re-ingest from that URL instead.
+    if (!isImageContentType(contentType) && contentType.toLowerCase().includes('text/html')) {
+      let htmlBody: string;
+      try {
+        htmlBody = await imageResponse.text();
+      } catch {
+        return Response.json({ ok: false, reason: 'not-an-image' }, { status: 422 });
+      }
+
+      const extractedImageUrl = extractImageUrlFromHtml(htmlBody, rawUrl);
+      if (!extractedImageUrl) {
+        console.warn('[ingestProductImage] HTML page, no og:image found:', rawUrl);
+        return Response.json({ ok: false, reason: 'not-an-image' }, { status: 422 });
+      }
+
+      console.log('[ingestProductImage] Extracted og:image from HTML:', extractedImageUrl);
+
+      if (!isValidUrl(extractedImageUrl) || isBlockedHostname(extractedImageUrl)) {
+        return Response.json({ ok: false, reason: 'not-an-image' }, { status: 422 });
+      }
+
+      // Fetch the extracted image URL
+      let extractedResponse: Response;
+      try {
+        const controller2 = new AbortController();
+        const timeout2 = setTimeout(() => controller2.abort(), FETCH_TIMEOUT_MS);
+
+        extractedResponse = await fetch(extractedImageUrl, {
+          signal: controller2.signal,
+          headers: {
+            'Accept':          'image/webp,image/avif,image/*,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'User-Agent':      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Sec-Fetch-Dest':  'image',
+            'Sec-Fetch-Mode':  'no-cors',
+          },
+        });
+
+        clearTimeout(timeout2);
+      } catch {
+        console.warn('[ingestProductImage] fetch failed for extracted image:', extractedImageUrl);
+        return Response.json({ ok: false, reason: 'fetch-failed' }, { status: 502 });
+      }
+
+      if (!extractedResponse.ok) {
+        return Response.json({ ok: false, reason: 'fetch-failed' }, { status: 502 });
+      }
+
+      const extractedContentType = extractedResponse.headers.get('content-type') || '';
+      if (!isImageContentType(extractedContentType)) {
+        return Response.json({ ok: false, reason: 'not-an-image' }, { status: 422 });
+      }
+
+      const extractedBuffer = await extractedResponse.arrayBuffer();
+      if (extractedBuffer.byteLength === 0) {
+        return Response.json({ ok: false, reason: 'not-an-image' }, { status: 422 });
+      }
+      if (extractedBuffer.byteLength > MAX_BYTES) {
+        return Response.json({ ok: false, reason: 'too-large' }, { status: 413 });
+      }
+
+      const extractedExt      = extensionFromMime(extractedContentType);
+      const extractedSafeName = name ? `_${name}` : '';
+      const extractedFilename = `${entityType}${extractedSafeName}_${Date.now()}${extractedExt}`;
+
+      try {
+        const extractedFile = new File(
+          [new Uint8Array(extractedBuffer)],
+          extractedFilename,
+          { type: extractedContentType.split(';')[0].trim() },
+        );
+        const extractedUpload = await base44.integrations.Core.UploadFile({ file: extractedFile });
+        const extractedFileUrl = extractedUpload?.file_url;
+        if (!extractedFileUrl) throw new Error('No file_url returned from UploadFile');
+
+        return Response.json({
+          ok:             true,
+          cachedImageUrl: extractedFileUrl,
+          contentType:    extractedContentType.split(';')[0].trim(),
+        });
+      } catch (uploadError) {
+        console.error('[ingestProductImage] upload error for extracted image:', uploadError);
+        return Response.json({ ok: false, reason: 'upload-failed' }, { status: 500 });
+      }
+    }
+
     if (!isImageContentType(contentType)) {
       return Response.json({ ok: false, reason: 'not-an-image' }, { status: 422 });
     }
