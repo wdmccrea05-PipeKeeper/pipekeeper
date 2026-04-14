@@ -30,6 +30,25 @@ const CACHE_KEY_PREFIX  = 'pk_pingest_v1_';
 const SUCCESS_TTL_MS    = 7 * 24 * 60 * 60 * 1000; // 7 days
 const FAILED_TTL_MS     = 60 * 60 * 1000;           // 1 hour
 
+// ── Simple hash ───────────────────────────────────────────────────────────────
+
+/**
+ * Compute a compact numeric hash of a string (djb2 variant).
+ * Used to produce short, stable cache key segments from arbitrary URLs.
+ *
+ * @param {string} str
+ * @returns {string} — 8-char hex string
+ */
+function hashString(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    // Simulate 32-bit unsigned multiply
+    h = (Math.imul(h, 0x01000193) >>> 0);
+  }
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+
 // ── Key builder ───────────────────────────────────────────────────────────────
 
 /**
@@ -41,11 +60,9 @@ const FAILED_TTL_MS     = 60 * 60 * 1000;           // 1 hour
  */
 export function buildIngestionCacheKey(entityType, candidateImageUrl) {
   const safeType = String(entityType || 'product').toLowerCase().slice(0, 20);
-  // Use last 80 chars of URL (avoids CDN query-string variation in prefix)
-  const urlSlug = String(candidateImageUrl || '')
-    .slice(-80)
-    .replace(/[^a-z0-9._-]/gi, '_');
-  return `${CACHE_KEY_PREFIX}${safeType}__${urlSlug}`;
+  // Hash the full URL to avoid collisions from URLs sharing a common suffix
+  const urlHash = hashString(String(candidateImageUrl || ''));
+  return `${CACHE_KEY_PREFIX}${safeType}__${urlHash}`;
 }
 
 // ── Entry shape ───────────────────────────────────────────────────────────────

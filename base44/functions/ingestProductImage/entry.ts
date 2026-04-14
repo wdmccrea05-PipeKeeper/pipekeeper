@@ -61,7 +61,8 @@ function isBlockedHostname(url: string): boolean {
 
     const ipv4 = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
     if (ipv4) {
-      const [, a, b] = ipv4.map(Number);
+      const a = Number(ipv4[1]);
+      const b = Number(ipv4[2]);
       if (a === 10) return true;                         // 10.x.x.x
       if (a === 127) return true;                        // 127.x.x.x
       if (a === 172 && b >= 16 && b <= 31) return true; // 172.16-31.x.x
@@ -107,7 +108,7 @@ Deno.serve(async (req) => {
 
     const rawUrl     = String(body?.url         || '').trim();
     const entityType = String(body?.entityType  || 'product').replace(/[^a-z]/gi, '').slice(0, 20);
-    const name       = String(body?.name        || '').replace(/[^a-z0-9_ -]/gi, '').slice(0, 80);
+    const name       = String(body?.name        || '').toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').slice(0, 60);
 
     // ── URL validation ────────────────────────────────────────────────────────
 
@@ -170,7 +171,7 @@ Deno.serve(async (req) => {
     // ── Upload to base44 storage ──────────────────────────────────────────────
 
     const ext      = extensionFromMime(contentType);
-    const safeName = name ? `_${name.replace(/\s+/g, '_')}` : '';
+    const safeName = name ? `_${name}` : '';
     const filename = `${entityType}${safeName}_${Date.now()}${ext}`;
 
     let fileUrl: string;
