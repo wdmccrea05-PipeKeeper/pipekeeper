@@ -98,15 +98,50 @@ function proxyImageUrl(url) {
   return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=112&h=112&fit=contain&we`;
 }
 
-/** Thumbnail that shows a placeholder when the image fails to load */
-function SuggestionThumb({ imageUrl, title }) {
-  // Always go straight to proxy — avoids CORS issues with direct CDN URLs
-  // 0 = try proxy, 1 = try raw, 2 = give up
+/**
+ * Determine the best thumbnail source for a suggestion result.
+ * Prefers the pre-resolved renderableImageUrl set by imageResolver; falls back
+ * to proxying imageUrl when it looks like a direct image asset.
+ *
+ * Returns null when no usable image URL is available — the thumbnail will show
+ * a placeholder icon instead of a broken image.
+ *
+ * @param {Object} result - NormalizedImageResult with resolved fields
+ * @returns {string|null}
+ */
+function getThumbnailSrc(result) {
+  // Best case: the resolver already built a proxied URL
+  if (result.renderableImageUrl) return result.renderableImageUrl;
+  // Fallback: proxied URL available separately
+  if (result.proxiedImageUrl) return result.proxiedImageUrl;
+  // Last resort: direct image URL that can still be proxied
+  if (result.imageUrl && result.isDirectImageUrl) return proxyImageUrl(result.imageUrl);
+  return null;
+}
+
+/**
+ * Thumbnail for a suggestion row.
+ *
+ * Uses renderableImageUrl (pre-resolved by imageResolver) as the primary
+ * source. Falls back to a direct proxy attempt when available, then gives
+ * up and shows a placeholder icon.
+ *
+ * 0 = try renderableImageUrl / proxied URL
+ * 1 = try raw imageUrl (last resort)
+ * 2 = give up → show placeholder
+ */
+function SuggestionThumb({ result }) {
   const [attempt, setAttempt] = useState(0);
 
-  if (!imageUrl || attempt >= 2) {
+  const primarySrc = getThumbnailSrc(result);
+  const rawFallback = result.imageUrl && result.isDirectImageUrl ? result.imageUrl : null;
+
+  const hasSrc = !!primarySrc;
+
+  if (!hasSrc || attempt >= 2) {
     return (
       <div
+        data-image-fallback=""
         className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center"
         style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
       >
@@ -115,12 +150,12 @@ function SuggestionThumb({ imageUrl, title }) {
     );
   }
 
-  const src = attempt === 0 ? proxyImageUrl(imageUrl) : imageUrl;
+  const src = attempt === 0 ? primarySrc : (rawFallback || primarySrc);
 
   return (
     <img
       src={src}
-      alt={title || 'Suggested image'}
+      alt={result.title || 'Suggested image'}
       className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
       style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
       onError={() => setAttempt((a) => a + 1)}
@@ -160,14 +195,17 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
         ...fields,
         seed,
       });
-      // Accept results that have any URL (direct image or page URL to proxy)
-      const withUrls = results.filter((r) => r.imageUrl || r.url);
+      // Accept all results that have any URL — imageResolver has already
+      // classified them and set renderableImageUrl where possible
+      const withUrls = results.filter((r) => r.imageUrl || r.url || r.renderableImageUrl);
       if (import.meta.env?.DEV) {
         // eslint-disable-next-line no-console
         console.log('[AddFlowManualImages] Suggested image results:', withUrls.map((r) => ({
           title: r.title,
           sourceDomain: r.sourceDomain,
           imageUrl: r.imageUrl,
+          proxiedImageUrl: r.proxiedImageUrl,
+          renderableImageUrl: r.renderableImageUrl,
           confidenceLabel: r.confidenceLabel,
         })));
       }
@@ -206,7 +244,9 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {suggestions.length > 0
-              ? `${suggestions.length} image preview${suggestions.length === 1 ? '' : 's'} available.`
+              ? suggestions.some((s) => s.renderableImageUrl)
+                ? `${suggestions.filter((s) => s.renderableImageUrl).length} image preview${suggestions.filter((s) => s.renderableImageUrl).length === 1 ? '' : 's'} available.`
+                : `${suggestions.length} suggested match${suggestions.length === 1 ? '' : 'es'} found.`
               : 'Choose a trusted image match or upload your own.'}
           </p>
         </div>
@@ -265,8 +305,8 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                   borderRadius: 18,
                 }}
               >
-                {/* Thumbnail — stateful so failed loads show a placeholder */}
-                <SuggestionThumb imageUrl={img.imageUrl} title={img.title} />
+                {/* Thumbnail — uses renderableImageUrl from imageResolver; shows placeholder when unavailable */}
+                <SuggestionThumb result={img} />
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
@@ -310,12 +350,16 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                   type="button"
                   size="sm"
                   onClick={() => {
-                    const useUrl = img.isDirectImageUrl
-                      ? img.imageUrl
-                      : proxyImageUrl(img.imageUrl || img.url);
+                    // Prefer the pre-resolved renderable URL so the saved image
+                    // remains stable. Fall back chain: renderable → proxied → raw.
+                    const useUrl =
+                      img.renderableImageUrl ||
+                      img.proxiedImageUrl    ||
+                      (img.isDirectImageUrl ? img.imageUrl : proxyImageUrl(img.imageUrl || img.url)) ||
+                      null;
                     onSelectImage(useUrl, {
-                      image_source_domain:    img.sourceDomain  || null,
-                      image_source_type:      img.sourceType    || null,
+                      image_source_domain:    img.sourceDomain    || null,
+                      image_source_type:      img.sourceType      || null,
                       image_confidence:       img.confidenceLabel || null,
                       image_verified_by_user: true,
                     });
