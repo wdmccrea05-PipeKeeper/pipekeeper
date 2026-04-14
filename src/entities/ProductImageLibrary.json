@@ -1,0 +1,80 @@
+{
+  "name": "ProductImageLibrary",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": ["bottle", "blend", "pipe"],
+      "description": "The product category this image belongs to"
+    },
+    "normalized_name": {
+      "type": "string",
+      "description": "Normalized product name used as the reuse key"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Human-readable product name"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Brand or distillery (bottles) or manufacturer (blends)"
+    },
+    "maker": {
+      "type": "string",
+      "description": "Pipe maker / carver"
+    },
+    "shape": {
+      "type": "string",
+      "description": "Pipe shape (billiard, dublin, etc.)"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Stable internal image URL (app-controlled storage)"
+    },
+    "storage_path": {
+      "type": "string",
+      "description": "Storage path hint for housekeeping"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "existing_logo_library",
+        "user_upload",
+        "user_confirmed",
+        "mined_record_image",
+        "reference"
+      ],
+      "description": "How this image entered the library"
+    },
+    "source_record_id": {
+      "type": "string",
+      "description": "ID of the originating record (for mined images)"
+    },
+    "source_user_id": {
+      "type": "string",
+      "description": "User who uploaded or confirmed the image"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the image has been user-verified"
+    },
+    "verified_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times users have confirmed this image"
+    },
+    "reference_only": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when image is a generic reference, not user-owned (especially pipes)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "hidden", "rejected"],
+      "default": "active",
+      "description": "Moderation status"
+    }
+  },
+  "required": ["entity_type", "normalized_name", "image_url", "source_type"]
+}
