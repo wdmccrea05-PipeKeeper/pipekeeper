@@ -384,10 +384,10 @@ function LibraryThumb({ imageUrl, title }) {
 }
 
 /**
- * Inline component that fetches and displays trusted image suggestions for the
- * current record. Fires automatically on mount when no image is present.
+ * Inline component that fetches and displays web reference image suggestions.
+ * Only fetches when `active` is true (i.e. the user has explicitly opened the panel).
  */
-function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload }) {
+function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, active }) {
   const [loading, setLoading]   = useState(false);
   const [fetched, setFetched]   = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -433,20 +433,22 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload }
     }
   };
 
-  // Auto-fetch once on mount
+  // Only fetch when the panel is explicitly activated by the user
   useEffect(() => {
+    if (!active) return;
     if (!hasFetchedRef.current && (fields.name || fields.distillery || fields.maker || fields.manufacturer)) {
       hasFetchedRef.current = true;
       fetchSuggestions(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [active]);
 
   const handleSearchAgain = () => {
     setSearchCount(c => c + 1);
     fetchSuggestions(true);
   };
 
+  if (!active) return null;
   if (!loading && !fetched) return null;
 
   const readyCount = suggestions.filter((s) => s.imageStatus === 'ready').length;
@@ -457,14 +459,14 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload }
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
-            {suggestions.length > 0 && readyCount === 0 ? 'Matched Products' : 'Suggested Images'}
+            Reference Matches from the Web
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {suggestions.length > 0
               ? readyCount > 0
-                ? `${readyCount} image preview${readyCount === 1 ? '' : 's'} available.`
+                ? `${readyCount} image preview${readyCount === 1 ? '' : 's'} available. These are possible product matches, not verified image previews.`
                 : `${suggestions.length} likely match${suggestions.length === 1 ? '' : 'es'} found — no verified image previews available yet.`
-              : 'Choose a trusted image match or upload your own.'}
+              : 'These are possible product matches, not verified image previews.'}
           </p>
         </div>
         {fetched && (
@@ -830,6 +832,8 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
   const [uploading, setUploading]           = useState(false);
   const [saving, setSaving]                 = useState(false);
   const [showLibrary, setShowLibrary]       = useState(false);
+  // Controls whether the optional external reference search panel is open
+  const [showWebSearch, setShowWebSearch]   = useState(false);
   // Pipe-specific: whether the uploaded image is a reusable reference
   const [pipeIsReference, setPipeIsReference] = useState(false);
   const fileRef = useRef(null);
@@ -1125,19 +1129,31 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           </>
         )}
 
-        {/* ── External pipeline suggestions (Tier 2 — fallback) ── */}
+        {/* ── External pipeline suggestions (optional, collapsed by default) ── */}
         {(itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
           <>
             <div style={{ height: 1, background: 'rgba(180,140,75,0.06)' }} />
-            <ImageSuggestions
-              itemType={itemType}
-              data={data}
-              onSelectImage={(url, meta) => {
-                if (url) setImageUrl(url);
-                setImageMeta(meta || null);
-              }}
-              onRequestFileUpload={() => fileRef.current?.click()}
-            />
+            <button
+              type="button"
+              onClick={() => setShowWebSearch((prev) => !prev)}
+              className="flex items-center gap-2 text-xs px-3 py-2 rounded-xl hover:bg-white/5 transition-colors self-start"
+              style={{ color: 'rgba(180,140,75,0.7)', border: '1px solid rgba(180,140,75,0.18)' }}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              {showWebSearch ? 'Hide Web Reference Matches' : 'Search Web for Reference Matches'}
+            </button>
+            {showWebSearch && (
+              <ImageSuggestions
+                active={showWebSearch}
+                itemType={itemType}
+                data={data}
+                onSelectImage={(url, meta) => {
+                  if (url) setImageUrl(url);
+                  setImageMeta(meta || null);
+                }}
+                onRequestFileUpload={() => fileRef.current?.click()}
+              />
+            )}
           </>
         )}
 
