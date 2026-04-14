@@ -150,7 +150,16 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
       // Pass a seed on retries so the LLM uses alternative sources/angles
       const seed = isRetry ? Date.now() : undefined;
       const { results } = await searchForImages(itemType, fields, { maxResults: 6, seed });
-      setSuggestions(results.filter((r) => r.imageUrl));
+      const withImages = results.filter((r) => r.imageUrl);
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.log('[AddFlowManualImages] Suggested image results:', results.map((r) => ({
+          title: r.title,
+          sourceDomain: r.sourceDomain,
+          imageUrl: r.imageUrl,
+        })));
+      }
+      setSuggestions(withImages);
     } catch {
       setSuggestions([]);
     } finally {
@@ -185,7 +194,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {suggestions.length > 0
-              ? `${suggestions.length} trusted image${suggestions.length === 1 ? '' : 's'} found.`
+              ? `${suggestions.length} image preview${suggestions.length === 1 ? '' : 's'} available.`
               : 'Choose a trusted image match or upload your own.'}
           </p>
         </div>

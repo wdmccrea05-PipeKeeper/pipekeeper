@@ -37,6 +37,27 @@ function nextId() {
 }
 
 /**
+ * Extract an image URL from a raw result object, checking all known field name
+ * variants that different providers / LLM responses may use.
+ *
+ * @param {Object} raw
+ * @returns {string|null}
+ */
+function extractImageUrl(raw) {
+  return (
+    raw.imageUrl ||
+    raw.image_url ||
+    raw.thumbnailUrl ||
+    raw.thumbnail ||
+    raw.thumb ||
+    raw.image ||
+    raw.previewImage ||
+    raw.preview_image ||
+    null
+  );
+}
+
+/**
  * Normalise a single LLM result item for a bottle / whiskey query.
  *
  * @param {Object} raw
@@ -55,9 +76,7 @@ export function normalizeBottleResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
-    matchedName: raw.name || '',
-    matchedBrand: raw.distillery || null,
+    imageUrl: extractImageUrl(raw),
     matchedType: raw.whiskey_type || raw.type || null,
     regionHint: raw.region || null,
     countryHint: raw.country || null,
@@ -89,9 +108,7 @@ export function normalizeBlendResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
-    matchedName: raw.name || '',
-    matchedBrand: raw.manufacturer || null,
+    imageUrl: extractImageUrl(raw),
     matchedType: raw.blend_type || null,
     regionHint: null,
     countryHint: null,
@@ -123,9 +140,7 @@ export function normalizePipeResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
-    matchedName: raw.name || '',
-    matchedBrand: raw.maker || null,
+    imageUrl: extractImageUrl(raw),
     matchedType: raw.shape || null,
     regionHint: null,
     countryHint: raw.country_of_origin || null,
@@ -157,9 +172,7 @@ export function normalizeCigarResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
-    matchedName: raw.name || '',
-    matchedBrand: raw.brand || null,
+    imageUrl: extractImageUrl(raw),
     matchedType: raw.vitola || null,
     regionHint: raw.country_of_origin || null,
     countryHint: raw.country_of_origin || null,
@@ -191,8 +204,7 @@ export function normalizeImageResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
-    matchedName: raw.title || '',
+    imageUrl: extractImageUrl(raw),
     matchedBrand: null,
     matchedType: null,
     regionHint: null,
