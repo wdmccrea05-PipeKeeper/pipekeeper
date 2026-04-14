@@ -295,7 +295,7 @@ export const QUICK_ADD_RESPONSE_SCHEMA = {
  */
 export function buildImageSearchPrompt(entityType, fields = {}, options = {}) {
   const { name, distillery, maker, manufacturer, region, country, shape } = fields;
-  const { seed } = options; // optional seed for Search Again variation
+  const { seed, broad } = options;
 
   const subject =
     entityType === 'bottle'
@@ -307,75 +307,44 @@ export function buildImageSearchPrompt(entityType, fields = {}, options = {}) {
   const internationalHint =
     region || country ? ` (${[region, country].filter(Boolean).join(', ')})` : '';
 
-  // Per-type source lists and query strategies
   const sourceHint =
     entityType === 'bottle'
-      ? 'masterofmalt.com, thewhiskyexchange.com, whiskybase.com, finedrams.com, reservebar.com, totalwine.com, or an official distillery page'
+      ? 'masterofmalt.com, thewhiskyexchange.com, whiskybase.com, reservebar.com, totalwine.com, or an official distillery page'
       : entityType === 'blend'
         ? 'smokingpipes.com, pipesandcigars.com, tobaccopipes.com, cupojoes.com, tobaccoreviews.com, or an official manufacturer page'
-        : 'smokingpipes.com, pipedia.org, smokingpipesjp.com, or an official maker page';
+        : 'smokingpipes.com, pipedia.org, or an official maker page';
 
-  // Per-type query variants to improve coverage
-  let queryVariants = '';
-  if (entityType === 'bottle') {
-    const base = subject;
-    queryVariants = `
-Query variants to try (use all):
-1. "${base} bottle front"
-2. "${base} whisky bottle"
-3. "${base} official product image"
-4. "${base} label"
-5. "${base} retailer"
-6. "${base} ${region || country || 'spirits'}"`;
-  } else if (entityType === 'blend') {
-    const base = subject;
-    queryVariants = `
-Query variants to try (use all):
-1. "${base} tin label"
-2. "${base} tobacco tin"
-3. "${base} official product image"
-4. "${base} smokingpipes"
-5. "${base} pouch label"
-6. "${base} pipe tobacco"`;
-  } else if (entityType === 'pipe') {
-    const base = subject;
-    const shapeHint = shape ? ` ${shape}` : '';
-    queryVariants = `
-Query variants to try (use all):
-1. "${base}${shapeHint} pipe"
-2. "${base} pipe official"
-3. "${maker || base} ${shape || ''} pipe"
-4. "${maker || base} pipe retailer"
-5. "${base} stamping pipe"
-6. "${base} pipe reference"`;
-  }
-
-  // Optional variation instruction for Search Again
   const variationNote = seed
     ? '\n- This is a re-search request. Return DIFFERENT images from a previous attempt — use alternative sources or query angles.'
     : '';
 
-  return `Find 6 to 8 high-quality product images for the ${entityType} "${subject}"${internationalHint}.
+  const broadNote = broad
+    ? '\n- Broaden the search: include related or similar products if an exact match is not found.'
+    : '';
 
-TARGET: Return at least 6 images. Minimum acceptable: 3. Even if an exact match exists, include alternatives from different sources.
-${queryVariants}
+  return `You are a product image research assistant. Search the web for product images of the ${entityType} named "${subject}"${internationalHint}.
 
-SOURCES: Prefer images from ${sourceHint}.
-${variationNote}
+Use internet search to find real product pages for this item. Return 6 to 8 results.
+
+IMPORTANT — for each result, provide:
+- "title": the product name from the page
+- "source_domain": the website domain (e.g. "smokingpipes.com")
+- "source_url": the full product page URL (e.g. "https://www.smokingpipes.com/...")
+- "image_url": a direct URL ending in .jpg, .png, or .webp if you can find one; otherwise leave empty string ""
+- "alt_text": image alt text if available
+${variationNote}${broadNote}
+
+SOURCES to search: ${sourceHint}
 
 RULES:
-- Do NOT return review thumbnails, forum post images, or low-resolution placeholders.
-- Do NOT return the same image from different URL variants (deduplicate).
-- For non-US products, strongly prefer international specialist sources.
-- For pipes, label results as reference images (not guaranteed to match the exact pipe).
-- Return only product/bottle/tin/label images in good resolution.
+- Search for real product pages that exist right now.
+- Provide accurate source_url values — these will be used to load images.
+- For smokingpipes.com products, image URLs follow the pattern: https://www.smokingpipes.com/products/images/[product-id]/main/[filename].jpg
+- For masterofmalt.com, image URLs follow: https://www.masterofmalt.com/whiskies/[path]/[filename].jpg
+- It is OK to return results where image_url is empty — the source_url alone is useful.
+- Return at least 4 results even if image URLs are uncertain.
 
-Return JSON with an "images" array of 6–8 entries. Each item:
-- title (string) — product name as shown on source page
-- image_url (string) — direct URL to the product image
-- source_url (string) — URL of the page where the image appears
-- source_domain (string) — bare domain (e.g. "masterofmalt.com")
-- alt_text (string or null)`;
+Return JSON with an "images" array of 6–8 entries.`;
 }
 
 /**
@@ -394,6 +363,7 @@ export const IMAGE_SEARCH_RESPONSE_SCHEMA = {
           source_url:    { type: 'string' },
           source_domain: { type: 'string' },
           alt_text:      { type: 'string' },
+          confidence:    { type: 'string' },
         },
       },
     },

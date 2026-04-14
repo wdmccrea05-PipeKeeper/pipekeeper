@@ -37,6 +37,7 @@ import { rankResults } from './searchRanking.js';
  */
 function rawHasImageUrl(img) {
   if (!img) return false;
+  // Accept results that have any image URL field OR a source_url we can proxy
   return !!(
     img.imageUrl ||
     img.image_url ||
@@ -45,7 +46,8 @@ function rawHasImageUrl(img) {
     img.thumb ||
     img.image ||
     img.previewImage ||
-    img.preview_image
+    img.preview_image ||
+    img.source_url
   );
 }
 

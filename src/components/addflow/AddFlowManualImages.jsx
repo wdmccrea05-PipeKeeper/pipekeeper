@@ -94,7 +94,8 @@ function proxyImageUrl(url) {
 
 /** Thumbnail that shows a placeholder when the image fails to load */
 function SuggestionThumb({ imageUrl, title }) {
-  // 0 = try raw, 1 = try proxy, 2 = give up
+  // Always go straight to proxy — avoids CORS issues with direct CDN URLs
+  // 0 = try proxy, 1 = try raw, 2 = give up
   const [attempt, setAttempt] = useState(0);
 
   if (!imageUrl || attempt >= 2) {
@@ -108,7 +109,7 @@ function SuggestionThumb({ imageUrl, title }) {
     );
   }
 
-  const src = attempt === 0 ? imageUrl : proxyImageUrl(imageUrl);
+  const src = attempt === 0 ? proxyImageUrl(imageUrl) : imageUrl;
 
   return (
     <img
@@ -150,8 +151,9 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
       // Pass a seed on retries so the LLM uses alternative sources/angles
       const seed = isRetry ? Date.now() : undefined;
       const { results } = await searchForImages(itemType, fields, { maxResults: 6, seed });
-      const withImages = results.filter((r) => r.imageUrl);
-      if (process.env.NODE_ENV !== 'production') {
+      // Accept all results that have any URL (direct image or page URL proxied)
+      const withImages = results.filter((r) => r.imageUrl || r.url);
+      if (import.meta.env?.DEV) {
         // eslint-disable-next-line no-console
         console.log('[AddFlowManualImages] Suggested image results:', results.map((r) => ({
           title: r.title,
@@ -282,7 +284,13 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
               <Button
                 type="button"
                 size="sm"
-                onClick={() => onSelectImage(img.imageUrl)}
+                onClick={() => {
+                  // If direct image URL, use it; otherwise proxy the page/source URL
+                  const useUrl = img.isDirectImageUrl
+                    ? img.imageUrl
+                    : proxyImageUrl(img.imageUrl || img.url);
+                  onSelectImage(useUrl);
+                }}
                 style={{
                   background: 'linear-gradient(135deg, rgba(212,175,55,0.85), rgba(180,140,50,0.85))',
                   color: '#1a1008',

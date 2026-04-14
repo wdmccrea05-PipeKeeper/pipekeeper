@@ -203,6 +203,12 @@ export function normalizeImageResult(raw) {
   const domain = raw.source_domain || null;
   const { tier, type: sourceType, isInternational } = getDomainInfo(domain);
 
+  // Use direct image URL if present, otherwise fall back to source_url so we
+  // can proxy it for display. This handles LLMs that return page URLs but no
+  // direct CDN image URL.
+  const directImageUrl = extractImageUrl(raw);
+  const imageUrl = directImageUrl || raw.source_url || null;
+
   return {
     id: nextId(),
     entityType: 'image',
@@ -212,7 +218,8 @@ export function normalizeImageResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: extractImageUrl(raw),
+    imageUrl,
+    isDirectImageUrl: !!directImageUrl,
     matchedName: raw.title || '',
     matchedBrand: null,
     matchedType: null,
