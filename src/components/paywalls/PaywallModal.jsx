@@ -11,12 +11,12 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { X, Crown, Check, Zap, AlertCircle } from 'lucide-react';
+import { X, Crown, Check, AlertCircle } from 'lucide-react';
 import PricingCard from '@/components/subscription/PricingCard';
 import { usePaywall } from '@/components/subscription/usePaywall';
 import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
 import { getUserSubscriptionState, isFreeUser, getCurrentPlanLabel } from '@/lib/billing/subscriptionState';
-import { getAvailableUpgradeOptions, getNewPurchaseOptions } from '@/lib/billing/upgradePaths';
+import { getAvailableUpgradeOptions } from '@/lib/billing/upgradePaths';
 import { SUBSCRIPTION_PLANS } from '@/lib/billing/subscriptionPlans';
 import { initiateCheckoutWithIntent } from '@/components/subscription/subscriptionHandler';
 import { toast } from 'sonner';
