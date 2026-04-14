@@ -33,6 +33,7 @@
  *   sourceType:       "official" | "retailer" | "database" | "reference" | "fallback",
  *   url:              string | null,
  *   imageUrl:         string | null,
+ *   isDirectImageUrl: boolean,
  *   matchedName:      string,
  *   matchedBrand:     string | null,
  *   confidenceScore:  number,

@@ -19,7 +19,9 @@ export const IMAGE_SEARCH_CONFIG = {
   minAcceptableResults: 3,
   maxResults: 6,
 
-  // Per-provider timeout (ms)
+  // Per-provider timeout (ms).
+  // Callers can wrap provider calls in Promise.race with this value to enforce
+  // a hard deadline when integrating structured providers.
   providerTimeoutMs: 20_000,
 
   // SerpApi Google Images — https://serpapi.com/
