@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { createInventoryEngine } from '@/components/inventory/InventoryEngine';
-import { searchForImages } from '@/lib/search/unifiedSearchService';
+import { searchProductImages } from '@/lib/images/imageSearchService';
 
 const ENTITIES = {
   blend: 'TobaccoBlend',
@@ -82,8 +82,14 @@ function buildBaseRecord(itemType, data) {
 }
 
 const CONFIDENCE_CHIP_STYLES = {
-  High:   { background: 'rgba(46,125,92,0.22)',  color: '#6ee7b7', border: '1px solid rgba(46,125,92,0.4)' },
-  Medium: { background: 'rgba(180,140,75,0.18)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.35)' },
+  'Exact Match':       { background: 'rgba(46,125,92,0.28)',   color: '#6ee7b7',              border: '1px solid rgba(46,125,92,0.5)' },
+  'High Confidence':   { background: 'rgba(46,125,92,0.18)',   color: '#86efac',              border: '1px solid rgba(46,125,92,0.35)' },
+  'Medium Confidence': { background: 'rgba(180,140,75,0.18)',  color: '#D4A574',              border: '1px solid rgba(180,140,75,0.35)' },
+  'Reference':         { background: 'rgba(99,102,241,0.15)',  color: 'rgba(167,139,250,0.9)', border: '1px solid rgba(99,102,241,0.3)' },
+  'Low Confidence':    { background: 'rgba(120,80,60,0.18)',   color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(120,80,60,0.3)' },
+  // Legacy fallback labels from the previous pipeline
+  High:   { background: 'rgba(46,125,92,0.18)',  color: '#86efac',              border: '1px solid rgba(46,125,92,0.35)' },
+  Medium: { background: 'rgba(180,140,75,0.18)', color: '#D4A574',              border: '1px solid rgba(180,140,75,0.35)' },
   Low:    { background: 'rgba(120,80,60,0.18)',  color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(120,80,60,0.3)' },
 };
 
@@ -148,20 +154,24 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
     setLoading(true);
     setFetched(false);
     try {
-      // Pass a seed on retries so the LLM uses alternative sources/angles
-      const seed = isRetry ? Date.now() : undefined;
-      const { results } = await searchForImages(itemType, fields, { maxResults: 6, seed });
-      // Accept all results that have any URL (direct image or page URL proxied)
-      const withImages = results.filter((r) => r.imageUrl || r.url);
+      const seed = isRetry ? Date.now() : 0;
+      const { results } = await searchProductImages({
+        entityType: itemType,
+        ...fields,
+        seed,
+      });
+      // Accept results that have any URL (direct image or page URL to proxy)
+      const withUrls = results.filter((r) => r.imageUrl || r.url);
       if (import.meta.env?.DEV) {
         // eslint-disable-next-line no-console
-        console.log('[AddFlowManualImages] Suggested image results:', results.map((r) => ({
+        console.log('[AddFlowManualImages] Suggested image results:', withUrls.map((r) => ({
           title: r.title,
           sourceDomain: r.sourceDomain,
           imageUrl: r.imageUrl,
+          confidenceLabel: r.confidenceLabel,
         })));
       }
-      setSuggestions(withImages);
+      setSuggestions(withUrls);
     } catch {
       setSuggestions([]);
     } finally {
@@ -227,84 +237,104 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
 
       {!loading && suggestions.length > 0 && (
         <div className="flex flex-col gap-2">
-          {suggestions.map((img) => (
-            <div
-              key={img.id}
-              className="flex items-center gap-3 p-3 rounded-xl"
-              style={{
-                background: 'linear-gradient(180deg, #111111 0%, #0b0b0b 100%)',
-                border: '1px solid rgba(212,175,55,0.15)',
-                borderRadius: 18,
-              }}
-            >
-              {/* Thumbnail — stateful so failed loads show a placeholder */}
-              <SuggestionThumb imageUrl={img.imageUrl} title={img.title} />
+          {suggestions.map((img) => {
+            const chipLabel = img.confidenceLabel || (itemType === 'pipe' ? 'Reference' : 'Low Confidence');
+            const chipStyle = CONFIDENCE_CHIP_STYLES[chipLabel] || CONFIDENCE_CHIP_STYLES['Low Confidence'];
+            const chipIcon =
+              chipLabel === 'Exact Match'       ? '✓ ' :
+              chipLabel === 'High Confidence'   ? '✓ ' :
+              chipLabel === 'Medium Confidence' ? '~ ' :
+              chipLabel === 'Reference'         ? '◈ ' : '? ';
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.92)' }}>
-                  {img.imageLabel || (itemType === 'pipe' ? 'Reference Image' : 'Suggested Match')}
-                </p>
-                {img.title && (
-                  <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                    {img.title}
-                  </p>
-                )}
+            const rowLabel =
+              img.isReferenceImage
+                ? 'Reference Image'
+                : img.isExactMatch
+                  ? 'Exact Match'
+                  : 'Suggested Match';
 
-                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                  {/* Source chip */}
-                  {img.sourceDomain && (
-                    <span
-                      className="text-[10px] px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
-                      style={{
-                        background: img.isInternationalSource ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.07)',
-                        color: img.isInternationalSource ? 'rgba(147,197,253,0.9)' : 'rgba(224,216,200,0.5)',
-                        border: img.isInternationalSource ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(255,255,255,0.1)',
-                      }}
-                    >
-                      {img.isInternationalSource && <Globe className="w-2.5 h-2.5" />}
-                      {img.sourceDomain}
-                    </span>
-                  )}
-
-                  {/* Confidence chip */}
-                  {img.confidenceLabel && (
-                    <span
-                      className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
-                      style={CONFIDENCE_CHIP_STYLES[img.confidenceLabel] || CONFIDENCE_CHIP_STYLES.Low}
-                    >
-                      {img.confidenceLabel === 'High' ? '✓ ' : img.confidenceLabel === 'Medium' ? '~ ' : '? '}
-                      {img.confidenceLabel}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Action button */}
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  // If direct image URL, use it; otherwise proxy the page/source URL
-                  const useUrl = img.isDirectImageUrl
-                    ? img.imageUrl
-                    : proxyImageUrl(img.imageUrl || img.url);
-                  onSelectImage(useUrl);
-                }}
+            return (
+              <div
+                key={img.id}
+                className="flex items-center gap-3 p-3 rounded-xl"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(212,175,55,0.85), rgba(180,140,50,0.85))',
-                  color: '#1a1008',
-                  fontWeight: 700,
-                  fontSize: 11,
-                  flexShrink: 0,
-                  minWidth: 72,
-                  borderRadius: 10,
+                  background: 'linear-gradient(180deg, #111111 0%, #0b0b0b 100%)',
+                  border: img.isExactMatch
+                    ? '1px solid rgba(46,125,92,0.35)'
+                    : '1px solid rgba(212,175,55,0.15)',
+                  borderRadius: 18,
                 }}
               >
-                Use This
-              </Button>
-            </div>
-          ))}
+                {/* Thumbnail — stateful so failed loads show a placeholder */}
+                <SuggestionThumb imageUrl={img.imageUrl} title={img.title} />
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                    {rowLabel}
+                  </p>
+                  {img.title && (
+                    <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                      {img.title}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    {/* Source chip */}
+                    {img.sourceDomain && (
+                      <span
+                        className="text-[10px] px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
+                        style={{
+                          background: img.isInternationalSource ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.07)',
+                          color: img.isInternationalSource ? 'rgba(147,197,253,0.9)' : 'rgba(224,216,200,0.5)',
+                          border: img.isInternationalSource ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(255,255,255,0.1)',
+                        }}
+                      >
+                        {img.isInternationalSource && <Globe className="w-2.5 h-2.5" />}
+                        {img.sourceDomain}
+                      </span>
+                    )}
+
+                    {/* Confidence chip */}
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
+                      style={chipStyle}
+                    >
+                      {chipIcon}{chipLabel}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action button */}
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    const useUrl = img.isDirectImageUrl
+                      ? img.imageUrl
+                      : proxyImageUrl(img.imageUrl || img.url);
+                    onSelectImage(useUrl, {
+                      image_source_domain:    img.sourceDomain  || null,
+                      image_source_type:      img.sourceType    || null,
+                      image_confidence:       img.confidenceLabel || null,
+                      image_verified_by_user: true,
+                    });
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(212,175,55,0.85), rgba(180,140,50,0.85))',
+                    color: '#1a1008',
+                    fontWeight: 700,
+                    fontSize: 11,
+                    flexShrink: 0,
+                    minWidth: 72,
+                    borderRadius: 10,
+                  }}
+                >
+                  Use This
+                </Button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -453,6 +483,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
   const [imageUrl, setImageUrl] = useState(
     itemType === 'blend' ? data.logo || '' : (itemType === 'pipe' || itemType === 'cigar') ? data.photos?.[0] || '' : data.photo || ''
   );
+  const [imageMeta, setImageMeta] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
@@ -475,6 +506,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setImageUrl(file_url);
+      setImageMeta(null); // user-uploaded file has no suggestion metadata
     } catch {
       toast.error('Image upload failed');
     } finally {
@@ -495,6 +527,14 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         if (itemType === 'cigar') finalData.photos = [imageUrl];
       }
 
+      // Persist image source metadata when the user selected from suggestions
+      const imageMetaPayload = imageMeta ? cleanObject({
+        image_source_domain:    imageMeta.image_source_domain,
+        image_source_type:      imageMeta.image_source_type,
+        image_confidence:       imageMeta.image_confidence,
+        image_verified_by_user: imageMeta.image_verified_by_user,
+      }) : {};
+
       const inventoryPayload = finalData._inventoryPayload || createInventoryEngine(itemType).buildUpdatePayload(finalData);
 
       // If we have a quick record ID, update it instead of creating a new one
@@ -505,6 +545,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
         const updateData = cleanObject({
           ...bottleSafeInventory,
+          ...imageMetaPayload,
           ...(itemType === 'blend' ? { logo: finalData.logo } : {}),
           ...(itemType === 'pipe' ? { photos: finalData.photos } : {}),
           ...(itemType === 'bottle' ? { photo: finalData.photo } : {}),
@@ -526,6 +567,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       const recordPayload = cleanObject({
         ...buildBaseRecord(itemType, finalData),
         ...inventoryPayload,
+        ...imageMetaPayload,
       });
 
       const created = await base44.entities[ENTITIES[itemType]].create(recordPayload);
@@ -577,7 +619,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           >
             <img src={imageUrl} alt="Preview" className="w-full h-full object-contain" />
             <button
-              onClick={() => setImageUrl('')}
+              onClick={() => { setImageUrl(''); setImageMeta(null); }}
               className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
               style={{ background: 'rgba(20,13,8,0.85)', color: '#F5F1E7', border: '1px solid rgba(255,255,255,0.15)' }}
             >
@@ -646,7 +688,10 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           <ImageSuggestions
             itemType={itemType}
             data={data}
-            onSelectImage={(url) => setImageUrl(url)}
+            onSelectImage={(url, meta) => {
+              setImageUrl(url);
+              setImageMeta(meta || null);
+            }}
           />
         )}
 
