@@ -111,6 +111,8 @@ function getImageUrlForSave(result) {
   if (result.isDirectImageUrl && result.imageUrl) return result.imageUrl;
   return proxyImageUrl(result.imageUrl || result.url);
 }
+
+/**
  * Prefers the pre-resolved renderableImageUrl set by imageResolver; falls back
  * to proxying imageUrl when it looks like a direct image asset.
  *
