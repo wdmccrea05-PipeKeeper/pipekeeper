@@ -1,11 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, BookImage, Check, Globe, Image as ImageIcon, Loader2, Search, Upload, X } from 'lucide-react';
+import { ArrowLeft, BookImage, Check, Globe, Image as ImageIcon, Library, Loader2, Search, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { createInventoryEngine } from '@/components/inventory/InventoryEngine';
 import { getProductImageSuggestions } from '@/lib/images/productImagePipeline';
+import { findInternalImageMatches } from '@/lib/images/imageLibraryMatcher';
+import { uploadUserPhoto } from '@/lib/images/imageUploadService';
+import { linkImageToRecord } from '@/lib/images/imageRecordLinkService';
+import { upsertLibraryImageEntry } from '@/lib/images/imageLibraryService';
+import { normalizeBottleKey, normalizeBlendKey, normalizePipeKey } from '@/lib/images/imageNormalization';
 
 const ENTITIES = {
   blend: 'TobaccoBlend',
@@ -93,6 +98,69 @@ const CONFIDENCE_CHIP_STYLES = {
   Low:    { background: 'rgba(120,80,60,0.18)',  color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(120,80,60,0.3)' },
 };
 
+// Source label chip styles for internal library matches
+const SOURCE_LABEL_STYLES = {
+  'Label Library':    { background: 'rgba(180,140,75,0.22)',  color: '#D4A574',              border: '1px solid rgba(180,140,75,0.4)' },
+  'User Uploaded':    { background: 'rgba(46,125,92,0.22)',   color: '#6ee7b7',              border: '1px solid rgba(46,125,92,0.4)' },
+  'User Confirmed':   { background: 'rgba(46,125,92,0.18)',   color: '#86efac',              border: '1px solid rgba(46,125,92,0.35)' },
+  'Community Match':  { background: 'rgba(59,130,246,0.18)',  color: 'rgba(147,197,253,0.9)', border: '1px solid rgba(59,130,246,0.3)' },
+  'Reference Image':  { background: 'rgba(99,102,241,0.15)',  color: 'rgba(167,139,250,0.9)', border: '1px solid rgba(99,102,241,0.3)' },
+  'Library Match':    { background: 'rgba(255,255,255,0.08)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(255,255,255,0.12)' },
+};
+
+// ── Helpers for library promotion ─────────────────────────────────────────────
+
+function buildNormalizedKey(itemType, data) {
+  if (itemType === 'bottle') return normalizeBottleKey({ brand: data.distillery, name: data.name });
+  if (itemType === 'blend')  return normalizeBlendKey({ brand: data.manufacturer, name: data.name });
+  if (itemType === 'pipe')   return normalizePipeKey({ maker: data.maker, name: data.name, shape: data.shape });
+  return '';
+}
+
+function buildDisplayName(itemType, data) {
+  if (itemType === 'bottle') return [data.distillery, data.name].filter(Boolean).join(' — ');
+  if (itemType === 'blend')  return [data.manufacturer, data.name].filter(Boolean).join(' — ');
+  if (itemType === 'pipe')   return [data.maker, data.name, data.shape].filter(Boolean).join(' ');
+  return data.name || '';
+}
+
+/**
+ * Silently promote a user-uploaded image into the ProductImageLibrary.
+ * Only fires when the product identity is sufficiently known (normalized key exists).
+ *
+ * @param {string} itemType
+ * @param {Object} data
+ * @param {string} imageUrl
+ * @param {boolean} [referenceOnly]  — for pipes
+ * @returns {Promise<string|null>}   — created library entry ID, or null
+ */
+async function promoteUploadToLibrary(itemType, data, imageUrl, referenceOnly = false) {
+  if (!imageUrl) return null;
+  const normalizedName = buildNormalizedKey(itemType, data);
+  if (!normalizedName) return null;
+
+  const payload = {
+    entity_type:     itemType,
+    normalized_name: normalizedName,
+    display_name:    buildDisplayName(itemType, data),
+    image_url:       imageUrl,
+    source_type:     'user_upload',
+    verified:        true,
+    verified_count:  1,
+    reference_only:  referenceOnly,
+  };
+  if (itemType === 'bottle') payload.brand = data.distillery || null;
+  if (itemType === 'blend')  payload.brand = data.manufacturer || null;
+  if (itemType === 'pipe')   { payload.maker = data.maker || null; payload.shape = data.shape || null; }
+
+  try {
+    const entry = await upsertLibraryImageEntry(payload);
+    return entry?.id || null;
+  } catch {
+    return null;
+  }
+}
+
 
 
 /**
@@ -146,6 +214,168 @@ function SuggestionThumb({ result }) {
     <img
       src={src}
       alt={result.title || 'Suggested image'}
+      className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
+      style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
+      onError={() => setErrored(true)}
+    />
+  );
+}
+
+/**
+ * InternalLibraryMatches — auto-fetches from the internal image library on
+ * mount and shows results with source labels (Label Library, User Confirmed,
+ * Community Match, Reference Image) before the external pipeline runs.
+ */
+function InternalLibraryMatches({ itemType, data, onSelectImage }) {
+  const [loading, setLoading]     = useState(false);
+  const [fetched, setFetched]     = useState(false);
+  const [matches, setMatches]     = useState([]);
+  const hasFetchedRef             = useRef(false);
+
+  const fields = {
+    entityType:   itemType,
+    name:         data.name,
+    brand:        data.distillery || data.manufacturer,
+    distillery:   data.distillery,
+    manufacturer: data.manufacturer,
+    maker:        data.maker,
+    shape:        data.shape,
+  };
+
+  useEffect(() => {
+    if (hasFetchedRef.current) return;
+    if (!fields.name && !fields.brand && !fields.maker) return;
+    hasFetchedRef.current = true;
+
+    setLoading(true);
+    findInternalImageMatches(fields)
+      .then((results) => setMatches(results || []))
+      .catch(() => setMatches([]))
+      .finally(() => { setLoading(false); setFetched(true); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 py-1" style={{ color: 'rgba(224,216,200,0.4)' }}>
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        <span className="text-xs">Searching library…</span>
+      </div>
+    );
+  }
+
+  if (!fetched) return null;
+
+  if (matches.length === 0) {
+    return (
+      <p className="text-xs" style={{ color: 'rgba(224,216,200,0.35)' }}>
+        No library matches found yet. Upload your own photo or save and add one later.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs font-semibold" style={{ color: 'rgba(212,165,116,0.85)' }}>
+        Library Matches
+      </p>
+      {matches.map((m) => {
+        const chipStyle = CONFIDENCE_CHIP_STYLES[m.confidenceLabel] || CONFIDENCE_CHIP_STYLES['Reference'];
+        const srcStyle  = SOURCE_LABEL_STYLES[m.sourceLabel] || SOURCE_LABEL_STYLES['Library Match'];
+        const [thumbErr, setThumbErr] = [false, () => {}]; // simple fallback
+
+        return (
+          <div
+            key={m.id}
+            className="flex items-center gap-3 p-3 rounded-xl"
+            style={{
+              background: 'linear-gradient(180deg, #111111 0%, #0b0b0b 100%)',
+              border: m.isExactMatch
+                ? '1px solid rgba(46,125,92,0.35)'
+                : '1px solid rgba(212,175,55,0.18)',
+              borderRadius: 18,
+            }}
+          >
+            {/* Thumbnail */}
+            <LibraryThumb imageUrl={m.cachedImageUrl} title={m.title} />
+
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <p className="text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                  {m.title || m.sourceLabel}
+                </p>
+                {/* Source label chip */}
+                <span
+                  className="text-[10px] px-1.5 py-0.5 rounded-full font-medium flex-shrink-0"
+                  style={srcStyle}
+                >
+                  {m.sourceLabel}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                {/* Confidence chip */}
+                <span
+                  className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
+                  style={chipStyle}
+                >
+                  {m.confidenceLabel}
+                </span>
+                {m.verifiedCount > 0 && (
+                  <span className="text-[10px]" style={{ color: 'rgba(224,216,200,0.35)' }}>
+                    ×{m.verifiedCount}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Use This button */}
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => onSelectImage(m.cachedImageUrl, {
+                image_source_type:      m.sourceType,
+                image_confidence:       m.confidenceLabel,
+                image_verified_by_user: true,
+                _libraryImageId:        m.libraryImageId,
+                _isInternalMatch:       true,
+              })}
+              style={{
+                background: 'rgba(46,125,92,0.85)',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: '11px',
+                flexShrink: 0,
+              }}
+            >
+              <Check className="w-3 h-3 mr-1" />
+              Use This
+            </Button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Simple thumbnail with error fallback for library match cards. */
+function LibraryThumb({ imageUrl, title }) {
+  const [errored, setErrored] = useState(false);
+  if (!imageUrl || errored) {
+    return (
+      <div
+        className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center"
+        style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
+      >
+        <ImageIcon className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.25)' }} />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={imageUrl}
+      alt={title || 'Library image'}
       className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
       style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
       onError={() => setErrored(true)}
@@ -596,10 +826,12 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
   const [imageUrl, setImageUrl] = useState(
     itemType === 'blend' ? data.logo || '' : (itemType === 'pipe' || itemType === 'cigar') ? data.photos?.[0] || '' : data.photo || ''
   );
-  const [imageMeta, setImageMeta] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [showLibrary, setShowLibrary] = useState(false);
+  const [imageMeta, setImageMeta]           = useState(null);
+  const [uploading, setUploading]           = useState(false);
+  const [saving, setSaving]                 = useState(false);
+  const [showLibrary, setShowLibrary]       = useState(false);
+  // Pipe-specific: whether the uploaded image is a reusable reference
+  const [pipeIsReference, setPipeIsReference] = useState(false);
   const fileRef = useRef(null);
 
   const imageLabel =
@@ -617,9 +849,16 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
     setUploading(true);
 
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setImageUrl(file_url);
-      setImageMeta(null); // user-uploaded file has no suggestion metadata
+      const result = await uploadUserPhoto(file, {
+        entityType: itemType,
+        name:       data.name || '',
+      });
+      if (result.ok && result.fileUrl) {
+        setImageUrl(result.fileUrl);
+        setImageMeta({ image_source_type: 'user_upload', image_verified_by_user: true });
+      } else {
+        toast.error(result.error || 'Image upload failed');
+      }
     } catch {
       toast.error('Image upload failed');
     } finally {
@@ -671,6 +910,34 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           await createCellarLogsForBlend(finalData._quickRecord.id, { ...finalData, ...updateData }, finalData._quickRecord.name);
         }
 
+        // Async side-effects: library promotion + record link (non-blocking)
+        if (imageUrl && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe')) {
+          const isUserUpload  = !imageMeta?._isInternalMatch;
+          const libraryImageId = imageMeta?._libraryImageId || null;
+
+          if (isUserUpload) {
+            promoteUploadToLibrary(itemType, finalData, imageUrl, itemType === 'pipe' && pipeIsReference).then((libId) => {
+              linkImageToRecord({
+                recordType:      itemType,
+                recordId:        finalData._quickRecord.id,
+                imageUrl,
+                imageSourceType: 'user_upload',
+                libraryImageId:  libId,
+                verifiedByUser:  true,
+              });
+            }).catch((e) => { if (import.meta.env.DEV) console.warn('[ImageLibrary] side-effect failed:', e); });
+          } else {
+            linkImageToRecord({
+              recordType:      itemType,
+              recordId:        finalData._quickRecord.id,
+              imageUrl,
+              imageSourceType: imageMeta?.image_source_type || 'user_confirmed',
+              libraryImageId,
+              verifiedByUser:  true,
+            }).catch((e) => { if (import.meta.env.DEV) console.warn('[ImageLibrary] side-effect failed:', e); });
+          }
+        }
+
         toast.success(`${typeLabel} saved!`);
         onCreated?.({ ...finalData._quickRecord, ...updateData });
         return;
@@ -687,6 +954,34 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
       if (itemType === 'blend') {
         await createCellarLogsForBlend(created.id, recordPayload, created.name);
+      }
+
+      // Async side-effects: library promotion + record link (non-blocking)
+      if (imageUrl && created?.id && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe')) {
+        const isUserUpload   = !imageMeta?._isInternalMatch;
+        const libraryImageId = imageMeta?._libraryImageId || null;
+
+        if (isUserUpload) {
+          promoteUploadToLibrary(itemType, { ...finalData, ...recordPayload }, imageUrl, itemType === 'pipe' && pipeIsReference).then((libId) => {
+            linkImageToRecord({
+              recordType:      itemType,
+              recordId:        created.id,
+              imageUrl,
+              imageSourceType: 'user_upload',
+              libraryImageId:  libId,
+              verifiedByUser:  true,
+            });
+          }).catch((e) => { if (import.meta.env.DEV) console.warn('[ImageLibrary] side-effect failed:', e); });
+        } else {
+          linkImageToRecord({
+            recordType:      itemType,
+            recordId:        created.id,
+            imageUrl,
+            imageSourceType: imageMeta?.image_source_type || 'user_confirmed',
+            libraryImageId,
+            verifiedByUser:  true,
+          }).catch((e) => { if (import.meta.env.DEV) console.warn('[ImageLibrary] side-effect failed:', e); });
+        }
       }
 
       toast.success(`${typeLabel} saved!`);
@@ -740,9 +1035,13 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             </button>
             <div
               className="absolute bottom-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
-              style={{ background: 'rgba(46,125,92,0.85)', color: '#fff' }}
+              style={{
+                background: imageMeta?._isInternalMatch ? 'rgba(180,140,75,0.85)' : 'rgba(46,125,92,0.85)',
+                color: '#fff',
+              }}
             >
-              <Check className="w-3 h-3" /> Uploaded
+              <Check className="w-3 h-3" />
+              {imageMeta?._isInternalMatch ? 'Library Image' : 'Uploaded'}
             </div>
           </div>
         ) : (
@@ -768,6 +1067,22 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
 
+        {/* Pipe-specific: reference image toggle (shown after upload) */}
+        {itemType === 'pipe' && imageUrl && !imageMeta?._isInternalMatch && (
+          <div className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}>
+            <input
+              id="pipe-reference-toggle"
+              type="checkbox"
+              checked={pipeIsReference}
+              onChange={(e) => setPipeIsReference(e.target.checked)}
+              className="w-4 h-4 rounded"
+            />
+            <label htmlFor="pipe-reference-toggle" className="text-xs cursor-pointer" style={{ color: 'rgba(167,139,250,0.85)' }}>
+              Save as Reference Image — reusable for this pipe model
+            </label>
+          </div>
+        )}
+
         {itemType === 'blend' && (
           <Button
             variant="outline"
@@ -779,7 +1094,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             }}
           >
             <BookImage className="w-4 h-4 mr-2" />
-            Browse Library
+            Browse Logo Library
           </Button>
         )}
 
@@ -788,27 +1103,42 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             initialQuery={data.manufacturer || data.name || ''}
             onSelect={(url) => {
               setImageUrl(url);
+              setImageMeta({ image_source_type: 'existing_logo_library', image_verified_by_user: true, _isInternalMatch: true });
               setShowLibrary(false);
             }}
             onClose={() => setShowLibrary(false)}
           />
         )}
 
+        {/* ── Internal library matches (Tier 1 — shown first) ── */}
         {(itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
-          <div style={{ height: 1, background: 'rgba(180,140,75,0.1)' }} />
+          <>
+            <div style={{ height: 1, background: 'rgba(180,140,75,0.1)' }} />
+            <InternalLibraryMatches
+              itemType={itemType}
+              data={data}
+              onSelectImage={(url, meta) => {
+                if (url) setImageUrl(url);
+                setImageMeta(meta || null);
+              }}
+            />
+          </>
         )}
+
+        {/* ── External pipeline suggestions (Tier 2 — fallback) ── */}
         {(itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
-          <ImageSuggestions
-            itemType={itemType}
-            data={data}
-            onSelectImage={(url, meta) => {
-              // url is null for match-only selections (no verified image acquired).
-              // In that case we record the match metadata without setting an image URL.
-              if (url) setImageUrl(url);
-              setImageMeta(meta || null);
-            }}
-            onRequestFileUpload={() => fileRef.current?.click()}
-          />
+          <>
+            <div style={{ height: 1, background: 'rgba(180,140,75,0.06)' }} />
+            <ImageSuggestions
+              itemType={itemType}
+              data={data}
+              onSelectImage={(url, meta) => {
+                if (url) setImageUrl(url);
+                setImageMeta(meta || null);
+              }}
+              onRequestFileUpload={() => fileRef.current?.click()}
+            />
+          </>
         )}
 
         <Button

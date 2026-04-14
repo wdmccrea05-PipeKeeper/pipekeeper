@@ -1,0 +1,34 @@
+{
+  "name": "RecordImageLink",
+  "type": "object",
+  "properties": {
+    "record_type": {
+      "type": "string",
+      "enum": ["bottle", "blend", "pipe"],
+      "description": "The entity type of the linked record"
+    },
+    "record_id": {
+      "type": "string",
+      "description": "ID of the collection record (Bottle, TobaccoBlend, or Pipe)"
+    },
+    "library_image_id": {
+      "type": "string",
+      "description": "ID of the linked ProductImageLibrary entry (null if not from library)"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Stable internal image URL that is actually displayed on the record"
+    },
+    "image_source_type": {
+      "type": "string",
+      "enum": ["user_upload", "user_confirmed", "existing_logo_library", "mined_record_image", "reference", "manual"],
+      "description": "How the image was attached to this record"
+    },
+    "verified_by_user": {
+      "type": "boolean",
+      "default": false,
+      "description": "User explicitly chose or confirmed this image"
+    }
+  },
+  "required": ["record_type", "record_id", "image_url", "image_source_type"]
+}

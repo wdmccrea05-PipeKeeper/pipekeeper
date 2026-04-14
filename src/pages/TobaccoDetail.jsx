@@ -708,7 +708,9 @@ export default function TobaccoDetail() {
               maxPhotos={2}
               label="Photos"
               showLogoLibrary
+              entityType="blend"
               recordName={blend.name}
+              brand={blend.manufacturer || ''}
               onUpdate={async (updatedPhotos) => {
                 await scopedEntities.TobaccoBlend.update(blend.id, { photos: updatedPhotos });
                 setBlend((prev) => ({ ...prev, photos: updatedPhotos }));

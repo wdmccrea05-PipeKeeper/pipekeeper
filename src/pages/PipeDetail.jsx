@@ -829,6 +829,10 @@ export default function PipeDetail() {
               photos={pipe.photos || []}
               maxPhotos={5}
               label="Photos"
+              entityType="pipe"
+              recordName={pipe.name || ''}
+              maker={pipe.maker || ''}
+              shape={pipe.shape || ''}
               onUpdate={async (updatedPhotos) => {
                 await base44.entities.Pipe.update(pipe.id, { photos: updatedPhotos });
                 setPipe((prev) => ({ ...prev, photos: updatedPhotos }));
