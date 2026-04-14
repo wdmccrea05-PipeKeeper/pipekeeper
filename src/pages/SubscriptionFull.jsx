@@ -19,7 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { handleManageSubscription } from "@/components/utils/manageSubscription";
 import { toast } from "sonner";
-import { getUserSubscriptionState, isFreeUser, getCurrentPlanLabel } from "@/lib/billing/subscriptionState";
+import { getUserSubscriptionState, getCurrentPlanLabel } from "@/lib/billing/subscriptionState";
 import { getAvailableUpgradeOptions } from "@/lib/billing/upgradePaths";
 import { SUBSCRIPTION_PLANS } from "@/lib/billing/subscriptionPlans";
 import { initiateCheckoutWithIntent } from "@/components/subscription/subscriptionHandler";
