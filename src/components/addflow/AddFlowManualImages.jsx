@@ -366,7 +366,6 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                   size="sm"
                   disabled={!isImageReady}
                   onClick={() => {
-                    if (!isImageReady) return;
                     const useUrl = getImageUrlForSave(img);
                     if (!useUrl) return;
                     onSelectImage(useUrl, {
