@@ -100,7 +100,10 @@ function proxyImageUrl(url) {
 
 /**
  * Determine the best URL to save when the user clicks "Use This".
- * Priority: renderableImageUrl → proxiedImageUrl → direct image URL → proxied fallback.
+ * Priority: verified renderableImageUrl → proxiedImageUrl → direct image URL → proxied fallback.
+ *
+ * Even when thumbnailStatus === 'failed' (e.g. slow network during search),
+ * we persist the best available URL so the record is not left imageless.
  *
  * @param {Object} result - NormalizedImageResult with resolved fields
  * @returns {string|null}
@@ -113,8 +116,9 @@ function getImageUrlForSave(result) {
 }
 
 /**
- * Prefers the pre-resolved renderableImageUrl set by imageResolver; falls back
- * to proxying imageUrl when it looks like a direct image asset.
+ * Prefers the pre-resolved renderableImageUrl set by imageResolver (only
+ * populated after successful load verification); falls back to proxying
+ * imageUrl directly as a last-resort attempt.
  *
  * Returns null when no usable image URL is available — the thumbnail will show
  * a placeholder icon instead of a broken image.
@@ -123,9 +127,11 @@ function getImageUrlForSave(result) {
  * @returns {string|null}
  */
 function getThumbnailSrc(result) {
-  // Best case: the resolver already built a proxied URL
-  if (result.renderableImageUrl) return result.renderableImageUrl;
-  // Fallback: proxied URL available separately
+  // Best case: verified renderable URL from imageResolver
+  if (result.thumbnailStatus === 'verified' && result.renderableImageUrl) {
+    return result.renderableImageUrl;
+  }
+  // Fallback: proxied URL available (unverified — will show or fail in <img>)
   if (result.proxiedImageUrl) return result.proxiedImageUrl;
   // Last resort: direct image URL that can still be proxied
   if (result.imageUrl && result.isDirectImageUrl) return proxyImageUrl(result.imageUrl);
@@ -219,6 +225,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
           imageUrl: r.imageUrl,
           proxiedImageUrl: r.proxiedImageUrl,
           renderableImageUrl: r.renderableImageUrl,
+          thumbnailStatus: r.thumbnailStatus,
           confidenceLabel: r.confidenceLabel,
         })));
       }
@@ -258,7 +265,9 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {suggestions.length > 0
               ? (() => {
-                  const previewCount = suggestions.filter((s) => s.renderableImageUrl).length;
+                  const previewCount = suggestions.filter(
+                    (s) => s.thumbnailStatus === 'verified' && s.renderableImageUrl
+                  ).length;
                   return previewCount > 0
                     ? `${previewCount} image preview${previewCount === 1 ? '' : 's'} available.`
                     : `${suggestions.length} suggested match${suggestions.length === 1 ? '' : 'es'} found.`;

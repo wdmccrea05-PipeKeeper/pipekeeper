@@ -1,22 +1,28 @@
 /**
  * imageResolver.js
  *
- * Resolves a "renderable" image URL for each NormalizedImageResult.
+ * Resolves a "renderable" image URL for each NormalizedImageResult, and
+ * verifies that the resolved URL actually loads in the browser before
+ * marking it as a usable thumbnail.
  *
  * For each candidate result it:
  *   1. Checks the cache (imageCache) — reuse if still valid
  *   2. Validates whether imageUrl is a real image asset URL (imageProxyService)
  *   3. Builds a proxied URL via images.weserv.nl for valid image URLs
- *   4. Sets the computed fields:
+ *   4. Verifies the proxied URL (and, if needed, the direct URL) actually loads
+ *   5. Sets the computed fields:
  *        proxiedImageUrl    — weserv.nl URL (or null if not a valid image)
- *        renderableImageUrl — best available URL the browser can render
- *   5. Stores the resolved entry in the cache for future calls
+ *        renderableImageUrl — verified URL the browser can render (null if verification failed)
+ *        thumbnailStatus    — "verified" | "failed" | "unverified"
+ *   6. Stores the resolved + verified entry in the cache for future calls
+ *
+ * thumbnailStatus values:
+ *   "verified"   — image loaded successfully; renderableImageUrl is trustworthy
+ *   "failed"     — both proxy and direct URLs failed to load
+ *   "unverified" — browser Image API unavailable (e.g., SSR); URL may still work
  *
  * renderableImageUrl resolution priority:
- *   proxiedImageUrl  →  (imageUrl when it is a direct image asset)  →  null
- *
- * A result with renderableImageUrl === null still appears in the list but the
- * UI renders a placeholder instead of a broken image.
+ *   proxied (if verified)  →  direct (if verified)  →  null
  */
 
 import { isImageUrl, buildProxiedUrl } from './imageProxyService.js';
@@ -25,20 +31,21 @@ import {
   getCachedResolution,
   setCachedResolution,
 } from './imageCache.js';
+import { verifyImageLoads } from './imageRenderVerifier.js';
 
 // ── Single-result resolver ────────────────────────────────────────────────────
 
 /**
- * Resolve renderableImageUrl for a single NormalizedImageResult.
+ * Resolve and verify renderableImageUrl for a single NormalizedImageResult.
  *
- * This function is synchronous — it does not make network requests.
- * Determining whether an image asset is accessible requires a browser load
- * attempt; that responsibility stays in the UI (SuggestionThumb).
+ * This function is async — it makes browser Image-load verification requests
+ * to confirm the proxy URL (and optionally the direct URL) actually returns
+ * a renderable bitmap before marking it available.
  *
  * @param {import('./imageSearchService.js').NormalizedImageResult} result
- * @returns {import('./imageSearchService.js').NormalizedImageResult}
+ * @returns {Promise<import('./imageSearchService.js').NormalizedImageResult>}
  */
-export function resolveRenderableImage(result) {
+export async function resolveRenderableImage(result) {
   const { imageUrl, isDirectImageUrl, sourceDomain, title, entityType } = result;
 
   // Build a cache key for this specific result
@@ -49,13 +56,14 @@ export function resolveRenderableImage(result) {
     imageUrl     || '',
   );
 
-  // Check cache first
+  // Check cache first — skip re-verification if we already have a definitive result
   const cached = getCachedResolution(cacheKey);
-  if (cached) {
+  if (cached && cached.thumbnailStatus !== 'unverified') {
     return {
       ...result,
       proxiedImageUrl:    cached.proxiedImageUrl,
       renderableImageUrl: cached.renderableImageUrl,
+      thumbnailStatus:    cached.thumbnailStatus,
     };
   }
 
@@ -65,48 +73,77 @@ export function resolveRenderableImage(result) {
   // Build the proxied URL — null when imageUrl is not an image asset URL
   const proxiedImageUrl = isActualImage ? buildProxiedUrl(imageUrl) : null;
 
-  // renderableImageUrl: prefer proxy, fall back to raw image URL only if it
-  // is confirmed to be a direct image asset
-  const renderableImageUrl = proxiedImageUrl || (isActualImage ? imageUrl : null);
+  // ── Verification ──────────────────────────────────────────────────────────
+  // Try proxy first; fall back to raw direct URL if proxy fails and the raw
+  // URL passes the image-URL check.
+  let renderableImageUrl = null;
+  let thumbnailStatus    = 'failed';
 
-  // Store in cache
+  if (proxiedImageUrl) {
+    const proxyOk = await verifyImageLoads(proxiedImageUrl);
+    if (proxyOk) {
+      renderableImageUrl = proxiedImageUrl;
+      thumbnailStatus    = 'verified';
+    }
+  }
+
+  if (thumbnailStatus !== 'verified' && isActualImage && imageUrl) {
+    // Check if the Image API is available before attempting direct load —
+    // if not, set unverified so callers can still attempt rendering
+    if (typeof window === 'undefined' || typeof Image === 'undefined') {
+      renderableImageUrl = proxiedImageUrl || imageUrl;
+      thumbnailStatus    = 'unverified';
+    } else {
+      const directOk = await verifyImageLoads(imageUrl);
+      if (directOk) {
+        renderableImageUrl = imageUrl;
+        thumbnailStatus    = 'verified';
+      }
+    }
+  }
+
+  // Store in cache — persists "failed" status so we skip re-verification on
+  // repeat searches within the TTL window
   setCachedResolution(cacheKey, {
     imageUrl,
     proxiedImageUrl,
     renderableImageUrl,
+    thumbnailStatus,
     title,
     sourceDomain,
-    ok: !!renderableImageUrl,
+    ok: thumbnailStatus === 'verified',
   });
 
   return {
     ...result,
     proxiedImageUrl,
     renderableImageUrl,
+    thumbnailStatus,
   };
 }
 
 // ── Batch resolver ────────────────────────────────────────────────────────────
 
 /**
- * Resolve renderableImageUrl for an array of NormalizedImageResult objects.
- * Results are sorted so those with a renderableImageUrl come first, preserving
+ * Resolve and verify renderableImageUrl for an array of NormalizedImageResult objects.
+ * All results are verified in parallel (Promise.all) to minimise total wait time.
+ * Results are then sorted so verified thumbnails come first, preserving
  * relative order within each group.
  *
  * @param {import('./imageSearchService.js').NormalizedImageResult[]} results
- * @returns {import('./imageSearchService.js').NormalizedImageResult[]}
+ * @returns {Promise<import('./imageSearchService.js').NormalizedImageResult[]>}
  */
-export function resolveRenderableImages(results) {
+export async function resolveRenderableImages(results) {
   if (!results || results.length === 0) return [];
 
-  const resolved = results.map(resolveRenderableImage);
+  // Run all verifications in parallel
+  const resolved = await Promise.all(results.map(resolveRenderableImage));
 
-  // Stable sort: results with a renderable image are preferred
+  // Stable sort: verified thumbnails first, then unverified, then failed
   return resolved.sort((a, b) => {
-    const aHas = !!a.renderableImageUrl;
-    const bHas = !!b.renderableImageUrl;
-    if (aHas && !bHas) return -1;
-    if (!aHas && bHas) return 1;
-    return 0; // preserve original rank order within each group
+    const rank = (r) =>
+      r.thumbnailStatus === 'verified'   ? 0 :
+      r.thumbnailStatus === 'unverified' ? 1 : 2;
+    return rank(a) - rank(b);
   });
 }

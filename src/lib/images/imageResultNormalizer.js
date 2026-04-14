@@ -170,6 +170,7 @@ export function normalizeImageResult(raw, entityType = 'bottle', context = {}) {
     isDirectImageUrl: !!(directImageUrl && sanitizeImageUrl(directImageUrl)),
     proxiedImageUrl:  null, // populated later by imageResolver
     renderableImageUrl: null, // populated later by imageResolver
+    thumbnailStatus: 'unverified', // updated to 'verified' | 'failed' by imageResolver
     matchedName:     context.matchedName  || title,
     matchedBrand:    context.matchedBrand || null,
     confidenceScore:  0,

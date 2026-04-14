@@ -41,6 +41,7 @@
  *   isExactMatch:     boolean,
  *   isReferenceImage: boolean,
  *   isInternationalSource: boolean,
+ *   thumbnailStatus:  "verified" | "failed" | "unverified",
  *   metadata:         Object,
  * }} NormalizedImageResult
  */
@@ -185,10 +186,9 @@ export async function searchProductImages({
   // Final slice: preferred 6, minimum 3
   const sliced = withLabels.slice(0, preferredResults);
 
-  // Resolve renderableImageUrl for each result (uses imageProxyService + cache)
-  // Results with a renderableImageUrl are sorted to the front, preserving
-  // relative score order within each group.
-  const finalResults = resolveRenderableImages(sliced);
+  // Resolve renderableImageUrl for each result (uses imageProxyService + imageRenderVerifier + cache)
+  // All verifications run in parallel via Promise.all; verified results sort to front.
+  const finalResults = await resolveRenderableImages(sliced);
 
   const exactMatch = finalResults.find((r) => r.isExactMatch) || null;
 
@@ -200,6 +200,7 @@ export async function searchProductImages({
       imageUrl: r.imageUrl,
       proxiedImageUrl: r.proxiedImageUrl,
       renderableImageUrl: r.renderableImageUrl,
+      thumbnailStatus: r.thumbnailStatus,
       confidenceLabel: r.confidenceLabel,
     })));
   }
