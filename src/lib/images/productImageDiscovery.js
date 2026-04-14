@@ -92,7 +92,9 @@ export async function discoverProductImageCandidates({
     sourceTier:           r.sourceTier,
     sourceType:           r.sourceType,
     productUrl:           r.url || null,
-    candidateImageUrl:    r.imageUrl || null,
+    // Use the direct image URL when available; fall back to the product page URL
+    // so the ingestion layer can attempt og:image extraction from the HTML page.
+    candidateImageUrl:    r.imageUrl || r.url || null,
     confidenceScore:      r.confidenceScore,
     confidenceLabel:      r.confidenceLabel,
     isExactMatch:         r.isExactMatch,
