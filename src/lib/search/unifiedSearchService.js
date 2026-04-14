@@ -147,22 +147,24 @@ export async function searchForRecord(query, itemType, options = {}) {
  * @returns {Object[]}
  */
 function dedupeImageResults(results = []) {
-  // First pass: collapse duplicate keys, keeping the entry with the better image
-  const byKey = new Map();
+  // First pass: collapse entries that share domain+title+imageUrl (exact duplicates),
+  // keeping the higher-confidence one via preferResultWithImage.
+  const byExactKey = new Map();
   for (const item of results) {
     const key = [
       item.sourceDomain || '',
       (item.title || '').toLowerCase().trim(),
+      (item.imageUrl || '').toLowerCase(),
     ].join('|');
 
-    const existing = byKey.get(key);
-    byKey.set(key, existing ? preferResultWithImage(existing, item) : item);
+    const existing = byExactKey.get(key);
+    byExactKey.set(key, existing ? preferResultWithImage(existing, item) : item);
   }
 
-  // Second pass: apply URL-uniqueness and quality filters
+  // Second pass: apply quality filters and deduplicate by raw image URL
   const seenUrls = new Set();
   const out = [];
-  for (const item of byKey.values()) {
+  for (const item of byExactKey.values()) {
     if (!item.imageUrl) continue;
 
     const url = String(item.imageUrl).toLowerCase();
