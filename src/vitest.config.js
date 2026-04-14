@@ -3,7 +3,7 @@ import path from 'path';
 
 export default defineConfig({
   test: {
-    globals: false,
+    globals: true,
     environment: 'jsdom',
     setupFiles: ['./test-setup.js'],
     // Force exit after all tests complete — prevents open handle hangs

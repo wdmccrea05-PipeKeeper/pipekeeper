@@ -55,6 +55,7 @@ function BottleGridCard({ bottle, onOpen }) {
   const photo = getBottlePhoto(bottle);
   const unitValue = resolveBottleUnitValue(bottle);
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
 
   return (
     <button
@@ -107,6 +108,7 @@ function BottleListRow({ bottle, onOpen }) {
   const photo = getBottlePhoto(bottle);
   const unitValue = resolveBottleUnitValue(bottle);
   const { t } = useTranslation();
+  const { formatFromBase } = useCurrency();
 
   return (
     <button
