@@ -138,8 +138,8 @@ h5,
 h6,
 div {
   overflow-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
+  word-break: normal;
+  hyphens: none;
 }
 
 /* Enforce mobile-safe scrolling */
@@ -156,8 +156,8 @@ html {
 
   .break-anywhere {
     overflow-wrap: break-word;
-    word-break: break-word;
-    hyphens: auto;
+    word-break: normal;
+    hyphens: none;
   }
 
   .text-truncate-safe {

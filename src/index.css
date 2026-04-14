@@ -92,7 +92,8 @@
     background-color: #140f0c;
     @apply text-foreground;
     overflow-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
+    hyphens: none;
     font-size: 16px;
   }
 
