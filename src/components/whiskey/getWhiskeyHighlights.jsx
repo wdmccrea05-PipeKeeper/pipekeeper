@@ -40,7 +40,7 @@ export function getWhiskeyHighlights(bottles, inventoryUnits = [], formatFromBas
   const candidates = [];
 
   // 1. Most Valuable
-  const mostValuable = findMostValuable(bottles, inventoryCountByBottleId, hasInventoryUnits);
+  const mostValuable = findMostValuable(bottles, inventoryCountByBottleId, hasInventoryUnits, fmt);
   if (mostValuable) candidates.push(mostValuable);
 
   // 2. Highest Rated
@@ -75,7 +75,7 @@ export function getWhiskeyHighlights(bottles, inventoryUnits = [], formatFromBas
 
   // If still too few, add fallback stats
   if (candidates.length < 3) {
-    const stats = getCollectionStatsFallbacks(bottles, inventoryCountByBottleId, hasInventoryUnits);
+    const stats = getCollectionStatsFallbacks(bottles, inventoryCountByBottleId, hasInventoryUnits, fmt);
     for (const stat of stats) {
       if (!isDuplicate(stat, candidates) && candidates.length < 4) {
         candidates.push(stat);
@@ -90,7 +90,7 @@ export function getWhiskeyHighlights(bottles, inventoryUnits = [], formatFromBas
 /**
  * Find most valuable bottle
  */
-function findMostValuable(bottles, inventoryCountByBottleId, hasInventoryUnits) {
+function findMostValuable(bottles, inventoryCountByBottleId, hasInventoryUnits, fmt) {
   const candidates = bottles
     .map((bottle) => ({
       ...bottle,
@@ -227,7 +227,7 @@ function findFavorite(bottles) {
 /**
  * Fallback stats for empty/sparse collections
  */
-function getCollectionStatsFallbacks(bottles, inventoryCountByBottleId, hasInventoryUnits) {
+function getCollectionStatsFallbacks(bottles, inventoryCountByBottleId, hasInventoryUnits, fmt) {
   const fallbacks = [];
 
   // Total collection value
