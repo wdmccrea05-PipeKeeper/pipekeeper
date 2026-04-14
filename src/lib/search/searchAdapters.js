@@ -37,6 +37,27 @@ function nextId() {
 }
 
 /**
+ * Extract an image URL from a raw result object, checking all known field name
+ * variants that different providers / LLM responses may use.
+ *
+ * @param {Object} raw
+ * @returns {string|null}
+ */
+function extractImageUrl(raw) {
+  return (
+    raw.imageUrl ||
+    raw.image_url ||
+    raw.thumbnailUrl ||
+    raw.thumbnail ||
+    raw.thumb ||
+    raw.image ||
+    raw.previewImage ||
+    raw.preview_image ||
+    null
+  );
+}
+
+/**
  * Normalise a single LLM result item for a bottle / whiskey query.
  *
  * @param {Object} raw
@@ -55,7 +76,7 @@ export function normalizeBottleResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
+    imageUrl: extractImageUrl(raw),
     matchedName: raw.name || '',
     matchedBrand: raw.distillery || null,
     matchedType: raw.whiskey_type || raw.type || null,
@@ -89,7 +110,7 @@ export function normalizeBlendResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
+    imageUrl: extractImageUrl(raw),
     matchedName: raw.name || '',
     matchedBrand: raw.manufacturer || null,
     matchedType: raw.blend_type || null,
@@ -123,7 +144,7 @@ export function normalizePipeResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
+    imageUrl: extractImageUrl(raw),
     matchedName: raw.name || '',
     matchedBrand: raw.maker || null,
     matchedType: raw.shape || null,
@@ -157,7 +178,7 @@ export function normalizeCigarResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
+    imageUrl: extractImageUrl(raw),
     matchedName: raw.name || '',
     matchedBrand: raw.brand || null,
     matchedType: raw.vitola || null,
@@ -191,7 +212,7 @@ export function normalizeImageResult(raw) {
     sourceTier: tier,
     sourceType,
     url: raw.source_url || '',
-    imageUrl: raw.image_url || null,
+    imageUrl: extractImageUrl(raw),
     matchedName: raw.title || '',
     matchedBrand: null,
     matchedType: null,

@@ -28,6 +28,59 @@ import { rankResults } from './searchRanking.js';
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
+ * Return true when a raw LLM image object contains any recognisable image URL
+ * field.  This must be checked before normalisation because the normaliser
+ * collapses all variants into `imageUrl`.
+ *
+ * @param {Object} img
+ * @returns {boolean}
+ */
+function rawHasImageUrl(img) {
+  if (!img) return false;
+  return !!(
+    img.imageUrl ||
+    img.image_url ||
+    img.thumbnailUrl ||
+    img.thumbnail ||
+    img.thumb ||
+    img.image ||
+    img.previewImage ||
+    img.preview_image
+  );
+}
+
+/**
+ * Sanitise an image URL before passing it to the UI.
+ *  - protocol-relative → https
+ *  - already http(s) → returned as-is
+ *  - anything else (relative, blank, non-URL) → null
+ *
+ * @param {string|null|undefined} url
+ * @returns {string|null}
+ */
+function sanitizeImageUrl(url) {
+  if (!url) return null;
+  const value = String(url).trim();
+  if (!value) return null;
+  if (value.startsWith('//')) return `https:${value}`;
+  if (value.startsWith('http://') || value.startsWith('https://')) return value;
+  return null;
+}
+
+/**
+ * When deduplicating, prefer the result that has a valid imageUrl.
+ *
+ * @param {Object} a
+ * @param {Object} b
+ * @returns {Object}
+ */
+function preferResultWithImage(a, b) {
+  if (a?.imageUrl && !b?.imageUrl) return a;
+  if (b?.imageUrl && !a?.imageUrl) return b;
+  return a;
+}
+
+/**
  * Invoke the LLM with internet context and parse the response.
  * Returns null on any error so callers can handle gracefully.
  *
@@ -94,23 +147,34 @@ export async function searchForRecord(query, itemType, options = {}) {
  * @returns {Object[]}
  */
 function dedupeImageResults(results = []) {
-  const seen = new Set();
-  return results.filter((item) => {
+  // First pass: collapse entries that share domain+title+imageUrl (exact duplicates),
+  // keeping the higher-confidence one via preferResultWithImage.
+  const byExactKey = new Map();
+  for (const item of results) {
     const key = [
-      item.imageUrl || '',
       item.sourceDomain || '',
       (item.title || '').toLowerCase().trim(),
+      (item.imageUrl || '').toLowerCase(),
     ].join('|');
 
-    if (!item.imageUrl) return false;
-    if (seen.has(key)) return false;
-    seen.add(key);
+    const existing = byExactKey.get(key);
+    byExactKey.set(key, existing ? preferResultWithImage(existing, item) : item);
+  }
+
+  // Second pass: apply quality filters and deduplicate by raw image URL
+  const seenUrls = new Set();
+  const out = [];
+  for (const item of byExactKey.values()) {
+    if (!item.imageUrl) continue;
 
     const url = String(item.imageUrl).toLowerCase();
-    if (url.includes('placeholder') || url.includes('no-image')) return false;
+    if (url.includes('placeholder') || url.includes('no-image')) continue;
+    if (seenUrls.has(url)) continue;
 
-    return true;
-  });
+    seenUrls.add(url);
+    out.push(item);
+  }
+  return out;
 }
 
 /**
@@ -142,8 +206,10 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
     return { results: [], exactMatch: null, totalCandidates: 0, noResults: true };
   }
 
-  // Filter out results that lack an image_url
-  const validImages = llmResult.images.filter((img) => img?.image_url);
+  // Filter out results that lack any recognisable image URL field.
+  // This check happens before normalisation which collapses all field-name
+  // variants into `imageUrl`.
+  const validImages = llmResult.images.filter(rawHasImageUrl);
 
   if (validImages.length === 0) return { results: [], exactMatch: null, totalCandidates: 0, noResults: true };
 
@@ -176,7 +242,7 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
     const broadResult = await callLLM(broadPrompt, IMAGE_SEARCH_RESPONSE_SCHEMA);
 
     if (broadResult && Array.isArray(broadResult.images) && broadResult.images.length > 0) {
-      const broadValid = broadResult.images.filter((img) => img?.image_url);
+      const broadValid = broadResult.images.filter(rawHasImageUrl);
       const broadNormalized = broadValid.map((img) => normalizeImageResult(img));
       const broadRanked = rankResults(rankQuery, broadNormalized, 'image');
       const broadWithLabel = broadRanked.map((r) => ({
@@ -190,11 +256,26 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
 
   const exactMatch = finalResults.find((r) => r.confidenceLabel === 'Exact Match') || null;
 
+  // Sanitize image URLs in the final output to strip invalid/relative URLs
+  const sanitizedResults = finalResults.map((r) => ({
+    ...r,
+    imageUrl: sanitizeImageUrl(r.imageUrl),
+  }));
+
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.log('[ImageSearch] Suggested image results:', sanitizedResults.map((r) => ({
+      title: r.title,
+      sourceDomain: r.sourceDomain,
+      imageUrl: r.imageUrl,
+    })));
+  }
+
   return {
-    results: finalResults,
-    exactMatch,
+    results: sanitizedResults,
+    exactMatch: exactMatch ? { ...exactMatch, imageUrl: sanitizeImageUrl(exactMatch.imageUrl) } : null,
     totalCandidates: ranked.length,
-    noResults: finalResults.length === 0,
+    noResults: sanitizedResults.length === 0,
   };
 }
 
