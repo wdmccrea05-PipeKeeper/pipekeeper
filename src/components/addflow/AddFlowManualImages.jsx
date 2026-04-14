@@ -99,7 +99,18 @@ function proxyImageUrl(url) {
 }
 
 /**
- * Determine the best thumbnail source for a suggestion result.
+ * Determine the best URL to save when the user clicks "Use This".
+ * Priority: renderableImageUrl → proxiedImageUrl → direct image URL → proxied fallback.
+ *
+ * @param {Object} result - NormalizedImageResult with resolved fields
+ * @returns {string|null}
+ */
+function getImageUrlForSave(result) {
+  if (result.renderableImageUrl) return result.renderableImageUrl;
+  if (result.proxiedImageUrl)    return result.proxiedImageUrl;
+  if (result.isDirectImageUrl && result.imageUrl) return result.imageUrl;
+  return proxyImageUrl(result.imageUrl || result.url);
+}
  * Prefers the pre-resolved renderableImageUrl set by imageResolver; falls back
  * to proxying imageUrl when it looks like a direct image asset.
  *
@@ -244,9 +255,12 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {suggestions.length > 0
-              ? suggestions.some((s) => s.renderableImageUrl)
-                ? `${suggestions.filter((s) => s.renderableImageUrl).length} image preview${suggestions.filter((s) => s.renderableImageUrl).length === 1 ? '' : 's'} available.`
-                : `${suggestions.length} suggested match${suggestions.length === 1 ? '' : 'es'} found.`
+              ? (() => {
+                  const previewCount = suggestions.filter((s) => s.renderableImageUrl).length;
+                  return previewCount > 0
+                    ? `${previewCount} image preview${previewCount === 1 ? '' : 's'} available.`
+                    : `${suggestions.length} suggested match${suggestions.length === 1 ? '' : 'es'} found.`;
+                })()
               : 'Choose a trusted image match or upload your own.'}
           </p>
         </div>
@@ -350,13 +364,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
                   type="button"
                   size="sm"
                   onClick={() => {
-                    // Prefer the pre-resolved renderable URL so the saved image
-                    // remains stable. Fall back chain: renderable → proxied → raw.
-                    const useUrl =
-                      img.renderableImageUrl ||
-                      img.proxiedImageUrl    ||
-                      (img.isDirectImageUrl ? img.imageUrl : proxyImageUrl(img.imageUrl || img.url)) ||
-                      null;
+                    const useUrl = getImageUrlForSave(img);
                     onSelectImage(useUrl, {
                       image_source_domain:    img.sourceDomain    || null,
                       image_source_type:      img.sourceType      || null,
