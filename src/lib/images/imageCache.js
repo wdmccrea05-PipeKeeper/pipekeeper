@@ -7,7 +7,7 @@
  *   entityType + normalised product name + sourceDomain + imageUrl
  *
  * Each entry stores:
- *   { imageUrl, proxiedImageUrl, renderableImageUrl, title, sourceDomain, fetchedAt, ok }
+ *   { imageUrl, proxiedImageUrl, renderableImageUrl, thumbnailStatus, title, sourceDomain, fetchedAt, ok }
  *
  * Default TTL: 24 hours.
  */
@@ -41,6 +41,7 @@ export function buildCacheKey(entityType, name, domain, imageUrl) {
  *   imageUrl:         string | null,
  *   proxiedImageUrl:  string | null,
  *   renderableImageUrl: string | null,
+ *   thumbnailStatus:  "verified" | "failed" | "unverified",
  *   title:            string | null,
  *   sourceDomain:     string | null,
  *   fetchedAt:        number,
@@ -91,6 +92,7 @@ export function setCachedResolution(key, value) {
       imageUrl:           value.imageUrl          ?? null,
       proxiedImageUrl:    value.proxiedImageUrl    ?? null,
       renderableImageUrl: value.renderableImageUrl ?? null,
+      thumbnailStatus:    value.thumbnailStatus    ?? 'unverified',
       title:              value.title              ?? null,
       sourceDomain:       value.sourceDomain       ?? null,
       fetchedAt:          Date.now(),

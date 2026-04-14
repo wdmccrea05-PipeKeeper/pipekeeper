@@ -15,7 +15,7 @@ const WESERV_BASE = 'https://images.weserv.nl/';
 // Extensions that reliably identify a URL as an image asset
 const IMAGE_EXTENSION_RE = /\.(jpg|jpeg|png|webp|gif|svg|avif|bmp|ico)(\?[^/]*)?$/i;
 
-// CDN path fragments that strongly indicate an image asset
+// CDN path fragments that strongly indicate an image asset (no extension required)
 const IMAGE_PATH_FRAGMENTS = [
   '/images/',
   '/image/',
@@ -32,33 +32,98 @@ const IMAGE_PATH_FRAGMENTS = [
   '/thumbnails/',
   '/pictures/',
   '/gallery/',
+  '/catalog/',
+  '/product/',
+  '/products/',
+  '/whisky/',
+  '/whiskey/',
+  '/spirits/',
+  '/bottles/',
+  '/tobacco/',
+  '/pipes/',
+  '/content/dam/',
+  '/dam/',
+  '/static/images/',
+  '/static/img/',
+  '/upload/',
+  '/uploads/',
+  '/files/',
+];
+
+// Query-parameter keys that are strong indicators of image transformation/CDN
+const IMAGE_TRANSFORM_PARAMS = [
+  'width', 'height', 'w', 'h', 'fit', 'format', 'quality', 'q',
+  'resize', 'scale', 'crop', 'auto', 'fm', 'cs', 'dpr',
+];
+
+// Path patterns that are very likely HTML product pages, not image assets
+const PRODUCT_PAGE_PATH_RE = [
+  /\/collections\//i,
+  /\/category\//i,
+  /\/categories\//i,
+  /\/shop\//i,
+  /\/store\//i,
+  /\/search\?/i,
+  /\/tag\//i,
+  /\/blog\//i,
+  /\/articles?\//i,
+  /\/pages?\//i,
+  /\/checkout/i,
+  /\/cart/i,
+  /\/account/i,
 ];
 
 /**
- * Return true when a URL looks like a direct image asset URL rather than an
- * HTML page or API endpoint.
- *
- * Checks:
- *  1. URL has a recognised image extension in the path
- *  2. OR URL path contains a known image-CDN fragment AND the extension check
- *     passes on the filename portion
+ * Return true when the URL looks like an HTML product/catalogue page rather
+ * than a binary image asset.
  *
  * @param {string|null|undefined} url
  * @returns {boolean}
  */
-export function isImageUrl(url) {
+export function looksLikeProductPageUrl(url) {
   if (!url) return false;
   try {
     const u = new URL(url);
-    const path = u.pathname;
+    const full = u.pathname + u.search;
+    return PRODUCT_PAGE_PATH_RE.some((re) => re.test(full));
+  } catch {
+    return false;
+  }
+}
 
-    // Primary check: known image extension in the path
-    if (IMAGE_EXTENSION_RE.test(path)) return true;
+/**
+ * Looser check: return true when a URL is likely a binary image asset.
+ *
+ * Accepts:
+ *  1. URLs with a known image file extension anywhere in the path
+ *  2. URLs whose path contains a recognised CDN/image-serving fragment
+ *     (no extension required — many retailer CDNs omit extensions)
+ *  3. URLs whose query string contains image-transformation parameters
+ *     (width=, h=, format=, etc.) which strongly imply an image endpoint
+ *
+ * Rejects HTML product pages detected by looksLikeProductPageUrl.
+ *
+ * @param {string|null|undefined} url
+ * @returns {boolean}
+ */
+export function looksLikeImageAssetUrl(url) {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    const path = u.pathname.toLowerCase();
 
-    // Secondary check: CDN-like path + filename with image extension
-    const lowerPath = path.toLowerCase();
-    const hasCdnFragment = IMAGE_PATH_FRAGMENTS.some((f) => lowerPath.includes(f));
-    if (hasCdnFragment && IMAGE_EXTENSION_RE.test(path.split('/').pop() || '')) return true;
+    // Reject obvious product pages first
+    if (looksLikeProductPageUrl(url)) return false;
+
+    // 1. Known image extension anywhere in path
+    if (IMAGE_EXTENSION_RE.test(u.pathname)) return true;
+
+    // 2. CDN/image-serving path fragment (extension not required)
+    if (IMAGE_PATH_FRAGMENTS.some((f) => path.includes(f))) return true;
+
+    // 3. Image transformation query params
+    const params = u.searchParams;
+    if (IMAGE_TRANSFORM_PARAMS.some((k) => params.has(k))) return true;
 
     return false;
   } catch {
@@ -67,7 +132,28 @@ export function isImageUrl(url) {
 }
 
 /**
+ * Return true when a URL looks like a direct image asset URL rather than an
+ * HTML page or API endpoint.
+ *
+ * This is the canonical public check used elsewhere in the pipeline.
+ * It delegates to looksLikeImageAssetUrl.
+ *
+ * @param {string|null|undefined} url
+ * @returns {boolean}
+ */
+export function isImageUrl(url) {
+  return looksLikeImageAssetUrl(url);
+}
+
+/**
  * Build a proxied image URL via images.weserv.nl.
+ *
+ * The proxy is built as:
+ *   https://images.weserv.nl/?url=<percent-encoded full URL>&w=…&h=…
+ *
+ * weserv.nl accepts both protocol-relative and full https:// URLs when
+ * percent-encoded in the `url` query parameter.  encodeURIComponent is
+ * the correct encoding — the server decodes and fetches the original URL.
  *
  * Returns null when:
  *  - url is empty / not a string
