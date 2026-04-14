@@ -157,7 +157,7 @@ function SuggestionThumb({ result }) {
  * Inline component that fetches and displays trusted image suggestions for the
  * current record. Fires automatically on mount when no image is present.
  */
-function ImageSuggestions({ itemType, data, onSelectImage }) {
+function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload }) {
   const [loading, setLoading]   = useState(false);
   const [fetched, setFetched]   = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -272,7 +272,7 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
             </button>
             <button
               type="button"
-              onClick={() => document.querySelector('input[type="file"]')?.click()}
+              onClick={onRequestFileUpload}
               className="text-xs px-3 py-1.5 rounded-full transition-colors hover:bg-white/10"
               style={{ color: 'rgba(224,216,200,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}
             >
@@ -802,9 +802,12 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             itemType={itemType}
             data={data}
             onSelectImage={(url, meta) => {
+              // url is null for match-only selections (no verified image acquired).
+              // In that case we record the match metadata without setting an image URL.
               if (url) setImageUrl(url);
               setImageMeta(meta || null);
             }}
+            onRequestFileUpload={() => fileRef.current?.click()}
           />
         )}
 
