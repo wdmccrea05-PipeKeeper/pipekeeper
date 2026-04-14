@@ -464,7 +464,7 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, 
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {suggestions.length > 0
               ? readyCount > 0
-                ? `${readyCount} image preview${readyCount === 1 ? '' : 's'} available. These are possible product matches, not verified image previews.`
+                ? `${readyCount} reference image${readyCount === 1 ? '' : 's'} available. These show possible product matches for reference only.`
                 : `${suggestions.length} likely match${suggestions.length === 1 ? '' : 'es'} found — no verified image previews available yet.`
               : 'These are possible product matches, not verified image previews.'}
           </p>
