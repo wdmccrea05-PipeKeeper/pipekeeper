@@ -58,7 +58,7 @@ export async function resolveRenderableImage(result) {
 
   // Check cache first — skip re-verification if we already have a definitive result
   const cached = getCachedResolution(cacheKey);
-  if (cached && cached.thumbnailStatus && cached.thumbnailStatus !== 'unverified') {
+  if (cached && cached.thumbnailStatus !== 'unverified') {
     return {
       ...result,
       proxiedImageUrl:    cached.proxiedImageUrl,
