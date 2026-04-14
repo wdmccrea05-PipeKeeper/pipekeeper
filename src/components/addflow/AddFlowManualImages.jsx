@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { createInventoryEngine } from '@/components/inventory/InventoryEngine';
-import { searchProductImages } from '@/lib/images/imageSearchService';
+import { getProductImageSuggestions } from '@/lib/images/productImagePipeline';
 
 const ENTITIES = {
   blend: 'TobaccoBlend',
@@ -93,71 +93,49 @@ const CONFIDENCE_CHIP_STYLES = {
   Low:    { background: 'rgba(120,80,60,0.18)',  color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(120,80,60,0.3)' },
 };
 
-function proxyImageUrl(url) {
-  if (!url) return null;
-  return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=112&h=112&fit=contain&we`;
-}
+
 
 /**
  * Determine the best URL to save when the user clicks "Use This".
- * Priority: verified renderableImageUrl → proxiedImageUrl → direct image URL → proxied fallback.
+ * Priority: cachedImageUrl (stable internal URL) → candidateImageUrl (fallback only).
  *
- * Even when thumbnailStatus === 'failed' (e.g. slow network during search),
- * we persist the best available URL so the record is not left imageless.
+ * Prefer the ingested internal URL. Only fall back to the raw candidate URL
+ * when no internal URL was produced (graceful degradation).
  *
- * @param {Object} result - NormalizedImageResult with resolved fields
+ * @param {Object} result - PipelineResult
  * @returns {string|null}
  */
 function getImageUrlForSave(result) {
-  if (result.renderableImageUrl) return result.renderableImageUrl;
-  if (result.proxiedImageUrl)    return result.proxiedImageUrl;
-  if (result.isDirectImageUrl && result.imageUrl) return result.imageUrl;
-  return proxyImageUrl(result.imageUrl || result.url);
+  if (result.cachedImageUrl) return result.cachedImageUrl;
+  // Graceful fallback: external URL if no internal URL was ingested
+  if (result.candidateImageUrl) return result.candidateImageUrl;
+  return null;
 }
 
 /**
- * Prefers the pre-resolved renderableImageUrl set by imageResolver (only
- * populated after successful load verification); falls back to proxying
- * imageUrl directly as a last-resort attempt.
+ * Returns the thumbnail src for a suggestion row.
+ * Uses only the stable internal cachedImageUrl — never raw retailer hotlinks.
  *
- * Returns null when no usable image URL is available — the thumbnail will show
- * a placeholder icon instead of a broken image.
- *
- * @param {Object} result - NormalizedImageResult with resolved fields
+ * @param {Object} result - PipelineResult
  * @returns {string|null}
  */
 function getThumbnailSrc(result) {
-  // Best case: verified renderable URL from imageResolver
-  if (result.thumbnailStatus === 'verified' && result.renderableImageUrl) {
-    return result.renderableImageUrl;
-  }
-  // Fallback: proxied URL available (unverified — will show or fail in <img>)
-  if (result.proxiedImageUrl) return result.proxiedImageUrl;
-  // Last resort: direct image URL that can still be proxied
-  if (result.imageUrl && result.isDirectImageUrl) return proxyImageUrl(result.imageUrl);
-  return null;
+  return result.cachedImageUrl || null;
 }
 
 /**
  * Thumbnail for a suggestion row.
  *
- * Uses renderableImageUrl (pre-resolved by imageResolver) as the primary
- * source. Falls back to a direct proxy attempt when available, then gives
- * up and shows a placeholder icon.
- *
- * 0 = try renderableImageUrl / proxied URL
- * 1 = try raw imageUrl (last resort)
- * 2 = give up → show placeholder
+ * Renders only the stable internal cachedImageUrl set by the ingestion pipeline.
+ * Shows a placeholder icon when no internal URL is available (ingestion failed
+ * or unavailable). Never renders raw retailer hotlinks.
  */
 function SuggestionThumb({ result }) {
-  const [attempt, setAttempt] = useState(0);
+  const [errored, setErrored] = useState(false);
 
-  const primarySrc = getThumbnailSrc(result);
-  const rawFallback = result.imageUrl && result.isDirectImageUrl ? result.imageUrl : null;
+  const src = getThumbnailSrc(result);
 
-  const hasSrc = !!primarySrc;
-
-  if (!hasSrc || attempt >= 2) {
+  if (!src || errored) {
     return (
       <div
         data-image-fallback=""
@@ -169,15 +147,13 @@ function SuggestionThumb({ result }) {
     );
   }
 
-  const src = attempt === 0 ? primarySrc : (rawFallback || primarySrc);
-
   return (
     <img
       src={src}
       alt={result.title || 'Suggested image'}
       className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
       style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}
-      onError={() => setAttempt((a) => a + 1)}
+      onError={() => setErrored(true)}
     />
   );
 }
@@ -208,28 +184,22 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
     setLoading(true);
     setFetched(false);
     try {
-      const seed = isRetry ? Date.now() : 0;
-      const { results } = await searchProductImages({
-        entityType: itemType,
+      const { results } = await getProductImageSuggestions({
+        entityType:   itemType,
+        forceRefresh: isRetry,
         ...fields,
-        seed,
       });
-      // Accept all results that have any URL — imageResolver has already
-      // classified them and set renderableImageUrl where possible
-      const withUrls = results.filter((r) => r.imageUrl || r.url || r.renderableImageUrl);
       if (import.meta.env?.DEV) {
         // eslint-disable-next-line no-console
-        console.log('[AddFlowManualImages] Suggested image results:', withUrls.map((r) => ({
-          title: r.title,
-          sourceDomain: r.sourceDomain,
-          imageUrl: r.imageUrl,
-          proxiedImageUrl: r.proxiedImageUrl,
-          renderableImageUrl: r.renderableImageUrl,
-          thumbnailStatus: r.thumbnailStatus,
+        console.log('[AddFlowManualImages] Pipeline results:', results.map((r) => ({
+          title:          r.title,
+          sourceDomain:   r.sourceDomain,
+          imageStatus:    r.imageStatus,
+          cachedImageUrl: r.cachedImageUrl,
           confidenceLabel: r.confidenceLabel,
         })));
       }
-      setSuggestions(withUrls);
+      setSuggestions(results);
     } catch {
       setSuggestions([]);
     } finally {
@@ -254,6 +224,8 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
 
   if (!loading && !fetched) return null;
 
+  const readyCount = suggestions.filter((s) => s.imageStatus === 'ready').length;
+
   return (
     <div className="flex flex-col gap-3">
       {/* Section header */}
@@ -264,14 +236,9 @@ function ImageSuggestions({ itemType, data, onSelectImage }) {
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {suggestions.length > 0
-              ? (() => {
-                  const previewCount = suggestions.filter(
-                    (s) => s.thumbnailStatus === 'verified' && s.renderableImageUrl
-                  ).length;
-                  return previewCount > 0
-                    ? `${previewCount} image preview${previewCount === 1 ? '' : 's'} available.`
-                    : `${suggestions.length} suggested match${suggestions.length === 1 ? '' : 'es'} found.`;
-                })()
+              ? readyCount > 0
+                ? `${readyCount} image preview${readyCount === 1 ? '' : 's'} available.`
+                : `${suggestions.length} suggested match${suggestions.length === 1 ? '' : 'es'} found.`
               : 'Choose a trusted image match or upload your own.'}
           </p>
         </div>
