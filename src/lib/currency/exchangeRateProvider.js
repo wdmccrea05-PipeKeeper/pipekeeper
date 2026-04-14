@@ -21,9 +21,27 @@ const PROVIDER_URL = 'https://api.frankfurter.app';
  */
 export async function fetchLatestRates(baseCurrency = BASE_CURRENCY) {
   const symbols = SUPPORTED_CURRENCIES.filter((c) => c !== baseCurrency).join(',');
-  const url = `${PROVIDER_URL}/latest?base=${baseCurrency}&symbols=${symbols}`;
 
-  const res = await fetch(url);
+  // Try open.er-api.com first (CORS-friendly, free, no redirect issues)
+  try {
+    const erUrl = `https://open.er-api.com/v6/latest/${baseCurrency}`;
+    const erRes = await fetch(erUrl);
+    if (erRes.ok) {
+      const erRaw = await erRes.json();
+      if (erRaw?.rates) {
+        const filteredRates = {};
+        symbols.split(',').forEach((c) => {
+          if (erRaw.rates[c] != null) filteredRates[c] = erRaw.rates[c];
+        });
+        return normalizeRatesFromProvider({ rates: filteredRates, date: erRaw.time_last_update_utc }, baseCurrency);
+      }
+    }
+  } catch {
+    // fall through to frankfurter
+  }
+
+  const url = `${PROVIDER_URL}/latest?base=${baseCurrency}&symbols=${symbols}`;
+  const res = await fetch(url, { redirect: 'follow' });
   if (!res.ok) throw new Error(`ECB provider returned HTTP ${res.status}`);
 
   const raw = await res.json();

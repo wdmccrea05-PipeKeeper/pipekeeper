@@ -283,7 +283,7 @@ export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={tastingTrends}>
               <CartesianGrid stroke="rgba(180,140,75,0.15)" />
-              <XAxis dataKey="month" tick={CHART_TICK_SM} angle={-45} />
+              <XAxis dataKey="month" tick={CHART_TICK_SM} />
               <YAxis tick={CHART_TICK} />
               <Tooltip {...CHART_TOOLTIP} />
               <Line type="monotone" dataKey="tastings" stroke="#C87941" strokeWidth={2} dot={{ fill: '#C87941' }} />
@@ -304,7 +304,7 @@ export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={purchaseTrends}>
               <CartesianGrid stroke="rgba(180,140,75,0.15)" />
-              <XAxis dataKey="month" tick={CHART_TICK_SM} angle={-45} />
+              <XAxis dataKey="month" tick={CHART_TICK_SM} />
               <YAxis tick={CHART_TICK} />
               <Tooltip {...CHART_TOOLTIP} />
               <Bar dataKey="purchases" fill="#10B981" radius={[8, 8, 0, 0]} />
@@ -325,7 +325,7 @@ export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={growthTrends}>
               <CartesianGrid stroke="rgba(180,140,75,0.15)" />
-              <XAxis dataKey="month" tick={CHART_TICK_SM} angle={-45} />
+              <XAxis dataKey="month" tick={CHART_TICK_SM} />
               <YAxis tick={CHART_TICK} />
               <Tooltip {...CHART_TOOLTIP} />
               <Line type="monotone" dataKey="bottles" stroke="#F59E0B" strokeWidth={2} dot={{ fill: '#F59E0B' }} />
@@ -429,7 +429,7 @@ export function WhiskeyAnalyticsTab({ bottles }) {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={ratingTrends}>
               <CartesianGrid stroke="rgba(180,140,75,0.15)" />
-              <XAxis dataKey="country" tick={CHART_TICK_SM} angle={-45} />
+              <XAxis dataKey="country" tick={CHART_TICK_SM} />
               <YAxis tick={CHART_TICK} domain={[0, 5]} />
               <Tooltip {...CHART_TOOLTIP} />
               <Bar dataKey="avgRating" fill="#8B5CF6" radius={[8, 8, 0, 0]} />
