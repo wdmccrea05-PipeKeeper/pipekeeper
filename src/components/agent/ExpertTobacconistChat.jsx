@@ -91,6 +91,61 @@ function evidenceQualifier(evidenceClass) {
   }
 }
 
+/**
+ * Classify the PRIMARY entity type the user is asking about.
+ * Returns 'blend' | 'pipe' | 'bottle' | 'pairing' | 'unknown'
+ * Used to validate that the answer actually addresses the question.
+ */
+function classifyTargetEntity(message) {
+  const t = message.toLowerCase().trim();
+  // Explicit tobacco/blend signals (check BEFORE generic pipe/smoke signals)
+  if (/\b(tobacco|blend|tin|cellar|virginia|aromatic|english|burley|latakia|perique|flake|ribbon|mixture|what.*(smoke|enjoy|try)|which.*(smoke|blend|tobacco))\b/i.test(t)) {
+    // Make sure it's not asking about a pipe specifically
+    if (!/\b(which pipe|what pipe|which bowl|pipe should)\b/i.test(t)) return 'blend';
+  }
+  // Explicit bottle/whiskey signals
+  if (/\b(bottle|whiskey|bourbon|scotch|rye|irish|dram|pour|open next|which bottle|what bottle)\b/i.test(t)) return 'bottle';
+  // Explicit pipe signals
+  if (/\b(which pipe|what pipe|pipe should|pipe (to use|for that)|which bowl)\b/i.test(t)) return 'pipe';
+  // Pairing
+  if (/\b(pair|pairing|pair with|combine|goes with)\b/i.test(t)) return 'pairing';
+  // Generic session — could be anything, check context
+  if (/\b(tonight|enjoy|smoke|session|use|open)\b/i.test(t)) return 'session';
+  return 'unknown';
+}
+
+/**
+ * Validate that an answer actually addresses the requested entity type.
+ * Returns true if the answer is valid, false if it needs to be corrected.
+ */
+function validateAnswerEntityMatch(targetEntity, reply = '', updatedEntityContext = {}) {
+  if (!targetEntity || targetEntity === 'unknown' || targetEntity === 'pairing' || targetEntity === 'session') return true;
+
+  const replyLower = reply.toLowerCase();
+  const subjectType = updatedEntityContext?.subject?.type || updatedEntityContext?.lastClaimType || '';
+
+  if (targetEntity === 'blend') {
+    // Answer must mention a blend/tobacco — not just pipe names
+    const hasBlendContent = /\b(blend|tobacco|virginia|aromatic|english|burley|latakia|mixture|flake|ribbon|perique)\b/i.test(replyLower);
+    const isOnlyPipes = /\b(billiard|dublin|apple|bulldog|pipe|bowl|briar|meerschaum)\b/i.test(replyLower) && !hasBlendContent;
+    if (isOnlyPipes) return false;
+    return true;
+  }
+
+  if (targetEntity === 'bottle') {
+    const hasBottleContent = /\b(bottle|whiskey|bourbon|scotch|rye|irish|distillery|dram|single malt)\b/i.test(replyLower);
+    if (!hasBottleContent && subjectType === 'pipe') return false;
+    return true;
+  }
+
+  if (targetEntity === 'pipe') {
+    const hasPipeContent = /\b(pipe|bowl|briar|billiard|dublin|meerschaum|shape|stem)\b/i.test(replyLower);
+    return hasPipeContent;
+  }
+
+  return true;
+}
+
 function classifyIntent(message) {
   const t = message.toLowerCase().trim();
 
@@ -790,8 +845,10 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   if (intent === 'SESSION_RECOMMENDATION') {
     try {
       const whiskeyFocused = /\b(whiskey|bourbon|scotch|rye|irish|bottle|pour|dram)\b/i.test(message);
-      const pipeFocused    = /\b(pipe|smoke|tobacco|blend)\b/i.test(message);
-      const targetModule   = whiskeyFocused ? 'whiskey' : pipeFocused ? 'pipe' : 'any';
+      // Blend/tobacco signals must be checked BEFORE generic pipe/smoke signals
+      const blendFocused   = /\b(tobacco|blend|tin|virginia|aromatic|english|burley|latakia|mixture|flake|what.*(smoke|enjoy)|which.*(smoke|blend|tobacco))\b/i.test(message) && !/\b(which pipe|what pipe|pipe should)\b/i.test(message);
+      const pipeFocused    = !blendFocused && /\b(pipe|bowl|briar)\b/i.test(message);
+      const targetModule   = whiskeyFocused ? 'whiskey' : blendFocused ? 'blend' : pipeFocused ? 'pipe' : 'any';
       const candidates = buildSessionPlan(context, activeModules, targetModule);
       if (!candidates.length) {
         return { reply: noDataResponses.sparse, updatedEntityContext: entityContext };
@@ -1036,8 +1093,33 @@ export default function ExpertTobacconistChat({
     setMessages((prev) => [...prev, { id: `user-${Date.now()}`, role: 'user', content: text }]);
     setInput('');
     try {
+      const targetEntity = classifyTargetEntity(text);
       const result = answerQuestion(text, collectionContext, { ...entityContext, analysisContext }, isSingleModuleMode, activeModules, continueAnalysis);
       const { reply, updatedEntityContext, newAnalysisContext } = result || {};
+
+      // Answer validation guard — if the reply doesn't match the requested entity, produce a corrective response
+      let finalReply = reply;
+      if (reply && !validateAnswerEntityMatch(targetEntity, reply, updatedEntityContext)) {
+        const entityLabel = targetEntity === 'blend' ? 'tobacco blend' : targetEntity === 'bottle' ? 'whiskey bottle' : targetEntity;
+        const validatedContext = validateCuratorContext(collectionContext);
+        const blends = validatedContext.blends;
+        const bottles = validatedContext.bottles;
+        if (targetEntity === 'blend' && blends.length > 0) {
+          const smokingLogs = validatedContext.smokingLogs;
+          const candidate = bestTonightBlend(blends, smokingLogs);
+          finalReply = candidate
+            ? `For ${entityLabel} — ${candidate.name}${candidate.blend_type ? ` (${candidate.blend_type})` : ''} is worth reaching for. It fits well for a smooth session and has been sitting in rotation. If you want something more specific to a mood or pairing, tell me and I can narrow it down.`
+            : `Looking through the blend collection, there are strong options available. Tell me more about what profile you are after — smooth and mild, or something with more body — and I can point to specific blends.`;
+        } else if (targetEntity === 'bottle' && bottles.length > 0) {
+          const candidate = bestOpenBottle(bottles, validatedContext.tastingLogs);
+          finalReply = candidate
+            ? `For a bottle — ${candidate.name}${candidate.type ? ` (${candidate.type})` : ''} is the one I would open next.`
+            : `Looking at the whiskey shelf, there are several candidates worth exploring. Let me know what profile you want and I can be more specific.`;
+        } else {
+          finalReply = `You asked about a ${entityLabel}. Let me answer that directly — tell me more about the occasion or profile you are after and I can pull the right candidates from your collection.`;
+        }
+      }
+
       if (newAnalysisContext) setAnalysisContext(newAnalysisContext);
       else if (result?.reply && !newAnalysisContext) setAnalysisContext(null);
       console.log('CURATOR_CHAT', {
@@ -1056,7 +1138,7 @@ export default function ExpertTobacconistChat({
         },
       });
       setEntityContext(updatedEntityContext);
-      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: reply || 'Something went wrong generating a response. Please try rephrasing.' }]);
+      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: finalReply || 'Something went wrong generating a response. Please try rephrasing.' }]);
     } catch (err) {
       console.error('[Curator] answerQuestion error:', err);
       const fallbackReply = safeCuratorFallback(collectionContext, text);
