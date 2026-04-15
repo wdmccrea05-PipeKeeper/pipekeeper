@@ -93,10 +93,7 @@ export async function initiateCheckout(planKey, selectedModules = [], successUrl
     });
 
     if (response?.data?.sessionUrl) {
-      const opened = window.open(response.data.sessionUrl, "_blank", "noopener,noreferrer");
-      if (!opened || opened?.closed) {
-        throw new Error("popup_blocked_or_redirect_disallowed");
-      }
+      window.location.assign(response.data.sessionUrl);
     } else {
       const errorMsg = response?.data?.error || 'Could not start checkout. Please try again.';
       throw new Error(errorMsg);
@@ -225,10 +222,10 @@ export async function initiateCheckoutWithIntent(
     const checkoutUrl = response?.data?.sessionUrl || response?.data?.url;
 
     if (checkoutUrl) {
-      const opened = window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
-      if (!opened || opened?.closed) {
-        throw new Error('popup_blocked_or_redirect_disallowed');
-      }
+      // Use window.location.assign instead of window.open to avoid popup blockers
+      // on iOS Safari and other mobile browsers that block popups not triggered
+      // directly by a synchronous user gesture.
+      window.location.assign(checkoutUrl);
     } else {
       const errorMsg = response?.data?.error || 'Could not start checkout. Please try again.';
       throw new Error(errorMsg);

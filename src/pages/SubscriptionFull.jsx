@@ -221,12 +221,8 @@ export default function SubscriptionFull() {
         "/Subscription"
       );
     } catch (e) {
-      if (e?.message === "popup_blocked_or_redirect_disallowed") {
-        toast.error("Unable to open checkout here. Please try again.");
-      } else {
-        console.error("[SubscriptionFull] Checkout error:", e);
-        setMessage(t("subscriptionFull.checkoutError"));
-      }
+      console.error("[SubscriptionFull] Checkout error:", e);
+      setMessage(t("subscriptionFull.checkoutError"));
     }
   };
 
@@ -279,11 +275,7 @@ export default function SubscriptionFull() {
         "/Subscription"
       );
     } catch (e) {
-      if (e?.message === "popup_blocked_or_redirect_disallowed") {
-        toast.error("Unable to open checkout here. Please try again from the Subscription page.");
-      } else {
-        setUpgradeError(e?.message || "An unexpected error occurred.");
-      }
+      setUpgradeError(e?.message || "An unexpected error occurred.");
     } finally {
       setIsUpgrading(false);
     }
