@@ -94,6 +94,7 @@ export default function SubscriptionFull() {
   const [selectedUpgradeOption, setSelectedUpgradeOption] = useState(null);
   const [upgradeError, setUpgradeError] = useState(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [selectedPlanKey, setSelectedPlanKey] = useState(null);
 
   useEffect(() => {
     if (!isIOSApp) return;
@@ -495,8 +496,6 @@ export default function SubscriptionFull() {
       </div>
     );
   }
-
-  const [selectedPlanKey, setSelectedPlanKey] = useState(null);
 
   return (
     <div className="w-full max-w-3xl mx-auto p-4 space-y-8">

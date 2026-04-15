@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, BookImage, Check, Globe, Image as ImageIcon, Library, Loader2, Search, Upload, X } from 'lucide-react';
+import { ArrowLeft, BookImage, Check, Globe, Image as ImageIcon, Loader2, Search, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
