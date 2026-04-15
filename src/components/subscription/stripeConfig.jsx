@@ -167,6 +167,17 @@ export function buildStripeConfig() {
       isAvailable: !!import.meta.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL,
       unavailableReason: import.meta.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL ? undefined : 'VITE_STRIPE_FOUR_BUNDLE_ANNUAL not configured',
     },
+    founders_bundle_monthly: {
+      planKey: 'founders_bundle_monthly',
+      type: 'founders',
+      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+      billingPeriod: 'monthly',
+      priceId: import.meta.env.VITE_STRIPE_FOUNDERS_MONTHLY || null,
+      displayPrice: '$4.99',
+      displayPeriod: '/month',
+      isAvailable: !!import.meta.env.VITE_STRIPE_FOUNDERS_MONTHLY,
+      unavailableReason: import.meta.env.VITE_STRIPE_FOUNDERS_MONTHLY ? undefined : 'VITE_STRIPE_FOUNDERS_MONTHLY not configured',
+    },
     founders_bundle_annual: {
       planKey: 'founders_bundle_annual',
       type: 'founders',
@@ -191,17 +202,11 @@ export function buildStripeConfig() {
   return config;
 }
 
-// Singleton instance
-let configInstance = null;
-
 /**
- * Get global Stripe config
+ * Get global Stripe config (rebuilt each call to ensure env vars are fresh)
  */
 export function getStripeConfig() {
-  if (!configInstance) {
-    configInstance = buildStripeConfig();
-  }
-  return configInstance;
+  return buildStripeConfig();
 }
 
 /**
