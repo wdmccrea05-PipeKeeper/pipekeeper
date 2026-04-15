@@ -160,27 +160,17 @@ export default function SubscriptionFull() {
   const availablePlans = useMemo(() => {
     const interval = selectedInterval === "annual" ? "annual" : "monthly";
 
-    // Ordered display list — pull directly from stripeConfig (the complete source of truth)
+    // Only show PipeKeeper Pro, WhiskeyKeeper Pro, and Founders Bundle
     const keyOrder = [
       `pipekeeper_pro_${interval}`,
       `whiskeykeeper_pro_${interval}`,
-      `cigarkeeper_pro_${interval}`,
-      `winekeeper_pro_${interval}`,
       `founders_bundle_${interval}`,
-      `three_module_bundle_${interval}`,
-      `four_module_bundle_${interval}`,
     ];
-
-    // founders_bundle only has annual variant — always include it when on annual
-    if (interval === "annual" && !keyOrder.includes("founders_bundle_annual")) {
-      keyOrder.push("founders_bundle_annual");
-    }
 
     return keyOrder
       .map(key => {
         const plan = stripeConfig[key];
         if (!plan?.isAvailable) return null;
-        // Merge in SUBSCRIPTION_PLANS data if available, fallback to stripeConfig data
         const appPlan = SUBSCRIPTION_PLANS[key] || {};
         return { ...appPlan, ...plan, key };
       })
