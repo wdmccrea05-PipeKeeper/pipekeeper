@@ -1,12 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { Camera, Check, ImagePlus, Pencil, X, Loader2, BookImage, Search } from 'lucide-react';
+import { Camera, ImagePlus, Pencil, X, Loader2, BookImage, Search } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import { Input } from '@/components/ui/input';
 import { findInternalImageMatches } from '@/lib/images/imageLibraryMatcher';
-import { upsertLibraryImageEntry } from '@/lib/images/imageLibraryService';
-import { linkImageToRecord } from '@/lib/images/imageRecordLinkService';
-import { normalizeBottleKey, normalizeBlendKey, normalizePipeKey } from '@/lib/images/imageNormalization';
 
 // ── Source label chip styles ──────────────────────────────────────────────────
 
