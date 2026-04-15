@@ -158,36 +158,33 @@ export default function SubscriptionFull() {
   const stripeConfig = useMemo(() => getStripeConfig(), []);
 
   const availablePlans = useMemo(() => {
-    const planOrder = [
-      'pipekeeper_pro',
-      'whiskeykeeper_pro',
-      'founders_bundle',
-      'three_module_bundle',
-      'four_module_bundle',
-    ];
-
     const interval = selectedInterval === "annual" ? "annual" : "monthly";
 
-    const plans = [];
-    for (const prefix of planOrder) {
-      const key = `${prefix}_${interval}`;
-      const stripePlan = stripeConfig[key];
-      const appPlan = SUBSCRIPTION_PLANS[key];
-      if (stripePlan?.isAvailable && appPlan) {
-        plans.push({ ...appPlan, ...stripePlan, key });
-      }
+    // Ordered display list — pull directly from stripeConfig (the complete source of truth)
+    const keyOrder = [
+      `pipekeeper_pro_${interval}`,
+      `whiskeykeeper_pro_${interval}`,
+      `cigarkeeper_pro_${interval}`,
+      `winekeeper_pro_${interval}`,
+      `founders_bundle_${interval}`,
+      `three_module_bundle_${interval}`,
+      `four_module_bundle_${interval}`,
+    ];
+
+    // founders_bundle only has annual variant — always include it when on annual
+    if (interval === "annual" && !keyOrder.includes("founders_bundle_annual")) {
+      keyOrder.push("founders_bundle_annual");
     }
 
-    // founders_bundle only has annual — add it if interval is annual and not already added
-    if (interval === "annual") {
-      const fb = stripeConfig["founders_bundle_annual"];
-      const already = plans.find(p => p.key === "founders_bundle_annual");
-      if (fb?.isAvailable && !already) {
-        plans.push({ ...SUBSCRIPTION_PLANS["founders_bundle_annual"], ...fb, key: "founders_bundle_annual" });
-      }
-    }
-
-    return plans;
+    return keyOrder
+      .map(key => {
+        const plan = stripeConfig[key];
+        if (!plan?.isAvailable) return null;
+        // Merge in SUBSCRIPTION_PLANS data if available, fallback to stripeConfig data
+        const appPlan = SUBSCRIPTION_PLANS[key] || {};
+        return { ...appPlan, ...plan, key };
+      })
+      .filter(Boolean);
   }, [selectedInterval, stripeConfig]);
 
   const planLabels = {
@@ -195,6 +192,10 @@ export default function SubscriptionFull() {
     pipekeeper_pro_annual: { name: "PipeKeeper Pro", badge: "Best Value" },
     whiskeykeeper_pro_monthly: { name: "WhiskeyKeeper Pro", badge: null },
     whiskeykeeper_pro_annual: { name: "WhiskeyKeeper Pro", badge: "Best Value" },
+    cigarkeeper_pro_monthly: { name: "CigarKeeper Pro", badge: null },
+    cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: "Best Value" },
+    winekeeper_pro_monthly: { name: "WineKeeper Pro", badge: null },
+    winekeeper_pro_annual: { name: "WineKeeper Pro", badge: "Best Value" },
     founders_bundle_monthly: { name: "Founders Bundle", badge: "Most Popular" },
     founders_bundle_annual: { name: "Founders Bundle", badge: "Best Value" },
     three_module_bundle_monthly: { name: "3-Module Bundle", badge: null },
@@ -208,6 +209,10 @@ export default function SubscriptionFull() {
     pipekeeper_pro_annual: "Unlimited pipes & blends, AI pairings & identification",
     whiskeykeeper_pro_monthly: "Unlimited bottles, AI valuations & tastings",
     whiskeykeeper_pro_annual: "Unlimited bottles, AI valuations & tastings",
+    cigarkeeper_pro_monthly: "Unlimited cigars, humidor management & AI recommendations",
+    cigarkeeper_pro_annual: "Unlimited cigars, humidor management & AI recommendations",
+    winekeeper_pro_monthly: "Unlimited wines, cellar tracking & AI valuations",
+    winekeeper_pro_annual: "Unlimited wines, cellar tracking & AI valuations",
     founders_bundle_monthly: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
     founders_bundle_annual: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
     three_module_bundle_monthly: "Any 3 modules of your choice",
