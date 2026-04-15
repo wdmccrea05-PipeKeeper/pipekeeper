@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { getUserSubscriptionState, getCurrentPlanLabel } from "@/lib/billing/subscriptionState";
 import { getAvailableUpgradeOptions } from "@/lib/billing/upgradePaths";
 import { SUBSCRIPTION_PLANS } from "@/lib/billing/subscriptionPlans";
+import { getStripeConfig } from "@/components/subscription/stripeConfig";
 import { initiateCheckoutWithIntent } from "@/components/subscription/subscriptionHandler";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading, t }) {
@@ -67,7 +68,6 @@ export default function SubscriptionFull() {
   const [subActive, setSubActive] = useState(false);
   const [subTier, setSubTier] = useState("");
   const [message, setMessage] = useState("");
-  const [selectedTier, setSelectedTier] = useState("pro");
   const [selectedInterval, setSelectedInterval] = useState("monthly");
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [refreshTimeout, setRefreshTimeout] = useState(null);
@@ -154,68 +154,82 @@ export default function SubscriptionFull() {
     return () => window.removeEventListener("focus", handleFocus);
   }, [isIOSApp, refetch, queryClient]);
 
-  const tierPrices = {
-    pro: { monthly: 2.99, annual: 29.99 },
-    pipekeeper: { monthly: 2.99, annual: 29.99 },
-    whiskeykeeper: { monthly: 2.99, annual: 29.99 },
+  // Build available plans from stripe config, filtered by billing interval
+  const stripeConfig = useMemo(() => getStripeConfig(), []);
+
+  const availablePlans = useMemo(() => {
+    const planOrder = [
+      'pipekeeper_pro',
+      'whiskeykeeper_pro',
+      'founders_bundle',
+      'three_module_bundle',
+      'four_module_bundle',
+    ];
+
+    const interval = selectedInterval === "annual" ? "annual" : "monthly";
+
+    const plans = [];
+    for (const prefix of planOrder) {
+      const key = `${prefix}_${interval}`;
+      const stripePlan = stripeConfig[key];
+      const appPlan = SUBSCRIPTION_PLANS[key];
+      if (stripePlan?.isAvailable && appPlan) {
+        plans.push({ ...appPlan, ...stripePlan, key });
+      }
+    }
+
+    // founders_bundle only has annual — add it if interval is annual and not already added
+    if (interval === "annual") {
+      const fb = stripeConfig["founders_bundle_annual"];
+      const already = plans.find(p => p.key === "founders_bundle_annual");
+      if (fb?.isAvailable && !already) {
+        plans.push({ ...SUBSCRIPTION_PLANS["founders_bundle_annual"], ...fb, key: "founders_bundle_annual" });
+      }
+    }
+
+    return plans;
+  }, [selectedInterval, stripeConfig]);
+
+  const planLabels = {
+    pipekeeper_pro_monthly: { name: "PipeKeeper Pro", badge: null },
+    pipekeeper_pro_annual: { name: "PipeKeeper Pro", badge: "Best Value" },
+    whiskeykeeper_pro_monthly: { name: "WhiskeyKeeper Pro", badge: null },
+    whiskeykeeper_pro_annual: { name: "WhiskeyKeeper Pro", badge: "Best Value" },
+    founders_bundle_monthly: { name: "Founders Bundle", badge: "Most Popular" },
+    founders_bundle_annual: { name: "Founders Bundle", badge: "Best Value" },
+    three_module_bundle_monthly: { name: "3-Module Bundle", badge: null },
+    three_module_bundle_annual: { name: "3-Module Bundle", badge: "Best Value" },
+    four_module_bundle_monthly: { name: "All 4 Modules", badge: null },
+    four_module_bundle_annual: { name: "All 4 Modules", badge: "Best Value" },
   };
 
-  const getDiscountPct = (tier, prices) => {
-    const p = prices?.[tier];
-    if (!p || !p.monthly || p.monthly === 0) return 0;
-    return Math.max(0, Math.round((1 - (p.annual / 12) / p.monthly) * 100));
+  const planDescriptions = {
+    pipekeeper_pro_monthly: "Unlimited pipes & blends, AI pairings & identification",
+    pipekeeper_pro_annual: "Unlimited pipes & blends, AI pairings & identification",
+    whiskeykeeper_pro_monthly: "Unlimited bottles, AI valuations & tastings",
+    whiskeykeeper_pro_annual: "Unlimited bottles, AI valuations & tastings",
+    founders_bundle_monthly: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
+    founders_bundle_annual: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
+    three_module_bundle_monthly: "Any 3 modules of your choice",
+    three_module_bundle_annual: "Any 3 modules of your choice",
+    four_module_bundle_monthly: "PipeKeeper + WhiskeyKeeper + CigarKeeper + WineKeeper",
+    four_module_bundle_annual: "PipeKeeper + WhiskeyKeeper + CigarKeeper + WineKeeper",
   };
 
-  const freeFeatures = [
-    "PipeKeeper: 5 pipes, 10 blends",
-    "WhiskeyKeeper: 10 bottles",
-    t("subscriptionFull.basicItemRecords"),
-    t("subscriptionFull.notesAndPhotos"),
-    t("subscriptionFull.manualOrganization"),
-  ];
-
-  const tierDescriptions = {
-    free: t("subscriptionFull.freeTierDesc"),
-    pro: t("subscriptionFull.proTierDesc"),
-  };
-
-  const tierTaglines = {
-    pro: t("subscriptionFull.proTagline"),
-  };
-
-  const tierFeatures = {
-    pro: [
-      "PipeKeeper Pro: Unlimited pipes & blends, AI pairings",
-      "WhiskeyKeeper Pro: Unlimited bottles, AI valuations",
-      "AI identification & matching",
-      t("subscriptionFull.collectionInsights"),
-      t("subscriptionFull.reportsAndExports"),
-      t("subscriptionFull.advancedOrgTools"),
-      t("subscriptionFull.priorityAccess"),
-      t("subscriptionFull.deepAnalytics"),
-      t("subscriptionFull.aiAssistedTools"),
-      t("subscriptionFull.powerUserFeatures"),
-    ],
-  };
-
-  const handleUpgrade = async (tier, interval) => {
+  const handleUpgrade = async (planKey) => {
     if (isIOSApp) {
-      const requestedTier = tier || selectedTier || "pro";
-      const ok = startApplePurchaseFlow(requestedTier);
+      const ok = startApplePurchaseFlow("pro");
       if (!ok) openNativePaywall();
       return;
     }
 
     setMessage("");
     try {
-      const billingInterval = (interval || selectedInterval) === "annual" ? "annual" : "monthly";
-      const targetPlanKey = billingInterval === "annual" ? "founders_bundle_annual" : "founders_bundle_monthly";
-
       await initiateCheckoutWithIntent(
         {
           actionType: "new_purchase",
           currentPlanKey: null,
-          targetPlanKey,
+          targetPlanKey: planKey,
         },
         `/SubscriptionSuccessFlow?next=${encodeURIComponent("/CollectionHub")}`,
         "/Subscription"
@@ -487,119 +501,121 @@ export default function SubscriptionFull() {
     );
   }
 
+  const [selectedPlanKey, setSelectedPlanKey] = useState(null);
+
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-8">
+    <div className="w-full max-w-3xl mx-auto p-4 space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">Unlock Pro Features</h1>
-        <p className="text-[#e8d5b7]/70">Choose which modules to unlock. Free tiers provide essential features with item limits.</p>
+        <p className="text-[#e8d5b7]/70">Choose the plan that's right for you.</p>
       </div>
 
       {/* Billing Interval Toggle */}
-      <div className="flex gap-4 items-center">
-         <span className="text-[#e8d5b7]">{t("subscriptionFull.billing")}:</span>
-         <Button
-           variant={selectedInterval === "monthly" ? "default" : "outline"}
-           onClick={() => setSelectedInterval("monthly")}
-         >
-           {t("subscriptionFull.monthly")}
-         </Button>
-         <Button
-           variant={selectedInterval === "annual" ? "default" : "outline"}
-           onClick={() => setSelectedInterval("annual")}
-         >
-           {t("subscriptionFull.annualSave")} ({t("subscriptionFull.save")} {getDiscountPct(selectedTier, tierPrices)}%)
-         </Button>
-       </div>
-
-      {/* Tier Selection */}
-      <div className="grid gap-6 md:grid-cols-2 mt-4">
-        {/* Free Tier */}
-        <Card className="border-white/10">
-          <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.free")}</CardTitle>
-            <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.free}</p>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {freeFeatures.map((f, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span className="text-sm text-[#e8d5b7]/80">{f}</span>
-              </div>
-            ))}
-            <Button variant="outline" className="w-full mt-4" disabled>
-              {t("subscriptionFull.continueWithFree")}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Pro Tier - Emphasized */}
-        <Card className="border-[#A35C5C] bg-[#1A2B3A]/60 relative overflow-visible">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#A35C5C] text-white px-3 py-1 rounded-full text-xs font-semibold">
-            {t("subscriptionFull.recommended")}
-          </div>
-          <CardHeader>
-            <CardTitle className="text-[#e8d5b7]">{t("subscriptionFull.pro")}</CardTitle>
-            <p className="text-xs text-[#A35C5C] font-semibold">{tierTaglines.pro}</p>
-            <p className="text-sm text-[#e8d5b7]/70 mt-2">{tierDescriptions.pro}</p>
-            <div className="text-2xl font-bold text-[#A35C5C] mt-3">${tierPrices.pro[selectedInterval]}</div>
-            <div className="text-sm text-[#e8d5b7]/60">
-              {t("subscriptionFull.per")} {selectedInterval === "monthly" ? t("subscriptionFull.month") : t("subscriptionFull.year")}
-            </div>
-            {selectedInterval === "annual" && (
-              <p className="text-xs text-emerald-500 mt-1">{t("subscription.annualSavings")}</p>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {tierFeatures.pro.map((f, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span className="text-sm text-[#e8d5b7]/80">{f}</span>
-              </div>
-            ))}
-            <Button
-              className="w-full mt-4"
-              onClick={() => handleUpgrade("pro", selectedInterval)}
-            >
-              {t("subscriptionFull.upgradeToPro")}
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="flex gap-3 items-center justify-center">
+        <Button
+          variant={selectedInterval === "monthly" ? "default" : "outline"}
+          onClick={() => { setSelectedInterval("monthly"); setSelectedPlanKey(null); }}
+        >
+          {t("subscriptionFull.monthly")}
+        </Button>
+        <Button
+          variant={selectedInterval === "annual" ? "default" : "outline"}
+          onClick={() => { setSelectedInterval("annual"); setSelectedPlanKey(null); }}
+        >
+          Annual <span className="ml-1 text-emerald-400 text-xs font-semibold">Save ~16%</span>
+        </Button>
       </div>
 
-      {/* Reassurance Copy */}
-      <div className="text-center space-y-2 text-sm text-[#e8d5b7]/60">
-         <p>{t("subscriptionFull.cancelAnytime")}</p>
-         {!isIOSApp && <p>{t("subscriptionFull.managedThroughStripe")}</p>}
-         <p>{t("subscriptionFull.dataUnaffected")}</p>
-       </div>
+      {/* Plan Cards */}
+      <div className="space-y-3">
+        {availablePlans.length === 0 && (
+          <p className="text-center text-[#e8d5b7]/50 text-sm">No plans available for this billing period.</p>
+        )}
+        {availablePlans.map((plan) => {
+          const meta = planLabels[plan.key] || { name: plan.displayName, badge: null };
+          const desc = planDescriptions[plan.key] || "";
+          const isSelected = selectedPlanKey === plan.key;
+          const isBundle = plan.type === "bundle" || plan.type === "founders" || plan.type === "three_bundle" || plan.type === "four_bundle";
 
-       {/* Manage Subscription */}
-       <div className="space-y-3">
-         <Button variant="outline" className="w-full" onClick={handleManage}>
-           {t("subscriptionFull.manageSubscription")}
-         </Button>
-         <Button variant="secondary" className="w-full" onClick={() => setShowBackupModal(true)}>
-           {t("subscriptionFull.manualBackupCheckout")}
-         </Button>
-       </div>
+          return (
+            <div
+              key={plan.key}
+              onClick={() => setSelectedPlanKey(plan.key)}
+              className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                isSelected
+                  ? "border-[#A35C5C] bg-[#A35C5C]/10"
+                  : "border-[#8b6239]/30 hover:border-[#A35C5C]/50 bg-[#2a1f18]/50"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 flex-1">
+                  {isBundle && <Crown className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#D4AF37" }} />}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-[#F5F1E7]">{meta.name}</h3>
+                      {meta.badge && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                          style={{ background: "rgba(163,92,92,0.2)", color: "#D4A574", border: "1px solid rgba(163,92,92,0.4)" }}>
+                          {meta.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-[#e8d5b7]/70 mt-0.5">{desc}</p>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-lg font-bold text-[#D4A574]">{plan.displayPrice}</div>
+                  <div className="text-xs text-[#e8d5b7]/50">{plan.displayPeriod}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
-       {message && (
-         <div className={`text-center text-sm ${message.includes("✅") ? "text-emerald-500" : "text-red-500"}`}>
-           {message}
-         </div>
-       )}
+      {/* CTA */}
+      <Button
+        className="w-full"
+        disabled={!selectedPlanKey}
+        onClick={() => selectedPlanKey && handleUpgrade(selectedPlanKey)}
+      >
+        {selectedPlanKey
+          ? `Subscribe — ${planLabels[selectedPlanKey]?.name || selectedPlanKey}`
+          : "Select a plan above"}
+      </Button>
 
-       {/* Backup Mode Modal */}
-       <SubscriptionBackupModeModal
-         isOpen={showBackupModal}
-         onClose={() => {
-           setShowBackupModal(false);
-           clearTimeout(refreshTimeout);
-           setRefreshTimeout(null);
-           setMessage("");
-         }}
-         user={user}
-       />
+      {/* Reassurance */}
+      <div className="text-center space-y-1 text-sm text-[#e8d5b7]/50">
+        <p>{t("subscriptionFull.cancelAnytime")}</p>
+        {!isIOSApp && <p>{t("subscriptionFull.managedThroughStripe")}</p>}
+      </div>
+
+      {/* Manage / Backup */}
+      <div className="space-y-3">
+        <Button variant="outline" className="w-full" onClick={handleManage}>
+          {t("subscriptionFull.manageSubscription")}
+        </Button>
+        <Button variant="secondary" className="w-full" onClick={() => setShowBackupModal(true)}>
+          {t("subscriptionFull.manualBackupCheckout")}
+        </Button>
+      </div>
+
+      {message && (
+        <div className={`text-center text-sm ${message.includes("✅") ? "text-emerald-500" : "text-red-500"}`}>
+          {message}
+        </div>
+      )}
+
+      <SubscriptionBackupModeModal
+        isOpen={showBackupModal}
+        onClose={() => {
+          setShowBackupModal(false);
+          clearTimeout(refreshTimeout);
+          setRefreshTimeout(null);
+          setMessage("");
+        }}
+        user={user}
+      />
     </div>
   );
 }
