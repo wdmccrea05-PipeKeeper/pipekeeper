@@ -182,6 +182,15 @@ function classifyIntent(message) {
   if (followUpPattern.test(t) || comparisonPattern.test(t)) return 'FOLLOW_UP';
 
   if (/\b(pairing|pair with|pair together|combine|combination|explain why .+ work together)\b/i.test(t)) return 'EXPLAIN_PAIRING';
+
+  // DIRECT RECOMMENDATION — explicit ask for a suggestion/recommendation (must come before SESSION_RECOMMENDATION)
+  const directRecPatterns = [
+    /\b(what (is|would be|should i|do you recommend|would you recommend)|which (blend|tobacco|pipe|bottle)|recommend (a|an|some|the best)|good (blend|tobacco|pipe|bottle)|suggest (a|an)|what.*(good|smooth|mild|full|strong|light).*(blend|tobacco|smoke|pipe|bottle)|good.*to smoke|good.*with (coffee|tea|whiskey|beer|food|meal)|what.*go(es)? with|pair with coffee|pair with tea|what.*for (morning|evening|night|afternoon|after dinner|mid-morning|bedtime))\b/i,
+    /\bwhat (blend|tobacco|pipe|bottle|whiskey|smoke) (should|would|do you|can you|could you)\b/i,
+    /\b(is there a|are there any|any (good|recommended|suggestions for)) (blend|tobacco|pipe|bottle|whiskey)\b/i,
+  ];
+  if (directRecPatterns.some((p) => p.test(t))) return 'DIRECT_RECOMMENDATION';
+
   if (/\b(tonight|enjoy|smoke|drink|open next|session|use|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(t)) return 'SESSION_RECOMMENDATION';
   if (/\b(restock|running low|running out|buy next|replenish)\b/i.test(t)) return 'RESTOCK_ADVICE';
   if (/\b(gap|missing|biggest gap|collection gap)\b/i.test(t)) return 'GAP_ANALYSIS';
@@ -841,6 +850,172 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     return pairingExplanationEngine(message, context, entityContext);
   }
 
+  // ── DIRECT_RECOMMENDATION ──────────────────────────────────────────────────
+  // Handles explicit "what is a good X" / "recommend a X" / "what goes with coffee" style questions.
+  // MUST produce a concrete answer even with sparse data. Never return meta-commentary as the main reply.
+  if (intent === 'DIRECT_RECOMMENDATION') {
+    const targetEntity = classifyTargetEntity(message);
+
+    // Extract request context from message
+    const wantsCoffee   = /\b(coffee|espresso|cappuccino)\b/i.test(message);
+    const wantsTea      = /\b(tea)\b/i.test(message);
+    const wantsSmooth   = /\b(smooth|mild|light|easy|gentle|soft)\b/i.test(message);
+    const wantsFull     = /\b(full|strong|bold|heavy|robust|rich)\b/i.test(message);
+    const wantsMorning  = /\b(morning|mid-morning|breakfast|early)\b/i.test(message);
+    const wantsEvening  = /\b(evening|night|after dinner|nightcap|late)\b/i.test(message);
+
+    // ── Blend/tobacco recommendation ──────────────────────────────────────
+    if (targetEntity === 'blend' || targetEntity === 'session' || targetEntity === 'unknown') {
+      if (blends.length > 0) {
+        // Score blends by request context
+        const scored = blends.map((b) => {
+          let score = 0;
+          const type = (b.blend_type || b.blend_family || '').toLowerCase();
+          const strength = (b.strength || '').toLowerCase();
+          const logs = smokingLogs.filter((l) => l?.blend_id === b.id || l?.blendId === b.id);
+          const lastDate = logs.map((l) => l?.date || l?.created_date).filter(Boolean).sort().reverse()[0];
+          const daysSinceLast = lastDate ? Math.floor((Date.now() - new Date(lastDate).getTime()) / 86400000) : null;
+
+          // Session history bonus
+          if (logs.length > 0) score += 10;
+          if (b.rating >= 4) score += 15;
+          if (b.is_favorite) score += 10;
+
+          // Coffee/morning profile: Aromatics, Virginias, VaPers, Burley-based score highest
+          if (wantsCoffee || wantsMorning) {
+            if (type.includes('aromatic')) score += 20;
+            if (type.includes('virginia/burley') || type.includes('burley')) score += 18;
+            if (type.includes('virginia') && !type.includes('english')) score += 15;
+            if (type.includes('virginia/perique')) score += 12;
+            if (type.includes('english') || type.includes('balkan') || type.includes('latakia')) score -= 5; // too heavy for morning coffee
+          }
+          if (wantsTea) {
+            if (type.includes('virginia')) score += 20;
+            if (type.includes('virginia/perique')) score += 15;
+            if (type.includes('aromatic')) score += 10;
+          }
+          if (wantsSmooth) {
+            if (strength === 'mild' || strength === 'mild-medium') score += 20;
+            if (type.includes('virginia') || type.includes('aromatic')) score += 10;
+            if (strength === 'full') score -= 10;
+          }
+          if (wantsFull) {
+            if (strength === 'full' || strength === 'medium-full') score += 20;
+            if (type.includes('english') || type.includes('balkan')) score += 15;
+          }
+          if (wantsEvening) {
+            if (type.includes('english') || type.includes('balkan') || type.includes('latakia')) score += 15;
+            if (strength === 'full' || strength === 'medium-full') score += 10;
+          }
+
+          return { blend: b, score, logs, daysSinceLast };
+        }).sort((a, b) => b.score - a.score);
+
+        const top = scored[0]?.blend;
+        const second = scored[1]?.blend;
+        const topType = top?.blend_type || top?.blend_family || 'tobacco';
+        const secondType = second?.blend_type || second?.blend_family || null;
+
+        let contextLine = '';
+        if (wantsCoffee && wantsSmooth) contextLine = 'For a smooth morning coffee smoke, ';
+        else if (wantsCoffee) contextLine = 'For pairing with coffee, ';
+        else if (wantsMorning) contextLine = 'For a morning session, ';
+        else if (wantsSmooth) contextLine = 'For something smooth, ';
+        else contextLine = 'Best current pick: ';
+
+        const strengthNote = top?.strength ? ` It sits at ${top.strength.toLowerCase()} strength` : '';
+        const typeNote = topType ? ` — a ${topType}` : '';
+        const secondLine = second ? ` Second option: ${second.name}${secondType ? ` (${secondType})` : ''}, if you want a different angle.` : '';
+
+        const reply = `${contextLine}${top.name}${typeNote}.${strengthNote}, which should work well without being heavy or demanding.${secondLine}`;
+        return {
+          reply,
+          updatedEntityContext: {
+            ...entityContext,
+            subject: { id: top.id, name: top.name, type: 'blend' },
+            topicIntent: 'recommend_session',
+            lastClaimType: 'direct_blend_recommendation',
+            lastEvidenceClass: scored[0]?.logs?.length > 2 ? 'MODERATE' : 'WEAK',
+            lastConclusion: top.name,
+          },
+        };
+      }
+
+      // No blends at all — give category guidance, not meta-commentary
+      const categoryAdvice = wantsCoffee || wantsSmooth || wantsMorning
+        ? "For a smooth coffee pairing, a Virginia or Burley-forward blend is the right direction. Something like a mild Virginia flake or a clean Burley mix won't compete with the cup. If you add any blends to your collection, look for one of those families first."
+        : "For a tobacco recommendation, a Virginia-based blend is a good all-around starting point — it's versatile, ages well, and suits most times of day. If you have a specific profile in mind, tell me and I can narrow it down.";
+      return { reply: categoryAdvice, updatedEntityContext: entityContext };
+    }
+
+    // ── Pipe recommendation ────────────────────────────────────────────────
+    if (targetEntity === 'pipe') {
+      if (pipes.length > 0) {
+        const scoredPipes = pipes.map((p) => {
+          let score = 0;
+          const logs = smokingLogs.filter((l) => l?.pipe_id === p.id || l?.pipeId === p.id);
+          const lastDate = logs.map((l) => l?.date || l?.created_date).filter(Boolean).sort().reverse()[0];
+          const daysSinceLast = lastDate ? Math.floor((Date.now() - new Date(lastDate).getTime()) / 86400000) : null;
+          if (logs.length > 0) score += 10;
+          if (daysSinceLast === null || daysSinceLast >= 14) score += 15; // rested
+          if (p.is_favorite) score += 10;
+          const shape = norm(p.shape || '');
+          if (wantsSmooth || wantsMorning || wantsCoffee) {
+            // Prefer smaller, shorter shapes for morning/coffee sessions
+            if (['billiard', 'apple', 'pot', 'canadian', 'lovat'].includes(shape)) score += 15;
+            if (['churchwarden', 'calabash', 'freehand'].includes(shape)) score -= 5;
+          }
+          return { pipe: p, score, logs, daysSinceLast };
+        }).sort((a, b) => b.score - a.score);
+
+        const top = scoredPipes[0]?.pipe;
+        const second = scoredPipes[1]?.pipe;
+        const shapeNote = top.shape ? ` (${top.shape})` : '';
+        const restNote = scoredPipes[0]?.daysSinceLast === null ? ' — never logged, good time to start' : scoredPipes[0]?.daysSinceLast >= 14 ? ` — rested ${scoredPipes[0].daysSinceLast} days` : '';
+        const secondLine = second ? ` Second option: ${second.name}${second.shape ? ` (${second.shape})` : ''} if you want a different feel.` : '';
+        const reply = `Best current pick: ${top.name}${shapeNote}${restNote}.${secondLine}`;
+        return {
+          reply,
+          updatedEntityContext: {
+            ...entityContext,
+            subject: { id: top.id, name: top.name, type: 'pipe' },
+            topicIntent: 'recommend_session',
+            lastClaimType: 'direct_pipe_recommendation',
+            lastEvidenceClass: 'MODERATE',
+            lastConclusion: top.name,
+          },
+        };
+      }
+      return { reply: "For a pipe recommendation — a billiard is the most versatile shape to start with, especially for morning sessions. Medium bowl size keeps things from getting heavy.", updatedEntityContext: entityContext };
+    }
+
+    // ── Bottle recommendation ──────────────────────────────────────────────
+    if (targetEntity === 'bottle') {
+      if (bottles.length > 0) {
+        const top = bestOpenBottle(bottles, tastingLogs);
+        const second = bottles.find((b) => b.id !== top?.id);
+        const typeNote = top?.type || top?.whiskey_type ? ` (${top.type || top.whiskey_type})` : '';
+        const secondLine = second ? ` Second option: ${second.name}${second.type || second.whiskey_type ? ` (${second.type || second.whiskey_type})` : ''}.` : '';
+        const reply = `Best current pick: ${top.name}${typeNote}. It${tastingLogs.some(l => l.bottle_id === top.id) ? ' has some session history' : ' hasn\'t been logged yet — first tasting would add useful data'}.${secondLine}`;
+        return {
+          reply,
+          updatedEntityContext: {
+            ...entityContext,
+            subject: { id: top.id, name: top.name, type: 'bottle' },
+            topicIntent: 'recommend_session',
+            lastClaimType: 'direct_bottle_recommendation',
+            lastEvidenceClass: 'MODERATE',
+            lastConclusion: top.name,
+          },
+        };
+      }
+      return { reply: "For whiskey to pair with a smoke, a lightly peated Scotch or a wheated Bourbon tends to complement tobacco well without dominating. Either makes a strong starting point for the shelf.", updatedEntityContext: entityContext };
+    }
+
+    // Generic fallback — should not reach here normally
+    return { reply: safeCuratorFallback(context, message), updatedEntityContext: entityContext };
+  }
+
   // ── SESSION_RECOMMENDATION ─────────────────────────────────────────────────
   if (intent === 'SESSION_RECOMMENDATION') {
     try {
@@ -851,7 +1026,21 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       const targetModule   = whiskeyFocused ? 'whiskey' : blendFocused ? 'blend' : pipeFocused ? 'pipe' : 'any';
       const candidates = buildSessionPlan(context, activeModules, targetModule);
       if (!candidates.length) {
-        return { reply: noDataResponses.sparse, updatedEntityContext: entityContext };
+        // Sparse data — still give a concrete answer using available collection items
+        if (blendFocused && blends.length > 0) {
+          const pick = bestTonightBlend(blends, smokingLogs);
+          if (pick) return { reply: `Best current pick: ${pick.name}${pick.blend_type ? ` (${pick.blend_type})` : ''}. It is the strongest candidate from the current cellar. Log a session after to start building the pattern.`, updatedEntityContext: { ...entityContext, subject: { id: pick.id, name: pick.name, type: 'blend' }, lastClaimType: 'sparse_blend_recommendation' } };
+        }
+        if (whiskeyFocused && bottles.length > 0) {
+          const pick = bestOpenBottle(bottles, tastingLogs);
+          if (pick) return { reply: `Best current pick: ${pick.name}${pick.type ? ` (${pick.type})` : ''}. Open it and log the pour to build up your tasting record.`, updatedEntityContext: { ...entityContext, subject: { id: pick.id, name: pick.name, type: 'bottle' }, lastClaimType: 'sparse_bottle_recommendation' } };
+        }
+        if (pipes.length > 0) {
+          const pick = bestTonightPipe(pipes, smokingLogs, blends);
+          if (pick) return { reply: `Best current pick: ${pick.name}${pick.shape ? ` (${pick.shape})` : ''}. It is the most rested pipe in rotation right now.`, updatedEntityContext: { ...entityContext, subject: { id: pick.id, name: pick.name, type: 'pipe' }, lastClaimType: 'sparse_pipe_recommendation' } };
+        }
+        // Truly nothing — still give useful guidance, not meta-commentary
+        return { reply: "Add a few items to your collection and I can make specific recommendations. For now: a mild Virginia or Burley blend is the best all-around starting point for daytime sessions, especially with coffee.", updatedEntityContext: entityContext };
       }
       const top = candidates[0];
       const second = candidates[1];

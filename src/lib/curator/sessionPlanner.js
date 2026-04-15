@@ -172,13 +172,15 @@ export function buildSessionPlan(context = {}, activeModules = {}, targetModule 
   if (whiskeyActive && (target === 'any' || target === 'whiskey')) {
     results.push(...planWhiskeySession(context));
   }
-  if (pipeActive && (target === 'any' || target === 'pipe' || target === 'tobacco')) {
+  if (pipeActive && (target === 'any' || target === 'pipe' || target === 'tobacco' || target === 'blend')) {
     results.push(...planPipeSession(context));
   }
 
   const filtered = target === 'any'
     ? results
-    : results.filter((r) => r.moduleKey === target);
+    : target === 'blend'
+      ? results.filter((r) => r.itemType === 'blend')
+      : results.filter((r) => r.moduleKey === target);
 
   const seen = new Set();
   return filtered.filter((r) => {
