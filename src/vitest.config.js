@@ -14,11 +14,7 @@ export default defineConfig({
     hookTimeout: 10000,
     // Run files in parallel threads but isolate each file
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        isolate: true,
-      },
-    },
+    isolate: true,
     // Only pick up actual test files, not markdown/docs
     include: [
       'src/**/*.{test,spec}.{js,jsx,ts,tsx}',

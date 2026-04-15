@@ -30,11 +30,7 @@ export default mergeConfig(
       hookTimeout: 10000,
       // Isolate each file in its own thread so one leaked handle cannot block others
       pool: 'threads',
-      poolOptions: {
-        threads: {
-          isolate: true,
-        },
-      },
+      isolate: true,
       // Pick up all test files under src/ and any root __tests__/ directory
       include: [
         'src/**/*.{test,spec}.{js,jsx,ts,tsx}',
