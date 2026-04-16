@@ -8,7 +8,10 @@ export default [
       '**/*.test.tsx',
       '**/*.spec.js',
       '**/*.spec.jsx',
-      '**/__tests__/**',
+      '**/__tests__/**/*.js',
+      '**/__tests__/**/*.jsx',
+      '**/__tests__/**/*.ts',
+      '**/__tests__/**/*.tsx',
     ],
     languageOptions: {
       globals: {
