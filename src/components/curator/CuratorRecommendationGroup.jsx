@@ -553,10 +553,14 @@ function ReviewRequiredActions({ rec, onAction }) {
 
   const allItems = rec.items || [];
   const hasPayloads = allItems.some(hasNonEmptyPayload);
+  const itemsWithPayloads = allItems.filter(hasNonEmptyPayload);
 
   const handleApprove = async () => {
     setApplying(true);
-    try { await onAction('approve_changes', rec); setShowReview(false); }
+    try {
+      await onAction('approve_changes', rec, { reviewedItems: itemsWithPayloads });
+      setShowReview(false);
+    }
     finally { setApplying(false); }
   };
 
