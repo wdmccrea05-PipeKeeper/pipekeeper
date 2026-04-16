@@ -17,7 +17,8 @@ import {
 } from '@/components/utils/moduleReleaseState';
 
 const STRIPE_PRODUCT_MAP = {
-  founders_bundle_annual: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], billingPeriod: 'annual' },
+  founders_bundle_monthly: { modules: ['pipekeeper', 'whiskeykeeper'], billingPeriod: 'monthly' },
+  founders_bundle_annual: { modules: ['pipekeeper', 'whiskeykeeper'], billingPeriod: 'annual' },
 
   pipekeeper_pro_monthly: { modules: ['pipekeeper'], billingPeriod: 'monthly' },
   pipekeeper_pro_annual: { modules: ['pipekeeper'], billingPeriod: 'annual' },

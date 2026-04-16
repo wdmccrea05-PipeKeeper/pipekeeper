@@ -142,7 +142,7 @@ export async function handlePostPurchase() {
  */
 export function getModulesFromPlanKey(planKey, metadata) {
   if (planKey.includes('founders')) {
-    return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+    return ['pipekeeper', 'whiskeykeeper'];
   }
 
   if (planKey.includes('four_module')) {

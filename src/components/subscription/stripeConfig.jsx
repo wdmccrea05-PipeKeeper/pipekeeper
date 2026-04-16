@@ -170,7 +170,7 @@ export function buildStripeConfig() {
     founders_bundle_monthly: {
       planKey: 'founders_bundle_monthly',
       type: 'founders',
-      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+      modules: ['pipekeeper', 'whiskeykeeper'],
       billingPeriod: 'monthly',
       priceId: import.meta.env.VITE_STRIPE_FOUNDERS_MONTHLY || null,
       displayPrice: '$4.99',
@@ -181,7 +181,7 @@ export function buildStripeConfig() {
     founders_bundle_annual: {
       planKey: 'founders_bundle_annual',
       type: 'founders',
-      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+      modules: ['pipekeeper', 'whiskeykeeper'],
       billingPeriod: 'annual',
       priceId: import.meta.env.VITE_STRIPE_FOUNDERS_ANNUAL || null,
       displayPrice: '$49.99',
