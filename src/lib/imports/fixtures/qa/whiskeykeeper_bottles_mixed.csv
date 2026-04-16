@@ -1,0 +1,5 @@
+brand,expression,type,bottle_size,acquisition_date,purchase_price,favorite,rating
+Lagavulin,16 Year,Single Malt,750ml,2025-03-01,109.99,yes,4.7
+,No Brand Entry,Single Malt,750ml,2025-03-01,89.99,yes,4.0
+Buffalo Trace,Bad Favorite,Bourbon,750ml,2025-02-10,35.99,maybe,4.2
+Ardbeg,Invalid Type,Peat Bomb,750ml,2025-02-10,99.99,yes,4.2

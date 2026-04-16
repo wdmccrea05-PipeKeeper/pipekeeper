@@ -1,0 +1,5 @@
+manufacturer,blend_name,blend_type,components,cut,package_type,quantity,purchase_price,purchase_date,rating
+Cornell & Diehl,Autumn Evening,Aromatic,"Virginia,Cavendish",Ribbon,tin,4,14.99,2025-02-10,4.5
+,Unnamed Blend,Aromatic,"Virginia,Cavendish",Ribbon,tin,4,14.99,2025-02-10,4.5
+Sutliff,Invalid Rating Blend,Aromatic,"Virginia",Ribbon,tin,4,14.99,2025-02-10,6
+Mac Baren,Invalid Cut Blend,Aromatic,"Virginia",Shredded,tin,4,14.99,2025-02-10,4

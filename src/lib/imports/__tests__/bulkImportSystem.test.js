@@ -119,4 +119,81 @@ describe('bulk import system', () => {
 
     expect(analysis.rows[0].payload.humidor_id).toBe('hum-1');
   });
+
+  test('supports legacy alias headers across import types', async () => {
+    const whiskeyDefinition = importDefinitions.whiskeykeeper_bottles;
+    const whiskeyParsed = parseCsvText(
+      'brand,name,bottle size,purchase date,purchase price,vendor,qty\nLagavulin,16 Year,750ml,2025-03-01,99.99,Retail store,1\n'
+    );
+    const whiskeyAnalysis = await analyzeImportRows({
+      definition: whiskeyDefinition,
+      headers: whiskeyParsed.headers,
+      rawHeaders: whiskeyParsed.rawHeaders,
+      rows: whiskeyParsed.rows,
+      duplicateHeaders: whiskeyParsed.duplicateHeaders,
+      parseErrors: whiskeyParsed.parseErrors,
+      userEmail: 'user@example.com',
+    });
+
+    expect(whiskeyAnalysis.rows[0].status).not.toBe('error');
+    expect(whiskeyAnalysis.rows[0].payload.name).toBe('16 Year');
+    expect(whiskeyAnalysis.rows[0].payload.purchase_date).toBe('2025-03-01');
+    expect(whiskeyAnalysis.rows[0].payload.purchase_location).toBe('Retail store');
+
+    const blendDefinition = importDefinitions.pipekeeper_blends;
+    const blendParsed = parseCsvText(
+      'blender,name,blend type,package type,qty,purchase date,purchase price\nCornell & Diehl,Autumn Evening,Aromatic,tin,4,2025-02-10,14.99\n'
+    );
+    const blendAnalysis = await analyzeImportRows({
+      definition: blendDefinition,
+      headers: blendParsed.headers,
+      rawHeaders: blendParsed.rawHeaders,
+      rows: blendParsed.rows,
+      duplicateHeaders: blendParsed.duplicateHeaders,
+      parseErrors: blendParsed.parseErrors,
+      userEmail: 'user@example.com',
+    });
+
+    expect(blendAnalysis.rows[0].status).not.toBe('error');
+    expect(blendAnalysis.rows[0].payload.name).toBe('Autumn Evening');
+
+    const cigarDefinition = importDefinitions.cigarkeeper_cigars;
+    const cigarParsed = parseCsvText(
+      'brand,line,unit type,quantity,cigars per package,purchase date,purchase price,body,strength,production status\nOliva,Serie V,box,1,20,2025-02-20,145,medium-full,medium-full,regular production\n'
+    );
+    const cigarAnalysis = await analyzeImportRows({
+      definition: cigarDefinition,
+      headers: cigarParsed.headers,
+      rawHeaders: cigarParsed.rawHeaders,
+      rows: cigarParsed.rows,
+      duplicateHeaders: cigarParsed.duplicateHeaders,
+      parseErrors: cigarParsed.parseErrors,
+      userEmail: 'user@example.com',
+    });
+
+    expect(cigarAnalysis.rows[0].status).not.toBe('error');
+    expect(cigarAnalysis.rows[0].payload.unit_type).toBe('box');
+    expect(cigarAnalysis.rows[0].payload.quantity).toBe(1);
+  });
+
+  test('allows cigar rows with brand + vitola when line is missing', async () => {
+    const definition = importDefinitions.cigarkeeper_cigars;
+    const parsed = parseCsvText(
+      'brand,vitola,package_type,cigars_per_package,current_quantity,purchase_date,purchase_price,body,strength,production_status\nOliva,Robusto,box,20,1,2025-02-20,145,medium_full,medium_full,regular_production\n'
+    );
+
+    const analysis = await analyzeImportRows({
+      definition,
+      headers: parsed.headers,
+      rawHeaders: parsed.rawHeaders,
+      rows: parsed.rows,
+      duplicateHeaders: parsed.duplicateHeaders,
+      parseErrors: parsed.parseErrors,
+      userEmail: 'user@example.com',
+    });
+
+    expect(analysis.rows[0].errors).toHaveLength(0);
+    expect(analysis.rows[0].status).not.toBe('error');
+    expect(analysis.rows[0].payload.vitola).toBe('Robusto');
+  });
 });

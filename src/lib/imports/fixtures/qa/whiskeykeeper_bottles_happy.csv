@@ -1,0 +1,3 @@
+brand,expression,distillery,country,region,type,style,age_statement,proof,abv,bottle_size,acquisition_date,purchase_price,purchase_source,bottle_count,open_status,rating,notes,tags,estimated_value,favorite,wishlist,shopping_list,restock
+Lagavulin,16 Year,Lagavulin,Scotland,Islay,Single Malt,Peated,16,86,43,750ml,2025-03-01,109.99,Retail store,1,open,4.7,Classic smoky dram,"islay,peat",135,yes,no,no,yes
+Wild Turkey,Rare Breed,Wild Turkey,USA,Kentucky,Bourbon,Barrel Proof,0,116.8,58.4,750ml,2025-01-20,69.99,Online,2,sealed,4.5,Great value barrel proof,"bourbon,kentucky",95,no,no,no,yes

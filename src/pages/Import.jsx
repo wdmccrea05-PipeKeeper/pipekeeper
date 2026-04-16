@@ -105,7 +105,7 @@ function ImportPreview({ analysis }) {
         </div>
 
         <div className="overflow-auto max-h-80 border border-stone-700 rounded-lg">
-          <table className="w-full text-sm text-left">
+          <table className="w-full min-w-[640px] text-sm text-left">
             <thead className="bg-stone-900 sticky top-0">
               <tr>
                 <th className="p-2 text-stone-200">Row</th>
@@ -131,7 +131,7 @@ function ImportPreview({ analysis }) {
                     </span>
                   </td>
                   <td className="p-2 text-xs text-stone-300">
-                    {[...row.errors, ...row.warnings].slice(0, 3).join(' • ') || '—'}
+                    {row.errors.length > 0 ? `Errors: ${row.errors.join(' • ')}` : row.warnings.length > 0 ? `Warnings: ${row.warnings.join(' • ')}` : '—'}
                   </td>
                 </tr>
               ))}
@@ -360,7 +360,7 @@ export default function ImportPage() {
                 </Select>
               </div>
               <div className="flex items-end">
-                <Button className="w-full" variant="outline" onClick={() => downloadTemplate(definition)}>
+                <Button className="w-full" variant="outline" disabled={!definition} onClick={() => definition && downloadTemplate(definition)}>
                   <Download className="w-4 h-4 mr-2" />
                   Download Template
                 </Button>
