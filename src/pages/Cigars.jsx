@@ -29,7 +29,7 @@ import HumidorManager from '@/components/cigars/HumidorManager';
 import CollectorGridView from '@/components/ui/CollectorGridView';
 import { useCurrency } from '@/lib/currency/useCurrency';
 
-const TABS = ['collection', 'humidors', 'wishlist', 'restock'];
+const TABS = ['collection', 'humidors', 'wishlist', 'shopping', 'restock'];
 
 const BODY_OPTIONS = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
 const STRENGTH_OPTIONS = ['mild', 'medium', 'full'];
@@ -99,6 +99,7 @@ function CigarsInner() {
     collection: t('cigars.tabCollection', 'Collection'),
     humidors: t('cigars.tabHumidors', 'Humidors'),
     wishlist: t('cigars.tabWishlist', 'Wishlist'),
+    shopping: t('cigars.tabShopping', 'Shopping List'),
     restock: t('cigars.tabRestock', 'Restock'),
   };
 
@@ -178,6 +179,8 @@ function CigarsInner() {
 
     if (activeTab === 'wishlist') {
       list = list.filter((c) => c.wishlist);
+    } else if (activeTab === 'shopping') {
+      list = list.filter((c) => c.shopping_list);
     } else if (activeTab === 'restock') {
       list = list.filter((c) => c.restock_flag);
     }
@@ -192,6 +195,7 @@ function CigarsInner() {
   }, [cigars, activeTab, search, sortBy, filterBody, filterStrength, filterOrigin, filterHumidor]);
 
   const wishlistCount = useMemo(() => cigars.filter((c) => c.wishlist).length, [cigars]);
+  const shoppingCount = useMemo(() => cigars.filter((c) => c.shopping_list).length, [cigars]);
   const restockCount = useMemo(() => cigars.filter((c) => c.restock_flag).length, [cigars]);
 
   const handleToggleFavorite = async (cigar) => {
@@ -207,6 +211,42 @@ function CigarsInner() {
     queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
     setEditDialogOpen(false);
     setEditingCigar(null);
+  };
+
+  const invalidateCigars = () => {
+    queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
+    queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
+  };
+
+  const handleQuickAction = async (cigar, action) => {
+    if (!cigar?.id) return;
+    try {
+      if (action === 'smoked_one') {
+        const current = Number(cigar.singles_equivalent ?? cigar.quantity ?? 0);
+        const nextSingles = Math.max(0, current - 1);
+        const patch = { singles_equivalent: nextSingles };
+        if (cigar.unit_type === 'single') patch.quantity = Math.max(0, Number(cigar.quantity || 0) - 1);
+        await base44.entities.Cigar.update(cigar.id, patch);
+      } else if (action === 'bought_more') {
+        const packageSize = Number(cigar.cigars_per_package || (cigar.unit_type === 'single' ? 1 : 1));
+        await base44.entities.Cigar.update(cigar.id, {
+          quantity: Number(cigar.quantity || 0) + 1,
+          singles_equivalent: Number(cigar.singles_equivalent ?? 0) + packageSize,
+        });
+      } else if (action === 'toggle_wishlist') {
+        await base44.entities.Cigar.update(cigar.id, { wishlist: !cigar.wishlist });
+      } else if (action === 'toggle_shopping') {
+        await base44.entities.Cigar.update(cigar.id, { shopping_list: !cigar.shopping_list });
+      } else if (action === 'toggle_restock') {
+        await base44.entities.Cigar.update(cigar.id, { restock_flag: !cigar.restock_flag });
+      } else if (action === 'toggle_not_for_me') {
+        const next = !cigar.not_for_me;
+        await base44.entities.Cigar.update(cigar.id, { not_for_me: next, ai_excluded: next });
+      }
+      invalidateCigars();
+    } catch {
+      toast.error('Failed to apply action');
+    }
   };
 
   const openAdd = () => {
@@ -248,6 +288,8 @@ function CigarsInner() {
             badge={
               tab === 'wishlist'
                 ? wishlistCount
+                : tab === 'shopping'
+                ? shoppingCount
                 : tab === 'restock'
                 ? restockCount
                 : tab === 'collection'
@@ -444,6 +486,8 @@ function CigarsInner() {
               <p className="text-2xl font-semibold" style={{ color: '#F5F1E7' }}>
                 {activeTab === 'wishlist'
                   ? t('cigars.noWishlist', 'No wishlist cigars')
+                  : activeTab === 'shopping'
+                  ? t('cigars.noShopping', 'No shopping list cigars')
                   : activeTab === 'restock'
                   ? t('cigars.noRestock', 'No restock alerts')
                   : t('cigars.noCigars', 'No cigars yet')}
@@ -453,6 +497,8 @@ function CigarsInner() {
                   ? t('cigars.addFirstCigar', 'Add your first cigar to start tracking your collection')
                   : activeTab === 'wishlist'
                   ? t('cigars.markAsWishlist', 'Mark cigars as wishlist to see them here')
+                  : activeTab === 'shopping'
+                  ? t('cigars.markAsShopping', 'Mark cigars as shopping list to see them here')
                   : t('cigars.markAsRestock', 'Mark cigars for restock to see them here')}
               </p>
               {activeTab === 'collection' && (
@@ -489,6 +535,7 @@ function CigarsInner() {
                   key={cigar.id}
                   cigar={cigar}
                   onToggleFavorite={handleToggleFavorite}
+                  onQuickAction={handleQuickAction}
                 />
               ))}
             </div>
@@ -499,6 +546,7 @@ function CigarsInner() {
                   key={cigar.id}
                   cigar={cigar}
                   onToggleFavorite={handleToggleFavorite}
+                  onQuickAction={handleQuickAction}
                 />
               ))}
             </div>

@@ -59,6 +59,10 @@ const OPTIONAL_STRING_FIELDS = [
   'personal_notes',
   'storage_notes',
   'humidor_id',
+  'humidor_tray',
+  'humidor_shelf',
+  'humidor_drawer',
+  'humidor_section',
 ];
 
 /**
@@ -76,8 +80,8 @@ export function deriveSinglesEquivalent({ unit_type, quantity, cigars_per_packag
   const cpp = cigars_per_package !== undefined && cigars_per_package !== '' ? Number(cigars_per_package) : null;
   const se = singles_equivalent !== undefined && singles_equivalent !== '' ? Number(singles_equivalent) : null;
 
-  if (unit_type === 'partial_box') {
-    // For partial boxes, singles_equivalent is explicitly set by the user to remaining sticks
+  if (unit_type === 'partial_box' || unit_type === 'partial_pack') {
+    // For partial packages, singles_equivalent is explicitly set by the user to remaining sticks
     return se != null && !Number.isNaN(se) ? se : null;
   }
 
@@ -103,6 +107,17 @@ export function deriveSinglesEquivalent({ unit_type, quantity, cigars_per_packag
  */
 export function normalizeCigarPayload(form, { isCreate = false } = {}) {
   const out = { ...form };
+
+  // Legacy compatibility mapping for older imports/forms.
+  if (!out.purchase_source && (out.purchase_vendor || out.vendor)) {
+    out.purchase_source = out.purchase_vendor || out.vendor;
+  }
+  if (!out.country_of_origin && out.origin_country) {
+    out.country_of_origin = out.origin_country;
+  }
+  if (!out.humidor_id && out.humidor) {
+    out.humidor_id = out.humidor;
+  }
 
   // Clean empty strings for optional string fields
   for (const field of OPTIONAL_STRING_FIELDS) {

@@ -32,6 +32,10 @@ describe('deriveSinglesEquivalent', () => {
     expect(deriveSinglesEquivalent({ unit_type: 'partial_box', quantity: 1, cigars_per_package: 20, singles_equivalent: 12 })).toBe(12);
   });
 
+  test('partial_pack ignores quantity * cpp, uses singles_equivalent', () => {
+    expect(deriveSinglesEquivalent({ unit_type: 'partial_pack', quantity: 1, cigars_per_package: 5, singles_equivalent: 3 })).toBe(3);
+  });
+
   test('returns null when insufficient data', () => {
     expect(deriveSinglesEquivalent({ unit_type: 'box' })).toBeNull();
   });
@@ -105,6 +109,11 @@ describe('normalizeCigarPayload', () => {
     const out = normalizeCigarPayload(form);
     expect(out.brand).toBe('Oliva');
     expect(out.barcode).toBe('123456');
+  });
+
+  test('maps legacy purchase_vendor to purchase_source', () => {
+    const out = normalizeCigarPayload({ name: 'Test', purchase_vendor: 'Legacy Shop' });
+    expect(out.purchase_source).toBe('Legacy Shop');
   });
 
   test('derives singles_equivalent for box', () => {

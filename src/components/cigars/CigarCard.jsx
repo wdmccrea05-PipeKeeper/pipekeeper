@@ -39,7 +39,7 @@ function MiniTag({ children, tone = 'default' }) {
   );
 }
 
-export default function CigarCard({ cigar, onToggleFavorite }) {
+export default function CigarCard({ cigar, onToggleFavorite, onQuickAction }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
@@ -54,6 +54,12 @@ export default function CigarCard({ cigar, onToggleFavorite }) {
     e.preventDefault();
     e.stopPropagation();
     if (typeof onToggleFavorite === 'function') onToggleFavorite(cigar);
+  };
+
+  const fireQuickAction = (e, action) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof onQuickAction === 'function') onQuickAction(cigar, action);
   };
 
   const originLine = [cigar?.wrapper, cigar?.country_of_origin].filter(Boolean).join(' · ');
@@ -159,6 +165,16 @@ export default function CigarCard({ cigar, onToggleFavorite }) {
                 fill={i < cigar.rating ? '#D4A574' : 'none'}
               />
             ))}
+          </div>
+        )}
+
+        {typeof onQuickAction === 'function' && (
+          <div className="flex flex-wrap gap-1 pt-1 border-t border-[rgba(180,140,75,0.12)]">
+            <button type="button" onClick={(e) => fireQuickAction(e, 'smoked_one')} className="px-2 py-1 rounded text-[10px]" style={{ background: 'rgba(140,107,63,0.18)', color: '#E0D8C8' }}>Smoked 1</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'bought_more')} className="px-2 py-1 rounded text-[10px]" style={{ background: 'rgba(76,175,130,0.18)', color: '#E0D8C8' }}>Bought +</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_wishlist')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.wishlist ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>Wishlist</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_shopping')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.shopping_list ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>Shopping</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_restock')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.restock_flag ? 'rgba(224,100,80,0.25)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>Restock</button>
           </div>
         )}
       </div>

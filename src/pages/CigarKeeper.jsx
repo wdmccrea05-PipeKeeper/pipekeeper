@@ -58,7 +58,7 @@ function RecentSessionCard({ session }) {
             <span className="text-base font-bold" style={{ color: '#D4A574' }}>
               {session.overall_enjoyment}
             </span>
-            <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>/10</span>
+            <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>/5</span>
           </div>
         )}
       </div>

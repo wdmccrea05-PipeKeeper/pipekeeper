@@ -666,6 +666,7 @@ export function generateCollectionInsights(cigars, sessions = [], humidors = [],
     const humidor = cigar.humidor_id ? humidorMap[cigar.humidor_id] : null;
     const readiness = getCigarReadinessWithContext(cigar, humidor, now);
     const qty = (cigar.singles_equivalent ?? cigar.quantity ?? 0);
+    const excludedFromSuggestions = cigar.not_for_me || cigar.ai_excluded === true;
     const smokeCount = sessionCounts[cigar.id] || 0;
     const lastSmoked = lastSmokedMap[cigar.id] || null;
     const daysSinceSmoked = lastSmoked
@@ -689,7 +690,7 @@ export function generateCollectionInsights(cigars, sessions = [], humidors = [],
     }
 
     // SMOKE_NOW — ready, in stock, no active warnings
-    if (readiness.state === 'ready_now' && qty > 0 && warningFlags.length === 0) {
+    if (!excludedFromSuggestions && readiness.state === 'ready_now' && qty > 0 && warningFlags.length === 0) {
       insights.push({
         cigarId: cigar.id,
         cigarName: name,
@@ -702,7 +703,7 @@ export function generateCollectionInsights(cigars, sessions = [], humidors = [],
     }
 
     // FAST_DEPLETING — heavy usage, critically low stock
-    if (smokeCount >= 5 && qty > 0 && qty <= 3) {
+    if (!excludedFromSuggestions && smokeCount >= 5 && qty > 0 && qty <= 3) {
       insights.push({
         cigarId: cigar.id,
         cigarName: name,
@@ -715,7 +716,7 @@ export function generateCollectionInsights(cigars, sessions = [], humidors = [],
     }
 
     // REST_LONGER — still aging, don't rush it
-    if (readiness.state === 'aging') {
+    if (!excludedFromSuggestions && readiness.state === 'aging') {
       insights.push({
         cigarId: cigar.id,
         cigarName: name,
@@ -728,7 +729,7 @@ export function generateCollectionInsights(cigars, sessions = [], humidors = [],
     }
 
     // NEGLECTED — has stock but untouched for 6+ months
-    if (qty > 0 && (daysSinceSmoked === null || daysSinceSmoked > 180)) {
+    if (!excludedFromSuggestions && qty > 0 && (daysSinceSmoked === null || daysSinceSmoked > 180)) {
       insights.push({
         cigarId: cigar.id,
         cigarName: name,
@@ -743,7 +744,7 @@ export function generateCollectionInsights(cigars, sessions = [], humidors = [],
     }
 
     // OVERSTOCKED — large quantity, zero usage
-    if (qty >= 20 && smokeCount === 0) {
+    if (!excludedFromSuggestions && qty >= 20 && smokeCount === 0) {
       insights.push({
         cigarId: cigar.id,
         cigarName: name,

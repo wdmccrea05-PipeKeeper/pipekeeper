@@ -183,6 +183,8 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
   const brandData = buildTopN(cigars, 'brand', 8);
   // Wrapper breakdown
   const wrapperData = buildTopN(cigars, 'wrapper', 7);
+  const lineData = buildTopN(cigars, 'line', 7);
+  const vitolaData = buildTopN(cigars, 'vitola', 7);
   // Country of origin
   const originData = buildTopN(cigars, 'country_of_origin', 7);
   // Body distribution
@@ -197,6 +199,32 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
   const recentSessionsSorted = [...recentSessions]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 10);
+
+  const tonightRecommendations = cigars
+    .filter((c) => (c.singles_equivalent ?? c.quantity ?? 0) > 0 && !c.not_for_me && c.ai_excluded !== true)
+    .map((c) => {
+      const linked = sessions.filter((s) => s.cigar_id === c.id && !s.is_out_of_collection);
+      const lastSmoked = linked
+        .filter((s) => !!s.date)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.date;
+      const daysSince = lastSmoked ? Math.floor((Date.now() - new Date(lastSmoked).getTime()) / (1000 * 60 * 60 * 24)) : 999;
+      const qty = Number(c.singles_equivalent ?? c.quantity ?? 0);
+      const rating = Number(c.rating || 0);
+      const readyDate = c.ready_to_smoke_date ? new Date(c.ready_to_smoke_date) : null;
+      const readyBonus = readyDate && !Number.isNaN(readyDate.getTime()) && readyDate <= today ? 1.5 : 0;
+      const preservePenalty = qty <= 1 ? -2 : qty <= 2 ? -1 : 0;
+      const score = rating + (c.is_favorite ? 2 : 0) + readyBonus + (daysSince > 30 ? 1 : 0) + preservePenalty;
+      const reasons = [
+        c.is_favorite ? 'Favorite' : null,
+        rating >= 4 ? `Rated ${rating}/5` : null,
+        readyBonus > 0 ? 'Ready now' : null,
+        daysSince > 30 ? 'Not smoked lately' : null,
+        qty <= 2 ? 'Low stock' : null,
+      ].filter(Boolean);
+      return { cigar: c, score, reasons };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -219,6 +247,12 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
         )}
         {wrapperData.length > 0 && (
           <MiniPie data={wrapperData} title="Wrapper Breakdown" />
+        )}
+        {lineData.length > 0 && (
+          <MiniChart data={lineData} title="Top Lines" horizontal />
+        )}
+        {vitolaData.length > 0 && (
+          <MiniChart data={vitolaData} title="Top Vitolas" />
         )}
         {originData.length > 0 && (
           <MiniPie data={originData} title="Country of Origin" />
@@ -302,6 +336,24 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Recommendations */}
+      {tonightRecommendations.length > 0 && (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+        >
+          <SectionHeading>What should I smoke tonight?</SectionHeading>
+          <div className="space-y-2">
+            {tonightRecommendations.map(({ cigar, reasons }) => (
+              <div key={cigar.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
+                <p className="text-sm font-semibold text-[#F5F1E7]">{[cigar.brand, cigar.name].filter(Boolean).join(' ')}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.58)' }}>{reasons.join(' · ') || 'Balanced pick from your collection'}</p>
+              </div>
+            ))}
           </div>
         </div>
       )}

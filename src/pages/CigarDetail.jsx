@@ -365,7 +365,8 @@ function InfoRow({ label, value }) {
   );
 }
 
-function SessionRow({ session }) {
+function SessionRow({ session, onEdit, onDelete }) {
+  const segmentNotes = [session.first_third_notes, session.second_third_notes, session.final_third_notes].filter(Boolean);
   return (
     <div
       className="rounded-xl p-4"
@@ -378,7 +379,7 @@ function SessionRow({ session }) {
         <div className="min-w-0">
           <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
             {session.overall_enjoyment > 0
-              ? `⭐ ${session.overall_enjoyment}/10`
+              ? `⭐ ${session.overall_enjoyment}/5`
               : 'Unrated session'}
           </p>
           <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>
@@ -391,6 +392,20 @@ function SessionRow({ session }) {
               {session.notes}
             </p>
           )}
+          {segmentNotes.length > 0 && (
+            <p className="text-xs mt-2 break-words" style={{ color: 'rgba(224,216,200,0.55)' }}>
+              {segmentNotes.join(' · ')}
+            </p>
+          )}
+          {(session.burn_quality || session.draw_quality || session.ash_quality || session.touch_ups != null || session.relights != null) && (
+            <p className="text-xs mt-1 break-words" style={{ color: 'rgba(224,216,200,0.55)' }}>
+              {[session.burn_quality ? `Burn: ${session.burn_quality}` : null, session.draw_quality ? `Draw: ${session.draw_quality}` : null, session.ash_quality ? `Ash: ${session.ash_quality}` : null, session.touch_ups != null ? `Touch-ups: ${session.touch_ups}` : null, session.relights != null ? `Relights: ${session.relights}` : null].filter(Boolean).join(' · ')}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col gap-2 shrink-0">
+          <Button variant="ghost" size="sm" onClick={() => onEdit(session)} className="h-7 px-2 text-xs">Edit</Button>
+          <Button variant="ghost" size="sm" onClick={() => onDelete(session)} className="h-7 px-2 text-xs" style={{ color: '#E05555' }}>Delete</Button>
         </div>
       </div>
     </div>
@@ -408,6 +423,7 @@ function CigarDetailInner() {
   const [activeTab, setActiveTab] = useState('overview');
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [sessionModalOpen, setSessionModalOpen] = useState(false);
+  const [editingSession, setEditingSession] = useState(null);
 
   const saveField = async (field, value) => {
     await base44.entities.Cigar.update(cigar.id, { [field]: value });
@@ -433,23 +449,23 @@ function CigarDetailInner() {
   });
 
   const { data: sessions = [] } = useQuery({
-    queryKey: ['cigar-sessions', id],
+    queryKey: ['cigar-sessions', id, user?.email],
     queryFn: async () => {
-      if (!id) return [];
-      const result = await base44.entities.CigarSession.filter({ cigar_id: id }, '-date').catch(() => []);
+      if (!id || !user?.email) return [];
+      const result = await base44.entities.CigarSession.filter({ cigar_id: id, created_by: user.email }, '-date').catch(() => []);
       return Array.isArray(result) ? result : [];
     },
-    enabled: !!id,
+    enabled: !!id && !!user?.email,
     staleTime: 10000,
   });
 
   const { data: humidor } = useQuery({
     queryKey: ['humidor-for-cigar', cigar?.humidor_id],
     queryFn: async () => {
-      const result = await base44.entities.HumidorLocation.filter({ id: cigar.humidor_id }).catch(() => []);
+      const result = await base44.entities.HumidorLocation.filter({ id: cigar.humidor_id, created_by: user?.email }).catch(() => []);
       return result?.[0] || null;
     },
-    enabled: !!cigar?.humidor_id,
+    enabled: !!cigar?.humidor_id && !!user?.email,
     staleTime: 10000,
   });
 
@@ -493,6 +509,30 @@ function CigarDetailInner() {
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
     } catch {
       toast.error('Failed to update favorite');
+    }
+  };
+
+  const handleQuickStateUpdate = async (patch) => {
+    try {
+      await base44.entities.Cigar.update(cigar.id, patch);
+      queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
+      toast.success('Updated');
+    } catch {
+      toast.error('Failed to update cigar');
+    }
+  };
+
+  const handleDeleteSession = async (session) => {
+    if (!session?.id) return;
+    if (!window.confirm('Delete this session?')) return;
+    try {
+      await base44.entities.CigarSession.delete(session.id);
+      queryClient.invalidateQueries({ queryKey: ['cigar-sessions', id, user?.email] });
+      toast.success('Session deleted');
+    } catch {
+      toast.error('Failed to delete session');
     }
   };
 
@@ -562,12 +602,25 @@ function CigarDetailInner() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setSessionModalOpen(true)}
+            onClick={() => {
+              setEditingSession(null);
+              setSessionModalOpen(true);
+            }}
             className="gap-1.5"
           >
             <Flame className="w-4 h-4" />
             Log Session
           </Button>
+          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ singles_equivalent: Math.max(0, Number(cigar.singles_equivalent ?? cigar.quantity ?? 0) - 1), ...(cigar.unit_type === 'single' ? { quantity: Math.max(0, Number(cigar.quantity || 0) - 1) } : {}) })}>
+            Smoked One
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ quantity: Number(cigar.quantity || 0) + 1, singles_equivalent: Number(cigar.singles_equivalent ?? 0) + Number(cigar.cigars_per_package || 1) })}>
+            Bought More
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ wishlist: !cigar.wishlist })}>{cigar.wishlist ? 'Unwishlist' : 'Wishlist'}</Button>
+          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ shopping_list: !cigar.shopping_list })}>{cigar.shopping_list ? 'Unshop' : 'Shopping'}</Button>
+          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ restock_flag: !cigar.restock_flag })}>{cigar.restock_flag ? 'Clear Restock' : 'Restock'}</Button>
+          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ not_for_me: !cigar.not_for_me, ai_excluded: !cigar.not_for_me })}>{cigar.not_for_me ? 'Not-for-me Off' : 'Not for Me'}</Button>
           <EnrichButton
             itemType="cigar"
             record={cigar}
@@ -712,6 +765,10 @@ function CigarDetailInner() {
             <InfoRow label="Strength" value={cigar.strength} />
             <InfoRow label="Flavor Notes" value={Array.isArray(cigar.flavor_notes) ? cigar.flavor_notes.join(', ') : cigar.flavor_notes} />
             <InfoRow label="Production" value={cigar.production_status} />
+            <InfoRow label="Wishlist" value={cigar.wishlist ? 'Yes' : 'No'} />
+            <InfoRow label="Shopping List" value={cigar.shopping_list ? 'Yes' : 'No'} />
+            <InfoRow label="Restock" value={cigar.restock_flag ? 'Yes' : 'No'} />
+            <InfoRow label="Not for Me" value={cigar.not_for_me ? 'Yes' : 'No'} />
             {cigar.personal_notes && (
               <div className="pt-3">
                 <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(224,216,200,0.5)' }}>Personal Notes</p>
@@ -732,14 +789,26 @@ function CigarDetailInner() {
             <EditableInfoRow
               label="Unit Type"
               value={cigar.unit_type}
-              options={['single', '5pack', 'pack', 'box', 'bundle', 'partial_box']}
+              options={['single', '5pack', 'pack', 'box', 'bundle', 'partial_pack', 'partial_box']}
               onSave={(v) => saveField('unit_type', v)}
             />
             <EditableInfoRow
-              label={cigar.unit_type === 'partial_box' ? 'Remaining Sticks' : 'Total Sticks'}
+              label={['partial_box', 'partial_pack'].includes(cigar.unit_type) ? 'Remaining Sticks' : 'Total Sticks'}
               value={cigar.singles_equivalent}
               type="number"
               onSave={(v) => saveField('singles_equivalent', v)}
+            />
+            <EditableInfoRow
+              label="Cigars per Package"
+              value={cigar.cigars_per_package}
+              type="number"
+              onSave={(v) => saveField('cigars_per_package', v)}
+            />
+            <EditableInfoRow
+              label="Package Open"
+              value={cigar.package_open ? 'Yes' : 'No'}
+              options={['Yes', 'No']}
+              onSave={(v) => saveField('package_open', v === 'Yes')}
             />
             {inventoryMetrics && (
               <>
@@ -819,6 +888,10 @@ function CigarDetailInner() {
                 ))}
               </select>
             </div>
+            <EditableInfoRow label="Humidor Tray" value={cigar.humidor_tray} onSave={(v) => saveField('humidor_tray', v)} />
+            <EditableInfoRow label="Humidor Shelf" value={cigar.humidor_shelf} onSave={(v) => saveField('humidor_shelf', v)} />
+            <EditableInfoRow label="Humidor Drawer" value={cigar.humidor_drawer} onSave={(v) => saveField('humidor_drawer', v)} />
+            <EditableInfoRow label="Humidor Section" value={cigar.humidor_section} onSave={(v) => saveField('humidor_section', v)} />
           </div>
         )}
 
@@ -835,7 +908,17 @@ function CigarDetailInner() {
                 </Button>
               </div>
             ) : (
-              sessions.map((s) => <SessionRow key={s.id} session={s} />)
+              sessions.map((s) => (
+                <SessionRow
+                  key={s.id}
+                  session={s}
+                  onEdit={(session) => {
+                    setEditingSession(session);
+                    setSessionModalOpen(true);
+                  }}
+                  onDelete={handleDeleteSession}
+                />
+              ))
             )}
           </div>
         )}
@@ -884,11 +967,18 @@ function CigarDetailInner() {
 
       <CigarSessionModal
         isOpen={sessionModalOpen}
-        onClose={() => setSessionModalOpen(false)}
+        onClose={() => {
+          setSessionModalOpen(false);
+          setEditingSession(null);
+        }}
         defaultCigar={cigar}
+        editSession={editingSession}
         onSessionSaved={() => {
           setSessionModalOpen(false);
-          queryClient.invalidateQueries({ queryKey: ['cigar-sessions', id] });
+          setEditingSession(null);
+          queryClient.invalidateQueries({ queryKey: ['cigar-sessions', id, user?.email] });
+          queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
+          queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
         }}
       />
     </div>
