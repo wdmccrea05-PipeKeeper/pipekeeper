@@ -696,10 +696,11 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {humidors.map((humidor) => {
-            const assignedCount = cigarsByHumidor[humidor.id] || 0;
+            {humidors.map((humidor) => {
+              const assignedCount = cigarsByHumidor[humidor.id] || 0;
+              const assignedToHumidor = cigarsByHumidor[humidor.id] || 0;
 
-            return (
+              return (
               <div key={humidor.id}>
                 {editTarget?.id === humidor.id ? (
                   <HumidorFormInline
@@ -728,7 +729,7 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
                       <AlertTriangle className="w-4 h-4 text-red-400" />
                         <p className="text-sm text-[#F5F1E7]">
                           Delete <strong>{humidor.name}</strong>? This cannot be undone.
-                          {(cigarsByHumidor[humidor.id] || 0) > 0 ? ` ${(cigarsByHumidor[humidor.id] || 0)} cigars will be moved to Unassigned and tray/shelf/drawer/section metadata will be cleared.` : ''}
+                          {assignedToHumidor > 0 ? ` ${assignedToHumidor} cigars will be moved to Unassigned and tray/shelf/drawer/section metadata will be cleared.` : ''}
                         </p>
                       </div>
                     <div className="flex gap-2">

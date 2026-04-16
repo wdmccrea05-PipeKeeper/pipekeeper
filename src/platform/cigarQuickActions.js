@@ -38,9 +38,7 @@ export function getCigarQuickActionPatch(cigar, action) {
 
   if (normalizedAction === 'bought_more') {
     const packageSize = getPackageSize(cigar);
-    const baseSingles = cigar.singles_equivalent != null
-      ? toNumber(cigar.singles_equivalent, 0)
-      : toNumber(cigar.quantity, 0) * packageSize;
+    const baseSingles = toNumber(cigar.singles_equivalent ?? (toNumber(cigar.quantity, 0) * packageSize), 0);
     return {
       quantity: toNumber(cigar.quantity, 0) + 1,
       singles_equivalent: baseSingles + packageSize,

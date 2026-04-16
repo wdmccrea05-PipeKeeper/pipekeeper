@@ -311,8 +311,10 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
     const rankedPool = pool.length >= 3 ? pool : tonightCandidates;
     const diversified = [];
     const usedBrands = new Set();
-    for (const candidate of rankedPool) {
-      const brandKey = candidate?.cigar?.brand ? `brand:${candidate.cigar.brand}` : `id:${candidate?.cigar?.id || 'unknown'}`;
+    for (const [index, candidate] of rankedPool.entries()) {
+      const brandKey = candidate?.cigar?.brand
+        ? `brand:${candidate.cigar.brand}`
+        : `fallback:${candidate?.cigar?.id || index}`;
       if (!usedBrands.has(brandKey) || diversified.length >= 2) {
         diversified.push(candidate);
         usedBrands.add(brandKey);
