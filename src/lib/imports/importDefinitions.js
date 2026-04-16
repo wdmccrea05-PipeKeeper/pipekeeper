@@ -379,7 +379,12 @@ const IMPORT_DEFINITIONS = [
       'purchase_date', 'purchase_price', 'purchase_source', 'condition', 'quantity', 'notes', 'tags',
       'estimated_value', 'favorite', 'wishlist', 'shopping_list', 'restock',
     ],
-    aliases: { vendor: 'purchase_source', qty: 'quantity', origin_country: 'country_of_origin' },
+    aliases: {
+      vendor: 'purchase_source',
+      qty: 'quantity',
+      origin_country: 'country_of_origin',
+      shape_number: 'shape_code',
+    },
     requiredColumns: ['maker', 'shape'],
     optionalColumns: ['finish', 'material', 'country_of_origin', 'purchase_date', 'purchase_price', 'notes'],
     example: {
@@ -421,7 +426,7 @@ const IMPORT_DEFINITIONS = [
       'purchase_date', 'purchase_price', 'purchase_source', 'cellar_date', 'age_start_date', 'rating',
       'favorite', 'wishlist', 'shopping_list', 'restock', 'notes', 'tags', 'estimated_value',
     ],
-    aliases: { vendor: 'purchase_source', qty: 'quantity' },
+    aliases: { vendor: 'purchase_source', qty: 'quantity', name: 'blend_name', blender: 'manufacturer' },
     requiredColumns: ['manufacturer', 'blend_name'],
     optionalColumns: ['blend_type', 'components', 'cut', 'package_type', 'quantity', 'notes'],
     example: {
@@ -468,7 +473,7 @@ const IMPORT_DEFINITIONS = [
       'bottle_size', 'acquisition_date', 'purchase_price', 'purchase_source', 'bottle_count', 'open_status',
       'rating', 'notes', 'tags', 'estimated_value', 'favorite', 'wishlist', 'shopping_list', 'restock',
     ],
-    aliases: { vendor: 'purchase_source', qty: 'bottle_count' },
+    aliases: { vendor: 'purchase_source', qty: 'bottle_count', name: 'expression', purchase_date: 'acquisition_date' },
     requiredColumns: ['brand', 'expression'],
     optionalColumns: ['distillery', 'country', 'region', 'type', 'abv', 'bottle_size', 'notes'],
     example: {
@@ -514,8 +519,16 @@ const IMPORT_DEFINITIONS = [
       'purchase_source', 'humidor_name', 'flavor_notes', 'rating', 'production_status', 'favorite', 'wishlist',
       'shopping_list', 'restock', 'not_for_me', 'notes', 'tags', 'estimated_value',
     ],
-    aliases: { vendor: 'purchase_source', qty: 'current_quantity', origin_country: 'country_of_origin' },
-    requiredColumns: ['brand', 'line'],
+    aliases: {
+      vendor: 'purchase_source',
+      qty: 'current_quantity',
+      quantity: 'current_quantity',
+      origin_country: 'country_of_origin',
+      unit_type: 'package_type',
+    },
+    // Cigar imports require a brand and at least one identifier field (line or vitola).
+    // `line` is intentionally not globally required because some collections track vitola-only entries.
+    requiredColumns: ['brand'],
     optionalColumns: ['vitola', 'wrapper', 'body', 'strength', 'package_type', 'purchase_date', 'notes'],
     example: {
       brand: 'Oliva',
