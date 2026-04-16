@@ -526,6 +526,8 @@ const IMPORT_DEFINITIONS = [
       origin_country: 'country_of_origin',
       unit_type: 'package_type',
     },
+    // Cigar imports require a brand and at least one identifier field (line or vitola).
+    // `line` is intentionally not globally required because some collections track vitola-only entries.
     requiredColumns: ['brand'],
     optionalColumns: ['vitola', 'wrapper', 'body', 'strength', 'package_type', 'purchase_date', 'notes'],
     example: {

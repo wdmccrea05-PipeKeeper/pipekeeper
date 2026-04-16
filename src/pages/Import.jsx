@@ -70,6 +70,12 @@ function buildImportTypeFromLocation(locationSearch) {
   return importDefinitionList[0]?.id;
 }
 
+function formatRowNotes(row) {
+  if (row.errors.length > 0) return `Errors: ${row.errors.join(' • ')}`;
+  if (row.warnings.length > 0) return `Warnings: ${row.warnings.join(' • ')}`;
+  return '—';
+}
+
 function ImportPreview({ analysis }) {
   if (!analysis) return null;
 
@@ -131,7 +137,7 @@ function ImportPreview({ analysis }) {
                     </span>
                   </td>
                   <td className="p-2 text-xs text-stone-300">
-                    {row.errors.length > 0 ? `Errors: ${row.errors.join(' • ')}` : row.warnings.length > 0 ? `Warnings: ${row.warnings.join(' • ')}` : '—'}
+                    {formatRowNotes(row)}
                   </td>
                 </tr>
               ))}

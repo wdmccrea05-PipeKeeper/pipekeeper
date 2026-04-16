@@ -193,7 +193,26 @@ describe('bulk import system', () => {
     });
 
     expect(analysis.rows[0].errors).toHaveLength(0);
-    expect(analysis.rows[0].status).not.toBe('error');
     expect(analysis.rows[0].payload.vitola).toBe('Robusto');
+  });
+
+  test('blocks cigar rows that omit both line and vitola', async () => {
+    const definition = importDefinitions.cigarkeeper_cigars;
+    const parsed = parseCsvText(
+      'brand,package_type,cigars_per_package,current_quantity,purchase_date,purchase_price,body,strength,production_status\nOliva,box,20,1,2025-02-20,145,medium_full,medium_full,regular_production\n'
+    );
+
+    const analysis = await analyzeImportRows({
+      definition,
+      headers: parsed.headers,
+      rawHeaders: parsed.rawHeaders,
+      rows: parsed.rows,
+      duplicateHeaders: parsed.duplicateHeaders,
+      parseErrors: parsed.parseErrors,
+      userEmail: 'user@example.com',
+    });
+
+    expect(analysis.rows[0].status).toBe('error');
+    expect(analysis.rows[0].errors).toContain('line or vitola is required');
   });
 });
