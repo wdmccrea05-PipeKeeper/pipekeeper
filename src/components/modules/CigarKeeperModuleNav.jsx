@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { TrendingUp, Plus, Cigarette, BookOpen } from 'lucide-react';
+import { TrendingUp, Plus, Cigarette, BookOpen, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AddCigarModal from '@/components/cigars/AddCigarModal';
 
@@ -63,6 +63,17 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
         >
           <BookOpen className="w-4 h-4" />
           <span className="hidden sm:inline">{t('cigars.logSession', 'Log Session')}</span>
+        </Button>
+        <Button
+          onClick={() => navigate('/Import?type=cigarkeeper_cigars')}
+          size="sm"
+          variant="ghost"
+          className="gap-1 text-xs"
+          title={t('import.bulkImport', 'Bulk Import')}
+          aria-label={t('import.bulkImport', 'Bulk Import')}
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('import.bulkImport', 'Bulk Import')}</span>
         </Button>
       </div>
 
