@@ -529,7 +529,10 @@ function CigarDetailInner() {
   };
 
   const handleQuickStateUpdate = async (patch, action = null) => {
-    if (!patch) return;
+    if (!patch) {
+      toast.error('Unable to apply action');
+      return;
+    }
     try {
       await base44.entities.Cigar.update(cigar.id, patch);
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });

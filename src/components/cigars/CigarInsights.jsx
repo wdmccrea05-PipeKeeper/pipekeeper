@@ -184,7 +184,7 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
   const totalQty = cigars.reduce((s, c) => s + Number(c?.singles_equivalent ?? c?.quantity ?? 0), 0);
   const totalValue = cigars.reduce((s, c) => {
     const qty = Number(c?.singles_equivalent ?? c?.quantity ?? 1);
-    return s + Number(c?.estimated_value ?? c?.purchase_price ?? 0) * Math.max(1, qty);
+    return s + Number(c?.estimated_value ?? c?.purchase_price ?? 0) * qty;
   }, 0);
   const favorites = cigars.filter((c) => c?.is_favorite).length;
   const [tonightRecommendations, setTonightRecommendations] = React.useState([]);
@@ -297,7 +297,7 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
         return { cigar: c, score, reasons, daysSince };
       })
       .sort((a, b) => b.score - a.score || b.daysSince - a.daysSince)
-   ), [cigars, sessions, today]);
+  ), [cigars, sessions, today]);
 
   React.useEffect(() => {
     if (!tonightCandidates.length) {
@@ -312,7 +312,7 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
     const diversified = [];
     const usedBrands = new Set();
     for (const candidate of rankedPool) {
-      const brandKey = candidate?.cigar?.brand || '__unknown__';
+      const brandKey = candidate?.cigar?.brand ? `brand:${candidate.cigar.brand}` : `id:${candidate?.cigar?.id || 'unknown'}`;
       if (!usedBrands.has(brandKey) || diversified.length >= 2) {
         diversified.push(candidate);
         usedBrands.add(brandKey);

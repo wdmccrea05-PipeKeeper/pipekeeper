@@ -38,8 +38,6 @@ import {
 
 const TABS = ['collection', 'humidors', 'wishlist', 'shopping', 'restock'];
 
-const BODY_OPTIONS = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
-
 function sortCigars(cigars, sortBy) {
   return [...cigars].sort((a, b) => {
     const aVal = a[sortBy] ?? '';
@@ -572,7 +570,7 @@ function CigarsInner() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
-                    {BODY_OPTIONS.map((o) => <SelectItem key={o} value={o}>{formatCigarStrengthLabel(o)}</SelectItem>)}
+                    {CIGAR_STRENGTH_VALUES.map((o) => <SelectItem key={o} value={o}>{formatCigarStrengthLabel(o)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

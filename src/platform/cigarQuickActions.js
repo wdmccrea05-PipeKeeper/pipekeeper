@@ -21,7 +21,7 @@ function toNumber(value, fallback = 0) {
 function getPackageSize(cigar) {
   const packageSize = toNumber(cigar?.cigars_per_package, 0);
   if (packageSize > 0) return packageSize;
-  return cigar?.unit_type === 'single' ? 1 : 1;
+  return 1;
 }
 
 export function getCigarQuickActionPatch(cigar, action) {
@@ -89,4 +89,3 @@ export function getCigarQuickActionSuccessMessage(action, cigar = {}, patch = {}
   if (normalizedAction === 'unassign_humidor') return 'Unassigned from humidor';
   return cigar?.name ? `Updated ${cigar.name}` : 'Updated';
 }
-

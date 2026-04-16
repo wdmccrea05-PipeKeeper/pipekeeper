@@ -505,8 +505,8 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, userEmail }) {
             Recent Reading Trend
           </p>
           <div className="space-y-1">
-            {recentReadings.map((entry) => (
-              <div key={entry.id || `${entry.date}-${entry.humidity_reading || 'na'}-${entry.temperature_reading || 'na'}`} className="flex items-center justify-between text-xs">
+            {recentReadings.map((entry, index) => (
+              <div key={entry.id || entry.date || index} className="flex items-center justify-between text-xs">
                 <span style={{ color: 'rgba(224,216,200,0.6)' }}>{formatDate(entry.date)}</span>
                 <span style={{ color: '#8BB4E8' }}>
                   {entry.humidity_reading != null ? `${entry.humidity_reading}% RH` : '—'}
