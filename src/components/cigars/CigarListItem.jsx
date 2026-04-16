@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Cigarette, Heart, MoreVertical, Package, Star } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
+import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
+import { getCigarQuickActionLabels } from '@/platform/cigarQuickActions';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,14 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-const BODY_LABELS = {
-  mild: 'Mild',
-  mild_medium: 'Mild-Med',
-  medium: 'Medium',
-  medium_full: 'Med-Full',
-  full: 'Full',
-};
 
 export default function CigarListItem({
   cigar,
@@ -53,6 +47,7 @@ export default function CigarListItem({
   const runAction = (action) => {
     if (typeof onQuickAction === 'function') onQuickAction(cigar, action);
   };
+  const actionLabels = getCigarQuickActionLabels(cigar);
 
   const handleSelectToggle = (e) => {
     e.preventDefault();
@@ -106,7 +101,7 @@ export default function CigarListItem({
           {cigar?.body && (
             <>
               <span className="text-[#E0D8C8]/30">·</span>
-              <span className="text-xs text-[#D4A574]/65">{BODY_LABELS[cigar.body] || cigar.body}</span>
+              <span className="text-xs text-[#D4A574]/65">{formatCigarStrengthLabel(cigar.body, { short: true })}</span>
             </>
           )}
         </div>
@@ -187,23 +182,13 @@ export default function CigarListItem({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={() => runAction('smoked_one')}>Smoked One</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => runAction('bought_more')}>Bought More</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => runAction('toggle_wishlist')}>
-              {cigar?.wishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => runAction('toggle_shopping')}>
-              {cigar?.shopping_list ? 'Remove from Shopping List' : 'Move to Shopping List'}
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => runAction('toggle_restock')}>
-              {cigar?.restock_flag ? 'Clear Restock' : 'Mark Restock'}
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => runAction('toggle_not_for_me')}>
-              {cigar?.not_for_me ? 'Remove Not For Me' : 'Not For Me'}
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => runAction('toggle_favorite')}>
-              {cigar?.is_favorite ? 'Unfavorite' : 'Favorite'}
-            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('smoked_one')}>{actionLabels.smoked_one}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('bought_more')}>{actionLabels.bought_more}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_wishlist')}>{actionLabels.toggle_wishlist}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_shopping')}>{actionLabels.toggle_shopping}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_restock')}>{actionLabels.toggle_restock}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_not_for_me')}>{actionLabels.toggle_not_for_me}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_favorite')}>{actionLabels.toggle_favorite}</DropdownMenuItem>
             {typeof onAssignHumidor === 'function' && (
               <DropdownMenuItem onSelect={() => onAssignHumidor(cigar)}>Assign Humidor…</DropdownMenuItem>
             )}
@@ -211,7 +196,7 @@ export default function CigarListItem({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Assign To</DropdownMenuLabel>
-                <DropdownMenuItem onSelect={() => runAction('unassign_humidor')}>Unassigned</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => runAction('unassign_humidor')}>{actionLabels.unassign_humidor}</DropdownMenuItem>
                 {humidors.slice(0, 6).map((humidor) => (
                   <DropdownMenuItem key={humidor.id} onSelect={() => runAction({ type: 'assign_humidor', humidorId: humidor.id })}>
                     {humidor.name}

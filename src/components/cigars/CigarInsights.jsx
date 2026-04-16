@@ -6,16 +6,9 @@ import {
 import { Cigarette, DollarSign, BookOpen, Heart, ShieldAlert, Flame, Clock3 } from 'lucide-react';
 import { summarizeCigarReadiness, generateCollectionInsights, INSIGHT_TYPES } from '@/platform/agingReadiness';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 
 const GOLD_PALETTE = ['#D4A574', '#B48C4B', '#8C6B3F', '#6B4F2E', '#F5D4A0', '#C4904A', '#A07840'];
-const BODY_LABELS = {
-  mild: 'Mild',
-  mild_medium: 'Mild-Med',
-  medium: 'Medium',
-  medium_full: 'Med-Full',
-  full: 'Full',
-};
-
 function SectionHeading({ children }) {
   return (
     <h3 style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
@@ -188,17 +181,17 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
   }, []);
   const { formatFromBase } = useCurrency();
 
-  const totalQty = cigars.reduce((s, c) => s + (c.singles_equivalent || c.quantity || 0), 0);
+  const totalQty = cigars.reduce((s, c) => s + Number(c?.singles_equivalent ?? c?.quantity ?? 0), 0);
   const totalValue = cigars.reduce((s, c) => {
-    const qty = c.singles_equivalent || c.quantity || 1;
-    return s + (c.estimated_value || c.purchase_price || 0) * qty;
+    const qty = Number(c?.singles_equivalent ?? c?.quantity ?? 1);
+    return s + Number(c?.estimated_value ?? c?.purchase_price ?? 0) * Math.max(1, qty);
   }, 0);
-  const favorites = cigars.filter((c) => c.is_favorite).length;
+  const favorites = cigars.filter((c) => c?.is_favorite).length;
   const [tonightRecommendations, setTonightRecommendations] = React.useState([]);
 
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const recentSessions = sessions.filter((s) => s.date && new Date(s.date) >= thirtyDaysAgo);
+  const recentSessions = sessions.filter((s) => s?.date && new Date(s.date) >= thirtyDaysAgo);
 
   // Brand chart
   const brandData = buildTopN(cigars, 'brand', 8);
@@ -211,7 +204,24 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
   // Country of origin
   const originData = buildTopN(cigars, 'country_of_origin', 7);
   // Body distribution
-  const bodyData = buildTopN(cigars, 'body', 6).map((d) => ({ ...d, name: BODY_LABELS[d.name] || d.name }));
+  const bodyData = buildTopN(cigars, 'body', 6).map((d) => ({ ...d, name: formatCigarStrengthLabel(d.name) }));
+
+  const acquisitionCounts = React.useMemo(() => ({
+    wishlist: cigars.filter((c) => c?.wishlist).length,
+    shopping: cigars.filter((c) => c?.shopping_list).length,
+    restock: cigars.filter((c) => c?.restock_flag).length,
+    notForMe: cigars.filter((c) => c?.not_for_me).length,
+  }), [cigars]);
+
+  const readySoonCount = React.useMemo(() => {
+    return cigars.filter((c) => {
+      if (!c?.ready_to_smoke_date) return false;
+      const date = new Date(c.ready_to_smoke_date);
+      if (Number.isNaN(date.getTime())) return false;
+      const days = Math.floor((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return days >= 0 && days <= 60;
+    }).length;
+  }, [cigars, today]);
 
   const sessionCountByCigarId = sessions.reduce((acc, s) => {
     if (!s?.cigar_id || s?.is_out_of_collection) return acc;
@@ -257,7 +267,7 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
 
   const tonightCandidates = React.useMemo(() => (
     cigars
-      .filter((c) => (c.singles_equivalent ?? c.quantity ?? 0) > 0 && !c.not_for_me && c.ai_excluded !== true)
+      .filter((c) => Number(c?.singles_equivalent ?? c?.quantity ?? 0) > 0 && !c?.not_for_me && c?.ai_excluded !== true)
       .map((c) => {
         const linked = sessions.filter((s) => s.cigar_id === c.id && !s.is_out_of_collection);
         const rated = linked.filter((s) => Number(s.overall_enjoyment || 0) > 0);
@@ -273,8 +283,9 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
         const readyDate = c.ready_to_smoke_date ? new Date(c.ready_to_smoke_date) : null;
         const readyBonus = readyDate && !Number.isNaN(readyDate.getTime()) && readyDate <= today ? 1.5 : 0;
         const restBonus = daysSince > 45 ? 1.25 : daysSince > 21 ? 0.75 : 0;
-        const preservePenalty = qty <= 1 ? -2 : qty <= 2 ? -1 : 0;
-        const score = rating + (c.is_favorite ? 2 : 0) + readyBonus + restBonus + avgSessionRating + preservePenalty;
+        const preservePenalty = qty <= 1 ? -1.6 : qty <= 2 ? -0.9 : 0;
+        const lowStockBoost = qty <= 2 && (rating >= 4.5 || avgSessionRating >= 4.5) ? 0.8 : 0;
+        const score = (rating * 1.25) + (c.is_favorite ? 2.2 : 0) + (avgSessionRating * 1.35) + readyBonus + restBonus + preservePenalty + lowStockBoost;
         const reasons = [
           c.is_favorite ? 'Favorite' : null,
           avgSessionRating >= 4 ? `Sessions ${avgSessionRating.toFixed(1)}/5` : null,
@@ -286,7 +297,7 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
         return { cigar: c, score, reasons, daysSince };
       })
       .sort((a, b) => b.score - a.score || b.daysSince - a.daysSince)
-  ), [cigars, sessions, today]);
+   ), [cigars, sessions, today]);
 
   React.useEffect(() => {
     if (!tonightCandidates.length) {
@@ -297,7 +308,18 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
     const raw = localStorage.getItem(key);
     const recentIds = raw ? raw.split(',').filter(Boolean) : [];
     const pool = tonightCandidates.filter((item) => !recentIds.includes(item.cigar.id));
-    const picks = (pool.length >= 3 ? pool : tonightCandidates).slice(0, 3);
+    const rankedPool = pool.length >= 3 ? pool : tonightCandidates;
+    const diversified = [];
+    const usedBrands = new Set();
+    for (const candidate of rankedPool) {
+      const brandKey = candidate?.cigar?.brand || '__unknown__';
+      if (!usedBrands.has(brandKey) || diversified.length >= 2) {
+        diversified.push(candidate);
+        usedBrands.add(brandKey);
+      }
+      if (diversified.length >= 3) break;
+    }
+    const picks = diversified.length > 0 ? diversified : rankedPool.slice(0, 3);
     setTonightRecommendations(picks);
     const updatedRecent = [...new Set([...picks.map((p) => p.cigar.id), ...recentIds])].slice(0, 10);
     localStorage.setItem(key, updatedRecent.join(','));
@@ -369,23 +391,52 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
               className="rounded-xl p-3 text-center"
               style={{ background: 'rgba(212,165,116,0.1)', border: '1px solid rgba(212,165,116,0.3)' }}
             >
-              <div className="text-2xl font-bold text-[#F5F1E7]">{readinessSummary.aging}</div>
+              <div className="text-2xl font-bold text-[#F5F1E7]">{readySoonCount}</div>
               <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(212,165,116,0.85)' }}>
-                Still Aging
+                Ready Soon
               </div>
             </div>
             <div
               className="rounded-xl p-3 text-center"
               style={{ background: 'rgba(224,100,80,0.1)', border: '1px solid rgba(224,100,80,0.25)' }}
             >
-              <div className="text-2xl font-bold text-[#F5F1E7]">{readinessSummary.pastPeak}</div>
+              <div className="text-2xl font-bold text-[#F5F1E7]">{readinessSummary.aging + readinessSummary.pastPeak}</div>
               <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(224,100,80,0.8)' }}>
-                Past Peak
+                Still Resting / Risk
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Acquisition-state clarity */}
+      <div
+        className="rounded-xl p-4"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+      >
+        <SectionHeading>Acquisition States</SectionHeading>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.3)' }}>
+            <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Wishlist</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.wishlist}</p>
+          </div>
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(76,120,180,0.14)', border: '1px solid rgba(76,120,180,0.3)' }}>
+            <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Shopping List</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.shopping}</p>
+          </div>
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(224,160,80,0.14)', border: '1px solid rgba(224,160,80,0.3)' }}>
+            <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Restock</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.restock}</p>
+          </div>
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(224,100,80,0.14)', border: '1px solid rgba(224,100,80,0.3)' }}>
+            <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Not for Me</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.notForMe}</p>
+          </div>
+        </div>
+        <p className="text-xs mt-2" style={{ color: 'rgba(224,216,200,0.55)' }}>
+          Wishlist = curious, Shopping List = planning to buy soon, Restock = replacing favorites, Not for Me = excluded from recommendations.
+        </p>
+      </div>
 
       {/* Collection insights */}
       {collectionInsights.length > 0 && (
@@ -399,6 +450,12 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
               const cfg = INSIGHT_CONFIG[insight.type];
               const Icon = cfg?.icon || Cigarette;
               const color = cfg?.color || '#D4A574';
+              const displayLabel =
+                insight.type === INSIGHT_TYPES.SMOKE_NOW ? 'Ready Now' :
+                insight.type === INSIGHT_TYPES.REST_LONGER ? 'Still Resting' :
+                insight.type === INSIGHT_TYPES.NEGLECTED ? 'Neglected Gem' :
+                insight.type === INSIGHT_TYPES.FAST_DEPLETING ? 'Low-Stock Favorite' :
+                insight.label;
               return (
                 <div
                   key={`${insight.cigarId}-${insight.type}`}
@@ -409,7 +466,7 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-semibold uppercase tracking-wide" style={{ color }}>
-                        {insight.label}
+                        {displayLabel}
                       </span>
                       <span className="text-xs" style={{ color: 'rgba(224,216,200,0.65)' }}>
                         {insight.cigarName}

@@ -28,12 +28,17 @@ import AddCigarModal from '@/components/cigars/AddCigarModal';
 import HumidorManager from '@/components/cigars/HumidorManager';
 import CollectorGridView from '@/components/ui/CollectorGridView';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { CIGAR_STRENGTH_VALUES, formatCigarStrengthLabel } from '@/platform/cigarCatalog';
+import {
+  NOT_FOR_ME_FLAGS_PATCH,
+  getCigarQuickActionPatch,
+  getCigarQuickActionSuccessMessage,
+  normalizeCigarQuickAction,
+} from '@/platform/cigarQuickActions';
 
 const TABS = ['collection', 'humidors', 'wishlist', 'shopping', 'restock'];
 
 const BODY_OPTIONS = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
-const STRENGTH_OPTIONS = ['mild', 'medium', 'full'];
-const NOT_FOR_ME_FLAGS_PATCH = { not_for_me: false, ai_excluded: false };
 
 function sortCigars(cigars, sortBy) {
   return [...cigars].sort((a, b) => {
@@ -206,14 +211,7 @@ function CigarsInner() {
   const restockCount = useMemo(() => cigars.filter((c) => c.restock_flag).length, [cigars]);
 
   const handleToggleFavorite = async (cigar) => {
-    try {
-      const patch = { is_favorite: !cigar.is_favorite };
-      await base44.entities.Cigar.update(cigar.id, patch);
-      updateCigarInCache(cigar.id, patch);
-      queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
-    } catch {
-      toast.error('Failed to update favorite');
-    }
+    await handleQuickAction(cigar, 'toggle_favorite');
   };
 
   const handleFormSubmit = () => {
@@ -270,69 +268,14 @@ function CigarsInner() {
 
   const handleQuickAction = async (cigar, action) => {
     if (!cigar?.id) return;
-    const normalizedAction = typeof action === 'string' ? action : action?.type;
+    const normalizedAction = normalizeCigarQuickAction(action);
     try {
-      if (normalizedAction === 'smoked_one') {
-        const current = Number(cigar.singles_equivalent ?? cigar.quantity ?? 0);
-        const nextSingles = Math.max(0, current - 1);
-        const patch = { singles_equivalent: nextSingles };
-        if (cigar.unit_type === 'single') patch.quantity = Math.max(0, Number(cigar.quantity || 0) - 1);
-        await base44.entities.Cigar.update(cigar.id, patch);
-        updateCigarInCache(cigar.id, patch);
-      } else if (normalizedAction === 'bought_more') {
-        const packageSize = Number(cigar.cigars_per_package || (cigar.unit_type === 'single' ? 1 : 1));
-        const patch = {
-          quantity: Number(cigar.quantity || 0) + 1,
-          singles_equivalent: Number(cigar.singles_equivalent ?? 0) + packageSize,
-        };
-        await base44.entities.Cigar.update(cigar.id, patch);
-        updateCigarInCache(cigar.id, patch);
-      } else if (normalizedAction === 'toggle_wishlist') {
-        const patch = { wishlist: !cigar.wishlist };
-        await base44.entities.Cigar.update(cigar.id, patch);
-        updateCigarInCache(cigar.id, patch);
-      } else if (normalizedAction === 'toggle_shopping') {
-        const patch = { shopping_list: !cigar.shopping_list };
-        await base44.entities.Cigar.update(cigar.id, patch);
-        updateCigarInCache(cigar.id, patch);
-      } else if (normalizedAction === 'toggle_restock') {
-        const patch = { restock_flag: !cigar.restock_flag };
-        await base44.entities.Cigar.update(cigar.id, patch);
-        updateCigarInCache(cigar.id, patch);
-      } else if (normalizedAction === 'toggle_not_for_me') {
-        const next = !cigar.not_for_me;
-        const patch = next ? { not_for_me: true, ai_excluded: true } : NOT_FOR_ME_FLAGS_PATCH;
-        await base44.entities.Cigar.update(cigar.id, patch);
-        updateCigarInCache(cigar.id, patch);
-      } else if (normalizedAction === 'toggle_favorite') {
-        const patch = { is_favorite: !cigar.is_favorite };
-        await base44.entities.Cigar.update(cigar.id, patch);
-        updateCigarInCache(cigar.id, patch);
-      } else if (normalizedAction === 'assign_humidor') {
-        const humidorId = action?.humidorId || null;
-        const patch = {
-          humidor_id: humidorId,
-          ...(humidorId ? {} : {
-            humidor_tray: null,
-            humidor_shelf: null,
-            humidor_drawer: null,
-            humidor_section: null,
-          }),
-        };
-        await base44.entities.Cigar.update(cigar.id, patch);
-        updateCigarInCache(cigar.id, patch);
-      } else if (normalizedAction === 'unassign_humidor') {
-        const patch = {
-          humidor_id: null,
-          humidor_tray: null,
-          humidor_shelf: null,
-          humidor_drawer: null,
-          humidor_section: null,
-        };
-        await base44.entities.Cigar.update(cigar.id, patch);
-        updateCigarInCache(cigar.id, patch);
-      }
+      const patch = getCigarQuickActionPatch(cigar, action);
+      if (!patch) return;
+      await base44.entities.Cigar.update(cigar.id, patch);
+      updateCigarInCache(cigar.id, patch);
       invalidateCigars();
+      toast.success(getCigarQuickActionSuccessMessage(normalizedAction, cigar, patch));
     } catch {
       toast.error('Failed to apply action');
     }
@@ -458,7 +401,7 @@ function CigarsInner() {
           {/* Search + sort + view controls */}
           <div className="flex flex-wrap gap-2 items-center">
             <div
-              className="flex items-center gap-2 rounded-xl px-3 py-2 flex-1 min-w-[160px]"
+              className="flex items-center gap-2 rounded-xl px-3 py-2 flex-1 min-w-[180px]"
               style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(140,107,63,0.2)',
@@ -476,7 +419,7 @@ function CigarsInner() {
 
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger
-                className="w-40 h-9"
+                className="w-full sm:w-44 h-9"
                 style={{
                   background: 'rgba(255,255,255,0.04)',
                   border: '1px solid rgba(140,107,63,0.2)',
@@ -496,7 +439,7 @@ function CigarsInner() {
             <button
               type="button"
               onClick={() => setShowFilters((v) => !v)}
-              className="px-3 py-2 rounded-xl text-sm flex items-center gap-1.5 transition-all"
+                className="px-3 py-2 rounded-xl text-sm flex items-center gap-1.5 transition-all min-w-[96px] justify-center"
               style={{
                 background: showFilters ? 'rgba(140,107,63,0.3)' : 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(140,107,63,0.2)',
@@ -508,7 +451,7 @@ function CigarsInner() {
             </button>
 
             <div
-              className="flex rounded-xl overflow-hidden"
+              className="flex rounded-xl overflow-hidden min-w-[86px]"
               style={{ border: '1px solid rgba(140,107,63,0.2)' }}
             >
               {['grid', 'list'].map((mode) => (
@@ -572,10 +515,10 @@ function CigarsInner() {
 
           {selectMode && (
             <div
-              className="rounded-xl p-3 flex flex-wrap items-center gap-2"
+              className="rounded-xl p-3 grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,107,63,0.2)' }}
             >
-              <span className="text-sm text-[#E0D8C8]/80 min-w-24">
+              <span className="text-sm text-[#E0D8C8]/80 min-w-24 col-span-2 sm:col-span-1">
                 {selectedCount} selected
               </span>
               <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('wishlist')}>Wishlist</Button>
@@ -586,7 +529,7 @@ function CigarsInner() {
                 value={bulkAssignHumidorId || 'unassigned'}
                 onValueChange={setBulkAssignHumidorId}
               >
-                <SelectTrigger className="w-44 h-8 text-xs">
+                <SelectTrigger className="w-full sm:w-44 h-8 text-xs col-span-2 sm:col-span-1">
                   <SelectValue placeholder="Assign Humidor" />
                 </SelectTrigger>
                 <SelectContent>
@@ -613,7 +556,7 @@ function CigarsInner() {
           {/* Filters panel */}
           {showFilters && (
             <div
-              className="rounded-xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3"
+              className="rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
               style={{
                 background: 'rgba(40,28,18,0.7)',
                 border: '1px solid rgba(140,107,63,0.2)',
@@ -629,7 +572,7 @@ function CigarsInner() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
-                    {BODY_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o.replace('_', '-')}</SelectItem>)}
+                    {BODY_OPTIONS.map((o) => <SelectItem key={o} value={o}>{formatCigarStrengthLabel(o)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -643,7 +586,7 @@ function CigarsInner() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
-                    {STRENGTH_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    {CIGAR_STRENGTH_VALUES.map((o) => <SelectItem key={o} value={o}>{formatCigarStrengthLabel(o)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -675,6 +618,15 @@ function CigarsInner() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+          )}
+
+          {(search || filterBody || filterStrength || filterOrigin || filterHumidor) && (
+            <div className="flex flex-wrap gap-1.5">
+              {filterBody && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Body: {formatCigarStrengthLabel(filterBody)}</span>}
+              {filterStrength && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Strength: {formatCigarStrengthLabel(filterStrength)}</span>}
+              {filterOrigin && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Origin: {filterOrigin}</span>}
+              {filterHumidor && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Humidor: {(humidors.find((h) => h.id === filterHumidor)?.name) || 'Assigned'}</span>}
             </div>
           )}
 
@@ -743,7 +695,7 @@ function CigarsInner() {
               gap="gap-8"
             />
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               {filteredCigars.map((cigar) => (
                 <CigarCard
                   key={cigar.id}
