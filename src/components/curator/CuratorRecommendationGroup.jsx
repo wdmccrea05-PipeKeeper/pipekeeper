@@ -221,8 +221,10 @@ function RecordOptimizationActions({ rec, onAction }) {
     const path = singleItemPath(item);
     const itemId = item.recordId || item.id;
 
-    // Auto-lookup age on mount when this item is missing age and has no proposed fix
-    const missingAge = !hasPayload && item.missingFields?.includes('age');
+    // Trigger age lookup for any item that is missing age — even if the engine proposed age=0 (NAS guess).
+    // We always want a real web lookup to confirm or override the NAS assumption.
+    const missingAge = item.missingFields?.includes('age') || 
+      (hasPayload && item.proposedChange?.payload?.age === 0);
     const searchResult = searchResults[itemId] || null;
 
     React.useEffect(() => {
@@ -231,13 +233,29 @@ function RecordOptimizationActions({ rec, onAction }) {
       setSearching(true);
       const name = item.itemName || item.recordName || '';
       base44.integrations.Core.InvokeLLM({
-        prompt: `What is the age statement (in years) for the whiskey "${name}"? If it is a NAS (no age statement) whiskey, return 0. Return ONLY a JSON object with a single field "age" as a number.`,
+        prompt: `Search online for the official age statement for the whiskey "${name}". Check the manufacturer's website, major retailers (Total Wine, Master of Malt, Whisky Exchange), and whisky databases (Whiskybase, LCBO).
+
+Return a JSON object with:
+- "age": number of years (integer), or 0 if it is definitively a No Age Statement (NAS) product
+- "is_nas": true if NAS, false if it has a stated age
+- "confidence": "high" | "medium" | "low"
+- "source": brief description of where you found this (e.g. "Talisker official site: 10 year old")
+
+Important: Many whiskies DO have age statements — e.g. Talisker Skye is NAS but Talisker 10 is 10 years. Be accurate.`,
         add_context_from_internet: true,
-        response_json_schema: { type: 'object', properties: { age: { type: 'number' } } },
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            age: { type: 'number' },
+            is_nas: { type: 'boolean' },
+            confidence: { type: 'string' },
+            source: { type: 'string' },
+          },
+        },
       }).then((res) => {
         if (cancelled) return;
         if (res?.age != null) {
-          setSearchResults(prev => ({ ...prev, [itemId]: { age: res.age } }));
+          setSearchResults(prev => ({ ...prev, [itemId]: { age: res.age, is_nas: res.is_nas, confidence: res.confidence, source: res.source } }));
         } else {
           setSearchError(true);
         }
@@ -256,8 +274,10 @@ function RecordOptimizationActions({ rec, onAction }) {
       : null;
 
     const ageLabel = searchResult != null
-      ? (searchResult.age === 0 ? 'NAS' : `${searchResult.age} years`)
+      ? (searchResult.is_nas || searchResult.age === 0 ? 'No Age Statement (NAS)' : `${searchResult.age} yr`)
       : null;
+    const ageSource = searchResult?.source || null;
+    const ageConfidence = searchResult?.confidence || null;
 
     const handleApplyItem = async () => {
       setItemApplying(true);
@@ -290,13 +310,25 @@ function RecordOptimizationActions({ rec, onAction }) {
               <div className="text-xs" style={{ color: '#71717A' }}>
                 Currently: <span style={{ color: '#A1A1AA' }}>{item.currentClassification || '—'}</span>
               </div>
-            ) : item.missingFields?.length > 0 ? (
-              <div className="text-xs flex items-center gap-2 flex-wrap" style={{ color: '#71717A' }}>
-                <span>Missing: {item.missingFields.join(', ')}</span>
+            ) : item.missingFields?.length > 0 || missingAge ? (
+              <div className="text-xs flex flex-col gap-1" style={{ color: '#71717A' }}>
+                <span>Missing: age</span>
                 {ageLabel && !done && (
-                  <span className="px-2 py-0.5 rounded text-xs font-semibold" style={{ background: 'rgba(198,161,91,0.15)', color: '#C6A15B', border: '1px solid rgba(198,161,91,0.3)' }}>
-                    → {searchResult?.age === 0 ? 'No Age Statement (NAS = age 0)' : `${searchResult?.age} years`}
-                  </span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="px-2 py-0.5 rounded text-xs font-semibold inline-flex items-center gap-1" style={{ background: 'rgba(198,161,91,0.15)', color: '#C6A15B', border: '1px solid rgba(198,161,91,0.3)', width: 'fit-content' }}>
+                      → {ageLabel}
+                      {ageConfidence && (
+                        <span style={{ color: ageConfidence === 'high' ? 'rgba(80,180,130,0.9)' : ageConfidence === 'medium' ? '#C6A15B' : '#A1A1AA', fontSize: '10px', fontWeight: 400 }}>
+                          ({ageConfidence})
+                        </span>
+                      )}
+                    </span>
+                    {ageSource && (
+                      <span className="text-xs italic" style={{ color: '#52524e', fontSize: '11px' }}>
+                        {ageSource}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             ) : null}
@@ -320,7 +352,7 @@ function RecordOptimizationActions({ rec, onAction }) {
                 style={{ background: '#4a7c5c', color: '#e0f5ea', border: 'none' }}
               >
                 {itemApplying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                {itemApplying ? 'Saving…' : searchResult.age === 0 ? 'Confirm: No Age Statement' : `Confirm: ${searchResult.age} yrs`}
+                {itemApplying ? 'Saving…' : (searchResult.is_nas || searchResult.age === 0) ? 'Confirm: NAS' : `Confirm: ${searchResult.age} yr`}
               </button>
             ) : hasPayload && confidence >= 0.85 ? (
               <button
