@@ -8,6 +8,8 @@ function toNumber(value, fallback = 0) {
 }
 
 export function getCigarQuantity(cigar) {
+  // Prefer normalized singles_equivalent when available to preserve package-to-stick math;
+  // fall back to quantity for legacy records that don't have singles_equivalent yet.
   return Math.max(0, toNumber(cigar?.singles_equivalent ?? cigar?.quantity ?? 0));
 }
 
@@ -22,7 +24,7 @@ export function getCigarRemainingValue(cigar) {
 }
 
 export function getCigarDisplayName(cigar) {
-  return [cigar?.brand, cigar?.name].filter(Boolean).join(' ') || cigar?.name || 'Unknown cigar';
+  return [cigar?.brand, cigar?.name].filter(Boolean).join(' ') || 'Unknown cigar';
 }
 
 export function hasMeaningfulValuation(cigar) {
@@ -334,8 +336,12 @@ export function getCollectorAnalytics(cigars = [], sessions = [], humidors = [],
 function monthKey(date) {
   const d = toDate(date);
   if (!d) return null;
-  const y = d.getUTCFullYear();
-  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  return formatMonthKey(d);
+}
+
+function formatMonthKey(date) {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
   return `${y}-${m}`;
 }
 
@@ -345,10 +351,21 @@ function makeRollingMonths(today = new Date(), count = 12) {
   ref.setUTCDate(1);
   for (let i = count - 1; i >= 0; i -= 1) {
     const d = new Date(Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth() - i, 1));
-    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+    const key = formatMonthKey(d);
     out.push({ key, label: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) });
   }
   return out;
+}
+
+function getSnapshotValue(snapshot) {
+  return toNumber(
+    snapshot?.computed_current_value
+      ?? snapshot?.computed_value
+      ?? snapshot?.market_value
+      ?? snapshot?.collector_value
+      ?? snapshot?.retail_value,
+    0
+  );
 }
 
 export function getTrendFoundation(cigars = [], sessions = [], snapshots = [], today = new Date()) {
@@ -374,7 +391,7 @@ export function getTrendFoundation(cigars = [], sessions = [], snapshots = [], t
   snapshots.forEach((snapshot) => {
     const key = monthKey(snapshot?.snapshot_date);
     if (!key || !monthKeys.has(key)) return;
-    const value = toNumber(snapshot?.computed_current_value ?? snapshot?.computed_value ?? snapshot?.market_value ?? snapshot?.collector_value ?? snapshot?.retail_value, 0);
+    const value = getSnapshotValue(snapshot);
     valueSnapshotsByMonth[key] = (valueSnapshotsByMonth[key] || 0) + Math.max(0, value);
   });
 

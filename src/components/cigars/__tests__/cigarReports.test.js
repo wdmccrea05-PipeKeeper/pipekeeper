@@ -61,7 +61,7 @@ describe('cigarReports', () => {
     ];
 
     const analytics = getCollectorAnalytics(cigars, sessions, [], new Date());
-    expect(analytics.smoking.mostSmoked[0].name).toContain('Alpha');
+    expect(analytics.smoking.mostSmoked[0].cigar.brand).toBe('Alpha');
 
     const trend = getTrendFoundation(cigars, sessions, [{ snapshot_date: daysAgo(5), computed_current_value: 100 }], new Date());
     expect(trend.timeline).toHaveLength(12);

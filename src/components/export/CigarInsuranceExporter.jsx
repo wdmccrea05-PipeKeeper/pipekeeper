@@ -20,6 +20,10 @@ function formatDate(value) {
   return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString() : '—';
 }
 
+function exportDateStamp() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function loadImageAsBase64(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -35,7 +39,7 @@ function loadImageAsBase64(url) {
       }
       ctx.drawImage(img, 0, 0);
       try {
-        resolve(canvas.toDataURL('image/jpeg', 0.82));
+        resolve(canvas.toDataURL('image/jpeg', 0.9));
       } catch (error) {
         reject(error);
       }
@@ -97,7 +101,7 @@ export default function CigarInsuranceExporter({ user, cigars = [], humidors = [
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `cigar-collection-insurance-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `cigarkeeper-insurance-inventory-${exportDateStamp()}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -196,7 +200,7 @@ export default function CigarInsuranceExporter({ user, cigars = [], humidors = [
         y += 4;
       }
 
-      doc.save(`cigarkeeper-insurance-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+      doc.save(`cigarkeeper-insurance-report-${exportDateStamp()}.pdf`);
     } catch (error) {
       toast.error(`Insurance export failed: ${error?.message || 'Unknown error'}`);
     } finally {

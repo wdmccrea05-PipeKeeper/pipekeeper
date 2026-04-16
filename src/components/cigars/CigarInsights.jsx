@@ -181,6 +181,16 @@ export default function CigarInsights({ user, cigars = [], sessions = [], humido
     { icon: Activity, label: 'Overdue to Smoke', value: portfolio.overdueToSmoke },
   ];
 
+  const formatTrendTooltip = React.useCallback((value, key) => {
+    if (key === 'collectionValue') return [formatFromBase(value), 'Collection Value'];
+    const labels = {
+      acquired: 'Acquired',
+      smoked: 'Smoked',
+      cellarDelta: 'Cellar Delta',
+    };
+    return [value, labels[key] || 'Metric'];
+  }, [formatFromBase]);
+
   return (
     <div className="space-y-6">
       <SectionCard
@@ -251,7 +261,15 @@ export default function CigarInsights({ user, cigars = [], sessions = [], humido
           columns={[
             { key: 'name', label: 'Highest Value Cigars', render: (row) => getCigarDisplayName(row.cigar) },
             { key: 'qty', label: 'Qty', render: (row) => getCigarQuantity(row.cigar) },
-            { key: 'unit', label: 'Unit Value', render: (row) => formatFromBase(row.remainingValue / Math.max(1, getCigarQuantity(row.cigar))) },
+            {
+              key: 'unit',
+              label: 'Unit Value',
+              render: (row) => {
+                const qty = getCigarQuantity(row.cigar);
+                if (qty <= 0) return '—';
+                return formatFromBase(row.remainingValue / qty);
+              },
+            },
             { key: 'total', label: 'Remaining Value', render: (row) => formatFromBase(row.remainingValue) },
           ]}
         />
@@ -386,10 +404,7 @@ export default function CigarInsights({ user, cigars = [], sessions = [], humido
                 <YAxis yAxisId="right" orientation="right" tick={{ fill: 'rgba(224,216,200,0.6)', fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{ background: 'rgba(26,18,12,0.96)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
-                  formatter={(value, key) => {
-                    if (key === 'collectionValue') return [formatFromBase(value), 'Collection Value'];
-                    return [value, key === 'acquired' ? 'Acquired' : key === 'smoked' ? 'Smoked' : 'Cellar Delta'];
-                  }}
+                  formatter={formatTrendTooltip}
                 />
                 <Legend />
                 <Line yAxisId="right" type="monotone" dataKey="collectionValue" name="Value" stroke="#D4A574" strokeWidth={2} dot={false} />
