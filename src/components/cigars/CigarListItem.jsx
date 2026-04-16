@@ -4,6 +4,8 @@ import { Check, Cigarette, Heart, MoreVertical, Package, Star } from 'lucide-rea
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import { getCigarQuickActionLabels } from '@/platform/cigarQuickActions';
+import { useCurrency } from '@/lib/currency/useCurrency';
+import { calculateCigarValue } from '@/utils/cigarValuation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +29,8 @@ export default function CigarListItem({
 }) {
   const navigate = useNavigate();
   const [imageFailed, setImageFailed] = React.useState(false);
+  const { formatFromBase } = useCurrency();
+  const valuation = calculateCigarValue(cigar);
 
   const handleClick = () => {
     navigate(createPageUrl(`CigarDetail?id=${cigar.id}`));
@@ -105,6 +109,11 @@ export default function CigarListItem({
             </>
           )}
         </div>
+        {valuation?.estimatedTotalValue > 0 && (
+          <div className="mt-1 text-xs text-[#D4A574]/80">
+            Value {formatFromBase(valuation.estimatedTotalValue)}
+          </div>
+        )}
       </div>
 
       {/* Right side */}

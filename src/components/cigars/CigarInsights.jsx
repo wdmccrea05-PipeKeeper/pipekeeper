@@ -7,6 +7,7 @@ import { Cigarette, DollarSign, BookOpen, Heart, ShieldAlert, Flame, Clock3 } fr
 import { summarizeCigarReadiness, generateCollectionInsights, INSIGHT_TYPES } from '@/platform/agingReadiness';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
+import { calculateCigarValue } from '@/utils/cigarValuation';
 
 const GOLD_PALETTE = ['#D4A574', '#B48C4B', '#8C6B3F', '#6B4F2E', '#F5D4A0', '#C4904A', '#A07840'];
 function SectionHeading({ children }) {
@@ -181,12 +182,32 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
   }, []);
   const { formatFromBase } = useCurrency();
 
+  const valuationRows = React.useMemo(
+    () =>
+      cigars.map((c) => ({
+        cigar: c,
+        valuation: calculateCigarValue(c),
+      })),
+    [cigars]
+  );
+
   const totalQty = cigars.reduce((s, c) => s + Number(c?.singles_equivalent ?? c?.quantity ?? 0), 0);
-  const totalValue = cigars.reduce((s, c) => {
-    const qty = Number(c?.singles_equivalent ?? c?.quantity ?? 1);
-    return s + Number(c?.estimated_value ?? c?.purchase_price ?? 0) * qty;
-  }, 0);
+  const totalValue = valuationRows.reduce((sum, row) => sum + Number(row.valuation.estimatedTotalValue || 0), 0);
   const favorites = cigars.filter((c) => c?.is_favorite).length;
+  const missingValuationCount = valuationRows.filter((row) => row.valuation.isMissing).length;
+  const staleValuationCount = valuationRows.filter((row) => row.valuation.isStale).length;
+  const highestValueCigars = valuationRows
+    .filter((row) => Number(row.valuation.estimatedTotalValue || 0) > 0)
+    .sort((a, b) => Number(b.valuation.estimatedTotalValue || 0) - Number(a.valuation.estimatedTotalValue || 0))
+    .slice(0, 5);
+  const highValueLowStock = valuationRows
+    .filter((row) => {
+      const qty = Number(row.cigar?.singles_equivalent ?? row.cigar?.quantity ?? 0);
+      const value = Number(row.valuation.estimatedTotalValue || 0);
+      return qty > 0 && qty <= 3 && value > 0;
+    })
+    .sort((a, b) => Number(b.valuation.estimatedTotalValue || 0) - Number(a.valuation.estimatedTotalValue || 0))
+    .slice(0, 5);
   const [tonightRecommendations, setTonightRecommendations] = React.useState([]);
 
   const thirtyDaysAgo = new Date(today);
@@ -340,6 +361,56 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
         <StatTile icon={BookOpen} label="Sessions" value={sessions.length} />
         <StatTile icon={Heart} label="Favorites" value={favorites} />
       </div>
+
+      <div
+        className="rounded-xl p-4"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+      >
+        <SectionHeading>Valuation Attention</SectionHeading>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
+            <div className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>Needs valuation</div>
+            <div className="text-lg font-semibold text-[#F5F1E7]">{missingValuationCount}</div>
+          </div>
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
+            <div className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>Stale valuations</div>
+            <div className="text-lg font-semibold text-[#F5F1E7]">{staleValuationCount}</div>
+          </div>
+        </div>
+      </div>
+
+      {(highestValueCigars.length > 0 || highValueLowStock.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {highestValueCigars.length > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <SectionHeading>Highest Value Cigars</SectionHeading>
+              <div className="space-y-2">
+                {highestValueCigars.map(({ cigar, valuation }) => (
+                  <div key={cigar.id} className="flex justify-between gap-3 text-sm">
+                    <span className="truncate text-[#E0D8C8]">{[cigar.brand, cigar.name].filter(Boolean).join(' · ') || cigar.name || 'Unnamed'}</span>
+                    <span className="text-[#D4A574] font-semibold">{formatFromBase(valuation.estimatedTotalValue || 0)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {highValueLowStock.length > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <SectionHeading>High Value / Low Stock</SectionHeading>
+              <div className="space-y-2">
+                {highValueLowStock.map(({ cigar, valuation }) => (
+                  <div key={cigar.id} className="flex justify-between gap-3 text-sm">
+                    <span className="truncate text-[#E0D8C8]">
+                      {[cigar.brand, cigar.name].filter(Boolean).join(' · ') || cigar.name || 'Unnamed'} ({Number(cigar.singles_equivalent ?? cigar.quantity ?? 0)})
+                    </span>
+                    <span className="text-[#D4A574] font-semibold">{formatFromBase(valuation.estimatedTotalValue || 0)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Charts grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

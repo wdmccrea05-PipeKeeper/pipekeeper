@@ -29,6 +29,7 @@ import HumidorManager from '@/components/cigars/HumidorManager';
 import CollectorGridView from '@/components/ui/CollectorGridView';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { CIGAR_STRENGTH_VALUES, formatCigarStrengthLabel } from '@/platform/cigarCatalog';
+import { calculateCigarValue } from '@/utils/cigarValuation';
 import {
   NOT_FOR_ME_FLAGS_PATCH,
   getCigarQuickActionPatch,
@@ -677,7 +678,10 @@ function CigarsInner() {
               getImage={(cigar) => cigar.photos?.[0]}
               getTitle={(cigar) => cigar.name}
               getSubtitle={(cigar) => [cigar.brand, cigar.vitola].filter(Boolean).join(' · ')}
-              getValue={(cigar) => cigar.estimated_value}
+              getValue={(cigar) => {
+                const valuation = calculateCigarValue(cigar);
+                return valuation.estimatedTotalValue || valuation.remainingCostBasis || 0;
+              }}
               getIsFavorite={(cigar) => cigar.is_favorite}
               getKey={(cigar) => cigar.id}
               onToggleFavorite={(cigar) => handleToggleFavorite(cigar)}

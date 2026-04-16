@@ -33,7 +33,17 @@ const DEFAULT_FORM = {
   purchase_source: '',
   purchase_date: '',
   purchase_price: '',
+  purchase_price_type: 'total_paid',
   estimated_value: '',
+  estimated_unit_value: '',
+  estimated_total_value: '',
+  replacement_cost_estimate: '',
+  valuation_source: '',
+  valuation_confidence: '',
+  valuation_notes: '',
+  valuation_updated_at: '',
+  manual_valuation_override: '',
+  manual_valuation_enabled: false,
   quantity: '',
   unit_type: '',
   cigars_per_package: '',
@@ -240,6 +250,8 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
     return {
       ...DEFAULT_FORM,
       ...sanitized,
+      estimated_unit_value: sanitized.estimated_unit_value ?? sanitized.estimated_value ?? '',
+      valuation_updated_at: sanitized.valuation_updated_at ? String(sanitized.valuation_updated_at).slice(0, 10) : '',
       flavor_notes: Array.isArray(cigar?.flavor_notes) ? cigar.flavor_notes : [],
       aliases: Array.isArray(cigar?.aliases) ? cigar.aliases : [],
       photos: Array.isArray(cigar?.photos) ? cigar.photos : [],
@@ -261,6 +273,8 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
     setForm({
       ...DEFAULT_FORM,
       ...sanitized,
+      estimated_unit_value: sanitized.estimated_unit_value ?? sanitized.estimated_value ?? '',
+      valuation_updated_at: sanitized.valuation_updated_at ? String(sanitized.valuation_updated_at).slice(0, 10) : '',
       flavor_notes: Array.isArray(cigar.flavor_notes) ? cigar.flavor_notes : [],
       aliases: Array.isArray(cigar.aliases) ? cigar.aliases : [],
       photos: Array.isArray(cigar.photos) ? cigar.photos : [],
@@ -364,6 +378,9 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
   const constructionSummary = [form.wrapper, form.country_of_origin].filter(Boolean).join(' · ') || undefined;
   const profileSummary = [form.body, form.strength].filter(Boolean).map((v) => v.replace(/_/g, '-')).join(' · ') || undefined;
   const inventorySummary = form.singles_equivalent ? `${form.singles_equivalent} sticks` : undefined;
+  const valuationSummary = form.estimated_unit_value || form.estimated_total_value || form.purchase_price
+    ? 'Configured'
+    : undefined;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
@@ -474,10 +491,66 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           <FormField label="Purchase Price ($)">
             <StyledInput type="number" value={form.purchase_price} onChange={set('purchase_price')} placeholder="0.00" />
           </FormField>
-          <FormField label="Estimated Value ($)">
-            <StyledInput type="number" value={form.estimated_value} onChange={set('estimated_value')} placeholder="0.00" />
+          <FormField label="Purchase Price Type">
+            <StyledSelect value={form.purchase_price_type} onValueChange={set('purchase_price_type')} placeholder="Select type">
+              {['single', 'pack', 'box', 'bundle', 'total_paid'].map((v) => (
+                <SelectItem key={v} value={v} style={selectItemStyle}>
+                  {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                </SelectItem>
+              ))}
+            </StyledSelect>
           </FormField>
         </div>
+      </FormSection>
+
+      <FormSection title="Valuation" summary={valuationSummary}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField label="Estimated Unit Value ($)">
+            <StyledInput
+              type="number"
+              value={form.estimated_unit_value}
+              onChange={(e) => {
+                const value = e?.target ? e.target.value : e;
+                setForm((f) => ({ ...f, estimated_unit_value: value, estimated_value: value }));
+              }}
+              placeholder="0.00"
+            />
+          </FormField>
+          <FormField label="Estimated Total Value ($)">
+            <StyledInput type="number" value={form.estimated_total_value} onChange={set('estimated_total_value')} placeholder="0.00" />
+          </FormField>
+          <FormField label="Replacement Cost Estimate ($)">
+            <StyledInput type="number" value={form.replacement_cost_estimate} onChange={set('replacement_cost_estimate')} placeholder="0.00" />
+          </FormField>
+          <FormField label="Valuation Date">
+            <StyledInput type="date" value={form.valuation_updated_at} onChange={set('valuation_updated_at')} />
+          </FormField>
+          <FormField label="Valuation Source">
+            <StyledInput value={form.valuation_source} onChange={set('valuation_source')} placeholder="Receipt, retailer, manual estimate…" />
+          </FormField>
+          <FormField label="Valuation Confidence">
+            <StyledSelect value={form.valuation_confidence} onValueChange={set('valuation_confidence')} placeholder="Select confidence">
+              {['high', 'medium', 'low'].map((v) => (
+                <SelectItem key={v} value={v} style={selectItemStyle}>
+                  {v.replace(/\b\w/g, (c) => c.toUpperCase())}
+                </SelectItem>
+              ))}
+            </StyledSelect>
+          </FormField>
+          <FormField label="Manual Override Value ($ per stick)">
+            <StyledInput type="number" value={form.manual_valuation_override} onChange={set('manual_valuation_override')} placeholder="0.00" />
+          </FormField>
+          <FormField label="Manual Override">
+            <CheckToggle
+              label="Enable manual valuation override"
+              checked={form.manual_valuation_enabled}
+              onChange={(v) => setForm((f) => ({ ...f, manual_valuation_enabled: v }))}
+            />
+          </FormField>
+        </div>
+        <FormField label="Valuation Notes">
+          <StyledTextarea value={form.valuation_notes} onChange={set('valuation_notes')} placeholder="Notes about how this valuation was determined…" rows={3} />
+        </FormField>
       </FormSection>
 
       {/* Section 5: Inventory */}

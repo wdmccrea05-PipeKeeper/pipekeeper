@@ -107,9 +107,53 @@
       "type": "number",
       "description": "Price paid at purchase"
     },
+    "purchase_price_type": {
+      "type": "string",
+      "enum": ["single", "pack", "box", "bundle", "total_paid"],
+      "description": "How purchase_price should be interpreted for valuation math"
+    },
     "estimated_value": {
       "type": "number",
-      "description": "Current estimated market value"
+      "description": "Legacy estimated per-stick value (kept for compatibility)"
+    },
+    "estimated_unit_value": {
+      "type": "number",
+      "description": "Current estimated per-stick value"
+    },
+    "estimated_total_value": {
+      "type": "number",
+      "description": "Current estimated total value for remaining cigars"
+    },
+    "replacement_cost_estimate": {
+      "type": "number",
+      "description": "Estimated replacement cost for this record"
+    },
+    "valuation_source": {
+      "type": "string",
+      "description": "Where valuation was sourced from (receipt, retailer, manual estimate, etc.)"
+    },
+    "valuation_confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence level for current valuation data"
+    },
+    "valuation_notes": {
+      "type": "string",
+      "description": "Free-text valuation notes"
+    },
+    "valuation_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when valuation data was last updated"
+    },
+    "manual_valuation_override": {
+      "type": "number",
+      "description": "Manual per-stick override value used when manual valuation is enabled"
+    },
+    "manual_valuation_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, manual_valuation_override takes priority over derived valuation"
     },
     "initial_quantity": {
       "type": "number",
