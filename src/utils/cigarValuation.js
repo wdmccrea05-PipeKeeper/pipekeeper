@@ -1,105 +1,182 @@
-/**
- * cigarValuation.js
- * Simple cigar value estimation — consistent with pipe/tobacco valuation philosophy.
- * Uses purchase price or estimated retail as the base, then adjusts for
- * quantity, brand tier, production status, and aging.
- */
+const STALE_VALUATION_DAYS = 180;
 
-// Known premium brands that command higher market prices
-const PREMIUM_BRANDS = [
-  'padron', 'fuente', 'arturo fuente', 'davidoff', 'cohiba', 'montecristo',
-  'romeo y julieta', 'opus x', 'padrón', 'oliva', 'my father', 'perdomo',
-  'drew estate', 'rocky patel', 'macanudo', 'ashton', 'alec bradley',
-  'crowned heads', 'liga privada', 'camacho', 'tatuaje',
-];
-
-// Vitolas that typically retail at higher price points
-const PREMIUM_VITOLAS = ['lancero', 'salomon', 'figurado', 'torpedo premium'];
-
-/**
- * Estimate a base per-stick retail price from cigar attributes.
- * Returns a number in USD.
- */
-function estimateBaseRetailPerStick(cigar) {
-  const brand = (cigar.brand || '').toLowerCase();
-  const vitola = (cigar.vitola || '').toLowerCase();
-  const productionStatus = (cigar.production_status || '').toLowerCase();
-
-  let base = 10; // conservative mid-market default
-
-  // Brand tier adjustment
-  if (PREMIUM_BRANDS.some((b) => brand.includes(b))) {
-    base = 18;
-  }
-
-  // Vitola premium
-  if (PREMIUM_VITOLAS.some((v) => vitola.includes(v))) {
-    base *= 1.15;
-  }
-
-  // Rarity / production status
-  if (productionStatus === 'limited' || productionStatus === 'limited_edition') {
-    base *= 1.25;
-  } else if (productionStatus === 'discontinued' || productionStatus === 'seasonal') {
-    base *= 1.15;
-  }
-
-  return Math.round(base * 100) / 100;
+function toNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
 }
 
-/**
- * Calculate cigar collection value.
- *
- * @param {object} cigar — Cigar entity record
- * @returns {{ perStickValue: number, totalValue: number, confidenceScore: string }}
- */
+function roundMoney(value) {
+  if (value == null || !Number.isFinite(value)) return null;
+  return Math.round(value * 100) / 100;
+}
+
+function getRemainingSticks(cigar) {
+  const singles = toNumber(cigar?.singles_equivalent);
+  if (singles && singles > 0) return singles;
+
+  const qty = toNumber(cigar?.quantity);
+  const cpp = toNumber(cigar?.cigars_per_package);
+  if (qty && qty > 0 && cpp && cpp > 0) return qty * cpp;
+
+  return qty && qty > 0 ? qty : 0;
+}
+
+function getBasisSticks(cigar, remainingSticks) {
+  const initial = toNumber(cigar?.initial_quantity);
+  if (initial && initial > 0) return initial;
+  return remainingSticks;
+}
+
+function getPurchasePerStick(cigar, basisSticks) {
+  const purchasePrice = toNumber(cigar?.purchase_price);
+  if (!purchasePrice || purchasePrice <= 0) return null;
+
+  const priceType = cigar?.purchase_price_type || 'total_paid';
+  const packageSize = toNumber(cigar?.cigars_per_package);
+
+  if (priceType === 'single') return purchasePrice;
+  if ((priceType === 'pack' || priceType === 'box' || priceType === 'bundle') && packageSize && packageSize > 0) {
+    return purchasePrice / packageSize;
+  }
+  if (basisSticks && basisSticks > 0) return purchasePrice / basisSticks;
+  return null;
+}
+
+function getGuidedMultiplier(cigar) {
+  let multiplier = 1;
+
+  const productionStatus = String(cigar?.production_status || '').toLowerCase();
+  if (productionStatus === 'limited') multiplier += 0.12;
+  if (productionStatus === 'discontinued') multiplier += 0.15;
+  if (productionStatus === 'seasonal') multiplier += 0.06;
+
+  const rating = toNumber(cigar?.rating);
+  if (rating && rating >= 4.5) multiplier += 0.08;
+  else if (rating && rating >= 4) multiplier += 0.05;
+
+  if (cigar?.is_favorite) multiplier += 0.04;
+
+  const agingStart = cigar?.aging_start_date ? new Date(cigar.aging_start_date) : null;
+  if (agingStart && !Number.isNaN(agingStart.getTime())) {
+    const ageDays = Math.max(0, (Date.now() - agingStart.getTime()) / (1000 * 60 * 60 * 24));
+    if (ageDays >= 720) multiplier += 0.08;
+    else if (ageDays >= 365) multiplier += 0.05;
+    else if (ageDays >= 180) multiplier += 0.03;
+  }
+
+  return multiplier;
+}
+
 export function calculateCigarValue(cigar) {
-  if (!cigar) return { perStickValue: null, totalValue: null, confidenceScore: 'low' };
-
-  const sticks = Number(cigar.singles_equivalent) || Number(cigar.quantity) || 0;
-  if (sticks === 0) {
-    return { perStickValue: null, totalValue: null, confidenceScore: 'low' };
-  }
-
-  // If the user provided estimated_value, use it directly (highest confidence)
-  if (cigar.estimated_value && Number(cigar.estimated_value) > 0) {
-    const total = Number(cigar.estimated_value);
+  if (!cigar) {
     return {
-      perStickValue: Math.round((total / sticks) * 100) / 100,
-      totalValue: total,
-      confidenceScore: 'high',
+      remainingSticks: 0,
+      basisSticks: 0,
+      purchasePerStick: null,
+      perStickCostBasis: null,
+      remainingCostBasis: null,
+      estimatedUnitValue: null,
+      estimatedTotalValue: null,
+      replacementCostEstimate: null,
+      confidenceScore: 'low',
+      source: 'missing',
+      sourceLabel: 'Missing valuation',
+      isMissing: true,
+      isStale: false,
+      needsReview: true,
+      valuationUpdatedAt: null,
     };
   }
 
-  // If user provided purchase price, use it as base (medium confidence)
-  if (cigar.purchase_price && Number(cigar.purchase_price) > 0) {
-    const total = Number(cigar.purchase_price);
-    return {
-      perStickValue: Math.round((total / sticks) * 100) / 100,
-      totalValue: total,
-      confidenceScore: 'medium',
-    };
+  const remainingSticks = getRemainingSticks(cigar);
+  const basisSticks = getBasisSticks(cigar, remainingSticks);
+  const purchasePerStickRaw = getPurchasePerStick(cigar, basisSticks);
+  const perStickCostBasis = roundMoney(purchasePerStickRaw);
+  const remainingCostBasis = roundMoney(
+    perStickCostBasis != null && remainingSticks > 0 ? perStickCostBasis * remainingSticks : null
+  );
+
+  const manualOverrideEnabled = Boolean(cigar?.manual_valuation_enabled);
+  const manualOverridePerStick = toNumber(cigar?.manual_valuation_override);
+  const manualUnit = toNumber(cigar?.estimated_unit_value ?? cigar?.estimated_value);
+  const manualTotal = toNumber(cigar?.estimated_total_value);
+  const manualReplacement = toNumber(cigar?.replacement_cost_estimate);
+
+  let estimatedUnitValue = null;
+  let estimatedTotalValue = null;
+  let replacementCostEstimate = null;
+  let confidenceScore = 'low';
+  let source = 'missing';
+
+  if (manualOverrideEnabled && manualOverridePerStick && manualOverridePerStick > 0) {
+    estimatedUnitValue = manualOverridePerStick;
+    estimatedTotalValue = remainingSticks > 0 ? manualOverridePerStick * remainingSticks : null;
+    replacementCostEstimate = basisSticks > 0 ? manualOverridePerStick * basisSticks : estimatedTotalValue;
+    source = 'manual_override';
+    confidenceScore = cigar?.valuation_confidence || 'high';
+  } else if (manualUnit && manualUnit > 0) {
+    estimatedUnitValue = manualUnit;
+    estimatedTotalValue = manualTotal && manualTotal > 0 ? manualTotal : (remainingSticks > 0 ? manualUnit * remainingSticks : null);
+    replacementCostEstimate = manualReplacement && manualReplacement > 0
+      ? manualReplacement
+      : (basisSticks > 0 ? manualUnit * basisSticks : estimatedTotalValue);
+    source = 'manual_entry';
+    confidenceScore = cigar?.valuation_confidence || 'high';
+  } else if (manualTotal && manualTotal > 0) {
+    estimatedTotalValue = manualTotal;
+    estimatedUnitValue = remainingSticks > 0 ? manualTotal / remainingSticks : null;
+    replacementCostEstimate = manualReplacement && manualReplacement > 0 ? manualReplacement : manualTotal;
+    source = 'manual_entry';
+    confidenceScore = cigar?.valuation_confidence || 'high';
+  } else if (perStickCostBasis && perStickCostBasis > 0 && remainingSticks > 0) {
+    const guidedPerStick = perStickCostBasis * getGuidedMultiplier(cigar);
+    estimatedUnitValue = guidedPerStick;
+    estimatedTotalValue = guidedPerStick * remainingSticks;
+    replacementCostEstimate = basisSticks > 0 ? guidedPerStick * basisSticks : estimatedTotalValue;
+    source = 'guided_estimate';
+    confidenceScore = 'medium';
   }
 
-  // Estimate from attributes (low confidence)
-  const perStick = estimateBaseRetailPerStick(cigar);
+  estimatedUnitValue = roundMoney(estimatedUnitValue);
+  estimatedTotalValue = roundMoney(estimatedTotalValue);
+  replacementCostEstimate = roundMoney(
+    manualReplacement && manualReplacement > 0 ? manualReplacement : replacementCostEstimate
+  );
 
-  // Aging premium (slight boost for cellared cigars)
-  let agingMultiplier = 1;
-  if (cigar.aging_start_date) {
-    const ageMonths = Math.floor(
-      (Date.now() - new Date(cigar.aging_start_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44)
-    );
-    if (ageMonths >= 36) agingMultiplier = 1.1;
-    else if (ageMonths >= 12) agingMultiplier = 1.05;
-  }
+  const valuationUpdatedAt = cigar?.valuation_updated_at || null;
+  const updatedDate = valuationUpdatedAt ? new Date(valuationUpdatedAt) : null;
+  const isStale = Boolean(
+    updatedDate &&
+      !Number.isNaN(updatedDate.getTime()) &&
+      (Date.now() - updatedDate.getTime()) / (1000 * 60 * 60 * 24) > STALE_VALUATION_DAYS
+  );
+  const isMissing = !(estimatedUnitValue || estimatedTotalValue || replacementCostEstimate);
+  const needsReview = isMissing || isStale || confidenceScore === 'low';
 
-  const adjustedPerStick = Math.round(perStick * agingMultiplier * 100) / 100;
-  const totalValue = Math.round(adjustedPerStick * sticks * 100) / 100;
+  const sourceLabelMap = {
+    manual_override: 'Manual override',
+    manual_entry: 'User entered',
+    guided_estimate: 'Guided estimate',
+    missing: 'Missing valuation',
+  };
 
   return {
-    perStickValue: adjustedPerStick,
-    totalValue,
-    confidenceScore: 'low',
+    remainingSticks,
+    basisSticks,
+    purchasePerStick: perStickCostBasis,
+    perStickCostBasis,
+    remainingCostBasis,
+    estimatedUnitValue,
+    estimatedTotalValue,
+    replacementCostEstimate,
+    confidenceScore,
+    source,
+    sourceLabel: sourceLabelMap[source] || sourceLabelMap.missing,
+    isMissing,
+    isStale,
+    needsReview,
+    valuationUpdatedAt,
   };
 }
+

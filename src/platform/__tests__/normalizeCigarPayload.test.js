@@ -71,11 +71,20 @@ describe('normalizeCigarPayload', () => {
   });
 
   test('converts numeric strings to numbers', () => {
-    const form = { name: 'Test', quantity: '2', cigars_per_package: '20', purchase_price: '15.50' };
+    const form = {
+      name: 'Test',
+      quantity: '2',
+      cigars_per_package: '20',
+      purchase_price: '15.50',
+      estimated_unit_value: '12.25',
+      estimated_total_value: '245',
+    };
     const out = normalizeCigarPayload(form);
     expect(out.quantity).toBe(2);
     expect(out.cigars_per_package).toBe(20);
     expect(out.purchase_price).toBe(15.5);
+    expect(out.estimated_unit_value).toBe(12.25);
+    expect(out.estimated_total_value).toBe(245);
   });
 
   test('converts empty string numerics to undefined', () => {
@@ -114,6 +123,29 @@ describe('normalizeCigarPayload', () => {
   test('maps legacy purchase_vendor to purchase_source', () => {
     const out = normalizeCigarPayload({ name: 'Test', purchase_vendor: 'Legacy Shop' });
     expect(out.purchase_source).toBe('Legacy Shop');
+  });
+
+  test('maps legacy estimated_value to estimated_unit_value', () => {
+    const out = normalizeCigarPayload({ name: 'Test', estimated_value: '11.5' });
+    expect(out.estimated_unit_value).toBe(11.5);
+    expect(out.estimated_value).toBe(11.5);
+  });
+
+  test('defaults purchase_price_type when purchase_price exists', () => {
+    const out = normalizeCigarPayload({ name: 'Test', purchase_price: '30' });
+    expect(out.purchase_price_type).toBe('total_paid');
+  });
+
+  test('derives estimated_total_value from estimated_unit_value and sticks', () => {
+    const out = normalizeCigarPayload({
+      name: 'Test',
+      estimated_unit_value: '10',
+      unit_type: 'box',
+      quantity: '1',
+      cigars_per_package: '20',
+    });
+    expect(out.singles_equivalent).toBe(20);
+    expect(out.estimated_total_value).toBe(200);
   });
 
   test('derives singles_equivalent for box', () => {

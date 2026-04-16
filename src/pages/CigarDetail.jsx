@@ -40,6 +40,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
+import CigarValuationModal from '@/components/cigars/CigarValuationModal';
 import { getCigarReadinessWithContext } from '@/platform/agingReadiness';
 import { getCigarInventoryMetrics } from '@/platform/cigarInventory';
 import EnrichButton from '@/components/shared/EnrichButton';
@@ -91,6 +92,7 @@ const READINESS_STYLE = {
 
 const CONFIDENCE_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' };
 const CONFIDENCE_COLOR = { high: '#6FCF97', medium: '#D4A574', low: 'rgba(224,216,200,0.55)' };
+const VALUATION_CONFIDENCE_LABEL = { high: 'High', medium: 'Medium', low: 'Low' };
 
 const HUMIDOR_HEALTH_STYLE = {
   stable:      { bg: 'rgba(76,175,130,0.1)',  border: 'rgba(76,175,130,0.3)',  color: '#6FCF97' },
@@ -189,12 +191,26 @@ function AgingTabContent({ cigar, humidor }) {
   );
 }
 
-function EditableStatCard({ label, value, icon: Icon, onSave, type = 'number', placeholder }) {
+function EditableStatCard({
+  label,
+  value,
+  icon: Icon,
+  onSave,
+  type = 'number',
+  placeholder,
+  editable = true,
+  onCardClick,
+  hint = 'tap to edit',
+}) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const inputRef = useRef(null);
 
   const start = () => {
+    if (!editable) {
+      if (typeof onCardClick === 'function') onCardClick();
+      return;
+    }
     setDraft(value === '—' || value == null ? '' : String(value).replace(/[^0-9.]/g, ''));
     setEditing(true);
   };
@@ -240,7 +256,7 @@ function EditableStatCard({ label, value, icon: Icon, onSave, type = 'number', p
           ) : (
             <p className="text-lg font-semibold mt-1 break-words" style={{ color: '#F5F1E7' }}>
               {safePrimitive(value)}
-              <span className="ml-2 text-xs" style={{ color: 'rgba(140,107,63,0.5)' }}>tap to edit</span>
+              {hint && <span className="ml-2 text-xs" style={{ color: 'rgba(140,107,63,0.5)' }}>{hint}</span>}
             </p>
           )}
         </div>
@@ -439,11 +455,15 @@ function CigarDetailInner() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [sessionModalOpen, setSessionModalOpen] = useState(false);
   const [editingSession, setEditingSession] = useState(null);
+  const [valuationModalOpen, setValuationModalOpen] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
 
   const saveField = async (field, value) => {
     await base44.entities.Cigar.update(cigar.id, { [field]: value });
     queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
+    queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
+    queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
+    queryClient.invalidateQueries({ queryKey: ['cigars-insights', user?.email] });
     toast.success('Updated');
   };
 
@@ -499,8 +519,17 @@ function CigarDetailInner() {
   const valuation = useMemo(() => (cigar ? calculateCigarValue(cigar) : null), [cigar]);
 
   const displayValue = useMemo(() => {
-    if (valuation?.totalValue) return formatFromBase(valuation.totalValue);
+    if (valuation?.estimatedTotalValue) return formatFromBase(valuation.estimatedTotalValue);
     return '—';
+  }, [valuation, formatFromBase]);
+  const valuationDisplay = useMemo(() => {
+    if (!valuation) return null;
+    return {
+      unit: valuation.estimatedUnitValue != null ? formatFromBase(valuation.estimatedUnitValue) : '—',
+      total: valuation.estimatedTotalValue != null ? formatFromBase(valuation.estimatedTotalValue) : '—',
+      replacement: valuation.replacementCostEstimate != null ? formatFromBase(valuation.replacementCostEstimate) : '—',
+      purchaseBasis: valuation.remainingCostBasis != null ? formatFromBase(valuation.remainingCostBasis) : '—',
+    };
   }, [valuation, formatFromBase]);
   const inventoryMetrics = useMemo(
     () => (cigar ? getCigarInventoryMetrics(cigar, sessions) : null),
@@ -553,6 +582,19 @@ function CigarDetailInner() {
       toast.success('Session deleted');
     } catch {
       toast.error('Failed to delete session');
+    }
+  };
+
+  const handleSaveValuation = async (patch) => {
+    try {
+      await base44.entities.Cigar.update(cigar.id, patch);
+      queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['cigars-insights', user?.email] });
+      toast.success('Valuation updated');
+    } catch {
+      toast.error('Failed to update valuation');
     }
   };
 
@@ -770,14 +812,11 @@ function CigarDetailInner() {
         />
         <EditableStatCard
           label="Value (est.)"
-          value={cigar.estimated_value ? Number(cigar.estimated_value) : '—'}
+          value={displayValue}
           icon={DollarSign}
-          placeholder="0.00"
-          onSave={async (val) => {
-            await base44.entities.Cigar.update(cigar.id, { estimated_value: val });
-            queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
-            toast.success('Value updated');
-          }}
+          editable={false}
+          onCardClick={() => setValuationModalOpen(true)}
+          hint="tap to manage"
         />
         <EditableStatCard
           label="Rating"
@@ -796,6 +835,41 @@ function CigarDetailInner() {
           value={humidor?.name || (cigar.humidor_id ? 'Loading…' : 'Unassigned')}
           icon={Flame}
         />
+      </div>
+
+      <div
+        className="rounded-2xl p-4 space-y-2"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,107,63,0.2)' }}
+      >
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-sm font-semibold tracking-wide uppercase" style={{ color: '#D4A574' }}>
+            Valuation
+          </h2>
+          <Button variant="ghost" size="sm" onClick={() => setValuationModalOpen(true)}>
+            Update valuation
+          </Button>
+        </div>
+        {valuation?.isMissing ? (
+          <p className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>
+            Add purchase price or estimated value to start tracking value.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+            <InfoRow label="Estimated unit value" value={valuationDisplay?.unit} />
+            <InfoRow label="Estimated total value" value={valuationDisplay?.total} />
+            <InfoRow label="Replacement estimate" value={valuationDisplay?.replacement} />
+            <InfoRow label="Purchase basis" value={valuationDisplay?.purchaseBasis} />
+            <InfoRow label="Source" value={cigar.valuation_source || valuation?.sourceLabel || '—'} />
+            <InfoRow label="Confidence" value={VALUATION_CONFIDENCE_LABEL[valuation?.confidenceScore] || 'Low'} />
+            <InfoRow label="Last updated" value={formatDate(cigar.valuation_updated_at)} />
+            <InfoRow label="Manual override" value={cigar.manual_valuation_enabled ? 'Enabled' : 'Off'} />
+          </div>
+        )}
+        {(valuation?.isStale || valuation?.needsReview) && (
+          <p className="text-xs" style={{ color: '#E0B450' }}>
+            {valuation?.isStale ? 'Valuation is stale and should be reviewed.' : 'Valuation confidence is low; review recommended.'}
+          </p>
+        )}
       </div>
 
       {/* Tabs */}
@@ -916,12 +990,17 @@ function CigarDetailInner() {
               type="number"
               onSave={(v) => saveField('purchase_price', v)}
             />
-            <EditableInfoRow
-              label="Est. Value"
-              value={cigar.estimated_value}
-              type="number"
-              onSave={(v) => saveField('estimated_value', v)}
-            />
+            <InfoRow label="Estimated Unit Value" value={valuationDisplay?.unit || '—'} />
+            <InfoRow label="Estimated Total Value" value={valuationDisplay?.total || '—'} />
+            <InfoRow label="Replacement Estimate" value={valuationDisplay?.replacement || '—'} />
+            <InfoRow label="Valuation Source" value={cigar.valuation_source || valuation?.sourceLabel || '—'} />
+            <InfoRow label="Valuation Confidence" value={VALUATION_CONFIDENCE_LABEL[valuation?.confidenceScore] || 'Low'} />
+            <InfoRow label="Valuation Updated" value={formatDate(cigar.valuation_updated_at)} />
+            <div className="py-2" style={{ borderBottom: '1px solid rgba(140,107,63,0.1)' }}>
+              <Button size="sm" variant="ghost" onClick={() => setValuationModalOpen(true)}>
+                Edit valuation
+              </Button>
+            </div>
             <EditableInfoRow
               label="Storage Notes"
               value={cigar.storage_notes}
@@ -1050,6 +1129,13 @@ function CigarDetailInner() {
           queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
           queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
         }}
+      />
+
+      <CigarValuationModal
+        open={valuationModalOpen}
+        onOpenChange={setValuationModalOpen}
+        cigar={cigar}
+        onSave={handleSaveValuation}
       />
     </div>
   );

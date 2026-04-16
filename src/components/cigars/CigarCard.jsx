@@ -6,6 +6,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import { getCigarQuickActionLabels } from '@/platform/cigarQuickActions';
+import { calculateCigarValue } from '@/utils/cigarValuation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +82,7 @@ export default function CigarCard({
   };
   const actionLabels = getCigarQuickActionLabels(cigar);
   const quantityBadgePositionClass = selectMode ? 'top-12' : 'top-3';
+  const valuation = calculateCigarValue(cigar);
 
   const handleSelectToggle = (e) => {
     e.preventDefault();
@@ -240,13 +242,13 @@ export default function CigarCard({
           )}
         </div>
 
-        {(cigar?.estimated_value > 0 || cigar?.purchase_price > 0) && (
+        {(valuation?.estimatedTotalValue > 0 || cigar?.purchase_price > 0) && (
           <div className="flex items-center justify-between pt-1 border-t border-[rgba(180,140,75,0.12)]">
             <span className="text-xs text-[#D8C7A6]/55">
-              {cigar?.estimated_value > 0 ? 'Est. Value' : 'Purchase'}
+              {valuation?.estimatedTotalValue > 0 ? 'Est. Total Value' : 'Purchase Basis'}
             </span>
             <span className="text-sm font-bold text-[#D4A574]">
-              {formatFromBase(cigar?.estimated_value || cigar?.purchase_price || 0)}
+              {formatFromBase(valuation?.estimatedTotalValue || valuation?.remainingCostBasis || cigar?.purchase_price || 0)}
             </span>
           </div>
         )}
