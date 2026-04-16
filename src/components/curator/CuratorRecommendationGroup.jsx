@@ -295,7 +295,7 @@ function RecordOptimizationActions({ rec, onAction }) {
                 <span>Missing: {item.missingFields.join(', ')}</span>
                 {ageLabel && !done && (
                   <span className="px-2 py-0.5 rounded text-xs font-semibold" style={{ background: 'rgba(198,161,91,0.15)', color: '#C6A15B', border: '1px solid rgba(198,161,91,0.3)' }}>
-                    → {ageLabel}
+                    → {searchResult?.age === 0 ? 'No Age Statement (NAS = age 0)' : `${searchResult?.age} years`}
                   </span>
                 )}
               </div>
@@ -320,7 +320,7 @@ function RecordOptimizationActions({ rec, onAction }) {
                 style={{ background: '#4a7c5c', color: '#e0f5ea', border: 'none' }}
               >
                 {itemApplying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                {itemApplying ? 'Saving…' : `Confirm ${searchResult.age === 0 ? 'NAS' : `${searchResult.age}yr`}`}
+                {itemApplying ? 'Saving…' : searchResult.age === 0 ? 'Confirm: No Age Statement' : `Confirm: ${searchResult.age} yrs`}
               </button>
             ) : hasPayload && confidence >= 0.85 ? (
               <button
