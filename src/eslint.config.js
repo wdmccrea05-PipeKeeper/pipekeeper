@@ -16,6 +16,10 @@ export default [
       'src/**/__tests__/**/*.jsx',
       'src/**/__tests__/**/*.ts',
       'src/**/__tests__/**/*.tsx',
+      'src/**/*.test.js',
+      'src/**/*.test.jsx',
+      'src/**/*.test.ts',
+      'src/**/*.test.tsx',
     ],
     languageOptions: {
       globals: {
@@ -28,7 +32,11 @@ export default [
         beforeAll: 'readonly',
         afterAll: 'readonly',
         vi: 'readonly',
+        suite: 'readonly',
       },
+    },
+    rules: {
+      'no-undef': 'off',
     },
   },
 ];
