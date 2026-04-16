@@ -70,6 +70,14 @@ function getPriceIdFromTierAndInterval(tier, interval) {
   return priceId || "";
 }
 
+function resolveAppSlugFromTier(tier: unknown) {
+  const normalized = String(tier || "").trim().toLowerCase();
+  if (normalized.startsWith("whiskey")) return "whiskeykeeper";
+  if (normalized.startsWith("cigar")) return "cigarkeeper";
+  if (normalized.startsWith("wine")) return "winekeeper";
+  return "pipekeeper";
+}
+
 Deno.serve(async (req) => {
   try {
     const platform = getPlatform(req);
@@ -103,6 +111,8 @@ Deno.serve(async (req) => {
     // COLLAPSE: Premium → Pro for all new purchases
     const normalizedTier = String(tier).toLowerCase() === "premium" ? "pro" : tier;
     const priceId = getPriceIdFromTierAndInterval(normalizedTier, interval);
+    const appSlug = resolveAppSlugFromTier(normalizedTier);
+    const appEnvironment = String(Deno.env.get("APP_ENV") || Deno.env.get("ENVIRONMENT") || "production").trim().toLowerCase();
     if (!priceId) {
       return Response.json({ error: "Invalid tier/interval combination. Supported: pro + monthly/annual." }, { status: 400 });
     }
@@ -130,6 +140,11 @@ Deno.serve(async (req) => {
       success_url: `${origin}/Subscription?success=1`,
       cancel_url: `${origin}/Subscription?canceled=1`,
       metadata: {
+        app: appSlug,
+        app_slug: appSlug,
+        app_environment: appEnvironment,
+        legacy_app_slug: "collectionkeeper",
+        app_aliases: "pipekeeper,collectionkeeper",
         user_email: emailLower,
         user_id: userId,
         platform: platform,
@@ -138,6 +153,11 @@ Deno.serve(async (req) => {
       },
       subscription_data: {
         metadata: {
+          app: appSlug,
+          app_slug: appSlug,
+          app_environment: appEnvironment,
+          legacy_app_slug: "collectionkeeper",
+          app_aliases: "pipekeeper,collectionkeeper",
           user_email: emailLower,
           user_id: userId,
           platform: platform,

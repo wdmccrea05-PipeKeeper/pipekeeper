@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle2, AlertCircle, Loader } from 'lucide-react';
 import { buildAccessSummary } from '@/components/access/accessSummary';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { parseSubscriptionCallbackError } from '@/lib/billing/subscriptionCallbackErrors';
 
 const SYNC_TIMEOUT_MS = 20000;
 
@@ -54,6 +55,11 @@ export default function SubscriptionSuccessFlow() {
 
     async function syncAndConfirm() {
       try {
+        const callbackError = parseSubscriptionCallbackError(searchParams);
+        if (callbackError) {
+          throw new Error(callbackError);
+        }
+
         setPhase('loading');
         setError(null);
 
@@ -145,7 +151,7 @@ export default function SubscriptionSuccessFlow() {
     return () => {
       mounted = false;
     };
-  }, [queryClient, attempt]);
+  }, [queryClient, attempt, searchParams]);
 
   if (phase === 'loading') {
     return (

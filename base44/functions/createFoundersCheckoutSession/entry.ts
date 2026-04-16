@@ -59,9 +59,32 @@ Deno.serve(async (req) => {
       success_url: `${Deno.env.get('APP_URL')}/SubscriptionSuccess?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${Deno.env.get('APP_URL')}/Subscription`,
       metadata: {
+        app: 'pipekeeper',
+        app_slug: 'pipekeeper',
+        app_environment: String(Deno.env.get('APP_ENV') || Deno.env.get('ENVIRONMENT') || 'production').trim().toLowerCase(),
+        legacy_app_slug: 'collectionkeeper',
+        app_aliases: 'pipekeeper,collectionkeeper',
+        plan_key: billingInterval === 'month' ? 'founders_bundle_monthly' : 'founders_bundle_annual',
+        modules_csv: 'pipekeeper,whiskeykeeper',
+        primary_module: 'pipekeeper',
         bundle_type: 'founders',
         user_email: email,
         interval: billingInterval,
+      },
+      subscription_data: {
+        metadata: {
+          app: 'pipekeeper',
+          app_slug: 'pipekeeper',
+          app_environment: String(Deno.env.get('APP_ENV') || Deno.env.get('ENVIRONMENT') || 'production').trim().toLowerCase(),
+          legacy_app_slug: 'collectionkeeper',
+          app_aliases: 'pipekeeper,collectionkeeper',
+          plan_key: billingInterval === 'month' ? 'founders_bundle_monthly' : 'founders_bundle_annual',
+          modules_csv: 'pipekeeper,whiskeykeeper',
+          primary_module: 'pipekeeper',
+          bundle_type: 'founders',
+          user_email: email,
+          interval: billingInterval,
+        },
       },
     });
 
