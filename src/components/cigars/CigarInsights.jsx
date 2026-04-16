@@ -1,144 +1,179 @@
 import React from 'react';
 import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  LineChart,
-  Line,
-  Legend,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell,
 } from 'recharts';
-import {
-  Cigarette,
-  DollarSign,
-  Layers,
-  Warehouse,
-  AlertTriangle,
-  TrendingUp,
-  Clock3,
-  Heart,
-  Shield,
-  Activity,
-} from 'lucide-react';
+import { Cigarette, DollarSign, BookOpen, Heart, ShieldAlert, Flame, Clock3 } from 'lucide-react';
+import { summarizeCigarReadiness, generateCollectionInsights, INSIGHT_TYPES } from '@/platform/agingReadiness';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
+import { calculateCigarValue } from '@/utils/cigarValuation';
 import CigarInsuranceExporter from '@/components/export/CigarInsuranceExporter';
-import {
-  getPortfolioSummary,
-  getValuationSections,
-  getCollectorAnalytics,
-  getTrendFoundation,
-  getCigarDisplayName,
-  getCigarQuantity,
-} from '@/components/cigars/cigarReports';
 
-const GOLD_PALETTE = ['#D4A574', '#B48C4B', '#8C6B3F', '#6B4F2E', '#F5D4A0', '#C4904A', '#A07840', '#E3B97A'];
-
-function SectionCard({ title, subtitle, children }) {
+const GOLD_PALETTE = ['#D4A574', '#B48C4B', '#8C6B3F', '#6B4F2E', '#F5D4A0', '#C4904A', '#A07840'];
+function SectionHeading({ children }) {
   return (
-    <section
-      className="rounded-2xl p-4 sm:p-5 space-y-4"
+    <h3 style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+      {children}
+    </h3>
+  );
+}
+
+function StatTile({ icon: Icon, label, value }) {
+  return (
+    <div
+      className="rounded-xl p-4 flex items-center gap-3"
       style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(180,140,75,0.15)',
+        background: 'rgba(255,255,255,0.035)',
+        border: '1px solid rgba(180,140,75,0.18)',
       }}
     >
-      <div>
-        <h3 className="text-lg font-semibold text-[#F5F1E7]">{title}</h3>
-        {subtitle ? <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.58)' }}>{subtitle}</p> : null}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function SummaryCard({ icon: Icon, label, value }) {
-  return (
-    <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.14)' }}>
-      <div className="flex items-center gap-2">
+      <div
+        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{
+          background: 'linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))',
+          border: '1px solid rgba(120,90,65,0.45)',
+        }}
+      >
         <Icon className="w-4 h-4" style={{ color: '#D4A574' }} />
-        <span className="text-[11px] uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>{label}</span>
       </div>
-      <p className="text-xl font-bold mt-2 text-[#F5F1E7]">{value}</p>
+      <div>
+        <div className="text-xl font-bold text-[#F5F1E7]">{value}</div>
+        <div className="text-xs uppercase tracking-wide font-semibold" style={{ color: 'rgba(224,216,200,0.55)' }}>
+          {label}
+        </div>
+      </div>
     </div>
   );
 }
 
-function EmptyState({ children }) {
+const CustomTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl p-4 text-sm" style={{ color: 'rgba(224,216,200,0.68)', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(180,140,75,0.22)' }}>
-      {children}
+    <div
+      className="rounded-xl px-3 py-2 text-sm"
+      style={{
+        background: 'rgba(40,28,18,0.98)',
+        border: '1px solid rgba(180,140,75,0.3)',
+        color: '#F5F1E7',
+      }}
+    >
+      <p className="font-semibold">{payload[0].name || payload[0].payload?.name}</p>
+      <p style={{ color: '#D4A574' }}>{payload[0].value}</p>
     </div>
   );
+};
+
+function buildTopN(arr, key, n = 7) {
+  const counts = {};
+  arr.forEach((item) => {
+    const val = item[key];
+    if (val) counts[val] = (counts[val] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n)
+    .map(([name, value]) => ({ name, value }));
 }
 
-function ChartBlock({ title, data, dataKey = 'value', color = '#D4A574' }) {
-  if (!data?.length) return null;
+function buildTopBrandsByAverageRating(cigars, minSessions = 1, n = 6) {
+  const map = {};
+  cigars.forEach((cigar) => {
+    const brand = cigar?.brand;
+    const rating = Number(cigar?.rating || 0);
+    if (!brand || rating <= 0) return;
+    if (!map[brand]) map[brand] = { sum: 0, count: 0 };
+    map[brand].sum += rating;
+    map[brand].count += 1;
+  });
+  return Object.entries(map)
+    .filter(([, v]) => v.count >= minSessions)
+    .map(([name, v]) => ({ name, value: Number((v.sum / v.count).toFixed(2)) }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, n);
+}
 
+function MiniChart({ data, title, horizontal = false }) {
+  if (!data.length) return null;
   return (
-    <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
-      <p className="text-sm font-semibold text-[#F5F1E7] mb-2">{title}</p>
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={data} margin={{ top: 4, right: 12, bottom: 4, left: 0 }}>
-          <CartesianGrid stroke="rgba(180,140,75,0.14)" />
-          <XAxis dataKey="name" tick={{ fill: 'rgba(224,216,200,0.72)', fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: 'rgba(224,216,200,0.6)', fontSize: 11 }} axisLine={false} tickLine={false} />
-          <Tooltip
-            contentStyle={{ background: 'rgba(26,18,12,0.96)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
-            formatter={(value) => [value, 'Count']}
-          />
-          <Bar dataKey={dataKey} radius={[6, 6, 0, 0]} fill={color} />
+    <div
+      className="rounded-xl p-4"
+      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+    >
+      <SectionHeading>{title}</SectionHeading>
+      <ResponsiveContainer width="100%" height={Math.max(160, data.length * 32)}>
+        <BarChart
+          data={data}
+          layout={horizontal ? 'vertical' : 'horizontal'}
+          margin={{ top: 0, right: 8, bottom: 0, left: horizontal ? 80 : 0 }}
+        >
+          {horizontal ? (
+            <>
+              <XAxis type="number" tick={{ fill: 'rgba(224,216,200,0.5)', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" tick={{ fill: 'rgba(224,216,200,0.7)', fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
+            </>
+          ) : (
+            <>
+              <XAxis dataKey="name" tick={{ fill: 'rgba(224,216,200,0.7)', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'rgba(224,216,200,0.5)', fontSize: 11 }} axisLine={false} tickLine={false} />
+            </>
+          )}
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(180,140,75,0.08)' }} />
+          <Bar dataKey="value" radius={[4, 4, 4, 4]}>
+            {data.map((_, i) => (
+              <Cell key={i} fill={GOLD_PALETTE[i % GOLD_PALETTE.length]} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 }
 
-function CompactRowCards({ rows, renderTitle, renderDetail, emptyText }) {
-  if (!rows?.length) return <EmptyState>{emptyText}</EmptyState>;
-
+function MiniPie({ data, title }) {
+  if (!data.length) return null;
+  const total = data.reduce((s, d) => s + d.value, 0);
   return (
-    <div className="space-y-2 md:hidden">
-      {rows.map((row, idx) => (
-        <div key={row?.id || row?.cigar?.id || `${idx}`} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
-          <p className="text-sm font-semibold text-[#F5F1E7]">{renderTitle(row)}</p>
-          <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.62)' }}>{renderDetail(row)}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function DataTable({ columns, rows, emptyText }) {
-  if (!rows?.length) return <EmptyState>{emptyText}</EmptyState>;
-
-  return (
-    <div className="hidden md:block overflow-x-auto rounded-xl" style={{ border: '1px solid rgba(180,140,75,0.15)' }}>
-      <table className="w-full text-sm">
-        <thead style={{ background: 'rgba(180,140,75,0.08)' }}>
-          <tr>
-            {columns.map((col) => (
-              <th key={col.key} className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.72)' }}>
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, idx) => (
-            <tr key={row?.id || row?.cigar?.id || idx} style={{ borderTop: '1px solid rgba(180,140,75,0.08)' }}>
-              {columns.map((col) => (
-                <td key={col.key} className="px-3 py-2 text-[#F5F1E7]">{col.render(row)}</td>
+    <div
+      className="rounded-xl p-4"
+      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+    >
+      <SectionHeading>{title}</SectionHeading>
+      <div className="flex items-center gap-4">
+        <ResponsiveContainer width={140} height={140}>
+          <PieChart>
+            <Pie data={data} dataKey="value" cx="50%" cy="50%" innerRadius={35} outerRadius={60} paddingAngle={2}>
+              {data.map((_, i) => (
+                <Cell key={i} fill={GOLD_PALETTE[i % GOLD_PALETTE.length]} />
               ))}
-            </tr>
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="flex-1 space-y-1.5">
+          {data.slice(0, 6).map((d, i) => (
+            <div key={d.name} className="flex items-center gap-2 text-xs">
+              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: GOLD_PALETTE[i % GOLD_PALETTE.length] }} />
+              <span className="text-[#F5F1E7] truncate flex-1">{d.name}</span>
+              <span style={{ color: 'rgba(224,216,200,0.55)' }}>
+                {total > 0 ? `${Math.round((d.value / total) * 100)}%` : ''}
+              </span>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
   );
 }
+
+const INSIGHT_CONFIG = {
+  [INSIGHT_TYPES.SMOKE_NOW]:      { icon: Flame,       color: '#6FCF97', label: 'Smoke Now' },
+  [INSIGHT_TYPES.REST_LONGER]:    { icon: Clock3,      color: '#D4A574', label: 'Rest Longer' },
+  [INSIGHT_TYPES.AT_RISK]:        { icon: ShieldAlert, color: '#E07060', label: 'At Risk' },
+  [INSIGHT_TYPES.NEGLECTED]:      { icon: Clock3,      color: 'rgba(224,216,200,0.55)', label: 'Neglected' },
+  [INSIGHT_TYPES.OVERSTOCKED]:    { icon: Cigarette,   color: '#B48C4B', label: 'Overstocked' },
+  [INSIGHT_TYPES.FAST_DEPLETING]: { icon: Flame,       color: '#E0B450', label: 'Running Low' },
+};
 
 export default function CigarInsights({ user, cigars = [], sessions = [], humidors = [], snapshots = [] }) {
   const today = React.useMemo(() => {
@@ -148,285 +183,493 @@ export default function CigarInsights({ user, cigars = [], sessions = [], humido
   }, []);
   const { formatFromBase } = useCurrency();
 
-  const portfolio = React.useMemo(
-    () => getPortfolioSummary(cigars, humidors, sessions, today),
-    [cigars, humidors, sessions, today]
+  const valuationRows = React.useMemo(
+    () =>
+      cigars.map((c) => ({
+        cigar: c,
+        valuation: calculateCigarValue(c),
+      })),
+    [cigars]
   );
 
-  const valuation = React.useMemo(
-    () => getValuationSections(cigars, humidors, today),
-    [cigars, humidors, today]
-  );
+  const totalQty = cigars.reduce((s, c) => s + Number(c?.singles_equivalent ?? c?.quantity ?? 0), 0);
+  const totalValue = valuationRows.reduce((sum, row) => sum + Number(row.valuation.estimatedTotalValue || 0), 0);
+  const favorites = cigars.filter((c) => c?.is_favorite).length;
+  const missingValuationCount = valuationRows.filter((row) => row.valuation.isMissing).length;
+  const staleValuationCount = valuationRows.filter((row) => row.valuation.isStale).length;
+  const highestValueCigars = valuationRows
+    .filter((row) => Number(row.valuation.estimatedTotalValue || 0) > 0)
+    .sort((a, b) => Number(b.valuation.estimatedTotalValue || 0) - Number(a.valuation.estimatedTotalValue || 0))
+    .slice(0, 5);
+  const highValueLowStock = valuationRows
+    .filter((row) => {
+      const qty = Number(row.cigar?.singles_equivalent ?? row.cigar?.quantity ?? 0);
+      const value = Number(row.valuation.estimatedTotalValue || 0);
+      return qty > 0 && qty <= 3 && value > 0;
+    })
+    .sort((a, b) => Number(b.valuation.estimatedTotalValue || 0) - Number(a.valuation.estimatedTotalValue || 0))
+    .slice(0, 5);
+  const [tonightRecommendations, setTonightRecommendations] = React.useState([]);
 
-  const analytics = React.useMemo(
-    () => getCollectorAnalytics(cigars, sessions, humidors, today),
-    [cigars, sessions, humidors, today]
-  );
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const recentSessions = sessions.filter((s) => s?.date && new Date(s.date) >= thirtyDaysAgo);
 
-  const trend = React.useMemo(
-    () => getTrendFoundation(cigars, sessions, snapshots, today),
-    [cigars, sessions, snapshots, today]
-  );
+  // Brand chart
+  const brandData = buildTopN(cigars, 'brand', 8);
+  const brandRatingData = buildTopBrandsByAverageRating(cigars, 2, 8);
+  // Wrapper breakdown
+  const wrapperData = buildTopN(cigars, 'wrapper', 7);
+  const favoriteWrapperData = buildTopN(cigars.filter((c) => c.is_favorite), 'wrapper', 7);
+  const lineData = buildTopN(cigars, 'line', 7);
+  const vitolaData = buildTopN(cigars, 'vitola', 7);
+  // Country of origin
+  const originData = buildTopN(cigars, 'country_of_origin', 7);
+  // Body distribution
+  const bodyData = buildTopN(cigars, 'body', 6).map((d) => ({ ...d, name: formatCigarStrengthLabel(d.name) }));
 
-  const summaryCards = [
-    { icon: Cigarette, label: 'Total Cigars', value: portfolio.totalCigars },
-    { icon: Layers, label: 'Unique Cigars', value: portfolio.totalUniqueCigars },
-    { icon: DollarSign, label: 'Collection Value', value: formatFromBase(portfolio.totalEstimatedCollectionValue) },
-    { icon: TrendingUp, label: 'Avg Value / Cigar', value: formatFromBase(portfolio.averageValuePerCigar) },
-    { icon: Warehouse, label: 'Humidors', value: portfolio.humidorCount },
-    { icon: AlertTriangle, label: 'Need Valuation', value: portfolio.cigarsNeedingValuation },
-    { icon: Heart, label: 'Low-Stock Favorites', value: portfolio.lowStockFavorites },
-    { icon: Shield, label: 'Ready Now', value: portfolio.readyNow },
-    { icon: Clock3, label: 'Resting', value: portfolio.resting },
-    { icon: Activity, label: 'Overdue to Smoke', value: portfolio.overdueToSmoke },
-  ];
+  const acquisitionCounts = React.useMemo(() => ({
+    wishlist: cigars.filter((c) => c?.wishlist).length,
+    shopping: cigars.filter((c) => c?.shopping_list).length,
+    restock: cigars.filter((c) => c?.restock_flag).length,
+    notForMe: cigars.filter((c) => c?.not_for_me).length,
+  }), [cigars]);
 
-  const formatTrendTooltip = React.useCallback((value, key) => {
-    if (key === 'collectionValue') return [formatFromBase(value), 'Collection Value'];
-    const labels = {
-      acquired: 'Acquired',
-      smoked: 'Smoked',
-      cellarDelta: 'Cellar Delta',
-    };
-    return [value, labels[key] || 'Metric'];
-  }, [formatFromBase]);
+  const readySoonCount = React.useMemo(() => {
+    return cigars.filter((c) => {
+      if (!c?.ready_to_smoke_date) return false;
+      const date = new Date(c.ready_to_smoke_date);
+      if (Number.isNaN(date.getTime())) return false;
+      const days = Math.floor((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return days >= 0 && days <= 60;
+    }).length;
+  }, [cigars, today]);
+
+  const sessionCountByCigarId = sessions.reduce((acc, s) => {
+    if (!s?.cigar_id || s?.is_out_of_collection) return acc;
+    acc[s.cigar_id] = (acc[s.cigar_id] || 0) + 1;
+    return acc;
+  }, {});
+  const cigarNameById = cigars.reduce((acc, c) => {
+    if (c?.id) acc[c.id] = [c.brand, c.name].filter(Boolean).join(' ') || c.name || 'Unknown';
+    return acc;
+  }, {});
+  const mostSmokedData = Object.entries(sessionCountByCigarId)
+    .map(([id, value]) => ({ name: cigarNameById[id] || 'Unknown Cigar', value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 7);
+
+  const lowStockFavorites = cigars
+    .filter((c) => c.is_favorite && Number(c.singles_equivalent ?? c.quantity ?? 0) > 0)
+    .filter((c) => Number(c.singles_equivalent ?? c.quantity ?? 0) <= Number(c.restock_threshold || 3))
+    .sort((a, b) => Number(a.singles_equivalent ?? a.quantity ?? 0) - Number(b.singles_equivalent ?? b.quantity ?? 0))
+    .slice(0, 5);
+
+  const buyAgainCandidates = cigars
+    .map((c) => {
+      const linked = sessions.filter((s) => s.cigar_id === c.id && !s.is_out_of_collection);
+      const rated = linked.filter((s) => Number(s.overall_enjoyment || 0) > 0);
+      const avg = rated.length ? rated.reduce((sum, s) => sum + Number(s.overall_enjoyment || 0), 0) / rated.length : 0;
+      const qty = Number(c.singles_equivalent ?? c.quantity ?? 0);
+      return { cigar: c, avg, qty, sessions: linked.length };
+    })
+    .filter((x) => x.sessions >= 2 && x.avg >= 4 && x.qty <= Number(x.cigar.restock_threshold || 2))
+    .sort((a, b) => b.avg - a.avg || a.qty - b.qty)
+    .slice(0, 5);
+
+  // Aging status — use the shared engine for consistency
+  const readinessSummary = summarizeCigarReadiness(cigars, today);
+
+  // Collection insights
+  const collectionInsights = generateCollectionInsights(cigars, sessions, humidors, today).slice(0, 8);
+
+  const recentSessionsSorted = [...recentSessions]
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 10);
+
+  const tonightCandidates = React.useMemo(() => (
+    cigars
+      .filter((c) => Number(c?.singles_equivalent ?? c?.quantity ?? 0) > 0 && !c?.not_for_me && c?.ai_excluded !== true)
+      .map((c) => {
+        const linked = sessions.filter((s) => s.cigar_id === c.id && !s.is_out_of_collection);
+        const rated = linked.filter((s) => Number(s.overall_enjoyment || 0) > 0);
+        const avgSessionRating = rated.length
+          ? rated.reduce((sum, s) => sum + Number(s.overall_enjoyment || 0), 0) / rated.length
+          : 0;
+        const lastSmoked = linked
+          .filter((s) => !!s.date)
+          .sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.date;
+        const daysSince = lastSmoked ? Math.floor((Date.now() - new Date(lastSmoked).getTime()) / (1000 * 60 * 60 * 24)) : 999;
+        const qty = Number(c.singles_equivalent ?? c.quantity ?? 0);
+        const rating = Number(c.rating || 0);
+        const readyDate = c.ready_to_smoke_date ? new Date(c.ready_to_smoke_date) : null;
+        const readyBonus = readyDate && !Number.isNaN(readyDate.getTime()) && readyDate <= today ? 1.5 : 0;
+        const restBonus = daysSince > 45 ? 1.25 : daysSince > 21 ? 0.75 : 0;
+        const preservePenalty = qty <= 1 ? -1.6 : qty <= 2 ? -0.9 : 0;
+        const lowStockBoost = qty <= 2 && (rating >= 4.5 || avgSessionRating >= 4.5) ? 0.8 : 0;
+        const score = (rating * 1.25) + (c.is_favorite ? 2.2 : 0) + (avgSessionRating * 1.35) + readyBonus + restBonus + preservePenalty + lowStockBoost;
+        const reasons = [
+          c.is_favorite ? 'Favorite' : null,
+          avgSessionRating >= 4 ? `Sessions ${avgSessionRating.toFixed(1)}/5` : null,
+          rating >= 4 ? `Rated ${rating}/5` : null,
+          readyBonus > 0 ? 'Ready now' : null,
+          daysSince > 30 ? 'Not smoked lately' : null,
+          qty <= 2 ? 'Low stock' : null,
+        ].filter(Boolean);
+        return { cigar: c, score, reasons, daysSince };
+      })
+      .sort((a, b) => b.score - a.score || b.daysSince - a.daysSince)
+  ), [cigars, sessions, today]);
+
+  React.useEffect(() => {
+    if (!tonightCandidates.length) {
+      setTonightRecommendations([]);
+      return;
+    }
+    const key = 'ck_tonight_pick_recent_ids_v1';
+    const raw = localStorage.getItem(key);
+    const recentIds = raw ? raw.split(',').filter(Boolean) : [];
+    const pool = tonightCandidates.filter((item) => !recentIds.includes(item.cigar.id));
+    const rankedPool = pool.length >= 3 ? pool : tonightCandidates;
+    const diversified = [];
+    const usedBrands = new Set();
+    for (const [index, candidate] of rankedPool.entries()) {
+      const brandKey = candidate?.cigar?.brand
+        ? `brand:${candidate.cigar.brand}`
+        : `fallback:${candidate?.cigar?.id || index}`;
+      if (!usedBrands.has(brandKey) || diversified.length >= 2) {
+        diversified.push(candidate);
+        usedBrands.add(brandKey);
+      }
+      if (diversified.length >= 3) break;
+    }
+    const picks = diversified.length > 0 ? diversified : rankedPool.slice(0, 3);
+    setTonightRecommendations(picks);
+    const updatedRecent = [...new Set([...picks.map((p) => p.cigar.id), ...recentIds])].slice(0, 10);
+    localStorage.setItem(key, updatedRecent.join(','));
+  }, [tonightCandidates]);
 
   return (
     <div className="space-y-6">
-      <SectionCard
-        title="Cigar Portfolio Dashboard"
-        subtitle="At-a-glance collection intelligence for value, readiness, and restock pressure."
-      >
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          {summaryCards.map((card) => (
-            <SummaryCard key={card.label} icon={card.icon} label={card.label} value={card.value} />
-          ))}
-        </div>
-      </SectionCard>
-
-      <SectionCard
-        title="Valuation Intelligence"
-        subtitle="Where your value lives, what is stale, and what needs updated pricing."
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
-            <p className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.6)' }}>Highest Value Brands</p>
-            <div className="space-y-1.5 mt-2">
-              {valuation.highestValueBrands.slice(0, 5).map((row) => (
-                <div key={row.name} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-[#F5F1E7] truncate">{row.name}</span>
-                  <span style={{ color: '#D4A574' }}>{formatFromBase(row.value)}</span>
-                </div>
-              ))}
-              {valuation.highestValueBrands.length === 0 ? <EmptyState>Add values to unlock portfolio reports.</EmptyState> : null}
-            </div>
-          </div>
-
-          <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
-            <p className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.6)' }}>Value by Humidor</p>
-            <div className="space-y-1.5 mt-2">
-              {valuation.valueByHumidor.slice(0, 5).map((row) => (
-                <div key={row.name} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-[#F5F1E7] truncate">{row.name}</span>
-                  <span style={{ color: '#D4A574' }}>{formatFromBase(row.value)}</span>
-                </div>
-              ))}
-              {valuation.valueByHumidor.length === 0 ? <EmptyState>Assign humidors to see storage analytics.</EmptyState> : null}
-            </div>
-          </div>
-
-          <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
-            <p className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.6)' }}>Low-Stock High Value</p>
-            <div className="space-y-1.5 mt-2">
-              {valuation.lowStockHighValue.slice(0, 5).map((row) => (
-                <div key={row.cigar.id} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-[#F5F1E7] truncate">{getCigarDisplayName(row.cigar)}</span>
-                  <span style={{ color: '#D4A574' }}>{formatFromBase(row.remainingValue)}</span>
-                </div>
-              ))}
-              {valuation.lowStockHighValue.length === 0 ? <EmptyState>No low-stock high-value cigars detected.</EmptyState> : null}
-            </div>
-          </div>
-        </div>
-
-        <CompactRowCards
-          rows={valuation.highestValueCigars.slice(0, 10)}
-          renderTitle={(row) => getCigarDisplayName(row.cigar)}
-          renderDetail={(row) => `${getCigarQuantity(row.cigar)} cigars · ${formatFromBase(row.remainingValue)}`}
-          emptyText="Add values to unlock portfolio reports."
+      {/* Stats row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatTile icon={Cigarette} label="Total Cigars" value={totalQty} />
+        <StatTile
+          icon={DollarSign}
+          label="Est. Value"
+          value={formatFromBase(totalValue)}
         />
-        <DataTable
-          rows={valuation.highestValueCigars.slice(0, 10)}
-          emptyText="Add values to unlock portfolio reports."
-          columns={[
-            { key: 'name', label: 'Highest Value Cigars', render: (row) => getCigarDisplayName(row.cigar) },
-            { key: 'qty', label: 'Qty', render: (row) => getCigarQuantity(row.cigar) },
-            {
-              key: 'unit',
-              label: 'Unit Value',
-              render: (row) => {
-                const qty = getCigarQuantity(row.cigar);
-                if (qty <= 0) return '—';
-                return formatFromBase(row.remainingValue / qty);
-              },
-            },
-            { key: 'total', label: 'Remaining Value', render: (row) => formatFromBase(row.remainingValue) },
-          ]}
-        />
+        <StatTile icon={BookOpen} label="Sessions" value={sessions.length} />
+        <StatTile icon={Heart} label="Favorites" value={favorites} />
+      </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <div>
-            <CompactRowCards
-              rows={valuation.missingValuation}
-              renderTitle={(row) => getCigarDisplayName(row.cigar)}
-              renderDetail={(row) => `${row.quantity} cigars · Missing estimated and purchase value`}
-              emptyText="All tracked cigars have valuation inputs."
-            />
-            <DataTable
-              rows={valuation.missingValuation}
-              emptyText="All tracked cigars have valuation inputs."
-              columns={[
-                { key: 'name', label: 'Missing Valuation', render: (row) => getCigarDisplayName(row.cigar) },
-                { key: 'qty', label: 'Qty', render: (row) => row.quantity },
-                { key: 'humidor', label: 'Humidor', render: (row) => humidors.find((h) => h.id === row.cigar.humidor_id)?.name || 'Unassigned' },
-              ]}
-            />
-          </div>
-          <div>
-            <CompactRowCards
-              rows={valuation.staleValuation}
-              renderTitle={(row) => getCigarDisplayName(row.cigar)}
-              renderDetail={(row) => `${row.staleDays} days stale · ${formatFromBase(row.remainingValue)}`}
-              emptyText="No stale valuations found in the current window."
-            />
-            <DataTable
-              rows={valuation.staleValuation}
-              emptyText="No stale valuations found in the current window."
-              columns={[
-                { key: 'name', label: 'Stale Valuation', render: (row) => getCigarDisplayName(row.cigar) },
-                { key: 'days', label: 'Days Stale', render: (row) => row.staleDays },
-                { key: 'value', label: 'Remaining Value', render: (row) => formatFromBase(row.remainingValue) },
-              ]}
-            />
-          </div>
-        </div>
-      </SectionCard>
-
-      <SectionCard
-        title="Collector Analytics"
-        subtitle="Inventory concentration, smoking behavior, readiness, and acquisition posture."
+      <div
+        className="rounded-xl p-4"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
       >
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
-          <ChartBlock title="Inventory by Brand" data={analytics.inventory.byBrand.slice(0, 8)} color={GOLD_PALETTE[0]} />
-          <ChartBlock title="Inventory by Country" data={analytics.inventory.byCountry.slice(0, 8)} color={GOLD_PALETTE[2]} />
-          <ChartBlock title="Inventory by Humidor" data={analytics.inventory.byHumidor.slice(0, 8)} color={GOLD_PALETTE[4]} />
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <div className="space-y-3">
-            <CompactRowCards
-              rows={analytics.smoking.mostSmoked}
-              renderTitle={(row) => row.name}
-              renderDetail={(row) => `Smoked ${row.value} time${row.value === 1 ? '' : 's'}`}
-              emptyText="Log sessions to unlock smoking analytics."
-            />
-            <DataTable
-              rows={analytics.smoking.mostSmoked}
-              emptyText="Log sessions to unlock smoking analytics."
-              columns={[
-                { key: 'name', label: 'Most Smoked Cigars', render: (row) => row.name },
-                { key: 'count', label: 'Sessions', render: (row) => row.value },
-              ]}
-            />
-
-            <CompactRowCards
-              rows={analytics.smoking.avgSessionRatingByBrand}
-              renderTitle={(row) => row.name}
-              renderDetail={(row) => `Avg ${row.value}/5 over ${row.samples} sessions`}
-              emptyText="Log rated sessions to unlock brand rating analytics."
-            />
-            <DataTable
-              rows={analytics.smoking.avgSessionRatingByBrand}
-              emptyText="Log rated sessions to unlock brand rating analytics."
-              columns={[
-                { key: 'brand', label: 'Average Session Rating by Brand', render: (row) => row.name },
-                { key: 'rating', label: 'Avg Rating', render: (row) => `${row.value}/5` },
-                { key: 'samples', label: 'Sessions', render: (row) => row.samples },
-              ]}
-            />
+        <SectionHeading>Valuation Attention</SectionHeading>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
+            <div className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>Needs valuation</div>
+            <div className="text-lg font-semibold text-[#F5F1E7]">{missingValuationCount}</div>
           </div>
-
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <SummaryCard icon={Shield} label="Ready Now" value={analytics.readiness.readyNow.length} />
-              <SummaryCard icon={Clock3} label="Ready Soon" value={analytics.readiness.readySoon.length} />
-              <SummaryCard icon={TrendingUp} label="Long-Term Aging" value={analytics.readiness.longTermAging.length} />
-              <SummaryCard icon={AlertTriangle} label="Neglected Gems" value={analytics.readiness.neglectedGems.length} />
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <SummaryCard icon={Layers} label="Wishlist" value={analytics.acquisition.wishlist} />
-              <SummaryCard icon={Layers} label="Shopping List" value={analytics.acquisition.shopping} />
-              <SummaryCard icon={Heart} label="Restock" value={analytics.acquisition.restock} />
-              <SummaryCard icon={AlertTriangle} label="Not for Me" value={analytics.acquisition.notForMe} />
-            </div>
-
-            <CompactRowCards
-              rows={analytics.smoking.recentlyEnjoyed}
-              renderTitle={(row) => row.displayName}
-              renderDetail={(row) => `${row.date || 'Unknown date'} · ${row.score}/5`}
-              emptyText="Log sessions to unlock recently enjoyed tracking."
-            />
-            <DataTable
-              rows={analytics.smoking.recentlyEnjoyed}
-              emptyText="Log sessions to unlock recently enjoyed tracking."
-              columns={[
-                { key: 'name', label: 'Recently Enjoyed', render: (row) => row.displayName },
-                { key: 'date', label: 'Date', render: (row) => row.date || '—' },
-                { key: 'score', label: 'Enjoyment', render: (row) => `${row.score}/5` },
-              ]}
-            />
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
+            <div className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>Stale valuations</div>
+            <div className="text-lg font-semibold text-[#F5F1E7]">{staleValuationCount}</div>
           </div>
         </div>
-      </SectionCard>
+      </div>
 
-      <SectionCard
-        title="Timeline & Trend Foundation"
-        subtitle="Monthly value snapshots, smoking activity, and acquisition movement over the last 12 months."
-      >
-        {trend.hasSnapshotValueTrend || trend.hasActivity ? (
-          <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={trend.timeline} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid stroke="rgba(180,140,75,0.14)" />
-                <XAxis dataKey="month" tick={{ fill: 'rgba(224,216,200,0.7)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis yAxisId="left" tick={{ fill: 'rgba(224,216,200,0.6)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'rgba(224,216,200,0.6)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: 'rgba(26,18,12,0.96)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
-                  formatter={formatTrendTooltip}
-                />
-                <Legend />
-                <Line yAxisId="right" type="monotone" dataKey="collectionValue" name="Value" stroke="#D4A574" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="acquired" name="Acquired" stroke="#6FCF97" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="smoked" name="Smoked" stroke="#E07060" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="cellarDelta" name="Cellar Delta" stroke="#8AA8D6" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <EmptyState>
-            Add values to unlock portfolio reports. Log sessions to unlock smoking analytics. Trend snapshots will appear as valuation history grows.
-          </EmptyState>
+      {(highestValueCigars.length > 0 || highValueLowStock.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {highestValueCigars.length > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <SectionHeading>Highest Value Cigars</SectionHeading>
+              <div className="space-y-2">
+                {highestValueCigars.map(({ cigar, valuation }) => (
+                  <div key={cigar.id} className="flex justify-between gap-3 text-sm">
+                    <span className="truncate text-[#E0D8C8]">{[cigar.brand, cigar.name].filter(Boolean).join(' · ') || cigar.name || 'Unnamed'}</span>
+                    <span className="text-[#D4A574] font-semibold">{formatFromBase(valuation.estimatedTotalValue || 0)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {highValueLowStock.length > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <SectionHeading>High Value / Low Stock</SectionHeading>
+              <div className="space-y-2">
+                {highValueLowStock.map(({ cigar, valuation }) => (
+                  <div key={cigar.id} className="flex justify-between gap-3 text-sm">
+                    <span className="truncate text-[#E0D8C8]">
+                      {[cigar.brand, cigar.name].filter(Boolean).join(' · ') || cigar.name || 'Unnamed'} ({Number(cigar.singles_equivalent ?? cigar.quantity ?? 0)})
+                    </span>
+                    <span className="text-[#D4A574] font-semibold">{formatFromBase(valuation.estimatedTotalValue || 0)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Charts grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {brandData.length > 0 && (
+          <MiniChart data={brandData} title="Top Brands" horizontal />
         )}
-      </SectionCard>
+        {brandRatingData.length > 0 && (
+          <MiniChart data={brandRatingData} title="Top Brands by Avg Rating" horizontal />
+        )}
+        {wrapperData.length > 0 && (
+          <MiniPie data={wrapperData} title="Wrapper Breakdown" />
+        )}
+        {favoriteWrapperData.length > 0 && (
+          <MiniPie data={favoriteWrapperData} title="Favorite Wrappers" />
+        )}
+        {lineData.length > 0 && (
+          <MiniChart data={lineData} title="Top Lines" horizontal />
+        )}
+        {vitolaData.length > 0 && (
+          <MiniChart data={vitolaData} title="Top Vitolas" />
+        )}
+        {originData.length > 0 && (
+          <MiniPie data={originData} title="Country of Origin" />
+        )}
+        {bodyData.length > 0 && (
+          <MiniChart data={bodyData} title="Body Distribution" />
+        )}
+        {mostSmokedData.length > 0 && (
+          <MiniChart data={mostSmokedData} title="Most Smoked Cigars" horizontal />
+        )}
+      </div>
 
-      <SectionCard
-        title="Insurance / Export Reports"
-        subtitle="Generate insurer-ready exports with values, quantities, storage locations, and generated date."
+      {/* Aging status — uses the shared readiness engine */}
+      {(readinessSummary.readyNow > 0 || readinessSummary.aging > 0 || readinessSummary.pastPeak > 0) && (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+        >
+          <SectionHeading>Aging Status</SectionHeading>
+          <div className="grid grid-cols-3 gap-3">
+            <div
+              className="rounded-xl p-3 text-center"
+              style={{ background: 'rgba(76,175,130,0.1)', border: '1px solid rgba(76,175,130,0.3)' }}
+            >
+              <div className="text-2xl font-bold text-[#F5F1E7]">{readinessSummary.readyNow}</div>
+              <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(76,175,130,0.85)' }}>
+                Ready Now
+              </div>
+            </div>
+            <div
+              className="rounded-xl p-3 text-center"
+              style={{ background: 'rgba(212,165,116,0.1)', border: '1px solid rgba(212,165,116,0.3)' }}
+            >
+              <div className="text-2xl font-bold text-[#F5F1E7]">{readySoonCount}</div>
+              <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(212,165,116,0.85)' }}>
+                Ready Soon
+              </div>
+            </div>
+            <div
+              className="rounded-xl p-3 text-center"
+              style={{ background: 'rgba(224,100,80,0.1)', border: '1px solid rgba(224,100,80,0.25)' }}
+            >
+              <div className="text-2xl font-bold text-[#F5F1E7]">{readinessSummary.aging + readinessSummary.pastPeak}</div>
+              <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(224,100,80,0.8)' }}>
+                Still Resting / Risk
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Acquisition-state clarity */}
+      <div
+        className="rounded-xl p-4"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
       >
+        <SectionHeading>Acquisition States</SectionHeading>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.3)' }}>
+            <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Wishlist</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.wishlist}</p>
+          </div>
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(76,120,180,0.14)', border: '1px solid rgba(76,120,180,0.3)' }}>
+            <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Shopping List</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.shopping}</p>
+          </div>
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(224,160,80,0.14)', border: '1px solid rgba(224,160,80,0.3)' }}>
+            <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Restock</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.restock}</p>
+          </div>
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(224,100,80,0.14)', border: '1px solid rgba(224,100,80,0.3)' }}>
+            <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Not for Me</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.notForMe}</p>
+          </div>
+        </div>
+        <p className="text-xs mt-2" style={{ color: 'rgba(224,216,200,0.55)' }}>
+          Wishlist = curious, Shopping List = planning to buy soon, Restock = replacing favorites, Not for Me = excluded from recommendations.
+        </p>
+      </div>
+
+      {/* Collection insights */}
+      {collectionInsights.length > 0 && (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+        >
+          <SectionHeading>Collection Insights</SectionHeading>
+          <div className="space-y-2">
+            {collectionInsights.map((insight) => {
+              const cfg = INSIGHT_CONFIG[insight.type];
+              const Icon = cfg?.icon || Cigarette;
+              const color = cfg?.color || '#D4A574';
+              const displayLabel =
+                insight.type === INSIGHT_TYPES.SMOKE_NOW ? 'Ready Now' :
+                insight.type === INSIGHT_TYPES.REST_LONGER ? 'Still Resting' :
+                insight.type === INSIGHT_TYPES.NEGLECTED ? 'Neglected Gem' :
+                insight.type === INSIGHT_TYPES.FAST_DEPLETING ? 'Low-Stock Favorite' :
+                insight.label;
+              return (
+                <div
+                  key={`${insight.cigarId}-${insight.type}`}
+                  className="flex items-start gap-3 rounded-xl px-3 py-2.5"
+                  style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color }} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-semibold uppercase tracking-wide" style={{ color }}>
+                        {displayLabel}
+                      </span>
+                      <span className="text-xs" style={{ color: 'rgba(224,216,200,0.65)' }}>
+                        {insight.cigarName}
+                      </span>
+                    </div>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                      {insight.detail}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Recommendations */}
+      {tonightRecommendations.length > 0 && (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+        >
+          <SectionHeading>What should I smoke tonight?</SectionHeading>
+          <div className="space-y-2">
+            {tonightRecommendations.map(({ cigar, reasons }) => (
+              <div key={cigar.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
+                <p className="text-sm font-semibold text-[#F5F1E7]">{[cigar.brand, cigar.name].filter(Boolean).join(' ')}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.58)' }}>{reasons.join(' · ') || 'Balanced pick from your collection'}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {(lowStockFavorites.length > 0 || buyAgainCandidates.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {lowStockFavorites.length > 0 && (
+            <div
+              className="rounded-xl p-4"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+            >
+              <SectionHeading>Low Stock Favorites</SectionHeading>
+              <div className="space-y-2">
+                {lowStockFavorites.map((c) => (
+                  <div key={c.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
+                    <p className="text-sm font-semibold text-[#F5F1E7]">{[c.brand, c.name].filter(Boolean).join(' ')}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                      {Number(c.singles_equivalent ?? c.quantity ?? 0)} left · Threshold {Number(c.restock_threshold || 3)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {buyAgainCandidates.length > 0 && (
+            <div
+              className="rounded-xl p-4"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+            >
+              <SectionHeading>Buy Again Candidates</SectionHeading>
+              <div className="space-y-2">
+                {buyAgainCandidates.map(({ cigar, avg, qty }) => (
+                  <div key={cigar.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
+                    <p className="text-sm font-semibold text-[#F5F1E7]">{[cigar.brand, cigar.name].filter(Boolean).join(' ')}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                      Session avg {avg.toFixed(1)}/5 · {qty} left
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Recent sessions table */}
+      {recentSessionsSorted.length > 0 && (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+        >
+          <SectionHeading>Recent Sessions</SectionHeading>
+          <div className="space-y-2">
+            {recentSessionsSorted.map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-[#F5F1E7] truncate">
+                    {s.cigar_name || s.external_cigar_name || 'Unknown Cigar'}
+                  </p>
+                  <p className="text-xs text-[#E0D8C8]/50 mt-0.5">
+                    {s.date}
+                    {s.duration_minutes ? ` · ${s.duration_minutes} min` : ''}
+                    {s.location ? ` · ${s.location}` : ''}
+                  </p>
+                </div>
+                {s.overall_enjoyment > 0 && (
+                  <div className="flex items-center gap-0.5 flex-shrink-0">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <span
+                        key={i}
+                        className="text-xs"
+                        style={{ color: i < s.overall_enjoyment ? '#D4A574' : 'rgba(180,140,75,0.25)' }}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Insurance / Export */}
+      <div
+        className="rounded-xl p-4"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+      >
+        <SectionHeading>Insurance &amp; Export Reports</SectionHeading>
+        <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>
+          Generate insurer-ready exports with values, quantities, storage locations, and a generated date.
+        </p>
         <CigarInsuranceExporter user={user} cigars={cigars} humidors={humidors} />
-      </SectionCard>
+      </div>
     </div>
   );
 }

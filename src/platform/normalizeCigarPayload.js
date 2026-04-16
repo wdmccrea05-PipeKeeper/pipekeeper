@@ -20,6 +20,10 @@ const NUMERIC_FIELDS = [
   'length_inches',
   'ring_gauge',
   'purchase_price',
+  'manual_valuation_override',
+  'estimated_unit_value',
+  'estimated_total_value',
+  'replacement_cost_estimate',
   'estimated_value',
   'quantity',
   'cigars_per_package',
@@ -34,6 +38,8 @@ const ENUM_FIELDS = [
   'unit_type',
   'production_status',
   'release_type',
+  'purchase_price_type',
+  'valuation_confidence',
 ];
 
 const DATE_FIELDS = [
@@ -41,6 +47,7 @@ const DATE_FIELDS = [
   'aging_start_date',
   'ready_to_smoke_date',
   'box_date',
+  'valuation_updated_at',
 ];
 
 const OPTIONAL_STRING_FIELDS = [
@@ -58,6 +65,8 @@ const OPTIONAL_STRING_FIELDS = [
   'ean',
   'personal_notes',
   'storage_notes',
+  'valuation_source',
+  'valuation_notes',
   'humidor_id',
   'humidor_tray',
   'humidor_shelf',
@@ -133,6 +142,10 @@ export function normalizeCigarPayload(form, { isCreate = false } = {}) {
     }
   }
 
+  if (out.valuation_updated_at && /^\d{4}-\d{2}-\d{2}$/.test(out.valuation_updated_at)) {
+    out.valuation_updated_at = new Date(`${out.valuation_updated_at}T12:00:00.000Z`).toISOString();
+  }
+
   // Clean empty / invalid enum fields
   for (const field of ENUM_FIELDS) {
     if (!out[field] || out[field] === '') {
@@ -156,10 +169,32 @@ export function normalizeCigarPayload(form, { isCreate = false } = {}) {
   // Sending 0 would display as a 0/5 score rather than an unrated state.
   if (out.rating === 0) out.rating = undefined;
 
+  // Keep legacy estimated_value (per-stick) aligned with the new field.
+  if (out.estimated_unit_value == null && out.estimated_value != null) {
+    out.estimated_unit_value = out.estimated_value;
+  }
+  if (out.estimated_value == null && out.estimated_unit_value != null) {
+    out.estimated_value = out.estimated_unit_value;
+  }
+
   // Derive and set singles_equivalent if we can compute it
   const derived = deriveSinglesEquivalent(out);
   if (derived !== null) {
     out.singles_equivalent = derived;
+  }
+
+  // If only unit value is provided, derive total valuation for remaining sticks.
+  if (
+    out.estimated_total_value == null &&
+    out.estimated_unit_value != null &&
+    out.singles_equivalent != null
+  ) {
+    out.estimated_total_value = Number(out.estimated_unit_value) * Number(out.singles_equivalent);
+  }
+
+  // Default purchase price interpretation for compatibility.
+  if (out.purchase_price != null && !out.purchase_price_type) {
+    out.purchase_price_type = 'total_paid';
   }
 
   // Set initial_quantity baseline when creating a new record
