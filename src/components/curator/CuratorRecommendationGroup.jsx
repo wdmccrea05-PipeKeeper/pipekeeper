@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import {
   Check, Eye, Loader2, CheckCircle2,
   RotateCcw, CalendarClock, TrendingUp, HelpCircle,
-  X, Search,
+  X,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { ACTION_TYPE, PRIORITY_STYLES, MODULE_KEY, CATEGORY } from '@/lib/curator/recommendationSchema.js';
@@ -190,25 +190,46 @@ function RecordOptimizationActions({ rec, onAction }) {
     finally { setApplying(false); }
   };
 
-  // Per-item row: name + action based on confidence (Apply Fix / Review Fix / Open Record / Search Online)
+  // Per-item row: name + action based on confidence (Apply Fix / Review Fix / Open Record / Auto-lookup age)
   const ItemRow = ({ item }) => {
     const [applying, setApplying] = useState(false);
     const [done, setDone] = useState(false);
     const [searching, setSearching] = useState(false);
     const [searchResult, setSearchResult] = useState(null); // { age: number }
+    const [searchError, setSearchError] = useState(false);
     const confidence = item?.proposedChange?.confidence || 0;
     const hasPayload = hasNonEmptyPayload(item);
     const path = singleItemPath(item);
 
-    // Determine if this item is missing age specifically (whiskey bottles)
+    // Auto-lookup age on mount when this item is missing age and has no proposed fix
     const missingAge = !hasPayload && item.missingFields?.includes('age');
+    React.useEffect(() => {
+      if (!missingAge) return;
+      let cancelled = false;
+      setSearching(true);
+      const name = item.itemName || item.recordName || '';
+      base44.integrations.Core.InvokeLLM({
+        prompt: `What is the age statement (in years) for the whiskey "${name}"? If it is a NAS (no age statement) whiskey, return 0. Return ONLY a JSON object with a single field "age" as a number.`,
+        add_context_from_internet: true,
+        response_json_schema: { type: 'object', properties: { age: { type: 'number' } } },
+      }).then((res) => {
+        if (cancelled) return;
+        if (res?.age != null) setSearchResult({ age: res.age });
+        else setSearchError(true);
+      }).catch(() => {
+        if (!cancelled) setSearchError(true);
+      }).finally(() => {
+        if (!cancelled) setSearching(false);
+      });
+      return () => { cancelled = true; };
+    }, [missingAge, item.itemName, item.recordName]);
 
     const proposedSummary = hasPayload
       ? item.issueType === 'reclassification'
         ? Object.values(item.proposedChange.payload).join(' · ')
         : Object.entries(item.proposedChange.payload).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')
       : searchResult
-      ? `age: ${searchResult.age} years`
+      ? `age: ${searchResult.age === 0 ? 'NAS' : `${searchResult.age} years`}`
       : null;
 
     const handleApplyItem = async () => {
@@ -217,34 +238,10 @@ function RecordOptimizationActions({ rec, onAction }) {
       finally { setApplying(false); }
     };
 
-    const handleSearchAge = async () => {
-      setSearching(true);
-      setSearchResult(null);
-      try {
-        const name = item.itemName || item.recordName || '';
-        const res = await base44.integrations.Core.InvokeLLM({
-          prompt: `What is the age statement (in years) for the whiskey "${name}"? If it is a NAS (no age statement) whiskey, return 0. Return ONLY a JSON object with a single field "age" as a number.`,
-          add_context_from_internet: true,
-          response_json_schema: {
-            type: 'object',
-            properties: { age: { type: 'number' } },
-          },
-        });
-        if (res?.age != null) {
-          setSearchResult({ age: res.age });
-        }
-      } catch (err) {
-        console.error('[Curator] age search failed', err);
-      } finally {
-        setSearching(false);
-      }
-    };
-
     const handleApplySearchResult = async () => {
       if (!searchResult) return;
       setApplying(true);
       try {
-        // Patch the bottle record directly
         const id = item.recordId || item.id;
         await base44.entities.Bottle.update(id, { age: searchResult.age });
         setDone(true);
@@ -276,6 +273,10 @@ function RecordOptimizationActions({ rec, onAction }) {
           <div className="shrink-0 flex items-center gap-1.5">
             {done ? (
               <DoneIndicator label="Fixed" />
+            ) : searching ? (
+              <span className="px-3 h-8 inline-flex items-center gap-1.5 text-xs" style={{ color: '#71717A' }}>
+                <Loader2 className="w-3 h-3 animate-spin" /> Looking up…
+              </span>
             ) : searchResult ? (
               <button
                 type="button"
@@ -285,7 +286,7 @@ function RecordOptimizationActions({ rec, onAction }) {
                 style={{ background: '#4a7c5c', color: '#e0f5ea', border: 'none' }}
               >
                 {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                {applying ? 'Saving…' : `Apply ${searchResult.age === 0 ? 'NAS' : `${searchResult.age}yr`}`}
+                {applying ? 'Saving…' : `Confirm ${searchResult.age === 0 ? 'NAS' : `${searchResult.age}yr`}`}
               </button>
             ) : hasPayload && confidence >= 0.85 ? (
               <button
@@ -307,17 +308,6 @@ function RecordOptimizationActions({ rec, onAction }) {
               >
                 <Eye className="w-3 h-3" />
                 Review Fix
-              </button>
-            ) : missingAge ? (
-              <button
-                type="button"
-                onClick={handleSearchAge}
-                disabled={searching}
-                className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
-                style={{ background: 'rgba(74,100,156,0.2)', color: 'rgba(160,200,240,1)', border: '1px solid rgba(74,100,156,0.35)' }}
-              >
-                {searching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
-                {searching ? 'Searching…' : 'Search Online'}
               </button>
             ) : path ? (
               <a
