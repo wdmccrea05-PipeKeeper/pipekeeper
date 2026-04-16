@@ -1,4 +1,4 @@
-import { base44 as base44Client } from "@/api/base44Client";
+import { base44 } from "@/api/base44Client";
 
 function safeString(value) {
   return String(value || "").trim();
@@ -33,7 +33,7 @@ export async function syncAppleSubscriptionStatus(payload = {}, options = {}) {
   const normalized = normalizeNativeAppleStatus(payload);
   const invoke =
     options.invoke ||
-    ((body) => base44Client.functions.invoke("syncAppleSubscriptionForMe", body));
+    ((body) => base44.functions.invoke("syncAppleSubscriptionForMe", body));
 
   if (normalized.active && !normalized.originalTransactionId) {
     return { ok: false, skipped: true, reason: "missing_original_transaction_id" };

@@ -170,6 +170,7 @@ Deno.serve(async (req) => {
       stripe_customer_id: null,
       status,
       tier,
+      // Keep both keys for compatibility with legacy readers that still check camelCase.
       plan_key: productAccess.planKey,
       planKey: productAccess.planKey,
       modules_csv: modulesCsv,
