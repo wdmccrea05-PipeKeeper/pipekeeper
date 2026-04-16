@@ -299,9 +299,7 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
     const pool = tonightCandidates.filter((item) => !recentIds.includes(item.cigar.id));
     const picks = (pool.length >= 3 ? pool : tonightCandidates).slice(0, 3);
     setTonightRecommendations(picks);
-    const updatedRecent = [...picks.map((p) => p.cigar.id), ...recentIds]
-      .filter((id, idx, arr) => arr.indexOf(id) === idx)
-      .slice(0, 10);
+    const updatedRecent = [...new Set([...picks.map((p) => p.cigar.id), ...recentIds])].slice(0, 10);
     localStorage.setItem(key, updatedRecent.join(','));
   }, [tonightCandidates]);
 

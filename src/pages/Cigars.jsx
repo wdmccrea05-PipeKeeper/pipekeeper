@@ -33,6 +33,7 @@ const TABS = ['collection', 'humidors', 'wishlist', 'shopping', 'restock'];
 
 const BODY_OPTIONS = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
 const STRENGTH_OPTIONS = ['mild', 'medium', 'full'];
+const NOT_FOR_ME_FLAGS_PATCH = { not_for_me: false, ai_excluded: false };
 
 function sortCigars(cigars, sortBy) {
   return [...cigars].sort((a, b) => {
@@ -130,6 +131,7 @@ function CigarsInner() {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [assignTargetCigar, setAssignTargetCigar] = useState(null);
   const [assignHumidorId, setAssignHumidorId] = useState('unassigned');
+  const [bulkAssignHumidorId, setBulkAssignHumidorId] = useState('unassigned');
   const [selectMode, setSelectMode] = useState(false);
   const [selectedCigarIds, setSelectedCigarIds] = useState([]);
   const [displayMode, setDisplayMode] = useState(() => {
@@ -299,7 +301,7 @@ function CigarsInner() {
         updateCigarInCache(cigar.id, patch);
       } else if (normalizedAction === 'toggle_not_for_me') {
         const next = !cigar.not_for_me;
-        const patch = { not_for_me: next, ai_excluded: next };
+        const patch = next ? { not_for_me: true, ai_excluded: true } : NOT_FOR_ME_FLAGS_PATCH;
         await base44.entities.Cigar.update(cigar.id, patch);
         updateCigarInCache(cigar.id, patch);
       } else if (normalizedAction === 'toggle_favorite') {
@@ -348,15 +350,18 @@ function CigarsInner() {
     [cigars, selectedCigarIds]
   );
 
+  const cigarIdSet = useMemo(() => new Set(cigars.map((c) => c.id)), [cigars]);
+
   useEffect(() => {
-    setSelectedCigarIds((prev) => prev.filter((id) => cigars.some((c) => c.id === id)));
-  }, [cigars]);
+    setSelectedCigarIds((prev) => prev.filter((id) => cigarIdSet.has(id)));
+  }, [cigarIdSet]);
 
   const handleBulkAction = async (action, humidorId = null) => {
     if (!selectedCigarIds.length) return;
     try {
       if (action === 'delete') {
-        if (!window.confirm(`Delete ${selectedCigarIds.length} cigars? This cannot be undone.`)) return;
+        const count = selectedCigarIds.length;
+        if (!window.confirm(`Delete ${count} cigar${count === 1 ? '' : 's'}? This cannot be undone.`)) return;
         await Promise.all(selectedCigarIds.map((id) => base44.entities.Cigar.delete(id)));
       } else {
         const patches = selectedCigars.map((cigar) => {
@@ -378,7 +383,7 @@ function CigarsInner() {
           if (action === 'wishlist') return { id: cigar.id, patch: { wishlist: true } };
           if (action === 'shopping') return { id: cigar.id, patch: { shopping_list: true } };
           if (action === 'restock') return { id: cigar.id, patch: { restock_flag: true } };
-          if (action === 'clear_flags') return { id: cigar.id, patch: { wishlist: false, shopping_list: false, restock_flag: false, not_for_me: false, ai_excluded: false } };
+          if (action === 'clear_flags') return { id: cigar.id, patch: { wishlist: false, shopping_list: false, restock_flag: false, ...NOT_FOR_ME_FLAGS_PATCH } };
           return null;
         }).filter(Boolean);
         await Promise.all(patches.map(({ id, patch }) => base44.entities.Cigar.update(id, patch)));
@@ -549,7 +554,10 @@ function CigarsInner() {
                   localStorage.setItem('cigarsDisplayMode', 'standard');
                 }
                 setSelectMode(next);
-                if (!next) setSelectedCigarIds([]);
+                if (!next) {
+                  setSelectedCigarIds([]);
+                  setBulkAssignHumidorId('unassigned');
+                }
               }}
               className="px-3 py-2 rounded-xl text-sm transition-all"
               style={{
@@ -575,11 +583,8 @@ function CigarsInner() {
               <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('restock')}>Restock</Button>
               <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('clear_flags')}>Clear Flags</Button>
               <Select
-                value={assignHumidorId || 'unassigned'}
-                onValueChange={(value) => {
-                  setAssignHumidorId(value);
-                  if (selectedCount > 0) handleBulkAction('assign_humidor', value === 'unassigned' ? null : value);
-                }}
+                value={bulkAssignHumidorId || 'unassigned'}
+                onValueChange={setBulkAssignHumidorId}
               >
                 <SelectTrigger className="w-44 h-8 text-xs">
                   <SelectValue placeholder="Assign Humidor" />
@@ -591,6 +596,14 @@ function CigarsInner() {
                   ))}
                 </SelectContent>
               </Select>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!selectedCount}
+                onClick={() => handleBulkAction('assign_humidor', bulkAssignHumidorId === 'unassigned' ? null : bulkAssignHumidorId)}
+              >
+                Assign
+              </Button>
               <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('delete')} style={{ color: '#E05555' }}>
                 Delete
               </Button>
