@@ -141,7 +141,7 @@
     },
     "quantity": {
       "type": "number",
-      "description": "Number of package units owned (e.g. 2 boxes, 5 singles)"
+      "description": "Number of package units owned (e.g. 2 boxes, 3 singles)"
     },
     "initial_quantity": {
       "type": "number",

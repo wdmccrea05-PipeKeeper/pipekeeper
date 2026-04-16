@@ -580,20 +580,15 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
               checked={form.not_for_me}
               onChange={(v) => setForm((f) => ({ ...f, not_for_me: v }))}
             />
-            {cigarMode === 'external' && (
+            {(cigarMode === 'external' || cigarMode === 'collection') && (
               <CheckToggle
-                label="Add to wishlist after"
+                label={cigarMode === 'external' ? 'Add to wishlist after' : 'Add to wishlist'}
                 checked={form.wishlist_after}
                 onChange={(v) => setForm((f) => ({ ...f, wishlist_after: v }))}
               />
             )}
             {cigarMode === 'collection' && (
               <>
-                <CheckToggle
-                  label="Add to wishlist"
-                  checked={form.wishlist_after}
-                  onChange={(v) => setForm((f) => ({ ...f, wishlist_after: v }))}
-                />
                 <CheckToggle
                   label="Mark restock"
                   checked={form.restock_after}
