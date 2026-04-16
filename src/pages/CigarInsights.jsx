@@ -51,6 +51,21 @@ function CigarInsightsInner() {
     staleTime: 10000,
   });
 
+  const { data: valueSnapshots = [] } = useQuery({
+    queryKey: ['cigar-value-snapshots-insights', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const result = await base44.entities.ItemValueSnapshot.filter(
+        { created_by: user?.email, module_key: 'cigarkeeper', item_type: 'cigar' },
+        '-snapshot_date',
+        1000
+      ).catch(() => []);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
   const isLoading = cigarsLoading || sessionsLoading;
 
   return (
@@ -69,7 +84,7 @@ function CigarInsightsInner() {
       {isLoading ? (
         <p style={{ color: 'rgba(224,216,200,0.6)' }}>Loading…</p>
       ) : (
-        <CigarInsights cigars={cigars} sessions={sessions} humidors={humidors} />
+        <CigarInsights user={user} cigars={cigars} sessions={sessions} humidors={humidors} snapshots={valueSnapshots} />
       )}
     </div>
   );

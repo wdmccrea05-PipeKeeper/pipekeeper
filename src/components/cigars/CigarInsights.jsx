@@ -8,6 +8,7 @@ import { summarizeCigarReadiness, generateCollectionInsights, INSIGHT_TYPES } fr
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import { calculateCigarValue } from '@/utils/cigarValuation';
+import CigarInsuranceExporter from '@/components/export/CigarInsuranceExporter';
 
 const GOLD_PALETTE = ['#D4A574', '#B48C4B', '#8C6B3F', '#6B4F2E', '#F5D4A0', '#C4904A', '#A07840'];
 function SectionHeading({ children }) {
@@ -174,7 +175,7 @@ const INSIGHT_CONFIG = {
   [INSIGHT_TYPES.FAST_DEPLETING]: { icon: Flame,       color: '#E0B450', label: 'Running Low' },
 };
 
-export default function CigarInsights({ cigars = [], sessions = [], humidors = [] }) {
+export default function CigarInsights({ user, cigars = [], sessions = [], humidors = [], snapshots = [] }) {
   const today = React.useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -657,6 +658,18 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
           </div>
         </div>
       )}
+
+      {/* Insurance / Export */}
+      <div
+        className="rounded-xl p-4"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+      >
+        <SectionHeading>Insurance &amp; Export Reports</SectionHeading>
+        <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>
+          Generate insurer-ready exports with values, quantities, storage locations, and a generated date.
+        </p>
+        <CigarInsuranceExporter user={user} cigars={cigars} humidors={humidors} />
+      </div>
     </div>
   );
 }
