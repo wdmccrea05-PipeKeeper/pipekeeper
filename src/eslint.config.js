@@ -1,10 +1,7 @@
-import js from '@eslint/js';
-
 export default [
-  js.configs.recommended,
   {
     // Test files — declare vitest globals so linter doesn't flag them
-    files: ['**/*.test.{js,jsx,ts,tsx}', '**/*.spec.{js,jsx,ts,tsx}', '**/__tests__/**/*.{js,jsx,ts,tsx}'],
+    files: ['**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/*.spec.js', '**/*.spec.jsx', '**/__tests__/**/*.js', '**/__tests__/**/*.jsx', '**/__tests__/**/*.ts', '**/__tests__/**/*.tsx'],
     languageOptions: {
       globals: {
         describe: 'readonly',
