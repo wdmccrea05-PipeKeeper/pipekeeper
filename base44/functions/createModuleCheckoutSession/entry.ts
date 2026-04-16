@@ -158,8 +158,10 @@ function getModuleDescriptor(type: CheckoutType, modules: string[]) {
 }
 
 function resolveCheckoutAppSlug(type: CheckoutType, modules: string[]): string {
-  if (type === 'single' && modules[0]) {
-    return modules[0];
+  const allowedAppSlugs = new Set(['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']);
+  const candidate = String(modules[0] || '').trim().toLowerCase();
+  if (type === 'single' && allowedAppSlugs.has(candidate)) {
+    return candidate;
   }
   return 'pipekeeper';
 }

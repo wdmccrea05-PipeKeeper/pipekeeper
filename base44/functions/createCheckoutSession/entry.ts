@@ -36,6 +36,12 @@ const PLAN_TO_STRIPE_PRICE = {
  * which event fires first.
  */
 function buildCheckoutMetadata(planKey, selectedModules = [], user) {
+  const allowedAppSlugs = new Set(['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']);
+  const toValidAppSlug = (value) => {
+    const normalized = String(value || '').trim().toLowerCase();
+    return allowedAppSlugs.has(normalized) ? normalized : 'pipekeeper';
+  };
+
   const normalizedModules = Array.isArray(selectedModules)
     ? selectedModules.map((m) => String(m || '').trim().toLowerCase()).filter(Boolean)
     : [];
@@ -48,7 +54,7 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
   let bundleName = '';
   let moduleCount = 1;
   let modulesCsv = primaryModule;
-  let appSlug = primaryModule || 'pipekeeper';
+  let appSlug = toValidAppSlug(primaryModule || 'pipekeeper');
 
   if (planKey.includes('three_module')) {
     checkoutType = 'bundle_3';
@@ -57,7 +63,7 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
     moduleCount = Math.min(normalizedModules.length || 3, 3);
     modulesCsv = normalizedModules.slice(0, 3).join(',') || 'pipekeeper';
     primaryModule = normalizedModules[0] || 'pipekeeper';
-    appSlug = primaryModule || 'pipekeeper';
+    appSlug = toValidAppSlug(primaryModule || 'pipekeeper');
   } else if (planKey.includes('four_module')) {
     checkoutType = 'bundle_4';
     productKind = 'bundle';
@@ -81,7 +87,7 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
     productKind = 'module';
     moduleCount = 1;
     modulesCsv = primaryModule;
-    appSlug = primaryModule || 'pipekeeper';
+    appSlug = toValidAppSlug(primaryModule || 'pipekeeper');
   }
 
   const appEnvironment =

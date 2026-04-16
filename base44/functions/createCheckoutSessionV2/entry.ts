@@ -70,7 +70,7 @@ function getPriceIdFromTierAndInterval(tier, interval) {
   return priceId || "";
 }
 
-function resolveAppSlugFromTier(tier) {
+function resolveAppSlugFromTier(tier: unknown) {
   const normalized = String(tier || "").trim().toLowerCase();
   if (normalized.startsWith("whiskey")) return "whiskeykeeper";
   if (normalized.startsWith("cigar")) return "cigarkeeper";

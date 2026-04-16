@@ -12,8 +12,7 @@ export function parseSubscriptionCallbackError(searchParams) {
   const normalized = value.toLowerCase();
   if (
     normalized.includes('app not found') ||
-    normalized.includes('entitlement grant failed') ||
-    normalized.includes('entitlement')
+    normalized.includes('entitlement grant failed')
   ) {
     return 'We could not activate your subscription yet. Please retry once from the app, and contact support if this continues.';
   }
