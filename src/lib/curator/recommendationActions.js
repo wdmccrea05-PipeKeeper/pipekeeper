@@ -203,6 +203,49 @@ export async function executeRecommendationAction(recommendation, action, opts =
       };
     }
 
+    case 'apply_suggestion': {
+      // apply_suggestion: same as approve_changes — apply all items with payloads
+      const reviewedItems = Array.isArray(opts.reviewedItems) ? opts.reviewedItems : items;
+      const toApply = reviewedItems.filter(
+        (i) => i?.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0
+      );
+
+      if (!toApply.length) {
+        // No payloads — treat as acknowledged (advisory with no data changes)
+        return {
+          ok: true,
+          appliedCount: 0,
+          resolvedRecordIds: items.map((i) => i.recordId || i.id).filter(Boolean),
+          resolvedRecommendationIds: [recommendation.id],
+          updatedRecords: [],
+        };
+      }
+
+      const resolvedRecordIds = [];
+      const updatedRecords = [];
+      const failedIds = [];
+
+      for (const item of toApply) {
+        try {
+          const updated = await updateRecord(item.recordType, item.recordId, item.proposedChange.payload);
+          resolvedRecordIds.push(item.recordId);
+          updatedRecords.push(updated);
+        } catch {
+          failedIds.push(item.recordId);
+        }
+      }
+
+      return {
+        ok: resolvedRecordIds.length > 0 || toApply.length === 0,
+        appliedCount: resolvedRecordIds.length,
+        resolvedRecordIds,
+        resolvedRecommendationIds: [recommendation.id],
+        updatedRecords,
+        failedIds,
+        error: resolvedRecordIds.length ? undefined : 'No changes were applied.',
+      };
+    }
+
     case 'add_to_rotation':
     case 'mark_for_session':
     case 'accept_reassignment':
