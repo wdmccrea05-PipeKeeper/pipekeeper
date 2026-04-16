@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, AlertCircle, CheckCircle, Download, FileSpreadsheet, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import UpgradePrompt from '@/components/subscription/UpgradePrompt';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { invalidateBlendQueries, invalidateEntityQueries, invalidatePipeQueries } from '@/components/utils/cacheInvalidation';
@@ -14,6 +15,15 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { analyzeImportRows, executeImportRows, importDefinitionList, importDefinitions } from '@/lib/imports/importDefinitions';
 import { parseCsvText } from '@/lib/imports/csvImportUtils';
+
+// Maps each import definition id prefix to a module key
+const IMPORT_MODULE_MAP = {
+  pipekeeper_pipes: 'pipekeeper',
+  pipekeeper_blends: 'pipekeeper',
+  whiskeykeeper_bottles: 'whiskeykeeper',
+  cigarkeeper_cigars: 'cigarkeeper',
+  winekeeper_wines: 'winekeeper',
+};
 
 function SummaryBadge({ tone = 'default', label, value }) {
   const styles = {
@@ -143,6 +153,17 @@ export default function ImportPage() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { user, hasPaid: isPaidUser } = useCurrentUser();
+  const { accessible, isLoading: modulesLoading } = useEnabledModules(user, user);
+
+  // Filter import definitions to only modules the user has access to
+  const availableDefinitions = useMemo(
+    () => importDefinitionList.filter((def) => {
+      const moduleKey = IMPORT_MODULE_MAP[def.id];
+      // If no mapping found, show it; if mapped, require module to be accessible
+      return !moduleKey || accessible[moduleKey];
+    }),
+    [accessible]
+  );
 
   const [importType, setImportType] = useState(() => buildImportTypeFromLocation(location.search));
   const [analysis, setAnalysis] = useState(null);
@@ -150,12 +171,28 @@ export default function ImportPage() {
   const [busy, setBusy] = useState(false);
   const [duplicateMode, setDuplicateMode] = useState('create_only');
 
-  const definition = importDefinitions[importType];
+  // Ensure the selected import type is valid for available definitions
+  const resolvedImportType = useMemo(() => {
+    if (!availableDefinitions.length) return null;
+    if (availableDefinitions.find((d) => d.id === importType)) return importType;
+    return availableDefinitions[0]?.id ?? null;
+  }, [availableDefinitions, importType]);
+
+  const definition = resolvedImportType ? importDefinitions[resolvedImportType] : null;
 
   const importableRows = useMemo(() => {
     if (!analysis) return [];
     return analysis.rows.filter((row) => row.status !== 'error');
   }, [analysis]);
+
+  // Sync resolvedImportType back into state when the available list changes
+  useEffect(() => {
+    if (resolvedImportType && resolvedImportType !== importType) {
+      setImportType(resolvedImportType);
+      setAnalysis(null);
+      setImportResult(null);
+    }
+  }, [resolvedImportType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasBlockingErrors = analysis?.blockingHeaderErrors?.length > 0;
 
@@ -252,6 +289,29 @@ export default function ImportPage() {
     );
   }
 
+  if (!modulesLoading && availableDefinitions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <a href={createPageUrl('Home')}>
+            <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('common.backToHome', 'Back to home')}
+            </Button>
+          </a>
+          <Card className="border-[#e8d5b7]/30">
+            <CardHeader>
+              <CardTitle className="text-xl text-stone-100">No modules available</CardTitle>
+              <CardDescription className="text-stone-300">
+                Bulk import requires at least one active module (PipeKeeper, WhiskeyKeeper, CigarKeeper, or WineKeeper). Enable a module from your collection settings to get started.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -280,7 +340,7 @@ export default function ImportPage() {
               <div className="md:col-span-2">
                 <label className="text-sm text-stone-300 mb-2 block">Import type</label>
                 <Select
-                  value={importType}
+                  value={resolvedImportType ?? ''}
                   onValueChange={(value) => {
                     setImportType(value);
                     setAnalysis(null);
@@ -291,7 +351,7 @@ export default function ImportPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {importDefinitionList.map((item) => (
+                    {availableDefinitions.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
                         {item.moduleLabel} — {item.label}
                       </SelectItem>
@@ -311,7 +371,7 @@ export default function ImportPage() {
               <p className="font-semibold mb-1">How this import works</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>Use the template and keep one record per row.</li>
-                <li>Required fields: {definition.requiredColumns.join(', ')}.</li>
+                <li>Required fields: {definition?.requiredColumns.join(', ')}.</li>
                 <li>Optional fields help enrich records and improve matching.</li>
                 <li>Warnings can import; errors are blocked until corrected.</li>
               </ul>
