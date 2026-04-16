@@ -1,7 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Cigarette, Heart, Package, Star } from 'lucide-react';
+import { Check, Cigarette, Heart, MoreVertical, Package, Star } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const BODY_LABELS = {
   mild: 'Mild',
@@ -11,8 +19,20 @@ const BODY_LABELS = {
   full: 'Full',
 };
 
-export default function CigarListItem({ cigar, onToggleFavorite, onQuickAction }) {
+export default function CigarListItem({
+  cigar,
+  onToggleFavorite,
+  onQuickAction,
+  onEdit,
+  onDelete,
+  onAssignHumidor,
+  humidors = [],
+  selectMode = false,
+  isSelected = false,
+  onToggleSelect,
+}) {
   const navigate = useNavigate();
+  const [imageFailed, setImageFailed] = React.useState(false);
 
   const handleClick = () => {
     navigate(createPageUrl(`CigarDetail?id=${cigar.id}`));
@@ -30,6 +50,16 @@ export default function CigarListItem({ cigar, onToggleFavorite, onQuickAction }
     if (typeof onQuickAction === 'function') onQuickAction(cigar, action);
   };
 
+  const runAction = (action) => {
+    if (typeof onQuickAction === 'function') onQuickAction(cigar, action);
+  };
+
+  const handleSelectToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof onToggleSelect === 'function') onToggleSelect(cigar);
+  };
+
   const photo = Array.isArray(cigar?.photos) ? cigar.photos[0] : cigar?.photos || '';
 
   return (
@@ -43,11 +73,11 @@ export default function CigarListItem({ cigar, onToggleFavorite, onQuickAction }
     >
       {/* Thumbnail */}
       <div
-        className="w-10 h-10 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center"
+        className="w-10 h-10 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center relative"
         style={{ background: 'rgba(58,40,28,0.8)', border: '1px solid rgba(180,140,75,0.18)' }}
       >
-        {photo ? (
-          <img src={photo} alt={cigar?.name} className="w-full h-full object-cover" />
+        {photo && !imageFailed ? (
+          <img src={photo} alt={cigar?.name} className="w-full h-full object-cover" onError={() => setImageFailed(true)} />
         ) : (
           <Cigarette className="w-5 h-5" style={{ color: 'rgba(180,140,75,0.4)' }} />
         )}
@@ -84,6 +114,22 @@ export default function CigarListItem({ cigar, onToggleFavorite, onQuickAction }
 
       {/* Right side */}
       <div className="flex items-center gap-3 flex-shrink-0">
+        {selectMode && (
+          <button
+            type="button"
+            onClick={handleSelectToggle}
+            className="w-6 h-6 rounded-full flex items-center justify-center"
+            style={{
+              background: isSelected ? 'rgba(76,175,130,0.9)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${isSelected ? 'rgba(76,175,130,1)' : 'rgba(180,140,75,0.25)'}`,
+              color: '#fff',
+            }}
+            aria-label={isSelected ? 'Unselect cigar' : 'Select cigar'}
+          >
+            {isSelected && <Check className="w-3.5 h-3.5" />}
+          </button>
+        )}
+
         {cigar?.rating > 0 && (
           <div className="flex items-center gap-0.5 hidden sm:flex">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -123,6 +169,65 @@ export default function CigarListItem({ cigar, onToggleFavorite, onQuickAction }
             <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_shopping')} className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: cigar?.shopping_list ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>shop</button>
           </div>
         )}
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="p-1.5 rounded-lg transition-all hover:bg-[rgba(255,255,255,0.08)]"
+              style={{ color: 'rgba(224,216,200,0.65)' }}
+              aria-label="Open cigar actions"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+            <DropdownMenuItem onSelect={() => runAction('smoked_one')}>Smoked One</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('bought_more')}>Bought More</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_wishlist')}>
+              {cigar?.wishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_shopping')}>
+              {cigar?.shopping_list ? 'Remove from Shopping List' : 'Move to Shopping List'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_restock')}>
+              {cigar?.restock_flag ? 'Clear Restock' : 'Mark Restock'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_not_for_me')}>
+              {cigar?.not_for_me ? 'Remove Not For Me' : 'Not For Me'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runAction('toggle_favorite')}>
+              {cigar?.is_favorite ? 'Unfavorite' : 'Favorite'}
+            </DropdownMenuItem>
+            {typeof onAssignHumidor === 'function' && (
+              <DropdownMenuItem onSelect={() => onAssignHumidor(cigar)}>Assign Humidor…</DropdownMenuItem>
+            )}
+            {Array.isArray(humidors) && humidors.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Assign To</DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => runAction('unassign_humidor')}>Unassigned</DropdownMenuItem>
+                {humidors.slice(0, 6).map((humidor) => (
+                  <DropdownMenuItem key={humidor.id} onSelect={() => runAction({ type: 'assign_humidor', humidorId: humidor.id })}>
+                    {humidor.name}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+            {(typeof onEdit === 'function' || typeof onDelete === 'function') && <DropdownMenuSeparator />}
+            {typeof onEdit === 'function' && (
+              <DropdownMenuItem onSelect={() => onEdit(cigar)}>Edit</DropdownMenuItem>
+            )}
+            {typeof onDelete === 'function' && (
+              <DropdownMenuItem onSelect={() => onDelete(cigar)} className="text-red-500 focus:text-red-500">Delete</DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

@@ -33,6 +33,7 @@ const TABS = ['collection', 'humidors', 'wishlist', 'shopping', 'restock'];
 
 const BODY_OPTIONS = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
 const STRENGTH_OPTIONS = ['mild', 'medium', 'full'];
+const NOT_FOR_ME_FLAGS_PATCH = { not_for_me: false, ai_excluded: false };
 
 function sortCigars(cigars, sortBy) {
   return [...cigars].sort((a, b) => {
@@ -127,6 +128,12 @@ function CigarsInner() {
   const [addFlowOpen, setAddFlowOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingCigar, setEditingCigar] = useState(null);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [assignTargetCigar, setAssignTargetCigar] = useState(null);
+  const [assignHumidorId, setAssignHumidorId] = useState('unassigned');
+  const [bulkAssignHumidorId, setBulkAssignHumidorId] = useState('unassigned');
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedCigarIds, setSelectedCigarIds] = useState([]);
   const [displayMode, setDisplayMode] = useState(() => {
     return localStorage.getItem('cigarsDisplayMode') === 'collector';
   });
@@ -200,7 +207,9 @@ function CigarsInner() {
 
   const handleToggleFavorite = async (cigar) => {
     try {
-      await base44.entities.Cigar.update(cigar.id, { is_favorite: !cigar.is_favorite });
+      const patch = { is_favorite: !cigar.is_favorite };
+      await base44.entities.Cigar.update(cigar.id, patch);
+      updateCigarInCache(cigar.id, patch);
       queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
     } catch {
       toast.error('Failed to update favorite');
@@ -218,36 +227,177 @@ function CigarsInner() {
     queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
   };
 
+  const updateCigarInCache = (cigarId, patch) => {
+    queryClient.setQueryData(['cigars', user?.email], (prev = []) =>
+      Array.isArray(prev)
+        ? prev.map((c) => (c.id === cigarId ? { ...c, ...patch } : c))
+        : prev
+    );
+    if (editingCigar?.id === cigarId) {
+      setEditingCigar((prev) => (prev ? { ...prev, ...patch } : prev));
+    }
+  };
+
+  const openAssignHumidorDialog = (cigar) => {
+    if (!cigar?.id) return;
+    setAssignTargetCigar(cigar);
+    setAssignHumidorId(cigar.humidor_id || 'unassigned');
+    setAssignDialogOpen(true);
+  };
+
+  const handleAssignHumidor = async () => {
+    if (!assignTargetCigar?.id) return;
+    const humidorId = assignHumidorId === 'unassigned' ? null : assignHumidorId;
+    try {
+      await base44.entities.Cigar.update(assignTargetCigar.id, {
+        humidor_id: humidorId,
+        ...(humidorId ? {} : {
+          humidor_tray: null,
+          humidor_shelf: null,
+          humidor_drawer: null,
+          humidor_section: null,
+        }),
+      });
+      updateCigarInCache(assignTargetCigar.id, { humidor_id: humidorId });
+      invalidateCigars();
+      setAssignDialogOpen(false);
+      setAssignTargetCigar(null);
+      toast.success('Humidor assignment updated');
+    } catch {
+      toast.error('Failed to assign humidor');
+    }
+  };
+
   const handleQuickAction = async (cigar, action) => {
     if (!cigar?.id) return;
+    const normalizedAction = typeof action === 'string' ? action : action?.type;
     try {
-      if (action === 'smoked_one') {
+      if (normalizedAction === 'smoked_one') {
         const current = Number(cigar.singles_equivalent ?? cigar.quantity ?? 0);
         const nextSingles = Math.max(0, current - 1);
         const patch = { singles_equivalent: nextSingles };
         if (cigar.unit_type === 'single') patch.quantity = Math.max(0, Number(cigar.quantity || 0) - 1);
         await base44.entities.Cigar.update(cigar.id, patch);
-      } else if (action === 'bought_more') {
+        updateCigarInCache(cigar.id, patch);
+      } else if (normalizedAction === 'bought_more') {
         const packageSize = Number(cigar.cigars_per_package || (cigar.unit_type === 'single' ? 1 : 1));
-        await base44.entities.Cigar.update(cigar.id, {
+        const patch = {
           quantity: Number(cigar.quantity || 0) + 1,
           singles_equivalent: Number(cigar.singles_equivalent ?? 0) + packageSize,
-        });
-      } else if (action === 'toggle_wishlist') {
-        await base44.entities.Cigar.update(cigar.id, { wishlist: !cigar.wishlist });
-      } else if (action === 'toggle_shopping') {
-        await base44.entities.Cigar.update(cigar.id, { shopping_list: !cigar.shopping_list });
-      } else if (action === 'toggle_restock') {
-        await base44.entities.Cigar.update(cigar.id, { restock_flag: !cigar.restock_flag });
-      } else if (action === 'toggle_not_for_me') {
+        };
+        await base44.entities.Cigar.update(cigar.id, patch);
+        updateCigarInCache(cigar.id, patch);
+      } else if (normalizedAction === 'toggle_wishlist') {
+        const patch = { wishlist: !cigar.wishlist };
+        await base44.entities.Cigar.update(cigar.id, patch);
+        updateCigarInCache(cigar.id, patch);
+      } else if (normalizedAction === 'toggle_shopping') {
+        const patch = { shopping_list: !cigar.shopping_list };
+        await base44.entities.Cigar.update(cigar.id, patch);
+        updateCigarInCache(cigar.id, patch);
+      } else if (normalizedAction === 'toggle_restock') {
+        const patch = { restock_flag: !cigar.restock_flag };
+        await base44.entities.Cigar.update(cigar.id, patch);
+        updateCigarInCache(cigar.id, patch);
+      } else if (normalizedAction === 'toggle_not_for_me') {
         const next = !cigar.not_for_me;
-        await base44.entities.Cigar.update(cigar.id, { not_for_me: next, ai_excluded: next });
+        const patch = next ? { not_for_me: true, ai_excluded: true } : NOT_FOR_ME_FLAGS_PATCH;
+        await base44.entities.Cigar.update(cigar.id, patch);
+        updateCigarInCache(cigar.id, patch);
+      } else if (normalizedAction === 'toggle_favorite') {
+        const patch = { is_favorite: !cigar.is_favorite };
+        await base44.entities.Cigar.update(cigar.id, patch);
+        updateCigarInCache(cigar.id, patch);
+      } else if (normalizedAction === 'assign_humidor') {
+        const humidorId = action?.humidorId || null;
+        const patch = {
+          humidor_id: humidorId,
+          ...(humidorId ? {} : {
+            humidor_tray: null,
+            humidor_shelf: null,
+            humidor_drawer: null,
+            humidor_section: null,
+          }),
+        };
+        await base44.entities.Cigar.update(cigar.id, patch);
+        updateCigarInCache(cigar.id, patch);
+      } else if (normalizedAction === 'unassign_humidor') {
+        const patch = {
+          humidor_id: null,
+          humidor_tray: null,
+          humidor_shelf: null,
+          humidor_drawer: null,
+          humidor_section: null,
+        };
+        await base44.entities.Cigar.update(cigar.id, patch);
+        updateCigarInCache(cigar.id, patch);
       }
       invalidateCigars();
     } catch {
       toast.error('Failed to apply action');
     }
   };
+
+  const toggleCigarSelection = (cigar) => {
+    if (!cigar?.id) return;
+    setSelectedCigarIds((prev) =>
+      prev.includes(cigar.id) ? prev.filter((id) => id !== cigar.id) : [...prev, cigar.id]
+    );
+  };
+
+  const selectedCigars = useMemo(
+    () => cigars.filter((c) => selectedCigarIds.includes(c.id)),
+    [cigars, selectedCigarIds]
+  );
+
+  const cigarIdSet = useMemo(() => new Set(cigars.map((c) => c.id)), [cigars]);
+
+  useEffect(() => {
+    setSelectedCigarIds((prev) => prev.filter((id) => cigarIdSet.has(id)));
+  }, [cigarIdSet]);
+
+  const handleBulkAction = async (action, humidorId = null) => {
+    if (!selectedCigarIds.length) return;
+    try {
+      if (action === 'delete') {
+        const count = selectedCigarIds.length;
+        if (!window.confirm(`Delete ${count} cigar${count === 1 ? '' : 's'}? This cannot be undone.`)) return;
+        await Promise.all(selectedCigarIds.map((id) => base44.entities.Cigar.delete(id)));
+      } else {
+        const patches = selectedCigars.map((cigar) => {
+          if (action === 'assign_humidor') {
+            const targetId = humidorId || null;
+            return {
+              id: cigar.id,
+              patch: {
+                humidor_id: targetId,
+                ...(targetId ? {} : {
+                  humidor_tray: null,
+                  humidor_shelf: null,
+                  humidor_drawer: null,
+                  humidor_section: null,
+                }),
+              },
+            };
+          }
+          if (action === 'wishlist') return { id: cigar.id, patch: { wishlist: true } };
+          if (action === 'shopping') return { id: cigar.id, patch: { shopping_list: true } };
+          if (action === 'restock') return { id: cigar.id, patch: { restock_flag: true } };
+          if (action === 'clear_flags') return { id: cigar.id, patch: { wishlist: false, shopping_list: false, restock_flag: false, ...NOT_FOR_ME_FLAGS_PATCH } };
+          return null;
+        }).filter(Boolean);
+        await Promise.all(patches.map(({ id, patch }) => base44.entities.Cigar.update(id, patch)));
+      }
+      setSelectedCigarIds([]);
+      setSelectMode(false);
+      invalidateCigars();
+      toast.success('Bulk action applied');
+    } catch {
+      toast.error('Failed to apply bulk action');
+    }
+  };
+
+  const selectedCount = selectedCigarIds.length;
 
   const openAdd = () => {
     setAddFlowOpen(true);
@@ -394,7 +544,71 @@ function CigarsInner() {
             >
               <Package2 className="w-4 h-4" />
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const next = !selectMode;
+                if (next && displayMode) {
+                  setDisplayMode(false);
+                  localStorage.setItem('cigarsDisplayMode', 'standard');
+                }
+                setSelectMode(next);
+                if (!next) {
+                  setSelectedCigarIds([]);
+                  setBulkAssignHumidorId('unassigned');
+                }
+              }}
+              className="px-3 py-2 rounded-xl text-sm transition-all"
+              style={{
+                background: selectMode ? 'rgba(140,107,63,0.25)' : 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(140,107,63,0.2)',
+                color: selectMode ? '#F5F1E7' : 'rgba(224,216,200,0.7)',
+              }}
+            >
+              {selectMode ? 'Done' : 'Select'}
+            </button>
           </div>
+
+          {selectMode && (
+            <div
+              className="rounded-xl p-3 flex flex-wrap items-center gap-2"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,107,63,0.2)' }}
+            >
+              <span className="text-sm text-[#E0D8C8]/80 min-w-24">
+                {selectedCount} selected
+              </span>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('wishlist')}>Wishlist</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('shopping')}>Shopping</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('restock')}>Restock</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('clear_flags')}>Clear Flags</Button>
+              <Select
+                value={bulkAssignHumidorId || 'unassigned'}
+                onValueChange={setBulkAssignHumidorId}
+              >
+                <SelectTrigger className="w-44 h-8 text-xs">
+                  <SelectValue placeholder="Assign Humidor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">Assign: Unassigned</SelectItem>
+                  {humidors.map((h) => (
+                    <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!selectedCount}
+                onClick={() => handleBulkAction('assign_humidor', bulkAssignHumidorId === 'unassigned' ? null : bulkAssignHumidorId)}
+              >
+                Assign
+              </Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('delete')} style={{ color: '#E05555' }}>
+                Delete
+              </Button>
+            </div>
+          )}
 
           {/* Filters panel */}
           {showFilters && (
@@ -536,6 +750,26 @@ function CigarsInner() {
                   cigar={cigar}
                   onToggleFavorite={handleToggleFavorite}
                   onQuickAction={handleQuickAction}
+                  onEdit={(target) => {
+                    setEditingCigar(target);
+                    setEditDialogOpen(true);
+                  }}
+                  onDelete={async (target) => {
+                    if (!target?.id) return;
+                    if (!window.confirm(`Delete ${target.name || 'this cigar'}? This cannot be undone.`)) return;
+                    try {
+                      await base44.entities.Cigar.delete(target.id);
+                      invalidateCigars();
+                      toast.success('Cigar deleted');
+                    } catch {
+                      toast.error('Failed to delete cigar');
+                    }
+                  }}
+                  onAssignHumidor={openAssignHumidorDialog}
+                  humidors={humidors}
+                  selectMode={selectMode}
+                  isSelected={selectedCigarIds.includes(cigar.id)}
+                  onToggleSelect={toggleCigarSelection}
                 />
               ))}
             </div>
@@ -547,6 +781,26 @@ function CigarsInner() {
                   cigar={cigar}
                   onToggleFavorite={handleToggleFavorite}
                   onQuickAction={handleQuickAction}
+                  onEdit={(target) => {
+                    setEditingCigar(target);
+                    setEditDialogOpen(true);
+                  }}
+                  onDelete={async (target) => {
+                    if (!target?.id) return;
+                    if (!window.confirm(`Delete ${target.name || 'this cigar'}? This cannot be undone.`)) return;
+                    try {
+                      await base44.entities.Cigar.delete(target.id);
+                      invalidateCigars();
+                      toast.success('Cigar deleted');
+                    } catch {
+                      toast.error('Failed to delete cigar');
+                    }
+                  }}
+                  onAssignHumidor={openAssignHumidorDialog}
+                  humidors={humidors}
+                  selectMode={selectMode}
+                  isSelected={selectedCigarIds.includes(cigar.id)}
+                  onToggleSelect={toggleCigarSelection}
                 />
               ))}
             </div>
@@ -559,6 +813,42 @@ function CigarsInner() {
         open={addFlowOpen}
         onClose={() => setAddFlowOpen(false)}
       />
+
+      <Dialog
+        open={assignDialogOpen}
+        onOpenChange={(open) => {
+          setAssignDialogOpen(open);
+          if (!open) setAssignTargetCigar(null);
+        }}
+      >
+        <DialogContent className="max-w-md" style={{ background: 'rgba(27,19,13,0.98)', border: '1px solid rgba(140,107,63,0.35)' }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+              Assign Humidor
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-[#E0D8C8]/70">
+              {assignTargetCigar ? `${assignTargetCigar.brand || ''} ${assignTargetCigar.name || ''}`.trim() : ''}
+            </p>
+            <Select value={assignHumidorId || 'unassigned'} onValueChange={setAssignHumidorId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select humidor" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {humidors.map((h) => (
+                  <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="ghost" onClick={() => setAssignDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleAssignHumidor}>Save</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit dialog — only opened when editing an existing cigar */}
       <Dialog
