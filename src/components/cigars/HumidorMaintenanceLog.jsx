@@ -9,6 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Droplets, Thermometer, PackagePlus, RefreshCcw, Sparkles, Sun, ClipboardList, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 const EVENT_TYPES = [
   { value: 'humidity_check', label: 'Humidity Check', Icon: Droplets },
@@ -86,6 +94,23 @@ function EventTypeBadge({ type }) {
 function isAidEvent(eventType) {
   return eventType === 'aid_replaced' || eventType === 'aid_refilled';
 }
+
+const ReadingTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div
+      className="rounded-lg px-2 py-1.5 text-xs"
+      style={{ background: 'rgba(40,28,18,0.96)', border: '1px solid rgba(180,140,75,0.24)', color: '#F5F1E7' }}
+    >
+      <p className="font-semibold">{label}</p>
+      {payload.map((entry) => (
+        <p key={entry.dataKey} style={{ color: entry.color }}>
+          {entry.name}: {entry.value}
+        </p>
+      ))}
+    </div>
+  );
+};
 
 export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryLogged }) {
   const { user } = useCurrentUser();
@@ -184,6 +209,15 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
   };
 
   const displayLogs = showAll ? logs : logs.slice(0, 3);
+  const readingTrendData = [...logs]
+    .filter((log) => log?.date && (log.humidity_reading != null || log.temperature_reading != null))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(-12)
+    .map((log) => ({
+      date: formatDate(log.date),
+      humidity: log.humidity_reading != null ? Number(log.humidity_reading) : null,
+      temperature: log.temperature_reading != null ? Number(log.temperature_reading) : null,
+    }));
 
   return (
     <div className="space-y-3">
@@ -217,6 +251,29 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
           Log Other
         </button>
       </div>
+
+      {readingTrendData.length > 1 && (
+        <div
+          className="rounded-lg p-3"
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.12)' }}
+        >
+          <p className="text-xs uppercase tracking-wider font-semibold mb-2" style={{ color: 'rgba(224,216,200,0.55)' }}>
+            Recent Conditions
+          </p>
+          <div className="h-36">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={readingTrendData} margin={{ top: 5, right: 6, left: 0, bottom: 0 }}>
+                <XAxis dataKey="date" tick={{ fill: 'rgba(224,216,200,0.45)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="rh" tick={{ fill: 'rgba(224,216,200,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} width={26} />
+                <YAxis yAxisId="temp" orientation="right" tick={{ fill: 'rgba(224,216,200,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} width={24} />
+                <Tooltip content={<ReadingTooltip />} />
+                <Line yAxisId="rh" type="monotone" dataKey="humidity" name="RH %" stroke="#8BB4E8" strokeWidth={2} dot={{ r: 2 }} connectNulls />
+                <Line yAxisId="temp" type="monotone" dataKey="temperature" name="Temp °F" stroke="#D4A574" strokeWidth={2} dot={{ r: 2 }} connectNulls />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* Log entries */}
       {isLoading ? (

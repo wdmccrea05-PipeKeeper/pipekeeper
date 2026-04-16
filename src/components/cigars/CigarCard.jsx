@@ -1,9 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Cigarette, Heart, Package, Star } from 'lucide-react';
+import { Check, Cigarette, Heart, MoreVertical, Package, Star } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const BODY_LABELS = {
   mild: 'Mild',
@@ -39,10 +47,22 @@ function MiniTag({ children, tone = 'default' }) {
   );
 }
 
-export default function CigarCard({ cigar, onToggleFavorite, onQuickAction }) {
+export default function CigarCard({
+  cigar,
+  onToggleFavorite,
+  onQuickAction,
+  onEdit,
+  onDelete,
+  onAssignHumidor,
+  humidors = [],
+  selectMode = false,
+  isSelected = false,
+  onToggleSelect,
+}) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
+  const [imageFailed, setImageFailed] = React.useState(false);
 
   const photo = Array.isArray(cigar?.photos) ? cigar.photos[0] : cigar?.photos || '';
 
@@ -62,6 +82,16 @@ export default function CigarCard({ cigar, onToggleFavorite, onQuickAction }) {
     if (typeof onQuickAction === 'function') onQuickAction(cigar, action);
   };
 
+  const runCardAction = (action) => {
+    if (typeof onQuickAction === 'function') onQuickAction(cigar, action);
+  };
+
+  const handleSelectToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof onToggleSelect === 'function') onToggleSelect(cigar);
+  };
+
   const originLine = [cigar?.wrapper, cigar?.country_of_origin].filter(Boolean).join(' · ');
 
   return (
@@ -76,11 +106,12 @@ export default function CigarCard({ cigar, onToggleFavorite, onQuickAction }) {
     >
       {/* Photo area */}
       <div className="relative h-44 bg-gradient-to-b from-[#3d2a1d] to-[#24160f]">
-        {photo ? (
+        {photo && !imageFailed ? (
           <img
             src={photo}
             alt={cigar?.name || 'Cigar'}
             className="w-full h-44 object-contain"
+            onError={() => setImageFailed(true)}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
@@ -92,7 +123,7 @@ export default function CigarCard({ cigar, onToggleFavorite, onQuickAction }) {
         {/* Quantity badge */}
         {cigar?.quantity > 0 && (
           <div
-            className="absolute top-3 left-3 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
+            className={`absolute ${selectMode ? 'top-12' : 'top-3'} left-3 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold`}
             style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}
           >
             <Package className="w-3 h-3" />
@@ -100,11 +131,27 @@ export default function CigarCard({ cigar, onToggleFavorite, onQuickAction }) {
           </div>
         )}
 
+        {selectMode && (
+          <button
+            type="button"
+            onClick={handleSelectToggle}
+            className="absolute top-3 left-3 w-7 h-7 rounded-full flex items-center justify-center"
+            style={{
+              background: isSelected ? 'rgba(76,175,130,0.9)' : 'rgba(0,0,0,0.45)',
+              border: `1px solid ${isSelected ? 'rgba(76,175,130,1)' : 'rgba(255,255,255,0.22)'}`,
+              color: '#fff',
+            }}
+            aria-label={isSelected ? 'Unselect cigar' : 'Select cigar'}
+          >
+            {isSelected && <Check className="w-4 h-4" />}
+          </button>
+        )}
+
         {/* Favorite button */}
         <button
           type="button"
           onClick={handleFavorite}
-          className="absolute top-3 right-3 p-1.5 rounded-full transition-all"
+          className="absolute top-3 right-11 p-1.5 rounded-full transition-all"
           style={{
             background: cigar?.is_favorite ? 'rgba(163,92,92,0.85)' : 'rgba(0,0,0,0.4)',
             border: '1px solid rgba(255,255,255,0.12)',
@@ -117,6 +164,69 @@ export default function CigarCard({ cigar, onToggleFavorite, onQuickAction }) {
             fill={cigar?.is_favorite ? 'currentColor' : 'none'}
           />
         </button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="absolute top-3 right-3 p-1.5 rounded-full transition-all"
+              style={{
+                background: 'rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.75)',
+              }}
+              aria-label="Open cigar actions"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+            <DropdownMenuItem onSelect={() => runCardAction('smoked_one')}>Smoked One</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runCardAction('bought_more')}>Bought More</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runCardAction('toggle_wishlist')}>
+              {cigar?.wishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runCardAction('toggle_shopping')}>
+              {cigar?.shopping_list ? 'Remove from Shopping List' : 'Move to Shopping List'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runCardAction('toggle_restock')}>
+              {cigar?.restock_flag ? 'Clear Restock' : 'Mark Restock'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runCardAction('toggle_not_for_me')}>
+              {cigar?.not_for_me ? 'Remove Not For Me' : 'Not For Me'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => runCardAction('toggle_favorite')}>
+              {cigar?.is_favorite ? 'Unfavorite' : 'Favorite'}
+            </DropdownMenuItem>
+            {typeof onAssignHumidor === 'function' && (
+              <DropdownMenuItem onSelect={() => onAssignHumidor(cigar)}>Assign Humidor…</DropdownMenuItem>
+            )}
+            {Array.isArray(humidors) && humidors.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Assign To</DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => runCardAction('unassign_humidor')}>Unassigned</DropdownMenuItem>
+                {humidors.slice(0, 6).map((humidor) => (
+                  <DropdownMenuItem key={humidor.id} onSelect={() => runCardAction({ type: 'assign_humidor', humidorId: humidor.id })}>
+                    {humidor.name}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+            {(typeof onEdit === 'function' || typeof onDelete === 'function') && <DropdownMenuSeparator />}
+            {typeof onEdit === 'function' && (
+              <DropdownMenuItem onSelect={() => onEdit(cigar)}>Edit</DropdownMenuItem>
+            )}
+            {typeof onDelete === 'function' && (
+              <DropdownMenuItem onSelect={() => onDelete(cigar)} className="text-red-500 focus:text-red-500">Delete</DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Content */}
@@ -175,6 +285,7 @@ export default function CigarCard({ cigar, onToggleFavorite, onQuickAction }) {
             <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_wishlist')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.wishlist ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>Wishlist</button>
             <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_shopping')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.shopping_list ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>Shopping</button>
             <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_restock')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.restock_flag ? 'rgba(224,100,80,0.25)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>Restock</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_not_for_me')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.not_for_me ? 'rgba(224,100,80,0.25)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>Not for me</button>
           </div>
         )}
       </div>

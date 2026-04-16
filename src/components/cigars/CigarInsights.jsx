@@ -81,6 +81,23 @@ function buildTopN(arr, key, n = 7) {
     .map(([name, value]) => ({ name, value }));
 }
 
+function buildTopBrandsByAverageRating(cigars, minSessions = 1, n = 6) {
+  const map = {};
+  cigars.forEach((cigar) => {
+    const brand = cigar?.brand;
+    const rating = Number(cigar?.rating || 0);
+    if (!brand || rating <= 0) return;
+    if (!map[brand]) map[brand] = { sum: 0, count: 0 };
+    map[brand].sum += rating;
+    map[brand].count += 1;
+  });
+  return Object.entries(map)
+    .filter(([, v]) => v.count >= minSessions)
+    .map(([name, v]) => ({ name, value: Number((v.sum / v.count).toFixed(2)) }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, n);
+}
+
 function MiniChart({ data, title, horizontal = false }) {
   if (!data.length) return null;
   return (
@@ -164,8 +181,11 @@ const INSIGHT_CONFIG = {
 };
 
 export default function CigarInsights({ cigars = [], sessions = [], humidors = [] }) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = React.useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
   const { formatFromBase } = useCurrency();
 
   const totalQty = cigars.reduce((s, c) => s + (c.singles_equivalent || c.quantity || 0), 0);
@@ -174,6 +194,7 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
     return s + (c.estimated_value || c.purchase_price || 0) * qty;
   }, 0);
   const favorites = cigars.filter((c) => c.is_favorite).length;
+  const [tonightRecommendations, setTonightRecommendations] = React.useState([]);
 
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -181,14 +202,48 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
 
   // Brand chart
   const brandData = buildTopN(cigars, 'brand', 8);
+  const brandRatingData = buildTopBrandsByAverageRating(cigars, 2, 8);
   // Wrapper breakdown
   const wrapperData = buildTopN(cigars, 'wrapper', 7);
+  const favoriteWrapperData = buildTopN(cigars.filter((c) => c.is_favorite), 'wrapper', 7);
   const lineData = buildTopN(cigars, 'line', 7);
   const vitolaData = buildTopN(cigars, 'vitola', 7);
   // Country of origin
   const originData = buildTopN(cigars, 'country_of_origin', 7);
   // Body distribution
   const bodyData = buildTopN(cigars, 'body', 6).map((d) => ({ ...d, name: BODY_LABELS[d.name] || d.name }));
+
+  const sessionCountByCigarId = sessions.reduce((acc, s) => {
+    if (!s?.cigar_id || s?.is_out_of_collection) return acc;
+    acc[s.cigar_id] = (acc[s.cigar_id] || 0) + 1;
+    return acc;
+  }, {});
+  const cigarNameById = cigars.reduce((acc, c) => {
+    if (c?.id) acc[c.id] = [c.brand, c.name].filter(Boolean).join(' ') || c.name || 'Unknown';
+    return acc;
+  }, {});
+  const mostSmokedData = Object.entries(sessionCountByCigarId)
+    .map(([id, value]) => ({ name: cigarNameById[id] || 'Unknown Cigar', value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 7);
+
+  const lowStockFavorites = cigars
+    .filter((c) => c.is_favorite && Number(c.singles_equivalent ?? c.quantity ?? 0) > 0)
+    .filter((c) => Number(c.singles_equivalent ?? c.quantity ?? 0) <= Number(c.restock_threshold || 3))
+    .sort((a, b) => Number(a.singles_equivalent ?? a.quantity ?? 0) - Number(b.singles_equivalent ?? b.quantity ?? 0))
+    .slice(0, 5);
+
+  const buyAgainCandidates = cigars
+    .map((c) => {
+      const linked = sessions.filter((s) => s.cigar_id === c.id && !s.is_out_of_collection);
+      const rated = linked.filter((s) => Number(s.overall_enjoyment || 0) > 0);
+      const avg = rated.length ? rated.reduce((sum, s) => sum + Number(s.overall_enjoyment || 0), 0) / rated.length : 0;
+      const qty = Number(c.singles_equivalent ?? c.quantity ?? 0);
+      return { cigar: c, avg, qty, sessions: linked.length };
+    })
+    .filter((x) => x.sessions >= 2 && x.avg >= 4 && x.qty <= Number(x.cigar.restock_threshold || 2))
+    .sort((a, b) => b.avg - a.avg || a.qty - b.qty)
+    .slice(0, 5);
 
   // Aging status — use the shared engine for consistency
   const readinessSummary = summarizeCigarReadiness(cigars, today);
@@ -200,31 +255,55 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 10);
 
-  const tonightRecommendations = cigars
-    .filter((c) => (c.singles_equivalent ?? c.quantity ?? 0) > 0 && !c.not_for_me && c.ai_excluded !== true)
-    .map((c) => {
-      const linked = sessions.filter((s) => s.cigar_id === c.id && !s.is_out_of_collection);
-      const lastSmoked = linked
-        .filter((s) => !!s.date)
-        .sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.date;
-      const daysSince = lastSmoked ? Math.floor((Date.now() - new Date(lastSmoked).getTime()) / (1000 * 60 * 60 * 24)) : 999;
-      const qty = Number(c.singles_equivalent ?? c.quantity ?? 0);
-      const rating = Number(c.rating || 0);
-      const readyDate = c.ready_to_smoke_date ? new Date(c.ready_to_smoke_date) : null;
-      const readyBonus = readyDate && !Number.isNaN(readyDate.getTime()) && readyDate <= today ? 1.5 : 0;
-      const preservePenalty = qty <= 1 ? -2 : qty <= 2 ? -1 : 0;
-      const score = rating + (c.is_favorite ? 2 : 0) + readyBonus + (daysSince > 30 ? 1 : 0) + preservePenalty;
-      const reasons = [
-        c.is_favorite ? 'Favorite' : null,
-        rating >= 4 ? `Rated ${rating}/5` : null,
-        readyBonus > 0 ? 'Ready now' : null,
-        daysSince > 30 ? 'Not smoked lately' : null,
-        qty <= 2 ? 'Low stock' : null,
-      ].filter(Boolean);
-      return { cigar: c, score, reasons };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+  const tonightCandidates = React.useMemo(() => (
+    cigars
+      .filter((c) => (c.singles_equivalent ?? c.quantity ?? 0) > 0 && !c.not_for_me && c.ai_excluded !== true)
+      .map((c) => {
+        const linked = sessions.filter((s) => s.cigar_id === c.id && !s.is_out_of_collection);
+        const rated = linked.filter((s) => Number(s.overall_enjoyment || 0) > 0);
+        const avgSessionRating = rated.length
+          ? rated.reduce((sum, s) => sum + Number(s.overall_enjoyment || 0), 0) / rated.length
+          : 0;
+        const lastSmoked = linked
+          .filter((s) => !!s.date)
+          .sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.date;
+        const daysSince = lastSmoked ? Math.floor((Date.now() - new Date(lastSmoked).getTime()) / (1000 * 60 * 60 * 24)) : 999;
+        const qty = Number(c.singles_equivalent ?? c.quantity ?? 0);
+        const rating = Number(c.rating || 0);
+        const readyDate = c.ready_to_smoke_date ? new Date(c.ready_to_smoke_date) : null;
+        const readyBonus = readyDate && !Number.isNaN(readyDate.getTime()) && readyDate <= today ? 1.5 : 0;
+        const restBonus = daysSince > 45 ? 1.25 : daysSince > 21 ? 0.75 : 0;
+        const preservePenalty = qty <= 1 ? -2 : qty <= 2 ? -1 : 0;
+        const score = rating + (c.is_favorite ? 2 : 0) + readyBonus + restBonus + avgSessionRating + preservePenalty;
+        const reasons = [
+          c.is_favorite ? 'Favorite' : null,
+          avgSessionRating >= 4 ? `Sessions ${avgSessionRating.toFixed(1)}/5` : null,
+          rating >= 4 ? `Rated ${rating}/5` : null,
+          readyBonus > 0 ? 'Ready now' : null,
+          daysSince > 30 ? 'Not smoked lately' : null,
+          qty <= 2 ? 'Low stock' : null,
+        ].filter(Boolean);
+        return { cigar: c, score, reasons, daysSince };
+      })
+      .sort((a, b) => b.score - a.score || b.daysSince - a.daysSince)
+  ), [cigars, sessions, today]);
+
+  React.useEffect(() => {
+    if (!tonightCandidates.length) {
+      setTonightRecommendations([]);
+      return;
+    }
+    const key = 'ck_tonight_pick_recent_ids_v1';
+    const raw = localStorage.getItem(key);
+    const recentIds = raw ? raw.split(',').filter(Boolean) : [];
+    const pool = tonightCandidates.filter((item) => !recentIds.includes(item.cigar.id));
+    const picks = (pool.length >= 3 ? pool : tonightCandidates).slice(0, 3);
+    setTonightRecommendations(picks);
+    const updatedRecent = [...picks.map((p) => p.cigar.id), ...recentIds]
+      .filter((id, idx, arr) => arr.indexOf(id) === idx)
+      .slice(0, 10);
+    localStorage.setItem(key, updatedRecent.join(','));
+  }, [tonightCandidates]);
 
   return (
     <div className="space-y-6">
@@ -245,8 +324,14 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
         {brandData.length > 0 && (
           <MiniChart data={brandData} title="Top Brands" horizontal />
         )}
+        {brandRatingData.length > 0 && (
+          <MiniChart data={brandRatingData} title="Top Brands by Avg Rating" horizontal />
+        )}
         {wrapperData.length > 0 && (
           <MiniPie data={wrapperData} title="Wrapper Breakdown" />
+        )}
+        {favoriteWrapperData.length > 0 && (
+          <MiniPie data={favoriteWrapperData} title="Favorite Wrappers" />
         )}
         {lineData.length > 0 && (
           <MiniChart data={lineData} title="Top Lines" horizontal />
@@ -259,6 +344,9 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
         )}
         {bodyData.length > 0 && (
           <MiniChart data={bodyData} title="Body Distribution" />
+        )}
+        {mostSmokedData.length > 0 && (
+          <MiniChart data={mostSmokedData} title="Most Smoked Cigars" horizontal />
         )}
       </div>
 
@@ -355,6 +443,47 @@ export default function CigarInsights({ cigars = [], sessions = [], humidors = [
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {(lowStockFavorites.length > 0 || buyAgainCandidates.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {lowStockFavorites.length > 0 && (
+            <div
+              className="rounded-xl p-4"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+            >
+              <SectionHeading>Low Stock Favorites</SectionHeading>
+              <div className="space-y-2">
+                {lowStockFavorites.map((c) => (
+                  <div key={c.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
+                    <p className="text-sm font-semibold text-[#F5F1E7]">{[c.brand, c.name].filter(Boolean).join(' ')}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                      {Number(c.singles_equivalent ?? c.quantity ?? 0)} left · Threshold {Number(c.restock_threshold || 3)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {buyAgainCandidates.length > 0 && (
+            <div
+              className="rounded-xl p-4"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}
+            >
+              <SectionHeading>Buy Again Candidates</SectionHeading>
+              <div className="space-y-2">
+                {buyAgainCandidates.map(({ cigar, avg, qty }) => (
+                  <div key={cigar.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
+                    <p className="text-sm font-semibold text-[#F5F1E7]">{[cigar.brand, cigar.name].filter(Boolean).join(' ')}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.58)' }}>
+                      Session avg {avg.toFixed(1)}/5 · {qty} left
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
