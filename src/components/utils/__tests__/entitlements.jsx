@@ -1,3 +1,4 @@
+/* global describe, test, expect, beforeEach, afterEach, beforeAll, afterAll, vi */
 /**
  * Unit tests for buildEntitlements (entitlements.jsx)
  *
@@ -9,7 +10,6 @@
  *   - isOnTrial flag propagation
  */
 
-import { describe, test, expect } from 'vitest';
 import { buildEntitlements, PRO_LAUNCH_CUTOFF_ISO } from '../entitlements';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────

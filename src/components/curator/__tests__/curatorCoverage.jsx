@@ -1,3 +1,4 @@
+/* global describe, test, expect, beforeEach, afterEach, beforeAll, afterAll, vi */
 /**
  * Curator Coverage & Anti-Repetition Tests
  *
@@ -12,7 +13,6 @@
  * 8. Anti-repetition / novelty weighting
  */
 
-import { describe, test, expect, beforeEach } from 'vitest';
 import { buildCoverageAudit, validateCompressionCoverage, reconcileCoverageTotals } from '../curatorCoverageAudit';
 import { buildSafeCollectionContext, selectContextMode } from '../collectionContextBudget';
 import {
