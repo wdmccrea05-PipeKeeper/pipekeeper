@@ -19,6 +19,7 @@ import {
   getNextReplacementDate,
   getHumidorMaintenanceStatus,
 } from './humidorMaintenanceUtils';
+import { getAvailableQuantity } from '@/platform/cigarInventory';
 
 const AID_TYPE_LABELS = {
   boveda: 'Boveda Pack',
@@ -555,14 +556,30 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.HumidorLocation.delete(id),
+    mutationFn: async (id) => {
+      const assigned = await base44.entities.Cigar.filter({ created_by: user?.email, humidor_id: id }).catch(() => []);
+      if (Array.isArray(assigned) && assigned.length > 0) {
+        await Promise.all(
+          assigned.map((c) =>
+            base44.entities.Cigar.update(c.id, {
+              humidor_id: null,
+              humidor_tray: null,
+              humidor_shelf: null,
+              humidor_drawer: null,
+              humidor_section: null,
+            })
+          )
+        );
+      }
+      return base44.entities.HumidorLocation.delete(id);
+    },
     onSuccess: () => { toast.success('Humidor deleted'); invalidate(); setDeleteConfirm(null); },
     onError: () => toast.error('Failed to delete humidor'),
   });
 
   const cigarsByHumidor = cigars.reduce((acc, c) => {
     const key = c.humidor_id || '__none__';
-    acc[key] = (acc[key] || 0) + (c.singles_equivalent || c.quantity || 1);
+    acc[key] = (acc[key] || 0) + getAvailableQuantity(c);
     return acc;
   }, {});
 
@@ -639,10 +656,11 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
                   >
                     <div className="flex items-center gap-2 mb-3">
                       <AlertTriangle className="w-4 h-4 text-red-400" />
-                      <p className="text-sm text-[#F5F1E7]">
-                        Delete <strong>{humidor.name}</strong>? This cannot be undone.
-                      </p>
-                    </div>
+                        <p className="text-sm text-[#F5F1E7]">
+                          Delete <strong>{humidor.name}</strong>? This cannot be undone.
+                          {(cigarsByHumidor[humidor.id] || 0) > 0 ? ` ${(cigarsByHumidor[humidor.id] || 0)} cigars will be moved to Unassigned.` : ''}
+                        </p>
+                      </div>
                     <div className="flex gap-2">
                       <Button
                         type="button"
@@ -673,4 +691,3 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
     </div>
   );
 }
-

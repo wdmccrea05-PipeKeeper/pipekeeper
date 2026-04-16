@@ -121,7 +121,7 @@
     },
     "unit_type": {
       "type": "string",
-      "enum": ["single", "5pack", "pack", "box", "bundle", "partial_box"],
+      "enum": ["single", "5pack", "pack", "box", "bundle", "partial_pack", "partial_box"],
       "description": "How the quantity is packaged or counted"
     },
     "cigars_per_package": {
@@ -136,9 +136,30 @@
       "type": "string",
       "description": "Foreign key to a HumidorLocation record"
     },
+    "humidor_tray": {
+      "type": "string",
+      "description": "Optional tray identifier inside the assigned humidor"
+    },
+    "humidor_shelf": {
+      "type": "string",
+      "description": "Optional shelf identifier inside the assigned humidor"
+    },
+    "humidor_drawer": {
+      "type": "string",
+      "description": "Optional drawer identifier inside the assigned humidor"
+    },
+    "humidor_section": {
+      "type": "string",
+      "description": "Optional row/bin/section identifier inside the assigned humidor"
+    },
     "storage_notes": {
       "type": "string",
       "description": "Notes about storage, position, or special handling"
+    },
+    "package_open": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the current pack/box is opened or partial"
     },
     "aging_start_date": {
       "type": "string",
@@ -169,6 +190,11 @@
       "type": "boolean",
       "default": false,
       "description": "Whether this cigar should be flagged for restock"
+    },
+    "not_for_me": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this cigar should be excluded from future recommendations"
     },
     "rating": {
       "type": "number",

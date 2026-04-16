@@ -270,6 +270,10 @@ export function computeSessionDecrement(cigar) {
     typeof cigar.singles_equivalent === 'number' && cigar.singles_equivalent > 0;
   const hasQuantity =
     typeof cigar.quantity === 'number' && cigar.quantity > 0;
+  const cigarsPerPackage =
+    typeof cigar.cigars_per_package === 'number' && cigar.cigars_per_package > 0
+      ? cigar.cigars_per_package
+      : null;
 
   if (!hasSinglesEquiv && !hasQuantity) return null;
 
@@ -277,11 +281,17 @@ export function computeSessionDecrement(cigar) {
 
   if (hasSinglesEquiv) {
     updates.singles_equivalent = Math.max(0, cigar.singles_equivalent - 1);
+  } else if (hasQuantity && cigarsPerPackage) {
+    updates.singles_equivalent = Math.max(0, cigar.quantity * cigarsPerPackage - 1);
   }
 
   // For single-unit cigars, also decrement the base quantity
   if (cigar.unit_type === 'single' && hasQuantity) {
     updates.quantity = Math.max(0, cigar.quantity - 1);
+  }
+
+  if (['box', 'pack', '5pack', 'bundle', 'partial_box', 'partial_pack'].includes(cigar.unit_type || '')) {
+    updates.package_open = true;
   }
 
   return updates;

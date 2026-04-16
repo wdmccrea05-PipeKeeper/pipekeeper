@@ -98,8 +98,8 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['humidor-maintenance-logs', humidorId],
-    queryFn: () => base44.entities.HumidorMaintenanceLog.filter({ humidor_id: humidorId }, '-date', 50),
-    enabled: !!humidorId,
+    queryFn: () => base44.entities.HumidorMaintenanceLog.filter({ humidor_id: humidorId, created_by: user?.email }, '-date', 50),
+    enabled: !!humidorId && !!user?.email,
   });
 
   const createMutation = useMutation({

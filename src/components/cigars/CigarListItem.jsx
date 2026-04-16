@@ -11,7 +11,7 @@ const BODY_LABELS = {
   full: 'Full',
 };
 
-export default function CigarListItem({ cigar, onToggleFavorite }) {
+export default function CigarListItem({ cigar, onToggleFavorite, onQuickAction }) {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -22,6 +22,12 @@ export default function CigarListItem({ cigar, onToggleFavorite }) {
     e.preventDefault();
     e.stopPropagation();
     if (typeof onToggleFavorite === 'function') onToggleFavorite(cigar);
+  };
+
+  const fireQuickAction = (e, action) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof onQuickAction === 'function') onQuickAction(cigar, action);
   };
 
   const photo = Array.isArray(cigar?.photos) ? cigar.photos[0] : cigar?.photos || '';
@@ -110,6 +116,13 @@ export default function CigarListItem({ cigar, onToggleFavorite }) {
             fill={cigar?.is_favorite ? 'currentColor' : 'none'}
           />
         </button>
+        {typeof onQuickAction === 'function' && (
+          <div className="hidden xl:flex items-center gap-1">
+            <button type="button" onClick={(e) => fireQuickAction(e, 'smoked_one')} className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: 'rgba(140,107,63,0.18)', color: '#E0D8C8' }}>-1</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'bought_more')} className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: 'rgba(76,175,130,0.18)', color: '#E0D8C8' }}>+buy</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_shopping')} className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: cigar?.shopping_list ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>shop</button>
+          </div>
+        )}
       </div>
     </div>
   );

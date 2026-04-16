@@ -141,7 +141,11 @@
     },
     "quantity": {
       "type": "number",
-      "description": "Number of units in inventory"
+      "description": "Number of package units owned (e.g. 2 boxes, 5 singles)"
+    },
+    "initial_quantity": {
+      "type": "number",
+      "description": "Starting quantity when first added to collection (for depletion tracking)"
     },
     "unit_type": {
       "type": "string",
@@ -151,21 +155,47 @@
         "pack",
         "box",
         "bundle",
+        "partial_pack",
         "partial_box"
       ],
       "description": "How the quantity is packaged or counted"
     },
+    "cigars_per_package": {
+      "type": "number",
+      "description": "Number of cigars in each package unit (e.g. 20 for a box of 20, 1 for singles)"
+    },
     "singles_equivalent": {
       "type": "number",
-      "description": "Calculated number of individual sticks represented by quantity + unit_type"
+      "description": "Total individual stick count (quantity * cigars_per_package, or remaining sticks for a partial package)"
     },
     "humidor_id": {
       "type": "string",
       "description": "Foreign key to a HumidorLocation record"
     },
+    "humidor_tray": {
+      "type": "string",
+      "description": "Optional tray identifier inside the assigned humidor"
+    },
+    "humidor_shelf": {
+      "type": "string",
+      "description": "Optional shelf identifier inside the assigned humidor"
+    },
+    "humidor_drawer": {
+      "type": "string",
+      "description": "Optional drawer identifier inside the assigned humidor"
+    },
+    "humidor_section": {
+      "type": "string",
+      "description": "Optional row/bin/section identifier inside the assigned humidor"
+    },
     "storage_notes": {
       "type": "string",
       "description": "Notes about storage, position, or special handling"
+    },
+    "package_open": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the current pack/box is opened or partial"
     },
     "aging_start_date": {
       "type": "string",
@@ -197,6 +227,11 @@
       "default": false,
       "description": "Whether this cigar should be flagged for restock"
     },
+    "not_for_me": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this cigar should be excluded from future recommendations"
+    },
     "rating": {
       "type": "number",
       "minimum": 0,
@@ -223,9 +258,24 @@
       "type": "boolean",
       "default": true,
       "description": "Whether this cigar is visible to other users on public profiles"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was created"
+    },
+    "updated_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was last updated"
     }
   },
   "required": [
-    "name"
+    "name",
+    "created_by"
   ]
 }

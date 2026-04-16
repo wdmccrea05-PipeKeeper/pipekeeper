@@ -21,6 +21,15 @@ const DEFAULT_SESSION = {
   burn_notes: '',
   draw_notes: '',
   flavor_progression: '',
+  first_third_notes: '',
+  second_third_notes: '',
+  final_third_notes: '',
+  burn_quality: '',
+  draw_quality: '',
+  ash_quality: '',
+  touch_ups: '',
+  relights: '',
+  duration_actual_minutes: '',
   strength_impression: '',
   overall_enjoyment: 0,
   would_buy_again: '',
@@ -29,6 +38,8 @@ const DEFAULT_SESSION = {
   notes: '',
   not_for_me: false,
   wishlist_after: false,
+  restock_after: false,
+  favorite_after: false,
   is_out_of_collection: false,
   external_cigar_brand: '',
   external_cigar_name: '',
@@ -270,6 +281,15 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
         burn_notes: editSession.burn_notes || '',
         draw_notes: editSession.draw_notes || '',
         flavor_progression: editSession.flavor_progression || '',
+        first_third_notes: editSession.first_third_notes || '',
+        second_third_notes: editSession.second_third_notes || '',
+        final_third_notes: editSession.final_third_notes || '',
+        burn_quality: editSession.burn_quality || '',
+        draw_quality: editSession.draw_quality || '',
+        ash_quality: editSession.ash_quality || '',
+        touch_ups: editSession.touch_ups != null ? String(editSession.touch_ups) : '',
+        relights: editSession.relights != null ? String(editSession.relights) : '',
+        duration_actual_minutes: editSession.duration_actual_minutes != null ? String(editSession.duration_actual_minutes) : '',
         strength_impression: editSession.strength_impression || '',
         overall_enjoyment: editSession.overall_enjoyment || 0,
         would_buy_again: editSession.would_buy_again || '',
@@ -278,6 +298,8 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
         notes: editSession.notes || '',
         not_for_me: editSession.not_for_me || false,
         wishlist_after: editSession.wishlist_after || false,
+        restock_after: false,
+        favorite_after: false,
         is_out_of_collection: editSession.is_out_of_collection || false,
         external_cigar_brand: editSession.external_cigar_brand || '',
         external_cigar_name: editSession.external_cigar_name || '',
@@ -298,14 +320,18 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
     setSaving(true);
     try {
       const isExternal = cigarMode === 'external';
+      const { restock_after, favorite_after, ...sessionFields } = form;
       const payload = {
-        ...form,
+        ...sessionFields,
         is_out_of_collection: isExternal,
         cigar_id: !isExternal && selectedCigar ? selectedCigar.id : undefined,
         cigar_name: !isExternal && selectedCigar
           ? [selectedCigar.brand, selectedCigar.name].filter(Boolean).join(' ')
           : undefined,
         duration_minutes: form.duration_minutes !== '' ? Number(form.duration_minutes) : undefined,
+        duration_actual_minutes: form.duration_actual_minutes !== '' ? Number(form.duration_actual_minutes) : undefined,
+        touch_ups: form.touch_ups !== '' ? Number(form.touch_ups) : undefined,
+        relights: form.relights !== '' ? Number(form.relights) : undefined,
         overall_enjoyment: form.overall_enjoyment || undefined,
       };
 
@@ -329,6 +355,26 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
               queryClient.invalidateQueries({ queryKey: ['cigar-detail'] });
             } catch {
               // Non-fatal: session was saved; inventory update failed silently
+            }
+          }
+        }
+
+        // Optional post-session updates for collection cigar records
+        if (!isExternal && selectedCigar) {
+          const cigarPatch = {};
+          if (form.wishlist_after) cigarPatch.wishlist = true;
+          if (form.restock_after) cigarPatch.restock_flag = true;
+          if (form.favorite_after) cigarPatch.is_favorite = true;
+          if (form.not_for_me) {
+            cigarPatch.not_for_me = true;
+            cigarPatch.ai_excluded = true;
+          }
+          if (Object.keys(cigarPatch).length > 0) {
+            try {
+              await base44.entities.Cigar.update(selectedCigar.id, cigarPatch);
+              queryClient.invalidateQueries({ queryKey: ['cigars'] });
+            } catch {
+              // Non-fatal: session already saved
             }
           }
         }
@@ -428,10 +474,23 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
               <FieldLabel>Flavor Progression</FieldLabel>
               <StyledTextarea value={form.flavor_progression} onChange={set('flavor_progression')} placeholder="First third → second → final…" />
             </div>
+            <div>
+              <FieldLabel>First Third</FieldLabel>
+              <StyledTextarea value={form.first_third_notes} onChange={set('first_third_notes')} placeholder="Opening notes…" />
+            </div>
+            <div>
+              <FieldLabel>Second Third</FieldLabel>
+              <StyledTextarea value={form.second_third_notes} onChange={set('second_third_notes')} placeholder="Midpoint notes…" />
+            </div>
+            <div>
+              <FieldLabel>Final Third</FieldLabel>
+              <StyledTextarea value={form.final_third_notes} onChange={set('final_third_notes')} placeholder="Final third notes…" />
+            </div>
           </div>
 
           {/* Strength impression */}
-          <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
             <FieldLabel>Strength Impression</FieldLabel>
             <StyledSelect value={form.strength_impression} onValueChange={set('strength_impression')} placeholder="Select impression">
               {['mild', 'mild_medium', 'medium', 'medium_full', 'full'].map((v) => (
@@ -440,6 +499,39 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
                 </SelectItem>
               ))}
             </StyledSelect>
+            </div>
+            <div>
+              <FieldLabel>Actual Duration (min)</FieldLabel>
+              <StyledInput type="number" value={form.duration_actual_minutes} onChange={set('duration_actual_minutes')} placeholder="Actual time smoked" />
+            </div>
+            <div>
+              <FieldLabel>Burn Quality</FieldLabel>
+              <StyledSelect value={form.burn_quality} onValueChange={set('burn_quality')} placeholder="Select quality">
+                {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{v}</SelectItem>)}
+              </StyledSelect>
+            </div>
+            <div>
+              <FieldLabel>Draw Quality</FieldLabel>
+              <StyledSelect value={form.draw_quality} onValueChange={set('draw_quality')} placeholder="Select quality">
+                {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{v}</SelectItem>)}
+              </StyledSelect>
+            </div>
+            <div>
+              <FieldLabel>Ash Quality</FieldLabel>
+              <StyledSelect value={form.ash_quality} onValueChange={set('ash_quality')} placeholder="Select quality">
+                {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{v}</SelectItem>)}
+              </StyledSelect>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <FieldLabel>Touch-ups</FieldLabel>
+                <StyledInput type="number" value={form.touch_ups} onChange={set('touch_ups')} placeholder="0" />
+              </div>
+              <div>
+                <FieldLabel>Relights</FieldLabel>
+                <StyledInput type="number" value={form.relights} onChange={set('relights')} placeholder="0" />
+              </div>
+            </div>
           </div>
 
           {/* Overall enjoyment */}
@@ -494,6 +586,25 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
                 checked={form.wishlist_after}
                 onChange={(v) => setForm((f) => ({ ...f, wishlist_after: v }))}
               />
+            )}
+            {cigarMode === 'collection' && (
+              <>
+                <CheckToggle
+                  label="Add to wishlist"
+                  checked={form.wishlist_after}
+                  onChange={(v) => setForm((f) => ({ ...f, wishlist_after: v }))}
+                />
+                <CheckToggle
+                  label="Mark restock"
+                  checked={form.restock_after}
+                  onChange={(v) => setForm((f) => ({ ...f, restock_after: v }))}
+                />
+                <CheckToggle
+                  label="Mark favorite"
+                  checked={form.favorite_after}
+                  onChange={(v) => setForm((f) => ({ ...f, favorite_after: v }))}
+                />
+              </>
             )}
           </div>
 

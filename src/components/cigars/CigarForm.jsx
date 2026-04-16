@@ -39,14 +39,21 @@ const DEFAULT_FORM = {
   cigars_per_package: '',
   singles_equivalent: '',
   humidor_id: '',
+  humidor_tray: '',
+  humidor_shelf: '',
+  humidor_drawer: '',
+  humidor_section: '',
   storage_notes: '',
+  package_open: false,
   aging_start_date: '',
   ready_to_smoke_date: '',
   personal_notes: '',
   rating: 0,
   is_favorite: false,
   wishlist: false,
+  shopping_list: false,
   restock_flag: false,
+  not_for_me: false,
   barcode: '',
   upc: '',
   ean: '',
@@ -263,14 +270,14 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
   }, [cigar?.id]);
 
   // Smart defaults: set cigars_per_package when unit_type changes
-  const PACKAGE_DEFAULTS = { single: 1, '5pack': 5, pack: 5, box: 20, bundle: 25, partial_box: 20 };
+  const PACKAGE_DEFAULTS = { single: 1, '5pack': 5, pack: 5, box: 20, bundle: 25, partial_pack: 5, partial_box: 20 };
 
   const handleUnitTypeChange = (val) => {
     setForm((f) => {
       const perPkg = val && PACKAGE_DEFAULTS[val] != null ? String(PACKAGE_DEFAULTS[val]) : f.cigars_per_package;
       const qty = f.quantity !== '' ? Number(f.quantity) : null;
       const cpp = perPkg !== '' ? Number(perPkg) : null;
-      const autoSingles = val !== 'partial_box' && qty !== null && cpp !== null ? String(qty * cpp) : f.singles_equivalent;
+      const autoSingles = !['partial_box', 'partial_pack'].includes(val) && qty !== null && cpp !== null ? String(qty * cpp) : f.singles_equivalent;
       return { ...f, unit_type: val, cigars_per_package: perPkg, singles_equivalent: autoSingles };
     });
   };
@@ -280,7 +287,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
     const raw = e?.target ? e.target.value : e;
     setForm((f) => {
       const updated = { ...f, [field]: raw };
-      if (updated.unit_type && updated.unit_type !== 'partial_box') {
+      if (updated.unit_type && !['partial_box', 'partial_pack'].includes(updated.unit_type)) {
         const qty = updated.quantity !== '' ? Number(updated.quantity) : null;
         const cpp = updated.cigars_per_package !== '' ? Number(updated.cigars_per_package) : null;
         if (qty !== null && cpp !== null && !Number.isNaN(qty) && !Number.isNaN(cpp)) {
@@ -478,7 +485,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Unit Type">
             <StyledSelect value={form.unit_type} onValueChange={handleUnitTypeChange} placeholder="Select unit">
-              {['single', '5pack', 'pack', 'box', 'bundle', 'partial_box'].map((v) => (
+              {['single', '5pack', 'pack', 'box', 'bundle', 'partial_pack', 'partial_box'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                 </SelectItem>
@@ -496,15 +503,18 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
               placeholder={form.unit_type === 'single' ? '1' : form.unit_type === '5pack' ? '5' : 'e.g. 20'}
             />
           </FormField>
-          <FormField label={form.unit_type === 'partial_box' ? 'Remaining Sticks' : 'Total Sticks'}>
-            <StyledInput
-              type="number"
-              value={form.singles_equivalent}
-              onChange={set('singles_equivalent')}
-              placeholder={form.unit_type === 'partial_box' ? 'e.g. 8' : 'Auto-calculated'}
-            />
-          </FormField>
-          <FormField label="Humidor">
+            <FormField label={['partial_box', 'partial_pack'].includes(form.unit_type) ? 'Remaining Sticks' : 'Total Sticks'}>
+              <StyledInput
+                type="number"
+                value={form.singles_equivalent}
+                onChange={set('singles_equivalent')}
+                placeholder={['partial_box', 'partial_pack'].includes(form.unit_type) ? 'e.g. 8' : 'Auto-calculated'}
+              />
+            </FormField>
+            <FormField label="Opened / Partial Package">
+              <CheckToggle label="Package open" checked={form.package_open} onChange={(v) => setForm((f) => ({ ...f, package_open: v }))} />
+            </FormField>
+            <FormField label="Humidor">
             <StyledSelect value={form.humidor_id || 'none'} onValueChange={handleHumidorChange} placeholder="Select humidor">
               <SelectItem value="none" style={selectItemStyle}>None</SelectItem>
               {humidors.map((h) => (
@@ -513,8 +523,20 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
                 </SelectItem>
               ))}
             </StyledSelect>
-          </FormField>
-          <FormField label="Aging Start Date">
+            </FormField>
+            <FormField label="Humidor Tray">
+              <StyledInput value={form.humidor_tray} onChange={set('humidor_tray')} placeholder="e.g. Top Tray" />
+            </FormField>
+            <FormField label="Humidor Shelf">
+              <StyledInput value={form.humidor_shelf} onChange={set('humidor_shelf')} placeholder="e.g. Shelf B" />
+            </FormField>
+            <FormField label="Humidor Drawer">
+              <StyledInput value={form.humidor_drawer} onChange={set('humidor_drawer')} placeholder="e.g. Drawer 1" />
+            </FormField>
+            <FormField label="Humidor Section">
+              <StyledInput value={form.humidor_section} onChange={set('humidor_section')} placeholder="e.g. Row 3" />
+            </FormField>
+            <FormField label="Aging Start Date">
             <StyledInput type="date" value={form.aging_start_date} onChange={set('aging_start_date')} />
           </FormField>
           <FormField label="Ready to Smoke Date">
@@ -538,7 +560,9 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
         <div className="flex flex-wrap gap-4 pt-1">
           <CheckToggle label="Favorite" checked={form.is_favorite} onChange={(v) => setForm((f) => ({ ...f, is_favorite: v }))} />
           <CheckToggle label="Wishlist" checked={form.wishlist} onChange={(v) => setForm((f) => ({ ...f, wishlist: v }))} />
+          <CheckToggle label="Shopping List" checked={form.shopping_list} onChange={(v) => setForm((f) => ({ ...f, shopping_list: v }))} />
           <CheckToggle label="Restock Flag" checked={form.restock_flag} onChange={(v) => setForm((f) => ({ ...f, restock_flag: v }))} />
+          <CheckToggle label="Not for Me" checked={form.not_for_me} onChange={(v) => setForm((f) => ({ ...f, not_for_me: v, ai_excluded: v }))} />
         </div>
       </FormSection>
 

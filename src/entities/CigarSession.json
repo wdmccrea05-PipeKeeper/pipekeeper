@@ -40,6 +40,45 @@
       "type": "string",
       "description": "Description of how flavors evolved from first third to final third"
     },
+    "first_third_notes": {
+      "type": "string",
+      "description": "Flavor and construction notes during the first third"
+    },
+    "second_third_notes": {
+      "type": "string",
+      "description": "Flavor and construction notes during the second third"
+    },
+    "final_third_notes": {
+      "type": "string",
+      "description": "Flavor and construction notes during the final third"
+    },
+    "burn_quality": {
+      "type": "string",
+      "enum": ["poor", "fair", "good", "excellent"],
+      "description": "Overall burn quality assessment for this session"
+    },
+    "draw_quality": {
+      "type": "string",
+      "enum": ["poor", "fair", "good", "excellent"],
+      "description": "Overall draw quality assessment for this session"
+    },
+    "touch_ups": {
+      "type": "number",
+      "description": "How many touch-ups were needed"
+    },
+    "relights": {
+      "type": "number",
+      "description": "How many relights were needed"
+    },
+    "ash_quality": {
+      "type": "string",
+      "enum": ["poor", "fair", "good", "excellent"],
+      "description": "Overall ash quality assessment for this session"
+    },
+    "duration_actual_minutes": {
+      "type": "number",
+      "description": "Actual smoke duration in minutes if tracked separately"
+    },
     "strength_impression": {
       "type": "string",
       "enum": ["mild", "mild_medium", "medium", "medium_full", "full"],

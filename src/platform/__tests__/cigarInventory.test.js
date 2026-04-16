@@ -290,6 +290,13 @@ describe('computeSessionDecrement', () => {
     const updates = computeSessionDecrement({ unit_type: 'box', quantity: 2, singles_equivalent: 25 });
     expect(updates.singles_equivalent).toBe(24);
     expect(updates.quantity).toBeUndefined();
+    expect(updates.package_open).toBe(true);
+  });
+
+  test('derives singles_equivalent decrement from quantity + cpp when singles_equivalent missing', () => {
+    const updates = computeSessionDecrement({ unit_type: 'box', quantity: 1, cigars_per_package: 20 });
+    expect(updates.singles_equivalent).toBe(19);
+    expect(updates.package_open).toBe(true);
   });
 
   test('does not go below 0', () => {

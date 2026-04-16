@@ -107,15 +107,23 @@ export function getCigarInsight(cigar, humidor, sessions) {
   }
 
   // ── Buy again signal (high-rated + low inventory) ─────────────────────────
+  const linkedSessions = Array.isArray(sessions)
+    ? sessions.filter((s) => s.cigar_id === cigar.id && !s.is_out_of_collection)
+    : [];
+  const avgSessionEnjoyment = linkedSessions.length > 0
+    ? linkedSessions.reduce((sum, s) => sum + (Number(s.overall_enjoyment) || 0), 0) / linkedSessions.length
+    : null;
+
   if (
+    !cigar.not_for_me &&
+    cigar.ai_excluded !== true &&
     (depStatus === 'critical' || depStatus === 'running_low') &&
-    cigar.rating != null &&
-    cigar.rating >= 80
+    ((cigar.rating != null && cigar.rating >= 4) || (avgSessionEnjoyment != null && avgSessionEnjoyment >= 4))
   ) {
     insights.push({
       type: CIGAR_INSIGHT_TYPES.BUY_AGAIN,
       label: 'Consider restocking',
-      detail: 'High-rated cigar is running low.',
+      detail: 'Well-liked cigar is running low.',
       severity: 'info',
     });
   }
