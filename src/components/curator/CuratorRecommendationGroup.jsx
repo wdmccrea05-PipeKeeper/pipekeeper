@@ -175,6 +175,10 @@ function InlineReviewPanel({ rec, onApply, onCancel }) {
 function RecordOptimizationActions({ rec, onAction }) {
   const [applying, setApplying] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  // Map of itemId -> { age: number } for looked-up results
+  const [searchResults, setSearchResults] = useState({});
+  const [committingAll, setCommittingAll] = useState(false);
+  const [allDone, setAllDone] = useState(false);
 
   const actionableItems = (rec.items || []).filter(
     (item) => item?.proposedChange?.payload && Object.keys(item.proposedChange.payload).length > 0
@@ -190,19 +194,37 @@ function RecordOptimizationActions({ rec, onAction }) {
     finally { setApplying(false); }
   };
 
+  const handleCommitAll = async () => {
+    const entries = Object.entries(searchResults);
+    if (!entries.length) return;
+    setCommittingAll(true);
+    try {
+      await Promise.all(entries.map(([id, result]) =>
+        base44.entities.Bottle.update(id, { age: result.age })
+      ));
+      setAllDone(true);
+    } catch (err) {
+      console.error('[Curator] commit all failed', err);
+    } finally {
+      setCommittingAll(false);
+    }
+  };
+
   // Per-item row: name + action based on confidence (Apply Fix / Review Fix / Open Record / Auto-lookup age)
   const ItemRow = ({ item }) => {
-    const [applying, setApplying] = useState(false);
+    const [itemApplying, setItemApplying] = useState(false);
     const [done, setDone] = useState(false);
     const [searching, setSearching] = useState(false);
-    const [searchResult, setSearchResult] = useState(null); // { age: number }
     const [searchError, setSearchError] = useState(false);
     const confidence = item?.proposedChange?.confidence || 0;
     const hasPayload = hasNonEmptyPayload(item);
     const path = singleItemPath(item);
+    const itemId = item.recordId || item.id;
 
     // Auto-lookup age on mount when this item is missing age and has no proposed fix
     const missingAge = !hasPayload && item.missingFields?.includes('age');
+    const searchResult = searchResults[itemId] || null;
+
     React.useEffect(() => {
       if (!missingAge) return;
       let cancelled = false;
@@ -214,41 +236,46 @@ function RecordOptimizationActions({ rec, onAction }) {
         response_json_schema: { type: 'object', properties: { age: { type: 'number' } } },
       }).then((res) => {
         if (cancelled) return;
-        if (res?.age != null) setSearchResult({ age: res.age });
-        else setSearchError(true);
+        if (res?.age != null) {
+          setSearchResults(prev => ({ ...prev, [itemId]: { age: res.age } }));
+        } else {
+          setSearchError(true);
+        }
       }).catch(() => {
         if (!cancelled) setSearchError(true);
       }).finally(() => {
         if (!cancelled) setSearching(false);
       });
       return () => { cancelled = true; };
-    }, [missingAge, item.itemName, item.recordName]);
+    }, [missingAge, itemId, item.itemName, item.recordName]);
 
     const proposedSummary = hasPayload
       ? item.issueType === 'reclassification'
         ? Object.values(item.proposedChange.payload).join(' · ')
         : Object.entries(item.proposedChange.payload).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')
-      : searchResult
-      ? `age: ${searchResult.age === 0 ? 'NAS' : `${searchResult.age} years`}`
+      : null;
+
+    const ageLabel = searchResult != null
+      ? (searchResult.age === 0 ? 'NAS' : `${searchResult.age} years`)
       : null;
 
     const handleApplyItem = async () => {
-      setApplying(true);
-      try { await onAction('apply_fix', rec, { itemId: item.recordId || item.id }); setDone(true); }
-      finally { setApplying(false); }
+      setItemApplying(true);
+      try { await onAction('apply_fix', rec, { itemId }); setDone(true); }
+      finally { setItemApplying(false); }
     };
 
     const handleApplySearchResult = async () => {
       if (!searchResult) return;
-      setApplying(true);
+      setItemApplying(true);
       try {
-        const id = item.recordId || item.id;
-        await base44.entities.Bottle.update(id, { age: searchResult.age });
+        await base44.entities.Bottle.update(itemId, { age: searchResult.age });
         setDone(true);
+        setSearchResults(prev => { const n = { ...prev }; delete n[itemId]; return n; });
       } catch (err) {
         console.error('[Curator] apply age failed', err);
       } finally {
-        setApplying(false);
+        setItemApplying(false);
       }
     };
 
@@ -264,14 +291,21 @@ function RecordOptimizationActions({ rec, onAction }) {
                 Currently: <span style={{ color: '#A1A1AA' }}>{item.currentClassification || '—'}</span>
               </div>
             ) : item.missingFields?.length > 0 ? (
-              <div className="text-xs" style={{ color: '#71717A' }}>Missing: {item.missingFields.join(', ')}</div>
+              <div className="text-xs flex items-center gap-2 flex-wrap" style={{ color: '#71717A' }}>
+                <span>Missing: {item.missingFields.join(', ')}</span>
+                {ageLabel && !done && (
+                  <span className="px-2 py-0.5 rounded text-xs font-semibold" style={{ background: 'rgba(198,161,91,0.15)', color: '#C6A15B', border: '1px solid rgba(198,161,91,0.3)' }}>
+                    → {ageLabel}
+                  </span>
+                )}
+              </div>
             ) : null}
             {proposedSummary && !done && (
               <div className="text-xs mt-0.5" style={{ color: '#C6A15B' }}>→ {proposedSummary}</div>
             )}
           </div>
           <div className="shrink-0 flex items-center gap-1.5">
-            {done ? (
+            {done || allDone ? (
               <DoneIndicator label="Fixed" />
             ) : searching ? (
               <span className="px-3 h-8 inline-flex items-center gap-1.5 text-xs" style={{ color: '#71717A' }}>
@@ -281,23 +315,23 @@ function RecordOptimizationActions({ rec, onAction }) {
               <button
                 type="button"
                 onClick={handleApplySearchResult}
-                disabled={applying}
+                disabled={itemApplying}
                 className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
                 style={{ background: '#4a7c5c', color: '#e0f5ea', border: 'none' }}
               >
-                {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                {applying ? 'Saving…' : `Confirm ${searchResult.age === 0 ? 'NAS' : `${searchResult.age}yr`}`}
+                {itemApplying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                {itemApplying ? 'Saving…' : `Confirm ${searchResult.age === 0 ? 'NAS' : `${searchResult.age}yr`}`}
               </button>
             ) : hasPayload && confidence >= 0.85 ? (
               <button
                 type="button"
                 onClick={handleApplyItem}
-                disabled={applying}
+                disabled={itemApplying}
                 className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
                 style={{ background: '#4a7c5c', color: '#e0f5ea', border: 'none' }}
               >
-                {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                {applying ? 'Fixing…' : 'Apply Fix'}
+                {itemApplying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                {itemApplying ? 'Fixing…' : 'Apply Fix'}
               </button>
             ) : hasPayload && confidence >= 0.60 ? (
               <button
@@ -309,7 +343,7 @@ function RecordOptimizationActions({ rec, onAction }) {
                 <Eye className="w-3 h-3" />
                 Review Fix
               </button>
-            ) : path ? (
+            ) : path && !searching && !searchError ? (
               <a
                 href={path}
                 className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center"
@@ -323,6 +357,8 @@ function RecordOptimizationActions({ rec, onAction }) {
       </div>
     );
   };
+
+  const readyCount = Object.keys(searchResults).length;
 
   if (hasNoDiffs) {
     const items = rec.items || [];
@@ -344,6 +380,19 @@ function RecordOptimizationActions({ rec, onAction }) {
           </div>
         )}
         <div className="flex flex-wrap items-center gap-2">
+          {readyCount >= 2 && !allDone && (
+            <button
+              type="button"
+              onClick={handleCommitAll}
+              disabled={committingAll}
+              className="inline-flex items-center gap-2 font-semibold transition-all disabled:opacity-50"
+              style={{ background: '#C6A15B', color: '#0B0B0C', height: '40px', padding: '0 16px', borderRadius: '12px', fontSize: '14px', border: 'none' }}
+            >
+              {committingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              {committingAll ? 'Applying…' : `Commit All (${readyCount})`}
+            </button>
+          )}
+          {allDone && <DoneIndicator label={`${readyCount} records updated`} />}
           <TertiaryBtn onClick={() => onAction('view_details', rec)} icon={Eye} label="Open All Records" />
           <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
         </div>
