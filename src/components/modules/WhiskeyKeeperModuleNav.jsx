@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { BookOpen, TrendingUp, Plus } from "lucide-react";
+import { BookOpen, TrendingUp, Plus, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WhiskeyBottleIcon from "@/components/icons/WhiskeyBottleIcon";
 
@@ -72,6 +72,17 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
         >
           <BookOpen className="w-4 h-4" />
           <span className="hidden sm:inline">{t('whiskey.logTasting', 'Log Tasting')}</span>
+        </Button>
+        <Button
+          onClick={() => navigate('/Import?type=whiskeykeeper_bottles')}
+          size="sm"
+          variant="ghost"
+          className="gap-1 text-xs"
+          title={t('import.bulkImport', 'Bulk Import')}
+          aria-label={t('import.bulkImport', 'Bulk Import')}
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('import.bulkImport', 'Bulk Import')}</span>
         </Button>
       </div>
     </div>

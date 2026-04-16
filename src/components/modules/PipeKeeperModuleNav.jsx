@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { Leaf, TrendingUp } from "lucide-react";
+import { Leaf, TrendingUp, FileSpreadsheet } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -76,6 +76,17 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
         >
           <Leaf className="w-4 h-4" />
           <span className="hidden sm:inline">{t('quickActions.addBlend', 'Add Blend')}</span>
+        </Button>
+        <Button
+          onClick={() => navigate('/Import?type=pipekeeper_pipes')}
+          size="sm"
+          variant="ghost"
+          className="gap-1 text-xs"
+          title={t('import.bulkImport', 'Bulk Import')}
+          aria-label={t('import.bulkImport', 'Bulk Import')}
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('import.bulkImport', 'Bulk Import')}</span>
         </Button>
       </div>
     </div>

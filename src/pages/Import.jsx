@@ -1,199 +1,238 @@
-import React, { useState } from 'react';
-import { base44 } from "@/api/base44Client";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createPageUrl } from "@/components/utils/createPageUrl";
-import { ArrowLeft, Download, Upload, FileSpreadsheet, CheckCircle, AlertCircle } from "lucide-react";
-import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import React, { useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, AlertCircle, CheckCircle, Download, FileSpreadsheet, Upload } from 'lucide-react';
+import { toast } from 'sonner';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import UpgradePrompt from '@/components/subscription/UpgradePrompt';
+import { createPageUrl } from '@/components/utils/createPageUrl';
+import { invalidateBlendQueries, invalidateEntityQueries, invalidatePipeQueries } from '@/components/utils/cacheInvalidation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { analyzeImportRows, executeImportRows, importDefinitionList, importDefinitions } from '@/lib/imports/importDefinitions';
+import { parseCsvText } from '@/lib/imports/csvImportUtils';
 
-const PIPE_TEMPLATE_HEADERS = [
-  'name', 'maker', 'country_of_origin', 'shape', 'length_mm', 'weight_grams',
-  'bowl_height_mm', 'bowl_width_mm', 'bowl_diameter_mm', 'bowl_depth_mm',
-  'chamber_volume', 'stem_material', 'bowl_material', 'finish', 'filter_type',
-  'year_made', 'stamping', 'condition', 'purchase_price', 'estimated_value', 'notes'
-];
+function SummaryBadge({ tone = 'default', label, value }) {
+  const styles = {
+    default: 'bg-stone-800 border-stone-600 text-stone-100',
+    success: 'bg-green-900/40 border-green-700 text-green-100',
+    warning: 'bg-yellow-900/40 border-yellow-700 text-yellow-100',
+    danger: 'bg-red-900/40 border-red-700 text-red-100',
+  };
+  return (
+    <div className={`rounded-lg border px-3 py-2 text-sm ${styles[tone]}`}>
+      <div className="font-semibold">{value}</div>
+      <div className="text-xs opacity-80">{label}</div>
+    </div>
+  );
+}
 
-const TOBACCO_TEMPLATE_HEADERS = [
-  'name', 'manufacturer', 'blend_type', 'cut', 'strength', 'room_note',
-  'tin_size_oz', 'tin_total_tins', 'tin_tins_open', 'tin_tins_cellared', 'tin_cellared_date',
-  'bulk_total_quantity_oz', 'bulk_open', 'bulk_cellared', 'bulk_cellared_date',
-  'pouch_size_oz', 'pouch_total_pouches', 'pouch_pouches_open', 'pouch_pouches_cellared', 'pouch_cellared_date',
-  'production_status', 'aging_potential', 'rating', 'notes'
-];
+function downloadTemplate(definition) {
+  const headerLine = definition.allowedColumns.join(',');
+  const exampleLine = definition.allowedColumns
+    .map((column) => {
+      const raw = definition.example?.[column] ?? '';
+      const value = String(raw);
+      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    })
+    .join(',');
+
+  const csv = `${headerLine}\n${exampleLine}\n`;
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = definition.templateFile;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function buildImportTypeFromLocation(locationSearch) {
+  const params = new URLSearchParams(locationSearch || '');
+  const requested = params.get('type');
+  if (requested && importDefinitions[requested]) return requested;
+  return importDefinitionList[0]?.id;
+}
+
+function ImportPreview({ analysis }) {
+  if (!analysis) return null;
+
+  return (
+    <Card className="border-[#e8d5b7]/30">
+      <CardHeader>
+        <CardTitle className="text-lg text-stone-100">Import Preview</CardTitle>
+        <CardDescription className="text-stone-300">
+          Review rows before import. Errors are blocked; warnings can still be imported.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {analysis.blockingHeaderErrors.length > 0 && (
+          <div className="rounded-lg border border-red-600/60 bg-red-900/20 p-3 text-sm text-red-100">
+            <p className="font-semibold mb-1">Blocking file errors</p>
+            <ul className="list-disc list-inside space-y-1">
+              {analysis.blockingHeaderErrors.map((error) => <li key={error}>{error}</li>)}
+            </ul>
+          </div>
+        )}
+
+        {analysis.unknownColumns.length > 0 && (
+          <div className="rounded-lg border border-yellow-600/60 bg-yellow-900/20 p-3 text-sm text-yellow-100">
+            Unsupported columns found: {analysis.unknownColumns.join(', ')}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <SummaryBadge label="Rows" value={analysis.totalRows} />
+          <SummaryBadge tone="success" label="Valid" value={analysis.counts.valid} />
+          <SummaryBadge tone="warning" label="Warnings" value={analysis.counts.warning} />
+          <SummaryBadge tone="danger" label="Blocked" value={analysis.counts.error} />
+        </div>
+
+        <div className="overflow-auto max-h-80 border border-stone-700 rounded-lg">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-stone-900 sticky top-0">
+              <tr>
+                <th className="p-2 text-stone-200">Row</th>
+                <th className="p-2 text-stone-200">Item</th>
+                <th className="p-2 text-stone-200">Status</th>
+                <th className="p-2 text-stone-200">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {analysis.rows.slice(0, 50).map((row) => (
+                <tr key={row.rowNumber} className="border-t border-stone-800 align-top">
+                  <td className="p-2 text-stone-300">{row.rowNumber}</td>
+                  <td className="p-2 text-stone-200">{row.previewName}</td>
+                  <td className="p-2">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      row.status === 'valid'
+                        ? 'bg-green-900/50 text-green-100'
+                        : row.status === 'warning'
+                          ? 'bg-yellow-900/50 text-yellow-100'
+                          : 'bg-red-900/50 text-red-100'
+                    }`}>
+                      {row.status.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="p-2 text-xs text-stone-300">
+                    {[...row.errors, ...row.warnings].slice(0, 3).join(' • ') || '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {analysis.rows.length > 50 && (
+          <p className="text-xs text-stone-400">
+            Showing first 50 rows of {analysis.rows.length}. Remaining rows will still follow the same validation rules during import.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function ImportPage() {
   const { t } = useTranslation();
-  const [uploadingPipes, setUploadingPipes] = useState(false);
-  const [uploadingTobacco, setUploadingTobacco] = useState(false);
-  const [pipeResults, setPipeResults] = useState(null);
-  const [tobaccoResults, setTobaccoResults] = useState(null);
-  
+  const location = useLocation();
   const queryClient = useQueryClient();
-
   const { user, hasPaid: isPaidUser } = useCurrentUser();
 
-  const downloadPipeTemplate = () => {
-    const csvContent = PIPE_TEMPLATE_HEADERS.join(',') + '\n' +
-      'Example Pipe,Peterson,Ireland,Billiard,140,45,40,35,18,35,Medium,Vulcanite,Briar,Smooth,None,2020,System Standard 314,Excellent,120,150,My favorite pipe\n';
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'pipe_import_template.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
+  const [importType, setImportType] = useState(() => buildImportTypeFromLocation(location.search));
+  const [analysis, setAnalysis] = useState(null);
+  const [importResult, setImportResult] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [duplicateMode, setDuplicateMode] = useState('create_only');
 
-  const downloadTobaccoTemplate = () => {
-    const csvContent = TOBACCO_TEMPLATE_HEADERS.join(',') + '\n' +
-      'Example Blend,Cornell & Diehl,English,Ribbon,Medium,Pleasant,1.75,5,1,4,2025-01-15,16,2,14,2025-01-10,1.5,3,1,2,2025-01-12,Current Production,Excellent,4.5,Great everyday smoke\n';
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'tobacco_import_template.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
+  const definition = importDefinitions[importType];
 
-  // RFC-4180 compliant CSV line parser — handles quoted commas, escaped quotes, blank cells
-  const parseCSVLine = (line) => {
-    const fields = [];
-    let cur = '';
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') {
-        if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
-        else inQuotes = !inQuotes;
-      } else if (ch === ',' && !inQuotes) {
-        fields.push(cur.trim());
-        cur = '';
-      } else {
-        cur += ch;
-      }
+  const importableRows = useMemo(() => {
+    if (!analysis) return [];
+    return analysis.rows.filter((row) => row.status !== 'error');
+  }, [analysis]);
+
+  const hasBlockingErrors = analysis?.blockingHeaderErrors?.length > 0;
+
+  const refreshModuleCaches = () => {
+    if (!user?.email) return;
+    if (definition.entity === 'Pipe') {
+      invalidatePipeQueries(queryClient, user.email);
+    } else if (definition.entity === 'TobaccoBlend') {
+      invalidateBlendQueries(queryClient, user.email);
+    } else if (definition.entity === 'Bottle') {
+      invalidateEntityQueries(queryClient, 'bottles', user.email);
+      invalidateEntityQueries(queryClient, 'whiskey-collection', user.email);
+      invalidateEntityQueries(queryClient, 'bottles-summary', user.email);
+    } else if (definition.entity === 'Cigar') {
+      invalidateEntityQueries(queryClient, 'cigars', user.email);
+      invalidateEntityQueries(queryClient, 'cigars-summary', user.email);
+      invalidateEntityQueries(queryClient, 'humidors', user.email);
     }
-    fields.push(cur.trim());
-    return fields;
   };
 
-  const PIPE_NUMERIC = ['length_mm','weight_grams','bowl_height_mm','bowl_width_mm','bowl_diameter_mm','bowl_depth_mm','purchase_price','estimated_value'];
-  const TOBACCO_NUMERIC = ['tin_size_oz','tin_total_tins','tin_tins_open','tin_tins_cellared','bulk_total_quantity_oz','bulk_open','bulk_cellared','pouch_size_oz','pouch_total_pouches','pouch_pouches_open','pouch_pouches_cellared','rating'];
+  const handleFileUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file || !definition || !user?.email) return;
 
-  const parseCSV = (text, requiredHeaders, numericFields) => {
-    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim());
-    if (lines.length < 2) return { data: [], errors: ['No data rows found in CSV.'] };
-    const headers = parseCSVLine(lines[0]);
-    const missing = requiredHeaders.filter(h => !headers.includes(h));
-    if (missing.length > 0) return { data: [], errors: [`Missing required columns: ${missing.join(', ')}`] };
-    const data = [];
-    const errors = [];
-    for (let i = 1; i < lines.length; i++) {
-      const values = parseCSVLine(lines[i]);
-      const obj = {};
-      headers.forEach((header, idx) => {
-        const val = values[idx] ?? '';
-        if (val !== '') {
-          if (numericFields.includes(header)) {
-            const n = parseFloat(val);
-            if (!isNaN(n)) obj[header] = n;
-            else errors.push(`Row ${i}: "${header}" has non-numeric value "${val}"`);
-          } else {
-            obj[header] = val;
-          }
-        }
+    setBusy(true);
+    setImportResult(null);
+    setAnalysis(null);
+
+    try {
+      const text = await file.text();
+      const parsed = parseCsvText(text);
+      const nextAnalysis = await analyzeImportRows({
+        definition,
+        headers: parsed.headers,
+        rawHeaders: parsed.rawHeaders,
+        rows: parsed.rows,
+        duplicateHeaders: parsed.duplicateHeaders,
+        parseErrors: parsed.parseErrors,
+        userEmail: user.email,
       });
-      if (Object.keys(obj).length > 0) data.push(obj);
-    }
-    return { data, errors };
-  };
-
-  const handlePipeUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setUploadingPipes(true);
-    setPipeResults(null);
-
-    try {
-      const text = await file.text();
-      const { data: pipes, errors: parseErrors } = parseCSV(text, ['name'], PIPE_NUMERIC);
-      
-      if (parseErrors.length > 0 && pipes.length === 0) {
-        setPipeResults({ success: 0, failed: 0, total: 0, errors: parseErrors });
-        return;
-      }
-
-      let success = 0;
-      let failed = 0;
-      const rowErrors = [...parseErrors];
-
-      for (const pipe of pipes) {
-        try {
-          await base44.entities.Pipe.create(pipe);
-          success++;
-        } catch (error) {
-          failed++;
-          rowErrors.push(`Failed to import pipe "${pipe.name || '(unknown)'}": ${error?.message || 'unknown error'}`);
-        }
-      }
-
-      setPipeResults({ success, failed, total: pipes.length, errors: rowErrors });
-      invalidatePipeQueries(queryClient, user?.email);
+      setAnalysis(nextAnalysis);
+      if (nextAnalysis.totalRows === 0) toast.warning('No data rows detected.');
     } catch (error) {
-      toast.error(t("import.csvParseFailed"));
+      console.error('[Import] Parse failed:', error);
+      toast.error(t('import.csvParseFailed', 'CSV parse failed.'));
     } finally {
-      setUploadingPipes(false);
-      e.target.value = '';
+      setBusy(false);
+      event.target.value = '';
     }
   };
 
-  const handleTobaccoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleExecuteImport = async () => {
+    if (!analysis || !definition) return;
+    if (hasBlockingErrors) {
+      toast.error('Fix file errors before importing.');
+      return;
+    }
+    if (!importableRows.length) {
+      toast.warning('No importable rows found.');
+      return;
+    }
 
-    setUploadingTobacco(true);
-    setTobaccoResults(null);
-
+    setBusy(true);
     try {
-      const text = await file.text();
-      const { data: blends, errors: parseErrors } = parseCSV(text, ['name'], TOBACCO_NUMERIC);
-
-      if (parseErrors.length > 0 && blends.length === 0) {
-        setTobaccoResults({ success: 0, failed: 0, total: 0, errors: parseErrors });
-        return;
-      }
-
-      let success = 0;
-      let failed = 0;
-      const rowErrors = [...parseErrors];
-
-      for (const blend of blends) {
-        try {
-          await base44.entities.TobaccoBlend.create(blend);
-          success++;
-        } catch (error) {
-          failed++;
-          rowErrors.push(`Failed to import blend "${blend.name || '(unknown)'}": ${error?.message || 'unknown error'}`);
-        }
-      }
-
-      setTobaccoResults({ success, failed, total: blends.length, errors: rowErrors });
-      invalidateBlendQueries(queryClient, user?.email);
+      const result = await executeImportRows({
+        definition,
+        analyzedRows: analysis.rows,
+        duplicateMode,
+      });
+      setImportResult(result);
+      refreshModuleCaches();
+      toast.success(`Imported ${result.imported} row(s).`);
     } catch (error) {
-      toast.error(t("import.csvParseFailed"));
+      console.error('[Import] Execute failed:', error);
+      toast.error('Import failed. Please try again.');
     } finally {
-      setUploadingTobacco(false);
-      e.target.value = '';
+      setBusy(false);
     }
   };
 
@@ -204,13 +243,10 @@ export default function ImportPage() {
           <a href={createPageUrl('Home')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              {t("supportFull.backToHome")}
+              {t('supportFull.backToHome')}
             </Button>
           </a>
-          <UpgradePrompt 
-            featureName={t("import.bulkImport")}
-            description={t("import.upgradeDesc")}
-          />
+          <UpgradePrompt featureName={t('import.bulkImport', 'Bulk Import')} description={t('import.upgradeDesc')} />
         </div>
       </div>
     );
@@ -218,11 +254,11 @@ export default function ImportPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <a href={createPageUrl('Home')}>
-          <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
+          <Button variant="ghost" className="text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {t("common.backToHome")}
+            {t('common.backToHome', 'Back to home')}
           </Button>
         </a>
 
@@ -230,170 +266,125 @@ export default function ImportPage() {
           <CardHeader>
             <CardTitle className="text-3xl text-stone-100 flex items-center gap-3">
               <FileSpreadsheet className="w-8 h-8 text-[#8b3a3a]" />
-              {t("import.bulkImport")}
+              {t('import.bulkImport', 'Bulk Import')}
             </CardTitle>
             <CardDescription className="text-stone-300">
-              {t("import.bulkImportDesc")}
+              {t(
+                'import.bulkImportDesc',
+                'Trusted collector migration flow: template download, upload, validation preview, safe import, and clear results.'
+              )}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="pipes" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="pipes">{t("import.importPipes")}</TabsTrigger>
-                <TabsTrigger value="tobacco">{t("import.importTobacco")}</TabsTrigger>
-              </TabsList>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-3 gap-3">
+              <div className="md:col-span-2">
+                <label className="text-sm text-stone-300 mb-2 block">Import type</label>
+                <Select
+                  value={importType}
+                  onValueChange={(value) => {
+                    setImportType(value);
+                    setAnalysis(null);
+                    setImportResult(null);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {importDefinitionList.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.moduleLabel} — {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button className="w-full" variant="outline" onClick={() => downloadTemplate(definition)}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Template
+                </Button>
+              </div>
+            </div>
 
-              <TabsContent value="pipes" className="space-y-6">
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-amber-900 mb-2">{t("import.howToImportPipes")}</h3>
-                  <ol className="text-sm text-amber-800 space-y-1 list-decimal list-inside mb-3">
-                    <li>{t("import.step1Template")}</li>
-                    <li>{t("import.step2OpenSpreadsheet")}</li>
-                    <li>{t("import.step3FillPipes")}</li>
-                    <li>{t("import.step4SaveCSV")}</li>
-                    <li>{t("import.step5Upload")}</li>
-                  </ol>
-                  <div className="mt-3 pt-3 border-t border-amber-300">
-                    <p className="text-sm font-semibold text-amber-900 mb-1">{t("import.requiredFields")}:</p>
-                    <ul className="text-sm text-amber-800 space-y-1">
-                      <li>• <strong>{t("import.fieldName")}</strong> - {t("import.pipeNameDesc")}</li>
-                      <li>• <strong>{t("import.fieldMaker")}</strong> - {t("import.pipeMakerDesc")}</li>
-                    </ul>
-                    <p className="text-xs text-amber-700 mt-2 italic">{t("import.pipeNoteCustom")}</p>
-                  </div>
-                </div>
+            <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+              <p className="font-semibold mb-1">How this import works</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Use the template and keep one record per row.</li>
+                <li>Required fields: {definition.requiredColumns.join(', ')}.</li>
+                <li>Optional fields help enrich records and improve matching.</li>
+                <li>Warnings can import; errors are blocked until corrected.</li>
+              </ul>
+            </div>
 
-                <div className="flex gap-4">
-                  <Button onClick={downloadPipeTemplate} variant="outline" className="flex-1">
-                    <Download className="w-4 h-4 mr-2" />
-                    {t("import.downloadPipeTemplate")}
-                  </Button>
-                </div>
-
-                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-2 text-sm text-yellow-800">
-                  ⚠️ Review your CSV carefully. Quoted values with commas are supported. Use the template to avoid formatting issues.
-                </div>
-
-                <div className="border-2 border-dashed border-stone-300 rounded-lg p-8 text-center">
-                  <Upload className="w-12 h-12 text-stone-400 mx-auto mb-4" />
-                  <p className="text-stone-600 mb-4">{t("import.uploadCompletedCSV")}</p>
-                  <Input
-                    type="file"
-                    accept=".csv"
-                    onChange={handlePipeUpload}
-                    disabled={uploadingPipes}
-                    className="max-w-xs mx-auto"
-                  />
-                  {uploadingPipes && <p className="text-sm text-stone-500 mt-2">{t("import.importingPipes")}</p>}
-                </div>
-
-                {pipeResults && (
-                  <Card className={pipeResults.failed === 0 && !pipeResults.errors?.length ? "bg-green-50 border-green-200" : "bg-yellow-50 border-yellow-200"}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-2">
-                        {pipeResults.failed === 0 && !pipeResults.errors?.length ? (
-                          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        ) : (
-                          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold">{t("import.importComplete")}</p>
-                          <p className="text-sm">
-                            {t("import.pipesImportedSuccess", { count: pipeResults.success })}
-                            {pipeResults.failed > 0 && `, ${t("import.importFailed", { count: pipeResults.failed })}`}
-                            {` (${pipeResults.total} rows detected)`}
-                          </p>
-                          {pipeResults.errors?.length > 0 && (
-                            <ul className="mt-2 space-y-1 text-xs text-yellow-800 max-h-32 overflow-y-auto">
-                              {pipeResults.errors.map((e, i) => <li key={i}>• {e}</li>)}
-                            </ul>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              <TabsContent value="tobacco" className="space-y-6">
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-amber-900 mb-2">{t("import.howToImportTobacco")}</h3>
-                  <ol className="text-sm text-amber-800 space-y-1 list-decimal list-inside mb-3">
-                    <li>{t("import.step1Template")}</li>
-                    <li>{t("import.step2OpenSpreadsheet")}</li>
-                    <li>{t("import.step3FillTobacco")}</li>
-                    <li>{t("import.step4SaveCSV")}</li>
-                    <li>{t("import.step5Upload")}</li>
-                  </ol>
-                  <div className="mt-3 pt-3 border-t border-amber-300">
-                    <p className="text-sm font-semibold text-amber-900 mb-1">{t("import.requiredFields")}:</p>
-                    <ul className="text-sm text-amber-800 space-y-1">
-                      <li>• <strong>{t("import.fieldName")}</strong> - {t("import.tobaccoNameDesc")}</li>
-                    </ul>
-                    <p className="text-sm font-semibold text-amber-900 mt-3 mb-1">{t("import.inventoryFields")}:</p>
-                    <ul className="text-xs text-amber-800 space-y-1">
-                      <li>• <strong>{t("import.tins")}:</strong> tin_size_oz, tin_total_tins, tin_tins_open, tin_tins_cellared, tin_cellared_date</li>
-                      <li>• <strong>{t("import.bulk")}:</strong> bulk_total_quantity_oz, bulk_open, bulk_cellared, bulk_cellared_date</li>
-                      <li>• <strong>{t("import.pouches")}:</strong> pouch_size_oz, pouch_total_pouches, pouch_pouches_open, pouch_pouches_cellared, pouch_cellared_date</li>
-                    </ul>
-                    <p className="text-xs text-amber-700 mt-2 italic">{t("import.inventoryFieldsNote")}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <Button onClick={downloadTobaccoTemplate} variant="outline" className="flex-1">
-                    <Download className="w-4 h-4 mr-2" />
-                    {t("import.downloadTobaccoTemplate")}
-                  </Button>
-                </div>
-
-                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-2 text-sm text-yellow-800">
-                  ⚠️ Review your CSV carefully. Quoted values with commas are supported. Use the template to avoid formatting issues.
-                </div>
-
-                <div className="border-2 border-dashed border-stone-300 rounded-lg p-8 text-center">
-                  <Upload className="w-12 h-12 text-stone-400 mx-auto mb-4" />
-                  <p className="text-stone-600 mb-4">{t("import.uploadCompletedCSV")}</p>
-                  <Input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleTobaccoUpload}
-                    disabled={uploadingTobacco}
-                    className="max-w-xs mx-auto"
-                  />
-                  {uploadingTobacco && <p className="text-sm text-stone-500 mt-2">{t("import.importingTobacco")}</p>}
-                </div>
-
-                {tobaccoResults && (
-                  <Card className={tobaccoResults.failed === 0 && !tobaccoResults.errors?.length ? "bg-green-50 border-green-200" : "bg-yellow-50 border-yellow-200"}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-2">
-                        {tobaccoResults.failed === 0 && !tobaccoResults.errors?.length ? (
-                          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        ) : (
-                          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold">{t("import.importComplete")}</p>
-                          <p className="text-sm">
-                            {t("import.blendsImportedSuccess", { count: tobaccoResults.success })}
-                            {tobaccoResults.failed > 0 && `, ${t("import.importFailed", { count: tobaccoResults.failed })}`}
-                            {` (${tobaccoResults.total} rows detected)`}
-                          </p>
-                          {tobaccoResults.errors?.length > 0 && (
-                            <ul className="mt-2 space-y-1 text-xs text-yellow-800 max-h-32 overflow-y-auto">
-                              {tobaccoResults.errors.map((e, i) => <li key={i}>• {e}</li>)}
-                            </ul>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-            </Tabs>
+            <div className="border-2 border-dashed border-stone-500/60 rounded-lg p-6 text-center space-y-3">
+              <Upload className="w-10 h-10 text-stone-400 mx-auto" />
+              <p className="text-stone-300">Upload your completed CSV file</p>
+              <Input type="file" accept=".csv" onChange={handleFileUpload} disabled={busy} className="max-w-sm mx-auto" />
+            </div>
           </CardContent>
         </Card>
+
+        <ImportPreview analysis={analysis} />
+
+        {analysis && (
+          <Card className="border-[#e8d5b7]/30">
+            <CardHeader>
+              <CardTitle className="text-xl text-stone-100">Confirm Import</CardTitle>
+              <CardDescription className="text-stone-300">
+                Explicit confirmation is required before records are created.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-stone-300 mb-2 block">Duplicate handling</label>
+                  <Select value={duplicateMode} onValueChange={setDuplicateMode}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="create_only">Create new only (default safe mode)</SelectItem>
+                      <SelectItem value="skip_duplicates">Create + skip detected duplicates</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    className="w-full"
+                    onClick={handleExecuteImport}
+                    disabled={busy || hasBlockingErrors || importableRows.length === 0}
+                  >
+                    {busy ? 'Importing…' : `Import ${importableRows.length} row(s)`}
+                  </Button>
+                </div>
+              </div>
+
+              {importResult && (
+                <div className="rounded-lg border border-stone-700 bg-stone-900/40 p-4">
+                  <div className="flex items-start gap-2 mb-2">
+                    {importResult.failed === 0 ? (
+                      <CheckCircle className="w-5 h-5 text-green-400 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
+                    )}
+                    <div>
+                      <p className="font-semibold text-stone-100">Import Results</p>
+                      <p className="text-sm text-stone-300">
+                        Processed: {importResult.processed} • Imported: {importResult.imported} • Skipped: {importResult.skipped} • Failed: {importResult.failed}
+                      </p>
+                    </div>
+                  </div>
+                  {importResult.details.length > 0 && (
+                    <ul className="max-h-40 overflow-auto text-xs text-stone-300 list-disc list-inside space-y-1">
+                      {importResult.details.slice(0, 100).map((detail, index) => <li key={`${detail}-${index}`}>{detail}</li>)}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
