@@ -15,8 +15,9 @@ export default function BrandLogo({
 
   const asset = getModuleAsset("collectionkeeper");
   const sizeClass = compact ? "w-8 h-8" : "w-12 h-12";
+  const hasSrc = asset?.src && asset.src !== '/favicon.ico';
 
-  const logoNode = failed ? (
+  const logoNode = (failed || !hasSrc) ? (
     <div
       className={cn(
         "flex items-center justify-center rounded-md flex-shrink-0",

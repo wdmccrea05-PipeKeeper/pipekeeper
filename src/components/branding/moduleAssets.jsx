@@ -10,6 +10,17 @@ export function getModuleIcon(moduleKey) {
   return MODULE_ICONS[moduleKey];
 }
 
+export function getModuleAsset(assetKey) {
+  const assets = {
+    collectionkeeper: { src: '/favicon.ico' },
+    pipekeeper: { src: '/favicon.ico' },
+    whiskeykeeper: { src: '/favicon.ico' },
+    cigarkeeper: { src: '/favicon.ico' },
+    winekeeper: { src: '/favicon.ico' },
+  };
+  return assets[assetKey] || { src: '/favicon.ico' };
+}
+
 export function getAssetImageStyle(assetKey, size = 'default') {
   return {};
 }
