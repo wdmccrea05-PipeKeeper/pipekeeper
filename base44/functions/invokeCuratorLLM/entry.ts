@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -15,13 +15,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No prompt provided' }, { status: 400 });
     }
 
-    // Call the LLM integration
+    // Call the LLM integration — use claude_sonnet_4_6 for collector-grade domain knowledge
     const result = await base44.integrations.Core.InvokeLLM({
       prompt,
       add_context_from_internet: false,
+      model: 'claude_sonnet_4_6',
     });
 
-    return Response.json(result);
+    // Normalize: InvokeLLM without response_json_schema returns a string directly
+    const text = typeof result === 'string' ? result : (result?.text || result?.content || result?.result || JSON.stringify(result));
+
+    return Response.json(text);
   } catch (error) {
     console.error('invokeCuratorLLM error:', error);
     return Response.json(

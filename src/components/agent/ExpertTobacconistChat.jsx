@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { SendHorizontal } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { buildSessionPlan } from '@/lib/curator/sessionPlanner.js';
 import {
   buildDirectAnswer,
@@ -44,13 +45,14 @@ const STARTER_PROMPTS_SINGLE = [
   "What haven't I used recently?",
   'What should I buy or restock next?',
   'What is the biggest gap in my collection?',
-  'Which bottle should I open next?',
+  'What Virginia flakes should I try next?',
+  'Best smooth morning smoke with coffee?',
 ];
 const STARTER_PROMPTS_MULTI = [
   'What is my most redundant pipe?',
   'Which pipe should I reassign?',
   'What should I smoke tonight?',
-  'What should I buy or restock next?',
+  'Best smooth morning smoke with coffee?',
   'What is the biggest gap in my collection?',
   'Explain one good pairing from my collection.',
 ];
@@ -345,10 +347,72 @@ function safeCuratorFallback(context, question) {
   const blends = context?.blends || [];
 
   if (bottles.length || blends.length) {
-    return `I wasn't able to resolve that cleanly, but looking at your collection, there are still strong directions to explore. If you want, I can walk through your current lineup and highlight where it can expand or improve.`;
+    return `I wasn't able to resolve that from local data, but this looks like a question that needs domain knowledge. Try the same question again — it will be answered via AI now.`;
   }
 
-  return "I wasn't able to resolve that from the current data. Try asking about a specific item, session, or gap and I'll walk through it with you.";
+  return "Try asking about a specific item, session, or what you should buy next and I'll answer directly.";
+}
+
+/**
+ * Build a rich LLM prompt with full collection context so the AI can answer
+ * any collector query that the rule-based engine can't handle.
+ */
+function buildLLMPrompt(userMessage, context = {}, history = [], entityContext = {}) {
+  const pipes = context.pipes || [];
+  const blends = context.blends || [];
+  const bottles = context.bottles || [];
+  const smokingLogs = context.smokingLogs || [];
+  const tastingLogs = context.tastingLogs || [];
+
+  const collectionSummary = [
+    blends.length > 0
+      ? `TOBACCO CELLAR (${blends.length} blends):\n` + blends.slice(0, 60).map((b) =>
+          `- ${b.name}${b.manufacturer ? ` by ${b.manufacturer}` : ''}${b.blend_type ? ` [${b.blend_type}]` : ''}${b.strength ? ` strength:${b.strength}` : ''}${b.rating ? ` rated:${b.rating}/5` : ''}${b.is_favorite ? ' ★' : ''}`
+        ).join('\n')
+      : 'TOBACCO CELLAR: empty',
+    pipes.length > 0
+      ? `\nPIPE COLLECTION (${pipes.length} pipes):\n` + pipes.slice(0, 40).map((p) =>
+          `- ${p.name}${p.maker ? ` by ${p.maker}` : ''}${p.shape ? ` [${p.shape}]` : ''}${p.bowl_material ? ` ${p.bowl_material}` : ''}${p.focus?.length ? ` focus:${p.focus.join(',')}` : ''}`
+        ).join('\n')
+      : '',
+    bottles.length > 0
+      ? `\nWHISKEY SHELF (${bottles.length} bottles):\n` + bottles.slice(0, 40).map((b) =>
+          `- ${b.name}${b.distillery ? ` by ${b.distillery}` : ''}${b.type || b.whiskey_type ? ` [${b.type || b.whiskey_type}]` : ''}${b.age ? ` ${b.age}yr` : ''}${b.rating ? ` rated:${b.rating}/5` : ''}`
+        ).join('\n')
+      : '',
+    smokingLogs.length > 0 ? `\nSMOKING SESSIONS: ${smokingLogs.length} logged` : '',
+    tastingLogs.length > 0 ? `\nTASTING SESSIONS: ${tastingLogs.length} logged` : '',
+  ].filter(Boolean).join('');
+
+  const recentHistory = history.slice(-6).map((m) => `${m.role === 'user' ? 'USER' : 'CURATOR'}: ${m.content}`).join('\n');
+
+  const currentSubject = entityContext.subject?.name
+    ? `\nCURRENT CONVERSATION SUBJECT: ${entityContext.subject.name} (${entityContext.subject.type})`
+    : '';
+
+  return `You are Curator — a premium pipe tobacco, whiskey, and collector intelligence assistant. You have deep domain knowledge about tobacco blends, pipe makers, whiskey distilleries, and collector preferences.
+
+COLLECTION CONTEXT:
+${collectionSummary || 'No collection data available yet.'}
+${currentSubject}
+
+${recentHistory ? `RECENT CONVERSATION:\n${recentHistory}\n` : ''}
+
+CRITICAL RULES:
+1. For "similar to X" questions: ALWAYS give 4-6 specific named product recommendations with WHY each matches. Use your tobacco/whiskey domain knowledge — do NOT say you need more information.
+2. If the item mentioned (e.g. "Cowboy Coffee") is NOT in the user's collection, treat it as a reference point and recommend similar items from general collector knowledge.
+3. If the item IS in the collection, reference it by name and build recommendations around it.
+4. NEVER say "I need more information" or "I can't determine" for similarity/recommendation questions. Always give your best expert answer.
+5. Recommendations must include: why it matches (flavor, strength, style, use case).
+6. Keep answers conversational and precise — like a trusted tobacconist or whiskey guide.
+7. When the user's collection has relevant items, weave them into the answer.
+8. For tobacco similarity: reference blend_type, strength, tobacco components, flavor notes, room note.
+9. For whiskey similarity: reference style, region, flavor profile, age, abv.
+10. End with a follow-up offer (rank by X, narrow by Y, etc.).
+
+USER QUESTION: ${userMessage}
+
+Answer directly and specifically. Lead with concrete recommendations, not caveats.`;
 }
 
 function fallbackGapAnalysis(context = {}) {
@@ -1275,67 +1339,97 @@ export default function ExpertTobacconistChat({
     }
   }, [preFillMessage, onPreFillConsumed]);
 
+  /**
+   * Determines if this query needs LLM (domain knowledge) vs local rule engine.
+   * LLM is used when:
+   * - User asks about similarity/comparison ("similar to X", "compare X vs Y")  
+   * - User mentions a product NOT in their collection
+   * - Intent is UNKNOWN (rule engine can't handle it)
+   * - User asks "what should I buy" type questions with named external products
+   */
+  function needsLLM(text, context) {
+    const t = text.toLowerCase();
+    // Explicit similarity/comparison questions always need domain knowledge
+    if (/\b(similar to|like [a-z]|compare|vs\.?|versus|difference between|recommend.*to (try|buy|purchase)|what.*(else|other|next|buy|purchase|try)|should i (buy|try|get|pick up))\b/i.test(text)) return true;
+    // Mentions specific named products — check if they're NOT in collection
+    const allNames = [
+      ...(context?.blends || []).map(b => b.name?.toLowerCase()),
+      ...(context?.pipes || []).map(p => p.name?.toLowerCase()),
+      ...(context?.bottles || []).map(b => b.name?.toLowerCase()),
+    ].filter(Boolean);
+    // Looks like it references a named product (capitalized multi-word phrase) that isn't in collection
+    const namedProductMatch = text.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z&][a-zA-Z']+){1,4})\b/g);
+    if (namedProductMatch) {
+      const externalProduct = namedProductMatch.find(name => !allNames.some(n => n.includes(name.toLowerCase())));
+      if (externalProduct) return true;
+    }
+    return false;
+  }
+
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || isSending) return;
     setIsSending(true);
-    setMessages((prev) => [...prev, { id: `user-${Date.now()}`, role: 'user', content: text }]);
+    const userMsgId = `user-${Date.now()}`;
+    setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content: text }]);
     setInput('');
     try {
+      const intent = classifyIntent(text);
+      const useLLM = needsLLM(text, collectionContext) || intent === 'UNKNOWN';
+
+      if (useLLM) {
+        // Use LLM for domain-knowledge queries (similarity, external products, comparison, etc.)
+        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, entityContext);
+        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
+        const llmReply = typeof response?.data === 'string'
+          ? response.data
+          : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
+        const cleanReply = llmReply.trim() || 'I was not able to generate a response. Please try rephrasing.';
+        // Update entity context with any named product mentioned
+        const namedProductMatch = text.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z&][a-zA-Z']+){1,4})\b/g);
+        if (namedProductMatch?.[0]) {
+          setEntityContext((prev) => ({
+            ...prev,
+            subject: { name: namedProductMatch[0], type: 'external', id: null },
+            topicIntent: 'similarity_query',
+            lastClaimType: 'llm_recommendation',
+            lastEvidenceClass: 'STRONG',
+          }));
+        }
+        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: cleanReply }]);
+        return;
+      }
+
+      // Rule-based engine for collection-specific queries
       const targetEntity = classifyTargetEntity(text);
       const result = answerQuestion(text, collectionContext, { ...entityContext, analysisContext }, isSingleModuleMode, activeModules, continueAnalysis);
       const { reply, updatedEntityContext, newAnalysisContext } = result || {};
 
-      // Answer validation guard — if the reply doesn't match the requested entity, produce a corrective response
+      // Answer validation guard — if the reply doesn't match the requested entity, escalate to LLM
       let finalReply = reply;
       if (reply && !validateAnswerEntityMatch(targetEntity, reply, updatedEntityContext)) {
-        const entityLabel = targetEntity === 'blend' ? 'tobacco blend' : targetEntity === 'bottle' ? 'whiskey bottle' : targetEntity;
-        const validatedContext = validateCuratorContext(collectionContext);
-        const blends = validatedContext.blends;
-        const bottles = validatedContext.bottles;
-        if (targetEntity === 'blend' && blends.length > 0) {
-          const smokingLogs = validatedContext.smokingLogs;
-          const candidate = bestTonightBlend(blends, smokingLogs);
-          finalReply = candidate
-            ? `For ${entityLabel} — ${candidate.name}${candidate.blend_type ? ` (${candidate.blend_type})` : ''} is worth reaching for. It fits well for a smooth session and has been sitting in rotation. If you want something more specific to a mood or pairing, tell me and I can narrow it down.`
-            : `Looking through the blend collection, there are strong options available. Tell me more about what profile you are after — smooth and mild, or something with more body — and I can point to specific blends.`;
-        } else if (targetEntity === 'bottle' && bottles.length > 0) {
-          const candidate = bestOpenBottle(bottles, validatedContext.tastingLogs);
-          finalReply = candidate
-            ? `For a bottle — ${candidate.name}${candidate.type ? ` (${candidate.type})` : ''} is the one I would open next.`
-            : `Looking at the whiskey shelf, there are several candidates worth exploring. Let me know what profile you want and I can be more specific.`;
-        } else {
-          finalReply = `You asked about a ${entityLabel}. Let me answer that directly — tell me more about the occasion or profile you are after and I can pull the right candidates from your collection.`;
-        }
+        // Escalate to LLM rather than producing filler text
+        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, entityContext);
+        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
+        const llmReply = typeof response?.data === 'string'
+          ? response.data
+          : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
+        finalReply = llmReply.trim() || finalReply;
       }
 
       if (newAnalysisContext) setAnalysisContext(newAnalysisContext);
       else if (result?.reply && !newAnalysisContext) setAnalysisContext(null);
-      console.log('CURATOR_CHAT', {
-        intent: classifyIntent(text),
-        subject: updatedEntityContext.subject?.name || null,
-        lastEvidenceClass: updatedEntityContext.lastEvidenceClass || null,
-        lastClaimType: updatedEntityContext.lastClaimType || null,
-        correctionApplied: updatedEntityContext.correctionApplied || false,
-        constraints: updatedEntityContext.constraints || null,
-        activeModules,
-        contextCounts: {
-          pipes: collectionContext?.pipes?.length || 0,
-          blends: collectionContext?.blends?.length || 0,
-          bottles: collectionContext?.bottles?.length || 0,
-          smokingLogs: collectionContext?.smokingLogs?.length || 0,
-        },
-      });
-      setEntityContext(updatedEntityContext);
+      if (updatedEntityContext) setEntityContext(updatedEntityContext);
       setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: finalReply || 'Something went wrong generating a response. Please try rephrasing.' }]);
     } catch (err) {
-      console.error('[Curator] answerQuestion error:', err);
-      const fallbackReply = safeCuratorFallback(collectionContext, text);
-      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: fallbackReply }]);
+      console.error('[Curator] sendMessage error:', err);
+      // Last-resort: still try to give useful guidance
+      const fallback = 'I ran into an issue processing that. Try rephrasing, or ask about a specific item in your collection.';
+      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: fallback }]);
     } finally {
       setIsSending(false);
     }
-  }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules, continueAnalysis]);
+  }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules, continueAnalysis, messages]);
 
   return (
     <div className="rounded-[18px] p-8" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}>
@@ -1364,6 +1458,19 @@ export default function ExpertTobacconistChat({
                 <div className="text-[16px] leading-8 whitespace-pre-wrap" style={{ color: '#F5F5F7' }}>{m.content}</div>
               </div>
             ))}
+            {isSending && (
+              <div className="space-y-2">
+                <div className="text-[12px] uppercase tracking-[0.12em]" style={{ color: '#71717A' }}>Curator</div>
+                <div className="flex items-center gap-2" style={{ color: '#71717A' }}>
+                  <span className="inline-flex gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '300ms' }} />
+                  </span>
+                  <span className="text-[14px]">Thinking…</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
