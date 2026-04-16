@@ -66,11 +66,11 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
       : 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper';
     primaryModule = normalizedModules[0] || 'pipekeeper';
   } else if (planKey.includes('founders')) {
-    checkoutType = 'bundle_4';
+    checkoutType = 'bundle_2';
     productKind = 'founders';
     bundleName = 'founders_bundle';
-    moduleCount = 4;
-    modulesCsv = 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper';
+    moduleCount = 2;
+    modulesCsv = 'pipekeeper,whiskeykeeper';
     primaryModule = 'pipekeeper';
   } else {
     checkoutType = 'single_module';

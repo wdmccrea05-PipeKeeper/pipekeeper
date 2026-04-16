@@ -6,8 +6,17 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
-import { openAppleSubscriptions, openNativePaywall, startApplePurchaseFlow, isIOSWebView } from "@/components/utils/nativeIAPBridge";
+import {
+  openAppleSubscriptions,
+  openNativePaywall,
+  startApplePurchaseFlow,
+  isIOSWebView,
+  requestNativeSubscriptionStatus,
+  registerNativeSubscriptionListener,
+} from "@/components/utils/nativeIAPBridge";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { useQueryClient } from "@tanstack/react-query";
+import { syncAppleSubscriptionStatus } from "@/components/utils/appleSubscriptionSync";
 
 function FeatureList({ items }) {
   return (
@@ -24,8 +33,31 @@ function FeatureList({ items }) {
 
 function AppleSubscription() {
   const { t } = useTranslation();
-  const { hasPaid, isTrial } = useCurrentUser();
+  const { hasPaid, isTrial, refetch } = useCurrentUser();
+  const queryClient = useQueryClient();
   const [upgrading, setUpgrading] = React.useState(false);
+  const [syncMessage, setSyncMessage] = React.useState("");
+
+  React.useEffect(() => {
+    if (!isAppleBuild || !isIOSWebView()) return;
+
+    requestNativeSubscriptionStatus();
+    const cleanup = registerNativeSubscriptionListener((payload) => {
+      syncAppleSubscriptionStatus(payload, { queryClient, refetch })
+        .then((result) => {
+          if (result?.skipped) {
+            setSyncMessage("Subscription verification is still processing. Please use Restore Purchases and try again.");
+          } else {
+            setSyncMessage("");
+          }
+        })
+        .catch((err) => {
+          setSyncMessage(err?.message || "Failed to sync Apple subscription status.");
+        });
+    });
+
+    return cleanup;
+  }, [queryClient, refetch]);
 
   const freeFeatures = [
     t("subscription.appleFeatureFree1"),
@@ -163,6 +195,14 @@ function AppleSubscription() {
             {hasPaid
               ? t("subscription.activeSubscription")
               : t("subscription.trialActive")}
+          </CardContent>
+        </Card>
+      )}
+
+      {syncMessage && (
+        <Card className="bg-black/30 border-white/10">
+          <CardContent className="pt-6 text-red-400 text-center text-sm">
+            {syncMessage}
           </CardContent>
         </Card>
       )}

@@ -24,6 +24,7 @@ import { getAvailableUpgradeOptions } from "@/lib/billing/upgradePaths";
 import { SUBSCRIPTION_PLANS } from "@/lib/billing/subscriptionPlans";
 import { getStripeConfig } from "@/components/subscription/stripeConfig";
 import { initiateCheckoutWithIntent } from "@/components/subscription/subscriptionHandler";
+import { syncAppleSubscriptionStatus } from "@/components/utils/appleSubscriptionSync";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading, t }) {
   return (
@@ -107,14 +108,20 @@ export default function SubscriptionFull() {
       setSubTier(payload?.tier || (payload?.productId || ""));
       if (active) setMessage(t("subscriptionFull.subActiveCheck"));
 
-      // FIX ISSUE-17: Invalidate cached user/subscription data so FeatureGate re-evaluates
-      // entitlements immediately after the native subscription status updates local state.
-      queryClient.invalidateQueries({ queryKey: ["current-user"] });
-      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      syncAppleSubscriptionStatus(payload, { queryClient, refetch })
+        .then((result) => {
+          if (result?.skipped) {
+            setMessage("Subscription verification is still processing. Please use Restore Purchases in the app and try again.");
+          }
+        })
+        .catch((err) => {
+          const errorMsg = err?.message || "Failed to sync Apple subscription status.";
+          setMessage(errorMsg);
+        });
     });
 
     return cleanup;
-  }, [isIOSApp, t, queryClient]);
+  }, [isIOSApp, t, queryClient, refetch]);
 
   useEffect(() => {
     if (isIOSApp) return;

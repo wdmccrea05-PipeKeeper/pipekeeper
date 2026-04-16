@@ -7,6 +7,63 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
+function uniqueModules(modules: string[]) {
+  return [...new Set((modules || []).map((m) => String(m || '').trim().toLowerCase()).filter(Boolean))];
+}
+
+function resolveAppleProductAccess(productId: string) {
+  const product = String(productId || '').trim().toLowerCase();
+  const isAnnual = product.includes('annual') || product.includes('year');
+
+  if (product.includes('founders')) {
+    return {
+      planKey: isAnnual ? 'founders_bundle_annual' : 'founders_bundle_monthly',
+      modules: ['pipekeeper', 'whiskeykeeper'],
+      productKind: 'founders',
+      checkoutType: 'bundle_2',
+      billingInterval: isAnnual ? 'year' : 'month',
+    };
+  }
+
+  if (product.includes('whiskey')) {
+    return {
+      planKey: isAnnual ? 'whiskeykeeper_pro_annual' : 'whiskeykeeper_pro_monthly',
+      modules: ['whiskeykeeper'],
+      productKind: 'single',
+      checkoutType: 'single_module',
+      billingInterval: isAnnual ? 'year' : 'month',
+    };
+  }
+
+  if (product.includes('cigar')) {
+    return {
+      planKey: isAnnual ? 'cigarkeeper_pro_annual' : 'cigarkeeper_pro_monthly',
+      modules: ['cigarkeeper'],
+      productKind: 'single',
+      checkoutType: 'single_module',
+      billingInterval: isAnnual ? 'year' : 'month',
+    };
+  }
+
+  if (product.includes('wine')) {
+    return {
+      planKey: isAnnual ? 'winekeeper_pro_annual' : 'winekeeper_pro_monthly',
+      modules: ['winekeeper'],
+      productKind: 'single',
+      checkoutType: 'single_module',
+      billingInterval: isAnnual ? 'year' : 'month',
+    };
+  }
+
+  return {
+    planKey: isAnnual ? 'pipekeeper_pro_annual' : 'pipekeeper_pro_monthly',
+    modules: ['pipekeeper'],
+    productKind: 'single',
+    checkoutType: 'single_module',
+    billingInterval: isAnnual ? 'year' : 'month',
+  };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -49,10 +106,17 @@ Deno.serve(async (req) => {
     const isVerified = !!verificationProof;
     
     // Determine tier
-    let tier = body.tier || 'premium';
+    let tier = body.tier || 'pro';
     if (!body.tier && productId.toLowerCase().includes('pro')) {
       tier = 'pro';
     }
+    if (String(tier).toLowerCase() === 'premium') {
+      tier = 'pro';
+    }
+
+    const productAccess = resolveAppleProductAccess(productId);
+    const activeModules = uniqueModules(productAccess.modules);
+    const modulesCsv = activeModules.join(',');
     
     // FIX ISSUE-11: Add server-side expiry check.
     // Do NOT grant paid access if expiresAt is populated and already in the past,
@@ -106,11 +170,19 @@ Deno.serve(async (req) => {
       stripe_customer_id: null,
       status,
       tier,
+      // Keep both keys for compatibility with legacy readers that still check camelCase.
+      plan_key: productAccess.planKey,
+      planKey: productAccess.planKey,
+      modules_csv: modulesCsv,
+      module_count: activeModules.length,
+      product_kind: productAccess.productKind,
+      checkout_type: productAccess.checkoutType,
+      primary_module: activeModules[0] || null,
       current_period_end: expiresAt,
       current_period_start: effectiveActive ? nowIso : (existingAppleSub?.current_period_start || null),
       started_at: existingAppleSub?.started_at || nowIso,
       subscriptionStartedAt: existingAppleSub?.subscriptionStartedAt || existingAppleSub?.started_at || nowIso,
-      billing_interval: 'month',
+      billing_interval: productAccess.billingInterval,
       amount: null,
       cancel_at_period_end: false
     };
@@ -125,6 +197,9 @@ Deno.serve(async (req) => {
     
     // Only mark paid when server-side expiry check confirms subscription is still active
     const shouldMarkPaid = effectiveActive;
+    const grantedModulesCsv = shouldMarkPaid ? modulesCsv : '';
+    const pipekeeper_paid = shouldMarkPaid && activeModules.includes('pipekeeper');
+    const whiskeykeeper_paid = shouldMarkPaid && activeModules.includes('whiskeykeeper');
     
     if (shouldMarkPaid && !isVerified) {
       console.warn(`[syncAppleSubscriptionForMe] Granting access based on unverified client claim for user ${userId}. originalTransactionId=${originalTransactionId}`);
@@ -139,6 +214,11 @@ Deno.serve(async (req) => {
         subscription_level: shouldMarkPaid ? 'paid' : 'free',
         subscription_status: status,
         subscription_tier: shouldMarkPaid ? tier : 'free',
+        subscription_provider: 'apple',
+        paid_modules_csv: grantedModulesCsv,
+        pipekeeper_paid,
+        whiskeykeeper_paid,
+        has_paid_access: shouldMarkPaid,
         // FIX ISSUE-11 + ISSUE-05: Write entitlement_tier for canonical resolver
         entitlement_tier: shouldMarkPaid ? tier : 'free',
         platform: 'ios'
@@ -149,6 +229,11 @@ Deno.serve(async (req) => {
         subscription_level: shouldMarkPaid ? 'paid' : 'free',
         subscription_status: status,
         subscription_tier: shouldMarkPaid ? tier : 'free',
+        subscription_provider: 'apple',
+        paid_modules_csv: grantedModulesCsv,
+        pipekeeper_paid,
+        whiskeykeeper_paid,
+        has_paid_access: shouldMarkPaid,
         // FIX ISSUE-11 + ISSUE-05: Write entitlement_tier (flat) and data.entitlement_tier (nested)
         entitlement_tier: shouldMarkPaid ? tier : 'free',
         data: {
@@ -157,6 +242,7 @@ Deno.serve(async (req) => {
           subscription_tier: shouldMarkPaid ? tier : 'free',
           subscription_level: shouldMarkPaid ? 'paid' : 'free',
           subscription_status: status,
+          paid_modules_csv: grantedModulesCsv,
         },
       };
       // Only set platform if not already set
@@ -177,6 +263,8 @@ Deno.serve(async (req) => {
       tier,
       status,
       active,
+      modules_csv: grantedModulesCsv,
+      plan_key: productAccess.planKey,
       user_id: userId,
       provider_subscription_id: providerSubId,
       access_granted: shouldMarkPaid
