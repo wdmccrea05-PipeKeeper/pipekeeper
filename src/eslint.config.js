@@ -12,6 +12,10 @@ export default [
       '**/__tests__/**/*.jsx',
       '**/__tests__/**/*.ts',
       '**/__tests__/**/*.tsx',
+      'src/**/__tests__/**/*.js',
+      'src/**/__tests__/**/*.jsx',
+      'src/**/__tests__/**/*.ts',
+      'src/**/__tests__/**/*.tsx',
     ],
     languageOptions: {
       globals: {
