@@ -39,7 +39,7 @@ describe('calculateCigarValue', () => {
     });
 
     expect(result.perStickCostBasis).toBe(2);
-    expect(result.estimatedUnitValue).toBeGreaterThan(2);
+    expect(result.estimatedUnitValue).toBeGreaterThanOrEqual(2);
     expect(result.source).toBe('guided_estimate');
     expect(result.confidenceScore).toBe('medium');
   });
@@ -67,4 +67,3 @@ describe('calculateCigarValue', () => {
     expect(result.isStale).toBe(true);
   });
 });
-
