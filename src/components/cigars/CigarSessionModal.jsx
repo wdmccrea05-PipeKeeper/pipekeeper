@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { computeSessionDecrement, getAvailableQuantity } from '@/platform/cigarInventory';
+import { CIGAR_STRENGTH_VALUES, formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 
 const TODAY = new Date().toISOString().split('T')[0];
 
@@ -163,7 +164,8 @@ function SourceToggle({ value, onChange }) {
 function CigarPicker({ cigars, selectedId, onSelect }) {
   const [search, setSearch] = useState('');
 
-  const filtered = cigars.filter((c) => {
+  const cigarList = Array.isArray(cigars) ? cigars : [];
+  const filtered = cigarList.filter((c) => {
     const q = search.toLowerCase();
     return (
       !q ||
@@ -320,9 +322,15 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
     setSaving(true);
     try {
       const isExternal = cigarMode === 'external';
+      if (!isExternal && !selectedCigar?.id) {
+        toast.error('Select a cigar from your collection');
+        setSaving(false);
+        return;
+      }
       const { restock_after, favorite_after, ...sessionFields } = form;
       const payload = {
         ...sessionFields,
+        date: form.date || TODAY,
         is_out_of_collection: isExternal,
         cigar_id: !isExternal && selectedCigar ? selectedCigar.id : undefined,
         cigar_name: !isExternal && selectedCigar
@@ -411,7 +419,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           {/* Date & Duration */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <FieldLabel>Date</FieldLabel>
               <StyledInput type="date" value={form.date} onChange={set('date')} />
@@ -492,13 +500,13 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
             <FieldLabel>Strength Impression</FieldLabel>
-            <StyledSelect value={form.strength_impression} onValueChange={set('strength_impression')} placeholder="Select impression">
-              {['mild', 'mild_medium', 'medium', 'medium_full', 'full'].map((v) => (
-                <SelectItem key={v} value={v} style={selectItemStyle}>
-                  {v.replace('_', '-').replace(/\b\w/g, (c) => c.toUpperCase())}
-                </SelectItem>
-              ))}
-            </StyledSelect>
+              <StyledSelect value={form.strength_impression} onValueChange={set('strength_impression')} placeholder="Select impression">
+                {CIGAR_STRENGTH_VALUES.map((v) => (
+                  <SelectItem key={v} value={v} style={selectItemStyle}>
+                    {formatCigarStrengthLabel(v)}
+                  </SelectItem>
+                ))}
+              </StyledSelect>
             </div>
             <div>
               <FieldLabel>Actual Duration (min)</FieldLabel>
@@ -556,7 +564,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
           </div>
 
           {/* Occasion & Location */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <FieldLabel>Occasion</FieldLabel>
               <StyledInput value={form.occasion} onChange={set('occasion')} placeholder="e.g. Celebration, Evening…" />

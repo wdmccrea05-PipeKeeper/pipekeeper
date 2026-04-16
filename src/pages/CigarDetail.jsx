@@ -4,6 +4,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -27,6 +35,7 @@ import {
   DollarSign,
   Check,
   X,
+  MoreVertical,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -36,6 +45,12 @@ import { getCigarInventoryMetrics } from '@/platform/cigarInventory';
 import EnrichButton from '@/components/shared/EnrichButton';
 import { calculateCigarValue } from '@/utils/cigarValuation';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
+import {
+  getCigarQuickActionLabels,
+  getCigarQuickActionPatch,
+  getCigarQuickActionSuccessMessage,
+} from '@/platform/cigarQuickActions';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -424,6 +439,7 @@ function CigarDetailInner() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [sessionModalOpen, setSessionModalOpen] = useState(false);
   const [editingSession, setEditingSession] = useState(null);
+  const [imageFailed, setImageFailed] = useState(false);
 
   const saveField = async (field, value) => {
     await base44.entities.Cigar.update(cigar.id, { [field]: value });
@@ -512,13 +528,17 @@ function CigarDetailInner() {
     }
   };
 
-  const handleQuickStateUpdate = async (patch) => {
+  const handleQuickStateUpdate = async (patch, action = null) => {
+    if (!patch) {
+      toast.error('Unable to apply action');
+      return;
+    }
     try {
       await base44.entities.Cigar.update(cigar.id, patch);
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
       queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
       queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
-      toast.success('Updated');
+      toast.success(action ? getCigarQuickActionSuccessMessage(action, cigar, patch) : 'Updated');
     } catch {
       toast.error('Failed to update cigar');
     }
@@ -537,6 +557,13 @@ function CigarDetailInner() {
   };
 
   const photo = Array.isArray(cigar?.photos) ? cigar.photos[0] : cigar?.photos || '';
+  const actionLabels = getCigarQuickActionLabels(cigar);
+  const locationMeta = [
+    cigar?.humidor_tray ? `Tray ${cigar.humidor_tray}` : null,
+    cigar?.humidor_shelf ? `Shelf ${cigar.humidor_shelf}` : null,
+    cigar?.humidor_drawer ? `Drawer ${cigar.humidor_drawer}` : null,
+    cigar?.humidor_section ? `Section ${cigar.humidor_section}` : null,
+  ].filter(Boolean);
 
   if (!id) {
     return (
@@ -586,7 +613,7 @@ function CigarDetailInner() {
           <ArrowLeft className="w-4 h-4" />
           Collection
         </Button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <Button
             variant="ghost"
             size="icon"
@@ -611,16 +638,39 @@ function CigarDetailInner() {
             <Flame className="w-4 h-4" />
             Log Session
           </Button>
-          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ singles_equivalent: Math.max(0, Number(cigar.singles_equivalent ?? cigar.quantity ?? 0) - 1), ...(cigar.unit_type === 'single' ? { quantity: Math.max(0, Number(cigar.quantity || 0) - 1) } : {}) })}>
+          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'smoked_one'), 'smoked_one')}>
             Smoked One
           </Button>
-          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ quantity: Number(cigar.quantity || 0) + 1, singles_equivalent: Number(cigar.singles_equivalent ?? 0) + Number(cigar.cigars_per_package || 1) })}>
+          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'bought_more'), 'bought_more')}>
             Bought More
           </Button>
-          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ wishlist: !cigar.wishlist })}>{cigar.wishlist ? 'Unwishlist' : 'Wishlist'}</Button>
-          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ shopping_list: !cigar.shopping_list })}>{cigar.shopping_list ? 'Unshop' : 'Shopping'}</Button>
-          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ restock_flag: !cigar.restock_flag })}>{cigar.restock_flag ? 'Clear Restock' : 'Restock'}</Button>
-          <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate({ not_for_me: !cigar.not_for_me, ai_excluded: !cigar.not_for_me })}>{cigar.not_for_me ? 'Not-for-me Off' : 'Not for Me'}</Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <MoreVertical className="w-4 h-4" />
+                Actions
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+              <DropdownMenuItem onSelect={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'toggle_wishlist'), 'toggle_wishlist')}>
+                {actionLabels.toggle_wishlist}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'toggle_shopping'), 'toggle_shopping')}>
+                {actionLabels.toggle_shopping}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'toggle_restock'), 'toggle_restock')}>
+                {actionLabels.toggle_restock}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'toggle_not_for_me'), 'toggle_not_for_me')}>
+                {actionLabels.toggle_not_for_me}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'toggle_favorite'), 'toggle_favorite')}>
+                {actionLabels.toggle_favorite}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <EnrichButton
             itemType="cigar"
             record={cigar}
@@ -648,21 +698,21 @@ function CigarDetailInner() {
 
       {/* Header */}
       <div
-        className="rounded-2xl p-6 flex gap-6 flex-col sm:flex-row"
+        className="rounded-2xl p-4 sm:p-6 flex gap-4 sm:gap-6 flex-col sm:flex-row"
         style={{
           background: 'linear-gradient(145deg, rgba(40,28,18,0.95), rgba(27,19,13,0.98))',
           border: '1px solid rgba(140,107,63,0.35)',
         }}
       >
-        {photo && (
+        {photo && !imageFailed && (
           <div
             className="w-24 h-32 rounded-xl overflow-hidden shrink-0 flex items-center justify-center"
             style={{ background: 'rgba(58,40,28,0.6)', border: '1px solid rgba(140,107,63,0.2)' }}
           >
-            <img src={photo} alt={cigar.name} className="w-full h-full object-cover" />
+            <img src={photo} alt={cigar.name || 'Cigar'} className="w-full h-full object-cover" onError={() => setImageFailed(true)} />
           </div>
         )}
-        {!photo && (
+        {(!photo || imageFailed) && (
           <div
             className="w-20 h-20 rounded-xl shrink-0 flex items-center justify-center"
             style={{ background: 'rgba(58,40,28,0.6)', border: '1px solid rgba(140,107,63,0.2)' }}
@@ -687,6 +737,20 @@ function CigarDetailInner() {
             <p className="text-xs mt-2" style={{ color: 'rgba(224,216,200,0.5)' }}>
               {cigar.country_of_origin}
             </p>
+          )}
+          {(humidor?.name || locationMeta.length > 0) && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {humidor?.name && (
+                <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>
+                  {humidor.name}
+                </span>
+              )}
+              {locationMeta.map((value) => (
+                <span key={value} className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(224,216,200,0.8)' }}>
+                  {value}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -761,8 +825,8 @@ function CigarDetailInner() {
             <InfoRow label="Factory" value={cigar.factory} />
             <InfoRow label="Length" value={cigar.length_inches ? `${cigar.length_inches}"` : ''} />
             <InfoRow label="Ring Gauge" value={cigar.ring_gauge} />
-            <InfoRow label="Body" value={cigar.body} />
-            <InfoRow label="Strength" value={cigar.strength} />
+            <InfoRow label="Body" value={formatCigarStrengthLabel(cigar.body)} />
+            <InfoRow label="Strength" value={formatCigarStrengthLabel(cigar.strength)} />
             <InfoRow label="Flavor Notes" value={Array.isArray(cigar.flavor_notes) ? cigar.flavor_notes.join(', ') : cigar.flavor_notes} />
             <InfoRow label="Production" value={cigar.production_status} />
             <InfoRow label="Wishlist" value={cigar.wishlist ? 'Yes' : 'No'} />
@@ -869,9 +933,15 @@ function CigarDetailInner() {
                 value={cigar.humidor_id || ''}
                 onChange={async (e) => {
                   const val = e.target.value || null;
-                  await base44.entities.Cigar.update(cigar.id, { humidor_id: val });
+                  await base44.entities.Cigar.update(cigar.id, val ? { humidor_id: val } : {
+                    humidor_id: null,
+                    humidor_tray: null,
+                    humidor_shelf: null,
+                    humidor_drawer: null,
+                    humidor_section: null,
+                  });
                   queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
-                  queryClient.invalidateQueries({ queryKey: ['humidor-for-cigar', cigar?.humidor_id] });
+                  queryClient.invalidateQueries({ queryKey: ['humidor-for-cigar'] });
                   toast.success('Humidor updated');
                 }}
                 className="flex-1 rounded-lg px-2 py-1.5 text-sm"

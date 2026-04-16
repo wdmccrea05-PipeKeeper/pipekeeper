@@ -360,7 +360,7 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
   );
 }
 
-function HumidorCard({ humidor, assignedCount, onEdit, onDelete }) {
+function HumidorCard({ humidor, assignedCount, onEdit, onDelete, userEmail }) {
   const [showMaintenance, setShowMaintenance] = useState(false);
   const capacity = humidor.capacity_count || 0;
   const status = getHumidorMaintenanceStatus(humidor);
@@ -370,6 +370,23 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete }) {
   now.setHours(12, 0, 0, 0);
   const checkDays = daysBetween(nextCheck, now);
   const replaceDays = daysBetween(nextReplacement, now);
+  const { data: recentLogs = [] } = useQuery({
+    queryKey: ['humidor-maintenance-logs-preview', humidor?.id, userEmail],
+    queryFn: () => base44.entities.HumidorMaintenanceLog.filter(
+      { humidor_id: humidor?.id, created_by: userEmail },
+      '-date',
+      8
+    ).catch(() => []),
+    enabled: !!humidor?.id && !!userEmail,
+    staleTime: 10000,
+  });
+
+  const recentReadings = Array.isArray(recentLogs)
+    ? recentLogs
+      .filter((entry) => entry?.date && (entry?.humidity_reading != null || entry?.temperature_reading != null))
+      .slice(0, 3)
+    : [];
+  const alertState = humidor?.alerts_enabled === false ? 'Alerts off' : (status === 'overdue' ? 'Alert active' : 'Alerts on');
 
   return (
     <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(180,140,75,0.18)' }}>
@@ -423,6 +440,39 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete }) {
 
       <UtilizationBar current={assignedCount} capacity={capacity} />
 
+      <div
+        className="mt-3 rounded-lg p-3 grid grid-cols-2 md:grid-cols-3 gap-2"
+        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}
+      >
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">Latest RH</p>
+          <p className="text-sm font-semibold text-[#F5F1E7]">{humidor.last_humidity_reading != null ? `${humidor.last_humidity_reading}%` : '—'}</p>
+        </div>
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">Latest Temp</p>
+          <p className="text-sm font-semibold text-[#F5F1E7]">{humidor.last_temperature_reading != null ? `${humidor.last_temperature_reading}°F` : '—'}</p>
+        </div>
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">Target Range</p>
+          <p className="text-sm font-semibold text-[#F5F1E7]">
+            {humidor.target_humidity_rh != null ? `${humidor.target_humidity_rh}% RH` : '—'}
+            {humidor.target_temp_f != null ? ` · ${humidor.target_temp_f}°F` : ''}
+          </p>
+        </div>
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">Last Reading</p>
+          <p className="text-sm font-semibold text-[#F5F1E7]">{formatDate(humidor.last_reading_date) || '—'}</p>
+        </div>
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">Last Maintenance</p>
+          <p className="text-sm font-semibold text-[#F5F1E7]">{formatDate(humidor.last_maintenance_date) || '—'}</p>
+        </div>
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">Alert State</p>
+          <p className="text-sm font-semibold" style={{ color: alertState === 'Alert active' ? '#E08232' : 'rgba(224,216,200,0.8)' }}>{alertState}</p>
+        </div>
+      </div>
+
       {/* Environment snapshot */}
       {(humidor.last_humidity_reading != null || humidor.last_temperature_reading != null) && (
         <div
@@ -446,6 +496,25 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete }) {
               {formatDate(humidor.last_reading_date)}
             </span>
           )}
+        </div>
+      )}
+
+      {recentReadings.length > 0 && (
+        <div className="mt-2 rounded-lg p-2.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
+          <p className="text-[11px] uppercase tracking-wide mb-1.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
+            Recent Reading Trend
+          </p>
+          <div className="space-y-1">
+            {recentReadings.map((entry, index) => (
+              <div key={entry.id || entry.date || index} className="flex items-center justify-between text-xs">
+                <span style={{ color: 'rgba(224,216,200,0.6)' }}>{formatDate(entry.date)}</span>
+                <span style={{ color: '#8BB4E8' }}>
+                  {entry.humidity_reading != null ? `${entry.humidity_reading}% RH` : '—'}
+                  {entry.temperature_reading != null ? ` · ${entry.temperature_reading}°F` : ''}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -586,7 +655,7 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <h2 style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", fontSize: '1.1rem', fontWeight: 700 }}>
           Humidors
         </h2>
@@ -627,10 +696,11 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {humidors.map((humidor) => {
-            const assignedCount = cigarsByHumidor[humidor.id] || 0;
+            {humidors.map((humidor) => {
+              const assignedCount = cigarsByHumidor[humidor.id] || 0;
+              const assignedToHumidor = cigarsByHumidor[humidor.id] || 0;
 
-            return (
+              return (
               <div key={humidor.id}>
                 {editTarget?.id === humidor.id ? (
                   <HumidorFormInline
@@ -645,6 +715,7 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
                     assignedCount={assignedCount}
                     onEdit={() => setEditTarget(humidor)}
                     onDelete={() => setDeleteConfirm(humidor)}
+                    userEmail={user?.email}
                   />
                 )}
 
@@ -658,7 +729,7 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
                       <AlertTriangle className="w-4 h-4 text-red-400" />
                         <p className="text-sm text-[#F5F1E7]">
                           Delete <strong>{humidor.name}</strong>? This cannot be undone.
-                          {(cigarsByHumidor[humidor.id] || 0) > 0 ? ` ${(cigarsByHumidor[humidor.id] || 0)} cigars will be moved to Unassigned.` : ''}
+                          {assignedToHumidor > 0 ? ` ${assignedToHumidor} cigars will be moved to Unassigned and tray/shelf/drawer/section metadata will be cleared.` : ''}
                         </p>
                       </div>
                     <div className="flex gap-2">
