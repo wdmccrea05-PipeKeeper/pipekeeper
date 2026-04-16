@@ -157,6 +157,13 @@ function getModuleDescriptor(type: CheckoutType, modules: string[]) {
   };
 }
 
+function resolveCheckoutAppSlug(type: CheckoutType, modules: string[]): string {
+  if (type === 'single' && modules[0]) {
+    return modules[0];
+  }
+  return 'pipekeeper';
+}
+
 function getBaseUrl(url: string): string {
   const parsed = new URL(url);
   return `${parsed.protocol}//${parsed.host}`;
@@ -178,7 +185,7 @@ function assertSafeRedirectUrl(successUrl: string, cancelUrl: string) {
   }
 }
 
-async function findOrCreateStripeCustomer(base44: any, stripe: any, user: any) {
+async function findOrCreateStripeCustomer(base44: any, stripe: any, user: any, appSlug: string, appEnvironment: string) {
   const email = normEmail(user?.email);
   if (!email) {
     throw new Error('User email is required.');
@@ -241,7 +248,11 @@ async function findOrCreateStripeCustomer(base44: any, stripe: any, user: any) {
       user_id: String(user?.id || ''),
       auth_user_id: String(user?.auth_user_id || ''),
       email,
-      app: 'collectionkeeper',
+      app: appSlug,
+      app_slug: appSlug,
+      app_environment: appEnvironment,
+      legacy_app_slug: 'collectionkeeper',
+      app_aliases: 'pipekeeper,collectionkeeper',
     },
   });
 
@@ -304,6 +315,9 @@ Deno.serve(async (req) => {
     assertSafeRedirectUrl(successUrl, cancelUrl);
 
     const moduleDescriptor = getModuleDescriptor(type, modules);
+    const appSlug = resolveCheckoutAppSlug(type, modules);
+    const appEnvironment =
+      String(Deno.env.get('APP_ENV') || Deno.env.get('ENVIRONMENT') || 'production').trim().toLowerCase();
     const priceId = resolvePriceId(type, billingPeriod, modules);
 
     if (!priceId) {
@@ -318,7 +332,9 @@ Deno.serve(async (req) => {
     const { stripeCustomerId, source: customerSource } = await findOrCreateStripeCustomer(
       base44,
       stripe,
-      user
+      user,
+      appSlug,
+      appEnvironment
     );
 
     const userId = String(user?.id || '');
@@ -329,7 +345,11 @@ Deno.serve(async (req) => {
     const isUpgradeIntent = type.startsWith('bundle') ? 'true' : 'false';
 
     const metadata: Record<string, string> = {
-      app: 'collectionkeeper',
+      app: appSlug,
+      app_slug: appSlug,
+      app_environment: appEnvironment,
+      legacy_app_slug: 'collectionkeeper',
+      app_aliases: 'pipekeeper,collectionkeeper',
       request_id: requestId,
       user_id: userId,
       auth_user_id: authUserId,

@@ -48,6 +48,7 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
   let bundleName = '';
   let moduleCount = 1;
   let modulesCsv = primaryModule;
+  let appSlug = primaryModule || 'pipekeeper';
 
   if (planKey.includes('three_module')) {
     checkoutType = 'bundle_3';
@@ -56,6 +57,7 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
     moduleCount = Math.min(normalizedModules.length || 3, 3);
     modulesCsv = normalizedModules.slice(0, 3).join(',') || 'pipekeeper';
     primaryModule = normalizedModules[0] || 'pipekeeper';
+    appSlug = primaryModule || 'pipekeeper';
   } else if (planKey.includes('four_module')) {
     checkoutType = 'bundle_4';
     productKind = 'bundle';
@@ -65,6 +67,7 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
       ? normalizedModules.slice(0, 4).join(',')
       : 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper';
     primaryModule = normalizedModules[0] || 'pipekeeper';
+    appSlug = 'pipekeeper';
   } else if (planKey.includes('founders')) {
     checkoutType = 'bundle_4';
     productKind = 'founders';
@@ -72,14 +75,24 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
     moduleCount = 4;
     modulesCsv = 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper';
     primaryModule = 'pipekeeper';
+    appSlug = 'pipekeeper';
   } else {
     checkoutType = 'single_module';
     productKind = 'module';
     moduleCount = 1;
     modulesCsv = primaryModule;
+    appSlug = primaryModule || 'pipekeeper';
   }
 
+  const appEnvironment =
+    String(Deno.env.get('APP_ENV') || Deno.env.get('ENVIRONMENT') || 'production').trim().toLowerCase();
+
   return {
+    app: appSlug,
+    app_slug: appSlug,
+    app_environment: appEnvironment,
+    legacy_app_slug: 'collectionkeeper',
+    app_aliases: 'pipekeeper,collectionkeeper',
     user_email: String(user?.email || '').trim().toLowerCase(),
     user_id: String(user?.id || user?.auth_user_id || '').trim(),
     plan_key: planKey,
