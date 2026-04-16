@@ -6,8 +6,9 @@ import React, { useState } from 'react';
 import {
   Check, Eye, Loader2, CheckCircle2,
   RotateCcw, CalendarClock, TrendingUp, HelpCircle,
-  X,
+  X, Search,
 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { ACTION_TYPE, PRIORITY_STYLES, MODULE_KEY, CATEGORY } from '@/lib/curator/recommendationSchema.js';
 import CuratorItemPreviewList from './CuratorItemPreviewList';
 
@@ -189,17 +190,25 @@ function RecordOptimizationActions({ rec, onAction }) {
     finally { setApplying(false); }
   };
 
-  // Per-item row: name + action based on confidence (Apply Fix / Review Fix / Open Record)
+  // Per-item row: name + action based on confidence (Apply Fix / Review Fix / Open Record / Search Online)
   const ItemRow = ({ item }) => {
     const [applying, setApplying] = useState(false);
     const [done, setDone] = useState(false);
+    const [searching, setSearching] = useState(false);
+    const [searchResult, setSearchResult] = useState(null); // { age: number }
     const confidence = item?.proposedChange?.confidence || 0;
     const hasPayload = hasNonEmptyPayload(item);
     const path = singleItemPath(item);
+
+    // Determine if this item is missing age specifically (whiskey bottles)
+    const missingAge = !hasPayload && item.missingFields?.includes('age');
+
     const proposedSummary = hasPayload
       ? item.issueType === 'reclassification'
         ? Object.values(item.proposedChange.payload).join(' · ')
         : Object.entries(item.proposedChange.payload).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')
+      : searchResult
+      ? `age: ${searchResult.age} years`
       : null;
 
     const handleApplyItem = async () => {
@@ -208,56 +217,118 @@ function RecordOptimizationActions({ rec, onAction }) {
       finally { setApplying(false); }
     };
 
+    const handleSearchAge = async () => {
+      setSearching(true);
+      setSearchResult(null);
+      try {
+        const name = item.itemName || item.recordName || '';
+        const res = await base44.integrations.Core.InvokeLLM({
+          prompt: `What is the age statement (in years) for the whiskey "${name}"? If it is a NAS (no age statement) whiskey, return 0. Return ONLY a JSON object with a single field "age" as a number.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: 'object',
+            properties: { age: { type: 'number' } },
+          },
+        });
+        if (res?.age != null) {
+          setSearchResult({ age: res.age });
+        }
+      } catch (err) {
+        console.error('[Curator] age search failed', err);
+      } finally {
+        setSearching(false);
+      }
+    };
+
+    const handleApplySearchResult = async () => {
+      if (!searchResult) return;
+      setApplying(true);
+      try {
+        // Patch the bottle record directly
+        const id = item.recordId || item.id;
+        await base44.entities.Bottle.update(id, { age: searchResult.age });
+        setDone(true);
+      } catch (err) {
+        console.error('[Curator] apply age failed', err);
+      } finally {
+        setApplying(false);
+      }
+    };
+
     return (
-      <div className="flex items-center justify-between gap-3 rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-medium truncate" style={{ color: '#F5F5F7' }}>
-            {item.itemName || item.recordName || '—'}
-          </div>
-          {item.issueType === 'reclassification' ? (
-            <div className="text-xs" style={{ color: '#71717A' }}>
-              Currently: <span style={{ color: '#A1A1AA' }}>{item.currentClassification || '—'}</span>
+      <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium truncate" style={{ color: '#F5F5F7' }}>
+              {item.itemName || item.recordName || '—'}
             </div>
-          ) : item.missingFields?.length > 0 ? (
-            <div className="text-xs" style={{ color: '#71717A' }}>Missing: {item.missingFields.join(', ')}</div>
-          ) : null}
-          {proposedSummary && !done && (
-            <div className="text-xs mt-0.5" style={{ color: '#C6A15B' }}>→ {proposedSummary}</div>
-          )}
-        </div>
-        <div className="shrink-0 flex items-center gap-1.5">
-          {done ? (
-            <DoneIndicator label="Fixed" />
-          ) : hasPayload && confidence >= 0.85 ? (
-            <button
-              type="button"
-              onClick={handleApplyItem}
-              disabled={applying}
-              className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
-              style={{ background: '#4a7c5c', color: '#e0f5ea', border: 'none' }}
-            >
-              {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-              {applying ? 'Fixing…' : 'Apply Fix'}
-            </button>
-          ) : hasPayload && confidence >= 0.60 ? (
-            <button
-              type="button"
-              onClick={() => onAction('approve_changes', rec, { reviewedItems: [item] })}
-              className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1"
-              style={{ background: 'rgba(180,100,50,0.2)', color: 'rgba(220,140,90,1)', border: '1px solid rgba(180,100,50,0.35)' }}
-            >
-              <Eye className="w-3 h-3" />
-              Review Fix
-            </button>
-          ) : path ? (
-            <a
-              href={path}
-              className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center"
-              style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7', textDecoration: 'none' }}
-            >
-              Open Record
-            </a>
-          ) : null}
+            {item.issueType === 'reclassification' ? (
+              <div className="text-xs" style={{ color: '#71717A' }}>
+                Currently: <span style={{ color: '#A1A1AA' }}>{item.currentClassification || '—'}</span>
+              </div>
+            ) : item.missingFields?.length > 0 ? (
+              <div className="text-xs" style={{ color: '#71717A' }}>Missing: {item.missingFields.join(', ')}</div>
+            ) : null}
+            {proposedSummary && !done && (
+              <div className="text-xs mt-0.5" style={{ color: '#C6A15B' }}>→ {proposedSummary}</div>
+            )}
+          </div>
+          <div className="shrink-0 flex items-center gap-1.5">
+            {done ? (
+              <DoneIndicator label="Fixed" />
+            ) : searchResult ? (
+              <button
+                type="button"
+                onClick={handleApplySearchResult}
+                disabled={applying}
+                className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
+                style={{ background: '#4a7c5c', color: '#e0f5ea', border: 'none' }}
+              >
+                {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                {applying ? 'Saving…' : `Apply ${searchResult.age === 0 ? 'NAS' : `${searchResult.age}yr`}`}
+              </button>
+            ) : hasPayload && confidence >= 0.85 ? (
+              <button
+                type="button"
+                onClick={handleApplyItem}
+                disabled={applying}
+                className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
+                style={{ background: '#4a7c5c', color: '#e0f5ea', border: 'none' }}
+              >
+                {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                {applying ? 'Fixing…' : 'Apply Fix'}
+              </button>
+            ) : hasPayload && confidence >= 0.60 ? (
+              <button
+                type="button"
+                onClick={() => onAction('approve_changes', rec, { reviewedItems: [item] })}
+                className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1"
+                style={{ background: 'rgba(180,100,50,0.2)', color: 'rgba(220,140,90,1)', border: '1px solid rgba(180,100,50,0.35)' }}
+              >
+                <Eye className="w-3 h-3" />
+                Review Fix
+              </button>
+            ) : missingAge ? (
+              <button
+                type="button"
+                onClick={handleSearchAge}
+                disabled={searching}
+                className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
+                style={{ background: 'rgba(74,100,156,0.2)', color: 'rgba(160,200,240,1)', border: '1px solid rgba(74,100,156,0.35)' }}
+              >
+                {searching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+                {searching ? 'Searching…' : 'Search Online'}
+              </button>
+            ) : path ? (
+              <a
+                href={path}
+                className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center"
+                style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7', textDecoration: 'none' }}
+              >
+                Open Record
+              </a>
+            ) : null}
+          </div>
         </div>
       </div>
     );
