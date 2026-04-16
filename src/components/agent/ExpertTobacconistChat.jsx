@@ -210,6 +210,13 @@ function classifyIntent(message) {
 
   if (/\b(evaluate|assess|how does .+ fit|where does .+ sit|role of)\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
 
+  if (/\b(how much|what.*(worth|value|valued|valuable|price)|value of|most valuable|least valuable|insure|insurance)\b/i.test(t)) return 'VALUE_QUERY';
+  if (/\b(what do i (own|have)|how many|list (my|all)|show me|inventory|do i have any|which (blends|pipes|bottles) do i)\b/i.test(t)) return 'INVENTORY_QUERY';
+  if (/\b(budget|under \$|spend|afford|price range|best.*for \$|cheap|expensive|bang for|worth the money)\b/i.test(t)) return 'PURCHASE_BUDGET';
+  if (/\b(weekend|week lineup|lineup|schedule|plan (for|my|a)|rotation plan|week.*smoke|smoke.*week)\b/i.test(t)) return 'LINEUP_PLANNING';
+  if (/\b(sleeper|underrated|hidden gem|overlooked|not enough credit|underappreciated|undervalued)\b/i.test(t)) return 'SLEEPER_QUERY';
+  if (/\b(haven.?t (touched|used|smoked|opened|had)|not used|sitting untouched|sitting idle|collecting dust|unopened)\b/i.test(t)) return 'UNUSED_QUERY';
+
   return 'UNKNOWN';
 }
 
@@ -354,8 +361,8 @@ function safeCuratorFallback(context, question) {
 }
 
 /**
- * Build a rich LLM prompt with full collection context so the AI can answer
- * any collector query that the rule-based engine can't handle.
+ * Build a rich LLM prompt with full collection context.
+ * This is the master intelligence layer — handles ALL query types with expert domain knowledge.
  */
 function buildLLMPrompt(userMessage, context = {}, history = [], entityContext = {}) {
   const pipes = context.pipes || [];
@@ -363,56 +370,119 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
   const bottles = context.bottles || [];
   const smokingLogs = context.smokingLogs || [];
   const tastingLogs = context.tastingLogs || [];
+  const acquisitionItems = context.acquisitionItems || context.wantListItems || [];
+
+  // ── Compute usage signals for richer context ─────────────────────────────
+  const blendUsage = {};
+  smokingLogs.forEach((l) => {
+    const id = l?.blend_id || l?.blendId;
+    if (id) blendUsage[id] = (blendUsage[id] || 0) + 1;
+  });
+  const bottleUsage = {};
+  tastingLogs.forEach((l) => {
+    const id = l?.bottle_id || l?.bottleId;
+    if (id) bottleUsage[id] = (bottleUsage[id] || 0) + 1;
+  });
+  const pipeUsage = {};
+  smokingLogs.forEach((l) => {
+    const id = l?.pipe_id || l?.pipeId;
+    if (id) pipeUsage[id] = (pipeUsage[id] || 0) + 1;
+  });
+
+  const lastSmokedByBlend = {};
+  smokingLogs.forEach((l) => {
+    const id = l?.blend_id || l?.blendId;
+    const d = l?.date || l?.created_date;
+    if (id && d && (!lastSmokedByBlend[id] || d > lastSmokedByBlend[id])) lastSmokedByBlend[id] = d;
+  });
+  const lastTastedByBottle = {};
+  tastingLogs.forEach((l) => {
+    const id = l?.bottle_id || l?.bottleId;
+    const d = l?.tasting_date || l?.date || l?.created_date;
+    if (id && d && (!lastTastedByBottle[id] || d > lastTastedByBottle[id])) lastTastedByBottle[id] = d;
+  });
+
+  const now = Date.now();
+  const daysAgo = (d) => d ? Math.floor((now - new Date(d).getTime()) / 86400000) : null;
+
+  // ── Build collection lines ───────────────────────────────────────────────
+  const blendLines = blends.slice(0, 80).map((b) => {
+    const sessions = blendUsage[b.id] || 0;
+    const last = lastSmokedByBlend[b.id];
+    const lastDays = daysAgo(last);
+    const qty = b.tin_total_quantity_oz || b.bulk_total_quantity_oz || null;
+    return `- ${b.name}${b.manufacturer ? ` by ${b.manufacturer}` : ''}${b.blend_type ? ` [${b.blend_type}]` : ''}${b.strength ? ` strength:${b.strength}` : ''}${b.flavor_notes?.length ? ` flavors:${b.flavor_notes.slice(0,3).join(',')}` : ''}${b.rating ? ` rated:${b.rating}/5` : ''}${b.is_favorite ? ' ★FAV' : ''}${sessions > 0 ? ` sessions:${sessions}` : ' NEW'}${lastDays !== null ? ` lastSmoked:${lastDays}d ago` : ''}${qty !== null ? ` qty:${qty}oz` : ''}${b.production_status === 'Discontinued' ? ' DISCONTINUED' : ''}`;
+  });
+
+  const pipeLines = pipes.slice(0, 60).map((p) => {
+    const sessions = pipeUsage[p.id] || 0;
+    return `- ${p.name}${p.maker ? ` by ${p.maker}` : ''}${p.shape ? ` [${p.shape}]` : ''}${p.bowl_material ? ` ${p.bowl_material}` : ''}${p.focus?.length ? ` focus:${p.focus.join(',')}` : ''}${p.is_favorite ? ' ★FAV' : ''}${sessions > 0 ? ` sessions:${sessions}` : ' UNSMOKED'}${p.estimated_value ? ` est.value:$${p.estimated_value}` : ''}`;
+  });
+
+  const bottleLines = bottles.slice(0, 60).map((b) => {
+    const sessions = bottleUsage[b.id] || 0;
+    const last = lastTastedByBottle[b.id];
+    const lastDays = daysAgo(last);
+    const type = b.type || b.whiskey_type || '';
+    return `- ${b.name}${b.distillery ? ` by ${b.distillery}` : ''}${type ? ` [${type}]` : ''}${b.region ? ` ${b.region}` : ''}${b.age ? ` ${b.age}yr` : ''}${b.abv ? ` ${b.abv}%` : ''}${b.rating ? ` rated:${b.rating}/5` : ''}${b.is_favorite ? ' ★FAV' : ''}${sessions > 0 ? ` tastings:${sessions}` : ' UNTASTED'}${lastDays !== null ? ` lastOpened:${lastDays}d ago` : ''}${b.purchase_price ? ` paid:$${b.purchase_price}` : ''}${b.estimated_value ? ` est.value:$${b.estimated_value}` : ''}`;
+  });
+
+  const wantListLines = acquisitionItems.filter(i => i.status !== 'archived').slice(0, 20).map((i) =>
+    `- ${i.name}${i.item_type ? ` [${i.item_type}]` : ''}${i.priority ? ` priority:${i.priority}` : ''}`
+  );
 
   const collectionSummary = [
-    blends.length > 0
-      ? `TOBACCO CELLAR (${blends.length} blends):\n` + blends.slice(0, 60).map((b) =>
-          `- ${b.name}${b.manufacturer ? ` by ${b.manufacturer}` : ''}${b.blend_type ? ` [${b.blend_type}]` : ''}${b.strength ? ` strength:${b.strength}` : ''}${b.rating ? ` rated:${b.rating}/5` : ''}${b.is_favorite ? ' ★' : ''}`
-        ).join('\n')
-      : 'TOBACCO CELLAR: empty',
-    pipes.length > 0
-      ? `\nPIPE COLLECTION (${pipes.length} pipes):\n` + pipes.slice(0, 40).map((p) =>
-          `- ${p.name}${p.maker ? ` by ${p.maker}` : ''}${p.shape ? ` [${p.shape}]` : ''}${p.bowl_material ? ` ${p.bowl_material}` : ''}${p.focus?.length ? ` focus:${p.focus.join(',')}` : ''}`
-        ).join('\n')
-      : '',
-    bottles.length > 0
-      ? `\nWHISKEY SHELF (${bottles.length} bottles):\n` + bottles.slice(0, 40).map((b) =>
-          `- ${b.name}${b.distillery ? ` by ${b.distillery}` : ''}${b.type || b.whiskey_type ? ` [${b.type || b.whiskey_type}]` : ''}${b.age ? ` ${b.age}yr` : ''}${b.rating ? ` rated:${b.rating}/5` : ''}`
-        ).join('\n')
-      : '',
-    smokingLogs.length > 0 ? `\nSMOKING SESSIONS: ${smokingLogs.length} logged` : '',
-    tastingLogs.length > 0 ? `\nTASTING SESSIONS: ${tastingLogs.length} logged` : '',
+    blendLines.length > 0 ? `TOBACCO CELLAR (${blends.length} blends):\n${blendLines.join('\n')}` : 'TOBACCO CELLAR: empty',
+    pipeLines.length > 0 ? `\nPIPE COLLECTION (${pipes.length} pipes):\n${pipeLines.join('\n')}` : '',
+    bottleLines.length > 0 ? `\nWHISKEY SHELF (${bottles.length} bottles):\n${bottleLines.join('\n')}` : '',
+    wantListLines.length > 0 ? `\nWANT LIST / ACQUISITION QUEUE:\n${wantListLines.join('\n')}` : '',
+    smokingLogs.length > 0 ? `\nTotal smoking sessions logged: ${smokingLogs.length}` : '',
+    tastingLogs.length > 0 ? `\nTotal whiskey tastings logged: ${tastingLogs.length}` : '',
   ].filter(Boolean).join('');
 
-  const recentHistory = history.slice(-6).map((m) => `${m.role === 'user' ? 'USER' : 'CURATOR'}: ${m.content}`).join('\n');
+  const recentHistory = history.slice(-8).map((m) => `${m.role === 'user' ? 'YOU' : 'CURATOR'}: ${m.content.slice(0, 400)}`).join('\n');
 
   const currentSubject = entityContext.subject?.name
-    ? `\nCURRENT CONVERSATION SUBJECT: ${entityContext.subject.name} (${entityContext.subject.type})`
+    ? `ACTIVE SUBJECT: ${entityContext.subject.name} (${entityContext.subject.type})\n`
     : '';
 
-  return `You are Curator — a premium pipe tobacco, whiskey, and collector intelligence assistant. You have deep domain knowledge about tobacco blends, pipe makers, whiskey distilleries, and collector preferences.
+  const constraints = entityContext.constraints
+    ? `USER CONSTRAINTS: ${JSON.stringify(entityContext.constraints)}\n`
+    : '';
 
-COLLECTION CONTEXT:
-${collectionSummary || 'No collection data available yet.'}
-${currentSubject}
+  return `You are Curator — a world-class collector intelligence assistant specializing in pipe tobacco, whiskey, cigars, and fine collectibles. You combine the knowledge of an expert tobacconist, master sommelier, and seasoned collector advisor.
 
-${recentHistory ? `RECENT CONVERSATION:\n${recentHistory}\n` : ''}
+═══ USER COLLECTION ═══
+${collectionSummary || 'No collection data yet.'}
 
-CRITICAL RULES:
-1. For "similar to X" questions: ALWAYS give 4-6 specific named product recommendations with WHY each matches. Use your tobacco/whiskey domain knowledge — do NOT say you need more information.
-2. If the item mentioned (e.g. "Cowboy Coffee") is NOT in the user's collection, treat it as a reference point and recommend similar items from general collector knowledge.
-3. If the item IS in the collection, reference it by name and build recommendations around it.
-4. NEVER say "I need more information" or "I can't determine" for similarity/recommendation questions. Always give your best expert answer.
-5. Recommendations must include: why it matches (flavor, strength, style, use case).
-6. Keep answers conversational and precise — like a trusted tobacconist or whiskey guide.
-7. When the user's collection has relevant items, weave them into the answer.
-8. For tobacco similarity: reference blend_type, strength, tobacco components, flavor notes, room note.
-9. For whiskey similarity: reference style, region, flavor profile, age, abv.
-10. End with a follow-up offer (rank by X, narrow by Y, etc.).
+${currentSubject}${constraints}${recentHistory ? `═══ CONVERSATION HISTORY ═══\n${recentHistory}\n` : ''}
+═══ YOUR MISSION ═══
+Answer the user's question with the precision of a trusted expert. You have two roles:
+1. COLLECTION ANALYST: Use the actual collection data above to give personalized insights
+2. DOMAIN EXPERT: Use your deep knowledge of tobacco/whiskey to recommend products, explain styles, and guide purchases — even for items NOT in the collection
 
-USER QUESTION: ${userMessage}
+═══ ANSWER RULES ═══
+SIMILARITY/RECOMMENDATIONS: Always give 4-7 specific named products with WHY each matches. Use flavor profile, strength, blend type, style. Never say "I need more information."
+INVENTORY QUESTIONS: Count/list from the collection data above. Be specific — name items.
+SESSION PLANNING: Pick from owned items. Explain why this item fits tonight (recency, rarity, mood, weather).
+VALUE/RARITY: Reference purchase_price, estimated_value, production_status (DISCONTINUED = valuable). Factor scarcity.
+GAP ANALYSIS: Compare what exists vs what's missing. Be specific about which families/styles are underrepresented.
+PURCHASE GUIDANCE: Give specific product names with price context. Factor what they already own.
+PAIRING: Explain the interaction — not just "goes well together." Why do these flavors complement or contrast?
+REDUNDANCY: Name specific items that overlap. Explain what makes them redundant.
+UNDERUSED: Look at sessions count and lastSmoked days. Items with 0 sessions or 60+ days = underused.
 
-Answer directly and specifically. Lead with concrete recommendations, not caveats.`;
+═══ FORMAT RULES ═══
+- Lead with the direct answer — no preamble or caveats
+- Use numbered lists for ranked recommendations (1. Item — reason)
+- Conversational but precise, like a trusted expert friend
+- End with one concrete follow-up offer or next step
+- Never use generic filler phrases ("strong directions", "couldn't resolve", "need more info")
+- If collection data is thin, still give your best expert answer using domain knowledge
+
+USER: ${userMessage}
+
+CURATOR:`;
 }
 
 function fallbackGapAnalysis(context = {}) {
@@ -1293,6 +1363,8 @@ export default function ExpertTobacconistChat({
   const [isSending, setIsSending] = useState(false);
   const [entityContext, setEntityContext] = useState({});
   const [analysisContext, setAnalysisContext] = useState(null);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (initialEntityContext) {
@@ -1332,38 +1404,32 @@ export default function ExpertTobacconistChat({
     };
   };
 
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isSending]);
+
   useEffect(() => {
     if (preFillMessage) {
       setInput(preFillMessage);
       onPreFillConsumed?.();
+      setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [preFillMessage, onPreFillConsumed]);
 
   /**
-   * Determines if this query needs LLM (domain knowledge) vs local rule engine.
-   * LLM is used when:
-   * - User asks about similarity/comparison ("similar to X", "compare X vs Y")  
-   * - User mentions a product NOT in their collection
-   * - Intent is UNKNOWN (rule engine can't handle it)
-   * - User asks "what should I buy" type questions with named external products
+   * Determines if this query should go to the LLM.
+   * The LLM is the PRIMARY engine for all intelligence queries.
+   * The local rule engine only handles simple structural operations (corrections, constraints, follow-ups).
    */
-  function needsLLM(text, context) {
-    const t = text.toLowerCase();
-    // Explicit similarity/comparison questions always need domain knowledge
-    if (/\b(similar to|like [a-z]|compare|vs\.?|versus|difference between|recommend.*to (try|buy|purchase)|what.*(else|other|next|buy|purchase|try)|should i (buy|try|get|pick up))\b/i.test(text)) return true;
-    // Mentions specific named products — check if they're NOT in collection
-    const allNames = [
-      ...(context?.blends || []).map(b => b.name?.toLowerCase()),
-      ...(context?.pipes || []).map(p => p.name?.toLowerCase()),
-      ...(context?.bottles || []).map(b => b.name?.toLowerCase()),
-    ].filter(Boolean);
-    // Looks like it references a named product (capitalized multi-word phrase) that isn't in collection
-    const namedProductMatch = text.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z&][a-zA-Z']+){1,4})\b/g);
-    if (namedProductMatch) {
-      const externalProduct = namedProductMatch.find(name => !allNames.some(n => n.includes(name.toLowerCase())));
-      if (externalProduct) return true;
-    }
-    return false;
+  function needsLLM(text, intent) {
+    // Local rule engine handles these specific intents reliably
+    const localIntents = new Set(['USER_CORRECTION', 'FOLLOW_UP_CONSTRAINT', 'FOLLOW_UP_NEXT_CANDIDATE']);
+    if (localIntents.has(intent)) return false;
+
+    // Everything else goes to LLM for premium-quality answers
+    // This covers: similarity, purchase, value, inventory, session, gap, pairing, redundancy, ranking, lineup, etc.
+    return true;
   }
 
   const sendMessage = useCallback(async () => {
@@ -1375,7 +1441,7 @@ export default function ExpertTobacconistChat({
     setInput('');
     try {
       const intent = classifyIntent(text);
-      const useLLM = needsLLM(text, collectionContext) || intent === 'UNKNOWN';
+      const useLLM = needsLLM(text, intent);
 
       if (useLLM) {
         // Use LLM for domain-knowledge queries (similarity, external products, comparison, etc.)
@@ -1431,68 +1497,136 @@ export default function ExpertTobacconistChat({
     }
   }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules, continueAnalysis, messages]);
 
+  const hasCollection = (collectionContext?.blends?.length || 0) + (collectionContext?.bottles?.length || 0) + (collectionContext?.pipes?.length || 0) > 0;
+
   return (
-    <div className="rounded-[18px] p-8" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}>
-      <h3 className="text-[20px] font-semibold mb-2" style={{ color: '#F5F5F7' }}>Curator Console</h3>
-      <p className="text-[16px] mb-6" style={{ color: '#A1A1AA' }}>Ask about your collection, pairings, or what to enjoy tonight.</p>
-      <div className="flex flex-wrap gap-3 mb-6">
-        <span className="px-4 py-2 rounded-full text-sm" style={{ border: '1px solid rgba(198,161,91,0.25)', color: '#C6A15B' }}>Your Collection</span>
-        <span className="px-4 py-2 rounded-full text-sm" style={{ border: '1px solid rgba(198,161,91,0.25)', color: '#C6A15B' }}>Pairings</span>
-        <span className="px-4 py-2 rounded-full text-sm" style={{ border: '1px solid rgba(198,161,91,0.25)', color: '#C6A15B' }}>Session Planning</span>
-      </div>
-      <div className="rounded-[18px] p-5 mb-5" style={{ background: '#09090B', border: '1px solid rgba(255,255,255,0.06)', minHeight: 220 }}>
-        {messages.length === 0 ? (
-          <>
-            <div className="text-[16px] mb-5" style={{ color: '#A1A1AA' }}>Start a conversation or pick a prompt below.</div>
-            <div className="flex flex-wrap gap-3">
-              {starterPrompts.map((prompt) => (
-                <button key={prompt} type="button" onClick={() => setInput(prompt)} className="px-4 h-10 rounded-full text-sm" style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7' }}>{prompt}</button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className="space-y-5">
-            {messages.map((m) => (
-              <div key={m.id} className="space-y-2">
-                <div className="text-[12px] uppercase tracking-[0.12em]" style={{ color: '#71717A' }}>{m.role === 'user' ? 'You' : 'Curator'}</div>
-                <div className="text-[16px] leading-8 whitespace-pre-wrap" style={{ color: '#F5F5F7' }}>{m.content}</div>
-              </div>
+    <div className="rounded-[18px] overflow-hidden flex flex-col" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)', minHeight: 520 }}>
+      {/* Header */}
+      <div className="px-5 sm:px-7 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h3 className="text-[18px] sm:text-[20px] font-semibold" style={{ color: '#F5F5F7' }}>Curator Console</h3>
+            <p className="text-[13px] sm:text-[14px] mt-0.5" style={{ color: '#6B6860' }}>
+              {hasCollection ? 'Personalized intelligence from your collection' : 'Expert collector advisor — ask anything'}
+            </p>
+          </div>
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={() => { setMessages([]); setEntityContext({}); setAnalysisContext(null); }}
+              className="text-[12px] px-3 py-1.5 rounded-lg"
+              style={{ border: '1px solid rgba(255,255,255,0.08)', color: '#71717A' }}
+            >
+              New chat
+            </button>
+          )}
+        </div>
+
+        {/* Topic tags */}
+        {messages.length === 0 && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {['Recommendations', 'Pairings', 'Session Planning', 'Collection Gaps', 'Value & Rarity', 'What to Buy'].map((tag) => (
+              <span key={tag} className="px-3 py-1 rounded-full text-[11px] sm:text-[12px]" style={{ border: '1px solid rgba(198,161,91,0.22)', color: '#C6A15B' }}>{tag}</span>
             ))}
-            {isSending && (
-              <div className="space-y-2">
-                <div className="text-[12px] uppercase tracking-[0.12em]" style={{ color: '#71717A' }}>Curator</div>
-                <div className="flex items-center gap-2" style={{ color: '#71717A' }}>
-                  <span className="inline-flex gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '300ms' }} />
-                  </span>
-                  <span className="text-[14px]">Thinking…</span>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
-      <div className="flex gap-3 items-center">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && canSend) sendMessage(); }}
-          placeholder="Ask about pipes, blends, pairings, aging, value, redundancy..."
-          className="flex-1 h-14 px-5 rounded-[14px] outline-none bg-transparent"
-          style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7' }}
-        />
-        <button
-          type="button"
-          disabled={!canSend}
-          onClick={sendMessage}
-          className="h-14 px-6 rounded-[14px] inline-flex items-center gap-2 font-medium"
-          style={{ background: '#C6A15B', color: '#0B0B0C', opacity: canSend ? 1 : 0.6 }}
-        >
-          <SendHorizontal className="w-4 h-4" />
-          Send
-        </button>
+
+      {/* Messages area */}
+      <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5" style={{ maxHeight: 480, minHeight: 260 }}>
+        {messages.length === 0 ? (
+          <div>
+            <p className="text-[14px] mb-4" style={{ color: '#6B6860' }}>Ask a question or pick a prompt to get started.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {starterPrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => { setInput(prompt); setTimeout(() => inputRef.current?.focus(), 50); }}
+                  className="text-left px-4 py-3 rounded-[12px] text-[13px] sm:text-[14px] transition-colors"
+                  style={{ border: '1px solid rgba(255,255,255,0.07)', color: '#C8B898', background: 'rgba(255,255,255,0.02)' }}
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {messages.map((m) => (
+              <div key={m.id} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+                <div className={`max-w-[92%] sm:max-w-[85%] ${m.role === 'user' ? 'order-last' : ''}`}>
+                  <div className="text-[11px] uppercase tracking-[0.10em] mb-1.5" style={{ color: '#4A4840' }}>
+                    {m.role === 'user' ? 'You' : 'Curator'}
+                  </div>
+                  <div
+                    className="rounded-[14px] px-4 py-3 text-[14px] sm:text-[15px] leading-7"
+                    style={m.role === 'user'
+                      ? { background: 'rgba(198,161,91,0.12)', color: '#F5F1E7', border: '1px solid rgba(198,161,91,0.18)' }
+                      : { background: 'rgba(255,255,255,0.03)', color: '#E8E4DC', border: '1px solid rgba(255,255,255,0.06)' }
+                    }
+                  >
+                    {/* Render response with basic markdown-like formatting */}
+                    {m.content.split('\n').map((line, i) => {
+                      if (/^#{1,3}\s/.test(line)) {
+                        return <div key={i} className="font-semibold text-[15px] sm:text-[16px] mt-3 mb-1" style={{ color: '#F5F5F7' }}>{line.replace(/^#{1,3}\s/, '')}</div>;
+                      }
+                      if (/^\d+\.\s/.test(line)) {
+                        return <div key={i} className="ml-1 my-1" style={{ color: '#E8E4DC' }}>{line}</div>;
+                      }
+                      if (/^[-•]\s/.test(line)) {
+                        return <div key={i} className="ml-2 my-0.5" style={{ color: '#C8C0B0' }}>{line}</div>;
+                      }
+                      if (line.trim() === '') return <div key={i} className="h-2" />;
+                      return <div key={i}>{line}</div>;
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {isSending && (
+              <div className="flex justify-start">
+                <div className="max-w-[85%]">
+                  <div className="text-[11px] uppercase tracking-[0.10em] mb-1.5" style={{ color: '#4A4840' }}>Curator</div>
+                  <div className="rounded-[14px] px-4 py-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span className="inline-flex gap-1.5 items-center">
+                      <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '300ms' }} />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+      </div>
+
+      {/* Input area */}
+      <div className="px-5 sm:px-7 pb-5 pt-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+        <div className="flex gap-2 sm:gap-3 items-end">
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={(e) => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && canSend) { e.preventDefault(); sendMessage(); } }}
+            placeholder="Ask about your collection, pairings, what to buy, or anything collector-related…"
+            rows={1}
+            className="flex-1 px-4 py-3 rounded-[14px] outline-none bg-transparent resize-none text-[14px] sm:text-[15px] leading-6"
+            style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7', minHeight: '48px', maxHeight: '120px' }}
+          />
+          <button
+            type="button"
+            disabled={!canSend}
+            onClick={sendMessage}
+            className="shrink-0 h-12 w-12 rounded-[12px] inline-flex items-center justify-center transition-opacity"
+            style={{ background: '#C6A15B', color: '#0B0B0C', opacity: canSend ? 1 : 0.45 }}
+          >
+            <SendHorizontal className="w-4 h-4" />
+          </button>
+        </div>
+        <p className="text-[11px] mt-2" style={{ color: '#3A3830' }}>Enter to send · Shift+Enter for new line</p>
       </div>
     </div>
   );
