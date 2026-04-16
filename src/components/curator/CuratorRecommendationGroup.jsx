@@ -601,9 +601,15 @@ function AdvisoryActions({ rec, onAction, onOpenGrowExpand }) {
 
   if (done) return <DoneIndicator label="Acknowledged" />;
 
+  const itemsWithPayloads = (rec.items || []).filter(hasNonEmptyPayload);
+
   return (
     <>
-      <PrimaryBtn onClick={() => onAction('apply_suggestion', rec)} icon={Check} label="Apply Suggestion" />
+      <PrimaryBtn
+        onClick={() => onAction('approve_changes', rec, { reviewedItems: itemsWithPayloads.length ? itemsWithPayloads : rec.items || [] })}
+        icon={Check}
+        label="Apply Suggestion"
+      />
       <SecondaryBtn onClick={() => { onAction('acknowledge', rec); setDone(true); }} icon={Check} label="Mark Reviewed" />
       <TertiaryBtn onClick={() => onAction('ask_curator', rec)} icon={HelpCircle} label="Ask Curator" />
     </>

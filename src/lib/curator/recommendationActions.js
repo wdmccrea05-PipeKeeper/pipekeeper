@@ -173,7 +173,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
     }
 
     case 'approve_changes': {
-      const reviewedItems = Array.isArray(opts.reviewedItems) ? opts.reviewedItems : [];
+      const reviewedItems = Array.isArray(opts.reviewedItems) ? opts.reviewedItems : items;
       if (!reviewedItems.length) return { ok: false, error: 'No reviewed items to apply.' };
 
       const resolvedRecordIds = [];
@@ -367,7 +367,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
     }
 
     // §2.3 MARK_REVIEWED — remove from Curator view (idempotent, optimistic)
-
+    case 'mark_reviewed':
       return {
         ok: true,
         appliedCount: items.length || 1,
