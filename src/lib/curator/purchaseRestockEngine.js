@@ -15,6 +15,8 @@ const LOW_STOCK_OZ = 2.0;
 const CRITICAL_STOCK_OZ = 0.5;
 const LOW_BOTTLE_POURS = 3;
 const LOW_CIGAR_STICKS = 2;
+const FAVORITE_RATING_THRESHOLD = 4;
+const FAVORITE_SESSION_THRESHOLD = 3;
 const MAX_ITEMS_PER_REC = 30;
 
 function totalOz(blend) {
@@ -53,10 +55,10 @@ function getCigarSticks(cigar) {
   return Math.max(0, Number(cigar?.singles_equivalent ?? cigar?.quantity ?? 0) || 0);
 }
 
-function isCigarFavorite(cigar, cigarSessions = []) {
+function isCigarFavorite(cigar, cigarSessionCounts = {}) {
   const rating = Number(cigar?.rating || 0);
-  const sessions = cigarSessions.filter((s) => s?.cigar_id === cigar.id && !s?.is_out_of_collection).length;
-  return !!cigar?.is_favorite || rating >= 4 || sessions >= 3;
+  const sessions = cigarSessionCounts[cigar.id] || 0;
+  return !!cigar?.is_favorite || rating >= FAVORITE_RATING_THRESHOLD || sessions >= FAVORITE_SESSION_THRESHOLD;
 }
 
 
@@ -176,14 +178,21 @@ function analyzeBottleRestock(bottles = []) {
 }
 
 function analyzeCigarRestock(cigars = [], cigarSessions = []) {
+  const cigarSessionCounts = cigarSessions.reduce((acc, s) => {
+    if (s?.cigar_id && !s?.is_out_of_collection) {
+      acc[s.cigar_id] = (acc[s.cigar_id] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
   const eligible = cigars
     .filter((c) => c && c.ai_excluded !== true && c.not_for_me !== true)
     .slice(0, MAX_ITEMS_PER_REC);
   const lowStock = eligible.filter((c) => {
     const qty = getCigarSticks(c);
-    return qty > 0 && qty <= LOW_CIGAR_STICKS && isCigarFavorite(c, cigarSessions);
+    return qty > 0 && qty <= LOW_CIGAR_STICKS && isCigarFavorite(c, cigarSessionCounts);
   });
-  const depleted = eligible.filter((c) => getCigarSticks(c) <= 0 && isCigarFavorite(c, cigarSessions));
+  const depleted = eligible.filter((c) => getCigarSticks(c) <= 0 && isCigarFavorite(c, cigarSessionCounts));
 
   const results = [];
 

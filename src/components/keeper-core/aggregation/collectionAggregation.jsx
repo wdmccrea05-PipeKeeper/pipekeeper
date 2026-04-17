@@ -137,6 +137,7 @@ export async function aggregateCollection(userEmail) {
 
     // === CIGAR MODULE ===
     const canonicalCigar = selectCigarMetrics(cigarsList, humidorsList);
+    const ratedCigars = cigarsList.filter(c => c.rating);
     const cigarStats = {
       cigarTypes: canonicalCigar.cigar_types,
       totalSticks: canonicalCigar.total_sticks,
@@ -145,9 +146,9 @@ export async function aggregateCollection(userEmail) {
       count: canonicalCigar.cigar_types, // legacy alias
       value: canonicalCigar.collection_value,
       favorite: cigarsList.filter(c => c.is_favorite).length,
-      rated: cigarsList.filter(c => c.rating).length,
-      avgRating: cigarsList.filter(c => c.rating).length > 0
-        ? (cigarsList.reduce((sum, c) => sum + (c.rating || 0), 0) / cigarsList.filter(c => c.rating).length).toFixed(2)
+      rated: ratedCigars.length,
+      avgRating: ratedCigars.length > 0
+        ? (ratedCigars.reduce((sum, c) => sum + (c.rating || 0), 0) / ratedCigars.length).toFixed(2)
         : 0,
       sessions: cigarSessionsList.length,
     };

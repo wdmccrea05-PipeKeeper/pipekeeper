@@ -33,6 +33,18 @@ function formatValue(v) {
     : `$${Math.round(v).toLocaleString()}`;
 }
 
+function getBottleUsageKeyFromLog(log) {
+  if (log?.bottle_id) return `id:${log.bottle_id}`;
+  if (log?.bottle_name) return `name:${log.bottle_name}`;
+  return null;
+}
+
+function getBottleUsageKeyFromBottle(bottle) {
+  if (bottle?.id) return `id:${bottle.id}`;
+  if (bottle?.name) return `name:${bottle.name}`;
+  return null;
+}
+
 function buildNarrative({ pipes, blends, bottleTypes, totalBottles, mostUsedPipe, mostTastedBottle,
   dominantBlendType, dominantWhiskyType, underusedCount, mostValuable, totalSessions,
   cigarTypes, totalCigarSticks, mostSmokedCigar, cigarSessions, humidorCount, dominantCigarStrength,
@@ -305,12 +317,15 @@ Deno.serve(async (req) => {
     // Most tasted bottle — key by bottle_id (primary), fallback to name for legacy logs
     const bottleUsage = {};
     tastingLogsList.forEach(log => {
-      const key = log.bottle_id || log.bottle_name;
+      const key = getBottleUsageKeyFromLog(log);
       if (key) bottleUsage[key] = (bottleUsage[key] || 0) + 1;
     });
     const maxBottleUses = Math.max(...Object.values(bottleUsage), 0);
     const mostTastedBottle = maxBottleUses > 0
-      ? bottlesList.find(b => (bottleUsage[b.id] || bottleUsage[b.name] || 0) === maxBottleUses)
+      ? bottlesList.find(b => {
+          const key = getBottleUsageKeyFromBottle(b);
+          return key ? (bottleUsage[key] || 0) === maxBottleUses : false;
+        })
       : null;
 
     // Most valuable item across all collections
@@ -424,15 +439,15 @@ Deno.serve(async (req) => {
             }
           : null,
         mostTastedBottle: mostTastedBottle
-      ? {
-          id: mostTastedBottle.id,
-          name: mostTastedBottle.name,
+          ? {
+              id: mostTastedBottle.id,
+              name: mostTastedBottle.name,
               recordType: 'bottle',
               photo: mostTastedBottle.photo,
               image: mostTastedBottle.image,
               image_url: mostTastedBottle.image_url,
               thumbnail: mostTastedBottle.thumbnail,
-              tastings: bottleUsage[mostTastedBottle.id] || bottleUsage[mostTastedBottle.name] || 0,
+              tastings: bottleUsage[getBottleUsageKeyFromBottle(mostTastedBottle) || ''] || 0,
             }
           : null,
         mostSmokedCigar: mostSmokedCigar
