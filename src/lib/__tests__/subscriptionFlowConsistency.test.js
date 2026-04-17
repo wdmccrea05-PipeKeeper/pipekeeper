@@ -85,7 +85,6 @@ describe("subscription flow consistency", () => {
       "pipekeeper",
       "whiskeykeeper",
       "cigarkeeper",
-      "winekeeper",
     ].sort());
   });
 

@@ -5,7 +5,7 @@
  * - activeModules only contains modules that are BOTH entitled AND released
  * - Only modules whose effective release state is 'launched' pass through for normal users
  * - WhiskeyKeeper is now publicly launched — paid subscribers gain full access
- * - Admin/internal testers bypass release-state gating
+ * - Internal modules pass for admin/internal testers OR explicitly granted test users
  * - Founding members get all 4 modules (subject to release-state gate)
  * - Never fabricate module access from CollectionKeeper shell presence
  * - Never infer all modules from tier === 'pro' alone
@@ -13,7 +13,7 @@
 
 import {
   getEffectiveModuleReleaseState,
-  isInternalModuleTester,
+  canAccessInternalModuleForTesting,
 } from '@/components/utils/moduleReleaseState';
 import { getEntitlementTier } from '@/components/utils/premiumAccess';
 
@@ -41,12 +41,16 @@ const VALID_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper
 /**
  * Filter modules by effective release state.
  * Normal users: only 'launched' modules pass through.
- * Admin/internal testers: all modules pass through unchanged.
+ * Internal modules pass only for explicit pre-launch tester access.
  */
 function filterModulesByReleaseState(modules, user) {
   if (!Array.isArray(modules)) return [];
-  if (isInternalModuleTester(user)) return modules;
-  return modules.filter((m) => getEffectiveModuleReleaseState(m, user) === 'launched');
+  return modules.filter((m) => {
+    const state = getEffectiveModuleReleaseState(m, user);
+    if (state === 'launched') return true;
+    if (state === 'internal') return canAccessInternalModuleForTesting(m, user);
+    return false;
+  });
 }
 
 function resolveTier(user, subscription) {
@@ -170,9 +174,9 @@ export function buildAccessSummary(user, subscription) {
 
   // ─── RELEASE-STATE GATE ───────────────────────────────────────────────────
   // Filter activeModules to only those whose effective release state is 'launched'.
-  // Admin/internal testers bypass this filter — all their entitled modules pass through.
-  // This is the single enforcement point that prevents WhiskeyKeeper (state: 'internal')
-  // from appearing in normal users' activeModules before it officially launches.
+  // Internal modules only pass for explicit pre-launch tester access
+  // (internal tester/admin OR explicit module grant).
+  // Blocked modules never pass.
   activeModules = filterModulesByReleaseState(activeModules, user);
 
   // Safety: ensure activeModules is always an array

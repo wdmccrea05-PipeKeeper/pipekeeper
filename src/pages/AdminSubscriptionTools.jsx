@@ -29,8 +29,8 @@ export default function AdminSubscriptionTools() {
   const moduleLabelMap = {
     pipekeeper: "PipeKeeper (Public)",
     whiskeykeeper: "WhiskeyKeeper (Public)",
-    cigarkeeper: "CigarKeeper (Internal Only)",
-    winekeeper: "WineKeeper (Not Launched)",
+    cigarkeeper: "CigarKeeper (Pre-Launch Testing Access)",
+    winekeeper: "WineKeeper (Blocked / Not Launched)",
   };
 
   // Check admin access
