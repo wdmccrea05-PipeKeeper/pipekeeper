@@ -862,9 +862,9 @@ export default {
     upgradeQ: "How do I upgrade to Pro?",
     upgradeSteps: [
       "Go to the Subscription page (accessible from Profile or the upgrade prompts).",
-      "Choose the module(s) you want to unlock: PipeKeeper, WhiskeyKeeper, CigarKeeper, or WineKeeper.",
+      "Choose what you want to unlock: PipeKeeper Pro, WhiskeyKeeper Pro, or the Founders Bundle.",
       "Select a monthly or annual plan (annual saves ~17%).",
-      "Consider a bundle plan if you use 3 or 4 modules.",
+      "Choose the Founders Bundle if you want both public modules in one plan.",
       "Complete payment via the secure checkout.",
       "Your Pro features activate immediately."
     ],
@@ -880,8 +880,8 @@ export default {
     tierDiffSteps: [
       "Free: PipeKeeper allows up to 5 pipes and 10 blends; WhiskeyKeeper allows up to 10 bottles. Basic features, no AI features.",
       "Pro: Unlimited items per module, AI pairings, collection optimization, AI identification, break-in schedules, valuation tools, Value & Strategy section, export reports, and priority support.",
-      "Each module (PipeKeeper, WhiskeyKeeper, CigarKeeper, WineKeeper) requires its own subscription.",
-      "Bundle plans unlock 3 or 4 modules at a discounted rate.",
+      "Each public module (PipeKeeper and WhiskeyKeeper) can be subscribed to individually.",
+      "The Founders Bundle unlocks both public modules at a discounted rate.",
       "Founding members have grandfathered lifetime Pro access."
     ],
   },

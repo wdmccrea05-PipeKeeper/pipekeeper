@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
+import { isInternalModuleTester } from '@/components/utils/moduleReleaseState';
 import UpgradePrompt from '@/components/subscription/UpgradePrompt';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { invalidateBlendQueries, invalidateEntityQueries, invalidatePipeQueries } from '@/components/utils/cacheInvalidation';
@@ -160,15 +161,20 @@ export default function ImportPage() {
   const queryClient = useQueryClient();
   const { user, hasPaid: isPaidUser } = useCurrentUser();
   const { accessible, isLoading: modulesLoading } = useEnabledModules(user, user);
+  const isInternalTester = isInternalModuleTester(user);
 
   // Filter import definitions to only modules the user has access to
   const availableDefinitions = useMemo(
     () => importDefinitionList.filter((def) => {
       const moduleKey = IMPORT_MODULE_MAP[def.id];
+      if (moduleKey === 'winekeeper') return false;
+      if (moduleKey === 'cigarkeeper') {
+        return isInternalTester && accessible[moduleKey];
+      }
       // If no mapping found, show it; if mapped, require module to be accessible
       return !moduleKey || accessible[moduleKey];
     }),
-    [accessible]
+    [accessible, isInternalTester]
   );
 
   const [importType, setImportType] = useState(() => buildImportTypeFromLocation(location.search));
@@ -305,14 +311,14 @@ export default function ImportPage() {
               {t('common.backToHome', 'Back to home')}
             </Button>
           </a>
-          <Card className="border-[#e8d5b7]/30">
-            <CardHeader>
-              <CardTitle className="text-xl text-stone-100">No modules available</CardTitle>
-              <CardDescription className="text-stone-300">
-                Bulk import requires at least one active module (PipeKeeper, WhiskeyKeeper, CigarKeeper, or WineKeeper). Enable a module from your collection settings to get started.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+            <Card className="border-[#e8d5b7]/30">
+              <CardHeader>
+                <CardTitle className="text-xl text-stone-100">No modules available</CardTitle>
+                <CardDescription className="text-stone-300">
+                  Bulk import requires at least one active public module (PipeKeeper or WhiskeyKeeper). Enable a module from your collection settings to get started.
+                </CardDescription>
+              </CardHeader>
+            </Card>
         </div>
       </div>
     );

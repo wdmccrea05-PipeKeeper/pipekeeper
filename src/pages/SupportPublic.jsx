@@ -17,7 +17,7 @@ const FAQS = [
   },
   {
     q: "What is included in each module?",
-    a: "CollectionKeeper includes PipeKeeper (pipes & tobacco), WhiskeyKeeper (spirits), and coming soon: WineKeeper and CigarKeeper. Each module tracks your collection, logs sessions, and provides AI-driven insights.",
+    a: "CollectionKeeper currently includes PipeKeeper (pipes & tobacco) and WhiskeyKeeper (spirits). Both modules track your collection, logs, and insights.",
   },
   {
     q: "My data isn't syncing. What should I do?",
