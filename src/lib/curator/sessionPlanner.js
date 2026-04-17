@@ -5,7 +5,12 @@
  * module context. Voice and reason output delegated to curatorVoice.js.
  */
 
-import { buildBottleSessionReason, buildPipeSessionReason, buildBlendSessionReason } from './curatorVoice.js';
+import {
+  buildBottleSessionReason,
+  buildPipeSessionReason,
+  buildBlendSessionReason,
+  buildCigarSessionReason,
+} from './curatorVoice.js';
 
 // ─── Scoring helpers ──────────────────────────────────────────────────────────
 
@@ -68,11 +73,44 @@ function scoreBlend(blend, smokingLogs = []) {
   return { total: recencyScore + ratingScore + freqScore, sessionCount: logs.length, lastSmokedDays: daysSinceLast, oz, rating };
 }
 
+function scoreCigar(cigar, cigarSessions = []) {
+  const logs = cigarSessions.filter(
+    (l) => l?.cigar_id === cigar.id || l?.cigarId === cigar.id
+  );
+  const lastDate = logs.map((l) => l?.date || l?.created_date).filter(Boolean).sort().reverse()[0];
+  const lastSessionDays = daysSince(lastDate);
+  const availableSticks = Math.max(0, Number(cigar.singles_equivalent ?? cigar.quantity ?? 0));
+  const rating = Number(cigar.rating || 0);
+  const hasReadyDate = !!cigar.ready_to_smoke_date;
+  const readySignal = hasReadyDate && daysSince(cigar.ready_to_smoke_date) >= 0;
+
+  if (availableSticks <= 0) {
+    return { total: 0, sessionCount: logs.length, lastSessionDays, availableSticks, rating, noStock: true, readySignal };
+  }
+
+  const recencyScore = lastSessionDays === null ? 48 : Math.min(55, lastSessionDays * 0.85);
+  const qualityScore = rating >= 4 ? 24 : rating >= 3 ? 14 : rating >= 2 ? 7 : 0;
+  const readinessScore = readySignal ? 12 : 0;
+  const usageScore = Math.max(0, 22 - logs.length * 3);
+  const inventoryScore = availableSticks <= 2 ? 8 : availableSticks <= 5 ? 4 : 0;
+  const favoriteScore = cigar.is_favorite ? 10 : 0;
+
+  return {
+    total: recencyScore + qualityScore + readinessScore + usageScore + inventoryScore + favoriteScore,
+    sessionCount: logs.length,
+    lastSessionDays,
+    availableSticks,
+    rating,
+    readySignal,
+  };
+}
+
 // ─── Reason builders — delegated to curatorVoice.js ──────────────────────────
 
 const buildBottleReason = buildBottleSessionReason;
 const buildPipeReason   = buildPipeSessionReason;
 const buildBlendReason  = buildBlendSessionReason;
+const buildCigarReason  = buildCigarSessionReason;
 
 // ─── Module-specific planners ─────────────────────────────────────────────────
 
@@ -161,11 +199,41 @@ function planPipeSession(context = {}) {
   return results.slice(0, 5);
 }
 
+function planCigarSession(context = {}) {
+  const { cigars = [], cigarSessions = [] } = context;
+  if (!cigars.length) return [];
+
+  const eligible = cigars.filter((cigar) => !cigar?.not_for_me && !cigar?.ai_excluded);
+
+  const scored = eligible
+    .map((cigar) => ({ cigar, scoreData: scoreCigar(cigar, cigarSessions) }))
+    .filter(({ scoreData }) => !scoreData.noStock && scoreData.total > 0)
+    .sort((a, b) => b.scoreData.total - a.scoreData.total);
+
+  return scored.slice(0, 5).map(({ cigar, scoreData }) => ({
+    id: `session_cigar_${cigar.id}`,
+    moduleKey: 'cigar',
+    itemType: 'cigar',
+    item: cigar,
+    title: cigar.name,
+    subtitle: [cigar.brand, cigar.vitola || cigar.wrapper].filter(Boolean).join(' · '),
+    reason: buildCigarReason(cigar, scoreData),
+    whyNow: scoreData.lastSessionDays === null
+      ? 'No cigar session logged yet'
+      : scoreData.readySignal
+        ? 'Humidor-ready now'
+        : `${scoreData.lastSessionDays} days since last cigar session`,
+    whatToExpect: cigar.strength || cigar.body || cigar.wrapper || 'Cigar session',
+    scoreData,
+  }));
+}
+
 // ─── Main entry point ─────────────────────────────────────────────────────────
 
 export function buildSessionPlan(context = {}, activeModules = {}, targetModule = 'any') {
   const pipeActive    = activeModules.pipekeeper    !== false;
   const whiskeyActive = activeModules.whiskeykeeper !== false;
+  const cigarActive   = activeModules.cigarkeeper   !== false;
   const target = String(targetModule || 'any').toLowerCase();
   const results = [];
 
@@ -174,6 +242,9 @@ export function buildSessionPlan(context = {}, activeModules = {}, targetModule 
   }
   if (pipeActive && (target === 'any' || target === 'pipe' || target === 'tobacco' || target === 'blend')) {
     results.push(...planPipeSession(context));
+  }
+  if (cigarActive && (target === 'any' || target === 'cigar')) {
+    results.push(...planCigarSession(context));
   }
 
   const filtered = target === 'any'

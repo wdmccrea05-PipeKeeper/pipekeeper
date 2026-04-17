@@ -368,6 +368,24 @@ export default function CollectionStoryCard() {
           />
         ) : null}
 
+        {cigarVisible && h.topRatedCigar ? (
+          <StoryCard
+            label="Top Rated Cigar"
+            title={h.topRatedCigar.name}
+            item={h.topRatedCigar}
+            navigate={navigate}
+          />
+        ) : null}
+
+        {cigarVisible && h.highestValueCigar ? (
+          <StoryCard
+            label="Highest Value Cigar"
+            title={h.highestValueCigar.name}
+            item={h.highestValueCigar}
+            navigate={navigate}
+          />
+        ) : null}
+
         {(() => {
           if (!h.mostValuableItem) return null;
           const rt = h.mostValuableItem.recordType;

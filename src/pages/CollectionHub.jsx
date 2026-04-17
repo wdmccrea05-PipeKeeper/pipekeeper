@@ -38,9 +38,10 @@ import {
   selectWhiskeyMetrics,
   getBottleUnitValue as getBottleValue,
 } from '@/lib/collection/whiskeySelectors';
-import { selectTotalSticks } from '@/lib/collection/cigarSelectors';
+import { selectTotalSticks, getCigarAvailableQuantity, getCigarUnitValue } from '@/lib/collection/cigarSelectors';
 import { selectCellarValue as calculateTobaccoCollectionValue } from '@/lib/collection/tobaccoSelectors';
 import { selectPipeCollectionValue } from '@/lib/collection/pipeSelectors';
+import { buildHubHighlightCandidates } from '@/components/hub/highlightSelection';
 
 
 const safe = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
@@ -426,6 +427,62 @@ export default function CollectionHub() {
           .find((c) => c.__count > 0) || null
       : null;
 
+    const favoriteCigar = cigarOpenable
+      ? [...cigars]
+          .filter((c) => c?.is_favorite && getCigarAvailableQuantity(c) > 0)
+          .sort((a, b) => (Number(b.rating || 0) - Number(a.rating || 0)) || ((logsByCigar[b.id] || 0) - (logsByCigar[a.id] || 0)))[0] || null
+      : null;
+
+    const topRatedCigar = cigarOpenable
+      ? [...cigars]
+          .filter((c) => Number(c?.rating || 0) >= 4 && getCigarAvailableQuantity(c) > 0)
+          .sort((a, b) => (Number(b.rating || 0) - Number(a.rating || 0)) || ((logsByCigar[b.id] || 0) - (logsByCigar[a.id] || 0)))[0] || null
+      : null;
+
+    const highestValueCigar = cigarOpenable
+      ? [...cigars]
+          .map((c) => ({ ...c, __totalValue: getCigarUnitValue(c) * getCigarAvailableQuantity(c) }))
+          .sort((a, b) => Number(b.__totalValue || 0) - Number(a.__totalValue || 0))
+          .find((c) => Number(c.__totalValue || 0) > 0) || null
+      : null;
+
+    const humidorFavoriteCigar = cigarOpenable
+      ? [...cigars]
+          .filter((c) => c?.humidor_id && getCigarAvailableQuantity(c) > 0)
+          .map((c) => ({ ...c, __usage: logsByCigar[c.id] || 0 }))
+          .sort((a, b) => {
+            const scoreA = (a.is_favorite ? 1000 : 0) + Number(a.rating || 0) * 100 + Number(a.__usage || 0) * 10;
+            const scoreB = (b.is_favorite ? 1000 : 0) + Number(b.rating || 0) * 100 + Number(b.__usage || 0) * 10;
+            return scoreB - scoreA;
+          })[0] || null
+      : null;
+
+    const restockPriorityCigar = cigarOpenable
+      ? [...cigars]
+          .filter((c) => c?.restock_flag && getCigarAvailableQuantity(c) > 0 && getCigarAvailableQuantity(c) <= 2)
+          .sort((a, b) => {
+            const qtyA = getCigarAvailableQuantity(a);
+            const qtyB = getCigarAvailableQuantity(b);
+            if (qtyA !== qtyB) return qtyA - qtyB;
+            return (logsByCigar[b.id] || 0) - (logsByCigar[a.id] || 0);
+          })[0] || null
+      : null;
+
+    const cigarCrownJewel = cigarOpenable
+      ? [...cigars]
+          .filter((c) => getCigarAvailableQuantity(c) > 0)
+          .map((c) => {
+            const totalValue = getCigarUnitValue(c) * getCigarAvailableQuantity(c);
+            const score =
+              totalValue * 0.6 +
+              Number(c.rating || 0) * 25 +
+              (c.is_favorite ? 30 : 0) +
+              (logsByCigar[c.id] || 0) * 2;
+            return { ...c, __totalValue: totalValue, __crownScore: score };
+          })
+          .sort((a, b) => Number(b.__crownScore || 0) - Number(a.__crownScore || 0))[0] || null
+      : null;
+
     const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, cigarSessions, { limit: 5 });
 
     // Cigar sticks: canonical selector (single-stick equivalents)
@@ -451,6 +508,12 @@ export default function CollectionHub() {
       mostValuablePipe,
       mostValuableBottle,
       mostSmokedCigar,
+      favoriteCigar,
+      topRatedCigar,
+      highestValueCigar,
+      humidorFavoriteCigar,
+      restockPriorityCigar,
+      cigarCrownJewel,
       recentActivity,
       totalCigarSticks,
       totalBlendOz,
@@ -481,12 +544,18 @@ export default function CollectionHub() {
     { label: t('hub.sessionsLoggedLabel'), value: isLoading ? '—' : cigarSessions.length },
   ];
 
-  const hasHighlights =
-    metrics.mostSmokedPipe ||
-    metrics.favoriteBlend ||
-    metrics.mostValuablePipe ||
-    metrics.mostValuableBottle ||
-    metrics.mostSmokedCigar;
+  const topHighlights = useMemo(() => buildHubHighlightCandidates({
+    pipekeeperOpenable,
+    whiskeyOpenable,
+    cigarOpenable,
+    metrics,
+    t,
+    formatFromBase,
+    getPipeValue,
+    getBottleValue,
+  }), [pipekeeperOpenable, whiskeyOpenable, cigarOpenable, metrics, t, formatFromBase]);
+
+  const hasHighlights = topHighlights.length > 0;
 
   const handleOpenCombinedSessionFlow = () => {
     setShowLogSelector(false);
@@ -700,65 +769,18 @@ export default function CollectionHub() {
         <section className="space-y-4">
           <SectionTitle>{t('hub.topHighlights')}</SectionTitle>
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-            {pipekeeperOpenable && metrics.mostSmokedPipe ? (
+            {topHighlights.map((card) => (
               <CatalogPlate
-                title={t('hub.mostSmokedPipe')}
-                value={metrics.mostSmokedPipe.name}
-                subtitle={`${metrics.mostSmokedPipe.__count || 0} ${t('hub.sessions')}`}
-                heroImage={metrics.mostSmokedPipe.photos?.[0]}
-                bgImage={metrics.mostSmokedPipe.photos?.[0]}
-                accent="#C87941"
-                onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostSmokedPipe.id)}`)}
+                key={card.id}
+                title={card.title}
+                value={card.value}
+                subtitle={card.subtitle}
+                heroImage={card.heroImage}
+                bgImage={card.bgImage}
+                accent={card.accent}
+                onClick={() => navigate(card.route)}
               />
-            ) : null}
-
-            {pipekeeperOpenable && metrics.favoriteBlend ? (
-              <CatalogPlate
-                title={t('hub.favoriteBlend')}
-                value={metrics.favoriteBlend.name}
-                subtitle={`${metrics.favoriteBlend.__count || 0} ${t('hub.sessions')}`}
-                heroImage={metrics.favoriteBlend.logo || metrics.favoriteBlend.photo}
-                bgImage={metrics.favoriteBlend.logo || metrics.favoriteBlend.photo}
-                accent="#5A7C5A"
-                onClick={() => navigate(`/TobaccoDetail?id=${encodeURIComponent(metrics.favoriteBlend.id)}`)}
-              />
-            ) : null}
-
-            {pipekeeperOpenable && metrics.mostValuablePipe ? (
-              <CatalogPlate
-                title={t('hub.mostValuablePipe')}
-                value={metrics.mostValuablePipe.name}
-                subtitle={formatFromBase(getPipeValue(metrics.mostValuablePipe))}
-                heroImage={metrics.mostValuablePipe.photos?.[0]}
-                bgImage={metrics.mostValuablePipe.photos?.[0]}
-                accent="#B4824B"
-                onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(metrics.mostValuablePipe.id)}`)}
-              />
-            ) : null}
-
-            {whiskeyOpenable && metrics.mostValuableBottle ? (
-              <CatalogPlate
-                title={t('hub.topWhiskey')}
-                value={metrics.mostValuableBottle.name}
-                subtitle={formatFromBase(getBottleValue(metrics.mostValuableBottle))}
-                heroImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
-                bgImage={metrics.mostValuableBottle.photo || metrics.mostValuableBottle.photos?.[0]}
-                accent="#B66565"
-                onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(metrics.mostValuableBottle.id)}`)}
-              />
-            ) : null}
-
-            {cigarOpenable && metrics.mostSmokedCigar ? (
-              <CatalogPlate
-                title={t('hub.mostSmokedCigar')}
-                value={metrics.mostSmokedCigar.name}
-                subtitle={`${metrics.mostSmokedCigar.__count || 0} ${t('hub.sessions')}`}
-                heroImage={metrics.mostSmokedCigar.photos?.[0]}
-                bgImage={metrics.mostSmokedCigar.photos?.[0]}
-                accent="#8C6B3F"
-                onClick={() => navigate(`/CigarDetail?id=${encodeURIComponent(metrics.mostSmokedCigar.id)}`)}
-              />
-            ) : null}
+            ))}
           </div>
         </section>
       ) : null}

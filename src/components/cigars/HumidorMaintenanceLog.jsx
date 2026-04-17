@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Droplets, Thermometer, PackagePlus, RefreshCcw, Sparkles, Sun, ClipboardList, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Droplets, Thermometer, PackagePlus, RefreshCcw, Sparkles, Sun, ClipboardList, Plus, Trash2, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import {
@@ -46,6 +46,36 @@ const EMPTY_FORM = {
   aid_brand: '',
   aid_specification: '',
   notes: '',
+};
+
+const QUICK_MAINTENANCE_PRESETS = {
+  replaced_boveda: {
+    event_type: 'aid_replaced',
+    aid_type: 'boveda',
+    aid_brand: 'Boveda',
+    notes: 'Replaced Boveda pack',
+  },
+  recharged_beads: {
+    event_type: 'aid_refilled',
+    aid_type: 'beads',
+    notes: 'Recharged humidity beads',
+  },
+  rotated_cigars: {
+    event_type: 'other',
+    notes: 'Rotated cigars for even aging',
+  },
+  inspected_humidor: {
+    event_type: 'humidity_check',
+    notes: 'Inspected humidor conditions',
+  },
+  cleaned_humidor: {
+    event_type: 'humidor_cleaned',
+    notes: 'Cleaned humidor interior',
+  },
+  other_note: {
+    event_type: 'other',
+    notes: '',
+  },
 };
 
 const inputStyle = {
@@ -112,7 +142,7 @@ const ReadingTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryLogged }) {
+export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryLogged, openComposerNonce }) {
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
@@ -203,10 +233,25 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
     createMutation.mutate(form);
   };
 
-  const openDialog = (defaultType = 'humidity_check') => {
-    setForm({ ...EMPTY_FORM, event_type: defaultType });
+  const openDialog = (defaultType = 'humidity_check', overrides = {}) => {
+    setForm({
+      ...EMPTY_FORM,
+      event_type: defaultType,
+      ...overrides,
+      date: overrides.date || EMPTY_FORM.date,
+    });
     setShowDialog(true);
   };
+
+  useEffect(() => {
+    const nonce = Number(openComposerNonce);
+    if (!Number.isFinite(nonce) || nonce <= 0) return;
+    setForm({
+      ...EMPTY_FORM,
+      event_type: 'humidity_check',
+    });
+    setShowDialog(true);
+  }, [openComposerNonce]);
 
   const displayLogs = showAll ? logs : logs.slice(0, 3);
   const readingTrendData = [...logs]
@@ -225,30 +270,57 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
       <div className="flex gap-2 flex-wrap">
         <button
           type="button"
-          onClick={() => openDialog('humidity_check')}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
-          style={{ background: 'rgba(68,120,200,0.18)', border: '1px solid rgba(68,120,200,0.35)', color: '#8BB4E8' }}
-        >
-          <Droplets className="w-3.5 h-3.5" />
-          Log Check
-        </button>
-        <button
-          type="button"
-          onClick={() => openDialog('aid_replaced')}
+          onClick={() => openDialog('aid_replaced', QUICK_MAINTENANCE_PRESETS.replaced_boveda)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
           style={{ background: 'rgba(180,140,75,0.18)', border: '1px solid rgba(180,140,75,0.35)', color: '#D4A574' }}
         >
           <PackagePlus className="w-3.5 h-3.5" />
-          Log Replacement
+          Replaced Boveda
         </button>
         <button
           type="button"
-          onClick={() => openDialog('other')}
+          onClick={() => openDialog('aid_refilled', QUICK_MAINTENANCE_PRESETS.recharged_beads)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+          style={{ background: 'rgba(110,150,210,0.16)', border: '1px solid rgba(110,150,210,0.35)', color: '#9FC4EE' }}
+        >
+          <RefreshCcw className="w-3.5 h-3.5" />
+          Recharged Beads
+        </button>
+        <button
+          type="button"
+          onClick={() => openDialog('other', QUICK_MAINTENANCE_PRESETS.rotated_cigars)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+          style={{ background: 'rgba(112,183,131,0.15)', border: '1px solid rgba(112,183,131,0.35)', color: '#83D49E' }}
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          Rotated Cigars
+        </button>
+        <button
+          type="button"
+          onClick={() => openDialog('humidity_check', QUICK_MAINTENANCE_PRESETS.inspected_humidor)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+          style={{ background: 'rgba(68,120,200,0.18)', border: '1px solid rgba(68,120,200,0.35)', color: '#8BB4E8' }}
+        >
+          <Droplets className="w-3.5 h-3.5" />
+          Inspected Humidor
+        </button>
+        <button
+          type="button"
+          onClick={() => openDialog('humidor_cleaned', QUICK_MAINTENANCE_PRESETS.cleaned_humidor)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', color: 'rgba(224,216,200,0.8)' }}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          Cleaned Humidor
+        </button>
+        <button
+          type="button"
+          onClick={() => openDialog('other', QUICK_MAINTENANCE_PRESETS.other_note)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(224,216,200,0.7)' }}
         >
           <Plus className="w-3.5 h-3.5" />
-          Log Other
+          Other Note
         </button>
       </div>
 
