@@ -29,23 +29,15 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("@/components/utils/moduleReleaseState", () => ({
-  isModuleLaunched: (moduleKey) => moduleKey === "pipekeeper" || moduleKey === "whiskeykeeper",
-  isModuleInternal: (moduleKey) => moduleKey === "cigarkeeper",
-  isInternalModuleTester: (user) => ["admin", "owner", "superadmin"].includes(String(user?.role || "").toLowerCase()) || user?.internal_tester === true,
-  isModuleBlocked: (moduleKey) => moduleKey === "winekeeper",
-  canAccessInternalModuleForTesting: (moduleKey, user) =>
-    moduleKey === "cigarkeeper" &&
-    (
-      ["admin", "owner", "superadmin"].includes(String(user?.role || "").toLowerCase()) ||
-      user?.internal_tester === true ||
-      user?.cigarkeeper_paid === true ||
-      String(user?.paid_modules_csv || "")
-        .split(",")
-        .map((value) => value.trim().toLowerCase())
-        .includes("cigarkeeper")
-    ),
-}));
+vi.mock("@/components/utils/moduleReleaseState", async () => {
+  const actual = await vi.importActual("@/components/utils/moduleReleaseState");
+  return {
+    ...actual,
+    isModuleLaunched: (moduleKey) => moduleKey === "pipekeeper" || moduleKey === "whiskeykeeper",
+    isModuleInternal: (moduleKey) => moduleKey === "cigarkeeper",
+    isModuleBlocked: (moduleKey) => moduleKey === "winekeeper",
+  };
+});
 
 function renderWithQueryClient(ui) {
   const queryClient = new QueryClient({

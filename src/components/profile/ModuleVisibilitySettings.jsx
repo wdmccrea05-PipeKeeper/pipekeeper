@@ -192,7 +192,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
           const state = moduleStates[mod.id];
           const enabled = state?.enabled === true;
           // Allow toggle for launched modules that are accessible (already enabled or entitlements met)
-          const canToggle = !!(mod.allowToggle && state?.canToggle && state?.accessible);
+          const canToggle = !!(state?.canToggle && state?.accessible);
           const isSavingThis = saving === mod.id;
 
           return (
