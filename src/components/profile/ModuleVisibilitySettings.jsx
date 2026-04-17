@@ -13,6 +13,7 @@ import {
   isModuleInternal,
   isInternalModuleTester,
   isModuleBlocked,
+  canAccessInternalModuleForTesting,
 } from "@/components/utils/moduleReleaseState";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -43,6 +44,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
 
   const effectiveUser = passedUser || user;
   const isTester = isInternalModuleTester(effectiveUser);
+  const canAccessCigarForTesting = canAccessInternalModuleForTesting("cigarkeeper", effectiveUser);
   const pipekeeperPaid = !!effectiveUser?.pipekeeper_paid;
   const whiskeykeeperPaid = !!effectiveUser?.whiskeykeeper_paid;
   const cigarkeeperPaid = !!effectiveUser?.cigarkeeper_paid;
@@ -99,8 +101,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
       launched: isModuleLaunched("cigarkeeper", effectiveUser),
       internalModule: isModuleInternal("cigarkeeper", effectiveUser),
       blocked: isModuleBlocked("cigarkeeper", effectiveUser),
-      allowToggle: isTester || isModuleLaunched("cigarkeeper", effectiveUser),
-      hidden: !isTester && !isModuleLaunched("cigarkeeper", effectiveUser),
+      allowToggle: canAccessCigarForTesting || isModuleLaunched("cigarkeeper", effectiveUser),
+      hidden: false,
     },
   ].filter((mod) => !mod.hidden);
 
@@ -190,9 +192,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
           const state = moduleStates[mod.id];
           const enabled = state?.enabled === true;
           // Allow toggle for launched modules that are accessible (already enabled or entitlements met)
-          const canToggle = (mod.id === 'pipekeeper' || mod.id === 'whiskeykeeper' || mod.id === 'cigarkeeper')
-            ? (mod.launched && state?.accessible)
-            : (mod.allowToggle && state?.canToggle);
+          const canToggle = !!(mod.allowToggle && state?.canToggle && state?.accessible);
           const isSavingThis = saving === mod.id;
 
           return (
@@ -214,7 +214,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-stone-100 text-sm">{mod.label}</span>
 
-                    {mod.internalModule && isTester ? (
+                    {mod.internalModule && canAccessInternalModuleForTesting(mod.id, effectiveUser) ? (
                       <Badge className="text-[10px] bg-purple-100 text-purple-700 border-0 px-1.5 py-0">
                         {t("profile.internalPreview", "Internal Preview")}
                       </Badge>
@@ -240,7 +240,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0">
-                {mod.launched && paidModuleIds.includes(mod.id) ? (
+                {canToggle && paidModuleIds.includes(mod.id) ? (
                   <>
                     <Switch
                       checked={enabled}
