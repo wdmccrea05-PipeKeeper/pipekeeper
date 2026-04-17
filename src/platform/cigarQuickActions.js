@@ -32,8 +32,8 @@ export function getCigarQuickActionPatch(cigar, action) {
   if (normalizedAction === 'smoked_one') {
     const packageSize = getPackageSize(cigar);
     const quantity = toNumber(cigar.quantity, 0);
-    const hasSinglesEquivalent = cigar.singles_equivalent !== null && cigar.singles_equivalent !== undefined && cigar.singles_equivalent !== '';
-    const currentSingles = hasSinglesEquivalent
+    const hasValidSinglesEquivalent = typeof cigar.singles_equivalent === 'number' && Number.isFinite(cigar.singles_equivalent);
+    const currentSingles = hasValidSinglesEquivalent
       ? toNumber(cigar.singles_equivalent, 0)
       : (cigar.unit_type === 'single' ? quantity : quantity * packageSize);
     const patch = { singles_equivalent: Math.max(0, currentSingles - 1) };

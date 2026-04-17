@@ -39,6 +39,14 @@ import {
 import { getAvailableQuantity } from '@/platform/cigarInventory';
 
 const TABS = ['collection', 'humidors', 'wishlist', 'shopping', 'restock'];
+const RECENTLY_SMOKED_DAYS = 90;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+// Cap per-list session fetch to keep collection filtering responsive on large accounts.
+const MAX_CIGAR_LIST_SESSIONS = 1000;
+
+function getRecentSmokingCutoff() {
+  return Date.now() - (MS_PER_DAY * RECENTLY_SMOKED_DAYS);
+}
 
 function sortCigars(cigars, sortBy, { lastSmokedByCigarId = {} } = {}) {
   return [...cigars].sort((a, b) => {
@@ -201,7 +209,7 @@ function CigarsInner() {
       const result = await base44.entities.CigarSession.filter(
         { created_by: user?.email },
         '-date',
-        2000
+        MAX_CIGAR_LIST_SESSIONS
       ).catch(() => []);
       return Array.isArray(result) ? result : [];
     },
@@ -259,7 +267,7 @@ function CigarsInner() {
       });
     }
     if (filterRecentlySmokedOnly) {
-      const recentCutoff = Date.now() - (1000 * 60 * 60 * 24 * 90);
+      const recentCutoff = getRecentSmokingCutoff();
       list = list.filter((c) => (lastSmokedByCigarId[c.id] || 0) >= recentCutoff);
     }
 
