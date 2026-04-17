@@ -528,7 +528,7 @@ export default function ProfilePage() {
                 <User className="w-6 h-6" style={{ color: '#D4A574' }} />
               </div>
               <div className="flex-1">
-                <CardTitle className="text-2xl" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{t("profile.smokingProfile")}</CardTitle>
+                <CardTitle className="text-2xl" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>Collection Profile</CardTitle>
                 <CardDescription style={{ color: 'rgba(224,216,200,0.6)' }}>
                   {t("profile.personalizeAIRecommendations")}
                 </CardDescription>
