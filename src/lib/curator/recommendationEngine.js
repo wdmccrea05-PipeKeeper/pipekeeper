@@ -1523,9 +1523,9 @@ export function generateRecommendations(context = {}) {
       blends:             context.blends || [],
       bottles:            context.bottles || [],
       cigars:             context.cigars || [],
+      cigarSessions:      context.cigarSessions || [],
       wantListItems:      context.wantListItems || [],
       acquisitionItems:   context.acquisitionItems || [],
-      cigarModuleActive:  context.cigarModuleActive || false,
       activeModules:      context.activeModules || {},
     }),
     ...generateSpecializationRecommendations(

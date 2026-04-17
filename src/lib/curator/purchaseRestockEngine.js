@@ -14,6 +14,7 @@ import {
 const LOW_STOCK_OZ = 2.0;
 const CRITICAL_STOCK_OZ = 0.5;
 const LOW_BOTTLE_POURS = 3;
+const LOW_CIGAR_STICKS = 2;
 const MAX_ITEMS_PER_REC = 30;
 
 function totalOz(blend) {
@@ -46,6 +47,16 @@ function isBottleDepleted(bottle) {
   const percent = Number(bottle.fill_level_percent ?? bottle.fill_percent ?? bottle.fill_level);
   if (!Number.isNaN(percent)) return percent === 0;
   return false;
+}
+
+function getCigarSticks(cigar) {
+  return Math.max(0, Number(cigar?.singles_equivalent ?? cigar?.quantity ?? 0) || 0);
+}
+
+function isCigarFavorite(cigar, cigarSessions = []) {
+  const rating = Number(cigar?.rating || 0);
+  const sessions = cigarSessions.filter((s) => s?.cigar_id === cigar.id && !s?.is_out_of_collection).length;
+  return !!cigar?.is_favorite || rating >= 4 || sessions >= 3;
 }
 
 
@@ -164,6 +175,55 @@ function analyzeBottleRestock(bottles = []) {
   return results;
 }
 
+function analyzeCigarRestock(cigars = [], cigarSessions = []) {
+  const eligible = cigars
+    .filter((c) => c && c.ai_excluded !== true && c.not_for_me !== true)
+    .slice(0, MAX_ITEMS_PER_REC);
+  const lowStock = eligible.filter((c) => {
+    const qty = getCigarSticks(c);
+    return qty > 0 && qty <= LOW_CIGAR_STICKS && isCigarFavorite(c, cigarSessions);
+  });
+  const depleted = eligible.filter((c) => getCigarSticks(c) <= 0 && isCigarFavorite(c, cigarSessions));
+
+  const results = [];
+
+  if (lowStock.length) {
+    results.push(createRecommendation({
+      category: CATEGORY.PURCHASE,
+      goal: 'low_stock_cigars',
+      actionType: ACTION_TYPE.SHOPPING_LIST_ACTION,
+      title: 'Low Stock Favorite Cigars',
+      summary: lowStock.length === 1 ? `${lowStock[0].name} is down to ${getCigarSticks(lowStock[0])} stick${getCigarSticks(lowStock[0]) === 1 ? '' : 's'}.` : `${lowStock.length} favorite cigars are running low.`,
+      whyItMatters: 'Restocking cigar favorites protects your humidor rotation and keeps preferred profiles available.',
+      moduleKey: MODULE_KEY.CIGAR,
+      ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority: PRIORITY.HIGH,
+      confidence: 'high',
+      items: lowStock.map((c) => buildItem(c, { recordType: 'cigar', itemType: 'cigar', shoppingType: 'restock', quantity: getCigarSticks(c) })),
+      actionPayload: { shoppingType: 'restock', itemType: 'cigar' },
+    }));
+  }
+
+  if (depleted.length) {
+    results.push(createRecommendation({
+      category: CATEGORY.PURCHASE,
+      goal: 'depleted_cigars',
+      actionType: ACTION_TYPE.SHOPPING_LIST_ACTION,
+      title: 'Depleted Favorite Cigars',
+      summary: depleted.length === 1 ? `${depleted[0].name} is fully depleted.` : `${depleted.length} favorite cigars are fully depleted.`,
+      whyItMatters: 'Depleted favorites are high-confidence restock opportunities for your next humidor refresh.',
+      moduleKey: MODULE_KEY.CIGAR,
+      ownershipContext: OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority: PRIORITY.HIGH,
+      confidence: 'high',
+      items: depleted.map((c) => buildItem(c, { recordType: 'cigar', itemType: 'cigar', shoppingType: 'restock', quantity: 0 })),
+      actionPayload: { shoppingType: 'restock', itemType: 'cigar' },
+    }));
+  }
+
+  return results;
+}
+
 function analyzeTrackedItems(acquisitionItems = []) {
   const active = acquisitionItems
     .filter(isActiveAcquisitionItem)
@@ -238,7 +298,9 @@ export function generatePurchaseRestockRecommendations(context = {}) {
   const {
     blends = [],
     bottles = [],
+    cigars = [],
     smokingLogs = [],
+    cigarSessions = [],
     wantListItems = [],
     acquisitionItems = [],
     activeModules = {},
@@ -246,6 +308,7 @@ export function generatePurchaseRestockRecommendations(context = {}) {
 
   const pipeActive    = activeModules.pipekeeper    !== false;
   const whiskeyActive = activeModules.whiskeykeeper !== false;
+  const cigarActive   = activeModules.cigarkeeper   !== false;
 
   const trackedItems = acquisitionItems.length ? acquisitionItems : wantListItems;
 
@@ -253,6 +316,7 @@ export function generatePurchaseRestockRecommendations(context = {}) {
     ...(pipeActive    ? analyzeLowStockBlends(blends, smokingLogs) : []),
     ...(pipeActive    ? analyzeDepletedBlends(blends, smokingLogs) : []),
     ...(whiskeyActive ? analyzeBottleRestock(bottles)              : []),
+    ...(cigarActive   ? analyzeCigarRestock(cigars, cigarSessions) : []),
     ...analyzeTrackedItems(trackedItems),
   ];
 }

@@ -142,6 +142,40 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     });
   }
 
+  // 4d. Top rated cigar
+  if (hasCigar && h.topRatedCigar) {
+    const record = h.topRatedCigar._record || null;
+    const photo = record?.photos?.[0] || record?.photo || null;
+    cards.push({
+      title: h.topRatedCigar.name,
+      value: h.topRatedCigar.name,
+      sub: `Top rated cigar${h.topRatedCigar.rating ? ` · ${h.topRatedCigar.rating}★` : ''}`,
+      accent: '#8C6B3F',
+      icon: Star,
+      heroImage: photo,
+      bgImage: photo,
+      silhouetteType: 'pipe',
+      label: 'Top Rated Cigar',
+    });
+  }
+
+  // 4e. Highest value cigar
+  if (hasCigar && h.highestValueCigar) {
+    const record = h.highestValueCigar._record || null;
+    const photo = record?.photos?.[0] || record?.photo || null;
+    cards.push({
+      title: h.highestValueCigar.name,
+      value: h.highestValueCigar.name,
+      sub: h.highestValueCigar.value ? `Valued at ${fmt(h.highestValueCigar.value)}` : 'Highest value cigar',
+      accent: '#A0784A',
+      icon: Award,
+      heroImage: photo,
+      bgImage: photo,
+      silhouetteType: 'pipe',
+      label: 'Cigar Crown Jewel',
+    });
+  }
+
   // 5. Crown jewel (most valuable item)
   if (h.mostValuableItem) {
     const record = h.mostValuableItem._record || null;
@@ -231,7 +265,7 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     const expLabel = isCombined ? 'Experiences Logged' : hasPipe ? 'Smoking Sessions' : hasCigar ? 'Cigar Sessions' : 'Tastings Logged';
     cards.push({
       title: expLabel,
-      value: sessions + tastings,
+      value: sessions + tastings + cigarSessions,
       sub: desc,
       accent: '#8B5CF6',
       icon: Flame,
