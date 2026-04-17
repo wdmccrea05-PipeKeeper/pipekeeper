@@ -16,9 +16,12 @@
  */
 
 import { KEEPER_MODULES } from '@/components/utils/moduleRegistry';
+import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
 
 // Derive launched module IDs from the registry (modules where enabled===true)
-const LAUNCHED_MODULES = KEEPER_MODULES.filter(m => m.enabled).map(m => m.moduleKey);
+const LAUNCHED_MODULES = KEEPER_MODULES
+  .filter((m) => m.enabled && isModuleLaunched(m.moduleKey))
+  .map((m) => m.moduleKey);
 
 // ─── A. Module EXISTS ────────────────────────────────────────────────────────
 
@@ -27,7 +30,7 @@ const LAUNCHED_MODULES = KEEPER_MODULES.filter(m => m.enabled).map(m => m.module
  */
 export function moduleExists(moduleId) {
   const m = KEEPER_MODULES.find(k => k.moduleKey === moduleId);
-  return !!m?.enabled; // enabled=true means platform-launched
+  return !!m?.enabled && isModuleLaunched(moduleId);
 }
 
 /**

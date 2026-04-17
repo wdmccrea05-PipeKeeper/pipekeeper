@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import PipeIcon from '@/components/icons/PipeIcon';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
+import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
 
 // ─── Module key constants ─────────────────────────────────────────────────────
 export const MODULES = {
@@ -165,7 +166,9 @@ export function getAllModuleConfigs() {
 
 /** Returns only platform-launched (active) module keys. */
 export function getActiveModules() {
-  return KEEPER_MODULES.filter(m => m.status === 'active').map(m => m.key);
+  return KEEPER_MODULES
+    .filter((m) => m.status === 'active' && isModuleLaunched(m.key))
+    .map((m) => m.key);
 }
 
 export function getModuleByKey(key) {

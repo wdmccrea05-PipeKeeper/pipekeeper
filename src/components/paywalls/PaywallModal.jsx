@@ -29,6 +29,7 @@ const moduleLabels = {
 };
 
 const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+const OFFER_MULTI_MODULE_BUNDLES = String(import.meta.env.VITE_ENABLE_MULTI_BUNDLE_OFFERS || '').toLowerCase() === 'true';
 
 function launchedModules() {
   return ALL_MODULES.filter((m) => isModuleLaunched(m));
@@ -36,8 +37,8 @@ function launchedModules() {
 
 function getVisibleOfferConfig(lockedModule) {
   const launched = launchedModules();
-  const canOfferThree = launched.length >= 3;
-  const canOfferFour = launched.length >= 4;
+  const canOfferThree = OFFER_MULTI_MODULE_BUNDLES && launched.length >= 3;
+  const canOfferFour = OFFER_MULTI_MODULE_BUNDLES && launched.length >= 4;
   const moduleIsLaunchable = lockedModule ? isModuleLaunched(lockedModule) : true;
 
   return {
@@ -328,8 +329,8 @@ export default function PaywallModal({
   const getHeader = () => {
     if (!offerConfig.moduleIsLaunchable) {
       return {
-        headline: 'PipeKeeper Pro',
-        subtext: 'This release currently unlocks PipeKeeper on the CollectionKeeper platform.',
+        headline: 'Module Not Available',
+        subtext: 'This module is not publicly available yet.',
       };
     }
 
@@ -349,8 +350,8 @@ export default function PaywallModal({
         };
       case 'multi':
         return {
-          headline: 'Unlock PipeKeeper',
-          subtext: 'This production release is focused on PipeKeeper while other modules remain hidden.',
+          headline: 'Unlock CollectionKeeper Pro',
+          subtext: 'Choose the plan that best fits your active modules.',
         };
       case 'expansion':
         return {
@@ -358,7 +359,7 @@ export default function PaywallModal({
           subtext: `You're currently tracking ${currentModules.length} keeper${currentModules.length !== 1 ? 's' : ''}.`,
         };
       default:
-        return { headline: 'Unlock PipeKeeper', subtext: '' };
+        return { headline: 'Unlock CollectionKeeper Pro', subtext: '' };
     }
   };
 

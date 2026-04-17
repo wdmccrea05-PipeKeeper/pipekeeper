@@ -3,6 +3,7 @@
  * Single source of truth for Stripe price IDs and plan routing
  * Fails loudly on missing env vars or invalid plans
  */
+import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
 
 // PlanType: 'single' | 'three_bundle' | 'four_bundle' | 'founders'
 // BillingPeriod: 'monthly' | 'annual'
@@ -92,7 +93,7 @@ export function buildStripeConfig() {
       isAvailable: !!import.meta.env.VITE_STRIPE_CIGARKEEPER_ANNUAL,
       unavailableReason: import.meta.env.VITE_STRIPE_CIGARKEEPER_ANNUAL ? undefined : 'VITE_STRIPE_CIGARKEEPER_ANNUAL not configured',
     },
-    winekeeper_pro_monthly: {
+      winekeeper_pro_monthly: {
       planKey: 'winekeeper_pro_monthly',
       type: 'single',
       modules: ['winekeeper'],
@@ -100,10 +101,12 @@ export function buildStripeConfig() {
       priceId: import.meta.env.VITE_STRIPE_WINEKEEPER_MONTHLY || null,
       displayPrice: '$2.99',
       displayPeriod: '/month',
-      isAvailable: !!import.meta.env.VITE_STRIPE_WINEKEEPER_MONTHLY,
-      unavailableReason: import.meta.env.VITE_STRIPE_WINEKEEPER_MONTHLY ? undefined : 'VITE_STRIPE_WINEKEEPER_MONTHLY not configured',
+      isAvailable: false,
+      unavailableReason: !isModuleLaunched('winekeeper')
+        ? 'WineKeeper is not publicly launched'
+        : (import.meta.env.VITE_STRIPE_WINEKEEPER_MONTHLY ? undefined : 'VITE_STRIPE_WINEKEEPER_MONTHLY not configured'),
     },
-    winekeeper_pro_annual: {
+      winekeeper_pro_annual: {
       planKey: 'winekeeper_pro_annual',
       type: 'single',
       modules: ['winekeeper'],
@@ -111,8 +114,10 @@ export function buildStripeConfig() {
       priceId: import.meta.env.VITE_STRIPE_WINEKEEPER_ANNUAL || null,
       displayPrice: '$29.99',
       displayPeriod: '/year',
-      isAvailable: !!import.meta.env.VITE_STRIPE_WINEKEEPER_ANNUAL,
-      unavailableReason: import.meta.env.VITE_STRIPE_WINEKEEPER_ANNUAL ? undefined : 'VITE_STRIPE_WINEKEEPER_ANNUAL not configured',
+      isAvailable: false,
+      unavailableReason: !isModuleLaunched('winekeeper')
+        ? 'WineKeeper is not publicly launched'
+        : (import.meta.env.VITE_STRIPE_WINEKEEPER_ANNUAL ? undefined : 'VITE_STRIPE_WINEKEEPER_ANNUAL not configured'),
     },
 
     // Bundle plans
@@ -146,8 +151,10 @@ export function buildStripeConfig() {
       priceId: import.meta.env.VITE_STRIPE_FOUR_BUNDLE_MONTHLY || null,
       displayPrice: '$8.99',
       displayPeriod: '/month',
-      isAvailable: !!import.meta.env.VITE_STRIPE_FOUR_BUNDLE_MONTHLY,
-      unavailableReason: import.meta.env.VITE_STRIPE_FOUR_BUNDLE_MONTHLY ? undefined : 'VITE_STRIPE_FOUR_BUNDLE_MONTHLY not configured',
+      isAvailable: false,
+      unavailableReason: !isModuleLaunched('winekeeper')
+        ? '4-module bundle unavailable until WineKeeper is launched'
+        : (import.meta.env.VITE_STRIPE_FOUR_BUNDLE_MONTHLY ? undefined : 'VITE_STRIPE_FOUR_BUNDLE_MONTHLY not configured'),
     },
     four_module_bundle_annual: {
       planKey: 'four_module_bundle_annual',
@@ -157,8 +164,10 @@ export function buildStripeConfig() {
       priceId: import.meta.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL || null,
       displayPrice: '$89.99',
       displayPeriod: '/year',
-      isAvailable: !!import.meta.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL,
-      unavailableReason: import.meta.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL ? undefined : 'VITE_STRIPE_FOUR_BUNDLE_ANNUAL not configured',
+      isAvailable: false,
+      unavailableReason: !isModuleLaunched('winekeeper')
+        ? '4-module bundle unavailable until WineKeeper is launched'
+        : (import.meta.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL ? undefined : 'VITE_STRIPE_FOUR_BUNDLE_ANNUAL not configured'),
     },
     founders_bundle_monthly: {
       planKey: 'founders_bundle_monthly',

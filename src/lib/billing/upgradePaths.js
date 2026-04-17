@@ -6,7 +6,13 @@
  */
 
 import { SUBSCRIPTION_PLANS, getPreferredPlanKeyForModule } from './subscriptionPlans';
-import { isFreeUser } from './subscriptionState';
+import { getModuleReleaseState } from '@/components/utils/moduleReleaseState';
+
+const PUBLIC_BILLING_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+
+function isPubliclyLaunched(moduleKey) {
+  return getModuleReleaseState(moduleKey) === 'launched';
+}
 
 /**
  * Returns the most relevant current plan key for a module.
@@ -49,119 +55,68 @@ export function getAvailableUpgradeOptions(subscriptionState) {
   if (!subscriptionState) return [];
 
   const {
-    hasPipekeeperPro,
-    hasWhiskeykeeperPro,
     hasBundle,
-    activePlanKeys,
-    eligibleActions,
+    activePlanKeys = [],
+    eligibleActions = [],
+    moduleFlags = {},
   } = subscriptionState;
 
   // Bundle users: no upgrade options
   if (hasBundle) return [];
 
   const options = [];
+  const launchedModules = PUBLIC_BILLING_MODULES.filter((m) => isPubliclyLaunched(m));
+  const paidModules = launchedModules.filter((m) => moduleFlags[m]);
+  const hasFoundersEligibleCoverage = paidModules.includes('pipekeeper') || paidModules.includes('whiskeykeeper');
 
-  if (hasPipekeeperPro && !hasWhiskeykeeperPro) {
-    const currentPlanKey = pickCurrentPlanKey(activePlanKeys, 'pipekeeper');
-    const bundlePlanKey = pickBundlePlanKey(activePlanKeys);
-    const wkPlanKey = getPreferredPlanKeyForModule('whiskeykeeper');
-
-    if (eligibleActions.includes('upgrade_to_bundle')) {
-      const bundlePlan = SUBSCRIPTION_PLANS[bundlePlanKey];
-      options.push({
-        action: 'upgrade_to_bundle',
-        actionType: 'upgrade_existing',
-        label: 'Upgrade to Founders Bundle',
-        description:
-          'Replace your current PipeKeeper Pro subscription with bundle access to PipeKeeper + WhiskeyKeeper.',
-        targetPlanKey: bundlePlanKey,
-        currentPlanKey,
-        displayPrice: bundlePlan?.displayPrice,
-        displayTerm: bundlePlan?.term,
-      });
-    }
-
-    if (eligibleActions.includes('add_whiskeykeeper_module')) {
-      const wkPlan = SUBSCRIPTION_PLANS[wkPlanKey];
-      options.push({
-        action: 'add_other_module',
-        actionType: 'add_complementary_module',
-        label: 'Add WhiskeyKeeper Pro',
-        description:
-          'Keep PipeKeeper Pro and purchase WhiskeyKeeper Pro as an additional subscription.',
-        targetPlanKey: wkPlanKey,
-        currentPlanKey,
-        displayPrice: wkPlan?.displayPrice,
-        displayTerm: wkPlan?.term,
-      });
-    }
-
-    return options;
-  }
-
-  if (hasWhiskeykeeperPro && !hasPipekeeperPro) {
-    const currentPlanKey = pickCurrentPlanKey(activePlanKeys, 'whiskeykeeper');
-    const bundlePlanKey = pickBundlePlanKey(activePlanKeys);
-    const pkPlanKey = getPreferredPlanKeyForModule('pipekeeper');
-
-    if (eligibleActions.includes('upgrade_to_bundle')) {
-      const bundlePlan = SUBSCRIPTION_PLANS[bundlePlanKey];
-      options.push({
-        action: 'upgrade_to_bundle',
-        actionType: 'upgrade_existing',
-        label: 'Upgrade to Founders Bundle',
-        description:
-          'Replace your current WhiskeyKeeper Pro subscription with bundle access to PipeKeeper + WhiskeyKeeper.',
-        targetPlanKey: bundlePlanKey,
-        currentPlanKey,
-        displayPrice: bundlePlan?.displayPrice,
-        displayTerm: bundlePlan?.term,
-      });
-    }
-
-    if (eligibleActions.includes('add_pipekeeper_module')) {
-      const pkPlan = SUBSCRIPTION_PLANS[pkPlanKey];
-      options.push({
-        action: 'add_other_module',
-        actionType: 'add_complementary_module',
-        label: 'Add PipeKeeper Pro',
-        description:
-          'Keep WhiskeyKeeper Pro and purchase PipeKeeper Pro as an additional subscription.',
-        targetPlanKey: pkPlanKey,
-        currentPlanKey,
-        displayPrice: pkPlan?.displayPrice,
-        displayTerm: pkPlan?.term,
-      });
-    }
-
-    return options;
-  }
-
-  if (hasPipekeeperPro && hasWhiskeykeeperPro) {
-    // Has both separately — offer bundle consolidation
-    const currentPlanKey = activePlanKeys[0] || null;
+  if (hasFoundersEligibleCoverage && eligibleActions.includes('upgrade_to_bundle')) {
+    const currentPlanKey = pickCurrentPlanKey(activePlanKeys, paidModules[0] || 'pipekeeper');
     const bundlePlanKey = pickBundlePlanKey(activePlanKeys);
     const bundlePlan = SUBSCRIPTION_PLANS[bundlePlanKey];
 
-    if (eligibleActions.includes('upgrade_to_bundle')) {
-      options.push({
-        action: 'upgrade_to_bundle',
-        actionType: 'upgrade_existing',
-        label: 'Consolidate to Founders Bundle',
-        description:
-          'Combine your PipeKeeper Pro and WhiskeyKeeper Pro into one Founders Bundle subscription.',
-        targetPlanKey: bundlePlanKey,
-        currentPlanKey,
-        displayPrice: bundlePlan?.displayPrice,
-        displayTerm: bundlePlan?.term,
-      });
-    }
-
-    return options;
+    options.push({
+      action: 'upgrade_to_bundle',
+      actionType: 'upgrade_existing',
+      label: 'Upgrade to Founders Bundle',
+      description:
+        'Replace your current subscription with bundle access to PipeKeeper + WhiskeyKeeper.',
+      targetPlanKey: bundlePlanKey,
+      currentPlanKey,
+      displayPrice: bundlePlan?.displayPrice,
+      displayTerm: bundlePlan?.term,
+    });
   }
 
-  // Free user: return empty — the caller shows the standard plan picker
-  return [];
+  for (const moduleKey of launchedModules) {
+    if (!eligibleActions.includes(`add_${moduleKey}_module`)) continue;
+
+    const currentModuleForTerm = paidModules[0] || moduleKey;
+    const currentPlanKey = pickCurrentPlanKey(activePlanKeys, currentModuleForTerm);
+    const targetPlanKey = getPreferredPlanKeyForModule(moduleKey);
+    const targetPlan = SUBSCRIPTION_PLANS[targetPlanKey];
+    const labelPrefix =
+      moduleKey === 'pipekeeper'
+        ? 'PipeKeeper'
+        : moduleKey === 'whiskeykeeper'
+          ? 'WhiskeyKeeper'
+          : 'CigarKeeper';
+
+    options.push({
+      action:
+        moduleKey === 'pipekeeper' || moduleKey === 'whiskeykeeper'
+          ? 'add_other_module'
+          : `add_${moduleKey}_module`,
+      actionType: 'add_complementary_module',
+      label: `Add ${labelPrefix} Pro`,
+      description: `Keep your current subscription and add ${labelPrefix} Pro.`,
+      targetPlanKey,
+      currentPlanKey,
+      displayPrice: targetPlan?.displayPrice,
+      displayTerm: targetPlan?.term,
+    });
+  }
+
+  return options;
 }
 
 /**
@@ -170,8 +125,10 @@ export function getAvailableUpgradeOptions(subscriptionState) {
  */
 export function getNewPurchaseOptions() {
   const plans = [
-    SUBSCRIPTION_PLANS.pipekeeper_pro_annual,
-    SUBSCRIPTION_PLANS.whiskeykeeper_pro_annual,
+    ...PUBLIC_BILLING_MODULES
+      .filter((moduleKey) => isPubliclyLaunched(moduleKey))
+      .map((moduleKey) => SUBSCRIPTION_PLANS[getPreferredPlanKeyForModule(moduleKey)])
+      .filter(Boolean),
     SUBSCRIPTION_PLANS.founders_bundle_annual,
   ];
 
@@ -197,6 +154,9 @@ function getNewPurchaseDescription(plan) {
   }
   if (plan.module === 'whiskeykeeper') {
     return 'Unlock unlimited WhiskeyKeeper access with valuation and tasting tools.';
+  }
+  if (plan.module === 'cigarkeeper') {
+    return 'Unlock unlimited CigarKeeper access with humidor, inventory, and session tools.';
   }
   return '';
 }

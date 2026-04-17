@@ -99,8 +99,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
       launched: isModuleLaunched("cigarkeeper", effectiveUser),
       internalModule: isModuleInternal("cigarkeeper", effectiveUser),
       blocked: isModuleBlocked("cigarkeeper", effectiveUser),
-      allowToggle: isTester,
-      hidden: !isTester,
+      allowToggle: isTester || isModuleLaunched("cigarkeeper", effectiveUser),
+      hidden: !isTester && !isModuleLaunched("cigarkeeper", effectiveUser),
     },
   ].filter((mod) => !mod.hidden);
 
@@ -190,7 +190,9 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
           const state = moduleStates[mod.id];
           const enabled = state?.enabled === true;
           // Allow toggle for launched modules that are accessible (already enabled or entitlements met)
-          const canToggle = (mod.id === 'pipekeeper' || mod.id === 'whiskeykeeper') ? (mod.launched && state?.accessible) : (mod.allowToggle && state?.canToggle);
+          const canToggle = (mod.id === 'pipekeeper' || mod.id === 'whiskeykeeper' || mod.id === 'cigarkeeper')
+            ? (mod.launched && state?.accessible)
+            : (mod.allowToggle && state?.canToggle);
           const isSavingThis = saving === mod.id;
 
           return (

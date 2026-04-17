@@ -130,8 +130,8 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.cigarkeeper,
       accessible: accessible.has("cigarkeeper"),
       visible: accessible.has("cigarkeeper"),
-      canToggle: tester && accessible.has("cigarkeeper"),
-      testerOnly: true,
+      canToggle: launchedToggleable.has("cigarkeeper"),
+      testerOnly: isModuleInternal("cigarkeeper", user),
     },
   };
 }

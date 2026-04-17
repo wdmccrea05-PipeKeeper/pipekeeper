@@ -25,6 +25,7 @@ import { SUBSCRIPTION_PLANS } from "@/lib/billing/subscriptionPlans";
 import { getStripeConfig } from "@/components/subscription/stripeConfig";
 import { initiateCheckoutWithIntent } from "@/components/subscription/subscriptionHandler";
 import { syncAppleSubscriptionStatus } from "@/components/utils/appleSubscriptionSync";
+import { isModuleLaunched } from "@/components/utils/moduleReleaseState";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading, t }) {
   return (
@@ -167,11 +168,12 @@ export default function SubscriptionFull() {
 
   const availablePlans = useMemo(() => {
     const interval = selectedInterval === "annual" ? "annual" : "monthly";
+    const launchedSingleModules = ["pipekeeper", "whiskeykeeper", "cigarkeeper"].filter((moduleKey) =>
+      isModuleLaunched(moduleKey, user)
+    );
 
-    // Only show PipeKeeper Pro, WhiskeyKeeper Pro, and Founders Bundle
     const keyOrder = [
-      `pipekeeper_pro_${interval}`,
-      `whiskeykeeper_pro_${interval}`,
+      ...launchedSingleModules.map((moduleKey) => `${moduleKey}_pro_${interval}`),
       `founders_bundle_${interval}`,
     ];
 
@@ -183,13 +185,15 @@ export default function SubscriptionFull() {
         return { ...appPlan, ...plan, key };
       })
       .filter(Boolean);
-  }, [selectedInterval, stripeConfig]);
+  }, [selectedInterval, stripeConfig, user]);
 
   const planLabels = {
     pipekeeper_pro_monthly: { name: "PipeKeeper Pro", badge: null },
     pipekeeper_pro_annual: { name: "PipeKeeper Pro", badge: "Best Value" },
     whiskeykeeper_pro_monthly: { name: "WhiskeyKeeper Pro", badge: null },
     whiskeykeeper_pro_annual: { name: "WhiskeyKeeper Pro", badge: "Best Value" },
+    cigarkeeper_pro_monthly: { name: "CigarKeeper Pro", badge: null },
+    cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: "Best Value" },
     founders_bundle_monthly: { name: "Founders Bundle", badge: "Most Popular" },
     founders_bundle_annual: { name: "Founders Bundle", badge: "Best Value" },
   };
@@ -199,6 +203,8 @@ export default function SubscriptionFull() {
     pipekeeper_pro_annual: "Unlimited pipes & blends, AI pairings & identification",
     whiskeykeeper_pro_monthly: "Unlimited bottles, AI valuations & tastings",
     whiskeykeeper_pro_annual: "Unlimited bottles, AI valuations & tastings",
+    cigarkeeper_pro_monthly: "Unlimited cigars, humidor tracking, and smoking sessions",
+    cigarkeeper_pro_annual: "Unlimited cigars, humidor tracking, and smoking sessions",
     founders_bundle_monthly: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
     founders_bundle_annual: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
   };
