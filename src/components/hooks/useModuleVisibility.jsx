@@ -59,7 +59,6 @@ function buildAccessibleModules(profile, activeModules, user) {
 function buildVisibility({ profile, user, activeModules }) {
   const accessible = buildAccessibleModules(profile, activeModules, user);
   const prefsSet = profile?.module_preferences_set === true;
-  const tester = isInternalModuleTester(user);
 
   const prefMap = {
     pipekeeper: normalizeBoolean(profile?.pipekeeper_enabled),
@@ -73,12 +72,6 @@ function buildVisibility({ profile, user, activeModules }) {
   for (const key of MODULE_KEYS) {
     if (!accessible.has(key)) {
       visibility[key] = false;
-      continue;
-    }
-
-    // Internal testers (admins) always see all accessible modules regardless of prefs.
-    if (tester) {
-      visibility[key] = true;
       continue;
     }
 
