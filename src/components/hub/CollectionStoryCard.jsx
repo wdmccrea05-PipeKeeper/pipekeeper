@@ -86,6 +86,8 @@ async function enrichHighlights(story) {
     ['mostTastedBottle', 'bottle'],
     ['mostSmokedCigar', 'cigar'],
     ['favoriteCigar', 'cigar'],
+    ['topRatedCigar', 'cigar'],
+    ['highestValueCigar', 'cigar'],
     ['mostValuedCigar', 'cigar'],
   ];
 

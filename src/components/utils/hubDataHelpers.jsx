@@ -11,5 +11,6 @@ export async function getModuleSummary(moduleType, userEmail) {
   if (moduleType === 'pipes') return data.pipes;
   if (moduleType === 'tobacco') return data.tobacco;
   if (moduleType === 'bottles') return data.whiskey;
+  if (moduleType === 'cigars') return data.cigar;
   return { count: 0, value: 0 };
 }

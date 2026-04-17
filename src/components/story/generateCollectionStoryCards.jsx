@@ -120,7 +120,7 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
       icon: Flame,
       heroImage: photo,
       bgImage: photo,
-      silhouetteType: 'pipe',
+      silhouetteType: 'cigar',
       label: 'Most Smoked Cigar',
     });
   }
@@ -137,8 +137,42 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
       icon: Star,
       heroImage: photo,
       bgImage: photo,
-      silhouetteType: 'pipe',
+      silhouetteType: 'cigar',
       label: 'Favorite Cigar',
+    });
+  }
+
+  // 4d. Top rated cigar
+  if (hasCigar && h.topRatedCigar) {
+    const record = h.topRatedCigar._record || null;
+    const photo = record?.photos?.[0] || record?.photo || null;
+    cards.push({
+      title: h.topRatedCigar.name,
+      value: h.topRatedCigar.name,
+      sub: `Top rated cigar${h.topRatedCigar.rating ? ` · ${h.topRatedCigar.rating}★` : ''}`,
+      accent: '#8C6B3F',
+      icon: Star,
+      heroImage: photo,
+      bgImage: photo,
+      silhouetteType: 'cigar',
+      label: 'Top Rated Cigar',
+    });
+  }
+
+  // 4e. Highest value cigar
+  if (hasCigar && h.highestValueCigar) {
+    const record = h.highestValueCigar._record || null;
+    const photo = record?.photos?.[0] || record?.photo || null;
+    cards.push({
+      title: h.highestValueCigar.name,
+      value: h.highestValueCigar.name,
+      sub: h.highestValueCigar.value ? `Valued at ${fmt(h.highestValueCigar.value)}` : 'Highest value cigar',
+      accent: '#A0784A',
+      icon: Award,
+      heroImage: photo,
+      bgImage: photo,
+      silhouetteType: 'cigar',
+      label: 'Cigar Crown Jewel',
     });
   }
 
@@ -158,8 +192,8 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
         : rt === 'blend'
           ? record?.logo || record?.photo || null
           : rt === 'cigar'
-            ? record?.photos?.[0] || record?.photo || null
-            : record?.photo || record?.image || null;
+        ? record?.photos?.[0] || record?.photo || null
+        : record?.photo || record?.image || null;
     cards.push({
       title: h.mostValuableItem.name,
       value: h.mostValuableItem.name,
@@ -168,7 +202,7 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
       icon: Award,
       heroImage: photo,
       bgImage: photo,
-      silhouetteType: 'pipe',
+      silhouetteType: rt === 'cigar' ? 'cigar' : 'pipe',
       label: 'Crown Jewel',
     });
     }
@@ -231,7 +265,7 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     const expLabel = isCombined ? 'Experiences Logged' : hasPipe ? 'Smoking Sessions' : hasCigar ? 'Cigar Sessions' : 'Tastings Logged';
     cards.push({
       title: expLabel,
-      value: sessions + tastings,
+      value: (sessions || 0) + (tastings || 0) + (cigarSessions || 0),
       sub: desc,
       accent: '#8B5CF6',
       icon: Flame,

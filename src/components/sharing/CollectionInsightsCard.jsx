@@ -10,6 +10,7 @@ const TONE = {
   pipes: '#A35C5C',
   blends: '#5A7C5A',
   bottles: '#C87941',
+  cigars: '#8C6B3F',
   value: '#10B981',
   whiskey: '#C87941',
   sessions: '#8B5CF6',
@@ -101,10 +102,22 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
     { label: 'Avg Rating', value: summary?.whiskey?.avgRating || '—', color: '#F59E0B' },
   ];
 
+  const cigarStats = [
+    { label: 'Cigar Types', value: summary?.cigar?.count ?? summary?.cigar?.cigarTypes ?? 0, color: TONE.cigars },
+    { label: 'Sticks', value: summary?.cigar?.totalSticks ?? 0, color: TONE.bottles },
+    { label: 'Sessions', value: summary?.cigar?.sessions ?? summary?.total?.cigarSessions ?? 0, color: TONE.sessions },
+    {
+      label: 'Value',
+      value: formatFromBase(Number(summary?.cigar?.value || 0)),
+      color: TONE.value,
+    },
+  ];
+
   const hubStats = [
     { label: 'Pipes', value: summary?.pipes?.count ?? 0, color: TONE.pipes },
     { label: 'Blends', value: summary?.tobacco?.count ?? 0, color: TONE.blends },
     { label: 'Bottles', value: summary?.whiskey?.count ?? 0, color: TONE.bottles },
+    { label: 'Cigars', value: summary?.cigar?.count ?? 0, color: TONE.cigars },
     {
       label: 'Total Value',
       value: formatFromBase(Number(summary?.total?.value || 0)),
@@ -112,12 +125,20 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
     },
   ];
 
-  const stats = variant === 'whiskey' ? whiskeyStats : variant === 'pipekeeper' ? pipeStats : hubStats;
+  const stats = variant === 'whiskey'
+    ? whiskeyStats
+    : variant === 'pipekeeper'
+    ? pipeStats
+    : variant === 'cigar'
+    ? cigarStats
+    : hubStats;
 
   const title = variant === 'whiskey'
     ? 'Whiskey Insights'
     : variant === 'pipekeeper'
     ? 'PipeKeeper Insights'
+    : variant === 'cigar'
+    ? 'CigarKeeper Insights'
     : 'Collection Insights';
 
   const subtitle = variant === 'whiskey'
@@ -180,7 +201,7 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
         </div>
 
         {/* Highlights */}
-        {(hl.mostUsedPipe || hl.mostValuedBottle) && (
+        {(hl.mostUsedPipe || hl.mostValuedBottle || hl.mostSmokedCigar || hl.highestValueCigar) && (
           <>
             <Divider />
             <div className="px-8 py-4">
@@ -192,6 +213,12 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
               )}
               {variant === 'hub' && hl.mostValuedBottle && (
                 <HighlightRow label={bottleLabel} value={hl.mostValuedBottle.name} />
+              )}
+              {variant === 'hub' && hl.mostSmokedCigar && (
+                <HighlightRow label="Most Smoked Cigar" value={hl.mostSmokedCigar.name} />
+              )}
+              {variant === 'hub' && hl.highestValueCigar && (
+                <HighlightRow label="Cigar Crown Jewel" value={hl.highestValueCigar.name} />
               )}
             </div>
           </>
@@ -243,13 +270,15 @@ export function CollectionInsightsShareModal({ isOpen, onClose, summary, userPro
     const pipes = summary?.pipes?.count || 0;
     const blends = summary?.tobacco?.count || 0;
     const bottles = summary?.whiskey?.count || 0;
+    const cigars = summary?.cigar?.count || 0;
+    const sticks = summary?.cigar?.totalSticks || 0;
     const value = Math.round(summary?.total?.value || summary?.whiskey?.value || 0);
 
     const text = variant === 'whiskey'
       ? `My WhiskeyKeeper collection:\n${bottles} bottle${bottles !== 1 ? 's' : ''}, ${summary?.total?.tastings || 0} tasting${(summary?.total?.tastings || 0) !== 1 ? 's' : ''}.\nCollection value: ${formatFromBase(value)}.`
       : variant === 'pipekeeper'
       ? `My PipeKeeper collection:\n${pipes} pipe${pipes !== 1 ? 's' : ''}, ${blends} blend${blends !== 1 ? 's' : ''}, ${summary?.total?.sessions || 0} sessions logged.`
-      : `My CollectionKeeper stats:\n${pipes} pipe${pipes !== 1 ? 's' : ''}, ${blends} blend${blends !== 1 ? 's' : ''}, ${bottles} bottle${bottles !== 1 ? 's' : ''}.\nTotal collection value: ${formatFromBase(value)}.`;
+      : `My CollectionKeeper stats:\n${pipes} pipe${pipes !== 1 ? 's' : ''}, ${blends} blend${blends !== 1 ? 's' : ''}, ${bottles} bottle${bottles !== 1 ? 's' : ''}, ${cigars} cigar type${cigars !== 1 ? 's' : ''} (${sticks} sticks).\nTotal collection value: ${formatFromBase(value)}.`;
 
     try {
       await navigator.clipboard.writeText(text);

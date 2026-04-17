@@ -49,6 +49,7 @@ export async function getCollectionHubSummary(userEmail, moduleStates = null) {
       pipes: { count: 0, value: 0 },
       tobacco: { count: 0, value: 0 },
       whiskey: { count: 0, value: 0 },
+      cigar: { count: 0, value: 0, totalSticks: 0, humidorCount: 0 },
       total: { items: 0, value: 0 },
       enabledModuleCount: 0,
       hubContributorCount: 0,
@@ -61,20 +62,23 @@ export async function getCollectionHubSummary(userEmail, moduleStates = null) {
     // Apply module visibility filter if moduleStates provided
     const pipesEnabled = moduleStates ? isModuleAIEligible('pipekeeper', moduleStates) : true;
     const whiskeyEnabled = moduleStates ? isModuleAIEligible('whiskeykeeper', moduleStates) : true;
+    const cigarEnabled = moduleStates ? isModuleAIEligible('cigarkeeper', moduleStates) : true;
 
     const pipes = pipesEnabled ? agg.pipes : { count: 0, value: 0 };
     const tobacco = pipesEnabled ? agg.tobacco : { count: 0, value: 0 };
     const whiskey = whiskeyEnabled ? agg.whiskey : { bottleTypes: 0, totalBottles: 0, count: 0, value: 0, open: 0, unopened: 0, sealed: 0 };
+    const cigar = cigarEnabled ? agg.cigar : { cigarTypes: 0, totalSticks: 0, readyToSmoke: 0, humidorCount: 0, count: 0, value: 0, sessions: 0 };
 
-    const totalItems = pipes.count + tobacco.count + whiskey.count;
-    const totalValue = pipes.value + tobacco.value + whiskey.value;
+    const totalItems = pipes.count + tobacco.count + whiskey.count + cigar.count;
+    const totalValue = pipes.value + tobacco.value + whiskey.value + cigar.value;
 
-    const enabledCount = (pipesEnabled ? 1 : 0) + (whiskeyEnabled ? 1 : 0);
+    const enabledCount = (pipesEnabled ? 1 : 0) + (whiskeyEnabled ? 1 : 0) + (cigarEnabled ? 1 : 0);
 
     return {
       pipes,
       tobacco,
       whiskey,
+      cigar,
       total: { items: totalItems, value: totalValue },
       enabledModuleCount: enabledCount,
       hubContributorCount: enabledCount,
@@ -85,6 +89,7 @@ export async function getCollectionHubSummary(userEmail, moduleStates = null) {
       pipes: { count: 0, value: 0 },
       tobacco: { count: 0, value: 0 },
       whiskey: { count: 0, value: 0 },
+      cigar: { count: 0, value: 0, totalSticks: 0, humidorCount: 0 },
       total: { items: 0, value: 0 },
       enabledModuleCount: 0,
       hubContributorCount: 0,

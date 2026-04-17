@@ -33,9 +33,22 @@ function formatValue(v) {
     : `$${Math.round(v).toLocaleString()}`;
 }
 
+function getBottleUsageKeyFromLog(log) {
+  if (log?.bottle_id) return `id:${log.bottle_id}`;
+  if (log?.bottle_name) return `name:${log.bottle_name}`;
+  return null;
+}
+
+function getBottleUsageKeyFromBottle(bottle) {
+  if (bottle?.id) return `id:${bottle.id}`;
+  if (bottle?.name) return `name:${bottle.name}`;
+  return null;
+}
+
 function buildNarrative({ pipes, blends, bottleTypes, totalBottles, mostUsedPipe, mostTastedBottle,
   dominantBlendType, dominantWhiskyType, underusedCount, mostValuable, totalSessions,
-  cigarTypes, totalCigarSticks, mostSmokedCigar, cigarSessions }) {
+  cigarTypes, totalCigarSticks, mostSmokedCigar, cigarSessions, humidorCount, dominantCigarStrength,
+  dominantCigarWrapper, dominantCigarCountry, topRatedCigar, highestValueCigar, restockCigarCount }) {
 
   const bottles = bottleTypes;
   const hasPipes = pipes > 0;
@@ -54,24 +67,25 @@ function buildNarrative({ pipes, blends, bottleTypes, totalBottles, mostUsedPipe
     ? ` (${totalBottles} bottles total across ${bottleTypes} ${bottleTypes === 1 ? 'label' : 'labels'})`
     : '';
   const cigarInventoryNote = totalCigarSticks > 0 ? ` (${totalCigarSticks} sticks)` : '';
+  const humidorNote = humidorCount > 0 ? ` across ${humidorCount} humidor${humidorCount === 1 ? '' : 's'}` : '';
 
   if (hasPipes && hasBlends && hasBottles && hasCigars) {
-    parts.push(`Your collection reflects a serious multi-module collector — ${pipes} pipes across ${blends} blends, a spirits shelf of ${bottleTypes} bottle types${bottleInventoryNote}, and a humidor of ${cigarTypes} cigar ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote}.`);
+    parts.push(`Your collection reflects a serious multi-module collector — ${pipes} pipes across ${blends} blends, a spirits shelf of ${bottleTypes} bottle types${bottleInventoryNote}, and a humidor of ${cigarTypes} cigar ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote}${humidorNote}.`);
   } else if (hasPipes && hasBlends && hasBottles) {
     const balance = pipes > blends
       ? `a pipe-forward rotation of ${pipes} pipes paired across ${blends} blends`
       : `a well-balanced rotation of ${pipes} pipes and ${blends} blends`;
     parts.push(`Your collection reflects a thoughtful collector's sensibility — ${balance}, alongside a spirits shelf of ${bottleTypes} carefully chosen ${bottleTypes === 1 ? 'bottle type' : 'bottle types'}${bottleInventoryNote}.`);
   } else if (hasPipes && hasBlends && hasCigars) {
-    parts.push(`A well-rounded tobacco collector's setup: ${pipes} pipes paired with ${blends} blends, and a cigar collection of ${cigarTypes} ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote}.`);
+    parts.push(`A well-rounded tobacco collector's setup: ${pipes} pipes paired with ${blends} blends, and a cigar collection of ${cigarTypes} ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote}${humidorNote}.`);
   } else if (hasPipes && hasBlends) {
     parts.push(`Your pipe collection shows a focused collector at work — ${pipes} ${pipes === 1 ? 'pipe' : 'pipes'} paired across ${blends} ${blends === 1 ? 'blend' : 'blends'}, building a rotation with clear intention.`);
   } else if (hasBottles && hasCigars) {
-    parts.push(`Your collection pairs a spirits shelf of ${bottleTypes} bottle types${bottleInventoryNote} with a cigar selection of ${cigarTypes} ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote} — a classic pairing collector's setup.`);
+    parts.push(`Your collection pairs a spirits shelf of ${bottleTypes} bottle types${bottleInventoryNote} with a cigar selection of ${cigarTypes} ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote}${humidorNote} — a classic pairing collector's setup.`);
   } else if (hasBottles) {
     parts.push(`Your spirits collection spans ${bottleTypes} distinct ${bottleTypes === 1 ? 'bottle type' : 'bottle types'}${bottleInventoryNote} — a curated shelf that reflects considered taste.`);
   } else if (hasCigars) {
-    parts.push(`Your cigar collection spans ${cigarTypes} ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote} — a growing humidor built with care.`);
+    parts.push(`Your cigar collection spans ${cigarTypes} ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote}${humidorNote} — a growing humidor built with care.`);
   } else if (hasPipes) {
     parts.push(`You're building a focused pipe collection of ${pipes} ${pipes === 1 ? 'pipe' : 'pipes'}. Every collector starts somewhere.`);
   }
@@ -112,6 +126,29 @@ function buildNarrative({ pipes, blends, bottleTypes, totalBottles, mostUsedPipe
 
   if (mostSmokedCigar && cigarSessions > 0) {
     parts.push(`In your humidor, the ${mostSmokedCigar.name} stands out as your most-smoked cigar — a clear favorite.`);
+  }
+
+  if (dominantCigarStrength || dominantCigarWrapper || dominantCigarCountry) {
+    const cigarProfileBits = [
+      dominantCigarStrength ? `${dominantCigarStrength.toLowerCase()}-leaning strength` : null,
+      dominantCigarWrapper ? `${dominantCigarWrapper} wrappers` : null,
+      dominantCigarCountry ? `${dominantCigarCountry} origins` : null,
+    ].filter(Boolean);
+    if (cigarProfileBits.length) {
+      parts.push(`Your cigar profile trends toward ${cigarProfileBits.join(', ')}.`);
+    }
+  }
+
+  if (topRatedCigar) {
+    parts.push(`Your highest rated cigar is ${topRatedCigar.name}${topRatedCigar.rating ? ` at ${topRatedCigar.rating}/5` : ''}.`);
+  }
+
+  if (highestValueCigar && highestValueCigar.value > 0) {
+    parts.push(`${highestValueCigar.name} currently leads your humidor value at ${formatValue(highestValueCigar.value)}.`);
+  }
+
+  if (restockCigarCount > 0) {
+    parts.push(`${restockCigarCount} cigar ${restockCigarCount === 1 ? 'entry is' : 'entries are'} flagged for restock priority.`);
   }
 
   if (mostValuable && mostValuable.value > 0) {
@@ -167,7 +204,7 @@ Deno.serve(async (req) => {
     const includeCigar = enabledModules.includes('cigarkeeper');
 
     // Fetch only AI-eligible module data in parallel
-    const [pipes, blends, bottles, logs, tastingLogs, inventoryUnits, cigars, cigarSessionsList] = await Promise.all([
+    const [pipes, blends, bottles, logs, tastingLogs, inventoryUnits, cigars, cigarSessionsList, humidors] = await Promise.all([
       includePipes ? base44.entities.Pipe.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includePipes ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includeWhiskey ? base44.entities.Bottle.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
@@ -176,6 +213,7 @@ Deno.serve(async (req) => {
       includeWhiskey ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }) : Promise.resolve([]),
       includeCigar ? base44.entities.Cigar.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includeCigar ? base44.entities.CigarSession.filter({ created_by: user.email }, '-date', 500) : Promise.resolve([]),
+      includeCigar ? base44.entities.HumidorLocation.filter({ created_by: user.email }, '-updated_date', 200) : Promise.resolve([]),
     ]);
 
     const pipesList = Array.isArray(pipes) ? pipes : [];
@@ -186,6 +224,7 @@ Deno.serve(async (req) => {
     const inventoryUnitsList = Array.isArray(inventoryUnits) ? inventoryUnits : [];
     const cigarsList = Array.isArray(cigars) ? cigars : [];
     const cigarSessionsData = Array.isArray(cigarSessionsList) ? cigarSessionsList : [];
+    const humidorsList = Array.isArray(humidors) ? humidors : [];
 
     // Dual bottle metrics
     const bottleTypes = bottlesList.length; // distinct labels
@@ -213,6 +252,27 @@ Deno.serve(async (req) => {
     const favoriteCigar = cigarsList.filter(c => c.is_favorite).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0]
       || cigarsList.filter(c => c.rating >= 4).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0]
       || null;
+
+    const topRatedCigar = cigarsList.filter(c => c.rating != null).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0] || null;
+    const highestValueCigar = cigarsList
+      .map((c) => ({ ...c, __value: getCigarValue(c) * getCigarSticks(c) }))
+      .sort((a, b) => (b.__value || 0) - (a.__value || 0))[0] || null;
+
+    const cigarStrengthCounts = {};
+    const cigarWrapperCounts = {};
+    const cigarCountryCounts = {};
+    cigarsList.forEach(c => {
+      if (c.strength) cigarStrengthCounts[c.strength] = (cigarStrengthCounts[c.strength] || 0) + 1;
+      if (c.wrapper) cigarWrapperCounts[c.wrapper] = (cigarWrapperCounts[c.wrapper] || 0) + 1;
+      if (c.country) cigarCountryCounts[c.country] = (cigarCountryCounts[c.country] || 0) + 1;
+    });
+    const dominantCigarStrength = Object.entries(cigarStrengthCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    const dominantCigarWrapper = Object.entries(cigarWrapperCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    const dominantCigarCountry = Object.entries(cigarCountryCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    const restockCigarCount = cigarsList.filter(c => {
+      const status = String(c.status || '').toLowerCase();
+      return status === 'restock' || getCigarSticks(c) <= 2;
+    }).length;
 
     // Value totals
     const totalValue =
@@ -257,12 +317,15 @@ Deno.serve(async (req) => {
     // Most tasted bottle — key by bottle_id (primary), fallback to name for legacy logs
     const bottleUsage = {};
     tastingLogsList.forEach(log => {
-      const key = log.bottle_id || log.bottle_name;
+      const key = getBottleUsageKeyFromLog(log);
       if (key) bottleUsage[key] = (bottleUsage[key] || 0) + 1;
     });
     const maxBottleUses = Math.max(...Object.values(bottleUsage), 0);
     const mostTastedBottle = maxBottleUses > 0
-      ? bottlesList.find(b => (bottleUsage[b.id] || bottleUsage[b.name] || 0) === maxBottleUses)
+      ? bottlesList.find(b => {
+          const key = getBottleUsageKeyFromBottle(b);
+          return key ? (bottleUsage[key] || 0) === maxBottleUses : false;
+        })
       : null;
 
     // Most valuable item across all collections
@@ -290,6 +353,13 @@ Deno.serve(async (req) => {
       totalCigarSticks,
       mostSmokedCigar,
       cigarSessions: cigarSessionsData.length,
+      humidorCount: humidorsList.length,
+      dominantCigarStrength,
+      dominantCigarWrapper,
+      dominantCigarCountry,
+      topRatedCigar,
+      highestValueCigar: highestValueCigar ? { ...highestValueCigar, value: highestValueCigar.__value || 0 } : null,
+      restockCigarCount,
     });
 
     const story = {
@@ -309,6 +379,11 @@ Deno.serve(async (req) => {
         totalCigarSticks,
         cigarSticks: totalCigarSticks,
         cigarSessions: cigarSessionsData.length,
+        humidorCount: humidorsList.length,
+        dominantCigarStrength,
+        dominantCigarWrapper,
+        dominantCigarCountry,
+        restockCigarCount,
       },
       highlights: {
         mostUsedPipe: mostUsedPipe
@@ -372,7 +447,7 @@ Deno.serve(async (req) => {
               image: mostTastedBottle.image,
               image_url: mostTastedBottle.image_url,
               thumbnail: mostTastedBottle.thumbnail,
-              tastings: bottleUsage[mostTastedBottle.name] || 0,
+              tastings: bottleUsage[getBottleUsageKeyFromBottle(mostTastedBottle) || ''] || 0,
             }
           : null,
         mostSmokedCigar: mostSmokedCigar
@@ -393,6 +468,26 @@ Deno.serve(async (req) => {
               photos: favoriteCigar.photos || [],
               photo: favoriteCigar.photo,
               rating: favoriteCigar.rating,
+            }
+          : null,
+        topRatedCigar: topRatedCigar
+          ? {
+              id: topRatedCigar.id,
+              name: topRatedCigar.name,
+              recordType: 'cigar',
+              photos: topRatedCigar.photos || [],
+              photo: topRatedCigar.photo,
+              rating: topRatedCigar.rating,
+            }
+          : null,
+        highestValueCigar: highestValueCigar
+          ? {
+              id: highestValueCigar.id,
+              name: highestValueCigar.name,
+              recordType: 'cigar',
+              photos: highestValueCigar.photos || [],
+              photo: highestValueCigar.photo,
+              value: Math.round(highestValueCigar.__value || 0),
             }
           : null,
         mostValuableItem: mostValuable

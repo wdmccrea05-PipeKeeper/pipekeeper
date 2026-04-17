@@ -74,6 +74,7 @@ function CoverCard({ summary, userProfile, cardRef }) {
   const pipes = summary?.pipes?.count ?? 0;
   const blends = summary?.tobacco?.count ?? 0;
   const bottles = summary?.whiskey?.count ?? 0;
+  const cigars = summary?.cigar?.count ?? 0;
   const value = Math.round(summary?.total?.value || 0);
 
   return (
@@ -96,6 +97,7 @@ function CoverCard({ summary, userProfile, cardRef }) {
           {pipes > 0 && <StatPill label="Pipes" value={pipes} color="#A35C5C" />}
           {blends > 0 && <StatPill label="Blends" value={blends} color="#5A7C5A" />}
           {bottles > 0 && <StatPill label="Bottles" value={bottles} color="#C87941" />}
+          {cigars > 0 && <StatPill label="Cigars" value={cigars} color="#8C6B3F" />}
           {value > 0 && (
             <StatPill
               label="Total Value"
@@ -220,10 +222,72 @@ function WhiskeyCard({ summary, cardRef }) {
   );
 }
 
+// Card 4 — CigarKeeper highlights
+function CigarCard({ summary, cardRef }) {
+  const { formatFromBase } = useCurrency();
+  const cigarTypes = summary?.cigar?.count ?? summary?.cigar?.cigarTypes ?? 0;
+  const sticks = summary?.cigar?.totalSticks ?? 0;
+  const sessions = summary?.cigar?.sessions ?? summary?.total?.cigarSessions ?? 0;
+  const value = Math.round(summary?.cigar?.value || 0);
+  const mostSmoked = summary?.highlights?.mostSmokedCigar;
+  const topRated = summary?.highlights?.highestRatedCigar;
+  const crownJewel = summary?.highlights?.highestValueCigar;
+
+  return (
+    <CardShell cardRef={cardRef}>
+      <div className="px-7 py-7 space-y-5">
+        <div className="text-center">
+          <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: 'rgba(180,140,75,0.6)' }}>
+            CigarKeeper
+          </p>
+          <h3 className="text-lg font-bold mt-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
+            Cigar Collection
+          </h3>
+        </div>
+        <Divider />
+        <div className="grid grid-cols-2 gap-3">
+          <StatPill label="Cigar Types" value={cigarTypes} color="#8C6B3F" />
+          <StatPill label="Sticks" value={sticks} color="#B48C4B" />
+          <StatPill label="Sessions" value={sessions} color="#8B5CF6" />
+          {value > 0 && (
+            <StatPill
+              label="Value"
+              value={formatFromBase(value)}
+              color="#10B981"
+            />
+          )}
+        </div>
+        <Divider />
+        <div className="space-y-3">
+          {mostSmoked && (
+            <div className="flex items-start justify-between gap-3">
+              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>Most Smoked</span>
+              <span className="text-sm font-semibold text-right" style={{ color: '#F5F1E7', maxWidth: '60%', wordBreak: 'break-word' }}>{mostSmoked.name}</span>
+            </div>
+          )}
+          {topRated && (
+            <div className="flex items-start justify-between gap-3">
+              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>Top Rated</span>
+              <span className="text-sm font-semibold text-right" style={{ color: '#F5F1E7', maxWidth: '60%', wordBreak: 'break-word' }}>{topRated.name}</span>
+            </div>
+          )}
+          {crownJewel && (
+            <div className="flex items-start justify-between gap-3">
+              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>Crown Jewel</span>
+              <span className="text-sm font-semibold text-right" style={{ color: '#F5F1E7', maxWidth: '60%', wordBreak: 'break-word' }}>{crownJewel.name}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </CardShell>
+  );
+}
+
 const STORY_CARDS = [
   { id: 'cover', label: 'Cover' },
   { id: 'pipe', label: 'PipeKeeper' },
   { id: 'whiskey', label: 'WhiskeyKeeper' },
+  { id: 'cigar', label: 'CigarKeeper' },
 ];
 
 export default function CollectionInsightsSharePage() {
@@ -258,6 +322,7 @@ export default function CollectionInsightsSharePage() {
   const visibleCards = STORY_CARDS.filter(c => {
     if (c.id === 'pipe' && !(summary?.pipes?.count > 0 || summary?.tobacco?.count > 0)) return false;
     if (c.id === 'whiskey' && !(summary?.whiskey?.count > 0)) return false;
+    if (c.id === 'cigar' && !(summary?.cigar?.count > 0)) return false;
     return true;
   });
 
@@ -285,8 +350,10 @@ export default function CollectionInsightsSharePage() {
     const pipes = summary?.pipes?.count || 0;
     const blends = summary?.tobacco?.count || 0;
     const bottles = summary?.whiskey?.count || 0;
+    const cigars = summary?.cigar?.count || 0;
+    const sticks = summary?.cigar?.totalSticks || 0;
     const value = Math.round(summary?.total?.value || 0);
-    const text = `My CollectionKeeper collection:\n${pipes} pipes, ${blends} blends, ${bottles} bottles.\nTotal collection value: ${formatFromBase(value)}.`;
+    const text = `My CollectionKeeper collection:\n${pipes} pipes, ${blends} blends, ${bottles} bottles, ${cigars} cigar types (${sticks} sticks).\nTotal collection value: ${formatFromBase(value)}.`;
     try {
       await navigator.clipboard.writeText(text);
       toast.success('Summary copied');
@@ -348,6 +415,7 @@ export default function CollectionInsightsSharePage() {
           {activeCard === 'cover' && <CoverCard summary={summary} userProfile={userProfile} cardRef={cardRef} />}
           {activeCard === 'pipe' && <PipeCard summary={summary} cardRef={cardRef} />}
           {activeCard === 'whiskey' && <WhiskeyCard summary={summary} cardRef={cardRef} />}
+          {activeCard === 'cigar' && <CigarCard summary={summary} cardRef={cardRef} />}
         </>
       )}
 
