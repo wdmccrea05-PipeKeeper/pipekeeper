@@ -72,10 +72,20 @@ export function getEntitlementTier(user, subscription) {
     user?.tier;
 
   const t1 = normalizeTier(topLevel);
+  const hasExplicitEntitlementField =
+    user?.entitlement_tier != null ||
+    user?.entitlementTier != null ||
+    user?.entitlement != null ||
+    user?.tier != null;
+  if (hasExplicitEntitlementField && t1 === "free") return "free";
   if (t1 !== "free") return t1;
 
   const dataTier = user?.data?.entitlement_tier ?? user?.data?.subscription_tier;
   const t2 = normalizeTier(dataTier);
+  const hasExplicitDataEntitlementField =
+    user?.data?.entitlement_tier != null ||
+    user?.data?.subscription_tier != null;
+  if (hasExplicitDataEntitlementField && t2 === "free") return "free";
   if (t2 !== "free") return t2;
 
   const legacyUser =

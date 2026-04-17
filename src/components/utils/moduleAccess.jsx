@@ -72,13 +72,15 @@ export function getEnabledModules(moduleStates) {
  * Check if user has paid access to a specific module.
  *
  * @param {string} moduleId
- * @param {object} user — user object with pipekeeper_paid and whiskeykeeper_paid flags
+ * @param {object} user — user object with per-module paid flags
  */
 export function isModulePaid(moduleId, user) {
   if (!user) return false;
   const normalized = String(moduleId || '').toLowerCase();
   if (normalized === 'pipekeeper') return !!user.pipekeeper_paid;
   if (normalized === 'whiskeykeeper') return !!user.whiskeykeeper_paid;
+  if (normalized === 'cigarkeeper') return !!user.cigarkeeper_paid;
+  if (normalized === 'winekeeper') return !!user.winekeeper_paid;
   return false;
 }
 
@@ -90,6 +92,8 @@ export function getPaidModuleIds(user) {
   const paid = [];
   if (user.pipekeeper_paid) paid.push('pipekeeper');
   if (user.whiskeykeeper_paid) paid.push('whiskeykeeper');
+  if (user.cigarkeeper_paid) paid.push('cigarkeeper');
+  if (user.winekeeper_paid) paid.push('winekeeper');
   return paid;
 }
 

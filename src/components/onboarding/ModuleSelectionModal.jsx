@@ -18,6 +18,8 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
   const userHasAnyPaid =
     !!user?.pipekeeper_paid ||
     !!user?.whiskeykeeper_paid ||
+    !!user?.cigarkeeper_paid ||
+    !!user?.winekeeper_paid ||
     String(user?.entitlement_tier || '').toLowerCase() === 'pro';
 
   const handleToggle = (moduleId) => {

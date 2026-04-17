@@ -47,6 +47,27 @@ Deno.serve(async (req: Request) => {
         subscriptionSource: "manual",
         subscriptionStatus: "inactive",
         subscriptionUpdatedAt: new Date().toISOString(),
+        entitlement_tier: "free",
+        subscription_level: "free",
+        subscription_status: "inactive",
+        has_paid_access: false,
+        paid_modules_csv: "",
+        pipekeeper_paid: false,
+        whiskeykeeper_paid: false,
+        cigarkeeper_paid: false,
+        winekeeper_paid: false,
+        data: {
+          ...(targetUser.data || {}),
+          entitlement_tier: "free",
+          subscription_level: "free",
+          subscription_status: "inactive",
+          paid_modules_csv: "",
+          pipekeeper_paid: false,
+          whiskeykeeper_paid: false,
+          cigarkeeper_paid: false,
+          winekeeper_paid: false,
+          admin_subscription_notes: String(notes || "").trim() || null,
+        },
       });
 
       // Fetch updated user

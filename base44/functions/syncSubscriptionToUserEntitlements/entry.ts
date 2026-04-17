@@ -39,15 +39,17 @@ Deno.serve(async (req) => {
     }
 
     // FIX BUG-05: Write BOTH flat AND nested entitlement fields so all resolver code paths see updates
-    const subscriptionTier = subscription.tier || "premium";
-    const subscriptionLevel = subscription.status === "active" ? "paid" : "free";
+    const normalizedStatus = String(subscription.status || "").toLowerCase();
+    const isPaidStatus = ["active", "trialing", "past_due", "incomplete"].includes(normalizedStatus);
+    const subscriptionTier = isPaidStatus ? "pro" : "free";
+    const subscriptionLevel = isPaidStatus ? "paid" : "free";
     
     const updateData = {
       // Flat fields (checked first by getEntitlementTier)
-      subscription_tier: subscriptionTier,
+      ...(isPaidStatus ? { subscription_tier: "pro" } : {}),
       subscription_level: subscriptionLevel,
-      subscription_status: subscription.status,
-      entitlement_tier: subscriptionLevel === "paid" ? subscriptionTier : "free",
+      subscription_status: normalizedStatus || "inactive",
+      entitlement_tier: subscriptionLevel === "paid" ? "pro" : "free",
       
       // Nested fields (fallback)
       data: {
@@ -55,10 +57,10 @@ Deno.serve(async (req) => {
         role: user.data?.role || "user",
         tos_accepted_at: user.data?.tos_accepted_at,
         stripe_customer_id: user.data?.stripe_customer_id || subscription.stripe_customer_id,
-        subscription_tier: subscriptionTier,
+        ...(isPaidStatus ? { subscription_tier: "pro" } : {}),
         subscription_level: subscriptionLevel,
-        subscription_status: subscription.status,
-        entitlement_tier: subscriptionLevel === "paid" ? subscriptionTier : "free",
+        subscription_status: normalizedStatus || "inactive",
+        entitlement_tier: subscriptionLevel === "paid" ? "pro" : "free",
         
         // Preserve other fields
         ...(user.data?.data || {}),
