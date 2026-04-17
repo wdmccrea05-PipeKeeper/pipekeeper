@@ -91,6 +91,10 @@ export default function SubscriptionSuccessFlow() {
 
             const me = meRes || null;
             const subscriptionSummary = subRes?.data || null;
+            const summaryModulesCsv =
+              subscriptionSummary?.effectiveModulesCsv ||
+              subscriptionSummary?.modulesCsv ||
+              '';
 
             const pseudoSubscription = subscriptionSummary
               ? {
@@ -99,9 +103,9 @@ export default function SubscriptionSuccessFlow() {
                   tier: subscriptionSummary.tier,
                   current_period_end: subscriptionSummary.expiresAt,
                   plan_key: subscriptionSummary.planKey,
-                  modules_csv: subscriptionSummary.modulesCsv,
-                  metadata: subscriptionSummary.modulesCsv
-                    ? { modules_csv: subscriptionSummary.modulesCsv }
+                  modules_csv: summaryModulesCsv,
+                  metadata: summaryModulesCsv
+                    ? { modules_csv: summaryModulesCsv }
                     : undefined,
                 }
               : null;

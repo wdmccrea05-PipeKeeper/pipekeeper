@@ -13,6 +13,7 @@ export const FOUNDING_MEMBER_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
 export const PRO_LAUNCH_CUTOFF_ISO = "2026-02-01T00:00:00.000Z";
 
 const LEGACY_PREMIUM_CUTOFF = FOUNDING_MEMBER_CUTOFF;
+const CANONICAL_MODULES = ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"];
 
 const normalizeTier = (raw) => {
   const t = String(raw || "").trim().toLowerCase();
@@ -160,6 +161,18 @@ export function isLegacyPremium(subscription) {
 export function buildCanonicalEntitlements(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
   const isPro = tier === "pro";
+  const csvModules = String(user?.paid_modules_csv || "")
+    .split(",")
+    .map((m) => m.trim().toLowerCase())
+    .filter((m) => m && CANONICAL_MODULES.includes(m) && isModuleLaunched(m));
+  const flaggedModules = CANONICAL_MODULES.filter(
+    (moduleKey) => Boolean(user?.[`${moduleKey}_paid`]) && isModuleLaunched(moduleKey)
+  );
+  const explicitModules = [...new Set([...csvModules, ...flaggedModules])];
+  const isLegacyBroadAccessUser =
+    Boolean(user?.isFoundingMember) ||
+    Boolean(user?.legacy_broad_module_access) ||
+    isLegacyPremium(subscription);
 
   const limits = isPro
     ? { pipes: Infinity, tobaccos: Infinity, bottles: Infinity, photosPerItem: Infinity, smokingLogs: Infinity }
@@ -176,12 +189,13 @@ export function buildCanonicalEntitlements(user, subscription) {
     isFree: !isPro,
     paidModules: isPro
       ? (() => {
-          const csv = String(user?.paid_modules_csv || '').trim().toLowerCase();
-          if (!csv) {
-            // Legacy: paid but no per-module tracking yet → grant all launched
-            return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'].filter(isModuleLaunched);
+          if (explicitModules.length > 0) {
+            return explicitModules;
           }
-          return csv.split(',').map((m) => m.trim()).filter((m) => m && isModuleLaunched(m));
+          if (isLegacyBroadAccessUser) {
+            return CANONICAL_MODULES.filter(isModuleLaunched);
+          }
+          return [];
         })()
       : [],
     limits,
