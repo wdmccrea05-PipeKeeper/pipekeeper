@@ -216,7 +216,14 @@ function pairingTypeForFamily(family, blend, liquid) {
 }
 
 function buildFamilyNarrative(family, { overlay, pipe, blend, cigar, liquid }) {
-  const seed = `${family.key}:${overlay}:${pipe?.id || ''}:${blend?.id || ''}:${cigar?.id || ''}:${liquid?.id || ''}`;
+  const seed = [
+    `family=${family.key}`,
+    `overlay=${overlay}`,
+    `pipe=${pipe?.id || 'none'}`,
+    `blend=${blend?.id || 'none'}`,
+    `cigar=${cigar?.id || 'none'}`,
+    `liquid=${liquid?.id || 'none'}`,
+  ].join('|');
 
   if (family.smokingSessionType === 'pipe_session') {
     const options = family.liquidType === 'whiskey'

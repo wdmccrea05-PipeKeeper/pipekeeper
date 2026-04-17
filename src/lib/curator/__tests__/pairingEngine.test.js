@@ -2,14 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { generatePairingRecommendations } from '@/lib/curator/pairingEngine';
 
 function baseContext(overrides = {}) {
+  const mergedActiveModules = {
+    pipekeeper: true,
+    whiskeykeeper: true,
+    winekeeper: true,
+    cigarkeeper: true,
+    ...(overrides.activeModules || {}),
+  };
+
   return {
-    activeModules: {
-      pipekeeper: true,
-      whiskeykeeper: true,
-      winekeeper: true,
-      cigarkeeper: true,
-      ...(overrides.activeModules || {}),
-    },
+    activeModules: mergedActiveModules,
     pipes: [{ id: 'p1', name: 'Pipe One', rating: 4 }],
     blends: [{ id: 't1', name: 'Blend One', blend_type: 'English', rating: 4 }],
     bottles: [{ id: 'w1', name: 'Whiskey One', type: 'Islay', quantity: 1, rating: 4 }],
@@ -19,6 +21,7 @@ function baseContext(overrides = {}) {
     tastingLogs: [],
     cigarSessions: [],
     ...overrides,
+    activeModules: mergedActiveModules,
   };
 }
 

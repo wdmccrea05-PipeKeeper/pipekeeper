@@ -11,7 +11,7 @@ const PAIRING_MODES = [
       liquidModule: 'whiskeykeeper',
       liquidInventory: 'bottles',
       smokeModule: 'cigarkeeper',
-      smokeInventory: 'cigars',
+      smokeInventory: ['cigars'],
     },
   },
   {
@@ -22,7 +22,7 @@ const PAIRING_MODES = [
       liquidModule: 'whiskeykeeper',
       liquidInventory: 'bottles',
       smokeModule: 'pipekeeper',
-      smokeInventory: 'pipe_session',
+      smokeInventory: ['pipes', 'blends'],
     },
   },
   {
@@ -33,7 +33,7 @@ const PAIRING_MODES = [
       liquidModule: 'winekeeper',
       liquidInventory: 'wines',
       smokeModule: 'cigarkeeper',
-      smokeInventory: 'cigars',
+      smokeInventory: ['cigars'],
     },
   },
   {
@@ -44,7 +44,7 @@ const PAIRING_MODES = [
       liquidModule: 'winekeeper',
       liquidInventory: 'wines',
       smokeModule: 'pipekeeper',
-      smokeInventory: 'pipe_session',
+      smokeInventory: ['pipes', 'blends'],
     },
   },
 ];
@@ -66,16 +66,13 @@ function groupPairings(pairings = []) {
 function isModeAvailable(mode, activeModules = {}, collectionStats = {}) {
   const hasLiquidModule = activeModules?.[mode.needs.liquidModule] === true;
   const hasLiquidInventory = Number(collectionStats?.[mode.needs.liquidInventory] || 0) > 0;
+  const hasSmokeModule = activeModules?.[mode.needs.smokeModule] === true;
+  const smokeRequirements = mode.needs.smokeInventory || [];
+  const hasSmokeInventory = smokeRequirements.every((key) => Number(collectionStats?.[key] || 0) > 0);
 
   if (!hasLiquidModule || !hasLiquidInventory) return false;
 
-  if (mode.needs.smokeInventory === 'cigars') {
-    return activeModules?.[mode.needs.smokeModule] === true && Number(collectionStats?.cigars || 0) > 0;
-  }
-
-  return activeModules?.[mode.needs.smokeModule] === true
-    && Number(collectionStats?.pipes || 0) > 0
-    && Number(collectionStats?.blends || 0) > 0;
+  return hasSmokeModule && hasSmokeInventory;
 }
 
 function ModeButton({ active, label, onClick }) {
