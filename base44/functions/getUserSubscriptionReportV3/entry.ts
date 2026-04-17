@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const REPORT_VERSION = 'v3.1';
+const MAX_SAMPLE_SIZE = 25;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -570,7 +571,7 @@ Deno.serve(async (req) => {
     };
     const staleCutoff = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
     const pushSample = (bucket: string[], email: string) => {
-      if (email && bucket.length < 25) bucket.push(email);
+      if (email && bucket.length < MAX_SAMPLE_SIZE) bucket.push(email);
     };
 
     for (const u of uniqueUsers) {

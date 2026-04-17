@@ -128,12 +128,12 @@ Deno.serve(async (req: Request) => {
     const appleSubs = (allSubs || []).filter((s) => s.provider === 'apple');
     const qualifyingSubs = (allSubs || []).filter((s) => qualifiesForAccess(s));
     const primarySub = pickPrimary(qualifyingSubs);
-    const effectiveModulesFromSubs = unique(
+    const unionedModules = unique(
       qualifyingSubs.flatMap((sub) => getSubModules(sub)),
     );
     const fallbackModules = parseModulesCsv(me?.paid_modules_csv);
     const effectiveModules =
-      effectiveModulesFromSubs.length > 0 ? effectiveModulesFromSubs : fallbackModules;
+      unionedModules.length > 0 ? unionedModules : fallbackModules;
     const effectiveModulesCsv = effectiveModules.join(',');
 
     const isPaid = effectiveModules.length > 0 || !!primarySub;
@@ -202,6 +202,7 @@ Deno.serve(async (req: Request) => {
           hasPaidAccess: isPaid,
           modules: effectiveModules,
           modulesCsv: effectiveModulesCsv,
+          qualifyingSubscriptionCount: qualifyingSubs.length,
           subscriptionCount: qualifyingSubs.length,
           hasMultipleSubscriptions: qualifyingSubs.length > 1,
           providers: unique(qualifyingSubs.map((s) => s?.provider).filter(Boolean)),

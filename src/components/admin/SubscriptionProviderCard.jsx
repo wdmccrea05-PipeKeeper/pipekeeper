@@ -39,8 +39,13 @@ export default function SubscriptionProviderCard({ me }) {
   const [error, setError] = useState(null);
 
   const toModuleName = (moduleKey) => {
-    if (!moduleKey) return "Unknown";
-    return moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1).replace("keeper", "Keeper");
+    const labels = {
+      pipekeeper: "PipeKeeper",
+      whiskeykeeper: "WhiskeyKeeper",
+      cigarkeeper: "CigarKeeper",
+      winekeeper: "WineKeeper",
+    };
+    return labels[moduleKey] || "Unknown";
   };
 
   const openStripePortal = () => {
