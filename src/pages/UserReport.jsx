@@ -255,8 +255,8 @@ export default function UserReport() {
       ['Annual Subscriptions',           subscriptions.annual  ?? 0],
       ['PipeKeeper',                     subscriptions.byProduct?.pipekeeper    ?? 0],
       ['WhiskeyKeeper',                  subscriptions.byProduct?.whiskeykeeper ?? 0],
-      ['CigarKeeper (internal only)',    subscriptions.byProduct?.cigarkeeper   ?? 0],
-      ['WineKeeper (not launched)',      subscriptions.byProduct?.winekeeper    ?? 0],
+      ['CigarKeeper (Internal Only)',    subscriptions.byProduct?.cigarkeeper   ?? 0],
+      ['WineKeeper (Not Launched)',      subscriptions.byProduct?.winekeeper    ?? 0],
       ['Bundles',                        subscriptions.byProduct?.bundles       ?? 0],
       // Run Rate
       ['--- RUN RATE ---', ''],
