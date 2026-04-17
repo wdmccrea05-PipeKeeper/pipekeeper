@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { canAccessInternalModuleForTesting, isInternalModuleTester, isModuleLaunched } from '@/components/utils/moduleReleaseState';
+import { canAccessInternalModuleForTesting, isModuleLaunched } from '@/components/utils/moduleReleaseState';
 
 function Badge({ children, className }) {
   return <span className={`px-2 py-1 rounded text-xs font-medium ${className}`}>{children}</span>;
@@ -15,7 +15,6 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
   const { t } = useTranslation();
   const canSelectCigarKeeper =
     isModuleLaunched('cigarkeeper', user) ||
-    isInternalModuleTester(user) ||
     canAccessInternalModuleForTesting('cigarkeeper', user);
   const [selected, setSelected] = useState({ pipekeeper: true, whiskeykeeper: false, cigarkeeper: false });
   const [saving, setSaving] = useState(false);

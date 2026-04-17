@@ -29,6 +29,7 @@ export default function ModuleSelectionStep({
 }) {
   const { activeModules = [] } = useAccessSummary();
   const tester = isInternalModuleTester(user);
+  const canAccessCigarInternal = canAccessInternalModuleForTesting("cigarkeeper", user);
   const { t } = useTranslation();
 
   const accessibleModules = useMemo(() => {
@@ -37,11 +38,11 @@ export default function ModuleSelectionStep({
       set.add("pipekeeper");
       set.add("whiskeykeeper");
     }
-    if (canAccessInternalModuleForTesting("cigarkeeper", user)) {
+    if (canAccessCigarInternal) {
       set.add("cigarkeeper");
     }
     return set;
-  }, [activeModules, tester, user]);
+  }, [activeModules, tester, canAccessCigarInternal]);
 
   const selectableModules = MODULES.filter((module) =>
     accessibleModules.has(module.key)
