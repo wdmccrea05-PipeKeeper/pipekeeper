@@ -160,6 +160,51 @@ export function buildBlendSessionReason(blend, scoreData) {
   return `${name} fits your current rotation gap — usage timing and blend balance both land here.`;
 }
 
+const CIGAR_REASON_NEVER_LOGGED = [
+  (name) => `${name} has no cigar sessions logged yet. One focused smoke tonight creates a baseline Curator can use for future humidor planning.`,
+  (name) => `No session history exists for ${name}. Logging it now turns it from a static inventory line into a true session candidate.`,
+  (name) => `${name} is in your humidor but off the books. A first session gives you real recency and enjoyment data to work from.`,
+];
+
+const CIGAR_REASON_LONG_GAP = [
+  (name, days) => `${name} hasn't shown up in a session for ${days} days. That's a meaningful rest window and a strong revisit signal.`,
+  (name, days) => `${days} days since your last session with ${name}. That's enough distance to reassess it with a fresh palate.`,
+  (name, days) => `${name} has rested ${days} days in storage. It's a timely candidate for tonight's rotation.`,
+];
+
+const CIGAR_REASON_AGING_READY = [
+  (name) => `${name} appears humidor-ready now. This is a good window to check how that extra rest translated in-session.`,
+  (name) => `${name} is at or past its ready-to-smoke target. A session now validates whether the aging plan is paying off.`,
+];
+
+const CIGAR_REASON_LOW_STOCK_FAVORITE = [
+  (name, qty) => `${name} is a favorite with only ${qty} stick${qty !== 1 ? 's' : ''} left. Smoke it while it's at peak and decide if it needs restock.`,
+  (name, qty) => `You like ${name}, and inventory is down to ${qty}. This is the right time for a deliberate smoke-and-restock check.`,
+];
+
+export function buildCigarSessionReason(cigar, scoreData) {
+  const { lastSessionDays, sessionCount, readySignal, quantity, rating } = scoreData;
+  const name = cigar.name;
+  const seed = cigar.id || name;
+
+  if (lastSessionDays === null) {
+    return pickVariant(seed, CIGAR_REASON_NEVER_LOGGED)(name);
+  }
+  if (readySignal) {
+    return pickVariant(seed, CIGAR_REASON_AGING_READY)(name);
+  }
+  if (lastSessionDays >= 30) {
+    return pickVariant(seed, CIGAR_REASON_LONG_GAP)(name, lastSessionDays);
+  }
+  if ((cigar.is_favorite || rating >= 4) && quantity <= 2) {
+    return pickVariant(seed, CIGAR_REASON_LOW_STOCK_FAVORITE)(name, quantity);
+  }
+  if (sessionCount <= 1) {
+    return `${name} is under-logged in your session history. Smoking it now improves recommendation quality and humidor rotation balance.`;
+  }
+  return `${name} is a balanced cigar-session candidate right now based on recency, inventory, and your collection profile.`;
+}
+
 // ─── Pairing narrative builders ───────────────────────────────────────────────
 // Each blendType × whiskeyType combination has a structurally distinct narrative.
 // Narratives do NOT reuse "this works because" or identical opening structures.

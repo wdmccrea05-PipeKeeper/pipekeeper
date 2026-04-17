@@ -5,6 +5,7 @@ import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import LogSessionModal from '@/components/home/LogSessionModal';
+import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import CuratorResultsBoard from '@/components/curator/CuratorResultsBoard';
 import CuratorPairingsTab from '@/components/curator/CuratorPairingsTab';
 import CuratorPlanSession from '@/components/curator/CuratorPlanSession';
@@ -151,6 +152,7 @@ export default function CuratorWorkspace({
   // Build Session modals — opened by plan_session "Build Session" button
   const [tastingModal, setTastingModal] = useState(null);   // { bottle }
   const [sessionModal, setSessionModal] = useState(null);   // { pipeId, blendId }
+  const [cigarModal, setCigarModal] = useState(null);       // { cigar }
 
   // Stabilize moduleEnabled so object-identity changes don't trigger effect loops
   const moduleEnabledStr = JSON.stringify(moduleEnabled);
@@ -362,6 +364,8 @@ export default function CuratorWorkspace({
         const moduleKey = candidate?.moduleKey || '';
         if (moduleKey === 'whiskey' || candidate?.itemType === 'bottle') {
           setTastingModal({ bottle: payload?.leftItem || candidate?.item || null });
+        } else if (moduleKey === 'cigar' || candidate?.itemType === 'cigar') {
+          setCigarModal({ cigar: payload?.cigarItem || candidate?.item || null });
         } else if (moduleKey === 'pipe' || moduleKey === 'tobacco' || candidate?.itemType === 'pipe' || candidate?.itemType === 'blend') {
           const pipeId  = (moduleKey === 'pipe'    ? candidate?.item?.id : '') || payload?.leftItem?.id || '';
           const blendId = (moduleKey === 'tobacco' ? candidate?.item?.id : '') || payload?.blendBridge?.id || '';
@@ -497,6 +501,14 @@ export default function CuratorWorkspace({
           initialPipeId={sessionModal.pipeId || ''}
           initialBlendId={sessionModal.blendId || ''}
           onClose={() => setSessionModal(null)}
+        />
+      )}
+      {cigarModal && (
+        <CigarSessionModal
+          isOpen={true}
+          defaultCigar={cigarModal.cigar || null}
+          onClose={() => setCigarModal(null)}
+          onSessionSaved={() => { setCigarModal(null); loadPrimaryData({ silent: true }); }}
         />
       )}
     </>

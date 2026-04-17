@@ -362,6 +362,7 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
 
 function HumidorCard({ humidor, assignedCount, onEdit, onDelete, userEmail }) {
   const [showMaintenance, setShowMaintenance] = useState(false);
+  const [openComposerNonce, setOpenComposerNonce] = useState(0);
   const capacity = humidor.capacity_count || 0;
   const status = getHumidorMaintenanceStatus(humidor);
   const nextCheck = getNextCheckDate(humidor);
@@ -417,6 +418,18 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, userEmail }) {
           </div>
         </div>
         <div className="flex gap-1.5 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              setShowMaintenance(true);
+              setOpenComposerNonce((prev) => prev + 1);
+            }}
+            className="px-2.5 h-7 rounded-lg transition-all hover:bg-[rgba(180,140,75,0.15)] text-xs font-semibold"
+            style={{ border: '1px solid rgba(180,140,75,0.35)', color: '#D4A574' }}
+            aria-label="Log maintenance"
+          >
+            Log Maintenance
+          </button>
           <button
             type="button"
             onClick={onEdit}
@@ -584,6 +597,7 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, userEmail }) {
             <HumidorMaintenanceLog
               humidorId={humidor.id}
               humidorName={humidor.name}
+              openComposerNonce={openComposerNonce}
             />
           </div>
         )}

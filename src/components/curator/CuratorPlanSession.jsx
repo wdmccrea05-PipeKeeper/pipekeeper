@@ -177,6 +177,7 @@ export default function CuratorPlanSession({
 }) {
   const pipeActive    = !!activeModules.pipekeeper;
   const whiskeyActive = !!activeModules.whiskeykeeper;
+  const cigarActive   = !!activeModules.cigarkeeper;
 
   // Build available module filters based on what is enabled
   const availableModules = useMemo(() => {
@@ -184,8 +185,9 @@ export default function CuratorPlanSession({
     if (whiskeyActive) mods.push('whiskey');
     if (pipeActive)    mods.push('pipe');
     if (pipeActive)    mods.push('tobacco');
+    if (cigarActive)   mods.push('cigar');
     return mods;
-  }, [pipeActive, whiskeyActive]);
+  }, [pipeActive, whiskeyActive, cigarActive]);
 
   const isMultiModule = availableModules.length > 1;
 
@@ -205,6 +207,7 @@ export default function CuratorPlanSession({
     onAction?.('build_session', {
       leftItem: candidate.itemType === 'bottle' ? candidate.item : null,
       blendBridge: candidate.itemType === 'blend' ? candidate.item : null,
+      cigarItem: candidate.itemType === 'cigar' ? candidate.item : null,
       title: name,
       _sessionCandidate: candidate,
     });
@@ -227,7 +230,7 @@ export default function CuratorPlanSession({
             Plan Session
           </h2>
           <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>
-            What should you enjoy right now? Based on recency, usage, and collection balance.
+            What should you enjoy right now? Based on recency, usage, readiness, and collection balance.
           </p>
         </div>
         <button
