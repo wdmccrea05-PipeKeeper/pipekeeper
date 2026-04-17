@@ -79,27 +79,27 @@ function scoreCigar(cigar, cigarSessions = []) {
   );
   const lastDate = logs.map((l) => l?.date || l?.created_date).filter(Boolean).sort().reverse()[0];
   const lastSessionDays = daysSince(lastDate);
-  const quantity = Math.max(0, Number(cigar.singles_equivalent ?? cigar.quantity ?? 0));
+  const availableSticks = Math.max(0, Number(cigar.singles_equivalent ?? cigar.quantity ?? 0));
   const rating = Number(cigar.rating || 0);
   const hasReadyDate = !!cigar.ready_to_smoke_date;
   const readySignal = hasReadyDate && daysSince(cigar.ready_to_smoke_date) >= 0;
 
-  if (quantity <= 0) {
-    return { total: 0, sessionCount: logs.length, lastSessionDays, quantity, rating, noStock: true, readySignal };
+  if (availableSticks <= 0) {
+    return { total: 0, sessionCount: logs.length, lastSessionDays, availableSticks, rating, noStock: true, readySignal };
   }
 
   const recencyScore = lastSessionDays === null ? 48 : Math.min(55, lastSessionDays * 0.85);
   const qualityScore = rating >= 4 ? 24 : rating >= 3 ? 14 : rating >= 2 ? 7 : 0;
   const readinessScore = readySignal ? 12 : 0;
   const usageScore = Math.max(0, 22 - logs.length * 3);
-  const inventoryScore = quantity <= 2 ? 8 : quantity <= 5 ? 4 : 0;
+  const inventoryScore = availableSticks <= 2 ? 8 : availableSticks <= 5 ? 4 : 0;
   const favoriteScore = cigar.is_favorite ? 10 : 0;
 
   return {
     total: recencyScore + qualityScore + readinessScore + usageScore + inventoryScore + favoriteScore,
     sessionCount: logs.length,
     lastSessionDays,
-    quantity,
+    availableSticks,
     rating,
     readySignal,
   };

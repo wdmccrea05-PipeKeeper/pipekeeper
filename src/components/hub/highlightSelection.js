@@ -29,7 +29,7 @@ export function buildHubHighlightCandidates({
   whiskeyOpenable = false,
   cigarOpenable = false,
   metrics = {},
-  t = (_key, fallback) => fallback,
+  t = (key, fallback) => fallback ?? key,
   formatFromBase = (value) => `$${toNumber(value).toFixed(0)}`,
   getPipeValue = () => 0,
   getBottleValue = () => 0,
@@ -37,6 +37,7 @@ export function buildHubHighlightCandidates({
   const pipeValue = toNumber(getPipeValue(metrics.mostValuablePipe));
   const bottleValue = toNumber(getBottleValue(metrics.mostValuableBottle));
   const cigarValue = toNumber(metrics.highestValueCigar?.__totalValue || 0);
+  const cigarCrownJewelValue = toNumber(metrics.cigarCrownJewel?.__totalValue || 0);
   const restockQty = cigarQuantity(metrics.restockPriorityCigar);
 
   const cards = [
@@ -170,18 +171,18 @@ export function buildHubHighlightCandidates({
       route: `/CigarDetail?id=${encodeURIComponent(metrics.restockPriorityCigar.id)}`,
       score: 72 + Math.max(0, 6 - restockQty) * 4,
     } : null,
-    cigarOpenable && metrics.cigarCrownJewel && cigarValue > 0 ? {
+    cigarOpenable && metrics.cigarCrownJewel && cigarCrownJewelValue > 0 ? {
       id: 'cigar-crown-jewel',
       recordType: 'cigar',
       recordId: metrics.cigarCrownJewel.id,
       title: t('hub.cigarCrownJewel', 'Cigar Crown Jewel'),
       value: metrics.cigarCrownJewel.name,
-      subtitle: formatFromBase(cigarValue),
+      subtitle: formatFromBase(cigarCrownJewelValue),
       heroImage: metrics.cigarCrownJewel.photos?.[0],
       bgImage: metrics.cigarCrownJewel.photos?.[0],
       accent: '#D4A574',
       route: `/CigarDetail?id=${encodeURIComponent(metrics.cigarCrownJewel.id)}`,
-      score: 78 + Math.min(25, cigarValue / 30) + toNumber(metrics.cigarCrownJewel.rating) * 2,
+      score: 78 + Math.min(25, cigarCrownJewelValue / 30) + toNumber(metrics.cigarCrownJewel.rating) * 2,
     } : null,
   ];
 

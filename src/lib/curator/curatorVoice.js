@@ -183,7 +183,7 @@ const CIGAR_REASON_LOW_STOCK_FAVORITE = [
 ];
 
 export function buildCigarSessionReason(cigar, scoreData) {
-  const { lastSessionDays, sessionCount, readySignal, quantity, rating } = scoreData;
+  const { lastSessionDays, sessionCount, readySignal, availableSticks, rating } = scoreData;
   const name = cigar.name;
   const seed = cigar.id || name;
 
@@ -196,8 +196,8 @@ export function buildCigarSessionReason(cigar, scoreData) {
   if (lastSessionDays >= 30) {
     return pickVariant(seed, CIGAR_REASON_LONG_GAP)(name, lastSessionDays);
   }
-  if ((cigar.is_favorite || rating >= 4) && quantity <= 2) {
-    return pickVariant(seed, CIGAR_REASON_LOW_STOCK_FAVORITE)(name, quantity);
+  if ((cigar.is_favorite || rating >= 4) && availableSticks <= 2) {
+    return pickVariant(seed, CIGAR_REASON_LOW_STOCK_FAVORITE)(name, availableSticks);
   }
   if (sessionCount <= 1) {
     return `${name} is under-logged in your session history. Smoking it now improves recommendation quality and humidor rotation balance.`;

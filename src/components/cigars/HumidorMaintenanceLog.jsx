@@ -244,10 +244,11 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
   };
 
   useEffect(() => {
-    if (!openComposerNonce) return;
+    const nonce = Number(openComposerNonce);
+    if (!Number.isFinite(nonce) || nonce <= 0) return;
     setForm({
       ...EMPTY_FORM,
-      event_type: 'other',
+      event_type: 'humidity_check',
     });
     setShowDialog(true);
   }, [openComposerNonce]);

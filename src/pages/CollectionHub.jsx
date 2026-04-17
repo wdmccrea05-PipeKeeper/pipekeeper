@@ -469,7 +469,18 @@ export default function CollectionHub() {
       : null;
 
     const cigarCrownJewel = cigarOpenable
-      ? highestValueCigar
+      ? [...cigars]
+          .filter((c) => getCigarAvailableQuantity(c) > 0)
+          .map((c) => {
+            const totalValue = getCigarUnitValue(c) * getCigarAvailableQuantity(c);
+            const score =
+              totalValue * 0.6 +
+              Number(c.rating || 0) * 25 +
+              (c.is_favorite ? 30 : 0) +
+              (logsByCigar[c.id] || 0) * 2;
+            return { ...c, __totalValue: totalValue, __crownScore: score };
+          })
+          .sort((a, b) => Number(b.__crownScore || 0) - Number(a.__crownScore || 0))[0] || null
       : null;
 
     const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, cigarSessions, { limit: 5 });
