@@ -343,6 +343,9 @@ Deno.serve(async (req) => {
     const authUserId = String(user?.auth_user_id || '');
     const email = normEmail(user.email);
     const modulesCsv = modules.join(',');
+    const appAliases = Array.from(
+      new Set(['collectionkeeper', 'pipekeeper', ...modules])
+    ).join(',');
     const requestId = crypto.randomUUID();
     const isUpgradeIntent = type.startsWith('bundle') ? 'true' : 'false';
 
@@ -351,7 +354,7 @@ Deno.serve(async (req) => {
       app_slug: appSlug,
       app_environment: appEnvironment,
       legacy_app_slug: 'collectionkeeper',
-      app_aliases: 'pipekeeper,collectionkeeper',
+      app_aliases: appAliases,
       request_id: requestId,
       user_id: userId,
       auth_user_id: authUserId,

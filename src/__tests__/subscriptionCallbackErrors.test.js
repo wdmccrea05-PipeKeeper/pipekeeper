@@ -23,4 +23,18 @@ describe('parseSubscriptionCallbackError', () => {
     );
     expect(message).toContain('could not complete subscription activation');
   });
+
+  it('handles machine-style callback reason codes', () => {
+    const message = parseSubscriptionCallbackError(
+      params({ reason: 'app_not_found' })
+    );
+    expect(message).toContain('could not activate your subscription');
+  });
+
+  it('handles machine-style entitlement error codes', () => {
+    const message = parseSubscriptionCallbackError(
+      params({ code: 'entitlement_grant_failed' })
+    );
+    expect(message).toContain('could not activate your subscription');
+  });
 });

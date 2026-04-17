@@ -45,6 +45,9 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
   const normalizedModules = Array.isArray(selectedModules)
     ? selectedModules.map((m) => String(m || '').trim().toLowerCase()).filter(Boolean)
     : [];
+  const appAliases = Array.from(
+    new Set(['collectionkeeper', 'pipekeeper', ...normalizedModules])
+  ).join(',');
 
   const billingPeriod = planKey.includes('annual') ? 'annual' : 'monthly';
 
@@ -98,7 +101,7 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
     app_slug: appSlug,
     app_environment: appEnvironment,
     legacy_app_slug: 'collectionkeeper',
-    app_aliases: 'pipekeeper,collectionkeeper',
+    app_aliases: appAliases,
     user_email: String(user?.email || '').trim().toLowerCase(),
     user_id: String(user?.id || user?.auth_user_id || '').trim(),
     plan_key: planKey,
