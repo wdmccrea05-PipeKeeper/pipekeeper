@@ -17,6 +17,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
     isModuleLaunched('cigarkeeper', user) || isInternalModuleTester(user);
   const [selected, setSelected] = useState({ pipekeeper: true, whiskeykeeper: false, cigarkeeper: false });
   const [saving, setSaving] = useState(false);
+  const hasAnySelected = selected.pipekeeper || selected.whiskeykeeper || (canSelectCigarKeeper && selected.cigarkeeper);
 
   const userHasAnyPaid =
     !!user?.pipekeeper_paid ||
@@ -30,7 +31,6 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
   };
 
   const handleContinue = async () => {
-    const hasAnySelected = selected.pipekeeper || selected.whiskeykeeper || (canSelectCigarKeeper && selected.cigarkeeper);
     if (!hasAnySelected) {
       toast.error('Please select at least one module.');
       return;
@@ -185,7 +185,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
         <div className="flex gap-3 justify-end">
           <Button
             onClick={handleContinue}
-            disabled={saving || (!selected.pipekeeper && !selected.whiskeykeeper && !(canSelectCigarKeeper && selected.cigarkeeper))}
+            disabled={saving || !hasAnySelected}
             className="bg-[#A35C5C] hover:bg-[#8F4E4E]"
           >
             {saving ? 'Saving...' : 'Continue'}

@@ -29,7 +29,7 @@ const moduleLabels = {
 };
 
 const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
-const OFFER_MULTI_MODULE_BUNDLES = false;
+const OFFER_MULTI_MODULE_BUNDLES = String(import.meta.env.VITE_ENABLE_MULTI_BUNDLE_OFFERS || '').toLowerCase() === 'true';
 
 function launchedModules() {
   return ALL_MODULES.filter((m) => isModuleLaunched(m));

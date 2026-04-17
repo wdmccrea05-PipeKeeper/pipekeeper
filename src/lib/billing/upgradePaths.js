@@ -6,7 +6,13 @@
  */
 
 import { SUBSCRIPTION_PLANS, getPreferredPlanKeyForModule } from './subscriptionPlans';
-import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
+import { getModuleReleaseState } from '@/components/utils/moduleReleaseState';
+
+const PUBLIC_BILLING_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+
+function isPubliclyLaunched(moduleKey) {
+  return getModuleReleaseState(moduleKey) === 'launched';
+}
 
 /**
  * Returns the most relevant current plan key for a module.
@@ -59,7 +65,7 @@ export function getAvailableUpgradeOptions(subscriptionState) {
   if (hasBundle) return [];
 
   const options = [];
-  const launchedModules = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'].filter((m) => isModuleLaunched(m));
+  const launchedModules = PUBLIC_BILLING_MODULES.filter((m) => isPubliclyLaunched(m));
   const paidModules = launchedModules.filter((m) => moduleFlags[m]);
   const hasFoundersEligibleCoverage = paidModules.includes('pipekeeper') || paidModules.includes('whiskeykeeper');
 
@@ -96,7 +102,10 @@ export function getAvailableUpgradeOptions(subscriptionState) {
           : 'CigarKeeper';
 
     options.push({
-      action: `add_${moduleKey}_module`,
+      action:
+        moduleKey === 'pipekeeper' || moduleKey === 'whiskeykeeper'
+          ? 'add_other_module'
+          : `add_${moduleKey}_module`,
       actionType: 'add_complementary_module',
       label: `Add ${labelPrefix} Pro`,
       description: `Keep your current subscription and add ${labelPrefix} Pro.`,
@@ -116,8 +125,8 @@ export function getAvailableUpgradeOptions(subscriptionState) {
  */
 export function getNewPurchaseOptions() {
   const plans = [
-    ...['pipekeeper', 'whiskeykeeper', 'cigarkeeper']
-      .filter((moduleKey) => isModuleLaunched(moduleKey))
+    ...PUBLIC_BILLING_MODULES
+      .filter((moduleKey) => isPubliclyLaunched(moduleKey))
       .map((moduleKey) => SUBSCRIPTION_PLANS[getPreferredPlanKeyForModule(moduleKey)])
       .filter(Boolean),
     SUBSCRIPTION_PLANS.founders_bundle_annual,
