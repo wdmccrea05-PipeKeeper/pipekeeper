@@ -215,4 +215,83 @@ describe('bulk import system', () => {
     expect(analysis.rows[0].status).toBe('error');
     expect(analysis.rows[0].errors).toContain('line or vitola is required');
   });
+
+  test('imports happy-path rows for all four supported live import types', async () => {
+    const fixtures = [
+      {
+        def: importDefinitions.pipekeeper_pipes,
+        csv: 'maker,shape,purchase_date,purchase_price\nPeterson,Billiard,2025-01-15,120\n',
+        createSpy: mockScoped.Pipe.create,
+      },
+      {
+        def: importDefinitions.pipekeeper_blends,
+        csv: 'manufacturer,blend_name,package_type,quantity,purchase_date,purchase_price\nCornell & Diehl,Autumn Evening,tin,2,2025-02-10,14.99\n',
+        createSpy: mockScoped.TobaccoBlend.create,
+      },
+      {
+        def: importDefinitions.whiskeykeeper_bottles,
+        csv: 'brand,expression,distillery,bottle_size,acquisition_date,purchase_price\nLagavulin,16 Year,Lagavulin,750ml,2025-03-01,99\n',
+        createSpy: mockBase44.entities.Bottle.create,
+      },
+      {
+        def: importDefinitions.cigarkeeper_cigars,
+        csv: 'brand,line,vitola,package_type,cigars_per_package,current_quantity,purchase_date,purchase_price,body,strength,production_status\nOliva,Serie V,Robusto,box,20,1,2025-02-20,145,medium_full,medium_full,regular_production\n',
+        createSpy: mockBase44.entities.Cigar.create,
+      },
+    ];
+
+    for (const { def, csv, createSpy } of fixtures) {
+      const parsed = parseCsvText(csv);
+      const analysis = await analyzeImportRows({
+        definition: def,
+        headers: parsed.headers,
+        rawHeaders: parsed.rawHeaders,
+        rows: parsed.rows,
+        duplicateHeaders: parsed.duplicateHeaders,
+        parseErrors: parsed.parseErrors,
+        userEmail: 'user@example.com',
+      });
+      const result = await executeImportRows({
+        definition: def,
+        analyzedRows: analysis.rows,
+        duplicateMode: 'create_only',
+      });
+
+      expect(result.failed).toBe(0);
+      expect(result.imported).toBe(1);
+      expect(createSpy).toHaveBeenCalled();
+    }
+  });
+
+  test('mixed import analysis separates valid, warning, and blocked rows', async () => {
+    const definition = importDefinitions.pipekeeper_pipes;
+    mockBase44.entities.Pipe.filter.mockResolvedValueOnce([
+      {
+        maker: 'Peterson',
+        name: 'Peterson Billiard',
+        shape: 'Billiard',
+        finish: 'Smooth',
+        purchase_date: '2025-01-15',
+      },
+    ]);
+
+    const parsed = parseCsvText(
+      'maker,shape,purchase_date,purchase_price,favorite\nPeterson,Billiard,2025-01-15,120,yes\nSavinelli,Author,2025-01-16,95,\n,Billiard,2025-01-17,not-a-number,yes\n'
+    );
+    const analysis = await analyzeImportRows({
+      definition,
+      headers: parsed.headers,
+      rawHeaders: parsed.rawHeaders,
+      rows: parsed.rows,
+      duplicateHeaders: parsed.duplicateHeaders,
+      parseErrors: parsed.parseErrors,
+      userEmail: 'user@example.com',
+    });
+
+    expect(analysis.totalRows).toBe(3);
+    expect(analysis.counts.warning).toBeGreaterThan(0);
+    expect(analysis.counts.error).toBe(1);
+    expect(analysis.rows.some((r) => r.status === 'valid' || r.status === 'warning')).toBe(true);
+    expect(analysis.rows.some((r) => r.status === 'error')).toBe(true);
+  });
 });
