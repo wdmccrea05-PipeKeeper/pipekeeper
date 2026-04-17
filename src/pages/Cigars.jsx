@@ -36,11 +36,28 @@ import {
   getCigarQuickActionSuccessMessage,
   normalizeCigarQuickAction,
 } from '@/platform/cigarQuickActions';
+import { getAvailableQuantity } from '@/platform/cigarInventory';
 
 const TABS = ['collection', 'humidors', 'wishlist', 'shopping', 'restock'];
+const RECENTLY_SMOKED_DAYS = 90;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+// Cap per-list session fetch to keep collection filtering responsive on large accounts.
+const MAX_CIGAR_LIST_SESSIONS = 1000;
 
-function sortCigars(cigars, sortBy) {
+function getRecentSmokingCutoff() {
+  return Date.now() - (MS_PER_DAY * RECENTLY_SMOKED_DAYS);
+}
+
+function sortCigars(cigars, sortBy, { lastSmokedByCigarId = {} } = {}) {
   return [...cigars].sort((a, b) => {
+    if (sortBy === 'highest_rated') {
+      return Number(b?.rating || 0) - Number(a?.rating || 0);
+    }
+    if (sortBy === 'recently_smoked') {
+      const aDate = lastSmokedByCigarId[a.id] || 0;
+      const bDate = lastSmokedByCigarId[b.id] || 0;
+      return bDate - aDate;
+    }
     const aVal = a[sortBy] ?? '';
     const bVal = b[sortBy] ?? '';
     if (typeof aVal === 'number' && typeof bVal === 'number') return bVal - aVal;
@@ -111,6 +128,8 @@ function CigarsInner() {
   const SORT_OPTIONS = [
     { value: 'name', label: t('cigars.sortName', 'Name') },
     { value: 'brand', label: t('cigars.sortBrand', 'Brand') },
+    { value: 'highest_rated', label: t('cigars.sortHighestRated', 'Highest Rated') },
+    { value: 'recently_smoked', label: t('cigars.sortRecentlySmoked', 'Recently Smoked') },
     { value: 'created_date', label: t('cigars.sortAddedDate', 'Added Date') },
     { value: 'estimated_value', label: t('cigars.sortValue', 'Value') },
     { value: 'quantity', label: t('cigars.sortQuantity', 'Quantity') },
@@ -128,6 +147,9 @@ function CigarsInner() {
   const [filterStrength, setFilterStrength] = useState('');
   const [filterOrigin, setFilterOrigin] = useState('');
   const [filterHumidor, setFilterHumidor] = useState('');
+  const [filterFavoritesOnly, setFilterFavoritesOnly] = useState(false);
+  const [filterLowStockOnly, setFilterLowStockOnly] = useState(false);
+  const [filterRecentlySmokedOnly, setFilterRecentlySmokedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [addFlowOpen, setAddFlowOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -180,6 +202,41 @@ function CigarsInner() {
     staleTime: 10000,
   });
 
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['cigar-sessions-for-list', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const result = await base44.entities.CigarSession.filter(
+        { created_by: user?.email },
+        '-date',
+        MAX_CIGAR_LIST_SESSIONS
+      ).catch(() => []);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: 10000,
+  });
+
+  const sessionsByCigarId = useMemo(() => {
+    return sessions.reduce((acc, session) => {
+      if (!session?.cigar_id || session?.is_out_of_collection) return acc;
+      if (!acc[session.cigar_id]) acc[session.cigar_id] = [];
+      acc[session.cigar_id].push(session);
+      return acc;
+    }, {});
+  }, [sessions]);
+
+  const lastSmokedByCigarId = useMemo(() => {
+    return Object.entries(sessionsByCigarId).reduce((acc, [cigarId, linkedSessions]) => {
+      const newest = linkedSessions.reduce((latest, session) => {
+        const timestamp = session?.date ? new Date(session.date).getTime() : 0;
+        return Number.isFinite(timestamp) && timestamp > latest ? timestamp : latest;
+      }, 0);
+      if (newest > 0) acc[cigarId] = newest;
+      return acc;
+    }, {});
+  }, [sessionsByCigarId]);
+
   const origins = useMemo(() => {
     const set = new Set(cigars.map((c) => c.country_of_origin).filter(Boolean));
     return Array.from(set).sort();
@@ -201,9 +258,34 @@ function CigarsInner() {
     if (filterStrength) list = list.filter((c) => c.strength === filterStrength);
     if (filterOrigin) list = list.filter((c) => c.country_of_origin === filterOrigin);
     if (filterHumidor) list = list.filter((c) => c.humidor_id === filterHumidor);
+    if (filterFavoritesOnly) list = list.filter((c) => c.is_favorite);
+    if (filterLowStockOnly) {
+      list = list.filter((c) => {
+        const quantity = getAvailableQuantity(c);
+        const threshold = Number(c?.restock_threshold || 3);
+        return quantity > 0 && quantity <= threshold;
+      });
+    }
+    if (filterRecentlySmokedOnly) {
+      const recentCutoff = getRecentSmokingCutoff();
+      list = list.filter((c) => (lastSmokedByCigarId[c.id] || 0) >= recentCutoff);
+    }
 
-    return sortCigars(list, sortBy);
-  }, [cigars, activeTab, search, sortBy, filterBody, filterStrength, filterOrigin, filterHumidor]);
+    return sortCigars(list, sortBy, { lastSmokedByCigarId });
+  }, [
+    cigars,
+    activeTab,
+    search,
+    sortBy,
+    filterBody,
+    filterStrength,
+    filterOrigin,
+    filterHumidor,
+    filterFavoritesOnly,
+    filterLowStockOnly,
+    filterRecentlySmokedOnly,
+    lastSmokedByCigarId,
+  ]);
 
   const wishlistCount = useMemo(() => cigars.filter((c) => c.wishlist).length, [cigars]);
   const shoppingCount = useMemo(() => cigars.filter((c) => c.shopping_list).length, [cigars]);
@@ -617,20 +699,65 @@ function CigarsInner() {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                  {t('cigars.filterFavorites', 'Favorites')}
+                </label>
+                <Select value={filterFavoritesOnly ? 'favorites' : 'all'} onValueChange={(v) => setFilterFavoritesOnly(v === 'favorites')}>
+                  <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
+                    <SelectItem value="favorites">{t('cigars.favoritesOnly', 'Favorites only')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                  {t('cigars.filterStock', 'Stock')}
+                </label>
+                <Select value={filterLowStockOnly ? 'low' : 'all'} onValueChange={(v) => setFilterLowStockOnly(v === 'low')}>
+                  <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
+                    <SelectItem value="low">{t('cigars.lowStockOnly', 'Low stock only')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                  {t('cigars.filterSessions', 'Sessions')}
+                </label>
+                <Select value={filterRecentlySmokedOnly ? 'smoked' : 'all'} onValueChange={(v) => setFilterRecentlySmokedOnly(v === 'smoked')}>
+                  <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
+                    <SelectItem value="smoked">{t('cigars.recentlySmokedOnly', 'Recently smoked')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
 
-          {(search || filterBody || filterStrength || filterOrigin || filterHumidor) && (
+          {(search || filterBody || filterStrength || filterOrigin || filterHumidor || filterFavoritesOnly || filterLowStockOnly || filterRecentlySmokedOnly) && (
             <div className="flex flex-wrap gap-1.5">
               {filterBody && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Body: {formatCigarStrengthLabel(filterBody)}</span>}
               {filterStrength && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Strength: {formatCigarStrengthLabel(filterStrength)}</span>}
               {filterOrigin && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Origin: {filterOrigin}</span>}
               {filterHumidor && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Humidor: {(humidors.find((h) => h.id === filterHumidor)?.name) || 'Assigned'}</span>}
+              {filterFavoritesOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Favorites</span>}
+              {filterLowStockOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Low stock</span>}
+              {filterRecentlySmokedOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Recently smoked</span>}
             </div>
           )}
 
           {/* Results count */}
-          {(search || filterBody || filterStrength || filterOrigin || filterHumidor) && (
+          {(search || filterBody || filterStrength || filterOrigin || filterHumidor || filterFavoritesOnly || filterLowStockOnly || filterRecentlySmokedOnly) && (
             <p className="text-sm" style={{ color: 'rgba(224,216,200,0.55)' }}>
               {filteredCigars.length} {filteredCigars.length !== 1 ? t('cigars.results', 'results') : t('cigars.result', 'result')}
             </p>
