@@ -45,6 +45,15 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   const isTester = isInternalModuleTester(effectiveUser);
   const pipekeeperPaid = !!effectiveUser?.pipekeeper_paid;
   const whiskeykeeperPaid = !!effectiveUser?.whiskeykeeper_paid;
+  const cigarkeeperPaid = !!effectiveUser?.cigarkeeper_paid;
+  const winekeeperPaid = !!effectiveUser?.winekeeper_paid;
+  const paidFlagByModule = {
+    pipekeeper: pipekeeperPaid,
+    whiskeykeeper: whiskeykeeperPaid,
+    cigarkeeper: cigarkeeperPaid,
+    winekeeper: winekeeperPaid,
+  };
+  const paidModuleIds = Object.keys(paidFlagByModule);
 
   const MODULE_CONFIG = [
     {
@@ -96,12 +105,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   ].filter((mod) => !mod.hidden);
 
   async function handleSetTierAndEnable(moduleId, isPaid) {
-    const hasPipePro = !!effectiveUser?.pipekeeper_paid;
-    const hasWhiskeyPro = !!effectiveUser?.whiskeykeeper_paid;
-
-    const hasEntitlement =
-      (moduleId === "pipekeeper" && hasPipePro) ||
-      (moduleId === "whiskeykeeper" && hasWhiskeyPro);
+    const hasEntitlement = !!paidFlagByModule[moduleId];
 
     if (isPaid && !hasEntitlement) {
       navigate("/Subscription");
@@ -110,7 +114,11 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
 
     setSaving(moduleId);
     try {
-      const key = moduleId === "pipekeeper" ? "pipekeeper_paid" : "whiskeykeeper_paid";
+      const key = `${moduleId}_paid`;
+      const validPaidKeys = paidModuleIds.map((id) => `${id}_paid`);
+      if (!validPaidKeys.includes(key)) {
+        throw new Error("Unsupported module entitlement key");
+      }
 
       // Important: this only changes local module mode.
       // It must NOT mutate or cancel the actual subscription.
@@ -230,7 +238,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0">
-                {mod.launched && (mod.id === "pipekeeper" || mod.id === "whiskeykeeper") ? (
+                {mod.launched && paidModuleIds.includes(mod.id) ? (
                   <>
                     <Switch
                       checked={enabled}
@@ -241,9 +249,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                       <Button
                         size="sm"
                         variant={
-                          mod.id === "pipekeeper"
-                            ? pipekeeperPaid ? "default" : "outline"
-                            : whiskeykeeperPaid ? "default" : "outline"
+                          paidFlagByModule[mod.id] ? "default" : "outline"
                         }
                         onClick={() => handleSetTierAndEnable(mod.id, true)}
                         disabled={isSavingThis}
@@ -254,9 +260,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                       <Button
                         size="sm"
                         variant={
-                          mod.id === "pipekeeper"
-                            ? !pipekeeperPaid && enabled ? "default" : "outline"
-                            : !whiskeykeeperPaid && enabled ? "default" : "outline"
+                          !paidFlagByModule[mod.id] && enabled ? "default" : "outline"
                         }
                         onClick={() => handleSetTierAndEnable(mod.id, false)}
                         disabled={isSavingThis}

@@ -18,13 +18,34 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { email, tier = "premium", status = "active", notes = "" } = body;
+    const {
+      email,
+      status = "active",
+      provider = "manual",
+      billing_interval = null,
+      modules = [],
+      notes = "",
+    } = body;
 
     if (!email) {
       return json(400, { ok: false, message: "Email is required" });
     }
 
     const emailLower = String(email).trim().toLowerCase();
+    const normalizedStatus = String(status || "active").trim().toLowerCase();
+    const normalizedProvider = String(provider || "manual").trim().toLowerCase();
+    const providerForSubscriptionField =
+      ["apple", "stripe"].includes(normalizedProvider) ? normalizedProvider : null;
+    const activeStatuses = new Set(["active", "trialing", "past_due", "incomplete"]);
+    const parsedModules = Array.isArray(modules)
+      ? modules
+      : String(modules || "").split(",");
+    const paidModules = [...new Set(
+      parsedModules
+        .map((m: unknown) => String(m || "").trim().toLowerCase())
+        .filter((m: string) => ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"].includes(m))
+    )];
+    const hasPaidAccess = activeStatuses.has(normalizedStatus) && paidModules.length > 0;
 
     // Get or create user
     const srv = base44.asServiceRole;
@@ -54,20 +75,34 @@ Deno.serve(async (req: Request) => {
     try {
       await srv.entities.User.update(targetUser.id, {
         subscriptionSource: "manual",
-        subscriptionStatus: status,
-        subscriptionTier: tier,
+        subscriptionStatus: normalizedStatus,
         subscriptionUpdatedAt: new Date().toISOString(),
-        // Canonical entitlement fields - required by getEntitlementTier() resolver
-        entitlement_tier: tier,
-        subscription_tier: tier,
-        subscription_level: "paid",
-        subscription_status: status,
+        ...(providerForSubscriptionField ? { subscription_provider: providerForSubscriptionField } : {}),
+        billing_source_of_truth: normalizedProvider === "manual" ? "manual" : normalizedProvider,
+        entitlement_tier: hasPaidAccess ? "pro" : "free",
+        subscription_level: hasPaidAccess ? "paid" : "free",
+        subscription_status: normalizedStatus,
+        has_paid_access: hasPaidAccess,
+        paid_modules_csv: hasPaidAccess ? paidModules.join(",") : "",
+        pipekeeper_paid: hasPaidAccess && paidModules.includes("pipekeeper"),
+        whiskeykeeper_paid: hasPaidAccess && paidModules.includes("whiskeykeeper"),
+        cigarkeeper_paid: hasPaidAccess && paidModules.includes("cigarkeeper"),
+        winekeeper_paid: hasPaidAccess && paidModules.includes("winekeeper"),
+        ...(hasPaidAccess ? { subscription_tier: "pro" } : {}),
         data: {
           ...(targetUser.data || {}),
-          entitlement_tier: tier,
-          subscription_tier: tier,
-          subscription_level: "paid",
-          subscription_status: status,
+          entitlement_tier: hasPaidAccess ? "pro" : "free",
+          subscription_level: hasPaidAccess ? "paid" : "free",
+          subscription_status: normalizedStatus,
+          subscription_provider: normalizedProvider,
+          paid_modules_csv: hasPaidAccess ? paidModules.join(",") : "",
+          pipekeeper_paid: hasPaidAccess && paidModules.includes("pipekeeper"),
+          whiskeykeeper_paid: hasPaidAccess && paidModules.includes("whiskeykeeper"),
+          cigarkeeper_paid: hasPaidAccess && paidModules.includes("cigarkeeper"),
+          winekeeper_paid: hasPaidAccess && paidModules.includes("winekeeper"),
+          billing_interval: billing_interval || null,
+          admin_subscription_notes: String(notes || "").trim() || null,
+          ...(hasPaidAccess ? { subscription_tier: "pro" } : {}),
         },
       });
 
@@ -75,7 +110,9 @@ Deno.serve(async (req: Request) => {
       const updatedUser = await srv.entities.User.get(targetUser.id);
 
       // Log the action
-      console.log(`[Admin] Granted subscription to ${emailLower}: tier=${tier} status=${status}`);
+      console.log(
+        `[Admin] Granted subscription access to ${emailLower}: status=${normalizedStatus} provider=${normalizedProvider} modules=${paidModules.join(",") || "none"}`
+      );
 
       return json(200, {
         ok: true,

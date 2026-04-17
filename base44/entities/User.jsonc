@@ -150,10 +150,20 @@
       "default": false,
       "description": "User has active WhiskeyKeeper subscription"
     },
+    "cigarkeeper_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "User has active CigarKeeper subscription"
+    },
+    "winekeeper_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "User has active WineKeeper subscription"
+    },
     "has_paid_access": {
       "type": "boolean",
       "default": false,
-      "description": "User has any paid subscription (pipekeeper_paid OR whiskeykeeper_paid)"
+      "description": "User has any paid subscription across PipeKeeper, WhiskeyKeeper, CigarKeeper, or WineKeeper"
     },
     "paid_modules_csv": {
       "type": "string",

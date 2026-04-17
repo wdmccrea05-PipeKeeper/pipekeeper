@@ -23,6 +23,8 @@ export function checkFreeTierLimit(moduleId, resourceType, currentCount, user) {
   // Paid users have no limits
   if (moduleId === 'pipekeeper' && user?.pipekeeper_paid) return { atLimit: false, count: currentCount, limit: null };
   if (moduleId === 'whiskeykeeper' && user?.whiskeykeeper_paid) return { atLimit: false, count: currentCount, limit: null };
+  if (moduleId === 'cigarkeeper' && user?.cigarkeeper_paid) return { atLimit: false, count: currentCount, limit: null };
+  if (moduleId === 'winekeeper' && user?.winekeeper_paid) return { atLimit: false, count: currentCount, limit: null };
 
   const limit = FREE_TIER_LIMITS[moduleId]?.[resourceType];
   if (!limit) return { atLimit: false, count: currentCount, limit: null };

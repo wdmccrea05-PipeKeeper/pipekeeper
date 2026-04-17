@@ -13,6 +13,22 @@ import { useAuth } from "@/lib/AuthContext";
 import { getCanonicalUserProfile } from "@/utils/getCanonicalUserProfile";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
+const unique = (arr) => [...new Set(arr)];
+const parseModulesCsv = (csv) =>
+  unique(
+    String(csv || "")
+      .split(",")
+      .map((m) => m.trim().toLowerCase())
+      .filter(Boolean)
+  );
+const statusRank = (status) => {
+  const s = String(status || "").toLowerCase();
+  if (s === "active") return 4;
+  if (s === "trialing" || s === "trial") return 3;
+  if (s === "past_due") return 2;
+  if (s === "incomplete") return 1;
+  return 0;
+};
 
 // Module-level in-flight locks — prevent duplicate calls when multiple components mount simultaneously
 let ensureUserInFlight = false;
@@ -147,30 +163,33 @@ export function useCurrentUser() {
           return fallback[0] || null;
         }
 
-        // Pick best subscription: pro > premium, then active > trialing > most recent
-        valid.sort((a, b) => {
-          // Prioritize pro tier
-          const aPro = (a.tier || '').toLowerCase() === 'pro' ? 1 : 0;
-          const bPro = (b.tier || '').toLowerCase() === 'pro' ? 1 : 0;
-          if (aPro !== bPro) return bPro - aPro;
-
-          // Then active status
-          const aActive = a.status === "active" ? 1 : 0;
-          const bActive = b.status === "active" ? 1 : 0;
-          if (aActive !== bActive) return bActive - aActive;
-
-          // Then trialing
-          const aTrialing = a.status === "trialing" || a.status === "trial" ? 1 : 0;
-          const bTrialing = b.status === "trialing" || b.status === "trial" ? 1 : 0;
-          if (aTrialing !== bTrialing) return bTrialing - aTrialing;
-
-          // Finally most recent
-          const aDate = new Date(a.current_period_start || a.created_date || 0).getTime();
-          const bDate = new Date(b.current_period_start || b.created_date || 0).getTime();
+        // Aggregate all qualifying subscriptions to avoid collapsing legitimate
+        // multi-subscription users to a single module entitlement surface.
+        const sorted = [...valid].sort((a, b) => {
+          const rankDiff = statusRank(b?.status) - statusRank(a?.status);
+          if (rankDiff !== 0) return rankDiff;
+          const aDate = new Date(a.current_period_start || a.updated_date || a.created_date || 0).getTime();
+          const bDate = new Date(b.current_period_start || b.updated_date || b.created_date || 0).getTime();
           return bDate - aDate;
         });
 
-        return valid[0];
+        const primary = sorted[0] || null;
+        const unionModules = unique(valid.flatMap((row) => parseModulesCsv(row?.modules_csv)));
+
+        if (!primary) return null;
+
+        return {
+          ...primary,
+          plan_key: "aggregated_multi_subscription",
+          planKey: "aggregated_multi_subscription",
+          modules_csv: unionModules.join(","),
+          module_count: unionModules.length,
+          metadata: {
+            ...(primary?.metadata || {}),
+            modules_csv: unionModules.join(","),
+          },
+          subscription_rows_count: valid.length,
+        };
       } catch (error) {
         if (import.meta?.env?.DEV) {
           console.warn("[useCurrentUser] Subscription query error:", error);
@@ -278,6 +297,8 @@ export function useCurrentUser() {
   // CRITICAL FIX: Per-module entitlements (canonical source of truth)
   const pipekeeper_paid = !!user?.pipekeeper_paid;
   const whiskeykeeper_paid = !!user?.whiskeykeeper_paid;
+  const cigarkeeper_paid = !!user?.cigarkeeper_paid;
+  const winekeeper_paid = !!user?.winekeeper_paid;
 
   // Merge user with userProfile for module fields
   const mergedUser = userProfile ? { ...user, ...userProfile } : user;
@@ -304,6 +325,8 @@ export function useCurrentUser() {
     isFoundingMember: isFounding,
     pipekeeper_paid, // CRITICAL: Per-module entitlements
     whiskeykeeper_paid, // CRITICAL: Per-module entitlements
+    cigarkeeper_paid, // CRITICAL: Per-module entitlements
+    winekeeper_paid, // CRITICAL: Per-module entitlements
     refetch,
   };
 }

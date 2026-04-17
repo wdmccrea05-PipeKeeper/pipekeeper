@@ -96,6 +96,15 @@ describe("getEntitlementTier — inactive subscription is not granted", () => {
     const sub = { status: "expired", tier: "pro" };
     expect(getEntitlementTier({}, sub)).toBe("free");
   });
+
+  test("explicit free entitlement_tier is not overridden by stale legacy tier fields", () => {
+    expect(
+      getEntitlementTier(
+        { entitlement_tier: "free", subscription_tier: "pro", data: { subscription_tier: "pro" } },
+        null
+      )
+    ).toBe("free");
+  });
 });
 
 describe("feature gating: hasPaidAccess", () => {

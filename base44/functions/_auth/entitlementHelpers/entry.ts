@@ -136,6 +136,13 @@ export function getEntitlementTier(user: any, subscription: any): string {
     user?.tier;
 
   const t1 = normalizeTier(fromUserEntitlement);
+  const hasExplicitEntitlementField =
+    user?.data?.entitlement_tier != null ||
+    user?.entitlement_tier != null ||
+    user?.entitlementTier != null ||
+    user?.entitlement != null ||
+    user?.tier != null;
+  if (hasExplicitEntitlementField && t1 === "free") return "free";
   if (t1 !== "free") return t1;
 
   // 2) Legacy user fields

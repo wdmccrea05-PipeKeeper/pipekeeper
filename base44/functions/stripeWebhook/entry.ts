@@ -138,9 +138,11 @@ async function syncUserEntitlements(base44: any, userEmail: string) {
       )
     : 0;
 
-  // CRITICAL FIX: Per-module entitlements (no fallback to both modules)
+  // CRITICAL FIX: Per-module entitlements from unioned active modules
   const pipekeeper_paid = paidModules.includes('pipekeeper');
   const whiskeykeeper_paid = paidModules.includes('whiskeykeeper');
+  const cigarkeeper_paid = paidModules.includes('cigarkeeper');
+  const winekeeper_paid = paidModules.includes('winekeeper');
 
   const updatePayload = {
     stripe_customer_id:
@@ -150,6 +152,8 @@ async function syncUserEntitlements(base44: any, userEmail: string) {
     paid_modules_csv: paidModules.length > 0 ? paidModules.join(',') : '',
     pipekeeper_paid,
     whiskeykeeper_paid,
+    cigarkeeper_paid,
+    winekeeper_paid,
     has_paid_access: hasPaidAccess,
     updated_date: new Date().toISOString(),
   };

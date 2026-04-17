@@ -13,8 +13,15 @@ export default function AdminSubscriptionTools() {
   const { user, isLoading } = useCurrentUser();
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
-  const [tier, setTier] = useState("premium");
   const [status, setStatus] = useState("active");
+  const [provider, setProvider] = useState("stripe");
+  const [billingInterval, setBillingInterval] = useState("monthly");
+  const [moduleFlags, setModuleFlags] = useState({
+    pipekeeper: true,
+    whiskeykeeper: false,
+    cigarkeeper: false,
+    winekeeper: false,
+  });
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -50,8 +57,10 @@ export default function AdminSubscriptionTools() {
 
       const response = await base44.functions.invoke("adminGrantSubscriptionAccess", {
         email: email.trim(),
-        tier,
         status,
+        provider,
+        billing_interval: billingInterval,
+        modules: Object.keys(moduleFlags).filter((moduleId) => moduleFlags[moduleId]),
         notes: notes.trim(),
       });
 
@@ -59,8 +68,15 @@ export default function AdminSubscriptionTools() {
         setResult({ ok: true, message: t("admin.accessGrantedSuccess") });
         setUpdatedUser(response.data.user);
         setEmail("");
-        setTier("premium");
         setStatus("active");
+        setProvider("stripe");
+        setBillingInterval("monthly");
+        setModuleFlags({
+          pipekeeper: true,
+          whiskeykeeper: false,
+          cigarkeeper: false,
+          winekeeper: false,
+        });
         setNotes("");
       } else {
         setResult({
@@ -132,14 +148,15 @@ export default function AdminSubscriptionTools() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.tier")}</label>
-                <Select value={tier} onValueChange={setTier} disabled={loading}>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.provider", "Provider")}</label>
+                <Select value={provider} onValueChange={setProvider} disabled={loading}>
                   <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="premium">{t("subscription.premium")}</SelectItem>
-                    <SelectItem value="pro">{t("subscription.pro")}</SelectItem>
+                    <SelectItem value="stripe">Stripe</SelectItem>
+                    <SelectItem value="apple">iOS</SelectItem>
+                    <SelectItem value="manual">Manual</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -152,9 +169,45 @@ export default function AdminSubscriptionTools() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">{t("admin.active")}</SelectItem>
+                    <SelectItem value="trialing">{t("admin.trialing", "Trialing")}</SelectItem>
+                    <SelectItem value="past_due">{t("admin.pastDue", "Past Due")}</SelectItem>
+                    <SelectItem value="incomplete">{t("admin.incomplete", "Incomplete")}</SelectItem>
                     <SelectItem value="inactive">{t("admin.inactive")}</SelectItem>
+                    <SelectItem value="canceled">{t("admin.canceled", "Canceled")}</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.billingInterval", "Billing Interval")}</label>
+                <Select value={billingInterval} onValueChange={setBillingInterval} disabled={loading}>
+                  <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">{t("admin.monthly", "Monthly")}</SelectItem>
+                    <SelectItem value="annual">{t("admin.annual", "Annual")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.activeModules", "Active Modules")}</label>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  {Object.keys(moduleFlags).map((moduleId) => (
+                    <label key={moduleId} className="flex items-center gap-2 text-[#E0D8C8]">
+                      <input
+                        type="checkbox"
+                        checked={moduleFlags[moduleId]}
+                        onChange={(e) =>
+                          setModuleFlags((prev) => ({ ...prev, [moduleId]: e.target.checked }))
+                        }
+                        disabled={loading}
+                      />
+                      <span>{moduleId}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -220,18 +273,26 @@ export default function AdminSubscriptionTools() {
                   <p className="text-[#E0D8C8]/50">{t("admin.nameLabel")}</p>
                   <p className="text-[#E0D8C8] font-medium">{updatedUser.full_name}</p>
                 </div>
-                <div>
-                   <p className="text-[#E0D8C8]/50">{t("admin.subscriptionLevel")}</p>
-                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_level || t("subscription.free")}</p>
-                 </div>
                  <div>
-                   <p className="text-[#E0D8C8]/50">{t("admin.subscriptionStatus")}</p>
-                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_status || t("admin.inactive")}</p>
-                 </div>
-                 <div>
-                   <p className="text-[#E0D8C8]/50">{t("admin.subscriptionTier")}</p>
-                   <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_tier || t("admin.none")}</p>
-                 </div>
+                    <p className="text-[#E0D8C8]/50">{t("admin.hasPaidAccess", "Has Paid Access")}</p>
+                    <p className="text-[#E0D8C8] font-medium">{updatedUser.has_paid_access ? "Yes" : "No"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#E0D8C8]/50">{t("admin.entitlementTier", "Entitlement Tier")}</p>
+                    <p className="text-[#E0D8C8] font-medium">{updatedUser.entitlement_tier || t("subscription.free")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#E0D8C8]/50">{t("admin.subscriptionStatus")}</p>
+                    <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_status || t("admin.inactive")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#E0D8C8]/50">{t("admin.provider", "Provider")}</p>
+                    <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_provider || t("admin.none")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#E0D8C8]/50">{t("admin.activeModules", "Active Modules")}</p>
+                    <p className="text-[#E0D8C8] font-medium">{updatedUser.paid_modules_csv || "—"}</p>
+                  </div>
                 <div>
                   <p className="text-[#E0D8C8]/50">{t("admin.updatedAt")}</p>
                   <p className="text-[#E0D8C8] font-medium">

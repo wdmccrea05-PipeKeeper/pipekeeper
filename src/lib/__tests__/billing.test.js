@@ -30,6 +30,11 @@ describe('SUBSCRIPTION_PLANS', () => {
     expect(plan.modules).toEqual(['whiskeykeeper']);
   });
 
+  it('defines cigarkeeper and winekeeper annual plans', () => {
+    expect(SUBSCRIPTION_PLANS.cigarkeeper_pro_annual?.modules).toEqual(['cigarkeeper']);
+    expect(SUBSCRIPTION_PLANS.winekeeper_pro_annual?.modules).toEqual(['winekeeper']);
+  });
+
   it('defines founders_bundle_annual with 2 modules', () => {
     const plan = SUBSCRIPTION_PLANS.founders_bundle_annual;
     expect(plan).toBeDefined();
@@ -44,6 +49,20 @@ describe('SUBSCRIPTION_PLANS', () => {
     expect(plan.type).toBe('bundle');
     expect(plan.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
     expect(plan.displayPrice).toBe(4.99);
+  });
+
+  it('defines three and four module bundles', () => {
+    expect(SUBSCRIPTION_PLANS.three_module_bundle_annual?.modules).toEqual([
+      'pipekeeper',
+      'whiskeykeeper',
+      'cigarkeeper',
+    ]);
+    expect(SUBSCRIPTION_PLANS.four_module_bundle_annual?.modules).toEqual([
+      'pipekeeper',
+      'whiskeykeeper',
+      'cigarkeeper',
+      'winekeeper',
+    ]);
   });
 });
 
@@ -75,12 +94,48 @@ describe('getUserSubscriptionState', () => {
     expect(state.hasBundle).toBe(false);
   });
 
+  it('detects CigarKeeper and WineKeeper from subscription records', () => {
+    const cigarState = stateFor([makeSub('cigarkeeper_pro_annual')]);
+    const wineState = stateFor([makeSub('winekeeper_pro_annual')]);
+    expect(cigarState.hasCigarkeeperPro).toBe(true);
+    expect(wineState.hasWinekeeperPro).toBe(true);
+  });
+
+  it('unions modules across multiple standalone subscriptions', () => {
+    const state = stateFor([
+      makeSub('pipekeeper_pro_annual'),
+      makeSub('whiskeykeeper_pro_monthly'),
+      makeSub('cigarkeeper_pro_annual'),
+    ]);
+    expect(state.paidModules.sort()).toEqual(['cigarkeeper', 'pipekeeper', 'whiskeykeeper'].sort());
+  });
+
   it('detects bundle from founders_bundle_annual', () => {
     const state = stateFor([makeSub('founders_bundle_annual')]);
     expect(state.hasBundle).toBe(true);
     expect(state.hasPipekeeperPro).toBe(true);
     expect(state.hasWhiskeykeeperPro).toBe(true);
     expect(isFreeUser(state)).toBe(false);
+  });
+
+  it('bundle unlocks all included modules', () => {
+    const state = stateFor([makeSub('four_module_bundle_annual')]);
+    expect(state.hasBundle).toBe(true);
+    expect(state.paidModules.sort()).toEqual([
+      'pipekeeper',
+      'whiskeykeeper',
+      'cigarkeeper',
+      'winekeeper',
+    ].sort());
+  });
+
+  it('bundle + standalone overlap remains deduplicated', () => {
+    const state = stateFor([
+      makeSub('founders_bundle_annual'),
+      makeSub('pipekeeper_pro_monthly'),
+      makeSub('whiskeykeeper_pro_monthly'),
+    ]);
+    expect(state.paidModules).toEqual(['pipekeeper', 'whiskeykeeper']);
   });
 
   it('detects bundle from founders_bundle_monthly', () => {
@@ -105,9 +160,11 @@ describe('getUserSubscriptionState', () => {
   });
 
   it('falls back to paid_modules_csv on user when no subscription records', () => {
-    const state = stateFor([], { paid_modules_csv: 'pipekeeper,whiskeykeeper' });
+    const state = stateFor([], { paid_modules_csv: 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper' });
     expect(state.hasPipekeeperPro).toBe(true);
     expect(state.hasWhiskeykeeperPro).toBe(true);
+    expect(state.hasCigarkeeperPro).toBe(true);
+    expect(state.hasWinekeeperPro).toBe(true);
   });
 
   it('detects bundle from user.isFoundingMember', () => {
@@ -146,6 +203,11 @@ describe('getCurrentPlanLabel', () => {
 
   it('returns WhiskeyKeeper Pro for WK sub', () => {
     expect(getCurrentPlanLabel(stateFor([makeSub('whiskeykeeper_pro_annual')]))).toBe('WhiskeyKeeper Pro');
+  });
+
+  it('returns CigarKeeper and WineKeeper labels for single-module subs', () => {
+    expect(getCurrentPlanLabel(stateFor([makeSub('cigarkeeper_pro_annual')]))).toBe('CigarKeeper Pro');
+    expect(getCurrentPlanLabel(stateFor([makeSub('winekeeper_pro_annual')]))).toBe('WineKeeper Pro');
   });
 
   it('returns Founders Bundle for bundle', () => {

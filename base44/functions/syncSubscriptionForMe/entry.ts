@@ -4,7 +4,7 @@
  * HARDENED:
  * - evaluates all Stripe customers for the email
  * - ignores fake test IDs when real cus_* customers exist
- * - picks the best qualifying subscription across all customers
+ * - aggregates ALL qualifying subscriptions across all customers
  * - updates BOTH Subscription and User records
  * - returns explicit activeModules + hasPaidAccess for post-checkout verification
  */
@@ -71,6 +71,19 @@ function statusRank(status: string): number {
   return 0;
 }
 
+function unique<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
+}
+
+function splitModulesCsv(csv: unknown): string[] {
+  return unique(
+    String(csv || '')
+      .split(',')
+      .map((m) => m.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
 function extractModulesFromMetadata(sub: Stripe.Subscription, planKey: string | null): string[] {
   const metadataModules = String(sub.metadata?.modules_csv || '')
     .split(',')
@@ -80,7 +93,7 @@ function extractModulesFromMetadata(sub: Stripe.Subscription, planKey: string | 
   return metadataModules.length > 0 ? metadataModules : modulesFromPlanKey(planKey || '');
 }
 
-function chooseBestSubscription(candidates: Array<{ customerId: string; subscription: Stripe.Subscription }>) {
+function choosePrimarySubscription(candidates: Array<{ customerId: string; subscription: Stripe.Subscription }>) {
   if (!candidates.length) return null;
 
   const sorted = [...candidates].sort((a, b) => {
@@ -135,31 +148,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    const best = chooseBestSubscription(candidates);
-    if (!best) {
+    const primary = choosePrimarySubscription(candidates);
+    if (!primary) {
       return Response.json({ status: 'no_subscription', message: 'No qualifying subscription found' });
     }
 
-    const subscription = best.subscription;
-    const customerId = best.customerId;
-    const item = subscription.items?.data?.[0];
-    const priceId = item?.price?.id || null;
-    const planKey = determinePlanKeyFromPrice(priceId) || null;
-    const activeModules = extractModulesFromMetadata(subscription, planKey);
-    const normalizedStatus = String(subscription.status || '').toLowerCase();
-    const hasPaidAccess = ['active', 'trialing', 'past_due', 'incomplete'].includes(normalizedStatus);
-    const currentPeriodStart = subscription.current_period_start
-      ? new Date(subscription.current_period_start * 1000).toISOString()
-      : null;
-    const currentPeriodEnd = subscription.current_period_end
-      ? new Date(subscription.current_period_end * 1000).toISOString()
-      : null;
-
-    // Determine product kind and bundle metadata
-    const isBundle = activeModules.length > 1;
-    const productKind = isBundle ? 'bundle' : (activeModules.length === 1 ? 'single' : 'unknown');
-
-    // Bundle name from plan key
     function bundleNameFromKey(key: string | null): string | null {
       if (!key) return null;
       if (key.includes('founders')) return 'Founders Bundle';
@@ -167,9 +160,7 @@ Deno.serve(async (req) => {
       if (key.includes('four_module')) return '4-Module Bundle';
       return null;
     }
-    const bundleName = isBundle ? (bundleNameFromKey(planKey) || 'Bundle') : null;
 
-    // Product label from plan key
     function productLabelFromKey(key: string | null, modules: string[]): string {
       if (!key) return modules.length > 0 ? modules[0] : 'Unknown';
       if (key.includes('founders')) return 'Founders Bundle (PK+WK)';
@@ -183,71 +174,119 @@ Deno.serve(async (req) => {
       return modules[0] || 'Unknown';
     }
 
-    const billingIntervalRaw = item?.price?.recurring?.interval || null;
-    const renewalAmount = item?.price?.unit_amount ? item.price.unit_amount / 100 : null;
+    // Upsert each qualifying Stripe subscription row
+    const modulesBySubscription = new Map<string, string[]>();
+    for (const candidate of candidates) {
+      const subscription = candidate.subscription;
+      const customerId = candidate.customerId;
+      const item = subscription.items?.data?.[0];
+      const priceId = item?.price?.id || null;
+      const planKey = determinePlanKeyFromPrice(priceId);
+      const subModules = unique(extractModulesFromMetadata(subscription, planKey));
+      modulesBySubscription.set(subscription.id, subModules);
 
-    const subscriptionData = {
-      user_id: userId,
-      user_email: email,
-      provider: 'stripe',
-      provider_subscription_id: subscription.id,
-      stripe_customer_id: customerId,
-      stripe_subscription_id: subscription.id,
-      price_id: priceId,
-      status: mapStripeStatus(subscription.status),
-      tier: hasPaidAccess ? 'pro' : 'free',
-      planKey,
-      current_period_start: currentPeriodStart,
-      current_period_end: currentPeriodEnd,
-      billing_interval: billingIntervalRaw,
-      billing_period: subscription.metadata?.billing_period || billingIntervalRaw,
-      modules_csv: activeModules.join(','),
-      module_count: activeModules.length,
-      product_kind: productKind,
-      primary_module: activeModules[0] || null,
-      bundle_name: bundleName,
-      product_label: productLabelFromKey(planKey, activeModules),
-      checkout_type: subscription.metadata?.checkout_type || (isBundle ? `bundle_${activeModules.length}` : 'single_module'),
-      renewal_amount: renewalAmount,
-      updated_date: new Date().toISOString(),
-    };
+      const normalizedStatus = String(subscription.status || '').toLowerCase();
+      const subHasPaidAccess = ['active', 'trialing', 'past_due', 'incomplete'].includes(normalizedStatus);
+      const currentPeriodStart = subscription.current_period_start
+        ? new Date(subscription.current_period_start * 1000).toISOString()
+        : null;
+      const currentPeriodEnd = subscription.current_period_end
+        ? new Date(subscription.current_period_end * 1000).toISOString()
+        : null;
+      const isBundle = subModules.length > 1;
+      const productKind = isBundle ? 'bundle' : (subModules.length === 1 ? 'single' : 'unknown');
+      const bundleName = isBundle ? (bundleNameFromKey(planKey) || 'Bundle') : null;
+      const billingIntervalRaw = item?.price?.recurring?.interval || null;
+      const renewalAmount = item?.price?.unit_amount ? item.price.unit_amount / 100 : null;
 
-    let existingSub = null;
-    try {
-      const byProviderId = await base44.asServiceRole.entities.Subscription.filter({
+      const subscriptionData = {
+        user_id: userId,
+        user_email: email,
+        provider: 'stripe',
         provider_subscription_id: subscription.id,
-      });
-      existingSub = byProviderId?.[0] || null;
-    } catch {}
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscription.id,
+        price_id: priceId,
+        status: mapStripeStatus(subscription.status),
+        tier: subHasPaidAccess ? 'pro' : 'free',
+        planKey,
+        current_period_start: currentPeriodStart,
+        current_period_end: currentPeriodEnd,
+        billing_interval: billingIntervalRaw,
+        billing_period: subscription.metadata?.billing_period || billingIntervalRaw,
+        modules_csv: subModules.join(','),
+        module_count: subModules.length,
+        product_kind: productKind,
+        primary_module: subModules[0] || null,
+        bundle_name: bundleName,
+        product_label: productLabelFromKey(planKey, subModules),
+        checkout_type: subscription.metadata?.checkout_type || (isBundle ? `bundle_${subModules.length}` : 'single_module'),
+        renewal_amount: renewalAmount,
+        updated_date: new Date().toISOString(),
+      };
 
-    if (!existingSub) {
+      let existingSub = null;
       try {
-        const byEmail = await base44.asServiceRole.entities.Subscription.filter({ user_email: email });
-        existingSub = byEmail?.find((row: any) => row.provider === 'stripe') || byEmail?.[0] || null;
+        const byProviderId = await base44.asServiceRole.entities.Subscription.filter({
+          provider_subscription_id: subscription.id,
+        });
+        existingSub = byProviderId?.[0] || null;
       } catch {}
+
+      if (existingSub?.id) {
+        await base44.asServiceRole.entities.Subscription.update(existingSub.id, subscriptionData);
+      } else {
+        await base44.asServiceRole.entities.Subscription.create({
+          ...subscriptionData,
+          created_date: new Date().toISOString(),
+        });
+      }
     }
 
-    if (existingSub?.id) {
-      await base44.asServiceRole.entities.Subscription.update(existingSub.id, subscriptionData);
-    } else {
-      await base44.asServiceRole.entities.Subscription.create({
-        ...subscriptionData,
-        created_date: new Date().toISOString(),
-      });
-    }
+    const unionModules = unique(
+      candidates.flatMap((candidate) => modulesBySubscription.get(candidate.subscription.id) || []),
+    );
+    const hasPaidAccess = candidates.length > 0;
+    const primarySubscription = primary.subscription;
+    const customerId = primary.customerId;
+    const primaryPriceId = primarySubscription.items?.data?.[0]?.price?.id || null;
+    const primaryPlanKey = determinePlanKeyFromPrice(primaryPriceId);
+    const currentPeriodEnd = primarySubscription.current_period_end
+      ? new Date(primarySubscription.current_period_end * 1000).toISOString()
+      : null;
+    const subscriptionStatus = mapStripeStatus(primarySubscription.status);
 
-    // CRITICAL FIX: Set per-module entitlements
+    // Preserve legacy module access only when paid and current subscription modules could not be resolved.
+    // This protects legitimate paid users during transient metadata/plan mapping drift.
+    const preservedUserModules =
+      hasPaidAccess && unionModules.length === 0
+        ? splitModulesCsv(user?.paid_modules_csv)
+        : [];
+    if (hasPaidAccess && unionModules.length === 0 && preservedUserModules.length > 0) {
+      console.warn(
+        `[syncSubscriptionForMe] using paid_modules_csv fallback for ${email} because qualifying subscriptions resolved zero modules`,
+      );
+    }
+    const activeModules = unionModules.length > 0 ? unionModules : preservedUserModules;
+
     const pipekeeper_paid = activeModules.includes('pipekeeper');
     const whiskeykeeper_paid = activeModules.includes('whiskeykeeper');
+    const cigarkeeper_paid = activeModules.includes('cigarkeeper');
+    const winekeeper_paid = activeModules.includes('winekeeper');
 
     await base44.asServiceRole.entities.User.update(userId, {
       stripe_customer_id: customerId,
+      subscription_provider: 'stripe',
       entitlement_tier: hasPaidAccess ? 'pro' : 'free',
       has_paid_access: hasPaidAccess,
       pipekeeper_paid,
       whiskeykeeper_paid,
+      cigarkeeper_paid,
+      winekeeper_paid,
       paid_modules_csv: hasPaidAccess ? activeModules.join(',') : '',
-      subscription_status: mapStripeStatus(subscription.status),
+      subscription_tier: hasPaidAccess ? 'pro' : null,
+      subscription_level: hasPaidAccess ? 'paid' : 'free',
+      subscription_status: subscriptionStatus,
       updated_date: new Date().toISOString(),
     });
 
@@ -255,9 +294,10 @@ Deno.serve(async (req) => {
       status: 'synced',
       hasPaidAccess,
       tier: hasPaidAccess ? 'pro' : 'free',
-      subscriptionStatus: subscription.status,
-      planKey,
+      subscriptionStatus: String(primarySubscription.status || '').toLowerCase(),
+      planKey: primaryPlanKey,
       activeModules,
+      subscriptionCount: candidates.length,
       stripeCustomerId: customerId,
       currentPeriodEnd,
     });
