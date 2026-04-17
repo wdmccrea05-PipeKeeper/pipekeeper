@@ -1,6 +1,6 @@
-// Automation: Sync Subscription tier/status → User.data nested structure
-// Runs whenever a Subscription is created or updated
-// Single source of truth: Subscription entity
+// Automation hook for Subscription create/update events.
+// This function is intentionally metadata-only.
+// Canonical entitlement writer is syncSubscriptionForMe / webhook sync paths.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.20";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
@@ -38,49 +38,29 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, skipped: `User not found: ${email}` });
     }
 
-    // FIX BUG-05: Write BOTH flat AND nested entitlement fields so all resolver code paths see updates
     const normalizedStatus = String(subscription.status || "").toLowerCase();
-    const isPaidStatus = ["active", "trialing", "past_due", "incomplete"].includes(normalizedStatus);
-    const subscriptionTier = isPaidStatus ? "pro" : "free";
-    const subscriptionLevel = isPaidStatus ? "paid" : "free";
-    
+
+    // Metadata-only update to avoid conflicting with canonical paid-module entitlement writers.
     const updateData = {
-      // Flat fields (checked first by getEntitlementTier)
-      ...(isPaidStatus ? { subscription_tier: "pro" } : {}),
-      subscription_level: subscriptionLevel,
-      subscription_status: normalizedStatus || "inactive",
-      entitlement_tier: subscriptionLevel === "paid" ? "pro" : "free",
-      
-      // Nested fields (fallback)
-      data: {
-        ...(user.data || {}),
-        role: user.data?.role || "user",
-        tos_accepted_at: user.data?.tos_accepted_at,
-        stripe_customer_id: user.data?.stripe_customer_id || subscription.stripe_customer_id,
-        ...(isPaidStatus ? { subscription_tier: "pro" } : {}),
-        subscription_level: subscriptionLevel,
-        subscription_status: normalizedStatus || "inactive",
-        entitlement_tier: subscriptionLevel === "paid" ? "pro" : "free",
-        
-        // Preserve other fields
-        ...(user.data?.data || {}),
-        last_login: user.data?.data?.last_login || user.data?.last_login,
-        platform: user.data?.data?.platform || user.data?.platform || "web",
-      },
+      subscription_provider: subscription.provider || user.subscription_provider || null,
+      stripe_customer_id: subscription.stripe_customer_id || user.stripe_customer_id || null,
+      entitlement_sync_state: "needs_sync",
+      entitlement_sync_error: null,
+      updated_date: new Date().toISOString(),
     };
 
     // Update user
     await base44.asServiceRole.entities.User.update(user.id, updateData);
 
     console.log(
-      `[syncSubscriptionToUserEntitlements] Synced ${email}: tier=${subscription.tier} status=${subscription.status}`
+      `[syncSubscriptionToUserEntitlements] metadata sync for ${email}: provider=${subscription.provider} status=${normalizedStatus}`
     );
 
     return Response.json({
       ok: true,
       email,
       userId: user.id,
-      tier: subscription.tier,
+      canonicalWriter: "syncSubscriptionForMe/webhook",
       status: subscription.status,
     });
   } catch (error) {

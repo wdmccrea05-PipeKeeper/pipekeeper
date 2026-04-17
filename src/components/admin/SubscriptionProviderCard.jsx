@@ -38,6 +38,16 @@ export default function SubscriptionProviderCard({ me }) {
   const [doubleBillAck, setDoubleBillAck] = useState(false);
   const [error, setError] = useState(null);
 
+  const toModuleName = (moduleKey) => {
+    const labels = {
+      pipekeeper: "PipeKeeper",
+      whiskeykeeper: "WhiskeyKeeper",
+      cigarkeeper: "CigarKeeper",
+      winekeeper: "WineKeeper",
+    };
+    return labels[moduleKey] || "Unknown";
+  };
+
   const openStripePortal = () => {
     const url = summary?.manageUrl || summary?.manage_url;
     if (url) {
@@ -89,7 +99,13 @@ export default function SubscriptionProviderCard({ me }) {
     );
   }
 
-  const { paid, provider, tier, status, can_switch_to_apple, warning } = summary || {};
+  const { provider, tier, status, can_switch_to_apple, warning } = summary || {};
+  const effectiveModules = summary?.effectiveModules || summary?.effectiveAccess?.modules || [];
+  const activeSubscriptionCount =
+    summary?.effectiveAccess?.subscriptionCount ?? summary?.activeSubscriptions?.length ?? 0;
+  const hasMultipleSubscriptions =
+    summary?.effectiveAccess?.hasMultipleSubscriptions ?? activeSubscriptionCount > 1;
+  const primaryBilling = summary?.primaryBillingSubscription || null;
 
   const providerColors = {
     stripe: "bg-[#635BFF] text-white",
@@ -137,6 +153,30 @@ export default function SubscriptionProviderCard({ me }) {
             <AlertDescription>{error || warning}</AlertDescription>
           </Alert>
         )}
+
+        <div className="space-y-2 text-xs text-[#E0D8C8]/80">
+          <div>
+            <span className="font-semibold text-[#E0D8C8]">{t("subscription.activeAccess", "Effective Access")}:</span>{" "}
+            {effectiveModules.length > 0 ? effectiveModules.map(toModuleName).join(", ") : "—"}
+          </div>
+          <div>
+            <span className="font-semibold text-[#E0D8C8]">{t("admin.activeSubscriptions", "Active Subscriptions")}:</span>{" "}
+            {activeSubscriptionCount || 0}
+            {hasMultipleSubscriptions ? ` (${t("admin.multiple", "multiple")})` : ""}
+          </div>
+          {primaryBilling && (
+            <div>
+              <span className="font-semibold text-[#E0D8C8]">{t("subscription.primaryBilling", "Primary Billing")}:</span>{" "}
+              {[
+                primaryBilling.provider || provider,
+                primaryBilling.planKey || summary?.planKey || null,
+                primaryBilling.billingInterval || null,
+              ]
+                .filter(Boolean)
+                .join(" · ") || "—"}
+            </div>
+          )}
+        </div>
 
         {provider === "apple" && ios && (
           <Button onClick={manageApple} className="w-full">

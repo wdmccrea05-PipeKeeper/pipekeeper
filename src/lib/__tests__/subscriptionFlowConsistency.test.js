@@ -88,6 +88,34 @@ describe("subscription flow consistency", () => {
       "winekeeper",
     ].sort());
   });
+
+  it("deduplicates overlap when summary modules include bundle + standalone overlap", () => {
+    const summary = buildAccessSummary(
+      { entitlement_tier: "pro", paid_modules_csv: "pipekeeper,whiskeykeeper,cigarkeeper" },
+      {
+        status: "active",
+        plan_key: "aggregated_multi_subscription",
+        modules_csv: "pipekeeper,whiskeykeeper,pipekeeper,cigarkeeper",
+      }
+    );
+
+    expect(new Set(summary.activeModules).size).toBe(summary.activeModules.length);
+    expect(summary.activeModules).toContain("pipekeeper");
+    expect(summary.activeModules).toContain("whiskeykeeper");
+  });
+
+  it("uses unioned summary modules for multi-subscription users", () => {
+    const summary = buildAccessSummary(
+      { entitlement_tier: "pro", paid_modules_csv: "pipekeeper,whiskeykeeper" },
+      {
+        status: "active",
+        plan_key: "aggregated_multi_subscription",
+        modules_csv: "pipekeeper,whiskeykeeper",
+        metadata: { modules_csv: "pipekeeper,whiskeykeeper" },
+      }
+    );
+    expect(summary.activeModules.sort()).toEqual(["pipekeeper", "whiskeykeeper"].sort());
+  });
 });
 
 describe("apple subscription sync", () => {

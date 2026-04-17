@@ -131,6 +131,7 @@ export default function UserReport() {
   const subscriptions = report?.subscriptions || {};
   const runRate       = report?.runRate       || {};
   const renewalRevenue = report?.renewalRevenue || {};
+  const diagnostics   = report?.diagnostics   || {};
   const meta          = report?.meta          || {};
   const warnings      = report?.warnings      || {};
   const sanityChecks  = report?.sanityChecks  || {};
@@ -280,7 +281,19 @@ export default function UserReport() {
       ['Missing Billing Interval', warnings.missingInterval ?? 0],
       ['Missing Platform',       warnings.missingPlatform   ?? 0],
       ['Missing Plan Key',       warnings.missingPlanKey    ?? 0],
+      ['Unknown Product',        warnings.unknownProduct    ?? 0],
       ['Duplicates Removed',     warnings.duplicatesRemoved ?? 0],
+      // Diagnostics
+      ['--- DIAGNOSTICS ---', ''],
+      ['Users with multiple active subscriptions', diagnostics.usersWithMultipleActiveSubscriptions ?? 0],
+      ['Users with active subscription but no paid modules', diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0],
+      ['Users with paid modules but no active subscription', diagnostics.usersWithPaidModulesNoActiveSubscription ?? 0],
+      ['Users with summary/runtime mismatch', diagnostics.usersWithSummaryRuntimeMismatch ?? 0],
+      ['Users relying on legacy fallback access', diagnostics.usersRelyingOnLegacyFallbackAccess ?? 0],
+      ['Users with stale sync timestamp', diagnostics.usersWithStaleSyncTimestamp ?? 0],
+      ['Failed entitlement syncs', diagnostics.failedEntitlementSyncs ?? 0],
+      ['Failed Stripe callbacks', diagnostics.failedStripeCallbacks ?? 0],
+      ['Failed restore attempts', diagnostics.failedRestoreAttempts ?? 0],
       // User detail
       ['', ''],
       ['--- USER DETAIL ---', ''],
@@ -472,6 +485,34 @@ export default function UserReport() {
           <MetricCard label="WineKeeper"    value={subscriptions.byProduct?.winekeeper    ?? 0} />
           <MetricCard label="Bundles"       value={subscriptions.byProduct?.bundles       ?? 0} />
         </div>
+      </SectionCard>
+
+      <SectionCard title="Subscription Diagnostics" icon={AlertTriangle} accentColor="#F87171">
+        <SectionDivider label="Integrity" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+          <MetricCard label="Multiple Active Subscriptions" value={diagnostics.usersWithMultipleActiveSubscriptions ?? 0} />
+          <MetricCard label="Active Sub, No Paid Modules" value={diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0} />
+          <MetricCard label="Paid Modules, No Active Sub" value={diagnostics.usersWithPaidModulesNoActiveSubscription ?? 0} />
+          <MetricCard label="Summary vs Runtime Mismatch" value={diagnostics.usersWithSummaryRuntimeMismatch ?? 0} />
+          <MetricCard label="Legacy Fallback Access Users" value={diagnostics.usersRelyingOnLegacyFallbackAccess ?? 0} />
+          <MetricCard label="Stale Entitlement Sync Users" value={diagnostics.usersWithStaleSyncTimestamp ?? 0} />
+        </div>
+        <SectionDivider label="Failures / Ops" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          <MetricCard label="Failed Entitlement Syncs" value={diagnostics.failedEntitlementSyncs ?? 0} />
+          <MetricCard label="Failed Stripe Callbacks" value={diagnostics.failedStripeCallbacks ?? 0} />
+          <MetricCard label="Failed Restore Attempts" value={diagnostics.failedRestoreAttempts ?? 0} />
+          <MetricCard label="Recent Admin Overrides (7d)" value={diagnostics.recentAdminOverrides?.last7d ?? 0} sub={`Total manual: ${diagnostics.recentAdminOverrides?.totalManualSubscriptions ?? 0}`} />
+        </div>
+        <SectionDivider label="Sync Outcome States" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <MetricCard label="OK" value={diagnostics.recentSyncWriteOutcomes?.ok ?? 0} />
+          <MetricCard label="Needs Sync" value={diagnostics.recentSyncWriteOutcomes?.needs_sync ?? 0} />
+          <MetricCard label="Error" value={diagnostics.recentSyncWriteOutcomes?.error ?? 0} />
+          <MetricCard label="Unknown" value={diagnostics.recentSyncWriteOutcomes?.unknown ?? 0} />
+        </div>
+        <SectionDivider label="Sample Anomaly Accounts" />
+        <DiagnosticsSamples diagnostics={diagnostics} />
       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
@@ -683,6 +724,36 @@ function WarningsPanel({ warnings }) {
 }
 
 // ─── Helper sub-components ────────────────────────────────────────────────────
+
+function DiagnosticsSamples({ diagnostics }) {
+  const groups = [
+    { label: 'Multi-active', values: diagnostics?.samples?.multipleActiveSubscriptions || [] },
+    { label: 'Active/no-modules', values: diagnostics?.samples?.activeNoModules || [] },
+    { label: 'Modules/no-active', values: diagnostics?.samples?.modulesNoActiveSubscription || [] },
+    { label: 'Summary/runtime drift', values: diagnostics?.samples?.summaryRuntimeMismatch || [] },
+    { label: 'Stale sync', values: diagnostics?.samples?.staleSyncTimestamp || [] },
+  ];
+
+  const nonEmpty = groups.filter((g) => g.values.length > 0);
+  if (nonEmpty.length === 0) {
+    return <p className="text-sm text-[#E0D8C8]/60">No sampled anomaly emails.</p>;
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {nonEmpty.map((group) => (
+        <div key={group.label} className="rounded-lg border border-[#8b6239]/20 bg-[#2a1f18]/40 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#E0D8C8]/70 mb-2">{group.label}</p>
+          <div className="space-y-1">
+            {group.values.slice(0, 6).map((email) => (
+              <p key={`${group.label}-${email}`} className="text-xs text-[#E0D8C8]/80 font-mono truncate">{email}</p>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function LoadingSpinner() {
   return (

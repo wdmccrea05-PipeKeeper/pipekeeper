@@ -67,10 +67,12 @@ function resolveStatus(subscription) {
 }
 
 function parseModulesCsv(value) {
-  return String(value || '')
-    .split(',')
-    .map((m) => m.trim().toLowerCase())
-    .filter((m) => VALID_MODULES.includes(m));
+  return [...new Set(
+    String(value || '')
+      .split(',')
+      .map((m) => m.trim().toLowerCase())
+      .filter((m) => VALID_MODULES.includes(m))
+  )];
 }
 
 function parseMetadataModules(subscription) {

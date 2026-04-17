@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 import Stripe from 'npm:stripe@17.5.0';
 
 const APP_URL = (Deno.env.get('APP_URL') || 'https://pipekeeper.app').trim();
+const VALID_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
 
 function normEmail(email: string | null | undefined) {
   return String(email || '').trim().toLowerCase();
@@ -36,7 +37,39 @@ function parseModulesCsv(value: string | null | undefined) {
   return String(value || '')
     .split(',')
     .map((m) => m.trim().toLowerCase())
-    .filter(Boolean);
+    .filter((m) => VALID_MODULES.includes(m));
+}
+
+function unique<T>(arr: T[]) {
+  return [...new Set(arr)];
+}
+
+function modulesFromPlanKey(planKey: string | null | undefined) {
+  const key = String(planKey || '').toLowerCase();
+  if (!key) return [];
+  if (key.startsWith('pipekeeper_')) return ['pipekeeper'];
+  if (key.startsWith('whiskeykeeper_')) return ['whiskeykeeper'];
+  if (key.startsWith('cigarkeeper_')) return ['cigarkeeper'];
+  if (key.startsWith('winekeeper_')) return ['winekeeper'];
+  if (key.includes('founders')) return ['pipekeeper', 'whiskeykeeper'];
+  if (key.includes('three_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+  if (key.includes('four_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+  return [];
+}
+
+function getSubPlanKey(sub: any) {
+  return sub?.plan_key || sub?.planKey || sub?.plan || null;
+}
+
+function getSubModules(sub: any) {
+  const planModules = modulesFromPlanKey(getSubPlanKey(sub));
+  const csvModules = parseModulesCsv(
+    sub?.modules_csv ||
+      sub?.paid_modules_csv ||
+      sub?.metadata?.modules_csv ||
+      '',
+  );
+  return unique(csvModules.length > 0 ? csvModules : planModules);
 }
 
 function pickPrimary(subs: any[]) {
@@ -93,21 +126,23 @@ Deno.serve(async (req: Request) => {
 
     const stripeSubs = (allSubs || []).filter((s) => s.provider === 'stripe');
     const appleSubs = (allSubs || []).filter((s) => s.provider === 'apple');
-    const primarySub = pickPrimary(allSubs);
+    const qualifyingSubs = (allSubs || []).filter((s) => qualifiesForAccess(s));
+    const primarySub = pickPrimary(qualifyingSubs);
+    const unionedModules = unique(
+      qualifyingSubs.flatMap((sub) => getSubModules(sub)),
+    );
+    const fallbackModules = parseModulesCsv(me?.paid_modules_csv);
+    const effectiveModules =
+      unionedModules.length > 0 ? unionedModules : fallbackModules;
+    const effectiveModulesCsv = effectiveModules.join(',');
 
-    const isPaid = !!primarySub;
+    const isPaid = effectiveModules.length > 0 || !!primarySub;
     const provider = primarySub?.provider || null;
     const tier = primarySub?.tier || me?.entitlement_tier || null;
     const status = primarySub?.status || null;
     const expiresAt = primarySub?.current_period_end || null;
-    const planKey = primarySub?.plan_key || primarySub?.planKey || primarySub?.plan || null;
-
-    const modulesCsv =
-      primarySub?.modules_csv ||
-      primarySub?.paid_modules_csv ||
-      primarySub?.metadata?.modules_csv ||
-      me?.paid_modules_csv ||
-      '';
+    const planKey = getSubPlanKey(primarySub);
+    const modulesCsv = effectiveModulesCsv;
 
     let manageUrl = null;
     let warning = null;
@@ -148,12 +183,62 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({
         ok: true,
         isPaid,
+        paid: isPaid,
         provider,
         tier,
         status,
         expiresAt,
         planKey,
         modulesCsv,
+        effectiveModules,
+        effectiveModulesCsv,
+        effectiveModuleFlags: {
+          pipekeeper_paid: effectiveModules.includes('pipekeeper'),
+          whiskeykeeper_paid: effectiveModules.includes('whiskeykeeper'),
+          cigarkeeper_paid: effectiveModules.includes('cigarkeeper'),
+          winekeeper_paid: effectiveModules.includes('winekeeper'),
+        },
+        effectiveAccess: {
+          hasPaidAccess: isPaid,
+          modules: effectiveModules,
+          modulesCsv: effectiveModulesCsv,
+          qualifyingSubscriptionCount: qualifyingSubs.length,
+          subscriptionCount: qualifyingSubs.length,
+          hasMultipleSubscriptions: qualifyingSubs.length > 1,
+          providers: unique(qualifyingSubs.map((s) => s?.provider).filter(Boolean)),
+          includesBundle:
+            qualifyingSubs.some((s) => getSubModules(s).length > 1) || effectiveModules.length > 1,
+        },
+        primaryBillingSubscription: primarySub
+          ? {
+              provider: primarySub?.provider || null,
+              status: primarySub?.status || null,
+              tier: primarySub?.tier || null,
+              expiresAt: primarySub?.current_period_end || null,
+              planKey: getSubPlanKey(primarySub),
+              billingInterval: primarySub?.billing_interval || primarySub?.billing_period || null,
+              stripeCustomerId: primarySub?.stripe_customer_id || null,
+              providerSubscriptionId:
+                primarySub?.provider_subscription_id ||
+                primarySub?.stripe_subscription_id ||
+                null,
+            }
+          : null,
+        activeSubscriptions: qualifyingSubs.map((sub) => {
+          const modules = getSubModules(sub);
+          return {
+            provider: sub?.provider || null,
+            status: sub?.status || null,
+            tier: sub?.tier || null,
+            expiresAt: sub?.current_period_end || null,
+            planKey: getSubPlanKey(sub),
+            billingInterval: sub?.billing_interval || sub?.billing_period || null,
+            modules,
+            modulesCsv: modules.join(','),
+            moduleCount: modules.length,
+            isBundle: modules.length > 1,
+          };
+        }),
         manageUrl,
         warning,
         hasRealStripeCustomer: isRealStripeId(primarySub?.stripe_customer_id || me?.stripe_customer_id, 'cus_'),

@@ -36,8 +36,10 @@ export function useEntitlements() {
       hasModuleAccess: (moduleKey) => {
         if (!base.hasPro) return false;
         if (!moduleKey) return true;
-        // paidModules is [] when free, or the csv-derived list when paid
-        if (!base.paidModules || base.paidModules.length === 0) return true; // legacy fallback
+        const legacyBroadAccess = Boolean(
+          user?.isFoundingMember || user?.legacy_broad_module_access
+        );
+        if ((!base.paidModules || base.paidModules.length === 0) && legacyBroadAccess) return true;
         return base.paidModules.includes(String(moduleKey).trim().toLowerCase());
       },
     };

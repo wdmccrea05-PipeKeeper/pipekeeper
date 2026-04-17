@@ -1,8 +1,9 @@
 /**
  * moduleEntitlements — delegates to canonical premiumAccess resolver.
  *
- * The old per-module entitlement system (pro_pipekeeper, pro_bundle_3, etc.)
- * is removed. The app has ONE tier: pro. Any paid user gets all modules.
+ * The old per-module entitlement SKU matrix (pro_pipekeeper, pro_bundle_3, etc.)
+ * is removed. The app has ONE paid tier: pro, with per-module access from
+ * canonical paid_modules_csv / module flags.
  *
  * Kept as a shim so existing imports don't break.
  */
@@ -15,6 +16,20 @@ import { isModuleLaunched } from './moduleReleaseState';
 // WhiskeyKeeper is publicly launched — it is now included for paid subscribers.
 function getLaunchedActiveModules() {
   return getActiveModules().filter((m) => isModuleLaunched(m));
+}
+
+function getFlagModules(user) {
+  if (!user) return [];
+  const modules = [];
+  if (user.pipekeeper_paid) modules.push('pipekeeper');
+  if (user.whiskeykeeper_paid) modules.push('whiskeykeeper');
+  if (user.cigarkeeper_paid) modules.push('cigarkeeper');
+  if (user.winekeeper_paid) modules.push('winekeeper');
+  return modules.filter((m) => isModuleLaunched(m));
+}
+
+function hasLegacyBroadAccess(user) {
+  return Boolean(user?.isFoundingMember || user?.legacy_broad_module_access);
 }
 
 export { MODULES, MODULE_LIST };
@@ -47,8 +62,17 @@ export function hasModuleProAccess(user, moduleKey) {
 
   const paidCsv = String(user.paid_modules_csv || '').trim().toLowerCase();
 
-  // Legacy fallback: has_paid_access=true but no csv stored → grant all launched modules
-  if (!paidCsv) return true;
+  if (!paidCsv) {
+    const fromFlags = getFlagModules(user);
+    if (moduleKey) {
+      if (fromFlags.length > 0) {
+        return fromFlags.includes(String(moduleKey || '').trim().toLowerCase());
+      }
+      if (hasLegacyBroadAccess(user)) return true;
+      return false;
+    }
+    return fromFlags.length > 0 || hasLegacyBroadAccess(user);
+  }
 
   const paidModules = paidCsv.split(',').map((m) => m.trim()).filter(Boolean);
   return paidModules.includes(String(moduleKey || '').trim().toLowerCase());
@@ -61,7 +85,12 @@ export function hasModuleProAccess(user, moduleKey) {
 export function getModulesWithProAccess(user) {
   if (!hasPaidAccess(user)) return [];
   const csv = String(user?.paid_modules_csv || '').trim().toLowerCase();
-  if (!csv) return getLaunchedActiveModules(); // legacy fallback
+  if (!csv) {
+    const fromFlags = getFlagModules(user);
+    if (fromFlags.length > 0) return fromFlags;
+    if (hasLegacyBroadAccess(user)) return getLaunchedActiveModules();
+    return [];
+  }
   return csv.split(',').map((m) => m.trim()).filter((m) => m && isModuleLaunched(m));
 }
 
@@ -79,9 +108,10 @@ export function shouldEnforceFreeLimit(user) {
 
 export function getSubscriptionSummary(user) {
   const isPro = hasPaidAccess(user);
+  const modules = isPro ? getModulesWithProAccess(user) : [];
   return {
     hasPaidAccess: isPro,
-    modules: isPro ? getLaunchedActiveModules() : [],
+    modules,
     tier: isPro ? 'pro' : 'free',
     entitlements: isPro ? [ENTITLEMENTS.PRO] : [ENTITLEMENTS.FREE],
   };

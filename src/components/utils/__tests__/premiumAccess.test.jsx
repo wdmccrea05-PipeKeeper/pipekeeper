@@ -13,6 +13,7 @@ import {
   hasProAccess,
   isLegacyPremium,
   getPlanLabel,
+  buildCanonicalEntitlements,
 } from "../premiumAccess";
 
 describe("getEntitlementTier — free user", () => {
@@ -188,5 +189,31 @@ describe("getPlanLabel", () => {
 
   test('returns "Pro" for pro user', () => {
     expect(getPlanLabel({ entitlement_tier: "pro" }, null)).toBe("Pro");
+  });
+});
+
+describe("buildCanonicalEntitlements paid module fallback safety", () => {
+  test("does not grant broad module access for non-legacy pro users missing paid_modules_csv", () => {
+    const ents = buildCanonicalEntitlements(
+      { entitlement_tier: "pro" },
+      { status: "active", tier: "pro" }
+    );
+    expect(ents.paidModules).toEqual([]);
+  });
+
+  test("uses explicit module paid flags when paid_modules_csv is missing", () => {
+    const ents = buildCanonicalEntitlements(
+      { entitlement_tier: "pro", pipekeeper_paid: true, whiskeykeeper_paid: true },
+      { status: "active", tier: "pro" }
+    );
+    expect(ents.paidModules.sort()).toEqual(["pipekeeper", "whiskeykeeper"].sort());
+  });
+
+  test("preserves broad access for explicit legacy/founding users", () => {
+    const ents = buildCanonicalEntitlements(
+      { entitlement_tier: "pro", isFoundingMember: true },
+      { status: "active", tier: "premium", started_at: "2025-01-01T00:00:00.000Z" }
+    );
+    expect(ents.paidModules.length).toBeGreaterThan(0);
   });
 });

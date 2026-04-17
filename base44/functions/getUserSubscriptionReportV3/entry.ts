@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const REPORT_VERSION = 'v3.1';
+const MAX_SAMPLE_SIZE = 25;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -121,6 +122,28 @@ function parseDate(v: any): Date | null {
 
 function inRange(d: Date, range: CalendarRange): boolean {
   return d >= range.start && d <= range.end;
+}
+
+const MODULE_KEYS = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+
+function uniqueModules(modules: string[]): string[] {
+  return [...new Set(modules.filter((m) => MODULE_KEYS.includes(m)))].sort();
+}
+
+function runtimeModulesFromUser(user: any): string[] {
+  const csvModules = String(user?.paid_modules_csv || '')
+    .split(',')
+    .map((m) => String(m || '').trim().toLowerCase())
+    .filter(Boolean);
+  const flagModules: string[] = [];
+  if (user?.pipekeeper_paid) flagModules.push('pipekeeper');
+  if (user?.whiskeykeeper_paid) flagModules.push('whiskeykeeper');
+  if (user?.cigarkeeper_paid) flagModules.push('cigarkeeper');
+  if (user?.winekeeper_paid) flagModules.push('winekeeper');
+  const explicit = uniqueModules([...csvModules, ...flagModules]);
+  if (explicit.length > 0) return explicit;
+  if (user?.isFoundingMember || user?.legacy_broad_module_access) return [...MODULE_KEYS];
+  return [];
 }
 
 // ─── Calendar ranges ──────────────────────────────────────────────────────────
@@ -518,15 +541,48 @@ Deno.serve(async (req) => {
     // then subscription records for detail.
     const paidUsersList: any[] = [];
     const freeUsersList: any[] = [];
+    const diagnostics = {
+      usersWithMultipleActiveSubscriptions: 0,
+      usersWithActiveSubscriptionNoPaidModules: 0,
+      usersWithPaidModulesNoActiveSubscription: 0,
+      usersWithSummaryRuntimeMismatch: 0,
+      usersRelyingOnLegacyFallbackAccess: 0,
+      usersWithStaleSyncTimestamp: 0,
+      failedEntitlementSyncs: 0,
+      failedStripeCallbacks: 0,
+      failedRestoreAttempts: 0,
+      recentSyncWriteOutcomes: {
+        ok: 0,
+        needs_sync: 0,
+        error: 0,
+        unknown: 0,
+      },
+      recentAdminOverrides: {
+        totalManualSubscriptions: 0,
+        last7d: 0,
+      },
+      samples: {
+        activeNoModules: [] as string[],
+        modulesNoActiveSubscription: [] as string[],
+        summaryRuntimeMismatch: [] as string[],
+        multipleActiveSubscriptions: [] as string[],
+        staleSyncTimestamp: [] as string[],
+      },
+    };
+    const staleCutoff = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+    const pushSample = (bucket: string[], email: string) => {
+      if (email && bucket.length < MAX_SAMPLE_SIZE) bucket.push(email);
+    };
 
     for (const u of uniqueUsers) {
       const rawUserSubs = getUserRawSubs(u);
       const activePaidUserSubs = rawUserSubs.filter(isActivePaid);
+      const normalizedActiveSubs = activePaidUserSubs.map((raw) => normalizeSub(raw, u));
 
       // Primary: subscription rows. Secondary: user entitlement flags.
       let isPaid = activePaidUserSubs.length > 0;
       if (!isPaid) {
-        isPaid = !!(u.has_paid_access || u.pipekeeper_paid || u.whiskeykeeper_paid);
+        isPaid = !!(u.has_paid_access || u.pipekeeper_paid || u.whiskeykeeper_paid || u.cigarkeeper_paid || u.winekeeper_paid);
       }
 
       // Best subscription: prefer active, then trialing, then most recent
@@ -542,9 +598,45 @@ Deno.serve(async (req) => {
       const bestSub = bestRaw ? normalizeSub(bestRaw, u) : null;
 
       // Collect all active modules for this user
-      const allUserModules = Array.from(new Set(
-        activePaidUserSubs.flatMap((raw) => normalizeSub(raw, u).modules)
-      ));
+      const allUserModules = uniqueModules(normalizedActiveSubs.flatMap((s) => s.modules));
+      const summaryModules = allUserModules;
+      const runtimeModules = runtimeModulesFromUser(u);
+
+      if (activePaidUserSubs.length > 1) {
+        diagnostics.usersWithMultipleActiveSubscriptions++;
+        pushSample(diagnostics.samples.multipleActiveSubscriptions, norm(u.email || ''));
+      }
+      if (activePaidUserSubs.length > 0 && summaryModules.length === 0) {
+        diagnostics.usersWithActiveSubscriptionNoPaidModules++;
+        pushSample(diagnostics.samples.activeNoModules, norm(u.email || ''));
+      }
+      if (activePaidUserSubs.length === 0 && runtimeModules.length > 0) {
+        diagnostics.usersWithPaidModulesNoActiveSubscription++;
+        pushSample(diagnostics.samples.modulesNoActiveSubscription, norm(u.email || ''));
+      }
+      if (summaryModules.join(',') !== runtimeModules.join(',')) {
+        diagnostics.usersWithSummaryRuntimeMismatch++;
+        pushSample(diagnostics.samples.summaryRuntimeMismatch, norm(u.email || ''));
+      }
+      if (isPaid && runtimeModules.length === 0 && Boolean(u?.isFoundingMember || u?.legacy_broad_module_access)) {
+        diagnostics.usersRelyingOnLegacyFallbackAccess++;
+      }
+
+      const syncState = norm(u?.entitlement_sync_state || '');
+      if (syncState === 'ok') diagnostics.recentSyncWriteOutcomes.ok++;
+      else if (syncState === 'needs_sync') diagnostics.recentSyncWriteOutcomes.needs_sync++;
+      else if (syncState === 'error') diagnostics.recentSyncWriteOutcomes.error++;
+      else diagnostics.recentSyncWriteOutcomes.unknown++;
+
+      if (syncState === 'error' || norm(u?.entitlement_sync_error || '').length > 0) {
+        diagnostics.failedEntitlementSyncs++;
+      }
+
+      const lastSynced = parseDate(u?.entitlement_last_synced_at);
+      if (isPaid && (!lastSynced || lastSynced < staleCutoff)) {
+        diagnostics.usersWithStaleSyncTimestamp++;
+        pushSample(diagnostics.samples.staleSyncTimestamp, norm(u.email || ''));
+      }
 
       const row: any = {
         full_name:           u.full_name || '',
@@ -563,11 +655,32 @@ Deno.serve(async (req) => {
         // User entitlement flags (direct from user record — source of truth)
         pipekeeper_paid:     !!u.pipekeeper_paid,
         whiskeykeeper_paid:  !!u.whiskeykeeper_paid,
+        cigarkeeper_paid:    !!u.cigarkeeper_paid,
+        winekeeper_paid:     !!u.winekeeper_paid,
       };
 
       if (isPaid) paidUsersList.push(row);
       else        freeUsersList.push(row);
     }
+
+    diagnostics.failedStripeCallbacks = allSubscriptions.filter((s) => {
+      const provider = norm(s.provider || '');
+      const status = norm(s.status || '');
+      return provider === 'stripe' && (status === 'incomplete_expired' || status === 'unpaid');
+    }).length;
+
+    diagnostics.failedRestoreAttempts = allSubscriptions.filter((s) => {
+      const provider = norm(s.provider || '');
+      const status = norm(s.status || '');
+      return provider === 'apple' && status === 'unverified';
+    }).length;
+
+    const manualSubscriptions = allSubscriptions.filter((s) => norm(s.provider || '') === 'manual');
+    diagnostics.recentAdminOverrides.totalManualSubscriptions = manualSubscriptions.length;
+    diagnostics.recentAdminOverrides.last7d = manualSubscriptions.filter((s) => {
+      const updated = parseDate(s.updated_date || s.created_date);
+      return updated ? updated >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) : false;
+    }).length;
 
     const totalUsers     = uniqueUsers.length;
     const paidUsersCount = paidUsersList.length;
@@ -642,6 +755,7 @@ Deno.serve(async (req) => {
         unknownProduct:    warningUnknownProduct,
         duplicatesRemoved: duplicatesRemoved,
       },
+      diagnostics,
       accounts: { total: totalUsers, paid: paidUsersCount, free: freeUsersCount, paidPct, signupSources, newAccounts },
       subscriptions: {
         totalActivePaid,
@@ -665,7 +779,27 @@ Deno.serve(async (req) => {
       detail: String(error?.message || error),
       meta: { generatedAt: new Date().toISOString(), reportVersion: REPORT_VERSION },
       sanityChecks: { passed: false, failures: ['Report generation failed — see server logs.'] },
-      warnings: { missingPrice: 0, missingInterval: 0, missingPlatform: 0, missingPlanKey: 0, duplicatesRemoved: 0 },
+      warnings: { missingPrice: 0, missingInterval: 0, missingPlatform: 0, missingPlanKey: 0, unknownProduct: 0, duplicatesRemoved: 0 },
+      diagnostics: {
+        usersWithMultipleActiveSubscriptions: 0,
+        usersWithActiveSubscriptionNoPaidModules: 0,
+        usersWithPaidModulesNoActiveSubscription: 0,
+        usersWithSummaryRuntimeMismatch: 0,
+        usersRelyingOnLegacyFallbackAccess: 0,
+        usersWithStaleSyncTimestamp: 0,
+        failedEntitlementSyncs: 0,
+        failedStripeCallbacks: 0,
+        failedRestoreAttempts: 0,
+        recentSyncWriteOutcomes: { ok: 0, needs_sync: 0, error: 0, unknown: 0 },
+        recentAdminOverrides: { totalManualSubscriptions: 0, last7d: 0 },
+        samples: {
+          activeNoModules: [],
+          modulesNoActiveSubscription: [],
+          summaryRuntimeMismatch: [],
+          multipleActiveSubscriptions: [],
+          staleSyncTimestamp: [],
+        },
+      },
       accounts: {}, subscriptions: {}, runRate: {}, renewalRevenue: {},
       paid_users: [], free_users: [],
     }, { status: 200 });
