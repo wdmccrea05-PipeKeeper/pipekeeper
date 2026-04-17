@@ -2,24 +2,9 @@ export default [
   {
     // Test files — declare vitest globals so linter doesn't flag them
     files: [
-      '**/*.test.js',
-      '**/*.test.jsx',
-      '**/*.test.ts',
-      '**/*.test.tsx',
-      '**/*.spec.js',
-      '**/*.spec.jsx',
-      '**/__tests__/**/*.js',
-      '**/__tests__/**/*.jsx',
-      '**/__tests__/**/*.ts',
-      '**/__tests__/**/*.tsx',
-      'src/**/__tests__/**/*.js',
-      'src/**/__tests__/**/*.jsx',
-      'src/**/__tests__/**/*.ts',
-      'src/**/__tests__/**/*.tsx',
-      'src/**/*.test.js',
-      'src/**/*.test.jsx',
-      'src/**/*.test.ts',
-      'src/**/*.test.tsx',
+      '**/__tests__/**/*',
+      '**/*.test.*',
+      '**/*.spec.*',
     ],
     languageOptions: {
       globals: {
