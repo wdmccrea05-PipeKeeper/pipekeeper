@@ -1,26 +1,50 @@
-/**
- * Pairing Engine — HARD EXECUTION ENFORCEMENT
- *
- * RULES ENFORCED:
- * - RULE 1: NO FALLBACK IF DATA EXISTS
- * - RULE 3: MODULE GATING (global, not local)
- * - RULE 4: NEVER RETURN TEMPLATE TEXT (only data-driven narratives)
- * - RULE 9: DEBUG LOGGING on every decision
- *
- * Generates pipe-tobacco-whiskey pairings from actual collection data only.
- * Outputs 4 distinct tabs with data-driven narratives.
- *
- * If data is insufficient → throw error, never fallback
- */
+import { pickVariant } from './curatorVoice.js';
 
-import { buildPairingNarrative, buildWhyItWorksCurator, buildWhatToExpectCurator } from './curatorVoice.js';
+const OVERLAYS = [
+  { key: 'best_match', label: 'Best Match', confidence: 'High Confidence' },
+  { key: 'rediscover', label: 'Rediscover', confidence: 'Medium Confidence' },
+  { key: 'something_new', label: 'Something New', confidence: 'Experimental' },
+];
 
-function getBlendType(blend) {
-  return blend?.blend_type || blend?.blend_family || '';
-}
+const PAIRING_FAMILIES = [
+  {
+    key: 'whiskey_cigar',
+    label: 'Whiskey + Cigar',
+    liquidType: 'whiskey',
+    smokingSessionType: 'cigar',
+    requires: ['whiskeykeeper', 'cigarkeeper'],
+  },
+  {
+    key: 'whiskey_pipe_session',
+    label: 'Whiskey + Pipe Session',
+    liquidType: 'whiskey',
+    smokingSessionType: 'pipe_session',
+    requires: ['whiskeykeeper', 'pipekeeper'],
+  },
+  {
+    key: 'wine_cigar',
+    label: 'Wine + Cigar',
+    liquidType: 'wine',
+    smokingSessionType: 'cigar',
+    requires: ['winekeeper', 'cigarkeeper'],
+  },
+  {
+    key: 'wine_pipe_session',
+    label: 'Wine + Pipe Session',
+    liquidType: 'wine',
+    smokingSessionType: 'pipe_session',
+    requires: ['winekeeper', 'pipekeeper'],
+  },
+];
 
-function getWhiskeyType(bottle) {
-  return bottle?.type || bottle?.whiskey_type || bottle?.spirit_type || '';
+const LIQUID_RECORD_META = {
+  whiskey: { key: 'bottle', type: 'bottle', recordType: 'bottle' },
+  wine: { key: 'wine', type: 'wine', recordType: 'wine' },
+};
+
+function safeNum(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function daysSince(dateValue) {
@@ -30,14 +54,70 @@ function daysSince(dateValue) {
   return Math.floor((Date.now() - ts) / 86400000);
 }
 
+function getBlendType(blend) {
+  return String(blend?.blend_type || blend?.blend_family || '').trim();
+}
+
+function getWhiskeyType(liquid) {
+  return String(liquid?.type || liquid?.whiskey_type || liquid?.spirit_type || '').trim().toLowerCase();
+}
+
+function getWineStyle(liquid) {
+  return String(liquid?.style || liquid?.varietal || '').trim().toLowerCase();
+}
+
+function getStockValue(item) {
+  const stockFields = [
+    'singles_equivalent',
+    'quantity',
+    'inventory_count',
+    'bottle_count',
+    'in_stock_count',
+    'remaining_qty',
+  ];
+
+  for (const field of stockFields) {
+    if (item?.[field] !== undefined && item?.[field] !== null && item?.[field] !== '') {
+      return safeNum(item[field]);
+    }
+  }
+
+  return null;
+}
+
+function isAvailableItem(item, { requireStock = false } = {}) {
+  if (!item || item.ai_excluded === true) return false;
+
+  const status = String(item.status || item.availability || '').trim().toLowerCase();
+  const openState = String(item.open_state || '').trim().toLowerCase();
+
+  if (item.unavailable === true) return false;
+  if (status === 'unavailable' || status === 'out_of_stock' || status === 'archived') return false;
+  if (openState === 'empty' || openState === 'depleted') return false;
+
+  const stockValue = getStockValue(item);
+  if (requireStock && stockValue !== null && stockValue <= 0) return false;
+
+  return true;
+}
+
+function isCigarEligible(cigar) {
+  return isAvailableItem(cigar, { requireStock: true }) && cigar?.not_for_me !== true;
+}
+
 function sortPipes(pipes = [], smokingLogs = []) {
   return [...pipes]
     .map((pipe) => {
       const logs = smokingLogs.filter((l) => l?.pipe_id === pipe.id || l?.pipeId === pipe.id);
       const last = logs.map((l) => l?.date || l?.created_date).filter(Boolean).sort().reverse()[0];
-      return { ...pipe, sessionCount: logs.length, lastUsedDays: daysSince(last) };
+      return {
+        ...pipe,
+        _sessionCount: logs.length,
+        _lastUsedDays: daysSince(last),
+        _ratingScore: safeNum(pipe.rating),
+      };
     })
-    .sort((a, b) => (b.sessionCount - a.sessionCount) || ((b.lastUsedDays || 0) - (a.lastUsedDays || 0)));
+    .sort((a, b) => ((b._ratingScore + b._sessionCount) - (a._ratingScore + a._sessionCount)) || ((b._lastUsedDays || 0) - (a._lastUsedDays || 0)));
 }
 
 function sortBlends(blends = [], smokingLogs = []) {
@@ -45,185 +125,337 @@ function sortBlends(blends = [], smokingLogs = []) {
     .map((blend) => {
       const logs = smokingLogs.filter((l) => l?.blend_id === blend.id || l?.blendId === blend.id);
       const last = logs.map((l) => l?.date || l?.created_date).filter(Boolean).sort().reverse()[0];
-      return { ...blend, sessionCount: logs.length, lastUsedDays: daysSince(last), ratingValue: Number(blend.rating || 0) };
+      return {
+        ...blend,
+        _sessionCount: logs.length,
+        _lastUsedDays: daysSince(last),
+        _ratingScore: safeNum(blend.rating),
+      };
     })
-    .sort((a, b) => ((b.ratingValue + b.sessionCount) - (a.ratingValue + a.sessionCount)) || ((b.lastUsedDays || 0) - (a.lastUsedDays || 0)));
+    .sort((a, b) => ((b._ratingScore + b._sessionCount) - (a._ratingScore + a._sessionCount)) || ((b._lastUsedDays || 0) - (a._lastUsedDays || 0)));
 }
 
-function sortBottles(bottles = [], tastingLogs = []) {
-  const tastedIds = new Set(tastingLogs.map((l) => l?.bottle_id || l?.bottleId).filter(Boolean));
-  return [...bottles]
-    .map((bottle) => ({ ...bottle, tasted: tastedIds.has(bottle.id), valueScore: Number(bottle.estimated_value || bottle.retail_price || bottle.purchase_price || 0) }))
-    .sort((a, b) => (Number(a.tasted) - Number(b.tasted)) || (a.valueScore - b.valueScore));
+function sortLiquids(liquids = [], tastingLogs = [], liquidType = 'whiskey') {
+  const logIdFields = liquidType === 'wine'
+    ? ['wine_id', 'wineId', 'bottle_id', 'bottleId']
+    : ['bottle_id', 'bottleId', 'wine_id', 'wineId'];
+
+  return [...liquids]
+    .map((liquid) => {
+      const logs = tastingLogs.filter((l) => logIdFields.some((field) => l?.[field] === liquid.id));
+      const last = logs.map((l) => l?.date || l?.tasting_date || l?.created_date).filter(Boolean).sort().reverse()[0];
+      return {
+        ...liquid,
+        _sessionCount: logs.length,
+        _lastUsedDays: daysSince(last),
+        _ratingScore: safeNum(liquid.rating),
+        _valueScore: safeNum(liquid.estimated_value || liquid.retail_price || liquid.purchase_price),
+      };
+    })
+    .sort((a, b) => ((b._ratingScore + b._sessionCount) - (a._ratingScore + a._sessionCount)) || (b._valueScore - a._valueScore) || ((b._lastUsedDays || 0) - (a._lastUsedDays || 0)));
 }
 
-function pairingType(blend, bottle) {
-  const bt = getBlendType(blend);
-  const wt = getWhiskeyType(bottle).toLowerCase();
-  if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('islay') || wt.includes('peated'))) return 'Reinforcing';
-  if (bt === 'Aromatic' && wt.includes('irish')) return 'Contrast';
+function sortCigars(cigars = [], cigarSessions = []) {
+  return [...cigars]
+    .map((cigar) => {
+      const logs = cigarSessions.filter((s) => s?.cigar_id === cigar.id || s?.cigarId === cigar.id);
+      const last = logs.map((s) => s?.date || s?.created_date).filter(Boolean).sort().reverse()[0];
+      return {
+        ...cigar,
+        _sessionCount: logs.length,
+        _lastUsedDays: daysSince(last),
+        _ratingScore: safeNum(cigar.rating),
+      };
+    })
+    .sort((a, b) => ((b._ratingScore + b._sessionCount) - (a._ratingScore + a._sessionCount)) || ((b._lastUsedDays || 0) - (a._lastUsedDays || 0)));
+}
+
+function wrapPipe(pipe) {
+  return { id: pipe.id, type: 'pipe', recordType: 'pipe', name: pipe.name };
+}
+
+function wrapBlend(blend) {
+  return { id: blend.id, type: 'blend', recordType: 'blend', name: blend.name };
+}
+
+function wrapCigar(cigar) {
+  return { id: cigar.id, type: 'cigar', recordType: 'cigar', name: cigar.name };
+}
+
+function wrapLiquid(liquid, liquidType) {
+  const meta = LIQUID_RECORD_META[liquidType] || LIQUID_RECORD_META.whiskey;
+  return {
+    id: liquid.id,
+    type: meta.type,
+    recordType: meta.recordType,
+    name: liquid.name,
+  };
+}
+
+function pairingTypeForFamily(family, blend, liquid) {
+  if (family.liquidType === 'whiskey') {
+    const wt = getWhiskeyType(liquid);
+    const bt = getBlendType(blend);
+    if ((bt === 'English' || bt === 'English/Balkan' || bt === 'Balkan') && (wt.includes('islay') || wt.includes('peated'))) {
+      return 'Reinforcing';
+    }
+    if (bt === 'Aromatic' && wt.includes('irish')) {
+      return 'Contrast';
+    }
+    return 'Complement';
+  }
+
+  const style = getWineStyle(liquid);
+  if (family.smokingSessionType === 'cigar') {
+    if (style.includes('red') || style.includes('fortified')) return 'Reinforcing';
+    return 'Complement';
+  }
+
+  if (style.includes('sparkling') || style.includes('white')) return 'Contrast';
   return 'Complement';
 }
 
-/**
- * RULE 3: Module gating enforced globally once
- * Prevents disabled modules from leaking into pairing data
- */
-function buildPairingContext(context = {}) {
-  const { pipes: rawPipes, blends: rawBlends, bottles: rawBottles, activeModules = {} } = context;
-  
-  return {
-    pipes: activeModules.pipekeeper !== false ? (rawPipes || []) : [],
-    blends: activeModules.tobacco !== false ? (rawBlends || []) : [],
-    bottles: activeModules.whiskeykeeper !== false ? (rawBottles || []) : [],
-    smokingLogs: context.smokingLogs || [],
-    tastingLogs: context.tastingLogs || [],
-    activeModules,
-  };
-}
+function buildFamilyNarrative(family, { overlay, pipe, blend, cigar, liquid }) {
+  const seed = `${family.key}:${overlay}:${pipe?.id || ''}:${blend?.id || ''}:${cigar?.id || ''}:${liquid?.id || ''}`;
 
-/**
- * buildNarrative — data-driven narrative (no templates)
- * Each pairing gets specific explanation tied to actual items
- */
-function buildNarrative(pipe, blend, bottle, tab) {
-  return buildPairingNarrative(pipe, blend, bottle, tab);
-}
-
-function buildWhyItWorks(blend, bottle) {
-  return buildWhyItWorksCurator(blend, bottle);
-}
-
-function buildWhatToExpect(blend, bottle) {
-  return buildWhatToExpectCurator(blend, bottle);
-}
-
-function buildBestMomentForIt(tab) {
-  if (tab === 'rediscover') return 'Best when you want to wake up something you\'ve set aside — proof that old favorites can still surprise you.';
-  if (tab === 'old_favorites') return 'Best when you know what you want before you pour. This is the safe harbor kind of session.';
-  if (tab === 'something_new') return 'Best when you want to nudge your collection in a direction it\'s already leaning — a small risk with a known reward.';
-  if (tab === 'expert') return 'Best when you want to experience your collection at its best — when skill and familiarity meet the right moment.';
-  return 'Best when you want a deliberate pairing that still feels safe enough to trust.';
-}
-
-function wrapPipe(pipe) { return { id: pipe.id, type: 'pipe', recordType: 'pipe', name: pipe.name }; }
-function wrapBlend(blend) { return { id: blend.id, type: 'blend', recordType: 'blend', name: blend.name }; }
-function wrapBottle(bottle) { return { id: bottle.id, type: 'bottle', recordType: 'bottle', name: bottle.name }; }
-
-function assignPrimaryModule(blend, bottle) {
-  const pt = pairingType(blend, bottle);
-  if (pt === 'Reinforcing') return 'tobacco';
-  if (pt === 'Contrast') return 'whiskey';
-  return 'pipe';
-}
-
-function makePair(tab, pipe, blend, bottle, confidenceLabel = 'Medium Confidence', tabContext = null) {
-  if (!pipe || !blend || !bottle) {
-    console.error('PAIRING_EXPLANATION_FAILED', { reason: 'missing_item', pipe: pipe?.name, blend: blend?.name, bottle: bottle?.name });
-    return null;
+  if (family.smokingSessionType === 'pipe_session') {
+    const options = family.liquidType === 'whiskey'
+      ? [
+          () => `${blend?.name} sets the smoke profile, ${liquid?.name} mirrors its weight, and ${pipe?.name} is a reliable vessel for this longer three-part session.`,
+          () => `${pipe?.name} and ${blend?.name} create a stable tobacco baseline, then ${liquid?.name} adds depth without drowning the bowl's core character.`,
+          () => `${liquid?.name} complements ${blend?.name} while ${pipe?.name} keeps heat and draw steady — this is a deliberate pipe session, not a random mix.`,
+        ]
+      : [
+          () => `${blend?.name} keeps the smoke expressive, ${liquid?.name} adds lift and restraint, and ${pipe?.name} keeps the session balanced start to finish.`,
+          () => `${pipe?.name} and ${blend?.name} anchor the smoke side while ${liquid?.name} provides contrast so the session stays clean and layered.`,
+          () => `${liquid?.name} supports ${blend?.name} without turning spirit-heavy language into wine territory, and ${pipe?.name} keeps the blend focused.`,
+        ];
+    return pickVariant(seed, options)();
   }
+
+  const cigarOptions = family.liquidType === 'whiskey'
+    ? [
+        () => `${cigar?.name} and ${liquid?.name} land in the same body range, so the smoke and pour reinforce each other without turning sharp.`,
+        () => `${liquid?.name} tracks the strength of ${cigar?.name}, giving you a confident cigar + whiskey session with no unnecessary friction.`,
+        () => `${cigar?.name} carries the smoke body while ${liquid?.name} keeps pace on warmth and finish for a coherent two-part session.`,
+      ]
+    : [
+        () => `${cigar?.name} gives structure while ${liquid?.name} brings restraint, making this cigar + wine pairing about balance, not force.`,
+        () => `${liquid?.name} supports ${cigar?.name} with acidity and fruit lift so the smoke stays defined instead of heavy.`,
+        () => `${cigar?.name} and ${liquid?.name} complement each other with clean contrast and controlled intensity across the session.`,
+      ];
+
+  return pickVariant(seed, cigarOptions)();
+}
+
+function buildWhyItWorks(family, { blend, cigar, liquid }) {
+  if (family.smokingSessionType === 'pipe_session') {
+    if (family.liquidType === 'whiskey') {
+      return `${blend?.name} provides tobacco body, ${liquid?.name} matches that weight, and the session stays coherent because pipe and pour are calibrated to the same pace.`;
+    }
+    return `${blend?.name} supplies smoke depth while ${liquid?.name} contributes lift and freshness, creating support without palate fatigue.`;
+  }
+
+  if (family.liquidType === 'whiskey') {
+    return `${cigar?.name} and ${liquid?.name} share compatible strength and finish, so neither side dominates the session.`;
+  }
+
+  return `${cigar?.name} brings smoke texture and ${liquid?.name} adds complementary structure, keeping the pairing composed rather than aggressive.`;
+}
+
+function buildWhatToExpect(family) {
+  if (family.smokingSessionType === 'pipe_session') {
+    return family.liquidType === 'whiskey'
+      ? 'Expect a longer three-part session where tobacco and whiskey build together as the bowl progresses.'
+      : 'Expect a measured three-part session with smoke depth first and wine-led balance throughout.';
+  }
+
+  return family.liquidType === 'whiskey'
+    ? 'Expect a focused two-part smoke-and-spirit session with steady body and a warm finish.'
+    : 'Expect a restrained cigar-and-wine session emphasizing complement, contrast, and balance.';
+}
+
+function getOverlayLists(base = [], stale = []) {
   return {
-    id: `${tab}_${pipe.id}_${blend.id}_${bottle.id}`,
-    subTab: tab,
-    confidenceLabel,
-    pairingType: pairingType(blend, bottle),
-    primaryModule: assignPrimaryModule(blend, bottle),
-    pipe: wrapPipe(pipe),
-    blend: wrapBlend(blend),
-    bottle: wrapBottle(bottle),
-    narrative: buildNarrative(pipe, blend, bottle, tabContext || tab),
-    whyItWorks: buildWhyItWorks(blend, bottle),
-    whatToExpect: buildWhatToExpect(blend, bottle),
-    bestMomentForIt: buildBestMomentForIt(tab),
+    best_match: base,
+    rediscover: stale,
+    something_new: [...base].reverse(),
   };
 }
 
-function pushUnique(rows, next, seen) {
-  if (!next) return;
-  const key = `${next.pipe.id}:${next.blend.id}:${next.bottle.id}`;
-  if (seen.has(key)) return;
-  seen.add(key);
-  rows.push(next);
-}
-
-function firstUnused(list, usedIds = new Set()) {
+function firstUnused(list = [], usedIds = new Set()) {
   return list.find((item) => !usedIds.has(item?.id)) || list[0] || null;
 }
 
-/**
- * RULE 1: NO FALLBACK IF DATA EXISTS
- * RULE 9: Debug logging on every decision
- */
-export function generatePairingRecommendations(context = {}) {
-  // RULE 3: Enforce module gating once, globally
-  const ctx = buildPairingContext(context);
-  const { pipes: unsortedPipes, blends: unsortedBlends, bottles: unsortedBottles, smokingLogs, tastingLogs, activeModules } = ctx;
+function buildPairingContext(context = {}) {
+  const { activeModules = {} } = context;
+  const pipeActive = activeModules.pipekeeper === true;
+  const whiskeyActive = activeModules.whiskeykeeper === true;
+  const wineActive = activeModules.winekeeper === true;
+  const cigarActive = activeModules.cigarkeeper === true;
 
-  // RULE 1: If any module-gated data is empty, error explicitly
-  if (!unsortedPipes.length || !unsortedBlends.length || !unsortedBottles.length) {
-    console.error('ENGINE_FAILURE', {
-      engine: 'pairingEngine',
-      reason: 'insufficient_data',
-      dataCounts: { pipes: unsortedPipes.length, blends: unsortedBlends.length, bottles: unsortedBottles.length },
-      activeModules,
+  const pipes = pipeActive ? (context.pipes || []).filter((pipe) => isAvailableItem(pipe)) : [];
+  const blends = pipeActive ? (context.blends || []).filter((blend) => isAvailableItem(blend)) : [];
+  const bottles = whiskeyActive ? (context.bottles || []).filter((bottle) => isAvailableItem(bottle, { requireStock: true })) : [];
+  const wines = wineActive ? (context.wines || []).filter((wine) => isAvailableItem(wine, { requireStock: true })) : [];
+  const cigars = cigarActive ? (context.cigars || []).filter((cigar) => isCigarEligible(cigar)) : [];
+
+  return {
+    activeModules,
+    pipes,
+    blends,
+    bottles,
+    wines,
+    cigars,
+    smokingLogs: context.smokingLogs || [],
+    tastingLogs: context.tastingLogs || [],
+    cigarSessions: context.cigarSessions || [],
+  };
+}
+
+function isFamilySupported(ctx, family) {
+  const hasRequiredModules = family.requires.every((moduleKey) => ctx.activeModules?.[moduleKey] === true);
+  if (!hasRequiredModules) return false;
+
+  const hasLiquidData = family.liquidType === 'whiskey' ? ctx.bottles.length > 0 : ctx.wines.length > 0;
+  if (!hasLiquidData) return false;
+
+  if (family.smokingSessionType === 'cigar') {
+    return ctx.cigars.length > 0;
+  }
+
+  return ctx.pipes.length > 0 && ctx.blends.length > 0;
+}
+
+function makePairing(family, overlay, contextItems) {
+  const { pipe, blend, cigar, liquid } = contextItems;
+  if (!liquid) return null;
+  if (family.smokingSessionType === 'pipe_session' && (!pipe || !blend)) return null;
+  if (family.smokingSessionType === 'cigar' && !cigar) return null;
+
+  const wrappedPipe = pipe ? wrapPipe(pipe) : null;
+  const wrappedBlend = blend ? wrapBlend(blend) : null;
+  const wrappedCigar = cigar ? wrapCigar(cigar) : null;
+  const wrappedLiquid = wrapLiquid(liquid, family.liquidType);
+  const liquidMeta = LIQUID_RECORD_META[family.liquidType] || LIQUID_RECORD_META.whiskey;
+
+  return {
+    id: `${family.key}_${overlay.key}_${pipe?.id || 'none'}_${blend?.id || 'none'}_${cigar?.id || 'none'}_${liquid?.id || 'none'}`,
+    subTab: family.key,
+    pairingFamily: family.key,
+    pairingFamilyLabel: family.label,
+    overlay: overlay.key,
+    overlayLabel: overlay.label,
+    confidenceLabel: overlay.confidence,
+    liquidType: family.liquidType,
+    smokingSessionType: family.smokingSessionType,
+    pairingType: pairingTypeForFamily(family, blend, liquid),
+    primaryModule: family.smokingSessionType === 'pipe_session' ? 'pipe' : 'cigar',
+    pipe: wrappedPipe,
+    blend: wrappedBlend,
+    cigar: wrappedCigar,
+    liquid: wrappedLiquid,
+    [liquidMeta.key]: wrappedLiquid,
+    leftItem: family.smokingSessionType === 'pipe_session' ? wrappedPipe : wrappedCigar,
+    blendBridge: wrappedBlend,
+    rightItem: wrappedLiquid,
+    cigarItem: wrappedCigar,
+    narrative: buildFamilyNarrative(family, { overlay: overlay.key, pipe, blend, cigar, liquid }),
+    whyItWorks: buildWhyItWorks(family, { blend, cigar, liquid }),
+    whatToExpect: buildWhatToExpect(family),
+    bestMomentForIt: family.smokingSessionType === 'pipe_session'
+      ? 'Best when you want a full smoke session with deliberate pacing between bowl and pour.'
+      : 'Best when you want a focused smoke-and-pour session with clear flavor alignment.',
+  };
+}
+
+function buildFamilyPairings(ctx, family) {
+  const liquids = family.liquidType === 'whiskey' ? ctx.bottles : ctx.wines;
+  const sortedLiquids = sortLiquids(liquids, ctx.tastingLogs, family.liquidType);
+  const staleLiquids = [...sortedLiquids].sort((a, b) => (b._lastUsedDays || 0) - (a._lastUsedDays || 0));
+
+  const liquidByOverlay = getOverlayLists(sortedLiquids, staleLiquids);
+  const usedLiquidIds = new Set();
+
+  if (family.smokingSessionType === 'cigar') {
+    const sortedCigars = sortCigars(ctx.cigars, ctx.cigarSessions);
+    const staleCigars = [...sortedCigars].sort((a, b) => (b._lastUsedDays || 0) - (a._lastUsedDays || 0));
+    const cigarByOverlay = getOverlayLists(sortedCigars, staleCigars);
+    const usedCigarIds = new Set();
+
+    return OVERLAYS
+      .map((overlay) => {
+        const cigar = firstUnused(cigarByOverlay[overlay.key], usedCigarIds);
+        const liquid = firstUnused(liquidByOverlay[overlay.key], usedLiquidIds);
+        if (cigar?.id) usedCigarIds.add(cigar.id);
+        if (liquid?.id) usedLiquidIds.add(liquid.id);
+        return makePairing(family, overlay, { cigar, liquid });
+      })
+      .filter(Boolean);
+  }
+
+  const sortedPipes = sortPipes(ctx.pipes, ctx.smokingLogs);
+  const sortedBlends = sortBlends(ctx.blends, ctx.smokingLogs);
+  const stalePipes = [...sortedPipes].sort((a, b) => (b._lastUsedDays || 0) - (a._lastUsedDays || 0));
+  const staleBlends = [...sortedBlends].sort((a, b) => (b._lastUsedDays || 0) - (a._lastUsedDays || 0));
+
+  const pipeByOverlay = getOverlayLists(sortedPipes, stalePipes);
+  const blendByOverlay = getOverlayLists(sortedBlends, staleBlends);
+  const usedPipeIds = new Set();
+  const usedBlendIds = new Set();
+
+  return OVERLAYS
+    .map((overlay) => {
+      const pipe = firstUnused(pipeByOverlay[overlay.key], usedPipeIds);
+      const blend = firstUnused(blendByOverlay[overlay.key], usedBlendIds);
+      const liquid = firstUnused(liquidByOverlay[overlay.key], usedLiquidIds);
+      if (pipe?.id) usedPipeIds.add(pipe.id);
+      if (blend?.id) usedBlendIds.add(blend.id);
+      if (liquid?.id) usedLiquidIds.add(liquid.id);
+      return makePairing(family, overlay, { pipe, blend, liquid });
+    })
+    .filter(Boolean);
+}
+
+export function generatePairingRecommendations(context = {}) {
+  const ctx = buildPairingContext(context);
+
+  const supportedFamilies = PAIRING_FAMILIES.filter((family) => isFamilySupported(ctx, family));
+  if (supportedFamilies.length === 0) {
+    console.log('CURATOR_DECISION', {
+      intent: 'pairings',
+      engineUsed: 'pairing',
+      reason: 'no_supported_pairing_families',
+      modules: ctx.activeModules,
+      dataCounts: {
+        pipes: ctx.pipes.length,
+        blends: ctx.blends.length,
+        bottles: ctx.bottles.length,
+        wines: ctx.wines.length,
+        cigars: ctx.cigars.length,
+      },
     });
     return [];
   }
 
-  const pipes = sortPipes(unsortedPipes, smokingLogs);
-  const blends = sortBlends(unsortedBlends, smokingLogs);
-  const bottles = sortBottles(unsortedBottles, tastingLogs);
+  const pairings = supportedFamilies.flatMap((family) => buildFamilyPairings(ctx, family));
 
-  const underusedPipes = [...pipes].sort((a, b) => (b.lastUsedDays || 0) - (a.lastUsedDays || 0));
-  const underusedBlends = [...blends].sort((a, b) => (b.lastUsedDays || 0) - (a.lastUsedDays || 0));
-
-  const rows = [];
-  const seenTriplets = new Set();
-  const usedPipeIds = new Set();
-  const usedBlendIds = new Set();
-  const usedBottleIds = new Set();
-
-  // Expert pairing — best of each category
-  const expertPipe = firstUnused(pipes, usedPipeIds);
-  const expertBlend = firstUnused(blends, usedBlendIds);
-  const expertBottle = firstUnused(bottles, usedBottleIds);
-  pushUnique(rows, makePair('expert', expertPipe, expertBlend, expertBottle, 'High Confidence', 'expert'), seenTriplets);
-  usedPipeIds.add(expertPipe?.id); usedBlendIds.add(expertBlend?.id); usedBottleIds.add(expertBottle?.id);
-
-  // Old favorites — highest-rated/most-used pipe with fresh partners
-  const favoritesPipe = pipes[0] || expertPipe;
-  const favoritesBlend = firstUnused(blends, usedBlendIds);
-  const favoritesBottle = firstUnused(bottles, usedBottleIds);
-  pushUnique(rows, makePair('old_favorites', favoritesPipe, favoritesBlend, favoritesBottle, 'High Confidence', 'old_favorites'), seenTriplets);
-  usedBlendIds.add(favoritesBlend?.id); usedBottleIds.add(favoritesBottle?.id);
-
-  // Rediscover — underused pipe + blend brought back
-  const rediscoverPipe = firstUnused(underusedPipes, usedPipeIds);
-  const rediscoverBlend = firstUnused(underusedBlends, usedBlendIds);
-  const rediscoverBottle = bottles[0] || firstUnused(bottles, usedBottleIds);
-  pushUnique(rows, makePair('rediscover', rediscoverPipe, rediscoverBlend, rediscoverBottle, 'Medium Confidence', 'rediscover'), seenTriplets);
-  usedPipeIds.add(rediscoverPipe?.id); usedBlendIds.add(rediscoverBlend?.id);
-
-  // Something new — fresh but still within collection taste profile
-  const newPipe = firstUnused(pipes, usedPipeIds);
-  const newBlend = firstUnused(blends, usedBlendIds);
-  const newBottle = firstUnused(bottles, usedBottleIds);
-  pushUnique(rows, makePair('something_new', newPipe, newBlend, newBottle, 'Experimental', 'something_new'), seenTriplets);
-
-  // RULE 9: Log curator decision
   console.log('CURATOR_DECISION', {
     intent: 'pairings',
-    modules: activeModules,
-    dataCounts: { pipes: pipes.length, blends: blends.length, bottles: bottles.length },
     engineUsed: 'pairing',
-    pairingsGenerated: rows.length,
-    tabCounts: {
-      expert: rows.filter(r => r.subTab === 'expert').length,
-      old_favorites: rows.filter(r => r.subTab === 'old_favorites').length,
-      rediscover: rows.filter(r => r.subTab === 'rediscover').length,
-      something_new: rows.filter(r => r.subTab === 'something_new').length,
+    modules: ctx.activeModules,
+    supportedFamilies: supportedFamilies.map((family) => family.key),
+    pairingsGenerated: pairings.length,
+    dataCounts: {
+      pipes: ctx.pipes.length,
+      blends: ctx.blends.length,
+      bottles: ctx.bottles.length,
+      wines: ctx.wines.length,
+      cigars: ctx.cigars.length,
     },
   });
 
-  return rows;
+  return pairings;
 }
+
+export const pairingFamilies = PAIRING_FAMILIES;

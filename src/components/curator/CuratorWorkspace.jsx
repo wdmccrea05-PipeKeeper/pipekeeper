@@ -98,8 +98,11 @@ function reconcileSections(prevSections, resolvedIds = [], resolvedRecommendatio
 }
 
 function buildAskCuratorPrompt(payload = {}) {
-  if (payload?.pairingType && payload?.leftItem && payload?.blendBridge && payload?.rightItem) {
-    return `Explain why ${payload.leftItem.name}, ${payload.blendBridge.name}, and ${payload.rightItem.name} work together in my collection.`;
+  if (payload?.pairingFamily && payload?.smokingSessionType === 'pipe_session' && payload?.leftItem && payload?.blendBridge && payload?.rightItem) {
+    return `Explain why this pipe session pairing works: ${payload.leftItem.name}, ${payload.blendBridge.name}, and ${payload.rightItem.name}.`;
+  }
+  if (payload?.pairingFamily && payload?.smokingSessionType === 'cigar' && payload?.leftItem && payload?.rightItem) {
+    return `Explain why this cigar pairing works: ${payload.leftItem.name} with ${payload.rightItem.name}.`;
   }
   const title = payload?.title || payload?.recordName || payload?.itemName || payload?.name || 'this recommendation';
   return `Evaluate ${title} in my collection`;
@@ -116,8 +119,11 @@ function buildEntityContextFromPayload(payload = {}) {
 }
 
 function buildSessionPrompt(pairing = {}) {
-  if (pairing?.leftItem && pairing?.blendBridge && pairing?.rightItem) {
+  if (pairing?.smokingSessionType === 'pipe_session' && pairing?.leftItem && pairing?.blendBridge && pairing?.rightItem) {
     return `Build a session plan around ${pairing.leftItem.name}, ${pairing.blendBridge.name}, and ${pairing.rightItem.name}. Include why this session fits my collection.`;
+  }
+  if (pairing?.smokingSessionType === 'cigar' && pairing?.leftItem && pairing?.rightItem) {
+    return `Build a cigar session plan around ${pairing.leftItem.name} and ${pairing.rightItem.name}. Include pacing and why this fit works.`;
   }
   return 'Build me a session from my current collection.';
 }
@@ -179,7 +185,7 @@ export default function CuratorWorkspace({
   const buildContext = useCallback(async () => {
     if (!user?.email) {
       return {
-        pipes: [], blends: [], bottles: [], smokingLogs: [], tastingLogs: [],
+        pipes: [], blends: [], bottles: [], wines: [], smokingLogs: [], tastingLogs: [],
         cigars: [], cigarSessions: [], inventoryUnits: [], acquisitionItems: [], wantListItems: [],
         preferences: {}, activeModules: stableModuleEnabled, cigarModuleActive: false,
       };
@@ -188,11 +194,12 @@ export default function CuratorWorkspace({
     // §1.2 MODULE GATE: determine which modules are active BEFORE any fetch
     const pipeActive    = stableModuleEnabled.pipekeeper    === true;
     const whiskeyActive = stableModuleEnabled.whiskeykeeper === true;
+    const wineActive    = stableModuleEnabled.winekeeper    === true;
     const cigarActive   = stableModuleEnabled.cigarkeeper   === true;
 
     // Batch all fetches in parallel — §9.1 single Promise.all per load
     const [
-      pipes, blends, bottles,
+      pipes, blends, bottles, wines,
       smokingLogs, tastingLogs,
       cigars, cigarSessions,
       inventoryUnits, acquisitionItems,
@@ -201,6 +208,7 @@ export default function CuratorWorkspace({
       pipeActive    ? safeFilter(base44.entities.Pipe,           { created_by: user.email }, '-updated_date',  200, 'pipes')          : Promise.resolve([]),
       pipeActive    ? safeFilter(base44.entities.TobaccoBlend,   { created_by: user.email }, '-updated_date',  200, 'blends')         : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.Bottle,         { created_by: user.email }, '-updated_date',  200, 'bottles')        : Promise.resolve([]),
+      wineActive    ? safeFilter(base44.entities.Wine,           { created_by: user.email }, '-updated_date',  200, 'wines')          : Promise.resolve([]),
       pipeActive    ? safeFilter(base44.entities.SmokingLog,     { created_by: user.email }, '-date',           300, 'smokingLogs')    : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.TastingLog,     { created_by: user.email }, '-tasting_date',   200, 'tastingLogs')   : Promise.resolve([]),
       cigarActive   ? safeFilter(base44.entities.Cigar,          { created_by: user.email }, '-updated_date',   200, 'cigars')        : Promise.resolve([]),
@@ -233,6 +241,7 @@ export default function CuratorWorkspace({
       pipes:          pipeActive    ? pipes    : [],
       blends:         pipeActive    ? blends   : [],
       bottles:        whiskeyActive ? bottles  : [],
+      wines:          wineActive    ? wines    : [],
       smokingLogs:    pipeActive    ? smokingLogs  : [],
       tastingLogs:    whiskeyActive ? tastingLogs  : [],
       cigars:         cigarActive   ? cigars : [],
@@ -314,6 +323,7 @@ export default function CuratorWorkspace({
             pipes:       shuffleArray(context.pipes       || []),
             blends:      shuffleArray(context.blends      || []),
             bottles:     shuffleArray(context.bottles     || []),
+            wines:       shuffleArray(context.wines       || []),
             smokingLogs: shuffleArray(context.smokingLogs || []),
             tastingLogs: shuffleArray(context.tastingLogs || []),
           }
@@ -543,7 +553,13 @@ export default function CuratorWorkspace({
 
     case 'pairings':
       return (
-        <>{modals}<CuratorPairingsTab pairings={pairings} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
+        <>{modals}<CuratorPairingsTab pairings={pairings} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} activeModules={moduleEnabled} collectionStats={{
+          pipes: (ctx.pipes || []).length,
+          blends: (ctx.blends || []).length,
+          bottles: (ctx.bottles || []).length,
+          wines: (ctx.wines || []).length,
+          cigars: (ctx.cigars || []).length,
+        }} /></>
       );
 
     case 'plan_session':

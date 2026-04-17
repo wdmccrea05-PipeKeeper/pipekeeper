@@ -16,9 +16,6 @@ import { generateGrowExpandRecommendations } from './growExpandEngine.js';
  */
 export function runCuratorEngines(curatorContext = {}) {
   const { activeModules = {} } = curatorContext;
-  const pipeActive = activeModules.pipekeeper !== false;
-  const tobaccoActive = activeModules.tobacco !== false;
-  const whiskeyActive = activeModules.whiskeykeeper !== false;
   
   const results = {
     recordOptimization: [],
@@ -87,31 +84,22 @@ export function runCuratorEngines(curatorContext = {}) {
     });
   }
 
-  // ─── Pairings (multi-module only) ──────────────────────────
-  if (pipeActive && whiskeyActive && (tobaccoActive || true)) {
-    try {
-      const pairings = generatePairingRecommendations(curatorContext) || [];
-      results.pairings = pairings;
-      results._engineLog.push({
-        engine: 'pairings',
-        status: pairings.length > 0 ? 'success' : 'no_pairings',
-        count: pairings.length,
-        reason: pairings.length === 0 ? 'insufficient_data' : null,
-      });
-    } catch (err) {
-      console.error('ENGINE_FAILURE', { engine: 'pairings', error: err.message });
-      results._engineLog.push({
-        engine: 'pairings',
-        status: 'error',
-        error: err.message,
-      });
-    }
-  } else {
+  // ─── Pairings (session-family engine) ──────────────────────
+  try {
+    const pairings = generatePairingRecommendations(curatorContext) || [];
+    results.pairings = pairings;
     results._engineLog.push({
       engine: 'pairings',
-      status: 'skipped',
-      reason: 'insufficient_modules',
-      modules: activeModules,
+      status: pairings.length > 0 ? 'success' : 'no_pairings',
+      count: pairings.length,
+      reason: pairings.length === 0 ? 'no_supported_pairing_families' : null,
+    });
+  } catch (err) {
+    console.error('ENGINE_FAILURE', { engine: 'pairings', error: err.message });
+    results._engineLog.push({
+      engine: 'pairings',
+      status: 'error',
+      error: err.message,
     });
   }
 

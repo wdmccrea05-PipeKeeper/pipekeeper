@@ -6,18 +6,23 @@ const TYPE_COLORS = {
   pipe: 'rgba(200,155,100,0.95)',
   blend: 'rgba(100,180,130,0.95)',
   bottle: 'rgba(120,170,220,0.95)',
+  wine: 'rgba(184,118,142,0.95)',
+  cigar: 'rgba(212,165,116,0.98)',
 };
 
 const TYPE_PAGE = {
   pipe: 'Pipes',
   blend: 'Tobacco',
   bottle: 'Whiskey',
+  wine: 'CollectionHub',
+  cigar: 'CigarKeeper',
 };
 
 function TrioItem({ item, label }) {
   const type = item?.recordType || item?.type;
   const color = TYPE_COLORS[type] || 'rgba(224,216,200,0.7)';
   const page = TYPE_PAGE[type];
+
   return (
     <div
       className="flex-1 min-w-0 rounded-lg px-4 py-3 text-center space-y-1"
@@ -59,37 +64,57 @@ function Badge({ text, tone = 'neutral' }) {
   );
 }
 
-export default function CuratorPairingResults({ pairings = [], onAction, moduleFilter = 'all' }) {
-  const filtered = pairings.filter((p) => {
-    if (moduleFilter === 'all') return true;
-    return p.primaryModule === moduleFilter;
-  });
+function getPairingItems(pairing) {
+  if (pairing?.smokingSessionType === 'cigar') {
+    return [
+      { label: 'Cigar', item: pairing.cigar || pairing.cigarItem || pairing.leftItem },
+      { label: pairing?.liquidType === 'wine' ? 'Wine' : 'Whiskey', item: pairing.liquid || pairing.wine || pairing.bottle || pairing.rightItem },
+    ];
+  }
 
-  if (!filtered.length) return null;
+  return [
+    { label: 'Pipe', item: pairing.pipe || pairing.leftItem },
+    { label: 'Tobacco', item: pairing.blend || pairing.blendBridge },
+    { label: pairing?.liquidType === 'wine' ? 'Wine' : 'Whiskey', item: pairing.liquid || pairing.wine || pairing.bottle || pairing.rightItem },
+  ];
+}
+
+export default function CuratorPairingResults({ pairings = [] }) {
+  if (!pairings.length) return null;
 
   return (
     <div className="space-y-3">
-      {filtered.map((pairing) => (
-        <div key={pairing.id} className="rounded-xl p-4" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <div className="space-y-1">
-              <p className="text-sm font-semibold" style={{ color: '#F5F5F7' }}>{pairing.narrative || pairing.title}</p>
-              {pairing.confidenceLabel && <Badge text={pairing.confidenceLabel} tone={pairing.pairingType === 'Reinforcing' ? 'success' : 'neutral'} />}
+      {pairings.map((pairing) => {
+        const items = getPairingItems(pairing);
+
+        return (
+          <div key={pairing.id} className="rounded-xl p-4" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold" style={{ color: '#F5F5F7' }}>{pairing.narrative || pairing.title}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  {pairing.overlayLabel && <Badge text={pairing.overlayLabel} tone="gold" />}
+                  {pairing.confidenceLabel && <Badge text={pairing.confidenceLabel} tone={pairing.pairingType === 'Reinforcing' ? 'success' : 'neutral'} />}
+                </div>
+              </div>
             </div>
+
+            <div className="flex gap-2 mb-3 flex-wrap">
+              {items.map((entry) => (
+                <TrioItem key={`${pairing.id}_${entry.label}`} item={entry.item} label={entry.label} />
+              ))}
+            </div>
+
+            {(pairing.whyItWorks || pairing.whatToExpect) && (
+              <p className="text-sm mb-3" style={{ color: '#D8D0C2' }}>{pairing.whyItWorks || pairing.whatToExpect}</p>
+            )}
+
+            {pairing.bestMomentForIt && (
+              <p className="text-xs mb-3" style={{ color: '#A1A1AA' }}><strong>When:</strong> {pairing.bestMomentForIt}</p>
+            )}
           </div>
-          <div className="flex gap-2 mb-3 flex-wrap">
-            <TrioItem item={pairing.pipe || pairing.leftItem} label="Pipe" />
-            <TrioItem item={pairing.blend || pairing.blendBridge} label="Tobacco" />
-            <TrioItem item={pairing.bottle || pairing.rightItem} label="Whiskey" />
-          </div>
-          {(pairing.whyItWorks || pairing.whatToExpect) && (
-            <p className="text-sm mb-3" style={{ color: '#D8D0C2' }}>{pairing.whyItWorks || pairing.whatToExpect}</p>
-          )}
-          {pairing.bestMomentForIt && (
-            <p className="text-xs mb-3" style={{ color: '#A1A1AA' }}><strong>When:</strong> {pairing.bestMomentForIt}</p>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
