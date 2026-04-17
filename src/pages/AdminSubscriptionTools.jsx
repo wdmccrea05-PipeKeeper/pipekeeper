@@ -26,6 +26,12 @@ export default function AdminSubscriptionTools() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [updatedUser, setUpdatedUser] = useState(null);
+  const moduleLabelMap = {
+    pipekeeper: "PipeKeeper (Public)",
+    whiskeykeeper: "WhiskeyKeeper (Public)",
+    cigarkeeper: "CigarKeeper (Internal Only)",
+    winekeeper: "WineKeeper (Not Launched)",
+  };
 
   // Check admin access
   if (!isLoading && user?.role !== "admin") {
@@ -204,7 +210,7 @@ export default function AdminSubscriptionTools() {
                         }
                         disabled={loading}
                       />
-                      <span>{moduleId}</span>
+                      <span>{moduleLabelMap[moduleId] || moduleId}</span>
                     </label>
                   ))}
                 </div>

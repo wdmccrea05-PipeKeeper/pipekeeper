@@ -255,8 +255,8 @@ export default function UserReport() {
       ['Annual Subscriptions',           subscriptions.annual  ?? 0],
       ['PipeKeeper',                     subscriptions.byProduct?.pipekeeper    ?? 0],
       ['WhiskeyKeeper',                  subscriptions.byProduct?.whiskeykeeper ?? 0],
-      ['CigarKeeper',                    subscriptions.byProduct?.cigarkeeper   ?? 0],
-      ['WineKeeper',                     subscriptions.byProduct?.winekeeper    ?? 0],
+      ['CigarKeeper (internal only)',    subscriptions.byProduct?.cigarkeeper   ?? 0],
+      ['WineKeeper (not launched)',      subscriptions.byProduct?.winekeeper    ?? 0],
       ['Bundles',                        subscriptions.byProduct?.bundles       ?? 0],
       // Run Rate
       ['--- RUN RATE ---', ''],
@@ -482,8 +482,8 @@ export default function UserReport() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <MetricCard label="PipeKeeper"    value={subscriptions.byProduct?.pipekeeper    ?? 0} />
           <MetricCard label="WhiskeyKeeper" value={subscriptions.byProduct?.whiskeykeeper ?? 0} />
-          <MetricCard label="CigarKeeper"   value={subscriptions.byProduct?.cigarkeeper   ?? 0} />
-          <MetricCard label="WineKeeper"    value={subscriptions.byProduct?.winekeeper    ?? 0} />
+          <MetricCard label="CigarKeeper (Internal)" value={subscriptions.byProduct?.cigarkeeper ?? 0} />
+          <MetricCard label="WineKeeper (Not Launched)" value={subscriptions.byProduct?.winekeeper ?? 0} />
           <MetricCard label="Bundles"       value={subscriptions.byProduct?.bundles       ?? 0} />
         </div>
       </SectionCard>

@@ -190,16 +190,8 @@ export default function SubscriptionFull() {
     pipekeeper_pro_annual: { name: "PipeKeeper Pro", badge: "Best Value" },
     whiskeykeeper_pro_monthly: { name: "WhiskeyKeeper Pro", badge: null },
     whiskeykeeper_pro_annual: { name: "WhiskeyKeeper Pro", badge: "Best Value" },
-    cigarkeeper_pro_monthly: { name: "CigarKeeper Pro", badge: null },
-    cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: "Best Value" },
-    winekeeper_pro_monthly: { name: "WineKeeper Pro", badge: null },
-    winekeeper_pro_annual: { name: "WineKeeper Pro", badge: "Best Value" },
     founders_bundle_monthly: { name: "Founders Bundle", badge: "Most Popular" },
     founders_bundle_annual: { name: "Founders Bundle", badge: "Best Value" },
-    three_module_bundle_monthly: { name: "3-Module Bundle", badge: null },
-    three_module_bundle_annual: { name: "3-Module Bundle", badge: "Best Value" },
-    four_module_bundle_monthly: { name: "All 4 Modules", badge: null },
-    four_module_bundle_annual: { name: "All 4 Modules", badge: "Best Value" },
   };
 
   const planDescriptions = {
@@ -207,16 +199,8 @@ export default function SubscriptionFull() {
     pipekeeper_pro_annual: "Unlimited pipes & blends, AI pairings & identification",
     whiskeykeeper_pro_monthly: "Unlimited bottles, AI valuations & tastings",
     whiskeykeeper_pro_annual: "Unlimited bottles, AI valuations & tastings",
-    cigarkeeper_pro_monthly: "Unlimited cigars, humidor management & AI recommendations",
-    cigarkeeper_pro_annual: "Unlimited cigars, humidor management & AI recommendations",
-    winekeeper_pro_monthly: "Unlimited wines, cellar tracking & AI valuations",
-    winekeeper_pro_annual: "Unlimited wines, cellar tracking & AI valuations",
     founders_bundle_monthly: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
     founders_bundle_annual: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
-    three_module_bundle_monthly: "Any 3 modules of your choice",
-    three_module_bundle_annual: "Any 3 modules of your choice",
-    four_module_bundle_monthly: "PipeKeeper + WhiskeyKeeper + CigarKeeper + WineKeeper",
-    four_module_bundle_annual: "PipeKeeper + WhiskeyKeeper + CigarKeeper + WineKeeper",
   };
 
   const handleUpgrade = async (planKey) => {
