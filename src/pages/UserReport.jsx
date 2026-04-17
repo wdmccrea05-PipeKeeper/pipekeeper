@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { buildDiagnosticsSampleGroups } from "@/lib/userReportDiagnostics";
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
@@ -502,6 +503,11 @@ export default function UserReport() {
           <MetricCard label="Failed Entitlement Syncs" value={diagnostics.failedEntitlementSyncs ?? 0} />
           <MetricCard label="Failed Stripe Callbacks" value={diagnostics.failedStripeCallbacks ?? 0} />
           <MetricCard label="Failed Restore Attempts" value={diagnostics.failedRestoreAttempts ?? 0} />
+          <MetricCard
+            label="Recent Subscription State Changes (7d)"
+            value={diagnostics.recentSubscriptionStateChanges?.last7d ?? 0}
+            sub={`At-risk: ${diagnostics.recentSubscriptionStateChanges?.atRisk ?? 0}`}
+          />
           <MetricCard label="Recent Admin Overrides (7d)" value={diagnostics.recentAdminOverrides?.last7d ?? 0} sub={`Total manual: ${diagnostics.recentAdminOverrides?.totalManualSubscriptions ?? 0}`} />
         </div>
         <SectionDivider label="Sync Outcome States" />
@@ -726,22 +732,14 @@ function WarningsPanel({ warnings }) {
 // ─── Helper sub-components ────────────────────────────────────────────────────
 
 function DiagnosticsSamples({ diagnostics }) {
-  const groups = [
-    { label: 'Multi-active', values: diagnostics?.samples?.multipleActiveSubscriptions || [] },
-    { label: 'Active/no-modules', values: diagnostics?.samples?.activeNoModules || [] },
-    { label: 'Modules/no-active', values: diagnostics?.samples?.modulesNoActiveSubscription || [] },
-    { label: 'Summary/runtime drift', values: diagnostics?.samples?.summaryRuntimeMismatch || [] },
-    { label: 'Stale sync', values: diagnostics?.samples?.staleSyncTimestamp || [] },
-  ];
-
-  const nonEmpty = groups.filter((g) => g.values.length > 0);
-  if (nonEmpty.length === 0) {
+  const groups = buildDiagnosticsSampleGroups(diagnostics);
+  if (groups.length === 0) {
     return <p className="text-sm text-[#E0D8C8]/60">No sampled anomaly emails.</p>;
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {nonEmpty.map((group) => (
+      {groups.map((group) => (
         <div key={group.label} className="rounded-lg border border-[#8b6239]/20 bg-[#2a1f18]/40 p-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-[#E0D8C8]/70 mb-2">{group.label}</p>
           <div className="space-y-1">

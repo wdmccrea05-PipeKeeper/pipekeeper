@@ -561,12 +561,20 @@ Deno.serve(async (req) => {
         totalManualSubscriptions: 0,
         last7d: 0,
       },
+      recentSubscriptionStateChanges: {
+        last7d: 0,
+        atRisk: 0,
+      },
       samples: {
         activeNoModules: [] as string[],
         modulesNoActiveSubscription: [] as string[],
         summaryRuntimeMismatch: [] as string[],
         multipleActiveSubscriptions: [] as string[],
         staleSyncTimestamp: [] as string[],
+        failedStripeCallbacks: [] as string[],
+        failedRestoreAttempts: [] as string[],
+        recentAdminOverrides: [] as string[],
+        recentSubscriptionStateChanges: [] as string[],
       },
     };
     const staleCutoff = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
@@ -663,24 +671,66 @@ Deno.serve(async (req) => {
       else        freeUsersList.push(row);
     }
 
-    diagnostics.failedStripeCallbacks = allSubscriptions.filter((s) => {
+    const resolveSubscriptionEmail = (s: any): string => {
+      const fromSub = norm(s?.user_email || '');
+      if (fromSub) return fromSub;
+      const byId = s?.user_id ? userByIdMap.get(String(s.user_id)) : null;
+      return norm(byId?.email || '');
+    };
+
+    const stripeCallbackFailures = allSubscriptions.filter((s) => {
       const provider = norm(s.provider || '');
       const status = norm(s.status || '');
       return provider === 'stripe' && (status === 'incomplete_expired' || status === 'unpaid');
-    }).length;
+    });
+    diagnostics.failedStripeCallbacks = stripeCallbackFailures.length;
+    stripeCallbackFailures.forEach((s) => {
+      const email = resolveSubscriptionEmail(s);
+      const status = norm(s?.status || 'unknown');
+      if (email) {
+        pushSample(diagnostics.samples.failedStripeCallbacks, `${email} (${status})`);
+      }
+    });
 
-    diagnostics.failedRestoreAttempts = allSubscriptions.filter((s) => {
+    const restoreFailures = allSubscriptions.filter((s) => {
       const provider = norm(s.provider || '');
       const status = norm(s.status || '');
       return provider === 'apple' && status === 'unverified';
-    }).length;
+    });
+    diagnostics.failedRestoreAttempts = restoreFailures.length;
+    restoreFailures.forEach((s) => {
+      const email = resolveSubscriptionEmail(s);
+      if (email) pushSample(diagnostics.samples.failedRestoreAttempts, email);
+    });
 
     const manualSubscriptions = allSubscriptions.filter((s) => norm(s.provider || '') === 'manual');
     diagnostics.recentAdminOverrides.totalManualSubscriptions = manualSubscriptions.length;
-    diagnostics.recentAdminOverrides.last7d = manualSubscriptions.filter((s) => {
+    const manualLast7d = manualSubscriptions.filter((s) => {
       const updated = parseDate(s.updated_date || s.created_date);
       return updated ? updated >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) : false;
-    }).length;
+    });
+    diagnostics.recentAdminOverrides.last7d = manualLast7d.length;
+    manualLast7d.forEach((s) => {
+      const email = resolveSubscriptionEmail(s);
+      if (email) pushSample(diagnostics.samples.recentAdminOverrides, email);
+    });
+
+    const changedStateLast7d = allSubscriptions.filter((s) => {
+      const updated = parseDate(s.updated_date || s.created_date);
+      return updated ? updated >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) : false;
+    });
+    const atRiskStateSet = new Set(['past_due', 'unpaid', 'incomplete', 'incomplete_expired', 'canceled', 'unverified']);
+    diagnostics.recentSubscriptionStateChanges.last7d = changedStateLast7d.length;
+    diagnostics.recentSubscriptionStateChanges.atRisk = changedStateLast7d.filter((s) => atRiskStateSet.has(norm(s?.status || ''))).length;
+    changedStateLast7d
+      .filter((s) => atRiskStateSet.has(norm(s?.status || '')))
+      .forEach((s) => {
+        const email = resolveSubscriptionEmail(s);
+        const status = norm(s?.status || 'unknown');
+        if (email) {
+          pushSample(diagnostics.samples.recentSubscriptionStateChanges, `${email} (${status})`);
+        }
+      });
 
     const totalUsers     = uniqueUsers.length;
     const paidUsersCount = paidUsersList.length;
@@ -792,12 +842,17 @@ Deno.serve(async (req) => {
         failedRestoreAttempts: 0,
         recentSyncWriteOutcomes: { ok: 0, needs_sync: 0, error: 0, unknown: 0 },
         recentAdminOverrides: { totalManualSubscriptions: 0, last7d: 0 },
+        recentSubscriptionStateChanges: { last7d: 0, atRisk: 0 },
         samples: {
           activeNoModules: [],
           modulesNoActiveSubscription: [],
           summaryRuntimeMismatch: [],
           multipleActiveSubscriptions: [],
           staleSyncTimestamp: [],
+          failedStripeCallbacks: [],
+          failedRestoreAttempts: [],
+          recentAdminOverrides: [],
+          recentSubscriptionStateChanges: [],
         },
       },
       accounts: {}, subscriptions: {}, runRate: {}, renewalRevenue: {},
