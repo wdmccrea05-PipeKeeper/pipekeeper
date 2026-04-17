@@ -34,6 +34,8 @@ Deno.serve(async (req: Request) => {
     const emailLower = String(email).trim().toLowerCase();
     const normalizedStatus = String(status || "active").trim().toLowerCase();
     const normalizedProvider = String(provider || "manual").trim().toLowerCase();
+    const providerForSubscriptionField =
+      ["apple", "stripe"].includes(normalizedProvider) ? normalizedProvider : null;
     const activeStatuses = new Set(["active", "trialing", "past_due", "incomplete"]);
     const parsedModules = Array.isArray(modules)
       ? modules
@@ -75,7 +77,8 @@ Deno.serve(async (req: Request) => {
         subscriptionSource: "manual",
         subscriptionStatus: normalizedStatus,
         subscriptionUpdatedAt: new Date().toISOString(),
-        subscription_provider: normalizedProvider === "apple" ? "apple" : "stripe",
+        ...(providerForSubscriptionField ? { subscription_provider: providerForSubscriptionField } : {}),
+        billing_source_of_truth: normalizedProvider === "manual" ? "manual" : normalizedProvider,
         entitlement_tier: hasPaidAccess ? "pro" : "free",
         subscription_level: hasPaidAccess ? "paid" : "free",
         subscription_status: normalizedStatus,

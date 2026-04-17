@@ -181,7 +181,7 @@ Deno.serve(async (req) => {
       const customerId = candidate.customerId;
       const item = subscription.items?.data?.[0];
       const priceId = item?.price?.id || null;
-      const planKey = determinePlanKeyFromPrice(priceId) || null;
+      const planKey = determinePlanKeyFromPrice(priceId);
       const subModules = unique(extractModulesFromMetadata(subscription, planKey));
       modulesBySubscription.set(subscription.id, subModules);
 
@@ -250,17 +250,23 @@ Deno.serve(async (req) => {
     const primarySubscription = primary.subscription;
     const customerId = primary.customerId;
     const primaryPriceId = primarySubscription.items?.data?.[0]?.price?.id || null;
-    const primaryPlanKey = determinePlanKeyFromPrice(primaryPriceId) || null;
+    const primaryPlanKey = determinePlanKeyFromPrice(primaryPriceId);
     const currentPeriodEnd = primarySubscription.current_period_end
       ? new Date(primarySubscription.current_period_end * 1000).toISOString()
       : null;
     const subscriptionStatus = mapStripeStatus(primarySubscription.status);
 
-    // Preserve legacy module access only when paid and current subscription modules could not be resolved
+    // Preserve legacy module access only when paid and current subscription modules could not be resolved.
+    // This protects legitimate paid users during transient metadata/plan mapping drift.
     const preservedUserModules =
       hasPaidAccess && unionModules.length === 0
         ? splitModulesCsv(user?.paid_modules_csv)
         : [];
+    if (hasPaidAccess && unionModules.length === 0 && preservedUserModules.length > 0) {
+      console.warn(
+        `[syncSubscriptionForMe] using paid_modules_csv fallback for ${email} because qualifying subscriptions resolved zero modules`,
+      );
+    }
     const activeModules = unionModules.length > 0 ? unionModules : preservedUserModules;
 
     const pipekeeper_paid = activeModules.includes('pipekeeper');

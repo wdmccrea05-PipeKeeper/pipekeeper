@@ -55,13 +55,12 @@ function normalizePlanKey(sub) {
   );
 }
 
-function csvToModules(csv) {
-  return [...new Set(
-    String(csv || '')
+function csvToValidModules(csv) {
+  const modules = String(csv || '')
     .split(',')
     .map((m) => m.trim().toLowerCase())
-    .filter((m) => MODULE_KEYS.includes(m))
-  )];
+    .filter((m) => MODULE_KEYS.includes(m));
+  return [...new Set(modules)];
 }
 
 /**
@@ -102,7 +101,7 @@ export function getUserSubscriptionState({
 
   // Legacy fallback: if no active subscription modules, use user-level canonical fields.
   if (paidModules.length === 0 && user) {
-    const csvModules = csvToModules(user?.paid_modules_csv);
+    const csvModules = csvToValidModules(user?.paid_modules_csv);
     paidModules = [...csvModules];
 
     // Detect bundle from user flags or entitlements

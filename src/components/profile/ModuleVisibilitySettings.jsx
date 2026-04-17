@@ -53,6 +53,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     cigarkeeper: cigarkeeperPaid,
     winekeeper: winekeeperPaid,
   };
+  const paidModuleIds = Object.keys(paidFlagByModule);
 
   const MODULE_CONFIG = [
     {
@@ -114,7 +115,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     setSaving(moduleId);
     try {
       const key = `${moduleId}_paid`;
-      if (!["pipekeeper_paid", "whiskeykeeper_paid", "cigarkeeper_paid", "winekeeper_paid"].includes(key)) {
+      const validPaidKeys = paidModuleIds.map((id) => `${id}_paid`);
+      if (!validPaidKeys.includes(key)) {
         throw new Error("Unsupported module entitlement key");
       }
 
@@ -236,7 +238,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0">
-                {mod.launched && ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"].includes(mod.id) ? (
+                {mod.launched && paidModuleIds.includes(mod.id) ? (
                   <>
                     <Switch
                       checked={enabled}

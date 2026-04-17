@@ -66,7 +66,11 @@ describe("subscription flow consistency", () => {
 
   it("preserves module resolution via metadata/modules_csv callback path", () => {
     const summary = buildAccessSummary(
-      { entitlement_tier: "pro", paid_modules_csv: "pipekeeper,whiskeykeeper,cigarkeeper,winekeeper" },
+      {
+        role: "admin",
+        entitlement_tier: "pro",
+        paid_modules_csv: "pipekeeper,whiskeykeeper,cigarkeeper,winekeeper",
+      },
       {
         status: "active",
         plan_key: "aggregated_multi_subscription",
