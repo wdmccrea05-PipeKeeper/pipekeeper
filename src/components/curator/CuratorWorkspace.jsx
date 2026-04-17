@@ -178,19 +178,21 @@ export default function CuratorWorkspace({
     if (!user?.email) {
       return {
         pipes: [], blends: [], bottles: [], smokingLogs: [], tastingLogs: [],
-        inventoryUnits: [], acquisitionItems: [], wantListItems: [],
-        preferences: {}, activeModules: stableModuleEnabled,
+        cigars: [], cigarSessions: [], inventoryUnits: [], acquisitionItems: [], wantListItems: [],
+        preferences: {}, activeModules: stableModuleEnabled, cigarModuleActive: false,
       };
     }
 
     // §1.2 MODULE GATE: determine which modules are active BEFORE any fetch
     const pipeActive    = stableModuleEnabled.pipekeeper    === true;
     const whiskeyActive = stableModuleEnabled.whiskeykeeper === true;
+    const cigarActive   = stableModuleEnabled.cigarkeeper   === true;
 
     // Batch all fetches in parallel — §9.1 single Promise.all per load
     const [
       pipes, blends, bottles,
       smokingLogs, tastingLogs,
+      cigars, cigarSessions,
       inventoryUnits, acquisitionItems,
     ] = await Promise.all([
       // §1.2: if module disabled, return empty array — NO data leakage
@@ -199,6 +201,8 @@ export default function CuratorWorkspace({
       whiskeyActive ? safeFilter(base44.entities.Bottle,         { created_by: user.email }, '-updated_date',  200, 'bottles')        : Promise.resolve([]),
       pipeActive    ? safeFilter(base44.entities.SmokingLog,     { created_by: user.email }, '-date',           300, 'smokingLogs')    : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.TastingLog,     { created_by: user.email }, '-tasting_date',   200, 'tastingLogs')   : Promise.resolve([]),
+      cigarActive   ? safeFilter(base44.entities.Cigar,          { created_by: user.email }, '-updated_date',   200, 'cigars')        : Promise.resolve([]),
+      cigarActive   ? safeFilter(base44.entities.CigarSession,   { created_by: user.email }, '-date',           300, 'cigarSessions') : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null,        500, 'inventoryUnits') : Promise.resolve([]),
       safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 300, 'acquisitionItems'),
     ]);
@@ -229,11 +233,14 @@ export default function CuratorWorkspace({
       bottles:        whiskeyActive ? bottles  : [],
       smokingLogs:    pipeActive    ? smokingLogs  : [],
       tastingLogs:    whiskeyActive ? tastingLogs  : [],
+      cigars:         cigarActive   ? cigars : [],
+      cigarSessions:  cigarActive   ? cigarSessions : [],
       inventoryUnits: whiskeyActive ? inventoryUnits : [],
       acquisitionItems: normalizedAcquisitions,
       wantListItems:    normalizedAcquisitions,
       preferences: {},
       activeModules: stableModuleEnabled,
+      cigarModuleActive: cigarActive,
     };
   }, [user?.email, stableModuleEnabled]);
 

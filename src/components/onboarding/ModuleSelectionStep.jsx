@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
-import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
+import { canAccessInternalModuleForTesting, isInternalModuleTester } from "@/components/utils/moduleReleaseState";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const MODULES = [
@@ -13,6 +13,11 @@ const MODULES = [
     key: "whiskeykeeper",
     label: "WhiskeyKeeper",
     description: "Track bottles, pours, tasting notes, inventory, and value insights.",
+  },
+  {
+    key: "cigarkeeper",
+    label: "CigarKeeper",
+    description: "Track cigars, humidors, inventory, and cigar sessions.",
   },
 ];
 
@@ -32,8 +37,11 @@ export default function ModuleSelectionStep({
       set.add("pipekeeper");
       set.add("whiskeykeeper");
     }
+    if (canAccessInternalModuleForTesting("cigarkeeper", user)) {
+      set.add("cigarkeeper");
+    }
     return set;
-  }, [activeModules, tester]);
+  }, [activeModules, tester, user]);
 
   const selectableModules = MODULES.filter((module) =>
     accessibleModules.has(module.key)

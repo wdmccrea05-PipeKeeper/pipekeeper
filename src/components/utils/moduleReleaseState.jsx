@@ -3,7 +3,7 @@
  *
  * States:
  *   blocked  — fully hidden from production users, fail closed
- *   internal — hidden from normal users, accessible to internal/admin testers only
+ *   internal — hidden from public users, accessible to internal/admin testers or explicitly granted test users
  *   launched — available to production users, subject to entitlements
  */
 
@@ -67,6 +67,32 @@ const INTERNAL_TESTER_EMAILS = new Set([
   // Add internal tester emails here if needed.
 ]);
 
+function parseModulesCsv(csv) {
+  return new Set(
+    String(csv || '')
+      .split(',')
+      .map((m) => m.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+export function hasExplicitModuleEntitlement(moduleKey, user) {
+  if (!user) return false;
+
+  const key = normalizeModuleKey(moduleKey);
+  if (!key) return false;
+
+  const directFlag = user?.[`${key}_paid`] === true;
+  const nestedFlag = user?.data?.[`${key}_paid`] === true;
+  if (directFlag || nestedFlag) return true;
+
+  const csv = parseModulesCsv(user?.paid_modules_csv);
+  if (csv.has(key)) return true;
+
+  const nestedCsv = parseModulesCsv(user?.data?.paid_modules_csv);
+  return nestedCsv.has(key);
+}
+
 export function isInternalModuleTester(user) {
   if (!user) return false;
 
@@ -79,6 +105,11 @@ export function isInternalModuleTester(user) {
   if (email && INTERNAL_TESTER_EMAILS.has(email)) return true;
 
   return false;
+}
+
+export function canAccessInternalModuleForTesting(moduleKey, user) {
+  if (!user) return false;
+  return isInternalModuleTester(user) || hasExplicitModuleEntitlement(moduleKey, user);
 }
 
 export function getModuleReleaseState(moduleKey) {
@@ -114,7 +145,7 @@ export function canUserAccessModule(moduleKey, user, hasEntitlement = true) {
   const state = getEffectiveModuleReleaseState(moduleKey, user);
 
   if (state === 'blocked') return false;
-  if (state === 'internal') return isInternalModuleTester(user);
+  if (state === 'internal') return canAccessInternalModuleForTesting(moduleKey, user);
   if (state === 'launched') return !!hasEntitlement;
   return false;
 }
@@ -123,7 +154,7 @@ export function shouldShowModuleInNav(moduleKey, user, hasEntitlement = true) {
   const state = getEffectiveModuleReleaseState(moduleKey, user);
 
   if (state === 'blocked') return false;
-  if (state === 'internal') return isInternalModuleTester(user);
+  if (state === 'internal') return canAccessInternalModuleForTesting(moduleKey, user);
   return !!hasEntitlement;
 }
 
@@ -131,7 +162,7 @@ export function shouldFetchModuleData(moduleKey, user, hasEntitlement = true) {
   const state = getEffectiveModuleReleaseState(moduleKey, user);
 
   if (state === 'blocked') return false;
-  if (state === 'internal') return isInternalModuleTester(user);
+  if (state === 'internal') return canAccessInternalModuleForTesting(moduleKey, user);
   return !!hasEntitlement;
 }
 
