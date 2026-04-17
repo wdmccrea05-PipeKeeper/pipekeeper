@@ -15,6 +15,7 @@ import {
   getEffectiveModuleReleaseState,
   isInternalModuleTester,
 } from '@/components/utils/moduleReleaseState';
+import { getEntitlementTier } from '@/components/utils/premiumAccess';
 
 const STRIPE_PRODUCT_MAP = {
   founders_bundle_monthly: { modules: ['pipekeeper', 'whiskeykeeper'], billingPeriod: 'monthly' },
@@ -48,28 +49,9 @@ function filterModulesByReleaseState(modules, user) {
   return modules.filter((m) => getEffectiveModuleReleaseState(m, user) === 'launched');
 }
 
-function normalizeTier(tier) {
-  const t = String(tier || '').trim().toLowerCase();
-  if (['pro', 'premium', 'paid', 'plus', 'subscriber'].includes(t)) return 'pro';
-  if (t.startsWith('bundle_')) return 'pro';
-  return 'free';
-}
-
-function subscriptionGrantsPaidAccess(subscription) {
-  if (!subscription) return false;
-  const status = String(subscription?.status || '').toLowerCase();
-  // 'incomplete' intentionally excluded — payment has not been confirmed
-  return ['active', 'trialing', 'past_due'].includes(status);
-}
-
 function resolveTier(user, subscription) {
-  if (user?.role === 'admin' || user?.is_admin === true) return 'pro';
-
-  const userTier = user?.entitlement_tier || user?.tier || user?.data?.entitlement_tier || user?.subscription_tier;
-  if (normalizeTier(userTier) === 'pro') return 'pro';
-
-  if (subscriptionGrantsPaidAccess(subscription)) return 'pro';
-  return 'free';
+  const canonical = getEntitlementTier(user, subscription);
+  return canonical === 'pro' ? 'pro' : 'free';
 }
 
 function resolveProvider(user, subscription) {

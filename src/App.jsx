@@ -18,6 +18,7 @@ import WhiskeyAnalytics from "@/pages/WhiskeyAnalytics";
 import Tastings from "@/pages/Tastings";
 import Curator from "@/pages/Curator";
 import Subscription from "@/pages/Subscription";
+import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import SubscriptionSuccessFlow from "@/pages/SubscriptionSuccessFlow";
 import CollectionHub from "@/pages/CollectionHub";
 import PipeKeeper from "@/pages/PipeKeeper";
@@ -182,6 +183,8 @@ const AuthenticatedApp = () => {
       <Route path="/upgrade" element={<LayoutWrapper currentPageName="Subscription"><Subscription /></LayoutWrapper>} />
 
       <Route path="/SubscriptionSuccessFlow" element={<SubscriptionSuccessFlow />} />
+      <Route path="/SubscriptionSuccess" element={<SubscriptionSuccess />} />
+      <Route path="/subscription-success" element={<SubscriptionSuccess />} />
 
       <Route
         path="/CollectionHub"

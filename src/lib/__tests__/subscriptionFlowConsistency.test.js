@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { buildAccessSummary } from "@/components/access/accessSummary";
 import { getModulesFromPlanKey } from "@/components/subscription/subscriptionHandler";
 import { getStripeConfig } from "@/components/subscription/stripeConfig";
+import { getEntitlementTier } from "@/components/utils/premiumAccess";
 import {
   normalizeNativeAppleStatus,
   syncAppleSubscriptionStatus,
@@ -34,6 +35,33 @@ describe("subscription flow consistency", () => {
       "pipekeeper",
       "whiskeykeeper",
     ]);
+  });
+
+  it("keeps access summary tier aligned with canonical entitlement resolver", () => {
+    const scenarios = [
+      {
+        user: { entitlement_tier: "free" },
+        sub: { status: "active", plan_key: "pipekeeper_pro_monthly" },
+        expected: "pro",
+      },
+      {
+        user: { entitlement_tier: "pro", paid_modules_csv: "pipekeeper" },
+        sub: null,
+        expected: "pro",
+      },
+      {
+        user: { entitlement_tier: "free" },
+        sub: null,
+        expected: "free",
+      },
+    ];
+
+    for (const row of scenarios) {
+      const canonicalTier = getEntitlementTier(row.user, row.sub);
+      const accessTier = buildAccessSummary(row.user, row.sub).tier;
+      expect(canonicalTier).toBe(row.expected);
+      expect(accessTier).toBe(canonicalTier);
+    }
   });
 });
 
