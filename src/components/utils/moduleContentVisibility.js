@@ -22,6 +22,16 @@ const WHISKEYKEEPER_KEYS = [
   "tastings",
 ];
 
+const CIGARKEEPER_KEYS = [
+  "cigarkeeper",
+  "cigar",
+  "cigars",
+  "humidor",
+  "humidors",
+  "smoke",
+  "smoked",
+];
+
 function normalize(value) {
   return String(value || "").toLowerCase().trim();
 }
@@ -43,12 +53,20 @@ export function getItemModule(item) {
     return "whiskeykeeper";
   }
 
+  if (explicitModule.includes("cigar") || explicitModule.includes("humidor")) {
+    return "cigarkeeper";
+  }
+
   if (item.pipeId || item.pipe_id || item.blendId || item.blend_id || item.tobaccoId || item.tobacco_id) {
     return "pipekeeper";
   }
 
   if (item.bottleId || item.bottle_id || item.tastingId || item.tasting_id || item.pourId || item.pour_id) {
     return "whiskeykeeper";
+  }
+
+  if (item.cigarId || item.cigar_id || item.humidorId || item.humidor_id || item.cigarSessionId || item.cigar_session_id) {
+    return "cigarkeeper";
   }
 
   const text = [
@@ -67,6 +85,7 @@ export function getItemModule(item) {
 
   if (PIPEKEEPER_KEYS.some((key) => text.includes(key))) return "pipekeeper";
   if (WHISKEYKEEPER_KEYS.some((key) => text.includes(key))) return "whiskeykeeper";
+  if (CIGARKEEPER_KEYS.some((key) => text.includes(key))) return "cigarkeeper";
 
   return null;
 }

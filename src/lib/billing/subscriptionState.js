@@ -8,6 +8,7 @@
  */
 
 import { SUBSCRIPTION_PLANS } from './subscriptionPlans';
+import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
 
 const MODULE_KEYS = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
 
@@ -40,6 +41,8 @@ const WINEKEEPER_PLAN_KEYS = new Set(
 );
 
 const ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due']);
+const PUBLIC_PURCHASABLE_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper']
+  .filter((moduleKey) => isModuleLaunched(moduleKey));
 
 function isActiveSubscription(sub) {
   const status = String(sub?.status || '').toLowerCase();
@@ -137,17 +140,24 @@ export function getUserSubscriptionState({
   // Determine eligible upgrade actions
   const eligibleActions = [];
 
-  if (hasBundle) {
-    // Bundle users: no upgrade needed
-  } else if (hasPipekeeperPro && hasWhiskeykeeperPro) {
-    // Has both modules separately — can consolidate to bundle
-    eligibleActions.push('upgrade_to_bundle');
-  } else if (hasPipekeeperPro) {
-    eligibleActions.push('upgrade_to_bundle');
-    eligibleActions.push('add_whiskeykeeper_module');
-  } else if (hasWhiskeykeeperPro) {
-    eligibleActions.push('upgrade_to_bundle');
-    eligibleActions.push('add_pipekeeper_module');
+  const hasAnyPaidModule = hasPipekeeperPro || hasWhiskeykeeperPro || hasCigarkeeperPro || hasWinekeeperPro;
+  if (!hasBundle && hasAnyPaidModule) {
+    const paidModuleMap = {
+      pipekeeper: hasPipekeeperPro,
+      whiskeykeeper: hasWhiskeykeeperPro,
+      cigarkeeper: hasCigarkeeperPro,
+    };
+
+    for (const moduleKey of PUBLIC_PURCHASABLE_MODULES) {
+      if (!paidModuleMap[moduleKey]) {
+        eligibleActions.push(`add_${moduleKey}_module`);
+      }
+    }
+
+    // Founders remains the canonical PK+WK bundle.
+    if (hasPipekeeperPro || hasWhiskeykeeperPro) {
+      eligibleActions.push('upgrade_to_bundle');
+    }
   }
   // Free users have no eligible upgrade actions in this list;
   // they see the full plan menu instead.

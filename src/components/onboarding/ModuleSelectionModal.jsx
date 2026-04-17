@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { isInternalModuleTester, isModuleLaunched } from '@/components/utils/moduleReleaseState';
 
 function Badge({ children, className }) {
   return <span className={`px-2 py-1 rounded text-xs font-medium ${className}`}>{children}</span>;
@@ -12,7 +13,9 @@ function Badge({ children, className }) {
 export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
   const { saveModulePreferences, user } = useModuleVisibility();
   const { t } = useTranslation();
-  const [selected, setSelected] = useState({ pipekeeper: true, whiskeykeeper: false });
+  const canSelectCigarKeeper =
+    isModuleLaunched('cigarkeeper', user) || isInternalModuleTester(user);
+  const [selected, setSelected] = useState({ pipekeeper: true, whiskeykeeper: false, cigarkeeper: false });
   const [saving, setSaving] = useState(false);
 
   const userHasAnyPaid =
@@ -27,7 +30,8 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
   };
 
   const handleContinue = async () => {
-    if (!selected.pipekeeper && !selected.whiskeykeeper) {
+    const hasAnySelected = selected.pipekeeper || selected.whiskeykeeper || (canSelectCigarKeeper && selected.cigarkeeper);
+    if (!hasAnySelected) {
       toast.error('Please select at least one module.');
       return;
     }
@@ -140,12 +144,48 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
               </Badge>
             </div>
           </button>
+
+          {canSelectCigarKeeper ? (
+            <button
+              onClick={() => handleToggle('cigarkeeper')}
+              className={`w-full p-4 rounded-xl border-2 transition-all text-left ${selected.cigarkeeper ? 'bg-stone-800/60 border-[#D4A574]' : 'bg-stone-800/20 border-stone-700'}`}
+            >
+              <div className="flex items-start gap-4">
+                <input
+                  type="checkbox"
+                  checked={selected.cigarkeeper}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    handleToggle('cigarkeeper');
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-5 h-5 mt-1 cursor-pointer"
+                />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-[#F5F1E7] flex items-center gap-2">
+                    <img
+                      src={MODULE_ICONS.cigarkeeper}
+                      alt="CigarKeeper"
+                      className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
+                    />
+                    CigarKeeper
+                  </h3>
+                  <p className="text-xs text-[#E0D8C8] mt-1">
+                    {t("onboarding.cigarkeeperDesc", "Track cigars, humidors, inventory, and smoking sessions.")}
+                  </p>
+                </div>
+                <Badge className="flex-shrink-0 bg-[#8C6B3F]/30 text-[#E9D7B5] border-0 text-xs">
+                  Pro
+                </Badge>
+              </div>
+            </button>
+          ) : null}
         </div>
 
         <div className="flex gap-3 justify-end">
           <Button
             onClick={handleContinue}
-            disabled={saving || (!selected.pipekeeper && !selected.whiskeykeeper)}
+            disabled={saving || (!selected.pipekeeper && !selected.whiskeykeeper && !(canSelectCigarKeeper && selected.cigarkeeper))}
             className="bg-[#A35C5C] hover:bg-[#8F4E4E]"
           >
             {saving ? 'Saving...' : 'Continue'}
