@@ -10,7 +10,7 @@
  * Bundle users: see current plan info + manage link.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { X, Crown, Check, AlertCircle } from 'lucide-react';
 import PricingCard from '@/components/subscription/PricingCard';
 import { usePaywall } from '@/components/subscription/usePaywall';
@@ -67,6 +67,14 @@ function UpgradeOptionCard({ option, isSelected, isLoading, onSelect }) {
           <h4 className="font-bold text-base" style={{ color: '#F5F1E7' }}>
             {option.label}
           </h4>
+          {option.recommended && (
+            <span
+              className="inline-flex mt-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+              style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.35)' }}
+            >
+              Recommended
+            </span>
+          )}
           {option.displayPrice != null && (
             <p className="text-sm font-semibold mt-0.5" style={{ color: '#D4A574' }}>
               ${option.displayPrice}/{option.displayTerm === 'annual' ? 'yr' : 'mo'}
@@ -149,6 +157,15 @@ function ExistingSubscriberView({
   );
 
   const planLabel = getCurrentPlanLabel(subscriptionState);
+
+  useEffect(() => {
+    if (upgradeOptions.length === 0) {
+      setSelectedOption(null);
+      return;
+    }
+    const recommended = upgradeOptions.find((option) => option.recommended);
+    setSelectedOption(recommended || upgradeOptions[0]);
+  }, [upgradeOptions]);
 
   const handleProceed = async () => {
     if (!selectedOption || isProcessing) return;

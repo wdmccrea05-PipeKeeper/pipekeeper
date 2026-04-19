@@ -99,6 +99,16 @@ export default function SubscriptionFull() {
   const [selectedPlanKey, setSelectedPlanKey] = useState(null);
 
   useEffect(() => {
+    if (upgradeOptions.length === 0) {
+      setSelectedUpgradeOption(null);
+      return;
+    }
+
+    const recommended = upgradeOptions.find((option) => option.recommended);
+    setSelectedUpgradeOption(recommended || upgradeOptions[0]);
+  }, [upgradeOptions]);
+
+  useEffect(() => {
     if (!isIOSApp) return;
 
     requestNativeSubscriptionStatus();
@@ -424,7 +434,20 @@ export default function SubscriptionFull() {
             <div className="p-3 rounded-lg flex gap-2 items-start text-sm"
               style={{ background: "rgba(224,93,93,0.1)", border: "1px solid rgba(224,93,93,0.3)" }}>
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "#E05D5D" }} />
-              <span style={{ color: "#E05D5D" }}>{upgradeError}</span>
+              <div className="space-y-2">
+                <span style={{ color: "#E05D5D" }}>{upgradeError}</span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2 text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(createPageUrl("SubscriptionSupport"));
+                  }}
+                >
+                  Open Subscription Support
+                </Button>
+              </div>
             </div>
           )}
 
@@ -446,6 +469,14 @@ export default function SubscriptionFull() {
                     {isBundle && <Crown className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#D4AF37" }} />}
                     <div className="flex-1">
                       <h3 className="font-bold text-[#F5F1E7]">{option.label}</h3>
+                      {option.recommended && (
+                        <span
+                          className="inline-flex mt-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                          style={{ background: "rgba(212,175,55,0.2)", color: "#D4AF37", border: "1px solid rgba(212,175,55,0.35)" }}
+                        >
+                          Recommended
+                        </span>
+                      )}
                       {planDef?.displayPrice != null && (
                         <p className="text-sm text-[#D4A574] mt-0.5">
                           ${planDef.displayPrice}/{planDef.term === "annual" ? "yr" : "mo"}

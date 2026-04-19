@@ -502,7 +502,14 @@ export default function UserReport() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <MetricCard label="Failed Entitlement Syncs" value={diagnostics.failedEntitlementSyncs ?? 0} />
           <MetricCard label="Failed Stripe Callbacks" value={diagnostics.failedStripeCallbacks ?? 0} />
+          <MetricCard label="Failed Purchases" value={diagnostics.failedPurchases ?? diagnostics.failedCheckoutAttempts ?? 0} />
           <MetricCard label="Failed Restore Attempts" value={diagnostics.failedRestoreAttempts ?? 0} />
+          <MetricCard label="Entitlement Mismatches" value={diagnostics.entitlementMismatches ?? diagnostics.usersWithSummaryRuntimeMismatch ?? 0} />
+          <MetricCard label="Import Failures" value={diagnostics.importFailures ?? diagnostics.failedImportAttempts ?? 0} />
+          <MetricCard label="Scanner Failures" value={diagnostics.scannerFailures ?? diagnostics.failedScannerAttempts ?? 0} />
+          <MetricCard label="Route Crashes" value={diagnostics.routeCrashes ?? diagnostics.failedRouteTransitions ?? 0} />
+          <MetricCard label="Multi-plan Conflicts" value={diagnostics.multiPlanConflicts ?? diagnostics.usersWithMultipleActiveSubscriptions ?? 0} />
+          <MetricCard label="Active Module Drift" value={diagnostics.activeModuleStateDrift ?? diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0} />
           <MetricCard
             label="Recent Subscription State Changes (7d)"
             value={diagnostics.recentSubscriptionStateChanges?.last7d ?? 0}
