@@ -220,7 +220,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                       </Badge>
                     ) : mod.blocked ? (
                       <Badge className="text-[10px] bg-stone-200 text-stone-600 border-0 px-1.5 py-0">
-                        {t("hub.comingSoon", "Coming Soon")}
+                        {t("modules.notAvailable", "Not Available")}
                       </Badge>
                     ) : null}
 
@@ -233,7 +233,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
 
                   <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">
                     {mod.blocked
-                      ? `${mod.description} (${t("hub.comingSoon", "Coming Soon")})`
+                      ? `${mod.description} (${t("modules.notAvailable", "Not Available")})`
                       : mod.description}
                   </p>
                 </div>
