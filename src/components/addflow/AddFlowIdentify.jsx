@@ -526,7 +526,7 @@ function ResultsPanel({ result, onSelect, onBack, onManual }) {
  * AddFlowIdentify — the "Scan or Photo Identify" step within the add flow.
  *
  * Props:
- *   itemType   "pipe" | "blend" | "bottle"
+ *   itemType   "pipe" | "blend" | "bottle" | "cigar"
  *   typeLabel  Human-readable label
  *   onBack     () => void  — go back to choice screen
  *   onManual   () => void  — fall through to manual add

@@ -483,7 +483,7 @@ export default function PaywallModal({
             <>
               {!offerConfig.canOfferThree && !offerConfig.canOfferFour && (
                 <p className="text-xs mb-4" style={{ color: 'rgba(212, 165, 116, 0.8)' }}>
-                  Additional Keepers are still hidden while they are being prepared for later launch.
+                  Multi-module bundle offers are not available in this checkout surface right now.
                 </p>
               )}
 

@@ -77,7 +77,7 @@ describe("useModuleVisibility", () => {
     expect(result.current.moduleStates.cigarkeeper.enabled).toBe(false);
   });
 
-  it("keeps unauthorized users locked out of CigarKeeper regardless of stored visibility", () => {
+  it("treats launched CigarKeeper as toggleable when module preferences are set", () => {
     const user = { role: "user", paid_modules_csv: "pipekeeper" };
     const profile = {
       module_preferences_set: true,
@@ -91,9 +91,9 @@ describe("useModuleVisibility", () => {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.moduleStates.cigarkeeper.accessible).toBe(false);
-    expect(result.current.moduleStates.cigarkeeper.canToggle).toBe(false);
-    expect(result.current.moduleStates.cigarkeeper.enabled).toBe(false);
+    expect(result.current.moduleStates.cigarkeeper.accessible).toBe(true);
+    expect(result.current.moduleStates.cigarkeeper.canToggle).toBe(true);
+    expect(result.current.moduleStates.cigarkeeper.enabled).toBe(true);
   });
 
   it("keeps WineKeeper blocked and non-toggleable", () => {
