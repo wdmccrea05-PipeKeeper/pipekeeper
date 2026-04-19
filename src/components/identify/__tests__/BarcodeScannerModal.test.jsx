@@ -7,6 +7,7 @@ const mediaDevicesDescriptor = Object.getOwnPropertyDescriptor(navigator, 'media
 const userAgentDescriptor = Object.getOwnPropertyDescriptor(navigator, 'userAgent');
 const playDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'play');
 const pauseDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'pause');
+const readyStateDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'readyState');
 
 function mockBarcodeDetector({ detect = vi.fn(async () => []), supportedFormats = ['ean_13', 'upc_a', 'code_128'] } = {}) {
   class MockBarcodeDetector {
@@ -45,6 +46,10 @@ describe('BarcodeScannerModal', () => {
       configurable: true,
       value: vi.fn(() => undefined),
     });
+    Object.defineProperty(HTMLMediaElement.prototype, 'readyState', {
+      configurable: true,
+      get: () => 4,
+    });
   });
 
   afterEach(() => {
@@ -67,6 +72,9 @@ describe('BarcodeScannerModal', () => {
     }
     if (pauseDescriptor) {
       Object.defineProperty(HTMLMediaElement.prototype, 'pause', pauseDescriptor);
+    }
+    if (readyStateDescriptor) {
+      Object.defineProperty(HTMLMediaElement.prototype, 'readyState', readyStateDescriptor);
     }
   });
 
@@ -145,6 +153,42 @@ describe('BarcodeScannerModal', () => {
 
     await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(2));
     expect(await screen.findByText('Hold steady with good lighting — scanning automatically')).toBeTruthy();
+  });
+
+  it('detects a barcode once and closes camera tracks cleanly', async () => {
+    const detect = vi.fn(async () => [{ rawValue: '012345678905' }]);
+    mockBarcodeDetector({ detect });
+
+    const stop = vi.fn();
+    const getUserMedia = vi.fn(async () => ({
+      getTracks: () => [{ stop }],
+    }));
+    setMediaDevices(getUserMedia);
+
+    const onDetected = vi.fn();
+    render(<BarcodeScannerModal open onDetected={onDetected} onClose={vi.fn()} />);
+
+    await waitFor(() => expect(onDetected).toHaveBeenCalledWith('012345678905'));
+    expect(onDetected).toHaveBeenCalledTimes(1);
+    expect(stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('can be closed and reopened without getting stuck', async () => {
+    mockBarcodeDetector({ detect: vi.fn(async () => []) });
+    const stop = vi.fn();
+    const getUserMedia = vi.fn(async () => ({
+      getTracks: () => [{ stop }],
+    }));
+    setMediaDevices(getUserMedia);
+
+    const { rerender } = render(<BarcodeScannerModal open onDetected={vi.fn()} onClose={vi.fn()} />);
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(1));
+
+    rerender(<BarcodeScannerModal open={false} onDetected={vi.fn()} onClose={vi.fn()} />);
+    await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+
+    rerender(<BarcodeScannerModal open onDetected={vi.fn()} onClose={vi.fn()} />);
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(2));
   });
 
   it('reports scanner capability only when camera + detector are both available', () => {

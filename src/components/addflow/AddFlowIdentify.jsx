@@ -69,7 +69,7 @@ function ModeSelector({ onSelectUPC, onSelectPhoto, onManual, onBack, typeLabel 
                 {t('addFlowIdentify.scanUPC', 'Scan or Enter UPC')}
               </p>
               <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                {t('addFlowIdentify.upcDesc', 'Enter or scan a barcode to look up the item automatically')}
+                {t('addFlowIdentify.upcDesc', 'Enter a barcode, or scan with camera where supported, to look up the item automatically')}
               </p>
             </div>
           </div>
@@ -168,7 +168,7 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
               {t('addFlowIdentify.upcTitle', 'Enter UPC / Barcode')}
             </h2>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              {t('addFlowIdentify.upcSubtitle', 'Scan a barcode with your camera or type it manually')}
+              {t('addFlowIdentify.upcSubtitle', 'Scan a barcode with your camera where supported, or type it manually')}
             </p>
           </div>
         </div>
