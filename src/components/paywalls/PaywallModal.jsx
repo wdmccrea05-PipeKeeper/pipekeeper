@@ -25,10 +25,10 @@ const moduleLabels = {
   pipekeeper: 'PipeKeeper',
   whiskeykeeper: 'WhiskeyKeeper',
   cigarkeeper: 'CigarKeeper',
-  winekeeper: 'WineKeeper',
 };
 
-const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+// WineKeeper intentionally excluded — not publicly launched
+const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
 const OFFER_MULTI_MODULE_BUNDLES = String(import.meta.env.VITE_ENABLE_MULTI_BUNDLE_OFFERS || '').toLowerCase() === 'true';
 
 function launchedModules() {
@@ -113,7 +113,7 @@ function BundleUserView({ onClose, onManage }) {
         Founders Bundle Active
       </div>
       <p style={{ color: 'rgba(224,216,200,0.8)' }} className="text-sm">
-        You already have the Founders Bundle — access to PipeKeeper and WhiskeyKeeper is included.
+        All modules included in your bundle are active and unlocked.
       </p>
       <div className="flex flex-col gap-3">
         <button
@@ -186,9 +186,10 @@ function ExistingSubscriberView({
           .filter(Boolean);
 
         if (cancelableIds.length > 0) {
+          const targetBundle = selectedOption.targetPlanKey?.startsWith('three_module_bundle') ? 'three_module' : 'founders';
           const upgradeRes = await base44.functions.invoke('handleBundleUpgrade', {
             currentSubscriptionIds: cancelableIds,
-            targetBundleType: 'founders',
+            targetBundleType: targetBundle,
             billingPeriod: selectedOption.targetPlanKey?.includes('monthly') ? 'monthly' : 'annual',
           });
           if (!upgradeRes?.data?.success) {

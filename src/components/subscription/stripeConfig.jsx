@@ -124,7 +124,7 @@ export function buildStripeConfig() {
     three_module_bundle_monthly: {
       planKey: 'three_module_bundle_monthly',
       type: 'three_bundle',
-      modules: [],
+      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
       billingPeriod: 'monthly',
       priceId: import.meta.env.VITE_STRIPE_THREE_BUNDLE_MONTHLY || null,
       displayPrice: '$7.99',
@@ -135,7 +135,7 @@ export function buildStripeConfig() {
     three_module_bundle_annual: {
       planKey: 'three_module_bundle_annual',
       type: 'three_bundle',
-      modules: [],
+      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
       billingPeriod: 'annual',
       priceId: import.meta.env.VITE_STRIPE_THREE_BUNDLE_ANNUAL || null,
       displayPrice: '$79.99',
