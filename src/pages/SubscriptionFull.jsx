@@ -175,6 +175,7 @@ export default function SubscriptionFull() {
     const keyOrder = [
       ...launchedSingleModules.map((moduleKey) => `${moduleKey}_pro_${interval}`),
       `founders_bundle_${interval}`,
+      `three_module_bundle_${interval}`,
     ];
 
     return keyOrder
@@ -196,6 +197,8 @@ export default function SubscriptionFull() {
     cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: "Best Value" },
     founders_bundle_monthly: { name: "Founders Bundle", badge: "Most Popular" },
     founders_bundle_annual: { name: "Founders Bundle", badge: "Best Value" },
+    three_module_bundle_monthly: { name: "3-Module Bundle", badge: "All 3 Keepers" },
+    three_module_bundle_annual: { name: "3-Module Bundle", badge: "Best Value" },
   };
 
   const planDescriptions = {
@@ -207,6 +210,8 @@ export default function SubscriptionFull() {
     cigarkeeper_pro_annual: "Unlimited cigars, humidor tracking, and smoking sessions",
     founders_bundle_monthly: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
     founders_bundle_annual: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
+    three_module_bundle_monthly: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules",
+    three_module_bundle_annual: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules",
   };
 
   const handleUpgrade = async (planKey) => {
@@ -354,9 +359,9 @@ export default function SubscriptionFull() {
     const planLabel = getCurrentPlanLabel(subscriptionState);
     const hasUpgradePaths = upgradeOptions.length > 0;
 
-    // Bundle users — already have everything
-    if (subscriptionState.hasBundle) {
-      const bundleName = planLabel || 'Bundle';
+    // Full coverage users (3-module bundle or all 3 modules) — already have everything
+    if (subscriptionState.hasFullCoverage) {
+      const bundleName = planLabel || '3-Module Bundle';
       return (
         <div className="w-full max-w-3xl mx-auto p-4 space-y-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mx-auto"
@@ -368,7 +373,9 @@ export default function SubscriptionFull() {
             {t("subscriptionFull.alreadySubscribed")}
           </h1>
           <p className="text-[#e8d5b7]/70">
-            All modules included in your bundle are unlocked.
+            {subscriptionState.isThreeModuleBundle
+              ? "All three modules — PipeKeeper, WhiskeyKeeper, and CigarKeeper — are unlocked."
+              : "You have full access to all three modules in your collection."}
           </p>
           <div className="flex flex-col gap-3 max-w-xs mx-auto">
             <Button className="w-full" onClick={handleManage}>
@@ -387,7 +394,7 @@ export default function SubscriptionFull() {
       );
     }
 
-    // Single-module subscribers — show upgrade paths
+    // All subscribers with upgrade paths (includes Founders Bundle users who can add CigarKeeper)
     if (hasUpgradePaths) {
       return (
         <div className="w-full max-w-3xl mx-auto p-4 space-y-6">

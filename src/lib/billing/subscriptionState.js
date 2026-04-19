@@ -137,11 +137,20 @@ export function getUserSubscriptionState({
   hasCigarkeeperPro = hasCigarkeeperPro || paidModules.includes('cigarkeeper');
   hasWinekeeperPro = hasWinekeeperPro || paidModules.includes('winekeeper');
 
+  // Determine whether this is a "full" bundle (all 3 public modules) or partial (Founders only)
+  const isThreeModuleBundle = activePlanKeys.some((k) => String(k).includes('three_module_bundle'));
+  const isFoundersOnlyBundle = hasBundle && !isThreeModuleBundle;
+  // Full coverage = 3-module bundle OR founders + separately purchased cigar OR all 3 individually
+  const hasAllThree = hasPipekeeperPro && hasWhiskeykeeperPro && hasCigarkeeperPro;
+  const hasFullCoverage = isThreeModuleBundle || hasAllThree;
+
   // Determine eligible upgrade actions
   const eligibleActions = [];
 
   const hasAnyPaidModule = hasPipekeeperPro || hasWhiskeykeeperPro || hasCigarkeeperPro || hasWinekeeperPro;
-  if (!hasBundle && hasAnyPaidModule) {
+
+  // Full 3-module bundle users have nothing left to upgrade to
+  if (!hasFullCoverage && hasAnyPaidModule) {
     const paidModuleMap = {
       pipekeeper: hasPipekeeperPro,
       whiskeykeeper: hasWhiskeykeeperPro,
@@ -154,9 +163,14 @@ export function getUserSubscriptionState({
       }
     }
 
-    // Founders remains the canonical PK+WK bundle.
-    if (hasPipekeeperPro || hasWhiskeykeeperPro) {
+    // Offer Founders bundle upgrade to individual PK or WK subscribers (not already on any bundle)
+    if (!hasBundle && (hasPipekeeperPro || hasWhiskeykeeperPro)) {
       eligibleActions.push('upgrade_to_bundle');
+    }
+
+    // Always offer 3-module bundle upgrade if user doesn't already have all 3
+    if (!isThreeModuleBundle) {
+      eligibleActions.push('upgrade_to_three_module_bundle');
     }
   }
   // Free users have no eligible upgrade actions in this list;
@@ -168,6 +182,9 @@ export function getUserSubscriptionState({
     hasCigarkeeperPro,
     hasWinekeeperPro,
     hasBundle,
+    isFoundersOnlyBundle,
+    isThreeModuleBundle,
+    hasFullCoverage,
     paidModules,
     moduleFlags: {
       pipekeeper: hasPipekeeperPro,
@@ -208,6 +225,8 @@ export function getCurrentPlanLabel(subscriptionState) {
   if (hasBundle) {
     if (activePlanKeys.some((k) => String(k).includes('four_module'))) return '4-Module Bundle';
     if (activePlanKeys.some((k) => String(k).includes('three_module'))) return '3-Module Bundle';
+    // Founders bundle + separately purchased CigarKeeper
+    if (hasCigarkeeperPro) return 'Founders Bundle + CigarKeeper';
     return 'Founders Bundle';
   }
 

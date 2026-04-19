@@ -95,9 +95,10 @@ function UpgradeOptionCard({ option, isSelected, isLoading, onSelect }) {
   );
 }
 
-// ─── Bundle user view ───────────────────────────────────────────────────────
+// ─── Full bundle user view (3-module) — nothing left to upgrade ─────────────
 
-function BundleUserView({ onClose, onManage }) {
+function FullBundleUserView({ planLabel, onClose, onManage }) {
+  const bundleName = planLabel || '3-Module Bundle';
   return (
     <div className="space-y-6 text-center py-4">
       <div
@@ -105,10 +106,10 @@ function BundleUserView({ onClose, onManage }) {
         style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}
       >
         <Crown className="w-4 h-4" />
-        Founders Bundle Active
+        {bundleName} Active
       </div>
       <p style={{ color: 'rgba(224,216,200,0.8)' }} className="text-sm">
-        All modules included in your bundle are active and unlocked.
+        All three modules — PipeKeeper, WhiskeyKeeper, and CigarKeeper — are active and unlocked.
       </p>
       <div className="flex flex-col gap-3">
         <button
@@ -426,13 +427,17 @@ export default function PaywallModal({
             )}
           </div>
 
-          {/* Bundle user — already has everything */}
-          {subscriptionState.hasBundle && (
-            <BundleUserView onClose={onClose} onManage={onManage} />
+          {/* Full coverage — already has all 3 modules, nothing left to upgrade */}
+          {subscriptionState.hasFullCoverage && (
+            <FullBundleUserView
+              planLabel={getCurrentPlanLabel(subscriptionState)}
+              onClose={onClose}
+              onManage={onManage}
+            />
           )}
 
-          {/* Existing single-module subscriber — show upgrade paths */}
-          {!subscriptionState.hasBundle && !freeUser && (
+          {/* Existing subscriber with upgrade paths (includes Founders Bundle → add CigarKeeper / 3-module upgrade) */}
+          {!freeUser && !subscriptionState.hasFullCoverage && (
             <ExistingSubscriberView
               subscriptionState={subscriptionState}
               user={user}
