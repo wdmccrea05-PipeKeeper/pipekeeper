@@ -1,9 +1,9 @@
 /**
  * BarcodeScannerModal
  *
- * Live camera barcode scanner using getUserMedia + BarcodeDetector (Chrome/Android).
- * On iOS Safari (no BarcodeDetector), falls back to the jsQR WASM library loaded
- * dynamically from CDN for QR codes, plus a manual-entry fallback for 1D barcodes.
+ * Live camera barcode scanner using getUserMedia + BarcodeDetector when supported.
+ * On unsupported browsers/devices (including iPhone Safari), the modal shows a
+ * manual-entry fallback message and returns users to typed barcode entry.
  *
  * Usage:
  *   <BarcodeScannerModal open={true} onDetected={(code) => ...} onClose={() => ...} />
@@ -39,7 +39,6 @@ export function canAttemptLiveBarcodeScan() {
 
 export default function BarcodeScannerModal({ open, onDetected, onClose }) {
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const detectorRef = useRef(null);
   const scanTimerRef = useRef(null);
@@ -91,8 +90,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
   // Start scanning loop using BarcodeDetector
   const startNativeScanner = useCallback(async (stream) => {
     const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video) return;
 
     video.srcObject = stream;
     await video.play();
@@ -287,9 +285,6 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
           )}
         </div>
       )}
-
-      {/* Hidden canvas for frame capture (not used with native BarcodeDetector but kept for future) */}
-      <canvas ref={canvasRef} className="hidden" />
 
       {/* Unsupported browser message */}
       {status === 'unsupported' && (
