@@ -21,6 +21,15 @@ function isBarcodeDetectorSupported() {
   return typeof window !== 'undefined' && 'BarcodeDetector' in window;
 }
 
+function isIOSSafari() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = String(navigator.userAgent || '').toLowerCase();
+  const hasTouchMac = typeof window !== 'undefined' && ua.includes('macintosh') && 'ontouchend' in window;
+  const isIOS = /iphone|ipad|ipod/.test(ua) || hasTouchMac;
+  const isSafari = ua.includes('safari') && !ua.includes('crios') && !ua.includes('fxios') && !ua.includes('edgios');
+  return isIOS && isSafari;
+}
+
 export function canAttemptLiveBarcodeScan() {
   return isBarcodeDetectorSupported() && !!navigator?.mediaDevices?.getUserMedia;
 }
@@ -132,7 +141,11 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
     setUnsupportedMsg('');
 
     if (!isBarcodeDetectorSupported()) {
-      setUnsupportedMsg('Live camera scanning is not supported in this browser. Manual barcode entry is still available.');
+      setUnsupportedMsg(
+        isIOSSafari()
+          ? 'Live camera scanning is not supported on iPhone Safari yet. Please use manual barcode entry.'
+          : 'Live camera scanning is not supported in this browser. Manual barcode entry is still available.'
+      );
       setStatus('unsupported');
       return;
     }

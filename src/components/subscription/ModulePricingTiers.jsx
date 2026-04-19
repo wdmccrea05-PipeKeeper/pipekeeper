@@ -56,6 +56,22 @@ export default function ModulePricingTiers({
             currentTier === 'bundle_2',
           savings: getBundleSavings(billingPeriod, ['pipekeeper', 'whiskeykeeper']),
         } : null,
+        activeModules.includes('pipekeeper') && activeModules.includes('whiskeykeeper') && activeModules.includes('cigarkeeper') ? {
+          id: 'bundle-three-module',
+          type: 'bundle_three_module',
+          modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+          displayName: 'Three Module Bundle',
+          price: 799, // $7.99
+          priceAnnual: 7999, // $79.99
+          description: 'PipeKeeper + WhiskeyKeeper + CigarKeeper in one plan.',
+          isBest: true,
+          isSelected:
+            selectedModules.length === 3 &&
+            selectedModules.includes('pipekeeper') &&
+            selectedModules.includes('whiskeykeeper') &&
+            selectedModules.includes('cigarkeeper'),
+          savings: getBundleSavings(billingPeriod, ['pipekeeper', 'whiskeykeeper', 'cigarkeeper']),
+        } : null,
       ].filter(Boolean);
   }, [activeModules, selectedModules, currentTier, billingPeriod, t]);
 
@@ -86,8 +102,19 @@ export default function ModulePricingTiers({
       </div>
 
       {/* Pricing cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pricingOptions.map(option => {
+      {[{
+        key: 'individual',
+        title: 'Individual Modules',
+        options: pricingOptions.filter((option) => option.type === 'single'),
+      }, {
+        key: 'bundles',
+        title: 'Bundles',
+        options: pricingOptions.filter((option) => option.type !== 'single'),
+      }].map((section) => section.options.length > 0 && (
+        <div key={section.key} className="space-y-3">
+          <h3 className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>{section.title}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {section.options.map(option => {
           const price = billingPeriod === 'monthly' ? option.price : option.priceAnnual;
           const displayPrice = formatPrice(price);
 
@@ -113,7 +140,7 @@ export default function ModulePricingTiers({
               {option.isBest && (
                 <div className="absolute top-0 right-0 bg-[#D4A574] text-[#0f0b08] px-3 py-1 rounded-bl-lg text-xs font-bold flex items-center gap-1">
                   <Zap className="w-3 h-3" />
-                  Best Value
+                  {option.type === 'bundle_founders' ? 'Popular' : 'Best Value'}
                 </div>
               )}
 
@@ -178,7 +205,9 @@ export default function ModulePricingTiers({
             </div>
           );
         })}
-      </div>
+          </div>
+        </div>
+      ))}
 
       {/* Current selection summary */}
       {selectedModules.length > 0 && (

@@ -4,6 +4,7 @@ import BarcodeScannerModal, { canAttemptLiveBarcodeScan } from '@/components/ide
 
 const originalBarcodeDetector = globalThis.BarcodeDetector;
 const mediaDevicesDescriptor = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices');
+const userAgentDescriptor = Object.getOwnPropertyDescriptor(navigator, 'userAgent');
 const playDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'play');
 const pauseDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'pause');
 
@@ -24,6 +25,13 @@ function setMediaDevices(getUserMedia) {
   Object.defineProperty(navigator, 'mediaDevices', {
     configurable: true,
     value: { getUserMedia },
+  });
+}
+
+function setUserAgent(value) {
+  Object.defineProperty(navigator, 'userAgent', {
+    configurable: true,
+    value,
   });
 }
 
@@ -51,6 +59,9 @@ describe('BarcodeScannerModal', () => {
     } else {
       delete navigator.mediaDevices;
     }
+    if (userAgentDescriptor) {
+      Object.defineProperty(navigator, 'userAgent', userAgentDescriptor);
+    }
     if (playDescriptor) {
       Object.defineProperty(HTMLMediaElement.prototype, 'play', playDescriptor);
     }
@@ -66,6 +77,15 @@ describe('BarcodeScannerModal', () => {
 
     expect(await screen.findByText('Live scanning not available')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Continue to Manual Entry' })).toBeTruthy();
+  });
+
+  it('shows iPhone Safari specific fallback guidance when unsupported', async () => {
+    delete globalThis.BarcodeDetector;
+    setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1');
+
+    render(<BarcodeScannerModal open onDetected={vi.fn()} onClose={vi.fn()} />);
+
+    expect(await screen.findByText(/iPhone Safari/i)).toBeTruthy();
   });
 
   it('shows manual fallback when camera APIs are unavailable', async () => {

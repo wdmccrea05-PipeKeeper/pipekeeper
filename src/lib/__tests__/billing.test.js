@@ -184,9 +184,10 @@ describe('getUserSubscriptionState', () => {
     expect(state.eligibleActions).toContain('add_pipekeeper_module');
   });
 
-  it('bundle user has empty eligibleActions', () => {
+  it('founders bundle user has cigar add-on and three-module upgrade actions', () => {
     const state = stateFor([makeSub('founders_bundle_annual')]);
-    expect(state.eligibleActions).toEqual([]);
+    expect(state.eligibleActions).toContain('add_cigarkeeper_module');
+    expect(state.eligibleActions).toContain('upgrade_to_three_module_bundle');
   });
 });
 
@@ -223,21 +224,23 @@ describe('getAvailableUpgradeOptions', () => {
     expect(options).toEqual([]);
   });
 
-  it('returns empty array for bundle user', () => {
+  it('returns founders add-on and three-module options for founders bundle user', () => {
     const options = getAvailableUpgradeOptions(stateFor([makeSub('founders_bundle_annual')]));
-    expect(options).toEqual([]);
+    const actions = options.map((o) => o.action);
+    expect(actions).toContain('add_cigarkeeper_module');
+    expect(actions).toContain('upgrade_to_three_module_bundle');
   });
 
-  it('returns bundle upgrade plus complementary module add-ons for PK Pro user', () => {
+  it('returns bundle + missing-module upgrade options for PK Pro user', () => {
     const state = stateFor([makeSub('pipekeeper_pro_annual')]);
     const options = getAvailableUpgradeOptions(state);
 
     const actions = options.map((o) => o.action);
     expect(actions).toContain('upgrade_to_bundle');
-    expect(actions).toContain('add_other_module');
+    expect(actions).toContain('add_whiskeykeeper_module');
     expect(actions).toContain('add_cigarkeeper_module');
-    expect(actions).not.toContain('upgrade_to_three_bundle');
-    expect(options).toHaveLength(3);
+    expect(actions).toContain('upgrade_to_three_module_bundle');
+    expect(options).toHaveLength(4);
   });
 
   it('upgrade_to_bundle option for PK Pro uses founders_bundle_annual', () => {
@@ -251,10 +254,10 @@ describe('getAvailableUpgradeOptions', () => {
     expect(bundleOpt.currentPlanKey).toBe('pipekeeper_pro_annual');
   });
 
-  it('add_other_module option for PK Pro targets whiskeykeeper_pro_annual', () => {
+  it('add_whiskeykeeper_module option for PK Pro targets whiskeykeeper_pro_annual', () => {
     const state = stateFor([makeSub('pipekeeper_pro_annual')]);
     const options = getAvailableUpgradeOptions(state);
-    const addOpt = options.find((o) => o.action === 'add_other_module');
+    const addOpt = options.find((o) => o.action === 'add_whiskeykeeper_module');
 
     expect(addOpt).toBeDefined();
     expect(addOpt.actionType).toBe('add_complementary_module');
@@ -267,9 +270,11 @@ describe('getAvailableUpgradeOptions', () => {
     const actions = options.map((o) => o.action);
 
     expect(actions).toContain('upgrade_to_bundle');
-    expect(actions).toContain('add_other_module');
+    expect(actions).toContain('add_pipekeeper_module');
+    expect(actions).toContain('add_cigarkeeper_module');
+    expect(actions).toContain('upgrade_to_three_module_bundle');
 
-    const addOpt = options.find((o) => o.action === 'add_other_module');
+    const addOpt = options.find((o) => o.action === 'add_pipekeeper_module');
     expect(addOpt.targetPlanKey).toBe('pipekeeper_pro_annual');
     expect(addOpt.actionType).toBe('add_complementary_module');
   });
@@ -303,10 +308,11 @@ describe('getAvailableUpgradeOptions', () => {
 // ─── getNewPurchaseOptions ───────────────────────────────────────────────────
 
 describe('getNewPurchaseOptions', () => {
-  it('returns 4 options for free users when CigarKeeper is launched', () => {
+  it('returns 5 options for free users when CigarKeeper is launched', () => {
     const options = getNewPurchaseOptions();
-    expect(options.length).toBe(4);
-    expect(options.some((o) => o.targetPlanKey?.startsWith('three_module_bundle'))).toBe(false);
+    expect(options.length).toBe(5);
+    expect(options.some((o) => o.targetPlanKey?.startsWith('three_module_bundle'))).toBe(true);
+    expect(options.some((o) => o.targetPlanKey?.startsWith('winekeeper'))).toBe(false);
   });
 
   it('all options have actionType new_purchase', () => {
