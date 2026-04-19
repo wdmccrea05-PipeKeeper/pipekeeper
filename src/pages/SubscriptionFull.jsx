@@ -197,8 +197,8 @@ export default function SubscriptionFull() {
     cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: null },
     founders_bundle_monthly: { name: "Founders Bundle (Pipe + Whiskey)", badge: "Most Popular" },
     founders_bundle_annual: { name: "Founders Bundle (Pipe + Whiskey)", badge: "Most Popular" },
-    three_module_bundle_monthly: { name: "Three Module Bundle", badge: "Best Value" },
-    three_module_bundle_annual: { name: "Three Module Bundle", badge: "Best Value" },
+    three_module_bundle_monthly: { name: "3-Module Bundle", badge: "Best Value" },
+    three_module_bundle_annual: { name: "3-Module Bundle", badge: "Best Value" },
   };
 
   const planDescriptions = {

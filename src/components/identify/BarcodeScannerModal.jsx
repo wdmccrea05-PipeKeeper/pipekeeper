@@ -24,8 +24,7 @@ function isBarcodeDetectorSupported() {
 function isIOSSafari() {
   if (typeof navigator === 'undefined') return false;
   const ua = String(navigator.userAgent || '').toLowerCase();
-  const hasTouchMac = typeof window !== 'undefined' && ua.includes('macintosh') && 'ontouchend' in window;
-  const isIOS = /iphone|ipad|ipod/.test(ua) || hasTouchMac;
+  const isIOS = /iphone|ipad|ipod/.test(ua);
   const isSafari = ua.includes('safari') && !ua.includes('crios') && !ua.includes('fxios') && !ua.includes('edgios');
   return isIOS && isSafari;
 }
