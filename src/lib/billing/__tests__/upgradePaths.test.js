@@ -220,4 +220,35 @@ describe('getAvailableUpgradeOptions — launch commerce alignment', () => {
     expect(match).toBeDefined();
     expect(match.targetPlanKey).toMatch(new RegExp(`^${requiredTargetPrefix}`));
   });
+
+  test('founders users get add-cigar path marked as recommended', () => {
+    const state = makeState({
+      hasBundle: true,
+      isFoundersOnlyBundle: true,
+      activePlanKeys: ['founders_bundle_annual'],
+      moduleFlags: { pipekeeper: true, whiskeykeeper: true, cigarkeeper: false, winekeeper: false },
+      paidModules: ['pipekeeper', 'whiskeykeeper'],
+      eligibleActions: ['add_cigarkeeper_module', 'upgrade_to_three_module_bundle'],
+    });
+
+    const options = getAvailableUpgradeOptions(state);
+    const recommended = options.filter((o) => o.recommended);
+
+    expect(recommended).toHaveLength(1);
+    expect(recommended[0].action).toBe('add_cigarkeeper_module');
+    expect(options[0].action).toBe('add_cigarkeeper_module');
+  });
+
+  test('pipe-only users get founders upgrade as recommended first step', () => {
+    const state = makeState({
+      activePlanKeys: ['pipekeeper_pro_annual'],
+      moduleFlags: { pipekeeper: true, whiskeykeeper: false, cigarkeeper: false, winekeeper: false },
+      paidModules: ['pipekeeper'],
+      eligibleActions: ['upgrade_to_bundle', 'add_whiskeykeeper_module', 'add_cigarkeeper_module', 'upgrade_to_three_module_bundle'],
+    });
+
+    const options = getAvailableUpgradeOptions(state);
+    expect(options[0].action).toBe('upgrade_to_bundle');
+    expect(options[0].recommended).toBe(true);
+  });
 });

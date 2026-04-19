@@ -47,6 +47,92 @@ function pickBundlePlanKey(activePlanKeys, bundleProduct = 'founders_bundle') {
   return hasMonthlyOnly ? `${bundleProduct}_monthly` : `${bundleProduct}_annual`;
 }
 
+function getOptionPriority(option, subscriptionState) {
+  const moduleFlags = subscriptionState?.moduleFlags || {};
+  const hasPipe = !!moduleFlags.pipekeeper;
+  const hasWhiskey = !!moduleFlags.whiskeykeeper;
+  const hasCigar = !!moduleFlags.cigarkeeper;
+  const isFoundersOnlyBundle = !!subscriptionState?.isFoundersOnlyBundle;
+
+  if (isFoundersOnlyBundle) {
+    if (option.action === 'add_cigarkeeper_module') return 10;
+    if (option.action === 'upgrade_to_three_module_bundle') return 20;
+  }
+
+  if (hasPipe && hasWhiskey && !hasCigar) {
+    if (option.action === 'add_cigarkeeper_module') return 10;
+    if (option.action === 'upgrade_to_three_module_bundle') return 20;
+  }
+
+  if (hasPipe && !hasWhiskey && !hasCigar) {
+    if (option.action === 'upgrade_to_bundle') return 10;
+    if (option.action === 'add_whiskeykeeper_module') return 20;
+    if (option.action === 'upgrade_to_three_module_bundle') return 30;
+    if (option.action === 'add_cigarkeeper_module') return 40;
+  }
+
+  if (!hasPipe && hasWhiskey && !hasCigar) {
+    if (option.action === 'upgrade_to_bundle') return 10;
+    if (option.action === 'add_pipekeeper_module') return 20;
+    if (option.action === 'upgrade_to_three_module_bundle') return 30;
+    if (option.action === 'add_cigarkeeper_module') return 40;
+  }
+
+  if (!hasPipe && !hasWhiskey && hasCigar) {
+    if (option.action === 'upgrade_to_three_module_bundle') return 10;
+    if (option.action === 'add_pipekeeper_module') return 20;
+    if (option.action === 'add_whiskeykeeper_module') return 30;
+  }
+
+  if (hasPipe && !hasWhiskey && hasCigar) {
+    if (option.action === 'add_whiskeykeeper_module') return 10;
+    if (option.action === 'upgrade_to_three_module_bundle') return 20;
+  }
+
+  if (!hasPipe && hasWhiskey && hasCigar) {
+    if (option.action === 'add_pipekeeper_module') return 10;
+    if (option.action === 'upgrade_to_three_module_bundle') return 20;
+  }
+
+  if (option.action === 'upgrade_to_three_module_bundle') return 50;
+  if (option.action === 'upgrade_to_bundle') return 60;
+  if (option.action?.startsWith('add_')) return 70;
+  return 80;
+}
+
+function sortAndAnnotateOptions(options, subscriptionState) {
+  if (!Array.isArray(options) || options.length === 0) return [];
+
+  const prioritized = options.map((option) => ({
+    ...option,
+    priority: getOptionPriority(option, subscriptionState),
+  }));
+
+  // Defensive dedupe by target plan key to avoid duplicate offer cards.
+  const uniqueByTarget = new Map();
+  for (const option of prioritized) {
+    const key = option.targetPlanKey || option.action;
+    const existing = uniqueByTarget.get(key);
+    if (!existing || option.priority < existing.priority) {
+      uniqueByTarget.set(key, option);
+    }
+  }
+
+  const sorted = [...uniqueByTarget.values()].sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    const aPrice = Number.isFinite(a.displayPrice) ? a.displayPrice : Number.POSITIVE_INFINITY;
+    const bPrice = Number.isFinite(b.displayPrice) ? b.displayPrice : Number.POSITIVE_INFINITY;
+    if (aPrice !== bPrice) return aPrice - bPrice;
+    return String(a.label || '').localeCompare(String(b.label || ''));
+  });
+
+  const bestPriority = sorted[0]?.priority;
+  return sorted.map((option) => ({
+    ...option,
+    recommended: option.priority === bestPriority,
+  }));
+}
+
 /**
  * Computes available billing actions for a user.
  *
@@ -148,7 +234,7 @@ export function getAvailableUpgradeOptions(subscriptionState) {
     });
   }
 
-  return options;
+  return sortAndAnnotateOptions(options, subscriptionState);
 }
 
 /**

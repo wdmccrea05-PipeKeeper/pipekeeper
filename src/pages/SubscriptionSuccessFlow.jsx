@@ -4,7 +4,7 @@
  * and fails safely with a hard timeout instead of spinning forever.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,6 +15,11 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { parseSubscriptionCallbackError } from '@/lib/billing/subscriptionCallbackErrors';
 
 const SYNC_TIMEOUT_MS = 20000;
+const MODULE_PAGE = {
+  pipekeeper: '/Pipes',
+  whiskeykeeper: '/Whiskey',
+  cigarkeeper: '/Tobacco',
+};
 
 function toDisplayName(moduleKey) {
   if (!moduleKey) return 'Module';
@@ -126,6 +131,7 @@ export default function SubscriptionSuccessFlow() {
             return {
               ...rebuiltAccess,
               activeModules: unlockedModules,
+              planKey: subscriptionSummary?.planKey || null,
               manageUrl: subscriptionSummary?.manageUrl || null,
               expiresAt: subscriptionSummary?.expiresAt || null,
             };
@@ -156,6 +162,48 @@ export default function SubscriptionSuccessFlow() {
       mounted = false;
     };
   }, [queryClient, attempt, searchParams]);
+
+  const modules = accessSummary?.activeModules || [];
+  const primaryModule = modules[0] || null;
+  const unlockedMessage = useMemo(() => {
+    const planKey = String(accessSummary?.planKey || '');
+    if (planKey.startsWith('three_module_bundle')) {
+      return 'Three Module Bundle unlocked: PipeKeeper, WhiskeyKeeper, and CigarKeeper are now active.';
+    }
+    if (planKey.startsWith('founders_bundle')) {
+      return 'Founders Bundle unlocked: PipeKeeper and WhiskeyKeeper are now active.';
+    }
+    if (modules.length === 1) {
+      return `${toDisplayName(modules[0])} is now unlocked.`;
+    }
+    if (modules.length > 1) {
+      return 'Your selected modules are now unlocked and ready.';
+    }
+    return 'Your purchase is confirmed and access is updating now.';
+  }, [accessSummary?.planKey, modules]);
+
+  const nextActions = useMemo(() => {
+    const actions = [];
+    if (primaryModule && MODULE_PAGE[primaryModule]) {
+      actions.push({
+        label: `Open ${toDisplayName(primaryModule)}`,
+        onClick: () => navigate(MODULE_PAGE[primaryModule]),
+      });
+    }
+
+    actions.push(
+      {
+        label: 'Import Records',
+        onClick: () => navigate('/Import'),
+      },
+      {
+        label: 'Start Collection',
+        onClick: () => navigate('/CollectionHub'),
+      }
+    );
+
+    return actions.slice(0, 3);
+  }, [navigate, primaryModule]);
 
   if (phase === 'loading') {
     return (
@@ -202,8 +250,6 @@ export default function SubscriptionSuccessFlow() {
     );
   }
 
-  const modules = accessSummary?.activeModules || [];
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-4">
       <div
@@ -222,6 +268,13 @@ export default function SubscriptionSuccessFlow() {
         <p style={{ color: '#E0D8C8' }} className="text-sm mb-6">
           {t('subscription.nowActive', 'Your subscription is now active. Your modules are ready to use.')}
         </p>
+
+        <div
+          className="mb-6 rounded-lg px-4 py-3 text-sm"
+          style={{ background: 'rgba(180, 140, 75, 0.14)', color: '#EADBC0', border: '1px solid rgba(180, 140, 75, 0.3)' }}
+        >
+          {unlockedMessage}
+        </div>
 
         {modules.length > 0 && (
           <div className="mb-8">
@@ -258,6 +311,19 @@ export default function SubscriptionSuccessFlow() {
         >
           {t('subscription.exploreCollections', 'Explore Collections')}
         </Button>
+
+        <div className="mt-3 grid grid-cols-1 gap-2">
+          {nextActions.map((action) => (
+            <Button
+              key={action.label}
+              variant="outline"
+              className="w-full"
+              onClick={action.onClick}
+            >
+              {action.label}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   );

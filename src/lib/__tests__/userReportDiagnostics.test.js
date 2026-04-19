@@ -11,6 +11,7 @@ describe('userReportDiagnostics', () => {
       samples: {
         multipleActiveSubscriptions: ['one@example.com', 'two@example.com'],
         failedStripeCallbacks: ['billing@example.com (unpaid)'],
+        failedPurchases: ['checkout@example.com timeout'],
         summaryRuntimeMismatch: [],
       },
     };
@@ -20,6 +21,7 @@ describe('userReportDiagnostics', () => {
 
     expect(labels).toContain('Multi-active');
     expect(labels).toContain('Failed Stripe callbacks');
+    expect(labels).toContain('Failed purchases');
     expect(labels).not.toContain('Summary/runtime drift');
     expect(groups.find((g) => g.label === 'Multi-active').values[0]).toBe('on*@example.com');
     expect(groups.find((g) => g.label === 'Failed Stripe callbacks').values[0]).toContain('(unpaid)');
