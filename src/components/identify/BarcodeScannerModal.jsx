@@ -24,16 +24,28 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const detectorRef = useRef(null);
-  const scanIntervalRef = useRef(null);
+  const scanTimerRef = useRef(null);
+  const scanInFlightRef = useRef(false);
   const detectedRef = useRef(false);
+  const [retryNonce, setRetryNonce] = useState(0);
 
   const [status, setStatus] = useState('starting'); // 'starting' | 'scanning' | 'error' | 'unsupported'
   const [errorMsg, setErrorMsg] = useState('');
 
   const stopCamera = useCallback(() => {
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
+    if (scanTimerRef.current) {
+      clearTimeout(scanTimerRef.current);
+      scanTimerRef.current = null;
+    }
+    scanInFlightRef.current = false;
+    const video = videoRef.current;
+    if (video) {
+      try {
+        video.pause();
+      } catch (_) {
+        // ignore pause errors
+      }
+      video.srcObject = null;
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
@@ -77,17 +89,31 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
 
     setStatus('scanning');
 
-    scanIntervalRef.current = setInterval(async () => {
+    const scanFrame = async () => {
       if (!video || video.readyState < 2 || detectedRef.current) return;
+      if (scanInFlightRef.current) {
+        scanTimerRef.current = setTimeout(scanFrame, SCAN_INTERVAL_MS);
+        return;
+      }
+      scanInFlightRef.current = true;
       try {
         const barcodes = await detectorRef.current.detect(video);
         if (barcodes.length > 0) {
           handleDetected(barcodes[0].rawValue);
+          return;
         }
       } catch (_) {
         // ignore per-frame errors
+      } finally {
+        scanInFlightRef.current = false;
       }
-    }, SCAN_INTERVAL_MS);
+
+      if (!detectedRef.current) {
+        scanTimerRef.current = setTimeout(scanFrame, SCAN_INTERVAL_MS);
+      }
+    };
+
+    scanTimerRef.current = setTimeout(scanFrame, SCAN_INTERVAL_MS);
   }, [handleDetected]);
 
   useEffect(() => {
@@ -98,6 +124,10 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
     setErrorMsg('');
 
     if (!isBarcodeDetectorSupported()) {
+      setStatus('unsupported');
+      return;
+    }
+    if (!navigator?.mediaDevices?.getUserMedia) {
       setStatus('unsupported');
       return;
     }
@@ -140,7 +170,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
       cancelled = true;
       stopCamera();
     };
-  }, [open, startNativeScanner, stopCamera]);
+  }, [open, startNativeScanner, stopCamera, retryNonce]);
 
   if (!open) return null;
 
@@ -161,6 +191,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
         <button
           onClick={handleClose}
           className="w-8 h-8 flex items-center justify-center rounded-full"
+          aria-label="Close scanner"
           style={{ background: 'rgba(255,255,255,0.12)', color: '#F5F1E7' }}
         >
           <X className="w-4 h-4" />
@@ -231,9 +262,21 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
         <div className="mx-6 text-center">
           <p className="text-base font-semibold mb-2" style={{ color: '#F5F1E7' }}>Camera unavailable</p>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.6)' }}>{errorMsg}</p>
-          <Button onClick={handleClose} variant="outline" className="w-full">
-            Type Manually Instead
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button
+              onClick={() => {
+                stopCamera();
+                detectedRef.current = false;
+                setRetryNonce((v) => v + 1);
+              }}
+              className="w-full"
+            >
+              Retry Camera
+            </Button>
+            <Button onClick={handleClose} variant="outline" className="w-full">
+              Type Manually Instead
+            </Button>
+          </div>
         </div>
       )}
 
