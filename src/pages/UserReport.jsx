@@ -509,7 +509,7 @@ export default function UserReport() {
           <MetricCard label="Scanner Failures" value={diagnostics.scannerFailures ?? diagnostics.failedScannerAttempts ?? 0} />
           <MetricCard label="Route Crashes" value={diagnostics.routeCrashes ?? diagnostics.failedRouteTransitions ?? 0} />
           <MetricCard label="Multi-plan Conflicts" value={diagnostics.multiPlanConflicts ?? diagnostics.usersWithMultipleActiveSubscriptions ?? 0} />
-          <MetricCard label="Active Module Drift" value={diagnostics.activeModuleStateDrift ?? diagnostics.usersWithSummaryRuntimeMismatch ?? 0} />
+          <MetricCard label="Active Module Drift" value={diagnostics.activeModuleStateDrift ?? diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0} />
           <MetricCard
             label="Recent Subscription State Changes (7d)"
             value={diagnostics.recentSubscriptionStateChanges?.last7d ?? 0}

@@ -108,7 +108,7 @@ function sortAndAnnotateOptions(options, subscriptionState) {
     priority: getOptionPriority(option, subscriptionState),
   }));
 
-  // Defensive dedupe by target plan key to avoid duplicate offer cards.
+  // defensive deduplication by target plan key to avoid duplicate offer cards.
   const uniqueByTarget = new Map();
   for (const option of prioritized) {
     const key = option.targetPlanKey || option.action;
