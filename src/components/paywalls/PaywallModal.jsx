@@ -233,6 +233,9 @@ function ExistingSubscriberView({
       <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
         Choose what you'd like to do next:
       </p>
+      <p className="text-xs -mt-3" style={{ color: 'rgba(224,216,200,0.55)' }}>
+        Your current access stays active while checkout completes.
+      </p>
 
       {error && (
         <div
@@ -266,7 +269,7 @@ function ExistingSubscriberView({
             color: '#F5F1E7',
           }}
         >
-          {isProcessing ? 'Processing…' : `Continue — ${selectedOption.label}`}
+          {isProcessing ? 'Processing…' : `Continue to Secure Checkout — ${selectedOption.label}`}
         </button>
       )}
 

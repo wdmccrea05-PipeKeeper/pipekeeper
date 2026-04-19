@@ -109,4 +109,115 @@ describe('getAvailableUpgradeOptions — launch commerce alignment', () => {
     const options = getAvailableUpgradeOptions(state);
     expect(options.length).toBe(0);
   });
+
+  test.each([
+    {
+      name: 'Pipe -> Founders',
+      state: makeState({
+        activePlanKeys: ['pipekeeper_pro_annual'],
+        moduleFlags: { pipekeeper: true, whiskeykeeper: false, cigarkeeper: false, winekeeper: false },
+        paidModules: ['pipekeeper'],
+        eligibleActions: ['upgrade_to_bundle', 'add_whiskeykeeper_module', 'add_cigarkeeper_module', 'upgrade_to_three_module_bundle'],
+      }),
+      requiredAction: 'upgrade_to_bundle',
+      requiredTargetPrefix: 'founders_bundle',
+    },
+    {
+      name: 'Pipe -> Three Bundle',
+      state: makeState({
+        activePlanKeys: ['pipekeeper_pro_annual'],
+        moduleFlags: { pipekeeper: true, whiskeykeeper: false, cigarkeeper: false, winekeeper: false },
+        paidModules: ['pipekeeper'],
+        eligibleActions: ['upgrade_to_three_module_bundle'],
+      }),
+      requiredAction: 'upgrade_to_three_module_bundle',
+      requiredTargetPrefix: 'three_module_bundle',
+    },
+    {
+      name: 'Whiskey -> Founders',
+      state: makeState({
+        activePlanKeys: ['whiskeykeeper_pro_annual'],
+        moduleFlags: { pipekeeper: false, whiskeykeeper: true, cigarkeeper: false, winekeeper: false },
+        paidModules: ['whiskeykeeper'],
+        eligibleActions: ['upgrade_to_bundle', 'add_pipekeeper_module', 'add_cigarkeeper_module', 'upgrade_to_three_module_bundle'],
+      }),
+      requiredAction: 'upgrade_to_bundle',
+      requiredTargetPrefix: 'founders_bundle',
+    },
+    {
+      name: 'Whiskey -> Three Bundle',
+      state: makeState({
+        activePlanKeys: ['whiskeykeeper_pro_annual'],
+        moduleFlags: { pipekeeper: false, whiskeykeeper: true, cigarkeeper: false, winekeeper: false },
+        paidModules: ['whiskeykeeper'],
+        eligibleActions: ['upgrade_to_three_module_bundle'],
+      }),
+      requiredAction: 'upgrade_to_three_module_bundle',
+      requiredTargetPrefix: 'three_module_bundle',
+    },
+    {
+      name: 'Cigar -> Three Bundle',
+      state: makeState({
+        activePlanKeys: ['cigarkeeper_pro_annual'],
+        moduleFlags: { pipekeeper: false, whiskeykeeper: false, cigarkeeper: true, winekeeper: false },
+        paidModules: ['cigarkeeper'],
+        eligibleActions: ['upgrade_to_three_module_bundle'],
+      }),
+      requiredAction: 'upgrade_to_three_module_bundle',
+      requiredTargetPrefix: 'three_module_bundle',
+    },
+    {
+      name: 'Founders -> Add CigarKeeper',
+      state: makeState({
+        hasBundle: true,
+        isFoundersOnlyBundle: true,
+        activePlanKeys: ['founders_bundle_annual'],
+        moduleFlags: { pipekeeper: true, whiskeykeeper: true, cigarkeeper: false, winekeeper: false },
+        paidModules: ['pipekeeper', 'whiskeykeeper'],
+        eligibleActions: ['add_cigarkeeper_module', 'upgrade_to_three_module_bundle'],
+      }),
+      requiredAction: 'add_cigarkeeper_module',
+      requiredTargetPrefix: 'cigarkeeper_pro',
+    },
+    {
+      name: 'Founders -> Three Bundle',
+      state: makeState({
+        hasBundle: true,
+        isFoundersOnlyBundle: true,
+        activePlanKeys: ['founders_bundle_annual'],
+        moduleFlags: { pipekeeper: true, whiskeykeeper: true, cigarkeeper: false, winekeeper: false },
+        paidModules: ['pipekeeper', 'whiskeykeeper'],
+        eligibleActions: ['add_cigarkeeper_module', 'upgrade_to_three_module_bundle'],
+      }),
+      requiredAction: 'upgrade_to_three_module_bundle',
+      requiredTargetPrefix: 'three_module_bundle',
+    },
+    {
+      name: 'Pipe + Cigar -> Three Bundle',
+      state: makeState({
+        activePlanKeys: ['pipekeeper_pro_annual', 'cigarkeeper_pro_annual'],
+        moduleFlags: { pipekeeper: true, whiskeykeeper: false, cigarkeeper: true, winekeeper: false },
+        paidModules: ['pipekeeper', 'cigarkeeper'],
+        eligibleActions: ['add_whiskeykeeper_module', 'upgrade_to_three_module_bundle'],
+      }),
+      requiredAction: 'upgrade_to_three_module_bundle',
+      requiredTargetPrefix: 'three_module_bundle',
+    },
+    {
+      name: 'Whiskey + Cigar -> Three Bundle',
+      state: makeState({
+        activePlanKeys: ['whiskeykeeper_pro_annual', 'cigarkeeper_pro_annual'],
+        moduleFlags: { pipekeeper: false, whiskeykeeper: true, cigarkeeper: true, winekeeper: false },
+        paidModules: ['whiskeykeeper', 'cigarkeeper'],
+        eligibleActions: ['add_pipekeeper_module', 'upgrade_to_three_module_bundle'],
+      }),
+      requiredAction: 'upgrade_to_three_module_bundle',
+      requiredTargetPrefix: 'three_module_bundle',
+    },
+  ])('$name scenario keeps expected upgrade path available', ({ state, requiredAction, requiredTargetPrefix }) => {
+    const options = getAvailableUpgradeOptions(state);
+    const match = options.find((o) => o.action === requiredAction);
+    expect(match).toBeDefined();
+    expect(match.targetPlanKey).toMatch(new RegExp(`^${requiredTargetPrefix}`));
+  });
 });

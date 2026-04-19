@@ -30,7 +30,11 @@ function isIOSSafari() {
 }
 
 export function canAttemptLiveBarcodeScan() {
-  return isBarcodeDetectorSupported() && !!navigator?.mediaDevices?.getUserMedia;
+  return (
+    isBarcodeDetectorSupported()
+    && typeof navigator !== 'undefined'
+    && !!navigator?.mediaDevices?.getUserMedia
+  );
 }
 
 export default function BarcodeScannerModal({ open, onDetected, onClose }) {
@@ -75,10 +79,13 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
   }, [stopCamera, onClose]);
 
   const handleDetected = useCallback((code) => {
+    if (typeof code !== 'string' && typeof code !== 'number') return;
+    const normalizedCode = String(code ?? '').trim();
+    if (!normalizedCode) return;
     if (detectedRef.current) return;
     detectedRef.current = true;
     stopCamera();
-    onDetected(code);
+    onDetected(normalizedCode);
   }, [stopCamera, onDetected]);
 
   // Start scanning loop using BarcodeDetector
@@ -209,6 +216,14 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
 
   if (!open) return null;
 
+  const headerLabel = status === 'scanning'
+    ? 'Point camera at barcode'
+    : status === 'unsupported'
+    ? 'Live scan unavailable'
+    : status === 'error'
+    ? 'Camera unavailable'
+    : 'Starting camera…';
+
   return (
     <div
       className="fixed inset-0 z-[999] flex flex-col items-center justify-center"
@@ -220,7 +235,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
         <div className="flex items-center gap-2">
           <Barcode className="w-5 h-5" style={{ color: '#D4A574' }} />
           <span className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>
-            {status === 'scanning' ? 'Point camera at barcode' : 'Starting camera…'}
+            {headerLabel}
           </span>
         </div>
         <button

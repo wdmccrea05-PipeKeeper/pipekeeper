@@ -515,7 +515,7 @@ export default function SubscriptionFull() {
     <div className="w-full max-w-3xl mx-auto p-4 space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">Unlock Pro Features</h1>
-        <p className="text-[#e8d5b7]/70">Choose the plan that's right for you.</p>
+        <p className="text-[#e8d5b7]/70">Pick an individual module or bundle with clear pricing and instant checkout.</p>
       </div>
 
       {/* Billing Interval Toggle */}
@@ -542,12 +542,12 @@ export default function SubscriptionFull() {
         {[{
           key: "individual",
           title: "Individual Modules",
-          subtitle: "Choose a single module plan",
+          subtitle: "PipeKeeper Pro, WhiskeyKeeper Pro, and CigarKeeper Pro",
           plans: groupedPlans.individual,
         }, {
           key: "bundles",
           title: "Bundles",
-          subtitle: "Best for customers using multiple modules",
+          subtitle: "Founders Bundle (Pipe + Whiskey) and Three Module Bundle",
           plans: groupedPlans.bundles,
         }].map((section) => (
           section.plans.length > 0 && (
@@ -608,7 +608,7 @@ export default function SubscriptionFull() {
         onClick={() => selectedPlanKey && handleUpgrade(selectedPlanKey)}
       >
         {selectedPlanKey
-          ? `Subscribe — ${planLabels[selectedPlanKey]?.name || selectedPlanKey}`
+          ? `Continue to Secure Checkout — ${planLabels[selectedPlanKey]?.name || selectedPlanKey}`
           : "Select a plan above"}
       </Button>
 

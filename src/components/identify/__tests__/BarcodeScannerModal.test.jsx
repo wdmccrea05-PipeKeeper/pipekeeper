@@ -76,6 +76,7 @@ describe('BarcodeScannerModal', () => {
     render(<BarcodeScannerModal open onDetected={vi.fn()} onClose={vi.fn()} />);
 
     expect(await screen.findByText('Live scanning not available')).toBeTruthy();
+    expect(screen.getByText('Live scan unavailable')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Continue to Manual Entry' })).toBeTruthy();
   });
 
@@ -139,7 +140,7 @@ describe('BarcodeScannerModal', () => {
 
     render(<BarcodeScannerModal open onDetected={vi.fn()} onClose={vi.fn()} />);
 
-    expect(await screen.findByText('Camera unavailable')).toBeTruthy();
+    expect(await screen.findByText(/Camera permission denied/i)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Retry Camera' }));
 
     await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(2));
@@ -154,4 +155,5 @@ describe('BarcodeScannerModal', () => {
     setMediaDevices(vi.fn(async () => ({ getTracks: () => [{ stop: vi.fn() }] })));
     expect(canAttemptLiveBarcodeScan()).toBe(true);
   });
+
 });
