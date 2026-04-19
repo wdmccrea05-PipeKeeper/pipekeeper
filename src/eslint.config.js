@@ -1,20 +1,32 @@
 export default [
   {
-    // Test files — declare vitest globals so linter doesn't flag them
+    // Test files — declare vitest globals so linter doesn't flag them.
+    // Patterns cover both root-level __tests__ and src/**/__tests__ paths.
     files: [
-      '**/__tests__/**/*',
-      '**/__tests__/**/*.jsx',
-      '**/__tests__/**/*.tsx',
       '**/__tests__/**/*.js',
+      '**/__tests__/**/*.jsx',
       '**/__tests__/**/*.ts',
+      '**/__tests__/**/*.tsx',
+      'src/**/__tests__/**/*.js',
+      'src/**/__tests__/**/*.jsx',
+      'src/**/__tests__/**/*.ts',
+      'src/**/__tests__/**/*.tsx',
       '**/*.test.js',
       '**/*.test.jsx',
       '**/*.test.ts',
       '**/*.test.tsx',
+      'src/**/*.test.js',
+      'src/**/*.test.jsx',
+      'src/**/*.test.ts',
+      'src/**/*.test.tsx',
       '**/*.spec.js',
       '**/*.spec.jsx',
       '**/*.spec.ts',
       '**/*.spec.tsx',
+      'src/**/*.spec.js',
+      'src/**/*.spec.jsx',
+      'src/**/*.spec.ts',
+      'src/**/*.spec.tsx',
     ],
     languageOptions: {
       globals: {
@@ -28,6 +40,8 @@ export default [
         afterAll: 'readonly',
         vi: 'readonly',
         suite: 'readonly',
+        mock: 'readonly',
+        jest: 'readonly',
       },
     },
     rules: {
