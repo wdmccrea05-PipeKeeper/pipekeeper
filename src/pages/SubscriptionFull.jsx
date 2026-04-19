@@ -190,14 +190,14 @@ export default function SubscriptionFull() {
 
   const planLabels = {
     pipekeeper_pro_monthly: { name: "PipeKeeper Pro", badge: null },
-    pipekeeper_pro_annual: { name: "PipeKeeper Pro", badge: "Best Value" },
+    pipekeeper_pro_annual: { name: "PipeKeeper Pro", badge: null },
     whiskeykeeper_pro_monthly: { name: "WhiskeyKeeper Pro", badge: null },
-    whiskeykeeper_pro_annual: { name: "WhiskeyKeeper Pro", badge: "Best Value" },
+    whiskeykeeper_pro_annual: { name: "WhiskeyKeeper Pro", badge: null },
     cigarkeeper_pro_monthly: { name: "CigarKeeper Pro", badge: null },
-    cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: "Best Value" },
-    founders_bundle_monthly: { name: "Founders Bundle", badge: "Most Popular" },
-    founders_bundle_annual: { name: "Founders Bundle", badge: "Best Value" },
-    three_module_bundle_monthly: { name: "3-Module Bundle", badge: "All 3 Keepers" },
+    cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: null },
+    founders_bundle_monthly: { name: "Founders Bundle (Pipe + Whiskey)", badge: "Most Popular" },
+    founders_bundle_annual: { name: "Founders Bundle (Pipe + Whiskey)", badge: "Most Popular" },
+    three_module_bundle_monthly: { name: "3-Module Bundle", badge: "Best Value" },
     three_module_bundle_annual: { name: "3-Module Bundle", badge: "Best Value" },
   };
 
@@ -213,6 +213,11 @@ export default function SubscriptionFull() {
     three_module_bundle_monthly: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules",
     three_module_bundle_annual: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules",
   };
+
+  const groupedPlans = useMemo(() => ({
+    individual: availablePlans.filter((plan) => plan.type === "single_module"),
+    bundles: availablePlans.filter((plan) => plan.type === "bundle"),
+  }), [availablePlans]);
 
   const handleUpgrade = async (planKey) => {
     if (isIOSApp) {
@@ -411,6 +416,9 @@ export default function SubscriptionFull() {
           <p className="text-[#e8d5b7]/70 text-sm">
             Choose what you'd like to do next:
           </p>
+          <p className="text-[#e8d5b7]/55 text-xs -mt-3">
+            Upgrade paths are based on your current plan and preserve existing access.
+          </p>
 
           {upgradeError && (
             <div className="p-3 rounded-lg flex gap-2 items-start text-sm"
@@ -527,11 +535,28 @@ export default function SubscriptionFull() {
       </div>
 
       {/* Plan Cards */}
-      <div className="space-y-3">
+      <div className="space-y-5">
         {availablePlans.length === 0 && (
           <p className="text-center text-[#e8d5b7]/50 text-sm">No plans available for this billing period.</p>
         )}
-        {availablePlans.map((plan) => {
+        {[{
+          key: "individual",
+          title: "Individual Modules",
+          subtitle: "Choose a single module plan",
+          plans: groupedPlans.individual,
+        }, {
+          key: "bundles",
+          title: "Bundles",
+          subtitle: "Best for customers using multiple modules",
+          plans: groupedPlans.bundles,
+        }].map((section) => (
+          section.plans.length > 0 && (
+            <div key={section.key} className="space-y-3">
+              <div>
+                <h2 className="text-sm font-semibold text-[#F5F1E7]">{section.title}</h2>
+                <p className="text-xs text-[#e8d5b7]/55">{section.subtitle}</p>
+              </div>
+              {section.plans.map((plan) => {
           const meta = planLabels[plan.key] || { name: plan.displayName, badge: null };
           const desc = planDescriptions[plan.key] || "";
           const isSelected = selectedPlanKey === plan.key;
@@ -570,7 +595,10 @@ export default function SubscriptionFull() {
               </div>
             </div>
           );
-        })}
+              })}
+            </div>
+          )
+        ))}
       </div>
 
       {/* CTA */}
