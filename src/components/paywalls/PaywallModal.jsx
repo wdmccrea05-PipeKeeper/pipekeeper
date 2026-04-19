@@ -29,7 +29,6 @@ const moduleLabels = {
 
 // WineKeeper intentionally excluded — not publicly launched
 const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
-const OFFER_MULTI_MODULE_BUNDLES = String(import.meta.env.VITE_ENABLE_MULTI_BUNDLE_OFFERS || '').toLowerCase() === 'true';
 
 function launchedModules() {
   return ALL_MODULES.filter((m) => isModuleLaunched(m));
@@ -37,14 +36,10 @@ function launchedModules() {
 
 function getVisibleOfferConfig(lockedModule) {
   const launched = launchedModules();
-  const canOfferThree = OFFER_MULTI_MODULE_BUNDLES && launched.length >= 3;
-  const canOfferFour = OFFER_MULTI_MODULE_BUNDLES && launched.length >= 4;
   const moduleIsLaunchable = lockedModule ? isModuleLaunched(lockedModule) : true;
 
   return {
     launched,
-    canOfferThree,
-    canOfferFour,
     moduleIsLaunchable,
     primaryModule: moduleIsLaunchable ? lockedModule || launched[0] || 'pipekeeper' : 'pipekeeper',
   };
@@ -394,39 +389,6 @@ export default function PaywallModal({
       />,
     ];
 
-    if (offerConfig.canOfferThree) {
-      cards.push(
-        <PricingCard
-          key="three"
-          title="Unlock 3 Keepers"
-          priceMonthly="7.99"
-          priceAnnual="79.99"
-          badge="Best Value"
-          cta="Expand Your Collection"
-          isSelected={selectedPlan === 'three'}
-          onSelect={() => handleSelectPlan('three')}
-          isLoading={isLoading && selectedPlan === 'three'}
-          billingPeriod={billingPeriod}
-        />
-      );
-    }
-
-    if (offerConfig.canOfferFour) {
-      cards.push(
-        <PricingCard
-          key="four"
-          title="Unlock Everything"
-          priceMonthly="8.99"
-          priceAnnual="89.99"
-          cta="Unlock All Keepers"
-          isSelected={selectedPlan === 'four'}
-          onSelect={() => handleSelectPlan('four')}
-          isLoading={isLoading && selectedPlan === 'four'}
-          billingPeriod={billingPeriod}
-        />
-      );
-    }
-
     return cards;
   };
 
@@ -482,12 +444,6 @@ export default function PaywallModal({
           {/* Free user — show standard plan picker */}
           {freeUser && (
             <>
-              {!offerConfig.canOfferThree && !offerConfig.canOfferFour && (
-                <p className="text-xs mb-4" style={{ color: 'rgba(212, 165, 116, 0.8)' }}>
-                  Multi-module bundle offers are not available in this checkout surface right now.
-                </p>
-              )}
-
               <div className="mb-6 flex gap-2 p-1 rounded-lg" style={{ background: 'rgba(120, 90, 65, 0.1)' }}>
                 <button
                   onClick={() => setBillingPeriod('monthly')}

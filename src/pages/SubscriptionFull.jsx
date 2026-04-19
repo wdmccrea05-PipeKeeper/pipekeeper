@@ -175,7 +175,6 @@ export default function SubscriptionFull() {
     const keyOrder = [
       ...launchedSingleModules.map((moduleKey) => `${moduleKey}_pro_${interval}`),
       `founders_bundle_${interval}`,
-      `three_module_bundle_${interval}`,
     ];
 
     return keyOrder
@@ -197,8 +196,6 @@ export default function SubscriptionFull() {
     cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: "Best Value" },
     founders_bundle_monthly: { name: "Founders Bundle", badge: "Most Popular" },
     founders_bundle_annual: { name: "Founders Bundle", badge: "Best Value" },
-    three_module_bundle_monthly: { name: "All 3 Keepers Bundle", badge: "Best Value" },
-    three_module_bundle_annual: { name: "All 3 Keepers Bundle", badge: "Best Value" },
   };
 
   const planDescriptions = {
@@ -210,8 +207,6 @@ export default function SubscriptionFull() {
     cigarkeeper_pro_annual: "Unlimited cigars, humidor tracking, and smoking sessions",
     founders_bundle_monthly: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
     founders_bundle_annual: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
-    three_module_bundle_monthly: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules unlocked",
-    three_module_bundle_annual: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules unlocked",
   };
 
   const handleUpgrade = async (planKey) => {
@@ -420,7 +415,7 @@ export default function SubscriptionFull() {
 
           <div className="space-y-4">
             {upgradeOptions.map((option) => {
-              const isBundle = option.action === "upgrade_to_bundle" || option.action === "upgrade_to_three_bundle";
+              const isBundle = option.action === "upgrade_to_bundle";
               const planDef = SUBSCRIPTION_PLANS[option.targetPlanKey];
               return (
                 <div

@@ -32,37 +32,11 @@ export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModule
   }
 
   if (selectedPlan === 'three') {
-    const planKey = `three_module_bundle_${billingPeriod}`;
-
-    try {
-      getRequiredStripePlan(planKey);
-    } catch {
-      throw new Error('This subscription option is not currently available. Please contact support.');
-    }
-
-    // For 3-module: use explicitly selectedModules if provided.
-    // Do NOT fall back to a default list that includes non-launched modules.
-    // If no modules provided, default to pipekeeper only — the entitlement layer
-    // will expand access once additional modules launch.
-    const modules = selectedModules.length >= 1
-      ? selectedModules.slice(0, 3)
-      : ['pipekeeper'];
-    return { planKey, modules };
+    throw new Error('Multi-module bundles are not available in this checkout flow.');
   }
 
   if (selectedPlan === 'four') {
-    const planKey = `four_module_bundle_${billingPeriod}`;
-
-    try {
-      getRequiredStripePlan(planKey);
-    } catch {
-      throw new Error('This subscription option is not currently available. Please contact support.');
-    }
-
-    return {
-      planKey,
-      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
-    };
+    throw new Error('Multi-module bundles are not available in this checkout flow.');
   }
 
   throw new Error('Invalid plan selection');

@@ -1,20 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import BarcodeScannerModal from '@/components/identify/BarcodeScannerModal';
+import BarcodeScannerModal, { canAttemptLiveBarcodeScan } from '@/components/identify/BarcodeScannerModal';
 
 const originalBarcodeDetector = globalThis.BarcodeDetector;
 const mediaDevicesDescriptor = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices');
 const playDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'play');
 const pauseDescriptor = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'pause');
 
-function mockBarcodeDetector({ detect = vi.fn(async () => []) } = {}) {
+function mockBarcodeDetector({ detect = vi.fn(async () => []), supportedFormats = ['ean_13', 'upc_a', 'code_128'] } = {}) {
   class MockBarcodeDetector {
     constructor() {
       this.detect = detect;
     }
 
     static async getSupportedFormats() {
-      return ['ean_13', 'upc_a', 'code_128'];
+      return supportedFormats;
     }
   }
   globalThis.BarcodeDetector = MockBarcodeDetector;
@@ -65,7 +65,7 @@ describe('BarcodeScannerModal', () => {
     render(<BarcodeScannerModal open onDetected={vi.fn()} onClose={vi.fn()} />);
 
     expect(await screen.findByText('Live scanning not available')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Type Manually Instead' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Continue to Manual Entry' })).toBeTruthy();
   });
 
   it('shows manual fallback when camera APIs are unavailable', async () => {
@@ -75,6 +75,16 @@ describe('BarcodeScannerModal', () => {
     render(<BarcodeScannerModal open onDetected={vi.fn()} onClose={vi.fn()} />);
 
     expect(await screen.findByText('Live scanning not available')).toBeTruthy();
+  });
+
+  it('falls back when detector is present but 1D barcode formats are unsupported', async () => {
+    mockBarcodeDetector({ supportedFormats: ['qr_code'] });
+    setMediaDevices(vi.fn(async () => ({ getTracks: () => [{ stop: vi.fn() }] })));
+
+    render(<BarcodeScannerModal open onDetected={vi.fn()} onClose={vi.fn()} />);
+
+    expect(await screen.findByText('Live scanning not available')).toBeTruthy();
+    expect(screen.getByText(/cannot scan product barcodes yet/i)).toBeTruthy();
   });
 
   it('stops camera tracks when closed to avoid stuck camera state', async () => {
@@ -113,6 +123,15 @@ describe('BarcodeScannerModal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Retry Camera' }));
 
     await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(2));
-    expect(await screen.findByText('Hold steady — scanning automatically')).toBeTruthy();
+    expect(await screen.findByText('Hold steady with good lighting — scanning automatically')).toBeTruthy();
+  });
+
+  it('reports scanner capability only when camera + detector are both available', () => {
+    delete globalThis.BarcodeDetector;
+    expect(canAttemptLiveBarcodeScan()).toBe(false);
+
+    mockBarcodeDetector();
+    setMediaDevices(vi.fn(async () => ({ getTracks: () => [{ stop: vi.fn() }] })));
+    expect(canAttemptLiveBarcodeScan()).toBe(true);
   });
 });
