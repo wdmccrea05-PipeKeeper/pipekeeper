@@ -26,6 +26,7 @@ import { generateSpecializationRecommendations } from './specializationEngine.js
 import { generatePairingRecommendations } from './pairingEngine.js';
 import { generatePurchaseRestockRecommendations } from './purchaseRestockEngine.js';
 import { generateGrowExpandRecommendations } from './growExpandEngine.js';
+import { normalizeAcquisitionState } from './acquisitionNormalizer.js';
 import { filterAiEligibleItems } from '../../platform/aiEligibility.js';
 
 // ─── Thresholds ───────────────────────────────────────────────────────────────
@@ -1382,12 +1383,36 @@ function analyzeWhiskeyCollection(context) {
     return false;
   });
   // Only flag depleted bottles that are not already in the purchase queue
+  const normalizeText = (value) => String(value || '').trim().toLowerCase();
+  const isTrackedRestockState = (item) => {
+    const normalizedState = normalizeAcquisitionState(item);
+    return normalizedState === 'restock' || normalizedState === 'shopping_list';
+  };
+  const trackedRestockRecordIds = new Set(
+    acquisitionItems
+      .filter(isTrackedRestockState)
+      .map((i) => i.record_id || i.recordId || i.item_id || i.itemId || i.entity_id || i.entityId)
+      .filter(Boolean)
+  );
+  const trackedRestockNames = new Set(
+    acquisitionItems
+      .filter(isTrackedRestockState)
+      .map((i) => normalizeText(i.name || i.itemName || i.recordName))
+      .filter(Boolean)
+  );
   const trackedRestockIds = new Set(
     acquisitionItems
-      .filter((i) => ['restock', 'shopping_list'].includes(String(i.status || '').toLowerCase()))
+      .filter(isTrackedRestockState)
       .map((i) => i.id)
   );
-  const depletedUntracked = depleted.filter((b) => !trackedRestockIds.has(b.id));
+  const depletedUntracked = depleted.filter((b) => {
+    const name = normalizeText(b.name);
+    return (
+      !trackedRestockIds.has(b.id) &&
+      !trackedRestockRecordIds.has(b.id) &&
+      (!name || !trackedRestockNames.has(name))
+    );
+  });
   if (depletedUntracked.length >= 1) {
     const items = depletedUntracked.slice(0, MAX_ITEMS_PER_REC).map((b) => ({
       id: b.id,

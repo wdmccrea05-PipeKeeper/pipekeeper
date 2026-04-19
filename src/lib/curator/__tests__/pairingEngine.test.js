@@ -125,4 +125,24 @@ describe('generatePairingRecommendations', () => {
 
     expect(pairings.every((p) => p.pairingFamily === 'whiskey_pipe_session')).toBe(true);
   });
+
+  it('prioritizes body/strength-aligned whiskey+cigar options for best-match overlay', () => {
+    const pairings = generatePairingRecommendations(
+      baseContext({
+        activeModules: { pipekeeper: false, winekeeper: false },
+        cigars: [
+          { id: 'c_mild', name: 'Mild Cigar', strength: 'Mild', singles_equivalent: 3, rating: 2 },
+          { id: 'c_full', name: 'Full Cigar', strength: 'Full', singles_equivalent: 3, rating: 5 },
+        ],
+        bottles: [
+          { id: 'w_light', name: 'Light Whiskey', abv: 40, quantity: 1, rating: 2 },
+          { id: 'w_full', name: 'Full Whiskey', abv: 58, quantity: 1, rating: 5 },
+        ],
+      })
+    );
+
+    const bestMatch = pairings.find((p) => p.pairingFamily === 'whiskey_cigar' && p.overlay === 'best_match');
+    expect(bestMatch?.cigar?.id).toBe('c_full');
+    expect(bestMatch?.bottle?.id).toBe('w_full');
+  });
 });

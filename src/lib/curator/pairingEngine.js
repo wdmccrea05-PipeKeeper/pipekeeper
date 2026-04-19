@@ -66,6 +66,44 @@ function getWineStyle(liquid) {
   return String(liquid?.style || liquid?.varietal || '').trim().toLowerCase();
 }
 
+function normalizeStrengthLevel(value) {
+  const text = String(value || '').trim().toLowerCase();
+  if (!text) return null;
+  if (text.includes('full') || text.includes('strong') || text.includes('bold')) return 4;
+  if (text.includes('medium-full') || text.includes('med-full')) return 3.5;
+  if (text.includes('medium')) return 3;
+  if (text.includes('mild-medium') || text.includes('med-mild')) return 2.5;
+  if (text.includes('mild') || text.includes('light')) return 2;
+  return null;
+}
+
+function getCigarBodyLevel(cigar) {
+  return (
+    normalizeStrengthLevel(cigar?.strength) ??
+    normalizeStrengthLevel(cigar?.body) ??
+    normalizeStrengthLevel(cigar?.profile) ??
+    3
+  );
+}
+
+function getLiquidBodyLevel(liquid, liquidType) {
+  if (liquidType === 'wine') {
+    const style = getWineStyle(liquid);
+    if (style.includes('full') || style.includes('fortified') || style.includes('bold') || style.includes('cabernet') || style.includes('syrah')) return 4;
+    if (style.includes('medium') || style.includes('merlot') || style.includes('tempranillo')) return 3;
+    if (style.includes('light') || style.includes('white') || style.includes('sparkling') || style.includes('rose')) return 2;
+    return 3;
+  }
+
+  const abv = safeNum(liquid?.abv);
+  if (abv >= 50) return 4;
+  if (abv >= 43) return 3;
+  const wt = getWhiskeyType(liquid);
+  if (wt.includes('islay') || wt.includes('peated') || wt.includes('rye')) return 3.5;
+  if (wt.includes('irish') || wt.includes('blended')) return 2.5;
+  return 3;
+}
+
 function getStockValue(item) {
   const stockFields = [
     'singles_equivalent',
@@ -294,6 +332,43 @@ function firstUnused(list = [], usedIds = new Set()) {
   return list.find((item) => !usedIds.has(item?.id)) || list[0] || null;
 }
 
+function pickCigarLiquidPairForOverlay({ overlay, family, cigars = [], liquids = [], usedCigarIds = new Set(), usedLiquidIds = new Set() }) {
+  const freshCigars = cigars.filter((item) => !usedCigarIds.has(item?.id));
+  const freshLiquids = liquids.filter((item) => !usedLiquidIds.has(item?.id));
+  const cigarPool = (freshCigars.length ? freshCigars : cigars).slice(0, 6);
+  const liquidPool = (freshLiquids.length ? freshLiquids : liquids).slice(0, 6);
+
+  if (!cigarPool.length || !liquidPool.length) {
+    return {
+      cigar: firstUnused(cigars, usedCigarIds),
+      liquid: firstUnused(liquids, usedLiquidIds),
+    };
+  }
+
+  let best = null;
+  for (const cigar of cigarPool) {
+    for (const liquid of liquidPool) {
+      const cigarLevel = getCigarBodyLevel(cigar);
+      const liquidLevel = getLiquidBodyLevel(liquid, family.liquidType);
+      const diff = Math.abs(cigarLevel - liquidLevel);
+      const staleBoost = (safeNum(cigar?._lastUsedDays) + safeNum(liquid?._lastUsedDays)) * 0.01;
+      const qualityBoost = safeNum(cigar?.rating) + safeNum(liquid?.rating);
+      const fitScore = overlay === 'something_new'
+        ? (diff * 5)
+        : overlay === 'rediscover'
+          ? (12 - diff * 2)
+          : (20 - diff * 6);
+      const score = fitScore + qualityBoost + (overlay === 'best_match' ? 0 : staleBoost);
+
+      if (!best || score > best.score) {
+        best = { cigar, liquid, score };
+      }
+    }
+  }
+
+  return { cigar: best?.cigar || null, liquid: best?.liquid || null };
+}
+
 function buildPairingContext(context = {}) {
   const { activeModules = {} } = context;
   const pipeActive = activeModules.pipekeeper === true;
@@ -392,8 +467,14 @@ function buildFamilyPairings(ctx, family) {
 
     return OVERLAYS
       .map((overlay) => {
-        const cigar = firstUnused(cigarByOverlay[overlay.key], usedCigarIds);
-        const liquid = firstUnused(liquidByOverlay[overlay.key], usedLiquidIds);
+        const { cigar, liquid } = pickCigarLiquidPairForOverlay({
+          overlay: overlay.key,
+          family,
+          cigars: cigarByOverlay[overlay.key] || [],
+          liquids: liquidByOverlay[overlay.key] || [],
+          usedCigarIds,
+          usedLiquidIds,
+        });
         if (cigar?.id) usedCigarIds.add(cigar.id);
         if (liquid?.id) usedLiquidIds.add(liquid.id);
         return makePairing(family, overlay, { cigar, liquid });
