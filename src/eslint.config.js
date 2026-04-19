@@ -5,6 +5,9 @@ export default [
       '**/__tests__/**/*',
       '**/*.test.*',
       '**/*.spec.*',
+      'src/**/__tests__/**/*',
+      'src/**/*.test.*',
+      'src/**/*.spec.*',
     ],
     languageOptions: {
       globals: {
