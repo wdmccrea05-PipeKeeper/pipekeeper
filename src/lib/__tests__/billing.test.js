@@ -228,14 +228,15 @@ describe('getAvailableUpgradeOptions', () => {
     expect(options).toEqual([]);
   });
 
-  it('returns upgrade_to_bundle and add_other_module for PK Pro user', () => {
+  it('returns bundle upgrade plus complementary module add-ons for PK Pro user', () => {
     const state = stateFor([makeSub('pipekeeper_pro_annual')]);
     const options = getAvailableUpgradeOptions(state);
 
     const actions = options.map((o) => o.action);
     expect(actions).toContain('upgrade_to_bundle');
     expect(actions).toContain('add_other_module');
-    expect(options).toHaveLength(2);
+    expect(actions).toContain('add_cigarkeeper_module');
+    expect(options).toHaveLength(3);
   });
 
   it('upgrade_to_bundle option for PK Pro uses founders_bundle_annual', () => {
@@ -301,9 +302,9 @@ describe('getAvailableUpgradeOptions', () => {
 // ─── getNewPurchaseOptions ───────────────────────────────────────────────────
 
 describe('getNewPurchaseOptions', () => {
-  it('returns 3 options for free users', () => {
+  it('returns 4 options for free users when CigarKeeper is launched', () => {
     const options = getNewPurchaseOptions();
-    expect(options.length).toBe(3);
+    expect(options.length).toBe(4);
   });
 
   it('all options have actionType new_purchase', () => {
