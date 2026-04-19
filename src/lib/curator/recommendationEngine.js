@@ -1388,10 +1388,11 @@ function analyzeWhiskeyCollection(context) {
     const normalizedState = normalizeAcquisitionState(item);
     return normalizedState === 'restock' || normalizedState === 'shopping_list';
   };
-  const trackedRestockRecordIds = new Set(
+  const trackedRestockRecordKeys = new Set(
     acquisitionItems
       .filter(isTrackedRestockState)
       .map((i) => i.record_id || i.recordId || i.item_id || i.itemId || i.entity_id || i.entityId)
+      .map(normalizeText)
       .filter(Boolean)
   );
   const trackedRestockNames = new Set(
@@ -1400,16 +1401,11 @@ function analyzeWhiskeyCollection(context) {
       .map((i) => normalizeText(i.name || i.itemName || i.recordName))
       .filter(Boolean)
   );
-  const trackedRestockIds = new Set(
-    acquisitionItems
-      .filter(isTrackedRestockState)
-      .map((i) => i.id)
-  );
   const depletedUntracked = depleted.filter((b) => {
+    const idKey = normalizeText(b.id);
     const name = normalizeText(b.name);
     return (
-      !trackedRestockIds.has(b.id) &&
-      !trackedRestockRecordIds.has(b.id) &&
+      (!idKey || !trackedRestockRecordKeys.has(idKey)) &&
       (!name || !trackedRestockNames.has(name))
     );
   });

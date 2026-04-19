@@ -42,6 +42,10 @@ const LIQUID_RECORD_META = {
   wine: { key: 'wine', type: 'wine', recordType: 'wine' },
 };
 
+const FULL_BODY_WINE_STYLES = ['full', 'fortified', 'bold', 'cabernet', 'syrah'];
+const MEDIUM_BODY_WINE_STYLES = ['medium', 'merlot', 'tempranillo'];
+const LIGHT_BODY_WINE_STYLES = ['light', 'white', 'sparkling', 'rose'];
+
 function safeNum(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -89,9 +93,9 @@ function getCigarBodyLevel(cigar) {
 function getLiquidBodyLevel(liquid, liquidType) {
   if (liquidType === 'wine') {
     const style = getWineStyle(liquid);
-    if (style.includes('full') || style.includes('fortified') || style.includes('bold') || style.includes('cabernet') || style.includes('syrah')) return 4;
-    if (style.includes('medium') || style.includes('merlot') || style.includes('tempranillo')) return 3;
-    if (style.includes('light') || style.includes('white') || style.includes('sparkling') || style.includes('rose')) return 2;
+    if (FULL_BODY_WINE_STYLES.some((token) => style.includes(token))) return 4;
+    if (MEDIUM_BODY_WINE_STYLES.some((token) => style.includes(token))) return 3;
+    if (LIGHT_BODY_WINE_STYLES.some((token) => style.includes(token))) return 2;
     return 3;
   }
 
@@ -353,6 +357,10 @@ function pickCigarLiquidPairForOverlay({ overlay, family, cigars = [], liquids =
       const diff = Math.abs(cigarLevel - liquidLevel);
       const staleBoost = (safeNum(cigar?._lastUsedDays) + safeNum(liquid?._lastUsedDays)) * 0.01;
       const qualityBoost = safeNum(cigar?.rating) + safeNum(liquid?.rating);
+      // Overlay scoring:
+      // - best_match: heavily rewards tight body/strength alignment
+      // - rediscover: prefers reasonable fit while weighting stale items
+      // - something_new: rewards stronger contrast for exploration
       const fitScore = overlay === 'something_new'
         ? (diff * 5)
         : overlay === 'rediscover'
