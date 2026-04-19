@@ -117,7 +117,7 @@ export const KEEPER_MODULES = [
     icon: MODULE_ICONS?.winekeeper,
     route: null,
     enabled: false,
-    description: 'Coming soon: Manage your wine cellar and bottle inventory.',
+    description: 'Not available in this release.',
     moduleKey: MODULES.WINEKEEPER,
 
     key: MODULES.WINEKEEPER,
