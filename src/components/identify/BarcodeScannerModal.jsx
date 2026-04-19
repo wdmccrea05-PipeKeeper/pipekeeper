@@ -43,7 +43,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
       try {
         video.pause();
       } catch (_) {
-        // ignore pause errors
+        // pause() may throw if media state has already transitioned during teardown.
       }
       video.srcObject = null;
     }
@@ -103,7 +103,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
           return;
         }
       } catch (_) {
-        // ignore per-frame errors
+        // Ignore transient frame-detection errors while the stream settles or refreshes.
       } finally {
         scanInFlightRef.current = false;
       }
