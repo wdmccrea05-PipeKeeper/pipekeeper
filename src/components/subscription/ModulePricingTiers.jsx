@@ -19,6 +19,11 @@ export default function ModulePricingTiers({
   const { t } = useTranslation();
   const activeModules = useMemo(() => getActiveModules(), []);
 
+  const getSelectButtonLabel = (option) => {
+    if (option.isSelected) return 'Selected';
+    return option.type === 'single' ? 'Choose Individual Plan' : 'Choose Bundle';
+  };
+
   const currentTier = useMemo(() => detectBundleTier(selectedModules), [selectedModules]);
   const currentPrice = useMemo(() => calculatePrice(billingPeriod, selectedModules), [billingPeriod, selectedModules]);
 
@@ -82,7 +87,7 @@ export default function ModulePricingTiers({
           className="rounded-lg border px-4 py-3 text-sm"
           style={{ background: 'rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.35)', color: '#A7F3D0' }}
         >
-          Already subscribed? Choose an upgrade option to expand access without losing your current modules.
+          Already subscribed? Choose an upgrade option to expand your access without losing current modules.
         </div>
       )}
 
@@ -214,7 +219,7 @@ export default function ModulePricingTiers({
                     : 'bg-[#A35C5C]/80 text-white hover:bg-[#A35C5C] active:scale-95'
                 )}
                 >
-                  {option.isSelected ? 'Selected' : option.type === 'single' ? 'Choose Individual Plan' : 'Choose Bundle'}
+                  {getSelectButtonLabel(option)}
                 </button>
               </div>
           );

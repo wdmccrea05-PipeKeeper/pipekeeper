@@ -79,7 +79,8 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
   }, [stopCamera, onClose]);
 
   const handleDetected = useCallback((code) => {
-    const normalizedCode = String(code || '').trim();
+    if (typeof code !== 'string' && typeof code !== 'number') return;
+    const normalizedCode = String(code ?? '').trim();
     if (!normalizedCode) return;
     if (detectedRef.current) return;
     detectedRef.current = true;
