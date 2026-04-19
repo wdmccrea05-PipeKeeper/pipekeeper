@@ -38,15 +38,6 @@ function pickBundlePlanKey(activePlanKeys) {
 }
 
 /**
- * Returns the preferred 3-module bundle plan key based on billing term.
- */
-function pickThreeBundlePlanKey(activePlanKeys) {
-  const hasMonthlyOnly =
-    activePlanKeys.length > 0 && activePlanKeys.every((k) => k.endsWith('_monthly'));
-  return hasMonthlyOnly ? 'three_module_bundle_monthly' : 'three_module_bundle_annual';
-}
-
-/**
  * Computes available billing actions for a user.
  *
  * @param {object} subscriptionState - Output of getUserSubscriptionState()
@@ -78,32 +69,6 @@ export function getAvailableUpgradeOptions(subscriptionState) {
   const paidModules = launchedModules.filter((m) => moduleFlags[m]);
   const hasFoundersEligibleCoverage = paidModules.includes('pipekeeper') || paidModules.includes('whiskeykeeper');
   const hasCigarkeeper = paidModules.includes('cigarkeeper');
-  const paidCount = paidModules.length;
-
-  // 3-module bundle: offered when user has any 1 or 2 modules (all 3 launched)
-  const allThreeLaunched = launchedModules.includes('pipekeeper') &&
-    launchedModules.includes('whiskeykeeper') &&
-    launchedModules.includes('cigarkeeper');
-
-  if (allThreeLaunched && paidCount >= 1 && paidCount < 3 && eligibleActions.includes('upgrade_to_bundle')) {
-    const currentPlanKey = pickCurrentPlanKey(activePlanKeys, paidModules[0] || 'pipekeeper');
-    const threeBundlePlanKey = pickThreeBundlePlanKey(activePlanKeys);
-    const threeBundlePlan = SUBSCRIPTION_PLANS[threeBundlePlanKey];
-
-    if (threeBundlePlan) {
-      options.push({
-        action: 'upgrade_to_three_bundle',
-        actionType: 'upgrade_existing',
-        label: 'Upgrade to All 3 Keepers Bundle',
-        description:
-          'Replace your current subscription with bundle access to PipeKeeper + WhiskeyKeeper + CigarKeeper.',
-        targetPlanKey: threeBundlePlanKey,
-        currentPlanKey,
-        displayPrice: threeBundlePlan?.displayPrice,
-        displayTerm: threeBundlePlan?.term,
-      });
-    }
-  }
 
   // Founders bundle: offered when user has PipeKeeper or WhiskeyKeeper but not CigarKeeper
   if (hasFoundersEligibleCoverage && !hasCigarkeeper && eligibleActions.includes('upgrade_to_bundle')) {
@@ -161,14 +126,12 @@ export function getAvailableUpgradeOptions(subscriptionState) {
  * These are all purchasable plans with actionType = 'new_purchase'.
  */
 export function getNewPurchaseOptions() {
-  const allThreeLaunched = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'].every(isPubliclyLaunched);
   const plans = [
     ...PUBLIC_BILLING_MODULES
       .filter((moduleKey) => isPubliclyLaunched(moduleKey))
       .map((moduleKey) => SUBSCRIPTION_PLANS[getPreferredPlanKeyForModule(moduleKey)])
       .filter(Boolean),
     SUBSCRIPTION_PLANS.founders_bundle_annual,
-    ...(allThreeLaunched ? [SUBSCRIPTION_PLANS.three_module_bundle_annual] : []),
   ];
 
   return plans.filter(Boolean).map((plan) => ({

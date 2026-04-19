@@ -15,8 +15,14 @@ import { Button } from '@/components/ui/button';
 
 const SCAN_INTERVAL_MS = 300; // scan a frame every 300ms
 
+const PREFERRED_BARCODE_FORMATS = ['upc_a', 'upc_e', 'ean_13', 'ean_8', 'code_128', 'code_39', 'itf', 'codabar'];
+
 function isBarcodeDetectorSupported() {
   return typeof window !== 'undefined' && 'BarcodeDetector' in window;
+}
+
+export function canAttemptLiveBarcodeScan() {
+  return isBarcodeDetectorSupported() && !!navigator?.mediaDevices?.getUserMedia;
 }
 
 export default function BarcodeScannerModal({ open, onDetected, onClose }) {
@@ -31,6 +37,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
 
   const [status, setStatus] = useState('starting'); // 'starting' | 'scanning' | 'error' | 'unsupported'
   const [errorMsg, setErrorMsg] = useState('');
+  const [unsupportedMsg, setUnsupportedMsg] = useState('');
 
   const stopCamera = useCallback(() => {
     if (scanTimerRef.current) {
@@ -75,7 +82,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
     video.srcObject = stream;
     await video.play();
 
-    const formats = ['upc_a', 'upc_e', 'ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code', 'itf', 'codabar'];
+    const formats = [...PREFERRED_BARCODE_FORMATS, 'qr_code'];
     // Filter to only supported formats to avoid DOMException on some browsers
     let supportedFormats = formats;
     try {
@@ -122,12 +129,15 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
     detectedRef.current = false;
     setStatus('starting');
     setErrorMsg('');
+    setUnsupportedMsg('');
 
     if (!isBarcodeDetectorSupported()) {
+      setUnsupportedMsg('Live camera scanning is not supported in this browser. Manual barcode entry is still available.');
       setStatus('unsupported');
       return;
     }
     if (!navigator?.mediaDevices?.getUserMedia) {
+      setUnsupportedMsg('Camera access is unavailable on this device or browser. Manual barcode entry is still available.');
       setStatus('unsupported');
       return;
     }
@@ -136,6 +146,19 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
 
     (async () => {
       try {
+        try {
+          const supportedFormats = await BarcodeDetector.getSupportedFormats();
+          const has1DSupport = PREFERRED_BARCODE_FORMATS.some((format) => supportedFormats.includes(format));
+          if (!has1DSupport) {
+            setUnsupportedMsg('This browser camera cannot scan product barcodes yet. Please type the barcode manually.');
+            setStatus('unsupported');
+            return;
+          }
+        } catch (formatErr) {
+          console.warn('[BarcodeScannerModal] Failed to inspect supported barcode formats:', formatErr);
+          // Continue and let runtime scan decide.
+        }
+
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: 'environment' },
@@ -156,7 +179,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
         if (!cancelled) {
           const msg =
             err?.name === 'NotAllowedError'
-              ? 'Camera permission denied. Please allow camera access and try again.'
+              ? 'Camera permission denied. Allow camera access in browser settings and try again.'
               : err?.name === 'NotFoundError'
               ? 'No camera found on this device.'
               : `Camera error: ${err?.message || 'Unknown error'}`;
@@ -249,10 +272,10 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
             Live scanning not available
           </p>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            Your browser doesn't support live barcode scanning. Please type the barcode number manually.
+            {unsupportedMsg || "Your browser doesn't support live barcode scanning. Please type the barcode number manually."}
           </p>
           <Button onClick={handleClose} variant="outline" className="w-full">
-            Type Manually Instead
+            Continue to Manual Entry
           </Button>
         </div>
       )}
@@ -283,7 +306,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
       {/* Status hint */}
       {status === 'scanning' && (
         <p className="mt-4 text-sm text-center" style={{ color: 'rgba(224,216,200,0.5)' }}>
-          Hold steady — scanning automatically
+          Hold steady with good lighting — scanning automatically
         </p>
       )}
     </div>

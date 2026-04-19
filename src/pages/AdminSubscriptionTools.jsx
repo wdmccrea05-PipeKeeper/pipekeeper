@@ -29,7 +29,7 @@ export default function AdminSubscriptionTools() {
   const moduleLabelMap = {
     pipekeeper: "PipeKeeper (Public)",
     whiskeykeeper: "WhiskeyKeeper (Public)",
-    cigarkeeper: "CigarKeeper (Pre-Launch Testing Access)",
+    cigarkeeper: "CigarKeeper (Public)",
     winekeeper: "WineKeeper (Blocked / Not Launched)",
   };
 

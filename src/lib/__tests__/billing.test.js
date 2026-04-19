@@ -236,6 +236,7 @@ describe('getAvailableUpgradeOptions', () => {
     expect(actions).toContain('upgrade_to_bundle');
     expect(actions).toContain('add_other_module');
     expect(actions).toContain('add_cigarkeeper_module');
+    expect(actions).not.toContain('upgrade_to_three_bundle');
     expect(options).toHaveLength(3);
   });
 
@@ -305,6 +306,7 @@ describe('getNewPurchaseOptions', () => {
   it('returns 4 options for free users when CigarKeeper is launched', () => {
     const options = getNewPurchaseOptions();
     expect(options.length).toBe(4);
+    expect(options.some((o) => o.targetPlanKey?.startsWith('three_module_bundle'))).toBe(false);
   });
 
   it('all options have actionType new_purchase', () => {

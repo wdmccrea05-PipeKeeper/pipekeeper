@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ArrowLeft,
   Barcode,
@@ -19,7 +19,7 @@ import {
   identifyByImageUrls,
   uploadIdentifyImages,
 } from '@/components/identify/identifyEngine';
-import BarcodeScannerModal from '@/components/identify/BarcodeScannerModal';
+import BarcodeScannerModal, { canAttemptLiveBarcodeScan } from '@/components/identify/BarcodeScannerModal';
 
 // ── Sub-mode selector ─────────────────────────────────────────────────────────
 
@@ -123,6 +123,7 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const canUseLiveScanner = useMemo(() => canAttemptLiveBarcodeScan(), []);
 
   const handleLookup = async (lookupCode) => {
     const trimmed = (lookupCode ?? code).trim();
@@ -177,19 +178,28 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
         <div className="px-6 py-5 flex flex-col gap-4">
           {/* Live camera scan button */}
           <button
-            onClick={() => setScannerOpen(true)}
-            disabled={loading}
+            onClick={() => canUseLiveScanner && setScannerOpen(true)}
+            disabled={loading || !canUseLiveScanner}
             className="flex items-center justify-center gap-2 w-full py-4 rounded-xl transition-colors"
             style={{
-              background: 'rgba(86,122,160,0.1)',
-              border: '1px solid rgba(86,122,160,0.35)',
-              color: 'rgba(140,180,220,0.85)',
-              opacity: loading ? 0.6 : 1,
+              background: canUseLiveScanner ? 'rgba(86,122,160,0.1)' : 'rgba(90,90,90,0.18)',
+              border: canUseLiveScanner ? '1px solid rgba(86,122,160,0.35)' : '1px solid rgba(150,150,150,0.28)',
+              color: canUseLiveScanner ? 'rgba(140,180,220,0.85)' : 'rgba(224,216,200,0.5)',
+              opacity: loading ? 0.6 : canUseLiveScanner ? 1 : 0.9,
             }}
           >
             <Camera className="w-5 h-5" />
-            <span className="text-sm font-medium">{t('addFlowIdentify.scanBarcode', 'Scan Barcode with Camera')}</span>
+            <span className="text-sm font-medium">
+              {canUseLiveScanner
+                ? t('addFlowIdentify.scanBarcode', 'Scan Barcode with Camera')
+                : t('addFlowIdentify.scanUnavailable', 'Live Scan Unavailable in This Browser')}
+            </span>
           </button>
+          {!canUseLiveScanner && (
+            <p className="text-xs -mt-1" style={{ color: 'rgba(224,216,200,0.5)' }}>
+              {t('addFlowIdentify.scanUnavailableHint', 'Use manual barcode entry on iPhone Safari and other unsupported browsers.')}
+            </p>
+          )}
 
           <div className="flex items-center gap-3">
             <div style={{ flex: 1, height: 1, background: 'rgba(180,140,75,0.12)' }} />

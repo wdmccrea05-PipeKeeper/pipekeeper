@@ -24,9 +24,10 @@ export default function ModulePricingTiers({
 
   // Available pricing options
   const pricingOptions = useMemo(() => {
-    return [
-      // Individual module options
-      ...activeModules.map(module => ({
+      const hasFoundersModules = activeModules.includes('pipekeeper') && activeModules.includes('whiskeykeeper');
+      return [
+        // Individual module options
+        ...activeModules.map(module => ({
         id: `single-${module}`,
         type: 'single',
         modules: [module],
@@ -35,37 +36,27 @@ export default function ModulePricingTiers({
         priceAnnual: 2999, // $29.99
         description: t('subscription.singleModuleDesc', { module: getModuleDisplayName(module) }),
         isBest: false,
-        isSelected: selectedModules.includes(module),
-      })),
-      
-      // 3-module bundle option
-      {
-        id: 'bundle-3',
-        type: 'bundle_3',
-        modules: activeModules.slice(0, 3),
-        displayName: activeModules.length >= 3 ? t('subscription.bundle3Monthly') : null,
-        price: 799, // $7.99
-        priceAnnual: 7999, // $79.99
-        description: t('subscription.bundle3Desc'),
-        isBest: true,
-        isSelected: selectedModules.length === 3 && currentTier === 'bundle_3',
-        savings: getBundleSavings(billingPeriod, activeModules.slice(0, 3)),
-      },
-      
-      // 4-module bundle option
-      activeModules.length >= 4 ? {
-        id: 'bundle-4',
-        type: 'bundle_4',
-        modules: activeModules,
-        displayName: t('subscription.bundle4Monthly'),
-        price: 899, // $8.99
-        priceAnnual: 8999, // $89.99
-        description: t('subscription.bundle4Desc'),
-        isBest: true,
-        isSelected: selectedModules.length === 4 && currentTier === 'bundle_4',
-        savings: getBundleSavings(billingPeriod, activeModules),
-      } : null,
-    ].filter(Boolean);
+          isSelected: selectedModules.includes(module),
+        })),
+
+        // Founders bundle option (PipeKeeper + WhiskeyKeeper)
+        hasFoundersModules ? {
+          id: 'bundle-founders',
+          type: 'bundle_founders',
+          modules: ['pipekeeper', 'whiskeykeeper'],
+          displayName: 'Founders Bundle',
+          price: 499, // $4.99
+          priceAnnual: 4999, // $49.99
+          description: 'PipeKeeper + WhiskeyKeeper in one plan.',
+          isBest: true,
+          isSelected:
+            selectedModules.length === 2 &&
+            selectedModules.includes('pipekeeper') &&
+            selectedModules.includes('whiskeykeeper') &&
+            currentTier === 'bundle_2',
+          savings: getBundleSavings(billingPeriod, ['pipekeeper', 'whiskeykeeper']),
+        } : null,
+      ].filter(Boolean);
   }, [activeModules, selectedModules, currentTier, billingPeriod, t]);
 
   return (
