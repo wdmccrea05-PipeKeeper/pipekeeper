@@ -77,6 +77,15 @@ export default function ModulePricingTiers({
 
   return (
     <div className="space-y-6">
+      {currentEntitlements.length > 0 && (
+        <div
+          className="rounded-lg border px-4 py-3 text-sm"
+          style={{ background: 'rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.35)', color: '#A7F3D0' }}
+        >
+          Already subscribed? Choose an upgrade option to expand access without losing your current modules.
+        </div>
+      )}
+
       {/* Billing period selector */}
       <div className="flex justify-center gap-4">
         {['monthly', 'annual'].map(period => (
@@ -105,14 +114,19 @@ export default function ModulePricingTiers({
       {[{
         key: 'individual',
         title: 'Individual Modules',
+        subtitle: 'PipeKeeper Pro, WhiskeyKeeper Pro, and CigarKeeper Pro',
         options: pricingOptions.filter((option) => option.type === 'single'),
       }, {
         key: 'bundles',
         title: 'Bundles',
+        subtitle: 'Founders Bundle and Three Module Bundle',
         options: pricingOptions.filter((option) => option.type !== 'single'),
       }].map((section) => section.options.length > 0 && (
         <div key={section.key} className="space-y-3">
-          <h3 className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>{section.title}</h3>
+          <div>
+            <h3 className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>{section.title}</h3>
+            <p className="text-xs" style={{ color: 'rgba(224,216,200,0.55)' }}>{section.subtitle}</p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {section.options.map(option => {
           const price = billingPeriod === 'monthly' ? option.price : option.priceAnnual;
@@ -122,7 +136,7 @@ export default function ModulePricingTiers({
             <div
               key={option.id}
               className={cn(
-                'rounded-xl p-6 border-2 transition-all duration-200 cursor-pointer hover:shadow-xl',
+                'relative rounded-xl p-6 border-2 transition-all duration-200 cursor-pointer hover:shadow-xl',
                 option.isSelected
                   ? 'bg-gradient-to-br from-[#A35C5C]/20 to-[#8F4E4E]/20 border-[#A35C5C]'
                   : 'bg-[#2a1f18]/50 border-[#8b6239]/30 hover:border-[#A35C5C]/50'
@@ -135,14 +149,14 @@ export default function ModulePricingTiers({
                   });
                 }
               }}
-            >
-              {/* Best value badge */}
-              {option.isBest && (
-                <div className="absolute top-0 right-0 bg-[#D4A574] text-[#0f0b08] px-3 py-1 rounded-bl-lg text-xs font-bold flex items-center gap-1">
-                  <Zap className="w-3 h-3" />
-                  {option.type === 'bundle_founders' ? 'Popular' : 'Best Value'}
-                </div>
-              )}
+              >
+                {/* Best value badge */}
+                {option.isBest && (
+                  <div className="absolute top-0 right-0 bg-[#D4A574] text-[#0f0b08] px-3 py-1 rounded-bl-lg text-xs font-bold flex items-center gap-1">
+                    <Zap className="w-3 h-3" />
+                    {option.type === 'bundle_founders' ? 'Most Popular' : 'Best Value'}
+                  </div>
+                )}
 
               {/* Title */}
               <h3 className="text-lg font-bold mb-2" style={{ color: '#F5F1E7' }}>
@@ -199,10 +213,10 @@ export default function ModulePricingTiers({
                     ? 'bg-[#A35C5C] text-white cursor-default'
                     : 'bg-[#A35C5C]/80 text-white hover:bg-[#A35C5C] active:scale-95'
                 )}
-              >
-                {option.isSelected ? 'Selected' : 'Select Plan'}
-              </button>
-            </div>
+                >
+                  {option.isSelected ? 'Selected' : option.type === 'single' ? 'Choose Individual Plan' : 'Choose Bundle'}
+                </button>
+              </div>
           );
         })}
           </div>
