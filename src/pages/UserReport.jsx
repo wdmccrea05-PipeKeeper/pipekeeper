@@ -7,11 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Loader2, Users, TrendingUp, RefreshCw, Crown, UserX, Search,
-  ChevronDown, ChevronUp, Download,
+  ChevronDown, ChevronUp, Download, Info,
   DollarSign, Package, AlertTriangle, CalendarDays
 } from "lucide-react";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { buildDiagnosticsSampleGroups } from "@/lib/userReportDiagnostics";
 import {
@@ -24,11 +25,23 @@ import {
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
-function MetricCard({ label, value, sub, uncertain = false }) {
+function MetricCard({ label, value, sub, uncertain = false, tooltip }) {
   return (
     <div className="min-w-0 rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(180,140,75,0.18)' }}>
       <p className="text-xs font-semibold uppercase tracking-wider break-words flex items-center gap-1.5" style={{ color: 'rgba(224,216,200,0.65)' }}>
         {label}
+        {tooltip && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button type="button" className="inline-flex items-center justify-center">
+                <Info className="w-3 h-3 text-[#D4A574]/80" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-xs text-xs">
+              {tooltip}
+            </TooltipContent>
+          </Tooltip>
+        )}
         {uncertain && <AlertTriangle className="w-3 h-3 text-amber-400/70 shrink-0" />}
       </p>
       <p className={`text-2xl font-bold mt-1 ${uncertain ? 'opacity-70' : ''}`} style={{ color: '#F5F1E7' }}>{value}</p>
@@ -144,6 +157,11 @@ export default function UserReport() {
   const meta          = report?.meta          || {};
   const warnings      = report?.warnings      || {};
   const sanityChecks  = report?.sanityChecks  || {};
+  const layers        = report?.layers        || {};
+  const reconciliation = report?.reconciliation || {};
+  const layerAccounts = layers.accounts || {};
+  const layerBilling  = layers.billingContracts || {};
+  const layerModuleAccess = layers.moduleAccess || {};
 
   // Show the warnings panel when there are excluded-record counts.
   // warnings contains: missingPrice, missingInterval, missingPlatform, missingPlanKey, duplicatesRemoved.
@@ -243,10 +261,10 @@ export default function UserReport() {
   function exportCSV() {
     const metricRows = [
       [t("userReport.csv.metric"), t("userReport.csv.value")],
-      [t("userReport.csv.sections.accounts"), ''],
-      [t("userReport.accounts.totalAccounts"), accounts.total ?? 0],
-      [t("userReport.accounts.paidAccounts"), accounts.paid ?? 0],
-      [t("userReport.accounts.freeAccounts"), accounts.free ?? 0],
+      [t("userReport.csv.sections.layerA"), ''],
+      [t("userReport.accounts.totalAccounts"), layerAccounts.totalAccounts ?? accounts.total ?? 0],
+      [t("userReport.accounts.paidAccounts"), layerAccounts.paidAccounts ?? accounts.paid ?? 0],
+      [t("userReport.accounts.freeAccounts"), layerAccounts.freeAccounts ?? accounts.free ?? 0],
       [t("userReport.accounts.paidPct"), `${accounts.paidPct ?? 0}%`],
       [t("userReport.accounts.signupWeb"), accounts.signupSources?.web ?? 0],
       [t("userReport.accounts.signupApple"), accounts.signupSources?.apple ?? 0],
@@ -257,36 +275,42 @@ export default function UserReport() {
       [t("userReport.newAccounts.month"), accounts.newAccounts?.month ?? 0],
       [t("userReport.newAccounts.quarter"), accounts.newAccounts?.quarter ?? 0],
       [t("userReport.newAccounts.year"), accounts.newAccounts?.year ?? 0],
-      [t("userReport.csv.sections.subscriptions"), ''],
-      [t("userReport.subscriptions.totalActivePaid"), subscriptions.totalActivePaid ?? 0],
-      [t("userReport.subscriptions.monthlySubscriptions"), subscriptions.monthly ?? 0],
-      [t("userReport.subscriptions.annualSubscriptions"), subscriptions.annual ?? 0],
+      [t("userReport.csv.sections.layerB"), ''],
+      [t("userReport.subscriptions.totalActivePaid"), layerBilling.activeSubscriptions ?? subscriptions.totalActivePaid ?? 0],
+      [t("userReport.subscriptions.monthlySubscriptions"), layerBilling.monthlyContracts ?? subscriptions.monthly ?? 0],
+      [t("userReport.subscriptions.annualSubscriptions"), layerBilling.annualContracts ?? subscriptions.annual ?? 0],
+      [t("userReport.subscriptions.providerWeb"), layerBilling.providerCounts?.web ?? 0],
+      [t("userReport.subscriptions.providerApple"), layerBilling.providerCounts?.ios ?? 0],
+      [t("userReport.subscriptions.providerGoogle"), layerBilling.providerCounts?.google ?? 0],
       [t("userReport.subscriptions.pipekeeperSingles"), subscriptions.byProduct?.pipekeeper ?? 0],
       [t("userReport.subscriptions.whiskeykeeperSingles"), subscriptions.byProduct?.whiskeykeeper ?? 0],
       [t("userReport.subscriptions.cigarkeeperSingles"), subscriptions.byProduct?.cigarkeeper ?? 0],
       [t("userReport.subscriptions.winekeeperSingles"), subscriptions.byProduct?.winekeeper ?? 0],
       [t("userReport.subscriptions.bundles"), subscriptions.byProduct?.bundles ?? 0],
       [t("userReport.subscriptions.unknown"), subscriptions.byProduct?.unknown ?? 0],
-      [t("userReport.subscriptions.moduleEffectivePipekeeper"), subscriptions.byModuleEffective?.pipekeeper ?? 0],
-      [t("userReport.subscriptions.moduleEffectiveWhiskeykeeper"), subscriptions.byModuleEffective?.whiskeykeeper ?? 0],
-      [t("userReport.subscriptions.moduleEffectiveCigarkeeper"), subscriptions.byModuleEffective?.cigarkeeper ?? 0],
-      [t("userReport.subscriptions.moduleEffectiveWinekeeper"), subscriptions.byModuleEffective?.winekeeper ?? 0],
-      [t("userReport.csv.sections.runRate"), ''],
-      [t("userReport.runRate.mrr"), `$${(runRate.mrr ?? 0).toFixed(2)}`],
-      [t("userReport.runRate.arr"), `$${(runRate.arr ?? 0).toFixed(2)}`],
-      [t("userReport.csv.sections.renewalRevenue"), ''],
-      [t("userReport.renewals.weekCustomers"), renewalRevenue.week?.customers ?? 0],
-      [t("userReport.renewals.weekSubscriptions"), renewalRevenue.week?.subscriptions ?? 0],
-      [t("userReport.renewals.weekRevenue"), `$${(renewalRevenue.week?.revenue ?? 0).toFixed(2)}`],
-      [t("userReport.renewals.monthCustomers"), renewalRevenue.month?.customers ?? 0],
-      [t("userReport.renewals.monthSubscriptions"), renewalRevenue.month?.subscriptions ?? 0],
-      [t("userReport.renewals.monthRevenue"), `$${(renewalRevenue.month?.revenue ?? 0).toFixed(2)}`],
-      [t("userReport.renewals.quarterCustomers"), renewalRevenue.quarter?.customers ?? 0],
-      [t("userReport.renewals.quarterSubscriptions"), renewalRevenue.quarter?.subscriptions ?? 0],
-      [t("userReport.renewals.quarterRevenue"), `$${(renewalRevenue.quarter?.revenue ?? 0).toFixed(2)}`],
-      [t("userReport.renewals.yearCustomers"), renewalRevenue.year?.customers ?? 0],
-      [t("userReport.renewals.yearSubscriptions"), renewalRevenue.year?.subscriptions ?? 0],
-      [t("userReport.renewals.yearRevenue"), `$${(renewalRevenue.year?.revenue ?? 0).toFixed(2)}`],
+      [t("userReport.runRate.mrr"), `$${((layerBilling.mrr ?? runRate.mrr ?? 0)).toFixed(2)}`],
+      [t("userReport.runRate.arr"), `$${((layerBilling.arr ?? runRate.arr ?? 0)).toFixed(2)}`],
+      [t("userReport.renewals.weekCustomers"), layerBilling.renewalRevenue?.week?.customers ?? renewalRevenue.week?.customers ?? 0],
+      [t("userReport.renewals.weekSubscriptions"), layerBilling.renewalRevenue?.week?.subscriptions ?? renewalRevenue.week?.subscriptions ?? 0],
+      [t("userReport.renewals.weekRevenue"), `$${((layerBilling.renewalRevenue?.week?.revenue ?? renewalRevenue.week?.revenue ?? 0)).toFixed(2)}`],
+      [t("userReport.renewals.monthCustomers"), layerBilling.renewalRevenue?.month?.customers ?? renewalRevenue.month?.customers ?? 0],
+      [t("userReport.renewals.monthSubscriptions"), layerBilling.renewalRevenue?.month?.subscriptions ?? renewalRevenue.month?.subscriptions ?? 0],
+      [t("userReport.renewals.monthRevenue"), `$${((layerBilling.renewalRevenue?.month?.revenue ?? renewalRevenue.month?.revenue ?? 0)).toFixed(2)}`],
+      [t("userReport.renewals.quarterCustomers"), layerBilling.renewalRevenue?.quarter?.customers ?? renewalRevenue.quarter?.customers ?? 0],
+      [t("userReport.renewals.quarterSubscriptions"), layerBilling.renewalRevenue?.quarter?.subscriptions ?? renewalRevenue.quarter?.subscriptions ?? 0],
+      [t("userReport.renewals.quarterRevenue"), `$${((layerBilling.renewalRevenue?.quarter?.revenue ?? renewalRevenue.quarter?.revenue ?? 0)).toFixed(2)}`],
+      [t("userReport.renewals.yearCustomers"), layerBilling.renewalRevenue?.year?.customers ?? renewalRevenue.year?.customers ?? 0],
+      [t("userReport.renewals.yearSubscriptions"), layerBilling.renewalRevenue?.year?.subscriptions ?? renewalRevenue.year?.subscriptions ?? 0],
+      [t("userReport.renewals.yearRevenue"), `$${((layerBilling.renewalRevenue?.year?.revenue ?? renewalRevenue.year?.revenue ?? 0)).toFixed(2)}`],
+      [t("userReport.csv.sections.layerC"), ''],
+      [t("userReport.subscriptions.moduleEffectivePipekeeper"), layerModuleAccess.pipekeeperUsers ?? subscriptions.byModuleEffective?.pipekeeper ?? 0],
+      [t("userReport.subscriptions.moduleEffectiveWhiskeykeeper"), layerModuleAccess.whiskeykeeperUsers ?? subscriptions.byModuleEffective?.whiskeykeeper ?? 0],
+      [t("userReport.subscriptions.moduleEffectiveCigarkeeper"), layerModuleAccess.cigarkeeperUsers ?? subscriptions.byModuleEffective?.cigarkeeper ?? 0],
+      [t("userReport.subscriptions.moduleEffectiveWinekeeper"), layerModuleAccess.winekeeperUsers ?? subscriptions.byModuleEffective?.winekeeper ?? 0],
+      [t("userReport.subscriptions.bundleUsers"), layerModuleAccess.bundleUsers ?? 0],
+      [t("userReport.subscriptions.totalModuleEntitlements"), layerModuleAccess.totalModuleEntitlements ?? 0],
+      [t("userReport.csv.sections.quarantine"), ''],
+      [t("userReport.subscriptions.unknown"), layerBilling.unknownQuarantine?.total ?? subscriptions.byProduct?.unknown ?? 0],
       [t("userReport.csv.sections.excludedRecords"), ''],
       [t("userReport.warnings.missingPrice"), warnings.missingPrice ?? 0],
       [t("userReport.warnings.missingInterval"), warnings.missingInterval ?? 0],
@@ -380,6 +404,7 @@ export default function UserReport() {
   ];
 
   return (
+    <TooltipProvider>
     <div className="max-w-7xl mx-auto p-6">
       {/* ── Header ───────────────────────────────────────────────────────── */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -441,10 +466,21 @@ export default function UserReport() {
         <WarningsPanel warnings={warnings} />
       )}
 
+      <SectionCard title={t("userReport.layers.reconciliation")} icon={RefreshCw} accentColor="#F59E0B">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <MetricCard label={t("userReport.reconciliation.beforeActiveRows")} value={reconciliation.before?.activePaidRows ?? 0} tooltip={t("userReport.metricTooltips.beforeCounts")} />
+          <MetricCard label={t("userReport.reconciliation.beforeDedupedContracts")} value={reconciliation.before?.dedupedContracts ?? 0} tooltip={t("userReport.metricTooltips.beforeCounts")} />
+          <MetricCard label={t("userReport.reconciliation.afterPaidAccounts")} value={reconciliation.after?.paidAccountsFromEntitlements ?? 0} tooltip={t("userReport.metricTooltips.afterCounts")} />
+          <MetricCard label={t("userReport.reconciliation.afterResolvedContracts")} value={reconciliation.after?.resolvedBillingContracts ?? 0} tooltip={t("userReport.metricTooltips.afterCounts")} />
+          <MetricCard label={t("userReport.reconciliation.afterEligibleContracts")} value={reconciliation.after?.financialEligibleContracts ?? 0} tooltip={t("userReport.metricTooltips.afterCounts")} />
+          <MetricCard label={t("userReport.reconciliation.afterUnknownContracts")} value={reconciliation.after?.unknownPlanContracts ?? 0} tooltip={t("userReport.metricTooltips.afterCounts")} />
+        </div>
+      </SectionCard>
+
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 1 — ACCOUNTS
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title={t("userReport.accounts.sectionTitle")} icon={Users} accentColor="#60A5FA">
+      <SectionCard title={t("userReport.layers.layerA")} icon={Users} accentColor="#60A5FA">
         {/* Top-level counts */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Card
@@ -452,21 +488,21 @@ export default function UserReport() {
             onClick={() => { setViewFilter('all');  setShowPaidTable(true);  setShowFreeTable(true);  }}
           >
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Users className="w-4 h-4" />{t("userReport.accounts.totalAccounts")}</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.total ?? 0}</p></CardContent>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{layerAccounts.totalAccounts ?? accounts.total ?? 0}</p></CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg min-w-0 break-words whitespace-normal ${viewFilter === 'paid' ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('paid'); setShowPaidTable(true);  setShowFreeTable(false); }}
           >
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Crown className="w-4 h-4" />{t("userReport.accounts.paidAccounts")}</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.paid ?? 0}</p></CardContent>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{layerAccounts.paidAccounts ?? accounts.paid ?? 0}</p></CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg min-w-0 break-words whitespace-normal ${viewFilter === 'free' ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('free'); setShowPaidTable(false); setShowFreeTable(true);  }}
           >
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><UserX className="w-4 h-4" />{t("userReport.accounts.freeAccounts")}</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.free ?? 0}</p></CardContent>
+            <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{layerAccounts.freeAccounts ?? accounts.free ?? 0}</p></CardContent>
           </Card>
           <Card className="min-w-0 break-words whitespace-normal">
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><TrendingUp className="w-4 h-4" />{t("userReport.accounts.paidPct")}</CardTitle></CardHeader>
@@ -478,40 +514,57 @@ export default function UserReport() {
         <div>
            <p className="text-sm font-medium mb-2" style={{ color: '#E0D8C8' }}>{t("userReport.accounts.signupSources")}</p>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-             <MetricCard label={t("userReport.accounts.signupWeb")} value={accounts.signupSources?.web ?? 0} />
-             <MetricCard label={t("userReport.accounts.signupApple")} value={accounts.signupSources?.apple ?? 0} />
-             <MetricCard label={t("userReport.accounts.signupGooglePlay")} value={accounts.signupSources?.googlePlay ?? 0} />
-             <MetricCard label={t("userReport.accounts.signupUnknown")} value={accounts.signupSources?.unknown ?? 0} />
-           </div>
-         </div>
-       </SectionCard>
+             <MetricCard label={t("userReport.accounts.signupWeb")} value={accounts.signupSources?.web ?? 0} tooltip={t("userReport.metricTooltips.signupSource")} />
+             <MetricCard label={t("userReport.accounts.signupApple")} value={accounts.signupSources?.apple ?? 0} tooltip={t("userReport.metricTooltips.signupSource")} />
+             <MetricCard label={t("userReport.accounts.signupGooglePlay")} value={accounts.signupSources?.googlePlay ?? 0} tooltip={t("userReport.metricTooltips.signupSource")} />
+             <MetricCard label={t("userReport.accounts.signupUnknown")} value={accounts.signupSources?.unknown ?? 0} tooltip={t("userReport.metricTooltips.signupSource")} />
+            </div>
+          </div>
+        </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 2 — NEW ACCOUNTS
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title={t("userReport.newAccounts.sectionTitle")} icon={CalendarDays} accentColor="#818CF8">
+      <SectionCard title={t("userReport.layers.layerAAccountsGrowth")} icon={CalendarDays} accentColor="#818CF8">
         <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.7)' }}>
           {t("userReport.newAccounts.description")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
-          <MetricCard label={t("userReport.newAccounts.today")} value={accounts.newAccounts?.today ?? 0} />
-          <MetricCard label={t("userReport.newAccounts.week")} value={accounts.newAccounts?.week ?? 0} />
-          <MetricCard label={t("userReport.newAccounts.month")} value={accounts.newAccounts?.month ?? 0} />
-          <MetricCard label={t("userReport.newAccounts.quarter")} value={accounts.newAccounts?.quarter ?? 0} />
-          <MetricCard label={t("userReport.newAccounts.year")} value={accounts.newAccounts?.year ?? 0} />
+          <MetricCard label={t("userReport.newAccounts.today")} value={accounts.newAccounts?.today ?? 0} tooltip={t("userReport.metricTooltips.newAccounts")} />
+          <MetricCard label={t("userReport.newAccounts.week")} value={accounts.newAccounts?.week ?? 0} tooltip={t("userReport.metricTooltips.newAccounts")} />
+          <MetricCard label={t("userReport.newAccounts.month")} value={accounts.newAccounts?.month ?? 0} tooltip={t("userReport.metricTooltips.newAccounts")} />
+          <MetricCard label={t("userReport.newAccounts.quarter")} value={accounts.newAccounts?.quarter ?? 0} tooltip={t("userReport.metricTooltips.newAccounts")} />
+          <MetricCard label={t("userReport.newAccounts.year")} value={accounts.newAccounts?.year ?? 0} tooltip={t("userReport.metricTooltips.newAccounts")} />
+        </div>
+      </SectionCard>
+
+      <SectionCard title={t("userReport.layers.layerC")} icon={Package} accentColor="#38BDF8">
+        <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.7)' }}>
+          {t("userReport.subscriptions.moduleCoverageDescription")}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <MetricCard label={t("userReport.subscriptions.moduleEffectivePipekeeper")} value={layerModuleAccess.pipekeeperUsers ?? subscriptions.byModuleEffective?.pipekeeper ?? 0} tooltip={t("userReport.metricTooltips.moduleUsers")} />
+          <MetricCard label={t("userReport.subscriptions.moduleEffectiveWhiskeykeeper")} value={layerModuleAccess.whiskeykeeperUsers ?? subscriptions.byModuleEffective?.whiskeykeeper ?? 0} tooltip={t("userReport.metricTooltips.moduleUsers")} />
+          <MetricCard label={t("userReport.subscriptions.moduleEffectiveCigarkeeper")} value={layerModuleAccess.cigarkeeperUsers ?? subscriptions.byModuleEffective?.cigarkeeper ?? 0} tooltip={t("userReport.metricTooltips.moduleUsers")} />
+          <MetricCard label={t("userReport.subscriptions.moduleEffectiveWinekeeper")} value={layerModuleAccess.winekeeperUsers ?? subscriptions.byModuleEffective?.winekeeper ?? 0} tooltip={t("userReport.metricTooltips.moduleUsers")} />
+          <MetricCard label={t("userReport.subscriptions.bundleUsers")} value={layerModuleAccess.bundleUsers ?? 0} tooltip={t("userReport.metricTooltips.bundleUsers")} />
+          <MetricCard label={t("userReport.subscriptions.totalModuleEntitlements")} value={layerModuleAccess.totalModuleEntitlements ?? 0} tooltip={t("userReport.metricTooltips.totalModuleEntitlements")} />
         </div>
       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 3 — SUBSCRIPTIONS
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title={t("userReport.subscriptions.sectionTitle")} icon={Package} accentColor="#A78BFA">
+      <SectionCard title={t("userReport.layers.layerB")} icon={Package} accentColor="#A78BFA">
         {/* Total counts + billing interval visual */}
-        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 mb-4">
-          <MetricCard label={t("userReport.subscriptions.totalActivePaid")} value={subscriptions.totalActivePaid ?? 0} sub={t("userReport.subscriptions.totalActivePaidSub")} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <MetricCard label={t("userReport.subscriptions.totalActivePaid")} value={layerBilling.activeSubscriptions ?? subscriptions.totalActivePaid ?? 0} sub={t("userReport.subscriptions.totalActivePaidSub")} tooltip={t("userReport.metricTooltips.activeSubscriptions")} />
+          <MetricCard label={t("userReport.subscriptions.providerWeb")} value={layerBilling.providerCounts?.web ?? 0} tooltip={t("userReport.metricTooltips.providerCounts")} />
+          <MetricCard label={t("userReport.subscriptions.providerApple")} value={layerBilling.providerCounts?.ios ?? 0} tooltip={t("userReport.metricTooltips.providerCounts")} />
+          <MetricCard label={t("userReport.subscriptions.providerGoogle")} value={layerBilling.providerCounts?.google ?? 0} tooltip={t("userReport.metricTooltips.providerCounts")} />
         </div>
         <div className="mb-4">
-          <BillingIntervalBar monthly={subscriptions.monthly} annual={subscriptions.annual} t={t} />
+          <BillingIntervalBar monthly={layerBilling.monthlyContracts ?? subscriptions.monthly} annual={layerBilling.annualContracts ?? subscriptions.annual} t={t} />
         </div>
 
         <SectionDivider label={t("userReport.subscriptions.byProduct")} />
@@ -519,23 +572,19 @@ export default function UserReport() {
           {t("userReport.subscriptions.byProductDescription")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          <MetricCard label={t("userReport.subscriptions.pipekeeperSingles")} value={subscriptions.byProduct?.pipekeeper ?? 0} />
-          <MetricCard label={t("userReport.subscriptions.whiskeykeeperSingles")} value={subscriptions.byProduct?.whiskeykeeper ?? 0} />
-          <MetricCard label={t("userReport.subscriptions.cigarkeeperSingles")} value={subscriptions.byProduct?.cigarkeeper ?? 0} />
-          <MetricCard label={t("userReport.subscriptions.winekeeperSingles")} value={subscriptions.byProduct?.winekeeper ?? 0} />
-          <MetricCard label={t("userReport.subscriptions.bundles")} value={subscriptions.byProduct?.bundles ?? 0} />
-          <MetricCard label={t("userReport.subscriptions.unknown")} value={subscriptions.byProduct?.unknown ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.pipekeeperSingles")} value={subscriptions.byProduct?.pipekeeper ?? 0} tooltip={t("userReport.metricTooltips.knownProductCounts")} />
+          <MetricCard label={t("userReport.subscriptions.whiskeykeeperSingles")} value={subscriptions.byProduct?.whiskeykeeper ?? 0} tooltip={t("userReport.metricTooltips.knownProductCounts")} />
+          <MetricCard label={t("userReport.subscriptions.cigarkeeperSingles")} value={subscriptions.byProduct?.cigarkeeper ?? 0} tooltip={t("userReport.metricTooltips.knownProductCounts")} />
+          <MetricCard label={t("userReport.subscriptions.winekeeperSingles")} value={subscriptions.byProduct?.winekeeper ?? 0} tooltip={t("userReport.metricTooltips.knownProductCounts")} />
+          <MetricCard label={t("userReport.subscriptions.bundles")} value={subscriptions.byProduct?.bundles ?? 0} tooltip={t("userReport.metricTooltips.knownProductCounts")} />
         </div>
 
-        <SectionDivider label={t("userReport.subscriptions.moduleCoverage")} />
-        <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.7)' }}>
-          {t("userReport.subscriptions.moduleCoverageDescription")}
-        </p>
+        <SectionDivider label={t("userReport.subscriptions.quarantineSection")} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricCard label={t("userReport.subscriptions.moduleEffectivePipekeeper")} value={subscriptions.byModuleEffective?.pipekeeper ?? 0} />
-          <MetricCard label={t("userReport.subscriptions.moduleEffectiveWhiskeykeeper")} value={subscriptions.byModuleEffective?.whiskeykeeper ?? 0} />
-          <MetricCard label={t("userReport.subscriptions.moduleEffectiveCigarkeeper")} value={subscriptions.byModuleEffective?.cigarkeeper ?? 0} />
-          <MetricCard label={t("userReport.subscriptions.moduleEffectiveWinekeeper")} value={subscriptions.byModuleEffective?.winekeeper ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.unknown")} value={layerBilling.unknownQuarantine?.total ?? subscriptions.byProduct?.unknown ?? 0} tooltip={t("userReport.metricTooltips.unknownQuarantine")} />
+          <MetricCard label={t("userReport.subscriptions.quarantineMissingPlan")} value={layerBilling.unknownQuarantine?.byReason?.missingPlanKey ?? 0} tooltip={t("userReport.metricTooltips.unknownQuarantine")} />
+          <MetricCard label={t("userReport.subscriptions.quarantineUnknownProduct")} value={layerBilling.unknownQuarantine?.byReason?.unknownProduct ?? 0} tooltip={t("userReport.metricTooltips.unknownQuarantine")} />
+          <MetricCard label={t("userReport.subscriptions.quarantineUnmappedPlan")} value={layerBilling.unknownQuarantine?.byReason?.unmappedPlanKey ?? 0} tooltip={t("userReport.metricTooltips.unknownQuarantine")} />
         </div>
       </SectionCard>
 
@@ -582,20 +631,20 @@ export default function UserReport() {
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 4 — CURRENT RUN RATE
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title={t("userReport.runRate.sectionTitle")} icon={DollarSign} accentColor="#34D399">
+      <SectionCard title={t("userReport.layers.layerBRunRate")} icon={DollarSign} accentColor="#34D399">
         <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.7)' }}>
           {t("userReport.runRate.description")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <MetricCard label={t("userReport.runRate.mrr")} value={`$${(runRate.mrr ?? 0).toFixed(2)}`} sub={t("userReport.runRate.mrrSub")} uncertain={hasDataWarning} />
-          <MetricCard label={t("userReport.runRate.arr")} value={`$${(runRate.arr ?? 0).toFixed(2)}`} sub={t("userReport.runRate.arrSub")} uncertain={hasDataWarning} />
+          <MetricCard label={t("userReport.runRate.mrr")} value={`$${(layerBilling.mrr ?? runRate.mrr ?? 0).toFixed(2)}`} sub={t("userReport.runRate.mrrSub")} uncertain={hasDataWarning} tooltip={t("userReport.metricTooltips.mrr")} />
+          <MetricCard label={t("userReport.runRate.arr")} value={`$${(layerBilling.arr ?? runRate.arr ?? 0).toFixed(2)}`} sub={t("userReport.runRate.arrSub")} uncertain={hasDataWarning} tooltip={t("userReport.metricTooltips.arr")} />
         </div>
       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 5 — RENEWAL REVENUE
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title={t("userReport.renewals.sectionTitle")} icon={TrendingUp} accentColor="#F59E0B">
+      <SectionCard title={t("userReport.layers.layerBRenewals")} icon={TrendingUp} accentColor="#F59E0B">
         <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.7)' }}>
           {t("userReport.renewals.description")}
         </p>
@@ -611,7 +660,7 @@ export default function UserReport() {
             </div>
           </div>
           {(() => {
-            const pd = renewalRevenue[renewalsPeriod] || {};
+            const pd = layerBilling.renewalRevenue?.[renewalsPeriod] || renewalRevenue[renewalsPeriod] || {};
             return (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <MetricCard label={t("userReport.renewals.renewingCustomers")} value={pd.customers ?? 0} sub={t("userReport.renewals.uniqueAccounts")} />
@@ -624,10 +673,10 @@ export default function UserReport() {
 
         <SectionDivider label={t("userReport.renewals.allPeriods")} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricCard label={t("userReport.renewals.weekRevenue")} value={`$${(renewalRevenue.week?.revenue ?? 0).toFixed(2)}`} />
-          <MetricCard label={t("userReport.renewals.monthRevenue")} value={`$${(renewalRevenue.month?.revenue ?? 0).toFixed(2)}`} />
-          <MetricCard label={t("userReport.renewals.quarterRevenue")} value={`$${(renewalRevenue.quarter?.revenue ?? 0).toFixed(2)}`} />
-          <MetricCard label={t("userReport.renewals.yearRevenue")} value={`$${(renewalRevenue.year?.revenue ?? 0).toFixed(2)}`} />
+          <MetricCard label={t("userReport.renewals.weekRevenue")} value={`$${((layerBilling.renewalRevenue?.week?.revenue ?? renewalRevenue.week?.revenue ?? 0)).toFixed(2)}`} tooltip={t("userReport.metricTooltips.renewalRevenue")} />
+          <MetricCard label={t("userReport.renewals.monthRevenue")} value={`$${((layerBilling.renewalRevenue?.month?.revenue ?? renewalRevenue.month?.revenue ?? 0)).toFixed(2)}`} tooltip={t("userReport.metricTooltips.renewalRevenue")} />
+          <MetricCard label={t("userReport.renewals.quarterRevenue")} value={`$${((layerBilling.renewalRevenue?.quarter?.revenue ?? renewalRevenue.quarter?.revenue ?? 0)).toFixed(2)}`} tooltip={t("userReport.metricTooltips.renewalRevenue")} />
+          <MetricCard label={t("userReport.renewals.yearRevenue")} value={`$${((layerBilling.renewalRevenue?.year?.revenue ?? renewalRevenue.year?.revenue ?? 0)).toFixed(2)}`} tooltip={t("userReport.metricTooltips.renewalRevenue")} />
         </div>
       </SectionCard>
 
@@ -758,6 +807,7 @@ export default function UserReport() {
         </Collapsible>
       )}
     </div>
+    </TooltipProvider>
   );
 }
 
