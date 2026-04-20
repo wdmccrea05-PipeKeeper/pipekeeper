@@ -125,32 +125,32 @@ export default function QuickLaunch() {
   const pipeActions = useMemo(
     () => [
       {
-        label: t("quickActions.addPipe", "Add Pipe"),
+        label: t("quickActions.addPipe"),
         icon: "/branding/pipe-icon.png?v=3",
         path: "/Pipes?action=add",
         accent: "#D4A574",
       },
       {
-        label: t("quickActions.addBlend", "Add Blend"),
+        label: t("quickActions.addBlend"),
         icon: Leaf,
         path: "/Tobacco?action=add",
         accent: "#7C9A6D",
       },
       {
-        label: t("quickActions.identifyPipe", "Identify Pipe"),
+        label: t("quickActions.identifyPipe"),
         icon: Sparkles,
         path: "/PipeKeeper?action=identify",
         accent: "#F0C58A",
       },
       {
-        label: t("quickActions.logSession", "Log Session"),
+        label: t("quickActions.logSession"),
         icon: BookOpen,
         path: "/PipeKeeper?action=log-smoke",
         accent: "#C87941",
         onClick: hasDualSessionModules ? () => setShowLogSelector(true) : undefined,
       },
       {
-        label: t("nav.insights", "Insights"),
+        label: t("nav.insights"),
         icon: TrendingUp,
         path: "/Insights",
         accent: "#8B5CF6",
@@ -162,22 +162,22 @@ export default function QuickLaunch() {
   const whiskeyActions = useMemo(
     () => [
       {
-        label: t("quickActions.addWhiskey", "Add Whiskey"),
+        label: t("whiskeykeeper.addBottle"),
         icon: BottleQuickIcon,
         path: "/Whiskey?action=add",
         accent: "#D4A574",
       },
       {
         label: hasDualSessionModules
-          ? t("quickActions.logSession", "Log Session")
-          : t("quickActions.logTasting", "Log Tasting"),
+          ? t("quickActions.logSession")
+          : t("quickActions.logTasting"),
         icon: BookOpen,
         path: "/Tastings?action=log",
         accent: "#C87941",
         onClick: hasDualSessionModules ? () => setShowLogSelector(true) : undefined,
       },
       {
-        label: t("nav.insights", "Insights"),
+        label: t("nav.insights"),
         icon: TrendingUp,
         path: "/WhiskeyInsights",
         accent: "#8B5CF6",
@@ -194,12 +194,12 @@ export default function QuickLaunch() {
             className="text-sm uppercase tracking-[0.12em] font-semibold"
             style={{ color: "rgba(180, 140, 75, 0.8)" }}
           >
-            {t("hub.quickLaunch", "Quick Launch")}
+            {t("hub.quickLaunch")}
           </h2>
 
           {pipekeeperEnabled ? (
             <div>
-              <SectionTitle label={t("nav.pipekeeper", "PipeKeeper")} />
+              <SectionTitle label={t("nav.pipekeeper")} />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {pipeActions.map((action) => (
                   <ActionCard
@@ -215,7 +215,7 @@ export default function QuickLaunch() {
 
           {whiskeyEnabled ? (
             <div>
-              <SectionTitle label={t("nav.whiskeykeeper", "WhiskeyKeeper")} />
+              <SectionTitle label={t("nav.whiskeykeeper")} />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {whiskeyActions.map((action) => (
                   <ActionCard

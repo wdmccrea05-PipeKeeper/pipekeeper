@@ -101,12 +101,12 @@ export default function CollectionIntelligenceHighlights({ pipes = [], blends = 
         className="text-sm uppercase tracking-[0.12em] font-semibold"
         style={{ color: 'rgba(180, 140, 75, 0.8)' }}
       >
-        {t('hub.collectionHighlights', 'Collection Highlights')}
+        {t('hub.collectionHighlights')}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {mostUsedPipe && (
           <HighlightCard
-            label={t('hub.mostUsedPipe', 'Most Used Pipe')}
+            label={t('hub.mostUsedPipe')}
             title={mostUsedPipe.name || '—'}
             photo={resolveItemPhoto(mostUsedPipe)}
             onClick={() => navigate(`/PipeDetail?id=${encodeURIComponent(mostUsedPipe.id)}`)}
@@ -114,7 +114,7 @@ export default function CollectionIntelligenceHighlights({ pipes = [], blends = 
         )}
         {favoriteBlend && (
           <HighlightCard
-            label={t('hub.topBlend', 'Top Blend')}
+            label={t('hub.topBlend')}
             title={favoriteBlend.name || '—'}
             photo={resolveItemPhoto(favoriteBlend)}
             onClick={() => navigate(`/TobaccoDetail?id=${encodeURIComponent(favoriteBlend.id)}`)}
@@ -122,7 +122,7 @@ export default function CollectionIntelligenceHighlights({ pipes = [], blends = 
         )}
         {mostTastedBottle && (
           <HighlightCard
-            label={t('hub.mostTasted', 'Most Tasted')}
+            label={t('hub.mostTasted')}
             title={mostTastedBottle.name || '—'}
             photo={resolveItemPhoto(mostTastedBottle)}
             onClick={() => navigate(`/BottleDetail?id=${encodeURIComponent(mostTastedBottle.id)}`)}

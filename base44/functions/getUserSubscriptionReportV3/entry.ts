@@ -549,14 +549,17 @@ function inferPlanKeyFromResolvedModules(
   if (normalizedModules.length !== 1) return null;
 
   const module = normalizedModules[0];
+  if (module === 'unknown') return null;
   const tierHint = norm(tierHintRaw || '');
   const normalizedAmount = Number.isFinite(Number(amount)) ? parseFloat(Number(amount).toFixed(2)) : null;
   const isLegacy = normalizedAmount === 1.99 || normalizedAmount === 19.99;
   const isPro = normalizedAmount === 2.99 || normalizedAmount === 29.99;
 
-  if (tierHint === 'premium' || isLegacy) return `${module}_premium_${interval}`;
+  if (tierHint === 'premium' || tierHint === 'legacy' || isLegacy) return `${module}_premium_${interval}`;
   if (tierHint === 'pro' || isPro) return `${module}_pro_${interval}`;
-  return null;
+  // Safe historical fallback: modern canonical plan key when module+interval are known
+  // but tier/amount hints are absent.
+  return `${module}_pro_${interval}`;
 }
 
 // ─── Platform normalization ───────────────────────────────────────────────────
@@ -640,8 +643,8 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     null;
 
   const recoveredAmount = directAmount || renewalAmountRecovered || null;
-  const price: number | null = recoveredAmount ?? (catalog ? catalog.price : null);
-  const renewalAmount = price;
+  let price: number | null = recoveredAmount ?? (catalog ? catalog.price : null);
+  let renewalAmount = price;
   const amountInference = price ? inferFromAmount(price) : null;
 
   // ── Interval resolution: direct fields → metadata → catalog → amount inference → span ──
@@ -656,6 +659,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   // ── Module resolution (never defaults to 'pipekeeper') ───────────────────
   let modules: string[];
   let productLabel: string;
+  const primaryModule = normalizeModuleToken(raw.primary_module || '');
 
   if (catalog) {
     // 1. Authoritative catalog match via planKey
@@ -665,15 +669,15 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     // 2. modules_csv stored field
     const csvModules = String(raw.modules_csv || '')
       .split(',')
-      .map((m: string) => m.trim().toLowerCase())
+      .map((m: string) => normalizeModuleToken(m))
       .filter(Boolean);
 
     if (csvModules.length > 0) {
       modules = csvModules;
       productLabel = buildProductLabel(modules, modules.length > 1 ? 'Bundle' : modules[0]);
-    } else if (norm(raw.primary_module || '')) {
+    } else if (primaryModule) {
       // 3. primary_module stored field
-      modules = [norm(raw.primary_module)];
+      modules = [primaryModule];
       productLabel = buildProductLabel(modules, modules[0]);
     } else if (metadataModules.length > 0) {
       // 4. metadata module/app hints
@@ -687,7 +691,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
       // 6. Truly unresolvable — mark as unknown, NOT pipekeeper
       const userModules = String(user?.paid_modules_csv || '')
         .split(',')
-        .map((m: string) => norm(m || ''))
+        .map((m: string) => normalizeModuleToken(m))
         .filter(Boolean);
       if (userModules.length > 0) {
         modules = [...new Set(userModules)];
@@ -709,6 +713,10 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     if (catalog) {
       modules = catalog.modules;
       productLabel = buildProductLabel(catalog.modules, catalog.label);
+      if (price === null) {
+        price = catalog.price;
+        renewalAmount = catalog.price;
+      }
     }
   }
 
