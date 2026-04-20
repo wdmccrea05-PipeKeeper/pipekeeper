@@ -4,7 +4,7 @@
  * and fails safely with a hard timeout instead of spinning forever.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -48,6 +48,12 @@ export default function SubscriptionSuccessFlow() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
+  const moduleDisplayName = useCallback((moduleKey) => {
+    if (!moduleKey) return t('subscription.moduleFallback');
+    const translated = t(`modules.${moduleKey}`);
+    return translated === `modules.${moduleKey}` ? toDisplayName(moduleKey) : translated;
+  }, [t]);
+
   const [phase, setPhase] = useState('loading');
   const [error, setError] = useState(null);
   const [accessSummary, setAccessSummary] = useState(null);
@@ -77,7 +83,7 @@ export default function SubscriptionSuccessFlow() {
               syncResponse?.data?.status === 'no_subscription' ||
               syncResponse?.data?.status === 'no_customer'
             ) {
-              throw new Error('Subscription not found yet. Please wait a moment and try again.');
+              throw new Error(t('subscription.syncNoSubscriptionYet'));
             }
 
             if (syncResponse?.data?.error) {
@@ -123,10 +129,10 @@ export default function SubscriptionSuccessFlow() {
             const hasPaidTier = rebuiltAccess?.tier === 'pro';
 
             if (!hasPaidTier) {
-              throw new Error(
-                'Your payment was received, but access is still updating. Please retry once or reopen the app in a moment.'
-              );
-            }
+                throw new Error(
+                  t('subscription.syncAccessUpdating')
+                );
+              }
 
             return {
               ...rebuiltAccess,
@@ -137,7 +143,7 @@ export default function SubscriptionSuccessFlow() {
             };
           })(),
           SYNC_TIMEOUT_MS,
-          'Subscription activation is taking longer than expected. Please retry once or reopen the app in a moment.'
+          t('subscription.syncTimeout')
         );
 
         if (!mounted || !result) return;
@@ -149,7 +155,7 @@ export default function SubscriptionSuccessFlow() {
         const msg =
           err instanceof Error
             ? err.message
-            : 'Subscription activation failed. Please try again.';
+            : t('subscription.syncFailed');
         setError(msg);
         setPhase('error');
         console.error('[SubscriptionSuccessFlow] Sync failed:', err);
@@ -168,49 +174,49 @@ export default function SubscriptionSuccessFlow() {
   const unlockedMessage = useMemo(() => {
     const planKey = String(accessSummary?.planKey || '');
     if (planKey.startsWith('three_module_bundle')) {
-      return 'Three Module Bundle unlocked: PipeKeeper, WhiskeyKeeper, and CigarKeeper are now active.';
+      return t('subscription.unlockedThreeBundle');
     }
     if (planKey.startsWith('founders_bundle')) {
-      return 'Founders Bundle unlocked: PipeKeeper and WhiskeyKeeper are now active.';
+      return t('subscription.unlockedFoundersBundle');
     }
     if (modules.length === 1) {
-      return `${toDisplayName(modules[0])} is now unlocked.`;
+      return t('subscription.unlockedSingleModule', { module: moduleDisplayName(modules[0]) });
     }
     if (modules.length > 1) {
-      return 'Your selected modules are now unlocked and ready.';
+      return t('subscription.unlockedSelectedModules');
     }
-    return 'Your purchase is confirmed and access is updating now.';
-  }, [accessSummary?.planKey, modules]);
+    return t('subscription.purchaseConfirmedUpdating');
+  }, [accessSummary?.planKey, modules, t]);
 
   const nextActions = useMemo(() => {
     const actions = [];
     if (primaryModule && MODULE_PAGE[primaryModule]) {
       actions.push({
-        label: `Open ${toDisplayName(primaryModule)}`,
+        label: t('subscription.openModuleAction', { module: moduleDisplayName(primaryModule) }),
         onClick: () => navigate(MODULE_PAGE[primaryModule]),
       });
     }
 
     actions.push(
       {
-        label: 'Import Records',
+        label: t('subscription.importRecordsAction'),
         onClick: () => navigate('/Import'),
       },
       {
-        label: 'Start Collection',
+        label: t('subscription.startCollectionAction'),
         onClick: () => navigate('/CollectionHub'),
       }
     );
 
     return actions.slice(0, 3);
-  }, [navigate, primaryModule]);
+  }, [moduleDisplayName, navigate, primaryModule, t]);
 
   if (phase === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
         <div className="text-center">
           <Loader className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: '#D4A574' }} />
-          <p style={{ color: '#E0D8C8' }}>{t('subscription.activating', 'Activating your subscription...')}</p>
+          <p style={{ color: '#E0D8C8' }}>{t('subscription.activating')}</p>
         </div>
       </div>
     );
@@ -228,10 +234,10 @@ export default function SubscriptionSuccessFlow() {
         >
           <AlertCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#D45C5C' }} />
           <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold mb-2">
-            {t('subscription.activationDelayedTitle', 'Activation Taking Longer')}
+            {t('subscription.activationDelayedTitle')}
           </h2>
           <p style={{ color: '#E0D8C8', marginBottom: '24px' }} className="text-sm mb-6">
-            {error || t('subscription.activationDelayedBody', 'Please try again or contact support if the issue persists.')}
+            {error || t('subscription.activationDelayedBody')}
           </p>
           <div className="flex gap-3">
             <Button
@@ -239,10 +245,10 @@ export default function SubscriptionSuccessFlow() {
               onClick={() => setAttempt((prev) => prev + 1)}
               className="flex-1"
             >
-              {t('common.retry', 'Retry')}
+              {t('common.retry')}
             </Button>
             <Button onClick={() => navigate(targetUrl)} className="flex-1">
-              {t('subscription.continueAnyway', 'Continue Anyway')}
+              {t('subscription.continueAnyway')}
             </Button>
           </div>
         </div>
@@ -262,11 +268,11 @@ export default function SubscriptionSuccessFlow() {
         <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: '#2e7d5c' }} />
 
         <h1 style={{ color: '#F5F1E7' }} className="text-3xl font-bold mb-2">
-          {t('subscription.welcome', 'Welcome!')}
+          {t('subscription.welcome')}
         </h1>
 
         <p style={{ color: '#E0D8C8' }} className="text-sm mb-6">
-          {t('subscription.nowActive', 'Your subscription is now active. Your modules are ready to use.')}
+          {t('subscription.nowActive')}
         </p>
 
         <div
@@ -282,7 +288,7 @@ export default function SubscriptionSuccessFlow() {
               style={{ color: '#8b6239' }}
               className="text-xs font-semibold uppercase tracking-wider mb-3"
             >
-              {t('subscription.activeAccess', 'Active Access')}
+              {t('subscription.activeAccess')}
             </p>
             <div className="space-y-2">
               {modules.map((m) => (
@@ -294,7 +300,7 @@ export default function SubscriptionSuccessFlow() {
                     color: '#D4A574',
                   }}
                 >
-                  {toDisplayName(m)}
+                  {moduleDisplayName(m)}
                 </div>
               ))}
             </div>
@@ -309,7 +315,7 @@ export default function SubscriptionSuccessFlow() {
             color: '#F5F1E7',
           }}
         >
-          {t('subscription.exploreCollections', 'Explore Collections')}
+          {t('subscription.exploreCollections')}
         </Button>
 
         <div className="mt-3 grid grid-cols-1 gap-2">

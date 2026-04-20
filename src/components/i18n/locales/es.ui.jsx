@@ -3,6 +3,18 @@
 // Priority: main es.jsx wins — these only fill gaps.
 
 const esUI = {
+  userReport: {
+    userTable: {
+      effectivePlatform: "Plataforma efectiva",
+      unknownValue: "Desconocido",
+      primaryBillingProduct: "Producto de facturación principal: {product}",
+      primaryBillingStatus: "Estado de facturación principal: {status}",
+      effectiveBillingIntervals: "Intervalos de facturación efectivos: {intervals}",
+      effectivePlatforms: "Plataformas efectivas: {platforms}",
+      billingContextCsv: "Producto principal: {primaryProduct}; Estado principal: {primaryStatus}; Intervalos efectivos: {intervalSummary}; Plataformas efectivas: {platformSummary}",
+      renewalContextCsv: "{renewalCount} suscripción(es) en renovación; Próxima renovación: {nextRenewalDate}; Renovación total: ${totalAmount}",
+    },
+  },
   featureGate: {
     collectionOptimizationName: "Optimización de colección",
     collectionOptimizationDesc: "Obtén un análisis impulsado por IA de tu colección con recomendaciones de especialización, identificación de brechas y planificación de escenarios con acceso Pro o Premium heredado.",
@@ -428,6 +440,39 @@ const esUI = {
     appleFeaturePro6: "Exportar e informes (CSV / PDF)",
     appleFeaturePro7: "Herramientas de optimización de colección",
     appleFeaturePro8: "Acceso anticipado a nuevas funciones avanzadas",
+    syncNoSubscriptionYet: "Suscripción aún no encontrada. Espera un momento e inténtalo de nuevo.",
+    syncAccessUpdating: "Recibimos tu pago, pero el acceso todavía se está actualizando. Reintenta una vez o vuelve a abrir la app en unos momentos.",
+    syncTimeout: "La activación de la suscripción está tardando más de lo esperado. Reintenta una vez o vuelve a abrir la app en unos momentos.",
+    syncFailed: "La activación de la suscripción falló. Inténtalo de nuevo.",
+    moduleFallback: "Módulo",
+    unlockedThreeBundle: "Paquete de tres módulos desbloqueado: PipeKeeper, WhiskeyKeeper y CigarKeeper ya están activos.",
+    unlockedFoundersBundle: "Paquete Founders desbloqueado: PipeKeeper y WhiskeyKeeper ya están activos.",
+    unlockedSingleModule: "{module} ya está desbloqueado.",
+    unlockedSelectedModules: "Tus módulos seleccionados ya están desbloqueados y listos.",
+    purchaseConfirmedUpdating: "Tu compra está confirmada y el acceso se está actualizando.",
+    openModuleAction: "Abrir {module}",
+    importRecordsAction: "Importar registros",
+    startCollectionAction: "Comenzar colección",
+  },
+  share: {
+    backHome: "Volver al inicio",
+    startOwnCollection: "Comienza tu propia colección",
+    openPipeKeeper: "Abrir PipeKeeper",
+    poweredByPipeKeeper: "Compartido desde PipeKeeper",
+    error: {
+      notFound: {
+        title: "Compartido no disponible",
+        message: "No se pudo cargar este registro compartido.",
+      },
+      recordNotFound: {
+        title: "Registro no disponible",
+        message: "El registro compartido ya no existe o no está disponible.",
+      },
+      loadFailed: {
+        title: "No se pudo cargar el compartido",
+        message: "No pudimos cargar este registro compartido. Inténtalo de nuevo más tarde.",
+      },
+    },
   },
   insights: {
     reportsTooltip: "Genera resúmenes exportables de tu colección para referencia o documentación.",
