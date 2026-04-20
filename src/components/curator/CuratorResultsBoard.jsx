@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react';
 import CuratorRecommendationGroup from '@/components/curator/CuratorRecommendationGroup';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const SCOPE_OPTIONS = [
-  { key: 'all', label: 'All' },
-  { key: 'pipe', label: 'Pipe' },
-  { key: 'tobacco', label: 'Tobacco' },
-  { key: 'whiskey', label: 'Whiskey' },
-  { key: 'cigar', label: 'Cigar' },
+  { key: 'all', labelKey: 'curator.scope.all' },
+  { key: 'pipe', labelKey: 'curator.scope.pipe' },
+  { key: 'tobacco', labelKey: 'curator.scope.tobacco' },
+  { key: 'whiskey', labelKey: 'curator.scope.whiskey' },
+  { key: 'cigar', labelKey: 'curator.scope.cigar' },
 ];
 
 function normalizeScope(value) {
@@ -132,6 +133,7 @@ function SectionHeader({ title, count }) {
 }
 
 export default function CuratorResultsBoard(props) {
+  const { t } = useTranslation();
   const {
     sections: rawSections,
     recommendationSections,
@@ -145,6 +147,14 @@ export default function CuratorResultsBoard(props) {
   } = props;
 
   const sectionsInput = rawSections || recommendationSections || [];
+  const scopeOptions = useMemo(
+    () =>
+      SCOPE_OPTIONS.map((scope) => ({
+        ...scope,
+        label: t(scope.labelKey),
+      })),
+    [t]
+  );
 
   // Internal scope state — used when parent doesn't control it
   const [internalScope, setInternalScope] = React.useState('all');
@@ -183,7 +193,7 @@ export default function CuratorResultsBoard(props) {
     <div key={boardKey} className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-3">
-          {SCOPE_OPTIONS.map((scope) => (
+          {scopeOptions.map((scope) => (
             <ScopePill
               key={scope.key}
               label={scope.label}
@@ -206,27 +216,27 @@ export default function CuratorResultsBoard(props) {
           disabled={isRefreshing}
         >
           <span className={isRefreshing ? 'animate-spin' : ''}>⟳</span>
-          Refresh
+          {t('curator.refresh')}
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <SummaryTile
           value={stats.autoFixable}
-          label="Auto-Fixable"
-          meta="apply in one click"
+          label={t('curator.summary.autoFixable')}
+          meta={t('curator.summary.autoFixableMeta')}
           tone="success"
         />
         <SummaryTile
           value={stats.reviewNeeded}
-          label="Review Needed"
-          meta="require your input"
+          label={t('curator.summary.reviewNeeded')}
+          meta={t('curator.summary.reviewNeededMeta')}
           tone="warning"
         />
         <SummaryTile
           value={stats.totalRecords}
-          label="Total Records"
-          meta="across all issues"
+          label={t('curator.summary.totalRecords')}
+          meta={t('curator.summary.totalRecordsMeta')}
         />
       </div>
 
@@ -238,7 +248,7 @@ export default function CuratorResultsBoard(props) {
           const sectionKey = section.id || section.category || section.title || String(sectionIdx);
           return (
             <section key={sectionKey}>
-              <SectionHeader title={section.title || 'Recommendations'} count={sectionCount} />
+              <SectionHeader title={section.title || t('curator.recommendations')} count={sectionCount} />
               <div className="space-y-4">
                 {recs.map((recommendation) => (
                   <CuratorRecommendationGroup

@@ -11,9 +11,9 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
   const navigate = useNavigate();
 
   const items = [
-    { page: "Whiskey", label: t("whiskey.bottles", "Bottles"), semanticIcon: "bottle" },
-    { page: "Tastings", label: t("whiskey.tastings", "Tastings"), icon: BookOpen },
-    { page: "WhiskeyInsights", label: t("nav.insights", "Insights"), icon: TrendingUp },
+    { page: "Whiskey", label: t("whiskey.bottles"), semanticIcon: "bottle" },
+    { page: "Tastings", label: t("whiskey.tastings"), icon: BookOpen },
+    { page: "WhiskeyInsights", label: t("nav.insights"), icon: TrendingUp },
   ];
 
   return (
@@ -56,33 +56,33 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('whiskey.addBottle', 'Add Bottle')}
-          aria-label={t('whiskey.addBottle', 'Add Bottle')}
+          title={t('whiskey.addBottle')}
+          aria-label={t('whiskey.addBottle')}
         >
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('whiskey.addBottle', 'Add Bottle')}</span>
+          <span className="hidden sm:inline">{t('whiskey.addBottle')}</span>
         </Button>
         <Button
           onClick={() => navigate('/Tastings')}
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('whiskey.logTasting', 'Log Tasting')}
-          aria-label={t('whiskey.logTasting', 'Log Tasting')}
+          title={t('whiskey.logTasting')}
+          aria-label={t('whiskey.logTasting')}
         >
           <BookOpen className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('whiskey.logTasting', 'Log Tasting')}</span>
+          <span className="hidden sm:inline">{t('whiskey.logTasting')}</span>
         </Button>
         <Button
           onClick={() => navigate('/Import?type=whiskeykeeper_bottles')}
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('import.bulkImport', 'Bulk Import')}
-          aria-label={t('import.bulkImport', 'Bulk Import')}
+          title={t('import.bulkImport')}
+          aria-label={t('import.bulkImport')}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('import.bulkImport', 'Bulk Import')}</span>
+          <span className="hidden sm:inline">{t('import.bulkImport')}</span>
         </Button>
       </div>
     </div>

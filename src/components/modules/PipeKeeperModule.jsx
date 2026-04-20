@@ -147,7 +147,7 @@ export default function PipeKeeperModule() {
     {
       key: 'identifyPipe',
       Icon: Sparkles,
-      label: t('quickActions.identifyPipe', 'Identify Pipe'),
+      label: t('quickActions.identifyPipe'),
       onClick: () => setShowIdentifier(true)
     },
     {
@@ -165,7 +165,7 @@ export default function PipeKeeperModule() {
     {
       key: 'wantList',
       Icon: List,
-      label: t('nav.wantList', 'Want List'),
+      label: t('nav.wantList'),
       onClick: () => navigate(createPageUrl('WantList'))
     }
   ];
@@ -178,7 +178,7 @@ export default function PipeKeeperModule() {
           <div className="flex items-center gap-3 mb-2">
             <img
               src="/branding/pipekeeper-logo.png?v=1"
-              alt="PipeKeeper"
+              alt={t('pipekeeper.title')}
               className="w-11 h-11 object-contain"
               style={{
                 filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.28))',
@@ -187,15 +187,15 @@ export default function PipeKeeperModule() {
               draggable={false}
             />
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
-              {t('pipekeeper.title') || 'PipeKeeper'}
+              {t('pipekeeper.title')}
             </h1>
           </div>
           <p className="text-base sm:pl-14" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
-            {t('pipekeeper.description') || 'Organize and explore your pipe and tobacco collection'}
+            {t('pipekeeper.description')}
           </p>
         </div>
         <Button onClick={() => navigate('/CollectionHub')} variant="ghost" className="text-sm text-[#E0D8C8] hover:bg-white/10">
-           {t('common.backToHub') || 'Back to Hub'}
+           {t('common.backToHub')}
         </Button>
       </div>
 
@@ -206,15 +206,15 @@ export default function PipeKeeperModule() {
       {pipeLimit.atLimit && !hasPaid && !user?.pipekeeper_paid && (
         <FreeTierUpgradePrompt
           moduleId="pipekeeper"
-          title="Pipe Collection Limit Reached"
-          description={`You've reached the ${pipeLimit.limit} pipe limit on your free tier. Upgrade to PipeKeeper Pro for unlimited storage.`}
+          title={t('pipekeeper.pipeLimitReachedTitle')}
+          description={t('pipekeeper.pipeLimitReachedDescription', { limit: pipeLimit.limit })}
         />
       )}
       {blendLimit.atLimit && !hasPaid && !user?.pipekeeper_paid && (
         <FreeTierUpgradePrompt
           moduleId="pipekeeper"
-          title="Blend Collection Limit Reached"
-          description={`You've reached the ${blendLimit.limit} blend limit on your free tier. Upgrade to PipeKeeper Pro for unlimited storage.`}
+          title={t('pipekeeper.blendLimitReachedTitle')}
+          description={t('pipekeeper.blendLimitReachedDescription', { limit: blendLimit.limit })}
         />
       )}
 
@@ -225,12 +225,12 @@ export default function PipeKeeperModule() {
         boxShadow: '0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)'
       }}>
         <h2 className="text-sm uppercase tracking-[0.12em] font-semibold mb-4" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
-          {t('home.collectionSummary') || 'Collection Summary'}
+          {t('home.collectionSummary')}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('home.totalValue') || 'Total Value'}
+              {t('home.totalValue')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
               {hideValues ? '—' : formatFromBase(Math.round(totalPipeValue))}
@@ -238,7 +238,7 @@ export default function PipeKeeperModule() {
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('home.pipesInCollection') || 'Pipes'}
+              {t('home.pipesInCollection')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
               {hideCollectionCounts ? '—' : pipes.length}
@@ -246,7 +246,7 @@ export default function PipeKeeperModule() {
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('home.tobaccoBlends') || 'Blends'}
+              {t('home.tobaccoBlends')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#5A7C5A' }}>
               {hideCollectionCounts ? '—' : blends.length}
@@ -254,7 +254,7 @@ export default function PipeKeeperModule() {
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('home.cellared') || 'Cellared'}
+              {t('home.cellared')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#B4824B' }}>
               {formatWeight(totalCellaredOz, 'oz')}
@@ -270,12 +270,12 @@ export default function PipeKeeperModule() {
       {(mostSmokedPipe || mostValuablePipe || favoriteBlends.length > 0) && (
         <div>
           <h2 className="text-sm uppercase tracking-[0.12em] font-semibold mb-4" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
-            {t('home.highlights') || 'Collection Highlights'}
+            {t('home.highlights')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {mostSmokedPipe && (
               <CatalogPlate
-                title={t('home.mostSmoked') || 'Most Smoked'}
+                title={t('home.mostSmoked')}
                 value={mostSmokedPipe.name}
                 subtitle={mostSmokedPipe.maker}
                 heroImage={mostSmokedPipe.photos?.[0]}
@@ -286,7 +286,7 @@ export default function PipeKeeperModule() {
             )}
             {mostValuablePipe && !hideValues && (
               <CatalogPlate
-                title={t('home.mostValuable') || 'Most Valuable'}
+                title={t('home.mostValuable')}
                 value={formatFromBase(mostValuablePipe.estimated_value)}
                 subtitle={mostValuablePipe.name}
                 heroImage={mostValuablePipe.photos?.[0]}
@@ -297,7 +297,7 @@ export default function PipeKeeperModule() {
             )}
             {favoriteBlends.length > 0 && (
               <CatalogPlate
-                title={t('home.favoriteBlend') || 'Favorite Blend'}
+                title={t('home.favoriteBlend')}
                 value={favoriteBlends[0].name}
                 subtitle={favoriteBlends[0].manufacturer}
                 heroImage={favoriteBlends[0].logo || favoriteBlends[0].photo}
@@ -317,7 +317,7 @@ export default function PipeKeeperModule() {
             <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-[#E0D8C8] flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-[#F0C58A]" /> AI Pipe Identifier
+                  <Sparkles className="w-5 h-5 text-[#F0C58A]" /> {t('quickPipeIdentifier.title')}
                 </h2>
                 <button onClick={() => setShowIdentifier(false)} className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] text-2xl">×</button>
               </div>

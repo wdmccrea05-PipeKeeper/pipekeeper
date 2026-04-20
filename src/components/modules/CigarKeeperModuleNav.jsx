@@ -12,8 +12,8 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
   const [addCigarOpen, setAddCigarOpen] = useState(false);
 
   const items = [
-    { page: 'Cigars', label: t('cigars.cigars', 'Cigars'), Icon: Cigarette },
-    { page: 'CigarInsights', label: t('nav.insights', 'Insights'), Icon: TrendingUp },
+    { page: 'Cigars', label: t('cigars.cigars'), Icon: Cigarette },
+    { page: 'CigarInsights', label: t('nav.insights'), Icon: TrendingUp },
   ];
 
   return (
@@ -47,33 +47,33 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('cigars.addCigar', 'Add Cigar')}
-          aria-label={t('cigars.addCigar', 'Add Cigar')}
+          title={t('cigars.addCigar')}
+          aria-label={t('cigars.addCigar')}
         >
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('cigars.addCigar', 'Add Cigar')}</span>
+          <span className="hidden sm:inline">{t('cigars.addCigar')}</span>
         </Button>
         <Button
           onClick={typeof onLogSession === 'function' ? onLogSession : () => navigate('/CigarKeeper')}
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('cigars.logSession', 'Log Session')}
-          aria-label={t('cigars.logSession', 'Log Session')}
+          title={t('cigars.logSession')}
+          aria-label={t('cigars.logSession')}
         >
           <BookOpen className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('cigars.logSession', 'Log Session')}</span>
+          <span className="hidden sm:inline">{t('cigars.logSession')}</span>
         </Button>
         <Button
           onClick={() => navigate('/Import?type=cigarkeeper_cigars')}
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('import.bulkImport', 'Bulk Import')}
-          aria-label={t('import.bulkImport', 'Bulk Import')}
+          title={t('import.bulkImport')}
+          aria-label={t('import.bulkImport')}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('import.bulkImport', 'Bulk Import')}</span>
+          <span className="hidden sm:inline">{t('import.bulkImport')}</span>
         </Button>
       </div>
 

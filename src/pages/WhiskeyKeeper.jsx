@@ -60,31 +60,31 @@ function WhiskeyKeeperInner() {
     {
       key: 'addBottle',
       Icon: Plus,
-      label: t('whiskey.addBottle', 'Add Bottle'),
+      label: t('whiskey.addBottle'),
       onClick: () => setShowAddModal(true)
     },
     {
       key: 'browseCollection',
       Icon: Glasses,
-      label: t('whiskey.yourCollection', 'Browse Collection'),
+      label: t('whiskey.yourCollection'),
       onClick: () => navigate('/Whiskey')
     },
     {
       key: 'logTasting',
       Icon: Flame,
-      label: t('quickActions.logTasting', 'Log Tasting'),
+      label: t('quickActions.logTasting'),
       onClick: () => navigate('/Tastings')
     },
     {
       key: 'insights',
       Icon: BarChart3,
-      label: t('nav.insights', 'Insights'),
+      label: t('nav.insights'),
       onClick: () => navigate('/WhiskeyInsights')
     },
     {
       key: 'curator',
       iconImage: CURATOR_ICON,
-      label: t('quickActions.collectionCurator', 'Collection Curator'),
+      label: t('quickActions.collectionCurator'),
       onClick: () => navigate('/Curator')
     }
   ];
@@ -111,12 +111,12 @@ function WhiskeyKeeperInner() {
           className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
           style={{ color: 'rgba(180, 140, 75, 0.8)' }}
         >
-          {t('home.collectionSummary', 'Collection Summary')}
+          {t('home.collectionSummary')}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskey.collectionValue', 'Total Value')}
+              {t('whiskey.collectionValue')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
               {formatFromBase(Math.round(whiskeyMetrics.collection_value))}
@@ -124,7 +124,7 @@ function WhiskeyKeeperInner() {
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskey.bottleTypes', 'Bottle Types')}
+              {t('whiskey.bottleTypes')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
               {whiskeyMetrics.bottle_types}
@@ -132,7 +132,7 @@ function WhiskeyKeeperInner() {
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskey.inventory', 'Inventory')}
+              {t('whiskey.inventory')}
             </p>
             <p className="text-2xl font-bold" style={{ color: '#B4824B' }}>
               {whiskeyMetrics.total_bottles}
@@ -149,7 +149,7 @@ function WhiskeyKeeperInner() {
             className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
             style={{ color: 'rgba(180, 140, 75, 0.8)' }}
           >
-            {t('home.highlights', 'Collection Highlights')}
+            {t('home.highlights')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {highlights.map((highlight) => (
