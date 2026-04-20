@@ -148,6 +148,12 @@ function persistNormalizedLanguage(code) {
     window.dispatchEvent(new CustomEvent('pk:language-changed', { detail: code }));
   } catch {}
 }
+
+export function setLanguage(languageCode) {
+  const normalized = normalizeLng(languageCode || 'en');
+  persistNormalizedLanguage(normalized);
+  return normalized;
+}
 function useLang(languageOverride = null) {
   const [lang, setLang] = useState(() => readLanguage(languageOverride));
   useEffect(() => {
@@ -201,4 +207,4 @@ export const SUPPORTED_LANGS = [
   { code: 'de', label: 'Deutsch' }, { code: 'it', label: 'Italiano' }, { code: 'pt-BR', label: 'Português (BR)' },
   { code: 'nl', label: 'Nederlands' }, { code: 'pl', label: 'Polski' }, { code: 'ja', label: '日本語' }, { code: 'zh-Hans', label: '中文 (简体)' },
 ];
-export default { useTranslation, translate, SUPPORTED_LANGS };
+export default { useTranslation, translate, SUPPORTED_LANGS, setLanguage };

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useTranslation, SUPPORTED_LANGS } from "@/components/i18n/safeTranslation";
+import { useTranslation, SUPPORTED_LANGS, setLanguage } from "@/components/i18n/safeTranslation";
 import { normalizeLng } from "@/components/i18n/normalizeLng";
 import {
   Select,
@@ -18,12 +18,8 @@ export default function LanguageSwitcher({ className = "" }) {
   }, [lang]);
 
   const handleLanguageChange = (code) => {
-    const normalized = normalizeLng(code);
     try {
-      localStorage.setItem("pk_lang", normalized);
-      document.documentElement.lang = normalized;
-      window.dispatchEvent(new CustomEvent("pk:language-changed", { detail: normalized }));
-      window.location.reload();
+      setLanguage(normalizeLng(code));
     } catch (error) {
       console.error("[LanguageSwitcher] Failed to change language:", error);
     }

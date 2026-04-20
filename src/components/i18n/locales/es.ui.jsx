@@ -4,6 +4,19 @@
 
 const esUI = {
   userReport: {
+    warningPanel: {
+      unresolvedSourceFailures: "Fallas de fuente sin resolver",
+      missingPriceReasons: "Precio faltante por fuente fallida",
+      missingIntervalReasons: "Intervalo faltante por fuente fallida",
+      unknownPlanReasons: "Clave de plan desconocida por fuente fallida",
+      items: {
+        unknownProduct: "{count} suscripción(es) de pago aún sin mapear a un producto/módulo conocido",
+        excludedCoreRecords: "{count} suscripción(es) de pago excluidas de métricas clave (falta precio y/o intervalo)",
+      },
+    },
+    warnings: {
+      excludedCoreRecords: "Registros centrales excluidos",
+    },
     userTable: {
       effectivePlatform: "Plataforma efectiva",
       unknownValue: "Desconocido",

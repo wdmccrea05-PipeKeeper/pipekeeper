@@ -155,6 +155,8 @@ export default function UserReport() {
       (warnings.missingInterval > 0) ||
       (warnings.missingPlatform > 0) ||
       (warnings.missingPlanKey  > 0) ||
+      (warnings.unknownProduct  > 0) ||
+      (warnings.excludedCoreRecords > 0) ||
       (warnings.duplicatesRemoved > 0)
     );
 
@@ -291,6 +293,7 @@ export default function UserReport() {
       [t("userReport.warnings.missingPlatform"), warnings.missingPlatform ?? 0],
       [t("userReport.warnings.missingPlanKey"), warnings.missingPlanKey ?? 0],
       [t("userReport.warnings.unknownProduct"), warnings.unknownProduct ?? 0],
+      [t("userReport.warnings.excludedCoreRecords"), warnings.excludedCoreRecords ?? 0],
       [t("userReport.warnings.duplicatesRemoved"), warnings.duplicatesRemoved ?? 0],
       [t("userReport.csv.sections.diagnostics"), ''],
       [t("userReport.diagnostics.multipleActiveSubscriptions"), diagnostics.usersWithMultipleActiveSubscriptions ?? 0],
@@ -770,8 +773,20 @@ function WarningsPanel({ warnings }) {
     warnings.missingInterval > 0 && t("userReport.warningPanel.items.missingInterval", { count: warnings.missingInterval }),
     warnings.missingPlatform > 0 && t("userReport.warningPanel.items.missingPlatform", { count: warnings.missingPlatform }),
     warnings.missingPlanKey > 0 && t("userReport.warningPanel.items.missingPlanKey", { count: warnings.missingPlanKey }),
+    warnings.unknownProduct > 0 && t("userReport.warningPanel.items.unknownProduct", { count: warnings.unknownProduct }),
+    warnings.excludedCoreRecords > 0 && t("userReport.warningPanel.items.excludedCoreRecords", { count: warnings.excludedCoreRecords }),
     warnings.duplicatesRemoved > 0 && t("userReport.warningPanel.items.duplicatesRemoved", { count: warnings.duplicatesRemoved }),
   ].filter(Boolean);
+  const unresolvedReasonGroups = [
+    { key: 'missingPriceBySource', label: t("userReport.warningPanel.missingPriceReasons") },
+    { key: 'missingIntervalBySource', label: t("userReport.warningPanel.missingIntervalReasons") },
+    { key: 'unknownPlanKeyBySource', label: t("userReport.warningPanel.unknownPlanReasons") },
+  ]
+    .map((group) => {
+      const rows = Object.entries(warnings?.unresolvedReasons?.[group.key] || {});
+      return rows.length > 0 ? { ...group, rows } : null;
+    })
+    .filter(Boolean);
 
   const totalCount = dataQualityItems.length;
 
@@ -804,6 +819,27 @@ function WarningsPanel({ warnings }) {
                   <div key={i} className="flex items-start gap-2">
                     <span className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-400/50 shrink-0" />
                     <p className="text-sm text-amber-200/75">{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {unresolvedReasonGroups.length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs font-semibold text-amber-300/70 uppercase tracking-wider mb-2">
+                {t("userReport.warningPanel.unresolvedSourceFailures")}
+              </p>
+              <div className="space-y-2">
+                {unresolvedReasonGroups.map((group) => (
+                  <div key={group.key} className="rounded-md border border-amber-500/20 bg-amber-900/10 p-2">
+                    <p className="text-xs text-amber-200/75 mb-1">{group.label}</p>
+                    <div className="space-y-0.5">
+                      {group.rows.slice(0, 4).map(([source, count]) => (
+                        <p key={`${group.key}-${source}`} className="text-xs text-amber-200/60 font-mono">
+                          {source}: {count}
+                        </p>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
