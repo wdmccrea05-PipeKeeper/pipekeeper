@@ -571,6 +571,7 @@ function inferPlanKeyFromResolvedModules(modules, billingInterval, amount, tierH
   if (normalizedModules.length !== 1) return null;
 
   const module = normalizedModules[0];
+  if (module === 'unknown') return null;
   const tierHint = norm(tierHintRaw);
   const normalizedAmount = Number.isFinite(Number(amount)) ? parseFloat(Number(amount).toFixed(2)) : null;
   const isLegacy = normalizedAmount === 1.99 || normalizedAmount === 19.99;
@@ -717,8 +718,8 @@ export function normalizeSub(raw, user = null) {
     parsePositiveNumber(metadata?.price?.unit_amount, { treatAsCents: true }) ||
     null;
   const recoveredAmount = directAmount || renewalAmount || null;
-  const inferredPrice = !directAmount && !!catalog;
-  const price = recoveredAmount ?? (catalog?.price ?? null);
+  let inferredPrice = !directAmount && !renewalAmount && !!catalog;
+  let price = recoveredAmount ?? (catalog?.price ?? null);
 
   // Amount inference (for interval and bundle-module resolution when catalog/fields are missing)
   const amountInference = price ? inferFromAmount(price) : null;
@@ -734,6 +735,7 @@ export function normalizeSub(raw, user = null) {
 
   // Module(s) resolution — NEVER defaults to 'pipekeeper'
   let modules;
+  const primaryModule = normalizeModuleToken(raw.primary_module || '');
   if (catalog) {
     // 1. Authoritative catalog match via planKey
     modules = catalog.modules;
@@ -745,9 +747,9 @@ export function normalizeSub(raw, user = null) {
       .filter(Boolean);
     if (csvModules.length > 0) {
       modules = csvModules;
-    } else if (normalizeModuleToken(raw.primary_module || '')) {
+    } else if (primaryModule) {
       // 3. primary_module stored field
-      modules = [normalizeModuleToken(raw.primary_module)];
+      modules = [primaryModule];
     } else if (metadataModules.length > 0) {
       // 4. metadata module/app hints
       modules = metadataModules;
@@ -778,6 +780,10 @@ export function normalizeSub(raw, user = null) {
     catalog = lookupPlanCatalog(planKey);
     if (catalog) {
       modules = catalog.modules;
+      if (price === null) {
+        price = catalog.price;
+        inferredPrice = true;
+      }
     }
   }
   const moduleResolved = modules[0];

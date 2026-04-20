@@ -316,6 +316,7 @@ describe('normalizeSub', () => {
     });
     const sub = normalizeSub(raw);
     expect(sub.planKey).toBe('pipekeeper_pro_monthly');
+    expect(sub.price).toBe(2.99);
     expect(sub.fieldResolution.sources.planKey).toBe('recovered:modules_interval_backfill');
   });
 

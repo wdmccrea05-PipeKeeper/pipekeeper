@@ -549,6 +549,7 @@ function inferPlanKeyFromResolvedModules(
   if (normalizedModules.length !== 1) return null;
 
   const module = normalizedModules[0];
+  if (module === 'unknown') return null;
   const tierHint = norm(tierHintRaw || '');
   const normalizedAmount = Number.isFinite(Number(amount)) ? parseFloat(Number(amount).toFixed(2)) : null;
   const isLegacy = normalizedAmount === 1.99 || normalizedAmount === 19.99;
@@ -642,8 +643,8 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     null;
 
   const recoveredAmount = directAmount || renewalAmountRecovered || null;
-  const price: number | null = recoveredAmount ?? (catalog ? catalog.price : null);
-  const renewalAmount = price;
+  let price: number | null = recoveredAmount ?? (catalog ? catalog.price : null);
+  let renewalAmount = price;
   const amountInference = price ? inferFromAmount(price) : null;
 
   // ── Interval resolution: direct fields → metadata → catalog → amount inference → span ──
@@ -658,6 +659,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   // ── Module resolution (never defaults to 'pipekeeper') ───────────────────
   let modules: string[];
   let productLabel: string;
+  const primaryModule = normalizeModuleToken(raw.primary_module || '');
 
   if (catalog) {
     // 1. Authoritative catalog match via planKey
@@ -673,9 +675,9 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     if (csvModules.length > 0) {
       modules = csvModules;
       productLabel = buildProductLabel(modules, modules.length > 1 ? 'Bundle' : modules[0]);
-    } else if (normalizeModuleToken(raw.primary_module || '')) {
+    } else if (primaryModule) {
       // 3. primary_module stored field
-      modules = [normalizeModuleToken(raw.primary_module || '') as string];
+      modules = [primaryModule];
       productLabel = buildProductLabel(modules, modules[0]);
     } else if (metadataModules.length > 0) {
       // 4. metadata module/app hints
@@ -711,6 +713,10 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     if (catalog) {
       modules = catalog.modules;
       productLabel = buildProductLabel(catalog.modules, catalog.label);
+      if (price === null) {
+        price = catalog.price;
+        renewalAmount = catalog.price;
+      }
     }
   }
 
