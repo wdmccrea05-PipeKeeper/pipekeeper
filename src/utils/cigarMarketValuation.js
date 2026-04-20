@@ -3,6 +3,8 @@ function toNum(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
 function roundMoney(value) {
   if (!Number.isFinite(value)) return null;
   return Math.round(value * 100) / 100;
@@ -61,7 +63,7 @@ function inferObservationUnitPrice(observation, cigar) {
   const observedDate = parseDate(observation?.observed_date);
   let recency = 0.45;
   if (observedDate) {
-    const ageDays = (Date.now() - observedDate.getTime()) / (1000 * 60 * 60 * 24);
+    const ageDays = (Date.now() - observedDate.getTime()) / MS_PER_DAY;
     if (ageDays <= 60) recency = 1;
     else if (ageDays <= 180) recency = 0.8;
     else if (ageDays <= 365) recency = 0.6;

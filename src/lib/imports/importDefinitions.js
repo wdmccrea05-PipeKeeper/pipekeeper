@@ -275,7 +275,7 @@ function coerceCigarPayload(row, extras) {
   const errors = [];
   if (!row.line && !row.vitola) errors.push('line or vitola is required');
   if (!purchasePrice.ok) errors.push('purchase_price is invalid');
-  if (!estimatedUnitValue.ok) errors.push('estimated_value is invalid');
+  if (!estimatedUnitValue.ok) errors.push('estimated_unit_value is invalid');
   if (!estimatedTotalValue.ok) errors.push('estimated_total_value is invalid');
   if (!replacementCostEstimate.ok) errors.push('replacement_cost_estimate is invalid');
   if (!manualOverride.ok) errors.push('manual_valuation_override is invalid');
@@ -347,6 +347,7 @@ function coerceCigarPayload(row, extras) {
     purchase_date: purchaseDate.value,
     purchase_price: purchasePrice.value,
     purchase_source: row.purchase_source || undefined,
+    // Keep legacy estimated_value aligned with estimated_unit_value for backward compatibility.
     estimated_value: estimatedUnitValue.value,
     estimated_unit_value: estimatedUnitValue.value,
     estimated_total_value: estimatedTotalValue.value,
