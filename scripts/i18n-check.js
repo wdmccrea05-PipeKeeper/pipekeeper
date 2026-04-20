@@ -315,6 +315,16 @@ function scanFile(filePath) {
 function main() {
   const failOnFindings = process.argv.includes('--fail-on-findings');
 
+  // --max-findings=N  Fail only when the total finding count exceeds N.
+  // This lets CI gate on regressions without requiring full zero-tolerance
+  // completion before the cleanup migration is done.
+  let maxFindings = Infinity;
+  const maxArg = process.argv.find((a) => a.startsWith('--max-findings='));
+  if (maxArg) {
+    const parsed = parseInt(maxArg.split('=')[1], 10);
+    if (!isNaN(parsed) && parsed >= 0) maxFindings = parsed;
+  }
+
   const allFiles = [];
   for (const scanRoot of SCAN_ROOTS) {
     collectFiles(scanRoot, allFiles);
@@ -377,6 +387,18 @@ function main() {
   console.log('     src/components/i18n/auditConfig.json.jsx → properNounAllowlist.');
   console.log('─'.repeat(60));
   console.log();
+
+  const exceedsMax = Number.isFinite(maxFindings) && allFindings.length > maxFindings;
+  if (exceedsMax) {
+    console.error(`❌  Findings budget exceeded: ${allFindings.length} findings > max allowed ${maxFindings}.`);
+    console.error('   Reduce hardcoded strings before merging.');
+    process.exit(1);
+  }
+  if (Number.isFinite(maxFindings)) {
+    const remaining = maxFindings - allFindings.length;
+    console.log(`ℹ️   Findings budget: ${allFindings.length}/${maxFindings} used (${remaining} remaining before gate triggers).`);
+    console.log('   Reduce this number over time by replacing hardcoded strings with t() calls.\n');
+  }
 
   if (failOnFindings || errorCount > 0) {
     process.exit(1);
