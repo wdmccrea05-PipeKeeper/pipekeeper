@@ -648,7 +648,7 @@ Deno.serve(async (req) => {
         !isPaid ? 'none' :
         statusValues.length === 1 ? statusValues[0] :
         statusValues.length > 1 ? 'mixed' :
-        'active';
+        'unknown';
       const effectivePlatform =
         platforms.length === 1 ? platforms[0] :
         platforms.length > 1 ? 'mixed' :

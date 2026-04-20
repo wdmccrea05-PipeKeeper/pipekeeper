@@ -4,7 +4,7 @@
  * and fails safely with a hard timeout instead of spinning forever.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -48,11 +48,11 @@ export default function SubscriptionSuccessFlow() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
-  const moduleDisplayName = (moduleKey) => {
+  const moduleDisplayName = useCallback((moduleKey) => {
     if (!moduleKey) return t('subscription.moduleFallback');
     const translated = t(`modules.${moduleKey}`);
     return translated === `modules.${moduleKey}` ? toDisplayName(moduleKey) : translated;
-  };
+  }, [t]);
 
   const [phase, setPhase] = useState('loading');
   const [error, setError] = useState(null);

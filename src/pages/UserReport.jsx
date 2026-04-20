@@ -103,7 +103,7 @@ function SectionDivider({ label }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function UserReport() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const [viewFilter, setViewFilter]           = useState('all');
   const [searchQuery, setSearchQuery]         = useState('');
@@ -327,8 +327,8 @@ export default function UserReport() {
         buildUserReportPlanSummary(u, t),
         (u.modules || []).join(', '),
         buildUserReportBillingContextText(u, t),
-        buildUserReportRenewalContextText(u, t),
-        u.created_date ? formatUserReportDate(u.created_date) : '',
+        buildUserReportRenewalContextText(u, t, lang),
+        u.created_date ? formatUserReportDate(u.created_date, '-', lang) : '',
         u.platform || t("userReport.userTable.unknownValue"),
       ]);
     });
@@ -700,7 +700,7 @@ export default function UserReport() {
                             {t("userReport.userTable.multiPlanRenewalCount", { count: user.renewal_subscription_count ?? 0 })}
                           </p>
                           <p className="text-xs text-[#E0D8C8]/70">
-                              {t("userReport.userTable.nextRenewalAt", { date: nextDate ? formatUserReportDate(nextDate) : t("userReport.userTable.noRenewalDate") })}
+                              {t("userReport.userTable.nextRenewalAt", { date: nextDate ? formatUserReportDate(nextDate, '-', lang) : t("userReport.userTable.noRenewalDate") })}
                           </p>
                           <p className="text-xs text-[#86EFAC]">
                             {t("userReport.userTable.totalRenewalAmount", { amount: totalAmount })}
@@ -708,7 +708,7 @@ export default function UserReport() {
                         </div>
                       );
                     }
-                    if (col === 'created_date')        return user.created_date ? formatUserReportDate(user.created_date) : '-';
+                    if (col === 'created_date')        return user.created_date ? formatUserReportDate(user.created_date, '-', lang) : '-';
                     return user[col] || '-';
                   }}
                 />

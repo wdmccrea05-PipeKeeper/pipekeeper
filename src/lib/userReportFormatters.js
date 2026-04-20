@@ -1,7 +1,7 @@
-export function formatUserReportDate(value, fallback = '-') {
+export function formatUserReportDate(value, fallback = '-', locale) {
   if (!value) return fallback;
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? fallback : parsed.toLocaleDateString();
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed.toLocaleDateString(locale);
 }
 
 export function formatUserReportList(values, fallback = '-') {
@@ -30,9 +30,9 @@ export function buildUserReportBillingContextText(user, t) {
   });
 }
 
-export function buildUserReportRenewalContextText(user, t) {
+export function buildUserReportRenewalContextText(user, t, locale) {
   if (!user || (user.active_subscription_count ?? 0) === 0) return '-';
-  const nextRenewalDate = formatUserReportDate(user.renewal_next_date || user.renewal_date);
+  const nextRenewalDate = formatUserReportDate(user.renewal_next_date || user.renewal_date, '-', locale);
   const totalAmount = (user.renewal_total_amount ?? user.renewal_amount ?? 0).toFixed(2);
   const renewalCount = user.renewal_subscription_count ?? 0;
   return t('userReport.userTable.renewalContextCsv', {
