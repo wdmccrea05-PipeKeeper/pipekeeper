@@ -78,21 +78,19 @@ export function getCigarValuationSnapshot(cigar) {
 
   const totalValue = hasCalculatedTotal
     ? Math.max(0, n(valuation.estimatedTotalValue))
-    : (explicitInput || !valuation?.isMissing ? 0 : null);
+    : null;
 
   let unitValue = null;
   if (hasCalculatedUnit) {
     unitValue = Math.max(0, n(valuation.estimatedUnitValue));
   } else if (totalValue != null && qty > 0) {
     unitValue = totalValue / qty;
-  } else if (explicitInput || !valuation?.isMissing) {
-    unitValue = 0;
   }
 
   return {
     totalValue,
     unitValue,
-    hasValuation: totalValue != null,
+    hasValuation: totalValue != null || unitValue != null || Boolean(explicitInput),
   };
 }
 

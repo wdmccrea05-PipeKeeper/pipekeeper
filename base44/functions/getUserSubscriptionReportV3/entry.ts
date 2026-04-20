@@ -10,6 +10,7 @@ type PlatformKind = 'ios' | 'web' | 'google';
 
 interface NormalizedSub {
   rawId: string;
+  recordPath: string;
   userId: string;
   userEmail: string;
   isPaid: boolean;
@@ -847,6 +848,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
 
   return {
     rawId:          String(raw.id || raw.stripe_subscription_id || ''),
+    recordPath:     `Subscription/${String(raw.id || raw.stripe_subscription_id || 'unknown')}`,
     userId:         String(raw.user_id || ''),
     userEmail:      norm(raw.user_email || ''),
     isPaid:         isActivePaid(raw),
@@ -1105,6 +1107,7 @@ Deno.serve(async (req) => {
       if ((sub.price === null || sub.billingInterval === null || sub.planKey === null) && unresolvedSamples.length < MAX_SAMPLE_SIZE) {
         unresolvedSamples.push({
           rawId: sub.rawId,
+          recordPath: sub.recordPath || `Subscription/${sub.rawId || 'unknown'}`,
           userId: sub.userId,
           userEmail: sub.userEmail,
           missingFields: [
