@@ -376,21 +376,21 @@ export default function SubscriptionFull() {
 
     // Full coverage users (3-module bundle or all 3 modules) — already have everything
     if (subscriptionState.hasFullCoverage) {
-      const bundleName = planLabel || '3-Module Bundle';
+      const bundleName = planLabel || t("subscriptionFull.threeModuleBundle");
       return (
         <div className="w-full max-w-3xl mx-auto p-4 space-y-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mx-auto"
             style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37", border: "1px solid rgba(212,175,55,0.3)" }}>
             <Crown className="w-4 h-4" />
-            {bundleName} Active
+            {bundleName} {t("subscriptionFull.activeSuffix")}
           </div>
           <h1 className="text-2xl font-bold text-[#e8d5b7]">
             {t("subscriptionFull.alreadySubscribed")}
           </h1>
           <p className="text-[#e8d5b7]/70">
             {subscriptionState.isThreeModuleBundle
-              ? "All three modules — PipeKeeper, WhiskeyKeeper, and CigarKeeper — are unlocked."
-              : "You have full access to all three modules in your collection."}
+              ? t("subscriptionFull.allThreeUnlocked")
+              : t("subscriptionFull.fullAccessThreeModules")}
           </p>
           <div className="flex flex-col gap-3 max-w-xs mx-auto">
             <Button className="w-full" onClick={handleManage}>
@@ -414,20 +414,20 @@ export default function SubscriptionFull() {
       return (
         <div className="w-full max-w-3xl mx-auto p-4 space-y-6">
           <div>
-            <h1 className="text-2xl font-bold text-[#e8d5b7] mb-1">Your Subscription</h1>
+            <h1 className="text-2xl font-bold text-[#e8d5b7] mb-1">{t("subscriptionFull.yourSubscription")}</h1>
             {planLabel && (
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold"
                 style={{ background: "rgba(163,92,92,0.15)", color: "#D4A574", border: "1px solid rgba(163,92,92,0.3)" }}>
-                Current Plan: {planLabel}
+                {t("subscriptionFull.currentPlanLabel")}: {planLabel}
               </div>
             )}
           </div>
 
           <p className="text-[#e8d5b7]/70 text-sm">
-            Choose what you'd like to do next:
+            {t("subscriptionFull.chooseNextAction")}
           </p>
           <p className="text-[#e8d5b7]/55 text-xs -mt-3">
-            Upgrade paths are based on your current plan and preserve existing access.
+            {t("subscriptionFull.upgradePathsHint")}
           </p>
 
           {upgradeError && (
@@ -445,7 +445,7 @@ export default function SubscriptionFull() {
                     navigate(createPageUrl("SubscriptionSupport"));
                   }}
                 >
-                  Open Subscription Support
+                  {t("subscriptionFull.openSubscriptionSupport")}
                 </Button>
               </div>
             </div>
@@ -474,12 +474,12 @@ export default function SubscriptionFull() {
                           className="inline-flex mt-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
                           style={{ background: "rgba(212,175,55,0.2)", color: "#D4AF37", border: "1px solid rgba(212,175,55,0.35)" }}
                         >
-                          Recommended
+                          {t("subscriptionFull.recommended")}
                         </span>
                       )}
                       {planDef?.displayPrice != null && (
                         <p className="text-sm text-[#D4A574] mt-0.5">
-                          ${planDef.displayPrice}/{planDef.term === "annual" ? "yr" : "mo"}
+                          ${planDef.displayPrice}/{planDef.term === "annual" ? t("subscriptionFull.yearShort") : t("subscriptionFull.monthShort")}
                         </p>
                       )}
                       <p className="text-sm text-[#e8d5b7]/70 mt-1">{option.description}</p>
@@ -496,7 +496,7 @@ export default function SubscriptionFull() {
               onClick={() => handleUpgradeWithIntent(selectedUpgradeOption)}
               disabled={isUpgrading}
             >
-              {isUpgrading ? "Processing…" : `Continue — ${selectedUpgradeOption.label}`}
+              {isUpgrading ? t("subscriptionFull.processing") : `${t("subscriptionFull.continue")} — ${selectedUpgradeOption.label}`}
             </Button>
           )}
 
@@ -545,8 +545,8 @@ export default function SubscriptionFull() {
   return (
     <div className="w-full max-w-3xl mx-auto p-4 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">Unlock Pro Features</h1>
-        <p className="text-[#e8d5b7]/70">Pick an individual module or bundle with clear pricing and instant checkout.</p>
+        <h1 className="text-3xl font-bold text-[#e8d5b7] mb-2">{t("subscriptionFull.unlockProFeaturesTitle")}</h1>
+        <p className="text-[#e8d5b7]/70">{t("subscriptionFull.unlockProFeaturesDesc")}</p>
       </div>
 
       {/* Billing Interval Toggle */}
@@ -561,24 +561,24 @@ export default function SubscriptionFull() {
           variant={selectedInterval === "annual" ? "default" : "outline"}
           onClick={() => { setSelectedInterval("annual"); setSelectedPlanKey(null); }}
         >
-          Annual <span className="ml-1 text-emerald-400 text-xs font-semibold">Save ~16%</span>
+          {t("subscriptionFull.annualSave")} <span className="ml-1 text-emerald-400 text-xs font-semibold">{t("subscriptionFull.saveApprox16")}</span>
         </Button>
       </div>
 
       {/* Plan Cards */}
       <div className="space-y-5">
         {availablePlans.length === 0 && (
-          <p className="text-center text-[#e8d5b7]/50 text-sm">No plans available for this billing period.</p>
+          <p className="text-center text-[#e8d5b7]/50 text-sm">{t("subscriptionFull.noPlansForBillingPeriod")}</p>
         )}
         {[{
           key: "individual",
-          title: "Individual Modules",
-          subtitle: "PipeKeeper Pro, WhiskeyKeeper Pro, and CigarKeeper Pro",
+          title: t("subscriptionFull.individualModulesTitle"),
+          subtitle: t("subscriptionFull.individualModulesSubtitle"),
           plans: groupedPlans.individual,
         }, {
           key: "bundles",
-          title: "Bundles",
-          subtitle: "Founders Bundle (Pipe + Whiskey) and Three Module Bundle",
+          title: t("subscriptionFull.bundlesTitle"),
+          subtitle: t("subscriptionFull.bundlesSubtitle"),
           plans: groupedPlans.bundles,
         }].map((section) => (
           section.plans.length > 0 && (

@@ -8,20 +8,20 @@ const CURATOR_ICON = 'https://media.base44.com/images/public/694956e18d119cc4971
 // ─── Static surfaces (always present) ────────────────────────────────────────
 
 const SURFACES_BASE = [
-  { key: 'record_optimization',  label: 'Record Optimization' },
-  { key: 'collection_optimization', label: 'Collection Optimization' },
-  { key: 'purchase_restock',     label: 'Purchase & Restock' },
-  { key: 'plan_session',         label: 'Plan Session' },
+  { key: 'record_optimization',  labelKey: 'curatorPage.surfaces.recordOptimization' },
+  { key: 'collection_optimization', labelKey: 'curatorPage.surfaces.collectionOptimization' },
+  { key: 'purchase_restock',     labelKey: 'curatorPage.surfaces.purchaseRestock' },
+  { key: 'plan_session',         labelKey: 'curatorPage.surfaces.planSession' },
 ];
 
 // These appear only when 2+ modules are active
 const MULTI_MODULE_SURFACES = [
-  { key: 'pairings', label: 'Pairings' },
+  { key: 'pairings', labelKey: 'curatorPage.surfaces.pairings' },
 ];
 
 const SURFACES_TAIL = [
-  { key: 'grow_expand', label: 'Grow & Expand' },
-  { key: 'chat',        label: 'Chat' },
+  { key: 'grow_expand', labelKey: 'curatorPage.surfaces.growExpand' },
+  { key: 'chat',        labelKey: 'curatorPage.surfaces.chat' },
 ];
 
 // All valid surface keys (used for URL deep-link validation before SURFACES is computed)
@@ -69,22 +69,13 @@ export default function CuratorPage() {
 
   // Build the active surfaces list depending on module mode
   const SURFACES = useMemo(() => {
-    const labelByKey = {
-      record_optimization: t('curatorPage.surfaces.recordOptimization', 'Record Optimization'),
-      collection_optimization: t('curatorPage.surfaces.collectionOptimization', 'Collection Optimization'),
-      purchase_restock: t('curatorPage.surfaces.purchaseRestock', 'Purchase & Restock'),
-      plan_session: t('curatorPage.surfaces.planSession', 'Plan Session'),
-      pairings: t('curatorPage.surfaces.pairings', 'Pairings'),
-      grow_expand: t('curatorPage.surfaces.growExpand', 'Grow & Expand'),
-      chat: t('curatorPage.surfaces.chat', 'Chat'),
-    };
     return [
       ...SURFACES_BASE,
       ...(isMultiModuleMode ? MULTI_MODULE_SURFACES : []),
       ...SURFACES_TAIL,
     ].map((surface) => ({
       ...surface,
-      label: labelByKey[surface.key] || surface.label,
+      label: t(surface.labelKey),
     }));
   }, [isMultiModuleMode, t]);
 
@@ -133,11 +124,11 @@ export default function CuratorPage() {
               className="text-[32px] leading-none font-semibold"
               style={{ color: '#F5F5F7', letterSpacing: '-0.5px' }}
             >
-              {t('curatorPage.title', 'Collection Curator')}
+              {t('curatorPage.title')}
             </h1>
           </div>
           <p className="text-[18px] leading-8" style={{ color: '#9C968C' }}>
-            {t('curatorPage.description', 'Operational intelligence across your collection — fix, optimize, pair, and grow.')}
+            {t('curatorPage.description')}
           </p>
         </header>
 

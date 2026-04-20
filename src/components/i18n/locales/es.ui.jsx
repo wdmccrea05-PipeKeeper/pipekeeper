@@ -1188,6 +1188,37 @@ const esUI = {
     cigars: "Puros",
   },
 
+  subscriptionFull: {
+    manageSubscription: "Gestionar suscripción",
+    refreshStatus: "Actualizar estado",
+    alreadySubscribed: "Ya estás suscrito",
+    currentlyOnPro: "Actualmente estás en el plan Pro.",
+    monthly: "Mensual",
+    annualSave: "Anual",
+    recommended: "Recomendado",
+    yourSubscription: "Tu suscripción",
+    currentPlanLabel: "Plan actual",
+    chooseNextAction: "Elige qué te gustaría hacer a continuación:",
+    upgradePathsHint: "Las rutas de actualización se basan en tu plan actual y conservan tu acceso existente.",
+    openSubscriptionSupport: "Abrir soporte de suscripción",
+    activeSuffix: "Activo",
+    allThreeUnlocked: "Los tres módulos — PipeKeeper, WhiskeyKeeper y CigarKeeper — están desbloqueados.",
+    fullAccessThreeModules: "Tienes acceso completo a los tres módulos de tu colección.",
+    yearShort: "año",
+    monthShort: "mes",
+    processing: "Procesando…",
+    continue: "Continuar",
+    unlockProFeaturesTitle: "Desbloquea funciones Pro",
+    unlockProFeaturesDesc: "Elige un módulo individual o paquete con precios claros y checkout inmediato.",
+    saveApprox16: "Ahorra ~16%",
+    noPlansForBillingPeriod: "No hay planes disponibles para este período de facturación.",
+    individualModulesTitle: "Módulos individuales",
+    individualModulesSubtitle: "PipeKeeper Pro, WhiskeyKeeper Pro y CigarKeeper Pro",
+    bundlesTitle: "Paquetes",
+    bundlesSubtitle: "Paquete Founders (Pipe + Whiskey) y paquete de tres módulos",
+    threeModuleBundle: "Paquete de 3 módulos",
+  },
+
 };
 
 export default esUI;

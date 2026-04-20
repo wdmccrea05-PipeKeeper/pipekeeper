@@ -535,7 +535,7 @@ export default function CollectionHub() {
   const whiskeyStats = [
     { label: t('hub.bottleTypes'), value: isLoading ? '—' : whiskeyMetrics.bottle_types },
     { label: t('hub.totalBottles'), value: isLoading ? '—' : whiskeyMetrics.total_bottles },
-    { label: t('whiskey.collectionValue', 'Est. value'), value: isLoading ? '—' : formatFromBase(whiskeyMetrics.collection_value) },
+    { label: t('whiskey.collectionValue'), value: isLoading ? '—' : formatFromBase(whiskeyMetrics.collection_value) },
   ];
 
   const cigarStats = [
@@ -619,7 +619,7 @@ export default function CollectionHub() {
               icon={Leaf}
               label={t('hub.blends')}
               value={isLoading ? '—' : blends.length}
-              sub={isLoading ? '' : `${totalBlendOzDisplay} ${t('hub.blendTotal', 'total')}`}
+              sub={isLoading ? '' : `${totalBlendOzDisplay} ${t('hub.blendTotal')}`}
               accent="#6E8A57"
             />
           ) : null}
