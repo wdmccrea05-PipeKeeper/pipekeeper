@@ -974,11 +974,11 @@ export function getProductFamilyKey(sub) {
 }
 
 /**
- * Deduplicate normalized active-paid subscriptions by (userIdentity, productFamily).
+ * Deduplicate normalized active-paid subscriptions by (userIdentity, provider, productFamily).
  * For each group, keeps the most recent active row.
  *
  * Business rules:
- *  - Dedupe key = user identity (userId or email) + canonical product family
+ *  - Dedupe key = user identity (userId or email) + provider + canonical product family
  *  - Keep the most recent row per grouping (by createdAt, then rawId as tiebreak)
  *  - Unknown products are never collapsed with each other
  *
@@ -992,7 +992,8 @@ export function deduplicateActivePaidSubs(normalizedSubs) {
   for (const sub of normalizedSubs) {
     const userKey = sub.userId || sub.userEmail;
     if (!userKey) continue;
-    const dedupKey = `${userKey}::${getProductFamilyKey(sub)}`;
+    const providerKey = sub.platform || 'unknown-provider';
+    const dedupKey = `${userKey}::${providerKey}::${getProductFamilyKey(sub)}`;
     const existing = byKey.get(dedupKey);
     if (!existing) {
       byKey.set(dedupKey, sub);

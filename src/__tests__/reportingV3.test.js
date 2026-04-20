@@ -1253,6 +1253,14 @@ describe('deduplicateActivePaidSubs', () => {
     expect(duplicatesRemoved).toBe(0);
   });
 
+  it('does not collapse same user/product across different providers', () => {
+    const web = normalizeSub(makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 2.99, id: 'sub_web', provider: 'stripe' }));
+    const ios = normalizeSub(makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 2.99, id: 'sub_ios', provider: 'apple' }));
+    const { deduped, duplicatesRemoved } = deduplicateActivePaidSubs([web, ios]);
+    expect(deduped).toHaveLength(2);
+    expect(duplicatesRemoved).toBe(0);
+  });
+
   it('does not collapse different users with the same product', () => {
     const user1 = normalizeSub(makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 2.99, id: 'sub_1', user_id: 'user_1', user_email: 'a@example.com' }));
     const user2 = normalizeSub(makeSub({ planKey: 'pipekeeper_pro_monthly', amount: 2.99, id: 'sub_2', user_id: 'user_2', user_email: 'b@example.com' }));
