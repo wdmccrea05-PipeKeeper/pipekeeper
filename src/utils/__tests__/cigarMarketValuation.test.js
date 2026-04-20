@@ -44,4 +44,3 @@ describe('cigarMarketValuation', () => {
     expect(patch.market_comparable_count).toBe(4);
   });
 });
-

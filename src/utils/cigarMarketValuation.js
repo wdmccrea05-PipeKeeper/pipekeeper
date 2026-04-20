@@ -183,4 +183,3 @@ export function buildCigarMarketValuationPatch(cigar, derivation) {
     market_comparable_count: derivation.comparableCount || 0,
   };
 }
-
