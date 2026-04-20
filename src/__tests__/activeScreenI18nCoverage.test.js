@@ -33,7 +33,6 @@ const REQUIRED_KEYS = [
 ];
 
 const NON_EN_REQUIRED_KEYS = [
-  'nav.hub',
   'nav.curator',
   'hub.quickLaunch',
   'curatorPage.description',
