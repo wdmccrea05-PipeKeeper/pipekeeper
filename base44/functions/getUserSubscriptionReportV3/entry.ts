@@ -1260,7 +1260,7 @@ Deno.serve(async (req) => {
       const totalRenewalAmount = roundCurrency(renewalEligibleSubs.reduce((sum, s) => sum + (s.renewalAmount ?? 0), 0));
       const hasMultipleActivePlans = userPaidSubs.length > 1;
       const effectiveStatus =
-        !hasActiveContract ? (isPaidAccount ? 'entitled_no_active_contract' : 'none') :
+        !hasActiveContract ? (isPaidAccount ? 'entitled' : 'none') :
         statusValues.length === 1 ? statusValues[0] :
         statusValues.length > 1 ? 'mixed' :
         'unknown';
@@ -1269,7 +1269,7 @@ Deno.serve(async (req) => {
         platforms.length > 1 ? 'mixed' :
         null;
       const effectiveProductLabel =
-        !hasActiveContract ? (isPaidAccount ? 'Entitled (No Active Contract)' : 'Free') :
+        !hasActiveContract ? (isPaidAccount ? 'Entitled' : 'Free') :
         productLabels.length === 1 ? productLabels[0] :
         null;
 
