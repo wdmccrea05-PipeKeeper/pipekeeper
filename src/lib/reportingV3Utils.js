@@ -236,6 +236,79 @@ export function normalizeInterval(raw) {
   return null;
 }
 
+function normalizeIntervalToken(v) {
+  const value = norm(v);
+  if (value === 'month' || value === 'monthly') return 'monthly';
+  if (value === 'year' || value === 'yearly' || value === 'annual') return 'annual';
+  return null;
+}
+
+function parsePositiveNumber(v, { treatAsCents = false } = {}) {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (treatAsCents) return n / 100;
+  return n;
+}
+
+function parseMetadataObject(raw) {
+  if (raw?.metadata_json && typeof raw.metadata_json === 'object') {
+    return raw.metadata_json;
+  }
+  const asString = String(raw?.metadata_json || '').trim();
+  if (!asString) return {};
+  try {
+    const parsed = JSON.parse(asString);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function inferIntervalFromDateSpan(raw) {
+  const start = parseDate(raw.current_period_start || raw.started_at || raw.created_date);
+  const end = parseDate(raw.current_period_end);
+  if (!start || !end) return null;
+  const days = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  if (days >= 300 && days <= 380) return 'annual';
+  if (days >= 27 && days <= 40) return 'monthly';
+  return null;
+}
+
+function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
+  const candidates = [
+    raw.planKey,
+    raw.plan_key,
+    raw.price_id,
+    raw.stripe_price_id,
+    raw.apple_product_id,
+    raw.plan_id,
+    raw.plan_name,
+    raw.bundle_name,
+    raw.product_kind,
+  ]
+    .map((v) => norm(v))
+    .filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (PLAN_CATALOG[candidate]) return candidate;
+  }
+
+  const has = (token) => candidates.some((v) => v.includes(token));
+  const intervalSuffix = resolvedInterval === 'annual' ? 'annual' : (resolvedInterval === 'monthly' ? 'monthly' : null);
+  if (!intervalSuffix) return null;
+
+  if (has('founders')) return `founders_bundle_${intervalSuffix}`;
+  if (has('three_module') || has('bundle_3')) return `three_module_bundle_${intervalSuffix}`;
+  if (has('four_module') || has('bundle_4')) return `four_module_bundle_${intervalSuffix}`;
+  if (has('pipekeeper')) return `pipekeeper_pro_${intervalSuffix}`;
+  if (has('whiskeykeeper')) return `whiskeykeeper_pro_${intervalSuffix}`;
+  if (has('cigarkeeper') || has('cigar')) return `cigarkeeper_pro_${intervalSuffix}`;
+  if (has('winekeeper') || has('wine')) return `winekeeper_pro_${intervalSuffix}`;
+
+  return null;
+}
+
 // ─── Active paid detection ────────────────────────────────────────────────────
 
 /**
@@ -322,20 +395,51 @@ export function normalizePlatform(raw, user = null) {
  * @returns {object}    Normalized subscription
  */
 export function normalizeSub(raw, user = null) {
-  const planKey = norm(raw.planKey || raw.plan_key || '') || null;
+  const metadata = parseMetadataObject(raw);
+
+  // Interval recovery
+  const directInterval = normalizeInterval(raw);
+  const metadataInterval =
+    normalizeIntervalToken(metadata.billing_interval) ||
+    normalizeIntervalToken(metadata.billing_period) ||
+    normalizeIntervalToken(metadata?.recurring?.interval) ||
+    normalizeIntervalToken(metadata?.price?.recurring?.interval);
+  const intervalFromSpan = inferIntervalFromDateSpan(raw);
+  const resolvedIntervalPrePlan = directInterval || metadataInterval || intervalFromSpan || null;
+
+  // Plan key recovery
+  const directPlanKey = norm(raw.planKey || raw.plan_key || '') || null;
+  const inferredPlanKey = inferPlanKeyFromIdentifiers(raw, resolvedIntervalPrePlan);
+  const planKey = directPlanKey || inferredPlanKey || null;
   const catalog = lookupPlanCatalog(planKey);
 
-  // Price: actual billed amount first, then catalog price as fallback
-  const rawPrice = Math.max(0, Number(raw.amount || 0));
-  const inferredPrice = rawPrice === 0 && catalog != null;
-  const price = rawPrice > 0 ? rawPrice : (catalog?.price ?? null);
+  // Price recovery
+  const directAmount = parsePositiveNumber(raw.amount);
+  const renewalAmount =
+    parsePositiveNumber(raw.renewal_amount) ||
+    parsePositiveNumber(raw.amount_total, { treatAsCents: true }) ||
+    parsePositiveNumber(raw.unit_amount, { treatAsCents: true }) ||
+    parsePositiveNumber(metadata.renewal_amount) ||
+    parsePositiveNumber(metadata.amount) ||
+    parsePositiveNumber(metadata.amount_total, { treatAsCents: true }) ||
+    parsePositiveNumber(metadata.unit_amount, { treatAsCents: true }) ||
+    parsePositiveNumber(metadata?.price?.unit_amount, { treatAsCents: true }) ||
+    null;
+  const recoveredAmount = directAmount || renewalAmount || null;
+  const inferredPrice = !directAmount && !!catalog;
+  const price = recoveredAmount ?? (catalog?.price ?? null);
 
   // Amount inference (for interval and bundle-module resolution when catalog/fields are missing)
-  const amountInference = rawPrice > 0 ? inferFromAmount(rawPrice) : null;
+  const amountInference = price ? inferFromAmount(price) : null;
 
-  // Billing interval: field → catalog → amount inference → null
-  const fieldInterval = normalizeInterval(raw);
-  const billingInterval = fieldInterval ?? (catalog?.billingInterval ?? (amountInference?.billingInterval ?? null));
+  // Billing interval: direct fields → metadata fields → catalog → amount inference → date span → null
+  const billingInterval =
+    directInterval ??
+    metadataInterval ??
+    (catalog?.billingInterval ?? null) ??
+    (amountInference?.billingInterval ?? null) ??
+    intervalFromSpan ??
+    null;
 
   // Module(s) resolution — NEVER defaults to 'pipekeeper'
   let modules;
@@ -365,6 +469,30 @@ export function normalizeSub(raw, user = null) {
   const module   = modules[0];
   const isBundle = modules.length > 1;
 
+  const priceSource = directAmount
+    ? 'direct:amount'
+    : renewalAmount
+      ? 'recovered:stored_renewal_or_metadata_amount'
+      : catalog?.price != null
+        ? 'recovered:plan_catalog'
+        : 'unresolved:none';
+  const intervalSource = directInterval
+    ? 'direct:billing_interval'
+    : metadataInterval
+      ? 'recovered:metadata_interval'
+      : catalog?.billingInterval
+        ? 'recovered:plan_catalog'
+        : amountInference?.billingInterval
+          ? 'recovered:amount_inference'
+          : intervalFromSpan
+            ? 'recovered:period_span'
+            : 'unresolved:none';
+  const planKeySource = directPlanKey
+    ? 'direct:plan_key'
+    : inferredPlanKey
+      ? 'recovered:identifier_mapping'
+      : 'unresolved:none';
+
   return {
     rawId:          String(raw.id || raw.stripe_subscription_id || ''),
     userId:         String(raw.user_id || ''),
@@ -380,6 +508,16 @@ export function normalizeSub(raw, user = null) {
     modules,
     isBundle,
     platform:       normalizePlatform(raw, user),
+    fieldResolution: {
+      price: price === null ? 'unresolved' : (directAmount ? 'direct' : 'recovered'),
+      billingInterval: billingInterval === null ? 'unresolved' : (directInterval ? 'direct' : 'recovered'),
+      planKey: planKey === null ? 'unresolved' : (directPlanKey ? 'direct' : 'recovered'),
+      sources: {
+        price: priceSource,
+        billingInterval: intervalSource,
+        planKey: planKeySource,
+      },
+    },
   };
 }
 

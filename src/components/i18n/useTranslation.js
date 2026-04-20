@@ -8,5 +8,5 @@
  *
  * DO NOT add logic here. Use index.jsx directly for new code.
  */
-export { useTranslation, translate, SUPPORTED_LANGS } from './index.jsx';
+export { useTranslation, translate, SUPPORTED_LANGS, setLanguage } from './index.jsx';
 export { useTranslation as default } from './index.jsx';

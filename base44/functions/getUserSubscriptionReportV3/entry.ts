@@ -24,6 +24,16 @@ interface NormalizedSub {
   modules: string[];
   platform: PlatformKind | null;
   productLabel: string;           // human-readable product name
+  fieldResolution?: {
+    price: 'direct' | 'recovered' | 'unresolved';
+    billingInterval: 'direct' | 'recovered' | 'unresolved';
+    planKey: 'direct' | 'recovered' | 'unresolved';
+    sources: {
+      price: string;
+      billingInterval: string;
+      planKey: string;
+    };
+  };
 }
 
 interface CalendarRange {
@@ -211,6 +221,75 @@ function normalizeInterval(raw: any): IntervalKind | null {
   return null;
 }
 
+function normalizeIntervalToken(v: unknown): IntervalKind | null {
+  const value = norm(v || '');
+  if (value === 'month' || value === 'monthly') return 'monthly';
+  if (value === 'year' || value === 'yearly' || value === 'annual') return 'annual';
+  return null;
+}
+
+function parsePositiveNumber(v: unknown, options: { treatAsCents?: boolean } = {}): number | null {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return options.treatAsCents ? (n / 100) : n;
+}
+
+function parseMetadataObject(raw: any): Record<string, any> {
+  if (raw?.metadata_json && typeof raw.metadata_json === 'object') return raw.metadata_json;
+  const text = String(raw?.metadata_json || '').trim();
+  if (!text) return {};
+  try {
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function inferIntervalFromDateSpan(raw: any): IntervalKind | null {
+  const start = parseDate(raw.current_period_start || raw.started_at || raw.created_date);
+  const end = parseDate(raw.current_period_end);
+  if (!start || !end) return null;
+  const days = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  if (days >= 300 && days <= 380) return 'annual';
+  if (days >= 27 && days <= 40) return 'monthly';
+  return null;
+}
+
+function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | null): string | null {
+  const candidates = [
+    raw.planKey,
+    raw.plan_key,
+    raw.price_id,
+    raw.stripe_price_id,
+    raw.apple_product_id,
+    raw.plan_id,
+    raw.plan_name,
+    raw.bundle_name,
+    raw.product_kind,
+  ]
+    .map((v) => norm(v || ''))
+    .filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (PLAN_CATALOG[candidate]) return candidate;
+  }
+
+  const has = (token: string) => candidates.some((v) => v.includes(token));
+  const suffix = resolvedInterval === 'annual' ? 'annual' : (resolvedInterval === 'monthly' ? 'monthly' : null);
+  if (!suffix) return null;
+
+  if (has('founders')) return `founders_bundle_${suffix}`;
+  if (has('three_module') || has('bundle_3')) return `three_module_bundle_${suffix}`;
+  if (has('four_module') || has('bundle_4')) return `four_module_bundle_${suffix}`;
+  if (has('pipekeeper')) return `pipekeeper_pro_${suffix}`;
+  if (has('whiskeykeeper')) return `whiskeykeeper_pro_${suffix}`;
+  if (has('cigarkeeper') || has('cigar')) return `cigarkeeper_pro_${suffix}`;
+  if (has('winekeeper') || has('wine')) return `winekeeper_pro_${suffix}`;
+  return null;
+}
+
 // ─── Platform normalization ───────────────────────────────────────────────────
 
 function normalizePlatform(raw: any, user: any | null): PlatformKind | null {
@@ -247,26 +326,46 @@ function isActivePaid(raw: any): boolean {
 //   5. 'unknown' — truly unresolvable products stay unknown
 
 function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
-  const planKey = norm(raw.planKey || raw.plan_key || '') || null;
+  const metadata = parseMetadataObject(raw);
+  const directInterval = normalizeInterval(raw);
+  const metadataInterval =
+    normalizeIntervalToken(metadata.billing_interval) ||
+    normalizeIntervalToken(metadata.billing_period) ||
+    normalizeIntervalToken(metadata?.recurring?.interval) ||
+    normalizeIntervalToken(metadata?.price?.recurring?.interval);
+  const intervalFromSpan = inferIntervalFromDateSpan(raw);
+  const resolvedIntervalPrePlan = directInterval || metadataInterval || intervalFromSpan || null;
+
+  const directPlanKey = norm(raw.planKey || raw.plan_key || '') || null;
+  const inferredPlanKey = inferPlanKeyFromIdentifiers(raw, resolvedIntervalPrePlan);
+  const planKey = directPlanKey || inferredPlanKey || null;
   const catalog = lookupPlan(planKey);
 
-  const rawAmount = Math.max(0, Number(raw.amount || 0));
-  const amountInference = rawAmount > 0 ? inferFromAmount(rawAmount) : null;
-
-  // ── Price resolution: stored amount → catalog fallback ───────────────────
-  const price: number | null =
-    rawAmount > 0 ? rawAmount :
-    catalog   ? catalog.price :
+  const directAmount = parsePositiveNumber(raw.amount);
+  const renewalAmountRecovered =
+    parsePositiveNumber(raw.renewal_amount) ||
+    parsePositiveNumber(raw.amount_total, { treatAsCents: true }) ||
+    parsePositiveNumber(raw.unit_amount, { treatAsCents: true }) ||
+    parsePositiveNumber(metadata.renewal_amount) ||
+    parsePositiveNumber(metadata.amount) ||
+    parsePositiveNumber(metadata.amount_total, { treatAsCents: true }) ||
+    parsePositiveNumber(metadata.unit_amount, { treatAsCents: true }) ||
+    parsePositiveNumber(metadata?.price?.unit_amount, { treatAsCents: true }) ||
     null;
 
+  const recoveredAmount = directAmount || renewalAmountRecovered || null;
+  const price: number | null = recoveredAmount ?? (catalog ? catalog.price : null);
   const renewalAmount = price;
+  const amountInference = price ? inferFromAmount(price) : null;
 
-  // ── Interval resolution: field → catalog → amount inference ──────────────
-  const fieldInterval = normalizeInterval(raw);
+  // ── Interval resolution: direct fields → metadata → catalog → amount inference → span ──
   const billingInterval: IntervalKind | null =
-    fieldInterval ??
+    directInterval ??
+    metadataInterval ??
     (catalog?.billingInterval ?? null) ??
-    (amountInference?.billingInterval ?? null);
+    (amountInference?.billingInterval ?? null) ??
+    intervalFromSpan ??
+    null;
 
   // ── Module resolution (never defaults to 'pipekeeper') ───────────────────
   let modules: string[];
@@ -302,6 +401,29 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   }
 
   const module = modules[0];
+  const priceSource = directAmount
+    ? 'direct:amount'
+    : renewalAmountRecovered
+      ? 'recovered:stored_renewal_or_metadata_amount'
+      : catalog?.price != null
+        ? 'recovered:plan_catalog'
+        : 'unresolved:none';
+  const intervalSource = directInterval
+    ? 'direct:billing_interval'
+    : metadataInterval
+      ? 'recovered:metadata_interval'
+      : catalog?.billingInterval
+        ? 'recovered:plan_catalog'
+        : amountInference?.billingInterval
+          ? 'recovered:amount_inference'
+          : intervalFromSpan
+            ? 'recovered:period_span'
+            : 'unresolved:none';
+  const planKeySource = directPlanKey
+    ? 'direct:plan_key'
+    : inferredPlanKey
+      ? 'recovered:identifier_mapping'
+      : 'unresolved:none';
 
   return {
     rawId:          String(raw.id || raw.stripe_subscription_id || ''),
@@ -319,6 +441,16 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     modules,
     platform:       normalizePlatform(raw, user),
     productLabel,
+    fieldResolution: {
+      price: price === null ? 'unresolved' : (directAmount ? 'direct' : 'recovered'),
+      billingInterval: billingInterval === null ? 'unresolved' : (directInterval ? 'direct' : 'recovered'),
+      planKey: planKey === null ? 'unresolved' : (directPlanKey ? 'direct' : 'recovered'),
+      sources: {
+        price: priceSource,
+        billingInterval: intervalSource,
+        planKey: planKeySource,
+      },
+    },
   };
 }
 
@@ -512,12 +644,62 @@ Deno.serve(async (req) => {
     let warningMissingPlatform = 0;
     let warningMissingPlanKey  = 0;
     let warningUnknownProduct  = 0;
+    const fieldRecovery = {
+      price: { direct: 0, recovered: 0, unresolved: 0 },
+      billingInterval: { direct: 0, recovered: 0, unresolved: 0 },
+      planKey: { direct: 0, recovered: 0, unresolved: 0 },
+    };
+    const unresolvedReasonCounts = {
+      missingPriceBySource: {} as Record<string, number>,
+      missingIntervalBySource: {} as Record<string, number>,
+      unknownPlanKeyBySource: {} as Record<string, number>,
+    };
+    const unresolvedSamples: Array<Record<string, unknown>> = [];
+    const bumpReason = (bucket: Record<string, number>, key: string) => {
+      bucket[key] = (bucket[key] || 0) + 1;
+    };
     for (const sub of paidSubs) {
       if (sub.price === null)           warningMissingPrice++;
       if (sub.billingInterval === null) warningMissingInterval++;
       if (sub.platform === null)        warningMissingPlatform++;
       if (sub.planKey === null)         warningMissingPlanKey++;
       if (sub.module === 'unknown')     warningUnknownProduct++;
+
+      const priceResolution = sub.fieldResolution?.price || 'unresolved';
+      const intervalResolution = sub.fieldResolution?.billingInterval || 'unresolved';
+      const planKeyResolution = sub.fieldResolution?.planKey || 'unresolved';
+      fieldRecovery.price[priceResolution as 'direct' | 'recovered' | 'unresolved']++;
+      fieldRecovery.billingInterval[intervalResolution as 'direct' | 'recovered' | 'unresolved']++;
+      fieldRecovery.planKey[planKeyResolution as 'direct' | 'recovered' | 'unresolved']++;
+
+      if (sub.price === null) {
+        bumpReason(unresolvedReasonCounts.missingPriceBySource, sub.fieldResolution?.sources?.price || 'unresolved:none');
+      }
+      if (sub.billingInterval === null) {
+        bumpReason(unresolvedReasonCounts.missingIntervalBySource, sub.fieldResolution?.sources?.billingInterval || 'unresolved:none');
+      }
+      if (sub.planKey === null) {
+        bumpReason(unresolvedReasonCounts.unknownPlanKeyBySource, sub.fieldResolution?.sources?.planKey || 'unresolved:none');
+      }
+
+      if ((sub.price === null || sub.billingInterval === null || sub.planKey === null) && unresolvedSamples.length < MAX_SAMPLE_SIZE) {
+        unresolvedSamples.push({
+          rawId: sub.rawId,
+          userId: sub.userId,
+          userEmail: sub.userEmail,
+          missingFields: [
+            sub.price === null ? 'price' : null,
+            sub.billingInterval === null ? 'billingInterval' : null,
+            sub.planKey === null ? 'planKey' : null,
+          ].filter(Boolean),
+          failedSources: {
+            price: sub.fieldResolution?.sources?.price || 'unresolved:none',
+            billingInterval: sub.fieldResolution?.sources?.billingInterval || 'unresolved:none',
+            planKey: sub.fieldResolution?.sources?.planKey || 'unresolved:none',
+          },
+          provider: sub.platform || null,
+        });
+      }
     }
 
     // ── Subscription counts ───────────────────────────────────────────────────
@@ -888,6 +1070,10 @@ Deno.serve(async (req) => {
         missingPlanKey:    warningMissingPlanKey,
         unknownProduct:    warningUnknownProduct,
         duplicatesRemoved: duplicatesRemoved,
+        fieldRecovery,
+        unresolvedReasons: unresolvedReasonCounts,
+        unresolvedSamples,
+        excludedCoreRecords: paidSubs.filter((s) => s.price === null || s.billingInterval === null).length,
       },
       diagnostics,
       accounts: { total: totalUsers, paid: paidUsersCount, free: freeUsersCount, paidPct, signupSources, newAccounts },
@@ -915,7 +1101,26 @@ Deno.serve(async (req) => {
       detail: String(error?.message || error),
       meta: { generatedAt: new Date().toISOString(), reportVersion: REPORT_VERSION },
       sanityChecks: { passed: false, failures: ['Report generation failed — see server logs.'] },
-      warnings: { missingPrice: 0, missingInterval: 0, missingPlatform: 0, missingPlanKey: 0, unknownProduct: 0, duplicatesRemoved: 0 },
+      warnings: {
+        missingPrice: 0,
+        missingInterval: 0,
+        missingPlatform: 0,
+        missingPlanKey: 0,
+        unknownProduct: 0,
+        duplicatesRemoved: 0,
+        excludedCoreRecords: 0,
+        fieldRecovery: {
+          price: { direct: 0, recovered: 0, unresolved: 0 },
+          billingInterval: { direct: 0, recovered: 0, unresolved: 0 },
+          planKey: { direct: 0, recovered: 0, unresolved: 0 },
+        },
+        unresolvedReasons: {
+          missingPriceBySource: {},
+          missingIntervalBySource: {},
+          unknownPlanKeyBySource: {},
+        },
+        unresolvedSamples: [],
+      },
       diagnostics: {
         usersWithMultipleActiveSubscriptions: 0,
         usersWithActiveSubscriptionNoPaidModules: 0,

@@ -4,6 +4,19 @@
 
 const frUI = {
   userReport: {
+    warningPanel: {
+      unresolvedSourceFailures: "Échecs de source non résolus",
+      missingPriceReasons: "Prix manquant par source en échec",
+      missingIntervalReasons: "Intervalle manquant par source en échec",
+      unknownPlanReasons: "Clé de plan inconnue par source en échec",
+      items: {
+        unknownProduct: "{count} abonnement(s) payant(s) encore non résolus vers un produit/module connu",
+        excludedCoreRecords: "{count} abonnement(s) payant(s) exclus des métriques clés (prix et/ou intervalle manquant)",
+      },
+    },
+    warnings: {
+      excludedCoreRecords: "Enregistrements clés exclus",
+    },
     userTable: {
       effectivePlatform: "Plateforme effective",
       unknownValue: "Inconnu",

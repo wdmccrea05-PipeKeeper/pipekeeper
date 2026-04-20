@@ -172,6 +172,52 @@ describe('normalizeSub', () => {
     expect(sub.billingInterval).toBeNull();
   });
 
+  it('recovers missing price from renewal_amount when amount is absent', () => {
+    const raw = makeSub({ amount: undefined, renewal_amount: 12.34, billing_interval: 'monthly' });
+    const sub = normalizeSub(raw);
+    expect(sub.price).toBe(12.34);
+    expect(sub.fieldResolution.price).toBe('recovered');
+  });
+
+  it('recovers interval from metadata_json recurring interval', () => {
+    const raw = makeSub({
+      amount: 9.99,
+      billing_interval: undefined,
+      billing_period: undefined,
+      metadata_json: JSON.stringify({ recurring: { interval: 'year' } }),
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.billingInterval).toBe('annual');
+    expect(sub.fieldResolution.billingInterval).toBe('recovered');
+  });
+
+  it('recovers interval from period span when direct fields are missing', () => {
+    const raw = makeSub({
+      amount: 9.99,
+      billing_interval: undefined,
+      billing_period: undefined,
+      current_period_start: '2025-01-01T00:00:00Z',
+      current_period_end: '2026-01-01T00:00:00Z',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.billingInterval).toBe('annual');
+  });
+
+  it('normalizes unknown plan key from apple product identifier when interval is known', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      billing_interval: undefined,
+      billing_period: 'year',
+      amount: 49.99,
+      apple_product_id: 'com.collectionkeeper.founders.annual',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.planKey).toBe('founders_bundle_annual');
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
+    expect(sub.fieldResolution.planKey).toBe('recovered');
+  });
+
   it('sets renewalAt to null when current_period_end is missing', () => {
     const raw = makeSub({ current_period_end: undefined });
     const sub = normalizeSub(raw);
@@ -336,6 +382,7 @@ describe('normalizeSub: planKey-based resolution', () => {
     const raw = makeSub({ amount: 9.99 });
     const sub = normalizeSub(raw);
     expect(sub.planKey).toBeNull();
+    expect(sub.fieldResolution.planKey).toBe('unresolved');
   });
 
   it('always exposes modules as an array', () => {
