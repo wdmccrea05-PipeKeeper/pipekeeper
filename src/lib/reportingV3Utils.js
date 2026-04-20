@@ -657,14 +657,14 @@ export function normalizeSub(raw, user = null) {
     parsePositiveNumber(metadata?.price?.unit_amount, { treatAsCents: true }) ||
     null;
   const recoveredAmount = directAmount || renewalAmount || null;
-  const inferredPrice = !directAmount && !!catalog;
-  const price = recoveredAmount ?? (catalog?.price ?? null);
+  let inferredPrice = !directAmount && !!catalog;
+  let price = recoveredAmount ?? (catalog?.price ?? null);
 
   // Amount inference (for interval and bundle-module resolution when catalog/fields are missing)
   const amountInference = price ? inferFromAmount(price) : null;
 
   // Billing interval: direct fields → metadata fields → catalog → amount inference → date span → null
-  const billingInterval =
+  let billingInterval =
     directInterval ??
     metadataInterval ??
     (catalog?.billingInterval ?? null) ??
@@ -715,6 +715,13 @@ export function normalizeSub(raw, user = null) {
     catalog = lookupPlanCatalog(planKey);
     if (catalog) {
       modules = catalog.modules;
+      if (price === null && catalog.price !== null) {
+        price = catalog.price;
+        inferredPrice = true;
+      }
+      if (billingInterval === null && catalog.billingInterval) {
+        billingInterval = catalog.billingInterval;
+      }
     }
   }
   const moduleResolved = modules[0];
@@ -724,15 +731,15 @@ export function normalizeSub(raw, user = null) {
     ? 'direct:amount'
     : renewalAmount
       ? 'recovered:stored_renewal_or_metadata_amount'
-      : catalog?.price != null
-        ? 'recovered:plan_catalog'
+      : catalog?.price !== null && catalog?.price !== undefined
+        ? (planKeyBackfill && recoveredAmount === null ? 'recovered:plan_catalog_backfill' : 'recovered:plan_catalog')
         : 'unresolved:none';
   const intervalSource = directInterval
     ? 'direct:billing_interval'
     : metadataInterval
       ? 'recovered:metadata_interval'
       : catalog?.billingInterval
-        ? 'recovered:plan_catalog'
+        ? (planKeyBackfill && !directInterval && !metadataInterval ? 'recovered:plan_catalog_backfill' : 'recovered:plan_catalog')
         : amountInference?.billingInterval
           ? 'recovered:amount_inference'
           : intervalFromSpan
@@ -745,6 +752,14 @@ export function normalizeSub(raw, user = null) {
       : planKeyBackfill
         ? 'recovered:modules_interval_backfill'
       : 'unresolved:none';
+
+  const sourceConfidence = (() => {
+    const unresolvedCount = Number(price === null) + Number(billingInterval === null) + Number(planKey === null);
+    if (unresolvedCount > 0) return 'low';
+    const directCount = Number(!!directAmount) + Number(!!directInterval) + Number(!!directPlanKey);
+    if (directCount >= 2) return 'high';
+    return 'medium';
+  })();
 
   return {
     rawId:          String(raw.id || raw.stripe_subscription_id || ''),
@@ -761,6 +776,7 @@ export function normalizeSub(raw, user = null) {
     modules,
     isBundle,
     platform:       normalizePlatform(raw, user),
+    sourceConfidence,
     fieldResolution: {
       price: price === null ? 'unresolved' : (directAmount ? 'direct' : 'recovered'),
       billingInterval: billingInterval === null ? 'unresolved' : (directInterval ? 'direct' : 'recovered'),

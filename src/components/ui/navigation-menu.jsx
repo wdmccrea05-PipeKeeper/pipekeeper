@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Sparkles, Users, User, HelpCircle, Shield, ClipboardList, Wrench, FileText } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 function isModuleEnabled(user, key) {
   return user?.activeModules?.[key] === true;
@@ -12,6 +13,7 @@ export default function TopNavigation({
   quickAccess = null,
 }) {
   const location = useLocation();
+  const { t } = useTranslation();
 
   const pipeEnabled =
     isModuleEnabled(user, "pipekeeper") || isModuleEnabled(user, "pipe");
@@ -31,27 +33,27 @@ export default function TopNavigation({
     "bg-transparent border-transparent text-[#D8C7A6] hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(180,140,75,0.18)] hover:text-[#F5F1E7]";
 
   const navItems = [
-    { to: "/", label: "Hub", icon: Home, match: (p) => p === "/" || p.startsWith("/hub") },
+    { to: "/", label: t("nav.hub"), icon: Home, match: (p) => p === "/" || p.startsWith("/hub") },
 
     ...(pipeEnabled
-      ? [{ to: "/PipeKeeper", label: "PipeKeeper", icon: null, match: (p) => p.startsWith("/Pipe") || p.startsWith("/Tobacco") || p.startsWith("/PipeKeeper") }]
+      ? [{ to: "/PipeKeeper", label: t("nav.pipekeeper"), icon: null, match: (p) => p.startsWith("/Pipe") || p.startsWith("/Tobacco") || p.startsWith("/PipeKeeper") }]
       : []),
 
     ...(whiskeyEnabled
-      ? [{ to: "/WhiskeyKeeper", label: "WhiskeyKeeper", icon: null, match: (p) => p.startsWith("/Whiskey") || p.startsWith("/Bottle") || p.startsWith("/WhiskeyKeeper") }]
+      ? [{ to: "/WhiskeyKeeper", label: t("nav.whiskeykeeper"), icon: null, match: (p) => p.startsWith("/Whiskey") || p.startsWith("/Bottle") || p.startsWith("/WhiskeyKeeper") }]
       : []),
 
-    { to: "/Curator", label: "Curator", icon: Sparkles, match: (p) => p.startsWith("/Curator") },
-    { to: "/Community", label: "Community", icon: Users, match: (p) => p.startsWith("/Community") },
-    { to: "/Profile", label: "Profile", icon: User, match: (p) => p.startsWith("/Profile") },
-    { to: "/Help", label: "Help", icon: HelpCircle, match: (p) => p.startsWith("/Help") },
+    { to: "/Curator", label: t("nav.curator"), icon: Sparkles, match: (p) => p.startsWith("/Curator") },
+    { to: "/Community", label: t("nav.community"), icon: Users, match: (p) => p.startsWith("/Community") },
+    { to: "/Profile", label: t("nav.profile"), icon: User, match: (p) => p.startsWith("/Profile") },
+    { to: "/Help", label: t("nav.help"), icon: HelpCircle, match: (p) => p.startsWith("/Help") },
 
     ...(isAdmin
       ? [
-          { to: "/AdminReports", label: "Admin Reports", icon: Shield, match: (p) => p.startsWith("/AdminReports") },
-          { to: "/SubscriptionRequests", label: "Subscription Requests", icon: ClipboardList, match: (p) => p.startsWith("/SubscriptionRequests") },
-          { to: "/SubscriptionTools", label: "Subscription Tools", icon: Wrench, match: (p) => p.startsWith("/SubscriptionTools") },
-          { to: "/UserReport", label: "User Report", icon: FileText, match: (p) => p.startsWith("/UserReport") },
+          { to: "/AdminReports", label: t("nav.adminReports"), icon: Shield, match: (p) => p.startsWith("/AdminReports") },
+          { to: "/SubscriptionRequests", label: t("nav.subscriptionRequests"), icon: ClipboardList, match: (p) => p.startsWith("/SubscriptionRequests") },
+          { to: "/SubscriptionTools", label: t("nav.subscriptionTools"), icon: Wrench, match: (p) => p.startsWith("/SubscriptionTools") },
+          { to: "/UserReport", label: t("nav.userReport"), icon: FileText, match: (p) => p.startsWith("/UserReport") },
         ]
       : []),
   ];
@@ -62,14 +64,14 @@ export default function TopNavigation({
         <div className="flex items-center gap-3 min-w-0">
           <img
             src="/logos/collectionkeeper.png"
-            alt="CollectionKeeper"
+            alt={t("hub.title")}
             className="h-11 w-auto shrink-0"
             onError={(e) => {
               e.currentTarget.style.display = "none";
             }}
           />
           <div className="text-[#F5F1E7] text-[2rem] leading-none font-semibold font-serif">
-            CollectionKeeper
+            {t("hub.title")}
           </div>
         </div>
 
