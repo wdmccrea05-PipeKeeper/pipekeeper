@@ -34,9 +34,12 @@ const REQUIRED_KEYS = [
 
 const NON_EN_REQUIRED_KEYS = [
   'nav.curator',
+  'nav.userReport',
   'hub.quickLaunch',
+  'hub.collectionStory',
   'curatorPage.description',
   'userReport.title',
+  'userReport.subscriptions.sectionTitle',
   'subscription.manage',
 ];
 

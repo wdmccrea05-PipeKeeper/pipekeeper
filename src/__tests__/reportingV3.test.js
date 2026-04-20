@@ -258,6 +258,21 @@ describe('normalizeSub', () => {
     expect(sub.fieldResolution.sources.billingInterval).toMatch(/^recovered:/);
   });
 
+  it('normalizes interval from recurring_interval alias fields', () => {
+    const raw = makeSub({
+      amount: 2.99,
+      billing_interval: undefined,
+      billing_period: undefined,
+      recurring_interval: 'month',
+      planKey: undefined,
+      plan_key: undefined,
+      modules_csv: 'pipekeeper',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.billingInterval).toBe('monthly');
+    expect(sub.planKey).toBe('pipekeeper_pro_monthly');
+  });
+
   it('normalizes unknown plan key from apple product identifier when interval is known', () => {
     const raw = makeSub({
       planKey: undefined,
@@ -408,6 +423,24 @@ describe('normalizeSub', () => {
     expect(sub.modules).toEqual(['pipekeeper']);
     expect(sub.planKey).toBe('pipekeeper_pro_monthly');
     expect(sub.fieldResolution.sources.planKey).toBe('recovered:identifier_mapping');
+  });
+
+  it('normalizes compact module aliases (pk/wk/ck) from metadata and identifier tokens', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: 2.99,
+      billing_interval: undefined,
+      billing_period: undefined,
+      metadata_json: JSON.stringify({
+        app_slug: 'pk',
+      }),
+      price_id: 'wk_pro_annual',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.modules).toContain('whiskeykeeper');
+    expect(sub.planKey).toBe('whiskeykeeper_pro_annual');
+    expect(sub.billingInterval).toBe('annual');
   });
 
   it('recovers bundle modules from metadata modules_csv and backfills bundle plan key', () => {
