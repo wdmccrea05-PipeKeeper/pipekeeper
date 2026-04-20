@@ -309,13 +309,12 @@ function mergeMissing(target: Record<string, any>, source: Record<string, any>):
   return target;
 }
 
-function parseObjectLike(value: unknown): Record<string, any> | null {
-  if (isPlainObject(value)) return value;
+function parseObjectLike(value: unknown): unknown {
+  if (isPlainObject(value) || Array.isArray(value)) return value;
   const text = typeof value === 'string' ? value.trim() : '';
   if (!text) return null;
   try {
-    const parsed = JSON.parse(text);
-    return isPlainObject(parsed) ? parsed : null;
+    return JSON.parse(text);
   } catch {
     return null;
   }
@@ -348,9 +347,54 @@ function parseMetadataObject(raw: any): Record<string, any> {
   const merged: Record<string, any> = {};
   for (const candidate of candidateFields) {
     const parsed = parseObjectLike(candidate);
-    if (parsed) mergeMissing(merged, parsed);
+    if (isPlainObject(parsed)) {
+      mergeMissing(merged, parsed);
+      continue;
+    }
+    if (Array.isArray(parsed)) {
+      for (const entry of parsed) {
+        if (isPlainObject(entry)) mergeMissing(merged, entry);
+      }
+    }
   }
   return merged;
+}
+
+function parseArrayLike(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  const parsed = parseObjectLike(value);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function extractReceiptProductIds(raw: any, metadata: Record<string, any>): string[] {
+  const arrayCandidates = [
+    raw?.latest_receipt_info,
+    raw?.latest_receipt,
+    raw?.apple_receipt,
+    raw?.apple_receipt_json,
+    raw?.receipt_json,
+    raw?.entitlement_data,
+    metadata?.latest_receipt_info,
+    metadata?.latest_receipt,
+    metadata?.apple_receipt,
+    metadata?.apple_receipt_json,
+    metadata?.receipt_json,
+    metadata?.entitlement_data,
+  ];
+
+  const directCandidates = [
+    raw?.product_id,
+    metadata?.product_id,
+    metadata?.latest_receipt_info?.product_id,
+  ];
+
+  const fromArrays = arrayCandidates
+    .flatMap((candidate) => parseArrayLike(candidate))
+    .flatMap((entry) => (isPlainObject(entry) ? [entry.product_id, entry.productId] : []));
+
+  return [...directCandidates, ...fromArrays]
+    .map((value) => norm(value || ''))
+    .filter(Boolean);
 }
 
 function normalizeModuleToken(value: unknown): string | null {
@@ -413,6 +457,7 @@ function inferIntervalFromDateSpan(raw: any): IntervalKind | null {
 
 function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | null): string | null {
   const metadata = parseMetadataObject(raw);
+  const receiptProductIds = extractReceiptProductIds(raw, metadata);
   const stripePriceId = raw?.items?.data?.[0]?.price?.id || raw?.price?.id || null;
   const candidates = [
     raw.planKey,
@@ -454,6 +499,7 @@ function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | 
     metadata.app_aliases,
     metadata.provider_subscription_id,
     metadata.stripe_subscription_id,
+    ...receiptProductIds,
   ]
     .map((v) => norm(v || ''))
     .filter(Boolean);
@@ -491,6 +537,7 @@ function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | 
 // Uses both top-level subscription fields and metadata payload hints.
 function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
   const metadata = parseMetadataObject(raw);
+  const receiptProductIds = extractReceiptProductIds(raw, metadata);
   const stripeInterval = raw?.items?.data?.[0]?.price?.recurring?.interval || raw?.price?.recurring?.interval || null;
   const candidates = [
     raw.planKey,
@@ -518,6 +565,7 @@ function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
     metadata.product_label,
     metadata?.items?.data?.[0]?.price?.recurring?.interval,
     metadata?.price?.recurring?.interval,
+    ...receiptProductIds,
   ]
     .map((v) => norm(v || ''))
     .filter(Boolean);

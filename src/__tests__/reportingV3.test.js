@@ -273,6 +273,26 @@ describe('normalizeSub', () => {
     expect(sub.fieldResolution.planKey).toBe('recovered');
   });
 
+  it('recovers plan key, interval, and price from iOS receipt-style latest_receipt_info payload', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: undefined,
+      billing_interval: undefined,
+      billing_period: undefined,
+      metadata_json: JSON.stringify({
+        latest_receipt_info: [
+          { product_id: 'com.collectionkeeper.cigarkeeper.pro.monthly' },
+        ],
+      }),
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.planKey).toBe('cigarkeeper_pro_monthly');
+    expect(sub.billingInterval).toBe('monthly');
+    expect(sub.price).toBe(2.99);
+    expect(sub.fieldResolution.sources.planKey).toMatch(/^recovered:/);
+  });
+
   it('recovers plan key directly from metadata plan_key', () => {
     const raw = makeSub({
       planKey: undefined,
