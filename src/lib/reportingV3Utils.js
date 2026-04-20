@@ -376,12 +376,29 @@ function parseMetadataObject(raw) {
   return merged;
 }
 
+/**
+ * Normalize array-like metadata payloads.
+ * Returns the original array when provided, attempts JSON parsing for string/object-like values,
+ * and returns an empty array when no array structure is available.
+ *
+ * @param {unknown} value
+ * @returns {unknown[]}
+ */
 function parseArrayLike(value) {
   if (Array.isArray(value)) return value;
   const parsed = parseObjectLike(value);
   return Array.isArray(parsed) ? parsed : [];
 }
 
+/**
+ * Extract normalized product identifiers from iOS receipt-style metadata payloads.
+ * Looks at both top-level raw subscription fields and parsed metadata fields, including
+ * latest_receipt_info-style arrays and receipt blobs.
+ *
+ * @param {object} raw
+ * @param {object} metadata
+ * @returns {string[]}
+ */
 function extractReceiptProductIds(raw, metadata) {
   const arrayCandidates = [
     raw?.latest_receipt_info,
@@ -408,9 +425,9 @@ function extractReceiptProductIds(raw, metadata) {
     .flatMap((candidate) => parseArrayLike(candidate))
     .flatMap((entry) => (isPlainObject(entry) ? [entry.product_id, entry.productId] : []));
 
-  return [...directCandidates, ...fromArrays]
+  return [...new Set([...directCandidates, ...fromArrays]
     .map((value) => norm(value))
-    .filter(Boolean);
+    .filter(Boolean))];
 }
 
 function normalizeModuleToken(value) {
