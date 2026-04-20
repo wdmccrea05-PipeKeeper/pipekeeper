@@ -122,12 +122,14 @@ function interpolate(str, vars) {
 }
 
 export const translations = Object.fromEntries(Object.entries(rawLocales).map(([lang, pack]) => {
-  const withCriticals = deepMerge(pack, CRITICAL_FALLBACKS);
-  const withHome = deepMerge(withCriticals, homeTranslations[lang] || {});
+  const withDocs = deepMerge(pack, docsLocales[lang] || {});
+  const withHome = deepMerge(withDocs, homeTranslations[lang] || {});
   const withInsights = deepMerge(withHome, insightsTranslations[lang] || {});
-  const withIntel = lang === 'en' ? deepMerge(withInsights, { collectionIntelligence: enCollectionIntelligence }) : withInsights;
-  const withDocs = deepMerge(withIntel, docsLocales[lang] || {});
-  return [lang, withDocs];
+  const withIntel = lang === 'en'
+    ? deepMerge(withInsights, { collectionIntelligence: enCollectionIntelligence })
+    : withInsights;
+  const withCriticals = deepMerge(withIntel, CRITICAL_FALLBACKS);
+  return [lang, withCriticals];
 }));
 
 function readLanguage(languageOverride = null) {
