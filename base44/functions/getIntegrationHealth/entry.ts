@@ -1,5 +1,5 @@
 // Admin-only: Get subscription integration health metrics
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
 
 function safeParsePayload(payload: unknown): Record<string, any> {
   if (!payload) return {};
@@ -55,45 +55,59 @@ Deno.serve(async (req) => {
       const featureArea = payload.feature_area || event.event_source || "unknown";
       const module = payload.module || "shared";
       const estimatedCredits = toNumber(payload.estimated_credits) || 1;
+      const billableCredits = toNumber(payload.billable_credits);
       const cached = Boolean(payload.cached);
       const isAdmin = Boolean(payload.is_admin_usage);
       const userTier = String(payload.user_tier || "unknown").toLowerCase();
       const failed = !event.success;
       const retryLike = String(event.event_type || "").toLowerCase().includes("retry") || toNumber(payload.retry_attempt) > 0;
 
-      return { endpoint, featureArea, module, estimatedCredits, cached, isAdmin, userTier, failed, retryLike };
+      return { endpoint, featureArea, module, estimatedCredits, billableCredits, cached, isAdmin, userTier, failed, retryLike };
     });
 
-    const byEndpoint = new Map<string, { calls: number; credits: number; failures: number }>();
+    const byEndpoint = new Map<string, { calls: number; estimatedCredits: number; billableCredits: number; failures: number }>();
     for (const row of attributionRows) {
       const key = `${row.endpoint}|${row.featureArea}|${row.module}`;
-      const existing = byEndpoint.get(key) || { calls: 0, credits: 0, failures: 0 };
+      const existing = byEndpoint.get(key) || { calls: 0, estimatedCredits: 0, billableCredits: 0, failures: 0 };
       existing.calls += 1;
-      existing.credits += row.estimatedCredits;
+      existing.estimatedCredits += row.estimatedCredits;
+      existing.billableCredits += row.billableCredits || row.estimatedCredits;
       if (row.failed) existing.failures += 1;
       byEndpoint.set(key, existing);
     }
     const topConsumers = [...byEndpoint.entries()]
       .map(([key, value]) => {
         const [endpoint, feature_area, module] = key.split("|");
-        return { endpoint, feature_area, module, calls: value.calls, estimated_credits: value.credits, failures: value.failures };
+        return {
+          endpoint,
+          feature_area,
+          module,
+          calls: value.calls,
+          estimated_credits: value.estimatedCredits,
+          billable_credits: value.billableCredits,
+          failures: value.failures,
+        };
       })
-      .sort((a, b) => b.estimated_credits - a.estimated_credits)
+      .sort((a, b) => b.billable_credits - a.billable_credits)
       .slice(0, 10);
 
-    const totalCreditsObserved = attributionRows.reduce((sum, row) => sum + row.estimatedCredits, 0);
+    const totalEstimatedCreditsObserved = attributionRows.reduce((sum, row) => sum + row.estimatedCredits, 0);
+    const totalBillableCreditsObserved = attributionRows.reduce((sum, row) => sum + (row.billableCredits || row.estimatedCredits), 0);
     const dedupedHits = attributionRows.filter((row) => row.cached).length;
     const retriesObserved = attributionRows.filter((row) => row.retryLike).length;
     const freeTierCalls = attributionRows.filter((row) => row.userTier === "free").length;
     const paidTierCalls = attributionRows.filter((row) => row.userTier === "paid").length;
     const adminCalls = attributionRows.filter((row) => row.isAdmin).length;
+    const avoidedCredits = Math.max(0, totalEstimatedCreditsObserved - totalBillableCreditsObserved);
 
-    const monthlyCreditsAtCurrentScale = Math.round(totalCreditsObserved * (30 / windowDays));
+    const monthlyCreditsAtCurrentScale = Math.round(totalBillableCreditsObserved * (30 / windowDays));
+    const forecastConfidence = windowDays >= 30 ? "high" : windowDays >= 7 ? "medium" : "low";
     const forecast = {
       current_scale: monthlyCreditsAtCurrentScale,
       users_2x: Math.round(monthlyCreditsAtCurrentScale * 2),
       users_5x: Math.round(monthlyCreditsAtCurrentScale * 5),
       users_10x: Math.round(monthlyCreditsAtCurrentScale * 10),
+      confidence: forecastConfidence,
     };
 
     // Detect stuck checkouts (Cloudflare completed but no entitlement update within 10 min)
@@ -112,7 +126,9 @@ Deno.serve(async (req) => {
         topConsumers,
         totals: {
           events: recentEvents.length,
-          estimatedCreditsObserved: totalCreditsObserved,
+          estimatedCreditsObserved: totalEstimatedCreditsObserved,
+          billableCreditsObserved: totalBillableCreditsObserved,
+          estimatedCreditsAvoidedByCaching: avoidedCredits,
           dedupedResponses: dedupedHits,
           retryLikeEvents: retriesObserved,
           freeTierCalls,

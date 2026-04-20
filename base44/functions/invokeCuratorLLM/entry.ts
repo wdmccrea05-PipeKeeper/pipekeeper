@@ -121,13 +121,15 @@ Deno.serve(async (req) => {
     if (cached && Date.now() - cached.cachedAt <= CACHE_TTL_MS) {
       const promptTokens = approximateTokens(resolvedPrompt);
       const completionTokens = approximateTokens(cached.text);
+      const estimatedCredits = approximateCredits(promptTokens, completionTokens);
       await trackUsage(base44, {
         ...baseUsagePayload,
         success: true,
         cached: true,
         estimated_prompt_tokens: promptTokens,
         estimated_completion_tokens: completionTokens,
-        estimated_credits: 0,
+        estimated_credits: estimatedCredits,
+        billable_credits: 0,
         latency_ms: Date.now() - startedAt,
       });
       return Response.json({ result: cached.text, cached: true, request_id: requestId || null });
@@ -153,6 +155,7 @@ Deno.serve(async (req) => {
       estimated_prompt_tokens: promptTokens,
       estimated_completion_tokens: completionTokens,
       estimated_credits: approximateCredits(promptTokens, completionTokens),
+      billable_credits: approximateCredits(promptTokens, completionTokens),
       latency_ms: Date.now() - startedAt,
     });
 
