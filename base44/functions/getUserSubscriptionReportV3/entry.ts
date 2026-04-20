@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-const REPORT_VERSION = 'v3.1';
+const REPORT_VERSION = 'v3.2';
 const MAX_SAMPLE_SIZE = 25;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -13,6 +13,7 @@ interface NormalizedSub {
   userId: string;
   userEmail: string;
   isPaid: boolean;
+  subscriptionStatus: string;
   planKey: string | null;
   billingInterval: IntervalKind | null;
   price: number | null;
@@ -120,6 +121,12 @@ function parseDate(v: any): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+function roundCurrency(value: number): number {
+  // Round to 2 decimal places for currency-safe reporting.
+  // Number.EPSILON helps avoid floating-point representation edge cases.
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
 function inRange(d: Date, range: CalendarRange): boolean {
   return d >= range.start && d <= range.end;
 }
@@ -144,6 +151,12 @@ function runtimeModulesFromUser(user: any): string[] {
   if (explicit.length > 0) return explicit;
   if (user?.isFoundingMember || user?.legacy_broad_module_access) return [...MODULE_KEYS];
   return [];
+}
+
+function userIdentityKey(userId: string | null | undefined, userEmail: string | null | undefined): string {
+  // Canonical user identity key for report aggregation.
+  // Prefer stable user_id; fallback to normalized email when id is unavailable.
+  return String(userId || '').trim() || norm(userEmail || '');
 }
 
 // ─── Calendar ranges ──────────────────────────────────────────────────────────
@@ -295,6 +308,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     userId:         String(raw.user_id || ''),
     userEmail:      norm(raw.user_email || ''),
     isPaid:         isActivePaid(raw),
+    subscriptionStatus: norm(raw.status || ''),
     planKey,
     billingInterval,
     price,
@@ -324,7 +338,7 @@ function calcRenewalPeriod(paidSubs: NormalizedSub[], range: CalendarRange) {
     (s) => s.renewalAt !== null && inRange(s.renewalAt, range) && s.price !== null && s.billingInterval !== null
   );
   const customers = new Set(renewing.map((s) => s.userId || s.userEmail).filter(Boolean)).size;
-  const revenue   = parseFloat(renewing.reduce((sum, s) => sum + (s.price ?? 0), 0).toFixed(2));
+  const revenue   = roundCurrency(renewing.reduce((sum, s) => sum + (s.price ?? 0), 0));
   return { customers, subscriptions: renewing.length, revenue };
 }
 
@@ -518,6 +532,7 @@ Deno.serve(async (req) => {
     //   directSingle: directly subscribed to that module
     //   viaBundle: module included through a bundle
     const byProductCounts: Record<string, number> = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundles: 0, unknown: 0 };
+    const moduleDirectCounts: Record<string, number> = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0 };
     const moduleViaBundle: Record<string, number> = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0 };
     for (const sub of paidSubs) {
       if (sub.modules.length > 1) {
@@ -528,12 +543,26 @@ Deno.serve(async (req) => {
         }
       } else {
         const m = sub.modules[0] ?? sub.module;
-        if      (m === 'pipekeeper')    byProductCounts.pipekeeper++;
-        else if (m === 'whiskeykeeper') byProductCounts.whiskeykeeper++;
-        else if (m === 'cigarkeeper')   byProductCounts.cigarkeeper++;
-        else if (m === 'winekeeper')    byProductCounts.winekeeper++;
+        if      (m === 'pipekeeper')    { byProductCounts.pipekeeper++; moduleDirectCounts.pipekeeper++; }
+        else if (m === 'whiskeykeeper') { byProductCounts.whiskeykeeper++; moduleDirectCounts.whiskeykeeper++; }
+        else if (m === 'cigarkeeper')   { byProductCounts.cigarkeeper++; moduleDirectCounts.cigarkeeper++; }
+        else if (m === 'winekeeper')    { byProductCounts.winekeeper++; moduleDirectCounts.winekeeper++; }
         else                            byProductCounts.unknown++;
       }
+    }
+    const moduleEffectiveCounts = {
+      pipekeeper: moduleDirectCounts.pipekeeper + moduleViaBundle.pipekeeper,
+      whiskeykeeper: moduleDirectCounts.whiskeykeeper + moduleViaBundle.whiskeykeeper,
+      cigarkeeper: moduleDirectCounts.cigarkeeper + moduleViaBundle.cigarkeeper,
+      winekeeper: moduleDirectCounts.winekeeper + moduleViaBundle.winekeeper,
+    };
+
+    const paidSubsByUser = new Map<string, NormalizedSub[]>();
+    for (const sub of paidSubs) {
+      const key = userIdentityKey(sub.userId, sub.userEmail);
+      if (!key) continue;
+      if (!paidSubsByUser.has(key)) paidSubsByUser.set(key, []);
+      paidSubsByUser.get(key)!.push(sub);
     }
 
     // ── User-level paid / free classification ─────────────────────────────────
@@ -550,7 +579,14 @@ Deno.serve(async (req) => {
       usersWithStaleSyncTimestamp: 0,
       failedEntitlementSyncs: 0,
       failedStripeCallbacks: 0,
+      failedPurchases: 0,
       failedRestoreAttempts: 0,
+      entitlementMismatches: 0,
+      importFailures: 0,
+      scannerFailures: 0,
+      routeCrashes: 0,
+      multiPlanConflicts: 0,
+      activeModuleStateDrift: 0,
       recentSyncWriteOutcomes: {
         ok: 0,
         needs_sync: 0,
@@ -572,7 +608,14 @@ Deno.serve(async (req) => {
         multipleActiveSubscriptions: [] as string[],
         staleSyncTimestamp: [] as string[],
         failedStripeCallbacks: [] as string[],
+        failedPurchases: [] as string[],
         failedRestoreAttempts: [] as string[],
+        entitlementMismatches: [] as string[],
+        importFailures: [] as string[],
+        scannerFailures: [] as string[],
+        routeCrashes: [] as string[],
+        multiPlanConflicts: [] as string[],
+        activeModuleStateDrift: [] as string[],
         recentAdminOverrides: [] as string[],
         recentSubscriptionStateChanges: [] as string[],
       },
@@ -583,48 +626,42 @@ Deno.serve(async (req) => {
     };
 
     for (const u of uniqueUsers) {
-      const rawUserSubs = getUserRawSubs(u);
-      const activePaidUserSubs = rawUserSubs.filter(isActivePaid);
-      const normalizedActiveSubs = activePaidUserSubs.map((raw) => normalizeSub(raw, u));
-
-      // Primary: subscription rows. Secondary: user entitlement flags.
-      let isPaid = activePaidUserSubs.length > 0;
-      if (!isPaid) {
-        isPaid = !!(u.has_paid_access || u.pipekeeper_paid || u.whiskeykeeper_paid || u.cigarkeeper_paid || u.winekeeper_paid);
-      }
-
-      // Best subscription: prefer active, then trialing, then most recent
-      const sortedSubs = [...activePaidUserSubs].sort((a, b) => {
-        const rank = (s: any) => norm(s.status) === 'active' ? 2 : norm(s.status) === 'trialing' ? 1 : 0;
-        const rd = rank(b) - rank(a);
-        if (rd !== 0) return rd;
-        return new Date(b.current_period_start || b.created_date || 0).getTime() -
-               new Date(a.current_period_start || a.created_date || 0).getTime();
-      });
-
-      const bestRaw = sortedSubs[0] ?? null;
-      const bestSub = bestRaw ? normalizeSub(bestRaw, u) : null;
-
-      // Collect all active modules for this user
-      const allUserModules = uniqueModules(normalizedActiveSubs.flatMap((s) => s.modules));
+      const userPaidSubs = paidSubsByUser.get(userIdentityKey(u.id, u.email)) || [];
+      const isPaid = userPaidSubs.length > 0;
+      const allUserModules = uniqueModules(userPaidSubs.flatMap((s) => s.modules));
       const summaryModules = allUserModules;
       const runtimeModules = runtimeModulesFromUser(u);
+      const productLabels = [...new Set(userPaidSubs.map((s) => s.productLabel).filter(Boolean))];
+      const intervals = [...new Set(userPaidSubs.map((s) => s.billingInterval).filter((v): v is IntervalKind => v === 'monthly' || v === 'annual'))];
+      const renewalEligibleSubs = userPaidSubs.filter((s) => s.renewalAt && s.price !== null && s.billingInterval !== null);
+      const sortedByCreatedDesc = [...userPaidSubs].sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+      const sortedByRenewalAsc = [...renewalEligibleSubs].sort((a, b) => (a.renewalAt?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.renewalAt?.getTime() ?? Number.MAX_SAFE_INTEGER));
+      const primarySub = sortedByCreatedDesc[0] ?? null;
+      const nextRenewalSub = sortedByRenewalAsc[0] ?? null;
+      const totalRenewalAmount = roundCurrency(renewalEligibleSubs.reduce((sum, s) => sum + (s.renewalAmount ?? 0), 0));
+      const hasMultipleActivePlans = userPaidSubs.length > 1;
 
-      if (activePaidUserSubs.length > 1) {
+      if (userPaidSubs.length > 1) {
         diagnostics.usersWithMultipleActiveSubscriptions++;
+        diagnostics.multiPlanConflicts++;
         pushSample(diagnostics.samples.multipleActiveSubscriptions, norm(u.email || ''));
+        pushSample(diagnostics.samples.multiPlanConflicts, norm(u.email || ''));
       }
-      if (activePaidUserSubs.length > 0 && summaryModules.length === 0) {
+      if (userPaidSubs.length > 0 && summaryModules.length === 0) {
         diagnostics.usersWithActiveSubscriptionNoPaidModules++;
+        diagnostics.activeModuleStateDrift++;
         pushSample(diagnostics.samples.activeNoModules, norm(u.email || ''));
+        pushSample(diagnostics.samples.activeModuleStateDrift, norm(u.email || ''));
       }
-      if (activePaidUserSubs.length === 0 && runtimeModules.length > 0) {
+      if (userPaidSubs.length === 0 && runtimeModules.length > 0) {
         diagnostics.usersWithPaidModulesNoActiveSubscription++;
         pushSample(diagnostics.samples.modulesNoActiveSubscription, norm(u.email || ''));
       }
       if (summaryModules.join(',') !== runtimeModules.join(',')) {
         diagnostics.usersWithSummaryRuntimeMismatch++;
+        diagnostics.entitlementMismatches++;
         pushSample(diagnostics.samples.summaryRuntimeMismatch, norm(u.email || ''));
+        pushSample(diagnostics.samples.entitlementMismatches, norm(u.email || ''));
       }
       if (isPaid && runtimeModules.length === 0 && Boolean(u?.isFoundingMember || u?.legacy_broad_module_access)) {
         diagnostics.usersRelyingOnLegacyFallbackAccess++;
@@ -651,15 +688,19 @@ Deno.serve(async (req) => {
         email:               norm(u.email || ''),
         role:                u.role || 'user',
         created_date:        u.created_date || '',
-        subscription_status: isPaid ? (norm(bestRaw?.status) || 'active') : 'none',
-        // ── New enriched fields ──────────────────────────────────────────────
-        product:             bestSub?.productLabel ?? (isPaid ? 'Unknown' : 'Free'),
+        subscription_status: isPaid ? (primarySub?.subscriptionStatus || 'active') : 'none',
+        product:             primarySub?.productLabel ?? (isPaid ? 'Unknown' : 'Free'),
         modules:             allUserModules,
-        billing_interval:    bestSub?.billingInterval ?? null,
-        subscribe_date:      bestSub?.createdAt?.toISOString() ?? null,
-        renewal_date:        bestSub?.renewalAt?.toISOString() ?? null,
-        renewal_amount:      bestSub?.renewalAmount ?? null,
-        platform:            bestSub?.platform ?? null,
+        active_subscription_count: userPaidSubs.length,
+        active_products:     productLabels,
+        active_billing_intervals: intervals,
+        billing_interval:    intervals.length > 1 ? 'mixed' : (intervals[0] ?? null),
+        subscribe_date:      hasMultipleActivePlans ? null : (primarySub?.createdAt?.toISOString() ?? null),
+        renewal_date:        hasMultipleActivePlans ? (nextRenewalSub?.renewalAt?.toISOString() ?? null) : (primarySub?.renewalAt?.toISOString() ?? null),
+        renewal_amount:      hasMultipleActivePlans ? (totalRenewalAmount || null) : (primarySub?.renewalAmount ?? null),
+        renewal_subscription_count: renewalEligibleSubs.length,
+        has_multiple_active_plans: hasMultipleActivePlans,
+        platform:            primarySub?.platform ?? null,
         // User entitlement flags (direct from user record — source of truth)
         pipekeeper_paid:     !!u.pipekeeper_paid,
         whiskeykeeper_paid:  !!u.whiskeykeeper_paid,
@@ -690,6 +731,17 @@ Deno.serve(async (req) => {
       if (email) {
         pushSample(diagnostics.samples.failedStripeCallbacks, `${email} (${status})`);
       }
+    });
+
+    const failedPurchases = allSubscriptions.filter((s) => {
+      const status = norm(s.status || '');
+      return status === 'incomplete' || status === 'incomplete_expired';
+    });
+    diagnostics.failedPurchases = failedPurchases.length;
+    failedPurchases.forEach((s) => {
+      const email = resolveSubscriptionEmail(s);
+      const status = norm(s?.status || 'unknown');
+      if (email) pushSample(diagnostics.samples.failedPurchases, `${email} (${status})`);
     });
 
     const restoreFailures = allSubscriptions.filter((s) => {
@@ -762,8 +814,8 @@ Deno.serve(async (req) => {
     // ── MRR / ARR ─────────────────────────────────────────────────────────────
     const mrrSubs  = paidSubs.filter((s) => s.billingInterval !== null && s.price !== null);
     const totalMRR = mrrSubs.reduce((sum, s) => sum + mrrContribution(s), 0);
-    const mrr      = parseFloat(totalMRR.toFixed(2));
-    const arr      = parseFloat((mrr * 12).toFixed(2));
+    const mrr      = roundCurrency(totalMRR);
+    const arr      = roundCurrency(mrr * 12);
 
     // ── Renewal revenue by calendar period ────────────────────────────────────
     const renewalWeek    = calcRenewalPeriod(paidSubs, ranges.week);
@@ -814,7 +866,9 @@ Deno.serve(async (req) => {
         bundles: bundleCount,
         singleModule: singleCount,
         byProduct: byProductCounts,
+        byModuleDirect: moduleDirectCounts,
         moduleViaBundle,
+        byModuleEffective: moduleEffectiveCounts,
       },
       runRate: { mrr, arr },
       renewalRevenue: { week: renewalWeek, month: renewalMonth, quarter: renewalQuarter, year: renewalYear },
@@ -839,7 +893,14 @@ Deno.serve(async (req) => {
         usersWithStaleSyncTimestamp: 0,
         failedEntitlementSyncs: 0,
         failedStripeCallbacks: 0,
+        failedPurchases: 0,
         failedRestoreAttempts: 0,
+        entitlementMismatches: 0,
+        importFailures: 0,
+        scannerFailures: 0,
+        routeCrashes: 0,
+        multiPlanConflicts: 0,
+        activeModuleStateDrift: 0,
         recentSyncWriteOutcomes: { ok: 0, needs_sync: 0, error: 0, unknown: 0 },
         recentAdminOverrides: { totalManualSubscriptions: 0, last7d: 0 },
         recentSubscriptionStateChanges: { last7d: 0, atRisk: 0 },
@@ -850,7 +911,14 @@ Deno.serve(async (req) => {
           multipleActiveSubscriptions: [],
           staleSyncTimestamp: [],
           failedStripeCallbacks: [],
+          failedPurchases: [],
           failedRestoreAttempts: [],
+          entitlementMismatches: [],
+          importFailures: [],
+          scannerFailures: [],
+          routeCrashes: [],
+          multiPlanConflicts: [],
+          activeModuleStateDrift: [],
           recentAdminOverrides: [],
           recentSubscriptionStateChanges: [],
         },

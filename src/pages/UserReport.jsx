@@ -31,21 +31,21 @@ function MetricCard({ label, value, sub, uncertain = false }) {
 }
 
 // Monthly vs annual side-by-side pair
-function BillingIntervalBar({ monthly, annual }) {
+function BillingIntervalBar({ monthly, annual, t }) {
   const total = (monthly || 0) + (annual || 0);
   const monthlyPct = total > 0 ? Math.round((monthly / total) * 100) : 0;
   const annualPct  = total > 0 ? 100 - monthlyPct : 0;
   return (
     <div className="rounded-xl border border-[#8b6239]/30 bg-[#2a1f18]/50 p-4">
-      <p className="text-xs font-semibold text-[#E0D8C8]/70 uppercase tracking-wider mb-3">Billing Interval Split</p>
+      <p className="text-xs font-semibold text-[#E0D8C8]/70 uppercase tracking-wider mb-3">{t("userReport.subscriptions.billingIntervalSplit")}</p>
       <div className="flex gap-4 mb-3">
         <div className="flex-1 rounded-lg bg-[#2563eb]/15 border border-[#2563eb]/25 p-3 text-center">
           <p className="text-2xl font-bold text-[#93C5FD]">{monthly ?? 0}</p>
-          <p className="text-xs text-[#93C5FD]/70 mt-0.5">Monthly</p>
+          <p className="text-xs text-[#93C5FD]/70 mt-0.5">{t("userReport.subscriptions.monthly")}</p>
         </div>
         <div className="flex-1 rounded-lg bg-[#16a34a]/15 border border-[#16a34a]/25 p-3 text-center">
           <p className="text-2xl font-bold text-[#86EFAC]">{annual ?? 0}</p>
-          <p className="text-xs text-[#86EFAC]/70 mt-0.5">Annual</p>
+          <p className="text-xs text-[#86EFAC]/70 mt-0.5">{t("userReport.subscriptions.annual")}</p>
         </div>
       </div>
       {total > 0 && (
@@ -56,8 +56,8 @@ function BillingIntervalBar({ monthly, annual }) {
       )}
       {total > 0 && (
         <div className="flex justify-between mt-1">
-          <span className="text-xs text-[#93C5FD]/60">{monthlyPct}% monthly</span>
-          <span className="text-xs text-[#86EFAC]/60">{annualPct}% annual</span>
+          <span className="text-xs text-[#93C5FD]/60">{t("userReport.subscriptions.monthlyPct", { pct: monthlyPct })}</span>
+          <span className="text-xs text-[#86EFAC]/60">{t("userReport.subscriptions.annualPct", { pct: annualPct })}</span>
         </div>
       )}
     </div>
@@ -106,6 +106,7 @@ export default function UserReport() {
   const [sortDirection, setSortDirection]     = useState('desc');
   const [isSyncing, setIsSyncing]             = useState(false);
   const [renewalsPeriod, setRenewalsPeriod]   = useState('month');
+  const DATE_COLUMNS = ['created_date', 'subscription_end', 'renewal_date', 'subscribe_date'];
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
@@ -162,7 +163,7 @@ export default function UserReport() {
     const sortFn = (a, b) => {
       let aVal = a[sortColumn];
       let bVal = b[sortColumn];
-      if (sortColumn === 'created_date' || sortColumn === 'subscription_end') {
+      if (DATE_COLUMNS.includes(sortColumn)) {
         aVal = new Date(aVal || 0);
         bVal = new Date(bVal || 0);
       }
@@ -232,73 +233,82 @@ export default function UserReport() {
   // ── CSV export — V3 canonical schema ─────────────────────────────────────
   function exportCSV() {
     const metricRows = [
-      ['Metric', 'Value'],
-      // Accounts
-      ['--- ACCOUNTS ---', ''],
-      ['Total Accounts',           accounts.total    ?? 0],
-      ['Paid Accounts',            accounts.paid     ?? 0],
-      ['Free Accounts',            accounts.free     ?? 0],
-      ['Paid %',                   `${accounts.paidPct ?? 0}%`],
-      ['Signup Source — Web',      accounts.signupSources?.web         ?? 0],
-      ['Signup Source — Apple',    accounts.signupSources?.apple       ?? 0],
-      ['Signup Source — Google Play', accounts.signupSources?.googlePlay ?? 0],
-      ['Signup Source — Unknown',  accounts.signupSources?.unknown     ?? 0],
-      ['New Accounts — Today',     accounts.newAccounts?.today   ?? 0],
-      ['New Accounts — This Week', accounts.newAccounts?.week    ?? 0],
-      ['New Accounts — This Month', accounts.newAccounts?.month  ?? 0],
-      ['New Accounts — This Quarter', accounts.newAccounts?.quarter ?? 0],
-      ['New Accounts — This Year', accounts.newAccounts?.year    ?? 0],
-      // Subscriptions
-      ['--- SUBSCRIPTIONS ---', ''],
-      ['Total Active Paid Subscriptions', subscriptions.totalActivePaid ?? 0],
-      ['Monthly Subscriptions',          subscriptions.monthly ?? 0],
-      ['Annual Subscriptions',           subscriptions.annual  ?? 0],
-      ['PipeKeeper',                     subscriptions.byProduct?.pipekeeper    ?? 0],
-      ['WhiskeyKeeper',                  subscriptions.byProduct?.whiskeykeeper ?? 0],
-      ['CigarKeeper',                    subscriptions.byProduct?.cigarkeeper   ?? 0],
-      ['WineKeeper (Not Launched)',      subscriptions.byProduct?.winekeeper    ?? 0],
-      ['Bundles',                        subscriptions.byProduct?.bundles       ?? 0],
-      // Run Rate
-      ['--- RUN RATE ---', ''],
-      ['MRR',  `$${(runRate.mrr ?? 0).toFixed(2)}`],
-      ['ARR',  `$${(runRate.arr ?? 0).toFixed(2)}`],
-      // Renewal Revenue
-      ['--- RENEWAL REVENUE ---', ''],
-      ['Renewal Revenue — This Week (customers)',      renewalRevenue.week?.customers     ?? 0],
-      ['Renewal Revenue — This Week (subs)',           renewalRevenue.week?.subscriptions ?? 0],
-      ['Renewal Revenue — This Week ($)',             `$${(renewalRevenue.week?.revenue    ?? 0).toFixed(2)}`],
-      ['Renewal Revenue — This Month (customers)',     renewalRevenue.month?.customers     ?? 0],
-      ['Renewal Revenue — This Month (subs)',          renewalRevenue.month?.subscriptions ?? 0],
-      ['Renewal Revenue — This Month ($)',            `$${(renewalRevenue.month?.revenue   ?? 0).toFixed(2)}`],
-      ['Renewal Revenue — This Quarter (customers)',   renewalRevenue.quarter?.customers     ?? 0],
-      ['Renewal Revenue — This Quarter (subs)',        renewalRevenue.quarter?.subscriptions ?? 0],
-      ['Renewal Revenue — This Quarter ($)',          `$${(renewalRevenue.quarter?.revenue  ?? 0).toFixed(2)}`],
-      ['Renewal Revenue — This Year (customers)',      renewalRevenue.year?.customers     ?? 0],
-      ['Renewal Revenue — This Year (subs)',           renewalRevenue.year?.subscriptions ?? 0],
-      ['Renewal Revenue — This Year ($)',             `$${(renewalRevenue.year?.revenue   ?? 0).toFixed(2)}`],
-      // Excluded records
-      ['--- EXCLUDED RECORDS ---', ''],
-      ['Missing Price',          warnings.missingPrice      ?? 0],
-      ['Missing Billing Interval', warnings.missingInterval ?? 0],
-      ['Missing Platform',       warnings.missingPlatform   ?? 0],
-      ['Missing Plan Key',       warnings.missingPlanKey    ?? 0],
-      ['Unknown Product',        warnings.unknownProduct    ?? 0],
-      ['Duplicates Removed',     warnings.duplicatesRemoved ?? 0],
-      // Diagnostics
-      ['--- DIAGNOSTICS ---', ''],
-      ['Users with multiple active subscriptions', diagnostics.usersWithMultipleActiveSubscriptions ?? 0],
-      ['Users with active subscription but no paid modules', diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0],
-      ['Users with paid modules but no active subscription', diagnostics.usersWithPaidModulesNoActiveSubscription ?? 0],
-      ['Users with summary/runtime mismatch', diagnostics.usersWithSummaryRuntimeMismatch ?? 0],
-      ['Users relying on legacy fallback access', diagnostics.usersRelyingOnLegacyFallbackAccess ?? 0],
-      ['Users with stale sync timestamp', diagnostics.usersWithStaleSyncTimestamp ?? 0],
-      ['Failed entitlement syncs', diagnostics.failedEntitlementSyncs ?? 0],
-      ['Failed Stripe callbacks', diagnostics.failedStripeCallbacks ?? 0],
-      ['Failed restore attempts', diagnostics.failedRestoreAttempts ?? 0],
-      // User detail
+      [t("userReport.csv.metric"), t("userReport.csv.value")],
+      [t("userReport.csv.sections.accounts"), ''],
+      [t("userReport.accounts.totalAccounts"), accounts.total ?? 0],
+      [t("userReport.accounts.paidAccounts"), accounts.paid ?? 0],
+      [t("userReport.accounts.freeAccounts"), accounts.free ?? 0],
+      [t("userReport.accounts.paidPct"), `${accounts.paidPct ?? 0}%`],
+      [t("userReport.accounts.signupWeb"), accounts.signupSources?.web ?? 0],
+      [t("userReport.accounts.signupApple"), accounts.signupSources?.apple ?? 0],
+      [t("userReport.accounts.signupGooglePlay"), accounts.signupSources?.googlePlay ?? 0],
+      [t("userReport.accounts.signupUnknown"), accounts.signupSources?.unknown ?? 0],
+      [t("userReport.newAccounts.today"), accounts.newAccounts?.today ?? 0],
+      [t("userReport.newAccounts.week"), accounts.newAccounts?.week ?? 0],
+      [t("userReport.newAccounts.month"), accounts.newAccounts?.month ?? 0],
+      [t("userReport.newAccounts.quarter"), accounts.newAccounts?.quarter ?? 0],
+      [t("userReport.newAccounts.year"), accounts.newAccounts?.year ?? 0],
+      [t("userReport.csv.sections.subscriptions"), ''],
+      [t("userReport.subscriptions.totalActivePaid"), subscriptions.totalActivePaid ?? 0],
+      [t("userReport.subscriptions.monthlySubscriptions"), subscriptions.monthly ?? 0],
+      [t("userReport.subscriptions.annualSubscriptions"), subscriptions.annual ?? 0],
+      [t("userReport.subscriptions.pipekeeperSingles"), subscriptions.byProduct?.pipekeeper ?? 0],
+      [t("userReport.subscriptions.whiskeykeeperSingles"), subscriptions.byProduct?.whiskeykeeper ?? 0],
+      [t("userReport.subscriptions.cigarkeeperSingles"), subscriptions.byProduct?.cigarkeeper ?? 0],
+      [t("userReport.subscriptions.winekeeperSingles"), subscriptions.byProduct?.winekeeper ?? 0],
+      [t("userReport.subscriptions.bundles"), subscriptions.byProduct?.bundles ?? 0],
+      [t("userReport.subscriptions.unknown"), subscriptions.byProduct?.unknown ?? 0],
+      [t("userReport.subscriptions.moduleEffectivePipekeeper"), subscriptions.byModuleEffective?.pipekeeper ?? 0],
+      [t("userReport.subscriptions.moduleEffectiveWhiskeykeeper"), subscriptions.byModuleEffective?.whiskeykeeper ?? 0],
+      [t("userReport.subscriptions.moduleEffectiveCigarkeeper"), subscriptions.byModuleEffective?.cigarkeeper ?? 0],
+      [t("userReport.subscriptions.moduleEffectiveWinekeeper"), subscriptions.byModuleEffective?.winekeeper ?? 0],
+      [t("userReport.csv.sections.runRate"), ''],
+      [t("userReport.runRate.mrr"), `$${(runRate.mrr ?? 0).toFixed(2)}`],
+      [t("userReport.runRate.arr"), `$${(runRate.arr ?? 0).toFixed(2)}`],
+      [t("userReport.csv.sections.renewalRevenue"), ''],
+      [t("userReport.renewals.weekCustomers"), renewalRevenue.week?.customers ?? 0],
+      [t("userReport.renewals.weekSubscriptions"), renewalRevenue.week?.subscriptions ?? 0],
+      [t("userReport.renewals.weekRevenue"), `$${(renewalRevenue.week?.revenue ?? 0).toFixed(2)}`],
+      [t("userReport.renewals.monthCustomers"), renewalRevenue.month?.customers ?? 0],
+      [t("userReport.renewals.monthSubscriptions"), renewalRevenue.month?.subscriptions ?? 0],
+      [t("userReport.renewals.monthRevenue"), `$${(renewalRevenue.month?.revenue ?? 0).toFixed(2)}`],
+      [t("userReport.renewals.quarterCustomers"), renewalRevenue.quarter?.customers ?? 0],
+      [t("userReport.renewals.quarterSubscriptions"), renewalRevenue.quarter?.subscriptions ?? 0],
+      [t("userReport.renewals.quarterRevenue"), `$${(renewalRevenue.quarter?.revenue ?? 0).toFixed(2)}`],
+      [t("userReport.renewals.yearCustomers"), renewalRevenue.year?.customers ?? 0],
+      [t("userReport.renewals.yearSubscriptions"), renewalRevenue.year?.subscriptions ?? 0],
+      [t("userReport.renewals.yearRevenue"), `$${(renewalRevenue.year?.revenue ?? 0).toFixed(2)}`],
+      [t("userReport.csv.sections.excludedRecords"), ''],
+      [t("userReport.warnings.missingPrice"), warnings.missingPrice ?? 0],
+      [t("userReport.warnings.missingInterval"), warnings.missingInterval ?? 0],
+      [t("userReport.warnings.missingPlatform"), warnings.missingPlatform ?? 0],
+      [t("userReport.warnings.missingPlanKey"), warnings.missingPlanKey ?? 0],
+      [t("userReport.warnings.unknownProduct"), warnings.unknownProduct ?? 0],
+      [t("userReport.warnings.duplicatesRemoved"), warnings.duplicatesRemoved ?? 0],
+      [t("userReport.csv.sections.diagnostics"), ''],
+      [t("userReport.diagnostics.multipleActiveSubscriptions"), diagnostics.usersWithMultipleActiveSubscriptions ?? 0],
+      [t("userReport.diagnostics.activeNoModules"), diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0],
+      [t("userReport.diagnostics.modulesNoActive"), diagnostics.usersWithPaidModulesNoActiveSubscription ?? 0],
+      [t("userReport.diagnostics.summaryRuntimeMismatch"), diagnostics.usersWithSummaryRuntimeMismatch ?? 0],
+      [t("userReport.diagnostics.legacyFallback"), diagnostics.usersRelyingOnLegacyFallbackAccess ?? 0],
+      [t("userReport.diagnostics.staleSync"), diagnostics.usersWithStaleSyncTimestamp ?? 0],
+      [t("userReport.diagnostics.failedEntitlementSyncs"), diagnostics.failedEntitlementSyncs ?? 0],
+      [t("userReport.diagnostics.failedStripeCallbacks"), diagnostics.failedStripeCallbacks ?? 0],
+      [t("userReport.diagnostics.failedRestoreAttempts"), diagnostics.failedRestoreAttempts ?? 0],
       ['', ''],
-      ['--- USER DETAIL ---', ''],
-      ['tier', 'name', 'email', 'subscription_status', 'billing_interval', 'subscription_end', 'joined', 'platform'],
+      [t("userReport.csv.sections.userDetail"), ''],
+      [
+        t("userReport.csv.tier"),
+        t("userReport.name"),
+        t("userReport.email"),
+        t("userReport.status"),
+        t("userReport.userTable.planSummary"),
+        t("userReport.userTable.modules"),
+        t("userReport.userTable.billingContext"),
+        t("userReport.userTable.renewalContext"),
+        t("userReport.joined"),
+        t("userReport.userTable.platform"),
+      ],
     ];
 
     (report?.paid_users || []).forEach((u) => {
@@ -307,8 +317,17 @@ export default function UserReport() {
         u.full_name || '',
         u.email || '',
         u.subscription_status || '',
+        u.has_multiple_active_plans
+          ? t("userReport.userTable.multiPlanLabel", { count: u.active_subscription_count ?? 0 })
+          : (u.product || ''),
+        (u.modules || []).join(', '),
         u.billing_interval || '',
-        u.subscription_end ? new Date(u.subscription_end).toLocaleDateString() : '',
+        u.has_multiple_active_plans
+          ? t("userReport.userTable.multiPlanRenewalSummary", {
+            renewalCount: u.renewal_subscription_count ?? 0,
+            amount: u.renewal_amount ?? 0,
+          })
+          : (u.renewal_date ? `${new Date(u.renewal_date).toLocaleDateString()} · $${(u.renewal_amount ?? 0).toFixed(2)}` : ''),
         u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
         u.platform || '',
       ]);
@@ -319,6 +338,8 @@ export default function UserReport() {
         u.full_name || '',
         u.email || '',
         u.subscription_status || '',
+        '',
+        '',
         '',
         '',
         u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
@@ -334,10 +355,26 @@ export default function UserReport() {
     a.download = `user-report-v3_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('CSV exported');
+    toast.success(t("userReport.csv.exported"));
   }
 
-  const periodLabels = { week: 'This Week', month: 'This Month', quarter: 'This Quarter', year: 'This Year' };
+  const periodLabels = {
+    week: t("userReport.renewals.week"),
+    month: t("userReport.renewals.month"),
+    quarter: t("userReport.renewals.quarter"),
+    year: t("userReport.renewals.year"),
+  };
+  const paidUserColumns = ['full_name', 'email', 'product', 'modules', 'billing_interval', 'renewal_date', 'subscription_status', 'created_date'];
+  const paidUserHeaders = [
+    t("userReport.name"),
+    t("userReport.email"),
+    t("userReport.userTable.planSummary"),
+    t("userReport.userTable.modules"),
+    t("userReport.userTable.billingContext"),
+    t("userReport.userTable.renewalContext"),
+    t("userReport.status"),
+    t("userReport.joined"),
+  ];
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -348,10 +385,10 @@ export default function UserReport() {
           <p className="text-xs text-[#e8d5b7]/60 mt-1">
             {t("userReport.lastUpdated")}: {lastUpdated}
             {meta.reportVersion && (
-              <span className="ml-2 opacity-60">· Report: {meta.reportVersion}</span>
+              <span className="ml-2 opacity-60">· {t("userReport.reportVersion")}: {meta.reportVersion}</span>
             )}
             {meta.timezoneNote && (
-              <span className="ml-2 opacity-60">· Date ranges: {meta.timezoneNote}</span>
+              <span className="ml-2 opacity-60">· {t("userReport.dateRanges")}: {meta.timezoneNote}</span>
             )}
           </p>
         </div>
@@ -383,7 +420,7 @@ export default function UserReport() {
 
           <Button onClick={exportCSV} variant="outline" className="w-full gap-2 sm:w-auto" disabled={!report}>
             <Download className="w-4 h-4" />
-            Export CSV
+            {t("userReport.exportCsv")}
           </Button>
 
           <Button
@@ -392,7 +429,7 @@ export default function UserReport() {
             className="w-full gap-2 sm:w-auto"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {t("userReport.refresh")}
           </Button>
         </div>
       </div>
@@ -404,155 +441,164 @@ export default function UserReport() {
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 1 — ACCOUNTS
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Accounts" icon={Users} accentColor="#60A5FA">
+      <SectionCard title={t("userReport.accounts.sectionTitle")} icon={Users} accentColor="#60A5FA">
         {/* Top-level counts */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg min-w-0 break-words whitespace-normal ${viewFilter === 'all'  ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('all');  setShowPaidTable(true);  setShowFreeTable(true);  }}
           >
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Users className="w-4 h-4" />Total Accounts</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Users className="w-4 h-4" />{t("userReport.accounts.totalAccounts")}</CardTitle></CardHeader>
             <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.total ?? 0}</p></CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg min-w-0 break-words whitespace-normal ${viewFilter === 'paid' ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('paid'); setShowPaidTable(true);  setShowFreeTable(false); }}
           >
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Crown className="w-4 h-4" />Paid Accounts</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><Crown className="w-4 h-4" />{t("userReport.accounts.paidAccounts")}</CardTitle></CardHeader>
             <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.paid ?? 0}</p></CardContent>
           </Card>
           <Card
             className={`cursor-pointer transition-all hover:shadow-lg min-w-0 break-words whitespace-normal ${viewFilter === 'free' ? 'ring-2 ring-[#B48C4B]' : ''}`}
             onClick={() => { setViewFilter('free'); setShowPaidTable(false); setShowFreeTable(true);  }}
           >
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><UserX className="w-4 h-4" />Free Accounts</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><UserX className="w-4 h-4" />{t("userReport.accounts.freeAccounts")}</CardTitle></CardHeader>
             <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.free ?? 0}</p></CardContent>
           </Card>
           <Card className="min-w-0 break-words whitespace-normal">
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><TrendingUp className="w-4 h-4" />Paid %</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-[#E0D8C8]/70 flex items-center gap-2"><TrendingUp className="w-4 h-4" />{t("userReport.accounts.paidPct")}</CardTitle></CardHeader>
             <CardContent><p className="text-3xl font-bold text-[#F5F1E7]">{accounts.paidPct ?? 0}%</p></CardContent>
           </Card>
         </div>
 
         {/* Signup sources */}
         <div>
-          <p className="text-sm font-medium mb-2" style={{ color: '#E0D8C8' }}>Signup Sources</p>
+           <p className="text-sm font-medium mb-2" style={{ color: '#E0D8C8' }}>{t("userReport.accounts.signupSources")}</p>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <MetricCard label="Web"         value={accounts.signupSources?.web         ?? 0} />
-            <MetricCard label="Apple / iOS" value={accounts.signupSources?.apple       ?? 0} />
-            <MetricCard label="Google Play" value={accounts.signupSources?.googlePlay  ?? 0} />
-            <MetricCard label="Unknown"     value={accounts.signupSources?.unknown     ?? 0} />
-          </div>
-        </div>
-      </SectionCard>
+             <MetricCard label={t("userReport.accounts.signupWeb")} value={accounts.signupSources?.web ?? 0} />
+             <MetricCard label={t("userReport.accounts.signupApple")} value={accounts.signupSources?.apple ?? 0} />
+             <MetricCard label={t("userReport.accounts.signupGooglePlay")} value={accounts.signupSources?.googlePlay ?? 0} />
+             <MetricCard label={t("userReport.accounts.signupUnknown")} value={accounts.signupSources?.unknown ?? 0} />
+           </div>
+         </div>
+       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 2 — NEW ACCOUNTS
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="New Accounts" icon={CalendarDays} accentColor="#818CF8">
+      <SectionCard title={t("userReport.newAccounts.sectionTitle")} icon={CalendarDays} accentColor="#818CF8">
         <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.7)' }}>
-          Based on account <code style={{ color: 'rgba(224,216,200,0.85)' }}>created_at</code> only.
-          Each period is an independent UTC calendar window — counts are not necessarily cumulative.
+          {t("userReport.newAccounts.description")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
-          <MetricCard label="Today"        value={accounts.newAccounts?.today   ?? 0} />
-          <MetricCard label="This Week"    value={accounts.newAccounts?.week    ?? 0} />
-          <MetricCard label="This Month"   value={accounts.newAccounts?.month   ?? 0} />
-          <MetricCard label="This Quarter" value={accounts.newAccounts?.quarter ?? 0} />
-          <MetricCard label="This Year"    value={accounts.newAccounts?.year    ?? 0} />
+          <MetricCard label={t("userReport.newAccounts.today")} value={accounts.newAccounts?.today ?? 0} />
+          <MetricCard label={t("userReport.newAccounts.week")} value={accounts.newAccounts?.week ?? 0} />
+          <MetricCard label={t("userReport.newAccounts.month")} value={accounts.newAccounts?.month ?? 0} />
+          <MetricCard label={t("userReport.newAccounts.quarter")} value={accounts.newAccounts?.quarter ?? 0} />
+          <MetricCard label={t("userReport.newAccounts.year")} value={accounts.newAccounts?.year ?? 0} />
         </div>
       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 3 — SUBSCRIPTIONS
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Subscriptions" icon={Package} accentColor="#A78BFA">
+      <SectionCard title={t("userReport.subscriptions.sectionTitle")} icon={Package} accentColor="#A78BFA">
         {/* Total counts + billing interval visual */}
         <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 mb-4">
-          <MetricCard label="Total Active Paid Subscriptions" value={subscriptions.totalActivePaid ?? 0} sub="All active paid records (deduped per account per module)" />
+          <MetricCard label={t("userReport.subscriptions.totalActivePaid")} value={subscriptions.totalActivePaid ?? 0} sub={t("userReport.subscriptions.totalActivePaidSub")} />
         </div>
         <div className="mb-4">
-          <BillingIntervalBar monthly={subscriptions.monthly} annual={subscriptions.annual} />
+          <BillingIntervalBar monthly={subscriptions.monthly} annual={subscriptions.annual} t={t} />
         </div>
 
-        <SectionDivider label="By Product" />
+        <SectionDivider label={t("userReport.subscriptions.byProduct")} />
         <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.7)' }}>
-          Active paid subscriptions grouped by product. Single-module subs count toward their module; bundles are counted separately.
+          {t("userReport.subscriptions.byProductDescription")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          <MetricCard label="PipeKeeper"    value={subscriptions.byProduct?.pipekeeper    ?? 0} />
-          <MetricCard label="WhiskeyKeeper" value={subscriptions.byProduct?.whiskeykeeper ?? 0} />
-          <MetricCard label="CigarKeeper" value={subscriptions.byProduct?.cigarkeeper ?? 0} />
-          <MetricCard label="WineKeeper (Not Launched)" value={subscriptions.byProduct?.winekeeper ?? 0} />
-          <MetricCard label="Bundles"       value={subscriptions.byProduct?.bundles       ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.pipekeeperSingles")} value={subscriptions.byProduct?.pipekeeper ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.whiskeykeeperSingles")} value={subscriptions.byProduct?.whiskeykeeper ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.cigarkeeperSingles")} value={subscriptions.byProduct?.cigarkeeper ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.winekeeperSingles")} value={subscriptions.byProduct?.winekeeper ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.bundles")} value={subscriptions.byProduct?.bundles ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.unknown")} value={subscriptions.byProduct?.unknown ?? 0} />
+        </div>
+
+        <SectionDivider label={t("userReport.subscriptions.moduleCoverage")} />
+        <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.7)' }}>
+          {t("userReport.subscriptions.moduleCoverageDescription")}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <MetricCard label={t("userReport.subscriptions.moduleEffectivePipekeeper")} value={subscriptions.byModuleEffective?.pipekeeper ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.moduleEffectiveWhiskeykeeper")} value={subscriptions.byModuleEffective?.whiskeykeeper ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.moduleEffectiveCigarkeeper")} value={subscriptions.byModuleEffective?.cigarkeeper ?? 0} />
+          <MetricCard label={t("userReport.subscriptions.moduleEffectiveWinekeeper")} value={subscriptions.byModuleEffective?.winekeeper ?? 0} />
         </div>
       </SectionCard>
 
-      <SectionCard title="Subscription Diagnostics" icon={AlertTriangle} accentColor="#F87171">
-        <SectionDivider label="Integrity" />
+      <SectionCard title={t("userReport.diagnostics.sectionTitle")} icon={AlertTriangle} accentColor="#F87171">
+        <SectionDivider label={t("userReport.diagnostics.integrity")} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-          <MetricCard label="Multiple Active Subscriptions" value={diagnostics.usersWithMultipleActiveSubscriptions ?? 0} />
-          <MetricCard label="Active Sub, No Paid Modules" value={diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0} />
-          <MetricCard label="Paid Modules, No Active Sub" value={diagnostics.usersWithPaidModulesNoActiveSubscription ?? 0} />
-          <MetricCard label="Summary vs Runtime Mismatch" value={diagnostics.usersWithSummaryRuntimeMismatch ?? 0} />
-          <MetricCard label="Legacy Fallback Access Users" value={diagnostics.usersRelyingOnLegacyFallbackAccess ?? 0} />
-          <MetricCard label="Stale Entitlement Sync Users" value={diagnostics.usersWithStaleSyncTimestamp ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.multipleActiveSubscriptions")} value={diagnostics.usersWithMultipleActiveSubscriptions ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.activeNoModules")} value={diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.modulesNoActive")} value={diagnostics.usersWithPaidModulesNoActiveSubscription ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.summaryRuntimeMismatch")} value={diagnostics.usersWithSummaryRuntimeMismatch ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.legacyFallback")} value={diagnostics.usersRelyingOnLegacyFallbackAccess ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.staleSync")} value={diagnostics.usersWithStaleSyncTimestamp ?? 0} />
         </div>
-        <SectionDivider label="Failures / Ops" />
+        <SectionDivider label={t("userReport.diagnostics.failuresOps")} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <MetricCard label="Failed Entitlement Syncs" value={diagnostics.failedEntitlementSyncs ?? 0} />
-          <MetricCard label="Failed Stripe Callbacks" value={diagnostics.failedStripeCallbacks ?? 0} />
-          <MetricCard label="Failed Purchases" value={diagnostics.failedPurchases ?? diagnostics.failedCheckoutAttempts ?? 0} />
-          <MetricCard label="Failed Restore Attempts" value={diagnostics.failedRestoreAttempts ?? 0} />
-          <MetricCard label="Entitlement Mismatches" value={diagnostics.entitlementMismatches ?? diagnostics.usersWithSummaryRuntimeMismatch ?? 0} />
-          <MetricCard label="Import Failures" value={diagnostics.importFailures ?? diagnostics.failedImportAttempts ?? 0} />
-          <MetricCard label="Scanner Failures" value={diagnostics.scannerFailures ?? diagnostics.failedScannerAttempts ?? 0} />
-          <MetricCard label="Route Crashes" value={diagnostics.routeCrashes ?? diagnostics.failedRouteTransitions ?? 0} />
-          <MetricCard label="Multi-plan Conflicts" value={diagnostics.multiPlanConflicts ?? diagnostics.usersWithMultipleActiveSubscriptions ?? 0} />
-          <MetricCard label="Active Module Drift" value={diagnostics.activeModuleStateDrift ?? diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.failedEntitlementSyncs")} value={diagnostics.failedEntitlementSyncs ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.failedStripeCallbacks")} value={diagnostics.failedStripeCallbacks ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.failedPurchases")} value={diagnostics.failedPurchases ?? diagnostics.failedCheckoutAttempts ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.failedRestoreAttempts")} value={diagnostics.failedRestoreAttempts ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.entitlementMismatches")} value={diagnostics.entitlementMismatches ?? diagnostics.usersWithSummaryRuntimeMismatch ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.importFailures")} value={diagnostics.importFailures ?? diagnostics.failedImportAttempts ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.scannerFailures")} value={diagnostics.scannerFailures ?? diagnostics.failedScannerAttempts ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.routeCrashes")} value={diagnostics.routeCrashes ?? diagnostics.failedRouteTransitions ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.multiPlanConflicts")} value={diagnostics.multiPlanConflicts ?? diagnostics.usersWithMultipleActiveSubscriptions ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.activeModuleStateDrift")} value={diagnostics.activeModuleStateDrift ?? diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0} />
           <MetricCard
-            label="Recent Subscription State Changes (7d)"
+            label={t("userReport.diagnostics.recentSubscriptionStateChanges")}
             value={diagnostics.recentSubscriptionStateChanges?.last7d ?? 0}
-            sub={`At-risk: ${diagnostics.recentSubscriptionStateChanges?.atRisk ?? 0}`}
+            sub={t("userReport.diagnostics.atRisk", { count: diagnostics.recentSubscriptionStateChanges?.atRisk ?? 0 })}
           />
-          <MetricCard label="Recent Admin Overrides (7d)" value={diagnostics.recentAdminOverrides?.last7d ?? 0} sub={`Total manual: ${diagnostics.recentAdminOverrides?.totalManualSubscriptions ?? 0}`} />
+          <MetricCard label={t("userReport.diagnostics.recentAdminOverrides")} value={diagnostics.recentAdminOverrides?.last7d ?? 0} sub={t("userReport.diagnostics.totalManual", { count: diagnostics.recentAdminOverrides?.totalManualSubscriptions ?? 0 })} />
         </div>
-        <SectionDivider label="Sync Outcome States" />
+        <SectionDivider label={t("userReport.diagnostics.syncOutcomes")} />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <MetricCard label="OK" value={diagnostics.recentSyncWriteOutcomes?.ok ?? 0} />
-          <MetricCard label="Needs Sync" value={diagnostics.recentSyncWriteOutcomes?.needs_sync ?? 0} />
-          <MetricCard label="Error" value={diagnostics.recentSyncWriteOutcomes?.error ?? 0} />
-          <MetricCard label="Unknown" value={diagnostics.recentSyncWriteOutcomes?.unknown ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.syncOk")} value={diagnostics.recentSyncWriteOutcomes?.ok ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.syncNeeds")} value={diagnostics.recentSyncWriteOutcomes?.needs_sync ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.syncError")} value={diagnostics.recentSyncWriteOutcomes?.error ?? 0} />
+          <MetricCard label={t("userReport.diagnostics.syncUnknown")} value={diagnostics.recentSyncWriteOutcomes?.unknown ?? 0} />
         </div>
-        <SectionDivider label="Sample Anomaly Accounts" />
+        <SectionDivider label={t("userReport.diagnostics.sampleAnomalyAccounts")} />
         <DiagnosticsSamples diagnostics={diagnostics} />
       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 4 — CURRENT RUN RATE
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Current Run Rate" icon={DollarSign} accentColor="#34D399">
+      <SectionCard title={t("userReport.runRate.sectionTitle")} icon={DollarSign} accentColor="#34D399">
         <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.7)' }}>
-          MRR = sum(monthly prices) + sum(annual prices ÷ 12). ARR = MRR × 12.
-          Only subs with known billing interval and non-zero price are included.
+          {t("userReport.runRate.description")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <MetricCard label="MRR" value={`$${(runRate.mrr ?? 0).toFixed(2)}`} sub="Monthly Recurring Revenue" uncertain={hasDataWarning} />
-          <MetricCard label="ARR" value={`$${(runRate.arr ?? 0).toFixed(2)}`} sub="MRR × 12"                  uncertain={hasDataWarning} />
+          <MetricCard label={t("userReport.runRate.mrr")} value={`$${(runRate.mrr ?? 0).toFixed(2)}`} sub={t("userReport.runRate.mrrSub")} uncertain={hasDataWarning} />
+          <MetricCard label={t("userReport.runRate.arr")} value={`$${(runRate.arr ?? 0).toFixed(2)}`} sub={t("userReport.runRate.arrSub")} uncertain={hasDataWarning} />
         </div>
       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
           SECTION 5 — RENEWAL REVENUE
       ═══════════════════════════════════════════════════════════════════ */}
-      <SectionCard title="Renewal Revenue" icon={TrendingUp} accentColor="#F59E0B">
+      <SectionCard title={t("userReport.renewals.sectionTitle")} icon={TrendingUp} accentColor="#F59E0B">
         <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.7)' }}>
-          Actual billed price for subscriptions whose renewal date falls in each calendar period.
-          This is upcoming charges — not run-rate.
+          {t("userReport.renewals.description")}
         </p>
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-            <p className="text-sm font-medium" style={{ color: '#E0D8C8' }}>Period</p>
+            <p className="text-sm font-medium" style={{ color: '#E0D8C8' }}>{t("userReport.renewals.period")}</p>
             <div className="flex flex-wrap gap-1">
               {['week', 'month', 'quarter', 'year'].map((p) => (
                 <Button key={p} variant={renewalsPeriod === p ? 'default' : 'outline'} size="sm" onClick={() => setRenewalsPeriod(p)} className="text-xs">
@@ -565,20 +611,20 @@ export default function UserReport() {
             const pd = renewalRevenue[renewalsPeriod] || {};
             return (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <MetricCard label="Renewing Customers"     value={pd.customers     ?? 0} sub="Unique accounts" />
-                <MetricCard label="Renewing Subscriptions" value={pd.subscriptions ?? 0} sub="Subscription records" />
-                <MetricCard label="Renewal Revenue"        value={`$${(pd.revenue ?? 0).toFixed(2)}`} sub="Actual billed amounts" />
+                <MetricCard label={t("userReport.renewals.renewingCustomers")} value={pd.customers ?? 0} sub={t("userReport.renewals.uniqueAccounts")} />
+                <MetricCard label={t("userReport.renewals.renewingSubscriptions")} value={pd.subscriptions ?? 0} sub={t("userReport.renewals.subscriptionRecords")} />
+                <MetricCard label={t("userReport.renewals.renewalRevenue")} value={`$${(pd.revenue ?? 0).toFixed(2)}`} sub={t("userReport.renewals.actualBilledAmounts")} />
               </div>
             );
           })()}
         </div>
 
-        <SectionDivider label="All Periods" />
+        <SectionDivider label={t("userReport.renewals.allPeriods")} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricCard label="Renewal Rev — This Week"    value={`$${(renewalRevenue.week?.revenue    ?? 0).toFixed(2)}`} />
-          <MetricCard label="Renewal Rev — This Month"   value={`$${(renewalRevenue.month?.revenue   ?? 0).toFixed(2)}`} />
-          <MetricCard label="Renewal Rev — This Quarter" value={`$${(renewalRevenue.quarter?.revenue ?? 0).toFixed(2)}`} />
-          <MetricCard label="Renewal Rev — This Year"    value={`$${(renewalRevenue.year?.revenue    ?? 0).toFixed(2)}`} />
+          <MetricCard label={t("userReport.renewals.weekRevenue")} value={`$${(renewalRevenue.week?.revenue ?? 0).toFixed(2)}`} />
+          <MetricCard label={t("userReport.renewals.monthRevenue")} value={`$${(renewalRevenue.month?.revenue ?? 0).toFixed(2)}`} />
+          <MetricCard label={t("userReport.renewals.quarterRevenue")} value={`$${(renewalRevenue.quarter?.revenue ?? 0).toFixed(2)}`} />
+          <MetricCard label={t("userReport.renewals.yearRevenue")} value={`$${(renewalRevenue.year?.revenue ?? 0).toFixed(2)}`} />
         </div>
       </SectionCard>
 
@@ -616,19 +662,52 @@ export default function UserReport() {
               <CardContent>
                 <UserTable
                     rows={filteredData.paid}
-                    columns={['full_name', 'email', 'product', 'billing_interval', 'subscribe_date', 'renewal_date', 'renewal_amount', 'subscription_status', 'created_date']}
-                    headers={[t("userReport.name"), t("userReport.email"), 'Product', 'Interval', 'Subscribed', 'Renews', 'Renewal $', t("userReport.status"), t("userReport.joined")]}
+                    columns={paidUserColumns}
+                    headers={paidUserHeaders}
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                     onSort={handleSort}
                     emptyMessage={searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
                   renderCell={(col, user) => {
                     if (col === 'subscription_status') return <Badge className="bg-[#B48C4B]/20 text-[#F5F1E7] border border-[#B48C4B]/40">{user.subscription_status}</Badge>;
-                    if (col === 'billing_interval')    return <span className="capitalize text-[#E0D8C8]">{user.billing_interval || '-'}</span>;
-                    if (col === 'product')             return <span className="text-[#D4A574] font-medium">{user.product || '-'}</span>;
-                    if (col === 'subscribe_date')      return user.subscribe_date ? new Date(user.subscribe_date).toLocaleDateString() : '-';
-                    if (col === 'renewal_date')        return user.renewal_date   ? new Date(user.renewal_date).toLocaleDateString()   : '-';
-                    if (col === 'renewal_amount')      return user.renewal_amount != null ? <span className="text-[#86EFAC] font-medium">${user.renewal_amount.toFixed(2)}</span> : '-';
+                    if (col === 'billing_interval') return <span className="capitalize text-[#E0D8C8]">{user.billing_interval || '-'}</span>;
+                    if (col === 'product') return (
+                      <div className="space-y-0.5">
+                        <span className="text-[#D4A574] font-medium">
+                          {user.has_multiple_active_plans
+                            ? t("userReport.userTable.multiPlanLabel", { count: user.active_subscription_count ?? 0 })
+                            : (user.product || '-')}
+                        </span>
+                        {Array.isArray(user.active_products) && user.active_products.length > 1 && (
+                          <p className="text-xs text-[#E0D8C8]/60 truncate">{user.active_products.join(', ')}</p>
+                        )}
+                      </div>
+                    );
+                    if (col === 'modules') return Array.isArray(user.modules) && user.modules.length > 0
+                      ? <span className="text-xs text-[#E0D8C8]/85">{user.modules.join(', ')}</span>
+                      : '-';
+                    if (col === 'renewal_date') {
+                      if (user.has_multiple_active_plans) {
+                        const nextDate = user.renewal_date ? new Date(user.renewal_date).toLocaleDateString() : t("userReport.userTable.noRenewalDate");
+                        return (
+                          <div className="space-y-0.5">
+                            <p className="text-xs text-[#E0D8C8]/85">
+                              {t("userReport.userTable.multiPlanRenewalCount", { count: user.renewal_subscription_count ?? 0 })}
+                            </p>
+                            <p className="text-xs text-[#E0D8C8]/70">
+                              {t("userReport.userTable.nextRenewalAt", { date: nextDate })}
+                            </p>
+                            <p className="text-xs text-[#86EFAC]">
+                              {t("userReport.userTable.totalRenewalAmount", { amount: (user.renewal_amount ?? 0).toFixed(2) })}
+                            </p>
+                          </div>
+                        );
+                      }
+                      if (user.renewal_date && user.renewal_amount != null) {
+                        return <span className="text-[#86EFAC] font-medium">{`${new Date(user.renewal_date).toLocaleDateString()} · $${user.renewal_amount.toFixed(2)}`}</span>;
+                      }
+                      return '-';
+                    }
                     if (col === 'created_date')        return user.created_date ? new Date(user.created_date).toLocaleDateString() : '-';
                     return user[col] || '-';
                   }}
@@ -682,15 +761,16 @@ export default function UserReport() {
 // ─── Warnings panel ──────────────────────────────────────────────────────────
 
 function WarningsPanel({ warnings }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   // Excluded-record counts — source-data quality issues after dedup.
   const dataQualityItems = [
-    warnings.missingPrice      > 0 && `${warnings.missingPrice} paid sub(s) missing price — excluded from MRR/ARR and renewal revenue`,
-    warnings.missingInterval   > 0 && `${warnings.missingInterval} paid sub(s) missing billing interval — excluded from MRR/ARR and renewal revenue`,
-    warnings.missingPlatform   > 0 && `${warnings.missingPlatform} paid sub(s) missing platform — excluded from platform breakdown`,
-    warnings.missingPlanKey    > 0 && `${warnings.missingPlanKey} paid sub(s) with unknown plan key — price resolved from stored amount only`,
-    warnings.duplicatesRemoved > 0 && `${warnings.duplicatesRemoved} duplicate sub(s) removed (kept most recent per account per module)`,
+    warnings.missingPrice > 0 && t("userReport.warningPanel.items.missingPrice", { count: warnings.missingPrice }),
+    warnings.missingInterval > 0 && t("userReport.warningPanel.items.missingInterval", { count: warnings.missingInterval }),
+    warnings.missingPlatform > 0 && t("userReport.warningPanel.items.missingPlatform", { count: warnings.missingPlatform }),
+    warnings.missingPlanKey > 0 && t("userReport.warningPanel.items.missingPlanKey", { count: warnings.missingPlanKey }),
+    warnings.duplicatesRemoved > 0 && t("userReport.warningPanel.items.duplicatesRemoved", { count: warnings.duplicatesRemoved }),
   ].filter(Boolean);
 
   const totalCount = dataQualityItems.length;
@@ -704,7 +784,7 @@ function WarningsPanel({ warnings }) {
       >
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="text-sm font-semibold text-amber-200">Excluded records</span>
+          <span className="text-sm font-semibold text-amber-200">{t("userReport.warningPanel.title")}</span>
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">{totalCount}</span>
         </div>
         {expanded ? <ChevronUp className="w-4 h-4 text-amber-400/60" /> : <ChevronDown className="w-4 h-4 text-amber-400/60" />}
@@ -714,11 +794,10 @@ function WarningsPanel({ warnings }) {
           {dataQualityItems.length > 0 && (
             <div className="mt-3">
               <p className="text-xs font-semibold text-amber-300/70 uppercase tracking-wider mb-1.5">
-                Incomplete Source Records
+                {t("userReport.warningPanel.incompleteSourceRecords")}
               </p>
               <p className="text-xs text-amber-200/40 mb-2">
-                These records are missing required fields and have been excluded from the relevant metrics.
-                No values are guessed or inferred.
+                {t("userReport.warningPanel.description")}
               </p>
               <div className="space-y-1.5">
                 {dataQualityItems.map((item, i) => (
@@ -739,19 +818,20 @@ function WarningsPanel({ warnings }) {
 // ─── Helper sub-components ────────────────────────────────────────────────────
 
 function DiagnosticsSamples({ diagnostics }) {
-  const groups = buildDiagnosticsSampleGroups(diagnostics);
+  const { t } = useTranslation();
+  const groups = buildDiagnosticsSampleGroups(diagnostics, { translate: t });
   if (groups.length === 0) {
-    return <p className="text-sm text-[#E0D8C8]/60">No sampled anomaly emails.</p>;
+    return <p className="text-sm text-[#E0D8C8]/60">{t("userReport.diagnostics.noSampledAnomalyEmails")}</p>;
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {groups.map((group) => (
-        <div key={group.label} className="rounded-lg border border-[#8b6239]/20 bg-[#2a1f18]/40 p-3">
+        <div key={group.labelKey} className="rounded-lg border border-[#8b6239]/20 bg-[#2a1f18]/40 p-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-[#E0D8C8]/70 mb-2">{group.label}</p>
           <div className="space-y-1">
             {group.values.slice(0, 6).map((email) => (
-              <p key={`${group.label}-${email}`} className="text-xs text-[#E0D8C8]/80 font-mono truncate">{email}</p>
+              <p key={`${group.labelKey}-${email}`} className="text-xs text-[#E0D8C8]/80 font-mono truncate">{email}</p>
             ))}
           </div>
         </div>

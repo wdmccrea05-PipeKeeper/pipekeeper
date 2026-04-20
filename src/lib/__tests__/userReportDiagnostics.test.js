@@ -16,16 +16,18 @@ describe('userReportDiagnostics', () => {
       },
     };
 
-    const groups = buildDiagnosticsSampleGroups(diagnostics);
+    const groups = buildDiagnosticsSampleGroups(diagnostics, {
+      translate: (key) => `t:${key}`,
+    });
     const labels = groups.map((g) => g.label);
 
-    expect(labels).toContain('Multi-active');
-    expect(labels).toContain('Failed Stripe callbacks');
-    expect(labels).toContain('Failed purchases');
-    expect(labels).not.toContain('Summary/runtime drift');
-    expect(groups.find((g) => g.label === 'Multi-active').values[0]).toBe('on*@example.com');
-    expect(groups.find((g) => g.label === 'Failed Stripe callbacks').values[0]).toContain('(unpaid)');
-    expect(groups.find((g) => g.label === 'Failed Stripe callbacks').values[0]).toContain('@example.com');
+    expect(labels).toContain('t:userReport.diagnostics.sampleLabels.multipleActiveSubscriptions');
+    expect(labels).toContain('t:userReport.diagnostics.sampleLabels.failedStripeCallbacks');
+    expect(labels).toContain('t:userReport.diagnostics.sampleLabels.failedPurchases');
+    expect(labels).not.toContain('t:userReport.diagnostics.sampleLabels.summaryRuntimeMismatch');
+    expect(groups.find((g) => g.labelKey === 'userReport.diagnostics.sampleLabels.multipleActiveSubscriptions').values[0]).toBe('on*@example.com');
+    expect(groups.find((g) => g.labelKey === 'userReport.diagnostics.sampleLabels.failedStripeCallbacks').values[0]).toContain('(unpaid)');
+    expect(groups.find((g) => g.labelKey === 'userReport.diagnostics.sampleLabels.failedStripeCallbacks').values[0]).toContain('@example.com');
   });
 
   it('limits samples per group', () => {
@@ -37,5 +39,15 @@ describe('userReportDiagnostics', () => {
 
     const groups = buildDiagnosticsSampleGroups(diagnostics, { maxItems: 2 });
     expect(groups[0].values).toHaveLength(2);
+  });
+
+  it('uses friendly fallback labels when translator is not provided', () => {
+    const diagnostics = {
+      samples: {
+        multipleActiveSubscriptions: ['a@example.com'],
+      },
+    };
+    const groups = buildDiagnosticsSampleGroups(diagnostics);
+    expect(groups[0].label).toBe('Multi-active');
   });
 });
