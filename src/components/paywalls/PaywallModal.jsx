@@ -19,13 +19,12 @@ import { getUserSubscriptionState, isFreeUser, getCurrentPlanLabel } from '@/lib
 import { getAvailableUpgradeOptions } from '@/lib/billing/upgradePaths';
 import { SUBSCRIPTION_PLANS } from '@/lib/billing/subscriptionPlans';
 import { initiateCheckoutWithIntent } from '@/components/subscription/subscriptionHandler';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { toast } from 'sonner';
 
-const moduleLabels = {
-  pipekeeper: 'PipeKeeper',
-  whiskeykeeper: 'WhiskeyKeeper',
-  cigarkeeper: 'CigarKeeper',
-};
+function getModuleLabel(t, moduleKey) {
+  return t(`hub.${moduleKey}`, moduleKey);
+}
 
 // WineKeeper intentionally excluded — not publicly launched
 const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
@@ -47,7 +46,7 @@ function getVisibleOfferConfig(lockedModule) {
 
 // ─── Upgrade option card for existing subscribers ──────────────────────────
 
-function UpgradeOptionCard({ option, isSelected, isLoading, onSelect }) {
+function UpgradeOptionCard({ option, isSelected, isLoading, onSelect, t }) {
   const isBundleUpgrade = option.action === 'upgrade_to_bundle';
 
   return (
@@ -72,7 +71,7 @@ function UpgradeOptionCard({ option, isSelected, isLoading, onSelect }) {
               className="inline-flex mt-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
               style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.35)' }}
             >
-              Recommended
+              {t('subscription.recommended')}
             </span>
           )}
           {option.displayPrice != null && (
@@ -94,7 +93,7 @@ function UpgradeOptionCard({ option, isSelected, isLoading, onSelect }) {
               style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.3)' }}
             >
               <Check className="w-3 h-3" />
-              {moduleLabels[m] || m}
+              {getModuleLabel(t, m)}
             </span>
           ))}
         </div>
@@ -105,8 +104,8 @@ function UpgradeOptionCard({ option, isSelected, isLoading, onSelect }) {
 
 // ─── Full bundle user view (3-module) — nothing left to upgrade ─────────────
 
-function FullBundleUserView({ planLabel, onClose, onManage }) {
-  const bundleName = planLabel || '3-Module Bundle';
+function FullBundleUserView({ planLabel, onClose, onManage, t }) {
+  const bundleName = planLabel || t('subscriptionFull.threeModuleBundle');
   return (
     <div className="space-y-6 text-center py-4">
       <div
@@ -114,10 +113,10 @@ function FullBundleUserView({ planLabel, onClose, onManage }) {
         style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}
       >
         <Crown className="w-4 h-4" />
-        {bundleName} Active
+        {bundleName} {t('subscriptionFull.activeSuffix')}
       </div>
       <p style={{ color: 'rgba(224,216,200,0.8)' }} className="text-sm">
-        All three modules — PipeKeeper, WhiskeyKeeper, and CigarKeeper — are active and unlocked.
+        {t('subscriptionFull.allThreeUnlocked')}
       </p>
       <div className="flex flex-col gap-3">
         <button
@@ -125,14 +124,14 @@ function FullBundleUserView({ planLabel, onClose, onManage }) {
           className="w-full py-2.5 rounded-lg font-semibold text-sm"
           style={{ background: 'rgba(120,90,65,0.3)', color: '#E0D8C8', border: '1px solid rgba(120,90,65,0.4)' }}
         >
-          Manage Subscription
+          {t('subscriptionFull.manageSubscription')}
         </button>
         <button
           onClick={onClose}
           className="w-full py-2.5 rounded-lg font-semibold text-sm"
           style={{ color: 'rgba(224,216,200,0.5)' }}
         >
-          Close
+          {t('common.cancel')}
         </button>
       </div>
     </div>
@@ -146,6 +145,7 @@ function ExistingSubscriberView({
   user,
   onClose,
   onManage,
+  t,
 }) {
   const [selectedOption, setSelectedOption] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -206,7 +206,7 @@ function ExistingSubscriberView({
             billingPeriod: selectedOption.targetPlanKey?.includes('monthly') ? 'monthly' : 'annual',
           });
           if (!upgradeRes?.data?.success) {
-            const serverError = upgradeRes?.data?.error || upgradeRes?.error || 'Failed to prepare upgrade.';
+            const serverError = upgradeRes?.data?.error || upgradeRes?.error || t('subscription.checkoutError');
             setError(serverError);
             setIsProcessing(false);
             return;
@@ -224,9 +224,9 @@ function ExistingSubscriberView({
         cancelUrl
       );
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
+      const msg = err instanceof Error ? err.message : t('error.somethingWentWrong');
       if (msg === 'popup_blocked_or_redirect_disallowed') {
-        toast.error('Unable to open checkout here. Please try again from the Subscription page.');
+        toast.error(t('subscription.popupBlockedCheckout'));
         onClose?.();
       } else {
         setError(msg);
@@ -243,15 +243,15 @@ function ExistingSubscriberView({
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
           style={{ background: 'rgba(163,92,92,0.15)', color: '#D4A574', border: '1px solid rgba(163,92,92,0.3)' }}
         >
-          Current Plan: {planLabel}
+          {t('subscription.currentPlanWithLabel', { label: planLabel })}
         </div>
       )}
 
       <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
-        Choose what you'd like to do next:
+        {t('subscriptionFull.chooseNextAction')}
       </p>
       <p className="text-xs -mt-3" style={{ color: 'rgba(224,216,200,0.55)' }}>
-        Your current access stays active while checkout completes.
+        {t('subscription.alreadySubscribedUpgradeHint')}
       </p>
 
       {error && (
@@ -272,6 +272,7 @@ function ExistingSubscriberView({
             isSelected={selectedOption?.action === option.action}
             isLoading={isProcessing}
             onSelect={setSelectedOption}
+            t={t}
           />
         ))}
       </div>
@@ -286,7 +287,7 @@ function ExistingSubscriberView({
             color: '#F5F1E7',
           }}
         >
-          {isProcessing ? 'Processing…' : `Continue to Secure Checkout — ${selectedOption.label}`}
+          {isProcessing ? t('subscriptionFull.processing') : `${t('subscriptionFull.continue')} — ${selectedOption.label}`}
         </button>
       )}
 
@@ -296,14 +297,14 @@ function ExistingSubscriberView({
           className="flex-1 py-2 rounded-lg text-sm font-medium"
           style={{ background: 'rgba(120,90,65,0.2)', color: 'rgba(224,216,200,0.7)', border: '1px solid rgba(120,90,65,0.25)' }}
         >
-          Manage Subscription
+          {t('subscriptionFull.manageSubscription')}
         </button>
         <button
           onClick={onClose}
           className="flex-1 py-2 rounded-lg text-sm font-medium"
           style={{ color: 'rgba(224,216,200,0.5)' }}
         >
-          Keep Current Plan
+          {t('subscription.keepCurrentPlan')}
         </button>
       </div>
     </div>
@@ -324,6 +325,7 @@ export default function PaywallModal({
   user = null,
   activeSubscriptions = [],
 }) {
+  const { t } = useTranslation();
   const { selectPlan } = usePaywall();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [billingPeriod, setBillingPeriod] = useState('monthly');
@@ -346,37 +348,37 @@ export default function PaywallModal({
   const getHeader = () => {
     if (!offerConfig.moduleIsLaunchable) {
       return {
-        headline: 'Module Not Available',
-        subtext: 'This module is not publicly available yet.',
+        headline: t('modules.notAvailable'),
+        subtext: t('modules.notYetAvailable'),
       };
     }
 
     if (!freeUser) {
       const label = getCurrentPlanLabel(subscriptionState);
       return {
-        headline: 'Your Subscription',
-        subtext: label ? `You are currently on ${label}.` : '',
+        headline: t('subscriptionFull.yourSubscription'),
+        subtext: label ? t('subscription.currentPlanWithLabel', { label }) : '',
       };
     }
 
     switch (type) {
       case 'module':
         return {
-          headline: `Unlock ${moduleLabels[offerConfig.primaryModule] || 'Module'}`,
-          subtext: 'Start tracking your collection with smart organization and AI insights.',
+          headline: t('subscription.unlockModuleTitle', { module: getModuleLabel(t, offerConfig.primaryModule) }),
+          subtext: t('subscription.unlockModuleDescription'),
         };
       case 'multi':
         return {
-          headline: 'Unlock CollectionKeeper Pro',
-          subtext: 'Choose the plan that best fits your active modules.',
+          headline: t('subscriptionFull.unlockProFeaturesTitle'),
+          subtext: t('subscriptionFull.unlockProFeaturesDesc'),
         };
       case 'expansion':
         return {
-          headline: 'PipeKeeper Pro',
-          subtext: `You're currently tracking ${currentModules.length} keeper${currentModules.length !== 1 ? 's' : ''}.`,
+          headline: t('subscription.pipekeeperPro'),
+          subtext: t('subscription.expansionCurrentModules', { count: currentModules.length }),
         };
       default:
-        return { headline: 'Unlock CollectionKeeper Pro', subtext: '' };
+        return { headline: t('subscriptionFull.unlockProFeaturesTitle'), subtext: '' };
     }
   };
 
@@ -396,13 +398,13 @@ export default function PaywallModal({
 
   const renderPlanCards = () => {
     const cards = [
-      <PricingCard
-        key="single"
-        title={`${moduleLabels[offerConfig.primaryModule]} Pro`}
-        priceMonthly="2.99"
-        priceAnnual="29.99"
-        cta={`Unlock ${moduleLabels[offerConfig.primaryModule]}`}
-        highlighted
+        <PricingCard
+          key="single"
+          title={`${getModuleLabel(t, offerConfig.primaryModule)} Pro`}
+          priceMonthly="2.99"
+          priceAnnual="29.99"
+          cta={t('subscription.unlockModuleCta', { module: getModuleLabel(t, offerConfig.primaryModule) })}
+          highlighted
         isSelected={selectedPlan === 'single'}
         onSelect={() => handleSelectPlan('single')}
         isLoading={isLoading && selectedPlan === 'single'}
@@ -430,7 +432,7 @@ export default function PaywallModal({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-all z-10"
-          aria-label="Close"
+          aria-label={t('common.cancel')}
         >
           <X className="w-5 h-5" style={{ color: 'rgba(224, 216, 200, 0.6)' }} />
         </button>
@@ -453,6 +455,7 @@ export default function PaywallModal({
               planLabel={getCurrentPlanLabel(subscriptionState)}
               onClose={onClose}
               onManage={onManage}
+              t={t}
             />
           )}
 
@@ -463,6 +466,7 @@ export default function PaywallModal({
               user={user}
               onClose={onClose}
               onManage={onManage}
+              t={t}
             />
           )}
 
@@ -478,7 +482,7 @@ export default function PaywallModal({
                     background: billingPeriod === 'monthly' ? 'rgba(180, 140, 75, 0.2)' : 'transparent',
                   }}
                 >
-                  Monthly
+                  {t('subscriptionFull.monthly')}
                 </button>
                 <button
                   onClick={() => setBillingPeriod('annual')}
@@ -488,7 +492,7 @@ export default function PaywallModal({
                     background: billingPeriod === 'annual' ? 'rgba(180, 140, 75, 0.2)' : 'transparent',
                   }}
                 >
-                  Annual (Save 17%)
+                  {t('subscription.paywallAnnualSave')}
                 </button>
               </div>
 
@@ -498,7 +502,7 @@ export default function PaywallModal({
                 className="pt-6 border-t text-xs text-center"
                 style={{ borderColor: 'rgba(120, 90, 65, 0.2)', color: 'rgba(224, 216, 200, 0.5)' }}
               >
-                <p>Cancel anytime. Secure checkout via Stripe.</p>
+                <p>{t('subscription.cancelAnytimeStripe')}</p>
               </div>
             </>
           )}

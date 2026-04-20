@@ -20,8 +20,8 @@ export default function ModulePricingTiers({
   const activeModules = useMemo(() => getActiveModules(), []);
 
   const getSelectButtonLabel = (option) => {
-    if (option.isSelected) return 'Selected';
-    return option.type === 'single' ? 'Choose Individual Plan' : 'Choose Bundle';
+    if (option.isSelected) return t('subscription.selected');
+    return option.type === 'single' ? t('subscription.chooseIndividualPlan') : t('subscription.chooseBundle');
   };
 
   const currentTier = useMemo(() => detectBundleTier(selectedModules), [selectedModules]);
@@ -49,10 +49,10 @@ export default function ModulePricingTiers({
           id: 'bundle-founders',
           type: 'bundle_founders',
           modules: ['pipekeeper', 'whiskeykeeper'],
-          displayName: 'Founders Bundle',
+          displayName: t('subscription.foundersOffer'),
           price: 499, // $4.99
           priceAnnual: 4999, // $49.99
-          description: 'PipeKeeper + WhiskeyKeeper in one plan.',
+          description: t('subscription.foundersBundleDescription'),
           isBest: true,
           isSelected:
             selectedModules.length === 2 &&
@@ -65,10 +65,10 @@ export default function ModulePricingTiers({
           id: 'bundle-three-module',
           type: 'bundle_three_module',
           modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
-          displayName: 'Three Module Bundle',
+          displayName: t('subscriptionFull.threeModuleBundle'),
           price: 799, // $7.99
           priceAnnual: 7999, // $79.99
-          description: 'PipeKeeper + WhiskeyKeeper + CigarKeeper in one plan.',
+          description: t('subscription.threeModuleBundleDescription'),
           isBest: true,
           isSelected:
             selectedModules.length === 3 &&
@@ -87,7 +87,7 @@ export default function ModulePricingTiers({
           className="rounded-lg border px-4 py-3 text-sm"
           style={{ background: 'rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.35)', color: '#A7F3D0' }}
         >
-          Already subscribed? Choose an upgrade option to expand your access without losing current modules.
+          {t('subscription.alreadySubscribedUpgradeHint')}
         </div>
       )}
 
@@ -109,8 +109,8 @@ export default function ModulePricingTiers({
                 : 'bg-[#3a2a20]/50 text-[#E0D8C8]/70 hover:bg-[#3a2a20]'
             )}
           >
-            {period === 'monthly' ? 'Monthly' : 'Annual'}
-            {period === 'annual' && <span className="ml-2 text-xs">Save 17%</span>}
+            {period === 'monthly' ? t('subscriptionFull.monthly') : t('subscriptionFull.annualSave')}
+            {period === 'annual' && <span className="ml-2 text-xs">{t('subscription.paywallSavePercent')}</span>}
           </button>
         ))}
       </div>
@@ -118,13 +118,13 @@ export default function ModulePricingTiers({
       {/* Pricing cards grid */}
       {[{
         key: 'individual',
-        title: 'Individual Modules',
-        subtitle: 'PipeKeeper Pro, WhiskeyKeeper Pro, and CigarKeeper Pro',
+        title: t('subscriptionFull.individualModulesTitle'),
+        subtitle: t('subscriptionFull.individualModulesSubtitle'),
         options: pricingOptions.filter((option) => option.type === 'single'),
       }, {
         key: 'bundles',
-        title: 'Bundles',
-        subtitle: 'Founders Bundle and Three Module Bundle',
+        title: t('subscriptionFull.bundlesTitle'),
+        subtitle: t('subscriptionFull.bundlesSubtitle'),
         options: pricingOptions.filter((option) => option.type !== 'single'),
       }].map((section) => section.options.length > 0 && (
         <div key={section.key} className="space-y-3">
@@ -159,7 +159,7 @@ export default function ModulePricingTiers({
                 {option.isBest && (
                   <div className="absolute top-0 right-0 bg-[#D4A574] text-[#0f0b08] px-3 py-1 rounded-bl-lg text-xs font-bold flex items-center gap-1">
                     <Zap className="w-3 h-3" />
-                    {option.type === 'bundle_founders' ? 'Most Popular' : 'Best Value'}
+                    {option.type === 'bundle_founders' ? t('subscription.mostPopular') : t('subscription.bestValue')}
                   </div>
                 )}
 
@@ -174,7 +174,7 @@ export default function ModulePricingTiers({
                   {displayPrice}
                 </div>
                 <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                  {billingPeriod === 'monthly' ? 'per month' : 'per year'}
+                  {billingPeriod === 'monthly' ? t('subscription.perMonth') : t('subscription.perYear')}
                 </p>
               </div>
 
@@ -182,10 +182,10 @@ export default function ModulePricingTiers({
               {option.savings && option.savings.savingsPercentage > 0 && (
                 <div className="mb-4 px-3 py-2 bg-[#10B981]/20 rounded-lg border border-[#10B981]/40">
                   <p className="text-sm font-semibold" style={{ color: '#10B981' }}>
-                    Save {option.savings.savingsPercentage}%
+                    {t('subscription.savePercent', { percent: option.savings.savingsPercentage })}
                   </p>
                   <p className="text-xs" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                    vs individual pricing
+                    {t('subscription.vsIndividualPricing')}
                   </p>
                 </div>
               )}
@@ -232,7 +232,7 @@ export default function ModulePricingTiers({
       {selectedModules.length > 0 && (
         <div className="mt-8 p-6 rounded-xl border border-[#8b6239]/30" style={{ background: 'rgba(42, 31, 24, 0.5)' }}>
           <h4 className="font-semibold mb-2" style={{ color: '#F5F1E7' }}>
-            Selected Modules
+            {t('subscription.selectedModules')}
           </h4>
           <div className="flex flex-wrap gap-2 mb-4">
             {selectedModules.map(module => (
@@ -250,7 +250,7 @@ export default function ModulePricingTiers({
             ))}
           </div>
           <div className="flex justify-between items-center">
-            <span style={{ color: 'rgba(224,216,200,0.7)' }}>Total Monthly Cost:</span>
+            <span style={{ color: 'rgba(224,216,200,0.7)' }}>{t('subscription.totalMonthlyCost')}</span>
             <span className="text-2xl font-bold" style={{ color: '#D4A574' }}>
               {formatPrice(currentPrice)}
             </span>

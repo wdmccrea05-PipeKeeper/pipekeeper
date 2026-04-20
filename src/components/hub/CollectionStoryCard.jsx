@@ -300,13 +300,13 @@ export default function CollectionStoryCard() {
         )}
         {cigarVisible && (
           <div className="rounded-xl p-4 border border-[rgba(140,107,63,0.28)] bg-[rgba(140,107,63,0.10)]">
-            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">Cigar Types</p>
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.cigarTypesLabel')}</p>
             <p className="text-2xl font-bold mt-2 text-[#C89752]">{m.cigarTypes || m.cigars || 0}</p>
           </div>
         )}
         {cigarVisible && (m.totalCigarSticks || m.cigarSticks) ? (
           <div className="rounded-xl p-4 border border-[rgba(140,107,63,0.28)] bg-[rgba(140,107,63,0.10)]">
-            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">Sticks Owned</p>
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.sticksOwnedLabel')}</p>
             <p className="text-2xl font-bold mt-2 text-[#C89752]">{m.totalCigarSticks || m.cigarSticks || 0}</p>
           </div>
         ) : null}
@@ -352,7 +352,7 @@ export default function CollectionStoryCard() {
 
         {cigarVisible && h.mostSmokedCigar ? (
           <StoryCard
-            label="Most Smoked Cigar"
+            label={t('hub.mostSmokedCigar')}
             title={h.mostSmokedCigar.name}
             item={h.mostSmokedCigar}
             navigate={navigate}
@@ -361,7 +361,7 @@ export default function CollectionStoryCard() {
 
         {cigarVisible && h.favoriteCigar ? (
           <StoryCard
-            label="Favorite Cigar"
+            label={t('hub.favoriteCigar')}
             title={h.favoriteCigar.name}
             item={h.favoriteCigar}
             navigate={navigate}
@@ -370,7 +370,7 @@ export default function CollectionStoryCard() {
 
         {cigarVisible && h.topRatedCigar ? (
           <StoryCard
-            label="Top Rated Cigar"
+            label={t('hub.topRatedCigar')}
             title={h.topRatedCigar.name}
             item={h.topRatedCigar}
             navigate={navigate}
@@ -379,7 +379,7 @@ export default function CollectionStoryCard() {
 
         {cigarVisible && h.highestValueCigar ? (
           <StoryCard
-            label="Highest Value Cigar"
+            label={t('hub.highestValueCigar')}
             title={h.highestValueCigar.name}
             item={h.highestValueCigar}
             navigate={navigate}
@@ -431,20 +431,20 @@ export default function CollectionStoryCard() {
               if (navigator.share) {
                 await navigator.share({
                   title: t('hub.collectorSnapshot', "Your Collector's Snapshot"),
-                  text: story?.narrative?.slice(0, 200) || 'Check out my collection on CollectionKeeper!',
+                  text: story?.narrative?.slice(0, 200) || t('hub.shareCollectionFallback'),
                   url: storyUrl,
                 });
               } else {
                 await navigator.clipboard.writeText(storyUrl);
-                toast.success('Share link copied to clipboard!');
+                toast.success(t('hub.shareLinkCopied'));
               }
             } catch (err) {
               if (err?.name !== 'AbortError') {
                 try {
                   await navigator.clipboard.writeText(storyUrl);
-                  toast.success('Share link copied to clipboard!');
+                  toast.success(t('hub.shareLinkCopied'));
                 } catch {
-                  toast.error('Could not copy link.');
+                  toast.error(t('hub.couldNotCopyLink'));
                 }
               }
             }

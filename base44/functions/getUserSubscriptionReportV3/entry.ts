@@ -283,16 +283,74 @@ function parsePositiveMoney(v: unknown): number | null {
   return direct;
 }
 
-function parseMetadataObject(raw: any): Record<string, any> {
-  if (raw?.metadata_json && typeof raw.metadata_json === 'object') return raw.metadata_json;
-  const text = String(raw?.metadata_json || '').trim();
-  if (!text) return {};
+function isPlainObject(v: unknown): v is Record<string, any> {
+  return !!v && typeof v === 'object' && !Array.isArray(v);
+}
+
+function hasMeaningfulValue(v: unknown): boolean {
+  if (v === null || v === undefined) return false;
+  if (typeof v === 'string') return v.trim().length > 0;
+  return true;
+}
+
+function mergeMissing(target: Record<string, any>, source: Record<string, any>): Record<string, any> {
+  if (!isPlainObject(source)) return target;
+  for (const [key, value] of Object.entries(source)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    if (isPlainObject(value)) {
+      if (!isPlainObject(target[key])) target[key] = {};
+      mergeMissing(target[key], value);
+      continue;
+    }
+    if (!hasMeaningfulValue(target[key]) && hasMeaningfulValue(value)) {
+      target[key] = value;
+    }
+  }
+  return target;
+}
+
+function parseObjectLike(value: unknown): Record<string, any> | null {
+  if (isPlainObject(value)) return value;
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text) return null;
   try {
     const parsed = JSON.parse(text);
-    return parsed && typeof parsed === 'object' ? parsed : {};
+    return isPlainObject(parsed) ? parsed : null;
   } catch {
-    return {};
+    return null;
   }
+}
+
+function parseMetadataObject(raw: any): Record<string, any> {
+  const candidateFields = [
+    raw?.metadata_json,
+    raw?.metadata,
+    raw?.subscription_metadata,
+    raw?.provider_metadata,
+    raw?.stripe_metadata,
+    raw?.apple_metadata,
+    raw?.stripe_subscription_json,
+    raw?.stripe_price_json,
+    raw?.stripe_payload_json,
+    raw?.stripe_payload,
+    raw?.provider_payload_json,
+    raw?.provider_payload,
+    raw?.apple_receipt_json,
+    raw?.apple_receipt,
+    raw?.receipt_json,
+    raw?.entitlement_json,
+    raw?.entitlement_data,
+    raw?.latest_receipt_info,
+    raw?.latest_receipt,
+    raw?.data,
+  ];
+
+  const merged: Record<string, any> = {};
+  for (const candidate of candidateFields) {
+    const parsed = parseObjectLike(candidate);
+    if (parsed) mergeMissing(merged, parsed);
+  }
+  return merged;
 }
 
 function inferIntervalFromDateSpan(raw: any): IntervalKind | null {
@@ -307,11 +365,14 @@ function inferIntervalFromDateSpan(raw: any): IntervalKind | null {
 
 function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | null): string | null {
   const metadata = parseMetadataObject(raw);
+  const stripePriceId = raw?.items?.data?.[0]?.price?.id || raw?.price?.id || null;
   const candidates = [
     raw.planKey,
     raw.plan_key,
     raw.price_id,
     raw.stripe_price_id,
+    raw.provider_price_id,
+    stripePriceId,
     raw.apple_product_id,
     raw.plan_id,
     raw.plan_name,
@@ -325,6 +386,9 @@ function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | 
     metadata.planKey,
     metadata.price_id,
     metadata.stripe_price_id,
+    metadata.provider_price_id,
+    metadata?.items?.data?.[0]?.price?.id,
+    metadata?.price?.id,
     metadata.apple_product_id,
     metadata.plan_id,
     metadata.plan_name,
@@ -371,6 +435,7 @@ function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | 
 // Uses both top-level subscription fields and metadata payload hints.
 function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
   const metadata = parseMetadataObject(raw);
+  const stripeInterval = raw?.items?.data?.[0]?.price?.recurring?.interval || raw?.price?.recurring?.interval || null;
   const candidates = [
     raw.planKey,
     raw.plan_key,
@@ -383,6 +448,7 @@ function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
     raw.checkout_type,
     raw.product_kind,
     raw.product_label,
+    stripeInterval,
     metadata.plan_key,
     metadata.planKey,
     metadata.price_id,
@@ -394,6 +460,8 @@ function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
     metadata.checkout_type,
     metadata.product_kind,
     metadata.product_label,
+    metadata?.items?.data?.[0]?.price?.recurring?.interval,
+    metadata?.price?.recurring?.interval,
   ]
     .map((v) => norm(v || ''))
     .filter(Boolean);
@@ -472,11 +540,14 @@ function isActivePaid(raw: any): boolean {
 
 function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   const metadata = parseMetadataObject(raw);
+  const stripeRecurringInterval = raw?.items?.data?.[0]?.price?.recurring?.interval || raw?.price?.recurring?.interval || null;
   const directInterval = normalizeInterval(raw);
   const metadataInterval =
     normalizeIntervalToken(metadata.billing_interval) ||
     normalizeIntervalToken(metadata.billing_period) ||
+    normalizeIntervalToken(stripeRecurringInterval) ||
     normalizeIntervalToken(metadata?.recurring?.interval) ||
+    normalizeIntervalToken(metadata?.items?.data?.[0]?.price?.recurring?.interval) ||
     normalizeIntervalToken(metadata?.price?.recurring?.interval);
   const intervalFromIdentifiers = inferIntervalFromIdentifiers(raw);
   const intervalFromSpan = inferIntervalFromDateSpan(raw);
@@ -488,15 +559,25 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   let planKey = directPlanKey || inferredPlanKey || null;
   let catalog = lookupPlan(planKey);
 
-  const directAmount = parsePositiveMoney(raw.amount);
+  const directAmountFromPriceField =
+    typeof raw.price === 'number' || typeof raw.price === 'string'
+      ? parsePositiveMoney(raw.price)
+      : null;
+  const directAmount = parsePositiveMoney(raw.amount) || directAmountFromPriceField;
   const renewalAmountRecovered =
     parsePositiveNumber(raw.renewal_amount) ||
     parsePositiveNumber(raw.amount_total, { treatAsCents: true }) ||
     parsePositiveNumber(raw.unit_amount, { treatAsCents: true }) ||
+    parsePositiveNumber(raw?.price?.unit_amount, { treatAsCents: true }) ||
+    parsePositiveNumber(raw?.items?.data?.[0]?.price?.unit_amount, { treatAsCents: true }) ||
+    parsePositiveNumber(raw?.price?.amount_total, { treatAsCents: true }) ||
     parsePositiveNumber(metadata.renewal_amount) ||
     parsePositiveNumber(metadata.amount) ||
+    parsePositiveMoney(metadata.price) ||
     parsePositiveNumber(metadata.amount_total, { treatAsCents: true }) ||
     parsePositiveNumber(metadata.unit_amount, { treatAsCents: true }) ||
+    parsePositiveNumber(metadata?.items?.data?.[0]?.price?.unit_amount, { treatAsCents: true }) ||
+    parsePositiveNumber(metadata?.price?.amount_total, { treatAsCents: true }) ||
     parsePositiveNumber(metadata?.price?.unit_amount, { treatAsCents: true }) ||
     null;
 
