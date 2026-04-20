@@ -1,7 +1,7 @@
 export default [
   {
     // Test files — declare vitest globals so linter doesn't flag them.
-    // Patterns cover both root-level __tests__ and src/**/__tests__ paths.
+    // Patterns cover root-level, src/, and all nested __tests__ / *.test.* paths.
     files: [
       '**/__tests__/**/*.js',
       '**/__tests__/**/*.jsx',
@@ -11,6 +11,10 @@ export default [
       'src/**/__tests__/**/*.jsx',
       'src/**/__tests__/**/*.ts',
       'src/**/__tests__/**/*.tsx',
+      'src/components/**/__tests__/**/*.js',
+      'src/components/**/__tests__/**/*.jsx',
+      'src/components/**/__tests__/**/*.ts',
+      'src/components/**/__tests__/**/*.tsx',
       '**/*.test.js',
       '**/*.test.jsx',
       '**/*.test.ts',
@@ -19,6 +23,10 @@ export default [
       'src/**/*.test.jsx',
       'src/**/*.test.ts',
       'src/**/*.test.tsx',
+      'src/components/**/*.test.js',
+      'src/components/**/*.test.jsx',
+      'src/components/**/*.test.ts',
+      'src/components/**/*.test.tsx',
       '**/*.spec.js',
       '**/*.spec.jsx',
       '**/*.spec.ts',
@@ -27,6 +35,10 @@ export default [
       'src/**/*.spec.jsx',
       'src/**/*.spec.ts',
       'src/**/*.spec.tsx',
+      'src/components/**/*.spec.js',
+      'src/components/**/*.spec.jsx',
+      'src/components/**/*.spec.ts',
+      'src/components/**/*.spec.tsx',
     ],
     languageOptions: {
       globals: {
