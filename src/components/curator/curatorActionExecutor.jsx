@@ -19,9 +19,10 @@ import { buildSafeCollectionContext, buildPromptBlock } from './collectionContex
 
 const inflightCuratorRequests = new Map();
 const INFLIGHT_DEDUPE_WINDOW_MS = 15_000;
+const DEDUPE_CONTEXT_SAMPLE_LENGTH = 1_200;
 
 function getInFlightRequestKey(actionType, contextBlock) {
-  return `${actionType || 'unknown'}::${String(contextBlock || '').slice(0, 1200)}`;
+  return `${actionType || 'unknown'}::${String(contextBlock || '').slice(0, DEDUPE_CONTEXT_SAMPLE_LENGTH)}`;
 }
 
 /**

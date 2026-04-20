@@ -5,10 +5,12 @@ const CACHE_TTL_MS = 60 * 1000;
 const MAX_CACHE_ENTRIES = 250;
 
 function approximateTokens(text: string) {
+  // Lightweight heuristic for observability only (not billing-grade tokenization).
   return Math.max(0, Math.ceil(String(text || '').length / 4));
 }
 
 function approximateCredits(promptTokens: number, completionTokens: number) {
+  // Coarse credit model for trend/forecast analytics (1 credit ~ 900 tokens combined).
   const totalTokens = promptTokens + completionTokens;
   return Math.max(1, Math.ceil(totalTokens / 900));
 }
@@ -24,7 +26,7 @@ function normalizePrompt({ prompt, actionType, contextBlock }: { prompt?: string
 }
 
 function getCacheKey({ userEmail, actionType, prompt }: { userEmail: string; actionType?: string; prompt: string }) {
-  const normalizedPrompt = String(prompt || '').slice(0, 4000);
+  const normalizedPrompt = String(prompt || '');
   return `${userEmail}|${actionType || 'default'}|${normalizedPrompt}`;
 }
 
