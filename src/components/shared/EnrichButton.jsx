@@ -100,20 +100,43 @@ Field guidelines:
 }
 
 async function enrichCigar(record) {
+  const normalizeText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+  const sanitizeList = (value) => {
+    if (!Array.isArray(value)) return [];
+    return [...new Set(value.map((entry) => normalizeText(entry)).filter(Boolean))];
+  };
+  const currentAliases = sanitizeList(record.aliases || record.name_aliases);
+  const canonicalName = normalizeText(record.name);
+  const canonicalBrand = normalizeText(record.brand);
+  const canonicalLine = normalizeText(record.line);
+
   const missingFields = [];
+  if (!record.brand) missingFields.push('brand');
+  if (!record.line) missingFields.push('line');
+  if (!record.vitola) missingFields.push('vitola');
   if (!record.country_of_origin) missingFields.push('country_of_origin');
   if (!record.wrapper) missingFields.push('wrapper');
   if (!record.binder) missingFields.push('binder');
   if (!record.filler) missingFields.push('filler');
   if (!record.strength) missingFields.push('strength');
   if (!record.body) missingFields.push('body');
+  if (!record.image_url && !record.photo_url && !record.image && !record.photo) missingFields.push('image_url');
+  if (!record.msrp) missingFields.push('msrp');
+  if (!record.production_status) missingFields.push('production_status');
   const needsFlavorNotes = !Array.isArray(record.flavor_notes) || record.flavor_notes.length === 0;
   if (needsFlavorNotes) missingFields.push('flavor_notes');
+  if (currentAliases.length === 0) missingFields.push('aliases');
 
-  if (missingFields.length === 0) return {};
+  if (missingFields.length === 0) {
+    const derivedAliases = [canonicalName, `${canonicalBrand} ${canonicalName}`.trim(), `${canonicalBrand} ${canonicalLine}`.trim()]
+      .map((entry) => normalizeText(entry))
+      .filter(Boolean);
+    const mergedAliases = [...new Set([...currentAliases, ...derivedAliases])];
+    return mergedAliases.length > currentAliases.length ? { aliases: mergedAliases } : {};
+  }
 
   const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `You are a cigar expert. Given this cigar record, fill in only the clearly identifiable missing fields.
+    prompt: `You are a cigar expert. Given this cigar record, fill in only clearly identifiable fields.
 Return null for any field you are not confident about.
 
 Cigar: "${record.name}"${record.brand ? ` by ${record.brand}` : ''}${record.line ? `, line: ${record.line}` : ''}${record.vitola ? `, vitola: ${record.vitola}` : ''}
@@ -121,24 +144,38 @@ Cigar: "${record.name}"${record.brand ? ` by ${record.brand}` : ''}${record.line
 Missing fields to fill: ${missingFields.join(', ')}
 
 Field guidelines:
+- brand: brand/manufacturer name
+- line: product line or series
+- vitola: cigar vitola/size format
 - country_of_origin: country name (e.g. "Nicaragua", "Dominican Republic", "Honduras", "Cuba", "Ecuador")
 - wrapper: wrapper leaf origin/type (e.g. "Ecuador Connecticut", "Nicaraguan Habano", "Cameroon", "Maduro")
 - binder: binder leaf origin/type
 - filler: filler leaf blend description
 - strength: one of "mild", "mild_medium", "medium", "medium_full", "full"
 - body: one of "mild", "mild_medium", "medium", "medium_full", "full"
-- flavor_notes: array of 3-6 tasting note strings (e.g. ["cedar", "leather", "earth", "pepper"])`,
+- image_url: direct image URL when known
+- msrp: numeric MSRP for one stick in USD when known
+- production_status: "regular", "limited", "seasonal", or "discontinued"
+- flavor_notes: array of 3-6 tasting note strings (e.g. ["cedar", "leather", "earth", "pepper"])
+- aliases: array of alternate name spellings/format variants`,
     add_context_from_internet: true,
     response_json_schema: {
       type: 'object',
       properties: {
+        brand: { type: ['string', 'null'] },
+        line: { type: ['string', 'null'] },
+        vitola: { type: ['string', 'null'] },
         country_of_origin: { type: ['string', 'null'] },
         wrapper: { type: ['string', 'null'] },
         binder: { type: ['string', 'null'] },
         filler: { type: ['string', 'null'] },
         strength: { type: ['string', 'null'] },
         body: { type: ['string', 'null'] },
+        image_url: { type: ['string', 'null'] },
+        msrp: { type: ['number', 'null'] },
+        production_status: { type: ['string', 'null'] },
         flavor_notes: { type: ['array', 'null'], items: { type: 'string' } },
+        aliases: { type: ['array', 'null'], items: { type: 'string' } },
       },
     },
   });
@@ -147,10 +184,24 @@ Field guidelines:
   for (const field of missingFields) {
     if (field === 'flavor_notes') {
       if (Array.isArray(result?.flavor_notes) && result.flavor_notes.length > 0) {
-        updates.flavor_notes = result.flavor_notes;
+        updates.flavor_notes = sanitizeList(result.flavor_notes);
       }
+    } else if (field === 'aliases') {
+      const generatedAliases = sanitizeList(result?.aliases);
+      const derivedAliases = [canonicalName, `${canonicalBrand} ${canonicalName}`.trim(), `${canonicalBrand} ${canonicalLine}`.trim()]
+        .map((entry) => normalizeText(entry))
+        .filter(Boolean);
+      const mergedAliases = [...new Set([...currentAliases, ...generatedAliases, ...derivedAliases])];
+      if (mergedAliases.length > 0) updates.aliases = mergedAliases;
+    } else if (field === 'msrp') {
+      if (Number.isFinite(Number(result?.msrp)) && Number(result.msrp) > 0) {
+        updates.msrp = Number(Number(result.msrp).toFixed(2));
+      }
+    } else if (field === 'image_url') {
+      const imageUrl = normalizeText(result?.image_url);
+      if (/^https?:\/\//i.test(imageUrl)) updates.image_url = imageUrl;
     } else if (result?.[field]) {
-      updates[field] = result[field];
+      updates[field] = normalizeText(result[field]);
     }
   }
   return updates;

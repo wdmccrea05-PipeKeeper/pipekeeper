@@ -922,6 +922,7 @@ export function normalizeSub(raw, user = null) {
 
   return {
     rawId:          String(raw.id || raw.stripe_subscription_id || ''),
+    recordPath:     `Subscription/${String(raw.id || raw.stripe_subscription_id || 'unknown')}`,
     userId:         String(raw.user_id || ''),
     userEmail:      norm(raw.user_email || ''),
     isPaid:         isActivePaid(raw),

@@ -787,6 +787,7 @@ function WarningsPanel({ warnings }) {
       return rows.length > 0 ? { ...group, rows } : null;
     })
     .filter(Boolean);
+  const unresolvedSamples = Array.isArray(warnings?.unresolvedSamples) ? warnings.unresolvedSamples : [];
 
   const totalCount = dataQualityItems.length;
 
@@ -840,6 +841,26 @@ function WarningsPanel({ warnings }) {
                         </p>
                       ))}
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {unresolvedSamples.length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs font-semibold text-amber-300/70 uppercase tracking-wider mb-2">
+                {t("userReport.warningPanel.exceptionRows")}
+              </p>
+              <div className="space-y-2">
+                {unresolvedSamples.slice(0, 6).map((sample, idx) => (
+                  <div key={`${sample.rawId || sample.recordPath || idx}`} className="rounded-md border border-amber-500/20 bg-amber-900/10 p-2">
+                    <p className="text-xs text-amber-200/80 font-mono break-all">{sample.recordPath || `Subscription/${sample.rawId || 'unknown'}`}</p>
+                    <p className="text-xs text-amber-200/65 mt-1">
+                      {(sample.missingFields || []).join(', ') || t("userReport.warningPanel.unknownReason")}
+                    </p>
+                    <p className="text-[11px] text-amber-200/55 font-mono mt-1 break-all">
+                      {`price=${sample?.failedSources?.price || 'unresolved:none'} | interval=${sample?.failedSources?.billingInterval || 'unresolved:none'} | plan=${sample?.failedSources?.planKey || 'unresolved:none'}`}
+                    </p>
                   </div>
                 ))}
               </div>
