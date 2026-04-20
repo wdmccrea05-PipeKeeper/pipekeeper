@@ -468,6 +468,7 @@ const esUI = {
     startCollectionAction: "Comenzar colección",
     selected: "Seleccionado",
     recommended: "Recomendado",
+    currentPlanWithLabel: "Plan actual: {{label}}",
     keepCurrentPlan: "Mantener plan actual",
     pipekeeperPro: "PipeKeeper Pro",
     paywallAnnualSave: "Anual (Ahorra 17%)",

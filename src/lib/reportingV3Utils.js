@@ -312,6 +312,7 @@ function hasMeaningfulValue(v) {
 function mergeMissing(target, source) {
   if (!isPlainObject(source)) return target;
   for (const [key, value] of Object.entries(source)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
     if (isPlainObject(value)) {
       if (!isPlainObject(target[key])) target[key] = {};
       mergeMissing(target[key], value);
@@ -634,7 +635,11 @@ export function normalizeSub(raw, user = null) {
   let catalog = lookupPlanCatalog(planKey);
 
   // Price recovery
-  const directAmount = parsePositiveMoney(raw.amount) || parsePositiveMoney(raw.price);
+  const directAmountFromPriceField =
+    typeof raw.price === 'number' || typeof raw.price === 'string'
+      ? parsePositiveMoney(raw.price)
+      : null;
+  const directAmount = parsePositiveMoney(raw.amount) || directAmountFromPriceField;
   const renewalAmount =
     parsePositiveNumber(raw.renewal_amount) ||
     parsePositiveNumber(raw.amount_total, { treatAsCents: true }) ||

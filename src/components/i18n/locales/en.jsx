@@ -965,6 +965,7 @@ export default {
     
     // Status
     currentPlan: "Current Plan",
+    currentPlanWithLabel: "Current Plan: {{label}}",
     selectPlan: "Select Plan",
     selected: "Selected",
     upgrading: "Upgrading...",

@@ -425,6 +425,7 @@ const jaUI = {
     appleFeaturePro8: "新しい高度な機能への早期アクセス",
     selected: "選択済み",
     recommended: "おすすめ",
+    currentPlanWithLabel: "現在のプラン: {{label}}",
     keepCurrentPlan: "現在のプランを維持",
     pipekeeperPro: "PipeKeeper Pro",
     paywallAnnualSave: "年額（17%節約）",

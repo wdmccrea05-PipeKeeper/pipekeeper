@@ -243,7 +243,7 @@ function ExistingSubscriberView({
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
           style={{ background: 'rgba(163,92,92,0.15)', color: '#D4A574', border: '1px solid rgba(163,92,92,0.3)' }}
         >
-          {t('subscription.currentPlan')}: {planLabel}
+          {t('subscription.currentPlanWithLabel', { label: planLabel })}
         </div>
       )}
 
@@ -357,7 +357,7 @@ export default function PaywallModal({
       const label = getCurrentPlanLabel(subscriptionState);
       return {
         headline: t('subscriptionFull.yourSubscription'),
-        subtext: label ? `${t('subscription.currentPlan')}: ${label}` : '',
+        subtext: label ? t('subscription.currentPlanWithLabel', { label }) : '',
       };
     }
 

@@ -296,6 +296,7 @@ function hasMeaningfulValue(v: unknown): boolean {
 function mergeMissing(target: Record<string, any>, source: Record<string, any>): Record<string, any> {
   if (!isPlainObject(source)) return target;
   for (const [key, value] of Object.entries(source)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
     if (isPlainObject(value)) {
       if (!isPlainObject(target[key])) target[key] = {};
       mergeMissing(target[key], value);
@@ -558,7 +559,11 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   let planKey = directPlanKey || inferredPlanKey || null;
   let catalog = lookupPlan(planKey);
 
-  const directAmount = parsePositiveMoney(raw.amount) || parsePositiveMoney(raw.price);
+  const directAmountFromPriceField =
+    typeof raw.price === 'number' || typeof raw.price === 'string'
+      ? parsePositiveMoney(raw.price)
+      : null;
+  const directAmount = parsePositiveMoney(raw.amount) || directAmountFromPriceField;
   const renewalAmountRecovered =
     parsePositiveNumber(raw.renewal_amount) ||
     parsePositiveNumber(raw.amount_total, { treatAsCents: true }) ||
