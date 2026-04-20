@@ -428,16 +428,18 @@ function extractReceiptProductIds(raw: any, metadata: Record<string, any>): stri
     .filter(Boolean))];
 }
 
+function hasModuleAlias(token: string, compact: string, alias: string): boolean {
+  return token === alias || token.startsWith(`${alias}_`) || token.includes(`.${alias}.`) || compact.startsWith(alias);
+}
+
 function normalizeModuleToken(value: unknown): string | null {
   const token = norm(value || '');
   if (!token) return null;
   const compact = token.replace(/[\s_-]/g, '');
-  const hasAlias = (alias: string) =>
-    token === alias || compact === alias || token.startsWith(`${alias}_`) || token.includes(`.${alias}.`) || compact.startsWith(alias);
-  if (token === 'pipe' || hasAlias('pk') || token.includes('pipekeeper') || compact.includes('pipekeeper')) return 'pipekeeper';
-  if (token === 'whiskey' || hasAlias('wk') || token.includes('whiskeykeeper') || compact.includes('whiskeykeeper')) return 'whiskeykeeper';
-  if (token === 'cigar' || hasAlias('ck') || token.includes('cigarkeeper') || compact.includes('cigarkeeper')) return 'cigarkeeper';
-  if (token === 'wine' || hasAlias('vk') || token.includes('winekeeper') || compact.includes('winekeeper')) return 'winekeeper';
+  if (token === 'pipe' || hasModuleAlias(token, compact, 'pk') || token.includes('pipekeeper') || compact.includes('pipekeeper')) return 'pipekeeper';
+  if (token === 'whiskey' || hasModuleAlias(token, compact, 'wk') || token.includes('whiskeykeeper') || compact.includes('whiskeykeeper')) return 'whiskeykeeper';
+  if (token === 'cigar' || hasModuleAlias(token, compact, 'ck') || token.includes('cigarkeeper') || compact.includes('cigarkeeper')) return 'cigarkeeper';
+  if (token === 'wine' || token.includes('winekeeper') || compact.includes('winekeeper')) return 'winekeeper';
   return null;
 }
 
