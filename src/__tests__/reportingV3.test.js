@@ -203,6 +203,20 @@ describe('normalizeSub', () => {
     expect(sub.billingInterval).toBe('annual');
   });
 
+  it('recovers interval from identifier tokens when direct interval fields are missing', () => {
+    const raw = makeSub({
+      amount: 29.99,
+      billing_interval: undefined,
+      billing_period: undefined,
+      current_period_start: undefined,
+      current_period_end: undefined,
+      price_id: 'price_pipekeeper_annual',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.billingInterval).toBe('annual');
+    expect(sub.fieldResolution.sources.billingInterval).toMatch(/^recovered:/);
+  });
+
   it('normalizes unknown plan key from apple product identifier when interval is known', () => {
     const raw = makeSub({
       planKey: undefined,
@@ -216,6 +230,47 @@ describe('normalizeSub', () => {
     expect(sub.planKey).toBe('founders_bundle_annual');
     expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
     expect(sub.fieldResolution.planKey).toBe('recovered');
+  });
+
+  it('recovers plan key directly from metadata plan_key', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: undefined,
+      billing_interval: undefined,
+      metadata_json: JSON.stringify({ plan_key: 'pipekeeper_pro_annual' }),
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.planKey).toBe('pipekeeper_pro_annual');
+    expect(sub.billingInterval).toBe('annual');
+    expect(sub.price).toBe(29.99);
+    expect(sub.fieldResolution.planKey).toBe('direct');
+  });
+
+  it('backfills unknown plan key from modules + interval + tier hint when grounded', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: undefined,
+      renewal_amount: undefined,
+      billing_interval: 'monthly',
+      modules_csv: 'cigarkeeper',
+      subscription_tier: 'pro',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.planKey).toBe('cigarkeeper_pro_monthly');
+    expect(sub.fieldResolution.sources.planKey).toBe('recovered:modules_interval_backfill');
+  });
+
+  it('parses positive numeric values from formatted currency strings', () => {
+    const raw = makeSub({
+      amount: undefined,
+      billing_interval: 'monthly',
+      renewal_amount: '$7.99',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.price).toBe(7.99);
+    expect(sub.fieldResolution.price).toBe('recovered');
   });
 
   it('sets renewalAt to null when current_period_end is missing', () => {

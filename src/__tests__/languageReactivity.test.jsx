@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import { setLanguage, translate, useTranslation } from '@/components/i18n/index.jsx';
@@ -6,6 +6,17 @@ import { setLanguage, translate, useTranslation } from '@/components/i18n/index.
 function LangProbe() {
   const { t } = useTranslation();
   return <span data-testid="label">{t('nav.profile')}</span>;
+}
+
+function StaleMemoLangProbe() {
+  const { t } = useTranslation();
+  const label = useMemo(() => t('nav.profile'), []);
+  return <span data-testid="stale-label">{label}</span>;
+}
+
+function KeyedLangProbe() {
+  const { lang } = useTranslation();
+  return <StaleMemoLangProbe key={lang} />;
 }
 
 describe('language reactivity', () => {
@@ -31,5 +42,16 @@ describe('language reactivity', () => {
     });
 
     expect(screen.getByTestId('label').textContent).toBe(translate('nav.profile', {}, 'es'));
+  });
+
+  it('language-keyed remount updates stale memoized translation surfaces', () => {
+    render(<KeyedLangProbe />);
+    expect(screen.getByTestId('stale-label').textContent).toBe(translate('nav.profile', {}, 'en'));
+
+    act(() => {
+      setLanguage('es');
+    });
+
+    expect(screen.getByTestId('stale-label').textContent).toBe(translate('nav.profile', {}, 'es'));
   });
 });

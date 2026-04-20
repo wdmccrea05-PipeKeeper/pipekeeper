@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const CURATOR_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png';
 
@@ -61,16 +62,31 @@ function SurfaceTab({ active, label, badge, onClick }) {
 
 export default function CuratorPage() {
   const { enabledModuleKeys } = useEnabledModules();
+  const { t } = useTranslation();
 
   // Multi-module mode when 2+ modules are enabled
   const isMultiModuleMode = enabledModuleKeys.length >= 2;
 
   // Build the active surfaces list depending on module mode
-  const SURFACES = useMemo(() => [
-    ...SURFACES_BASE,
-    ...(isMultiModuleMode ? MULTI_MODULE_SURFACES : []),
-    ...SURFACES_TAIL,
-  ], [isMultiModuleMode]);
+  const SURFACES = useMemo(() => {
+    const labelByKey = {
+      record_optimization: t('curatorPage.surfaces.recordOptimization', 'Record Optimization'),
+      collection_optimization: t('curatorPage.surfaces.collectionOptimization', 'Collection Optimization'),
+      purchase_restock: t('curatorPage.surfaces.purchaseRestock', 'Purchase & Restock'),
+      plan_session: t('curatorPage.surfaces.planSession', 'Plan Session'),
+      pairings: t('curatorPage.surfaces.pairings', 'Pairings'),
+      grow_expand: t('curatorPage.surfaces.growExpand', 'Grow & Expand'),
+      chat: t('curatorPage.surfaces.chat', 'Chat'),
+    };
+    return [
+      ...SURFACES_BASE,
+      ...(isMultiModuleMode ? MULTI_MODULE_SURFACES : []),
+      ...SURFACES_TAIL,
+    ].map((surface) => ({
+      ...surface,
+      label: labelByKey[surface.key] || surface.label,
+    }));
+  }, [isMultiModuleMode, t]);
 
   // Support URL deep-links like ?surface=pairings — validate against all known keys
   const initialSurface = (() => {
@@ -117,11 +133,11 @@ export default function CuratorPage() {
               className="text-[32px] leading-none font-semibold"
               style={{ color: '#F5F5F7', letterSpacing: '-0.5px' }}
             >
-              Collection Curator
+              {t('curatorPage.title', 'Collection Curator')}
             </h1>
           </div>
           <p className="text-[18px] leading-8" style={{ color: '#9C968C' }}>
-            Operational intelligence across your collection — fix, optimize, pair, and grow.
+            {t('curatorPage.description', 'Operational intelligence across your collection — fix, optimize, pair, and grow.')}
           </p>
         </header>
 

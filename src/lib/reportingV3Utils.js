@@ -245,7 +245,9 @@ function normalizeIntervalToken(v) {
 
 function parsePositiveNumber(v, { treatAsCents = false } = {}) {
   if (v === null || v === undefined || v === '') return null;
-  const n = Number(v);
+  const n = typeof v === 'string'
+    ? Number(String(v).replace(/,/g, '').match(/-?\d+(\.\d+)?/)?.[0] ?? Number.NaN)
+    : Number(v);
   if (!Number.isFinite(n) || n <= 0) return null;
   if (treatAsCents) return n / 100;
   return n;
@@ -276,6 +278,7 @@ function inferIntervalFromDateSpan(raw) {
 }
 
 function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
+  const metadata = parseMetadataObject(raw);
   const candidates = [
     raw.planKey,
     raw.plan_key,
@@ -286,6 +289,17 @@ function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
     raw.plan_name,
     raw.bundle_name,
     raw.product_kind,
+    raw.product_label,
+    metadata.plan_key,
+    metadata.planKey,
+    metadata.price_id,
+    metadata.stripe_price_id,
+    metadata.apple_product_id,
+    metadata.plan_id,
+    metadata.plan_name,
+    metadata.bundle_name,
+    metadata.product_kind,
+    metadata.product_label,
   ]
     .map((v) => norm(v))
     .filter(Boolean);
@@ -294,18 +308,82 @@ function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
     if (PLAN_CATALOG[candidate]) return candidate;
   }
 
-  const has = (token) => candidates.some((v) => v.includes(token));
-  const planSuffix = resolvedInterval === 'annual' ? 'annual' : (resolvedInterval === 'monthly' ? 'monthly' : null);
-  if (!planSuffix) return null;
+  const suffixFromToken = (value) => {
+    const v = norm(value);
+    if (!v) return null;
+    if (v.includes('annual') || v.includes('yearly') || v.includes('year')) return 'annual';
+    if (v.includes('monthly') || v.includes('month')) return 'monthly';
+    return null;
+  };
+  const fallbackSuffix = resolvedInterval === 'annual' ? 'annual' : (resolvedInterval === 'monthly' ? 'monthly' : null);
 
-  if (has('founders')) return `founders_bundle_${planSuffix}`;
-  if (has('three_module') || has('bundle_3')) return `three_module_bundle_${planSuffix}`;
-  if (has('four_module') || has('bundle_4')) return `four_module_bundle_${planSuffix}`;
-  if (has('pipekeeper')) return `pipekeeper_pro_${planSuffix}`;
-  if (has('whiskeykeeper')) return `whiskeykeeper_pro_${planSuffix}`;
-  if (has('cigarkeeper') || has('cigar')) return `cigarkeeper_pro_${planSuffix}`;
-  if (has('winekeeper') || has('wine')) return `winekeeper_pro_${planSuffix}`;
+  for (const candidate of candidates) {
+    const planSuffix = suffixFromToken(candidate) || fallbackSuffix;
+    if (!planSuffix) continue;
+    if (candidate.includes('founders')) return `founders_bundle_${planSuffix}`;
+    if (candidate.includes('three_module') || candidate.includes('bundle_3')) return `three_module_bundle_${planSuffix}`;
+    if (candidate.includes('four_module') || candidate.includes('bundle_4')) return `four_module_bundle_${planSuffix}`;
+    if (candidate.includes('pipekeeper')) return `pipekeeper_pro_${planSuffix}`;
+    if (candidate.includes('whiskeykeeper')) return `whiskeykeeper_pro_${planSuffix}`;
+    if (candidate.includes('cigarkeeper') || candidate.includes('cigar')) return `cigarkeeper_pro_${planSuffix}`;
+    if (candidate.includes('winekeeper') || candidate.includes('wine')) return `winekeeper_pro_${planSuffix}`;
+  }
 
+  return null;
+}
+
+function inferIntervalFromIdentifiers(raw) {
+  const metadata = parseMetadataObject(raw);
+  const tokens = [
+    raw.planKey,
+    raw.plan_key,
+    raw.price_id,
+    raw.stripe_price_id,
+    raw.apple_product_id,
+    raw.plan_id,
+    raw.plan_name,
+    raw.bundle_name,
+    raw.product_kind,
+    raw.product_label,
+    metadata.plan_key,
+    metadata.planKey,
+    metadata.price_id,
+    metadata.stripe_price_id,
+    metadata.apple_product_id,
+    metadata.plan_id,
+    metadata.plan_name,
+    metadata.bundle_name,
+    metadata.product_kind,
+    metadata.product_label,
+  ].map((v) => norm(v)).filter(Boolean);
+
+  for (const token of tokens) {
+    if (token.includes('annual') || token.includes('yearly') || token.includes('year')) return 'annual';
+    if (token.includes('monthly') || token.includes('month')) return 'monthly';
+  }
+  return null;
+}
+
+function inferPlanKeyFromResolvedModules(modules, billingInterval, amount, tierHintRaw) {
+  const interval = billingInterval === 'annual' ? 'annual' : (billingInterval === 'monthly' ? 'monthly' : null);
+  if (!interval || !Array.isArray(modules) || modules.length === 0) return null;
+
+  const normalizedModules = [...new Set(modules.map((m) => norm(m)).filter(Boolean))].sort();
+  const same = (arr) => arr.length === normalizedModules.length && arr.every((m, idx) => normalizedModules[idx] === m);
+
+  if (same(['pipekeeper', 'whiskeykeeper'])) return `founders_bundle_${interval}`;
+  if (same(['cigarkeeper', 'pipekeeper', 'whiskeykeeper'])) return `three_module_bundle_${interval}`;
+  if (same(['cigarkeeper', 'pipekeeper', 'whiskeykeeper', 'winekeeper'])) return `four_module_bundle_${interval}`;
+  if (normalizedModules.length !== 1) return null;
+
+  const module = normalizedModules[0];
+  const tierHint = norm(tierHintRaw);
+  const normalizedAmount = Number.isFinite(Number(amount)) ? parseFloat(Number(amount).toFixed(2)) : null;
+  const isLegacy = normalizedAmount === 1.99 || normalizedAmount === 19.99;
+  const isPro = normalizedAmount === 2.99 || normalizedAmount === 29.99;
+
+  if (tierHint === 'premium' || isLegacy) return `${module}_premium_${interval}`;
+  if (tierHint === 'pro' || isPro) return `${module}_pro_${interval}`;
   return null;
 }
 
@@ -404,14 +482,15 @@ export function normalizeSub(raw, user = null) {
     normalizeIntervalToken(metadata.billing_period) ||
     normalizeIntervalToken(metadata?.recurring?.interval) ||
     normalizeIntervalToken(metadata?.price?.recurring?.interval);
+  const intervalFromIdentifiers = inferIntervalFromIdentifiers(raw);
   const intervalFromSpan = inferIntervalFromDateSpan(raw);
-  const resolvedIntervalPrePlan = directInterval || metadataInterval || intervalFromSpan || null;
+  const resolvedIntervalPrePlan = directInterval || metadataInterval || intervalFromIdentifiers || intervalFromSpan || null;
 
   // Plan key recovery
-  const directPlanKey = norm(raw.planKey || raw.plan_key || '') || null;
+  const directPlanKey = norm(raw.planKey || raw.plan_key || metadata.planKey || metadata.plan_key || '') || null;
   const inferredPlanKey = inferPlanKeyFromIdentifiers(raw, resolvedIntervalPrePlan);
-  const planKey = directPlanKey || inferredPlanKey || null;
-  const catalog = lookupPlanCatalog(planKey);
+  let planKey = directPlanKey || inferredPlanKey || null;
+  let catalog = lookupPlanCatalog(planKey);
 
   // Price recovery
   const directAmount = parsePositiveNumber(raw.amount);
@@ -467,6 +546,18 @@ export function normalizeSub(raw, user = null) {
   }
 
   const module   = modules[0];
+  const tierHint = raw.subscription_tier || raw.tier || metadata.subscription_tier || metadata.tier || null;
+  const planKeyBackfill = !planKey
+    ? inferPlanKeyFromResolvedModules(modules, billingInterval, price, tierHint)
+    : null;
+  if (planKeyBackfill) {
+    planKey = planKeyBackfill;
+    catalog = lookupPlanCatalog(planKey);
+    if (catalog) {
+      modules = catalog.modules;
+    }
+  }
+  const moduleResolved = modules[0];
   const isBundle = modules.length > 1;
 
   const priceSource = directAmount
@@ -491,6 +582,8 @@ export function normalizeSub(raw, user = null) {
     ? 'direct:plan_key'
     : inferredPlanKey
       ? 'recovered:identifier_mapping'
+      : planKeyBackfill
+        ? 'recovered:modules_interval_backfill'
       : 'unresolved:none';
 
   return {
@@ -504,7 +597,7 @@ export function normalizeSub(raw, user = null) {
     inferredPrice,
     createdAt:      parseDate(raw.started_at || raw.created_date || raw.current_period_start),
     renewalAt:      parseDate(raw.current_period_end),
-    module,
+    module: moduleResolved,
     modules,
     isBundle,
     platform:       normalizePlatform(raw, user),

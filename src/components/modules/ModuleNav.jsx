@@ -103,37 +103,37 @@ export default function ModuleNav({ currentPageName, user }) {
     ? [
         {
           page: "AdminReports",
-          label: "Admin Reports",
+          label: t("nav.adminReports", "Admin Reports"),
           icon: Shield,
           path: "/AdminReports",
         },
         {
           page: "AdminSubscriptionRequests",
-          label: "Subscription Requests",
+          label: t("nav.subscriptionRequests", "Subscription Requests"),
           icon: ClipboardList,
           path: "/AdminSubscriptionRequests",
         },
         {
           page: "AdminSubscriptionTools",
-          label: "Subscription Tools",
+          label: t("nav.subscriptionTools", "Subscription Tools"),
           icon: Wrench,
           path: "/AdminSubscriptionTools",
         },
         {
           page: "UserReport",
-          label: "User Report",
+          label: t("nav.userReport", "User Report"),
           icon: FileBarChart2,
           path: "/UserReport",
         },
         {
           page: "CuratorAnalyticsDashboard",
-          label: "Curator Analytics",
+          label: t("nav.curatorAnalytics", "Curator Analytics"),
           icon: BarChart3,
           path: "/CuratorAnalyticsDashboard",
         },
         {
           page: "SubscriptionE2ETest",
-          label: "Sub E2E Test",
+          label: t("nav.subscriptionE2ETest", "Sub E2E Test"),
           icon: TestTube2,
           path: "/SubscriptionE2ETest",
         },
