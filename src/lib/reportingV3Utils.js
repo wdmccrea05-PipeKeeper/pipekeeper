@@ -715,7 +715,7 @@ export function normalizeSub(raw, user = null) {
     catalog = lookupPlanCatalog(planKey);
     if (catalog) {
       modules = catalog.modules;
-      if (price === null && catalog.price != null) {
+      if (price === null && catalog.price !== null) {
         price = catalog.price;
         inferredPrice = true;
       }
@@ -731,7 +731,7 @@ export function normalizeSub(raw, user = null) {
     ? 'direct:amount'
     : renewalAmount
       ? 'recovered:stored_renewal_or_metadata_amount'
-      : catalog?.price != null
+      : catalog?.price !== null && catalog?.price !== undefined
         ? (planKeyBackfill && recoveredAmount === null ? 'recovered:plan_catalog_backfill' : 'recovered:plan_catalog')
         : 'unresolved:none';
   const intervalSource = directInterval

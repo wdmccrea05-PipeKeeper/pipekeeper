@@ -648,7 +648,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     if (catalog) {
       modules = catalog.modules;
       productLabel = buildProductLabel(catalog.modules, catalog.label);
-      if (price === null && catalog.price != null) {
+      if (price === null && catalog.price !== null) {
         price = catalog.price;
         renewalAmount = price;
       }
@@ -663,7 +663,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     ? 'direct:amount'
     : renewalAmountRecovered
       ? 'recovered:stored_renewal_or_metadata_amount'
-      : catalog?.price != null
+      : catalog?.price !== null && catalog?.price !== undefined
         ? (planKeyBackfill && recoveredAmount === null ? 'recovered:plan_catalog_backfill' : 'recovered:plan_catalog')
         : 'unresolved:none';
   const intervalSource = directInterval
