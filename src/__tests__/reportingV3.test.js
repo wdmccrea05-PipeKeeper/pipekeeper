@@ -300,7 +300,34 @@ describe('normalizeSub', () => {
     });
     const sub = normalizeSub(raw);
     expect(sub.planKey).toBe('cigarkeeper_pro_monthly');
+    expect(sub.price).toBe(2.99);
+    expect(sub.billingInterval).toBe('monthly');
     expect(sub.fieldResolution.sources.planKey).toBe('recovered:modules_interval_backfill');
+  });
+
+  it('assigns high source confidence when core billing fields are direct', () => {
+    const sub = normalizeSub(makeSub({
+      planKey: 'pipekeeper_pro_monthly',
+      amount: 2.99,
+      billing_interval: 'monthly',
+    }));
+    expect(sub.sourceConfidence).toBe('high');
+  });
+
+  it('assigns low source confidence when core billing fields remain unresolved', () => {
+    const sub = normalizeSub(makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: undefined,
+      renewal_amount: undefined,
+      billing_interval: undefined,
+      billing_period: undefined,
+      modules_csv: undefined,
+      primary_module: undefined,
+      product_kind: undefined,
+      product_label: undefined,
+    }));
+    expect(sub.sourceConfidence).toBe('low');
   });
 
   it('parses positive numeric values from formatted currency strings', () => {

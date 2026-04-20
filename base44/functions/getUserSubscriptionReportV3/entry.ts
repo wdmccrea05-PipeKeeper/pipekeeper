@@ -24,6 +24,7 @@ interface NormalizedSub {
   modules: string[];
   platform: PlatformKind | null;
   productLabel: string;           // human-readable product name
+  sourceConfidence: 'high' | 'medium' | 'low';
   fieldResolution?: {
     price: 'direct' | 'recovered' | 'unresolved';
     billingInterval: 'direct' | 'recovered' | 'unresolved';
@@ -582,12 +583,12 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     null;
 
   const recoveredAmount = directAmount || renewalAmountRecovered || null;
-  const price: number | null = recoveredAmount ?? (catalog ? catalog.price : null);
-  const renewalAmount = price;
+  let price: number | null = recoveredAmount ?? (catalog ? catalog.price : null);
+  let renewalAmount = price;
   const amountInference = price ? inferFromAmount(price) : null;
 
   // ── Interval resolution: direct fields → metadata → catalog → amount inference → span ──
-  const billingInterval: IntervalKind | null =
+  let billingInterval: IntervalKind | null =
     directInterval ??
     metadataInterval ??
     (catalog?.billingInterval ?? null) ??
@@ -647,6 +648,13 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     if (catalog) {
       modules = catalog.modules;
       productLabel = buildProductLabel(catalog.modules, catalog.label);
+      if (price === null && catalog.price != null) {
+        price = catalog.price;
+        renewalAmount = price;
+      }
+      if (billingInterval === null && catalog.billingInterval) {
+        billingInterval = catalog.billingInterval;
+      }
     }
   }
 
@@ -656,14 +664,14 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     : renewalAmountRecovered
       ? 'recovered:stored_renewal_or_metadata_amount'
       : catalog?.price != null
-        ? 'recovered:plan_catalog'
+        ? (planKeyBackfill && recoveredAmount === null ? 'recovered:plan_catalog_backfill' : 'recovered:plan_catalog')
         : 'unresolved:none';
   const intervalSource = directInterval
     ? 'direct:billing_interval'
     : metadataInterval
       ? 'recovered:metadata_interval'
       : catalog?.billingInterval
-        ? 'recovered:plan_catalog'
+        ? (planKeyBackfill && !directInterval && !metadataInterval ? 'recovered:plan_catalog_backfill' : 'recovered:plan_catalog')
         : amountInference?.billingInterval
           ? 'recovered:amount_inference'
           : intervalFromSpan
@@ -676,6 +684,14 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
       : planKeyBackfill
         ? 'recovered:modules_interval_backfill'
       : 'unresolved:none';
+
+  const sourceConfidence: 'high' | 'medium' | 'low' = (() => {
+    const unresolvedCount = Number(price === null) + Number(billingInterval === null) + Number(planKey === null);
+    if (unresolvedCount > 0) return 'low';
+    const directCount = Number(!!directAmount) + Number(!!directInterval) + Number(!!directPlanKey);
+    if (directCount >= 2) return 'high';
+    return 'medium';
+  })();
 
   return {
     rawId:          String(raw.id || raw.stripe_subscription_id || ''),
@@ -693,6 +709,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     modules,
     platform:       normalizePlatform(raw, user),
     productLabel,
+    sourceConfidence,
     fieldResolution: {
       price: price === null ? 'unresolved' : (directAmount ? 'direct' : 'recovered'),
       billingInterval: billingInterval === null ? 'unresolved' : (directInterval ? 'direct' : 'recovered'),

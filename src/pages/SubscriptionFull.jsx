@@ -122,11 +122,11 @@ export default function SubscriptionFull() {
       syncAppleSubscriptionStatus(payload, { queryClient, refetch })
         .then((result) => {
           if (result?.skipped) {
-            setMessage("Subscription verification is still processing. Please use Restore Purchases in the app and try again.");
+            setMessage(t("subscription.syncAccessUpdating"));
           }
         })
         .catch((err) => {
-          const errorMsg = err?.message || "Failed to sync Apple subscription status.";
+          const errorMsg = err?.message || t("subscription.syncFailed");
           setMessage(errorMsg);
         });
     });
@@ -198,30 +198,43 @@ export default function SubscriptionFull() {
       .filter(Boolean);
   }, [selectedInterval, stripeConfig, user]);
 
-  const planLabels = {
-    pipekeeper_pro_monthly: { name: "PipeKeeper Pro", badge: null },
-    pipekeeper_pro_annual: { name: "PipeKeeper Pro", badge: null },
-    whiskeykeeper_pro_monthly: { name: "WhiskeyKeeper Pro", badge: null },
-    whiskeykeeper_pro_annual: { name: "WhiskeyKeeper Pro", badge: null },
-    cigarkeeper_pro_monthly: { name: "CigarKeeper Pro", badge: null },
-    cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: null },
-    founders_bundle_monthly: { name: "Founders Bundle (Pipe + Whiskey)", badge: "Most Popular" },
-    founders_bundle_annual: { name: "Founders Bundle (Pipe + Whiskey)", badge: "Most Popular" },
-    three_module_bundle_monthly: { name: "3-Module Bundle", badge: "Best Value" },
-    three_module_bundle_annual: { name: "3-Module Bundle", badge: "Best Value" },
-  };
-
-  const planDescriptions = {
-    pipekeeper_pro_monthly: "Unlimited pipes & blends, AI pairings & identification",
-    pipekeeper_pro_annual: "Unlimited pipes & blends, AI pairings & identification",
-    whiskeykeeper_pro_monthly: "Unlimited bottles, AI valuations & tastings",
-    whiskeykeeper_pro_annual: "Unlimited bottles, AI valuations & tastings",
-    cigarkeeper_pro_monthly: "Unlimited cigars, humidor tracking, and smoking sessions",
-    cigarkeeper_pro_annual: "Unlimited cigars, humidor tracking, and smoking sessions",
-    founders_bundle_monthly: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
-    founders_bundle_annual: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
-    three_module_bundle_monthly: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules",
-    three_module_bundle_annual: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules",
+  const getPlanPresentation = (planKey) => {
+    if (planKey?.startsWith("pipekeeper_pro")) {
+      return {
+        name: `${t("nav.pipekeeper")} ${t("subscription.pro")}`,
+        badge: null,
+        description: t("subscription.singleModuleDesc", { module: t("nav.pipekeeper") }),
+      };
+    }
+    if (planKey?.startsWith("whiskeykeeper_pro")) {
+      return {
+        name: `${t("nav.whiskeykeeper")} ${t("subscription.pro")}`,
+        badge: null,
+        description: t("subscription.singleModuleDesc", { module: t("nav.whiskeykeeper") }),
+      };
+    }
+    if (planKey?.startsWith("cigarkeeper_pro")) {
+      return {
+        name: `${t("nav.cigarkeeper")} ${t("subscription.pro")}`,
+        badge: null,
+        description: t("subscription.singleModuleDesc", { module: t("nav.cigarkeeper") }),
+      };
+    }
+    if (planKey?.startsWith("founders_bundle")) {
+      return {
+        name: t("subscription.foundersOffer"),
+        badge: t("subscription.mostPopular"),
+        description: t("subscription.foundersBundleDescription"),
+      };
+    }
+    if (planKey?.startsWith("three_module_bundle")) {
+      return {
+        name: t("subscriptionFull.threeModuleBundle"),
+        badge: t("subscription.bestValue"),
+        description: t("subscription.threeModuleBundleDescription"),
+      };
+    }
+    return { name: null, badge: null, description: "" };
   };
 
   const groupedPlans = useMemo(() => ({
@@ -286,7 +299,7 @@ export default function SubscriptionFull() {
             billingPeriod: option.targetPlanKey?.includes("monthly") ? "monthly" : "annual",
           });
           if (!upgradeRes?.data?.success) {
-            setUpgradeError(upgradeRes?.data?.error || upgradeRes?.error || "Failed to prepare upgrade.");
+            setUpgradeError(upgradeRes?.data?.error || upgradeRes?.error || t("subscription.checkoutError"));
             setIsUpgrading(false);
             return;
           }
@@ -303,7 +316,7 @@ export default function SubscriptionFull() {
         "/Subscription"
       );
     } catch (e) {
-      setUpgradeError(e?.message || "An unexpected error occurred.");
+      setUpgradeError(e?.message || t("error.somethingWentWrong"));
     } finally {
       setIsUpgrading(false);
     }
@@ -588,8 +601,9 @@ export default function SubscriptionFull() {
                 <p className="text-xs text-[#e8d5b7]/55">{section.subtitle}</p>
               </div>
               {section.plans.map((plan) => {
-          const meta = planLabels[plan.key] || { name: plan.displayName, badge: null };
-          const desc = planDescriptions[plan.key] || "";
+          const presentation = getPlanPresentation(plan.key);
+          const meta = { name: presentation.name || plan.displayName, badge: presentation.badge };
+          const desc = presentation.description;
           const isSelected = selectedPlanKey === plan.key;
           const isBundle = plan.type === "bundle" || plan.type === "founders" || plan.type === "three_bundle" || plan.type === "four_bundle";
 
@@ -638,9 +652,7 @@ export default function SubscriptionFull() {
         disabled={!selectedPlanKey}
         onClick={() => selectedPlanKey && handleUpgrade(selectedPlanKey)}
       >
-        {selectedPlanKey
-          ? `Continue to Secure Checkout — ${planLabels[selectedPlanKey]?.name || selectedPlanKey}`
-          : "Select a plan above"}
+        {selectedPlanKey ? `${t("subscriptionFull.continue")} — ${(getPlanPresentation(selectedPlanKey).name || selectedPlanKey)}` : t("subscriptionFull.chooseNextAction")}
       </Button>
 
       {/* Reassurance */}
