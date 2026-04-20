@@ -273,6 +273,49 @@ describe('normalizeSub', () => {
     expect(sub.fieldResolution.price).toBe('recovered');
   });
 
+  it('normalizes cent-based integer amount values into dollars when they match known plan prices', () => {
+    const raw = makeSub({
+      amount: 299,
+      billing_interval: 'monthly',
+      planKey: undefined,
+      plan_key: undefined,
+      modules_csv: undefined,
+      primary_module: undefined,
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.price).toBe(2.99);
+    expect(sub.fieldResolution.price).toBe('direct');
+  });
+
+  it('recovers historical legacy plan aliases to canonical plan keys', () => {
+    const raw = makeSub({
+      planKey: 'pipekeeper_monthly',
+      amount: undefined,
+      billing_interval: undefined,
+      billing_period: undefined,
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.planKey).toBe('pipekeeper_pro_monthly');
+    expect(sub.billingInterval).toBe('monthly');
+    expect(sub.price).toBe(2.99);
+  });
+
+  it('uses user paid_modules_csv as a safe final module fallback', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: undefined,
+      renewal_amount: undefined,
+      modules_csv: undefined,
+      primary_module: undefined,
+      product_kind: undefined,
+      product_label: undefined,
+    });
+    const user = { paid_modules_csv: 'pipekeeper,whiskeykeeper' };
+    const sub = normalizeSub(raw, user);
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
+  });
+
   it('sets renewalAt to null when current_period_end is missing', () => {
     const raw = makeSub({ current_period_end: undefined });
     const sub = normalizeSub(raw);

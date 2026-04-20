@@ -5,7 +5,13 @@ import { setLanguage, translate, useTranslation } from '@/components/i18n/index.
 
 function LangProbe() {
   const { t } = useTranslation();
-  return <span data-testid="label">{t('nav.profile')}</span>;
+  return (
+    <div>
+      <span data-testid="label">{t('nav.profile')}</span>
+      <span data-testid="curator-title">{t('curatorPage.title')}</span>
+      <span data-testid="subscription-title">{t('subscriptionFull.yourSubscription')}</span>
+    </div>
+  );
 }
 
 function StaleMemoLangProbe() {
@@ -36,12 +42,16 @@ describe('language reactivity', () => {
   it('active UI translations rerender after language change event', () => {
     render(<LangProbe />);
     expect(screen.getByTestId('label').textContent).toBe(translate('nav.profile', {}, 'en'));
+    expect(screen.getByTestId('curator-title').textContent).toBe(translate('curatorPage.title', {}, 'en'));
+    expect(screen.getByTestId('subscription-title').textContent).toBe(translate('subscriptionFull.yourSubscription', {}, 'en'));
 
     act(() => {
       setLanguage('es');
     });
 
     expect(screen.getByTestId('label').textContent).toBe(translate('nav.profile', {}, 'es'));
+    expect(screen.getByTestId('curator-title').textContent).toBe(translate('curatorPage.title', {}, 'es'));
+    expect(screen.getByTestId('subscription-title').textContent).toBe(translate('subscriptionFull.yourSubscription', {}, 'es'));
   });
 
   it('language-keyed remount updates stale memoized translation surfaces', () => {

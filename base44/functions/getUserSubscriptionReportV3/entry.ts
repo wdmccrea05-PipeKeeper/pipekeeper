@@ -76,6 +76,42 @@ const PLAN_CATALOG: Record<string, { modules: string[]; billingInterval: Interva
   four_module_bundle_annual:     { modules: ['pipekeeper','whiskeykeeper','cigarkeeper','winekeeper'], billingInterval: 'annual',  price: 89.99, label: '4-Module Bundle Annual' },
 };
 
+const HISTORICAL_PLAN_KEY_MAP: Record<string, string> = {
+  pipekeeper_monthly: 'pipekeeper_pro_monthly',
+  pipekeeper_annual: 'pipekeeper_pro_annual',
+  pipekeeper_yearly: 'pipekeeper_pro_annual',
+  whiskeykeeper_monthly: 'whiskeykeeper_pro_monthly',
+  whiskeykeeper_annual: 'whiskeykeeper_pro_annual',
+  whiskeykeeper_yearly: 'whiskeykeeper_pro_annual',
+  cigarkeeper_monthly: 'cigarkeeper_pro_monthly',
+  cigarkeeper_annual: 'cigarkeeper_pro_annual',
+  cigarkeeper_yearly: 'cigarkeeper_pro_annual',
+  winekeeper_monthly: 'winekeeper_pro_monthly',
+  winekeeper_annual: 'winekeeper_pro_annual',
+  winekeeper_yearly: 'winekeeper_pro_annual',
+  founders_monthly: 'founders_bundle_monthly',
+  founders_annual: 'founders_bundle_annual',
+  founders_yearly: 'founders_bundle_annual',
+  bundle_2_monthly: 'founders_bundle_monthly',
+  bundle_2_annual: 'founders_bundle_annual',
+  bundle_3_monthly: 'three_module_bundle_monthly',
+  bundle_3_annual: 'three_module_bundle_annual',
+  bundle_4_monthly: 'four_module_bundle_monthly',
+  bundle_4_annual: 'four_module_bundle_annual',
+  three_bundle_monthly: 'three_module_bundle_monthly',
+  three_bundle_annual: 'three_module_bundle_annual',
+  four_bundle_monthly: 'four_module_bundle_monthly',
+  four_bundle_annual: 'four_module_bundle_annual',
+};
+
+function canonicalizePlanKeyCandidate(value: unknown): string | null {
+  const token = norm(value || '');
+  if (!token) return null;
+  if (PLAN_CATALOG[token]) return token;
+  if (HISTORICAL_PLAN_KEY_MAP[token]) return HISTORICAL_PLAN_KEY_MAP[token];
+  return null;
+}
+
 function lookupPlan(planKey: string | null) {
   if (!planKey) return null;
   return PLAN_CATALOG[planKey.trim().toLowerCase()] ?? null;
@@ -237,6 +273,16 @@ function parsePositiveNumber(v: unknown, options: { treatAsCents?: boolean } = {
   return options.treatAsCents ? (n / 100) : n;
 }
 
+function parsePositiveMoney(v: unknown): number | null {
+  const direct = parsePositiveNumber(v);
+  if (direct === null) return null;
+  if (Number.isInteger(direct)) {
+    const asCents = parseFloat((direct / 100).toFixed(2));
+    if (inferFromAmount(asCents)) return asCents;
+  }
+  return direct;
+}
+
 function parseMetadataObject(raw: any): Record<string, any> {
   if (raw?.metadata_json && typeof raw.metadata_json === 'object') return raw.metadata_json;
   const text = String(raw?.metadata_json || '').trim();
@@ -270,8 +316,11 @@ function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | 
     raw.plan_id,
     raw.plan_name,
     raw.bundle_name,
+    raw.checkout_type,
     raw.product_kind,
     raw.product_label,
+    raw.provider_subscription_id,
+    raw.stripe_subscription_id,
     metadata.plan_key,
     metadata.planKey,
     metadata.price_id,
@@ -280,14 +329,18 @@ function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | 
     metadata.plan_id,
     metadata.plan_name,
     metadata.bundle_name,
+    metadata.checkout_type,
     metadata.product_kind,
     metadata.product_label,
+    metadata.provider_subscription_id,
+    metadata.stripe_subscription_id,
   ]
     .map((v) => norm(v || ''))
     .filter(Boolean);
 
   for (const candidate of candidates) {
-    if (PLAN_CATALOG[candidate]) return candidate;
+    const canonical = canonicalizePlanKeyCandidate(candidate);
+    if (canonical) return canonical;
   }
 
   const suffixFromToken = (value: string): IntervalKind | null => {
@@ -327,6 +380,7 @@ function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
     raw.plan_id,
     raw.plan_name,
     raw.bundle_name,
+    raw.checkout_type,
     raw.product_kind,
     raw.product_label,
     metadata.plan_key,
@@ -337,6 +391,7 @@ function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
     metadata.plan_id,
     metadata.plan_name,
     metadata.bundle_name,
+    metadata.checkout_type,
     metadata.product_kind,
     metadata.product_label,
   ]
@@ -427,12 +482,13 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   const intervalFromSpan = inferIntervalFromDateSpan(raw);
   const resolvedIntervalPrePlan = directInterval || metadataInterval || intervalFromIdentifiers || intervalFromSpan || null;
 
-  const directPlanKey = norm(raw.planKey || raw.plan_key || metadata.planKey || metadata.plan_key || '') || null;
+  const directPlanKeyRaw = norm(raw.planKey || raw.plan_key || metadata.planKey || metadata.plan_key || '') || null;
+  const directPlanKey = directPlanKeyRaw ? (canonicalizePlanKeyCandidate(directPlanKeyRaw) || directPlanKeyRaw) : null;
   const inferredPlanKey = inferPlanKeyFromIdentifiers(raw, resolvedIntervalPrePlan);
   let planKey = directPlanKey || inferredPlanKey || null;
   let catalog = lookupPlan(planKey);
 
-  const directAmount = parsePositiveNumber(raw.amount);
+  const directAmount = parsePositiveMoney(raw.amount);
   const renewalAmountRecovered =
     parsePositiveNumber(raw.renewal_amount) ||
     parsePositiveNumber(raw.amount_total, { treatAsCents: true }) ||
@@ -486,8 +542,17 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
       productLabel = amountInference.label;
     } else {
       // 5. Truly unresolvable — mark as unknown, NOT pipekeeper
-      modules = ['unknown'];
-      productLabel = 'Unknown';
+      const userModules = String(user?.paid_modules_csv || '')
+        .split(',')
+        .map((m: string) => norm(m || ''))
+        .filter(Boolean);
+      if (userModules.length > 0) {
+        modules = [...new Set(userModules)];
+        productLabel = buildProductLabel(modules, modules.length > 1 ? 'Bundle' : modules[0]);
+      } else {
+        modules = ['unknown'];
+        productLabel = 'Unknown';
+      }
     }
   }
 
