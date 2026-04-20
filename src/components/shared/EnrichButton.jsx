@@ -3,6 +3,68 @@ import { Zap, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+
+// Keep flavor tags concise so detail cards stay readable while still being useful.
+const MAX_FLAVOR_NOTES = 8;
+
+function cleanText(value) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function cleanArray(values) {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values.map((v) => cleanText(v)).filter(Boolean))];
+}
+
+function toPositiveNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function normalizeIntensityLevel(value) {
+  const normalized = cleanText(value)?.toLowerCase().replace(/[\s-]+/g, '_');
+  const allowed = new Set(['mild', 'mild_medium', 'medium', 'medium_full', 'full']);
+  return normalized && allowed.has(normalized) ? normalized : null;
+}
+
+function normalizeProductionStatus(value) {
+  const normalized = cleanText(value)?.toLowerCase().replace(/[\s-]+/g, '_');
+  const allowed = new Set(['regular_production', 'limited', 'discontinued', 'seasonal', 'unknown']);
+  return normalized && allowed.has(normalized) ? normalized : null;
+}
+
+function getRemainingSticks(record) {
+  const singles = toPositiveNumber(record?.singles_equivalent);
+  if (singles) return singles;
+  const qty = toPositiveNumber(record?.quantity);
+  const cpp = toPositiveNumber(record?.cigars_per_package);
+  if (qty && cpp) return qty * cpp;
+  return qty || 1;
+}
+
+function arraysDifferCaseInsensitive(a = [], b = []) {
+  const left = a.map((v) => String(v).trim().toLowerCase()).filter(Boolean).sort();
+  const right = b.map((v) => String(v).trim().toLowerCase()).filter(Boolean).sort();
+  if (left.length !== right.length) return true;
+  for (let i = 0; i < left.length; i += 1) {
+    if (left[i] !== right[i]) return true;
+  }
+  return false;
+}
+
+function mergeUniqueCaseInsensitive(existing = [], incoming = []) {
+  const map = new Map();
+  [...existing, ...incoming].forEach((value) => {
+    const cleaned = cleanText(value);
+    if (!cleaned) return;
+    const key = cleaned.toLowerCase();
+    if (!map.has(key)) map.set(key, cleaned);
+  });
+  return [...map.values()];
+}
 
 async function enrichPipe(record) {
   const missingFields = [];
@@ -100,67 +162,54 @@ Field guidelines:
 }
 
 async function enrichCigar(record) {
-  const normalizeText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
-  const sanitizeList = (value) => {
-    if (!Array.isArray(value)) return [];
-    return [...new Set(value.map((entry) => normalizeText(entry)).filter(Boolean))];
-  };
-  const deriveAliases = (brand, name, line) => (
-    [name, `${brand} ${name}`.trim(), `${brand} ${line}`.trim()]
-      .map((entry) => normalizeText(entry))
-      .filter(Boolean)
-  );
-  const currentAliases = sanitizeList(record.aliases || record.name_aliases);
-  const canonicalName = normalizeText(record.name);
-  const canonicalBrand = normalizeText(record.brand);
-  const canonicalLine = normalizeText(record.line);
-
-  const missingFields = [];
-  if (!record.brand) missingFields.push('brand');
-  if (!record.line) missingFields.push('line');
-  if (!record.vitola) missingFields.push('vitola');
-  if (!record.country_of_origin) missingFields.push('country_of_origin');
-  if (!record.wrapper) missingFields.push('wrapper');
-  if (!record.binder) missingFields.push('binder');
-  if (!record.filler) missingFields.push('filler');
-  if (!record.strength) missingFields.push('strength');
-  if (!record.body) missingFields.push('body');
-  if (!record.image_url && !record.photo_url && !record.image && !record.photo) missingFields.push('image_url');
-  if (!record.msrp) missingFields.push('msrp');
-  if (!record.production_status) missingFields.push('production_status');
-  const needsFlavorNotes = !Array.isArray(record.flavor_notes) || record.flavor_notes.length === 0;
-  if (needsFlavorNotes) missingFields.push('flavor_notes');
-  if (currentAliases.length === 0) missingFields.push('aliases');
-
-  if (missingFields.length === 0) {
-    const derivedAliases = deriveAliases(canonicalBrand, canonicalName, canonicalLine);
-    const mergedAliases = [...new Set([...currentAliases, ...derivedAliases])];
-    return mergedAliases.length > currentAliases.length ? { aliases: mergedAliases } : {};
-  }
+  const missingFields = [
+    !record.brand && 'brand',
+    !record.line && 'line',
+    !record.vitola && 'vitola',
+    !record.country_of_origin && 'country_of_origin',
+    !record.wrapper && 'wrapper',
+    !record.binder && 'binder',
+    !record.filler && 'filler',
+    !record.strength && 'strength',
+    !record.body && 'body',
+    !record.production_status && 'production_status',
+  ].filter(Boolean);
+  const shouldImproveAliases = !Array.isArray(record.aliases) || record.aliases.length < 2;
+  const shouldImproveFlavor = !Array.isArray(record.flavor_notes) || record.flavor_notes.length < 3;
+  const hasPhoto = Array.isArray(record.photos) && record.photos.length > 0;
+  const needsMarketValuation = !toPositiveNumber(record.market_estimated_unit_value);
 
   const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `You are a cigar expert. Given this cigar record, fill in only clearly identifiable fields.
-Return null for any field you are not confident about.
+    prompt: `You are a cigar expert doing production data enrichment for a collector app.
+Return only high-confidence metadata. Use null when uncertain.
 
-Cigar: "${record.name}"${record.brand ? ` by ${record.brand}` : ''}${record.line ? `, line: ${record.line}` : ''}${record.vitola ? `, vitola: ${record.vitola}` : ''}
+Record:
+- name: "${record.name || ''}"
+- brand: "${record.brand || ''}"
+- line: "${record.line || ''}"
+- vitola: "${record.vitola || ''}"
+- wrapper: "${record.wrapper || ''}"
+- binder: "${record.binder || ''}"
+- filler: "${record.filler || ''}"
+- country_of_origin: "${record.country_of_origin || ''}"
+- strength: "${record.strength || ''}"
+- body: "${record.body || ''}"
+- production_status: "${record.production_status || ''}"
+- aliases: ${JSON.stringify(record.aliases || [])}
+- flavor_notes: ${JSON.stringify(record.flavor_notes || [])}
 
-Missing fields to fill: ${missingFields.join(', ')}
+Improve missing fields: ${missingFields.join(', ') || 'none'}
+Also provide useful canonicalization:
+- normalize aliases
+- seed flavor notes if sparse
+- production status
+- pricing clue (msrp_per_stick or estimated_unit_value)
+- valuation_source / confidence / notes
+- image_url if a trustworthy product image is known
 
-Field guidelines:
-- brand: brand/manufacturer name
-- line: product line or series
-- vitola: cigar vitola/size format
-- country_of_origin: country name (e.g. "Nicaragua", "Dominican Republic", "Honduras", "Cuba", "Ecuador")
-- wrapper: wrapper leaf origin/type (e.g. "Ecuador Connecticut", "Nicaraguan Habano", "Cameroon", "Maduro")
-- binder: binder leaf origin/type
-- filler: filler leaf blend description
-- strength: one of "mild", "mild_medium", "medium", "medium_full", "full"
-- body: one of "mild", "mild_medium", "medium", "medium_full", "full"
-- image_url: direct image URL when known
-- msrp: numeric MSRP for one stick in USD when known
-- production_status: "regular", "limited", "seasonal", or "discontinued"
-- flavor_notes: array of 3-6 tasting note strings (e.g. ["cedar", "leather", "earth", "pepper"])
-- aliases: array of alternate name spellings/format variants`,
+Enums:
+- strength/body: mild | mild_medium | medium | medium_full | full
+- production_status: regular_production | limited | discontinued | seasonal | unknown`,
     add_context_from_internet: true,
     response_json_schema: {
       type: 'object',
@@ -174,43 +223,80 @@ Field guidelines:
         filler: { type: ['string', 'null'] },
         strength: { type: ['string', 'null'] },
         body: { type: ['string', 'null'] },
-        image_url: { type: ['string', 'null'] },
-        msrp: { type: ['number', 'null'] },
         production_status: { type: ['string', 'null'] },
         flavor_notes: { type: ['array', 'null'], items: { type: 'string' } },
         aliases: { type: ['array', 'null'], items: { type: 'string' } },
+        image_url: { type: ['string', 'null'] },
+        msrp_per_stick: { type: ['number', 'null'] },
+        estimated_unit_value: { type: ['number', 'null'] },
+        comparable_count: { type: ['number', 'null'] },
+        valuation_source: { type: ['string', 'null'] },
+        valuation_confidence: { type: ['string', 'null'] },
+        valuation_notes: { type: ['string', 'null'] },
       },
     },
   });
 
   const updates = {};
-  for (const field of missingFields) {
-    if (field === 'flavor_notes') {
-      if (Array.isArray(result?.flavor_notes) && result.flavor_notes.length > 0) {
-        updates.flavor_notes = sanitizeList(result.flavor_notes);
-      }
-    } else if (field === 'aliases') {
-      const generatedAliases = sanitizeList(result?.aliases);
-      const derivedAliases = deriveAliases(canonicalBrand, canonicalName, canonicalLine);
-      const mergedAliases = [...new Set([...currentAliases, ...generatedAliases, ...derivedAliases])];
-      if (mergedAliases.length > 0) updates.aliases = mergedAliases;
-    } else if (field === 'msrp') {
-      const numericMsrp = Number(result?.msrp);
-      if (Number.isFinite(numericMsrp) && numericMsrp > 0) {
-        updates.msrp = Math.round(numericMsrp * 100) / 100;
-      }
-    } else if (field === 'image_url') {
-      const imageUrl = normalizeText(result?.image_url);
-      if (/^https?:\/\//i.test(imageUrl)) updates.image_url = imageUrl;
-    } else if (result?.[field]) {
-      updates[field] = normalizeText(result[field]);
-    }
+
+  ['brand', 'line', 'vitola', 'country_of_origin', 'wrapper', 'binder', 'filler'].forEach((field) => {
+    const next = cleanText(result?.[field]);
+    if (next && !cleanText(record?.[field])) updates[field] = next;
+  });
+
+  const strength = normalizeIntensityLevel(result?.strength);
+  if (strength && !record?.strength) updates.strength = strength;
+
+  const body = normalizeIntensityLevel(result?.body);
+  if (body && !record?.body) updates.body = body;
+
+  const productionStatus = normalizeProductionStatus(result?.production_status);
+  if (productionStatus && !record?.production_status) updates.production_status = productionStatus;
+
+  const mergedAliases = mergeUniqueCaseInsensitive(record?.aliases || [], cleanArray(result?.aliases));
+  if (shouldImproveAliases && mergedAliases.length > 0 && arraysDifferCaseInsensitive(record?.aliases || [], mergedAliases)) {
+    updates.aliases = mergedAliases;
   }
+
+  const mergedFlavor = mergeUniqueCaseInsensitive(record?.flavor_notes || [], cleanArray(result?.flavor_notes)).slice(0, MAX_FLAVOR_NOTES);
+  if (shouldImproveFlavor && mergedFlavor.length > 0 && arraysDifferCaseInsensitive(record?.flavor_notes || [], mergedFlavor)) {
+    updates.flavor_notes = mergedFlavor;
+  }
+
+  const imageUrl = cleanText(result?.image_url);
+  if (!hasPhoto && imageUrl) {
+    updates.photos = [imageUrl];
+  }
+
+  const valuationConfidence = cleanText(result?.valuation_confidence)?.toLowerCase();
+  const normalizedConfidence = ['high', 'medium', 'low'].includes(valuationConfidence) ? valuationConfidence : 'low';
+  const valuationSource = cleanText(result?.valuation_source);
+  const valuationNotes = cleanText(result?.valuation_notes);
+  const inferredUnit = toPositiveNumber(result?.estimated_unit_value) || toPositiveNumber(result?.msrp_per_stick);
+  if (needsMarketValuation && inferredUnit) {
+    const sticks = getRemainingSticks(record);
+    const nowIso = new Date().toISOString();
+    updates.market_estimated_unit_value = inferredUnit;
+    updates.market_estimated_total_value = Number((inferredUnit * sticks).toFixed(2));
+    updates.market_replacement_cost_estimate = Number((inferredUnit * sticks).toFixed(2));
+    updates.market_valuation_source = valuationSource || 'Market reference';
+    updates.market_valuation_confidence = normalizedConfidence;
+    updates.market_valuation_updated_at = nowIso;
+    const derivedComparableCount = toPositiveNumber(result?.comparable_count);
+    const existingComparableCount = toPositiveNumber(record?.market_comparable_count);
+    updates.market_comparable_count = derivedComparableCount || existingComparableCount || 1;
+    if (!record?.valuation_source && valuationSource) updates.valuation_source = valuationSource;
+    if (!record?.valuation_updated_at) updates.valuation_updated_at = nowIso;
+    if (!record?.valuation_confidence && normalizedConfidence) updates.valuation_confidence = normalizedConfidence;
+    if (!record?.valuation_notes && valuationNotes) updates.valuation_notes = valuationNotes;
+  }
+
   return updates;
 }
 
 export default function EnrichButton({ itemType, record, onEnriched }) {
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleEnrich = async () => {
     setLoading(true);
@@ -243,41 +329,41 @@ export default function EnrichButton({ itemType, record, onEnriched }) {
 
         if (Object.keys(updateData).length > 0) {
           await base44.entities.TobaccoBlend.update(record.id, updateData);
-          toast.success('Blend enriched with metadata');
+          toast.success(t('enrichButton.blendSuccess'));
           onEnriched?.({ ...record, ...updateData });
         } else {
-          toast.info('No new metadata to add');
+          toast.info(t('enrichButton.noUpdates'));
         }
       } else if (itemType === 'pipe') {
         const updates = await enrichPipe(record);
         if (Object.keys(updates).length > 0) {
           await base44.entities.Pipe.update(record.id, updates);
-          toast.success(`Pipe enriched — ${Object.keys(updates).length} field${Object.keys(updates).length !== 1 ? 's' : ''} updated`);
+          toast.success(t('enrichButton.fieldsUpdated', { type: t('enrichButton.pipeLabel'), count: Object.keys(updates).length }));
           onEnriched?.({ ...record, ...updates });
         } else {
-          toast.info('No new metadata to add — pipe data is complete');
+          toast.info(t('enrichButton.pipeNoUpdates'));
         }
       } else if (itemType === 'bottle') {
         const updates = await enrichBottle(record);
         if (Object.keys(updates).length > 0) {
           await base44.entities.Bottle.update(record.id, updates);
-          toast.success(`Bottle enriched — ${Object.keys(updates).length} field${Object.keys(updates).length !== 1 ? 's' : ''} updated`);
+          toast.success(t('enrichButton.fieldsUpdated', { type: t('enrichButton.bottleLabel'), count: Object.keys(updates).length }));
           onEnriched?.({ ...record, ...updates });
         } else {
-          toast.info('No new metadata to add — bottle data is complete');
+          toast.info(t('enrichButton.bottleNoUpdates'));
         }
       } else if (itemType === 'cigar') {
         const updates = await enrichCigar(record);
         if (Object.keys(updates).length > 0) {
           await base44.entities.Cigar.update(record.id, updates);
-          toast.success(`Cigar enriched — ${Object.keys(updates).length} field${Object.keys(updates).length !== 1 ? 's' : ''} updated`);
-          onEnriched?.({ ...record, ...updates });
+          toast.success(t('enrichButton.fieldsUpdated', { type: t('enrichButton.cigarLabel'), count: Object.keys(updates).length }));
+          await Promise.resolve(onEnriched?.({ ...record, ...updates }));
         } else {
-          toast.info('No new metadata to add — cigar data is complete');
+          toast.info(t('enrichButton.cigarNoUpdates'));
         }
       }
     } catch (e) {
-      toast.error(e?.message || 'Enrichment failed');
+      toast.error(e?.message || t('enrichButton.failed'));
     } finally {
       setLoading(false);
     }
@@ -292,7 +378,7 @@ export default function EnrichButton({ itemType, record, onEnriched }) {
       className="gap-2"
     >
       {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
-      Enrich
+      {t('enrichButton.action')}
     </Button>
   );
 }

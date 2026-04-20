@@ -46,10 +46,10 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
   const cigarMetrics = useMemo(() => selectCigarMetrics(cigars, humidors), [cigars, humidors]);
   const totalQty = cigarMetrics.total_sticks;
   const valuedCount = cigarMetrics.valued_cigar_count;
-  const valueDisplay = valuedCount > 0 ? formatFromBase(cigarMetrics.collection_value) : t('cigars.noValuesAddedYet');
+  const valueDisplay = valuedCount > 0 ? formatFromBase(cigarMetrics.collection_value) : t('cigars.highlights.noValuesAddedYet');
   const valueSub = valuedCount > 0
-    ? t('cigars.valuedCount', { valued: valuedCount, total: cigars.length })
-    : t('cigars.addPurchasePriceOrEstimate');
+    ? t('cigars.highlights.valuedCount', { valued: valuedCount, total: cigars.length })
+    : t('cigars.highlights.addPurchaseOrEstimate');
 
   const readyCount = cigars.filter((c) => {
     if (!c.ready_to_smoke_date) return true;
@@ -93,37 +93,37 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
       <div className="flex items-center gap-2 mb-1">
         <Cigarette className="w-5 h-5" style={{ color: '#D4A574' }} />
         <h2 style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", fontSize: '1.05rem', fontWeight: 700 }}>
-          {t('cigars.collectionOverview')}
+          {t('cigars.highlights.collectionOverview')}
         </h2>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <StatCard icon={Cigarette} label={t('cigars.cigarTypes')} value={cigars.length} sub={t('cigars.sticksTotal', { count: totalQty })} />
+        <StatCard icon={Cigarette} label={t('cigars.highlights.cigarTypes')} value={cigars.length} sub={t('cigars.highlights.sticksTotal', { count: totalQty })} />
         <StatCard
           icon={DollarSign}
-          label={t('cigars.estimatedValue')}
+          label={t('cigars.highlights.estimatedValue')}
           value={valueDisplay}
           sub={valueSub}
         />
         <StatCard icon={Box} label={t('cigars.humidors')} value={humidors.length} />
-        <StatCard icon={Heart} label={t('cigars.favorites')} value={favoriteCount} />
-        <StatCard icon={Flame} label={t('cigars.readyToSmoke')} value={readyCount} />
-        <StatCard icon={Clock} label={t('cigars.recentSessions')} value={recentSessions} sub={t('cigars.last30Days')} />
+        <StatCard icon={Heart} label={t('cigars.highlights.favorites')} value={favoriteCount} />
+        <StatCard icon={Flame} label={t('cigars.highlights.readyToSmoke')} value={readyCount} />
+        <StatCard icon={Clock} label={t('cigars.recentSessions')} value={recentSessions} sub={t('cigars.highlights.last30Days')} />
         {insights.runningLow.length > 0 && (
           <StatCard
             icon={TrendingDown}
-            label={t('cigars.runningLowLabel')}
+            label={t('cigars.highlights.runningLow')}
             value={insights.runningLow.length}
-            sub={t('cigars.runningLowSub')}
+            sub={t('cigars.highlights.runningLowSub')}
           />
         )}
         {atRiskCount > 0 && (
-          <StatCard icon={ShieldAlert} label={t('cigars.atRisk')} value={atRiskCount} sub={t('cigars.needsAttention')} />
+          <StatCard icon={ShieldAlert} label={t('cigars.highlights.atRisk')} value={atRiskCount} sub={t('cigars.highlights.needsAttention')} />
         )}
         {alertHumidorCount > 0 && (
           <StatCard
             icon={AlertTriangle}
-            label={t('cigars.humidorsNeedAttention')}
+            label={t('cigars.humidorsNeedingAttention')}
             value={alertHumidorCount}
             alert
           />
@@ -136,7 +136,7 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
             className="text-xs font-semibold uppercase tracking-wider mb-2"
             style={{ color: 'rgba(224,216,200,0.55)' }}
           >
-            {t('cigars.topBrands')}
+            {t('cigars.highlights.topBrands')}
           </p>
           <div className="flex flex-wrap gap-2">
             {topBrands.map((brand, i) => (
