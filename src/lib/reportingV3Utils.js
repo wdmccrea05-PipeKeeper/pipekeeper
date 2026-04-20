@@ -295,16 +295,16 @@ function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
   }
 
   const has = (token) => candidates.some((v) => v.includes(token));
-  const intervalSuffix = resolvedInterval === 'annual' ? 'annual' : (resolvedInterval === 'monthly' ? 'monthly' : null);
-  if (!intervalSuffix) return null;
+  const planSuffix = resolvedInterval === 'annual' ? 'annual' : (resolvedInterval === 'monthly' ? 'monthly' : null);
+  if (!planSuffix) return null;
 
-  if (has('founders')) return `founders_bundle_${intervalSuffix}`;
-  if (has('three_module') || has('bundle_3')) return `three_module_bundle_${intervalSuffix}`;
-  if (has('four_module') || has('bundle_4')) return `four_module_bundle_${intervalSuffix}`;
-  if (has('pipekeeper')) return `pipekeeper_pro_${intervalSuffix}`;
-  if (has('whiskeykeeper')) return `whiskeykeeper_pro_${intervalSuffix}`;
-  if (has('cigarkeeper') || has('cigar')) return `cigarkeeper_pro_${intervalSuffix}`;
-  if (has('winekeeper') || has('wine')) return `winekeeper_pro_${intervalSuffix}`;
+  if (has('founders')) return `founders_bundle_${planSuffix}`;
+  if (has('three_module') || has('bundle_3')) return `three_module_bundle_${planSuffix}`;
+  if (has('four_module') || has('bundle_4')) return `four_module_bundle_${planSuffix}`;
+  if (has('pipekeeper')) return `pipekeeper_pro_${planSuffix}`;
+  if (has('whiskeykeeper')) return `whiskeykeeper_pro_${planSuffix}`;
+  if (has('cigarkeeper') || has('cigar')) return `cigarkeeper_pro_${planSuffix}`;
+  if (has('winekeeper') || has('wine')) return `winekeeper_pro_${planSuffix}`;
 
   return null;
 }
