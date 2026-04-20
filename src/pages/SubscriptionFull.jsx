@@ -122,11 +122,11 @@ export default function SubscriptionFull() {
       syncAppleSubscriptionStatus(payload, { queryClient, refetch })
         .then((result) => {
           if (result?.skipped) {
-            setMessage("Subscription verification is still processing. Please use Restore Purchases in the app and try again.");
+            setMessage(t("subscription.syncStillProcessing"));
           }
         })
         .catch((err) => {
-          const errorMsg = err?.message || "Failed to sync Apple subscription status.";
+          const errorMsg = err?.message || t("subscription.syncStatusFailed");
           setMessage(errorMsg);
         });
     });
@@ -198,31 +198,31 @@ export default function SubscriptionFull() {
       .filter(Boolean);
   }, [selectedInterval, stripeConfig, user]);
 
-  const planLabels = {
-    pipekeeper_pro_monthly: { name: "PipeKeeper Pro", badge: null },
-    pipekeeper_pro_annual: { name: "PipeKeeper Pro", badge: null },
-    whiskeykeeper_pro_monthly: { name: "WhiskeyKeeper Pro", badge: null },
-    whiskeykeeper_pro_annual: { name: "WhiskeyKeeper Pro", badge: null },
-    cigarkeeper_pro_monthly: { name: "CigarKeeper Pro", badge: null },
-    cigarkeeper_pro_annual: { name: "CigarKeeper Pro", badge: null },
-    founders_bundle_monthly: { name: "Founders Bundle (Pipe + Whiskey)", badge: "Most Popular" },
-    founders_bundle_annual: { name: "Founders Bundle (Pipe + Whiskey)", badge: "Most Popular" },
-    three_module_bundle_monthly: { name: "3-Module Bundle", badge: "Best Value" },
-    three_module_bundle_annual: { name: "3-Module Bundle", badge: "Best Value" },
-  };
+  const planLabels = useMemo(() => ({
+    pipekeeper_pro_monthly: { name: t("subscriptionFull.plan.pipekeeperPro"), badge: null },
+    pipekeeper_pro_annual: { name: t("subscriptionFull.plan.pipekeeperPro"), badge: null },
+    whiskeykeeper_pro_monthly: { name: t("subscriptionFull.plan.whiskeykeeperPro"), badge: null },
+    whiskeykeeper_pro_annual: { name: t("subscriptionFull.plan.whiskeykeeperPro"), badge: null },
+    cigarkeeper_pro_monthly: { name: t("subscriptionFull.plan.cigarkeeperPro"), badge: null },
+    cigarkeeper_pro_annual: { name: t("subscriptionFull.plan.cigarkeeperPro"), badge: null },
+    founders_bundle_monthly: { name: t("subscriptionFull.plan.foundersBundle"), badge: t("subscriptionFull.badge.mostPopular") },
+    founders_bundle_annual: { name: t("subscriptionFull.plan.foundersBundle"), badge: t("subscriptionFull.badge.mostPopular") },
+    three_module_bundle_monthly: { name: t("subscriptionFull.plan.threeModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
+    three_module_bundle_annual: { name: t("subscriptionFull.plan.threeModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
+  }), [t]);
 
-  const planDescriptions = {
-    pipekeeper_pro_monthly: "Unlimited pipes & blends, AI pairings & identification",
-    pipekeeper_pro_annual: "Unlimited pipes & blends, AI pairings & identification",
-    whiskeykeeper_pro_monthly: "Unlimited bottles, AI valuations & tastings",
-    whiskeykeeper_pro_annual: "Unlimited bottles, AI valuations & tastings",
-    cigarkeeper_pro_monthly: "Unlimited cigars, humidor tracking, and smoking sessions",
-    cigarkeeper_pro_annual: "Unlimited cigars, humidor tracking, and smoking sessions",
-    founders_bundle_monthly: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
-    founders_bundle_annual: "PipeKeeper + WhiskeyKeeper — both modules unlocked",
-    three_module_bundle_monthly: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules",
-    three_module_bundle_annual: "PipeKeeper + WhiskeyKeeper + CigarKeeper — all three modules",
-  };
+  const planDescriptions = useMemo(() => ({
+    pipekeeper_pro_monthly: t("subscriptionFull.planDescription.pipekeeperPro"),
+    pipekeeper_pro_annual: t("subscriptionFull.planDescription.pipekeeperPro"),
+    whiskeykeeper_pro_monthly: t("subscriptionFull.planDescription.whiskeykeeperPro"),
+    whiskeykeeper_pro_annual: t("subscriptionFull.planDescription.whiskeykeeperPro"),
+    cigarkeeper_pro_monthly: t("subscriptionFull.planDescription.cigarkeeperPro"),
+    cigarkeeper_pro_annual: t("subscriptionFull.planDescription.cigarkeeperPro"),
+    founders_bundle_monthly: t("subscriptionFull.planDescription.foundersBundle"),
+    founders_bundle_annual: t("subscriptionFull.planDescription.foundersBundle"),
+    three_module_bundle_monthly: t("subscriptionFull.planDescription.threeModuleBundle"),
+    three_module_bundle_annual: t("subscriptionFull.planDescription.threeModuleBundle"),
+  }), [t]);
 
   const groupedPlans = useMemo(() => ({
     individual: availablePlans.filter((plan) => plan.type === "single_module"),
@@ -286,7 +286,7 @@ export default function SubscriptionFull() {
             billingPeriod: option.targetPlanKey?.includes("monthly") ? "monthly" : "annual",
           });
           if (!upgradeRes?.data?.success) {
-            setUpgradeError(upgradeRes?.data?.error || upgradeRes?.error || "Failed to prepare upgrade.");
+            setUpgradeError(upgradeRes?.data?.error || upgradeRes?.error || t("subscriptionFull.failedToPrepareUpgrade"));
             setIsUpgrading(false);
             return;
           }
@@ -303,7 +303,7 @@ export default function SubscriptionFull() {
         "/Subscription"
       );
     } catch (e) {
-      setUpgradeError(e?.message || "An unexpected error occurred.");
+      setUpgradeError(e?.message || t("subscriptionFull.unexpectedError"));
     } finally {
       setIsUpgrading(false);
     }
@@ -455,6 +455,8 @@ export default function SubscriptionFull() {
             {upgradeOptions.map((option) => {
               const isBundle = option.action === "upgrade_to_bundle";
               const planDef = SUBSCRIPTION_PLANS[option.targetPlanKey];
+              const optionLabel = planLabels[option.targetPlanKey]?.name || option.label;
+              const optionDescription = planDescriptions[option.targetPlanKey] || option.description;
               return (
                 <div
                   key={option.action}
@@ -468,7 +470,7 @@ export default function SubscriptionFull() {
                   <div className="flex items-start gap-3">
                     {isBundle && <Crown className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#D4AF37" }} />}
                     <div className="flex-1">
-                      <h3 className="font-bold text-[#F5F1E7]">{option.label}</h3>
+                      <h3 className="font-bold text-[#F5F1E7]">{optionLabel}</h3>
                       {option.recommended && (
                         <span
                           className="inline-flex mt-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
@@ -482,7 +484,7 @@ export default function SubscriptionFull() {
                           ${planDef.displayPrice}/{planDef.term === "annual" ? t("subscriptionFull.yearShort") : t("subscriptionFull.monthShort")}
                         </p>
                       )}
-                      <p className="text-sm text-[#e8d5b7]/70 mt-1">{option.description}</p>
+                      <p className="text-sm text-[#e8d5b7]/70 mt-1">{optionDescription}</p>
                     </div>
                   </div>
                 </div>
@@ -496,7 +498,9 @@ export default function SubscriptionFull() {
               onClick={() => handleUpgradeWithIntent(selectedUpgradeOption)}
               disabled={isUpgrading}
             >
-              {isUpgrading ? t("subscriptionFull.processing") : `${t("subscriptionFull.continue")} — ${selectedUpgradeOption.label}`}
+              {isUpgrading
+                ? t("subscriptionFull.processing")
+                : `${t("subscriptionFull.continue")} — ${planLabels[selectedUpgradeOption.targetPlanKey]?.name || selectedUpgradeOption.label}`}
             </Button>
           )}
 
@@ -621,7 +625,9 @@ export default function SubscriptionFull() {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <div className="text-lg font-bold text-[#D4A574]">{plan.displayPrice}</div>
-                  <div className="text-xs text-[#e8d5b7]/50">{plan.displayPeriod}</div>
+                  <div className="text-xs text-[#e8d5b7]/50">
+                    {plan.term === "annual" ? t("subscriptionFull.annualSave") : t("subscriptionFull.monthly")}
+                  </div>
                 </div>
               </div>
             </div>
@@ -639,8 +645,8 @@ export default function SubscriptionFull() {
         onClick={() => selectedPlanKey && handleUpgrade(selectedPlanKey)}
       >
         {selectedPlanKey
-          ? `Continue to Secure Checkout — ${planLabels[selectedPlanKey]?.name || selectedPlanKey}`
-          : "Select a plan above"}
+          ? `${t("subscriptionFull.continueToSecureCheckout")} — ${planLabels[selectedPlanKey]?.name || selectedPlanKey}`
+          : t("subscriptionFull.selectPlanAbove")}
       </Button>
 
       {/* Reassurance */}

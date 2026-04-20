@@ -12,12 +12,12 @@ const PRIMARY_ACTION_IDS = ['session_builder', 'optimize_collection', 'cigar_smo
 const SECONDARY_GROUPS = [
   {
     key: 'optimize',
-    label: 'Optimize & Maintain',
+    labelKey: 'curator.optimizeAndMaintain',
     actionIds: ['recommend_specializations', 'optimize_whiskey_collection', 'reclassify_tobacco_blends', 'update_pipe_measurements', 'update_bottle_data', 'cigar_rest_longer'],
   },
   {
     key: 'discovery',
-    label: 'Discovery',
+    labelKey: 'curator.discovery',
     actionIds: ['find_similar_blends', 'find_similar_pipes', 'find_similar_bottles', 'cigar_buy_again', 'cigar_pairing_suggestions'],
   },
 ];
@@ -223,7 +223,7 @@ export default function CuratorActionBar({
             className="text-xs uppercase tracking-wider font-semibold mb-2"
             style={{ color: 'rgba(180,140,75,0.55)' }}
           >
-            {t('curator.featuredActions', 'Quick Start')}
+            {t('curator.featuredActions')}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {primaryActions.map((action) => (
@@ -246,7 +246,7 @@ export default function CuratorActionBar({
             className="text-xs uppercase tracking-wider font-semibold mb-2"
             style={{ color: 'rgba(180,140,75,0.5)' }}
           >
-            {group.label}
+            {t(group.labelKey)}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             {group.actions.map((action) => (

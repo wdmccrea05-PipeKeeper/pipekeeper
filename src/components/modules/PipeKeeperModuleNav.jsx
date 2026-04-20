@@ -38,9 +38,9 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
   const { t } = useTranslation();
 
   const items = [
-    { page: "Pipes", label: "Pipes", semanticIcon: "pipe" },
-    { page: "Tobacco", label: "Tobacco", icon: Leaf },
-    { page: "Insights", label: "Insights", icon: TrendingUp },
+    { page: "Pipes", label: t("nav.pipes"), semanticIcon: "pipe" },
+    { page: "Tobacco", label: t("nav.tobacco"), icon: Leaf },
+    { page: "Insights", label: t("nav.insights"), icon: TrendingUp },
   ];
 
   return (
@@ -60,33 +60,33 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('quickActions.addPipe', 'Add Pipe')}
-          aria-label={t('quickActions.addPipe', 'Add Pipe')}
+          title={t('quickActions.addPipe')}
+          aria-label={t('quickActions.addPipe')}
         >
           <PipeIcon className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('quickActions.addPipe', 'Add Pipe')}</span>
+          <span className="hidden sm:inline">{t('quickActions.addPipe')}</span>
         </Button>
         <Button
           onClick={() => navigate('/Tobacco?action=add')}
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('quickActions.addBlend', 'Add Blend')}
-          aria-label={t('quickActions.addBlend', 'Add Blend')}
+          title={t('quickActions.addBlend')}
+          aria-label={t('quickActions.addBlend')}
         >
           <Leaf className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('quickActions.addBlend', 'Add Blend')}</span>
+          <span className="hidden sm:inline">{t('quickActions.addBlend')}</span>
         </Button>
         <Button
           onClick={() => navigate('/Import?type=pipekeeper_pipes')}
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('import.bulkImport', 'Bulk Import')}
-          aria-label={t('import.bulkImport', 'Bulk Import')}
+          title={t('import.bulkImport')}
+          aria-label={t('import.bulkImport')}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('import.bulkImport', 'Bulk Import')}</span>
+          <span className="hidden sm:inline">{t('import.bulkImport')}</span>
         </Button>
       </div>
     </div>
