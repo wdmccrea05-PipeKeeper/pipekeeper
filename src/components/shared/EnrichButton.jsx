@@ -105,6 +105,11 @@ async function enrichCigar(record) {
     if (!Array.isArray(value)) return [];
     return [...new Set(value.map((entry) => normalizeText(entry)).filter(Boolean))];
   };
+  const deriveAliases = (brand, name, line) => (
+    [name, `${brand} ${name}`.trim(), `${brand} ${line}`.trim()]
+      .map((entry) => normalizeText(entry))
+      .filter(Boolean)
+  );
   const currentAliases = sanitizeList(record.aliases || record.name_aliases);
   const canonicalName = normalizeText(record.name);
   const canonicalBrand = normalizeText(record.brand);
@@ -128,9 +133,7 @@ async function enrichCigar(record) {
   if (currentAliases.length === 0) missingFields.push('aliases');
 
   if (missingFields.length === 0) {
-    const derivedAliases = [canonicalName, `${canonicalBrand} ${canonicalName}`.trim(), `${canonicalBrand} ${canonicalLine}`.trim()]
-      .map((entry) => normalizeText(entry))
-      .filter(Boolean);
+    const derivedAliases = deriveAliases(canonicalBrand, canonicalName, canonicalLine);
     const mergedAliases = [...new Set([...currentAliases, ...derivedAliases])];
     return mergedAliases.length > currentAliases.length ? { aliases: mergedAliases } : {};
   }
@@ -188,14 +191,13 @@ Field guidelines:
       }
     } else if (field === 'aliases') {
       const generatedAliases = sanitizeList(result?.aliases);
-      const derivedAliases = [canonicalName, `${canonicalBrand} ${canonicalName}`.trim(), `${canonicalBrand} ${canonicalLine}`.trim()]
-        .map((entry) => normalizeText(entry))
-        .filter(Boolean);
+      const derivedAliases = deriveAliases(canonicalBrand, canonicalName, canonicalLine);
       const mergedAliases = [...new Set([...currentAliases, ...generatedAliases, ...derivedAliases])];
       if (mergedAliases.length > 0) updates.aliases = mergedAliases;
     } else if (field === 'msrp') {
-      if (Number.isFinite(Number(result?.msrp)) && Number(result.msrp) > 0) {
-        updates.msrp = Number(Number(result.msrp).toFixed(2));
+      const numericMsrp = Number(result?.msrp);
+      if (Number.isFinite(numericMsrp) && numericMsrp > 0) {
+        updates.msrp = Math.round(numericMsrp * 100) / 100;
       }
     } else if (field === 'image_url') {
       const imageUrl = normalizeText(result?.image_url);

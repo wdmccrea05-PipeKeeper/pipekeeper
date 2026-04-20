@@ -854,7 +854,7 @@ function WarningsPanel({ warnings }) {
               <div className="space-y-2">
                 {unresolvedSamples.slice(0, 6).map((sample, idx) => (
                   <div key={`${sample.rawId || sample.recordPath || idx}`} className="rounded-md border border-amber-500/20 bg-amber-900/10 p-2">
-                    <p className="text-xs text-amber-200/80 font-mono break-all">{sample.recordPath || `Subscription/${sample.rawId || 'unknown'}`}</p>
+                    <p className="text-xs text-amber-200/80 font-mono break-all">{sample.recordPath}</p>
                     <p className="text-xs text-amber-200/65 mt-1">
                       {(sample.missingFields || []).join(', ') || t("userReport.warningPanel.unknownReason")}
                     </p>

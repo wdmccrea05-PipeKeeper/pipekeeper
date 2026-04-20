@@ -1205,7 +1205,7 @@ const jaUI = {
     sticksTotal: "合計 {count} 本",
     estimatedValue: "推定価値",
     noValuesAddedYet: "まだ価値データがありません",
-    valuedCount: "{total} 件中 {valued} 件に価値あり",
+    valuedCount: "{valued}/{total} 件に価値あり",
     addPurchasePriceOrEstimate: "購入価格または推定値を追加してください",
     favorites: "お気に入り",
     readyToSmoke: "喫煙可能",

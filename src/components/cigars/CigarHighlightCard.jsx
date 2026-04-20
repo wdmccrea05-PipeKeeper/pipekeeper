@@ -134,10 +134,10 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
         <div>
           <p
             className="text-xs font-semibold uppercase tracking-wider mb-2"
-              style={{ color: 'rgba(224,216,200,0.55)' }}
-            >
-              {t('cigars.topBrands')}
-            </p>
+            style={{ color: 'rgba(224,216,200,0.55)' }}
+          >
+            {t('cigars.topBrands')}
+          </p>
           <div className="flex flex-wrap gap-2">
             {topBrands.map((brand, i) => (
               <span
