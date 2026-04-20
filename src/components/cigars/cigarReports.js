@@ -1,4 +1,5 @@
 import { summarizeCigarReadiness, getCigarReadiness } from '@/platform/agingReadiness';
+import { calculateCigarValue } from '@/utils/cigarValuation';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -14,13 +15,19 @@ export function getCigarQuantity(cigar) {
 }
 
 export function getCigarUnitValue(cigar) {
-  const estimated = toNumber(cigar?.estimated_value, 0);
-  if (estimated > 0) return estimated;
-  return Math.max(0, toNumber(cigar?.purchase_price, 0));
+  const valuation = calculateCigarValue(cigar);
+  if (valuation?.estimatedUnitValue != null) return Math.max(0, toNumber(valuation.estimatedUnitValue, 0));
+  const qty = getCigarQuantity(cigar);
+  if (valuation?.estimatedTotalValue != null && qty > 0) {
+    return Math.max(0, toNumber(valuation.estimatedTotalValue, 0) / qty);
+  }
+  return 0;
 }
 
 export function getCigarRemainingValue(cigar) {
-  return getCigarQuantity(cigar) * getCigarUnitValue(cigar);
+  const valuation = calculateCigarValue(cigar);
+  if (valuation?.estimatedTotalValue != null) return Math.max(0, toNumber(valuation.estimatedTotalValue, 0));
+  return 0;
 }
 
 export function getCigarDisplayName(cigar) {
@@ -28,7 +35,23 @@ export function getCigarDisplayName(cigar) {
 }
 
 export function hasMeaningfulValuation(cigar) {
-  return getCigarUnitValue(cigar) > 0;
+  const valuation = calculateCigarValue(cigar);
+  if (valuation && !valuation.isMissing) return true;
+
+  const hasNumericInput = (value) => {
+    if (value === null || value === undefined || value === '') return false;
+    const n = Number(value);
+    return Number.isFinite(n);
+  };
+
+  return (
+    hasNumericInput(cigar?.purchase_price) ||
+    hasNumericInput(cigar?.estimated_value) ||
+    hasNumericInput(cigar?.estimated_unit_value) ||
+    hasNumericInput(cigar?.estimated_total_value) ||
+    hasNumericInput(cigar?.replacement_cost_estimate) ||
+    hasNumericInput(cigar?.manual_valuation_override)
+  );
 }
 
 function toDate(value) {
