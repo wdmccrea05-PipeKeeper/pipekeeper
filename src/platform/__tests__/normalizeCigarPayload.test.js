@@ -78,6 +78,8 @@ describe('normalizeCigarPayload', () => {
       purchase_price: '15.50',
       estimated_unit_value: '12.25',
       estimated_total_value: '245',
+      market_estimated_unit_value: '13.4',
+      market_comparable_count: '6',
     };
     const out = normalizeCigarPayload(form);
     expect(out.quantity).toBe(2);
@@ -85,6 +87,8 @@ describe('normalizeCigarPayload', () => {
     expect(out.purchase_price).toBe(15.5);
     expect(out.estimated_unit_value).toBe(12.25);
     expect(out.estimated_total_value).toBe(245);
+    expect(out.market_estimated_unit_value).toBe(13.4);
+    expect(out.market_comparable_count).toBe(6);
   });
 
   test('converts empty string numerics to undefined', () => {

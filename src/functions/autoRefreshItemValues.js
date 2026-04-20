@@ -38,7 +38,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { runScheduledRefreshForUser } from '../components/valuation/valueRefreshService.js';
 
 /** Modules supported by the scheduler. Extend to add PipeKeeper, etc. */
-const SUPPORTED_MODULES = ['whiskeykeeper', 'pipekeeper'];
+const SUPPORTED_MODULES = ['whiskeykeeper', 'pipekeeper', 'cigarkeeper'];
 
 /**
  * Entry point for the scheduled refresh cloud function.

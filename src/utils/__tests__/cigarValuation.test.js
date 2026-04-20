@@ -44,6 +44,23 @@ describe('calculateCigarValue', () => {
     expect(result.confidenceScore).toBe('medium');
   });
 
+  test('uses market-derived valuation when market fields are available', () => {
+    const result = calculateCigarValue({
+      singles_equivalent: 10,
+      market_estimated_unit_value: 9.5,
+      market_estimated_total_value: 95,
+      market_replacement_cost_estimate: 110,
+      market_valuation_confidence: 'medium',
+      market_valuation_updated_at: '2026-04-01T12:00:00.000Z',
+    });
+
+    expect(result.estimatedUnitValue).toBe(9.5);
+    expect(result.estimatedTotalValue).toBe(95);
+    expect(result.replacementCostEstimate).toBe(110);
+    expect(result.confidenceScore).toBe('medium');
+    expect(result.source).toBe('market_derived');
+  });
+
   test('handles zero quantity safely', () => {
     const result = calculateCigarValue({
       quantity: 0,

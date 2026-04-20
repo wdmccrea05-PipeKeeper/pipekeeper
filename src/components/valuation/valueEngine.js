@@ -290,12 +290,47 @@ export function normalizeValuationInputs(item, moduleKey) {
   }
 
   if (moduleKey === 'cigarkeeper') {
+    const singlesEquivalent = toNum(item.singles_equivalent);
+    const quantity = toNum(item.quantity);
+    const cigarsPerPackage = toNum(item.cigars_per_package);
+    const remainingSticks = singlesEquivalent > 0
+      ? singlesEquivalent
+      : (quantity > 0 && cigarsPerPackage > 0 ? quantity * cigarsPerPackage : quantity);
+
+    const purchasePrice = toNum(item.purchase_price);
+    const purchaseType = String(item.purchase_price_type || 'total_paid').toLowerCase();
+    const purchasePerStick = (() => {
+      if (!(purchasePrice > 0)) return 0;
+      if (purchaseType === 'single') return purchasePrice;
+      if (['pack', 'box', 'bundle'].includes(purchaseType) && cigarsPerPackage > 0) return purchasePrice / cigarsPerPackage;
+      if (remainingSticks > 0) return purchasePrice / remainingSticks;
+      return purchasePrice;
+    })();
+    const purchaseTotal = remainingSticks > 0 ? purchasePerStick * remainingSticks : purchasePrice;
+
+    const estimatedUnit = toNum(item.estimated_unit_value || item.estimated_value);
+    const estimatedTotal = toNum(item.estimated_total_value) || (estimatedUnit > 0 && remainingSticks > 0 ? estimatedUnit * remainingSticks : 0);
+    const marketUnit = toNum(item.market_estimated_unit_value);
+    const marketTotal = toNum(item.market_estimated_total_value) || (marketUnit > 0 && remainingSticks > 0 ? marketUnit * remainingSticks : 0);
+    const manualOverrideTotal = item.manual_valuation_enabled && toNum(item.manual_valuation_override) > 0 && remainingSticks > 0
+      ? toNum(item.manual_valuation_override) * remainingSticks
+      : 0;
+    const boxDateYear = parseInt(String(item.box_date || '').slice(0, 4), 10);
+
     return {
       ...base,
+      retailValue: toNum(item.retail_price) || base.retailValue,
+      marketValue: marketTotal > 0 ? marketTotal : base.marketValue,
+      purchaseValue: purchaseTotal > 0 ? purchaseTotal : base.purchaseValue,
+      estimatedValue: estimatedTotal > 0 ? estimatedTotal : base.estimatedValue,
+      manualValueOverride: manualOverrideTotal > 0 ? manualOverrideTotal : null,
+      confidence: item.valuation_confidence || item.market_valuation_confidence || base.confidence,
       brand: item.brand || '',
       vitola: item.vitola || '',
       origin: item.origin || item.country || '',
-      vintage: toNum(item.vintage_year),
+      vintage: toNum(item.vintage_year || boxDateYear),
+      productionStatus: item.production_status || '',
+      remainingSticks,
     };
   }
 
@@ -1067,6 +1102,9 @@ export function buildValuationSnapshot(item, moduleKey, collectionContext = {}) 
   } else if (inputs.collectorValue > 0) {
     source = 'Collector Value';
     confidence = 'high';
+  } else if (inputs.estimatedValue > 0) {
+    source = 'Estimated Value';
+    confidence = 'low';
   } else if (inputs.marketValue > 0) {
     source = 'Aftermarket / Secondary Market';
     confidence = 'medium';
@@ -1075,9 +1113,6 @@ export function buildValuationSnapshot(item, moduleKey, collectionContext = {}) 
     confidence = 'medium';
   } else if (inputs.purchaseValue > 0) {
     source = 'Purchase Price';
-    confidence = 'low';
-  } else if (inputs.estimatedValue > 0) {
-    source = 'Estimated Value';
     confidence = 'low';
   }
 

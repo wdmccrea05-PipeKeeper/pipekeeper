@@ -102,6 +102,9 @@ export function calculateCigarValue(cigar) {
   const manualUnit = toNumber(cigar?.estimated_unit_value ?? cigar?.estimated_value);
   const manualTotal = toNumber(cigar?.estimated_total_value);
   const manualReplacement = toNumber(cigar?.replacement_cost_estimate);
+  const marketUnit = toNumber(cigar?.market_estimated_unit_value);
+  const marketTotal = toNumber(cigar?.market_estimated_total_value);
+  const marketReplacement = toNumber(cigar?.market_replacement_cost_estimate);
 
   let estimatedUnitValue = null;
   let estimatedTotalValue = null;
@@ -129,6 +132,18 @@ export function calculateCigarValue(cigar) {
     replacementCostEstimate = manualReplacement && manualReplacement > 0 ? manualReplacement : manualTotal;
     source = 'manual_entry';
     confidenceScore = cigar?.valuation_confidence || 'high';
+  } else if ((marketUnit && marketUnit > 0) || (marketTotal && marketTotal > 0)) {
+    estimatedUnitValue = marketUnit && marketUnit > 0
+      ? marketUnit
+      : (remainingSticks > 0 ? marketTotal / remainingSticks : null);
+    estimatedTotalValue = marketTotal && marketTotal > 0
+      ? marketTotal
+      : (estimatedUnitValue != null && remainingSticks > 0 ? estimatedUnitValue * remainingSticks : null);
+    replacementCostEstimate = marketReplacement && marketReplacement > 0
+      ? marketReplacement
+      : (estimatedUnitValue != null && basisSticks > 0 ? estimatedUnitValue * basisSticks : estimatedTotalValue);
+    source = 'market_derived';
+    confidenceScore = cigar?.market_valuation_confidence || 'low';
   } else if (perStickCostBasis && perStickCostBasis > 0 && remainingSticks > 0) {
     const guidedPerStick = perStickCostBasis * getGuidedMultiplier(cigar);
     estimatedUnitValue = guidedPerStick;
@@ -140,11 +155,16 @@ export function calculateCigarValue(cigar) {
 
   estimatedUnitValue = roundMoney(estimatedUnitValue);
   estimatedTotalValue = roundMoney(estimatedTotalValue);
+  const shouldUseManualReplacement = source === 'manual_entry' || source === 'manual_override';
   replacementCostEstimate = roundMoney(
-    manualReplacement && manualReplacement > 0 ? manualReplacement : replacementCostEstimate
+    shouldUseManualReplacement && manualReplacement && manualReplacement > 0
+      ? manualReplacement
+      : replacementCostEstimate
   );
 
-  const valuationUpdatedAt = cigar?.valuation_updated_at || null;
+  const valuationUpdatedAt = source === 'market_derived'
+    ? (cigar?.market_valuation_updated_at || cigar?.valuation_updated_at || null)
+    : (cigar?.valuation_updated_at || cigar?.market_valuation_updated_at || null);
   const updatedDate = valuationUpdatedAt ? new Date(valuationUpdatedAt) : null;
   const isStale = Boolean(
     updatedDate &&
@@ -157,6 +177,7 @@ export function calculateCigarValue(cigar) {
   const sourceLabelMap = {
     manual_override: 'Manual override',
     manual_entry: 'User entered',
+    market_derived: 'Market derived',
     guided_estimate: 'Guided estimate',
     missing: 'Missing valuation',
   };
@@ -179,4 +200,3 @@ export function calculateCigarValue(cigar) {
     valuationUpdatedAt,
   };
 }
-
