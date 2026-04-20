@@ -326,12 +326,11 @@ function mergeMissing(target, source) {
 }
 
 function parseObjectLike(value) {
-  if (isPlainObject(value)) return value;
+  if (isPlainObject(value) || Array.isArray(value)) return value;
   const asString = typeof value === 'string' ? value.trim() : '';
   if (!asString) return null;
   try {
-    const parsed = JSON.parse(asString);
-    return isPlainObject(parsed) ? parsed : null;
+    return JSON.parse(asString);
   } catch {
     return null;
   }
@@ -364,9 +363,71 @@ function parseMetadataObject(raw) {
   const merged = {};
   for (const candidate of candidateFields) {
     const parsed = parseObjectLike(candidate);
-    if (parsed) mergeMissing(merged, parsed);
+    if (isPlainObject(parsed)) {
+      mergeMissing(merged, parsed);
+      continue;
+    }
+    if (Array.isArray(parsed)) {
+      for (const entry of parsed) {
+        if (isPlainObject(entry)) mergeMissing(merged, entry);
+      }
+    }
   }
   return merged;
+}
+
+/**
+ * Normalize array-like metadata payloads.
+ * Returns the original array when provided, attempts JSON parsing for string/object-like values,
+ * and returns an empty array when no array structure is available.
+ *
+ * @param {unknown} value
+ * @returns {unknown[]}
+ */
+function parseArrayLike(value) {
+  if (Array.isArray(value)) return value;
+  const parsed = parseObjectLike(value);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+/**
+ * Extract normalized product identifiers from iOS receipt-style metadata payloads.
+ * Looks at both top-level raw subscription fields and parsed metadata fields, including
+ * latest_receipt_info-style arrays and receipt blobs.
+ *
+ * @param {object} raw
+ * @param {object} metadata
+ * @returns {string[]}
+ */
+function extractReceiptProductIds(raw, metadata) {
+  const arrayCandidates = [
+    raw?.latest_receipt_info,
+    raw?.latest_receipt,
+    raw?.apple_receipt,
+    raw?.apple_receipt_json,
+    raw?.receipt_json,
+    raw?.entitlement_data,
+    metadata?.latest_receipt_info,
+    metadata?.latest_receipt,
+    metadata?.apple_receipt,
+    metadata?.apple_receipt_json,
+    metadata?.receipt_json,
+    metadata?.entitlement_data,
+  ];
+
+  const directCandidates = [
+    raw?.product_id,
+    metadata?.product_id,
+    metadata?.latest_receipt_info?.product_id,
+  ];
+
+  const fromArrays = arrayCandidates
+    .flatMap((candidate) => parseArrayLike(candidate))
+    .flatMap((entry) => (isPlainObject(entry) ? [entry.product_id, entry.productId] : []));
+
+  return [...new Set([...directCandidates, ...fromArrays]
+    .map((value) => norm(value))
+    .filter(Boolean))];
 }
 
 function normalizeModuleToken(value) {
@@ -429,6 +490,7 @@ function inferIntervalFromDateSpan(raw) {
 
 function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
   const metadata = parseMetadataObject(raw);
+  const receiptProductIds = extractReceiptProductIds(raw, metadata);
   const stripePriceId = raw?.items?.data?.[0]?.price?.id || raw?.price?.id || null;
   const candidates = [
     raw.planKey,
@@ -470,6 +532,7 @@ function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
     metadata.app_aliases,
     metadata.provider_subscription_id,
     metadata.stripe_subscription_id,
+    ...receiptProductIds,
   ]
     .map((v) => norm(v))
     .filter(Boolean);
@@ -512,6 +575,7 @@ function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
  */
 function inferIntervalFromIdentifiers(raw) {
   const metadata = parseMetadataObject(raw);
+  const receiptProductIds = extractReceiptProductIds(raw, metadata);
   const stripeInterval = raw?.items?.data?.[0]?.price?.recurring?.interval || raw?.price?.recurring?.interval || null;
   const tokens = [
     raw.planKey,
@@ -539,6 +603,7 @@ function inferIntervalFromIdentifiers(raw) {
     metadata.product_label,
     metadata?.items?.data?.[0]?.price?.recurring?.interval,
     metadata?.price?.recurring?.interval,
+    ...receiptProductIds,
   ].map((v) => norm(v)).filter(Boolean);
 
   for (const token of tokens) {

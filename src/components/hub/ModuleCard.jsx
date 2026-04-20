@@ -119,7 +119,7 @@ export default function ModuleCard({
                 className="text-xs font-medium mt-1"
                 style={{ color: "rgba(180,140,75,0.7)", letterSpacing: "0.08em" }}
               >
-                {t("hub.comingSoon", "Expanding Soon")}
+                {t("hub.comingSoon")}
               </p>
             ) : null}
           </div>
@@ -161,7 +161,7 @@ export default function ModuleCard({
             ) : (
               <div className="flex items-center justify-between">
                 <span className="text-sm" style={{ color: "rgba(224,216,200,0.65)" }}>
-                  {t("hub.items", "Items")}
+                  {t("hub.items")}
                 </span>
                 <span className="text-lg font-semibold" style={{ color: "#D4A574" }}>
                   {itemCount}
@@ -171,7 +171,7 @@ export default function ModuleCard({
           </div>
         ) : (
           <p className="text-sm" style={{ color: "rgba(224,216,200,0.5)" }}>
-            {t("hub.expandingEcosystem", "Expanding your CollectionKeeper ecosystem soon.")}
+            {t("hub.expandingEcosystem")}
           </p>
         )}
 
@@ -185,7 +185,7 @@ export default function ModuleCard({
               color: "#E0D8C8",
             }}
           >
-            <span>{t("hub.openModule", "Open Module")}</span>
+            <span>{t("hub.openModule")}</span>
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
         ) : null}

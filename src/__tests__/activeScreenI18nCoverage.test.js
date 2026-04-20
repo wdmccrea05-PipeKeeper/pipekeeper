@@ -32,6 +32,14 @@ const REQUIRED_KEYS = [
   'subscription.openSubscriptionFailed',
 ];
 
+const NON_EN_REQUIRED_KEYS = [
+  'nav.curator',
+  'hub.quickLaunch',
+  'curatorPage.description',
+  'userReport.title',
+  'subscription.manage',
+];
+
 describe('active screen i18n coverage', () => {
   it('does not use inline english t() fallback literals on critical active screens', () => {
     const fallbackPattern = /\bt\(\s*['"][^'"]+['"]\s*,\s*['"]/;
@@ -48,6 +56,18 @@ describe('active screen i18n coverage', () => {
         expect(typeof value, `${lang}:${key}`).toBe('string');
         expect(String(value).trim().length, `${lang}:${key}`).toBeGreaterThan(0);
         expect(value, `${lang}:${key}`).not.toBe(key);
+      }
+    }
+  });
+
+  it('uses non-english copy on critical active-screen keys for japanese and polish', () => {
+    for (const lang of ['ja', 'pl']) {
+      for (const key of NON_EN_REQUIRED_KEYS) {
+        const value = translate(key, {}, lang);
+        const english = translate(key, {}, 'en');
+        expect(typeof value, `${lang}:${key}`).toBe('string');
+        expect(String(value).trim().length, `${lang}:${key}`).toBeGreaterThan(0);
+        expect(value, `${lang}:${key}`).not.toBe(english);
       }
     }
   });
