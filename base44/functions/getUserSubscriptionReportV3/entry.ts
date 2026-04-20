@@ -231,7 +231,7 @@ function normalizeIntervalToken(v: unknown): IntervalKind | null {
 function parsePositiveNumber(v: unknown, options: { treatAsCents?: boolean } = {}): number | null {
   if (v === null || v === undefined || v === '') return null;
   const n = typeof v === 'string'
-    ? Number(String(v).replace(/,/g, '').match(/-?\d+(\.\d+)?/)?.[0] ?? Number.NaN)
+    ? Number(String(v).replace(/,/g, '').match(/\d+(\.\d+)?/)?.[0] ?? Number.NaN)
     : Number(v);
   if (!Number.isFinite(n) || n <= 0) return null;
   return options.treatAsCents ? (n / 100) : n;
@@ -314,6 +314,8 @@ function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | 
   return null;
 }
 
+// Infer billing interval from identifier-like fields when explicit interval fields are absent.
+// Uses both top-level subscription fields and metadata payload hints.
 function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
   const metadata = parseMetadataObject(raw);
   const candidates = [
@@ -348,6 +350,8 @@ function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
   return null;
 }
 
+// Safe canonical backfill: infer plan key from resolved module set + billing interval + tier/amount hints.
+// Only used after direct and identifier-based plan resolution fails.
 function inferPlanKeyFromResolvedModules(
   modules: string[],
   billingInterval: IntervalKind | null,

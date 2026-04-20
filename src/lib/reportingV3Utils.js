@@ -246,7 +246,7 @@ function normalizeIntervalToken(v) {
 function parsePositiveNumber(v, { treatAsCents = false } = {}) {
   if (v === null || v === undefined || v === '') return null;
   const n = typeof v === 'string'
-    ? Number(String(v).replace(/,/g, '').match(/-?\d+(\.\d+)?/)?.[0] ?? Number.NaN)
+    ? Number(String(v).replace(/,/g, '').match(/\d+(\.\d+)?/)?.[0] ?? Number.NaN)
     : Number(v);
   if (!Number.isFinite(n) || n <= 0) return null;
   if (treatAsCents) return n / 100;
@@ -332,6 +332,13 @@ function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
   return null;
 }
 
+/**
+ * Infer billing interval from identifier-like fields when explicit interval fields are missing.
+ * Uses plan/price/product tokens from both top-level and metadata payloads.
+ *
+ * @param {object} raw
+ * @returns {'monthly'|'annual'|null}
+ */
 function inferIntervalFromIdentifiers(raw) {
   const metadata = parseMetadataObject(raw);
   const tokens = [
@@ -364,6 +371,16 @@ function inferIntervalFromIdentifiers(raw) {
   return null;
 }
 
+/**
+ * Safely backfill canonical plan key from already-resolved modules + interval + tier/amount hints.
+ * This runs only after direct and identifier mapping paths fail.
+ *
+ * @param {string[]} modules
+ * @param {'monthly'|'annual'|null} billingInterval
+ * @param {number|null} amount
+ * @param {unknown} tierHintRaw
+ * @returns {string|null}
+ */
 function inferPlanKeyFromResolvedModules(modules, billingInterval, amount, tierHintRaw) {
   const interval = billingInterval === 'annual' ? 'annual' : (billingInterval === 'monthly' ? 'monthly' : null);
   if (!interval || !Array.isArray(modules) || modules.length === 0) return null;
