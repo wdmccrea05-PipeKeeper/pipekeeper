@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import LogSessionModal from '@/components/home/LogSessionModal';
@@ -133,6 +134,7 @@ export default function CuratorWorkspace({
   onSurfaceChange,
   onCountsChange,
 }) {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const { enabled: moduleEnabled, enabledModuleKeys } = useEnabledModules();
 
@@ -458,7 +460,7 @@ export default function CuratorWorkspace({
     return (
       <div className="py-24 text-center">
         <div className="text-[20px]" style={{ color: '#A1A1AA' }}>
-          Loading curator intelligence…
+          {t('curator.workspaceLoading')}
         </div>
       </div>
     );
@@ -474,7 +476,7 @@ export default function CuratorWorkspace({
         }}
       >
         <div className="text-[22px] font-semibold mb-3" style={{ color: '#F5F5F7' }}>
-          Curator could not load
+          {t('curator.workspaceLoadErrorTitle')}
         </div>
         <div className="text-[16px] mb-6" style={{ color: '#A1A1AA' }}>
           {error}
@@ -485,7 +487,7 @@ export default function CuratorWorkspace({
           className="h-12 px-6 rounded-[14px] font-medium"
           style={{ background: '#C6A15B', color: '#0B0B0C' }}
         >
-          Try Again
+          {t('common.retry')}
         </button>
       </div>
     );

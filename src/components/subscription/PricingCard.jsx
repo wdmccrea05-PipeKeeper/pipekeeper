@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Star } from 'lucide-react';
 
 export default function PricingCard({
@@ -13,6 +14,7 @@ export default function PricingCard({
   isSelected = false,
   billingPeriod = 'monthly',
 }) {
+  const { t } = useTranslation();
 
   // Defensive null checks for prices
   if (!priceMonthly || !priceAnnual) {
@@ -27,14 +29,14 @@ export default function PricingCard({
           {title}
         </h3>
         <p className="text-sm" style={{ color: 'rgba(224, 216, 200, 0.5)' }}>
-          Not available
+          {t('modules.notAvailable')}
         </p>
       </div>
     );
   }
 
   const displayPrice = billingPeriod === 'monthly' ? priceMonthly : priceAnnual;
-  const displayPeriod = billingPeriod === 'monthly' ? '/month' : '/year';
+  const displayPeriod = billingPeriod === 'monthly' ? t('subscription.perMonthShort') : t('subscription.perYearShort');
 
   // Calculate annual savings (with null safety)
   const monthlyNum = parseFloat(priceMonthly) || 0;
@@ -105,7 +107,7 @@ export default function PricingCard({
               color: '#A0D5A0',
             }}
           >
-            Save {savings}% annually
+            {t('subscription.savePercentAnnually', { percent: savings })}
           </div>
         )}
       </div>

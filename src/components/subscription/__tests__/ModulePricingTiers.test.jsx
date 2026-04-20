@@ -4,9 +4,17 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import ModulePricingTiers from '@/components/subscription/ModulePricingTiers';
 
 vi.mock('@/components/i18n/safeTranslation', () => ({
-  useTranslation: () => ({ t: (_key, fallbackOrParams) => {
+  useTranslation: () => ({ t: (key, fallbackOrParams) => {
     if (typeof fallbackOrParams === 'string') return fallbackOrParams;
-    return '';
+    const dictionary = {
+      'subscriptionFull.individualModulesTitle': 'Individual Modules',
+      'subscriptionFull.bundlesTitle': 'Bundles',
+      'subscription.mostPopular': 'Most Popular',
+      'subscription.bestValue': 'Best Value',
+      'subscription.alreadySubscribedUpgradeHint': 'Already subscribed? Choose an upgrade option to expand your access without losing current modules.',
+      'subscription.foundersOffer': 'Founders Bundle',
+    };
+    return dictionary[key] || key;
   } }),
 }));
 

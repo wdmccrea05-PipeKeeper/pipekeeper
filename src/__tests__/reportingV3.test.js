@@ -191,6 +191,47 @@ describe('normalizeSub', () => {
     expect(sub.fieldResolution.billingInterval).toBe('recovered');
   });
 
+  it('recovers plan, interval, and price from Stripe expanded payload fields', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: undefined,
+      billing_interval: undefined,
+      billing_period: undefined,
+      items: {
+        data: [{
+          price: {
+            id: 'four_module_bundle_annual',
+            unit_amount: 8999,
+            recurring: { interval: 'year' },
+          },
+        }],
+      },
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.planKey).toBe('four_module_bundle_annual');
+    expect(sub.billingInterval).toBe('annual');
+    expect(sub.price).toBe(89.99);
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']);
+  });
+
+  it('recovers billing fields from provider payload JSON metadata when metadata_json is empty', () => {
+    const raw = makeSub({
+      amount: undefined,
+      billing_interval: undefined,
+      billing_period: undefined,
+      metadata_json: undefined,
+      provider_payload_json: JSON.stringify({
+        plan_key: 'whiskeykeeper_pro_monthly',
+        price: { unit_amount: 299, recurring: { interval: 'month' } },
+      }),
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.planKey).toBe('whiskeykeeper_pro_monthly');
+    expect(sub.billingInterval).toBe('monthly');
+    expect(sub.price).toBe(2.99);
+  });
+
   it('recovers interval from period span when direct fields are missing', () => {
     const raw = makeSub({
       amount: 9.99,
