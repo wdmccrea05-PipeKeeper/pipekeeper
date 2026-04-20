@@ -226,7 +226,7 @@ describe('normalizeSub', () => {
 
   it('sets module to unknown when no planKey, no modules_csv, no primary_module, and unrecognized amount', () => {
     // 9.99 is not a valid known plan price, so no product can be resolved
-    const raw = makeSub({ product_kind: 'whiskeykeeper' });
+    const raw = makeSub({ product_kind: 'custom_unknown_product' });
     const sub = normalizeSub(raw);
     expect(sub.module).toBe('unknown');
     expect(sub.modules).toEqual(['unknown']);
