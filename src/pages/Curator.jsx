@@ -8,10 +8,10 @@ const CURATOR_ICON = 'https://media.base44.com/images/public/694956e18d119cc4971
 // ─── Static surfaces (always present) ────────────────────────────────────────
 
 const SURFACES_BASE = [
-  { key: 'record_optimization',  labelKey: 'curatorPage.surfaces.recordOptimization' },
+  { key: 'record_optimization', labelKey: 'curatorPage.surfaces.recordOptimization' },
   { key: 'collection_optimization', labelKey: 'curatorPage.surfaces.collectionOptimization' },
-  { key: 'purchase_restock',     labelKey: 'curatorPage.surfaces.purchaseRestock' },
-  { key: 'plan_session',         labelKey: 'curatorPage.surfaces.planSession' },
+  { key: 'purchase_restock', labelKey: 'curatorPage.surfaces.purchaseRestock' },
+  { key: 'plan_session', labelKey: 'curatorPage.surfaces.planSession' },
 ];
 
 // These appear only when 2+ modules are active
@@ -21,7 +21,7 @@ const MULTI_MODULE_SURFACES = [
 
 const SURFACES_TAIL = [
   { key: 'grow_expand', labelKey: 'curatorPage.surfaces.growExpand' },
-  { key: 'chat',        labelKey: 'curatorPage.surfaces.chat' },
+  { key: 'chat', labelKey: 'curatorPage.surfaces.chat' },
 ];
 
 // All valid surface keys (used for URL deep-link validation before SURFACES is computed)

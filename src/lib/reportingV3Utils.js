@@ -292,7 +292,7 @@ function parsePositiveNumber(v, { treatAsCents = false } = {}) {
 function parsePositiveMoney(v) {
   const direct = parsePositiveNumber(v);
   if (direct === null) return null;
-  if (Number.isInteger(direct) && direct >= 100) {
+  if (Number.isInteger(direct)) {
     const asCents = parseFloat((direct / 100).toFixed(2));
     if (inferFromAmount(asCents)) return asCents;
   }
