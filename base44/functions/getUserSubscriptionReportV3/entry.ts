@@ -251,7 +251,15 @@ function getCalendarRange(type: 'today' | 'week' | 'month' | 'quarter' | 'year',
 // ─── Interval normalization ───────────────────────────────────────────────────
 
 function normalizeInterval(raw: any): IntervalKind | null {
-  const v = norm(raw.billing_interval || raw.billing_period || '');
+  const v = norm(
+    raw.billing_interval ||
+    raw.billing_period ||
+    raw.interval ||
+    raw.period ||
+    raw.plan_interval ||
+    raw.recurring_interval ||
+    ''
+  );
   if (v === 'month' || v === 'monthly') return 'monthly';
   if (v === 'year' || v === 'yearly' || v === 'annual') return 'annual';
   return null;
@@ -329,13 +337,21 @@ function parseMetadataObject(raw: any): Record<string, any> {
     raw?.stripe_metadata,
     raw?.apple_metadata,
     raw?.stripe_subscription_json,
+    raw?.stripe_subscription,
     raw?.stripe_price_json,
+    raw?.stripe_price,
     raw?.stripe_payload_json,
     raw?.stripe_payload,
     raw?.provider_payload_json,
     raw?.provider_payload,
+    raw?.provider_response_json,
+    raw?.provider_response,
+    raw?.subscription_json,
+    raw?.price_json,
     raw?.apple_receipt_json,
     raw?.apple_receipt,
+    raw?.apple_entitlement_json,
+    raw?.apple_entitlement,
     raw?.receipt_json,
     raw?.entitlement_json,
     raw?.entitlement_data,
@@ -394,8 +410,13 @@ function extractReceiptProductIds(raw: any, metadata: Record<string, any>): stri
 
   const directCandidates = [
     raw?.product_id,
+    raw?.productId,
+    raw?.apple_product_id,
     metadata?.product_id,
+    metadata?.productId,
+    metadata?.apple_product_id,
     metadata?.latest_receipt_info?.product_id,
+    metadata?.latest_receipt_info?.productId,
   ];
 
   const fromArrays = arrayCandidates
@@ -410,10 +431,11 @@ function extractReceiptProductIds(raw: any, metadata: Record<string, any>): stri
 function normalizeModuleToken(value: unknown): string | null {
   const token = norm(value || '');
   if (!token) return null;
-  if (token === 'pipe' || token.includes('pipekeeper')) return 'pipekeeper';
-  if (token === 'whiskey' || token.includes('whiskeykeeper')) return 'whiskeykeeper';
-  if (token === 'cigar' || token.includes('cigarkeeper')) return 'cigarkeeper';
-  if (token === 'wine' || token.includes('winekeeper')) return 'winekeeper';
+  const compact = token.replace(/[\s_-]/g, '');
+  if (token === 'pipe' || token === 'pk' || compact === 'pk' || token.includes('pipekeeper') || compact.includes('pipekeeper')) return 'pipekeeper';
+  if (token === 'whiskey' || token === 'wk' || compact === 'wk' || token.includes('whiskeykeeper') || compact.includes('whiskeykeeper')) return 'whiskeykeeper';
+  if (token === 'cigar' || token === 'ck' || compact === 'ck' || token.includes('cigarkeeper') || compact.includes('cigarkeeper')) return 'cigarkeeper';
+  if (token === 'wine' || token === 'vk' || compact === 'vk' || token.includes('winekeeper') || compact.includes('winekeeper')) return 'winekeeper';
   return null;
 }
 
@@ -534,10 +556,8 @@ function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | 
     if (candidate.includes('founders')) return `founders_bundle_${planSuffix}`;
     if (candidate.includes('three_module') || candidate.includes('bundle_3')) return `three_module_bundle_${planSuffix}`;
     if (candidate.includes('four_module') || candidate.includes('bundle_4')) return `four_module_bundle_${planSuffix}`;
-    if (candidate.includes('pipekeeper')) return `pipekeeper_pro_${planSuffix}`;
-    if (candidate.includes('whiskeykeeper')) return `whiskeykeeper_pro_${planSuffix}`;
-    if (candidate.includes('cigarkeeper') || candidate.includes('cigar')) return `cigarkeeper_pro_${planSuffix}`;
-    if (candidate.includes('winekeeper') || candidate.includes('wine')) return `winekeeper_pro_${planSuffix}`;
+    const moduleFromToken = normalizeModuleToken(candidate);
+    if (moduleFromToken) return `${moduleFromToken}_pro_${planSuffix}`;
   }
 
   return null;
@@ -561,6 +581,10 @@ function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
     raw.checkout_type,
     raw.product_kind,
     raw.product_label,
+    raw.interval,
+    raw.period,
+    raw.plan_interval,
+    raw.recurring_interval,
     stripeInterval,
     metadata.plan_key,
     metadata.planKey,
@@ -573,6 +597,10 @@ function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
     metadata.checkout_type,
     metadata.product_kind,
     metadata.product_label,
+    metadata.interval,
+    metadata.period,
+    metadata.plan_interval,
+    metadata.recurring_interval,
     metadata?.items?.data?.[0]?.price?.recurring?.interval,
     metadata?.price?.recurring?.interval,
     ...receiptProductIds,
@@ -664,6 +692,14 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
   const metadataInterval =
     normalizeIntervalToken(metadata.billing_interval) ||
     normalizeIntervalToken(metadata.billing_period) ||
+    normalizeIntervalToken(raw.interval) ||
+    normalizeIntervalToken(raw.period) ||
+    normalizeIntervalToken(raw.plan_interval) ||
+    normalizeIntervalToken(raw.recurring_interval) ||
+    normalizeIntervalToken(metadata.interval) ||
+    normalizeIntervalToken(metadata.period) ||
+    normalizeIntervalToken(metadata.plan_interval) ||
+    normalizeIntervalToken(metadata.recurring_interval) ||
     normalizeIntervalToken(stripeRecurringInterval) ||
     normalizeIntervalToken(metadata?.recurring?.interval) ||
     normalizeIntervalToken(metadata?.items?.data?.[0]?.price?.recurring?.interval) ||
