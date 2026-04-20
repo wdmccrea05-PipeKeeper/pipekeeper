@@ -3,6 +3,7 @@ import { Cigarette, DollarSign, Box, Heart, Clock, Flame, TrendingDown, ShieldAl
 import { humidorNeedsAttention } from './humidorMaintenanceUtils';
 import { getCollectionInsights } from '@/platform/cigarInsights';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { selectCigarMetrics } from '@/lib/collection/cigarSelectors';
 
 function StatCard({ icon: Icon, label, value, sub, alert }) {
   return (
@@ -40,13 +41,13 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
   today.setHours(0, 0, 0, 0);
   const { formatFromBase } = useCurrency();
 
-  const totalQty = cigars.reduce((sum, c) => sum + (c.singles_equivalent || c.quantity || 0), 0);
-
-  const totalValue = cigars.reduce((sum, c) => {
-    const qty = c.singles_equivalent || c.quantity || 1;
-    const price = c.estimated_value || c.purchase_price || 0;
-    return sum + price * qty;
-  }, 0);
+  const cigarMetrics = useMemo(() => selectCigarMetrics(cigars, humidors), [cigars, humidors]);
+  const totalQty = cigarMetrics.total_sticks;
+  const valuedCount = cigarMetrics.valued_cigar_count;
+  const valueDisplay = valuedCount > 0 ? formatFromBase(cigarMetrics.collection_value) : 'No values added yet';
+  const valueSub = valuedCount > 0
+    ? `${valuedCount}/${cigars.length} valued`
+    : 'Add purchase price or estimate';
 
   const readyCount = cigars.filter((c) => {
     if (!c.ready_to_smoke_date) return true;
@@ -99,7 +100,8 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
         <StatCard
           icon={DollarSign}
           label="Est. Value"
-          value={formatFromBase(totalValue)}
+          value={valueDisplay}
+          sub={valueSub}
         />
         <StatCard icon={Box} label="Humidors" value={humidors.length} />
         <StatCard icon={Heart} label="Favorites" value={favoriteCount} />

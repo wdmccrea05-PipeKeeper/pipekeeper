@@ -38,7 +38,7 @@ import {
   selectWhiskeyMetrics,
   getBottleUnitValue as getBottleValue,
 } from '@/lib/collection/whiskeySelectors';
-import { selectTotalSticks, getCigarAvailableQuantity, getCigarUnitValue } from '@/lib/collection/cigarSelectors';
+import { selectTotalSticks, selectCigarCollectionValue, getCigarAvailableQuantity, getCigarUnitValue } from '@/lib/collection/cigarSelectors';
 import { selectCellarValue as calculateTobaccoCollectionValue } from '@/lib/collection/tobaccoSelectors';
 import { selectPipeCollectionValue } from '@/lib/collection/pipeSelectors';
 import { buildHubHighlightCandidates } from '@/components/hub/highlightSelection';
@@ -361,8 +361,11 @@ export default function CollectionHub() {
     const whiskeyValue = whiskeyOpenable
       ? whiskeyMetrics.collection_value
       : 0;
+    const cigarValue = cigarOpenable
+      ? selectCigarCollectionValue(cigars)
+      : 0;
 
-    const totalValue = pipeValue + tobaccoValue + whiskeyValue;
+    const totalValue = pipeValue + tobaccoValue + whiskeyValue + cigarValue;
 
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 

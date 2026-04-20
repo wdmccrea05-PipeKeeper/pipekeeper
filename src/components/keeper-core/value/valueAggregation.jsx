@@ -5,6 +5,7 @@
 import { getEffectiveRates, getCurrentDisplayCurrency } from '@/lib/currency/exchangeRateStore';
 import { convertFromBase } from '@/lib/currency/convertCurrency';
 import { formatMoney } from '@/lib/currency/formatCurrency';
+import { calculateCigarValue } from '@/utils/cigarValuation';
 
 export function getPipeValue(pipe) {
   if (!pipe) return 0;
@@ -29,7 +30,9 @@ export function getBottleValue(bottle) {
 
 export function getCigarValue(cigar) {
   if (!cigar) return 0;
-  return cigar.estimated_value || cigar.purchase_price || 0;
+  const valuation = calculateCigarValue(cigar);
+  if (valuation?.estimatedTotalValue != null) return valuation.estimatedTotalValue;
+  return 0;
 }
 
 export function getCoffeeBeanValue(bean) {

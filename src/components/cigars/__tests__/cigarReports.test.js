@@ -19,6 +19,24 @@ describe('cigarReports', () => {
     expect(getCigarRemainingValue(cigar)).toBe(36);
   });
 
+  test('computes remaining value from estimated_unit_value even without legacy estimated_value', () => {
+    const cigar = { quantity: 4, estimated_unit_value: 11 };
+    expect(getCigarRemainingValue(cigar)).toBe(44);
+  });
+
+  test('treats explicit zero valuation as valued (not missing)', () => {
+    const summary = getPortfolioSummary(
+      [
+        { id: 'zero-valued', quantity: 3, estimated_unit_value: 0 },
+        { id: 'missing', quantity: 2 },
+      ],
+      [],
+      [],
+      new Date()
+    );
+    expect(summary.cigarsNeedingValuation).toBe(1);
+  });
+
   test('builds portfolio summary counts safely', () => {
     const cigars = [
       { id: '1', name: 'A', quantity: 5, estimated_value: 10, is_favorite: true, restock_threshold: 6, created_date: daysAgo(200), ready_to_smoke_date: daysAgo(10) },

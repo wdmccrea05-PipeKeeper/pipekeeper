@@ -12,6 +12,8 @@
  *  collection_value      — total value of owned cigar inventory
  */
 
+import { calculateCigarValue } from '@/utils/cigarValuation';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -19,6 +21,24 @@
 function n(v) {
   const x = Number(v);
   return Number.isFinite(x) ? x : 0;
+}
+
+function hasNumericInput(v) {
+  if (v === null || v === undefined || v === '') return false;
+  const x = Number(v);
+  return Number.isFinite(x);
+}
+
+function hasValuationInput(cigar) {
+  if (!cigar) return false;
+  return (
+    hasNumericInput(cigar.purchase_price) ||
+    hasNumericInput(cigar.estimated_value) ||
+    hasNumericInput(cigar.estimated_unit_value) ||
+    hasNumericInput(cigar.estimated_total_value) ||
+    hasNumericInput(cigar.replacement_cost_estimate) ||
+    hasNumericInput(cigar.manual_valuation_override)
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -39,6 +59,44 @@ export function getCigarAvailableQuantity(cigar) {
 }
 
 /**
+ * Return canonical valuation state for a cigar.
+ *
+ * - totalValue: null means no valuation data exists
+ * - totalValue: number (including 0) means valuation exists
+ *
+ * @param {object} cigar
+ * @returns {{ totalValue: number|null, unitValue: number|null, hasValuation: boolean }}
+ */
+export function getCigarValuationSnapshot(cigar) {
+  if (!cigar) return { totalValue: null, unitValue: null, hasValuation: false };
+
+  const valuation = calculateCigarValue(cigar);
+  const qty = getCigarAvailableQuantity(cigar);
+  const explicitInput = hasValuationInput(cigar);
+  const hasCalculatedTotal = valuation?.estimatedTotalValue != null && Number.isFinite(Number(valuation.estimatedTotalValue));
+  const hasCalculatedUnit = valuation?.estimatedUnitValue != null && Number.isFinite(Number(valuation.estimatedUnitValue));
+
+  const totalValue = hasCalculatedTotal
+    ? Math.max(0, n(valuation.estimatedTotalValue))
+    : (explicitInput || !valuation?.isMissing ? 0 : null);
+
+  let unitValue = null;
+  if (hasCalculatedUnit) {
+    unitValue = Math.max(0, n(valuation.estimatedUnitValue));
+  } else if (totalValue != null && qty > 0) {
+    unitValue = totalValue / qty;
+  } else if (explicitInput || !valuation?.isMissing) {
+    unitValue = 0;
+  }
+
+  return {
+    totalValue,
+    unitValue,
+    hasValuation: totalValue != null,
+  };
+}
+
+/**
  * Return the canonical value for one Cigar record.
  *
  * Priority: estimated_value → purchase_price → 0
@@ -47,10 +105,39 @@ export function getCigarAvailableQuantity(cigar) {
  * @returns {number}
  */
 export function getCigarUnitValue(cigar) {
-  if (!cigar) return 0;
-  if (n(cigar.estimated_value) > 0) return n(cigar.estimated_value);
-  if (n(cigar.purchase_price) > 0) return n(cigar.purchase_price);
-  return 0;
+  return n(getCigarValuationSnapshot(cigar).unitValue);
+}
+
+/**
+ * Return canonical total remaining value for one cigar record.
+ *
+ * @param {object} cigar
+ * @returns {number}
+ */
+export function getCigarTotalValue(cigar) {
+  const total = getCigarValuationSnapshot(cigar).totalValue;
+  return total == null ? 0 : Math.max(0, n(total));
+}
+
+/**
+ * Returns true when a cigar has valuation input or derived valuation.
+ *
+ * @param {object} cigar
+ * @returns {boolean}
+ */
+export function hasCigarValuation(cigar) {
+  return getCigarValuationSnapshot(cigar).hasValuation;
+}
+
+/**
+ * Count cigars with valuation data.
+ *
+ * @param {object[]} cigars
+ * @returns {number}
+ */
+export function selectValuedCigarCount(cigars) {
+  if (!Array.isArray(cigars)) return 0;
+  return cigars.filter((c) => hasCigarValuation(c)).length;
 }
 
 // ---------------------------------------------------------------------------
@@ -116,9 +203,7 @@ export function selectHumidorCount(humidors) {
  */
 export function selectCigarCollectionValue(cigars) {
   if (!Array.isArray(cigars)) return 0;
-  return cigars.reduce((sum, c) => {
-    return sum + getCigarUnitValue(c) * getCigarAvailableQuantity(c);
-  }, 0);
+  return cigars.reduce((sum, c) => sum + getCigarTotalValue(c), 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -139,11 +224,17 @@ export function selectCigarCollectionValue(cigars) {
  * }}
  */
 export function selectCigarMetrics(cigars, humidors) {
+  const valued_cigar_count = selectValuedCigarCount(cigars);
+  const cigar_types = selectCigarTypes(cigars);
+
   return {
-    cigar_types: selectCigarTypes(cigars),
+    cigar_types,
     total_sticks: selectTotalSticks(cigars),
     ready_to_smoke_count: selectReadyToSmokeCount(cigars),
     humidor_count: selectHumidorCount(humidors),
     collection_value: selectCigarCollectionValue(cigars),
+    valued_cigar_count,
+    unvalued_cigar_count: Math.max(0, cigar_types - valued_cigar_count),
+    has_collection_valuation: valued_cigar_count > 0,
   };
 }

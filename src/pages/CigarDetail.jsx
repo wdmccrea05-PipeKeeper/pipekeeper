@@ -519,16 +519,32 @@ function CigarDetailInner() {
   const valuation = useMemo(() => (cigar ? calculateCigarValue(cigar) : null), [cigar]);
 
   const displayValue = useMemo(() => {
-    if (valuation?.estimatedTotalValue) return formatFromBase(valuation.estimatedTotalValue);
-    return '—';
+    if (!valuation || valuation.isMissing) return '—';
+    if (valuation.estimatedTotalValue != null) return formatFromBase(valuation.estimatedTotalValue);
+    return formatFromBase(0);
   }, [valuation, formatFromBase]);
   const valuationDisplay = useMemo(() => {
     if (!valuation) return null;
+    const totalDisplay = valuation.estimatedTotalValue != null
+      ? formatFromBase(valuation.estimatedTotalValue)
+      : valuation.isMissing
+      ? '—'
+      : formatFromBase(0);
+    const replacementDisplay = valuation.replacementCostEstimate != null
+      ? formatFromBase(valuation.replacementCostEstimate)
+      : valuation.isMissing
+      ? '—'
+      : formatFromBase(0);
+    const purchaseBasisDisplay = valuation.remainingCostBasis != null
+      ? formatFromBase(valuation.remainingCostBasis)
+      : valuation.isMissing
+      ? '—'
+      : formatFromBase(0);
     return {
       unit: valuation.estimatedUnitValue != null ? formatFromBase(valuation.estimatedUnitValue) : '—',
-      total: valuation.estimatedTotalValue != null ? formatFromBase(valuation.estimatedTotalValue) : '—',
-      replacement: valuation.replacementCostEstimate != null ? formatFromBase(valuation.replacementCostEstimate) : '—',
-      purchaseBasis: valuation.remainingCostBasis != null ? formatFromBase(valuation.remainingCostBasis) : '—',
+      total: totalDisplay,
+      replacement: replacementDisplay,
+      purchaseBasis: purchaseBasisDisplay,
     };
   }, [valuation, formatFromBase]);
   const inventoryMetrics = useMemo(
