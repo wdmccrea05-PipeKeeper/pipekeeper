@@ -155,6 +155,36 @@
       "default": false,
       "description": "When true, manual_valuation_override takes priority over derived valuation"
     },
+    "market_estimated_unit_value": {
+      "type": "number",
+      "description": "System-derived market per-stick estimate from comparable observations"
+    },
+    "market_estimated_total_value": {
+      "type": "number",
+      "description": "System-derived total market value estimate for current remaining quantity"
+    },
+    "market_replacement_cost_estimate": {
+      "type": "number",
+      "description": "System-derived replacement estimate for the full baseline quantity"
+    },
+    "market_valuation_source": {
+      "type": "string",
+      "description": "System-derived market valuation source summary (retail listings, comparables, snapshots)"
+    },
+    "market_valuation_confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence level of system-derived market valuation"
+    },
+    "market_valuation_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when market valuation was last refreshed by the system"
+    },
+    "market_comparable_count": {
+      "type": "number",
+      "description": "Number of comparable market/snapshot inputs used for current system valuation"
+    },
     "initial_quantity": {
       "type": "number",
       "description": "Starting quantity when first added to collection (for depletion tracking)"

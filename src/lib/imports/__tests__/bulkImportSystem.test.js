@@ -196,6 +196,29 @@ describe('bulk import system', () => {
     expect(analysis.rows[0].payload.vitola).toBe('Robusto');
   });
 
+  test('maps advanced cigar valuation import columns', async () => {
+    const definition = importDefinitions.cigarkeeper_cigars;
+    const parsed = parseCsvText(
+      'brand,line,vitola,package_type,cigars_per_package,current_quantity,purchase_date,purchase_price,estimated_unit_value,estimated_total_value,replacement_cost_estimate,valuation_source,valuation_confidence,valuation_updated_at,manual_valuation_enabled,manual_valuation_override,market_estimated_unit_value,market_estimated_total_value,market_valuation_source,market_valuation_confidence,market_valuation_updated_at,market_comparable_count\nOliva,Serie V,Robusto,box,20,1,2025-02-20,145,11.5,230,240,Retail listings,medium,2026-04-15,yes,12.0,10.8,216,Comparable listings,medium,2026-04-20,5\n'
+    );
+
+    const analysis = await analyzeImportRows({
+      definition,
+      headers: parsed.headers,
+      rawHeaders: parsed.rawHeaders,
+      rows: parsed.rows,
+      duplicateHeaders: parsed.duplicateHeaders,
+      parseErrors: parsed.parseErrors,
+      userEmail: 'user@example.com',
+    });
+
+    expect(analysis.rows[0].errors).toHaveLength(0);
+    expect(analysis.rows[0].payload.estimated_unit_value).toBe(11.5);
+    expect(analysis.rows[0].payload.manual_valuation_enabled).toBe(true);
+    expect(analysis.rows[0].payload.market_estimated_total_value).toBe(216);
+    expect(analysis.rows[0].payload.market_valuation_confidence).toBe('medium');
+  });
+
   test('blocks cigar rows that omit both line and vitola', async () => {
     const definition = importDefinitions.cigarkeeper_cigars;
     const parsed = parseCsvText(

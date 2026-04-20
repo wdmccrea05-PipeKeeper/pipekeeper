@@ -245,7 +245,14 @@ function coerceBottlePayload(row, extras) {
 
 function coerceCigarPayload(row, extras) {
   const purchasePrice = parseNumber(row.purchase_price);
-  const estimatedValue = parseNumber(row.estimated_value);
+  const estimatedUnitValue = parseNumber(row.estimated_unit_value ?? row.estimated_value);
+  const estimatedTotalValue = parseNumber(row.estimated_total_value);
+  const replacementCostEstimate = parseNumber(row.replacement_cost_estimate);
+  const manualOverride = parseNumber(row.manual_valuation_override);
+  const marketEstimatedUnitValue = parseNumber(row.market_estimated_unit_value);
+  const marketEstimatedTotalValue = parseNumber(row.market_estimated_total_value);
+  const marketReplacementCostEstimate = parseNumber(row.market_replacement_cost_estimate);
+  const marketComparableCount = parseInteger(row.market_comparable_count);
   const cigarsPerPackage = parseInteger(row.cigars_per_package);
   const initialQuantity = parseInteger(row.initial_quantity);
   const currentQuantity = parseInteger(row.current_quantity);
@@ -256,14 +263,26 @@ function coerceCigarPayload(row, extras) {
   const restock = parseBoolean(row.restock);
   const notForMe = parseBoolean(row.not_for_me);
   const purchaseDate = parseDate(row.purchase_date);
+  const valuationUpdatedAt = parseDate(row.valuation_updated_at || row.valuation_date);
+  const marketValuationUpdatedAt = parseDate(row.market_valuation_updated_at || row.market_valuation_date);
+  const manualValuationEnabled = parseBoolean(row.manual_valuation_enabled);
   const body = parseEnum((row.body || '').replace('-', '_').toLowerCase(), CIGAR_BODY);
   const strength = parseEnum((row.strength || '').replace('-', '_').toLowerCase(), CIGAR_BODY);
   const productionStatus = parseEnum((row.production_status || '').replace(/ /g, '_').toLowerCase(), CIGAR_PRODUCTION);
+  const valuationConfidence = parseEnum((row.valuation_confidence || '').toLowerCase(), ['high', 'medium', 'low']);
+  const marketValuationConfidence = parseEnum((row.market_valuation_confidence || '').toLowerCase(), ['high', 'medium', 'low']);
 
   const errors = [];
   if (!row.line && !row.vitola) errors.push('line or vitola is required');
   if (!purchasePrice.ok) errors.push('purchase_price is invalid');
-  if (!estimatedValue.ok) errors.push('estimated_value is invalid');
+  if (!estimatedUnitValue.ok) errors.push('estimated_unit_value is invalid');
+  if (!estimatedTotalValue.ok) errors.push('estimated_total_value is invalid');
+  if (!replacementCostEstimate.ok) errors.push('replacement_cost_estimate is invalid');
+  if (!manualOverride.ok) errors.push('manual_valuation_override is invalid');
+  if (!marketEstimatedUnitValue.ok) errors.push('market_estimated_unit_value is invalid');
+  if (!marketEstimatedTotalValue.ok) errors.push('market_estimated_total_value is invalid');
+  if (!marketReplacementCostEstimate.ok) errors.push('market_replacement_cost_estimate is invalid');
+  if (!marketComparableCount.ok) errors.push('market_comparable_count is invalid');
   if (!cigarsPerPackage.ok) errors.push('cigars_per_package is invalid');
   if (!initialQuantity.ok) errors.push('initial_quantity is invalid');
   if (!currentQuantity.ok) errors.push('current_quantity is invalid');
@@ -274,9 +293,14 @@ function coerceCigarPayload(row, extras) {
   if (!restock.ok) errors.push('restock is invalid');
   if (!notForMe.ok) errors.push('not_for_me is invalid');
   if (!purchaseDate.ok) errors.push('purchase_date is invalid');
+  if (!valuationUpdatedAt.ok) errors.push('valuation_updated_at is invalid');
+  if (!marketValuationUpdatedAt.ok) errors.push('market_valuation_updated_at is invalid');
+  if (!manualValuationEnabled.ok) errors.push('manual_valuation_enabled is invalid');
   if (!body.ok) errors.push('body is invalid');
   if (!strength.ok) errors.push('strength is invalid');
   if (!productionStatus.ok) errors.push('production_status is invalid');
+  if (!valuationConfidence.ok) errors.push('valuation_confidence is invalid');
+  if (!marketValuationConfidence.ok) errors.push('market_valuation_confidence is invalid');
 
   const packageTypeRaw = compactString(row.package_type);
   const unitTypeMap = {
@@ -323,7 +347,24 @@ function coerceCigarPayload(row, extras) {
     purchase_date: purchaseDate.value,
     purchase_price: purchasePrice.value,
     purchase_source: row.purchase_source || undefined,
-    estimated_unit_value: estimatedValue.value,
+    // Keep legacy estimated_value aligned with estimated_unit_value for backward compatibility.
+    estimated_value: estimatedUnitValue.value,
+    estimated_unit_value: estimatedUnitValue.value,
+    estimated_total_value: estimatedTotalValue.value,
+    replacement_cost_estimate: replacementCostEstimate.value,
+    manual_valuation_override: manualOverride.value,
+    manual_valuation_enabled: manualValuationEnabled.value,
+    valuation_source: row.valuation_source || undefined,
+    valuation_confidence: valuationConfidence.value,
+    valuation_notes: row.valuation_notes || undefined,
+    valuation_updated_at: valuationUpdatedAt.value,
+    market_estimated_unit_value: marketEstimatedUnitValue.value,
+    market_estimated_total_value: marketEstimatedTotalValue.value,
+    market_replacement_cost_estimate: marketReplacementCostEstimate.value,
+    market_valuation_source: row.market_valuation_source || undefined,
+    market_valuation_confidence: marketValuationConfidence.value,
+    market_valuation_updated_at: marketValuationUpdatedAt.value,
+    market_comparable_count: marketComparableCount.value,
     rating: rating.value,
     production_status: productionStatus.value,
     is_favorite: favorite.value,
@@ -517,7 +558,12 @@ const IMPORT_DEFINITIONS = [
       'brand', 'line', 'vitola', 'wrapper', 'binder', 'filler', 'country_of_origin', 'body', 'strength',
       'package_type', 'cigars_per_package', 'initial_quantity', 'current_quantity', 'purchase_date', 'purchase_price',
       'purchase_source', 'humidor_name', 'flavor_notes', 'rating', 'production_status', 'favorite', 'wishlist',
-      'shopping_list', 'restock', 'not_for_me', 'notes', 'tags', 'estimated_value',
+      'shopping_list', 'restock', 'not_for_me', 'notes', 'tags', 'estimated_value', 'estimated_unit_value',
+      'estimated_total_value', 'replacement_cost_estimate', 'valuation_source', 'valuation_confidence',
+      'valuation_notes', 'valuation_updated_at', 'valuation_date', 'manual_valuation_override', 'manual_valuation_enabled',
+      'market_estimated_unit_value', 'market_estimated_total_value', 'market_replacement_cost_estimate',
+      'market_valuation_source', 'market_valuation_confidence', 'market_valuation_updated_at', 'market_valuation_date',
+      'market_comparable_count',
     ],
     aliases: {
       vendor: 'purchase_source',
@@ -547,6 +593,9 @@ const IMPORT_DEFINITIONS = [
       purchase_date: '2025-02-20',
       purchase_price: '145',
       purchase_source: 'Cigar lounge',
+      valuation_source: 'Retail listings',
+      valuation_confidence: 'medium',
+      valuation_updated_at: '2025-03-01',
       humidor_name: 'Main Humidor',
       flavor_notes: 'pepper,cocoa,cedar',
       rating: '4.6',
@@ -559,6 +608,8 @@ const IMPORT_DEFINITIONS = [
       notes: 'Excellent evening smoke',
       tags: 'full-bodied,nicaragua',
       estimated_value: '11.5',
+      estimated_total_value: '230',
+      replacement_cost_estimate: '240',
     },
     parseRow: coerceCigarPayload,
     create: (payload) => base44.entities.Cigar.create(payload),

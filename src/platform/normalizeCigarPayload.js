@@ -24,6 +24,10 @@ const NUMERIC_FIELDS = [
   'estimated_unit_value',
   'estimated_total_value',
   'replacement_cost_estimate',
+  'market_estimated_unit_value',
+  'market_estimated_total_value',
+  'market_replacement_cost_estimate',
+  'market_comparable_count',
   'estimated_value',
   'quantity',
   'cigars_per_package',
@@ -40,6 +44,7 @@ const ENUM_FIELDS = [
   'release_type',
   'purchase_price_type',
   'valuation_confidence',
+  'market_valuation_confidence',
 ];
 
 const DATE_FIELDS = [
@@ -48,6 +53,7 @@ const DATE_FIELDS = [
   'ready_to_smoke_date',
   'box_date',
   'valuation_updated_at',
+  'market_valuation_updated_at',
 ];
 
 const OPTIONAL_STRING_FIELDS = [
@@ -66,6 +72,7 @@ const OPTIONAL_STRING_FIELDS = [
   'personal_notes',
   'storage_notes',
   'valuation_source',
+  'market_valuation_source',
   'valuation_notes',
   'humidor_id',
   'humidor_tray',

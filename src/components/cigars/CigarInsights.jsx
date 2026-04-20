@@ -194,6 +194,8 @@ export default function CigarInsights({ user, cigars = [], sessions = [], humido
 
   const totalQty = cigars.reduce((s, c) => s + Number(c?.singles_equivalent ?? c?.quantity ?? 0), 0);
   const totalValue = valuationRows.reduce((sum, row) => sum + Number(row.valuation.estimatedTotalValue || 0), 0);
+  const valuedCount = valuationRows.filter((row) => !row.valuation.isMissing).length;
+  const totalValueDisplay = valuedCount > 0 ? formatFromBase(totalValue) : '—';
   const favorites = cigars.filter((c) => c?.is_favorite).length;
   const missingValuationCount = valuationRows.filter((row) => row.valuation.isMissing).length;
   const staleValuationCount = valuationRows.filter((row) => row.valuation.isStale).length;
@@ -357,7 +359,7 @@ export default function CigarInsights({ user, cigars = [], sessions = [], humido
         <StatTile
           icon={DollarSign}
           label="Est. Value"
-          value={formatFromBase(totalValue)}
+          value={totalValueDisplay}
         />
         <StatTile icon={BookOpen} label="Sessions" value={sessions.length} />
         <StatTile icon={Heart} label="Favorites" value={favorites} />

@@ -547,6 +547,22 @@ function CigarDetailInner() {
       purchaseBasis: purchaseBasisDisplay,
     };
   }, [valuation, formatFromBase]);
+  const valuationSourceDisplay = useMemo(() => {
+    if (!valuation) return '—';
+    if (valuation.source === 'manual_entry' || valuation.source === 'manual_override') {
+      return cigar?.valuation_source || valuation?.sourceLabel || '—';
+    }
+    if (valuation.source === 'market_derived') {
+      return cigar?.market_valuation_source || cigar?.valuation_source || valuation?.sourceLabel || '—';
+    }
+    return valuation?.sourceLabel || cigar?.valuation_source || '—';
+  }, [valuation, cigar]);
+  const valuationUpdatedDisplay = useMemo(() => {
+    if (valuation?.source === 'market_derived') {
+      return formatDate(cigar?.market_valuation_updated_at || cigar?.valuation_updated_at);
+    }
+    return formatDate(cigar?.valuation_updated_at || cigar?.market_valuation_updated_at);
+  }, [valuation, cigar]);
   const inventoryMetrics = useMemo(
     () => (cigar ? getCigarInventoryMetrics(cigar, sessions) : null),
     [cigar, sessions]
@@ -875,9 +891,9 @@ function CigarDetailInner() {
             <InfoRow label="Estimated total value" value={valuationDisplay?.total} />
             <InfoRow label="Replacement estimate" value={valuationDisplay?.replacement} />
             <InfoRow label="Purchase basis" value={valuationDisplay?.purchaseBasis} />
-            <InfoRow label="Source" value={cigar.valuation_source || valuation?.sourceLabel || '—'} />
+            <InfoRow label="Source" value={valuationSourceDisplay} />
             <InfoRow label="Confidence" value={VALUATION_CONFIDENCE_LABEL[valuation?.confidenceScore] || 'Low'} />
-            <InfoRow label="Last updated" value={formatDate(cigar.valuation_updated_at)} />
+            <InfoRow label="Last updated" value={valuationUpdatedDisplay} />
             <InfoRow label="Manual override" value={cigar.manual_valuation_enabled ? 'Enabled' : 'Off'} />
           </div>
         )}
@@ -1009,9 +1025,9 @@ function CigarDetailInner() {
             <InfoRow label="Estimated Unit Value" value={valuationDisplay?.unit || '—'} />
             <InfoRow label="Estimated Total Value" value={valuationDisplay?.total || '—'} />
             <InfoRow label="Replacement Estimate" value={valuationDisplay?.replacement || '—'} />
-            <InfoRow label="Valuation Source" value={cigar.valuation_source || valuation?.sourceLabel || '—'} />
+            <InfoRow label="Valuation Source" value={valuationSourceDisplay} />
             <InfoRow label="Valuation Confidence" value={VALUATION_CONFIDENCE_LABEL[valuation?.confidenceScore] || 'Low'} />
-            <InfoRow label="Valuation Updated" value={formatDate(cigar.valuation_updated_at)} />
+            <InfoRow label="Valuation Updated" value={valuationUpdatedDisplay} />
             <div className="py-2" style={{ borderBottom: '1px solid rgba(140,107,63,0.1)' }}>
               <Button size="sm" variant="ghost" onClick={() => setValuationModalOpen(true)}>
                 Edit valuation
