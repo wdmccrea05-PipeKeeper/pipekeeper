@@ -14,6 +14,13 @@ import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { buildDiagnosticsSampleGroups } from "@/lib/userReportDiagnostics";
+import {
+  formatUserReportDate,
+  formatUserReportList,
+  buildUserReportPlanSummary,
+  buildUserReportBillingContextText,
+  buildUserReportRenewalContextText,
+} from "@/lib/userReportFormatters";
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
@@ -307,7 +314,7 @@ export default function UserReport() {
         t("userReport.userTable.billingContext"),
         t("userReport.userTable.renewalContext"),
         t("userReport.joined"),
-        t("userReport.userTable.platform"),
+        t("userReport.userTable.effectivePlatform"),
       ],
     ];
 
@@ -317,19 +324,12 @@ export default function UserReport() {
         u.full_name || '',
         u.email || '',
         u.subscription_status || '',
-        u.has_multiple_active_plans
-          ? t("userReport.userTable.multiPlanLabel", { count: u.active_subscription_count ?? 0 })
-          : (u.product || ''),
+        buildUserReportPlanSummary(u, t),
         (u.modules || []).join(', '),
-        u.billing_interval || '',
-        u.has_multiple_active_plans
-          ? t("userReport.userTable.multiPlanRenewalSummary", {
-            renewalCount: u.renewal_subscription_count ?? 0,
-            amount: u.renewal_amount ?? 0,
-          })
-          : (u.renewal_date ? `${new Date(u.renewal_date).toLocaleDateString()} · $${(u.renewal_amount ?? 0).toFixed(2)}` : ''),
-        u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
-        u.platform || '',
+        buildUserReportBillingContextText(u, t),
+        buildUserReportRenewalContextText(u, t),
+        u.created_date ? formatUserReportDate(u.created_date) : '',
+        u.platform || t("userReport.userTable.unknownValue"),
       ]);
     });
     (report?.free_users || []).forEach((u) => {
@@ -670,13 +670,18 @@ export default function UserReport() {
                     emptyMessage={searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noPaidUsersFound")}
                   renderCell={(col, user) => {
                     if (col === 'subscription_status') return <Badge className="bg-[#B48C4B]/20 text-[#F5F1E7] border border-[#B48C4B]/40">{user.subscription_status}</Badge>;
-                    if (col === 'billing_interval') return <span className="capitalize text-[#E0D8C8]">{user.billing_interval || '-'}</span>;
+                    if (col === 'billing_interval') return (
+                      <div className="space-y-0.5">
+                        <p className="text-xs text-[#E0D8C8]/85">{t("userReport.userTable.primaryBillingProduct", { product: user.primary_billing_product || t("userReport.userTable.unknownValue") })}</p>
+                        <p className="text-xs text-[#E0D8C8]/70">{t("userReport.userTable.primaryBillingStatus", { status: user.primary_billing_status || t("userReport.userTable.unknownValue") })}</p>
+                        <p className="text-xs text-[#E0D8C8]/70">{t("userReport.userTable.effectiveBillingIntervals", { intervals: formatUserReportList(user.active_billing_intervals) })}</p>
+                        <p className="text-xs text-[#E0D8C8]/70">{t("userReport.userTable.effectivePlatforms", { platforms: formatUserReportList(user.active_platforms) })}</p>
+                      </div>
+                    );
                     if (col === 'product') return (
                       <div className="space-y-0.5">
                         <span className="text-[#D4A574] font-medium">
-                          {user.has_multiple_active_plans
-                            ? t("userReport.userTable.multiPlanLabel", { count: user.active_subscription_count ?? 0 })
-                            : (user.product || '-')}
+                          {buildUserReportPlanSummary(user, t)}
                         </span>
                         {Array.isArray(user.active_products) && user.active_products.length > 1 && (
                           <p className="text-xs text-[#E0D8C8]/60 truncate">{user.active_products.join(', ')}</p>
@@ -687,28 +692,23 @@ export default function UserReport() {
                       ? <span className="text-xs text-[#E0D8C8]/85">{user.modules.join(', ')}</span>
                       : '-';
                     if (col === 'renewal_date') {
-                      if (user.has_multiple_active_plans) {
-                        const nextDate = user.renewal_date ? new Date(user.renewal_date).toLocaleDateString() : t("userReport.userTable.noRenewalDate");
-                        return (
-                          <div className="space-y-0.5">
-                            <p className="text-xs text-[#E0D8C8]/85">
-                              {t("userReport.userTable.multiPlanRenewalCount", { count: user.renewal_subscription_count ?? 0 })}
-                            </p>
-                            <p className="text-xs text-[#E0D8C8]/70">
-                              {t("userReport.userTable.nextRenewalAt", { date: nextDate })}
-                            </p>
-                            <p className="text-xs text-[#86EFAC]">
-                              {t("userReport.userTable.totalRenewalAmount", { amount: (user.renewal_amount ?? 0).toFixed(2) })}
-                            </p>
-                          </div>
-                        );
-                      }
-                      if (user.renewal_date && user.renewal_amount != null) {
-                        return <span className="text-[#86EFAC] font-medium">{`${new Date(user.renewal_date).toLocaleDateString()} · $${user.renewal_amount.toFixed(2)}`}</span>;
-                      }
-                      return '-';
+                      const nextDate = user.renewal_next_date || user.renewal_date;
+                      const totalAmount = (user.renewal_total_amount ?? user.renewal_amount ?? 0).toFixed(2);
+                      return (
+                        <div className="space-y-0.5">
+                          <p className="text-xs text-[#E0D8C8]/85">
+                            {t("userReport.userTable.multiPlanRenewalCount", { count: user.renewal_subscription_count ?? 0 })}
+                          </p>
+                          <p className="text-xs text-[#E0D8C8]/70">
+                              {t("userReport.userTable.nextRenewalAt", { date: nextDate ? formatUserReportDate(nextDate) : t("userReport.userTable.noRenewalDate") })}
+                          </p>
+                          <p className="text-xs text-[#86EFAC]">
+                            {t("userReport.userTable.totalRenewalAmount", { amount: totalAmount })}
+                          </p>
+                        </div>
+                      );
                     }
-                    if (col === 'created_date')        return user.created_date ? new Date(user.created_date).toLocaleDateString() : '-';
+                    if (col === 'created_date')        return user.created_date ? formatUserReportDate(user.created_date) : '-';
                     return user[col] || '-';
                   }}
                 />
@@ -863,7 +863,7 @@ function ErrorCard({ message, onRetry }) {
               onClick={onRetry}
               className="mt-4 bg-rose-700 hover:bg-rose-800 text-white"
             >
-              {t("userReport.retry", { defaultValue: "Retry" })}
+              {t("userReport.retry")}
             </Button>
           )}
         </CardContent>

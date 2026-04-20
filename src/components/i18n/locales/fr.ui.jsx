@@ -3,6 +3,18 @@
 // Priority: main fr.jsx wins — these only fill gaps.
 
 const frUI = {
+  userReport: {
+    userTable: {
+      effectivePlatform: "Plateforme effective",
+      unknownValue: "Inconnu",
+      primaryBillingProduct: "Produit de facturation principal : {product}",
+      primaryBillingStatus: "Statut de facturation principal : {status}",
+      effectiveBillingIntervals: "Intervalles de facturation effectifs : {intervals}",
+      effectivePlatforms: "Plateformes effectives : {platforms}",
+      billingContextCsv: "Produit principal : {primaryProduct}; Statut principal : {primaryStatus}; Intervalles effectifs : {intervalSummary}; Plateformes effectives : {platformSummary}",
+      renewalContextCsv: "{renewalCount} abonnement(s) en renouvellement ; Prochain renouvellement : {nextRenewalDate} ; Renouvellement total : ${totalAmount}",
+    },
+  },
   featureGate: {
     collectionOptimizationName: "Optimisation de collection",
     collectionOptimizationDesc: "Obtenez une analyse pilotée par IA de votre collection avec des recommandations de spécialisation, l'identification des lacunes et la planification de scénarios avec un accès Pro ou Premium hérité.",
@@ -395,6 +407,39 @@ const frUI = {
     appleFeaturePro6: "Export et rapports (CSV / PDF)",
     appleFeaturePro7: "Outils d'optimisation de collection",
     appleFeaturePro8: "Accès anticipé aux nouvelles fonctionnalités avancées",
+    syncNoSubscriptionYet: "Abonnement introuvable pour le moment. Attendez un instant puis réessayez.",
+    syncAccessUpdating: "Votre paiement a été reçu, mais l'accès est encore en cours de mise à jour. Réessayez une fois ou rouvrez l'application dans un instant.",
+    syncTimeout: "L'activation de l'abonnement prend plus de temps que prévu. Réessayez une fois ou rouvrez l'application dans un instant.",
+    syncFailed: "L'activation de l'abonnement a échoué. Veuillez réessayer.",
+    moduleFallback: "Module",
+    unlockedThreeBundle: "Pack trois modules débloqué : PipeKeeper, WhiskeyKeeper et CigarKeeper sont maintenant actifs.",
+    unlockedFoundersBundle: "Pack Founders débloqué : PipeKeeper et WhiskeyKeeper sont maintenant actifs.",
+    unlockedSingleModule: "{module} est maintenant débloqué.",
+    unlockedSelectedModules: "Vos modules sélectionnés sont maintenant débloqués et prêts.",
+    purchaseConfirmedUpdating: "Votre achat est confirmé et l'accès est en cours de mise à jour.",
+    openModuleAction: "Ouvrir {module}",
+    importRecordsAction: "Importer des enregistrements",
+    startCollectionAction: "Démarrer la collection",
+  },
+  share: {
+    backHome: "Retour à l'accueil",
+    startOwnCollection: "Commencez votre propre collection",
+    openPipeKeeper: "Ouvrir PipeKeeper",
+    poweredByPipeKeeper: "Partagé depuis PipeKeeper",
+    error: {
+      notFound: {
+        title: "Partage indisponible",
+        message: "Cet enregistrement partagé n'a pas pu être chargé.",
+      },
+      recordNotFound: {
+        title: "Enregistrement indisponible",
+        message: "L'enregistrement partagé n'existe plus ou n'est pas disponible.",
+      },
+      loadFailed: {
+        title: "Impossible de charger le partage",
+        message: "Nous n'avons pas pu charger cet enregistrement partagé. Veuillez réessayer plus tard.",
+      },
+    },
   },
   insights: {
     reportsTooltip: "Générez des résumés exportables de votre collection pour référence ou documentation.",

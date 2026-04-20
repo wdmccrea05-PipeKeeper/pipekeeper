@@ -633,13 +633,30 @@ Deno.serve(async (req) => {
       const runtimeModules = runtimeModulesFromUser(u);
       const productLabels = [...new Set(userPaidSubs.map((s) => s.productLabel).filter(Boolean))];
       const intervals = [...new Set(userPaidSubs.map((s) => s.billingInterval).filter((v): v is IntervalKind => v === 'monthly' || v === 'annual'))];
+      const statusValues = [...new Set(userPaidSubs.map((s) => norm(s.subscriptionStatus || '')).filter(Boolean))];
+      const platforms = [...new Set(userPaidSubs.map((s) => s.platform).filter((v): v is PlatformKind => v === 'ios' || v === 'web' || v === 'google'))];
       const renewalEligibleSubs = userPaidSubs.filter((s) => s.renewalAt && s.price !== null && s.billingInterval !== null);
       const sortedByCreatedDesc = [...userPaidSubs].sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+      const sortedByCreatedAsc = [...userPaidSubs].sort((a, b) => (a.createdAt?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.createdAt?.getTime() ?? Number.MAX_SAFE_INTEGER));
       const sortedByRenewalAsc = [...renewalEligibleSubs].sort((a, b) => (a.renewalAt?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.renewalAt?.getTime() ?? Number.MAX_SAFE_INTEGER));
       const primarySub = sortedByCreatedDesc[0] ?? null;
       const nextRenewalSub = sortedByRenewalAsc[0] ?? null;
+      const firstStartedSub = sortedByCreatedAsc[0] ?? null;
       const totalRenewalAmount = roundCurrency(renewalEligibleSubs.reduce((sum, s) => sum + (s.renewalAmount ?? 0), 0));
       const hasMultipleActivePlans = userPaidSubs.length > 1;
+      const effectiveStatus =
+        !isPaid ? 'none' :
+        statusValues.length === 1 ? statusValues[0] :
+        statusValues.length > 1 ? 'mixed' :
+        'active';
+      const effectivePlatform =
+        platforms.length === 1 ? platforms[0] :
+        platforms.length > 1 ? 'mixed' :
+        null;
+      const effectiveProductLabel =
+        !isPaid ? 'Free' :
+        productLabels.length === 1 ? productLabels[0] :
+        null;
 
       if (userPaidSubs.length > 1) {
         diagnostics.usersWithMultipleActiveSubscriptions++;
@@ -688,24 +705,39 @@ Deno.serve(async (req) => {
         email:               norm(u.email || ''),
         role:                u.role || 'user',
         created_date:        u.created_date || '',
-        subscription_status: isPaid ? (primarySub?.subscriptionStatus || 'active') : 'none',
-        product:             primarySub?.productLabel ?? (isPaid ? 'Unknown' : 'Free'),
+        // Effective-access level fields (across all active paid subscriptions)
+        subscription_status: effectiveStatus,
+        product:             effectiveProductLabel,
         modules:             allUserModules,
         active_subscription_count: userPaidSubs.length,
         active_products:     productLabels,
         active_billing_intervals: intervals,
+        active_platforms:    platforms,
+        active_statuses:     statusValues,
+        effective_access_modules: allUserModules,
+        effective_access_products: productLabels,
         billing_interval:    intervals.length > 1 ? 'mixed' : (intervals[0] ?? null),
-        subscribe_date:      hasMultipleActivePlans ? null : (primarySub?.createdAt?.toISOString() ?? null),
+        subscribe_date:      firstStartedSub?.createdAt?.toISOString() ?? null,
         renewal_date:        hasMultipleActivePlans ? (nextRenewalSub?.renewalAt?.toISOString() ?? null) : (primarySub?.renewalAt?.toISOString() ?? null),
         renewal_amount:      hasMultipleActivePlans ? (totalRenewalAmount || null) : (primarySub?.renewalAmount ?? null),
         renewal_subscription_count: renewalEligibleSubs.length,
         has_multiple_active_plans: hasMultipleActivePlans,
-        platform:            primarySub?.platform ?? null,
+        platform:            effectivePlatform,
+        // Primary billing context (most recently created active paid subscription)
+        primary_billing_product: primarySub?.productLabel ?? null,
+        primary_billing_status: primarySub?.subscriptionStatus ?? null,
+        primary_billing_platform: primarySub?.platform ?? null,
+        primary_billing_interval: primarySub?.billingInterval ?? null,
+        primary_billing_subscribe_date: primarySub?.createdAt?.toISOString() ?? null,
+        // Renewal context
+        renewal_next_date: nextRenewalSub?.renewalAt?.toISOString() ?? null,
+        renewal_total_amount: totalRenewalAmount || null,
         // User entitlement flags (direct from user record — source of truth)
         pipekeeper_paid:     !!u.pipekeeper_paid,
         whiskeykeeper_paid:  !!u.whiskeykeeper_paid,
         cigarkeeper_paid:    !!u.cigarkeeper_paid,
         winekeeper_paid:     !!u.winekeeper_paid,
+        account_runtime_modules: runtimeModules,
       };
 
       if (isPaid) paidUsersList.push(row);
