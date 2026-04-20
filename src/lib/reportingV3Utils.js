@@ -455,10 +455,11 @@ function normalizeModuleToken(value) {
   const token = norm(value);
   if (!token) return null;
   const compact = token.replace(/[\s_-]/g, '');
-  if (token === 'pipe' || token === 'pk' || compact === 'pk' || token.includes('pipekeeper') || compact.includes('pipekeeper')) return 'pipekeeper';
-  if (token === 'whiskey' || token === 'wk' || compact === 'wk' || token.includes('whiskeykeeper') || compact.includes('whiskeykeeper')) return 'whiskeykeeper';
-  if (token === 'cigar' || token === 'ck' || compact === 'ck' || token.includes('cigarkeeper') || compact.includes('cigarkeeper')) return 'cigarkeeper';
-  if (token === 'wine' || token === 'vk' || compact === 'vk' || token.includes('winekeeper') || compact.includes('winekeeper')) return 'winekeeper';
+  const hasAlias = (alias) => token === alias || compact === alias || token.startsWith(`${alias}_`) || token.includes(`.${alias}.`) || compact.startsWith(alias);
+  if (token === 'pipe' || hasAlias('pk') || token.includes('pipekeeper') || compact.includes('pipekeeper')) return 'pipekeeper';
+  if (token === 'whiskey' || hasAlias('wk') || token.includes('whiskeykeeper') || compact.includes('whiskeykeeper')) return 'whiskeykeeper';
+  if (token === 'cigar' || hasAlias('ck') || token.includes('cigarkeeper') || compact.includes('cigarkeeper')) return 'cigarkeeper';
+  if (token === 'wine' || hasAlias('vk') || token.includes('winekeeper') || compact.includes('winekeeper')) return 'winekeeper';
   return null;
 }
 

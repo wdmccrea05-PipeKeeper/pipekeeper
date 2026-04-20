@@ -434,7 +434,6 @@ describe('normalizeSub', () => {
       billing_period: undefined,
       metadata_json: JSON.stringify({
         app_slug: 'pk',
-        recurring_interval: 'month',
       }),
       price_id: 'wk_pro_annual',
     });
