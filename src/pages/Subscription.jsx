@@ -46,13 +46,13 @@ function AppleSubscription() {
       syncAppleSubscriptionStatus(payload, { queryClient, refetch })
         .then((result) => {
           if (result?.skipped) {
-            setSyncMessage("Subscription verification is still processing. Please use Restore Purchases and try again.");
+            setSyncMessage(t("subscription.syncStillProcessing"));
           } else {
             setSyncMessage("");
           }
         })
         .catch((err) => {
-          setSyncMessage(err?.message || "Failed to sync Apple subscription status.");
+          setSyncMessage(err?.message || t("subscription.syncStatusFailed"));
         });
     });
 
@@ -94,13 +94,13 @@ function AppleSubscription() {
     setUpgrading(true);
     try {
       if (!isAppleBuild) {
-        toast.error("Apple subscription only available in the app");
+        toast.error(t("subscription.appleOnlyInApp"));
         return;
       }
 
       const isWebView = isIOSWebView();
       if (!isWebView) {
-        toast.error("Please open this in the PipeKeeper app to upgrade.");
+        toast.error(t("subscription.openInAppToUpgrade"));
         return;
       }
 
@@ -119,7 +119,7 @@ function AppleSubscription() {
       toast.info(t("subscription.openedAppleSubsInBrowser"));
     } catch (error) {
       console.error("[Subscription] upgrade error:", error);
-      toast.error("Failed to open subscription. Please try again.");
+      toast.error(t("subscription.openSubscriptionFailed"));
     } finally {
       setUpgrading(false);
     }
@@ -171,7 +171,7 @@ function AppleSubscription() {
             <FeatureList items={proFeatures} />
             <div className="mt-4">
               <Button className="w-full" onClick={() => openSubscription("pro")} disabled={upgrading}>
-                {upgrading ? "Opening..." : t("subscription.subscribe")}
+                {upgrading ? t("subscription.opening") : t("subscription.subscribe")}
               </Button>
             </div>
           </CardContent>

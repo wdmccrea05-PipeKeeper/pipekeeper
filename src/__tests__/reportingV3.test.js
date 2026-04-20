@@ -303,6 +303,22 @@ describe('normalizeSub', () => {
     expect(sub.fieldResolution.sources.planKey).toBe('recovered:modules_interval_backfill');
   });
 
+  it('backfills plan key from module + interval when tier/amount hints are absent', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: undefined,
+      renewal_amount: undefined,
+      billing_interval: 'monthly',
+      modules_csv: 'pipekeeper',
+      subscription_tier: undefined,
+      tier: undefined,
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.planKey).toBe('pipekeeper_pro_monthly');
+    expect(sub.fieldResolution.sources.planKey).toBe('recovered:modules_interval_backfill');
+  });
+
   it('parses positive numeric values from formatted currency strings', () => {
     const raw = makeSub({
       amount: undefined,
@@ -387,6 +403,37 @@ describe('normalizeSub', () => {
     expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
     expect(sub.planKey).toBe('founders_bundle_annual');
     expect(sub.fieldResolution.sources.planKey).toBe('recovered:modules_interval_backfill');
+  });
+
+  it('normalizes modules_csv aliases before plan-key backfill', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: undefined,
+      renewal_amount: undefined,
+      billing_interval: 'annual',
+      modules_csv: 'Whiskey',
+      subscription_tier: 'pro',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.modules).toEqual(['whiskeykeeper']);
+    expect(sub.planKey).toBe('whiskeykeeper_pro_annual');
+  });
+
+  it('normalizes primary_module aliases before plan-key backfill', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      amount: undefined,
+      renewal_amount: undefined,
+      billing_interval: 'monthly',
+      modules_csv: undefined,
+      primary_module: 'Cigar',
+      subscription_tier: 'pro',
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.modules).toEqual(['cigarkeeper']);
+    expect(sub.planKey).toBe('cigarkeeper_pro_monthly');
   });
 
   it('sets renewalAt to null when current_period_end is missing', () => {

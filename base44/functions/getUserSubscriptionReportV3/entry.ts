@@ -554,9 +554,11 @@ function inferPlanKeyFromResolvedModules(
   const isLegacy = normalizedAmount === 1.99 || normalizedAmount === 19.99;
   const isPro = normalizedAmount === 2.99 || normalizedAmount === 29.99;
 
-  if (tierHint === 'premium' || isLegacy) return `${module}_premium_${interval}`;
+  if (tierHint === 'premium' || tierHint === 'legacy' || isLegacy) return `${module}_premium_${interval}`;
   if (tierHint === 'pro' || isPro) return `${module}_pro_${interval}`;
-  return null;
+  // Safe historical fallback: modern canonical plan key when module+interval are known
+  // but tier/amount hints are absent.
+  return `${module}_pro_${interval}`;
 }
 
 // ─── Platform normalization ───────────────────────────────────────────────────
@@ -665,15 +667,15 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     // 2. modules_csv stored field
     const csvModules = String(raw.modules_csv || '')
       .split(',')
-      .map((m: string) => m.trim().toLowerCase())
+      .map((m: string) => normalizeModuleToken(m))
       .filter(Boolean);
 
     if (csvModules.length > 0) {
       modules = csvModules;
       productLabel = buildProductLabel(modules, modules.length > 1 ? 'Bundle' : modules[0]);
-    } else if (norm(raw.primary_module || '')) {
+    } else if (normalizeModuleToken(raw.primary_module || '')) {
       // 3. primary_module stored field
-      modules = [norm(raw.primary_module)];
+      modules = [normalizeModuleToken(raw.primary_module || '') as string];
       productLabel = buildProductLabel(modules, modules[0]);
     } else if (metadataModules.length > 0) {
       // 4. metadata module/app hints
@@ -687,7 +689,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
       // 6. Truly unresolvable — mark as unknown, NOT pipekeeper
       const userModules = String(user?.paid_modules_csv || '')
         .split(',')
-        .map((m: string) => norm(m || ''))
+        .map((m: string) => normalizeModuleToken(m))
         .filter(Boolean);
       if (userModules.length > 0) {
         modules = [...new Set(userModules)];

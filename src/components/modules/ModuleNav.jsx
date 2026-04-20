@@ -62,7 +62,7 @@ export default function ModuleNav({ currentPageName, user }) {
     if (enabled.pipekeeper) {
       items.push({
         page: "PipeKeeper",
-        label: t("nav.pipekeeper", "PipeKeeper"),
+        label: t("nav.pipekeeper"),
         icon: PipeIcon,
         path: "/PipeKeeper",
       });
@@ -71,7 +71,7 @@ export default function ModuleNav({ currentPageName, user }) {
     if (enabled.whiskeykeeper) {
       items.push({
         page: "WhiskeyKeeper",
-        label: t("nav.whiskeykeeper", "WhiskeyKeeper"),
+        label: t("nav.whiskeykeeper"),
         icon: WhiskeyKeeperIcon,
         path: "/WhiskeyKeeper",
       });
@@ -80,7 +80,7 @@ export default function ModuleNav({ currentPageName, user }) {
     if (enabled.cigarkeeper) {
       items.push({
         page: "CigarKeeper",
-        label: t("nav.cigarkeeper", "CigarKeeper"),
+        label: t("nav.cigarkeeper"),
         icon: Flame,
         path: "/CigarKeeper",
       });
@@ -90,50 +90,50 @@ export default function ModuleNav({ currentPageName, user }) {
   }, [enabled, t]);
 
   const baseItems = [
-    { page: "CollectionHub", label: t("nav.hub", "Hub"), icon: Home, path: "/" },
+    { page: "CollectionHub", label: t("nav.hub"), icon: Home, path: "/" },
     ...moduleItems,
-    { page: "WantList", label: t("nav.wantList", "Want List"), icon: List, path: "/WantList" },
-    { page: "Curator", label: t("nav.curator", "Curator"), icon: Target, path: "/Curator" },
-    { page: "Community", label: t("nav.community", "Community"), icon: Users, path: "/Community" },
-    { page: "Profile", label: t("nav.profile", "Profile"), icon: User, path: "/Profile" },
-    { page: "HelpCenter", label: t("nav.help", "Help"), icon: HelpCircle, path: "/HelpCenter" },
+    { page: "WantList", label: t("nav.wantList"), icon: List, path: "/WantList" },
+    { page: "Curator", label: t("nav.curator"), icon: Target, path: "/Curator" },
+    { page: "Community", label: t("nav.community"), icon: Users, path: "/Community" },
+    { page: "Profile", label: t("nav.profile"), icon: User, path: "/Profile" },
+    { page: "HelpCenter", label: t("nav.help"), icon: HelpCircle, path: "/HelpCenter" },
   ];
 
   const adminItems = isAdmin
     ? [
         {
           page: "AdminReports",
-          label: t("nav.adminReports", "Admin Reports"),
+          label: t("nav.adminReports"),
           icon: Shield,
           path: "/AdminReports",
         },
         {
           page: "AdminSubscriptionRequests",
-          label: t("nav.subscriptionRequests", "Subscription Requests"),
+          label: t("nav.subscriptionRequests"),
           icon: ClipboardList,
           path: "/AdminSubscriptionRequests",
         },
         {
           page: "AdminSubscriptionTools",
-          label: t("nav.subscriptionTools", "Subscription Tools"),
+          label: t("nav.subscriptionTools"),
           icon: Wrench,
           path: "/AdminSubscriptionTools",
         },
         {
           page: "UserReport",
-          label: t("nav.userReport", "User Report"),
+          label: t("nav.userReport"),
           icon: FileBarChart2,
           path: "/UserReport",
         },
         {
           page: "CuratorAnalyticsDashboard",
-          label: t("nav.curatorAnalytics", "Curator Analytics"),
+          label: t("nav.curatorAnalytics"),
           icon: BarChart3,
           path: "/CuratorAnalyticsDashboard",
         },
         {
           page: "SubscriptionE2ETest",
-          label: t("nav.subscriptionE2ETest", "Sub E2E Test"),
+          label: t("nav.subscriptionE2ETest"),
           icon: TestTube2,
           path: "/SubscriptionE2ETest",
         },

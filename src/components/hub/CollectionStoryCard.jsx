@@ -228,7 +228,7 @@ export default function CollectionStoryCard() {
   if (loading) {
     return (
       <div className="rounded-2xl p-8" style={{ border: '1px solid rgba(180,140,75,0.22)' }}>
-        <p className="text-[#E0D8C8]">{t('hub.storyLoading', 'Composing your collection story…')}</p>
+        <p className="text-[#E0D8C8]">{t('hub.storyLoading')}</p>
       </div>
     );
   }
@@ -254,13 +254,13 @@ export default function CollectionStoryCard() {
       <div className="px-6 pt-6 pb-4 flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1 text-[#B48C4B]">
-            {t('hub.collectionStory', 'Collection Story')}
+            {t('hub.collectionStory')}
           </p>
           <h3
             className="text-2xl sm:text-3xl font-bold"
             style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
           >
-            {t('hub.collectorSnapshot', "Your Collector's Snapshot")}
+            {t('hub.collectorSnapshot')}
           </h3>
         </div>
 
@@ -276,24 +276,24 @@ export default function CollectionStoryCard() {
       <div className="px-6 py-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {isModuleEnabled('pipekeeper') && (
           <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
-            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.pipes', 'Pipes')}</p>
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.pipes')}</p>
             <p className="text-2xl font-bold mt-2 text-[#C87941]">{m.pipes || 0}</p>
           </div>
         )}
         {isModuleEnabled('pipekeeper') && (
           <div className="rounded-xl p-4 border border-[rgba(74,156,106,0.22)] bg-[rgba(74,156,106,0.10)]">
-            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.blends', 'Blends')}</p>
+            <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.blends')}</p>
             <p className="text-2xl font-bold mt-2 text-[#4A9C6A]">{m.blends || 0}</p>
           </div>
         )}
         {!WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper') && (
           <>
             <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
-              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.bottleTypesShort', 'Btl. Types')}</p>
+              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.bottleTypesShort')}</p>
               <p className="text-2xl font-bold mt-2 text-[#C87941]">{m.bottleTypes || 0}</p>
             </div>
             <div className="rounded-xl p-4 border border-[rgba(200,121,65,0.22)] bg-[rgba(200,121,65,0.10)]">
-              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.totalBottlesShort', 'Total Btls')}</p>
+              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.totalBottlesShort')}</p>
               <p className="text-2xl font-bold mt-2 text-[#C87941]">{m.totalBottles || 0}</p>
             </div>
           </>
@@ -311,7 +311,7 @@ export default function CollectionStoryCard() {
           </div>
         ) : null}
         <div className="rounded-xl p-4 border border-[rgba(16,185,129,0.22)] bg-[rgba(16,185,129,0.10)]">
-          <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.totalValueShort', 'Value')}</p>
+          <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.totalValueShort')}</p>
           <p className="text-2xl font-bold mt-2 text-[#10B981]">{valueDisplay}</p>
         </div>
       </div>
@@ -325,7 +325,7 @@ export default function CollectionStoryCard() {
       <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         {pipeVisible && h.mostUsedPipe ? (
           <StoryCard
-            label={t('hub.mostUsedPipe', 'Most Used Pipe')}
+             label={t('hub.mostUsedPipe')}
             title={h.mostUsedPipe.name}
             item={h.mostUsedPipe}
             navigate={navigate}
@@ -334,7 +334,7 @@ export default function CollectionStoryCard() {
 
         {pipeVisible && h.favoriteBlend ? (
           <StoryCard
-            label={t('hub.topBlend', 'Top Blend')}
+             label={t('hub.topBlend')}
             title={h.favoriteBlend.name}
             item={h.favoriteBlend}
             navigate={navigate}
@@ -343,7 +343,7 @@ export default function CollectionStoryCard() {
 
         {whiskeyVisible && h.mostTastedBottle ? (
           <StoryCard
-            label={t('hub.mostTasted', 'Most Tasted')}
+             label={t('hub.mostTasted')}
             title={h.mostTastedBottle.name}
             item={h.mostTastedBottle}
             navigate={navigate}
@@ -396,7 +396,7 @@ export default function CollectionStoryCard() {
           if (!crownVisible) return null;
           return (
             <StoryCard
-              label={t('hub.crownJewel', 'Crown Jewel')}
+               label={t('hub.crownJewel')}
               title={h.mostValuableItem.name}
               item={h.mostValuableItem}
               navigate={navigate}
@@ -419,7 +419,7 @@ export default function CollectionStoryCard() {
           onClick={() => setShowStoryViewer(true)}
         >
           <BookOpen className="w-4 h-4 mr-2" />
-          {t('hub.viewStory', 'Story')}
+          {t('hub.viewStory')}
         </Button>
 
         <Button
@@ -430,7 +430,7 @@ export default function CollectionStoryCard() {
             try {
               if (navigator.share) {
                 await navigator.share({
-                  title: t('hub.collectorSnapshot', "Your Collector's Snapshot"),
+                  title: t('hub.collectorSnapshot'),
                   text: story?.narrative?.slice(0, 200) || t('hub.shareCollectionFallback'),
                   url: storyUrl,
                 });
@@ -451,7 +451,7 @@ export default function CollectionStoryCard() {
           }}
         >
           <Share2 className="w-4 h-4 mr-2" />
-          {t('common.share', 'Share')}
+          {t('common.share')}
         </Button>
         <Button
           className="flex-1"
@@ -462,14 +462,14 @@ export default function CollectionStoryCard() {
           }}
         >
           <Sparkles className="w-4 h-4 mr-2" />
-          {t('hub.regenerate', 'Regenerate')}
+           {t('hub.regenerate')}
         </Button>
       </div>
 
       <div className="px-6 py-3 flex items-center justify-center gap-2 border-t border-[rgba(120,90,65,0.25)]">
         <BrandLogo compact showWordmark={false} imageClassName="w-5 h-5" />
         <span className="text-xs text-[#E0D8C8]/55">
-          {t('hub.trackedWithCollectionKeeper', 'Tracked with CollectionKeeper')}
+          {t('hub.trackedWithCollectionKeeper')}
         </span>
       </div>
     </div>

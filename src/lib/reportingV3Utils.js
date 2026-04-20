@@ -576,9 +576,11 @@ function inferPlanKeyFromResolvedModules(modules, billingInterval, amount, tierH
   const isLegacy = normalizedAmount === 1.99 || normalizedAmount === 19.99;
   const isPro = normalizedAmount === 2.99 || normalizedAmount === 29.99;
 
-  if (tierHint === 'premium' || isLegacy) return `${module}_premium_${interval}`;
+  if (tierHint === 'premium' || tierHint === 'legacy' || isLegacy) return `${module}_premium_${interval}`;
   if (tierHint === 'pro' || isPro) return `${module}_pro_${interval}`;
-  return null;
+  // Safe historical fallback: modern canonical plan key when module+interval are known
+  // but tier/amount hints are absent.
+  return `${module}_pro_${interval}`;
 }
 
 // ─── Active paid detection ────────────────────────────────────────────────────
@@ -739,13 +741,13 @@ export function normalizeSub(raw, user = null) {
     // 2. modules_csv stored field
     const csvModules = String(raw.modules_csv || '')
       .split(',')
-      .map((m) => m.trim().toLowerCase())
+      .map((m) => normalizeModuleToken(m))
       .filter(Boolean);
     if (csvModules.length > 0) {
       modules = csvModules;
-    } else if (norm(raw.primary_module || '')) {
+    } else if (normalizeModuleToken(raw.primary_module || '')) {
       // 3. primary_module stored field
-      modules = [norm(raw.primary_module)];
+      modules = [normalizeModuleToken(raw.primary_module)];
     } else if (metadataModules.length > 0) {
       // 4. metadata module/app hints
       modules = metadataModules;
@@ -756,7 +758,7 @@ export function normalizeSub(raw, user = null) {
       // 6. Truly unknown — do NOT default to 'pipekeeper'
       const userModules = String(user?.paid_modules_csv || '')
         .split(',')
-        .map((m) => norm(m))
+        .map((m) => normalizeModuleToken(m))
         .filter(Boolean);
       if (userModules.length > 0) {
         modules = [...new Set(userModules)];

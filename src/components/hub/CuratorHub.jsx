@@ -64,7 +64,7 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
         >
           <img
             src={curatorAsset.src}
-            alt={t("hub.curatorTitle", "Collection Curator")}
+            alt={t("hub.curatorTitle")}
             className="w-10 h-10 object-contain bg-transparent"
             style={getAssetImageStyle("curator")}
             draggable={false}
@@ -73,16 +73,13 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
 
         <div>
           <h3 className="text-lg font-semibold" style={{ color: "#F5F1E7" }}>
-            {t("hub.curatorTitle", "Collection Curator")}
+            {t("hub.curatorTitle")}
           </h3>
           <p
             className="text-sm mt-1"
             style={{ color: "rgba(224, 216, 200, 0.7)" }}
           >
-            {t(
-              "hub.curatorDescription",
-              "Get AI-powered insights, recommendations, and guidance across your entire collection."
-            )}
+            {t("hub.curatorDescription")}
           </p>
           {entryText ? (
             <p
@@ -104,7 +101,7 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
           fontWeight: 600,
         }}
       >
-        {t("hub.curatorAction", "Open Curator")}
+        {t("hub.curatorAction")}
         <ArrowRight className="w-4 h-4" />
       </Button>
     </div>
