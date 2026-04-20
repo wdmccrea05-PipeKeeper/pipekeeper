@@ -369,6 +369,54 @@ function parseMetadataObject(raw) {
   return merged;
 }
 
+function normalizeModuleToken(value) {
+  const token = norm(value);
+  if (!token) return null;
+  if (token === 'pipe' || token.includes('pipekeeper')) return 'pipekeeper';
+  if (token === 'whiskey' || token.includes('whiskeykeeper')) return 'whiskeykeeper';
+  if (token === 'cigar' || token.includes('cigarkeeper')) return 'cigarkeeper';
+  if (token === 'wine' || token.includes('winekeeper')) return 'winekeeper';
+  return null;
+}
+
+function extractModuleTokens(value) {
+  if (Array.isArray(value)) return value.flatMap((entry) => extractModuleTokens(entry));
+  if (typeof value === 'string') return value.split(/[,;|]/g).map((part) => part.trim()).filter(Boolean);
+  if (isPlainObject(value)) return Object.values(value).flatMap((entry) => extractModuleTokens(entry));
+  const normalized = normalizeModuleToken(value);
+  return normalized ? [normalized] : [];
+}
+
+function recoverModulesFromMetadata(raw, metadata) {
+  const candidates = [
+    raw.modules,
+    raw.modules_csv,
+    raw.paid_modules_csv,
+    raw.module,
+    raw.primary_module,
+    raw.product_module,
+    raw.app,
+    raw.app_slug,
+    raw.legacy_app_slug,
+    raw.app_aliases,
+    metadata.modules,
+    metadata.modules_csv,
+    metadata.paid_modules_csv,
+    metadata.module,
+    metadata.primary_module,
+    metadata.product_module,
+    metadata.app,
+    metadata.app_slug,
+    metadata.legacy_app_slug,
+    metadata.app_aliases,
+  ];
+  const modules = candidates
+    .flatMap((candidate) => extractModuleTokens(candidate))
+    .map((entry) => normalizeModuleToken(entry))
+    .filter(Boolean);
+  return [...new Set(modules)];
+}
+
 function inferIntervalFromDateSpan(raw) {
   const start = parseDate(raw.current_period_start || raw.started_at || raw.created_date);
   const end = parseDate(raw.current_period_end);
@@ -396,6 +444,10 @@ function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
     raw.checkout_type,
     raw.product_kind,
     raw.product_label,
+    raw.app,
+    raw.app_slug,
+    raw.legacy_app_slug,
+    raw.app_aliases,
     raw.provider_subscription_id,
     raw.stripe_subscription_id,
     metadata.plan_key,
@@ -412,6 +464,10 @@ function inferPlanKeyFromIdentifiers(raw, resolvedInterval) {
     metadata.checkout_type,
     metadata.product_kind,
     metadata.product_label,
+    metadata.app,
+    metadata.app_slug,
+    metadata.legacy_app_slug,
+    metadata.app_aliases,
     metadata.provider_subscription_id,
     metadata.stripe_subscription_id,
   ]
@@ -592,8 +648,9 @@ export function normalizePlatform(raw, user = null) {
  *   1. PLAN_CATALOG via planKey → authoritative (modules + interval + price)
  *   2. modules_csv stored field → explicit
  *   3. primary_module stored field → explicit single module
- *   4. inferFromAmount for BUNDLE amounts → resolves modules from price
- *   5. 'unknown' — products that cannot be recovered stay unknown
+ *   4. metadata module/app hints (modules/app_slug/app_aliases)
+ *   5. inferFromAmount for BUNDLE amounts → resolves modules from price
+ *   6. 'unknown' — products that cannot be recovered stay unknown
  *
  * Price resolution order:
  *   1. raw.amount (actual billed amount if present and > 0)
@@ -612,6 +669,7 @@ export function normalizePlatform(raw, user = null) {
  */
 export function normalizeSub(raw, user = null) {
   const metadata = parseMetadataObject(raw);
+  const metadataModules = recoverModulesFromMetadata(raw, metadata);
   const stripeRecurringInterval = raw?.items?.data?.[0]?.price?.recurring?.interval || raw?.price?.recurring?.interval || null;
 
   // Interval recovery
@@ -688,11 +746,14 @@ export function normalizeSub(raw, user = null) {
     } else if (norm(raw.primary_module || '')) {
       // 3. primary_module stored field
       modules = [norm(raw.primary_module)];
+    } else if (metadataModules.length > 0) {
+      // 4. metadata module/app hints
+      modules = metadataModules;
     } else if (amountInference?.modules) {
-      // 4. Amount inference resolves bundle modules
+      // 5. Amount inference resolves bundle modules
       modules = amountInference.modules;
     } else {
-      // 5. Truly unknown — do NOT default to 'pipekeeper'
+      // 6. Truly unknown — do NOT default to 'pipekeeper'
       const userModules = String(user?.paid_modules_csv || '')
         .split(',')
         .map((m) => norm(m))

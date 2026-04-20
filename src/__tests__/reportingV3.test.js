@@ -357,6 +357,38 @@ describe('normalizeSub', () => {
     expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
   });
 
+  it('recovers module from metadata app_slug and backfills canonical plan key', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      modules_csv: undefined,
+      primary_module: undefined,
+      amount: 2.99,
+      billing_interval: 'monthly',
+      metadata_json: JSON.stringify({ app_slug: 'pipekeeper' }),
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.modules).toEqual(['pipekeeper']);
+    expect(sub.planKey).toBe('pipekeeper_pro_monthly');
+    expect(sub.fieldResolution.sources.planKey).toBe('recovered:identifier_mapping');
+  });
+
+  it('recovers bundle modules from metadata modules_csv and backfills bundle plan key', () => {
+    const raw = makeSub({
+      planKey: undefined,
+      plan_key: undefined,
+      modules_csv: undefined,
+      primary_module: undefined,
+      amount: 49.99,
+      billing_interval: 'annual',
+      metadata_json: JSON.stringify({ modules_csv: 'pipekeeper,whiskeykeeper' }),
+    });
+    const sub = normalizeSub(raw);
+    expect(sub.modules).toEqual(['pipekeeper', 'whiskeykeeper']);
+    expect(sub.planKey).toBe('founders_bundle_annual');
+    expect(sub.fieldResolution.sources.planKey).toBe('recovered:modules_interval_backfill');
+  });
+
   it('sets renewalAt to null when current_period_end is missing', () => {
     const raw = makeSub({ current_period_end: undefined });
     const sub = normalizeSub(raw);
