@@ -22,22 +22,22 @@ function maskSampleValue(value) {
 }
 
 const GROUP_DEFS = [
-  { labelKey: 'userReport.diagnostics.sampleLabels.multipleActiveSubscriptions', key: 'multipleActiveSubscriptions' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.activeNoModules', key: 'activeNoModules' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.modulesNoActiveSubscription', key: 'modulesNoActiveSubscription' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.summaryRuntimeMismatch', key: 'summaryRuntimeMismatch' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.staleSyncTimestamp', key: 'staleSyncTimestamp' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.failedStripeCallbacks', key: 'failedStripeCallbacks' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.failedPurchases', key: 'failedPurchases' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.failedRestoreAttempts', key: 'failedRestoreAttempts' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.entitlementMismatches', key: 'entitlementMismatches' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.importFailures', key: 'importFailures' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.scannerFailures', key: 'scannerFailures' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.routeCrashes', key: 'routeCrashes' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.multiPlanConflicts', key: 'multiPlanConflicts' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.activeModuleStateDrift', key: 'activeModuleStateDrift' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.recentAdminOverrides', key: 'recentAdminOverrides' },
-  { labelKey: 'userReport.diagnostics.sampleLabels.recentSubscriptionStateChanges', key: 'recentSubscriptionStateChanges' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.multipleActiveSubscriptions', fallbackLabel: 'Multi-active', key: 'multipleActiveSubscriptions' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.activeNoModules', fallbackLabel: 'Active/no-modules', key: 'activeNoModules' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.modulesNoActiveSubscription', fallbackLabel: 'Modules/no-active', key: 'modulesNoActiveSubscription' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.summaryRuntimeMismatch', fallbackLabel: 'Summary/runtime drift', key: 'summaryRuntimeMismatch' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.staleSyncTimestamp', fallbackLabel: 'Stale sync', key: 'staleSyncTimestamp' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.failedStripeCallbacks', fallbackLabel: 'Failed Stripe callbacks', key: 'failedStripeCallbacks' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.failedPurchases', fallbackLabel: 'Failed purchases', key: 'failedPurchases' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.failedRestoreAttempts', fallbackLabel: 'Failed restore attempts', key: 'failedRestoreAttempts' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.entitlementMismatches', fallbackLabel: 'Entitlement mismatches', key: 'entitlementMismatches' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.importFailures', fallbackLabel: 'Import failures', key: 'importFailures' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.scannerFailures', fallbackLabel: 'Scanner failures', key: 'scannerFailures' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.routeCrashes', fallbackLabel: 'Route crashes', key: 'routeCrashes' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.multiPlanConflicts', fallbackLabel: 'Multi-plan conflicts', key: 'multiPlanConflicts' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.activeModuleStateDrift', fallbackLabel: 'Active module state drift', key: 'activeModuleStateDrift' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.recentAdminOverrides', fallbackLabel: 'Recent admin overrides', key: 'recentAdminOverrides' },
+  { labelKey: 'userReport.diagnostics.sampleLabels.recentSubscriptionStateChanges', fallbackLabel: 'Recent state changes', key: 'recentSubscriptionStateChanges' },
 ];
 
 export function buildDiagnosticsSampleGroups(diagnostics, options = {}) {
@@ -47,10 +47,10 @@ export function buildDiagnosticsSampleGroups(diagnostics, options = {}) {
   const translate = typeof options.translate === 'function' ? options.translate : null;
 
   return GROUP_DEFS
-    .map(({ labelKey, key }) => {
+    .map(({ labelKey, fallbackLabel, key }) => {
       const values = Array.isArray(diagnostics?.samples?.[key]) ? diagnostics.samples[key] : [];
       const safeValues = values.slice(0, maxItems).map(maskSampleValue).filter(Boolean);
-      const label = translate ? translate(labelKey) : labelKey;
+      const label = translate ? translate(labelKey) : fallbackLabel;
       return { label, labelKey, values: safeValues };
     })
     .filter((group) => group.values.length > 0);

@@ -13,7 +13,7 @@ interface NormalizedSub {
   userId: string;
   userEmail: string;
   isPaid: boolean;
-  status: string;
+  subscriptionStatus: string;
   planKey: string | null;
   billingInterval: IntervalKind | null;
   price: number | null;
@@ -121,6 +121,12 @@ function parseDate(v: any): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+function roundCurrency(value: number): number {
+  // Round to 2 decimal places for currency-safe reporting.
+  // Number.EPSILON helps avoid floating-point representation edge cases.
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
 function inRange(d: Date, range: CalendarRange): boolean {
   return d >= range.start && d <= range.end;
 }
@@ -148,6 +154,8 @@ function runtimeModulesFromUser(user: any): string[] {
 }
 
 function userIdentityKey(userId: string | null | undefined, userEmail: string | null | undefined): string {
+  // Canonical user identity key for report aggregation.
+  // Prefer stable user_id; fallback to normalized email when id is unavailable.
   return String(userId || '').trim() || norm(userEmail || '');
 }
 
@@ -300,7 +308,7 @@ function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
     userId:         String(raw.user_id || ''),
     userEmail:      norm(raw.user_email || ''),
     isPaid:         isActivePaid(raw),
-    status:         norm(raw.status || ''),
+    subscriptionStatus: norm(raw.status || ''),
     planKey,
     billingInterval,
     price,
@@ -330,7 +338,7 @@ function calcRenewalPeriod(paidSubs: NormalizedSub[], range: CalendarRange) {
     (s) => s.renewalAt !== null && inRange(s.renewalAt, range) && s.price !== null && s.billingInterval !== null
   );
   const customers = new Set(renewing.map((s) => s.userId || s.userEmail).filter(Boolean)).size;
-  const revenue   = parseFloat(renewing.reduce((sum, s) => sum + (s.price ?? 0), 0).toFixed(2));
+  const revenue   = roundCurrency(renewing.reduce((sum, s) => sum + (s.price ?? 0), 0));
   return { customers, subscriptions: renewing.length, revenue };
 }
 
@@ -630,7 +638,7 @@ Deno.serve(async (req) => {
       const sortedByRenewalAsc = [...renewalEligibleSubs].sort((a, b) => (a.renewalAt?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.renewalAt?.getTime() ?? Number.MAX_SAFE_INTEGER));
       const primarySub = sortedByCreatedDesc[0] ?? null;
       const nextRenewalSub = sortedByRenewalAsc[0] ?? null;
-      const totalRenewalAmount = parseFloat(renewalEligibleSubs.reduce((sum, s) => sum + (s.renewalAmount ?? 0), 0).toFixed(2));
+      const totalRenewalAmount = roundCurrency(renewalEligibleSubs.reduce((sum, s) => sum + (s.renewalAmount ?? 0), 0));
       const hasMultipleActivePlans = userPaidSubs.length > 1;
 
       if (userPaidSubs.length > 1) {
@@ -680,8 +688,8 @@ Deno.serve(async (req) => {
         email:               norm(u.email || ''),
         role:                u.role || 'user',
         created_date:        u.created_date || '',
-        subscription_status: isPaid ? (primarySub?.status || 'active') : 'none',
-        product:             hasMultipleActivePlans ? `Multiple Active Plans (${userPaidSubs.length})` : (primarySub?.productLabel ?? (isPaid ? 'Unknown' : 'Free')),
+        subscription_status: isPaid ? (primarySub?.subscriptionStatus || 'active') : 'none',
+        product:             primarySub?.productLabel ?? (isPaid ? 'Unknown' : 'Free'),
         modules:             allUserModules,
         active_subscription_count: userPaidSubs.length,
         active_products:     productLabels,
@@ -806,8 +814,8 @@ Deno.serve(async (req) => {
     // ── MRR / ARR ─────────────────────────────────────────────────────────────
     const mrrSubs  = paidSubs.filter((s) => s.billingInterval !== null && s.price !== null);
     const totalMRR = mrrSubs.reduce((sum, s) => sum + mrrContribution(s), 0);
-    const mrr      = parseFloat(totalMRR.toFixed(2));
-    const arr      = parseFloat((mrr * 12).toFixed(2));
+    const mrr      = roundCurrency(totalMRR);
+    const arr      = roundCurrency(mrr * 12);
 
     // ── Renewal revenue by calendar period ────────────────────────────────────
     const renewalWeek    = calcRenewalPeriod(paidSubs, ranges.week);

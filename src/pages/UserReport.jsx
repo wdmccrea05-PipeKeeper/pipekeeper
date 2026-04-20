@@ -106,6 +106,7 @@ export default function UserReport() {
   const [sortDirection, setSortDirection]     = useState('desc');
   const [isSyncing, setIsSyncing]             = useState(false);
   const [renewalsPeriod, setRenewalsPeriod]   = useState('month');
+  const DATE_COLUMNS = ['created_date', 'subscription_end', 'renewal_date', 'subscribe_date'];
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
@@ -162,7 +163,7 @@ export default function UserReport() {
     const sortFn = (a, b) => {
       let aVal = a[sortColumn];
       let bVal = b[sortColumn];
-      if (sortColumn === 'created_date' || sortColumn === 'subscription_end' || sortColumn === 'renewal_date' || sortColumn === 'subscribe_date') {
+      if (DATE_COLUMNS.includes(sortColumn)) {
         aVal = new Date(aVal || 0);
         bVal = new Date(bVal || 0);
       }
@@ -296,7 +297,18 @@ export default function UserReport() {
       [t("userReport.diagnostics.failedRestoreAttempts"), diagnostics.failedRestoreAttempts ?? 0],
       ['', ''],
       [t("userReport.csv.sections.userDetail"), ''],
-      [t("userReport.csv.tier"), t("userReport.name"), t("userReport.email"), t("userReport.status"), t("userReport.userTable.planSummary"), t("userReport.userTable.modules"), t("userReport.userTable.billingContext"), t("userReport.userTable.renewalContext"), t("userReport.joined"), t("userReport.userTable.platform")],
+      [
+        t("userReport.csv.tier"),
+        t("userReport.name"),
+        t("userReport.email"),
+        t("userReport.status"),
+        t("userReport.userTable.planSummary"),
+        t("userReport.userTable.modules"),
+        t("userReport.userTable.billingContext"),
+        t("userReport.userTable.renewalContext"),
+        t("userReport.joined"),
+        t("userReport.userTable.platform"),
+      ],
     ];
 
     (report?.paid_users || []).forEach((u) => {
@@ -305,13 +317,15 @@ export default function UserReport() {
         u.full_name || '',
         u.email || '',
         u.subscription_status || '',
-        u.product || '',
+        u.has_multiple_active_plans
+          ? t("userReport.userTable.multiPlanLabel", { count: u.active_subscription_count ?? 0 })
+          : (u.product || ''),
         (u.modules || []).join(', '),
         u.billing_interval || '',
         u.has_multiple_active_plans
           ? t("userReport.userTable.multiPlanRenewalSummary", {
             renewalCount: u.renewal_subscription_count ?? 0,
-            amount: (u.renewal_amount ?? 0).toFixed(2),
+            amount: u.renewal_amount ?? 0,
           })
           : (u.renewal_date ? `${new Date(u.renewal_date).toLocaleDateString()} · $${(u.renewal_amount ?? 0).toFixed(2)}` : ''),
         u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
@@ -350,6 +364,17 @@ export default function UserReport() {
     quarter: t("userReport.renewals.quarter"),
     year: t("userReport.renewals.year"),
   };
+  const paidUserColumns = ['full_name', 'email', 'product', 'modules', 'billing_interval', 'renewal_date', 'subscription_status', 'created_date'];
+  const paidUserHeaders = [
+    t("userReport.name"),
+    t("userReport.email"),
+    t("userReport.userTable.planSummary"),
+    t("userReport.userTable.modules"),
+    t("userReport.userTable.billingContext"),
+    t("userReport.userTable.renewalContext"),
+    t("userReport.status"),
+    t("userReport.joined"),
+  ];
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -637,8 +662,8 @@ export default function UserReport() {
               <CardContent>
                 <UserTable
                     rows={filteredData.paid}
-                    columns={['full_name', 'email', 'product', 'modules', 'billing_interval', 'renewal_date', 'subscription_status', 'created_date']}
-                    headers={[t("userReport.name"), t("userReport.email"), t("userReport.userTable.planSummary"), t("userReport.userTable.modules"), t("userReport.userTable.billingContext"), t("userReport.userTable.renewalContext"), t("userReport.status"), t("userReport.joined")]}
+                    columns={paidUserColumns}
+                    headers={paidUserHeaders}
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                     onSort={handleSort}
@@ -648,7 +673,11 @@ export default function UserReport() {
                     if (col === 'billing_interval') return <span className="capitalize text-[#E0D8C8]">{user.billing_interval || '-'}</span>;
                     if (col === 'product') return (
                       <div className="space-y-0.5">
-                        <span className="text-[#D4A574] font-medium">{user.product || '-'}</span>
+                        <span className="text-[#D4A574] font-medium">
+                          {user.has_multiple_active_plans
+                            ? t("userReport.userTable.multiPlanLabel", { count: user.active_subscription_count ?? 0 })
+                            : (user.product || '-')}
+                        </span>
                         {Array.isArray(user.active_products) && user.active_products.length > 1 && (
                           <p className="text-xs text-[#E0D8C8]/60 truncate">{user.active_products.join(', ')}</p>
                         )}

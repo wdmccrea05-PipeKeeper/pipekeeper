@@ -2865,6 +2865,7 @@ const enUI = {
       billingContext: "Billing Context",
       renewalContext: "Renewal Context",
       platform: "Platform",
+      multiPlanLabel: "Multiple Active Plans ({count})",
       multiPlanRenewalSummary: "{renewalCount} renewal sub(s) · ${amount}",
       multiPlanRenewalCount: "{count} renewing subscription(s)",
       nextRenewalAt: "Next renewal: {date}",

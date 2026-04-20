@@ -40,4 +40,14 @@ describe('userReportDiagnostics', () => {
     const groups = buildDiagnosticsSampleGroups(diagnostics, { maxItems: 2 });
     expect(groups[0].values).toHaveLength(2);
   });
+
+  it('uses friendly fallback labels when translator is not provided', () => {
+    const diagnostics = {
+      samples: {
+        multipleActiveSubscriptions: ['a@example.com'],
+      },
+    };
+    const groups = buildDiagnosticsSampleGroups(diagnostics);
+    expect(groups[0].label).toBe('Multi-active');
+  });
 });
