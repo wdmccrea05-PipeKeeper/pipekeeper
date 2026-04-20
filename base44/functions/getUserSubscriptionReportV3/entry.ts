@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-const REPORT_VERSION = 'v3.2';
+const REPORT_VERSION = 'v4.0';
 const MAX_SAMPLE_SIZE = 25;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -1047,7 +1047,8 @@ Deno.serve(async (req) => {
     for (const sub of allActivePaidNorm) {
       const userKey = sub.userId || sub.userEmail;
       if (!userKey) continue;
-      const dedupKey = `${userKey}::${getProductFamilyKey(sub)}`;
+      const providerKey = sub.platform || 'unknown-provider';
+      const dedupKey = `${userKey}::${providerKey}::${getProductFamilyKey(sub)}`;
       const existing = paidSubsByKey.get(dedupKey);
       if (!existing) {
         paidSubsByKey.set(dedupKey, sub);
@@ -1175,6 +1176,10 @@ Deno.serve(async (req) => {
     // then subscription records for detail.
     const paidUsersList: any[] = [];
     const freeUsersList: any[] = [];
+    const staleUserKeys = new Set<string>();
+    const userEntitlementModulesMap = new Map<string, string[]>();
+    const userHasBundleContractMap = new Map<string, boolean>();
+    const moduleEntitlementRows = new Set<string>();
     const diagnostics = {
       usersWithMultipleActiveSubscriptions: 0,
       usersWithActiveSubscriptionNoPaidModules: 0,
@@ -1231,11 +1236,19 @@ Deno.serve(async (req) => {
     };
 
     for (const u of uniqueUsers) {
-      const userPaidSubs = paidSubsByUser.get(userIdentityKey(u.id, u.email)) || [];
-      const isPaid = userPaidSubs.length > 0;
+      const userKey = userIdentityKey(u.id, u.email);
+      const userPaidSubs = paidSubsByUser.get(userKey) || [];
+      const hasActiveContract = userPaidSubs.length > 0;
       const allUserModules = uniqueModules(userPaidSubs.flatMap((s) => s.modules));
       const summaryModules = allUserModules;
       const runtimeModules = runtimeModulesFromUser(u);
+      const entitlementModules = runtimeModules.length > 0 ? runtimeModules : allUserModules;
+      const isPaidAccount = entitlementModules.length > 0;
+      if (userKey) {
+        userEntitlementModulesMap.set(userKey, entitlementModules);
+        userHasBundleContractMap.set(userKey, userPaidSubs.some((s) => s.modules.length > 1));
+        entitlementModules.forEach((moduleKey) => moduleEntitlementRows.add(`${userKey}::${moduleKey}`));
+      }
       const productLabels = [...new Set(userPaidSubs.map((s) => s.productLabel).filter(Boolean))];
       const intervals = [...new Set(userPaidSubs.map((s) => s.billingInterval).filter((v): v is IntervalKind => v === 'monthly' || v === 'annual'))];
       const statusValues = [...new Set(userPaidSubs.map((s) => norm(s.subscriptionStatus || '')).filter(Boolean))];
@@ -1250,7 +1263,7 @@ Deno.serve(async (req) => {
       const totalRenewalAmount = roundCurrency(renewalEligibleSubs.reduce((sum, s) => sum + (s.renewalAmount ?? 0), 0));
       const hasMultipleActivePlans = userPaidSubs.length > 1;
       const effectiveStatus =
-        !isPaid ? 'none' :
+        !hasActiveContract ? (isPaidAccount ? 'paid_without_active_contract' : 'none') :
         statusValues.length === 1 ? statusValues[0] :
         statusValues.length > 1 ? 'mixed' :
         'unknown';
@@ -1259,7 +1272,7 @@ Deno.serve(async (req) => {
         platforms.length > 1 ? 'mixed' :
         null;
       const effectiveProductLabel =
-        !isPaid ? 'Free' :
+        !hasActiveContract ? (isPaidAccount ? 'Entitlement Access' : 'Free') :
         productLabels.length === 1 ? productLabels[0] :
         null;
 
@@ -1285,7 +1298,7 @@ Deno.serve(async (req) => {
         pushSample(diagnostics.samples.summaryRuntimeMismatch, norm(u.email || ''));
         pushSample(diagnostics.samples.entitlementMismatches, norm(u.email || ''));
       }
-      if (isPaid && runtimeModules.length === 0 && Boolean(u?.isFoundingMember || u?.legacy_broad_module_access)) {
+      if (hasActiveContract && runtimeModules.length === 0 && Boolean(u?.isFoundingMember || u?.legacy_broad_module_access)) {
         diagnostics.usersRelyingOnLegacyFallbackAccess++;
       }
 
@@ -1300,8 +1313,9 @@ Deno.serve(async (req) => {
       }
 
       const lastSynced = parseDate(u?.entitlement_last_synced_at);
-      if (isPaid && (!lastSynced || lastSynced < staleCutoff)) {
+      if (isPaidAccount && (!lastSynced || lastSynced < staleCutoff)) {
         diagnostics.usersWithStaleSyncTimestamp++;
+        if (userKey) staleUserKeys.add(userKey);
         pushSample(diagnostics.samples.staleSyncTimestamp, norm(u.email || ''));
       }
 
@@ -1313,13 +1327,13 @@ Deno.serve(async (req) => {
         // Effective-access level fields (across all active paid subscriptions)
         subscription_status: effectiveStatus,
         product:             effectiveProductLabel,
-        modules:             allUserModules,
+        modules:             entitlementModules,
         active_subscription_count: userPaidSubs.length,
         active_products:     productLabels,
         active_billing_intervals: intervals,
         active_platforms:    platforms,
         active_statuses:     statusValues,
-        effective_access_modules: allUserModules,
+        effective_access_modules: entitlementModules,
         effective_access_products: productLabels,
         billing_interval:    intervals.length > 1 ? 'mixed' : (intervals[0] ?? null),
         subscribe_date:      firstStartedSub?.createdAt?.toISOString() ?? null,
@@ -1345,7 +1359,7 @@ Deno.serve(async (req) => {
         account_runtime_modules: runtimeModules,
       };
 
-      if (isPaid) paidUsersList.push(row);
+      if (isPaidAccount) paidUsersList.push(row);
       else        freeUsersList.push(row);
     }
 
@@ -1448,17 +1462,87 @@ Deno.serve(async (req) => {
       if (inRange(d, ranges.year))    newAccounts.year++;
     }
 
+    const contractsWithKnownPlan = paidSubs.filter((s) => !!s.planKey && !!lookupPlan(s.planKey));
+    const unknownPlanContracts = paidSubs.filter((s) => !s.planKey || !lookupPlan(s.planKey) || s.module === 'unknown');
+    const unresolvedFinancialContracts = paidSubs.filter((s) => s.price === null || s.billingInterval === null);
+    const staleSyncExcludedContracts = paidSubs.filter((s) => staleUserKeys.has(userIdentityKey(s.userId, s.userEmail)));
+    const failedRestoreExcludedContracts = paidSubs.filter((s) => norm(s.subscriptionStatus || '') === 'unverified');
+    const resolvedFinancialContracts = paidSubs.filter(
+      (s) => s.price !== null && s.billingInterval !== null && !!s.planKey && !!lookupPlan(s.planKey) && s.module !== 'unknown'
+    );
+    const financialEligibleSubs = resolvedFinancialContracts.filter((s) => {
+      const key = userIdentityKey(s.userId, s.userEmail);
+      return !staleUserKeys.has(key) && norm(s.subscriptionStatus || '') !== 'unverified';
+    });
+
     // ── MRR / ARR ─────────────────────────────────────────────────────────────
-    const mrrSubs  = paidSubs.filter((s) => s.billingInterval !== null && s.price !== null);
-    const totalMRR = mrrSubs.reduce((sum, s) => sum + mrrContribution(s), 0);
-    const mrr      = roundCurrency(totalMRR);
-    const arr      = roundCurrency(mrr * 12);
+    const totalMRR = financialEligibleSubs.reduce((sum, s) => sum + mrrContribution(s), 0);
+    const mrr = roundCurrency(totalMRR);
+    const arr = roundCurrency(mrr * 12);
 
     // ── Renewal revenue by calendar period ────────────────────────────────────
-    const renewalWeek    = calcRenewalPeriod(paidSubs, ranges.week);
-    const renewalMonth   = calcRenewalPeriod(paidSubs, ranges.month);
-    const renewalQuarter = calcRenewalPeriod(paidSubs, ranges.quarter);
-    const renewalYear    = calcRenewalPeriod(paidSubs, ranges.year);
+    const renewalWeek = calcRenewalPeriod(financialEligibleSubs, ranges.week);
+    const renewalMonth = calcRenewalPeriod(financialEligibleSubs, ranges.month);
+    const renewalQuarter = calcRenewalPeriod(financialEligibleSubs, ranges.quarter);
+    const renewalYear = calcRenewalPeriod(financialEligibleSubs, ranges.year);
+
+    // ── Provider counts (resolved active contracts only) ──────────────────────
+    const providerCounts = { web: 0, ios: 0, google: 0, unknown: 0 };
+    for (const sub of contractsWithKnownPlan) {
+      if (sub.platform === 'web') providerCounts.web++;
+      else if (sub.platform === 'ios') providerCounts.ios++;
+      else if (sub.platform === 'google') providerCounts.google++;
+      else providerCounts.unknown++;
+    }
+
+    // ── Layer C module access (entitlement rows: user × module) ───────────────
+    const moduleUsers = {
+      pipekeeper: new Set<string>(),
+      whiskeykeeper: new Set<string>(),
+      cigarkeeper: new Set<string>(),
+      winekeeper: new Set<string>(),
+    };
+    let bundleUsers = 0;
+    for (const [userKey, modules] of userEntitlementModulesMap.entries()) {
+      if (!userKey || modules.length === 0) continue;
+      if (userHasBundleContractMap.get(userKey)) bundleUsers++;
+      if (modules.includes('pipekeeper')) moduleUsers.pipekeeper.add(userKey);
+      if (modules.includes('whiskeykeeper')) moduleUsers.whiskeykeeper.add(userKey);
+      if (modules.includes('cigarkeeper')) moduleUsers.cigarkeeper.add(userKey);
+      if (modules.includes('winekeeper')) moduleUsers.winekeeper.add(userKey);
+    }
+    const moduleAccess = {
+      pipekeeperUsers: moduleUsers.pipekeeper.size,
+      whiskeykeeperUsers: moduleUsers.whiskeykeeper.size,
+      cigarkeeperUsers: moduleUsers.cigarkeeper.size,
+      winekeeperUsers: moduleUsers.winekeeper.size,
+      bundleUsers,
+      totalModuleEntitlements: moduleEntitlementRows.size,
+    };
+
+    const unknownQuarantineByProvider = { web: 0, ios: 0, google: 0, unknown: 0 };
+    const unknownQuarantineByReason = {
+      missingPlanKey: paidSubs.filter((s) => !s.planKey).length,
+      unknownProduct: paidSubs.filter((s) => s.module === 'unknown').length,
+      unmappedPlanKey: paidSubs.filter((s) => !!s.planKey && !lookupPlan(s.planKey)).length,
+    };
+    unknownPlanContracts.forEach((s) => {
+      if (s.platform === 'web') unknownQuarantineByProvider.web++;
+      else if (s.platform === 'ios') unknownQuarantineByProvider.ios++;
+      else if (s.platform === 'google') unknownQuarantineByProvider.google++;
+      else unknownQuarantineByProvider.unknown++;
+    });
+    const unknownQuarantineSamples = unknownPlanContracts.slice(0, MAX_SAMPLE_SIZE).map((s) => ({
+      userEmail: s.userEmail || null,
+      userId: s.userId || null,
+      rawId: s.rawId || null,
+      planKey: s.planKey || null,
+      module: s.module,
+      billingInterval: s.billingInterval,
+      price: s.price,
+      platform: s.platform,
+      status: s.subscriptionStatus,
+    }));
 
     // ── Sanity checks ─────────────────────────────────────────────────────────
     const sanity = runSanityChecks({
@@ -1513,6 +1597,46 @@ Deno.serve(async (req) => {
       },
       runRate: { mrr, arr },
       renewalRevenue: { week: renewalWeek, month: renewalMonth, quarter: renewalQuarter, year: renewalYear },
+      layers: {
+        accounts: { totalAccounts: totalUsers, paidAccounts: paidUsersCount, freeAccounts: freeUsersCount, signupSources },
+        billingContracts: {
+          activeSubscriptions: contractsWithKnownPlan.length,
+          monthlyContracts: contractsWithKnownPlan.filter((s) => s.billingInterval === 'monthly').length,
+          annualContracts: contractsWithKnownPlan.filter((s) => s.billingInterval === 'annual').length,
+          providerCounts,
+          mrr,
+          arr,
+          renewalRevenue: { week: renewalWeek, month: renewalMonth, quarter: renewalQuarter, year: renewalYear },
+          excludedFromFinancials: {
+            unresolvedFinancialContracts: unresolvedFinancialContracts.length,
+            staleSyncContracts: staleSyncExcludedContracts.length,
+            failedRestoreContracts: failedRestoreExcludedContracts.length,
+          },
+          unknownQuarantine: {
+            total: unknownPlanContracts.length,
+            byProvider: unknownQuarantineByProvider,
+            byReason: unknownQuarantineByReason,
+            samples: unknownQuarantineSamples,
+          },
+        },
+        moduleAccess,
+      },
+      reconciliation: {
+        before: {
+          activePaidRows: allSubscriptions.filter(isActivePaid).length,
+          dedupedContracts: paidSubs.length,
+          paidAccountsFromContracts: new Set(paidSubs.map((s) => userIdentityKey(s.userId, s.userEmail)).filter(Boolean)).size,
+        },
+        after: {
+          paidAccountsFromEntitlements: paidUsersCount,
+          resolvedBillingContracts: contractsWithKnownPlan.length,
+          unknownPlanContracts: unknownPlanContracts.length,
+          financialEligibleContracts: financialEligibleSubs.length,
+          totalModuleEntitlements: moduleAccess.totalModuleEntitlements,
+          staleSyncExcludedContracts: staleSyncExcludedContracts.length,
+        },
+        sampleReconciledMultiPlanUser: paidUsersList.find((u) => u.has_multiple_active_plans) || null,
+      },
       paid_users: paidUsersList,
       free_users: freeUsersList,
     });
@@ -1584,6 +1708,22 @@ Deno.serve(async (req) => {
         },
       },
       accounts: {}, subscriptions: {}, runRate: {}, renewalRevenue: {},
+      layers: {
+        accounts: {},
+        billingContracts: {
+          activeSubscriptions: 0,
+          monthlyContracts: 0,
+          annualContracts: 0,
+          providerCounts: { web: 0, ios: 0, google: 0, unknown: 0 },
+          mrr: 0,
+          arr: 0,
+          renewalRevenue: { week: { customers: 0, subscriptions: 0, revenue: 0 }, month: { customers: 0, subscriptions: 0, revenue: 0 }, quarter: { customers: 0, subscriptions: 0, revenue: 0 }, year: { customers: 0, subscriptions: 0, revenue: 0 } },
+          excludedFromFinancials: { unresolvedFinancialContracts: 0, staleSyncContracts: 0, failedRestoreContracts: 0 },
+          unknownQuarantine: { total: 0, byProvider: { web: 0, ios: 0, google: 0, unknown: 0 }, byReason: { missingPlanKey: 0, unknownProduct: 0, unmappedPlanKey: 0 }, samples: [] },
+        },
+        moduleAccess: { pipekeeperUsers: 0, whiskeykeeperUsers: 0, cigarkeeperUsers: 0, winekeeperUsers: 0, bundleUsers: 0, totalModuleEntitlements: 0 },
+      },
+      reconciliation: { before: {}, after: {}, sampleReconciledMultiPlanUser: null },
       paid_users: [], free_users: [],
     }, { status: 200 });
   }
