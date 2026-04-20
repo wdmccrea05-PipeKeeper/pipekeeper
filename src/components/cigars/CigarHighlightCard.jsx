@@ -4,6 +4,7 @@ import { humidorNeedsAttention } from './humidorMaintenanceUtils';
 import { getCollectionInsights } from '@/platform/cigarInsights';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { selectCigarMetrics } from '@/lib/collection/cigarSelectors';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function StatCard({ icon: Icon, label, value, sub, alert }) {
   return (
@@ -40,14 +41,15 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const { formatFromBase } = useCurrency();
+  const { t } = useTranslation();
 
   const cigarMetrics = useMemo(() => selectCigarMetrics(cigars, humidors), [cigars, humidors]);
   const totalQty = cigarMetrics.total_sticks;
   const valuedCount = cigarMetrics.valued_cigar_count;
-  const valueDisplay = valuedCount > 0 ? formatFromBase(cigarMetrics.collection_value) : 'No values added yet';
+  const valueDisplay = valuedCount > 0 ? formatFromBase(cigarMetrics.collection_value) : t('cigars.highlights.noValuesAddedYet');
   const valueSub = valuedCount > 0
-    ? `${valuedCount}/${cigars.length} valued`
-    : 'Add purchase price or estimate';
+    ? t('cigars.highlights.valuedCount', { valued: valuedCount, total: cigars.length })
+    : t('cigars.highlights.addPurchaseOrEstimate');
 
   const readyCount = cigars.filter((c) => {
     if (!c.ready_to_smoke_date) return true;
@@ -91,37 +93,37 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
       <div className="flex items-center gap-2 mb-1">
         <Cigarette className="w-5 h-5" style={{ color: '#D4A574' }} />
         <h2 style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", fontSize: '1.05rem', fontWeight: 700 }}>
-          Collection Overview
+          {t('cigars.highlights.collectionOverview')}
         </h2>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <StatCard icon={Cigarette} label="Cigar Types" value={cigars.length} sub={`${totalQty} sticks total`} />
+        <StatCard icon={Cigarette} label={t('cigars.highlights.cigarTypes')} value={cigars.length} sub={t('cigars.highlights.sticksTotal', { count: totalQty })} />
         <StatCard
           icon={DollarSign}
-          label="Est. Value"
+          label={t('cigars.highlights.estimatedValue')}
           value={valueDisplay}
           sub={valueSub}
         />
-        <StatCard icon={Box} label="Humidors" value={humidors.length} />
-        <StatCard icon={Heart} label="Favorites" value={favoriteCount} />
-        <StatCard icon={Flame} label="Ready to Smoke" value={readyCount} />
-        <StatCard icon={Clock} label="Recent Sessions" value={recentSessions} sub="Last 30 days" />
+        <StatCard icon={Box} label={t('cigars.humidors')} value={humidors.length} />
+        <StatCard icon={Heart} label={t('cigars.highlights.favorites')} value={favoriteCount} />
+        <StatCard icon={Flame} label={t('cigars.highlights.readyToSmoke')} value={readyCount} />
+        <StatCard icon={Clock} label={t('cigars.recentSessions')} value={recentSessions} sub={t('cigars.highlights.last30Days')} />
         {insights.runningLow.length > 0 && (
           <StatCard
             icon={TrendingDown}
-            label="Running Low"
+            label={t('cigars.highlights.runningLow')}
             value={insights.runningLow.length}
-            sub="≤3 sticks"
+            sub={t('cigars.highlights.runningLowSub')}
           />
         )}
         {atRiskCount > 0 && (
-          <StatCard icon={ShieldAlert} label="At Risk" value={atRiskCount} sub="Needs attention" />
+          <StatCard icon={ShieldAlert} label={t('cigars.highlights.atRisk')} value={atRiskCount} sub={t('cigars.highlights.needsAttention')} />
         )}
         {alertHumidorCount > 0 && (
           <StatCard
             icon={AlertTriangle}
-            label="Humidors Need Attention"
+            label={t('cigars.humidorsNeedingAttention')}
             value={alertHumidorCount}
             alert
           />
@@ -134,7 +136,7 @@ export default function CigarHighlightCard({ cigars = [], sessions = [], humidor
             className="text-xs font-semibold uppercase tracking-wider mb-2"
             style={{ color: 'rgba(224,216,200,0.55)' }}
           >
-            Top Brands
+            {t('cigars.highlights.topBrands')}
           </p>
           <div className="flex flex-wrap gap-2">
             {topBrands.map((brand, i) => (

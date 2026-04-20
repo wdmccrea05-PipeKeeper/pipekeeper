@@ -76,20 +76,21 @@ export function formatCurrencyValue(value, options = {}) {
 
 export function calculateEcosystemValueMetrics(summary) {
   if (!summary) {
-    return {
-      total: 0,
-      byModule: { pipes: 0, tobacco: 0, whiskey: 0 },
-      percentages: { pipes: 0, tobacco: 0, whiskey: 0 },
-    };
+      return {
+        total: 0,
+        byModule: { pipes: 0, tobacco: 0, whiskey: 0, cigars: 0 },
+        percentages: { pipes: 0, tobacco: 0, whiskey: 0, cigars: 0 },
+      };
   }
 
   const byModule = {
     pipes: Number(summary?.pipes_value || 0),
     tobacco: Number(summary?.tobacco_value || 0),
     whiskey: Number(summary?.whiskey_value || 0),
+    cigars: Number(summary?.cigars_value || summary?.cigar_value || 0),
   };
 
-  const total = byModule.pipes + byModule.tobacco + byModule.whiskey;
+  const total = byModule.pipes + byModule.tobacco + byModule.whiskey + byModule.cigars;
 
   const percentages =
     total > 0
@@ -97,8 +98,9 @@ export function calculateEcosystemValueMetrics(summary) {
           pipes: Math.round((byModule.pipes / total) * 100),
           tobacco: Math.round((byModule.tobacco / total) * 100),
           whiskey: Math.round((byModule.whiskey / total) * 100),
+          cigars: Math.round((byModule.cigars / total) * 100),
         }
-      : { pipes: 0, tobacco: 0, whiskey: 0 };
+      : { pipes: 0, tobacco: 0, whiskey: 0, cigars: 0 };
 
   return { total, byModule, percentages };
 }
