@@ -44,7 +44,7 @@ const plUI = {
     failed: "Uzupełnianie nie powiodło się",
     noUpdates: "Brak nowych metadanych do dodania",
     blendSuccess: "Metadane mieszanki zostały uzupełnione",
-    fieldsUpdated: "{{type}} uzupełniono — zaktualizowano {{count}} pól",
+    fieldsUpdated: "{{type}} uzupełniono — zaktualizowano {{count}} rekordów",
     pipeLabel: "Fajkę",
     bottleLabel: "Butelkę",
     cigarLabel: "Cygaro",

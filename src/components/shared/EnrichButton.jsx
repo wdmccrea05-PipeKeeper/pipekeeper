@@ -5,6 +5,9 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
+// Keep flavor tags concise so detail cards stay readable while still being useful.
+const MAX_FLAVOR_NOTES = 8;
+
 function cleanText(value) {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
@@ -21,7 +24,7 @@ function toPositiveNumber(value) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function normalizeStrength(value) {
+function normalizeIntensityLevel(value) {
   const normalized = cleanText(value)?.toLowerCase().replace(/[\s-]+/g, '_');
   const allowed = new Set(['mild', 'mild_medium', 'medium', 'medium_full', 'full']);
   return normalized && allowed.has(normalized) ? normalized : null;
@@ -226,6 +229,7 @@ Enums:
         image_url: { type: ['string', 'null'] },
         msrp_per_stick: { type: ['number', 'null'] },
         estimated_unit_value: { type: ['number', 'null'] },
+        comparable_count: { type: ['number', 'null'] },
         valuation_source: { type: ['string', 'null'] },
         valuation_confidence: { type: ['string', 'null'] },
         valuation_notes: { type: ['string', 'null'] },
@@ -240,10 +244,10 @@ Enums:
     if (next && !cleanText(record?.[field])) updates[field] = next;
   });
 
-  const strength = normalizeStrength(result?.strength);
+  const strength = normalizeIntensityLevel(result?.strength);
   if (strength && !record?.strength) updates.strength = strength;
 
-  const body = normalizeStrength(result?.body);
+  const body = normalizeIntensityLevel(result?.body);
   if (body && !record?.body) updates.body = body;
 
   const productionStatus = normalizeProductionStatus(result?.production_status);
@@ -254,7 +258,7 @@ Enums:
     updates.aliases = mergedAliases;
   }
 
-  const mergedFlavor = mergeUniqueCaseInsensitive(record?.flavor_notes || [], cleanArray(result?.flavor_notes)).slice(0, 8);
+  const mergedFlavor = mergeUniqueCaseInsensitive(record?.flavor_notes || [], cleanArray(result?.flavor_notes)).slice(0, MAX_FLAVOR_NOTES);
   if (shouldImproveFlavor && mergedFlavor.length > 0 && arraysDifferCaseInsensitive(record?.flavor_notes || [], mergedFlavor)) {
     updates.flavor_notes = mergedFlavor;
   }
@@ -278,7 +282,9 @@ Enums:
     updates.market_valuation_source = valuationSource || 'Market reference';
     updates.market_valuation_confidence = normalizedConfidence;
     updates.market_valuation_updated_at = nowIso;
-    updates.market_comparable_count = Math.max(1, Number(record?.market_comparable_count || 0));
+    const derivedComparableCount = toPositiveNumber(result?.comparable_count);
+    const existingComparableCount = toPositiveNumber(record?.market_comparable_count);
+    updates.market_comparable_count = derivedComparableCount || existingComparableCount || 1;
     if (!record?.valuation_source && valuationSource) updates.valuation_source = valuationSource;
     if (!record?.valuation_updated_at) updates.valuation_updated_at = nowIso;
     if (!record?.valuation_confidence && normalizedConfidence) updates.valuation_confidence = normalizedConfidence;
@@ -351,7 +357,7 @@ export default function EnrichButton({ itemType, record, onEnriched }) {
         if (Object.keys(updates).length > 0) {
           await base44.entities.Cigar.update(record.id, updates);
           toast.success(t('enrichButton.fieldsUpdated', { type: t('enrichButton.cigarLabel'), count: Object.keys(updates).length }));
-          await onEnriched?.({ ...record, ...updates });
+          await Promise.resolve(onEnriched?.({ ...record, ...updates }));
         } else {
           toast.info(t('enrichButton.cigarNoUpdates'));
         }
