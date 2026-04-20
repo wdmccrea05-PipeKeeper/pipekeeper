@@ -236,8 +236,8 @@ export default function UserReport() {
   };
 
   const lastUpdated = meta.generatedAt
-    ? new Date(meta.generatedAt).toLocaleString()
-    : new Date().toLocaleString();
+    ? new Date(meta.generatedAt).toLocaleString(lang)
+    : new Date().toLocaleString(lang);
 
   // ── CSV export — V3 canonical schema ─────────────────────────────────────
   function exportCSV() {
@@ -345,7 +345,7 @@ export default function UserReport() {
         '',
         '',
         '',
-        u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
+        u.created_date ? formatUserReportDate(u.created_date, '', lang) : '',
         '',
       ]);
     });
@@ -748,7 +748,7 @@ export default function UserReport() {
                   emptyMessage={searchQuery ? t("userReport.noUsersMatchSearch") : t("userReport.noFreeUsersFound")}
                   renderCell={(col, user) => {
                     if (col === 'subscription_status') return <Badge variant="outline" className="text-[#E0D8C8]/70 border-[#8b6239]/40">{user.subscription_status}</Badge>;
-                    if (col === 'created_date')        return new Date(user.created_date).toLocaleDateString();
+                    if (col === 'created_date')        return user.created_date ? formatUserReportDate(user.created_date, '-', lang) : '-';
                     return user[col] || '-';
                   }}
                 />

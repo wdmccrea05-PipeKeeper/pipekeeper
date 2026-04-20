@@ -182,6 +182,11 @@ export default {
     syncing: "Syncing...",
     subscriptionSupport: "Subscription Support",
     userReport: "User Report",
+    adminReports: "Admin Reports",
+    subscriptionRequests: "Subscription Requests",
+    subscriptionTools: "Subscription Tools",
+    curatorAnalytics: "Curator Analytics",
+    subscriptionE2ETest: "Sub E2E Test",
     contentModeration: "Content Moderation",
     eventsLog: "Events Log",
     admin: "Admin",
@@ -192,6 +197,20 @@ export default {
     bottles: "Bottles",
     tastingNotes: "Tasting Notes",
     analytics: "Analytics",
+  },
+
+  curatorPage: {
+    title: "Collection Curator",
+    description: "Operational intelligence across your collection — fix, optimize, pair, and grow.",
+    surfaces: {
+      recordOptimization: "Record Optimization",
+      collectionOptimization: "Collection Optimization",
+      purchaseRestock: "Purchase & Restock",
+      planSession: "Plan Session",
+      pairings: "Pairings",
+      growExpand: "Grow & Expand",
+      chat: "Chat",
+    },
   },
 
   pipekeeper: {
