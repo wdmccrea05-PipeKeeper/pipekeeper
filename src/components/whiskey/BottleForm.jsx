@@ -267,7 +267,7 @@ export default function BottleForm({
                     retail_price: entry.retail_price != null ? String(entry.retail_price) : prev.retail_price,
                   }));
                 }}
-                onManualAdd={() => {}}
+                onManualAdd={onCancel}
               />
             </FormSection>
 

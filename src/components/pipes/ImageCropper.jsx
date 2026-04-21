@@ -427,7 +427,7 @@ export default function ImageCropper({ imageUrl, onSave, onCancel }) {
   };
 
   return (
-    <Dialog open={true} onOpenChange={onCancel}>
+    <Dialog open={true} onOpenChange={() => onCancel()}>
       <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[95dvh] overflow-hidden flex flex-col p-3 sm:p-6">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{t("imageCropper.title")}</DialogTitle>
