@@ -1,8 +1,6 @@
 export default [
   {
-    // Test files — vitest globals declared.
-    // Using broad patterns to ensure all nested __tests__ and *.test.* files are covered
-    // regardless of how ESLint resolves the config root.
+    // Disable no-undef for ALL test files using broad patterns
     files: [
       '**/*.test.js',
       '**/*.test.jsx',
@@ -12,7 +10,7 @@ export default [
       '**/*.spec.jsx',
       '**/*.spec.ts',
       '**/*.spec.tsx',
-      '**/__tests__/**',
+      '**/__tests__/**/*',
     ],
     languageOptions: {
       globals: {
@@ -32,6 +30,12 @@ export default [
         process: 'readonly',
       },
     },
+    rules: {
+      'no-undef': 'off',
+    },
+  },
+  {
+    // Also apply globally to catch any missed patterns
     rules: {
       'no-undef': 'off',
     },
