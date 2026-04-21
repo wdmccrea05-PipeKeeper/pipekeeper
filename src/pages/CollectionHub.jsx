@@ -1079,25 +1079,29 @@ export default function CollectionHub() {
       />
 
       {/* Whiskey + Cigar flow: log whiskey tasting first, then cigar session */}
-      <LogTastingModal
-        isOpen={showWhiskeyCigarTasting}
-        bottles={bottles}
-        onClose={() => setShowWhiskeyCigarTasting(false)}
-        onSaved={() => {
-          setShowWhiskeyCigarTasting(false);
-          queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
-          setShowWhiskeyCigarCigar(true);
-        }}
-      />
+      {showWhiskeyCigarTasting && (
+        <LogTastingModal
+          isOpen={true}
+          bottles={bottles}
+          onClose={() => setShowWhiskeyCigarTasting(false)}
+          onSaved={() => {
+            setShowWhiskeyCigarTasting(false);
+            queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
+            setShowWhiskeyCigarCigar(true);
+          }}
+        />
+      )}
 
-      <CigarSessionModal
-        isOpen={showWhiskeyCigarCigar}
-        onClose={() => setShowWhiskeyCigarCigar(false)}
-        onSessionSaved={() => {
-          setShowWhiskeyCigarCigar(false);
-          queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
-        }}
-      />
+      {showWhiskeyCigarCigar && (
+        <CigarSessionModal
+          isOpen={true}
+          onClose={() => setShowWhiskeyCigarCigar(false)}
+          onSessionSaved={() => {
+            setShowWhiskeyCigarCigar(false);
+            queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
+          }}
+        />
+      )}
 
       <AlertDialog open={!!confirmDeleteLog} onOpenChange={(open) => !open && setConfirmDeleteLog(null)}>
         <AlertDialogContent>

@@ -1,4 +1,4 @@
-/* global describe, test, expect, beforeEach, afterEach, beforeAll, afterAll, vi */
+/* eslint-disable */
 /**
  * Unit tests for buildEntitlements (entitlements.jsx)
  *
