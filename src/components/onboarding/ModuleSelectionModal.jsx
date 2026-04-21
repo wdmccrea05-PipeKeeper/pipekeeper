@@ -63,7 +63,8 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
       <div
-        className="max-w-2xl w-full rounded-2xl p-8"
+        className="max-w-2xl w-full rounded-2xl p-6 overflow-y-auto"
+        style={{ maxHeight: 'calc(100vh - 2rem)' }}
         style={{
           background: 'linear-gradient(135deg, rgba(42,30,20,0.98), rgba(28,18,12,0.98))',
           border: '1px solid rgba(180,140,75,0.2)',
