@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { BookOpen, TrendingUp, Plus, FileSpreadsheet } from "lucide-react";
+import { BookOpen, TrendingUp, Plus, FileSpreadsheet, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WhiskeyBottleIcon from "@/components/icons/WhiskeyBottleIcon";
 
@@ -13,6 +13,7 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
   const items = [
     { page: "Whiskey", label: t("whiskey.bottles"), semanticIcon: "bottle" },
     { page: "Tastings", label: t("whiskey.tastings"), icon: BookOpen },
+    { page: "SessionHistory", label: t("sessionHistory.title", "Session History"), icon: CalendarDays },
     { page: "WhiskeyInsights", label: t("nav.insights"), icon: TrendingUp },
   ];
 

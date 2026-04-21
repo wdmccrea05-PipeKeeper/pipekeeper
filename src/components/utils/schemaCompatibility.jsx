@@ -97,8 +97,12 @@ export function preparePipeData(data) {
     result.usage_characteristics = characteristics;
     result.smoking_characteristics = ""; // Clear legacy field when updating
   }
-  
-  return result;
+
+  // Avoid sending undefined fields on partial edits (can overwrite existing values
+  // in backends that treat update payloads as full replacements).
+  return Object.fromEntries(
+    Object.entries(result).filter(([, value]) => value !== undefined)
+  );
 }
 
 /**

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { TrendingUp, Plus, Cigarette, BookOpen, FileSpreadsheet } from 'lucide-react';
+import { TrendingUp, Plus, Cigarette, BookOpen, FileSpreadsheet, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AddCigarModal from '@/components/cigars/AddCigarModal';
 
@@ -13,6 +13,7 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
 
   const items = [
     { page: 'Cigars', label: t('cigars.cigars'), Icon: Cigarette },
+    { page: 'SessionHistory', label: t('sessionHistory.title', 'Session History'), Icon: CalendarDays },
     { page: 'CigarInsights', label: t('nav.insights'), Icon: TrendingUp },
   ];
 

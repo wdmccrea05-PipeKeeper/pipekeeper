@@ -56,6 +56,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { scopedEntities } from '@/components/api/scopedEntities';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import EnrichButton from '@/components/shared/EnrichButton';
+import { safeUpdate } from '@/components/utils/safeUpdate';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
@@ -364,7 +365,7 @@ function EditPipeValuationModal({ pipe, onClose, onSaved }) {
         replacement_difficulty_override: form.replacement_difficulty_override || null,
         rarity_score_override: form.rarity_score_override ? Number(form.rarity_score_override) : null,
       };
-      await base44.entities.Pipe.update(pipe.id, updates);
+      await safeUpdate('Pipe', pipe.id, updates, pipe?.created_by || null);
       onSaved(updates);
     } catch (e) {
       console.error('[PipeDetail] failed to save valuation inputs', e);
@@ -623,14 +624,14 @@ export default function PipeDetail() {
   const handlePipeUpdate = async (updates) => {
     if (!pipe) return;
     try {
-      await base44.entities.Pipe.update(pipe.id, updates);
+      await safeUpdate('Pipe', pipe.id, updates, user?.email);
       // Re-fetch: try getForUser first, fallback to direct get
       let fresh = await scopedEntities.Pipe.getForUser(user?.email, pipe.id).catch(() => null);
       if (!fresh) {
         const direct = await base44.entities.Pipe.get(pipe.id).catch(() => null);
         if (direct && direct.created_by === user?.email) fresh = direct;
       }
-      setPipe(fresh || ((prev) => ({ ...prev, ...updates })));
+      setPipe(fresh || { ...pipe, ...updates });
       toast.success(t('common.saved') || 'Pipe updated');
     } catch (e) {
       console.error('[PipeDetail] update failed', e);
@@ -837,8 +838,7 @@ export default function PipeDetail() {
               maker={pipe.maker || ''}
               shape={pipe.shape || ''}
               onUpdate={async (updatedPhotos) => {
-                await base44.entities.Pipe.update(pipe.id, { photos: updatedPhotos });
-                setPipe((prev) => ({ ...prev, photos: updatedPhotos }));
+                await handlePipeUpdate({ photos: updatedPhotos });
               }}
             />
           </div>

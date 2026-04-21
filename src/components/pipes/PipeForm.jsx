@@ -28,6 +28,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { preparePipeData } from "@/components/utils/schemaCompatibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { CuratorEvents } from "@/components/utils/curatorEventLogger";
+import { sortByLabel, uniqueSortedStrings } from "@/lib/sorting/alphabetical";
 
 const SHAPES = ["Billiard", "Bent Billiard", "Apple", "Bent Apple", "Dublin", "Bent Dublin", "Bulldog", "Rhodesian", "Canadian", "Liverpool", "Lovat", "Lumberman", "Prince", "Author", "Brandy", "Pot", "Tomato", "Egg", "Acorn", "Pear", "Cutty", "Devil Anse", "Hawkbill", "Diplomat", "Poker", "Cherrywood", "Duke", "Don", "Tankard", "Churchwarden", "Nosewarmer", "Vest Pocket", "MacArthur", "Calabash", "Reverse Calabash", "Cavalier", "Freehand", "Blowfish", "Volcano", "Horn", "Nautilus", "Tomahawk", "Bullmoose", "Bullcap", "Oom Paul (Hungarian)", "Tyrolean", "Unknown", "Other"];
 const BOWL_STYLES = ["Cylindrical (Straight Wall)", "Conical (Tapered)", "Rounded / Ball", "Oval / Egg", "Squat / Pot", "Chimney (Tall)", "Paneled", "Faceted / Multi-Panel", "Horn-Shaped", "Freeform", "Unknown"];
@@ -43,40 +44,48 @@ const FILTER_TYPES = ["None", "6mm", "9mm", "Stinger", "Other"];
 
 export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState(pipe || {
-    name: '',
-    maker: '',
-    country_of_origin: '',
-    shape: '',
-    bowlStyle: '',
-    shankShape: '',
-    bend: '',
-    sizeClass: '',
-    length_mm: '',
-    weight_grams: '',
-    bowl_height_mm: '',
-    bowl_width_mm: '',
-    bowl_diameter_mm: '',
-    bowl_depth_mm: '',
-    chamber_volume: '',
-    stem_material: '',
-    bowl_material: '',
-    finish: '',
-    filter_type: '',
-    year_made: '',
-    purchase_date: '',
-    stamping: '',
-    condition: '',
-    purchase_price: '',
-    estimated_value: '',
-    notes: '',
-    usage_characteristics: '',
-    smoking_characteristics: '',
-    photos: [],
-    stamping_photos: [],
-    is_favorite: false,
-    ai_excluded: false,
-    interchangeable_bowls: []
+  const [formData, setFormData] = useState(() => {
+    const defaults = {
+      name: '',
+      maker: '',
+      country_of_origin: '',
+      shape: '',
+      bowlStyle: '',
+      shankShape: '',
+      bend: '',
+      sizeClass: '',
+      length_mm: '',
+      weight_grams: '',
+      bowl_height_mm: '',
+      bowl_width_mm: '',
+      bowl_diameter_mm: '',
+      bowl_depth_mm: '',
+      chamber_volume: '',
+      stem_material: '',
+      bowl_material: '',
+      finish: '',
+      filter_type: '',
+      year_made: '',
+      purchase_date: '',
+      stamping: '',
+      condition: '',
+      purchase_price: '',
+      estimated_value: '',
+      notes: '',
+      usage_characteristics: '',
+      smoking_characteristics: '',
+      photos: [],
+      stamping_photos: [],
+      is_favorite: false,
+      ai_excluded: false,
+      interchangeable_bowls: [],
+    };
+    const merged = { ...defaults, ...(pipe || {}) };
+    merged.photos = Array.isArray(pipe?.photos)
+      ? pipe.photos
+      : [pipe?.photo, pipe?.photo_url, pipe?.image, pipe?.image_url].filter(Boolean);
+    merged.stamping_photos = Array.isArray(pipe?.stamping_photos) ? pipe.stamping_photos : [];
+    return merged;
   });
   const [hasInterchangeableBowls, setHasInterchangeableBowls] = useState(
     pipe?.interchangeable_bowls?.length > 0 || false
@@ -103,6 +112,26 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const { data: recentCountries = [] } = useRecentValues("Pipe", "country_of_origin");
   const { data: recentBowlMaterials = [] } = useRecentValues("Pipe", "bowl_material");
   const { data: recentStemMaterials = [] } = useRecentValues("Pipe", "stem_material");
+  const sortedRecentMakers = React.useMemo(
+    () => uniqueSortedStrings(recentMakers),
+    [recentMakers]
+  );
+  const sortedRecentCountries = React.useMemo(
+    () =>
+      uniqueSortedStrings(
+        recentCountries.map((country) => (country === "USA" ? "United States" : country))
+      ),
+    [recentCountries]
+  );
+  const sortedBowlMaterials = React.useMemo(
+    () => uniqueSortedStrings([...BOWL_MATERIALS, ...recentBowlMaterials]),
+    [recentBowlMaterials]
+  );
+  const sortedStemMaterials = React.useMemo(
+    () => uniqueSortedStrings([...STEM_MATERIALS, ...recentStemMaterials]),
+    [recentStemMaterials]
+  );
+  const sortedShapes = React.useMemo(() => sortByLabel(SHAPES, (value) => value), []);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -496,7 +525,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Combobox
               value={formData.maker}
               onValueChange={(v) => handleChange('maker', v)}
-              options={recentMakers}
+              options={sortedRecentMakers}
               placeholder={t("pipesExtended.makerPlaceholder")}
               searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={true}
@@ -513,13 +542,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 const normalized = v === 'USA' ? 'United States' : v;
                 handleChange('country_of_origin', normalized);
               }}
-              options={[
-                // Deduplicate: remove 'USA' if 'United States' is present
-                ...new Set(
-                  recentCountries
-                    .map(c => c === 'USA' ? 'United States' : c)
-                )
-              ]}
+              options={sortedRecentCountries}
               placeholder={t("pipesExtended.countryPlaceholder")}
               searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={true}
@@ -588,7 +611,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {SHAPES.map(shape => <SelectItem key={shape} value={shape}>{t(`shapes.${shape}`, shape)}</SelectItem>)}
+                {sortedShapes.map(shape => <SelectItem key={shape} value={shape}>{t(`shapes.${shape}`, shape)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FieldWithInfo>
@@ -676,7 +699,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Combobox
               value={formData.bowl_material}
               onValueChange={(v) => handleChange('bowl_material', v)}
-              options={[...new Set([...BOWL_MATERIALS, ...recentBowlMaterials])]}
+              options={sortedBowlMaterials}
               placeholder={t("common.selectPlaceholder")}
               searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={false}
@@ -689,7 +712,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <Combobox
               value={formData.stem_material}
               onValueChange={(v) => handleChange('stem_material', v)}
-              options={[...new Set([...STEM_MATERIALS, ...recentStemMaterials])]}
+              options={sortedStemMaterials}
               placeholder={t("common.selectPlaceholder")}
               searchPlaceholder={t("common.searchPlaceholder")}
               allowCustom={false}

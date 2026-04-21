@@ -39,6 +39,7 @@ import Cigars from "@/pages/Cigars";
 import CigarDetail from "@/pages/CigarDetail";
 import CigarFormPage from "@/pages/CigarFormPage";
 import CigarInsights from "@/pages/CigarInsights";
+import SessionHistory from "@/pages/SessionHistory";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import ModuleSelectionModal from "@/components/onboarding/ModuleSelectionModal";
@@ -346,6 +347,15 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="ShoppingList">
             <ShoppingList />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/SessionHistory"
+        element={
+          <LayoutWrapper currentPageName="SessionHistory">
+            <SessionHistory />
           </LayoutWrapper>
         }
       />

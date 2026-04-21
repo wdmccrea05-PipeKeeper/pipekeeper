@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { toast } from "sonner";
 import PostSessionPrompt from "@/components/session/PostSessionPrompt";
 import ExternalItemPicker from "@/components/session/ExternalItemPicker";
+import { sortByLabel } from "@/lib/sorting/alphabetical";
 
 function SelectItem({ item, selected, onClick, accent = "#D4A574" }) {
   return (
@@ -153,6 +154,18 @@ export default function CombinedSessionModal({
   const steps = useMemo(
     () => ["pipe", "blend", "bottle", "confirm"],
     []
+  );
+  const sortedPipes = useMemo(
+    () => sortByLabel(pipes || [], (pipe) => pipe?.name || ""),
+    [pipes]
+  );
+  const sortedBlends = useMemo(
+    () => sortByLabel(blends || [], (blend) => blend?.name || ""),
+    [blends]
+  );
+  const sortedBottles = useMemo(
+    () => sortByLabel(bottles || [], (bottle) => bottle?.name || ""),
+    [bottles]
   );
 
   const currentStep = steps[step];
@@ -582,7 +595,7 @@ export default function CombinedSessionModal({
                     }}
                     accent="#888888"
                   />
-                  {pipes.map((pipe) => (
+                  {sortedPipes.map((pipe) => (
                     <SelectItem
                       key={pipe.id}
                       item={{
@@ -668,7 +681,7 @@ export default function CombinedSessionModal({
                     }}
                     accent="#888888"
                   />
-                  {blends.map((blend) => (
+                  {sortedBlends.map((blend) => (
                     <SelectItem
                       key={blend.id}
                       item={{
@@ -763,7 +776,7 @@ export default function CombinedSessionModal({
                     }}
                     accent="#888888"
                   />
-                  {bottles.map((bottle) => (
+                  {sortedBottles.map((bottle) => (
                     <SelectItem
                       key={bottle.id}
                       item={{

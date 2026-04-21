@@ -21,6 +21,7 @@ import { saveSession } from "@/components/session/saveSession";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
 import { isAppleBuild } from "@/components/utils/appVariant";
+import { sortByLabel } from "@/lib/sorting/alphabetical";
 import ExternalItemSearch from "@/components/session/ExternalItemSearch";
 import ExternalItemManualEntry from "@/components/session/ExternalItemManualEntry";
 import SessionContextTags from "@/components/session/SessionContextTags";
@@ -137,13 +138,16 @@ export default function LogSessionModal({
     selectedPipe.interchangeable_bowls.length > 0;
 
   const sortedBlends = useMemo(() => {
-    return [...(blends || [])].sort((a, b) =>
-      String(a?.name || "").localeCompare(String(b?.name || ""), undefined, {
-        sensitivity: "base",
-        numeric: true,
-      })
-    );
+    return sortByLabel(blends || [], (item) => item?.name || "");
   }, [blends]);
+  const sortedPipes = useMemo(
+    () => sortByLabel(pipes || [], (item) => item?.name || ""),
+    [pipes]
+  );
+  const sortedContainers = useMemo(
+    () => sortByLabel(containers || [], (item) => item?.container_name || ""),
+    [containers]
+  );
 
   const { data: containers = [] } = useQuery({
     queryKey: ["containers", user?.email, formData.blend_id],
@@ -585,7 +589,7 @@ export default function LogSessionModal({
                       <SelectValue placeholder={t("smokingLog.selectPipe")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {(pipes || []).map((p) => {
+                      {sortedPipes.map((p) => {
                         const restStatus = pipeRestStatusMap[p.id] || { ready: true, message: "" };
                         return (
                           <SelectItem key={p.id} value={p.id}>
@@ -773,7 +777,7 @@ export default function LogSessionModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">{t("smokingLog.autoNone")}</SelectItem>
-                    {containers.map((c) => (
+                    {sortedContainers.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.container_name} — {c.quantity_grams ?? 0}g
                       </SelectItem>

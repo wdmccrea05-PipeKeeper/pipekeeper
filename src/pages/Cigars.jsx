@@ -37,6 +37,7 @@ import {
   normalizeCigarQuickAction,
 } from '@/platform/cigarQuickActions';
 import { getAvailableQuantity } from '@/platform/cigarInventory';
+import { sortByLabel } from '@/lib/sorting/alphabetical';
 
 const TABS = ['collection', 'humidors', 'wishlist', 'shopping', 'restock'];
 const RECENTLY_SMOKED_DAYS = 90;
@@ -61,7 +62,7 @@ function sortCigars(cigars, sortBy, { lastSmokedByCigarId = {} } = {}) {
     const aVal = a[sortBy] ?? '';
     const bVal = b[sortBy] ?? '';
     if (typeof aVal === 'number' && typeof bVal === 'number') return bVal - aVal;
-    return String(aVal).localeCompare(String(bVal));
+    return String(aVal).localeCompare(String(bVal), undefined, { sensitivity: 'base', numeric: true });
   });
 }
 
@@ -241,6 +242,10 @@ function CigarsInner() {
     const set = new Set(cigars.map((c) => c.country_of_origin).filter(Boolean));
     return Array.from(set).sort();
   }, [cigars]);
+  const sortedHumidors = useMemo(
+    () => sortByLabel(humidors || [], (item) => item?.name || ''),
+    [humidors]
+  );
 
   const filteredCigars = useMemo(() => {
     let list = cigars;
@@ -615,7 +620,7 @@ function CigarsInner() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">Assign: Unassigned</SelectItem>
-                  {humidors.map((h) => (
+                  {sortedHumidors.map((h) => (
                     <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -695,7 +700,7 @@ function CigarsInner() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
-                    {humidors.map((h) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
+                    {sortedHumidors.map((h) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -918,7 +923,7 @@ function CigarsInner() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
-                {humidors.map((h) => (
+                {sortedHumidors.map((h) => (
                   <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                 ))}
               </SelectContent>
