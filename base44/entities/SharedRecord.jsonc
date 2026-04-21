@@ -1,0 +1,64 @@
+{
+  "name": "SharedRecord",
+  "type": "object",
+  "properties": {
+    "module_type": {
+      "type": "string",
+      "enum": [
+        "pipe",
+        "tobacco",
+        "whiskey",
+        "cigar",
+        "coffee"
+      ],
+      "description": "Type of collection module (pipe, tobacco, whiskey, etc.)"
+    },
+    "record_id": {
+      "type": "string",
+      "description": "ID of the shared record"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the record owner"
+    },
+    "share_token": {
+      "type": "string",
+      "description": "Unique token for the public share URL"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this share is currently active"
+    },
+    "include_photos": {
+      "type": "boolean",
+      "default": true,
+      "description": "Include photos in the shared view"
+    },
+    "include_notes": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include user notes in the shared view"
+    },
+    "include_value": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include estimated value in the shared view"
+    },
+    "include_inventory": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include inventory/cellar quantities in the shared view"
+    },
+    "share_config": {
+      "type": "object",
+      "description": "Additional share configuration options"
+    }
+  },
+  "required": [
+    "module_type",
+    "record_id",
+    "owner_email",
+    "share_token"
+  ]
+}

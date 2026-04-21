@@ -1,0 +1,27 @@
+{
+  "name": "UserConnection",
+  "type": "object",
+  "properties": {
+    "follower_email": {
+      "type": "string",
+      "description": "Email of the user who is following"
+    },
+    "following_email": {
+      "type": "string",
+      "description": "Email of the user being followed"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "blocked"
+      ],
+      "default": "active",
+      "description": "Connection status"
+    }
+  },
+  "required": [
+    "follower_email",
+    "following_email"
+  ]
+}

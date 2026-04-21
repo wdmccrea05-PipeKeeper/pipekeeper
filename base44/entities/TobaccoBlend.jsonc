@@ -1,0 +1,266 @@
+{
+  "name": "TobaccoBlend",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the tobacco blend"
+    },
+    "manufacturer": {
+      "type": "string",
+      "description": "Company that makes the blend"
+    },
+    "blend_type": {
+      "type": "string",
+      "enum": [
+        "American",
+        "Aromatic",
+        "Balkan",
+        "Burley",
+        "Burley-based",
+        "Cavendish",
+        "Codger Blend",
+        "Dark Fired Kentucky",
+        "English",
+        "English Aromatic",
+        "English Balkan",
+        "Full English/Oriental",
+        "Kentucky",
+        "Lakeland",
+        "Latakia Blend",
+        "Navy Flake",
+        "Oriental/Turkish",
+        "Other",
+        "Perique",
+        "Shag",
+        "Virginia",
+        "Virginia/Burley",
+        "Virginia/Oriental",
+        "Virginia/Perique"
+      ],
+      "description": "Primary blend category"
+    },
+    "tobacco_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of tobacco types in the blend"
+    },
+    "cut": {
+      "type": "string",
+      "enum": [
+        "Broken Flake",
+        "Coin",
+        "Crumble Cake",
+        "Cube Cut",
+        "Flake",
+        "Other",
+        "Plug",
+        "Ready Rubbed",
+        "Ribbon",
+        "Rope",
+        "Shag",
+        "Twist"
+      ],
+      "description": "How the tobacco is cut"
+    },
+    "strength": {
+      "type": "string",
+      "enum": [
+        "Full",
+        "Medium",
+        "Medium-Full",
+        "Mild",
+        "Mild-Medium"
+      ],
+      "description": "Nicotine strength"
+    },
+    "room_note": {
+      "type": "string",
+      "enum": [
+        "Neutral",
+        "Pleasant",
+        "Strong",
+        "Very Strong"
+      ],
+      "description": "How it smells to others"
+    },
+    "flavor_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Flavor characteristics"
+    },
+    "tin_size_oz": {
+      "type": "number",
+      "description": "Size of individual tin in ounces"
+    },
+    "tin_total_tins": {
+      "type": "number",
+      "description": "Total number of tins owned"
+    },
+    "tin_total_quantity_oz": {
+      "type": "number",
+      "description": "Total quantity in ounces (calculated: tin_size_oz * tin_total_tins)"
+    },
+    "tin_tins_open": {
+      "type": "number",
+      "description": "Number of tins that are opened"
+    },
+    "tin_tins_cellared": {
+      "type": "number",
+      "description": "Number of tins cellared/sealed"
+    },
+    "tin_cellared_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when tins were cellared"
+    },
+    "bulk_total_quantity_oz": {
+      "type": "number",
+      "description": "Total bulk quantity in ounces"
+    },
+    "bulk_open": {
+      "type": "number",
+      "description": "Amount of bulk tobacco that is open (oz)"
+    },
+    "bulk_cellared": {
+      "type": "number",
+      "description": "Amount of bulk tobacco cellared (oz)"
+    },
+    "bulk_cellared_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when bulk was cellared"
+    },
+    "pouch_size_oz": {
+      "type": "number",
+      "description": "Size of individual pouch in ounces"
+    },
+    "pouch_total_pouches": {
+      "type": "number",
+      "description": "Total number of pouches owned"
+    },
+    "pouch_total_quantity_oz": {
+      "type": "number",
+      "description": "Total quantity in ounces (calculated: pouch_size_oz * pouch_total_pouches)"
+    },
+    "pouch_pouches_open": {
+      "type": "number",
+      "description": "Number of pouches that are opened"
+    },
+    "pouch_pouches_cellared": {
+      "type": "number",
+      "description": "Number of pouches cellared/sealed"
+    },
+    "pouch_cellared_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when pouches were cellared"
+    },
+    "production_status": {
+      "type": "string",
+      "enum": [
+        "Current Production",
+        "Discontinued",
+        "Limited Edition",
+        "Vintage"
+      ],
+      "description": "Whether still being made"
+    },
+    "aging_potential": {
+      "type": "string",
+      "enum": [
+        "Excellent",
+        "Fair",
+        "Good",
+        "Poor"
+      ],
+      "description": "How well it ages"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Personal rating 1-5"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Personal notes about the blend"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 2,
+      "description": "URLs of blend label photos (max 2)"
+    },
+    "logo": {
+      "type": "string",
+      "description": "URL of manufacturer/blend logo or label image"
+    },
+    "is_favorite": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a favorite blend"
+    },
+    "ai_excluded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Exclude from AI matching, pairing, and recommendations (collectible only)"
+    },
+    "manual_market_value": {
+      "type": "number",
+      "description": "User-entered current market value (Premium)"
+    },
+    "cost_basis": {
+      "type": "number",
+      "description": "Original purchase cost (Premium)"
+    },
+    "ai_estimated_value": {
+      "type": "number",
+      "description": "AI-generated estimated market value (Pro)"
+    },
+    "ai_value_range_low": {
+      "type": "number",
+      "description": "AI-estimated low end of value range (Pro)"
+    },
+    "ai_value_range_high": {
+      "type": "number",
+      "description": "AI-estimated high end of value range (Pro)"
+    },
+    "ai_confidence": {
+      "type": "string",
+      "enum": [
+        "High",
+        "Medium",
+        "Low"
+      ],
+      "description": "Confidence level of AI estimate (Pro)"
+    },
+    "ai_evidence_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Sources used for AI valuation (Pro)"
+    },
+    "ai_projection_12m": {
+      "type": "number",
+      "description": "AI-projected value in 12 months (Pro)"
+    },
+    "ai_projection_36m": {
+      "type": "number",
+      "description": "AI-projected value in 36 months (Pro)"
+    },
+    "ai_last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When AI valuation was last run (Pro)"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

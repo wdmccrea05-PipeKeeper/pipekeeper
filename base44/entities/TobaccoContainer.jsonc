@@ -1,0 +1,32 @@
+{
+  "name": "TobaccoContainer",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User's email"
+    },
+    "blend_id": {
+      "type": "string",
+      "description": "ID of the tobacco blend"
+    },
+    "container_name": {
+      "type": "string",
+      "description": "Name of container (e.g., 'Tin #1', 'Jar A')"
+    },
+    "quantity_grams": {
+      "type": "number",
+      "description": "Current quantity in grams"
+    },
+    "is_open": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether container is currently open"
+    }
+  },
+  "required": [
+    "user_email",
+    "blend_id",
+    "container_name"
+  ]
+}

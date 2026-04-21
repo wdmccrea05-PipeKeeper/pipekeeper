@@ -1,0 +1,61 @@
+{
+  "name": "WhiskeyInventoryUnit",
+  "type": "object",
+  "properties": {
+    "bottle_id": {
+      "type": "string",
+      "description": "ID of the parent Bottle record"
+    },
+    "bottle_name": {
+      "type": "string",
+      "description": "Denormalized bottle name for quick display"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "reserve",
+        "drinking",
+        "open"
+      ],
+      "default": "drinking",
+      "description": "reserve = collection only, drinking = unopened for consumption, open = currently being consumed"
+    },
+    "fill_level": {
+      "type": "string",
+      "enum": [
+        "Full",
+        "High",
+        "Medium",
+        "Low",
+        "Almost Empty"
+      ],
+      "description": "Fill level \u2014 only relevant for open bottles"
+    },
+    "purchase_price": {
+      "type": "number",
+      "description": "Price paid for this specific unit"
+    },
+    "purchase_location": {
+      "type": "string",
+      "description": "Where this unit was purchased"
+    },
+    "purchase_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this unit was purchased"
+    },
+    "opened_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this unit was opened (for open bottles)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes about this specific unit"
+    }
+  },
+  "required": [
+    "bottle_id",
+    "status"
+  ]
+}

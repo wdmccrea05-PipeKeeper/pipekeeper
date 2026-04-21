@@ -1,0 +1,47 @@
+{
+  "name": "Comment",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "pipe",
+        "blend",
+        "log"
+      ],
+      "description": "Type of entity being commented on"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the pipe, blend, or log"
+    },
+    "entity_owner_email": {
+      "type": "string",
+      "description": "Email of the entity owner"
+    },
+    "commenter_email": {
+      "type": "string",
+      "description": "Email of person leaving comment"
+    },
+    "commenter_name": {
+      "type": "string",
+      "description": "Name of commenter"
+    },
+    "content": {
+      "type": "string",
+      "description": "Comment text"
+    },
+    "is_hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether comment is hidden due to reports"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "entity_owner_email",
+    "commenter_email",
+    "content"
+  ]
+}

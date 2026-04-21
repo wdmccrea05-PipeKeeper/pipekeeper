@@ -1,0 +1,69 @@
+{
+  "name": "CuratorSession",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User who started the session"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Unique session identifier"
+    },
+    "agent_conversation_id": {
+      "type": "string",
+      "description": "Base44 agent conversation ID"
+    },
+    "originating_recommendation": {
+      "type": "object",
+      "description": "Original recommendation that triggered this session (if any)"
+    },
+    "initial_prompt": {
+      "type": "string",
+      "description": "First user prompt"
+    },
+    "collection_snapshot": {
+      "type": "object",
+      "description": "Collection state at session start"
+    },
+    "message_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of messages in session"
+    },
+    "session_duration_seconds": {
+      "type": "number",
+      "description": "Session duration in seconds"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session start time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session end time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "abandoned"
+      ],
+      "default": "active",
+      "description": "Session status"
+    },
+    "resulted_in_action": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether session led to collection change"
+    }
+  },
+  "required": [
+    "user_email",
+    "session_id",
+    "started_at"
+  ]
+}

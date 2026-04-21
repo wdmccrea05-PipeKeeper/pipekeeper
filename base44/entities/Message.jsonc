@@ -1,0 +1,43 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "sender_email": {
+      "type": "string",
+      "description": "Email of the sender"
+    },
+    "recipient_email": {
+      "type": "string",
+      "description": "Email of the recipient"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the message has been read"
+    },
+    "is_saved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the recipient has saved this message"
+    },
+    "is_edited": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the message has been edited"
+    },
+    "edited_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the message was last edited"
+    }
+  },
+  "required": [
+    "sender_email",
+    "recipient_email",
+    "content"
+  ]
+}

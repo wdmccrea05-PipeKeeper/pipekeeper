@@ -1,0 +1,58 @@
+{
+  "name": "EntitlementDriftCache",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID with drift"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email"
+    },
+    "drift_type": {
+      "type": "string",
+      "enum": [
+        "stale_sync",
+        "sync_error",
+        "free_with_stripe",
+        "provider_mismatch",
+        "missing_customer"
+      ],
+      "description": "Type of drift detected"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Severity of the drift"
+    },
+    "details": {
+      "type": "string",
+      "description": "Details about the drift"
+    },
+    "last_synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When entitlement was last synced"
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this drift was detected"
+    },
+    "resolved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the drift has been resolved"
+    }
+  },
+  "required": [
+    "user_email",
+    "drift_type"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "UserConversationHistory",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User's email for linking conversation history"
+    },
+    "conversation_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this conversation took place"
+    },
+    "topics_discussed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Main topics covered (e.g., 'rhodesian pipes', 'English blends', 'break-in advice')"
+    },
+    "key_preferences_mentioned": {
+      "type": "object",
+      "description": "Any preferences the user mentioned (e.g., favorite shapes, blend types, smoking habits)"
+    },
+    "pipes_discussed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of specific pipes the user asked about or mentioned"
+    },
+    "blends_discussed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of specific tobacco blends discussed"
+    },
+    "questions_asked": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Summary of questions the user asked"
+    },
+    "follow_up_topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Topics that might warrant follow-up in future conversations"
+    }
+  },
+  "required": [
+    "user_email",
+    "conversation_date"
+  ]
+}

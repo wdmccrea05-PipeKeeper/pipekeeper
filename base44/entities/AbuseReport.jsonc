@@ -1,0 +1,47 @@
+{
+  "name": "AbuseReport",
+  "type": "object",
+  "properties": {
+    "reporter_email": {
+      "type": "string",
+      "description": "Email of person reporting"
+    },
+    "reported_user_email": {
+      "type": "string",
+      "description": "Email of reported user (for user reports)"
+    },
+    "comment_id": {
+      "type": "string",
+      "description": "ID of the reported comment (for comment reports)"
+    },
+    "context_type": {
+      "type": "string",
+      "enum": [
+        "comment",
+        "user_profile",
+        "message"
+      ],
+      "description": "What is being reported"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason for report"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewed",
+        "dismissed",
+        "actioned"
+      ],
+      "default": "pending",
+      "description": "Report status"
+    }
+  },
+  "required": [
+    "reporter_email",
+    "reason",
+    "context_type"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "name": "SubscriptionSupportRequest",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user requesting subscription access"
+    },
+    "requested_tier": {
+      "type": "string",
+      "enum": [
+        "premium",
+        "pro"
+      ],
+      "description": "Subscription tier requested"
+    },
+    "requested_term": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "annual"
+      ],
+      "description": "Billing term requested"
+    },
+    "checkout_url_used": {
+      "type": "string",
+      "description": "Which checkout link was used (optional)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "paid_confirmed",
+        "access_granted",
+        "resolved",
+        "rejected"
+      ],
+      "default": "new",
+      "description": "Current status of the request"
+    },
+    "user_message": {
+      "type": "string",
+      "description": "Optional message from user explaining their situation"
+    },
+    "payment_reference": {
+      "type": "string",
+      "description": "Payment proof: receipt email, invoice number, Stripe payment_intent, or last 4 digits"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Admin's notes when rejecting or resolving"
+    },
+    "granted_by": {
+      "type": "string",
+      "description": "Email of admin who granted access"
+    },
+    "granted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When access was granted"
+    }
+  },
+  "required": [
+    "user_email",
+    "requested_tier",
+    "requested_term"
+  ]
+}

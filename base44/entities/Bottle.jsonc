@@ -1,0 +1,193 @@
+{
+  "name": "Bottle",
+  "type": "object",
+  "properties": {
+    "bottle_type": {
+      "type": "string",
+      "enum": [
+        "whiskey",
+        "wine"
+      ],
+      "default": "whiskey",
+      "description": "Type of bottle: whiskey or wine"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name or label of the whiskey"
+    },
+    "distillery": {
+      "type": "string",
+      "description": "Name of the distillery"
+    },
+    "region": {
+      "type": "string",
+      "description": "Region or area of production"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country of origin"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Single Malt",
+        "Blended Malt",
+        "Single Grain",
+        "Blended Grain",
+        "Blended Whiskey",
+        "Bourbon",
+        "Rye",
+        "Tennessee Whiskey",
+        "Irish Whiskey",
+        "Scotch Whisky",
+        "Other"
+      ],
+      "default": "Other",
+      "description": "Type of whiskey"
+    },
+    "age": {
+      "type": "number",
+      "description": "Age in years"
+    },
+    "abv": {
+      "type": "number",
+      "description": "Alcohol by volume percentage"
+    },
+    "bottle_size": {
+      "type": "string",
+      "enum": [
+        "50ml",
+        "100ml",
+        "200ml",
+        "375ml",
+        "500ml",
+        "700ml",
+        "750ml",
+        "1L",
+        "1.75L",
+        "Other"
+      ],
+      "default": "750ml",
+      "description": "Size of the bottle"
+    },
+    "purchase_type": {
+      "type": "string",
+      "enum": [
+        "retail",
+        "aftermarket",
+        "gift",
+        "trade",
+        "other"
+      ],
+      "default": "retail",
+      "description": "How the bottle was acquired"
+    },
+    "purchase_price": {
+      "type": "number",
+      "description": "Actual amount paid for the bottle"
+    },
+    "purchase_location": {
+      "type": "string",
+      "description": "Where the bottle was purchased"
+    },
+    "purchase_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of purchase"
+    },
+    "retail_price": {
+      "type": "number",
+      "description": "Current or recent retail market price"
+    },
+    "aftermarket_price": {
+      "type": "number",
+      "description": "Going price in auction or secondary market"
+    },
+    "collector_value": {
+      "type": "number",
+      "description": "Estimated collector value for sealed bottles"
+    },
+    "average_market_value": {
+      "type": "number",
+      "description": "Legacy: Estimated average market value per bottle"
+    },
+    "value_confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Confidence level of pricing estimates"
+    },
+    "value_last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When pricing values were last updated"
+    },
+    "value_source_summary": {
+      "type": "string",
+      "description": "Summary of where pricing data came from"
+    },
+    "flavor_notes": {
+      "type": "string",
+      "description": "Comma-separated flavor descriptors (e.g. vanilla, oak, smoke, caramel) used for AI recommendations and display"
+    },
+    "notes": {
+      "type": "string",
+      "description": "General tasting notes about this whiskey"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Personal rating 1-5"
+    },
+    "photo": {
+      "type": "string",
+      "description": "Primary bottle photo URL"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 2,
+      "description": "URLs of bottle photos (max 2: front and back)"
+    },
+    "fill_level": {
+      "type": "string",
+      "enum": [
+        "Full",
+        "High",
+        "Medium",
+        "Low",
+        "Empty"
+      ],
+      "description": "Legacy fill level \u2014 use inventory units instead"
+    },
+    "opened_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Legacy opened date"
+    },
+    "bottle_count": {
+      "type": "number",
+      "default": 1,
+      "description": "Legacy bottle count \u2014 use inventory units instead"
+    },
+    "favorite": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a favorite whiskey"
+    },
+    "inventory_migrated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether legacy bottle_count has been migrated to inventory units"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

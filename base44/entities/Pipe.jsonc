@@ -1,0 +1,333 @@
+{
+  "name": "Pipe",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name or identifier for the pipe"
+    },
+    "maker": {
+      "type": "string",
+      "description": "Pipe maker or brand"
+    },
+    "country_of_origin": {
+      "type": "string",
+      "description": "Country where the pipe was made"
+    },
+    "shape": {
+      "type": "string",
+      "enum": [
+        "Billiard",
+        "Bent Billiard",
+        "Apple",
+        "Bent Apple",
+        "Dublin",
+        "Bent Dublin",
+        "Bulldog",
+        "Rhodesian",
+        "Canadian",
+        "Liverpool",
+        "Lovat",
+        "Lumberman",
+        "Prince",
+        "Author",
+        "Brandy",
+        "Pot",
+        "Tomato",
+        "Egg",
+        "Acorn",
+        "Pear",
+        "Cutty",
+        "Devil Anse",
+        "Hawkbill",
+        "Diplomat",
+        "Poker",
+        "Cherrywood",
+        "Duke",
+        "Don",
+        "Tankard",
+        "Churchwarden",
+        "Nosewarmer",
+        "Vest Pocket",
+        "MacArthur",
+        "Calabash",
+        "Reverse Calabash",
+        "Cavalier",
+        "Freehand",
+        "Blowfish",
+        "Volcano",
+        "Horn",
+        "Nautilus",
+        "Tomahawk",
+        "Bullmoose",
+        "Bullcap",
+        "Oom Paul (Hungarian)",
+        "Tyrolean",
+        "Unknown",
+        "Other"
+      ],
+      "default": "Unknown",
+      "description": "Shape of the pipe"
+    },
+    "bowlStyle": {
+      "type": "string",
+      "enum": [
+        "Cylindrical (Straight Wall)",
+        "Conical (Tapered)",
+        "Rounded / Ball",
+        "Oval / Egg",
+        "Squat / Pot",
+        "Chimney (Tall)",
+        "Paneled",
+        "Faceted / Multi-Panel",
+        "Horn-Shaped",
+        "Freeform",
+        "Unknown"
+      ],
+      "default": "Unknown",
+      "description": "Bowl style classification"
+    },
+    "shankShape": {
+      "type": "string",
+      "enum": [
+        "Round",
+        "Diamond",
+        "Square",
+        "Oval",
+        "Paneled / Faceted",
+        "Military / Army Mount",
+        "Freeform",
+        "Unknown"
+      ],
+      "default": "Unknown",
+      "description": "Shape of the shank"
+    },
+    "bend": {
+      "type": "string",
+      "enum": [
+        "Straight",
+        "1/4 Bent",
+        "1/2 Bent",
+        "3/4 Bent",
+        "Full Bent",
+        "S-Bend",
+        "Unknown"
+      ],
+      "default": "Unknown",
+      "description": "Bend classification"
+    },
+    "sizeClass": {
+      "type": "string",
+      "enum": [
+        "Vest Pocket",
+        "Small",
+        "Standard",
+        "Large",
+        "Magnum / XL",
+        "Churchwarden",
+        "MacArthur",
+        "Unknown"
+      ],
+      "default": "Standard",
+      "description": "Size class of the pipe"
+    },
+    "length_mm": {
+      "type": "number",
+      "description": "Overall pipe length in millimeters"
+    },
+    "weight_grams": {
+      "type": "number",
+      "description": "Pipe weight in grams"
+    },
+    "bowl_height_mm": {
+      "type": "number",
+      "description": "Bowl height in millimeters"
+    },
+    "bowl_width_mm": {
+      "type": "number",
+      "description": "Bowl outer width in millimeters"
+    },
+    "bowl_diameter_mm": {
+      "type": "number",
+      "description": "Internal chamber diameter in millimeters"
+    },
+    "bowl_depth_mm": {
+      "type": "number",
+      "description": "Chamber depth in millimeters"
+    },
+    "chamber_volume": {
+      "type": "string",
+      "enum": [
+        "Extra Large",
+        "Large",
+        "Medium",
+        "Small"
+      ],
+      "description": "Overall chamber volume category"
+    },
+    "stem_material": {
+      "type": "string",
+      "enum": [
+        "Acrylic",
+        "Amber",
+        "Bone",
+        "Cumberland",
+        "Ebonite",
+        "Horn",
+        "Lucite",
+        "Other",
+        "Vulcanite"
+      ],
+      "description": "Material of the stem"
+    },
+    "bowl_material": {
+      "type": "string",
+      "enum": [
+        "Briar",
+        "Cherry Wood",
+        "Clay",
+        "Corn Cob",
+        "Meerschaum",
+        "Morta",
+        "Olive Wood",
+        "Other"
+      ],
+      "description": "Material of the bowl"
+    },
+    "finish": {
+      "type": "string",
+      "enum": [
+        "Carved",
+        "Natural",
+        "Other",
+        "Partially Rusticated",
+        "Rusticated",
+        "Sandblast",
+        "Smooth"
+      ],
+      "description": "Bowl finish type"
+    },
+    "filter_type": {
+      "type": "string",
+      "enum": [
+        "6mm",
+        "9mm",
+        "None",
+        "Other",
+        "Stinger"
+      ],
+      "description": "Filter type if any"
+    },
+    "year_made": {
+      "type": "string",
+      "description": "Year or era the pipe was made"
+    },
+    "purchase_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when the pipe was purchased"
+    },
+    "stamping": {
+      "type": "string",
+      "description": "Text or markings stamped on the pipe"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "Estate - Unrestored",
+        "Excellent",
+        "Fair",
+        "Good",
+        "Mint",
+        "Poor",
+        "Very Good"
+      ],
+      "description": "Current condition of the pipe"
+    },
+    "condition_tracking": {
+      "type": "object",
+      "description": "Detailed condition tracking metrics"
+    },
+    "purchase_price": {
+      "type": "number",
+      "description": "Price paid for the pipe"
+    },
+    "estimated_value": {
+      "type": "number",
+      "description": "Current estimated market value"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the pipe"
+    },
+    "usage_characteristics": {
+      "type": "string",
+      "description": "How the pipe performs - hot/cool, wet/dry, etc."
+    },
+    "smoking_characteristics": {
+      "type": "string",
+      "description": "Legacy field - use usage_characteristics instead"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 5,
+      "description": "URLs of main pipe photos (max 5 angles/views)"
+    },
+    "stamping_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 2,
+      "description": "URLs of stamping/marking photos (max 2)"
+    },
+    "is_favorite": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a favorite pipe"
+    },
+    "ai_excluded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Exclude from AI matching, pairing, and recommendations (collectible only)"
+    },
+    "focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specialized focus or blend types this pipe is designated for"
+    },
+    "break_in_schedule": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Break-in schedule with tobacco recommendations and progress"
+    },
+    "break_in_schedule_input_fingerprint": {
+      "type": "string",
+      "description": "Hash of input data used to detect schedule staleness"
+    },
+    "break_in_schedule_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "History of previous break-in schedules for undo"
+    },
+    "interchangeable_bowls": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Additional interchangeable bowls for systems like Falcon, Gabotherm, Yello-Bole, Viking"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

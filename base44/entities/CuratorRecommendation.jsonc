@@ -1,0 +1,95 @@
+{
+  "name": "CuratorRecommendation",
+  "type": "object",
+  "properties": {
+    "action_run_id": {
+      "type": "string",
+      "description": "ID of the parent CuratorActionRun"
+    },
+    "execution_id": {
+      "type": "string",
+      "description": "Execution ID for deduplication"
+    },
+    "recommendation_id": {
+      "type": "string",
+      "description": "Unique recommendation ID (rec_001, rec_002, etc)"
+    },
+    "group_key": {
+      "type": "string",
+      "description": "Group this recommendation belongs to"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "pipe",
+        "tobacco",
+        "bottle",
+        "collection"
+      ],
+      "description": "Type of item being recommended"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "ID of the collection item (pipe_123, blend_456, etc)"
+    },
+    "item_name": {
+      "type": "string",
+      "description": "User-friendly name of the item"
+    },
+    "issue": {
+      "type": "string",
+      "description": "What problem or gap was detected"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "What should be done"
+    },
+    "proposed_change": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type of change (pipe_specialization, tobacco_reclassification, etc)"
+        },
+        "payload": {
+          "type": "object",
+          "description": "Change data (what fields to update, new values, etc)"
+        }
+      },
+      "description": "Proposed change details"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Confidence level of the recommendation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "applied",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Whether this recommendation was applied"
+    },
+    "applied_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the recommendation was applied"
+    }
+  },
+  "required": [
+    "action_run_id",
+    "recommendation_id",
+    "item_type",
+    "item_id",
+    "issue",
+    "recommendation",
+    "proposed_change"
+  ]
+}

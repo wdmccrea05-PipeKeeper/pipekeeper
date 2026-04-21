@@ -1,10 +1,27 @@
 /**
- * V3 Subscription Report — pure helper functions (no side effects).
+ * V5 Ledger-First Subscription Report — pure helper functions (no side effects).
  *
- * These are the canonical implementations used for testing.
- * The Deno entry.ts duplicates the same logic inline (Deno cannot import from src/).
+ * Architecture contract:
+ *   ONE SOURCE OF TRUTH = Subscription entity rows, normalized through PLAN_CATALOG.
+ *   KPIs (paid accounts, active contracts, module access, MRR, ARR, renewals) are
+ *   derived exclusively from the billing ledger.
  *
- * Canonical data model (NormalizedSub):
+ *   Entitlement flags (pipekeeper_paid etc.) are DIAGNOSTIC signals only.
+ *   Unknown products are quarantined, not excluded and not mixed into trusted KPIs.
+ *
+ * Ledger row fields:
+ *   rawId / userId / userEmail — identity
+ *   planKey           — canonical plan key from PLAN_CATALOG (null = quarantine)
+ *   modules           — module list from catalog (['unknown'] when unresolvable)
+ *   billingInterval   — 'monthly' | 'annual' | null
+ *   price             — known price or null
+ *   renewalAt         — current_period_end
+ *   platform          — 'ios' | 'web' | 'google' | null
+ *   isTrusted         — true when planKey resolved through PLAN_CATALOG
+ *   isUnknown         — true when modules = ['unknown'] → quarantine only
+ *   isBundle          — true when modules.length > 1
+ *
+ * Canonical data model (NormalizedSub — kept for backward compat with tests):
  *   userId              ← user_id
  *   userEmail           ← user_email
  *   isPaid              ← derived via isActivePaid(raw)

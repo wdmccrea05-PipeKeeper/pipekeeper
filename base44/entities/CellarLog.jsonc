@@ -1,0 +1,62 @@
+{
+  "name": "CellarLog",
+  "type": "object",
+  "properties": {
+    "blend_id": {
+      "type": "string",
+      "description": "ID of the tobacco blend"
+    },
+    "blend_name": {
+      "type": "string",
+      "description": "Name of the tobacco blend for quick reference"
+    },
+    "transaction_type": {
+      "type": "string",
+      "enum": [
+        "added",
+        "removed"
+      ],
+      "description": "Whether tobacco was added to or removed from cellar"
+    },
+    "removal_destination": {
+      "type": "string",
+      "enum": [
+        "open_collection",
+        "exchanged",
+        "discarded"
+      ],
+      "description": "Where tobacco went when removed from cellar"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the transaction"
+    },
+    "amount_oz": {
+      "type": "number",
+      "description": "Amount in ounces"
+    },
+    "container_type": {
+      "type": "string",
+      "enum": [
+        "tin",
+        "jar",
+        "pouch",
+        "bulk",
+        "other"
+      ],
+      "description": "Type of container"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about the transaction"
+    }
+  },
+  "required": [
+    "blend_id",
+    "blend_name",
+    "transaction_type",
+    "date",
+    "amount_oz"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "name": "TobacconistKnowledge",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "pipe_pairing",
+        "tobacco_characteristic",
+        "maintenance_tip",
+        "aging_insight",
+        "shape_preference",
+        "blend_compatibility",
+        "break_in_technique",
+        "general_wisdom"
+      ],
+      "description": "Category of knowledge"
+    },
+    "topic": {
+      "type": "string",
+      "description": "Specific topic or subject (e.g., 'Peterson System Pipes', 'English Blends')"
+    },
+    "insight": {
+      "type": "string",
+      "description": "The actual knowledge or insight learned from user interactions"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "description": "Confidence level based on frequency and consistency of observations"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "user_query",
+        "user_feedback",
+        "pattern_observed",
+        "external_research"
+      ],
+      "description": "How this knowledge was acquired"
+    },
+    "times_validated": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of times this insight has been confirmed by different users"
+    },
+    "last_validated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this knowledge was last confirmed"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Keywords for searching this knowledge"
+    }
+  },
+  "required": [
+    "category",
+    "topic",
+    "insight"
+  ]
+}

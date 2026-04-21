@@ -1,0 +1,61 @@
+{
+  "name": "CuratorActionApplyResult",
+  "type": "object",
+  "properties": {
+    "recommendation_id": {
+      "type": "string",
+      "description": "ID of the recommendation that was applied"
+    },
+    "action_run_id": {
+      "type": "string",
+      "description": "ID of the parent action run"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of user who applied the recommendation"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "pipe",
+        "tobacco",
+        "bottle",
+        "collection"
+      ],
+      "description": "Type of item affected"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "ID of the item that was updated"
+    },
+    "success": {
+      "type": "boolean",
+      "description": "Whether the apply succeeded"
+    },
+    "before_state": {
+      "type": "object",
+      "description": "State of item before change"
+    },
+    "after_state": {
+      "type": "object",
+      "description": "State of item after change"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message if apply failed"
+    },
+    "applied_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the change was applied"
+    }
+  },
+  "required": [
+    "recommendation_id",
+    "action_run_id",
+    "user_email",
+    "item_type",
+    "item_id",
+    "success"
+  ]
+}

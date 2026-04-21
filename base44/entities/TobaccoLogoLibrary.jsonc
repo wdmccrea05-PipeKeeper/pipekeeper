@@ -1,0 +1,23 @@
+{
+  "name": "TobaccoLogoLibrary",
+  "type": "object",
+  "properties": {
+    "brand_name": {
+      "type": "string",
+      "description": "Name of the tobacco brand"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL of the brand logo"
+    },
+    "is_custom": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this is a user-uploaded custom logo"
+    }
+  },
+  "required": [
+    "brand_name",
+    "logo_url"
+  ]
+}

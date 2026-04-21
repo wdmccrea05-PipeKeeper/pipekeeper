@@ -1,0 +1,60 @@
+{
+  "name": "CuratorEvent",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User who triggered the event"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "curator_opened",
+        "recommendation_shown",
+        "recommendation_clicked",
+        "recommendation_explored",
+        "recommendation_accepted",
+        "recommendation_dismissed",
+        "curator_message_sent",
+        "curator_session_closed",
+        "collection_item_added",
+        "collection_item_edited",
+        "collectible_only_toggled",
+        "export_generated",
+        "valuation_viewed",
+        "insurance_doc_generated"
+      ],
+      "description": "Type of event"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Curator session ID if applicable"
+    },
+    "recommendation_id": {
+      "type": "string",
+      "description": "ID of recommendation if applicable"
+    },
+    "recommendation_context": {
+      "type": "object",
+      "description": "Full recommendation payload (title, insight, module, category)"
+    },
+    "collection_context": {
+      "type": "object",
+      "description": "Collection snapshot at time of event (pipe count, blend count, etc.)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional event-specific metadata"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event timestamp"
+    }
+  },
+  "required": [
+    "user_email",
+    "event_type",
+    "timestamp"
+  ]
+}

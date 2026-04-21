@@ -1,44 +1,18 @@
 export default [
   {
-    // Test files — declare vitest globals so linter doesn't flag them.
-    // Patterns cover root-level, src/, and all nested __tests__ / *.test.* paths.
+    // Test files — vitest globals declared.
+    // Using broad patterns to ensure all nested __tests__ and *.test.* files are covered
+    // regardless of how ESLint resolves the config root.
     files: [
-      '**/__tests__/**/*.js',
-      '**/__tests__/**/*.jsx',
-      '**/__tests__/**/*.ts',
-      '**/__tests__/**/*.tsx',
-      'src/**/__tests__/**/*.js',
-      'src/**/__tests__/**/*.jsx',
-      'src/**/__tests__/**/*.ts',
-      'src/**/__tests__/**/*.tsx',
-      'src/components/**/__tests__/**/*.js',
-      'src/components/**/__tests__/**/*.jsx',
-      'src/components/**/__tests__/**/*.ts',
-      'src/components/**/__tests__/**/*.tsx',
       '**/*.test.js',
       '**/*.test.jsx',
       '**/*.test.ts',
       '**/*.test.tsx',
-      'src/**/*.test.js',
-      'src/**/*.test.jsx',
-      'src/**/*.test.ts',
-      'src/**/*.test.tsx',
-      'src/components/**/*.test.js',
-      'src/components/**/*.test.jsx',
-      'src/components/**/*.test.ts',
-      'src/components/**/*.test.tsx',
       '**/*.spec.js',
       '**/*.spec.jsx',
       '**/*.spec.ts',
       '**/*.spec.tsx',
-      'src/**/*.spec.js',
-      'src/**/*.spec.jsx',
-      'src/**/*.spec.ts',
-      'src/**/*.spec.tsx',
-      'src/components/**/*.spec.js',
-      'src/components/**/*.spec.jsx',
-      'src/components/**/*.spec.ts',
-      'src/components/**/*.spec.tsx',
+      '**/__tests__/**',
     ],
     languageOptions: {
       globals: {
@@ -54,6 +28,8 @@ export default [
         suite: 'readonly',
         mock: 'readonly',
         jest: 'readonly',
+        global: 'readonly',
+        process: 'readonly',
       },
     },
     rules: {

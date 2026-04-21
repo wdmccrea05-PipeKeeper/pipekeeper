@@ -1,0 +1,28 @@
+{
+  "name": "OnboardingStatus",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User's email"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether onboarding is completed"
+    },
+    "current_step": {
+      "type": "number",
+      "default": 0,
+      "description": "Current onboarding step"
+    },
+    "skipped": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user skipped onboarding"
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

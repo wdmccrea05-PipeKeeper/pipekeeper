@@ -1,0 +1,73 @@
+{
+  "name": "DailyUserMetrics",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Metrics date"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email"
+    },
+    "curator_sessions": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of Curator sessions"
+    },
+    "curator_messages": {
+      "type": "number",
+      "default": 0,
+      "description": "Messages sent to Curator"
+    },
+    "recommendations_shown": {
+      "type": "number",
+      "default": 0,
+      "description": "Recommendations shown"
+    },
+    "recommendations_clicked": {
+      "type": "number",
+      "default": 0,
+      "description": "Recommendations clicked"
+    },
+    "recommendations_accepted": {
+      "type": "number",
+      "default": 0,
+      "description": "Recommendations accepted/applied"
+    },
+    "items_added": {
+      "type": "number",
+      "default": 0,
+      "description": "Collection items added"
+    },
+    "items_edited": {
+      "type": "number",
+      "default": 0,
+      "description": "Collection items edited"
+    },
+    "exports_generated": {
+      "type": "number",
+      "default": 0,
+      "description": "Exports generated"
+    },
+    "valuations_viewed": {
+      "type": "number",
+      "default": 0,
+      "description": "Valuations viewed"
+    },
+    "collectible_toggles": {
+      "type": "number",
+      "default": 0,
+      "description": "Collectible-only toggles"
+    },
+    "subscription_tier": {
+      "type": "string",
+      "description": "User's tier at time of metrics"
+    }
+  },
+  "required": [
+    "date",
+    "user_email"
+  ]
+}

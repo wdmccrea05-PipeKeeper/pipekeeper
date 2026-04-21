@@ -1,950 +1,326 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const REPORT_VERSION = 'v4.0';
+const REPORT_VERSION = 'v5.0-ledger';
 const MAX_SAMPLE_SIZE = 25;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type IntervalKind = 'monthly' | 'annual';
-type PlatformKind = 'ios' | 'web' | 'google';
-
-interface NormalizedSub {
-  rawId: string;
-  recordPath: string;
-  userId: string;
-  userEmail: string;
-  isPaid: boolean;
-  subscriptionStatus: string;
-  planKey: string | null;
-  billingInterval: IntervalKind | null;
-  price: number | null;
-  renewalAmount: number | null;   // actual renewal charge (same as price for most cases)
-  createdAt: Date | null;
-  renewalAt: Date | null;
-  module: string;
-  modules: string[];
-  platform: PlatformKind | null;
-  productLabel: string;           // human-readable product name
-  fieldResolution?: {
-    price: 'direct' | 'recovered' | 'unresolved';
-    billingInterval: 'direct' | 'recovered' | 'unresolved';
-    planKey: 'direct' | 'recovered' | 'unresolved';
-    sources: {
-      price: string;
-      billingInterval: string;
-      planKey: string;
-    };
-  };
-}
-
-interface CalendarRange {
-  start: Date;
-  end: Date;
-}
-
-// ─── Plan catalog ─────────────────────────────────────────────────────────────
-// Single source of truth for plan → modules, interval, price.
-// Founders = PipeKeeper + WhiskeyKeeper only ($4.99/mo, $49.99/yr).
-// Original premium = legacy plans at $1.99/mo, $19.99/yr (single module).
-// Pro = current plans at $2.99/mo, $29.99/yr (single module).
-
-const PLAN_CATALOG: Record<string, { modules: string[]; billingInterval: IntervalKind; price: number; label: string }> = {
-  // ── Legacy "premium" single-module plans ──────────────────────────────────
-  pipekeeper_premium_monthly:    { modules: ['pipekeeper'],              billingInterval: 'monthly', price: 1.99,  label: 'PipeKeeper (Legacy)'           },
-  pipekeeper_premium_annual:     { modules: ['pipekeeper'],              billingInterval: 'annual',  price: 19.99, label: 'PipeKeeper (Legacy Annual)'    },
-  whiskeykeeper_premium_monthly: { modules: ['whiskeykeeper'],           billingInterval: 'monthly', price: 1.99,  label: 'WhiskeyKeeper (Legacy)'        },
-  whiskeykeeper_premium_annual:  { modules: ['whiskeykeeper'],           billingInterval: 'annual',  price: 19.99, label: 'WhiskeyKeeper (Legacy Annual)' },
-
-  // ── Current "pro" single-module plans ─────────────────────────────────────
-  pipekeeper_pro_monthly:        { modules: ['pipekeeper'],              billingInterval: 'monthly', price: 2.99,  label: 'PipeKeeper Pro' },
-  pipekeeper_pro_annual:         { modules: ['pipekeeper'],              billingInterval: 'annual',  price: 29.99, label: 'PipeKeeper Pro Annual' },
-  whiskeykeeper_pro_monthly:     { modules: ['whiskeykeeper'],           billingInterval: 'monthly', price: 2.99,  label: 'WhiskeyKeeper Pro' },
-  whiskeykeeper_pro_annual:      { modules: ['whiskeykeeper'],           billingInterval: 'annual',  price: 29.99, label: 'WhiskeyKeeper Pro Annual' },
-  cigarkeeper_pro_monthly:       { modules: ['cigarkeeper'],             billingInterval: 'monthly', price: 2.99,  label: 'CigarKeeper Pro' },
-  cigarkeeper_pro_annual:        { modules: ['cigarkeeper'],             billingInterval: 'annual',  price: 29.99, label: 'CigarKeeper Pro Annual' },
-  winekeeper_pro_monthly:        { modules: ['winekeeper'],              billingInterval: 'monthly', price: 2.99,  label: 'WineKeeper Pro' },
-  winekeeper_pro_annual:         { modules: ['winekeeper'],              billingInterval: 'annual',  price: 29.99, label: 'WineKeeper Pro Annual' },
-
-  // ── Founders bundle: PipeKeeper + WhiskeyKeeper ONLY ($4.99/mo, $49.99/yr) ─
-  // Canonical definition: 2 modules. Do NOT map founders to 4 modules.
-  founders_bundle_monthly:       { modules: ['pipekeeper','whiskeykeeper'], billingInterval: 'monthly', price: 4.99,  label: 'Founders Bundle (PK+WK)' },
-  founders_bundle_annual:        { modules: ['pipekeeper','whiskeykeeper'], billingInterval: 'annual',  price: 49.99, label: 'Founders Bundle Annual (PK+WK)' },
-
-  // ── Larger bundles ────────────────────────────────────────────────────────
-  three_module_bundle_monthly:   { modules: ['pipekeeper','whiskeykeeper','cigarkeeper'],            billingInterval: 'monthly', price: 7.99,  label: '3-Module Bundle' },
-  three_module_bundle_annual:    { modules: ['pipekeeper','whiskeykeeper','cigarkeeper'],            billingInterval: 'annual',  price: 79.99, label: '3-Module Bundle Annual' },
-  four_module_bundle_monthly:    { modules: ['pipekeeper','whiskeykeeper','cigarkeeper','winekeeper'], billingInterval: 'monthly', price: 8.99,  label: '4-Module Bundle' },
-  four_module_bundle_annual:     { modules: ['pipekeeper','whiskeykeeper','cigarkeeper','winekeeper'], billingInterval: 'annual',  price: 89.99, label: '4-Module Bundle Annual' },
+// ─── PLAN CATALOG (single source of truth) ────────────────────────────────────
+// One row per known product. All KPIs derive from here.
+const PLAN_CATALOG = {
+  pipekeeper_premium_monthly:    { modules: ['pipekeeper'],                                                billingInterval: 'monthly', price: 1.99,  label: 'PipeKeeper (Legacy)'           },
+  pipekeeper_premium_annual:     { modules: ['pipekeeper'],                                                billingInterval: 'annual',  price: 19.99, label: 'PipeKeeper (Legacy Annual)'    },
+  whiskeykeeper_premium_monthly: { modules: ['whiskeykeeper'],                                             billingInterval: 'monthly', price: 1.99,  label: 'WhiskeyKeeper (Legacy)'        },
+  whiskeykeeper_premium_annual:  { modules: ['whiskeykeeper'],                                             billingInterval: 'annual',  price: 19.99, label: 'WhiskeyKeeper (Legacy Annual)' },
+  pipekeeper_pro_monthly:        { modules: ['pipekeeper'],                                                billingInterval: 'monthly', price: 2.99,  label: 'PipeKeeper Pro'                },
+  pipekeeper_pro_annual:         { modules: ['pipekeeper'],                                                billingInterval: 'annual',  price: 29.99, label: 'PipeKeeper Pro Annual'          },
+  whiskeykeeper_pro_monthly:     { modules: ['whiskeykeeper'],                                             billingInterval: 'monthly', price: 2.99,  label: 'WhiskeyKeeper Pro'             },
+  whiskeykeeper_pro_annual:      { modules: ['whiskeykeeper'],                                             billingInterval: 'annual',  price: 29.99, label: 'WhiskeyKeeper Pro Annual'       },
+  cigarkeeper_pro_monthly:       { modules: ['cigarkeeper'],                                               billingInterval: 'monthly', price: 2.99,  label: 'CigarKeeper Pro'               },
+  cigarkeeper_pro_annual:        { modules: ['cigarkeeper'],                                               billingInterval: 'annual',  price: 29.99, label: 'CigarKeeper Pro Annual'         },
+  winekeeper_pro_monthly:        { modules: ['winekeeper'],                                                billingInterval: 'monthly', price: 2.99,  label: 'WineKeeper Pro'                },
+  winekeeper_pro_annual:         { modules: ['winekeeper'],                                                billingInterval: 'annual',  price: 29.99, label: 'WineKeeper Pro Annual'          },
+  founders_bundle_monthly:       { modules: ['pipekeeper','whiskeykeeper'],                                billingInterval: 'monthly', price: 4.99,  label: 'Founders Bundle (PK+WK)'       },
+  founders_bundle_annual:        { modules: ['pipekeeper','whiskeykeeper'],                                billingInterval: 'annual',  price: 49.99, label: 'Founders Bundle Annual (PK+WK)' },
+  three_module_bundle_monthly:   { modules: ['pipekeeper','whiskeykeeper','cigarkeeper'],                  billingInterval: 'monthly', price: 7.99,  label: '3-Module Bundle'               },
+  three_module_bundle_annual:    { modules: ['pipekeeper','whiskeykeeper','cigarkeeper'],                  billingInterval: 'annual',  price: 79.99, label: '3-Module Bundle Annual'         },
+  four_module_bundle_monthly:    { modules: ['pipekeeper','whiskeykeeper','cigarkeeper','winekeeper'],     billingInterval: 'monthly', price: 8.99,  label: '4-Module Bundle'               },
+  four_module_bundle_annual:     { modules: ['pipekeeper','whiskeykeeper','cigarkeeper','winekeeper'],     billingInterval: 'annual',  price: 89.99, label: '4-Module Bundle Annual'         },
 };
 
-const HISTORICAL_PLAN_KEY_MAP: Record<string, string> = {
-  pipekeeper_monthly: 'pipekeeper_pro_monthly',
-  pipekeeper_annual: 'pipekeeper_pro_annual',
-  pipekeeper_yearly: 'pipekeeper_pro_annual',
-  whiskeykeeper_monthly: 'whiskeykeeper_pro_monthly',
-  whiskeykeeper_annual: 'whiskeykeeper_pro_annual',
-  whiskeykeeper_yearly: 'whiskeykeeper_pro_annual',
-  cigarkeeper_monthly: 'cigarkeeper_pro_monthly',
-  cigarkeeper_annual: 'cigarkeeper_pro_annual',
-  cigarkeeper_yearly: 'cigarkeeper_pro_annual',
-  winekeeper_monthly: 'winekeeper_pro_monthly',
-  winekeeper_annual: 'winekeeper_pro_annual',
-  winekeeper_yearly: 'winekeeper_pro_annual',
-  founders_monthly: 'founders_bundle_monthly',
-  founders_annual: 'founders_bundle_annual',
-  founders_yearly: 'founders_bundle_annual',
-  bundle_2_monthly: 'founders_bundle_monthly',
-  bundle_2_annual: 'founders_bundle_annual',
-  bundle_3_monthly: 'three_module_bundle_monthly',
-  bundle_3_annual: 'three_module_bundle_annual',
-  bundle_4_monthly: 'four_module_bundle_monthly',
-  bundle_4_annual: 'four_module_bundle_annual',
-  three_bundle_monthly: 'three_module_bundle_monthly',
-  three_bundle_annual: 'three_module_bundle_annual',
-  four_bundle_monthly: 'four_module_bundle_monthly',
+const PLAN_KEY_ALIASES = {
+  pipekeeper_monthly: 'pipekeeper_pro_monthly', pipekeeper_annual: 'pipekeeper_pro_annual',
+  pipekeeper_yearly: 'pipekeeper_pro_annual', whiskeykeeper_monthly: 'whiskeykeeper_pro_monthly',
+  whiskeykeeper_annual: 'whiskeykeeper_pro_annual', whiskeykeeper_yearly: 'whiskeykeeper_pro_annual',
+  cigarkeeper_monthly: 'cigarkeeper_pro_monthly', cigarkeeper_annual: 'cigarkeeper_pro_annual',
+  cigarkeeper_yearly: 'cigarkeeper_pro_annual', winekeeper_monthly: 'winekeeper_pro_monthly',
+  winekeeper_annual: 'winekeeper_pro_annual', winekeeper_yearly: 'winekeeper_pro_annual',
+  founders_monthly: 'founders_bundle_monthly', founders_annual: 'founders_bundle_annual',
+  founders_yearly: 'founders_bundle_annual', bundle_2_monthly: 'founders_bundle_monthly',
+  bundle_2_annual: 'founders_bundle_annual', bundle_3_monthly: 'three_module_bundle_monthly',
+  bundle_3_annual: 'three_module_bundle_annual', three_bundle_monthly: 'three_module_bundle_monthly',
+  three_bundle_annual: 'three_module_bundle_annual', bundle_4_monthly: 'four_module_bundle_monthly',
+  bundle_4_annual: 'four_module_bundle_annual', four_bundle_monthly: 'four_module_bundle_monthly',
   four_bundle_annual: 'four_module_bundle_annual',
 };
 
-function canonicalizePlanKeyCandidate(value: unknown): string | null {
-  const token = norm(value || '');
-  if (!token) return null;
-  if (PLAN_CATALOG[token]) return token;
-  if (HISTORICAL_PLAN_KEY_MAP[token]) return HISTORICAL_PLAN_KEY_MAP[token];
-  return null;
-}
-
-function lookupPlan(planKey: string | null) {
-  if (!planKey) return null;
-  return PLAN_CATALOG[planKey.trim().toLowerCase()] ?? null;
-}
-
-// ─── Amount-based plan inference ──────────────────────────────────────────────
-// Valid prices: 1.99/19.99, 2.99/29.99, 4.99/49.99, 7.99/79.99, 8.99/89.99
-// INVALID: 9.99/99.99 — do not infer from these amounts.
-
-interface AmountInference {
-  billingInterval: IntervalKind;
-  modules: string[] | null; // null for singles (module can't be determined from price alone)
-  isBundle: boolean;
-  label: string;
-}
-
-function inferFromAmount(amount: number): AmountInference | null {
-  const a = parseFloat(Number(amount).toFixed(2));
-  // Single-module plans: interval known, module unknown
-  if (a === 1.99)  return { billingInterval: 'monthly', modules: null, isBundle: false, label: 'Legacy Premium' };
-  if (a === 19.99) return { billingInterval: 'annual',  modules: null, isBundle: false, label: 'Legacy Premium Annual' };
-  if (a === 2.99)  return { billingInterval: 'monthly', modules: null, isBundle: false, label: 'Pro' };
-  if (a === 29.99) return { billingInterval: 'annual',  modules: null, isBundle: false, label: 'Pro Annual' };
-  // Founders bundle: PK + WK ONLY (2 modules)
-  if (a === 4.99)  return { billingInterval: 'monthly', modules: ['pipekeeper', 'whiskeykeeper'], isBundle: true, label: 'Founders Bundle (PK+WK)' };
-  if (a === 49.99) return { billingInterval: 'annual',  modules: ['pipekeeper', 'whiskeykeeper'], isBundle: true, label: 'Founders Bundle Annual (PK+WK)' };
-  // 3-module bundle
-  if (a === 7.99)  return { billingInterval: 'monthly', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], isBundle: true, label: '3-Module Bundle' };
-  if (a === 79.99) return { billingInterval: 'annual',  modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], isBundle: true, label: '3-Module Bundle Annual' };
-  // 4-module bundle
-  if (a === 8.99)  return { billingInterval: 'monthly', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], isBundle: true, label: '4-Module Bundle' };
-  if (a === 89.99) return { billingInterval: 'annual',  modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], isBundle: true, label: '4-Module Bundle Annual' };
-  return null;
-}
-
-function buildProductLabel(modules: string[], baseLabel: string): string {
-  if (modules.length > 1) return baseLabel; // bundle label already descriptive
-  const m = modules[0];
-  if (m === 'pipekeeper')    return 'PipeKeeper';
-  if (m === 'whiskeykeeper') return 'WhiskeyKeeper';
-  if (m === 'cigarkeeper')   return 'CigarKeeper';
-  if (m === 'winekeeper')    return 'WineKeeper';
-  return baseLabel;
-}
+// Valid prices and what they imply
+const AMOUNT_TO_INTERVAL = {
+  1.99: 'monthly', 19.99: 'annual', 2.99: 'monthly', 29.99: 'annual',
+  4.99: 'monthly', 49.99: 'annual', 7.99: 'monthly', 79.99: 'annual',
+  8.99: 'monthly', 89.99: 'annual',
+};
+const BUNDLE_AMOUNT_TO_MODULES = {
+  4.99:  ['pipekeeper','whiskeykeeper'],
+  49.99: ['pipekeeper','whiskeykeeper'],
+  7.99:  ['pipekeeper','whiskeykeeper','cigarkeeper'],
+  79.99: ['pipekeeper','whiskeykeeper','cigarkeeper'],
+  8.99:  ['pipekeeper','whiskeykeeper','cigarkeeper','winekeeper'],
+  89.99: ['pipekeeper','whiskeykeeper','cigarkeeper','winekeeper'],
+};
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
+function norm(v) { return String(v ?? '').trim().toLowerCase(); }
+function parseDate(v) { if (!v) return null; const d = new Date(v); return isNaN(d.getTime()) ? null : d; }
+function roundCurrency(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+function inRange(d, r) { return d >= r.start && d <= r.end; }
 
-function norm(v: any): string { return String(v ?? '').trim().toLowerCase(); }
-
-function parseDate(v: any): Date | null {
-  if (!v) return null;
-  const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? null : d;
+function lookupPlan(key) {
+  if (!key) return null;
+  const k = norm(key);
+  return PLAN_CATALOG[k] ?? PLAN_CATALOG[PLAN_KEY_ALIASES[k]] ?? null;
 }
 
-function roundCurrency(value: number): number {
-  // Round to 2 decimal places for currency-safe reporting.
-  // Number.EPSILON helps avoid floating-point representation edge cases.
-  return Math.round((value + Number.EPSILON) * 100) / 100;
-}
-
-function inRange(d: Date, range: CalendarRange): boolean {
-  return d >= range.start && d <= range.end;
-}
-
-const MODULE_KEYS = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
-
-function uniqueModules(modules: string[]): string[] {
-  return [...new Set(modules.filter((m) => MODULE_KEYS.includes(m)))].sort();
-}
-
-function runtimeModulesFromUser(user: any): string[] {
-  const csvModules = String(user?.paid_modules_csv || '')
-    .split(',')
-    .map((m) => String(m || '').trim().toLowerCase())
-    .filter(Boolean);
-  const flagModules: string[] = [];
-  if (user?.pipekeeper_paid) flagModules.push('pipekeeper');
-  if (user?.whiskeykeeper_paid) flagModules.push('whiskeykeeper');
-  if (user?.cigarkeeper_paid) flagModules.push('cigarkeeper');
-  if (user?.winekeeper_paid) flagModules.push('winekeeper');
-  const explicit = uniqueModules([...csvModules, ...flagModules]);
-  if (explicit.length > 0) return explicit;
-  if (user?.isFoundingMember || user?.legacy_broad_module_access) return [...MODULE_KEYS];
-  return [];
-}
-
-function userIdentityKey(userId: string | null | undefined, userEmail: string | null | undefined): string {
-  // Canonical user identity key for report aggregation.
-  // Prefer stable user_id; fallback to normalized email when id is unavailable.
-  return String(userId || '').trim() || norm(userEmail || '');
-}
-
-// ─── Calendar ranges ──────────────────────────────────────────────────────────
-
-function getCalendarRange(type: 'today' | 'week' | 'month' | 'quarter' | 'year', now: Date): CalendarRange {
-  const start = new Date(now);
-  let end: Date;
-  switch (type) {
-    case 'today': {
-      start.setUTCHours(0, 0, 0, 0);
-      end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate(), 23, 59, 59, 999));
-      break;
-    }
-    case 'week': {
-      const dow = start.getUTCDay();
-      start.setUTCDate(start.getUTCDate() - (dow === 0 ? 6 : dow - 1));
-      start.setUTCHours(0, 0, 0, 0);
-      end = new Date(start);
-      end.setUTCDate(end.getUTCDate() + 6);
-      end.setUTCHours(23, 59, 59, 999);
-      break;
-    }
-    case 'month': {
-      start.setUTCDate(1);
-      start.setUTCHours(0, 0, 0, 0);
-      end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0, 23, 59, 59, 999));
-      break;
-    }
-    case 'quarter': {
-      const q = Math.floor(start.getUTCMonth() / 3);
-      start.setUTCMonth(q * 3, 1);
-      start.setUTCHours(0, 0, 0, 0);
-      end = new Date(Date.UTC(start.getUTCFullYear(), q * 3 + 3, 0, 23, 59, 59, 999));
-      break;
-    }
-    case 'year': {
-      start.setUTCMonth(0, 1);
-      start.setUTCHours(0, 0, 0, 0);
-      end = new Date(Date.UTC(start.getUTCFullYear(), 11, 31, 23, 59, 59, 999));
-      break;
-    }
-  }
-  return { start, end };
-}
-
-// ─── Interval normalization ───────────────────────────────────────────────────
-
-function normalizeInterval(raw: any): IntervalKind | null {
-  const v = norm(
-    raw.billing_interval ||
-    raw.billing_period ||
-    raw.interval ||
-    raw.period ||
-    raw.plan_interval ||
-    raw.recurring_interval ||
-    ''
-  );
-  if (v === 'month' || v === 'monthly') return 'monthly';
-  if (v === 'year' || v === 'yearly' || v === 'annual') return 'annual';
+function canonicalizePlanKey(key) {
+  if (!key) return null;
+  const k = norm(key);
+  if (PLAN_CATALOG[k]) return k;
+  if (PLAN_KEY_ALIASES[k]) return PLAN_KEY_ALIASES[k];
   return null;
 }
 
-function normalizeIntervalToken(v: unknown): IntervalKind | null {
-  const value = norm(v || '');
-  if (value === 'month' || value === 'monthly') return 'monthly';
-  if (value === 'year' || value === 'yearly' || value === 'annual') return 'annual';
-  return null;
-}
-
-function parsePositiveNumber(v: unknown, options: { treatAsCents?: boolean } = {}): number | null {
-  if (v === null || v === undefined || v === '') return null;
-  const n = typeof v === 'string'
-    ? Number(String(v).replace(/,/g, '').match(/\d+(\.\d+)?/)?.[0] ?? Number.NaN)
-    : Number(v);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return options.treatAsCents ? (n / 100) : n;
-}
-
-function parsePositiveMoney(v: unknown): number | null {
-  const direct = parsePositiveNumber(v);
-  if (direct === null) return null;
-  if (Number.isInteger(direct)) {
-    const asCents = parseFloat((direct / 100).toFixed(2));
-    if (inferFromAmount(asCents)) return asCents;
+function parsePositiveMoney(v) {
+  if (v == null || v === '') return null;
+  const n = Number(typeof v === 'string' ? v.replace(/,/g,'').match(/\d+(\.\d+)?/)?.[0] : v);
+  if (!isFinite(n) || n <= 0) return null;
+  // Detect cents (e.g. 299 → 2.99)
+  if (Number.isInteger(n) && n > 10) {
+    const asCents = parseFloat((n / 100).toFixed(2));
+    if (AMOUNT_TO_INTERVAL[asCents] !== undefined) return asCents;
   }
-  return direct;
+  return n;
 }
 
-function isPlainObject(v: unknown): v is Record<string, any> {
-  return !!v && typeof v === 'object' && !Array.isArray(v);
-}
-
-function hasMeaningfulValue(v: unknown): boolean {
-  if (v === null || v === undefined) return false;
-  if (typeof v === 'string') return v.trim().length > 0;
-  return true;
-}
-
-function mergeMissing(target: Record<string, any>, source: Record<string, any>): Record<string, any> {
-  if (!isPlainObject(source)) return target;
-  for (const [key, value] of Object.entries(source)) {
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
-    if (isPlainObject(value)) {
-      if (!isPlainObject(target[key])) target[key] = {};
-      mergeMissing(target[key], value);
-      continue;
-    }
-    if (!hasMeaningfulValue(target[key]) && hasMeaningfulValue(value)) {
-      target[key] = value;
-    }
-  }
-  return target;
-}
-
-function parseObjectLike(value: unknown): unknown {
-  if (isPlainObject(value) || Array.isArray(value)) return value;
-  const text = typeof value === 'string' ? value.trim() : '';
-  if (!text) return null;
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
-}
-
-function parseMetadataObject(raw: any): Record<string, any> {
-  const candidateFields = [
-    raw?.metadata_json,
-    raw?.metadata,
-    raw?.subscription_metadata,
-    raw?.provider_metadata,
-    raw?.stripe_metadata,
-    raw?.apple_metadata,
-    raw?.stripe_subscription_json,
-    raw?.stripe_subscription,
-    raw?.stripe_price_json,
-    raw?.stripe_price,
-    raw?.stripe_payload_json,
-    raw?.stripe_payload,
-    raw?.provider_payload_json,
-    raw?.provider_payload,
-    raw?.provider_response_json,
-    raw?.provider_response,
-    raw?.subscription_json,
-    raw?.price_json,
-    raw?.apple_receipt_json,
-    raw?.apple_receipt,
-    raw?.apple_entitlement_json,
-    raw?.apple_entitlement,
-    raw?.receipt_json,
-    raw?.entitlement_json,
-    raw?.entitlement_data,
-    raw?.latest_receipt_info,
-    raw?.latest_receipt,
-    raw?.data,
-  ];
-
-  const merged: Record<string, any> = {};
-  for (const candidate of candidateFields) {
-    const parsed = parseObjectLike(candidate);
-    if (isPlainObject(parsed)) {
-      mergeMissing(merged, parsed);
-      continue;
-    }
-    if (Array.isArray(parsed)) {
-      for (const entry of parsed) {
-        if (isPlainObject(entry)) mergeMissing(merged, entry);
-      }
-    }
-  }
-  return merged;
-}
-
-/**
- * Normalize array-like metadata payloads.
- * Returns the original array when provided, attempts JSON parsing for string/object-like values,
- * and returns an empty array when no array structure is available.
- */
-function parseArrayLike(value: unknown): unknown[] {
-  if (Array.isArray(value)) return value;
-  const parsed = parseObjectLike(value);
-  return Array.isArray(parsed) ? parsed : [];
-}
-
-/**
- * Extract normalized product identifiers from iOS receipt-style metadata payloads.
- * Looks at both top-level raw subscription fields and parsed metadata fields, including
- * latest_receipt_info-style arrays and receipt blobs.
- */
-function extractReceiptProductIds(raw: any, metadata: Record<string, any>): string[] {
-  const arrayCandidates = [
-    raw?.latest_receipt_info,
-    raw?.latest_receipt,
-    raw?.apple_receipt,
-    raw?.apple_receipt_json,
-    raw?.receipt_json,
-    raw?.entitlement_data,
-    metadata?.latest_receipt_info,
-    metadata?.latest_receipt,
-    metadata?.apple_receipt,
-    metadata?.apple_receipt_json,
-    metadata?.receipt_json,
-    metadata?.entitlement_data,
-  ];
-
-  const directCandidates = [
-    raw?.product_id,
-    raw?.productId,
-    raw?.apple_product_id,
-    metadata?.product_id,
-    metadata?.productId,
-    metadata?.apple_product_id,
-    metadata?.latest_receipt_info?.product_id,
-    metadata?.latest_receipt_info?.productId,
-  ];
-
-  const fromArrays = arrayCandidates
-    .flatMap((candidate) => parseArrayLike(candidate))
-    .flatMap((entry) => (isPlainObject(entry) ? [entry.product_id, entry.productId] : []));
-
-  return [...new Set([...directCandidates, ...fromArrays]
-    .map((value) => norm(value || ''))
-    .filter(Boolean))];
-}
-
-function hasModuleAlias(token: string, compact: string, alias: string): boolean {
-  return token === alias || token.startsWith(`${alias}_`) || token.includes(`.${alias}.`) || compact.startsWith(alias);
-}
-
-function normalizeModuleToken(value: unknown): string | null {
-  const token = norm(value || '');
-  if (!token) return null;
-  const compact = token.replace(/[\s_-]/g, '');
-  if (token === 'pipe' || hasModuleAlias(token, compact, 'pk') || token.includes('pipekeeper') || compact.includes('pipekeeper')) return 'pipekeeper';
-  if (token === 'whiskey' || hasModuleAlias(token, compact, 'wk') || token.includes('whiskeykeeper') || compact.includes('whiskeykeeper')) return 'whiskeykeeper';
-  if (token === 'cigar' || hasModuleAlias(token, compact, 'ck') || token.includes('cigarkeeper') || compact.includes('cigarkeeper')) return 'cigarkeeper';
-  if (token === 'wine' || token.includes('winekeeper') || compact.includes('winekeeper')) return 'winekeeper';
-  return null;
-}
-
-function extractModuleTokens(value: unknown): string[] {
-  if (Array.isArray(value)) return value.flatMap((entry) => extractModuleTokens(entry));
-  if (typeof value === 'string') return value.split(/[,;|]/g).map((part) => part.trim()).filter(Boolean);
-  if (isPlainObject(value)) return Object.values(value).flatMap((entry) => extractModuleTokens(entry));
-  const normalized = normalizeModuleToken(value);
-  return normalized ? [normalized] : [];
-}
-
-function recoverModulesFromMetadata(raw: any, metadata: Record<string, any>): string[] {
+function normalizeInterval(raw) {
   const candidates = [
-    raw.modules,
-    raw.modules_csv,
-    raw.paid_modules_csv,
-    raw.module,
-    raw.primary_module,
-    raw.product_module,
-    raw.app,
-    raw.app_slug,
-    raw.legacy_app_slug,
-    raw.app_aliases,
-    metadata.modules,
-    metadata.modules_csv,
-    metadata.paid_modules_csv,
-    metadata.module,
-    metadata.primary_module,
-    metadata.product_module,
-    metadata.app,
-    metadata.app_slug,
-    metadata.legacy_app_slug,
-    metadata.app_aliases,
+    raw.billing_interval, raw.billing_period, raw.interval,
+    raw.period, raw.plan_interval, raw.recurring_interval,
+    raw.items?.data?.[0]?.price?.recurring?.interval,
+    raw.price?.recurring?.interval,
   ];
-  const modules = candidates
-    .flatMap((candidate) => extractModuleTokens(candidate))
-    .map((entry) => normalizeModuleToken(entry))
-    .filter(Boolean) as string[];
-  return [...new Set(modules)];
-}
-
-function inferIntervalFromDateSpan(raw: any): IntervalKind | null {
-  const start = parseDate(raw.current_period_start || raw.started_at || raw.created_date);
-  const end = parseDate(raw.current_period_end);
-  if (!start || !end) return null;
-  const days = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-  if (days >= 300 && days <= 380) return 'annual';
-  if (days >= 27 && days <= 40) return 'monthly';
-  return null;
-}
-
-function inferPlanKeyFromIdentifiers(raw: any, resolvedInterval: IntervalKind | null): string | null {
-  const metadata = parseMetadataObject(raw);
-  const receiptProductIds = extractReceiptProductIds(raw, metadata);
-  const stripePriceId = raw?.items?.data?.[0]?.price?.id || raw?.price?.id || null;
-  const candidates = [
-    raw.planKey,
-    raw.plan_key,
-    raw.price_id,
-    raw.stripe_price_id,
-    raw.provider_price_id,
-    stripePriceId,
-    raw.apple_product_id,
-    raw.plan_id,
-    raw.plan_name,
-    raw.bundle_name,
-    raw.checkout_type,
-    raw.product_kind,
-    raw.product_label,
-    raw.app,
-    raw.app_slug,
-    raw.legacy_app_slug,
-    raw.app_aliases,
-    raw.provider_subscription_id,
-    raw.stripe_subscription_id,
-    metadata.plan_key,
-    metadata.planKey,
-    metadata.price_id,
-    metadata.stripe_price_id,
-    metadata.provider_price_id,
-    metadata?.items?.data?.[0]?.price?.id,
-    metadata?.price?.id,
-    metadata.apple_product_id,
-    metadata.plan_id,
-    metadata.plan_name,
-    metadata.bundle_name,
-    metadata.checkout_type,
-    metadata.product_kind,
-    metadata.product_label,
-    metadata.app,
-    metadata.app_slug,
-    metadata.legacy_app_slug,
-    metadata.app_aliases,
-    metadata.provider_subscription_id,
-    metadata.stripe_subscription_id,
-    ...receiptProductIds,
-  ]
-    .map((v) => norm(v || ''))
-    .filter(Boolean);
-
-  for (const candidate of candidates) {
-    const canonical = canonicalizePlanKeyCandidate(candidate);
-    if (canonical) return canonical;
-  }
-
-  const suffixFromToken = (value: string): IntervalKind | null => {
-    const v = norm(value || '');
-    if (!v) return null;
-    if (v.includes('annual') || v.includes('yearly') || v.includes('year')) return 'annual';
-    if (v.includes('monthly') || v.includes('month')) return 'monthly';
-    return null;
-  };
-  const fallbackSuffix = resolvedInterval === 'annual' ? 'annual' : (resolvedInterval === 'monthly' ? 'monthly' : null);
-
-  for (const candidate of candidates) {
-    const planSuffix = suffixFromToken(candidate) || fallbackSuffix;
-    if (!planSuffix) continue;
-    if (candidate.includes('founders')) return `founders_bundle_${planSuffix}`;
-    if (candidate.includes('three_module') || candidate.includes('bundle_3')) return `three_module_bundle_${planSuffix}`;
-    if (candidate.includes('four_module') || candidate.includes('bundle_4')) return `four_module_bundle_${planSuffix}`;
-    const moduleFromToken = normalizeModuleToken(candidate);
-    if (moduleFromToken) return `${moduleFromToken}_pro_${planSuffix}`;
-  }
-
-  return null;
-}
-
-// Infer billing interval from identifier-like fields when explicit interval fields are absent.
-// Uses both top-level subscription fields and metadata payload hints.
-function inferIntervalFromIdentifiers(raw: any): IntervalKind | null {
-  const metadata = parseMetadataObject(raw);
-  const receiptProductIds = extractReceiptProductIds(raw, metadata);
-  const stripeInterval = raw?.items?.data?.[0]?.price?.recurring?.interval || raw?.price?.recurring?.interval || null;
-  const candidates = [
-    raw.planKey,
-    raw.plan_key,
-    raw.price_id,
-    raw.stripe_price_id,
-    raw.apple_product_id,
-    raw.plan_id,
-    raw.plan_name,
-    raw.bundle_name,
-    raw.checkout_type,
-    raw.product_kind,
-    raw.product_label,
-    raw.interval,
-    raw.period,
-    raw.plan_interval,
-    raw.recurring_interval,
-    stripeInterval,
-    metadata.plan_key,
-    metadata.planKey,
-    metadata.price_id,
-    metadata.stripe_price_id,
-    metadata.apple_product_id,
-    metadata.plan_id,
-    metadata.plan_name,
-    metadata.bundle_name,
-    metadata.checkout_type,
-    metadata.product_kind,
-    metadata.product_label,
-    metadata.interval,
-    metadata.period,
-    metadata.plan_interval,
-    metadata.recurring_interval,
-    metadata?.items?.data?.[0]?.price?.recurring?.interval,
-    metadata?.price?.recurring?.interval,
-    ...receiptProductIds,
-  ]
-    .map((v) => norm(v || ''))
-    .filter(Boolean);
-
-  for (const candidate of candidates) {
-    if (candidate.includes('annual') || candidate.includes('yearly') || candidate.includes('year')) return 'annual';
-    if (candidate.includes('monthly') || candidate.includes('month')) return 'monthly';
+  for (const v of candidates) {
+    const n = norm(v ?? '');
+    if (n === 'month' || n === 'monthly') return 'monthly';
+    if (n === 'year' || n === 'yearly' || n === 'annual') return 'annual';
   }
   return null;
 }
 
-// Safe canonical backfill: infer plan key from resolved module set + billing interval + tier/amount hints.
-// Only used after direct and identifier-based plan resolution fails.
-function inferPlanKeyFromResolvedModules(
-  modules: string[],
-  billingInterval: IntervalKind | null,
-  amount: number | null,
-  tierHintRaw: unknown,
-): string | null {
-  const interval = billingInterval === 'annual' ? 'annual' : (billingInterval === 'monthly' ? 'monthly' : null);
-  if (!interval || !Array.isArray(modules) || modules.length === 0) return null;
-
-  const normalizedModules = [...new Set(modules.map((m) => norm(m || '')).filter(Boolean))].sort();
-  const same = (arr: string[]) => arr.length === normalizedModules.length && arr.every((m, idx) => normalizedModules[idx] === m);
-
-  if (same(['pipekeeper', 'whiskeykeeper'])) return `founders_bundle_${interval}`;
-  if (same(['cigarkeeper', 'pipekeeper', 'whiskeykeeper'])) return `three_module_bundle_${interval}`;
-  if (same(['cigarkeeper', 'pipekeeper', 'whiskeykeeper', 'winekeeper'])) return `four_module_bundle_${interval}`;
-  if (normalizedModules.length !== 1) return null;
-
-  const module = normalizedModules[0];
-  if (module === 'unknown') return null;
-  const tierHint = norm(tierHintRaw || '');
-  const normalizedAmount = Number.isFinite(Number(amount)) ? parseFloat(Number(amount).toFixed(2)) : null;
-  const isLegacy = normalizedAmount === 1.99 || normalizedAmount === 19.99;
-  const isPro = normalizedAmount === 2.99 || normalizedAmount === 29.99;
-
-  if (tierHint === 'premium' || tierHint === 'legacy' || isLegacy) return `${module}_premium_${interval}`;
-  if (tierHint === 'pro' || isPro) return `${module}_pro_${interval}`;
-  // Safe historical fallback: modern canonical plan key when module+interval are known
-  // but tier/amount hints are absent.
-  return `${module}_pro_${interval}`;
-}
-
-// ─── Platform normalization ───────────────────────────────────────────────────
-
-function normalizePlatform(raw: any, user: any | null): PlatformKind | null {
-  const provider = norm(raw.provider || '');
-  if (provider === 'apple' || provider === 'ios') return 'ios';
-  if (provider === 'google' || provider === 'android' || provider === 'googleplay') return 'google';
-  if (provider === 'stripe' || provider === 'web') return 'web';
-  if (user) {
-    const up = norm(user.data?.platform || user.platform || '');
-    if (up === 'apple' || up === 'ios') return 'ios';
-    if (up === 'android' || up === 'googleplay' || up === 'google') return 'google';
-    if (up && up !== 'unknown') return 'web';
-  }
+function normalizePlatform(raw) {
+  const p = norm(raw.provider ?? '');
+  if (p === 'apple' || p === 'ios') return 'ios';
+  if (p === 'google' || p === 'android' || p === 'googleplay') return 'google';
+  if (p === 'stripe' || p === 'web') return 'web';
   return null;
 }
 
-// ─── Active paid detection ────────────────────────────────────────────────────
+function normalizeModuleToken(v) {
+  const t = norm(v ?? '');
+  if (!t) return null;
+  const c = t.replace(/[\s_-]/g,'');
+  if (t === 'pipe' || t.includes('pipekeeper') || c.includes('pipekeeper') || c.startsWith('pk')) return 'pipekeeper';
+  if (t === 'whiskey' || t.includes('whiskeykeeper') || c.includes('whiskeykeeper') || c.startsWith('wk')) return 'whiskeykeeper';
+  if (t === 'cigar' || t.includes('cigarkeeper') || c.includes('cigarkeeper') || c.startsWith('ck')) return 'cigarkeeper';
+  if (t === 'wine' || t.includes('winekeeper') || c.includes('winekeeper')) return 'winekeeper';
+  return null;
+}
 
-function isActivePaid(raw: any): boolean {
-  const status = norm(raw.status);
-  const amount = Math.max(0, Number(raw.amount || 0));
-  if (status === 'active') return true;
-  if (status === 'trialing' && amount > 0) return true;
-  if (status === 'past_due') return true;
+function isActivePaid(raw) {
+  const s = norm(raw.status ?? '');
+  if (s === 'active') return true;
+  if (s === 'trialing' && Number(raw.amount ?? 0) > 0) return true;
+  if (s === 'past_due') return true;
   return false;
 }
 
-// ─── Normalization: raw → NormalizedSub ──────────────────────────────────────
-// Module resolution priority (NEVER defaults to 'pipekeeper'):
-//   1. planKey → PLAN_CATALOG (authoritative)
-//   2. modules_csv stored field
-//   3. primary_module stored field
-//   4. metadata module/app hints (modules/app_slug/app_aliases)
-//   5. Amount inference for bundle prices (resolves modules from price)
-//   6. 'unknown' — truly unresolvable products stay unknown
+function userKey(userId, userEmail) {
+  return String(userId ?? '').trim() || norm(userEmail ?? '');
+}
 
-function normalizeSub(raw: any, user: any | null = null): NormalizedSub {
-  const metadata = parseMetadataObject(raw);
-  const metadataModules = recoverModulesFromMetadata(raw, metadata);
-  const stripeRecurringInterval = raw?.items?.data?.[0]?.price?.recurring?.interval || raw?.price?.recurring?.interval || null;
-  const directInterval = normalizeInterval(raw);
-  const metadataInterval =
-    normalizeIntervalToken(metadata.billing_interval) ||
-    normalizeIntervalToken(metadata.billing_period) ||
-    normalizeIntervalToken(raw.interval) ||
-    normalizeIntervalToken(raw.period) ||
-    normalizeIntervalToken(raw.plan_interval) ||
-    normalizeIntervalToken(raw.recurring_interval) ||
-    normalizeIntervalToken(metadata.interval) ||
-    normalizeIntervalToken(metadata.period) ||
-    normalizeIntervalToken(metadata.plan_interval) ||
-    normalizeIntervalToken(metadata.recurring_interval) ||
-    normalizeIntervalToken(stripeRecurringInterval) ||
-    normalizeIntervalToken(metadata?.recurring?.interval) ||
-    normalizeIntervalToken(metadata?.items?.data?.[0]?.price?.recurring?.interval) ||
-    normalizeIntervalToken(metadata?.price?.recurring?.interval);
-  const intervalFromIdentifiers = inferIntervalFromIdentifiers(raw);
-  const intervalFromSpan = inferIntervalFromDateSpan(raw);
-  const resolvedIntervalPrePlan = directInterval || metadataInterval || intervalFromIdentifiers || intervalFromSpan || null;
+function getCalendarRange(type, now) {
+  const s = new Date(now);
+  let e;
+  if (type === 'today') {
+    s.setUTCHours(0,0,0,0);
+    e = new Date(Date.UTC(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate(), 23,59,59,999));
+  } else if (type === 'week') {
+    const dow = s.getUTCDay();
+    s.setUTCDate(s.getUTCDate() - (dow === 0 ? 6 : dow - 1));
+    s.setUTCHours(0,0,0,0);
+    e = new Date(s); e.setUTCDate(e.getUTCDate()+6); e.setUTCHours(23,59,59,999);
+  } else if (type === 'month') {
+    s.setUTCDate(1); s.setUTCHours(0,0,0,0);
+    e = new Date(Date.UTC(s.getUTCFullYear(), s.getUTCMonth()+1, 0, 23,59,59,999));
+  } else if (type === 'quarter') {
+    const q = Math.floor(s.getUTCMonth()/3);
+    s.setUTCMonth(q*3,1); s.setUTCHours(0,0,0,0);
+    e = new Date(Date.UTC(s.getUTCFullYear(), q*3+3, 0, 23,59,59,999));
+  } else {
+    s.setUTCMonth(0,1); s.setUTCHours(0,0,0,0);
+    e = new Date(Date.UTC(s.getUTCFullYear(), 11, 31, 23,59,59,999));
+  }
+  return { start: s, end: e };
+}
 
-  const directPlanKeyRaw = norm(raw.planKey || raw.plan_key || metadata.planKey || metadata.plan_key || '') || null;
-  const directPlanKey = directPlanKeyRaw ? (canonicalizePlanKeyCandidate(directPlanKeyRaw) || directPlanKeyRaw) : null;
-  const inferredPlanKey = inferPlanKeyFromIdentifiers(raw, resolvedIntervalPrePlan);
-  let planKey = directPlanKey || inferredPlanKey || null;
-  let catalog = lookupPlan(planKey);
-
-  const directAmountFromPriceField =
-    typeof raw.price === 'number' || typeof raw.price === 'string'
-      ? parsePositiveMoney(raw.price)
-      : null;
-  const directAmount = parsePositiveMoney(raw.amount) || directAmountFromPriceField;
-  const renewalAmountRecovered =
-    parsePositiveNumber(raw.renewal_amount) ||
-    parsePositiveNumber(raw.amount_total, { treatAsCents: true }) ||
-    parsePositiveNumber(raw.unit_amount, { treatAsCents: true }) ||
-    parsePositiveNumber(raw?.price?.unit_amount, { treatAsCents: true }) ||
-    parsePositiveNumber(raw?.items?.data?.[0]?.price?.unit_amount, { treatAsCents: true }) ||
-    parsePositiveNumber(raw?.price?.amount_total, { treatAsCents: true }) ||
-    parsePositiveNumber(metadata.renewal_amount) ||
-    parsePositiveNumber(metadata.amount) ||
-    parsePositiveMoney(metadata.price) ||
-    parsePositiveNumber(metadata.amount_total, { treatAsCents: true }) ||
-    parsePositiveNumber(metadata.unit_amount, { treatAsCents: true }) ||
-    parsePositiveNumber(metadata?.items?.data?.[0]?.price?.unit_amount, { treatAsCents: true }) ||
-    parsePositiveNumber(metadata?.price?.amount_total, { treatAsCents: true }) ||
-    parsePositiveNumber(metadata?.price?.unit_amount, { treatAsCents: true }) ||
+// ─── CANONICAL LEDGER ROW BUILDER ─────────────────────────────────────────────
+// One row per active-paid subscription record.
+// Resolution order for planKey → everything else derives from it.
+// Unknown rows are quarantined, not excluded.
+function buildLedgerRow(raw) {
+  // 1. Try direct plan_key fields (authoritative)
+  const directPlanKey =
+    canonicalizePlanKey(raw.planKey) ||
+    canonicalizePlanKey(raw.plan_key) ||
     null;
 
-  const recoveredAmount = directAmount || renewalAmountRecovered || null;
-  let price: number | null = recoveredAmount ?? (catalog ? catalog.price : null);
-  let renewalAmount = price;
-  const amountInference = price ? inferFromAmount(price) : null;
+  // 2. Try identifiers that might encode a plan key
+  let inferredPlanKey = null;
+  if (!directPlanKey) {
+    const candidates = [
+      raw.price_id, raw.stripe_price_id, raw.provider_price_id,
+      raw.apple_product_id, raw.plan_id, raw.plan_name, raw.checkout_type,
+    ].map(v => norm(v ?? '')).filter(Boolean);
 
-  // ── Interval resolution: direct fields → metadata → catalog → amount inference → span ──
-  const billingInterval: IntervalKind | null =
+    for (const c of candidates) {
+      const k = canonicalizePlanKey(c);
+      if (k) { inferredPlanKey = k; break; }
+      // Pattern-match: module + interval token in string
+      if (!inferredPlanKey) {
+        const intervalToken = c.includes('annual') || c.includes('yearly') || c.includes('year') ? 'annual'
+                            : c.includes('monthly') || c.includes('month') ? 'monthly' : null;
+        const module = normalizeModuleToken(c);
+        if (module && intervalToken) { inferredPlanKey = `${module}_pro_${intervalToken}`; break; }
+        if (c.includes('founders') && intervalToken) { inferredPlanKey = `founders_bundle_${intervalToken}`; break; }
+        if ((c.includes('three_module') || c.includes('bundle_3')) && intervalToken) { inferredPlanKey = `three_module_bundle_${intervalToken}`; break; }
+        if ((c.includes('four_module') || c.includes('bundle_4')) && intervalToken) { inferredPlanKey = `four_module_bundle_${intervalToken}`; break; }
+      }
+    }
+  }
+
+  const resolvedPlanKey = directPlanKey || inferredPlanKey || null;
+  let catalog = lookupPlan(resolvedPlanKey);
+
+  // 3. Resolve price (raw amount wins; catalog is fallback)
+  const rawPrice = parsePositiveMoney(raw.amount) || parsePositiveMoney(raw.price) || null;
+  const catalogPrice = catalog?.price ?? null;
+  const price = rawPrice ?? catalogPrice ?? null;
+
+  // 4. Resolve billing interval
+  const directInterval = normalizeInterval(raw);
+  const intervalFromAmount = price !== null ? (AMOUNT_TO_INTERVAL[parseFloat(Number(price).toFixed(2))] ?? null) : null;
+  const intervalFromSpan = (() => {
+    const s = parseDate(raw.current_period_start || raw.started_at);
+    const e = parseDate(raw.current_period_end);
+    if (!s || !e) return null;
+    const days = Math.round((e.getTime()-s.getTime())/(86400000));
+    if (days >= 300 && days <= 380) return 'annual';
+    if (days >= 27 && days <= 40) return 'monthly';
+    return null;
+  })();
+  const billingInterval =
     directInterval ??
-    metadataInterval ??
     (catalog?.billingInterval ?? null) ??
-    (amountInference?.billingInterval ?? null) ??
+    intervalFromAmount ??
     intervalFromSpan ??
     null;
 
-  // ── Module resolution (never defaults to 'pipekeeper') ───────────────────
-  let modules: string[];
-  let productLabel: string;
-  const primaryModule = normalizeModuleToken(raw.primary_module || '');
+  // 5. Backfill planKey from modules+interval when still missing
+  if (!resolvedPlanKey && billingInterval) {
+    const csvModules = String(raw.modules_csv ?? '').split(',')
+      .map(m => normalizeModuleToken(m)).filter(Boolean);
+    if (csvModules.length > 0) {
+      const sorted = [...new Set(csvModules)].sort();
+      const mKey = sorted.join(',');
+      const map = {
+        'pipekeeper': `pipekeeper_pro_${billingInterval}`,
+        'whiskeykeeper': `whiskeykeeper_pro_${billingInterval}`,
+        'cigarkeeper': `cigarkeeper_pro_${billingInterval}`,
+        'winekeeper': `winekeeper_pro_${billingInterval}`,
+        'pipekeeper,whiskeykeeper': `founders_bundle_${billingInterval}`,
+        'cigarkeeper,pipekeeper,whiskeykeeper': `three_module_bundle_${billingInterval}`,
+        'cigarkeeper,pipekeeper,whiskeykeeper,winekeeper': `four_module_bundle_${billingInterval}`,
+      };
+      if (map[mKey]) {
+        catalog = lookupPlan(map[mKey]);
+      }
+    }
+  }
+
+  // 6. Resolve modules (NEVER defaults to pipekeeper)
+  let modules;
+  let productLabel;
+  let trusted = false; // true = came from catalog
 
   if (catalog) {
-    // 1. Authoritative catalog match via planKey
     modules = catalog.modules;
-    productLabel = buildProductLabel(catalog.modules, catalog.label);
+    productLabel = catalog.label;
+    trusted = true;
   } else {
-    // 2. modules_csv stored field
-    const csvModules = String(raw.modules_csv || '')
-      .split(',')
-      .map((m: string) => normalizeModuleToken(m))
-      .filter(Boolean);
-
+    // Try modules_csv
+    const csvModules = String(raw.modules_csv ?? '').split(',')
+      .map(m => normalizeModuleToken(m)).filter(Boolean);
     if (csvModules.length > 0) {
-      modules = csvModules;
-      productLabel = buildProductLabel(modules, modules.length > 1 ? 'Bundle' : modules[0]);
-    } else if (primaryModule) {
-      // 3. primary_module stored field
-      modules = [primaryModule];
-      productLabel = buildProductLabel(modules, modules[0]);
-    } else if (metadataModules.length > 0) {
-      // 4. metadata module/app hints
-      modules = metadataModules;
-      productLabel = buildProductLabel(modules, modules.length > 1 ? 'Bundle' : modules[0]);
-    } else if (amountInference?.modules) {
-      // 5. Amount inference for bundle amounts (resolves modules definitively)
-      modules = amountInference.modules;
-      productLabel = amountInference.label;
+      modules = [...new Set(csvModules)];
+      productLabel = modules.join('+');
+    } else if (price !== null && BUNDLE_AMOUNT_TO_MODULES[parseFloat(Number(price).toFixed(2))]) {
+      // Bundle amount implies modules definitively
+      modules = BUNDLE_AMOUNT_TO_MODULES[parseFloat(Number(price).toFixed(2))];
+      productLabel = `Bundle (inferred from $${price})`;
+      trusted = true;
     } else {
-      // 6. Truly unresolvable — mark as unknown, NOT pipekeeper
-      const userModules = String(user?.paid_modules_csv || '')
-        .split(',')
-        .map((m: string) => normalizeModuleToken(m))
-        .filter(Boolean);
-      if (userModules.length > 0) {
-        modules = [...new Set(userModules)];
-        productLabel = buildProductLabel(modules, modules.length > 1 ? 'Bundle' : modules[0]);
-      } else {
-        modules = ['unknown'];
-        productLabel = 'Unknown';
-      }
+      // Unknown — quarantine
+      modules = ['unknown'];
+      productLabel = 'Unknown';
     }
   }
 
-  const tierHint = raw.subscription_tier || raw.tier || metadata.subscription_tier || metadata.tier || null;
-  const planKeyBackfill = !planKey
-    ? inferPlanKeyFromResolvedModules(modules, billingInterval, price, tierHint)
-    : null;
-  if (planKeyBackfill) {
-    planKey = planKeyBackfill;
-    catalog = lookupPlan(planKey);
-    if (catalog) {
-      modules = catalog.modules;
-      productLabel = buildProductLabel(catalog.modules, catalog.label);
-      if (price === null) {
-        price = catalog.price;
-        renewalAmount = catalog.price;
-      }
-    }
-  }
-
-  const module = modules[0];
-  const priceSource = directAmount
-    ? 'direct:amount'
-    : renewalAmountRecovered
-      ? 'recovered:stored_renewal_or_metadata_amount'
-      : catalog?.price != null
-        ? 'recovered:plan_catalog'
-        : 'unresolved:none';
-  const intervalSource = directInterval
-    ? 'direct:billing_interval'
-    : metadataInterval
-      ? 'recovered:metadata_interval'
-      : catalog?.billingInterval
-        ? 'recovered:plan_catalog'
-        : amountInference?.billingInterval
-          ? 'recovered:amount_inference'
-          : intervalFromSpan
-            ? 'recovered:period_span'
-            : 'unresolved:none';
-  const planKeySource = directPlanKey
-    ? 'direct:plan_key'
-    : inferredPlanKey
-      ? 'recovered:identifier_mapping'
-      : planKeyBackfill
-        ? 'recovered:modules_interval_backfill'
-      : 'unresolved:none';
+  const isUnknown = modules.length === 1 && modules[0] === 'unknown';
+  const isBundle = modules.length > 1;
 
   return {
-    rawId:          String(raw.id || raw.stripe_subscription_id || ''),
-    recordPath:     `Subscription/${String(raw.id || raw.stripe_subscription_id || 'unknown')}`,
-    userId:         String(raw.user_id || ''),
-    userEmail:      norm(raw.user_email || ''),
-    isPaid:         isActivePaid(raw),
-    subscriptionStatus: norm(raw.status || ''),
-    planKey,
+    rawId:           String(raw.id || raw.stripe_subscription_id || ''),
+    userId:          String(raw.user_id ?? ''),
+    userEmail:       norm(raw.user_email ?? ''),
+    status:          norm(raw.status ?? ''),
+    planKey:         resolvedPlanKey,
+    modules,
     billingInterval,
     price,
-    renewalAmount,
-    createdAt:      parseDate(raw.started_at || raw.created_date || raw.current_period_start),
-    renewalAt:      parseDate(raw.current_period_end),
-    module,
-    modules,
-    platform:       normalizePlatform(raw, user),
+    renewalAt:       parseDate(raw.current_period_end),
+    createdAt:       parseDate(raw.started_at || raw.created_date || raw.current_period_start),
+    platform:        normalizePlatform(raw),
     productLabel,
-    fieldResolution: {
-      price: price === null ? 'unresolved' : (directAmount ? 'direct' : 'recovered'),
-      billingInterval: billingInterval === null ? 'unresolved' : (directInterval ? 'direct' : 'recovered'),
-      planKey: planKey === null ? 'unresolved' : (directPlanKey ? 'direct' : 'recovered'),
-      sources: {
-        price: priceSource,
-        billingInterval: intervalSource,
-        planKey: planKeySource,
-      },
-    },
+    isBundle,
+    isUnknown,
+    isTrusted:       trusted,
+    // Diagnostic: what was in the raw record
+    _rawStatus:      raw.status,
+    _rawProvider:    raw.provider,
   };
 }
 
-// ─── MRR contribution ─────────────────────────────────────────────────────────
-
-function mrrContribution(sub: NormalizedSub): number {
-  if (!sub.isPaid || sub.price === null) return 0;
-  if (sub.billingInterval === 'monthly') return sub.price;
-  if (sub.billingInterval === 'annual')  return sub.price / 12;
-  return 0;
+// ─── Paginated fetch ──────────────────────────────────────────────────────────
+async function fetchAll(entity) {
+  const PAGE = 100;
+  const items = [];
+  let skip = 0;
+  while (true) {
+    let page = await entity.list(null, PAGE, skip);
+    if (typeof page === 'string') { try { page = JSON.parse(page); } catch { break; } }
+    if (!Array.isArray(page) || page.length === 0) break;
+    items.push(...page);
+    if (page.length < PAGE) break;
+    skip += PAGE;
+  }
+  return items;
 }
 
-// ─── Renewal period math ──────────────────────────────────────────────────────
-
-function calcRenewalPeriod(paidSubs: NormalizedSub[], range: CalendarRange) {
-  const renewing = paidSubs.filter(
-    (s) => s.renewalAt !== null && inRange(s.renewalAt, range) && s.price !== null && s.billingInterval !== null
-  );
-  const customers = new Set(renewing.map((s) => s.userId || s.userEmail).filter(Boolean)).size;
-  const revenue   = roundCurrency(renewing.reduce((sum, s) => sum + (s.price ?? 0), 0));
-  return { customers, subscriptions: renewing.length, revenue };
-}
-
-// ─── Sanity checks ────────────────────────────────────────────────────────────
-
-function runSanityChecks(params: {
-  paidAccounts: number; totalAccounts: number; mrr: number; arr: number;
-  renewals: { week: any; month: any; quarter: any; year: any };
-}) {
-  const failures: string[] = [];
-  if (params.paidAccounts > params.totalAccounts) {
-    failures.push(`SANITY_FAIL: paidAccounts(${params.paidAccounts}) > totalAccounts(${params.totalAccounts})`);
-  }
-  const expectedArr = parseFloat((params.mrr * 12).toFixed(2));
-  if (Math.abs(params.arr - expectedArr) > 0.01) {
-    failures.push(`SANITY_FAIL: arr(${params.arr}) !== mrr×12(${expectedArr})`);
-  }
-  for (const [label, period] of Object.entries(params.renewals) as [string, any][]) {
-    if (period.customers > period.subscriptions) {
-      failures.push(`SANITY_FAIL: renewal ${label} — customers(${period.customers}) > subscriptions(${period.subscriptions})`);
-    }
-  }
-  if (failures.length > 0) failures.forEach((f) => console.error('[getUserSubscriptionReportV3] ' + f));
-  return { passed: failures.length === 0, failures };
-}
-
-// ─── Main handler ─────────────────────────────────────────────────────────────
-
+// ─── Main ─────────────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   try {
-    const base44  = createClientFromRequest(req);
+    const base44 = createClientFromRequest(req);
     const authUser = await base44.auth.me();
-
     if (authUser?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required', meta: { generatedAt: new Date().toISOString(), reportVersion: REPORT_VERSION } }, { status: 403 });
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
-
-    // ── Paginated fetch ───────────────────────────────────────────────────────
-    const fetchAll = async (entity: any): Promise<any[]> => {
-      const PAGE = 100;
-      const items: any[] = [];
-      let skip = 0;
-      while (true) {
-        let page = await entity.list(null, PAGE, skip);
-        if (typeof page === 'string') { try { page = JSON.parse(page); } catch { break; } }
-        if (!Array.isArray(page) || page.length === 0) break;
-        items.push(...page);
-        if (page.length < PAGE) break;
-        skip += PAGE;
-      }
-      return items;
-    };
 
     const [allUsers, allSubscriptions] = await Promise.all([
       fetchAll(base44.asServiceRole.entities.User),
@@ -952,7 +328,6 @@ Deno.serve(async (req) => {
     ]);
 
     const now = new Date();
-
     const ranges = {
       today:   getCalendarRange('today',   now),
       week:    getCalendarRange('week',    now),
@@ -961,769 +336,412 @@ Deno.serve(async (req) => {
       year:    getCalendarRange('year',    now),
     };
 
-    // ── Deduplicate users by email (most recent wins) ─────────────────────────
-    const uniqueUsersMap = new Map<string, any>();
+    // ── Deduplicate users by email ────────────────────────────────────────────
+    const userByEmail = new Map();
+    const userById = new Map();
     for (const u of allUsers) {
-      const email = norm(u.email || '');
+      const email = norm(u.email ?? '');
       if (!email) continue;
-      const existing = uniqueUsersMap.get(email);
-      if (!existing) {
-        uniqueUsersMap.set(email, u);
-      } else {
-        // Keep the most recently created/updated user record
-        const existingTs = new Date(existing.updated_date || existing.created_date || 0).getTime();
-        const uTs = new Date(u.updated_date || u.created_date || 0).getTime();
-        if (uTs > existingTs) uniqueUsersMap.set(email, u);
+      const existing = userByEmail.get(email);
+      if (!existing || new Date(u.updated_date||0) > new Date(existing.updated_date||0)) {
+        userByEmail.set(email, u);
       }
+      if (u.id) userById.set(String(u.id), u);
     }
-    const uniqueUsers = [...uniqueUsersMap.values()];
+    const uniqueUsers = [...userByEmail.values()];
 
-    // ── User lookup maps ──────────────────────────────────────────────────────
-    const userByIdMap    = new Map<string, any>();
-    const userByEmailMap = new Map<string, any>();
-    for (const u of uniqueUsers) {
-      if (u.id) userByIdMap.set(String(u.id), u);
-      const email = norm(u.email || '');
-      if (email) userByEmailMap.set(email, u);
-    }
+    // ── BUILD CANONICAL BILLING LEDGER ────────────────────────────────────────
+    // Rule: one row per active-paid subscription record, deduplicated by
+    // (userKey, platform, productFamilyKey). Unknown products are never collapsed.
+    const activePaidRaws = allSubscriptions.filter(isActivePaid);
 
-    // ── Subscription lookup maps ──────────────────────────────────────────────
-    const subsByUserId = new Map<string, any[]>();
-    const subsByEmail  = new Map<string, any[]>();
-    for (const raw of allSubscriptions) {
-      if (raw.user_id) {
-        if (!subsByUserId.has(raw.user_id)) subsByUserId.set(raw.user_id, []);
-        subsByUserId.get(raw.user_id)!.push(raw);
-      }
-      const e = norm(raw.user_email || '');
-      if (e) {
-        if (!subsByEmail.has(e)) subsByEmail.set(e, []);
-        subsByEmail.get(e)!.push(raw);
-      }
+    // Build ledger rows
+    const seenRawIds = new Set();
+    const allLedgerRows = [];
+    for (const raw of activePaidRaws) {
+      const rid = String(raw.id || raw.stripe_subscription_id || '');
+      if (rid && seenRawIds.has(rid)) continue;
+      if (rid) seenRawIds.add(rid);
+      allLedgerRows.push(buildLedgerRow(raw));
     }
 
-    function getUserRawSubs(u: any): any[] {
-      const email = norm(u.email || '');
-      const byId  = subsByUserId.get(u.id)  || [];
-      const byMail = subsByEmail.get(email) || [];
-      const seen = new Set<string>();
-      return [...byId, ...byMail].filter((s) => {
-        const key = s.id || s.stripe_subscription_id || '';
-        if (!key) return true;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+    // Dedup by (userKey × platform × productFamily)
+    function productFamilyKey(row) {
+      if (row.isUnknown) return `unknown::${row.rawId || row.userEmail || 'empty'}`;
+      if (row.isBundle)  return `bundle::${[...row.modules].sort().join(',')}`;
+      return `single::${row.modules[0]}`;
     }
 
-    // ── Phase 1: Normalize all active paid subs (dedup by subscription ID) ────
-    const seenSubIds = new Set<string>();
-    const allActivePaidNorm: NormalizedSub[] = [];
-    for (const raw of allSubscriptions.filter(isActivePaid)) {
-      const key = String(raw.id || raw.stripe_subscription_id || '');
-      if (key && seenSubIds.has(key)) continue;
-      if (key) seenSubIds.add(key);
-      const userId = String(raw.user_id || '');
-      const email  = norm(raw.user_email || '');
-      const user   = (userId && userByIdMap.get(userId)) || (email && userByEmailMap.get(email)) || null;
-      allActivePaidNorm.push(normalizeSub(raw, user));
-    }
-
-    // ── Phase 2: Dedup per (userKey, productFamily) — keep most recent ───────
-    // Use product-family key, NOT first module, so bundles dedup correctly.
-    function getProductFamilyKey(sub: NormalizedSub): string {
-      if (sub.modules.length > 1) {
-        return 'bundle::' + [...sub.modules].sort().join(',');
-      }
-      if (sub.module === 'unknown') {
-        // Unknown products do not collapse — use rawId as unique identifier.
-        return 'unknown::' + (sub.rawId || sub.userEmail || sub.planKey || sub.userId || 'empty');
-      }
-      return 'single::' + sub.module;
-    }
-
-    const paidSubsByKey = new Map<string, NormalizedSub>();
+    const dedupMap = new Map();
     let duplicatesRemoved = 0;
-    for (const sub of allActivePaidNorm) {
-      const userKey = sub.userId || sub.userEmail;
-      if (!userKey) continue;
-      const providerKey = sub.platform || 'unknown-provider';
-      const dedupKey = `${userKey}::${providerKey}::${getProductFamilyKey(sub)}`;
-      const existing = paidSubsByKey.get(dedupKey);
+    for (const row of allLedgerRows) {
+      const uk = userKey(row.userId, row.userEmail);
+      if (!uk) continue;
+      const dk = `${uk}::${row.platform || 'unknown'}::${productFamilyKey(row)}`;
+      const existing = dedupMap.get(dk);
       if (!existing) {
-        paidSubsByKey.set(dedupKey, sub);
+        dedupMap.set(dk, row);
       } else {
         duplicatesRemoved++;
-        const existingDate = existing.createdAt?.getTime() ?? 0;
-        if ((sub.createdAt?.getTime() ?? 0) > existingDate) paidSubsByKey.set(dedupKey, sub);
-      }
-    }
-    const paidSubs = [...paidSubsByKey.values()];
-
-
-    // ── Warning counts ────────────────────────────────────────────────────────
-    let warningMissingPrice    = 0;
-    let warningMissingInterval = 0;
-    let warningMissingPlatform = 0;
-    let warningMissingPlanKey  = 0;
-    let warningUnknownProduct  = 0;
-    const fieldRecovery = {
-      price: { direct: 0, recovered: 0, unresolved: 0 },
-      billingInterval: { direct: 0, recovered: 0, unresolved: 0 },
-      planKey: { direct: 0, recovered: 0, unresolved: 0 },
-    };
-    const unresolvedReasonCounts = {
-      missingPriceBySource: {} as Record<string, number>,
-      missingIntervalBySource: {} as Record<string, number>,
-      unknownPlanKeyBySource: {} as Record<string, number>,
-    };
-    const unresolvedSamples: Array<Record<string, unknown>> = [];
-    const bumpReason = (bucket: Record<string, number>, key: string) => {
-      bucket[key] = (bucket[key] || 0) + 1;
-    };
-    for (const sub of paidSubs) {
-      if (sub.price === null)           warningMissingPrice++;
-      if (sub.billingInterval === null) warningMissingInterval++;
-      if (sub.platform === null)        warningMissingPlatform++;
-      if (sub.planKey === null)         warningMissingPlanKey++;
-      if (sub.module === 'unknown')     warningUnknownProduct++;
-
-      const priceResolution = sub.fieldResolution?.price || 'unresolved';
-      const intervalResolution = sub.fieldResolution?.billingInterval || 'unresolved';
-      const planKeyResolution = sub.fieldResolution?.planKey || 'unresolved';
-      fieldRecovery.price[priceResolution as 'direct' | 'recovered' | 'unresolved']++;
-      fieldRecovery.billingInterval[intervalResolution as 'direct' | 'recovered' | 'unresolved']++;
-      fieldRecovery.planKey[planKeyResolution as 'direct' | 'recovered' | 'unresolved']++;
-
-      if (sub.price === null) {
-        bumpReason(unresolvedReasonCounts.missingPriceBySource, sub.fieldResolution?.sources?.price || 'unresolved:none');
-      }
-      if (sub.billingInterval === null) {
-        bumpReason(unresolvedReasonCounts.missingIntervalBySource, sub.fieldResolution?.sources?.billingInterval || 'unresolved:none');
-      }
-      if (sub.planKey === null) {
-        bumpReason(unresolvedReasonCounts.unknownPlanKeyBySource, sub.fieldResolution?.sources?.planKey || 'unresolved:none');
-      }
-
-      if ((sub.price === null || sub.billingInterval === null || sub.planKey === null) && unresolvedSamples.length < MAX_SAMPLE_SIZE) {
-        unresolvedSamples.push({
-          rawId: sub.rawId,
-          recordPath: sub.recordPath || `Subscription/${sub.rawId || 'unknown'}`,
-          userId: sub.userId,
-          userEmail: sub.userEmail,
-          missingFields: [
-            sub.price === null ? 'price' : null,
-            sub.billingInterval === null ? 'billingInterval' : null,
-            sub.planKey === null ? 'planKey' : null,
-          ].filter(Boolean),
-          failedSources: {
-            price: sub.fieldResolution?.sources?.price || 'unresolved:none',
-            billingInterval: sub.fieldResolution?.sources?.billingInterval || 'unresolved:none',
-            planKey: sub.fieldResolution?.sources?.planKey || 'unresolved:none',
-          },
-          provider: sub.platform || null,
-        });
-      }
-    }
-
-    // ── Subscription counts ───────────────────────────────────────────────────
-    const totalActivePaid = paidSubs.length;
-    const monthlyCount    = paidSubs.filter((s) => s.billingInterval === 'monthly').length;
-    const annualCount     = paidSubs.filter((s) => s.billingInterval === 'annual').length;
-    const bundleCount     = paidSubs.filter((s) => s.modules.length > 1).length;
-    const singleCount     = paidSubs.filter((s) => s.modules.length === 1 && s.module !== 'unknown').length;
-
-    // ── By-product breakdown ──────────────────────────────────────────────────
-    // Bundles count as 1 subscription. Module breakdown shows:
-    //   directSingle: directly subscribed to that module
-    //   viaBundle: module included through a bundle
-    const byProductCounts: Record<string, number> = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundles: 0, unknown: 0 };
-    const moduleDirectCounts: Record<string, number> = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0 };
-    const moduleViaBundle: Record<string, number> = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0 };
-    for (const sub of paidSubs) {
-      if (sub.modules.length > 1) {
-        byProductCounts.bundles++;
-        // Count each module as accessible via bundle
-        for (const m of sub.modules) {
-          if (m in moduleViaBundle) moduleViaBundle[m as keyof typeof moduleViaBundle]++;
+        if ((row.createdAt?.getTime()??0) > (existing.createdAt?.getTime()??0)) {
+          dedupMap.set(dk, row);
         }
-      } else {
-        const m = sub.modules[0] ?? sub.module;
-        if      (m === 'pipekeeper')    { byProductCounts.pipekeeper++; moduleDirectCounts.pipekeeper++; }
-        else if (m === 'whiskeykeeper') { byProductCounts.whiskeykeeper++; moduleDirectCounts.whiskeykeeper++; }
-        else if (m === 'cigarkeeper')   { byProductCounts.cigarkeeper++; moduleDirectCounts.cigarkeeper++; }
-        else if (m === 'winekeeper')    { byProductCounts.winekeeper++; moduleDirectCounts.winekeeper++; }
-        else                            byProductCounts.unknown++;
       }
     }
-    const moduleEffectiveCounts = {
-      pipekeeper: moduleDirectCounts.pipekeeper + moduleViaBundle.pipekeeper,
-      whiskeykeeper: moduleDirectCounts.whiskeykeeper + moduleViaBundle.whiskeykeeper,
-      cigarkeeper: moduleDirectCounts.cigarkeeper + moduleViaBundle.cigarkeeper,
-      winekeeper: moduleDirectCounts.winekeeper + moduleViaBundle.winekeeper,
-    };
+    const ledger = [...dedupMap.values()];
 
-    const paidSubsByUser = new Map<string, NormalizedSub[]>();
-    for (const sub of paidSubs) {
-      const key = userIdentityKey(sub.userId, sub.userEmail);
-      if (!key) continue;
-      if (!paidSubsByUser.has(key)) paidSubsByUser.set(key, []);
-      paidSubsByUser.get(key)!.push(sub);
+    // Split ledger: trusted (known product) vs quarantined (unknown)
+    const trustedContracts   = ledger.filter(r => !r.isUnknown);
+    const quarantinedContracts = ledger.filter(r => r.isUnknown);
+
+    // ── ACCOUNT LAYER (A) — Users only ────────────────────────────────────────
+    // Paid account = has ≥1 trusted contract in ledger. Source: ledger only.
+    const contractsByUserKey = new Map();
+    for (const row of trustedContracts) {
+      const uk = userKey(row.userId, row.userEmail);
+      if (!uk) continue;
+      if (!contractsByUserKey.has(uk)) contractsByUserKey.set(uk, []);
+      contractsByUserKey.get(uk).push(row);
     }
 
-    // ── User-level paid / free classification ─────────────────────────────────
-    // SOURCE OF TRUTH: user record (has_paid_access, pipekeeper_paid, whiskeykeeper_paid)
-    // then subscription records for detail.
-    const paidUsersList: any[] = [];
-    const freeUsersList: any[] = [];
-    const staleUserKeys = new Set<string>();
-    const userEntitlementModulesMap = new Map<string, string[]>();
-    const userHasBundleContractMap = new Map<string, boolean>();
-    const moduleEntitlementRows = new Set<string>();
-    const diagnostics = {
-      usersWithMultipleActiveSubscriptions: 0,
-      usersWithActiveSubscriptionNoPaidModules: 0,
-      usersWithPaidModulesNoActiveSubscription: 0,
-      usersWithSummaryRuntimeMismatch: 0,
-      usersRelyingOnLegacyFallbackAccess: 0,
-      usersWithStaleSyncTimestamp: 0,
-      failedEntitlementSyncs: 0,
-      failedStripeCallbacks: 0,
-      failedPurchases: 0,
-      failedRestoreAttempts: 0,
-      entitlementMismatches: 0,
-      importFailures: 0,
-      scannerFailures: 0,
-      routeCrashes: 0,
-      multiPlanConflicts: 0,
-      activeModuleStateDrift: 0,
-      recentSyncWriteOutcomes: {
-        ok: 0,
-        needs_sync: 0,
-        error: 0,
-        unknown: 0,
-      },
-      recentAdminOverrides: {
-        totalManualSubscriptions: 0,
-        last7d: 0,
-      },
-      recentSubscriptionStateChanges: {
-        last7d: 0,
-        atRisk: 0,
-      },
-      samples: {
-        activeNoModules: [] as string[],
-        modulesNoActiveSubscription: [] as string[],
-        summaryRuntimeMismatch: [] as string[],
-        multipleActiveSubscriptions: [] as string[],
-        staleSyncTimestamp: [] as string[],
-        failedStripeCallbacks: [] as string[],
-        failedPurchases: [] as string[],
-        failedRestoreAttempts: [] as string[],
-        entitlementMismatches: [] as string[],
-        importFailures: [] as string[],
-        scannerFailures: [] as string[],
-        routeCrashes: [] as string[],
-        multiPlanConflicts: [] as string[],
-        activeModuleStateDrift: [] as string[],
-        recentAdminOverrides: [] as string[],
-        recentSubscriptionStateChanges: [] as string[],
-      },
-    };
-    const staleCutoff = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
-    const pushSample = (bucket: string[], email: string) => {
-      if (email && bucket.length < MAX_SAMPLE_SIZE) bucket.push(email);
-    };
-
-    for (const u of uniqueUsers) {
-      const userKey = userIdentityKey(u.id, u.email);
-      const userPaidSubs = paidSubsByUser.get(userKey) || [];
-      const hasActiveContract = userPaidSubs.length > 0;
-      const allUserModules = uniqueModules(userPaidSubs.flatMap((s) => s.modules));
-      const summaryModules = allUserModules;
-      const runtimeModules = runtimeModulesFromUser(u);
-      const entitlementModules = runtimeModules.length > 0 ? runtimeModules : allUserModules;
-      const isPaidAccount = entitlementModules.length > 0;
-      if (userKey) {
-        userEntitlementModulesMap.set(userKey, entitlementModules);
-        userHasBundleContractMap.set(userKey, userPaidSubs.some((s) => s.modules.length > 1));
-        entitlementModules.forEach((moduleKey) => moduleEntitlementRows.add(`${userKey}::${moduleKey}`));
-      }
-      const productLabels = [...new Set(userPaidSubs.map((s) => s.productLabel).filter(Boolean))];
-      const intervals = [...new Set(userPaidSubs.map((s) => s.billingInterval).filter((v): v is IntervalKind => v === 'monthly' || v === 'annual'))];
-      const statusValues = [...new Set(userPaidSubs.map((s) => norm(s.subscriptionStatus || '')).filter(Boolean))];
-      const platforms = [...new Set(userPaidSubs.map((s) => s.platform).filter((v): v is PlatformKind => v === 'ios' || v === 'web' || v === 'google'))];
-      const renewalEligibleSubs = userPaidSubs.filter((s) => s.renewalAt && s.price !== null && s.billingInterval !== null);
-      const sortedByCreatedDesc = [...userPaidSubs].sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
-      const sortedByCreatedAsc = [...userPaidSubs].sort((a, b) => (a.createdAt?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.createdAt?.getTime() ?? Number.MAX_SAFE_INTEGER));
-      const sortedByRenewalAsc = [...renewalEligibleSubs].sort((a, b) => (a.renewalAt?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.renewalAt?.getTime() ?? Number.MAX_SAFE_INTEGER));
-      const primarySub = sortedByCreatedDesc[0] ?? null;
-      const nextRenewalSub = sortedByRenewalAsc[0] ?? null;
-      const firstStartedSub = sortedByCreatedAsc[0] ?? null;
-      const totalRenewalAmount = roundCurrency(renewalEligibleSubs.reduce((sum, s) => sum + (s.renewalAmount ?? 0), 0));
-      const hasMultipleActivePlans = userPaidSubs.length > 1;
-      const effectiveStatus =
-        !hasActiveContract ? (isPaidAccount ? 'paid_without_active_contract' : 'none') :
-        statusValues.length === 1 ? statusValues[0] :
-        statusValues.length > 1 ? 'mixed' :
-        'unknown';
-      const effectivePlatform =
-        platforms.length === 1 ? platforms[0] :
-        platforms.length > 1 ? 'mixed' :
-        null;
-      const effectiveProductLabel =
-        !hasActiveContract ? (isPaidAccount ? 'Entitlement Access' : 'Free') :
-        productLabels.length === 1 ? productLabels[0] :
-        null;
-
-      if (userPaidSubs.length > 1) {
-        diagnostics.usersWithMultipleActiveSubscriptions++;
-        diagnostics.multiPlanConflicts++;
-        pushSample(diagnostics.samples.multipleActiveSubscriptions, norm(u.email || ''));
-        pushSample(diagnostics.samples.multiPlanConflicts, norm(u.email || ''));
-      }
-      if (userPaidSubs.length > 0 && summaryModules.length === 0) {
-        diagnostics.usersWithActiveSubscriptionNoPaidModules++;
-        diagnostics.activeModuleStateDrift++;
-        pushSample(diagnostics.samples.activeNoModules, norm(u.email || ''));
-        pushSample(diagnostics.samples.activeModuleStateDrift, norm(u.email || ''));
-      }
-      if (userPaidSubs.length === 0 && runtimeModules.length > 0) {
-        diagnostics.usersWithPaidModulesNoActiveSubscription++;
-        pushSample(diagnostics.samples.modulesNoActiveSubscription, norm(u.email || ''));
-      }
-      if (summaryModules.join(',') !== runtimeModules.join(',')) {
-        diagnostics.usersWithSummaryRuntimeMismatch++;
-        diagnostics.entitlementMismatches++;
-        pushSample(diagnostics.samples.summaryRuntimeMismatch, norm(u.email || ''));
-        pushSample(diagnostics.samples.entitlementMismatches, norm(u.email || ''));
-      }
-      if (hasActiveContract && runtimeModules.length === 0 && Boolean(u?.isFoundingMember || u?.legacy_broad_module_access)) {
-        diagnostics.usersRelyingOnLegacyFallbackAccess++;
-      }
-
-      const syncState = norm(u?.entitlement_sync_state || '');
-      if (syncState === 'ok') diagnostics.recentSyncWriteOutcomes.ok++;
-      else if (syncState === 'needs_sync') diagnostics.recentSyncWriteOutcomes.needs_sync++;
-      else if (syncState === 'error') diagnostics.recentSyncWriteOutcomes.error++;
-      else diagnostics.recentSyncWriteOutcomes.unknown++;
-
-      if (syncState === 'error' || norm(u?.entitlement_sync_error || '').length > 0) {
-        diagnostics.failedEntitlementSyncs++;
-      }
-
-      const lastSynced = parseDate(u?.entitlement_last_synced_at);
-      if (isPaidAccount && (!lastSynced || lastSynced < staleCutoff)) {
-        diagnostics.usersWithStaleSyncTimestamp++;
-        if (userKey) staleUserKeys.add(userKey);
-        pushSample(diagnostics.samples.staleSyncTimestamp, norm(u.email || ''));
-      }
-
-      const row: any = {
-        full_name:           u.full_name || '',
-        email:               norm(u.email || ''),
-        role:                u.role || 'user',
-        created_date:        u.created_date || '',
-        // Effective-access level fields (across all active paid subscriptions)
-        subscription_status: effectiveStatus,
-        product:             effectiveProductLabel,
-        modules:             entitlementModules,
-        active_subscription_count: userPaidSubs.length,
-        active_products:     productLabels,
-        active_billing_intervals: intervals,
-        active_platforms:    platforms,
-        active_statuses:     statusValues,
-        effective_access_modules: entitlementModules,
-        effective_access_products: productLabels,
-        billing_interval:    intervals.length > 1 ? 'mixed' : (intervals[0] ?? null),
-        subscribe_date:      firstStartedSub?.createdAt?.toISOString() ?? null,
-        renewal_date:        hasMultipleActivePlans ? (nextRenewalSub?.renewalAt?.toISOString() ?? null) : (primarySub?.renewalAt?.toISOString() ?? null),
-        renewal_amount:      hasMultipleActivePlans ? (totalRenewalAmount || null) : (primarySub?.renewalAmount ?? null),
-        renewal_subscription_count: renewalEligibleSubs.length,
-        has_multiple_active_plans: hasMultipleActivePlans,
-        platform:            effectivePlatform,
-        // Primary billing context (most recently created active paid subscription)
-        primary_billing_product: primarySub?.productLabel ?? null,
-        primary_billing_status: primarySub?.subscriptionStatus ?? null,
-        primary_billing_platform: primarySub?.platform ?? null,
-        primary_billing_interval: primarySub?.billingInterval ?? null,
-        primary_billing_subscribe_date: primarySub?.createdAt?.toISOString() ?? null,
-        // Renewal context
-        renewal_next_date: nextRenewalSub?.renewalAt?.toISOString() ?? null,
-        renewal_total_amount: totalRenewalAmount || null,
-        // User entitlement flags (direct from user record — source of truth)
-        pipekeeper_paid:     !!u.pipekeeper_paid,
-        whiskeykeeper_paid:  !!u.whiskeykeeper_paid,
-        cigarkeeper_paid:    !!u.cigarkeeper_paid,
-        winekeeper_paid:     !!u.winekeeper_paid,
-        account_runtime_modules: runtimeModules,
-      };
-
-      if (isPaidAccount) paidUsersList.push(row);
-      else        freeUsersList.push(row);
-    }
-
-    const resolveSubscriptionEmail = (s: any): string => {
-      const fromSub = norm(s?.user_email || '');
-      if (fromSub) return fromSub;
-      const byId = s?.user_id ? userByIdMap.get(String(s.user_id)) : null;
-      return norm(byId?.email || '');
-    };
-
-    const stripeCallbackFailures = allSubscriptions.filter((s) => {
-      const provider = norm(s.provider || '');
-      const status = norm(s.status || '');
-      return provider === 'stripe' && (status === 'incomplete_expired' || status === 'unpaid');
-    });
-    diagnostics.failedStripeCallbacks = stripeCallbackFailures.length;
-    stripeCallbackFailures.forEach((s) => {
-      const email = resolveSubscriptionEmail(s);
-      const status = norm(s?.status || 'unknown');
-      if (email) {
-        pushSample(diagnostics.samples.failedStripeCallbacks, `${email} (${status})`);
-      }
-    });
-
-    const failedPurchases = allSubscriptions.filter((s) => {
-      const status = norm(s.status || '');
-      return status === 'incomplete' || status === 'incomplete_expired';
-    });
-    diagnostics.failedPurchases = failedPurchases.length;
-    failedPurchases.forEach((s) => {
-      const email = resolveSubscriptionEmail(s);
-      const status = norm(s?.status || 'unknown');
-      if (email) pushSample(diagnostics.samples.failedPurchases, `${email} (${status})`);
-    });
-
-    const restoreFailures = allSubscriptions.filter((s) => {
-      const provider = norm(s.provider || '');
-      const status = norm(s.status || '');
-      return provider === 'apple' && status === 'unverified';
-    });
-    diagnostics.failedRestoreAttempts = restoreFailures.length;
-    restoreFailures.forEach((s) => {
-      const email = resolveSubscriptionEmail(s);
-      if (email) pushSample(diagnostics.samples.failedRestoreAttempts, email);
-    });
-
-    const manualSubscriptions = allSubscriptions.filter((s) => norm(s.provider || '') === 'manual');
-    diagnostics.recentAdminOverrides.totalManualSubscriptions = manualSubscriptions.length;
-    const manualLast7d = manualSubscriptions.filter((s) => {
-      const updated = parseDate(s.updated_date || s.created_date);
-      return updated ? updated >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) : false;
-    });
-    diagnostics.recentAdminOverrides.last7d = manualLast7d.length;
-    manualLast7d.forEach((s) => {
-      const email = resolveSubscriptionEmail(s);
-      if (email) pushSample(diagnostics.samples.recentAdminOverrides, email);
-    });
-
-    const changedStateLast7d = allSubscriptions.filter((s) => {
-      const updated = parseDate(s.updated_date || s.created_date);
-      return updated ? updated >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) : false;
-    });
-    const atRiskStateSet = new Set(['past_due', 'unpaid', 'incomplete', 'incomplete_expired', 'canceled', 'unverified']);
-    diagnostics.recentSubscriptionStateChanges.last7d = changedStateLast7d.length;
-    diagnostics.recentSubscriptionStateChanges.atRisk = changedStateLast7d.filter((s) => atRiskStateSet.has(norm(s?.status || ''))).length;
-    changedStateLast7d
-      .filter((s) => atRiskStateSet.has(norm(s?.status || '')))
-      .forEach((s) => {
-        const email = resolveSubscriptionEmail(s);
-        const status = norm(s?.status || 'unknown');
-        if (email) {
-          pushSample(diagnostics.samples.recentSubscriptionStateChanges, `${email} (${status})`);
-        }
-      });
-
-    const totalUsers     = uniqueUsers.length;
-    const paidUsersCount = paidUsersList.length;
-    const freeUsersCount = freeUsersList.length;
-    const paidPct        = totalUsers > 0 ? parseFloat(((paidUsersCount / totalUsers) * 100).toFixed(1)) : 0;
-
-    // ── Signup sources ────────────────────────────────────────────────────────
     const signupSources = { web: 0, apple: 0, googlePlay: 0, unknown: 0 };
-    for (const u of uniqueUsers) {
-      const platform = norm(u.data?.platform || u.platform || '');
-      if (platform === 'apple' || platform === 'ios')                                     signupSources.apple++;
-      else if (platform === 'android' || platform === 'googleplay' || platform === 'google') signupSources.googlePlay++;
-      else if (!platform)                                                                  signupSources.unknown++;
-      else                                                                                 signupSources.web++;
-    }
+    const newAccounts   = { today: 0, week: 0, month: 0, quarter: 0, year: 0 };
 
-    // ── New accounts by calendar period ───────────────────────────────────────
-    const newAccounts = { today: 0, week: 0, month: 0, quarter: 0, year: 0 };
     for (const u of uniqueUsers) {
+      const p = norm(u.data?.platform || u.platform || '');
+      if (p === 'apple' || p === 'ios') signupSources.apple++;
+      else if (p === 'android' || p === 'googleplay' || p === 'google') signupSources.googlePlay++;
+      else if (!p) signupSources.unknown++;
+      else signupSources.web++;
+
       const d = parseDate(u.created_date);
-      if (!d) continue;
-      if (inRange(d, ranges.today))   newAccounts.today++;
-      if (inRange(d, ranges.week))    newAccounts.week++;
-      if (inRange(d, ranges.month))   newAccounts.month++;
-      if (inRange(d, ranges.quarter)) newAccounts.quarter++;
-      if (inRange(d, ranges.year))    newAccounts.year++;
+      if (d) {
+        if (inRange(d, ranges.today))   newAccounts.today++;
+        if (inRange(d, ranges.week))    newAccounts.week++;
+        if (inRange(d, ranges.month))   newAccounts.month++;
+        if (inRange(d, ranges.quarter)) newAccounts.quarter++;
+        if (inRange(d, ranges.year))    newAccounts.year++;
+      }
     }
 
-    const contractsWithKnownPlan = paidSubs.filter((s) => !!s.planKey && !!lookupPlan(s.planKey));
-    const unknownPlanContracts = paidSubs.filter((s) => !s.planKey || !lookupPlan(s.planKey) || s.module === 'unknown');
-    const unresolvedFinancialContracts = paidSubs.filter((s) => s.price === null || s.billingInterval === null);
-    const staleSyncExcludedContracts = paidSubs.filter((s) => staleUserKeys.has(userIdentityKey(s.userId, s.userEmail)));
-    const failedRestoreExcludedContracts = paidSubs.filter((s) => norm(s.subscriptionStatus || '') === 'unverified');
-    const resolvedFinancialContracts = paidSubs.filter(
-      (s) => s.price !== null && s.billingInterval !== null && !!s.planKey && !!lookupPlan(s.planKey) && s.module !== 'unknown'
-    );
-    const financialEligibleSubs = resolvedFinancialContracts.filter((s) => {
-      const key = userIdentityKey(s.userId, s.userEmail);
-      return !staleUserKeys.has(key) && norm(s.subscriptionStatus || '') !== 'unverified';
-    });
+    const totalUsers  = uniqueUsers.length;
+    const paidUserSet = new Set([...contractsByUserKey.keys()].filter(Boolean));
+    const paidCount   = paidUserSet.size;
+    const freeCount   = totalUsers - paidCount;
 
-    // ── MRR / ARR ─────────────────────────────────────────────────────────────
-    const totalMRR = financialEligibleSubs.reduce((sum, s) => sum + mrrContribution(s), 0);
-    const mrr = roundCurrency(totalMRR);
-    const arr = roundCurrency(mrr * 12);
+    // ── CONTRACT LAYER (B) — Billing contracts ────────────────────────────────
+    const monthlyContracts  = trustedContracts.filter(r => r.billingInterval === 'monthly');
+    const annualContracts   = trustedContracts.filter(r => r.billingInterval === 'annual');
 
-    // ── Renewal revenue by calendar period ────────────────────────────────────
-    const renewalWeek = calcRenewalPeriod(financialEligibleSubs, ranges.week);
-    const renewalMonth = calcRenewalPeriod(financialEligibleSubs, ranges.month);
-    const renewalQuarter = calcRenewalPeriod(financialEligibleSubs, ranges.quarter);
-    const renewalYear = calcRenewalPeriod(financialEligibleSubs, ranges.year);
-
-    // ── Provider counts (resolved active contracts only) ──────────────────────
+    const byProduct = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundles: 0 };
     const providerCounts = { web: 0, ios: 0, google: 0, unknown: 0 };
-    for (const sub of contractsWithKnownPlan) {
-      if (sub.platform === 'web') providerCounts.web++;
-      else if (sub.platform === 'ios') providerCounts.ios++;
-      else if (sub.platform === 'google') providerCounts.google++;
+
+    for (const row of trustedContracts) {
+      if (row.isBundle) {
+        byProduct.bundles++;
+      } else {
+        const m = row.modules[0];
+        if (m in byProduct) byProduct[m]++;
+      }
+      if (row.platform === 'web') providerCounts.web++;
+      else if (row.platform === 'ios') providerCounts.ios++;
+      else if (row.platform === 'google') providerCounts.google++;
       else providerCounts.unknown++;
     }
 
-    // ── Layer C module access (entitlement rows: user × module) ───────────────
-    const moduleUsers = {
-      pipekeeper: new Set<string>(),
-      whiskeykeeper: new Set<string>(),
-      cigarkeeper: new Set<string>(),
-      winekeeper: new Set<string>(),
-    };
-    let bundleUsers = 0;
-    for (const [userKey, modules] of userEntitlementModulesMap.entries()) {
-      if (!userKey || modules.length === 0) continue;
-      if (userHasBundleContractMap.get(userKey)) bundleUsers++;
-      if (modules.includes('pipekeeper')) moduleUsers.pipekeeper.add(userKey);
-      if (modules.includes('whiskeykeeper')) moduleUsers.whiskeykeeper.add(userKey);
-      if (modules.includes('cigarkeeper')) moduleUsers.cigarkeeper.add(userKey);
-      if (modules.includes('winekeeper')) moduleUsers.winekeeper.add(userKey);
+    // ── FINANCIAL METRICS — from trusted contracts with complete data ─────────
+    const financialContracts = trustedContracts.filter(
+      r => r.price !== null && r.billingInterval !== null
+    );
+
+    const mrrRaw = financialContracts.reduce((sum, r) => {
+      return sum + (r.billingInterval === 'monthly' ? r.price : r.price / 12);
+    }, 0);
+    const mrr = roundCurrency(mrrRaw);
+    const arr = roundCurrency(mrr * 12);
+
+    function calcRenewalPeriod(contracts, range) {
+      const renewing = contracts.filter(r =>
+        r.renewalAt && inRange(r.renewalAt, range) && r.price !== null && r.billingInterval !== null
+      );
+      const customers = new Set(renewing.map(r => userKey(r.userId, r.userEmail)).filter(Boolean)).size;
+      const revenue = roundCurrency(renewing.reduce((s, r) => s + r.price, 0));
+      return { customers, subscriptions: renewing.length, revenue };
     }
+
+    const renewalRevenue = {
+      week:    calcRenewalPeriod(financialContracts, ranges.week),
+      month:   calcRenewalPeriod(financialContracts, ranges.month),
+      quarter: calcRenewalPeriod(financialContracts, ranges.quarter),
+      year:    calcRenewalPeriod(financialContracts, ranges.year),
+    };
+
+    // ── MODULE ACCESS LAYER (C) — derived from contracts ─────────────────────
+    const moduleUsers = { pipekeeper: new Set(), whiskeykeeper: new Set(), cigarkeeper: new Set(), winekeeper: new Set() };
+    const bundleUserSet = new Set();
+
+    for (const row of trustedContracts) {
+      const uk = userKey(row.userId, row.userEmail);
+      if (!uk) continue;
+      if (row.isBundle) bundleUserSet.add(uk);
+      for (const m of row.modules) {
+        if (m in moduleUsers) moduleUsers[m].add(uk);
+      }
+    }
+
     const moduleAccess = {
-      pipekeeperUsers: moduleUsers.pipekeeper.size,
-      whiskeykeeperUsers: moduleUsers.whiskeykeeper.size,
-      cigarkeeperUsers: moduleUsers.cigarkeeper.size,
-      winekeeperUsers: moduleUsers.winekeeper.size,
-      bundleUsers,
-      totalModuleEntitlements: moduleEntitlementRows.size,
+      pipekeeperUsers:      moduleUsers.pipekeeper.size,
+      whiskeykeeperUsers:   moduleUsers.whiskeykeeper.size,
+      cigarkeeperUsers:     moduleUsers.cigarkeeper.size,
+      winekeeperUsers:      moduleUsers.winekeeper.size,
+      bundleUsers:          bundleUserSet.size,
+      totalEntitlementRows: Object.values(moduleUsers).reduce((s, set) => s + set.size, 0),
     };
 
-    const unknownQuarantineByProvider = { web: 0, ios: 0, google: 0, unknown: 0 };
-    const unknownQuarantineByReason = {
-      missingPlanKey: paidSubs.filter((s) => !s.planKey).length,
-      unknownProduct: paidSubs.filter((s) => s.module === 'unknown').length,
-      unmappedPlanKey: paidSubs.filter((s) => !!s.planKey && !lookupPlan(s.planKey)).length,
+    // ── QUARANTINE ANALYSIS ───────────────────────────────────────────────────
+    const quarantineByProvider = { web: 0, ios: 0, google: 0, unknown: 0 };
+    const quarantineByReason   = { missingPlanKey: 0, missingInterval: 0, missingPrice: 0 };
+    for (const row of quarantinedContracts) {
+      if (row.platform === 'web') quarantineByProvider.web++;
+      else if (row.platform === 'ios') quarantineByProvider.ios++;
+      else if (row.platform === 'google') quarantineByProvider.google++;
+      else quarantineByProvider.unknown++;
+      if (!row.planKey) quarantineByReason.missingPlanKey++;
+      if (!row.billingInterval) quarantineByReason.missingInterval++;
+      if (row.price === null) quarantineByReason.missingPrice++;
+    }
+
+    // ── DATA QUALITY WARNINGS (trusted contracts only) ────────────────────────
+    const warnings = {
+      missingPrice:      trustedContracts.filter(r => r.price === null).length,
+      missingInterval:   trustedContracts.filter(r => r.billingInterval === null).length,
+      missingPlanKey:    trustedContracts.filter(r => !r.planKey).length,
+      missingPlatform:   trustedContracts.filter(r => !r.platform).length,
+      duplicatesRemoved,
+      excludedFromFinancials: trustedContracts.length - financialContracts.length,
     };
-    unknownPlanContracts.forEach((s) => {
-      if (s.platform === 'web') unknownQuarantineByProvider.web++;
-      else if (s.platform === 'ios') unknownQuarantineByProvider.ios++;
-      else if (s.platform === 'google') unknownQuarantineByProvider.google++;
-      else unknownQuarantineByProvider.unknown++;
-    });
-    const unknownQuarantineSamples = unknownPlanContracts.slice(0, MAX_SAMPLE_SIZE).map((s) => ({
-      userEmail: s.userEmail || null,
-      userId: s.userId || null,
-      rawId: s.rawId || null,
-      planKey: s.planKey || null,
-      module: s.module,
-      billingInterval: s.billingInterval,
-      price: s.price,
-      platform: s.platform,
-      status: s.subscriptionStatus,
-    }));
 
-    // ── Sanity checks ─────────────────────────────────────────────────────────
-    const sanity = runSanityChecks({
-      paidAccounts: paidUsersCount, totalAccounts: totalUsers, mrr, arr,
-      renewals: { week: renewalWeek, month: renewalMonth, quarter: renewalQuarter, year: renewalYear },
-    });
+    // ── DIAGNOSTICS — entitlement drift between ledger and user flags ─────────
+    // This is OBSERVATIONAL only. It does NOT affect KPIs.
+    const diagnostics = {
+      usersWithActiveContractNoPaidFlag: 0,
+      usersWithPaidFlagNoActiveContract: 0,
+      usersWithMultipleContracts: 0,
+      samples: {
+        activeContractNoPaidFlag: [],
+        paidFlagNoActiveContract: [],
+        multipleContracts: [],
+        quarantinedContracts: quarantinedContracts.slice(0, MAX_SAMPLE_SIZE).map(r => ({
+          rawId: r.rawId, userEmail: r.userEmail, status: r._rawStatus, provider: r._rawProvider,
+          price: r.price, billingInterval: r.billingInterval, planKey: r.planKey,
+        })),
+      },
+    };
 
-    const sortByDate = (a: any, b: any) =>
-      new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime();
-    paidUsersList.sort(sortByDate);
-    freeUsersList.sort(sortByDate);
+    for (const u of uniqueUsers) {
+      const uk = userKey(u.id, u.email);
+      const email = norm(u.email ?? '');
+      const hasContract = contractsByUserKey.has(uk);
+      const hasPaidFlag = !!(u.pipekeeper_paid || u.whiskeykeeper_paid || u.cigarkeeper_paid || u.winekeeper_paid || u.has_paid_access);
+
+      if (hasContract && !hasPaidFlag) {
+        diagnostics.usersWithActiveContractNoPaidFlag++;
+        if (diagnostics.samples.activeContractNoPaidFlag.length < MAX_SAMPLE_SIZE) {
+          diagnostics.samples.activeContractNoPaidFlag.push(email);
+        }
+      }
+      if (!hasContract && hasPaidFlag) {
+        diagnostics.usersWithPaidFlagNoActiveContract++;
+        if (diagnostics.samples.paidFlagNoActiveContract.length < MAX_SAMPLE_SIZE) {
+          diagnostics.samples.paidFlagNoActiveContract.push(email);
+        }
+      }
+      const userContracts = contractsByUserKey.get(uk) ?? [];
+      if (userContracts.length > 1) {
+        diagnostics.usersWithMultipleContracts++;
+        if (diagnostics.samples.multipleContracts.length < MAX_SAMPLE_SIZE) {
+          diagnostics.samples.multipleContracts.push(email);
+        }
+      }
+    }
+
+    // ── PER-USER ROWS for user detail tables ──────────────────────────────────
+    const paidUsersList = [];
+    const freeUsersList = [];
+
+    for (const u of uniqueUsers) {
+      const uk = userKey(u.id, u.email);
+      const email = norm(u.email ?? '');
+      const contracts = contractsByUserKey.get(uk) ?? [];
+      const isPaid = contracts.length > 0;
+
+      const row = {
+        full_name:     u.full_name ?? '',
+        email,
+        role:          u.role ?? 'user',
+        created_date:  u.created_date ?? '',
+        subscription_status: isPaid ? (contracts.length > 1 ? 'multi-contract' : contracts[0].status) : 'free',
+        product:       isPaid ? contracts.map(c => c.productLabel).join(', ') : null,
+        modules:       isPaid ? [...new Set(contracts.flatMap(c => c.modules))].filter(m => m !== 'unknown') : [],
+        billing_interval: isPaid ? (contracts.length === 1 ? contracts[0].billingInterval : 'multi') : null,
+        platform:      isPaid ? (contracts.length === 1 ? contracts[0].platform : 'multi') : null,
+        contract_count: contracts.length,
+        renewal_date:  isPaid ? (contracts[0]?.renewalAt?.toISOString() ?? null) : null,
+        renewal_amount: isPaid ? roundCurrency(contracts.reduce((s,c) => s+(c.price??0), 0)) : null,
+      };
+
+      if (isPaid) paidUsersList.push(row);
+      else freeUsersList.push(row);
+    }
+
+    paidUsersList.sort((a, b) => new Date(b.created_date||0) - new Date(a.created_date||0));
+    freeUsersList.sort((a, b) => new Date(b.created_date||0) - new Date(a.created_date||0));
+
+    // ── SANITY CHECKS ─────────────────────────────────────────────────────────
+    const sanityFailures = [];
+    if (paidCount > totalUsers) sanityFailures.push(`paidAccounts(${paidCount}) > totalAccounts(${totalUsers})`);
+    if (Math.abs(arr - roundCurrency(mrr * 12)) > 0.01) sanityFailures.push(`arr(${arr}) !== mrr×12(${roundCurrency(mrr*12)})`);
+    for (const [label, period] of Object.entries(renewalRevenue)) {
+      if (period.customers > period.subscriptions) {
+        sanityFailures.push(`renewal ${label}: customers(${period.customers}) > subscriptions(${period.subscriptions})`);
+      }
+    }
+    if (sanityFailures.length > 0) sanityFailures.forEach(f => console.error('[LedgerReport] SANITY_FAIL:', f));
 
     return Response.json({
       meta: {
-        generatedAt: now.toISOString(),
-        dateRangeDefinition: 'calendar',
-        timezoneNote: 'UTC',
-        reportVersion: REPORT_VERSION,
-        calendarRanges: {
-          today:   { start: ranges.today.start.toISOString(),   end: ranges.today.end.toISOString()   },
-          week:    { start: ranges.week.start.toISOString(),    end: ranges.week.end.toISOString()    },
-          month:   { start: ranges.month.start.toISOString(),   end: ranges.month.end.toISOString()   },
-          quarter: { start: ranges.quarter.start.toISOString(), end: ranges.quarter.end.toISOString() },
-          year:    { start: ranges.year.start.toISOString(),    end: ranges.year.end.toISOString()    },
+        generatedAt:    now.toISOString(),
+        reportVersion:  REPORT_VERSION,
+        timezoneNote:   'UTC',
+        architecture:   'ledger-first: KPIs derive exclusively from Subscription entity rows normalized through PLAN_CATALOG',
+      },
+      sanityChecks: { passed: sanityFailures.length === 0, failures: sanityFailures },
+      warnings,
+
+      // ── Layer A: Accounts ──
+      accounts: {
+        total:     totalUsers,
+        paid:      paidCount,
+        free:      freeCount,
+        paidPct:   totalUsers > 0 ? parseFloat(((paidCount/totalUsers)*100).toFixed(1)) : 0,
+        signupSources,
+        newAccounts,
+      },
+
+      // ── Layer B: Billing contracts ──
+      billingContracts: {
+        ledgerRows:       ledger.length,
+        trustedContracts: trustedContracts.length,
+        monthly:          monthlyContracts.length,
+        annual:           annualContracts.length,
+        financiallyEligible: financialContracts.length,
+        byProduct,
+        providerCounts,
+        mrr,
+        arr,
+        renewalRevenue,
+        quarantine: {
+          total: quarantinedContracts.length,
+          byProvider: quarantineByProvider,
+          byReason: quarantineByReason,
+          samples: diagnostics.samples.quarantinedContracts,
         },
       },
-      sanityChecks: sanity,
-      warnings: {
-        missingPrice:      warningMissingPrice,
-        missingInterval:   warningMissingInterval,
-        missingPlatform:   warningMissingPlatform,
-        missingPlanKey:    warningMissingPlanKey,
-        unknownProduct:    warningUnknownProduct,
-        duplicatesRemoved: duplicatesRemoved,
-        fieldRecovery,
-        unresolvedReasons: unresolvedReasonCounts,
-        unresolvedSamples,
-        excludedCoreRecords: paidSubs.filter((s) => s.price === null || s.billingInterval === null).length,
-      },
+
+      // ── Layer C: Module access (derived from contracts) ──
+      moduleAccess,
+
+      // ── Diagnostics (observational, does not affect KPIs) ──
       diagnostics,
-      accounts: { total: totalUsers, paid: paidUsersCount, free: freeUsersCount, paidPct, signupSources, newAccounts },
+
+      // ── User detail tables ──
+      paid_users: paidUsersList,
+      free_users: freeUsersList,
+
+      // ── Backward-compat aliases for existing UI ──
       subscriptions: {
-        totalActivePaid,
-        monthly: monthlyCount,
-        annual: annualCount,
-        bundles: bundleCount,
-        singleModule: singleCount,
-        byProduct: byProductCounts,
-        byModuleDirect: moduleDirectCounts,
-        moduleViaBundle,
-        byModuleEffective: moduleEffectiveCounts,
+        totalActivePaid: trustedContracts.length,
+        monthly: monthlyContracts.length,
+        annual:  annualContracts.length,
+        bundles: trustedContracts.filter(r => r.isBundle).length,
+        singleModule: trustedContracts.filter(r => !r.isBundle).length,
+        byProduct,
+        byModuleEffective: {
+          pipekeeper:    moduleAccess.pipekeeperUsers,
+          whiskeykeeper: moduleAccess.whiskeykeeperUsers,
+          cigarkeeper:   moduleAccess.cigarkeeperUsers,
+          winekeeper:    moduleAccess.winekeeperUsers,
+        },
       },
       runRate: { mrr, arr },
-      renewalRevenue: { week: renewalWeek, month: renewalMonth, quarter: renewalQuarter, year: renewalYear },
+      renewalRevenue,
+      // Compat layer shape for existing UI paths
       layers: {
-        accounts: { totalAccounts: totalUsers, paidAccounts: paidUsersCount, freeAccounts: freeUsersCount, signupSources },
+        accounts: { totalAccounts: totalUsers, paidAccounts: paidCount, freeAccounts: freeCount, signupSources },
         billingContracts: {
-          activeSubscriptions: contractsWithKnownPlan.length,
-          monthlyContracts: contractsWithKnownPlan.filter((s) => s.billingInterval === 'monthly').length,
-          annualContracts: contractsWithKnownPlan.filter((s) => s.billingInterval === 'annual').length,
+          activeSubscriptions: trustedContracts.length,
+          monthlyContracts: monthlyContracts.length,
+          annualContracts: annualContracts.length,
           providerCounts,
           mrr,
           arr,
-          renewalRevenue: { week: renewalWeek, month: renewalMonth, quarter: renewalQuarter, year: renewalYear },
+          renewalRevenue,
           excludedFromFinancials: {
-            unresolvedFinancialContracts: unresolvedFinancialContracts.length,
-            staleSyncContracts: staleSyncExcludedContracts.length,
-            failedRestoreContracts: failedRestoreExcludedContracts.length,
+            unresolvedFinancialContracts: warnings.excludedFromFinancials,
+            staleSyncContracts: 0,
+            failedRestoreContracts: 0,
           },
           unknownQuarantine: {
-            total: unknownPlanContracts.length,
-            byProvider: unknownQuarantineByProvider,
-            byReason: unknownQuarantineByReason,
-            samples: unknownQuarantineSamples,
+            total: quarantinedContracts.length,
+            byProvider: quarantineByProvider,
+            byReason: { missingPlanKey: quarantineByReason.missingPlanKey, unknownProduct: quarantinedContracts.length, unmappedPlanKey: 0 },
+            samples: diagnostics.samples.quarantinedContracts,
           },
         },
-        moduleAccess,
+        moduleAccess: {
+          pipekeeperUsers:         moduleAccess.pipekeeperUsers,
+          whiskeykeeperUsers:      moduleAccess.whiskeykeeperUsers,
+          cigarkeeperUsers:        moduleAccess.cigarkeeperUsers,
+          winekeeperUsers:         moduleAccess.winekeeperUsers,
+          bundleUsers:             moduleAccess.bundleUsers,
+          totalModuleEntitlements: moduleAccess.totalEntitlementRows,
+        },
       },
       reconciliation: {
         before: {
-          activePaidRows: allSubscriptions.filter(isActivePaid).length,
-          dedupedContracts: paidSubs.length,
-          paidAccountsFromContracts: new Set(paidSubs.map((s) => userIdentityKey(s.userId, s.userEmail)).filter(Boolean)).size,
+          activePaidRows:    activePaidRaws.length,
+          dedupedContracts:  ledger.length,
+          paidAccountsFromContracts: paidCount,
         },
         after: {
-          paidAccountsFromEntitlements: paidUsersCount,
-          resolvedBillingContracts: contractsWithKnownPlan.length,
-          unknownPlanContracts: unknownPlanContracts.length,
-          financialEligibleContracts: financialEligibleSubs.length,
-          totalModuleEntitlements: moduleAccess.totalModuleEntitlements,
-          staleSyncExcludedContracts: staleSyncExcludedContracts.length,
+          paidAccountsFromEntitlements: paidCount,
+          resolvedBillingContracts: trustedContracts.length,
+          unknownPlanContracts: quarantinedContracts.length,
+          financialEligibleContracts: financialContracts.length,
+          totalModuleEntitlements: moduleAccess.totalEntitlementRows,
+          staleSyncExcludedContracts: 0,
         },
-        sampleReconciledMultiPlanUser: paidUsersList.find((u) => u.has_multiple_active_plans) || null,
+        sampleReconciledMultiPlanUser: paidUsersList.find(u => u.contract_count > 1) ?? null,
       },
-      paid_users: paidUsersList,
-      free_users: freeUsersList,
     });
 
-  } catch (error: any) {
-    console.error('[getUserSubscriptionReportV3] HARD FAILURE:', error);
+  } catch (error) {
+    console.error('[LedgerReport] HARD FAILURE:', error);
     return Response.json({
       error: 'report_generation_failed',
-      detail: String(error?.message || error),
+      detail: String(error?.message ?? error),
       meta: { generatedAt: new Date().toISOString(), reportVersion: REPORT_VERSION },
-      sanityChecks: { passed: false, failures: ['Report generation failed — see server logs.'] },
-      warnings: {
-        missingPrice: 0,
-        missingInterval: 0,
-        missingPlatform: 0,
-        missingPlanKey: 0,
-        unknownProduct: 0,
-        duplicatesRemoved: 0,
-        excludedCoreRecords: 0,
-        fieldRecovery: {
-          price: { direct: 0, recovered: 0, unresolved: 0 },
-          billingInterval: { direct: 0, recovered: 0, unresolved: 0 },
-          planKey: { direct: 0, recovered: 0, unresolved: 0 },
-        },
-        unresolvedReasons: {
-          missingPriceBySource: {},
-          missingIntervalBySource: {},
-          unknownPlanKeyBySource: {},
-        },
-        unresolvedSamples: [],
-      },
-      diagnostics: {
-        usersWithMultipleActiveSubscriptions: 0,
-        usersWithActiveSubscriptionNoPaidModules: 0,
-        usersWithPaidModulesNoActiveSubscription: 0,
-        usersWithSummaryRuntimeMismatch: 0,
-        usersRelyingOnLegacyFallbackAccess: 0,
-        usersWithStaleSyncTimestamp: 0,
-        failedEntitlementSyncs: 0,
-        failedStripeCallbacks: 0,
-        failedPurchases: 0,
-        failedRestoreAttempts: 0,
-        entitlementMismatches: 0,
-        importFailures: 0,
-        scannerFailures: 0,
-        routeCrashes: 0,
-        multiPlanConflicts: 0,
-        activeModuleStateDrift: 0,
-        recentSyncWriteOutcomes: { ok: 0, needs_sync: 0, error: 0, unknown: 0 },
-        recentAdminOverrides: { totalManualSubscriptions: 0, last7d: 0 },
-        recentSubscriptionStateChanges: { last7d: 0, atRisk: 0 },
-        samples: {
-          activeNoModules: [],
-          modulesNoActiveSubscription: [],
-          summaryRuntimeMismatch: [],
-          multipleActiveSubscriptions: [],
-          staleSyncTimestamp: [],
-          failedStripeCallbacks: [],
-          failedPurchases: [],
-          failedRestoreAttempts: [],
-          entitlementMismatches: [],
-          importFailures: [],
-          scannerFailures: [],
-          routeCrashes: [],
-          multiPlanConflicts: [],
-          activeModuleStateDrift: [],
-          recentAdminOverrides: [],
-          recentSubscriptionStateChanges: [],
-        },
-      },
-      accounts: {}, subscriptions: {}, runRate: {}, renewalRevenue: {},
+      sanityChecks: { passed: false, failures: ['Report generation failed'] },
+      warnings: { missingPrice: 0, missingInterval: 0, missingPlanKey: 0, missingPlatform: 0, duplicatesRemoved: 0, excludedFromFinancials: 0 },
+      accounts: {}, billingContracts: {}, moduleAccess: {},
+      subscriptions: {}, runRate: {}, renewalRevenue: {},
       layers: {
-        accounts: {},
-        billingContracts: {
-          activeSubscriptions: 0,
-          monthlyContracts: 0,
-          annualContracts: 0,
-          providerCounts: { web: 0, ios: 0, google: 0, unknown: 0 },
-          mrr: 0,
-          arr: 0,
-          renewalRevenue: { week: { customers: 0, subscriptions: 0, revenue: 0 }, month: { customers: 0, subscriptions: 0, revenue: 0 }, quarter: { customers: 0, subscriptions: 0, revenue: 0 }, year: { customers: 0, subscriptions: 0, revenue: 0 } },
-          excludedFromFinancials: { unresolvedFinancialContracts: 0, staleSyncContracts: 0, failedRestoreContracts: 0 },
-          unknownQuarantine: { total: 0, byProvider: { web: 0, ios: 0, google: 0, unknown: 0 }, byReason: { missingPlanKey: 0, unknownProduct: 0, unmappedPlanKey: 0 }, samples: [] },
-        },
-        moduleAccess: { pipekeeperUsers: 0, whiskeykeeperUsers: 0, cigarkeeperUsers: 0, winekeeperUsers: 0, bundleUsers: 0, totalModuleEntitlements: 0 },
+        accounts: {}, 
+        billingContracts: { activeSubscriptions:0, monthlyContracts:0, annualContracts:0, providerCounts:{web:0,ios:0,google:0,unknown:0}, mrr:0, arr:0, renewalRevenue:{week:{customers:0,subscriptions:0,revenue:0},month:{customers:0,subscriptions:0,revenue:0},quarter:{customers:0,subscriptions:0,revenue:0},year:{customers:0,subscriptions:0,revenue:0}}, excludedFromFinancials:{unresolvedFinancialContracts:0,staleSyncContracts:0,failedRestoreContracts:0}, unknownQuarantine:{total:0,byProvider:{web:0,ios:0,google:0,unknown:0},byReason:{missingPlanKey:0,unknownProduct:0,unmappedPlanKey:0},samples:[]} },
+        moduleAccess: { pipekeeperUsers:0, whiskeykeeperUsers:0, cigarkeeperUsers:0, winekeeperUsers:0, bundleUsers:0, totalModuleEntitlements:0 },
       },
-      reconciliation: { before: {}, after: {}, sampleReconciledMultiPlanUser: null },
+      reconciliation: { before:{}, after:{}, sampleReconciledMultiPlanUser:null },
+      diagnostics: { usersWithActiveContractNoPaidFlag:0, usersWithPaidFlagNoActiveContract:0, usersWithMultipleContracts:0, samples:{activeContractNoPaidFlag:[],paidFlagNoActiveContract:[],multipleContracts:[],quarantinedContracts:[]} },
       paid_users: [], free_users: [],
     }, { status: 200 });
   }

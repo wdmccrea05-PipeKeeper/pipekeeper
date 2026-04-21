@@ -1,0 +1,16 @@
+{
+  "name": "OptimizationApplyBatch",
+  "type": "object",
+  "properties": {
+    "pipe_changes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Array of pipe focus changes applied in this batch"
+    }
+  },
+  "required": [
+    "pipe_changes"
+  ]
+}

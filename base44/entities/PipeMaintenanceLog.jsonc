@@ -1,0 +1,57 @@
+{
+  "name": "PipeMaintenanceLog",
+  "type": "object",
+  "properties": {
+    "pipe_id": {
+      "type": "string",
+      "description": "ID of the pipe"
+    },
+    "pipe_name": {
+      "type": "string",
+      "description": "Name of the pipe for reference"
+    },
+    "maintenance_type": {
+      "type": "string",
+      "enum": [
+        "cleaning",
+        "restoration",
+        "repair",
+        "reaming",
+        "polishing",
+        "stem_work",
+        "other"
+      ],
+      "description": "Type of maintenance performed"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of maintenance"
+    },
+    "description": {
+      "type": "string",
+      "description": "Details of what was done"
+    },
+    "cost": {
+      "type": "number",
+      "description": "Cost of maintenance if applicable"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "Who performed the maintenance (self, professional, etc.)"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Before/after photos"
+    }
+  },
+  "required": [
+    "pipe_id",
+    "pipe_name",
+    "maintenance_type",
+    "date"
+  ]
+}

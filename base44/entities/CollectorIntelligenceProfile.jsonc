@@ -1,0 +1,90 @@
+{
+  "name": "CollectorIntelligenceProfile",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User's email"
+    },
+    "preferred_tobacco_families": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Learned tobacco family preferences"
+    },
+    "preferred_pipe_shapes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Learned pipe shape preferences"
+    },
+    "flavor_preferences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Learned flavor preferences"
+    },
+    "dislikes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Stated dislikes or constraints"
+    },
+    "collectible_bias": {
+      "type": "string",
+      "enum": [
+        "collector",
+        "user",
+        "balanced"
+      ],
+      "default": "balanced",
+      "description": "Collectible-only usage pattern"
+    },
+    "exploration_score": {
+      "type": "number",
+      "description": "0-10 score of willingness to explore new styles"
+    },
+    "cellar_maturity_score": {
+      "type": "number",
+      "description": "0-10 score of cellar sophistication"
+    },
+    "recommendation_confidence": {
+      "type": "number",
+      "description": "0-10 confidence in providing recommendations"
+    },
+    "collection_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Stated collection goals"
+    },
+    "expertise_level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "expert"
+      ],
+      "description": "Assessed expertise level"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When profile was last updated"
+    },
+    "signal_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of signals used to build this profile"
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

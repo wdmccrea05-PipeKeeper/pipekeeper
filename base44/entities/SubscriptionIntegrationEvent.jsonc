@@ -1,0 +1,53 @@
+{
+  "name": "SubscriptionIntegrationEvent",
+  "type": "object",
+  "properties": {
+    "event_source": {
+      "type": "string",
+      "enum": [
+        "cloudflare",
+        "stripe",
+        "app",
+        "admin"
+      ],
+      "description": "Source of the event"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Type of event (e.g., cloudflare.checkout.completed, stripe.webhook.received)"
+    },
+    "success": {
+      "type": "boolean",
+      "description": "Whether the event processing succeeded"
+    },
+    "error": {
+      "type": "string",
+      "description": "Error message if failed"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "PipeKeeper user ID"
+    },
+    "email": {
+      "type": "string",
+      "description": "User email"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe subscription ID"
+    },
+    "payload_json": {
+      "type": "string",
+      "description": "Safe minimal payload (JSON string)"
+    }
+  },
+  "required": [
+    "event_source",
+    "event_type",
+    "success"
+  ]
+}

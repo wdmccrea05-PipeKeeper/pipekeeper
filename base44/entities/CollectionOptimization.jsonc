@@ -1,0 +1,42 @@
+{
+  "name": "CollectionOptimization",
+  "type": "object",
+  "properties": {
+    "pipe_specializations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Recommended specializations for each pipe"
+    },
+    "collection_gaps": {
+      "type": "object",
+      "description": "Analysis of collection gaps and redundancies"
+    },
+    "next_pipe_recommendation": {
+      "type": "object",
+      "description": "Recommendation for next pipe to buy"
+    },
+    "generated_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this optimization was generated"
+    },
+    "input_fingerprint": {
+      "type": "string",
+      "description": "Hash of input data used to detect staleness"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this is the active version"
+    },
+    "previous_active_id": {
+      "type": "string",
+      "description": "ID of previous active version for undo"
+    }
+  },
+  "required": [
+    "pipe_specializations"
+  ]
+}

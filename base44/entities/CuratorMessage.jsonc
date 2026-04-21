@@ -1,0 +1,46 @@
+{
+  "name": "CuratorMessage",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Parent session ID"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Session owner"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "assistant"
+      ],
+      "description": "Message sender role"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "message_index": {
+      "type": "number",
+      "description": "Order in conversation"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Message timestamp"
+    },
+    "token_count": {
+      "type": "number",
+      "description": "Approximate token count"
+    }
+  },
+  "required": [
+    "session_id",
+    "user_email",
+    "role",
+    "content",
+    "timestamp"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "RemoteConfig",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Configuration key (e.g. STRIPE_SECRET_KEY)"
+    },
+    "value": {
+      "type": "string",
+      "description": "Configuration value (plain text, access controlled)"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "live",
+        "test"
+      ],
+      "default": "live",
+      "description": "Environment this config applies to"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this config is active"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Email of user who last updated this config"
+    }
+  },
+  "required": [
+    "key",
+    "value",
+    "environment"
+  ]
+}

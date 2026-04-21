@@ -1,0 +1,56 @@
+{
+  "name": "CuratorActionRun",
+  "type": "object",
+  "properties": {
+    "action_id": {
+      "type": "string",
+      "description": "Curator action type (optimize_collection, recommend_specializations, etc)"
+    },
+    "execution_id": {
+      "type": "string",
+      "description": "Unique execution ID for this run (actionId_timestamp)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who triggered the action"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "completed",
+        "failed"
+      ],
+      "default": "running",
+      "description": "Current execution status"
+    },
+    "result_summary": {
+      "type": "object",
+      "description": "Summary of action result (title, summary, group count, item count)"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message if execution failed"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the action started"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the action completed"
+    },
+    "collection_snapshot": {
+      "type": "object",
+      "description": "Snapshot of collection state at execution (pipe count, blend count, etc)"
+    }
+  },
+  "required": [
+    "action_id",
+    "execution_id",
+    "user_email",
+    "status"
+  ]
+}

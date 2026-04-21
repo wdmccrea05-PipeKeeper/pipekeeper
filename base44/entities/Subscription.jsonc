@@ -1,0 +1,101 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Internal PipeKeeper user ID (required for Apple, optional for legacy Stripe)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the subscriber (lowercase, for Stripe + legacy compatibility)"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple"
+      ],
+      "default": "stripe",
+      "description": "Subscription provider"
+    },
+    "provider_subscription_id": {
+      "type": "string",
+      "description": "Provider's subscription ID (Stripe sub ID or Apple originalTransactionId)"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID (null for Apple)"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Legacy: Stripe subscription ID (use provider_subscription_id instead)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "trial",
+        "active",
+        "past_due",
+        "canceled",
+        "expired",
+        "trialing",
+        "incomplete"
+      ],
+      "default": "trial",
+      "description": "Current subscription status"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "premium",
+        "pro"
+      ],
+      "default": "premium",
+      "description": "Subscription tier level"
+    },
+    "trial_end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the trial period ends"
+    },
+    "current_period_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start of current billing period"
+    },
+    "current_period_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End of current billing period"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When user first became a paid subscriber"
+    },
+    "subscriptionStartedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Normalized subscription start date"
+    },
+    "cancel_at_period_end": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether subscription will cancel at period end"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Subscription amount in USD"
+    },
+    "billing_interval": {
+      "type": "string",
+      "enum": [
+        "month",
+        "year"
+      ],
+      "description": "Billing interval - monthly or yearly"
+    }
+  },
+  "required": []
+}

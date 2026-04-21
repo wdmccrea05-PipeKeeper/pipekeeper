@@ -1,0 +1,34 @@
+{
+  "name": "PairingMatrix",
+  "type": "object",
+  "properties": {
+    "pairings": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "AI-generated pipe-tobacco pairings"
+    },
+    "generated_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When these pairings were generated"
+    },
+    "input_fingerprint": {
+      "type": "string",
+      "description": "Hash of input data used to detect staleness"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this is the active version"
+    },
+    "previous_active_id": {
+      "type": "string",
+      "description": "ID of previous active version for undo"
+    }
+  },
+  "required": [
+    "pairings"
+  ]
+}

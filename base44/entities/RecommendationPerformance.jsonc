@@ -1,0 +1,70 @@
+{
+  "name": "RecommendationPerformance",
+  "type": "object",
+  "properties": {
+    "recommendation_key": {
+      "type": "string",
+      "description": "Unique recommendation identifier (titleKey)"
+    },
+    "category": {
+      "type": "string",
+      "description": "Recommendation category"
+    },
+    "module": {
+      "type": "string",
+      "description": "Source module (pipes/tobacco)"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Reporting period start"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Reporting period end"
+    },
+    "impressions": {
+      "type": "number",
+      "default": 0,
+      "description": "Times shown"
+    },
+    "clicks": {
+      "type": "number",
+      "default": 0,
+      "description": "Times clicked"
+    },
+    "explores": {
+      "type": "number",
+      "default": 0,
+      "description": "Times Explore This clicked"
+    },
+    "accepts": {
+      "type": "number",
+      "default": 0,
+      "description": "Times accepted/applied"
+    },
+    "dismisses": {
+      "type": "number",
+      "default": 0,
+      "description": "Times dismissed"
+    },
+    "ctr": {
+      "type": "number",
+      "description": "Click-through rate"
+    },
+    "conversion_rate": {
+      "type": "number",
+      "description": "Accept/impression ratio"
+    },
+    "avg_time_to_action_seconds": {
+      "type": "number",
+      "description": "Average time from shown to action"
+    }
+  },
+  "required": [
+    "recommendation_key",
+    "period_start",
+    "period_end"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "CuratorExtractedSignal",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User who generated the signal"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Source session"
+    },
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "preference_stated",
+        "dislike_stated",
+        "goal_identified",
+        "constraint_identified",
+        "expertise_level_assessed",
+        "collection_gap_acknowledged",
+        "action_committed"
+      ],
+      "description": "Type of extracted signal"
+    },
+    "signal_value": {
+      "type": "string",
+      "description": "Extracted signal content"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium",
+      "description": "Signal extraction confidence"
+    },
+    "source_message_index": {
+      "type": "number",
+      "description": "Which message this was extracted from"
+    },
+    "extracted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When signal was extracted"
+    }
+  },
+  "required": [
+    "user_email",
+    "session_id",
+    "signal_type",
+    "signal_value",
+    "extracted_at"
+  ]
+}

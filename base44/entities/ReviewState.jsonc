@@ -1,0 +1,86 @@
+{
+  "name": "ReviewState",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user (primary lookup key)"
+    },
+    "last_review_ask_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last time the review soft-ask was shown"
+    },
+    "review_prompt_dismissed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last 'Not Now' dismissal"
+    },
+    "review_feedback_submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last in-app feedback submission via review flow"
+    },
+    "has_completed_review_flow": {
+      "type": "boolean",
+      "default": false,
+      "description": "User tapped 'Yes, I'll rate it' \u2014 accepted path. Suppress long-term."
+    },
+    "last_frustration_event_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last detected frustration event (error, failed sync, failed payment, etc.)"
+    },
+    "last_negative_feedback_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last negative feedback submission"
+    },
+    "is_ios_active_user": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if the user has been detected on an iOS device at least once"
+    },
+    "last_positive_moment_type": {
+      "type": "string",
+      "description": "Type of the last positive trigger event (e.g. pipe_added, session_logged)"
+    },
+    "testimonial_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Web-only Stripe users who are engaged but should not see App Store prompt"
+    },
+    "total_review_asks": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of times the review prompt has been shown"
+    },
+    "last_prompt_variant": {
+      "type": "string",
+      "description": "The variant/module context in which the review prompt was last shown"
+    },
+    "session_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Running count of meaningful app sessions (used for eligibility)"
+    },
+    "records_created_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Running count of records created by the user (pipes, bottles, blends, etc.)"
+    },
+    "logs_completed_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Running count of completed logs (smoke sessions, tastings, etc.)"
+    },
+    "last_session_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last recorded session for streak/engagement tracking"
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "ProcessedStripeEvents",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Stripe event ID for deduplication"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Type of Stripe event (e.g., customer.subscription.updated)"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this event was processed"
+    }
+  },
+  "required": [
+    "event_id"
+  ]
+}

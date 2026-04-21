@@ -589,43 +589,50 @@ export default function UserReport() {
       </SectionCard>
 
       <SectionCard title={t("userReport.diagnostics.sectionTitle")} icon={AlertTriangle} accentColor="#F87171">
-        <SectionDivider label={t("userReport.diagnostics.integrity")} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-          <MetricCard label={t("userReport.diagnostics.multipleActiveSubscriptions")} value={diagnostics.usersWithMultipleActiveSubscriptions ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.activeNoModules")} value={diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.modulesNoActive")} value={diagnostics.usersWithPaidModulesNoActiveSubscription ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.summaryRuntimeMismatch")} value={diagnostics.usersWithSummaryRuntimeMismatch ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.legacyFallback")} value={diagnostics.usersRelyingOnLegacyFallbackAccess ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.staleSync")} value={diagnostics.usersWithStaleSyncTimestamp ?? 0} />
-        </div>
-        <SectionDivider label={t("userReport.diagnostics.failuresOps")} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <MetricCard label={t("userReport.diagnostics.failedEntitlementSyncs")} value={diagnostics.failedEntitlementSyncs ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.failedStripeCallbacks")} value={diagnostics.failedStripeCallbacks ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.failedPurchases")} value={diagnostics.failedPurchases ?? diagnostics.failedCheckoutAttempts ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.failedRestoreAttempts")} value={diagnostics.failedRestoreAttempts ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.entitlementMismatches")} value={diagnostics.entitlementMismatches ?? diagnostics.usersWithSummaryRuntimeMismatch ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.importFailures")} value={diagnostics.importFailures ?? diagnostics.failedImportAttempts ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.scannerFailures")} value={diagnostics.scannerFailures ?? diagnostics.failedScannerAttempts ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.routeCrashes")} value={diagnostics.routeCrashes ?? diagnostics.failedRouteTransitions ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.multiPlanConflicts")} value={diagnostics.multiPlanConflicts ?? diagnostics.usersWithMultipleActiveSubscriptions ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.activeModuleStateDrift")} value={diagnostics.activeModuleStateDrift ?? diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0} />
+        <p className="text-xs mb-4" style={{ color: 'rgba(224,216,200,0.6)' }}>
+          Entitlement drift — observational only. These counts do NOT affect KPIs. KPIs derive exclusively from the billing ledger.
+        </p>
+        <SectionDivider label="Entitlement Drift" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           <MetricCard
-            label={t("userReport.diagnostics.recentSubscriptionStateChanges")}
-            value={diagnostics.recentSubscriptionStateChanges?.last7d ?? 0}
-            sub={t("userReport.diagnostics.atRisk", { count: diagnostics.recentSubscriptionStateChanges?.atRisk ?? 0 })}
+            label="Active Contract, No Paid Flag"
+            value={diagnostics.usersWithActiveContractNoPaidFlag ?? diagnostics.usersWithActiveSubscriptionNoPaidModules ?? 0}
+            tooltip="User has an active billing contract but entitlement flags on the user record are not set."
           />
-          <MetricCard label={t("userReport.diagnostics.recentAdminOverrides")} value={diagnostics.recentAdminOverrides?.last7d ?? 0} sub={t("userReport.diagnostics.totalManual", { count: diagnostics.recentAdminOverrides?.totalManualSubscriptions ?? 0 })} />
+          <MetricCard
+            label="Paid Flag, No Active Contract"
+            value={diagnostics.usersWithPaidFlagNoActiveContract ?? diagnostics.usersWithPaidModulesNoActiveSubscription ?? 0}
+            tooltip="Entitlement flags are set on the user record but no active subscription row exists. These users still have access via their flags but are flagged for sync."
+          />
+          <MetricCard
+            label="Users With Multiple Contracts"
+            value={diagnostics.usersWithMultipleContracts ?? diagnostics.usersWithMultipleActiveSubscriptions ?? 0}
+            tooltip="User has more than one active trusted contract (e.g. module + bundle overlap)."
+          />
         </div>
-        <SectionDivider label={t("userReport.diagnostics.syncOutcomes")} />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <MetricCard label={t("userReport.diagnostics.syncOk")} value={diagnostics.recentSyncWriteOutcomes?.ok ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.syncNeeds")} value={diagnostics.recentSyncWriteOutcomes?.needs_sync ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.syncError")} value={diagnostics.recentSyncWriteOutcomes?.error ?? 0} />
-          <MetricCard label={t("userReport.diagnostics.syncUnknown")} value={diagnostics.recentSyncWriteOutcomes?.unknown ?? 0} />
-        </div>
-        <SectionDivider label={t("userReport.diagnostics.sampleAnomalyAccounts")} />
-        <DiagnosticsSamples diagnostics={diagnostics} />
+        {/* Sample anomaly emails */}
+        {(() => {
+          const groups = [
+            { label: 'Active Contract, No Paid Flag', values: diagnostics.samples?.activeContractNoPaidFlag ?? diagnostics.samples?.activeNoModules ?? [] },
+            { label: 'Paid Flag, No Active Contract', values: diagnostics.samples?.paidFlagNoActiveContract ?? diagnostics.samples?.modulesNoActiveSubscription ?? [] },
+            { label: 'Multiple Contracts', values: diagnostics.samples?.multipleContracts ?? diagnostics.samples?.multipleActiveSubscriptions ?? [] },
+          ].filter(g => g.values.length > 0);
+          if (groups.length === 0) return (
+            <p className="text-sm text-[#E0D8C8]/60">{t("userReport.diagnostics.noSampledAnomalyEmails")}</p>
+          );
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {groups.map(g => (
+                <div key={g.label} className="rounded-lg border border-[#8b6239]/20 bg-[#2a1f18]/40 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#E0D8C8]/70 mb-2">{g.label}</p>
+                  {g.values.slice(0, 6).map(email => (
+                    <p key={email} className="text-xs text-[#E0D8C8]/80 font-mono truncate">{email}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </SectionCard>
 
       {/* ═══════════════════════════════════════════════════════════════════
