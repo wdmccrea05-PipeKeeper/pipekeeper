@@ -44,45 +44,48 @@ const FILTER_TYPES = ["None", "6mm", "9mm", "Stinger", "Other"];
 
 export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState({
-    name: '',
-    maker: '',
-    country_of_origin: '',
-    shape: '',
-    bowlStyle: '',
-    shankShape: '',
-    bend: '',
-    sizeClass: '',
-    length_mm: '',
-    weight_grams: '',
-    bowl_height_mm: '',
-    bowl_width_mm: '',
-    bowl_diameter_mm: '',
-    bowl_depth_mm: '',
-    chamber_volume: '',
-    stem_material: '',
-    bowl_material: '',
-    finish: '',
-    filter_type: '',
-    year_made: '',
-    purchase_date: '',
-    stamping: '',
-    condition: '',
-    purchase_price: '',
-    estimated_value: '',
-    notes: '',
-    usage_characteristics: '',
-    smoking_characteristics: '',
-    photos: [],
-    stamping_photos: [],
-    is_favorite: false,
-    ai_excluded: false,
-    interchangeable_bowls: [],
-    ...(pipe || {}),
-    photos: Array.isArray(pipe?.photos)
+  const [formData, setFormData] = useState(() => {
+    const defaults = {
+      name: '',
+      maker: '',
+      country_of_origin: '',
+      shape: '',
+      bowlStyle: '',
+      shankShape: '',
+      bend: '',
+      sizeClass: '',
+      length_mm: '',
+      weight_grams: '',
+      bowl_height_mm: '',
+      bowl_width_mm: '',
+      bowl_diameter_mm: '',
+      bowl_depth_mm: '',
+      chamber_volume: '',
+      stem_material: '',
+      bowl_material: '',
+      finish: '',
+      filter_type: '',
+      year_made: '',
+      purchase_date: '',
+      stamping: '',
+      condition: '',
+      purchase_price: '',
+      estimated_value: '',
+      notes: '',
+      usage_characteristics: '',
+      smoking_characteristics: '',
+      photos: [],
+      stamping_photos: [],
+      is_favorite: false,
+      ai_excluded: false,
+      interchangeable_bowls: [],
+    };
+    const merged = { ...defaults, ...(pipe || {}) };
+    merged.photos = Array.isArray(pipe?.photos)
       ? pipe.photos
-      : [pipe?.photo, pipe?.photo_url, pipe?.image, pipe?.image_url].filter(Boolean),
-    stamping_photos: Array.isArray(pipe?.stamping_photos) ? pipe.stamping_photos : [],
+      : [pipe?.photo, pipe?.photo_url, pipe?.image, pipe?.image_url].filter(Boolean);
+    merged.stamping_photos = Array.isArray(pipe?.stamping_photos) ? pipe.stamping_photos : [];
+    return merged;
   });
   const [hasInterchangeableBowls, setHasInterchangeableBowls] = useState(
     pipe?.interchangeable_bowls?.length > 0 || false

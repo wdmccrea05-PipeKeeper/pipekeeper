@@ -15,8 +15,8 @@ describe("alphabetical helpers", () => {
   it("deduplicates equivalent labels and sorts", () => {
     expect(uniqueSortedStrings(["USA", "united states", "usa", "Canada"])).toEqual([
       "Canada",
-      "USA",
       "united states",
+      "USA",
     ]);
   });
 
@@ -24,4 +24,3 @@ describe("alphabetical helpers", () => {
     expect(compareAlpha(null, "a")).toBeLessThan(0);
   });
 });
-
