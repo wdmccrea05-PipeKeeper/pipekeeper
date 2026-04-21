@@ -875,17 +875,38 @@ export default function CollectionHub() {
                   <div className="space-y-3">
                     {calSelectedDayRows.map((row) => {
                       const moduleColor = row.moduleType === 'whiskey' ? '#D47C7C' : row.moduleType === 'cigar' ? '#C4956A' : '#D4A574';
+                      const rawId = row.id.replace(/^(pipe|whiskey|cigar)_/, '');
+                      const handleDrill = () => {
+                        if (row.moduleType === 'pipe') {
+                          const log = smokeLogs.find(l => l.id === rawId);
+                          if (log) setEditingSmokingLog(log);
+                        } else if (row.moduleType === 'whiskey') {
+                          const log = tastings.find(l => l.id === rawId);
+                          if (log) setEditingTastingLog(log);
+                        } else if (row.moduleType === 'cigar') {
+                          const log = cigarSessions.find(l => l.id === rawId);
+                          if (log) setEditingCigarSession(log);
+                        }
+                      };
                       return (
-                        <div key={row.id} className="rounded-xl p-3 border border-[rgba(180,140,75,0.18)] bg-[rgba(255,255,255,0.03)]">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full" style={{ background: `${moduleColor}22`, color: moduleColor }}>
-                              {row.moduleType}
-                            </span>
-                            {row.rating != null && <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>★ {row.rating}</span>}
+                        <button
+                          key={row.id}
+                          type="button"
+                          onClick={handleDrill}
+                          className="w-full text-left rounded-xl p-3 border border-[rgba(180,140,75,0.18)] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full" style={{ background: `${moduleColor}22`, color: moduleColor }}>
+                                {row.moduleType}
+                              </span>
+                              {row.rating != null && <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>★ {row.rating}</span>}
+                            </div>
+                            <span className="text-xs" style={{ color: moduleColor }}>Edit →</span>
                           </div>
                           <p className="text-sm font-semibold text-[#F5F1E7] mt-1">{row.itemLabel}</p>
                           {row.notes ? <p className="text-xs text-[#E0D8C8]/60 mt-1 line-clamp-2">{row.notes}</p> : null}
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
