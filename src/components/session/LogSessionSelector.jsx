@@ -16,6 +16,7 @@ export default function LogSessionSelector({
   onSelectWhiskey,
   onSelectCigar,
   onSelectCombined,
+  onSelectWhiskeyCigar,
 }) {
   const { t } = useTranslation();
 
@@ -91,6 +92,24 @@ export default function LogSessionSelector({
       onClick: () => {
         onClose?.();
         onSelectCombined?.();
+      },
+    });
+  }
+
+  if (whiskeyEnabled && cigarEnabled) {
+    options.push({
+      key: "whiskey_cigar",
+      label: t('session.whiskeyCigarSession', 'Whiskey + Cigar'),
+      sublabel: t('session.whiskeyCigarSessionDesc', 'Log a whiskey and cigar pairing session'),
+      Icon: Sparkles,
+      accent: "#C49A6C",
+      background:
+        "linear-gradient(135deg,rgba(140,107,63,0.22),rgba(196,122,58,0.12))",
+      border: "1px solid rgba(180,130,70,0.38)",
+      iconBackground: "rgba(180,130,70,0.18)",
+      onClick: () => {
+        onClose?.();
+        onSelectWhiskeyCigar?.();
       },
     });
   }

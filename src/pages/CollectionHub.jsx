@@ -278,6 +278,8 @@ export default function CollectionHub() {
 
   const [showLogSelector, setShowLogSelector] = useState(false);
   const [showCombinedModal, setShowCombinedModal] = useState(false);
+  const [showWhiskeyCigarTasting, setShowWhiskeyCigarTasting] = useState(false);
+  const [showWhiskeyCigarCigar, setShowWhiskeyCigarCigar] = useState(false);
   const [editingSmokingLog, setEditingSmokingLog] = useState(null);
   const [editingTastingLog, setEditingTastingLog] = useState(null);
   const [editingCigarSession, setEditingCigarSession] = useState(null);
@@ -593,6 +595,11 @@ export default function CollectionHub() {
     setShowCombinedModal(true);
   };
 
+  const handleOpenWhiskeyCigarFlow = () => {
+    setShowLogSelector(false);
+    setShowWhiskeyCigarTasting(true);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       <section
@@ -718,6 +725,7 @@ export default function CollectionHub() {
         onSelectWhiskey={() => navigate('/Tastings?action=log')}
         onSelectCigar={() => navigate('/CigarKeeper')}
         onSelectCombined={handleOpenCombinedSessionFlow}
+        onSelectWhiskeyCigar={handleOpenWhiskeyCigarFlow}
       />
 
       {openableModuleKeys.length > 0 ? (
@@ -1066,6 +1074,27 @@ export default function CollectionHub() {
         onClose={() => setEditingCigarSession(null)}
         onSessionSaved={() => {
           setEditingCigarSession(null);
+          queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
+        }}
+      />
+
+      {/* Whiskey + Cigar flow: log whiskey tasting first, then cigar session */}
+      <LogTastingModal
+        isOpen={showWhiskeyCigarTasting}
+        bottles={bottles}
+        onClose={() => setShowWhiskeyCigarTasting(false)}
+        onSaved={() => {
+          setShowWhiskeyCigarTasting(false);
+          queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
+          setShowWhiskeyCigarCigar(true);
+        }}
+      />
+
+      <CigarSessionModal
+        isOpen={showWhiskeyCigarCigar}
+        onClose={() => setShowWhiskeyCigarCigar(false)}
+        onSessionSaved={() => {
+          setShowWhiskeyCigarCigar(false);
           queryClient.invalidateQueries({ queryKey: ['collection-hub-dashboard'] });
         }}
       />
