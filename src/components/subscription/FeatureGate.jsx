@@ -35,8 +35,8 @@ export default function FeatureGate({
 
   const upgradePrompt = (
     <UpgradePrompt
-      featureName={featureName || t("featureGate.proFeature", "Pro Feature")}
-      description={description || t("featureGate.requiresProTier", "Upgrade to Pro to unlock this feature.")}
+      featureName={featureName || t("featureGate.proFeature")}
+      description={description || t("featureGate.requiresProTier")}
       moduleKey={moduleKey}
     />
   );

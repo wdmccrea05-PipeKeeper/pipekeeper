@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { buildHubHighlightCandidates } from '@/components/hub/highlightSelection';
 
-const t = (_key, fallback) => fallback;
+const t = (key) => ({
+  'hub.mostSmokedCigar': 'Most Smoked Cigar',
+  'hub.topRatedCigar': 'Top Rated Cigar',
+  'hub.favoriteCigar': 'Favorite Cigar',
+  'hub.highestValueCigar': 'Highest Value Cigar',
+  'hub.humidorFavorite': 'Humidor Favorite',
+  'hub.readyInHumidor': 'Ready in your humidor',
+  'hub.restockPriority': 'Restock Priority',
+  'hub.sticksLeft': 'sticks left',
+  'hub.cigarCrownJewel': 'Cigar Crown Jewel',
+  'hub.collectionFavorite': 'Collection favorite',
+  'hub.sessions': 'sessions',
+})[key] ?? key;
 const formatFromBase = (value) => `$${Number(value || 0).toFixed(0)}`;
 const getPipeValue = (pipe) => Number(pipe?.value || 0);
 const getBottleValue = (bottle) => Number(bottle?.value || 0);

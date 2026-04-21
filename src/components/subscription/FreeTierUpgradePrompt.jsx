@@ -31,7 +31,7 @@ export default function FreeTierUpgradePrompt({
       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-100/10 border border-amber-500/30">
         <Zap className="w-3.5 h-3.5 text-amber-500" />
         <span className="text-xs text-amber-100">
-          {t('freeTier.upgradePrompt', 'Upgrade to Pro')}
+          {t('freeTier.upgradePrompt')}
         </span>
         <Button
           variant="ghost"
@@ -39,7 +39,7 @@ export default function FreeTierUpgradePrompt({
           onClick={() => navigate('/Subscription')}
           className="h-6 px-2 text-xs text-amber-400 hover:text-amber-300"
         >
-          {t('common.upgrade', 'Upgrade')}
+          {t('common.upgrade')}
         </Button>
       </div>
     );
@@ -74,7 +74,7 @@ export default function FreeTierUpgradePrompt({
             className="font-medium gap-2"
           >
             <Zap className="w-4 h-4" />
-            {t('common.upgradeNow', 'Upgrade Now')}
+            {t('common.upgradeNow')}
           </Button>
         </div>
       </div>

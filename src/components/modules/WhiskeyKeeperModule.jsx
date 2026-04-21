@@ -158,14 +158,14 @@ export default function WhiskeyKeeperModule({
   const bottleTypeBreakdown = useMemo(() => {
     const counts = {};
     for (const bottle of bottles) {
-      const type = String(bottle?.type || 'Other').trim() || 'Other';
+      const type = String(bottle?.type || t('whiskey.otherType')).trim() || t('whiskey.otherType');
       counts[type] = (counts[type] || 0) + 1;
     }
 
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 4);
-  }, [bottles]);
+  }, [bottles, t]);
 
   // Check free tier limits — hasPaid from canonical resolver overrides raw user flag
   const effectiveUser = (hasPaid || user?.whiskeykeeper_paid) ? { ...user, whiskeykeeper_paid: true } : user;
@@ -197,10 +197,10 @@ export default function WhiskeyKeeperModule({
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-[#F5F1E7]">
-              {t('whiskey.title') || 'WhiskeyKeeper'}
+              {t('whiskey.title')}
             </h1>
             <p className="text-sm mt-1 text-[#E0D8C8]/70">
-              {t('whiskey.subtitle') || 'Track bottles, inventory, value, and tasting notes in one place.'}
+              {t('whiskey.subtitle')}
             </p>
           </div>
 
@@ -211,7 +211,7 @@ export default function WhiskeyKeeperModule({
               className="bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              {t('whiskey.addBottle') || 'Add Bottle'}
+              {t('whiskey.addBottle')}
             </Button>
           </div>
         </div>
@@ -223,11 +223,11 @@ export default function WhiskeyKeeperModule({
           >
             <div className="flex items-center gap-2 text-[#D4A574] text-sm font-semibold">
               <WhiskeyKeeperIcon className="w-4 h-4" />
-              {t('whiskey.bottleTypes') || 'Bottle Types'}
+              {t('whiskey.bottleTypes')}
             </div>
             <div className="text-3xl font-bold text-[#F5F1E7] mt-2">{bottleTypes}</div>
             <p className="text-xs mt-1 text-[#E0D8C8]/60">
-              {totalBottles} {t('whiskey.totalBottles') || 'total bottles'}
+              {totalBottles} {t('whiskey.totalBottles')}
             </p>
           </div>
 
@@ -237,11 +237,11 @@ export default function WhiskeyKeeperModule({
           >
             <div className="flex items-center gap-2 text-[#D4A574] text-sm font-semibold">
               <Package className="w-4 h-4" />
-              {t('whiskey.inventory') || 'Inventory'}
+              {t('whiskey.inventory')}
             </div>
             <div className="text-3xl font-bold text-[#F5F1E7] mt-2">{totalBottles}</div>
             <p className="text-xs mt-1 text-[#E0D8C8]/60">
-              {openBottles} {t('whiskey.open') || 'open'} · {sealedBottles} {t('whiskey.sealed') || 'sealed'}
+              {openBottles} {t('whiskey.open')} · {sealedBottles} {t('whiskey.sealed')}
             </p>
           </div>
 
@@ -251,13 +251,13 @@ export default function WhiskeyKeeperModule({
           >
             <div className="flex items-center gap-2 text-[#D4A574] text-sm font-semibold">
               <ShieldCheck className="w-4 h-4" />
-              {t('whiskey.collectionValue') || 'Collection Value'}
+              {t('whiskey.collectionValue')}
             </div>
             <div className="text-3xl font-bold text-[#F5F1E7] mt-2">
               {formatFromBase(totalBottleValue)}
             </div>
             <p className="text-xs mt-1 text-[#E0D8C8]/60">
-              {t('whiskey.basedOnBestKnownValues') || 'Based on best known value per bottle'}
+              {t('whiskey.basedOnBestKnownValues')}
             </p>
           </div>
 
@@ -267,13 +267,13 @@ export default function WhiskeyKeeperModule({
           >
             <div className="flex items-center gap-2 text-[#D4A574] text-sm font-semibold">
               <LockOpen className="w-4 h-4" />
-              {t('whiskey.topBottleType') || 'Top Bottle Type'}
+              {t('whiskey.topBottleType')}
             </div>
             <div className="text-2xl font-bold text-[#F5F1E7] mt-2 break-words">
-              {bottleTypeBreakdown[0]?.[0] || (t('common.none') || 'None')}
+              {bottleTypeBreakdown[0]?.[0] || t('common.none')}
             </div>
             <p className="text-xs mt-1 text-[#E0D8C8]/60">
-              {bottleTypeBreakdown[0]?.[1] || 0} bottles
+              {bottleTypeBreakdown[0]?.[1] || 0} {t('whiskey.bottles')}
             </p>
           </div>
         </div>
@@ -281,7 +281,7 @@ export default function WhiskeyKeeperModule({
 
       {mostValuableBottle && (
         <CatalogPlate
-          title={t('home.mostValuable') || 'Most Valuable'}
+          title={t('home.mostValuable')}
           value={formatFromBase(mostValuableBottle.__unitValue || 0)}
           subtitle={mostValuableBottle.name}
           heroImage={mostValuableBottle.photo}
@@ -306,7 +306,7 @@ export default function WhiskeyKeeperModule({
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('whiskey.searchPlaceholder') || 'Search bottles, distilleries, notes, region...'}
+              placeholder={t('whiskey.searchPlaceholder')}
               className="pl-9 bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.15)] text-[#F5F1E7]"
             />
           </div>
@@ -319,7 +319,7 @@ export default function WhiskeyKeeperModule({
               className={viewMode === 'grid' ? 'bg-[#A35C5C] hover:bg-[#8F4E4E]' : ''}
             >
               <LayoutGrid className="w-4 h-4 mr-2" />
-              {t('common.grid') || 'Grid'}
+              {t('common.grid')}
             </Button>
             <Button
               type="button"
@@ -328,7 +328,7 @@ export default function WhiskeyKeeperModule({
               className={viewMode === 'list' ? 'bg-[#A35C5C] hover:bg-[#8F4E4E]' : ''}
             >
               <List className="w-4 h-4 mr-2" />
-              {t('common.list') || 'List'}
+              {t('common.list')}
             </Button>
           </div>
         </div>
@@ -339,7 +339,7 @@ export default function WhiskeyKeeperModule({
           className="rounded-2xl p-10 text-center"
           style={{ background: 'rgba(44,30,22,0.75)', border: '1px solid rgba(180,140,75,0.12)' }}
         >
-          <p className="text-[#E0D8C8]/70">{t('common.loading') || 'Loading...'}</p>
+          <p className="text-[#E0D8C8]/70">{t('common.loading')}</p>
         </div>
       ) : filteredBottles.length === 0 ? (
         <div
@@ -348,12 +348,12 @@ export default function WhiskeyKeeperModule({
         >
           <WhiskeyKeeperIcon className="w-10 h-10 mx-auto mb-3 text-[#D4A574]/70" />
           <h3 className="text-lg font-semibold text-[#F5F1E7]">
-            {t('whiskey.noBottlesFound') || 'No bottles found'}
+            {t('whiskey.noBottlesFound')}
           </h3>
           <p className="text-sm mt-1 text-[#E0D8C8]/65">
             {searchQuery
-              ? (t('whiskey.adjustSearch') || 'Try a different search.')
-              : (t('whiskey.addFirstBottle') || 'Add your first bottle to get started.')}
+              ? t('whiskey.adjustSearch')
+              : t('whiskey.addFirstBottle')}
           </p>
           {!searchQuery && (
             <Button
@@ -362,7 +362,7 @@ export default function WhiskeyKeeperModule({
               className="mt-4 bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              {t('whiskey.addBottle') || 'Add Bottle'}
+              {t('whiskey.addBottle')}
             </Button>
           )}
         </div>
