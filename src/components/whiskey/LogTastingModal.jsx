@@ -8,6 +8,7 @@ import ExternalItemSearch from '@/components/session/ExternalItemSearch';
 import ExternalItemManualEntry from '@/components/session/ExternalItemManualEntry';
 import SessionContextTags from '@/components/session/SessionContextTags';
 import PostSessionPrompt from '@/components/session/PostSessionPrompt';
+import { sortByLabel } from '@/lib/sorting/alphabetical';
 
 const SERVING_OPTIONS = ['Neat', 'With Ice', 'With Water', 'Cocktail', 'Other'];
 
@@ -79,6 +80,10 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const sortedBottles = useMemo(
+    () => sortByLabel(bottles || [], (item) => item?.name || ''),
+    [bottles]
+  );
 
   useEffect(() => {
     if (bottle) {
@@ -226,18 +231,18 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
                 </div>
 
                 {bottleMode === "collection" ? (
-                  bottles.length > 0 ? (
+                  sortedBottles.length > 0 ? (
                     <select
                       value={form.bottle_id}
                       onChange={(e) => {
-                        const selected = bottles.find((b) => b.id === e.target.value);
+                        const selected = sortedBottles.find((b) => b.id === e.target.value);
                         updateField('bottle_id', e.target.value);
                         updateField('bottle_name', selected?.name || '');
                       }}
                       className="w-full rounded-xl px-3 py-2.5 bg-[rgba(20,15,12,0.6)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm"
                     >
                       <option value="" className="bg-[#1A120D]">Select a bottle...</option>
-                      {bottles.map((b) => (
+                      {sortedBottles.map((b) => (
                         <option key={b.id} value={b.id} className="bg-[#1A120D]">{b.name}</option>
                       ))}
                     </select>

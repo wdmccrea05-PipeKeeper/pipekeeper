@@ -53,7 +53,7 @@ export default function TobaccoPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('__none__');
   const [strengthFilter, setStrengthFilter] = useState('__none__');
-  const [sortBy, setSortBy] = useState('-created_date');
+  const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('tobaccoViewMode') || 'grid';
   });

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { Leaf, TrendingUp, FileSpreadsheet } from "lucide-react";
+import { Leaf, TrendingUp, FileSpreadsheet, CalendarDays } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -40,6 +40,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
   const items = [
     { page: "Pipes", label: t("nav.pipes"), semanticIcon: "pipe" },
     { page: "Tobacco", label: t("nav.tobacco"), icon: Leaf },
+    { page: "SessionHistory", label: t("sessionHistory.title", "Session History"), icon: CalendarDays },
     { page: "Insights", label: t("nav.insights"), icon: TrendingUp },
   ];
 

@@ -53,7 +53,7 @@ export default function PipesPage() {
     return localStorage.getItem('pipesDisplayMode') === 'collector';
   });
   const [showAddFlow, setShowAddFlow] = useState(false);
-  const [sortBy, setSortBy] = useState('date');
+  const [sortBy, setSortBy] = useState('name');
   const [searchParams, setSearchParams] = useSearchParams();
 
   const queryClient = useQueryClient();
@@ -184,12 +184,12 @@ export default function PipesPage() {
         if (sortBy === 'maker') {
           const makerA = (a?.maker || '').toLowerCase();
           const makerB = (b?.maker || '').toLowerCase();
-          return makerA.localeCompare(makerB);
+          return makerA.localeCompare(makerB, undefined, { sensitivity: 'base', numeric: true });
         }
         if (sortBy === 'name') {
           const nameA = (a?.name || '').toLowerCase();
           const nameB = (b?.name || '').toLowerCase();
-          return nameA.localeCompare(nameB);
+          return nameA.localeCompare(nameB, undefined, { sensitivity: 'base', numeric: true });
         }
         // Default: date (newest first)
         return new Date(b?.created_date || 0).getTime() - new Date(a?.created_date || 0).getTime();
@@ -294,13 +294,13 @@ export default function PipesPage() {
               <SelectTrigger className="w-full text-[#F5F1E7] bg-[rgba(28,21,16,0.8)] border border-[rgba(180,140,75,0.35)]" aria-label={t("pipesPage.sortBy")}>
                 <SelectValue placeholder={t("pipesPage.sortBy")} />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date">{t("pipesPage.newestFirst")}</SelectItem>
-                <SelectItem value="favorites">{t("pipesPage.favoritesFirst")}</SelectItem>
-                <SelectItem value="maker">{t("pipesPage.byMaker")}</SelectItem>
-                <SelectItem value="name">{t("pipesPage.byName")}</SelectItem>
-              </SelectContent>
-            </Select>
+               <SelectContent>
+                 <SelectItem value="name">{t("pipesPage.byName")}</SelectItem>
+                 <SelectItem value="maker">{t("pipesPage.byMaker")}</SelectItem>
+                 <SelectItem value="favorites">{t("pipesPage.favoritesFirst")}</SelectItem>
+                 <SelectItem value="date">{t("pipesPage.newestFirst")}</SelectItem>
+               </SelectContent>
+             </Select>
             <div className="flex gap-2">
               <div className={`flex border rounded-lg ${PK_THEME.card}`} role="group" aria-label={t("pipesPage.viewMode")}>
                 <Button

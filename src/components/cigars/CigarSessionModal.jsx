@@ -11,6 +11,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { computeSessionDecrement, getAvailableQuantity } from '@/platform/cigarInventory';
 import { CIGAR_STRENGTH_VALUES, formatCigarStrengthLabel } from '@/platform/cigarCatalog';
+import { sortByLabel } from '@/lib/sorting/alphabetical';
 
 const TODAY = new Date().toISOString().split('T')[0];
 
@@ -174,6 +175,7 @@ function CigarPicker({ cigars, selectedId, onSelect }) {
       c.vitola?.toLowerCase().includes(q)
     );
   });
+  const sorted = sortByLabel(filtered, (cigar) => `${cigar?.name || ''} ${cigar?.brand || ''}`);
 
   return (
     <div className="space-y-2">
@@ -193,10 +195,10 @@ function CigarPicker({ cigars, selectedId, onSelect }) {
         />
       </div>
       <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
-        {filtered.length === 0 ? (
+        {sorted.length === 0 ? (
           <p className="text-xs text-[#E0D8C8]/40 text-center py-4">No cigars found</p>
         ) : (
-          filtered.map((c) => {
+          sorted.map((c) => {
             const isSelected = c.id === selectedId;
             return (
               <button

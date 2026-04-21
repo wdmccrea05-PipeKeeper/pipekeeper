@@ -176,7 +176,7 @@ function WhiskeyInner() {
 
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState('date');
+  const [sortBy, setSortBy] = useState('name');
 
   const userEmail = user?.email || null;
   const shouldOpenAdd = new URLSearchParams(location.search).get("action") === "add";
@@ -217,13 +217,13 @@ function WhiskeyInner() {
 
     return [...results].sort((a, b) => {
       if (sortBy === 'name') {
-        return (a.name || '').localeCompare(b.name || '');
+        return (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base', numeric: true });
       } else if (sortBy === 'distillery') {
-        return (a.distillery || '').localeCompare(b.distillery || '');
+        return (a.distillery || '').localeCompare(b.distillery || '', undefined, { sensitivity: 'base', numeric: true });
       } else if (sortBy === 'value') {
         return (resolveBottleUnitValue(b) || 0) - (resolveBottleUnitValue(a) || 0);
       } else if (sortBy === 'type') {
-        return (a.type || '').localeCompare(b.type || '');
+        return (a.type || '').localeCompare(b.type || '', undefined, { sensitivity: 'base', numeric: true });
       } else {
         return new Date(b.updated_date || 0).getTime() - new Date(a.updated_date || 0).getTime();
       }
@@ -282,11 +282,11 @@ function WhiskeyInner() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent style={{ background: "rgba(25,17,11,0.98)", border: "1px solid rgba(180,140,75,0.35)" }}>
-                <SelectItem value="date">Newest First</SelectItem>
                 <SelectItem value="name">Name</SelectItem>
                 <SelectItem value="distillery">Distillery</SelectItem>
                 <SelectItem value="type">Type</SelectItem>
                 <SelectItem value="value">Value</SelectItem>
+                <SelectItem value="date">Newest First</SelectItem>
               </SelectContent>
             </Select>
           </div>
