@@ -10,7 +10,7 @@ export default function UserReport() {
     setLoading(true);
     setError(null);
     base44.functions
-      .invoke('getUserReport', {})
+      .invoke('getUserSubscriptionReportV3', {})
       .then((response) => setData(response?.data ?? response))
       .catch((err) => setError(err?.message || 'Unknown error'))
       .finally(() => setLoading(false));
@@ -81,105 +81,91 @@ export default function UserReport() {
           <Card title="Total Accounts"   value={accounts.totalUsers ?? 0} />
           <Card title="Paid Accounts"    value={accounts.paidUsers ?? 0} />
           <Card title="Free Accounts"    value={accounts.freeUsers ?? 0} />
-          <Card title="Known Rev. Rows"  value={counts.totalSubscriptions ?? 0} />
-          <Card title="Exception Rows"   value={totalExceptions} warn={totalExceptions > 0} />
-          <Card title="Data Health"      value={`${dataHealthPct}%`} className={healthColor} />
+          <Card title="Paid %"           value={`${accounts.paidPercentage ?? 0}%`} />
+          <Card title="Unique Payers"    value={data.subscriptions?.uniquePayingUsers ?? 0} />
+          <Card title="Exceptions"       value={data.stats?.exceptionCount ?? 0} warn={data.stats?.exceptionCount > 0} />
         </div>
       </Section>
 
       {/* B. Revenue Metrics */}
       <Section title="B. Revenue Metrics (trusted + inferred)">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card title="MRR"              value={`$${revenue.mrr ?? 0}`} />
-          <Card title="ARR"              value={`$${revenue.arr ?? 0}`} />
-          <Card title="Paying Users"     value={counts.uniquePayingUsers ?? 0} />
+          <Card title="MRR"              value={`$${data.revenue?.mrr ?? 0}`} />
+          <Card title="ARR"              value={`$${data.revenue?.arr ?? 0}`} />
+          <Card title="Paying Users"     value={data.subscriptions?.uniquePayingUsers ?? 0} />
           <Card title="Paid %"           value={`${accounts.paidPercentage ?? '0.0'}%`} />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-          <Card title="Monthly Subs"     value={counts.monthlySubscriptions ?? 0} />
-          <Card title="Annual Subs"      value={counts.annualSubscriptions ?? 0} />
-          <Card title="New This Month"   value={accounts.newAccounts?.month ?? 0} />
-          <Card title="New This Year"    value={accounts.newAccounts?.year ?? 0} />
+          <Card title="Monthly Subs"     value={data.subscriptions?.monthly ?? 0} />
+          <Card title="Annual Subs"      value={data.subscriptions?.annual ?? 0} />
         </div>
       </Section>
 
       {/* B2. Reconciliation */}
-      <Section title="B2. Data Reconciliation">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <Card title="Total Active"     value={counts.totalActiveRows ?? 0} />
-          <Card title="Trusted Rows"     value={counts.trustedRows ?? 0} />
-          <Card title="Inferred Rows"    value={counts.inferredRows ?? 0} />
-          <Card title="Unknown Product"  value={counts.unknownProductRows ?? 0} warn={counts.unknownProductRows > 0} />
-          <Card title="Unknown Interval" value={counts.unknownIntervalRows ?? 0} warn={counts.unknownIntervalRows > 0} />
-        </div>
-      </Section>
+      {data.reconciliation && (
+        <Section title="B2. Data Reconciliation">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <Card title="Total Active"     value={data.stats?.totalActive ?? 0} />
+            <Card title="Trusted Rows"     value={data.stats?.trustedCount ?? 0} />
+            <Card title="Inferred Rows"    value={data.stats?.inferredCount ?? 0} />
+            <Card title="Unknown Product"  value={data.reconciliation.unknown_product_rows ?? 0} warn={data.reconciliation.unknown_product_rows > 0} />
+            <Card title="Unknown Renewal"  value={data.reconciliation.unknown_renewal_rows ?? 0} warn={data.reconciliation.unknown_renewal_rows > 0} />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+            <Card title="Inferred Products" value={data.reconciliation.inferred_product_count ?? 0} />
+            <Card title="Inferred Renewals" value={data.reconciliation.inferred_renewal_count ?? 0} />
+          </div>
+        </Section>
+      )}
 
       {/* C. Product Mix */}
-      <Section title="C. Product Mix">
+      <Section title="C. Product Mix (inferred + trusted)">
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <Card title="PipeKeeper"       value={products.pipekeeper ?? 0} />
-          <Card title="WhiskeyKeeper"    value={products.whiskeykeeper ?? 0} />
-          <Card title="CigarKeeper"      value={products.cigarkeeper ?? 0} />
-          <Card title="WineKeeper"       value={products.winekeeper ?? 0} />
-          <Card title="Bundles"          value={products.bundle ?? 0} />
+          <Card title="PipeKeeper"       value={data.revenue?.byProduct?.pipekeeper ?? 0} />
+          <Card title="WhiskeyKeeper"    value={data.revenue?.byProduct?.whiskeykeeper ?? 0} />
+          <Card title="CigarKeeper"      value={data.revenue?.byProduct?.cigarkeeper ?? 0} />
+          <Card title="WineKeeper"       value={data.revenue?.byProduct?.winekeeper ?? 0} />
+          <Card title="Bundle"           value={data.revenue?.byProduct?.bundle ?? 0} />
         </div>
       </Section>
 
       {/* D. Renewals */}
-      <Section title="D. Upcoming Renewals">
+      <Section title="D. Upcoming Renewals (confirmed + inferred)">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <RenewalCard label="This Week"    period={renewals.thisWeek} />
-          <RenewalCard label="This Month"   period={renewals.thisMonth} />
-          <RenewalCard label="This Quarter" period={renewals.thisQuarter} />
-          <RenewalCard label="This Year"    period={renewals.thisYear} />
+          <RenewalCard label="This Week"    period={data.renewals?.week} />
+          <RenewalCard label="This Month"   period={data.renewals?.month} />
+          <RenewalCard label="This Quarter" period={data.renewals?.quarter} />
+          <RenewalCard label="This Year"    period={data.renewals?.year} />
         </div>
       </Section>
 
       {/* E. Exceptions Queue */}
-      {totalExceptions > 0 && (
-        <Section title="E. Exceptions Queue — Needs Attention">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-            <Card title="Unknown Product" value={unknownProductRows.count}  warn />
-            <Card title="Unknown Interval" value={unknownIntervalRows.count} warn={unknownIntervalRows.count > 0} />
-            <Card title="Parse Errors"    value={errorRows.count}           warn={errorRows.count > 0} />
-            <Card title="Duplicates Removed" value={duplicatesRemoved} />
+      {data.stats?.exceptionCount > 0 && (
+        <Section title="E. Exceptions Queue — Unresolvable">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+            <Card title="Exception Rows" value={data.stats?.exceptionCount} warn />
+            <Card title="Unknown Product" value={data.reconciliation?.unknown_product_rows} warn />
+            <Card title="Unknown Renewal" value={data.reconciliation?.unknown_renewal_rows} warn />
           </div>
 
-          {unknownProductRows.count > 0 && (
-            <ExceptionTable
-              title={`Unknown Product Rows (${unknownProductRows.count} total — showing up to 10)`}
-              rows={unknownProductRows.samples}
-              note="These active subscriptions could not be mapped to a known product. Add product_kind, price_id, or modules_csv to resolve."
-            />
-          )}
-
-          {unknownIntervalRows.count > 0 && (
-            <ExceptionTable
-              title={`Unknown Billing Interval Rows (${unknownIntervalRows.count} total — showing up to 10)`}
-              rows={unknownIntervalRows.samples}
-              note="These rows have a known product but no recognizable billing interval. Set billing_interval to 'month' or 'year'."
-            />
-          )}
-
-          {errorRows.count > 0 && (
-            <div className="rounded-xl border border-red-800/30 bg-red-900/10 p-4 mt-3">
-              <p className="text-red-400 font-semibold mb-2">Parse Errors ({errorRows.count})</p>
-              {errorRows.samples.map((r, i) => (
-                <p key={i} className="text-red-300 text-xs font-mono">{r.error}</p>
-              ))}
-            </div>
-          )}
+          <div className="rounded-xl border border-yellow-800/30 bg-yellow-900/10 p-4">
+            <p className="text-yellow-300 font-semibold mb-2">Exception Rows ({data.stats?.exceptionCount ?? 0} unresolvable)</p>
+            <p className="text-yellow-200 text-sm">
+              These subscriptions could not be fully classified. Trusted + inferred rows are included in revenue and product mix.
+              Only truly unresolvable rows (unknown product AND unknown interval) are counted as exceptions.
+            </p>
+          </div>
         </Section>
       )}
 
       {/* F. Paid Users */}
-      <Section title={`F. Paid Users (${paidUsers.length})`}>
-        <UserTable users={paidUsers} columns={['email', 'full_name', 'subscription_status', 'subscription_tier', 'billing_interval', 'platform', 'created_date']} />
+      <Section title={`F. Paid Users (${(data.paid_users || []).length})`}>
+        <UserTable users={data.paid_users || []} columns={['email', 'full_name', 'subscription_status', 'platform', 'created_date']} />
       </Section>
 
       {/* G. Free Users */}
-      <Section title={`G. Free Users (${freeUsers.length})`}>
-        <UserTable users={freeUsers} columns={['email', 'full_name', 'platform', 'created_date']} />
+      <Section title={`G. Free Users (${(data.free_users || []).length})`}>
+        <UserTable users={data.free_users || []} columns={['email', 'full_name', 'platform', 'created_date']} />
       </Section>
 
     </div>
@@ -207,16 +193,21 @@ function Card({ title, value, warn = false, className = '' }) {
 }
 
 function RenewalCard({ label, period = {} }) {
-  return (
-    <div className="rounded-xl border border-[#8b6239]/25 bg-[#1f1712]/70 p-4">
-      <p className="text-xs uppercase tracking-wider text-[#E0D8C8]/60 mb-2">{label}</p>
-      <p className="text-xl font-semibold text-[#F5F1E7]">${period.revenue ?? 0}</p>
-      <p className="text-xs text-[#E0D8C8]/50 mt-1">
-        {period.customers ?? 0} customers · {period.subscriptions ?? 0} subs
-      </p>
-    </div>
-  );
-}
+   return (
+     <div className="rounded-xl border border-[#8b6239]/25 bg-[#1f1712]/70 p-4">
+       <p className="text-xs uppercase tracking-wider text-[#E0D8C8]/60 mb-2">{label}</p>
+       <p className="text-xl font-semibold text-[#F5F1E7]">${period.revenue ?? 0}</p>
+       <p className="text-xs text-[#E0D8C8]/50 mt-1">
+         {period.customers ?? 0} customers · {period.subscriptions ?? 0} subs
+       </p>
+       {(period.confirmed || period.inferred) && (
+         <p className="text-xs text-[#D4A574] mt-2">
+           {period.confirmed ?? 0} confirmed · {period.inferred ?? 0} inferred
+         </p>
+       )}
+     </div>
+   );
+ }
 
 function ExceptionTable({ title, rows, note }) {
   if (!rows || rows.length === 0) return null;
