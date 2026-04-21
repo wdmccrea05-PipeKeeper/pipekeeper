@@ -2,6 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useNavigate } from '@/components/utils/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Calendar } from '@/components/ui/calendar';
+import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
+import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
 import LogSessionSelector from '@/components/session/LogSessionSelector';
 import {
   ChevronRight,
@@ -12,6 +15,8 @@ import {
   TrendingUp,
   GlassWater,
   Cigarette,
+  CalendarDays,
+  List,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
@@ -277,6 +282,8 @@ export default function CollectionHub() {
   const [editingTastingLog, setEditingTastingLog] = useState(null);
   const [editingCigarSession, setEditingCigarSession] = useState(null);
   const [confirmDeleteLog, setConfirmDeleteLog] = useState(null);
+  const [activityView, setActivityView] = useState('list'); // 'list' | 'calendar'
+  const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
 
   const updateLogMutation = useMutation({
     mutationFn: ({ id, data }) => safeUpdate('SmokingLog', id, data, user?.email),
@@ -560,6 +567,27 @@ export default function CollectionHub() {
 
   const hasHighlights = topHighlights.length > 0;
 
+  // All-module session rows for the calendar view
+  const allSessionRows = useMemo(() => {
+    const rows = [];
+    for (const log of smokeLogs) {
+      rows.push({ id: `pipe_${log.id}`, moduleType: 'pipe', date: log.date, itemLabel: [log.blend_name, log.pipe_name].filter(Boolean).join(' · ') || 'Pipe session', rating: log.rating ?? null, notes: log.notes || '' });
+    }
+    for (const log of tastings) {
+      rows.push({ id: `whiskey_${log.id}`, moduleType: 'whiskey', date: log.tasting_date || log.date, itemLabel: log.bottle_name || log.notes || 'Whiskey tasting', rating: log.rating ?? null, notes: log.notes || '' });
+    }
+    for (const log of cigarSessions) {
+      rows.push({ id: `cigar_${log.id}`, moduleType: 'cigar', date: log.date, itemLabel: log.cigar_name || [log.external_cigar_brand, log.external_cigar_name].filter(Boolean).join(' ') || 'Cigar session', rating: log.overall_enjoyment ?? null, notes: log.notes || '' });
+    }
+    return rows;
+  }, [smokeLogs, tastings, cigarSessions]);
+
+  const { byDate: sessionsByDate, highlightedDates: calHighlights } = useMemo(
+    () => buildSessionCalendarData(allSessionRows, 'all'),
+    [allSessionRows]
+  );
+  const calSelectedDayRows = useMemo(() => sessionsByDate[calSelectedDate] || [], [sessionsByDate, calSelectedDate]);
+
   const handleOpenCombinedSessionFlow = () => {
     setShowLogSelector(false);
     setShowCombinedModal(true);
@@ -788,10 +816,77 @@ export default function CollectionHub() {
         </section>
       ) : null}
 
-      {metrics.recentActivity.length > 0 ? (
+      {(metrics.recentActivity.length > 0 || allSessionRows.length > 0) ? (
         <section className="space-y-4">
-          <SectionTitle>{t('hub.recentActivity')}</SectionTitle>
-          <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <SectionTitle>{t('hub.recentActivity')}</SectionTitle>
+            <div className="flex gap-1 rounded-xl overflow-hidden border border-[rgba(180,140,75,0.2)]">
+              <button
+                type="button"
+                onClick={() => setActivityView('list')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all"
+                style={{
+                  background: activityView === 'list' ? 'rgba(180,140,75,0.22)' : 'transparent',
+                  color: activityView === 'list' ? '#D4A574' : 'rgba(224,216,200,0.5)',
+                }}
+              >
+                <List className="w-3.5 h-3.5" />
+                List
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivityView('calendar')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all"
+                style={{
+                  background: activityView === 'calendar' ? 'rgba(180,140,75,0.22)' : 'transparent',
+                  color: activityView === 'calendar' ? '#D4A574' : 'rgba(224,216,200,0.5)',
+                }}
+              >
+                <CalendarDays className="w-3.5 h-3.5" />
+                Calendar
+              </button>
+            </div>
+          </div>
+
+          {activityView === 'calendar' && (
+            <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+              <div className="rounded-[22px] border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.85)] p-3">
+                <Calendar
+                  mode="single"
+                  selected={new Date(`${calSelectedDate}T12:00:00`)}
+                  onSelect={(date) => { if (date) setCalSelectedDate(toLocalDateYmd(date)); }}
+                  modifiers={{ hasSessions: calHighlights }}
+                  modifiersClassNames={{ hasSessions: 'ring-1 ring-[#B48C4B] ring-offset-0' }}
+                />
+              </div>
+              <div className="rounded-[22px] border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.85)] p-5">
+                <p className="text-sm font-semibold text-[#F5F1E7] mb-3">{calSelectedDate}</p>
+                {calSelectedDayRows.length === 0 ? (
+                  <p style={{ color: 'rgba(224,216,200,0.5)' }} className="text-sm">No sessions logged for this day.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {calSelectedDayRows.map((row) => {
+                      const moduleColor = row.moduleType === 'whiskey' ? '#D47C7C' : row.moduleType === 'cigar' ? '#C4956A' : '#D4A574';
+                      return (
+                        <div key={row.id} className="rounded-xl p-3 border border-[rgba(180,140,75,0.18)] bg-[rgba(255,255,255,0.03)]">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full" style={{ background: `${moduleColor}22`, color: moduleColor }}>
+                              {row.moduleType}
+                            </span>
+                            {row.rating != null && <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>★ {row.rating}</span>}
+                          </div>
+                          <p className="text-sm font-semibold text-[#F5F1E7] mt-1">{row.itemLabel}</p>
+                          {row.notes ? <p className="text-xs text-[#E0D8C8]/60 mt-1 line-clamp-2">{row.notes}</p> : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activityView === 'list' && <div className="space-y-3">
             {metrics.recentActivity.map((activity) => {
               const rawSmokingLog = activity.type === 'session'
                 ? smokeLogs.find(l => l.id === activity.id)
@@ -897,7 +992,7 @@ export default function CollectionHub() {
               </div>
               );
             })}
-          </div>
+          </div>}
         </section>
       ) : null}
 
