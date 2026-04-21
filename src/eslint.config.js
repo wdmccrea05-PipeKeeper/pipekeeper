@@ -5,7 +5,7 @@ export default [
     },
   },
   {
-    files: ['**/__tests__/**', '**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx'],
+    files: ['**/__tests__/**', '**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/*.spec.js', '**/*.spec.jsx', '**/*.spec.ts', '**/*.spec.tsx'],
     languageOptions: {
       globals: {
         describe: 'readonly',

@@ -839,7 +839,7 @@ export default function CollectionHub() {
                 }}
               >
                 <List className="w-3.5 h-3.5" />
-                List
+                {t('hub.listView', 'List')}
               </button>
               <button
                 type="button"
@@ -851,7 +851,7 @@ export default function CollectionHub() {
                 }}
               >
                 <CalendarDays className="w-3.5 h-3.5" />
-                Calendar
+                {t('hub.calendarView', 'Calendar')}
               </button>
             </div>
           </div>

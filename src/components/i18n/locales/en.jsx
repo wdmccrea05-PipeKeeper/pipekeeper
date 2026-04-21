@@ -177,6 +177,9 @@ export default {
     aiCuratorDescription: "Get personalized insights, rotation advice, and collection recommendations tailored to your actual collection.",
     hubDescription: "Your unified ecosystem for tracking, curating, and understanding your collections.",
     blendTotal: "total",
+    viewStory: "View Story",
+    listView: "List",
+    calendarView: "Calendar",
   },
 
   nav: {
