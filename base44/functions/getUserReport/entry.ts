@@ -289,79 +289,92 @@ Deno.serve(async (req) => {
     };
 
     // ── Classify ALL active subscription rows (RESILIENT — no fatal stops) ────
-    const activePaidRawSubs = dedupedSubs.filter((s) => isActivePaidSub(s, now));
+     const activePaidRawSubs = dedupedSubs.filter((s) => isActivePaidSub(s, now));
 
-    const validRows = [];
-    const unknownProductRows = [];
-    const unknownIntervalRows = [];
-    const errorRows = [];
+     const trustedRows = [];       // fully mapped
+     const inferredRows = [];      // active paid, product/interval inferable
+     const unknownProductRows = [];
+     const unknownIntervalRows = [];
+     const errorRows = [];
 
-    for (const s of activePaidRawSubs) {
-      try {
-        const product  = classifyProduct(s);
-        const interval = deriveInterval(s);
-        const price    = getSubAmount(s);
-        const userId   = String(s.user_id || normEmail(s.user_email) || '');
+     for (const s of activePaidRawSubs) {
+       try {
+         const product  = classifyProduct(s);
+         const interval = deriveInterval(s);
+         const price    = getSubAmount(s);
+         const userId   = String(s.user_id || normEmail(s.user_email) || '');
 
-        const normalized = {
-          subscriptionId: String(s.id || s.provider_subscription_id || s.stripe_subscription_id || ''),
-          userId,
-          status:   (s.status || '').toLowerCase(),
-          price:    (typeof price === 'number' && !isNaN(price) && price >= 0) ? price : 0,
-          currency: (s.currency || 'usd').toLowerCase(),
-          interval,
-          product,
-          renewalDate: s.current_period_end ? new Date(s.current_period_end) : null,
-          // raw snapshot for exceptions queue
-          _raw: {
-            id: s.id,
-            user_id: s.user_id,
-            user_email: s.user_email,
-            provider: s.provider,
-            product_kind: s.product_kind,
-            price_id: s.price_id,
-            stripe_price_id: s.stripe_price_id,
-            apple_product_id: s.apple_product_id,
-            billing_interval: s.billing_interval,
-            amount: s.amount,
-            status: s.status,
-          },
-        };
+         const normalized = {
+           subscriptionId: String(s.id || s.provider_subscription_id || s.stripe_subscription_id || ''),
+           userId,
+           status:   (s.status || '').toLowerCase(),
+           price:    (typeof price === 'number' && !isNaN(price) && price >= 0) ? price : 0,
+           currency: (s.currency || 'usd').toLowerCase(),
+           interval,
+           product,
+           renewalDate: s.current_period_end ? new Date(s.current_period_end) : null,
+           // raw snapshot for exceptions queue
+           _raw: {
+             id: s.id,
+             user_id: s.user_id,
+             user_email: s.user_email,
+             provider: s.provider,
+             product_kind: s.product_kind,
+             price_id: s.price_id,
+             stripe_price_id: s.stripe_price_id,
+             apple_product_id: s.apple_product_id,
+             billing_interval: s.billing_interval,
+             amount: s.amount,
+             status: s.status,
+           },
+         };
 
-        if (product === 'unknown_product') {
-          unknownProductRows.push(normalized);
-        } else if (interval === 'unknown_interval') {
-          unknownIntervalRows.push(normalized);
-        } else {
-          validRows.push(normalized);
-        }
-      } catch (e) {
-        errorRows.push({ raw: s, error: String(e?.message || e) });
-      }
-    }
+         if (product === 'unknown_product') {
+           unknownProductRows.push(normalized);
+         } else if (interval === 'unknown_interval') {
+           unknownIntervalRows.push(normalized);
+         } else {
+           trustedRows.push(normalized);
+         }
+       } catch (e) {
+         errorRows.push({ raw: s, error: String(e?.message || e) });
+       }
+     }
 
-    // ── Aggregate from VALID rows only (trusted financial pipeline) ───────────
-    const totalValidSubs      = validRows.length;
-    const uniquePayingUsers   = new Set(validRows.map((s) => s.userId)).size;
-    const monthlySubs         = validRows.filter((s) => s.interval === 'monthly').length;
-    const annualSubs          = validRows.filter((s) => s.interval === 'annual').length;
+     // ── Attempt inference on unknown-product rows ────────────────────────────
+     // If active paid sub has unknown product but has price + interval, count it
+     for (const r of unknownProductRows) {
+       if (r.interval !== 'unknown_interval' && r.price > 0) {
+         inferredRows.push({ ...r, product: 'inferred' });
+       }
+     }
 
-    const totalMRR = validRows.reduce((sum, s) => {
+     // Combine trusted + inferred for revenue metrics
+     const revenueQualifiedRows = [...trustedRows, ...inferredRows];
+
+    // ── Aggregate from REVENUE-QUALIFIED rows (trusted + inferred) ────────────
+    const totalQualifiedSubs  = revenueQualifiedRows.length;
+    const uniquePayingUsers   = new Set(revenueQualifiedRows.map((s) => s.userId)).size;
+    const monthlySubs         = revenueQualifiedRows.filter((s) => s.interval === 'monthly').length;
+    const annualSubs          = revenueQualifiedRows.filter((s) => s.interval === 'annual').length;
+
+    const totalMRR = revenueQualifiedRows.reduce((sum, s) => {
       return sum + (s.interval === 'annual' ? s.price / 12 : s.price);
     }, 0);
     const mrr = parseFloat(totalMRR.toFixed(2));
     const arr = parseFloat((totalMRR * 12).toFixed(2));
 
-    const revenueByProduct = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundle: 0 };
-    const productCounts    = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundle: 0 };
-    for (const s of validRows) {
-      revenueByProduct[s.product] = parseFloat(((revenueByProduct[s.product] || 0) + s.price).toFixed(2));
-      productCounts[s.product]    = (productCounts[s.product] || 0) + 1;
+    const revenueByProduct = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundle: 0, inferred: 0 };
+    const productCounts    = { pipekeeper: 0, whiskeykeeper: 0, cigarkeeper: 0, winekeeper: 0, bundle: 0, inferred: 0 };
+    for (const s of revenueQualifiedRows) {
+      const key = s.product || 'inferred';
+      revenueByProduct[key] = parseFloat(((revenueByProduct[key] || 0) + s.price).toFixed(2));
+      productCounts[key]    = (productCounts[key] || 0) + 1;
     }
 
-    // ── Renewal revenue (from valid rows only) ────────────────────────────────
+    // ── Renewal revenue (from revenue-qualified rows) ──────────────────────────
     const calcRenewal = (periodEnd) => {
-      const renewingSubs = validRows.filter((s) => {
+      const renewingSubs = revenueQualifiedRows.filter((s) => {
         return s.renewalDate && s.renewalDate > now && s.renewalDate <= periodEnd;
       });
       const uniqueCustomers = new Set(renewingSubs.map((s) => s.userId));
@@ -451,9 +464,9 @@ Deno.serve(async (req) => {
 
     // ── Data health ───────────────────────────────────────────────────────────
     const totalActiveRows  = activePaidRawSubs.length;
-    const exceptionCount   = unknownProductRows.length + unknownIntervalRows.length + errorRows.length;
+    const exceptionCount   = unknownIntervalRows.length + errorRows.length;
     const dataHealthPct    = totalActiveRows > 0
-      ? parseFloat(((validRows.length / totalActiveRows) * 100).toFixed(1))
+      ? parseFloat((((trustedRows.length + inferredRows.length) / totalActiveRows) * 100).toFixed(1))
       : 100;
 
     // ── Exceptions queue (sample IDs for admin review) ────────────────────────
@@ -485,9 +498,13 @@ Deno.serve(async (req) => {
         newAccounts,
       },
 
-      // ── Core metrics (trusted rows only) ──────────────────────────────────
+      // ── Core metrics (trusted + inferred) ────────────────────────────────────
       counts: {
-        totalSubscriptions:   totalValidSubs,
+        totalSubscriptions:   totalQualifiedSubs,
+        trustedRows: trustedRows.length,
+        inferredRows: inferredRows.length,
+        unknownProductRows: unknownProductRows.length,
+        unknownIntervalRows: unknownIntervalRows.length,
         uniquePayingUsers,
         monthlySubscriptions: monthlySubs,
         annualSubscriptions:  annualSubs,

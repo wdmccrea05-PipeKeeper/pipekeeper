@@ -88,7 +88,7 @@ export default function UserReport() {
       </Section>
 
       {/* B. Revenue Metrics */}
-      <Section title="B. Revenue Metrics (trusted rows only)">
+      <Section title="B. Revenue Metrics (trusted + inferred)">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card title="MRR"              value={`$${revenue.mrr ?? 0}`} />
           <Card title="ARR"              value={`$${revenue.arr ?? 0}`} />
@@ -100,6 +100,17 @@ export default function UserReport() {
           <Card title="Annual Subs"      value={counts.annualSubscriptions ?? 0} />
           <Card title="New This Month"   value={accounts.newAccounts?.month ?? 0} />
           <Card title="New This Year"    value={accounts.newAccounts?.year ?? 0} />
+        </div>
+      </Section>
+
+      {/* B2. Reconciliation */}
+      <Section title="B2. Data Reconciliation">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <Card title="Total Active"     value={counts.totalActiveRows ?? 0} />
+          <Card title="Trusted Rows"     value={counts.trustedRows ?? 0} />
+          <Card title="Inferred Rows"    value={counts.inferredRows ?? 0} />
+          <Card title="Unknown Product"  value={counts.unknownProductRows ?? 0} warn={counts.unknownProductRows > 0} />
+          <Card title="Unknown Interval" value={counts.unknownIntervalRows ?? 0} warn={counts.unknownIntervalRows > 0} />
         </div>
       </Section>
 
