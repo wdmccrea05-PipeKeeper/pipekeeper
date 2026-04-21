@@ -57,6 +57,7 @@ import { scopedEntities } from '@/components/api/scopedEntities';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import EnrichButton from '@/components/shared/EnrichButton';
 import { safeUpdate } from '@/components/utils/safeUpdate';
+import PipePhotoGallery from '@/components/pipes/PipePhotoGallery';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
@@ -497,6 +498,8 @@ export default function PipeDetail() {
   const [showObservationModal, setShowObservationModal] = useState(false);
   const [showEditValuationModal, setShowEditValuationModal] = useState(false);
   const [isRefreshingValue, setIsRefreshingValue] = useState(false);
+  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -724,6 +727,15 @@ export default function PipeDetail() {
   }
 
   const mainPhoto = pipe.photos?.[0];
+  const allPhotos = [
+    ...(pipe.photos || []),
+    ...(pipe.stamping_photos || [])
+  ];
+
+  const handlePhotoClick = (index) => {
+    setGalleryIndex(index);
+    setShowPhotoGallery(true);
+  };
 
   const money = (value) => {
     const num = Number(value);
@@ -812,12 +824,26 @@ export default function PipeDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
           <div className="p-6 flex flex-col items-center gap-4 border-r border-[rgba(180,140,75,0.12)]">
             {mainPhoto ? (
-              <img
-                src={mainPhoto}
-                alt={pipe.name}
-                className="max-h-[440px] w-full object-contain"
+              <button
+                type="button"
+                onClick={() => handlePhotoClick(0)}
+                className="max-h-[440px] w-full rounded-xl overflow-hidden hover:opacity-90 transition-opacity group relative"
                 style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.45))' }}
-              />
+                title="Click to view full gallery"
+              >
+                <img
+                  src={mainPhoto}
+                  alt={pipe.name}
+                  className="max-h-[440px] w-full object-contain"
+                />
+                {allPhotos.length > 1 && (
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                    <span className="text-white/0 group-hover:text-white/70 text-sm font-medium">
+                      {allPhotos.length} photos
+                    </span>
+                  </div>
+                )}
+              </button>
             ) : (
               <div className="w-full h-[280px] rounded-2xl flex flex-col items-center justify-center bg-[rgba(255,255,255,0.03)] text-[#D8C7A6]/55 border border-[rgba(180,140,75,0.14)]">
                 <PipeShapeIcon
@@ -826,6 +852,31 @@ export default function PipeDetail() {
                   style={{ color: 'rgba(180,140,75,0.3)' }}
                 />
                 <p className="text-xs uppercase tracking-wider mt-2">{pipe.shape || 'No Photo'}</p>
+              </div>
+            )}
+
+            {/* Photo set preview — first image larger, rest as thumbnails */}
+            {allPhotos.length > 1 && (
+              <div className="w-full space-y-2">
+                <p className="text-xs uppercase tracking-[0.12em] font-semibold text-[#D8C7A6]/60">
+                  Photo Set ({allPhotos.length})
+                </p>
+                <div className="grid grid-cols-4 gap-2">
+                  {allPhotos.map((photo, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handlePhotoClick(idx)}
+                      className="aspect-square rounded-lg overflow-hidden border border-[rgba(180,140,75,0.18)] hover:border-[rgba(180,140,75,0.35)] transition-all hover:scale-105"
+                      title={`View photo ${idx + 1}`}
+                    >
+                      <img
+                        src={photo}
+                        alt={`Photo ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -1234,6 +1285,13 @@ export default function PipeDetail() {
           }}
         />
       )}
+
+      <PipePhotoGallery
+        photos={allPhotos}
+        isOpen={showPhotoGallery}
+        onClose={() => setShowPhotoGallery(false)}
+        initialIndex={galleryIndex}
+      />
     </div>
   );
 }

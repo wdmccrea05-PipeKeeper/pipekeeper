@@ -1,0 +1,137 @@
+import { describe, test, expect, vi, beforeEach } from 'vitest';
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import PipePhotoGallery from '../PipePhotoGallery';
+
+describe('PipePhotoGallery', () => {
+  const mockPhotos = [
+    'https://example.com/photo1.jpg',
+    'https://example.com/photo2.jpg',
+    'https://example.com/photo3.jpg',
+  ];
+
+  const mockOnClose = vi.fn();
+
+  beforeEach(() => {
+    mockOnClose.mockClear();
+  });
+
+  test('should render nothing when isOpen is false', () => {
+    const { container } = render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={false} onClose={mockOnClose} />
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  test('should render nothing when photos array is empty', () => {
+    const { container } = render(
+      <PipePhotoGallery photos={[]} isOpen={true} onClose={mockOnClose} />
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  test('should display the current photo when open', () => {
+    render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={true} onClose={mockOnClose} initialIndex={0} />
+    );
+    const img = screen.getByAltText('Photo 1');
+    expect(img).toBeInTheDocument();
+    expect(img.src).toBe(mockPhotos[0]);
+  });
+
+  test('should display photo counter', () => {
+    render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={true} onClose={mockOnClose} />
+    );
+    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+  });
+
+  test('should navigate to next photo when Next button is clicked', () => {
+    render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={true} onClose={mockOnClose} />
+    );
+    const nextButton = screen.getByLabelText('Next photo');
+    fireEvent.click(nextButton);
+    expect(screen.getByText('2 / 3')).toBeInTheDocument();
+    expect(screen.getByAltText('Photo 2')).toBeInTheDocument();
+  });
+
+  test('should navigate to previous photo when Previous button is clicked', () => {
+    render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={true} onClose={mockOnClose} initialIndex={1} />
+    );
+    const prevButton = screen.getByLabelText('Previous photo');
+    fireEvent.click(prevButton);
+    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+  });
+
+  test('should wrap around to last photo when navigating previous from first photo', () => {
+    render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={true} onClose={mockOnClose} initialIndex={0} />
+    );
+    const prevButton = screen.getByLabelText('Previous photo');
+    fireEvent.click(prevButton);
+    expect(screen.getByText('3 / 3')).toBeInTheDocument();
+  });
+
+  test('should wrap around to first photo when navigating next from last photo', () => {
+    render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={true} onClose={mockOnClose} initialIndex={2} />
+    );
+    const nextButton = screen.getByLabelText('Next photo');
+    fireEvent.click(nextButton);
+    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+  });
+
+  test('should call onClose when close button is clicked', () => {
+    render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={true} onClose={mockOnClose} />
+    );
+    const closeButton = screen.getByLabelText('Close Gallery');
+    fireEvent.click(closeButton);
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  test('should call onClose when ESC key is pressed', () => {
+    render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={true} onClose={mockOnClose} />
+    );
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  test('should navigate with arrow keys', () => {
+    render(
+      <PipePhotoGallery photos={mockPhotos} isOpen={true} onClose={mockOnClose} />
+    );
+    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+    
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(screen.getByText('2 / 3')).toBeInTheDocument();
+    
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+  });
+
+  test('should hide controls when only one photo', () => {
+    const { container } = render(
+      <PipePhotoGallery photos={['https://example.com/photo1.jpg']} isOpen={true} onClose={mockOnClose} />
+    );
+    expect(screen.queryByLabelText('Next photo')).not.toBeInTheDocument();
+    expect(screen.queryByText(/\d+ \/ \d+/)).not.toBeInTheDocument();
+  });
+
+  test('should filter out invalid photo URLs', () => {
+    const invalidPhotos = [
+      'https://example.com/photo1.jpg',
+      null,
+      '',
+      'https://example.com/photo2.jpg',
+      undefined,
+    ];
+    render(
+      <PipePhotoGallery photos={invalidPhotos} isOpen={true} onClose={mockOnClose} />
+    );
+    expect(screen.getByText('1 / 2')).toBeInTheDocument();
+  });
+});

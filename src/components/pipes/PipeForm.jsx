@@ -233,22 +233,27 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           const newPhotos = [...(formData.stamping_photos || [])];
           newPhotos[editingPhotoIndex] = result.file_url;
           handleChange('stamping_photos', newPhotos);
+          toast.success('Stamping photo updated');
         } else {
           const newPhotos = [...(formData.photos || [])];
           newPhotos[editingPhotoIndex] = result.file_url;
           handleChange('photos', newPhotos);
+          toast.success('Pipe photo updated');
         }
         setEditingPhotoIndex(null);
       } else {
         // Adding new photo
         if (isStamping) {
           handleChange('stamping_photos', [...(formData.stamping_photos || []), result.file_url]);
+          toast.success('Stamping photo added - click Save to persist');
         } else {
           handleChange('photos', [...(formData.photos || []), result.file_url]);
+          toast.success('Pipe photo added - click Save to persist');
         }
       }
     } catch (err) {
       console.error('Upload error:', err);
+      toast.error('Photo upload failed. Please try again.');
     } finally {
       setCropperImage(null);
       setCropperType(null);

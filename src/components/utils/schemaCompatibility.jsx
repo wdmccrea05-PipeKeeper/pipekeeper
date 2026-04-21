@@ -86,6 +86,7 @@ export function prepareLogData(data) {
 /**
  * Prepare Pipe data for create/update
  * Ensures both new and legacy fields are set
+ * CRITICAL: Preserves photos and stamping_photos arrays
  */
 export function preparePipeData(data) {
   const characteristics = data.usage_characteristics || data.smoking_characteristics || "";
@@ -98,10 +99,18 @@ export function preparePipeData(data) {
     result.smoking_characteristics = ""; // Clear legacy field when updating
   }
 
+  // Ensure photos arrays are included even if empty (prevents data loss on edit)
+  if (!Array.isArray(result.photos)) {
+    result.photos = [];
+  }
+  if (!Array.isArray(result.stamping_photos)) {
+    result.stamping_photos = [];
+  }
+
   // Avoid sending undefined fields on partial edits (can overwrite existing values
   // in backends that treat update payloads as full replacements).
   return Object.fromEntries(
-    Object.entries(result).filter(([, value]) => value !== undefined)
+    Object.entries(result).filter(([, value]) => value !== undefined && value !== null)
   );
 }
 
