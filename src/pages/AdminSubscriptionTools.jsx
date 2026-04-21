@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import NormalizeSubscriptionsCard from "@/components/admin/NormalizeSubscriptionsCard";
 
 export default function AdminSubscriptionTools() {
   const { user, isLoading } = useCurrentUser();
@@ -135,6 +136,10 @@ export default function AdminSubscriptionTools() {
     <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] py-12">
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-4xl font-bold text-[#E0D8C8] mb-8">{t("admin.subscriptionAdminTools")}</h1>
+
+        <div className="mb-6">
+          <NormalizeSubscriptionsCard />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">

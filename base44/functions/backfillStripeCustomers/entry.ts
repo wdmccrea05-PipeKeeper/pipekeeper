@@ -3,6 +3,60 @@ import Stripe from "npm:stripe@14.21.0";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
+function buildPriceMap() {
+  const e = Deno.env;
+  return {
+    [e.get('VITE_STRIPE_PIPEKEEPER_MONTHLY') || '']:    { planKey: 'pipekeeper_pro_monthly',        modules: ['pipekeeper'],                                              interval: 'month', price: 2.99  },
+    [e.get('VITE_STRIPE_PIPEKEEPER_ANNUAL') || '']:     { planKey: 'pipekeeper_pro_annual',          modules: ['pipekeeper'],                                              interval: 'year',  price: 29.99 },
+    [e.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY') || '']: { planKey: 'whiskeykeeper_pro_monthly',      modules: ['whiskeykeeper'],                                           interval: 'month', price: 2.99  },
+    [e.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL') || '']:  { planKey: 'whiskeykeeper_pro_annual',       modules: ['whiskeykeeper'],                                           interval: 'year',  price: 29.99 },
+    [e.get('VITE_STRIPE_CIGARKEEPER_MONTHLY') || '']:   { planKey: 'cigarkeeper_pro_monthly',        modules: ['cigarkeeper'],                                             interval: 'month', price: 2.99  },
+    [e.get('VITE_STRIPE_CIGARKEEPER_ANNUAL') || '']:    { planKey: 'cigarkeeper_pro_annual',         modules: ['cigarkeeper'],                                             interval: 'year',  price: 29.99 },
+    [e.get('VITE_STRIPE_WINEKEEPER_MONTHLY') || '']:    { planKey: 'winekeeper_pro_monthly',         modules: ['winekeeper'],                                              interval: 'month', price: 2.99  },
+    [e.get('VITE_STRIPE_WINEKEEPER_ANNUAL') || '']:     { planKey: 'winekeeper_pro_annual',          modules: ['winekeeper'],                                              interval: 'year',  price: 29.99 },
+    [e.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY') || '']:  { planKey: 'three_module_bundle_monthly',    modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],               interval: 'month', price: 7.99  },
+    [e.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL') || '']:   { planKey: 'three_module_bundle_annual',     modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],               interval: 'year',  price: 79.99 },
+    [e.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY') || '']:   { planKey: 'four_module_bundle_monthly',     modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], interval: 'month', price: 8.99  },
+    [e.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL') || '']:    { planKey: 'four_module_bundle_annual',      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], interval: 'year',  price: 89.99 },
+    [e.get('VITE_STRIPE_FOUNDERS_MONTHLY') || '']:      { planKey: 'founders_bundle_monthly',        modules: ['pipekeeper', 'whiskeykeeper'],                              interval: 'month', price: 4.99  },
+    [e.get('VITE_STRIPE_FOUNDERS_ANNUAL') || '']:       { planKey: 'founders_bundle_annual',         modules: ['pipekeeper', 'whiskeykeeper'],                              interval: 'year',  price: 49.99 },
+  };
+}
+
+function canonicalFieldsFromStripe(stripeSub, priceMap) {
+  const item    = stripeSub.items?.data?.[0];
+  const priceId = item?.price?.id || null;
+  const entry   = priceId ? priceMap[priceId] : null;
+  const modules = entry ? entry.modules : [];
+  const planKey = entry ? entry.planKey  : null;
+  const interval = entry ? entry.interval : (item?.price?.recurring?.interval || null);
+  const unitAmount = item?.price?.unit_amount;
+  const amount = unitAmount ? unitAmount / 100 : (entry ? entry.price : null);
+  const productKind = modules.length > 1 ? 'bundle' : (modules.length === 1 ? 'single' : 'unknown');
+  const bundleName = planKey
+    ? (planKey.includes('founders') ? 'Founders Bundle'
+      : planKey.includes('three_module') ? '3-Module Bundle'
+      : planKey.includes('four_module') ? '4-Module Bundle'
+      : null)
+    : null;
+  return {
+    price_id: priceId,
+    planKey,
+    modules_csv: modules.length > 0 ? modules.join(',') : null,
+    primary_module: modules[0] || null,
+    module_count: modules.length || null,
+    product_kind: productKind !== 'unknown' ? productKind : null,
+    bundle_name: bundleName,
+    billing_interval: interval,
+    billing_period: interval,
+    amount,
+    renewal_amount: amount,
+    source_confidence: entry ? 'high' : 'low',
+    source_trace: entry ? `price_id_map:${priceId}→${planKey}` : `no_price_map_entry:${priceId}`,
+    normalized_at: new Date().toISOString(),
+  };
+}
+
 Deno.serve(async (req) => {
   let keyPrefix = "unknown";
 
@@ -60,6 +114,9 @@ Deno.serve(async (req) => {
     } catch (e) {
       return Response.json({ ok: false, error: "BACKFILL_FAILED", where: "stripe_customers_list", message: e?.message || String(e), keyPrefix }, { status: 500 });
     }
+
+    const priceMap = buildPriceMap();
+    delete priceMap[''];
 
     let processedCustomers = 0, createdSubs = 0, updatedSubs = 0, createdUsers = 0, updatedUsers = 0;
     let skippedNoEmail = 0, skippedNoSub = 0, errorsCount = 0;
@@ -125,14 +182,23 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        const canonical = canonicalFieldsFromStripe(stripeSub, priceMap);
+        const userId = entityUser?.id || null;
+
         if (!existingSubs || existingSubs.length === 0) {
           try {
             await base44.asServiceRole.entities.Subscription.create({
-              user_email: email, provider: "stripe", provider_subscription_id: stripeSub.id,
-              stripe_customer_id: customer.id, stripe_subscription_id: stripeSub.id,
-              status: stripeSub.status, tier: "premium",
+              user_id: userId,
+              user_email: email,
+              provider: "stripe",
+              provider_subscription_id: stripeSub.id,
+              stripe_customer_id: customer.id,
+              stripe_subscription_id: stripeSub.id,
+              status: stripeSub.status,
+              tier: "pro",
               current_period_start: new Date(stripeSub.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(stripeSub.current_period_end * 1000).toISOString()
+              current_period_end: new Date(stripeSub.current_period_end * 1000).toISOString(),
+              ...canonical,
             });
             createdSubs++;
           } catch (e) {
@@ -144,7 +210,8 @@ Deno.serve(async (req) => {
             await base44.asServiceRole.entities.Subscription.update(existingSubs[0].id, {
               status: stripeSub.status,
               current_period_start: new Date(stripeSub.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(stripeSub.current_period_end * 1000).toISOString()
+              current_period_end: new Date(stripeSub.current_period_end * 1000).toISOString(),
+              ...canonical,
             });
             updatedSubs++;
           } catch (e) {
