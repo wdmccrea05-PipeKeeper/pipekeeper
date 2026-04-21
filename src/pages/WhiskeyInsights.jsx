@@ -21,6 +21,9 @@ import {
   selectOpenBottleValue,
   selectSealedBottleValue,
 } from '@/lib/collection/whiskeySelectors';
+import { Calendar } from '@/components/ui/calendar';
+import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
+import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
 
 export default function WhiskeyInsightsPage() {
   const { t } = useTranslation();
@@ -28,6 +31,7 @@ export default function WhiskeyInsightsPage() {
   const { formatFromBase } = useCurrency();
   const formatCurrency = formatFromBase;
   const [activeTab, setActiveTab] = useState('summary');
+  const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
   const highlightRefs = useRef({});
 
   const { data: bottles = [], isLoading: bottlesLoading } = useQuery({
@@ -70,6 +74,21 @@ export default function WhiskeyInsightsPage() {
   });
 
   const isDataLoading = !!user?.email && (bottlesLoading || logsLoading || inventoryLoading);
+
+  const whiskeySessions = useMemo(() => (tastingLogs || []).map(log => ({
+    id: `whiskey_${log.id}`,
+    moduleType: 'whiskey',
+    date: log.tasting_date,
+    itemLabel: log.bottle_name || 'Whiskey tasting',
+    rating: log.rating ?? null,
+    notes: log.notes || '',
+  })), [tastingLogs]);
+
+  const { byDate: whiskeyByDate, highlightedDates: whiskeyHighlights } = useMemo(
+    () => buildSessionCalendarData(whiskeySessions, 'whiskey'),
+    [whiskeySessions]
+  );
+  const whiskeySelectedDayRows = useMemo(() => whiskeyByDate[calSelectedDate] || [], [whiskeyByDate, calSelectedDate]);
 
   // Canonical whiskey metrics via shared selector layer — single source of truth
   const whiskeyMetrics = useMemo(
@@ -326,7 +345,8 @@ export default function WhiskeyInsightsPage() {
               { key: 'usage', label: t('insights.tabUsage', 'Usage') },
               { key: 'stats', label: t('insights.tabStats', 'Statistics') },
               { key: 'trends', label: t('insights.tabTrends', 'Trends') },
-              { key: 'reports', label: t('insights.tabReports', 'Reports') }
+              { key: 'reports', label: t('insights.tabReports', 'Reports') },
+              { key: 'sessions', label: 'Sessions' }
             ].map(({ key, label }) => (
               <button
                 key={key}
@@ -587,6 +607,39 @@ export default function WhiskeyInsightsPage() {
           {/* Trends Tab */}
           {activeTab === 'trends' && (
             <WhiskeyTrendsTab bottles={bottles} tastingLogs={tastingLogs} />
+          )}
+
+          {/* Sessions Tab */}
+          {activeTab === 'sessions' && (
+            <div className="space-y-4">
+              <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+                <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-3">
+                  <Calendar
+                    mode="single"
+                    selected={new Date(`${calSelectedDate}T12:00:00`)}
+                    onSelect={(date) => { if (date) setCalSelectedDate(toLocalDateYmd(date)); }}
+                    modifiers={{ hasSessions: whiskeyHighlights }}
+                    modifiersClassNames={{ hasSessions: 'ring-1 ring-[#B48C4B] ring-offset-0' }}
+                  />
+                </div>
+                <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-5">
+                  <h2 className="text-lg font-semibold mb-3 text-[#F5F1E7]">{calSelectedDate}</h2>
+                  {whiskeySelectedDayRows.length === 0 ? (
+                    <p className="text-[#D8C7A6]/75">No tastings logged for this day.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {whiskeySelectedDayRows.map((row) => (
+                        <div key={row.id} className="rounded-xl p-3 border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)]">
+                          <p className="text-sm font-semibold text-[#F5F1E7]">{row.itemLabel}</p>
+                          {row.rating != null && <p className="text-xs text-[#D8C7A6]/70 mt-1">Rating: {row.rating}</p>}
+                          {row.notes ? <p className="text-sm text-[#E0D8C8] mt-2 whitespace-pre-wrap">{row.notes}</p> : null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Reports Tab */}

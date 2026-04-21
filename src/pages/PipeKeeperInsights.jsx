@@ -21,8 +21,13 @@ import {
   Leaf,
   RotateCw,
   ArrowLeft,
+  CalendarDays,
 } from 'lucide-react';
 import PipeShapeIcon from '@/components/pipes/PipeShapeIcon';
+import { Calendar } from '@/components/ui/calendar';
+import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
+import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
+import { base44 } from '@/api/base44Client';
 
 // ---------------------------------------------------------------------------
 // Analytics helpers
@@ -172,6 +177,7 @@ export default function PipeKeeperInsights() {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('pipes');
+  const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
   const { formatFromBase } = useCurrency();
 
   const { data: pipes = [] } = useQuery({
@@ -191,6 +197,27 @@ export default function PipeKeeperInsights() {
     },
     enabled: !!user?.email,
   });
+
+  const { data: smokingLogs = [] } = useQuery({
+    queryKey: ['smoking-logs-insights', user?.email],
+    queryFn: async () => base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 1000).catch(() => []),
+    enabled: !!user?.email,
+  });
+
+  const pipeSessions = useMemo(() => (smokingLogs || []).map(log => ({
+    id: `pipe_${log.id}`,
+    moduleType: 'pipe',
+    date: log.date,
+    itemLabel: [log.pipe_name, log.blend_name].filter(Boolean).join(' • ') || 'Pipe session',
+    rating: null,
+    notes: log.notes || '',
+  })), [smokingLogs]);
+
+  const { byDate: pipeByDate, highlightedDates: pipeHighlights } = useMemo(
+    () => buildSessionCalendarData(pipeSessions, 'pipe'),
+    [pipeSessions]
+  );
+  const pipeSelectedDayRows = useMemo(() => pipeByDate[calSelectedDate] || [], [pipeByDate, calSelectedDate]);
 
   // Pipe analytics — value via canonical selector
   const totalPipeValue = useMemo(
@@ -217,6 +244,7 @@ export default function PipeKeeperInsights() {
   const TABS = [
     { key: 'pipes', label: 'Pipes' },
     { key: 'tobacco', label: 'Tobacco' },
+    { key: 'sessions', label: 'Sessions' },
   ];
 
   return (
@@ -464,6 +492,38 @@ export default function PipeKeeperInsights() {
               <p style={{ color: 'rgba(224,216,200,0.5)' }}>No tobacco blends found. Add blends to see insights.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Sessions Tab */}
+      {activeTab === 'sessions' && (
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+            <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-3">
+              <Calendar
+                mode="single"
+                selected={new Date(`${calSelectedDate}T12:00:00`)}
+                onSelect={(date) => { if (date) setCalSelectedDate(toLocalDateYmd(date)); }}
+                modifiers={{ hasSessions: pipeHighlights }}
+                modifiersClassNames={{ hasSessions: 'ring-1 ring-[#B48C4B] ring-offset-0' }}
+              />
+            </div>
+            <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-5">
+              <h2 className="text-lg font-semibold mb-3" style={{ color: '#F5F1E7' }}>{calSelectedDate}</h2>
+              {pipeSelectedDayRows.length === 0 ? (
+                <p style={{ color: 'rgba(224,216,200,0.6)' }}>No sessions logged for this day.</p>
+              ) : (
+                <div className="space-y-3">
+                  {pipeSelectedDayRows.map((row) => (
+                    <div key={row.id} className="rounded-xl p-3 border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)]">
+                      <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>{row.itemLabel}</p>
+                      {row.notes ? <p className="text-sm mt-2 whitespace-pre-wrap" style={{ color: 'rgba(224,216,200,0.85)' }}>{row.notes}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
