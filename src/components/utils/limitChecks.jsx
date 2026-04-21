@@ -67,3 +67,46 @@ export async function canCreateTobacco(userEmail, hasPaid, _isTrialing = false) 
     return buildFailure('limits.unableToVerify', null, FREE_TIER_LIMITS.TOBACCO_BLENDS);
   }
 }
+
+export const FREE_CIGAR_LIMIT = 10;
+export const FREE_HUMIDOR_LIMIT = 1;
+
+export async function canCreateCigar(userEmail, hasPaid) {
+  if (hasPaid) return { canCreate: true, currentCount: 0, limit: null, reason: null };
+
+  try {
+    const count = await countExisting(
+      () => base44.entities.Cigar.filter({ created_by: userEmail }, null, FREE_CIGAR_LIMIT + 1),
+      FREE_CIGAR_LIMIT
+    );
+
+    if (count >= FREE_CIGAR_LIMIT) {
+      return buildFailure('limits.freeCigarsExceeded', count, FREE_CIGAR_LIMIT);
+    }
+
+    return { canCreate: true, currentCount: count, limit: FREE_CIGAR_LIMIT, reason: null };
+  } catch (error) {
+    console.error('[limitChecks] failed to verify cigar limit', error);
+    return buildFailure('limits.unableToVerify', null, FREE_CIGAR_LIMIT);
+  }
+}
+
+export async function canCreateHumidor(userEmail, hasPaid) {
+  if (hasPaid) return { canCreate: true, currentCount: 0, limit: null, reason: null };
+
+  try {
+    const count = await countExisting(
+      () => base44.entities.HumidorLocation.filter({ created_by: userEmail }, null, FREE_HUMIDOR_LIMIT + 1),
+      FREE_HUMIDOR_LIMIT
+    );
+
+    if (count >= FREE_HUMIDOR_LIMIT) {
+      return buildFailure('limits.freeHumidorsExceeded', count, FREE_HUMIDOR_LIMIT);
+    }
+
+    return { canCreate: true, currentCount: count, limit: FREE_HUMIDOR_LIMIT, reason: null };
+  } catch (error) {
+    console.error('[limitChecks] failed to verify humidor limit', error);
+    return buildFailure('limits.unableToVerify', null, FREE_HUMIDOR_LIMIT);
+  }
+}

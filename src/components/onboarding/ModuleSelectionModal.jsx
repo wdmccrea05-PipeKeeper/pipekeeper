@@ -70,7 +70,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
           boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
         }}
       >
-        <h2 className="text-2xl font-bold mb-2 text-[#F5F1E7]">{t("onboarding.welcomeTitle", "Welcome to CollectionKeeper")}</h2>
+        <h2 className="text-2xl font-bold mb-2 text-[#F5F1E7]">{t("onboarding.welcomeModuleTitle", "Welcome to CollectionKeeper")}</h2>
         <p className="text-sm text-[#E0D8C8] mb-6">
           {t("onboarding.moduleSelectionDesc", "Choose which collection modules you'd like to start with. You can enable or upgrade these anytime.")}
         </p>
@@ -172,11 +172,11 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                     CigarKeeper
                   </h3>
                   <p className="text-xs text-[#E0D8C8] mt-1">
-                    {t("onboarding.cigarkeeperDesc", "Track cigars, humidors, inventory, and smoking sessions.")}
+                    {t("onboarding.cigarkeeperDesc", "Track cigars, humidors, inventory, and sessions. Free tier: 10 cigars, 1 humidor. Upgrade anytime.")}
                   </p>
                 </div>
-                <Badge className="flex-shrink-0 bg-[#8C6B3F]/30 text-[#E9D7B5] border-0 text-xs">
-                  Pro
+                <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
+                  Free
                 </Badge>
               </div>
             </button>

@@ -62,6 +62,10 @@ export default {
     pipesLimit: "Free tier allows up to {{limit}} pipes. Upgrade to add more.",
     tobaccoLimit: "Free tier allows up to {{limit}} blends. Upgrade to add more.",
     photosLimit: "Maximum {{limit}} photos per item.",
+    cigarsLimit: "Free tier allows up to {{limit}} cigars. Upgrade to add more.",
+    humidorsLimit: "Free tier allows 1 humidor. Upgrade to add more.",
+    freeCigarsExceeded: "You've reached the free tier limit of {{limit}} cigars.",
+    freeHumidorsExceeded: "Free tier allows 1 humidor. Upgrade to Pro for unlimited humidors.",
   },
   
   errors: {
@@ -1417,5 +1421,10 @@ export default {
     next: "Next",
     back: "Back",
     finish: "Finish",
+    welcomeModuleTitle: "Welcome to CollectionKeeper",
+    moduleSelectionDesc: "Choose which collection modules you'd like to start with. You can enable or upgrade these anytime.",
+    pipekeeperDesc: "Organize and track your pipe and tobacco collection. Free tier: 5 pipes, 10 blends.",
+    whiskeykeeperDesc: "Track your whiskey collection with tasting notes and inventory. Free tier: 10 bottles.",
+    cigarkeeperDesc: "Track cigars, humidors, inventory, and sessions. Free tier: 10 cigars, 1 humidor. Upgrade anytime.",
   },
 };

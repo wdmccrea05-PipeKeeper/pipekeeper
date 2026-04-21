@@ -13,6 +13,11 @@ const FREE_TIER_LIMITS = {
     bottles: 10,
     tastingLogs: 50,
   },
+  cigarkeeper: {
+    cigars: 10,
+    humidors: 1,
+    cigarSessions: 100,
+  },
 };
 
 /**

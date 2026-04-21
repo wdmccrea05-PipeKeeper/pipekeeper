@@ -46,10 +46,21 @@ function buildAccessibleModules(profile, activeModules, user) {
   }
 
   // After first-run module setup, all launched production modules should be
-  // toggleable in Profile by free or paid users.
+  // accessible to free or paid users (free tier applies limits, not access blocks).
   if (profile?.module_preferences_set === true) {
     for (const key of getLaunchedToggleableModules(user)) {
       accessible.add(key);
+    }
+  }
+
+  // During onboarding (prefs not yet set), also grant access to launched modules
+  // that have been explicitly enabled in the profile so newly-selected modules
+  // (including cigarkeeper for free users) become accessible immediately.
+  if (profile?.module_preferences_set !== true) {
+    for (const key of getLaunchedToggleableModules(user)) {
+      if (profile?.[`${key}_enabled`] === true) {
+        accessible.add(key);
+      }
     }
   }
 
