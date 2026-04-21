@@ -144,11 +144,6 @@ export default function LogSessionModal({
     () => sortByLabel(pipes || [], (item) => item?.name || ""),
     [pipes]
   );
-  const sortedContainers = useMemo(
-    () => sortByLabel(containers || [], (item) => item?.container_name || ""),
-    [containers]
-  );
-
   const { data: containers = [] } = useQuery({
     queryKey: ["containers", user?.email, formData.blend_id],
     enabled: !!user?.email && !!formData.blend_id && blendMode === "collection",
@@ -166,6 +161,11 @@ export default function LogSessionModal({
       }
     },
   });
+
+  const sortedContainers = useMemo(
+    () => sortByLabel(containers || [], (item) => item?.container_name || ""),
+    [containers]
+  );
 
   const { data: recentLogs = [] } = useQuery({
     queryKey: ["smoking-logs", user?.email],
