@@ -18,14 +18,23 @@ const REPORT_VERSION = 'v3';
 // ─── Canonical plan + amount mapping ───────────────────────────────────────────
 
 const AMOUNT_TO_PLAN: Record<number, { modules: string[]; interval: 'monthly' | 'annual'; bundle: string | null }> = {
-  1.99: { modules: [], interval: 'monthly', bundle: null },
-  19.99: { modules: [], interval: 'annual', bundle: null },
-  2.99: { modules: [], interval: 'monthly', bundle: null },
-  29.99: { modules: [], interval: 'annual', bundle: null },
+  // PipeKeeper single-module plans (fallback when modules_csv is missing)
+  1.99: { modules: ['pipekeeper'], interval: 'monthly', bundle: null },
+  19.99: { modules: ['pipekeeper'], interval: 'annual', bundle: null },
+  
+  // WhiskeyKeeper single-module plans (fallback when modules_csv is missing)
+  2.99: { modules: ['whiskeykeeper'], interval: 'monthly', bundle: null },
+  29.99: { modules: ['whiskeykeeper'], interval: 'annual', bundle: null },
+  
+  // Founders Bundle (PipeKeeper + WhiskeyKeeper)
   4.99: { modules: ['pipekeeper', 'whiskeykeeper'], interval: 'monthly', bundle: 'Founders' },
   49.99: { modules: ['pipekeeper', 'whiskeykeeper'], interval: 'annual', bundle: 'Founders' },
+  
+  // 3-Module Bundle (PipeKeeper + WhiskeyKeeper + CigarKeeper)
   7.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], interval: 'monthly', bundle: '3-Module' },
   79.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], interval: 'annual', bundle: '3-Module' },
+  
+  // 4-Module Bundle (all modules)
   8.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], interval: 'monthly', bundle: '4-Module' },
   89.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], interval: 'annual', bundle: '4-Module' },
 };
@@ -79,41 +88,51 @@ function inferFromAmount(
 // ─── Product classification ───────────────────────────────────────────────────
 
 function classifyProduct(sub: any, interval: 'monthly' | 'annual' | 'unknown' | null): { product: string; inferred: boolean } {
-  // 1. modules_csv
-  for (const m of splitMods(sub.modules_csv)) {
-    if (['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'].includes(m)) {
-      return { product: m, inferred: false };
+  // 1. modules_csv (TRUSTED — canonical source when present)
+  const modulesFromCsv = splitMods(sub.modules_csv);
+  if (modulesFromCsv.length > 0) {
+    // Only return single module; for bundles, use product_kind or infer from amount
+    for (const m of modulesFromCsv) {
+      if (['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'].includes(m)) {
+        return { product: m, inferred: false };
+      }
     }
   }
 
-  // 2. product_kind
+  // 2. product_kind (TRUSTED)
   const pk = norm(sub.product_kind || '');
-  if (['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper', 'bundle'].includes(pk)) {
+  if (pk === 'bundle') {
+    return { product: 'bundle', inferred: false };
+  }
+  if (['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'].includes(pk)) {
     return { product: pk, inferred: false };
   }
 
-  // 3. bundle signals
+  // 3. bundle signals (TRUSTED)
   const bundleFields = [sub.bundle_name, sub.checkout_type, sub.plan_name, sub.name].map(norm);
   if (bundleFields.some((f) => f.includes('bundle') || f.includes('founders'))) {
     return { product: 'bundle', inferred: false };
   }
 
-  // 4. Amount + interval inference (CRITICAL — resolves unknown products)
+  // 4. Amount + interval inference (CRITICAL — resolves unknown products via pricing schema)
   const amount = Math.max(0, Number(sub.amount || 0));
   if (amount > 0) {
     const inference = inferFromAmount(amount, interval);
-    if (inference) {
+    if (inference && inference.modules.length > 0) {
       if (inference.modules.length > 1) {
-        // Bundle with known modules
         return { product: 'bundle', inferred: true };
-      } else if (inference.modules.length === 1) {
-        // Single module with known product
+      } else {
         return { product: inference.modules[0], inferred: true };
-      } else if (inference.modules.length === 0) {
-        // Single-module amount (1.99, 2.99, etc.) — can't infer exact module, stay unknown
-        // but interval is known
-        return { product: 'unknown', inferred: false };
       }
+    }
+  }
+
+  // 5. Fallback: amount alone may indicate a known plan (last resort)
+  if (amount > 0) {
+    // If amount matches any known plan amount, it's likely a system data issue
+    // Log it and classify as inferred from amount
+    if (amount >= 4.99 && amount <= 8.99) {
+      return { product: 'bundle', inferred: true }; // All bundle prices are in this range
     }
   }
 
@@ -379,7 +398,13 @@ Deno.serve(async (req) => {
 
     // Revenue and counts from trusted + inferred
     const revenueRows = [...trusted, ...inferred];
-    const uniquePayingUsers = new Set(revenueRows.map((r) => r.user_id || r.user_email)).size;
+    // Deduplicate by user_id first (primary), then email (fallback for legacy records)
+    const uniquePayingUsersSet = new Set<string>();
+    for (const r of revenueRows) {
+      const key = r.user_id || norm(r.user_email || '');
+      if (key) uniquePayingUsersSet.add(key);
+    }
+    const uniquePayingUsers = uniquePayingUsersSet.size;
     const monthlyCount = revenueRows.filter((r) => r.interval === 'monthly').length;
     const annualCount = revenueRows.filter((r) => r.interval === 'annual').length;
 
