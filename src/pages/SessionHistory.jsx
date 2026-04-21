@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { buildSessionCalendarData } from "@/lib/sessionHistory/calendarData";
 import { sortByLabel } from "@/lib/sorting/alphabetical";
+import { X, Star } from "lucide-react";
 
 const MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar"];
 
@@ -50,6 +51,7 @@ export default function SessionHistory() {
   const { user } = useCurrentUser();
   const [moduleFilter, setModuleFilter] = useState("all");
   const [selectedDate, setSelectedDate] = useState(toLocalDateYmd(new Date()));
+  const [selectedSession, setSelectedSession] = useState(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["session-history-calendar", user?.email],
@@ -126,25 +128,79 @@ export default function SessionHistory() {
           ) : (
             <div className="space-y-3">
               {selectedDayRows.map((row) => (
-                <div
+                <button
                   key={row.id}
-                  className="rounded-xl p-3 border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)]"
+                  onClick={() => setSelectedSession(row)}
+                  className="w-full text-left rounded-xl p-3 border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(180,140,75,0.08)] hover:border-[rgba(180,140,75,0.45)] transition-colors cursor-pointer"
                 >
                   <p className="text-sm font-semibold">{row.itemLabel}</p>
                   <p className="text-xs text-[#D8C7A6]/70 mt-1">
                     {t(`sessionHistory.module.${row.moduleType}`, row.moduleType)}
-                    {row.rating != null ? ` • ${t("sessionHistory.rating", "Rating")}: ${row.rating}` : ""}
+                    {row.rating != null ? ` • ★ ${row.rating}` : ""}
                   </p>
-                  {row.notes ? (
-                    <p className="text-sm text-[#E0D8C8] mt-2 whitespace-pre-wrap">{row.notes}</p>
-                  ) : null}
-                </div>
+                </button>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Session Detail Modal */}
+      {selectedSession && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.65)" }}
+          onClick={() => setSelectedSession(null)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-2xl border border-[rgba(180,140,75,0.35)] bg-[#1d1511] p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedSession(null)}
+              className="absolute top-4 right-4 text-[#D8C7A6]/60 hover:text-[#D8C7A6] transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-1 text-xs uppercase tracking-widest text-[#B48C4B]">
+              {t(`sessionHistory.module.${selectedSession.moduleType}`, selectedSession.moduleType)}
+            </div>
+
+            <h3 className="text-lg font-bold text-[#F5F1E7] pr-6">{selectedSession.itemLabel}</h3>
+
+            <div className="mt-1 text-sm text-[#D8C7A6]/70">{selectedSession.date}</div>
+
+            {selectedSession.rating != null && (
+              <div className="flex items-center gap-1 mt-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className="w-4 h-4"
+                    fill={i < selectedSession.rating ? "#B48C4B" : "transparent"}
+                    stroke={i < selectedSession.rating ? "#B48C4B" : "#D8C7A6"}
+                    strokeWidth={1.5}
+                  />
+                ))}
+                <span className="ml-1 text-sm text-[#D8C7A6]/70">{selectedSession.rating} / 5</span>
+              </div>
+            )}
+
+            {selectedSession.notes ? (
+              <div className="mt-4 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.15)] p-3">
+                <p className="text-xs uppercase tracking-widest text-[#B48C4B] mb-1">
+                  {t("sessionHistory.notes", "Notes")}
+                </p>
+                <p className="text-sm text-[#E0D8C8] whitespace-pre-wrap">{selectedSession.notes}</p>
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-[#D8C7A6]/50 italic">
+                {t("sessionHistory.noNotes", "No notes recorded.")}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
