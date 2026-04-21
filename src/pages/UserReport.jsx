@@ -27,27 +27,15 @@ export default function UserReport() {
   );
   if (!data)   return <div className="p-8 text-[#E0D8C8]">No data returned.</div>;
 
-  const accounts   = data.accounts   || {};
-  const counts     = data.counts     || {};
-  const revenue    = data.revenue    || {};
-  const products   = data.products   || {};
-  const renewals   = data.renewals   || {};
-  const exceptions = data.exceptions || {};
-  const paidUsers  = data.paid_users || [];
-  const freeUsers  = data.free_users || [];
-  const meta       = data.meta       || {};
+  const accounts       = data.accounts       || {};
+  const revenue        = data.revenue        || {};
+  const renewals       = data.renewals       || {};
+  const reconciliation = data.reconciliation || {};
+  const meta           = data.meta           || {};
+  const reasonCounts   = reconciliation.reasonCounts || {};
 
-  const unknownProductRows  = exceptions.unknownProduct  || { count: 0, samples: [] };
-  const unknownIntervalRows = exceptions.unknownInterval || { count: 0, samples: [] };
-  const errorRows           = exceptions.errorRows       || { count: 0, samples: [] };
-  const duplicatesRemoved   = exceptions.duplicatesRemoved || 0;
-
-  const totalExceptions = unknownProductRows.count + unknownIntervalRows.count + errorRows.count + duplicatesRemoved;
-  const dataHealthPct   = counts.dataHealthPct ?? 100;
-
-  const healthColor = dataHealthPct >= 90 ? 'text-green-400'
-    : dataHealthPct >= 70 ? 'text-yellow-400'
-    : 'text-red-400';
+  const discrepancy = reconciliation.discrepancy || 0;
+  const healthColor = discrepancy === 0 ? 'text-green-400' : 'text-red-400';
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -76,44 +64,35 @@ export default function UserReport() {
       </div>
 
       {/* A. Accounts */}
-      <Section title="A. Accounts">
+      <Section title="A. Accounts & Reconciliation">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Card title="Total Accounts"   value={accounts.totalUsers ?? 0} />
-          <Card title="Paid Accounts"    value={accounts.paidUsers ?? 0} />
-          <Card title="Free Accounts"    value={accounts.freeUsers ?? 0} />
-          <Card title="Paid %"           value={`${accounts.paidPercentage ?? 0}%`} />
-          <Card title="Unique Payers"    value={data.subscriptions?.uniquePayingUsers ?? 0} />
-          <Card title="Exceptions"       value={data.stats?.exceptionCount ?? 0} warn={data.stats?.exceptionCount > 0} />
+          <Card title="Total Users"        value={accounts.totalUsers ?? 0} />
+          <Card title="Paid Users"         value={accounts.paidUsers ?? 0} />
+          <Card title="Free Users"         value={accounts.freeUsers ?? 0} />
+          <Card title="Paid %"             value={`${accounts.paidPercentage ?? 0}%`} />
+          <Card title="Paid Accounts"      value={reconciliation.totalPaidAccounts ?? 0} />
+          <Card title="Discrepancy"        value={discrepancy} warn={discrepancy > 0} />
         </div>
       </Section>
 
       {/* B. Revenue Metrics */}
-      <Section title="B. Revenue Metrics (trusted + inferred)">
+      <Section title="B. Revenue Metrics">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card title="MRR"              value={`$${data.revenue?.mrr ?? 0}`} />
-          <Card title="ARR"              value={`$${data.revenue?.arr ?? 0}`} />
-          <Card title="Paying Users"     value={data.subscriptions?.uniquePayingUsers ?? 0} />
-          <Card title="Paid %"           value={`${accounts.paidPercentage ?? '0.0'}%`} />
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+          <Card title="MRR"              value={`$${revenue.mrr ?? 0}`} />
+          <Card title="ARR"              value={`$${revenue.arr ?? 0}`} />
           <Card title="Monthly Subs"     value={data.subscriptions?.monthly ?? 0} />
           <Card title="Annual Subs"      value={data.subscriptions?.annual ?? 0} />
         </div>
       </Section>
 
-      {/* B2. Reconciliation */}
-      {data.reconciliation && (
-        <Section title="B2. Data Reconciliation">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <Card title="Total Active"     value={data.stats?.totalActive ?? 0} />
-            <Card title="Trusted Rows"     value={data.stats?.trustedCount ?? 0} />
-            <Card title="Inferred Rows"    value={data.stats?.inferredCount ?? 0} />
-            <Card title="Unknown Product"  value={data.reconciliation.unknown_product_rows ?? 0} warn={data.reconciliation.unknown_product_rows > 0} />
-            <Card title="Unknown Renewal"  value={data.reconciliation.unknown_renewal_rows ?? 0} warn={data.reconciliation.unknown_renewal_rows > 0} />
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-            <Card title="Inferred Products" value={data.reconciliation.inferred_product_count ?? 0} />
-            <Card title="Inferred Renewals" value={data.reconciliation.inferred_renewal_count ?? 0} />
+      {/* B2. Reason Codes */}
+      {Object.keys(reasonCounts).length > 0 && (
+        <Section title="B2. Reconciliation Details">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card title="Counted"           value={reasonCounts.counted_as_paying_user ?? 0} />
+            <Card title="Unknown Product"   value={reasonCounts.unknown_product ?? 0} warn={reasonCounts.unknown_product > 0} />
+            <Card title="Duplicate Merged"  value={reasonCounts.duplicate_subscription_merged ?? 0} />
+            <Card title="Manual/Admin"      value={reasonCounts.manual_admin_access ?? 0} />
           </div>
         </Section>
       )}
@@ -139,33 +118,26 @@ export default function UserReport() {
         </div>
       </Section>
 
-      {/* E. Exceptions Queue */}
-      {data.stats?.exceptionCount > 0 && (
-        <Section title="E. Exceptions Queue — Unresolvable">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-            <Card title="Exception Rows" value={data.stats?.exceptionCount} warn />
-            <Card title="Unknown Product" value={data.reconciliation?.unknown_product_rows} warn />
-            <Card title="Unknown Renewal" value={data.reconciliation?.unknown_renewal_rows} warn />
-          </div>
-
+      {/* E. Reason Summary */}
+      {discrepancy > 0 && (
+        <Section title="E. Reconciliation Issues">
           <div className="rounded-xl border border-yellow-800/30 bg-yellow-900/10 p-4">
-            <p className="text-yellow-300 font-semibold mb-2">Exception Rows ({data.stats?.exceptionCount ?? 0} unresolvable)</p>
-            <p className="text-yellow-200 text-sm">
-              These subscriptions could not be fully classified. Trusted + inferred rows are included in revenue and product mix.
-              Only truly unresolvable rows (unknown product AND unknown interval) are counted as exceptions.
+            <p className="text-yellow-300 font-semibold mb-2">Discrepancy: {discrepancy} accounts</p>
+            <p className="text-yellow-200 text-sm mb-3">
+              Paid accounts should equal paying users. Discrepancies indicate duplicates, manual grants, or missing subscription records.
             </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-yellow-200">
+              {reasonCounts.unknown_product > 0 && <div>Unknown Product: {reasonCounts.unknown_product}</div>}
+              {reasonCounts.duplicate_subscription_merged > 0 && <div>Duplicates Merged: {reasonCounts.duplicate_subscription_merged}</div>}
+              {reasonCounts.manual_admin_access > 0 && <div>Manual Grants: {reasonCounts.manual_admin_access}</div>}
+            </div>
           </div>
         </Section>
       )}
 
-      {/* F. Paid Users */}
-      <Section title={`F. Paid Users (${(data.paid_users || []).length})`}>
-        <UserTable users={data.paid_users || []} columns={['email', 'full_name', 'subscription_status', 'platform', 'created_date']} />
-      </Section>
-
-      {/* G. Free Users */}
-      <Section title={`G. Free Users (${(data.free_users || []).length})`}>
-        <UserTable users={data.free_users || []} columns={['email', 'full_name', 'platform', 'created_date']} />
+      {/* F. Paying Users */}
+      <Section title={`F. Paying Users (${(data.payingUsersList || []).length})`}>
+        <PayingUserTable users={data.payingUsersList || []} />
       </Section>
 
     </div>
@@ -234,6 +206,38 @@ function ExceptionTable({ title, rows, note }) {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function PayingUserTable({ users }) {
+  return (
+    <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
+      <table className="w-full text-sm">
+        <thead className="bg-[#2a1f18]">
+          <tr>
+            <th className="text-left px-3 py-2 text-[#E0D8C8] font-semibold whitespace-nowrap">Email</th>
+            <th className="text-left px-3 py-2 text-[#E0D8C8] font-semibold whitespace-nowrap">Product</th>
+            <th className="text-left px-3 py-2 text-[#E0D8C8] font-semibold whitespace-nowrap">Modules</th>
+            <th className="text-left px-3 py-2 text-[#E0D8C8] font-semibold whitespace-nowrap">Status</th>
+            <th className="text-left px-3 py-2 text-[#E0D8C8] font-semibold whitespace-nowrap">Subs</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.length === 0 && (
+            <tr><td colSpan={5} className="px-3 py-4 text-[#E0D8C8]/50 text-center">No paying users</td></tr>
+          )}
+          {users.map((u, i) => (
+            <tr key={i} className="border-t border-[#8b6239]/15 hover:bg-white/[0.02]">
+              <td className="px-3 py-2 text-[#E0D8C8]/90 font-mono text-xs">{u.email || '-'}</td>
+              <td className="px-3 py-2 text-[#E0D8C8]/90">{u.canonicalProduct || '-'}</td>
+              <td className="px-3 py-2 text-[#E0D8C8]/90 text-xs">{u.modules?.join(', ') || '-'}</td>
+              <td className="px-3 py-2 text-[#E0D8C8]/90">{u.status || '-'}</td>
+              <td className="px-3 py-2 text-[#E0D8C8]/90 text-center">{u.subscriptionCount}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
