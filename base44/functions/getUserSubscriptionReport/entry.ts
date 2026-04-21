@@ -1,4 +1,11 @@
 type Row = Record<string, any>;
+type EntityList<T> = { list: () => Promise<T[]> };
+type HandlerContext = {
+  entities: {
+    User: EntityList<Row>;
+    Subscription: EntityList<Row>;
+  };
+};
 
 function monthlyValue(amount: number, interval: string) {
   if (!amount) return 0;
@@ -11,7 +18,17 @@ function uniq<T>(arr: T[]) {
   return [...new Set(arr)];
 }
 
-export default async function handler(_: any, { entities }: any) {
+function resolveModules(row: Row, product: string) {
+  if (Array.isArray(row.modules)) return row.modules;
+  const lower = String(product).toLowerCase();
+  if (lower.includes('bundle')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+  if (lower.includes('pipe')) return ['pipekeeper'];
+  if (lower.includes('whiskey')) return ['whiskeykeeper'];
+  if (lower.includes('cigar')) return ['cigarkeeper'];
+  return [];
+}
+
+export default async function handler(_: unknown, { entities }: HandlerContext) {
   const users = await entities.User.list();
   const subs = await entities.Subscription.list();
 
@@ -22,20 +39,10 @@ export default async function handler(_: any, { entities }: any) {
   // BILLING CONTRACTS = one row per active contract
   const contracts = activeSubs.map((s: Row) => {
     const product = s.product || s.plan || s.plan_key || s.price_id || 'Unknown';
+    const modules = resolveModules(s, product);
 
-    const modules =
-      s.modules ||
-      (String(product).toLowerCase().includes('bundle')
-        ? ['pipekeeper', 'whiskeykeeper', 'cigarkeeper']
-        : String(product).toLowerCase().includes('pipe')
-          ? ['pipekeeper']
-          : String(product).toLowerCase().includes('whiskey')
-            ? ['whiskeykeeper']
-            : String(product).toLowerCase().includes('cigar')
-              ? ['cigarkeeper']
-              : []);
-
-    const amount = Number(s.amount || s.price || 0);
+    const parsedAmount = Number(s.amount ?? s.price ?? 0);
+    const amount = Number.isFinite(parsedAmount) ? parsedAmount : 0;
 
     return {
       id: s.id,

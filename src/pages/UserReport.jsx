@@ -5,15 +5,21 @@ import { exportContractsCsv } from '@/lib/exportUserReportCsv';
 export default function UserReport() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     base44.functions
       .invoke('getUserSubscriptionReport', {})
       .then((response) => setData(response?.data ?? response))
+      .catch((err) => {
+        console.error('Failed to load getUserSubscriptionReport', err);
+        setError(err);
+      })
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="p-6 text-[#E0D8C8]">Loading user report...</div>;
+  if (error) return <div className="p-6 text-[#E0D8C8]">Unable to load user report.</div>;
   if (!data) return <div className="p-6 text-[#E0D8C8]">Unable to load user report.</div>;
 
   const { summary = {}, modules = {}, contracts = [] } = data;
@@ -68,7 +74,7 @@ export default function UserReport() {
                 <Td>{c.user_id}</Td>
                 <Td>{c.provider}</Td>
                 <Td>{c.product}</Td>
-                <Td>{Array.isArray(c.modules) ? c.modules.join(', ') : ''}</Td>
+                <Td>{Array.isArray(c.modules) && c.modules.length > 0 ? c.modules.join(', ') : '-'}</Td>
                 <Td>{c.interval}</Td>
                 <Td>{c.amount}</Td>
                 <Td>{c.renewal_date || '-'}</Td>
