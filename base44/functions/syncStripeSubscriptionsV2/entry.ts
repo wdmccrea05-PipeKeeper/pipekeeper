@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
       return priceId ? (priceMap[priceId] || null) : null;
     }
 
-    function modulesFromPlanKey(key: string | null): string[] {
+    function modulesFromPlanKey(key: string | null, createdAt?: number | null): string[] {
       const k = String(key || '').toLowerCase();
       if (k.startsWith('pipekeeper_')) return ['pipekeeper'];
       if (k.startsWith('whiskeykeeper_')) return ['whiskeykeeper'];
@@ -105,6 +105,13 @@ Deno.serve(async (req) => {
       if (k.includes('three_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
       if (k.includes('four_module')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
       if (k.includes('founders')) return ['pipekeeper', 'whiskeykeeper'];
+      
+      // Temporal inference: subscriptions before WhiskeyKeeper release (April 14, 2026) must be PipeKeeper
+      const WHISKEYKEEPER_LAUNCH = new Date('2026-04-14T00:00:00Z').getTime();
+      if (createdAt && createdAt * 1000 < WHISKEYKEEPER_LAUNCH) {
+        return ['pipekeeper'];
+      }
+      
       return [];
     }
 
@@ -118,7 +125,7 @@ Deno.serve(async (req) => {
       const amount = item?.price?.unit_amount ? item.price.unit_amount / 100 : 0;
       const customerId = typeof sub.customer === 'string' ? sub.customer : (sub.customer as any)?.id;
 
-      const modules = modulesFromPlanKey(planKey);
+      const modules = modulesFromPlanKey(planKey, sub.created);
       modules.forEach((m) => allModules.add(m));
 
       const payload = {
