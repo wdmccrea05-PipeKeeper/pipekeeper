@@ -64,8 +64,8 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
       <div
         className="max-w-2xl w-full rounded-2xl p-6 overflow-y-auto"
-        style={{ maxHeight: 'calc(100vh - 2rem)' }}
         style={{
+          maxHeight: 'calc(100vh - 2rem)',
           background: 'linear-gradient(135deg, rgba(42,30,20,0.98), rgba(28,18,12,0.98))',
           border: '1px solid rgba(180,140,75,0.2)',
           boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
@@ -184,13 +184,15 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
           ) : null}
         </div>
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex gap-3 justify-end sticky bottom-0 pt-3 pb-1"
+          style={{ background: 'linear-gradient(to top, rgba(28,18,12,1) 80%, transparent)' }}
+        >
           <Button
             onClick={handleContinue}
             disabled={saving || !hasAnySelected}
-            className="bg-[#A35C5C] hover:bg-[#8F4E4E]"
+            className="bg-[#A35C5C] hover:bg-[#8F4E4E] w-full sm:w-auto text-base py-3"
           >
-            {saving ? 'Saving...' : 'Continue'}
+            {saving ? 'Saving...' : 'Continue →'}
           </Button>
         </div>
       </div>

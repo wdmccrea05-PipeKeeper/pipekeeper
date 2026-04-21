@@ -34,16 +34,18 @@ export default function ModuleSelectionStep({
 
   const accessibleModules = useMemo(() => {
     const set = new Set(activeModules || []);
-    if (tester) {
-      set.add("pipekeeper");
-      set.add("whiskeykeeper");
-    }
+    // Free users always get pipekeeper and whiskeykeeper — they are free-tier modules.
+    // This ensures brand new users with no subscription can still see and select modules.
+    set.add("pipekeeper");
+    set.add("whiskeykeeper");
     if (canAccessCigarInternal) {
       set.add("cigarkeeper");
     }
     return set;
   }, [activeModules, tester, canAccessCigarInternal]);
 
+  // All defined modules are selectable — access is gated on features inside each module,
+  // not on visibility in the picker. CigarKeeper is shown only if internally accessible.
   const selectableModules = MODULES.filter((module) =>
     accessibleModules.has(module.key)
   );
