@@ -4,6 +4,19 @@ const toNumber = (value) => {
 };
 
 const cigarQuantity = (cigar) => Math.max(0, toNumber(cigar?.singles_equivalent ?? cigar?.quantity ?? 0));
+const DEFAULT_TEXT = {
+  'hub.mostSmokedCigar': 'Most Smoked Cigar',
+  'hub.topRatedCigar': 'Top Rated Cigar',
+  'hub.favoriteCigar': 'Favorite Cigar',
+  'hub.collectionFavorite': 'Collection favorite',
+  'hub.highestValueCigar': 'Highest Value Cigar',
+  'hub.humidorFavorite': 'Humidor Favorite',
+  'hub.readyInHumidor': 'Ready in your humidor',
+  'hub.restockPriority': 'Restock Priority',
+  'hub.sticksLeft': 'sticks left',
+  'hub.cigarCrownJewel': 'Cigar Crown Jewel',
+};
+const defaultTranslate = (key) => DEFAULT_TEXT[key] ?? key;
 
 export function selectTopHubHighlights(candidates = [], maxCards = 6) {
   const sorted = (Array.isArray(candidates) ? candidates : [])
@@ -29,7 +42,7 @@ export function buildHubHighlightCandidates({
   whiskeyOpenable = false,
   cigarOpenable = false,
   metrics = {},
-  t = (key, fallback) => fallback ?? key,
+  t = defaultTranslate,
   formatFromBase = (value) => `$${toNumber(value).toFixed(0)}`,
   getPipeValue = () => 0,
   getBottleValue = () => 0,
