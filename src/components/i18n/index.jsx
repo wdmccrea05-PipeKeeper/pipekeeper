@@ -120,6 +120,15 @@ function interpolate(str, vars) {
     return vars[k] !== undefined ? String(vars[k]) : `{${k}}`;
   });
 }
+const loggedMissingKeys = new Set();
+function logMissingI18nKey(lang, key, source = 'locale') {
+  const token = `${lang}:${key}:${source}`;
+  if (loggedMissingKeys.has(token)) return;
+  loggedMissingKeys.add(token);
+  if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+    console.warn(`[i18n] Missing key "${key}" for "${lang}" (${source})`);
+  }
+}
 
 export const translations = Object.fromEntries(Object.entries(rawLocales).map(([lang, pack]) => {
   const withDocs = deepMerge(pack, docsLocales[lang] || {});
@@ -187,8 +196,10 @@ function createTranslator(lang) {
         : undefined;
     const returnObjects = isOptions && varsOrFallback.returnObjects === true;
     let value = getNestedValue(translationPack, key);
+    if (value === undefined && lang !== 'en') logMissingI18nKey(lang, key, 'locale');
     if (value === undefined) value = getNestedValue(translations.en, key);
     if (value === undefined) value = getNestedValue(CRITICAL_FALLBACKS, key);
+    if (value === undefined) logMissingI18nKey(lang, key, 'global');
     if (value === undefined) value = fallback !== undefined ? fallback : key;
     if (returnObjects) return value;
     if (typeof value === 'string') return interpolate(value, vars);
