@@ -1,8 +1,35 @@
 import { base44 } from "@/api/base44Client";
 
+function normalizeErrorMessage(error) {
+  const details = [
+    error?.response?.data?.message,
+    error?.response?.data?.error,
+    error?.response?.data?.details,
+    error?.data?.message,
+    error?.data?.error,
+    error?.body?.message,
+    error?.body?.error,
+    error?.message,
+  ].find((value) => typeof value === "string" && value.trim().length > 0);
+
+  if (details) return details;
+  if (error?.response?.data?.details && typeof error.response.data.details === "object") {
+    try {
+      return JSON.stringify(error.response.data.details);
+    } catch {
+      return "Unknown validation error";
+    }
+  }
+  return "Unknown update error";
+}
+
+function removeUndefinedValues(input = {}) {
+  return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
+}
+
 /**
- * Safe entity update that merges changes with existing data
- * Prevents accidental data loss from partial updates
+ * Safe entity update that verifies ownership and sends only explicit updates.
+ * Avoids legacy-record incompatibility from re-sending stale/deprecated fields.
  * 
  * @param {string} entityName - Name of the entity (e.g., 'Pipe', 'TobaccoBlend')
  * @param {string|number} id - Entity ID
@@ -40,20 +67,19 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
       throw new Error(`Permission denied: ${entityName} belongs to another user`);
     }
     
-    // Merge updates with current data, preserving critical fields
-    const { id: _, created_date, updated_date, ...existingData } = current;
-    const merged = {
-      ...existingData,
+    // IMPORTANT: send only explicit updates.
+    // Re-sending the full current record can fail on legacy records that contain
+    // deprecated/invalid fields no longer accepted by the current backend schema.
+    const merged = removeUndefinedValues({
       ...updates,
-      // Always preserve these fields
-      created_by: current.created_by,
-    };
+      ...(updates?.created_by === undefined && current?.created_by ? { created_by: current.created_by } : {}),
+    });
     
     // Perform update using the ID that actually worked (current.id)
     return await base44.entities[entityName].update(current.id, merged);
   } catch (error) {
     console.error(`safeUpdate failed for ${entityName}:`, error);
-    throw error;
+    throw new Error(normalizeErrorMessage(error));
   }
 }
 
