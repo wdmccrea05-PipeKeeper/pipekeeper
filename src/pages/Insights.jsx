@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import {
@@ -990,7 +991,8 @@ function computeLongestStreak(logs) {
 
 export default function Insights() {
   const { t } = useTranslation();
-  const { user, hasPaid } = useCurrentUser();
+  const { user } = useCurrentUser();
+  const hasPipekeeperPro = hasModuleProAccess(user, "pipekeeper");
   const navigate = useNavigate();
   // Subscribe to currency context so the component re-renders when the user changes currency
   const { selectedCurrency, formatFromBase } = useCurrency();
@@ -1273,7 +1275,7 @@ export default function Insights() {
                 {t("insights.title")}
               </h1>
 
-              {hasPaid && (
+              {hasPipekeeperPro && (
                 <Badge
                   className="border-0 text-xs"
                   style={{

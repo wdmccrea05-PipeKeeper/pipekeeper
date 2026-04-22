@@ -17,6 +17,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { calculateCorrectCellaredValues } from "@/components/utils/cellarReconciliation";
 import { detectCellarDrift } from "@/components/utils/tobaccoQuantityHelpers";
 import { safeUpdate } from "@/components/utils/safeUpdate";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 
 export default function CellarLog({ blend }) {
   const { t } = useTranslation();
@@ -32,7 +33,8 @@ export default function CellarLog({ blend }) {
 
   const queryClient = useQueryClient();
 
-  const { user, hasPremium: isPaidUser } = useCurrentUser();
+  const { user } = useCurrentUser();
+  const isPaidUser = hasModuleProAccess(user, 'pipekeeper');
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['cellar-logs', blend.id],

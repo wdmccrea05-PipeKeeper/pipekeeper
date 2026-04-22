@@ -19,6 +19,7 @@ import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import LogSessionModal from '@/components/home/LogSessionModal';
 import FreeTierUpgradePrompt from '@/components/subscription/FreeTierUpgradePrompt';
+import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -29,7 +30,7 @@ export default function PipeKeeperModule() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
 
-  const { user, hasPaid, isLoading: isUserLoading } = useCurrentUser();
+  const { user, isLoading: isUserLoading } = useCurrentUser();
   const { hideValues, hideCollectionCounts } = useProfilePrivacy();
   const queryClient = useQueryClient();
   
@@ -85,10 +86,9 @@ export default function PipeKeeperModule() {
 
   const totalCellaredOz = useMemo(() => blends.reduce((sum, b) => sum + calculateCellaredOzFromBlend(b), 0), [blends]);
 
-  // Check free tier limits — treat any paid user as having pipekeeper access
-  const effectiveUser = (hasPaid || user?.pipekeeper_paid) ? { ...user, pipekeeper_paid: true } : user;
-  const pipeLimit = checkFreeTierLimit('pipekeeper', 'pipes', pipes.length, effectiveUser);
-  const blendLimit = checkFreeTierLimit('pipekeeper', 'blends', blends.length, effectiveUser);
+  const hasPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
+  const pipeLimit = checkFreeTierLimit('pipekeeper', 'pipes', pipes.length, user);
+  const blendLimit = checkFreeTierLimit('pipekeeper', 'blends', blends.length, user);
   
   const mostSmokedPipe = useMemo(() => {
     if (!smokingLogs.length || !pipes.length) return null;
@@ -203,14 +203,14 @@ export default function PipeKeeperModule() {
       <PipeKeeperModuleNav currentPageName={null} />
 
       {/* Free Tier Limit Warnings */}
-      {pipeLimit.atLimit && !hasPaid && !user?.pipekeeper_paid && (
+      {pipeLimit.atLimit && !hasPipekeeperPro && (
         <FreeTierUpgradePrompt
           moduleId="pipekeeper"
           title={t('pipekeeper.pipeLimitReachedTitle')}
           description={t('pipekeeper.pipeLimitReachedDescription', { limit: pipeLimit.limit })}
         />
       )}
-      {blendLimit.atLimit && !hasPaid && !user?.pipekeeper_paid && (
+      {blendLimit.atLimit && !hasPipekeeperPro && (
         <FreeTierUpgradePrompt
           moduleId="pipekeeper"
           title={t('pipekeeper.blendLimitReachedTitle')}

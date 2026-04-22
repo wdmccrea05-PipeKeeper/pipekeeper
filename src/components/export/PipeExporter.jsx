@@ -8,13 +8,14 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from 'sonner';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
 
 export default function PipeExporter() {
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
   const [loading, setLoading] = useState(false);
 
-  const { user, hasPaid } = useCurrentUser();
+  const { user } = useCurrentUser();
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
@@ -22,7 +23,7 @@ export default function PipeExporter() {
     enabled: !!user?.email,
   });
 
-  const isPremiumUser = hasPaid;
+  const isPremiumUser = hasModuleProAccess(user, 'pipekeeper');
 
   const exportToCSV = () => {
     const headers = [

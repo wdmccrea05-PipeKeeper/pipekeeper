@@ -3,6 +3,7 @@
  */
 export { getModuleLimits, getModuleLimit, hasReachedLimit, getRemainingBeforeLimit } from './moduleLimits';
 import { base44 } from "@/api/base44Client";
+import { hasModuleProAccess } from './moduleEntitlements';
 
 export const FREE_TIER_LIMITS = {
   PIPES: 5,
@@ -11,6 +12,11 @@ export const FREE_TIER_LIMITS = {
   PHOTOS_PER_ITEM: 3,
   SMOKING_LOGS: 100,
 };
+
+function hasModuleAccessFromInput(userOrHasPaid, moduleKey) {
+  if (typeof userOrHasPaid === 'boolean') return userOrHasPaid;
+  return hasModuleProAccess(userOrHasPaid, moduleKey);
+}
 
 export function shouldApplyTrialRestrictions() {
   return new Date() >= new Date('2026-02-01T00:00:00.000Z');
@@ -25,8 +31,8 @@ async function countExisting(fetcher, limit) {
   return Array.isArray(items) ? items.length : 0;
 }
 
-export async function canCreatePipe(userEmail, hasPaid, isTrialing = false) {
-  if (hasPaid) return { canCreate: true, currentCount: 0, limit: null, reason: null };
+export async function canCreatePipe(userEmail, userOrHasPaid, isTrialing = false) {
+  if (hasModuleAccessFromInput(userOrHasPaid, 'pipekeeper')) return { canCreate: true, currentCount: 0, limit: null, reason: null };
 
   try {
     const count = await countExisting(
@@ -48,8 +54,8 @@ export async function canCreatePipe(userEmail, hasPaid, isTrialing = false) {
   }
 }
 
-export async function canCreateTobacco(userEmail, hasPaid, _isTrialing = false) {
-  if (hasPaid) return { canCreate: true, currentCount: 0, limit: null, reason: null };
+export async function canCreateTobacco(userEmail, userOrHasPaid, _isTrialing = false) {
+  if (hasModuleAccessFromInput(userOrHasPaid, 'pipekeeper')) return { canCreate: true, currentCount: 0, limit: null, reason: null };
 
   try {
     const count = await countExisting(
@@ -71,8 +77,8 @@ export async function canCreateTobacco(userEmail, hasPaid, _isTrialing = false) 
 export const FREE_CIGAR_LIMIT = 10;
 export const FREE_HUMIDOR_LIMIT = 1;
 
-export async function canCreateCigar(userEmail, hasPaid) {
-  if (hasPaid) return { canCreate: true, currentCount: 0, limit: null, reason: null };
+export async function canCreateCigar(userEmail, userOrHasPaid) {
+  if (hasModuleAccessFromInput(userOrHasPaid, 'cigarkeeper')) return { canCreate: true, currentCount: 0, limit: null, reason: null };
 
   try {
     const count = await countExisting(
@@ -91,8 +97,8 @@ export async function canCreateCigar(userEmail, hasPaid) {
   }
 }
 
-export async function canCreateHumidor(userEmail, hasPaid) {
-  if (hasPaid) return { canCreate: true, currentCount: 0, limit: null, reason: null };
+export async function canCreateHumidor(userEmail, userOrHasPaid) {
+  if (hasModuleAccessFromInput(userOrHasPaid, 'cigarkeeper')) return { canCreate: true, currentCount: 0, limit: null, reason: null };
 
   try {
     const count = await countExisting(

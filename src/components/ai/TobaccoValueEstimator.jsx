@@ -10,16 +10,17 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isLegacyPremium } from "@/components/utils/premiumAccess";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrency } from "@/lib/currency/useCurrency";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 
 export default function TobaccoValueEstimator({ blends, user, onComplete }) {
-  const { subscription, hasPro } = useCurrentUser();
+  const { user: currentUser, subscription } = useCurrentUser();
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
   const [selectedBlends, setSelectedBlends] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState(null);
 
-  const hasProAccess = hasPro || isLegacyPremium(subscription);
+  const hasProAccess = hasModuleProAccess(currentUser || user, 'pipekeeper') || isLegacyPremium(subscription);
 
   // Filter blends that need valuation
   const blendsNeedingValuation = blends.filter(b => !b.ai_estimated_value);

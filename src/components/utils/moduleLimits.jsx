@@ -7,7 +7,7 @@
  * Usage: import { getModuleLimits, hasReachedLimit } from '@/components/utils/moduleLimits'
  */
 
-import { hasPaidAccess } from './premiumAccess';
+import { hasModuleProAccess } from './moduleEntitlements';
 
 const FREE_LIMITS = {
   pipekeeper: {
@@ -55,14 +55,14 @@ export function getModuleLimit(module, limitKey) {
  * Pro users (any module) are never limited.
  */
 export function shouldEnforceModuleLimit(user, subscription) {
-  return !hasPaidAccess(user, subscription);
+  return !hasModuleProAccess(user, null, subscription);
 }
 
 /**
  * True if user has reached the limit for a given item type.
  */
 export function hasReachedLimit(user, subscription, module, limitKey, currentCount) {
-  if (hasPaidAccess(user, subscription)) return false;
+  if (hasModuleProAccess(user, module, subscription)) return false;
   const limit = getModuleLimit(module, limitKey);
   if (limit == null) return false;
   return currentCount >= limit;
@@ -73,7 +73,7 @@ export function hasReachedLimit(user, subscription, module, limitKey, currentCou
  * Returns null for Pro users (no limit).
  */
 export function getRemainingBeforeLimit(user, subscription, module, limitKey, currentCount) {
-  if (hasPaidAccess(user, subscription)) return null;
+  if (hasModuleProAccess(user, module, subscription)) return null;
   const limit = getModuleLimit(module, limitKey);
   if (limit == null) return null;
   return Math.max(0, limit - currentCount);

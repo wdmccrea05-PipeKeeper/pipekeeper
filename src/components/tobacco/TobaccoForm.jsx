@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { canCreateTobacco } from "@/components/utils/limitChecks";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import { toast } from "sonner";
 import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
@@ -85,8 +86,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   
   const queryClient = useQueryClient();
   const entitlements = useEntitlements();
-  const { user, hasPaid, isTrial } = useCurrentUser();
-  const isPaidUser = hasPaid;
+  const { user, isTrial } = useCurrentUser();
+  const isPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
 
   // Auto-suggest recent values
   const { data: recentManufacturers = [] } = useRecentValues("TobaccoBlend", "manufacturer");
@@ -284,8 +285,8 @@ Return complete and accurate information based on the blend name or description 
     e.preventDefault();
 
     // Check free tier limits for new blends only
-    if (!blend && !isPaidUser) {
-      const result = await canCreateTobacco(user?.email, isPaidUser, false);
+    if (!blend && !isPipekeeperPro) {
+      const result = await canCreateTobacco(user?.email, user, isTrial);
       if (!result.canCreate) {
         toast.error(result.reason || t("limits.tobaccoLimit", { limit: result.limit }));
         return;

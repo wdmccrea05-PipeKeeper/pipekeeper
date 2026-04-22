@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { prepareLogData, getBowlsUsed, getTotalBowlsFromLogs, getBreakInBowlsFromLogs, parseLocalCalendarDate, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import SmokingLogLoadingState from "./SmokingLogLoadingState";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 
 const TOBACCO_DENSITY_GCM3 = 0.30; // g/cm³ for pipe tobacco (loosely packed)
 const BOWL_GEOMETRY_FACTOR = 0.85; // account for tapered bowl shape
@@ -42,7 +43,8 @@ const BOWL_GEOMETRY_FACTOR = 0.85; // account for tapered bowl shape
 export default function SmokingLogPanel({ pipes, blends, user }) {
   const { t } = useTranslation();
 
-  const { hasPaid, isLoading: userLoading } = useCurrentUser();
+  const { isLoading: userLoading } = useCurrentUser();
+  const hasPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
   const entitlements = useEntitlements();
 
   const [showAddLog, setShowAddLog] = useState(false);
@@ -331,7 +333,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
       }
 
       // Reduce tobacco inventory (Premium feature)
-      if (autoReduceInventory && variables.tobaccoUsed > 0 && hasPaid) {
+      if (autoReduceInventory && variables.tobaccoUsed > 0 && hasPipekeeperPro) {
         const blend = blends.find(b => b.id === variables.blend_id);
         if (blend) {
           // Reduce from opened inventory first
@@ -495,7 +497,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
     );
   }
 
-  if (!hasPaid) {
+  if (!hasPipekeeperPro) {
     return (
       <UpgradePrompt 
         featureName={t("smokingLog.usageLog")}

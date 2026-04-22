@@ -10,11 +10,13 @@ import { useCurrency } from "@/lib/currency/useCurrency";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 
 export default function ValueLookup({ pipe, onUpdateValue }) {
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
-  const { hasPremium } = useCurrentUser();
+  const { user } = useCurrentUser();
+  const hasPremium = hasModuleProAccess(user, 'pipekeeper');
   const [loading, setLoading] = useState(false);
   const [valuation, setValuation] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
