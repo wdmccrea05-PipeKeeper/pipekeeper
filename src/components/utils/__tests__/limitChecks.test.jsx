@@ -149,3 +149,30 @@ describe('canCreateTobacco — backend error', () => {
     expect(result.reason).toBe('limits.unableToVerify');
   });
 });
+
+describe('module-specific pro isolation', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  test('WhiskeyKeeper Pro does not bypass PipeKeeper pipe limits', async () => {
+    base44.entities.Pipe.filter.mockResolvedValue(new Array(PIPE_LIMIT));
+    const user = { entitlement_tier: 'pro', paid_modules_csv: 'whiskeykeeper' };
+    const result = await canCreatePipe('test@example.com', user, false);
+    expect(result.canCreate).toBe(false);
+    expect(result.reason).toBe('limits.freePipesExceeded');
+  });
+
+  test('PipeKeeper Pro bypasses PipeKeeper limits', async () => {
+    const user = { entitlement_tier: 'pro', paid_modules_csv: 'pipekeeper' };
+    const result = await canCreatePipe('test@example.com', user, false);
+    expect(result.canCreate).toBe(true);
+    expect(base44.entities.Pipe.filter).not.toHaveBeenCalled();
+  });
+
+  test('CigarKeeper Pro does not bypass PipeKeeper tobacco limits', async () => {
+    base44.entities.TobaccoBlend.filter.mockResolvedValue(new Array(TOBACCO_LIMIT));
+    const user = { entitlement_tier: 'pro', paid_modules_csv: 'cigarkeeper' };
+    const result = await canCreateTobacco('test@example.com', user, false);
+    expect(result.canCreate).toBe(false);
+    expect(result.reason).toBe('limits.freeBlendExceeded');
+  });
+});

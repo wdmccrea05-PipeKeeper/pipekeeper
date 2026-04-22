@@ -33,6 +33,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { formatWeight } from "@/components/utils/localeFormatters";
 import AddFlowModal from "@/components/addflow/AddFlowModal";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -70,7 +71,8 @@ export default function TobaccoPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { user, hasPaid, isTrial } = useCurrentUser();
+  const { user, isTrial } = useCurrentUser();
+  const hasPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
 
   const { data: blends = [], isLoading } = useQuery({
     queryKey: ['blends', user?.email, sortBy],
@@ -123,7 +125,7 @@ export default function TobaccoPage() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       // Check limits before creating
-      const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
+      const limitCheck = await canCreateTobacco(user?.email, user, isTrial);
       if (!limitCheck.canCreate) {
         throw new Error(t(limitCheck.reason, { limit: limitCheck.limit }));
       }
@@ -296,7 +298,7 @@ export default function TobaccoPage() {
             )}
             <Button 
              onClick={async () => {
-               const limitCheck = await canCreateTobacco(user?.email, hasPaid, isTrial);
+               const limitCheck = await canCreateTobacco(user?.email, user, isTrial);
                if (!limitCheck.canCreate) {
                  toast.error(t(limitCheck.reason, { limit: limitCheck.limit }), {
                    action: {
@@ -404,7 +406,7 @@ export default function TobaccoPage() {
               </Button>
             </div>
             
-            {hasPaid && !quickEditMode && (
+            {hasPipekeeperPro && !quickEditMode && (
               <Button
                 variant="outline"
                 size="icon"

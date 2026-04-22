@@ -51,7 +51,7 @@ describe('CigarKeeper — moduleLimits.js', () => {
   });
 
   test('hasReachedLimit is false for paid user at 1000 cigars', () => {
-    const paidUser = { has_paid_access: true, cigarkeeper_paid: true };
+    const paidUser = { entitlement_tier: 'pro', cigarkeeper_paid: true };
     const paidSub = { status: 'active' };
     expect(hasReachedLimit(paidUser, paidSub, 'cigarkeeper', 'cigars', 1000)).toBe(false);
   });

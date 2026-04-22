@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { PK_THEME } from "@/components/utils/pkTheme";
 import { PkPageTitle, PkText } from "@/components/ui/PkSectionHeader";
 import { canCreatePipe } from "@/components/utils/limitChecks";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useNavigate } from "@/components/utils/navigation";
@@ -58,7 +59,8 @@ export default function PipesPage() {
 
   const queryClient = useQueryClient();
 
-  const { user, hasPaid, isTrial } = useCurrentUser();
+  const { user, isTrial } = useCurrentUser();
+  const hasPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
   const navigate = useNavigate();
 
   const { data: pipes = [], isLoading } = useQuery({
@@ -102,7 +104,7 @@ export default function PipesPage() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       // Check limits before creating
-      const limitCheck = await canCreatePipe(user?.email, hasPaid, isTrial);
+      const limitCheck = await canCreatePipe(user?.email, user, isTrial);
       if (!limitCheck.canCreate) {
         throw new Error(t(limitCheck.reason, { limit: limitCheck.limit }));
       }
@@ -227,7 +229,7 @@ export default function PipesPage() {
 
             <Button 
               onClick={async () => {
-                const limitCheck = await canCreatePipe(user?.email, hasPaid, isTrial);
+                const limitCheck = await canCreatePipe(user?.email, user, isTrial);
                 if (!limitCheck.canCreate) {
                   toast.error(t(limitCheck.reason, { limit: limitCheck.limit }), {
                     action: {
@@ -331,7 +333,7 @@ export default function PipesPage() {
                 </Button>
               </div>
               
-              {hasPaid && (
+              {hasPipekeeperPro && (
                 <Button
                   variant="outline"
                   size="icon"

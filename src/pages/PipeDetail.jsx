@@ -53,6 +53,7 @@ import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
 import { scopedEntities } from '@/components/api/scopedEntities';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import EnrichButton from '@/components/shared/EnrichButton';
@@ -473,7 +474,8 @@ function EditPipeValuationModal({ pipe, onClose, onSaved }) {
 export default function PipeDetail() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, hasPremium: isPaidUser } = useCurrentUser();
+  const { user } = useCurrentUser();
+  const isPaidUser = hasModuleProAccess(user, 'pipekeeper');
   const { formatLength, formatWeight } = useMeasurement();
   const { formatFromBase } = useCurrency();
   const [params] = useSearchParams();

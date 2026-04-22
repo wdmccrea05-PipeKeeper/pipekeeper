@@ -22,6 +22,7 @@ import { useMeasurement, imperialToMetric } from "@/components/utils/measurement
 import { useEntitlements } from "@/components/hooks/useEntitlements";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { canCreatePipe, FREE_TIER_LIMITS } from "@/components/utils/limitChecks";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import { toast } from "sonner";
 import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
@@ -98,9 +99,9 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [showOnlineSearch, setShowOnlineSearch] = useState(false);
   const [onlineSearchType, setOnlineSearchType] = useState(null); // 'photo' | 'stamping'
 
-  const { user, hasPaid, isTrial } = useCurrentUser();
+  const { user, isTrial } = useCurrentUser();
   const entitlements = useEntitlements();
-  const isPaidUser = hasPaid;
+  const isPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
   const photoLimit = Number.isFinite(entitlements?.limits?.photosPerItem)
     ? entitlements.limits.photosPerItem
     : FREE_TIER_LIMITS.PHOTOS_PER_ITEM;
@@ -291,8 +292,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     e.preventDefault();
 
     // Check free tier limits for new pipes only
-    if (!pipe && !isPaidUser) {
-      const result = await canCreatePipe(user?.email, isPaidUser, false);
+    if (!pipe && !isPipekeeperPro) {
+      const result = await canCreatePipe(user?.email, user, isTrial);
       if (!result.canCreate) {
         toast.error(result.reason || t("limits.pipesLimit", { limit: result.limit }));
         return;

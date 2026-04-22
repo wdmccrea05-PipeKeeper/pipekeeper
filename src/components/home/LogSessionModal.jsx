@@ -22,6 +22,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from "sonner";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { sortByLabel } from "@/lib/sorting/alphabetical";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import ExternalItemSearch from "@/components/session/ExternalItemSearch";
 import ExternalItemManualEntry from "@/components/session/ExternalItemManualEntry";
 import SessionContextTags from "@/components/session/SessionContextTags";
@@ -79,8 +80,9 @@ export default function LogSessionModal({
   isLoading = false,
 }) {
   const { t } = useTranslation();
-  const { user: currentUser, hasPaid } = useCurrentUser();
+  const { user: currentUser } = useCurrentUser();
   const user = passedUser || currentUser;
+  const hasPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
   const entitlements = useEntitlements();
   const queryClient = useQueryClient();
 
@@ -366,7 +368,7 @@ export default function LogSessionModal({
         }
       }
 
-      if (autoReduceInventory && tobaccoUsed > 0 && hasPaid && blendMode === "collection") {
+      if (autoReduceInventory && tobaccoUsed > 0 && hasPipekeeperPro && blendMode === "collection") {
         const blendToReduce = (blends || []).find((b) => b.id === savePayload.blend_id);
         if (blendToReduce) {
           let remaining = Number(tobaccoUsed);

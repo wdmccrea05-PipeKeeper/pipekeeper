@@ -27,6 +27,7 @@ import {
 import { checkFreeTierLimit } from '@/components/utils/freeTierLimits';
 import FreeTierUpgradePrompt from '@/components/subscription/FreeTierUpgradePrompt';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
 
 function normalizeText(value) {
   return String(value || '').trim().toLowerCase();
@@ -61,7 +62,7 @@ export default function WhiskeyKeeperModule({
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
   const navigate = useNavigate();
-  const { user, hasPaid } = useCurrentUser();
+  const { user } = useCurrentUser();
 
   const [bottles, setBottles] = useState([]);
   const [inventoryUnits, setInventoryUnits] = useState([]);
@@ -167,9 +168,8 @@ export default function WhiskeyKeeperModule({
       .slice(0, 4);
   }, [bottles, t]);
 
-  // Check free tier limits — hasPaid from canonical resolver overrides raw user flag
-  const effectiveUser = (hasPaid || user?.whiskeykeeper_paid) ? { ...user, whiskeykeeper_paid: true } : user;
-  const bottleLimit = checkFreeTierLimit('whiskeykeeper', 'bottles', bottleTypes, effectiveUser);
+  const hasWhiskeyPro = hasModuleProAccess(user, 'whiskeykeeper');
+  const bottleLimit = checkFreeTierLimit('whiskeykeeper', 'bottles', bottleTypes, user);
 
   const handleBottleUpdated = async () => {
     await loadData();
@@ -178,7 +178,7 @@ export default function WhiskeyKeeperModule({
   return (
     <div className="space-y-6">
       {/* Free Tier Limit Warning */}
-      {bottleLimit.atLimit && !hasPaid && !user?.whiskeykeeper_paid && (
+      {bottleLimit.atLimit && !hasWhiskeyPro && (
         <FreeTierUpgradePrompt
           moduleId="whiskeykeeper"
           title="Bottle Collection Limit Reached"

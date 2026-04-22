@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Lock, TrendingUp, DollarSign, Info, Sparkles, Loader2, ShieldCheck } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { isLegacyPremium } from "@/components/utils/premiumAccess";
+import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import ProUpgradeModal from "@/components/subscription/ProUpgradeModal";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -138,13 +139,14 @@ export { ReplacementDifficultyPanel };
 
 export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
   const { t } = useTranslation();
-  const { subscription, hasPro, hasPremium } = useCurrentUser();
+  const { user, subscription } = useCurrentUser();
   const { formatFromBase } = useCurrency();
   const [showProModal, setShowProModal] = useState(false);
   const [estimating, setEstimating] = useState(false);
   const normalizedSources = normalizeEvidenceSources(blend?.ai_evidence_sources);
 
-  const hasProAccess = hasPro || isLegacyPremium(subscription);
+  const hasPremium = hasModuleProAccess(user, 'pipekeeper');
+  const hasProAccess = hasPremium || isLegacyPremium(subscription);
 
   const handleManualValueChange = (field, value) => {
     if (!hasPremium) {
