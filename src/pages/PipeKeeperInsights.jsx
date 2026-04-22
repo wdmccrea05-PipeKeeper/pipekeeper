@@ -21,7 +21,6 @@ import {
   Leaf,
   RotateCw,
   ArrowLeft,
-  CalendarDays,
 } from 'lucide-react';
 import PipeShapeIcon from '@/components/pipes/PipeShapeIcon';
 import { Calendar } from '@/components/ui/calendar';
