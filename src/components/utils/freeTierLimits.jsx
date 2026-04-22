@@ -3,6 +3,8 @@
  * Paid tiers have unlimited access
  */
 
+import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
+
 const FREE_TIER_LIMITS = {
   pipekeeper: {
     pipes: 5,
@@ -44,4 +46,3 @@ export function checkFreeTierLimit(moduleId, resourceType, currentCount, user) {
 export function getFreeTierLimit(moduleId, resourceType) {
   return FREE_TIER_LIMITS[moduleId]?.[resourceType] || null;
 }
-import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';

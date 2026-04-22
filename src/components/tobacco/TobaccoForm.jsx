@@ -86,7 +86,7 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   
   const queryClient = useQueryClient();
   const entitlements = useEntitlements();
-  const { user, isTrial } = useCurrentUser();
+  const { user } = useCurrentUser();
   const isPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
 
   // Auto-suggest recent values
@@ -286,7 +286,7 @@ Return complete and accurate information based on the blend name or description 
 
     // Check free tier limits for new blends only
     if (!blend && !isPipekeeperPro) {
-      const result = await canCreateTobacco(user?.email, user, isTrial);
+      const result = await canCreateTobacco(user?.email, user, false);
       if (!result.canCreate) {
         toast.error(result.reason || t("limits.tobaccoLimit", { limit: result.limit }));
         return;

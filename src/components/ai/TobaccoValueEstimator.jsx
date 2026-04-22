@@ -12,7 +12,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrency } from "@/lib/currency/useCurrency";
 import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 
-export default function TobaccoValueEstimator({ blends, user, onComplete }) {
+export default function TobaccoValueEstimator({ blends, onComplete }) {
   const { user: currentUser, subscription } = useCurrentUser();
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
@@ -20,7 +20,7 @@ export default function TobaccoValueEstimator({ blends, user, onComplete }) {
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState(null);
 
-  const hasProAccess = hasModuleProAccess(currentUser || user, 'pipekeeper') || isLegacyPremium(subscription);
+  const hasProAccess = hasModuleProAccess(currentUser, 'pipekeeper') || isLegacyPremium(subscription);
 
   // Filter blends that need valuation
   const blendsNeedingValuation = blends.filter(b => !b.ai_estimated_value);

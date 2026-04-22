@@ -184,11 +184,10 @@ export function getModuleTier(user, moduleKey, subscription = null) {
 /**
  * For Pro users: all active modules. For free: empty.
  */
-export function getUserEntitlements(user) {
-  if (getModulesWithProAccess(user).length > 0) return [ENTITLEMENTS.PRO];
-  if (!hasPaidAccess(user)) return [ENTITLEMENTS.FREE];
-  if (hasLegacyBroadAccess(user)) return [ENTITLEMENTS.PRO];
-  return [ENTITLEMENTS.PRO];
+export function getUserEntitlements(user, subscription = null) {
+  return getModulesWithProAccess(user, subscription).length > 0
+    ? [ENTITLEMENTS.PRO]
+    : [ENTITLEMENTS.FREE];
 }
 
 export function shouldEnforceFreeLimit(user) {
