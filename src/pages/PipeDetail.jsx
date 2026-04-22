@@ -638,7 +638,7 @@ export default function PipeDetail() {
       toast.success(t('common.saved') || 'Pipe updated');
     } catch (e) {
       console.error('[PipeDetail] update failed', e);
-      toast.error(t('errors.updateFailed') || 'Failed to update pipe');
+      toast.error(e?.message || t('errors.updateFailed') || 'Failed to update pipe');
     }
   };
 
