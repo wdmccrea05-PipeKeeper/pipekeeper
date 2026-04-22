@@ -1,7 +1,7 @@
 import { base44 } from "@/api/base44Client";
 
 function normalizeErrorMessage(error) {
-  const details = [
+  const possibleMessages = [
     error?.response?.data?.message,
     error?.response?.data?.error,
     error?.response?.data?.details,
@@ -10,9 +10,12 @@ function normalizeErrorMessage(error) {
     error?.body?.message,
     error?.body?.error,
     error?.message,
-  ].find((value) => typeof value === "string" && value.trim().length > 0);
+  ];
 
-  if (details) return details;
+  for (const value of possibleMessages) {
+    if (typeof value === "string" && value.trim().length > 0) return value;
+  }
+
   if (error?.response?.data?.details && typeof error.response.data.details === "object") {
     try {
       return JSON.stringify(error.response.data.details);
@@ -70,9 +73,13 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
     // IMPORTANT: send only explicit updates.
     // Re-sending the full current record can fail on legacy records that contain
     // deprecated/invalid fields no longer accepted by the current backend schema.
+    const createdByField =
+      updates?.created_by === undefined && current?.created_by
+        ? { created_by: current.created_by }
+        : {};
     const merged = removeUndefinedValues({
       ...updates,
-      ...(updates?.created_by === undefined && current?.created_by ? { created_by: current.created_by } : {}),
+      ...createdByField,
     });
     
     // Perform update using the ID that actually worked (current.id)
