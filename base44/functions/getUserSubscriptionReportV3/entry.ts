@@ -30,7 +30,7 @@ function splitMods(csv: unknown): string[] {
   return String(csv || '')
     .split(',')
     .map((m) => norm(m))
-    .filter((m) => KNOWN_MODULES.includes(m));
+    .filter(Boolean);
 }
 
 function uniq<T>(arr: T[]) {
@@ -112,42 +112,45 @@ function resolveExplicitProduct(sub: Record<string, unknown>) {
 }
 
 function resolveCanonicalProductAndModules(sub: Record<string, unknown>, interval: string) {
-  const explicitModules = uniq(splitMods(sub.modules_csv));
+  const rawModules = uniq(splitMods(sub.modules_csv));
+  const explicitModules = rawModules.filter((m) => KNOWN_MODULES.includes(m));
+  const unknownModules = rawModules.filter((m) => !KNOWN_MODULES.includes(m));
   const explicitProduct = resolveExplicitProduct(sub);
   const amount = Math.max(0, Number(sub.amount || 0));
   const amountInference = inferFromAmount(amount, interval === 'unknown' ? null : interval);
 
   if (explicitModules.length > 1) {
-    return { product: 'bundle', modules: explicitModules, inferred: false, confidence: 'high', reason: 'modules_csv_bundle' };
+    return { product: 'bundle', modules: explicitModules, inferred: false, confidence: 'high', reason: 'modules_csv_bundle', explicitProduct, explicitModules, unknownModules };
   }
   if (explicitModules.length === 1 && explicitProduct && explicitProduct !== explicitModules[0]) {
-    return { product: 'unknown', modules: [], inferred: false, confidence: 'low', reason: 'product_module_conflict' };
+    return { product: 'unknown', modules: [], inferred: false, confidence: 'low', reason: 'product_module_conflict', explicitProduct, explicitModules, unknownModules };
   }
   if (explicitModules.length === 1) {
-    return { product: explicitModules[0], modules: explicitModules, inferred: false, confidence: 'high', reason: 'modules_csv_single' };
+    return { product: explicitModules[0], modules: explicitModules, inferred: false, confidence: 'high', reason: 'modules_csv_single', explicitProduct, explicitModules, unknownModules };
   }
 
   if (explicitProduct && explicitProduct !== 'bundle') {
-    return { product: explicitProduct, modules: [explicitProduct], inferred: false, confidence: 'high', reason: 'explicit_product' };
+    return { product: explicitProduct, modules: [explicitProduct], inferred: false, confidence: 'high', reason: 'explicit_product', explicitProduct, explicitModules, unknownModules };
   }
   if (explicitProduct === 'bundle') {
     if (amountInference?.modules?.length > 1) {
-      return { product: 'bundle', modules: amountInference.modules, inferred: true, confidence: 'medium', reason: 'bundle_plus_amount' };
+      return { product: 'bundle', modules: amountInference.modules, inferred: true, confidence: 'medium', reason: 'bundle_plus_amount', explicitProduct, explicitModules, unknownModules };
     }
-    return { product: 'unknown', modules: [], inferred: false, confidence: 'low', reason: 'bundle_without_modules' };
+    return { product: 'unknown', modules: [], inferred: false, confidence: 'low', reason: 'bundle_without_modules', explicitProduct, explicitModules, unknownModules };
   }
 
   if (amountInference?.modules?.length > 0) {
     const modules = amountInference.modules;
     const product = modules.length > 1 ? 'bundle' : modules[0];
-    return { product, modules, inferred: true, confidence: 'medium', reason: 'amount_interval_inference' };
+    return { product, modules, inferred: true, confidence: 'medium', reason: 'amount_interval_inference', explicitProduct, explicitModules, unknownModules };
   }
 
-  return { product: 'unknown', modules: [], inferred: false, confidence: 'low', reason: 'unresolved' };
+  return { product: 'unknown', modules: [], inferred: false, confidence: 'low', reason: 'unresolved', explicitProduct, explicitModules, unknownModules };
 }
 
 function isActivePaid(sub: Record<string, unknown>, now: Date) {
   const status = norm(sub.status || '');
+  // Providers emit both "trial" and "trialing"; keep both for compatibility.
   if (!['active', 'trialing', 'trial', 'past_due'].includes(status)) return false;
   const end = parseDate(sub.current_period_end);
   if (end && end <= now) return false;
@@ -234,6 +237,7 @@ Deno.serve(async (req) => {
       counted_as_paying_user: 0,
       unknown_product: 0,
       unknown_interval: 0,
+      unknown_module_token: 0,
       product_module_conflict: 0,
       inferred_contract: 0,
       manual_admin_access: 0,
@@ -251,12 +255,16 @@ Deno.serve(async (req) => {
       const userId = String(sub.user_id || norm(sub.user_email || ''));
       const provider = detectProvider(sub);
       const providerSubscriptionId = getProviderSubscriptionId(sub);
-      const dedupeKey = `${userId}|${provider}|${providerSubscriptionId}`;
-      if (providerSubscriptionId && seenContracts.has(dedupeKey)) {
+      const fallbackDedupeKey = String(sub.id || `${userId}|${provider}|${norm(sub.price_id || sub.stripe_price_id || sub.apple_product_id || '')}|${norm(sub.created_date || sub.started_at || '')}`);
+      const dedupeKey = `${userId}|${provider}|${providerSubscriptionId || fallbackDedupeKey}`;
+      if (seenContracts.has(dedupeKey)) {
         reasonCounts.duplicate_subscription_merged++;
         continue;
       }
-      if (providerSubscriptionId) seenContracts.add(dedupeKey);
+      seenContracts.add(dedupeKey);
+      if (Array.isArray(resolved.unknownModules) && resolved.unknownModules.length > 0) {
+        reasonCounts.unknown_module_token += resolved.unknownModules.length;
+      }
 
       const row = {
         user_id: userId,
@@ -271,6 +279,9 @@ Deno.serve(async (req) => {
         status: norm(sub.status || ''),
         source_confidence: resolved.confidence,
         source_reason: resolved.reason,
+        source_product_signal: resolved.explicitProduct || null,
+        source_module_signal: resolved.explicitModules || [],
+        source_unknown_module_tokens: resolved.unknownModules || [],
         interval_inferred: intervalResult.inferred,
         renewal_inferred: renewalInferred,
       };
@@ -377,7 +388,7 @@ Deno.serve(async (req) => {
     const paidUsers = users.filter((u) => Boolean(u.paid_user));
     reasonCounts.counted_as_paying_user = paidUsers.length;
 
-    const paidAccounts = paidUsers.length;
+    const paidAccounts = new Set(trustedContracts.map((c) => String(c.user_id || ''))).size;
     const discrepancy = paidAccounts - paidUsers.length;
 
     const productMix: Record<string, number> = {
@@ -450,8 +461,8 @@ Deno.serve(async (req) => {
 
       metricDefinitions: {
         paidUsers: 'Unique users with >=1 trusted canonical active paid contract.',
-        paidAccounts: 'Unique billing account holders with >=1 trusted canonical active paid contract (same grain as paid users in this model).',
-        contracts: 'Trusted canonical active paid contract rows.',
+        paidAccounts: 'Unique billing-account identities (user_id) with >=1 trusted canonical active paid contract. This matches paid users because billing is anchored to user_id.',
+        billingContracts: 'Trusted canonical active paid contract rows.',
         entitlements: 'Trusted effective user×module entitlements derived from trusted canonical contracts.',
       },
 
