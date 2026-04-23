@@ -79,7 +79,6 @@ function consolidateProfiles(rows = []) {
     show_location: pickBool(acc.show_location, row.show_location),
     is_public: pickBool(acc.is_public, row.is_public),
     allow_comments: pickBool(acc.allow_comments, row.allow_comments),
-    enable_messaging: pickBool(acc.enable_messaging, row.enable_messaging),
     allow_web_lookups: pickBool(acc.allow_web_lookups, row.allow_web_lookups),
     privacy_hide_values: pickBool(acc.privacy_hide_values, row.privacy_hide_values),
     privacy_hide_inventory: pickBool(acc.privacy_hide_inventory, row.privacy_hide_inventory),
@@ -106,6 +105,22 @@ function consolidateProfiles(rows = []) {
     cigarkeeper_enabled: pickBool(acc.cigarkeeper_enabled, row.cigarkeeper_enabled),
     module_preferences_set: pickBool(acc.module_preferences_set, row.module_preferences_set),
   }), {});
+
+  // CRITICAL: For boolean toggle fields that the user explicitly sets (enable_messaging,
+  // allow_comments, etc.), the master record (most recently updated) is authoritative.
+  // The reduce above uses pickBool which finds the FIRST boolean — this can return a
+  // stale `false` from an older row even after the user saved `true`. Override with
+  // master's explicit value for these critical fields.
+  const MASTER_BOOL_FIELDS = [
+    'enable_messaging', 'allow_comments', 'is_public', 'show_location',
+    'allow_web_lookups', 'privacy_hide_values', 'privacy_hide_inventory',
+    'privacy_hide_collection_counts', 'home_hide_collection_values', 'show_social_media',
+  ];
+  for (const field of MASTER_BOOL_FIELDS) {
+    if (typeof master[field] === 'boolean') {
+      merged[field] = master[field];
+    }
+  }
 
   // For free-text note fields, prefer the master (most-recently-updated) record's
   // exact value — including an empty string.  The `pick` helper above skips ""
@@ -336,9 +351,12 @@ export default function ProfilePage() {
     onSuccess: async (savedData) => {
       console.log("[Profile] Save successful, returned data:", savedData);
       toast.success(t("notifications.saved"));
+      // Reset init ref so form re-hydrates from fresh backend data after save
+      initializedRef.current = false;
       await queryClient.invalidateQueries({ queryKey: ["user-profile-page", email] });
       await queryClient.refetchQueries({ queryKey: ["user-profile-page", email] });
-      await queryClient.invalidateQueries({ queryKey: ["user-profile", email] });
+      // Invalidate all variants of user-profile cache key used across pages (Community uses id+email)
+      await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       await queryClient.invalidateQueries({ queryKey: ["public-profile", email] });
     },
