@@ -310,7 +310,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     try {
       await onSave(preparePipeData(cleanedData));
     } catch (error) {
-      const reason = error?.message || t('pipesPage.failedToAddPipe') || 'Failed to update pipe';
+      const reason = error?.message || t('errors.updateFailed') || 'Save failed';
       setSubmitError(reason);
     } finally {
       setIsSubmitting(false);
@@ -977,7 +977,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* Actions */}
       <div className="sticky bottom-0 bg-[linear-gradient(180deg,rgba(22,18,14,0.94)_0%,rgba(18,14,11,0.97)_100%)] backdrop-blur-sm border-t border-[rgba(140,105,65,0.18)] p-4 sm:p-6 flex gap-3 justify-end -mx-6 sm:-mx-8 px-6 sm:px-8">
         {submitError ? (
-          <div className="mr-auto text-sm text-red-300 max-w-[70%] break-words">
+          <div role="alert" aria-live="polite" className="mr-auto text-sm text-red-300 max-w-[70%] break-words">
             {submitError}
           </div>
         ) : null}

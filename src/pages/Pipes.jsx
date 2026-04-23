@@ -132,12 +132,13 @@ export default function PipesPage() {
       } else {
         await createMutation.mutateAsync(data);
         await queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
-        toast.success(t("notifications.created"));
+        toast.success(t("notifications.created") || 'Pipe created');
       }
       setShowForm(false);
       setEditingPipe(null);
     } catch (error) {
-      const message = error?.message || t('pipesPage.failedToAddPipe') || 'Failed to update pipe';
+      const fallback = editingPipe ? (t('pipesPage.failedToUpdatePipe') || 'Failed to update pipe') : (t('pipesPage.failedToAddPipe') || 'Failed to create pipe');
+      const message = error?.message || fallback;
       console.error('[Pipes] save failed', {
         mode: editingPipe ? 'update' : 'create',
         pipeId: editingPipe?.id || null,
@@ -146,7 +147,7 @@ export default function PipesPage() {
         rawError: error,
       });
       toast.error(message);
-      throw new Error(message);
+      throw (error instanceof Error ? error : new Error(message));
     }
   };
 

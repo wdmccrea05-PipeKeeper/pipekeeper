@@ -83,6 +83,10 @@ function normalizePipePhotoArray(input) {
   return [];
 }
 
+function getLegacyPipePhotoCandidates(pipe = {}) {
+  return [pipe?.photo, pipe?.photo_url, pipe?.image, pipe?.image_url].filter(Boolean);
+}
+
 function normalizeBoolean(value, fallback = false) {
   if (value === undefined || value === null || value === "") return fallback;
   return Boolean(value);
@@ -148,7 +152,7 @@ export function normalizePipeFormData(pipe = null) {
     }
   }
 
-  const fallbackPhotos = [pipe?.photo, pipe?.photo_url, pipe?.image, pipe?.image_url].filter(Boolean);
+  const fallbackPhotos = getLegacyPipePhotoCandidates(pipe);
   next.photos = normalizePipePhotoArray(pipe?.photos ?? fallbackPhotos);
   next.stamping_photos = normalizePipePhotoArray(pipe?.stamping_photos);
 
@@ -248,6 +252,8 @@ export function preparePipeData(data) {
   const characteristics = source.usage_characteristics || source.smoking_characteristics || "";
   const result = {};
 
+  // Keep nulls/undefined out of the generic loop, then explicitly enforce always-on
+  // collection fields below (photos/stamping_photos/interchangeable_bowls/booleans).
   for (const field of PIPE_EDITABLE_FIELDS) {
     const normalized = normalizePipeField(field, source[field]);
     if (normalized !== undefined && normalized !== null) {
