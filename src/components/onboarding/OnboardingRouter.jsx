@@ -4,11 +4,14 @@ import { useEnabledModules } from "@/components/hooks/useEnabledModules";
 import {
   isPipeOnboardingComplete,
   isWhiskeyOnboardingComplete,
+  isCigarOnboardingComplete,
   markPipeOnboardingComplete,
   markWhiskeyOnboardingComplete,
+  markCigarOnboardingComplete,
 } from "./onboardingState";
 import OnboardingFlow from "./OnboardingFlow";
 import WhiskeyKeeperOnboarding from "./WhiskeyKeeperOnboarding";
+import CigarKeeperOnboarding from "./CigarKeeperOnboarding";
 
 function shouldAutoLaunchOnboarding() {
   try {
@@ -26,7 +29,7 @@ function clearAutoLaunchOnboarding() {
 
 // ── Multi-module starter — let user pick which onboarding to run first ────────
 
-function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSkip }) {
+function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSelectCigar, onSkip }) {
   const BG          = "#140f0c";
   const CARD_BG     = "rgba(255,255,255,0.035)";
   const CARD_BORDER = "1px solid rgba(180,140,75,0.18)";
@@ -77,6 +80,20 @@ function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSkip }) {
               </div>
               <span className="text-lg" aria-hidden="true">🥃</span>
             </button>
+            {onSelectCigar && (
+              <button
+                type="button"
+                onClick={onSelectCigar}
+                className="w-full rounded-xl p-4 text-left flex items-center justify-between transition-all"
+                style={{ background: CARD_BG, border: CARD_BORDER }}
+              >
+                <div>
+                  <p className="text-sm font-bold" style={{ color: TEXT_MAIN }}>CigarKeeper</p>
+                  <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>Cigars, humidors, sessions, insights</p>
+                </div>
+                <span className="text-lg" aria-hidden="true">🚬</span>
+              </button>
+            )}
           </div>
 
           <button
@@ -100,14 +117,16 @@ export default function OnboardingRouter({ initialSelection = null }) {
   const { enabled, isLoading: modulesLoading } = useEnabledModules();
 
   // Track which flow is currently visible
-  // 'pipe' | 'whiskey' | 'multi_picker' | null
+  // 'pipe' | 'whiskey' | 'cigar' | 'multi_picker' | null
   const [activeFlow, setActiveFlow] = useState(null);
 
-  const seededPipe = typeof initialSelection?.pipekeeper === 'boolean' ? initialSelection.pipekeeper : null;
+  const seededPipe    = typeof initialSelection?.pipekeeper   === 'boolean' ? initialSelection.pipekeeper   : null;
   const seededWhiskey = typeof initialSelection?.whiskeykeeper === 'boolean' ? initialSelection.whiskeykeeper : null;
+  const seededCigar   = typeof initialSelection?.cigarkeeper   === 'boolean' ? initialSelection.cigarkeeper   : null;
 
-  const hasPipe = seededPipe ?? enabled.pipekeeper;
+  const hasPipe    = seededPipe    ?? enabled.pipekeeper;
   const hasWhiskey = seededWhiskey ?? enabled.whiskeykeeper;
+  const hasCigar   = seededCigar   ?? enabled.cigarkeeper;
 
   useEffect(() => {
     if (userLoading || modulesLoading || !user) return;
@@ -118,30 +137,38 @@ export default function OnboardingRouter({ initialSelection = null }) {
 
     const pipeComplete    = isPipeOnboardingComplete();
     const whiskeyComplete = isWhiskeyOnboardingComplete();
+    const cigarComplete   = isCigarOnboardingComplete();
 
-    if (hasPipe && !hasWhiskey) {
+    // Single-module cases
+    if (hasCigar && !hasPipe && !hasWhiskey) {
+      if (!cigarComplete) setActiveFlow("cigar");
+      return;
+    }
+    if (hasPipe && !hasWhiskey && !hasCigar) {
       if (!pipeComplete) setActiveFlow("pipe");
       return;
     }
-
-    if (hasWhiskey && !hasPipe) {
+    if (hasWhiskey && !hasPipe && !hasCigar) {
       if (!whiskeyComplete) setActiveFlow("whiskey");
       return;
     }
 
-    if (hasPipe && hasWhiskey) {
-      const needPipe    = !pipeComplete;
-      const needWhiskey = !whiskeyComplete;
+    // Multi-module: show picker for whichever aren't complete
+    const needPipe    = hasPipe    && !pipeComplete;
+    const needWhiskey = hasWhiskey && !whiskeyComplete;
+    const needCigar   = hasCigar   && !cigarComplete;
+    const needCount   = [needPipe, needWhiskey, needCigar].filter(Boolean).length;
 
-      if (needPipe && needWhiskey) {
-        setActiveFlow("multi_picker");
-      } else if (needPipe) {
-        setActiveFlow("pipe");
-      } else if (needWhiskey) {
-        setActiveFlow("whiskey");
-      }
+    if (needCount > 1) {
+      setActiveFlow("multi_picker");
+    } else if (needPipe) {
+      setActiveFlow("pipe");
+    } else if (needWhiskey) {
+      setActiveFlow("whiskey");
+    } else if (needCigar) {
+      setActiveFlow("cigar");
     }
-  }, [userLoading, modulesLoading, user, hasPipe, hasWhiskey, activeFlow]);
+  }, [userLoading, modulesLoading, user, hasPipe, hasWhiskey, hasCigar, activeFlow]);
 
   // ── Dismiss helpers ─────────────────────────────────────────────────────────
 
@@ -165,6 +192,18 @@ export default function OnboardingRouter({ initialSelection = null }) {
 
   function skipWhiskey() {
     markWhiskeyOnboardingComplete();
+    clearAutoLaunchOnboarding();
+    setActiveFlow(null);
+  }
+
+  function finishCigar() {
+    markCigarOnboardingComplete();
+    clearAutoLaunchOnboarding();
+    setActiveFlow(null);
+  }
+
+  function skipCigar() {
+    markCigarOnboardingComplete();
     clearAutoLaunchOnboarding();
     setActiveFlow(null);
   }
@@ -196,11 +235,21 @@ export default function OnboardingRouter({ initialSelection = null }) {
     );
   }
 
+  if (activeFlow === 'cigar') {
+    return (
+      <CigarKeeperOnboarding
+        onComplete={finishCigar}
+        onSkip={skipCigar}
+      />
+    );
+  }
+
   if (activeFlow === 'multi_picker') {
     return (
       <MultiModuleStarter
         onSelectPipe={() => setActiveFlow('pipe')}
         onSelectWhiskey={() => setActiveFlow('whiskey')}
+        onSelectCigar={() => setActiveFlow('cigar')}
         onSkip={skipMulti}
       />
     );

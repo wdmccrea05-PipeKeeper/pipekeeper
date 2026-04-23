@@ -196,6 +196,51 @@ export default function FAQFull() {
           </Q>
         </Section>
 
+        <Section title="CigarKeeper">
+          <Q id="cigarkeeper-what" q="What is CigarKeeper?">
+            <p>CigarKeeper is a dedicated module for tracking your cigar collection, managing humidors, logging smoking sessions, and getting AI-powered insights and recommendations. It works alongside PipeKeeper and WhiskeyKeeper as part of the CollectionKeeper suite.</p>
+          </Q>
+          <Q id="cigarkeeper-free-vs-pro" q="What's included in the free vs. pro CigarKeeper plan?">
+            <div className="space-y-3">
+              <div className="rounded-xl border border-[rgba(140,105,65,0.25)] bg-[rgba(28,21,16,0.72)] p-4">
+                <h4 className="mb-2 font-semibold text-[#F5F1E7]">Free Tier</h4>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li>Up to 10 cigars in your collection</li>
+                  <li>1 humidor with maintenance alerts</li>
+                  <li>Session logging (unlimited)</li>
+                  <li>Basic collection view and search</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-[rgba(180,140,75,0.32)] bg-[rgba(58,40,22,0.72)] p-4">
+                <h4 className="mb-2 font-semibold text-[#F5F1E7]">Pro Tier</h4>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li>Unlimited cigars and humidors</li>
+                  <li>Curator AI recommendations</li>
+                  <li>Collection insights and analytics</li>
+                  <li>Aging readiness and value tracking</li>
+                  <li>Advanced session analytics</li>
+                  <li>Export reports</li>
+                </ul>
+              </div>
+              <p className="text-sm text-[#D8C7A6]/75">You can start using CigarKeeper on the free tier immediately — no payment required.</p>
+            </div>
+          </Q>
+          <Q id="cigarkeeper-humidor" q="How do humidor maintenance alerts work?">
+            <p>When you set up a humidor you can specify how often humidity should be checked and when humidity aids should be replaced. CigarKeeper tracks these intervals and shows alerts on the CigarKeeper home page when a check or replacement is overdue or coming up within 3 days. Log a maintenance event to reset the timer.</p>
+          </Q>
+          <Q id="cigarkeeper-sessions" q="Can I log sessions for cigars not in my collection?">
+            <p>Yes. When logging a session, toggle <strong>Smoked outside my collection</strong> to record a cigar you tried elsewhere. You can capture the brand, line, vitola, tasting notes, and ratings — and optionally add it to your wishlist afterward.</p>
+          </Q>
+          <Q id="cigarkeeper-onboarding" q="How do I get started with CigarKeeper?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Enable CigarKeeper from your Profile → Module Settings, or select it during initial onboarding.</li>
+              <li>The CigarKeeper onboarding wizard will walk you through adding your first cigar and setting preferences.</li>
+              <li>Add a humidor to organize your collection and enable maintenance tracking.</li>
+              <li>Start logging smoking sessions to build your history.</li>
+            </ol>
+          </Q>
+        </Section>
+
         <Section title="Curator Chat">
           <Q id="curator-chat-overview" q="What can I ask the Curator?">
             <p>The Curator is an AI advisor that understands your entire collection — pipes, blends, bottles, and session history. You can ask it:</p>

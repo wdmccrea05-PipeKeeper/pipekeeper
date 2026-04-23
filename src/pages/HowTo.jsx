@@ -262,6 +262,40 @@ export default function HowTo() {
           </Q>
         </Section>
 
+        <Section title="Managing Cigars">
+          <Q id="add-cigar" q="How do I add a cigar to my collection?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Go to <strong>CigarKeeper</strong> from the nav or Collection Hub.</li>
+              <li>Tap <strong>Add Cigar</strong> or navigate to <strong>Cigars → +</strong>.</li>
+              <li>Enter the brand, line, vitola, wrapper, and other details.</li>
+              <li>Set your quantity and unit type (single, box, 5-pack, etc.).</li>
+              <li>Tap <strong>Save</strong> to add it to your humidor.</li>
+            </ol>
+          </Q>
+          <Q id="cigar-humidor" q="How do I set up and manage a humidor?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Go to <strong>Cigars → Humidors tab</strong>.</li>
+              <li>Tap <strong>Add Humidor</strong> and name it.</li>
+              <li>Set capacity, target humidity %, and maintenance interval.</li>
+              <li>Assign cigars to the humidor from each cigar's detail page.</li>
+              <li>Log maintenance events to reset alert timers.</li>
+            </ol>
+          </Q>
+          <Q id="cigar-session" q="How do I log a cigar smoking session?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Tap <strong>Log Session</strong> from CigarKeeper or the cigar's detail page.</li>
+              <li>Select the cigar, or enter a cigar you smoked outside your collection.</li>
+              <li>Fill in tasting notes, burn/draw quality, pairing, and enjoyment rating.</li>
+              <li>Tap <strong>Save</strong> to record the session.</li>
+            </ol>
+          </Q>
+          <Q id="cigar-free-vs-pro" q="What's included in the free vs. pro CigarKeeper plan?">
+            <p><strong>Free tier</strong> — add up to 10 cigars, log sessions, manage 1 humidor, and track basic maintenance alerts.</p>
+            <p><strong>Pro tier</strong> — unlimited cigars and humidors, Curator AI recommendations, collection insights, advanced analytics, and export features.</p>
+            <p>You can start on the free tier immediately after signing up — no payment required.</p>
+          </Q>
+        </Section>
+
         <Section title={t("howTo.subscriptions")}>
           <Q id="upgrade" q={t("howTo.upgradeQ")}>
             <ol className="list-decimal list-inside space-y-2">

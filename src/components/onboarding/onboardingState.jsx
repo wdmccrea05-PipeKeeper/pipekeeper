@@ -11,6 +11,7 @@ const ONBOARDING_KEYS = {
   SELECTED_MODULES: "ck_onboarding_modules",
   PIPE_COMPLETE:    "ck_pipe_onboarding_complete",
   WHISKEY_COMPLETE: "ck_whiskey_onboarding_complete",
+  CIGAR_COMPLETE:   "ck_cigar_onboarding_complete",
 };
 
 // ── Legacy (generic) ──────────────────────────────────────────────────────────
@@ -101,5 +102,19 @@ export function isWhiskeyOnboardingComplete() {
 export function markWhiskeyOnboardingComplete() {
   try {
     localStorage.setItem(ONBOARDING_KEYS.WHISKEY_COMPLETE, "true");
+  } catch {}
+}
+
+export function isCigarOnboardingComplete() {
+  try {
+    return localStorage.getItem(ONBOARDING_KEYS.CIGAR_COMPLETE) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function markCigarOnboardingComplete() {
+  try {
+    localStorage.setItem(ONBOARDING_KEYS.CIGAR_COMPLETE, "true");
   } catch {}
 }
