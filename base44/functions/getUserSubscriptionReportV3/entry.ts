@@ -5,10 +5,17 @@ const ACTIVE_STATUSES = new Set(['active', 'trialing', 'paid']);
 const MONTH_ALIASES = ['month', 'monthly', 'mo'];
 const YEAR_ALIASES = ['year', 'yearly', 'annual', 'yr'];
 const MODULE_ALIASES = {
-  pk: 'pipekeeper', pipekeeper: 'pipekeeper', pipe: 'pipekeeper',
-  wk: 'whiskeykeeper', whiskeykeeper: 'whiskeykeeper', whiskey: 'whiskeykeeper',
-  ck: 'cigarkeeper', cigarkeeper: 'cigarkeeper', cigar: 'cigarkeeper',
-  winekeeper: 'winekeeper', wine: 'winekeeper',
+  pk: 'pipekeeper',
+  pipekeeper: 'pipekeeper',
+  pipe: 'pipekeeper',
+  wk: 'whiskeykeeper',
+  whiskeykeeper: 'whiskeykeeper',
+  whiskey: 'whiskeykeeper',
+  ck: 'cigarkeeper',
+  cigarkeeper: 'cigarkeeper',
+  cigar: 'cigarkeeper',
+  winekeeper: 'winekeeper',
+  wine: 'winekeeper',
 };
 const PRODUCT_ALIASES = [
   { family: 'bundle', markers: ['founders_bundle', 'founders', 'bundle', '3_module_bundle', 'three_module_bundle', 'bundle_3'] },
@@ -18,16 +25,24 @@ const PRODUCT_ALIASES = [
   { family: 'winekeeper', markers: ['winekeeper', 'wine keeper', 'wine'] },
 ];
 
-function norm(v) { return String(v ?? '').trim().toLowerCase(); }
-function uniq(arr) { return [...new Set(arr)]; }
-function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+function norm(v) {
+  return String(v ?? '').trim().toLowerCase();
+}
+function uniq(arr) {
+  return [...new Set(arr)];
+}
+function round2(n) {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
 
 async function fetchAll(entity) {
   const out = [];
   let skip = 0;
   while (true) {
     let page = await entity.list(null, PAGE_SIZE, skip);
-    if (typeof page === 'string') { try { page = JSON.parse(page); } catch { break; } }
+    if (typeof page === 'string') {
+      try { page = JSON.parse(page); } catch { break; }
+    }
     if (!Array.isArray(page) || page.length === 0) break;
     out.push(...page);
     if (page.length < PAGE_SIZE) break;
@@ -73,7 +88,10 @@ function resolveInterval(sub) {
   const direct = norm(sub.billing_interval || sub.billing_period || sub.interval || sub.plan_interval || sub.recurring_interval);
   if (MONTH_ALIASES.some((m) => direct.includes(m))) return 'month';
   if (YEAR_ALIASES.some((y) => direct.includes(y))) return 'year';
-  const metadataFields = [sub.price_id, sub.stripe_price_id, sub.apple_product_id, sub.plan_key, sub.plan_id, sub.product_kind, sub.productId].map(norm);
+  const metadataFields = [
+    sub.price_id, sub.stripe_price_id, sub.apple_product_id,
+    sub.plan_key, sub.plan_id, sub.product_kind, sub.productId,
+  ].map(norm);
   const joined = metadataFields.join(' ');
   if (MONTH_ALIASES.some((m) => joined.includes(m))) return 'month';
   if (YEAR_ALIASES.some((y) => joined.includes(y))) return 'year';
@@ -96,7 +114,11 @@ function resolveProductFamily(sub) {
   const modules = resolveModules(sub, null);
   if (modules.length === 1) return modules[0];
   if (modules.length > 1) return 'bundle';
-  const fields = [sub.price_id, sub.stripe_price_id, sub.apple_product_id, sub.productId, sub.name, sub.description, sub.metadata?.product_kind, sub.metadata?.plan_key].map(norm);
+  const fields = [
+    sub.price_id, sub.stripe_price_id, sub.apple_product_id,
+    sub.productId, sub.name, sub.description,
+    sub.metadata?.product_kind, sub.metadata?.plan_key,
+  ].map(norm);
   const joined = fields.join(' ');
   for (const { family, markers } of PRODUCT_ALIASES) {
     if (markers.some((m) => joined.includes(m))) return family;
@@ -116,14 +138,20 @@ function resolveModules(sub, family) {
   if (family === 'bundle') {
     const marker = norm(sub.plan_key || sub.product_kind || sub.price_id || sub.apple_product_id || sub.productId || '');
     if (marker.includes('founders')) return ['pipekeeper', 'whiskeykeeper'];
-    if (marker.includes('3_module') || marker.includes('three_module') || marker.includes('bundle_3')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+    if (marker.includes('3_module') || marker.includes('three_module') || marker.includes('bundle_3')) {
+      return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+    }
     return ['pipekeeper', 'whiskeykeeper'];
   }
   return [];
 }
 
 function providerSubId(sub) {
-  return sub.provider_subscription_id || sub.stripe_subscription_id || sub.original_transaction_id || sub.originalTransactionId || sub.transaction_id || sub.subscription_id || sub.id;
+  return (
+    sub.provider_subscription_id || sub.stripe_subscription_id ||
+    sub.original_transaction_id || sub.originalTransactionId ||
+    sub.transaction_id || sub.subscription_id || sub.id
+  );
 }
 
 function isActivePaidStatus(sub) {
@@ -153,15 +181,21 @@ function periodRange(kind, now) {
     end.setTime(start.getTime());
     end.setUTCDate(end.getUTCDate() + 7);
   } else if (kind === 'month') {
-    start.setUTCDate(1); start.setUTCHours(0, 0, 0, 0);
-    end.setUTCMonth(start.getUTCMonth() + 1, 1); end.setUTCHours(0, 0, 0, 0);
+    start.setUTCDate(1);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCMonth(start.getUTCMonth() + 1, 1);
+    end.setUTCHours(0, 0, 0, 0);
   } else if (kind === 'quarter') {
     const q = Math.floor(start.getUTCMonth() / 3);
-    start.setUTCMonth(q * 3, 1); start.setUTCHours(0, 0, 0, 0);
-    end.setUTCMonth(q * 3 + 3, 1); end.setUTCHours(0, 0, 0, 0);
+    start.setUTCMonth(q * 3, 1);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCMonth(q * 3 + 3, 1);
+    end.setUTCHours(0, 0, 0, 0);
   } else {
-    start.setUTCMonth(0, 1); start.setUTCHours(0, 0, 0, 0);
-    end.setUTCFullYear(start.getUTCFullYear() + 1, 0, 1); end.setUTCHours(0, 0, 0, 0);
+    start.setUTCMonth(0, 1);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCFullYear(start.getUTCFullYear() + 1, 0, 1);
+    end.setUTCHours(0, 0, 0, 0);
   }
   return { start, end };
 }
@@ -194,7 +228,11 @@ Deno.serve(async (req) => {
       const modules = resolveModules(sub, family);
       const interval = resolveInterval(sub);
       const amount = parseMoney(sub.amount, sub.renewal_amount, sub.price, sub.metadata?.amount, sub.metadata?.renewal_amount);
-      const renewalDate = parseDate(sub.renewal_date) || parseDate(sub.current_period_end) || parseDate(sub.metadata?.renewal_date) || null;
+      const renewalDate =
+        parseDate(sub.renewal_date) ||
+        parseDate(sub.current_period_end) ||
+        parseDate(sub.metadata?.renewal_date) ||
+        null;
       return {
         raw: sub,
         id: String(sub.id),
@@ -212,13 +250,16 @@ Deno.serve(async (req) => {
     });
 
     const active = normalized.filter((n) => n.isActive);
+
     const dedupeMap = new Map();
     let duplicatesMerged = 0;
-
     for (const row of active) {
       const key = [row.provider || 'unknown', row.providerSubscriptionId || row.id].join('|');
       const existing = dedupeMap.get(key);
-      if (!existing) { dedupeMap.set(key, row); continue; }
+      if (!existing) {
+        dedupeMap.set(key, row);
+        continue;
+      }
       const currentScore = completenessScore(existing);
       const nextScore = completenessScore(row);
       let winner = existing;
@@ -253,7 +294,12 @@ Deno.serve(async (req) => {
       if (row.family && row.family in byProduct) byProduct[row.family] += 1;
     }
 
-    const entitlementSets = { pipekeeper: new Set(), whiskeykeeper: new Set(), cigarkeeper: new Set(), winekeeper: new Set() };
+    const entitlementSets = {
+      pipekeeper: new Set(),
+      whiskeykeeper: new Set(),
+      cigarkeeper: new Set(),
+      winekeeper: new Set(),
+    };
     for (const row of trustedActive) {
       let modules = row.modules;
       if (modules.length === 0) {
@@ -296,7 +342,8 @@ Deno.serve(async (req) => {
       today: users.filter((u) => {
         const d = parseDate(u.created_date || u.created_at);
         if (!d) return false;
-        const start = new Date(now); start.setHours(0, 0, 0, 0);
+        const start = new Date(now);
+        start.setHours(0, 0, 0, 0);
         return d >= start;
       }).length,
       week: users.filter((u) => inRange(parseDate(u.created_date || u.created_at), periodRange('week', now))).length,
@@ -305,30 +352,45 @@ Deno.serve(async (req) => {
       year: users.filter((u) => inRange(parseDate(u.created_date || u.created_at), periodRange('year', now))).length,
     };
 
-    const signupSources = users.reduce((acc, u) => {
-      const p = norm(u.platform || u.signup_source || 'unknown');
-      if (p === 'ios' || p === 'apple') acc.apple += 1;
-      else if (p === 'android' || p === 'google') acc.google += 1;
-      else if (p === 'web') acc.web += 1;
-      else acc.unknown += 1;
-      return acc;
-    }, { web: 0, apple: 0, google: 0, unknown: 0 });
+    const signupSources = users.reduce(
+      (acc, u) => {
+        const p = norm(u.platform || u.signup_source || 'unknown');
+        if (p === 'ios' || p === 'apple') acc.apple += 1;
+        else if (p === 'android' || p === 'google') acc.google += 1;
+        else if (p === 'web') acc.web += 1;
+        else acc.unknown += 1;
+        return acc;
+      },
+      { web: 0, apple: 0, google: 0, unknown: 0 },
+    );
 
     const unknownProductRows = trustedActive.filter((r) => !r.family);
     const missingIntervalRows = trustedActive.filter((r) => !r.interval);
     const missingAmountRows = trustedActive.filter((r) => !((r.amount || 0) > 0));
+
     const manualAdminUsers = users.filter((u) => {
-      const hasManual = !!u.isFoundingMember || !!u.pipekeeper_paid || !!u.whiskeykeeper_paid || !!u.cigarkeeper_paid || !!u.winekeeper_paid || !!splitCsv(u.paid_modules_csv).length;
+      const hasManual =
+        !!u.isFoundingMember || !!u.pipekeeper_paid || !!u.whiskeykeeper_paid ||
+        !!u.cigarkeeper_paid || !!u.winekeeper_paid || !!splitCsv(u.paid_modules_csv).length;
       const hasContract = paidUserKeys.includes(String(u.id));
       return hasManual && !hasContract;
     });
 
-    const payingUsersList = [...usersWithContracts.entries()].map(([userKey, rows]) => {
-      const email = rows.find((r) => r.email)?.email || users.find((u) => String(u.id) === userKey)?.email || '';
-      const products = uniq(rows.map((r) => r.family).filter(Boolean));
-      const modules = uniq(rows.flatMap((r) => r.modules));
-      return { userKey, email, canonicalProduct: products.join(', ') || '-', modules, status: 'paying_user', subscriptionCount: rows.length };
-    }).sort((a, b) => String(a.email).localeCompare(String(b.email)));
+    const payingUsersList = [...usersWithContracts.entries()]
+      .map(([userKey, rows]) => {
+        const email = rows.find((r) => r.email)?.email || users.find((u) => String(u.id) === userKey)?.email || '';
+        const products = uniq(rows.map((r) => r.family).filter(Boolean));
+        const modules = uniq(rows.flatMap((r) => r.modules));
+        return {
+          userKey,
+          email,
+          canonicalProduct: products.join(', ') || '-',
+          modules,
+          status: 'paying_user',
+          subscriptionCount: rows.length,
+        };
+      })
+      .sort((a, b) => String(a.email).localeCompare(String(b.email)));
 
     const reasonCounts = {
       counted_as_paying_user: paidUsers,
@@ -353,7 +415,9 @@ Deno.serve(async (req) => {
         whiskeykeeper: entitlementSets.whiskeykeeper.size,
         cigarkeeper: entitlementSets.cigarkeeper.size,
         winekeeper: entitlementSets.winekeeper.size,
-        totalModuleEntitlements: entitlementSets.pipekeeper.size + entitlementSets.whiskeykeeper.size + entitlementSets.cigarkeeper.size + entitlementSets.winekeeper.size,
+        totalModuleEntitlements:
+          entitlementSets.pipekeeper.size + entitlementSets.whiskeykeeper.size +
+          entitlementSets.cigarkeeper.size + entitlementSets.winekeeper.size,
       },
       renewals: renewalPeriods,
       reconciliation: {
@@ -363,15 +427,35 @@ Deno.serve(async (req) => {
         manualAdminCount: manualAdminUsers.length,
         reasonCounts,
         unresolvedSamples: {
-          unknownProduct: unknownProductRows.slice(0, 10).map((r) => ({ id: r.id, user_id: r.userKey, user_email: r.email, provider: r.provider, product_kind: r.raw.product_kind || r.raw.plan_key || r.raw.price_id || '-', price_id: r.raw.price_id || r.raw.stripe_price_id || r.raw.apple_product_id || '-', billing_interval: r.raw.billing_interval || r.raw.interval || '-', amount: r.raw.amount ?? r.raw.renewal_amount ?? '-', status: r.raw.status || '-' })),
-          missingInterval: missingIntervalRows.slice(0, 10).map((r) => ({ id: r.id, user_id: r.userKey, user_email: r.email, provider: r.provider, product_kind: r.family || '-', price_id: r.raw.price_id || r.raw.stripe_price_id || r.raw.apple_product_id || '-', billing_interval: '-', amount: r.amount ?? '-', status: r.raw.status || '-' })),
-          missingAmount: missingAmountRows.slice(0, 10).map((r) => ({ id: r.id, user_id: r.userKey, user_email: r.email, provider: r.provider, product_kind: r.family || '-', price_id: r.raw.price_id || r.raw.stripe_price_id || r.raw.apple_product_id || '-', billing_interval: r.interval || '-', amount: '-', status: r.raw.status || '-' })),
+          unknownProduct: unknownProductRows.slice(0, 10).map((r) => ({
+            id: r.id, user_id: r.userKey, user_email: r.email, provider: r.provider,
+            product_kind: r.raw.product_kind || r.raw.plan_key || r.raw.price_id || '-',
+            price_id: r.raw.price_id || r.raw.stripe_price_id || r.raw.apple_product_id || '-',
+            billing_interval: r.raw.billing_interval || r.raw.interval || '-',
+            amount: r.raw.amount ?? r.raw.renewal_amount ?? '-',
+            status: r.raw.status || '-',
+          })),
+          missingInterval: missingIntervalRows.slice(0, 10).map((r) => ({
+            id: r.id, user_id: r.userKey, user_email: r.email, provider: r.provider,
+            product_kind: r.family || '-',
+            price_id: r.raw.price_id || r.raw.stripe_price_id || r.raw.apple_product_id || '-',
+            billing_interval: '-', amount: r.amount ?? '-', status: r.raw.status || '-',
+          })),
+          missingAmount: missingAmountRows.slice(0, 10).map((r) => ({
+            id: r.id, user_id: r.userKey, user_email: r.email, provider: r.provider,
+            product_kind: r.family || '-',
+            price_id: r.raw.price_id || r.raw.stripe_price_id || r.raw.apple_product_id || '-',
+            billing_interval: r.interval || '-', amount: '-', status: r.raw.status || '-',
+          })),
         },
       },
       payingUsersList,
     });
   } catch (error) {
     console.error('[getUserSubscriptionReportV3] fatal:', error);
-    return Response.json({ error: error?.message || 'Failed to build user subscription report', meta: { generatedAt: new Date().toISOString(), reportVersion: 'v6-canonical-basic' } }, { status: 500 });
+    return Response.json(
+      { error: error?.message || 'Failed to build user subscription report', meta: { generatedAt: new Date().toISOString(), reportVersion: 'v6-canonical-basic' } },
+      { status: 500 },
+    );
   }
 });

@@ -154,9 +154,9 @@ function Header({ generatedAt, onRefresh, onExport }) {
     <div className="flex items-center justify-between gap-4">
       <div>
         <h1 className="text-2xl font-bold text-[#F5F1E7]">User Subscription Report</h1>
-        {generatedAt && (
+        {generatedAt ? (
           <p className="text-xs text-[#E0D8C8]/50 mt-1">Generated {new Date(generatedAt).toLocaleString()}</p>
-        )}
+        ) : null}
       </div>
       <div className="flex gap-2">
         <button onClick={onRefresh} className="px-3 py-2 rounded border border-[#8b6239]/40 text-[#E0D8C8] hover:bg-[#8b6239]/20 text-sm">
@@ -245,7 +245,9 @@ function PayingUserTable({ rows }) {
         </thead>
         <tbody>
           {rows.length === 0 ? (
-            <tr><td colSpan={5} className="px-3 py-4 text-[#E0D8C8]/50 text-center">No paying users found</td></tr>
+            <tr>
+              <td colSpan={5} className="px-3 py-4 text-[#E0D8C8]/50 text-center">No paying users found</td>
+            </tr>
           ) : (
             rows.map((row, idx) => (
               <tr key={idx} className="border-t border-[#8b6239]/15 hover:bg-white/[0.02]">
@@ -272,13 +274,15 @@ function exportCsv(rows) {
   const headers = ['email', 'canonicalProduct', 'modules', 'status', 'subscriptionCount'];
   const lines = [
     headers.join(','),
-    ...rows.map((row) => [
-      csvValue(row.email),
-      csvValue(row.canonicalProduct),
-      csvValue((row.modules || []).join('|')),
-      csvValue(row.status),
-      csvValue(row.subscriptionCount),
-    ].join(',')),
+    ...rows.map((row) =>
+      [
+        csvValue(row.email),
+        csvValue(row.canonicalProduct),
+        csvValue((row.modules || []).join('|')),
+        csvValue(row.status),
+        csvValue(row.subscriptionCount),
+      ].join(',')
+    ),
   ];
   const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
