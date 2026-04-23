@@ -1,0 +1,101 @@
+{
+  "name": "SubscriptionEvent",
+  "type": "object",
+  "description": "Raw immutable event log \u2014 one row per inbound event from Stripe, Apple, Google, or manual admin action. Never mutated after insert.",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Provider-native event ID (e.g. Stripe evt_xxx, Apple notificationUUID). Unique per provider."
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple",
+        "google",
+        "manual",
+        "unknown"
+      ],
+      "description": "Source of this event"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Provider event type string (e.g. customer.subscription.updated, SUBSCRIBED, RENEWAL)"
+    },
+    "provider_subscription_id": {
+      "type": "string",
+      "description": "Provider's subscription/transaction ID"
+    },
+    "provider_customer_id": {
+      "type": "string",
+      "description": "Provider's customer ID"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Internal platform user ID (set during ingestion if resolvable)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email at time of event"
+    },
+    "raw_status": {
+      "type": "string",
+      "description": "Raw status string from provider payload"
+    },
+    "amount_cents": {
+      "type": "number",
+      "description": "Amount in smallest currency unit (cents). Avoids floating point."
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd",
+      "description": "ISO 4217 currency code"
+    },
+    "price_id": {
+      "type": "string",
+      "description": "Provider price/product ID (e.g. Stripe price_xxx)"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Provider product ID"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "month",
+        "year",
+        "unknown"
+      ],
+      "description": "Billing interval from provider"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Current billing period start"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Current billing period end"
+    },
+    "raw_payload": {
+      "type": "string",
+      "description": "JSON-serialized raw provider payload (truncated to 8KB if needed)"
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this event was ingested into the platform"
+    },
+    "processed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this event has been folded into active_contracts"
+    }
+  },
+  "required": [
+    "provider",
+    "event_type",
+    "ingested_at"
+  ]
+}

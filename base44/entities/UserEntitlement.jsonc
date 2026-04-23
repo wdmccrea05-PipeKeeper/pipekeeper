@@ -1,0 +1,96 @@
+{
+  "name": "UserEntitlement",
+  "type": "object",
+  "description": "Derived entitlement record \u2014 one row per user. Computed exclusively from ActiveContract rows. Never written by sync, webhooks, or UI directly. Rebuilt on each normalization pass.",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Internal platform user ID"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email (lowercase)"
+    },
+    "has_access": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if the user has at least one active contract"
+    },
+    "active_contract_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of all ActiveContract rows contributing to this entitlement"
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Union of all modules across active contracts"
+    },
+    "pipekeeper": {
+      "type": "boolean",
+      "default": false
+    },
+    "whiskeykeeper": {
+      "type": "boolean",
+      "default": false
+    },
+    "cigarkeeper": {
+      "type": "boolean",
+      "default": false
+    },
+    "winekeeper": {
+      "type": "boolean",
+      "default": false
+    },
+    "mrr_cents": {
+      "type": "number",
+      "description": "Total MRR contribution from all active contracts (cents)"
+    },
+    "contract_count": {
+      "type": "number",
+      "description": "Number of active contracts for this user"
+    },
+    "primary_product": {
+      "type": "string",
+      "description": "Canonical primary product (bundle if multi-module, else single module)"
+    },
+    "primary_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple",
+        "google",
+        "manual",
+        "unknown"
+      ],
+      "description": "Provider of the primary/highest-value contract"
+    },
+    "primary_billing_interval": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "annual",
+        "unknown"
+      ]
+    },
+    "next_renewal_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Earliest upcoming renewal date across all active contracts"
+    },
+    "computed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this entitlement was last recomputed"
+    }
+  },
+  "required": [
+    "user_id",
+    "has_access",
+    "computed_at"
+  ]
+}

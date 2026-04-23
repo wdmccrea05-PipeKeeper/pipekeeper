@@ -1,0 +1,186 @@
+{
+  "name": "ActiveContract",
+  "type": "object",
+  "description": "Canonical active subscription contract \u2014 one row per user per active subscription. Normalized from Stripe/Apple/Google/manual sources. This is the single source of truth for billing state.",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Internal platform user ID"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email (lowercase)"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple",
+        "google",
+        "manual",
+        "unknown"
+      ],
+      "description": "Subscription provider"
+    },
+    "provider_subscription_id": {
+      "type": "string",
+      "description": "Provider's canonical subscription ID"
+    },
+    "provider_customer_id": {
+      "type": "string",
+      "description": "Provider's customer ID"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "trialing",
+        "past_due",
+        "canceled",
+        "expired",
+        "incomplete",
+        "unknown"
+      ],
+      "description": "Canonical normalized status"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this contract grants access right now (active or trialing and period not expired)"
+    },
+    "product": {
+      "type": "string",
+      "enum": [
+        "pipekeeper",
+        "whiskeykeeper",
+        "cigarkeeper",
+        "winekeeper",
+        "bundle",
+        "unknown"
+      ],
+      "description": "Canonical product. Never inferred \u2014 must come from trusted source or be marked unknown."
+    },
+    "product_source": {
+      "type": "string",
+      "enum": [
+        "modules_csv",
+        "product_kind",
+        "bundle_signal",
+        "price_id_lookup",
+        "amount_lookup",
+        "manual",
+        "unknown"
+      ],
+      "description": "How product was resolved \u2014 for full auditability"
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Resolved module list (e.g. ['pipekeeper', 'whiskeykeeper'])"
+    },
+    "bundle_name": {
+      "type": "string",
+      "description": "Bundle tier name if applicable (e.g. Founders, 3-Module, 4-Module)"
+    },
+    "billing_interval": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "annual",
+        "unknown"
+      ],
+      "description": "Billing interval \u2014 never inferred without explicit provider signal"
+    },
+    "billing_interval_source": {
+      "type": "string",
+      "enum": [
+        "provider_field",
+        "price_id",
+        "amount_lookup",
+        "unknown"
+      ],
+      "description": "How billing interval was resolved"
+    },
+    "amount_cents": {
+      "type": "number",
+      "description": "Billing amount in cents (integer). 0 means unknown/free."
+    },
+    "amount_source": {
+      "type": "string",
+      "enum": [
+        "provider",
+        "amount_lookup",
+        "unknown"
+      ],
+      "description": "How amount was resolved"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "mrr_cents": {
+      "type": "number",
+      "description": "Monthly recurring revenue contribution in cents. annual_amount / 12 for annual subs."
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Current billing period start"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Current billing period end (renewal date)"
+    },
+    "period_end_source": {
+      "type": "string",
+      "enum": [
+        "provider",
+        "inferred",
+        "unknown"
+      ],
+      "description": "How period_end was determined"
+    },
+    "quality": {
+      "type": "string",
+      "enum": [
+        "trusted",
+        "inferred",
+        "exception"
+      ],
+      "description": "Row quality: trusted = all fields from provider; inferred = some lookups; exception = missing critical data"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of data quality issue codes for this contract"
+    },
+    "source_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of SubscriptionEvent rows that drove this contract"
+    },
+    "source_subscription_id": {
+      "type": "string",
+      "description": "ID of the legacy Subscription entity row used to build this contract (if backfilled)"
+    },
+    "normalized_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this contract was last normalized/updated"
+    }
+  },
+  "required": [
+    "user_id",
+    "provider",
+    "status",
+    "product",
+    "normalized_at"
+  ]
+}
