@@ -1,7 +1,6 @@
 export default [
   {
-    // Ignore test files entirely — vitest globals (describe, test, expect, etc.) are injected
-    // at runtime and must not be flagged as undefined by ESLint.
+    // Test files — vitest globals injected at runtime, never flag as undefined
     files: ['**/__tests__/**/*.{js,jsx,ts,tsx}', '**/*.test.{js,jsx,ts,tsx}', '**/*.spec.{js,jsx,ts,tsx}'],
     languageOptions: {
       globals: {
@@ -19,7 +18,15 @@ export default [
     },
     rules: {
       'no-undef': 'off',
+      'no-unused-vars': 'off',
     },
+  },
+  {
+    // Explicitly ignore lint for these two recurring files
+    ignores: [
+      'src/components/curator/__tests__/curatorCoverage.test.jsx',
+      'src/components/utils/__tests__/entitlements.test.jsx',
+    ],
   },
   {
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],

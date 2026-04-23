@@ -141,6 +141,7 @@ export default function UserReport() {
           <p><span className="text-[#D4A574] font-semibold">Avg first billing amount:</span> ${formatMoney(forecastAssumptions.avgFirstBillingAmount)}</p>
           <p className="pt-1 text-[#E0D8C8]/40 italic">Retention assumptions are conservative defaults. Update in the backend function RETENTION constant as historical data becomes available.</p>
         </div>
+        <BillingAuditPanel audit={forecastAssumptions.billingAudit} />
       </Section>
 
       <Section title="C. Product Mix (trusted contracts only)">
@@ -330,6 +331,71 @@ function PayingUserTable({ rows }) {
           )}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function BillingAuditPanel({ audit }) {
+  if (!audit) return null;
+  return (
+    <div className="rounded-xl border border-[#8b6239]/20 bg-[#1a1108]/60 p-4 mt-3 text-xs space-y-2">
+      <p className="text-[#D4A574] font-semibold text-sm">Avg First Billing Audit</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="rounded-lg border border-[#8b6239]/20 bg-[#1f1712]/80 p-3">
+          <p className="text-[#E0D8C8]/50 uppercase tracking-wider text-[10px]">Unique Paying Users</p>
+          <p className="text-[#F5F1E7] text-lg font-semibold mt-0.5">{audit.uniquePayingUsers}</p>
+          <p className="text-[#E0D8C8]/40 mt-0.5">of {audit.totalEligibleRows} eligible rows</p>
+        </div>
+        <div className="rounded-lg border border-[#8b6239]/20 bg-[#1f1712]/80 p-3">
+          <p className="text-[#E0D8C8]/50 uppercase tracking-wider text-[10px]">Standard Price Rows</p>
+          <p className="text-[#F5F1E7] text-lg font-semibold mt-0.5">{audit.standardPriceCount}</p>
+          <p className="text-[#E0D8C8]/40 mt-0.5">&gt; ${audit.introPriceThreshold} threshold</p>
+        </div>
+        <div className="rounded-lg border border-yellow-800/30 bg-yellow-900/10 p-3">
+          <p className="text-yellow-300/70 uppercase tracking-wider text-[10px]">Intro/Trial Price Rows</p>
+          <p className="text-yellow-200 text-lg font-semibold mt-0.5">{audit.introPriceCount}</p>
+          <p className="text-yellow-300/40 mt-0.5">≤ ${audit.introPriceThreshold} (excluded from avg)</p>
+        </div>
+        <div className="rounded-lg border border-red-800/30 bg-red-900/10 p-3">
+          <p className="text-red-300/70 uppercase tracking-wider text-[10px]">Malformed / Excluded</p>
+          <p className="text-red-200 text-lg font-semibold mt-0.5">{audit.excludedMalformedCount}</p>
+          <p className="text-red-300/40 mt-0.5">no amount / interval / provider</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-1">
+        <div className="rounded-lg border border-[#8b6239]/20 bg-[#1f1712]/80 p-3">
+          <p className="text-[#E0D8C8]/50 uppercase tracking-wider text-[10px]">Avg Billing Amount</p>
+          <p className="text-[#F5F1E7] text-lg font-semibold mt-0.5">${formatMoney(audit.avgFirstBillingAmount)}</p>
+          <p className="text-[#E0D8C8]/40 mt-0.5">{audit.avgSourceNote}</p>
+        </div>
+        <div className="rounded-lg border border-[#8b6239]/20 bg-[#1f1712]/80 p-3">
+          <p className="text-[#E0D8C8]/50 uppercase tracking-wider text-[10px]">Min Amount</p>
+          <p className="text-[#F5F1E7] text-lg font-semibold mt-0.5">${formatMoney(audit.minAmount)}</p>
+        </div>
+        <div className="rounded-lg border border-[#8b6239]/20 bg-[#1f1712]/80 p-3">
+          <p className="text-[#E0D8C8]/50 uppercase tracking-wider text-[10px]">Max Amount</p>
+          <p className="text-[#F5F1E7] text-lg font-semibold mt-0.5">${formatMoney(audit.maxAmount)}</p>
+        </div>
+        <div className="rounded-lg border border-[#8b6239]/20 bg-[#1f1712]/80 p-3">
+          <p className="text-[#E0D8C8]/50 uppercase tracking-wider text-[10px]">Median Amount</p>
+          <p className="text-[#F5F1E7] text-lg font-semibold mt-0.5">${formatMoney(audit.medianAmount)}</p>
+        </div>
+      </div>
+      {audit.introAmounts?.length > 0 && (
+        <p className="text-yellow-300/60">Intro/promo amounts found: {audit.introAmounts.map((a) => `$${a}`).join(', ')}</p>
+      )}
+      {audit.excludedSamples?.length > 0 && (
+        <div className="mt-2">
+          <p className="text-red-300/70 font-semibold mb-1">Excluded malformed samples:</p>
+          <div className="space-y-0.5">
+            {audit.excludedSamples.map((s, i) => (
+              <p key={i} className="text-[#E0D8C8]/50 font-mono">
+                {s.email || '(no email)'} · {s.provider} · amt={s.amount ?? 'null'} · interval={s.interval ?? 'null'} · {s.reason}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

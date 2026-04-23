@@ -32,6 +32,9 @@ function parseDate(v) {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+// Threshold below which a dollar amount is considered suspiciously low (likely intro/trial pricing)
+const INTRO_PRICE_THRESHOLD = 2.50; // $2.50 or less = likely introductory / promotional
+
 function parseMoney(...values) {
   for (const value of values) {
     if (value === null || value === undefined || value === '') continue;
@@ -39,12 +42,35 @@ function parseMoney(...values) {
     let n = Number(raw);
     if (!Number.isFinite(n)) continue;
     if (n <= 0) continue;
-    // cents → dollars if large integer
-    if (Number.isInteger(n) && n >= 1000) n = n / 100;
+    // cents → dollars: any integer >= 100 is almost certainly cents
+    // (a $1.00 sub stored as integer 1 is ambiguous but extremely rare — $100+ stored as integer is common)
+    // Rule: integer >= 100 → divide by 100
+    if (Number.isInteger(n) && n >= 100) n = n / 100;
     if (n <= 0) continue;
     return round2(n);
   }
   return null;
+}
+
+// Returns true if the amount looks like a legacy test/seed row (round numbers that match known test prices)
+const KNOWN_TEST_AMOUNTS = new Set([4.99, 9.99]); // legacy test_sub seeded rows
+function isLikelyTestAmount(amount) {
+  return KNOWN_TEST_AMOUNTS.has(amount);
+}
+
+function isMalformedBillingRow(row) {
+  // Exclude: no amount, no interval, unknown product, provider unknown/manual
+  if (!row.canonical_amount || row.canonical_amount <= 0) return true;
+  if (!row.canonical_billing_interval) return true;
+  if (row.canonical_provider === 'manual' || row.canonical_provider === 'unknown') return true;
+  return false;
+}
+
+function median(arr) {
+  if (arr.length === 0) return 0;
+  const sorted = arr.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : round2((sorted[mid - 1] + sorted[mid]) / 2);
 }
 
 function splitCsv(v) {
@@ -601,19 +627,73 @@ Deno.serve(async (req) => {
       return round2(weighted);
     }
 
+    // ── Avg First Billing — audited calculation ────────────────────────────────
+    // Rules:
+    // 1. One row per unique paying user (pick highest-value row to avoid test/intro contamination)
+    // 2. Exclude malformed rows (no amount, no interval, manual/unknown provider)
+    // 3. Separate intro/trial pricing from standard pricing
+    // 4. Return full audit: count, min, max, median, excluded samples
+
+    const seenUsersForAvg = new Set();
+    const standardBillingAmounts = [];   // > INTRO_PRICE_THRESHOLD
+    const introBillingAmounts = [];      // <= INTRO_PRICE_THRESHOLD (likely promotional)
+    const excludedFromAvg = [];          // rows excluded + why
+
+    // Build one canonical billing amount per user: use highest amount among their eligible rows
+    const amountsByUser = new Map();
+    for (const row of financiallyEligible) {
+      if (isMalformedBillingRow(row)) {
+        excludedFromAvg.push({ reason: 'malformed', user_id: row.canonical_user_id, email: row.canonical_email, amount: row.canonical_amount, interval: row.canonical_billing_interval, provider: row.canonical_provider });
+        continue;
+      }
+      const existing = amountsByUser.get(row.canonical_user_id);
+      if (!existing || row.canonical_amount > existing.canonical_amount) {
+        amountsByUser.set(row.canonical_user_id, row);
+      }
+    }
+
+    for (const [, row] of amountsByUser) {
+      const amt = row.canonical_amount;
+      if (amt <= INTRO_PRICE_THRESHOLD) {
+        introBillingAmounts.push(amt);
+      } else {
+        standardBillingAmounts.push(amt);
+      }
+    }
+
+    // Prefer standard amounts for forecast avg; fall back to all if no standard rows
+    const avgSourceAmounts = standardBillingAmounts.length > 0 ? standardBillingAmounts : [...standardBillingAmounts, ...introBillingAmounts];
+    const avgFirstBilling = avgSourceAmounts.length > 0
+      ? round2(avgSourceAmounts.reduce((s, v) => s + v, 0) / avgSourceAmounts.length)
+      : 0;
+
+    const billingAudit = {
+      totalEligibleRows: financiallyEligible.length,
+      uniquePayingUsers: amountsByUser.size,
+      standardPriceCount: standardBillingAmounts.length,
+      introPriceCount: introBillingAmounts.length,
+      avgFirstBillingAmount: avgFirstBilling,
+      avgSourceNote: standardBillingAmounts.length > 0 ? 'standard_prices_only' : 'all_prices_fallback',
+      minAmount: avgSourceAmounts.length > 0 ? round2(Math.min(...avgSourceAmounts)) : 0,
+      maxAmount: avgSourceAmounts.length > 0 ? round2(Math.max(...avgSourceAmounts)) : 0,
+      medianAmount: median(avgSourceAmounts),
+      introPriceThreshold: INTRO_PRICE_THRESHOLD,
+      introAmounts: introBillingAmounts.slice().sort((a, b) => a - b),
+      excludedMalformedCount: excludedFromAvg.length,
+      excludedSamples: excludedFromAvg.slice(0, 10).map((e) => ({ reason: e.reason, email: e.email, amount: e.amount, interval: e.interval, provider: e.provider })),
+    };
+
     // New revenue forecast: based on recent 90-day new paid user trend
-    // Identify users who became paying in the last 90 days
+    // Count distinct users whose FIRST paid contract was within last 90 days
     const last90Start = new Date(now); last90Start.setUTCDate(last90Start.getUTCDate() - 90);
     const recentlyConvertedUsers = new Set();
     for (const row of financiallyEligible) {
+      if (isMalformedBillingRow(row)) continue;
       const user = users.find((u) => String(u.id) === row.canonical_user_id || norm(u.email) === row.canonical_email);
       const joinDate = user ? parseDate(user.created_date || user.created_at) : null;
       if (joinDate && joinDate >= last90Start) recentlyConvertedUsers.add(row.canonical_user_id);
     }
     const newPaidPer90Days = recentlyConvertedUsers.size;
-    const avgFirstBilling = financiallyEligible.length > 0
-      ? round2(financiallyEligible.reduce((s, r) => s + (r.canonical_amount || 0), 0) / financiallyEligible.length)
-      : 0;
     const newPaidPerDay = newPaidPer90Days / 90;
 
     function newRevenueForecast(days) {
@@ -624,10 +704,11 @@ Deno.serve(async (req) => {
       assumptions: {
         monthlyRetention: RETENTION.month,
         annualRetention: RETENTION.year,
-        newPaidMethod: 'recent_90d_trend × avg_first_billing',
+        newPaidMethod: 'recent_90d_trend × avg_first_billing (standard_prices_only)',
         newPaidPer90Days,
         newPaidPerDay: round2(newPaidPerDay * 30) + ' per 30d (approx)',
         avgFirstBillingAmount: avgFirstBilling,
+        billingAudit,
       },
       committed: {
         next30: committedRenewal(30),
