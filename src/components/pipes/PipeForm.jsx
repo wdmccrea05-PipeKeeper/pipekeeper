@@ -26,7 +26,7 @@ import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import { toast } from "sonner";
 import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
-import { preparePipeData } from "@/components/utils/schemaCompatibility";
+import { preparePipeData, normalizePipeFormData } from "@/components/utils/schemaCompatibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { CuratorEvents } from "@/components/utils/curatorEventLogger";
 import { sortByLabel, uniqueSortedStrings } from "@/lib/sorting/alphabetical";
@@ -45,49 +45,7 @@ const FILTER_TYPES = ["None", "6mm", "9mm", "Stinger", "Other"];
 
 export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState(() => {
-    const defaults = {
-      name: '',
-      maker: '',
-      country_of_origin: '',
-      shape: '',
-      bowlStyle: '',
-      shankShape: '',
-      bend: '',
-      sizeClass: '',
-      length_mm: '',
-      weight_grams: '',
-      bowl_height_mm: '',
-      bowl_width_mm: '',
-      bowl_diameter_mm: '',
-      bowl_depth_mm: '',
-      chamber_volume: '',
-      stem_material: '',
-      bowl_material: '',
-      finish: '',
-      filter_type: '',
-      year_made: '',
-      purchase_date: '',
-      stamping: '',
-      condition: '',
-      purchase_price: '',
-      estimated_value: '',
-      notes: '',
-      usage_characteristics: '',
-      smoking_characteristics: '',
-      photos: [],
-      stamping_photos: [],
-      is_favorite: false,
-      ai_excluded: false,
-      interchangeable_bowls: [],
-    };
-    const merged = { ...defaults, ...(pipe || {}) };
-    merged.photos = Array.isArray(pipe?.photos)
-      ? pipe.photos
-      : [pipe?.photo, pipe?.photo_url, pipe?.image, pipe?.image_url].filter(Boolean);
-    merged.stamping_photos = Array.isArray(pipe?.stamping_photos) ? pipe.stamping_photos : [];
-    return merged;
-  });
+  const [formData, setFormData] = useState(() => normalizePipeFormData(pipe));
   const [hasInterchangeableBowls, setHasInterchangeableBowls] = useState(
     pipe?.interchangeable_bowls?.length > 0 || false
   );
@@ -98,6 +56,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [editingPhotoIndex, setEditingPhotoIndex] = useState(null);
   const [showOnlineSearch, setShowOnlineSearch] = useState(false);
   const [onlineSearchType, setOnlineSearchType] = useState(null); // 'photo' | 'stamping'
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const { user, isTrial } = useCurrentUser();
   const entitlements = useEntitlements();
@@ -290,6 +250,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
 
     // Check free tier limits for new pipes only
     if (!pipe && !isPipekeeperPro) {
@@ -345,7 +306,15 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       });
     }
 
-    onSave(preparePipeData(cleanedData));
+    setIsSubmitting(true);
+    try {
+      await onSave(preparePipeData(cleanedData));
+    } catch (error) {
+      const reason = error?.message || t('errors.updateFailed') || 'Save failed';
+      setSubmitError(reason);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -1007,15 +976,20 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* ===== SECTION: Form Actions ===== */}
       {/* Actions */}
       <div className="sticky bottom-0 bg-[linear-gradient(180deg,rgba(22,18,14,0.94)_0%,rgba(18,14,11,0.97)_100%)] backdrop-blur-sm border-t border-[rgba(140,105,65,0.18)] p-4 sm:p-6 flex gap-3 justify-end -mx-6 sm:-mx-8 px-6 sm:px-8">
+        {submitError ? (
+          <div role="alert" aria-live="polite" className="mr-auto text-sm text-red-300 max-w-[70%] break-words">
+            {submitError}
+          </div>
+        ) : null}
         <Button type="button" variant="outline" onClick={onCancel} className="bg-black/15 border-[rgba(140,105,65,0.35)] text-[#E0D8C8] hover:bg-white/5">
           {t("common.cancel")}
         </Button>
         <Button 
           type="submit" 
-          disabled={isLoading}
+          disabled={isLoading || isSubmitting}
           className="bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
         >
-          {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+          {(isLoading || isSubmitting) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           {pipe ? t("pipesExtended.updatePipe") : t("pipesExtended.addPipe")}
         </Button>
       </div>
