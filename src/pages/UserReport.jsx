@@ -73,6 +73,11 @@ export default function UserReport() {
           <Card title="Paid Accounts"      value={reconciliation.totalPaidAccounts ?? 0} />
           <Card title="Discrepancy"        value={discrepancy} warn={discrepancy > 0} />
         </div>
+        {data.metricDefinitions?.paidAccounts && (
+          <p className="text-xs text-[#E0D8C8]/60">
+            {data.metricDefinitions.paidAccounts}
+          </p>
+        )}
       </Section>
 
       {/* B. Revenue Metrics */}
@@ -98,7 +103,7 @@ export default function UserReport() {
       )}
 
       {/* C. Product Mix */}
-      <Section title="C. Product Mix (inferred + trusted)">
+      <Section title="C. Product Mix (trusted canonical contracts only)">
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <Card title="PipeKeeper"       value={data.revenue?.byProduct?.pipekeeper ?? 0} />
           <Card title="WhiskeyKeeper"    value={data.revenue?.byProduct?.whiskeykeeper ?? 0} />
@@ -109,7 +114,7 @@ export default function UserReport() {
       </Section>
 
       {/* D. Renewals */}
-      <Section title="D. Upcoming Renewals (confirmed + inferred)">
+      <Section title="D. Upcoming Renewals (financial-eligible canonical contracts)">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <RenewalCard label="This Week"    period={data.renewals?.week} />
           <RenewalCard label="This Month"   period={data.renewals?.month} />
