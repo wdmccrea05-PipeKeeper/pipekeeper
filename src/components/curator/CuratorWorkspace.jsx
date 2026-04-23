@@ -15,6 +15,7 @@ import CuratorGrowAndExpand from '@/components/curator/CuratorGrowAndExpand';
 import CuratorSpecializationReview from '@/components/curator/CuratorSpecializationReview';
 import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
 
+import { toast } from 'sonner';
 import { generateRecommendations } from '@/lib/curator/recommendationEngine';
 import { generatePairingRecommendations } from '@/lib/curator/pairingEngine';
 import { executeRecommendationAction, buildViewItemsNavigation } from '@/lib/curator/recommendationActions';
@@ -408,8 +409,16 @@ export default function CuratorWorkspace({
       });
 
       if (!result?.ok) {
-        console.error('[Curator] action failed:', result?.error || 'unknown error');
+        const errMsg = result?.error || 'Action could not be completed.';
+        console.error('[Curator] action failed:', errMsg);
+        toast.error(errMsg);
         return result;
+      }
+
+      if (result?.appliedCount > 0) {
+        toast.success(`${result.appliedCount} record${result.appliedCount !== 1 ? 's' : ''} updated.`);
+      } else if (actionKey === 'acknowledge' || actionKey === 'mark_reviewed') {
+        toast.success('Marked as reviewed.');
       }
 
       const resolvedIds = result.resolvedRecordIds || [];

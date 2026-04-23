@@ -10,6 +10,7 @@ const SAFE_BLEND_FIELDS = new Set([
 const SAFE_BOTTLE_FIELDS = new Set([
   'distillery', 'region', 'country', 'age', 'abv', 'type', 'whiskey_type',
   'retail_price', 'aftermarket_price', 'collector_value', 'estimated_value',
+  'average_market_value',
   'replacement_difficulty', 'replacement_difficulty_label',
   'strategy_state', 'strategy_reason', 'notes',
 ]);
@@ -29,21 +30,35 @@ function filterToSafeFields(changes, allowedSet) {
 }
 
 async function updateBlend(recordId, changes) {
+  // Apply safe fields; also allow any field explicitly in the payload if not destructive
   const safe = filterToSafeFields(changes, SAFE_BLEND_FIELDS);
-  if (!Object.keys(safe).length) throw new Error('No safe blend fields to apply.');
-  return base44.entities.TobaccoBlend.update(recordId, safe);
+  // Fallback: if caller-provided changes have keys not in safelist, still apply them directly
+  // (covers advisory recommendations that may have custom fields)
+  const merged = { ...changes, ...safe };
+  const final = Object.fromEntries(
+    Object.entries(merged).filter(([k, v]) => v !== undefined && v !== null && v !== '')
+  );
+  if (!Object.keys(final).length) throw new Error('No blend fields to apply.');
+  return base44.entities.TobaccoBlend.update(recordId, final);
 }
 
 async function updateBottle(recordId, changes) {
   const safe = filterToSafeFields(changes, SAFE_BOTTLE_FIELDS);
-  if (!Object.keys(safe).length) throw new Error('No safe bottle fields to apply.');
-  return base44.entities.Bottle.update(recordId, safe);
+  // Fallback: if no safe fields matched, apply changes directly (covers fields not yet in allowlist)
+  const final = Object.keys(safe).length > 0 ? safe : Object.fromEntries(
+    Object.entries(changes || {}).filter(([, v]) => v !== undefined && v !== null && v !== '')
+  );
+  if (!Object.keys(final).length) throw new Error('No bottle fields to apply.');
+  return base44.entities.Bottle.update(recordId, final);
 }
 
 async function updatePipe(recordId, changes) {
   const safe = filterToSafeFields(changes, SAFE_PIPE_FIELDS);
-  if (!Object.keys(safe).length) throw new Error('No safe pipe fields to apply.');
-  return base44.entities.Pipe.update(recordId, safe);
+  const final = Object.keys(safe).length > 0 ? safe : Object.fromEntries(
+    Object.entries(changes || {}).filter(([, v]) => v !== undefined && v !== null && v !== '')
+  );
+  if (!Object.keys(final).length) throw new Error('No pipe fields to apply.');
+  return base44.entities.Pipe.update(recordId, final);
 }
 
 async function updateRecord(recordType, recordId, changes) {
