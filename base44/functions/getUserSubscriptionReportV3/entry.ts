@@ -556,7 +556,7 @@ Deno.serve(async (req) => {
     }, 0));
     const arr = round2(mrr * 12);
 
-    // ── Step 7: Renewals ──
+    // ── Step 7: Renewals (calendar-period buckets, unchanged) ──
     const renewalPeriods = {};
     for (const key of ['week', 'month', 'quarter', 'year']) {
       const range = periodRange(key, now);
@@ -567,6 +567,89 @@ Deno.serve(async (req) => {
         revenue: round2(renewing.reduce((sum, r) => sum + (r.canonical_amount || 0), 0)),
       };
     }
+
+    // ── Step 7b: Forecast ──────────────────────────────────────────────────────
+    // Retention assumptions (configurable defaults)
+    const RETENTION = { month: 0.85, year: 0.75, unknown: 0.80 };
+
+    // Helper: rolling window from now
+    function rollingEnd(days) {
+      const d = new Date(now); d.setUTCDate(d.getUTCDate() + days); return d;
+    }
+    function inRolling(d, days) {
+      if (!d) return false;
+      return d >= now && d < rollingEnd(days);
+    }
+
+    // Committed renewal: rows WITH renewal_date in window, using actual amounts
+    function committedRenewal(days) {
+      const rows = financiallyEligible.filter((r) => r.canonical_renewal_date && inRolling(r.canonical_renewal_date, days));
+      return {
+        customers: uniq(rows.map((r) => r.canonical_user_id)).length,
+        subscriptions: rows.length,
+        revenue: round2(rows.reduce((sum, r) => sum + (r.canonical_amount || 0), 0)),
+      };
+    }
+
+    // Expected renewal: weighted by retention probability
+    function expectedRenewal(days) {
+      const rows = financiallyEligible.filter((r) => r.canonical_renewal_date && inRolling(r.canonical_renewal_date, days));
+      const weighted = rows.reduce((sum, r) => {
+        const p = RETENTION[r.canonical_billing_interval] ?? RETENTION.unknown;
+        return sum + (r.canonical_amount || 0) * p;
+      }, 0);
+      return round2(weighted);
+    }
+
+    // New revenue forecast: based on recent 90-day new paid user trend
+    // Identify users who became paying in the last 90 days
+    const last90Start = new Date(now); last90Start.setUTCDate(last90Start.getUTCDate() - 90);
+    const recentlyConvertedUsers = new Set();
+    for (const row of financiallyEligible) {
+      const user = users.find((u) => String(u.id) === row.canonical_user_id || norm(u.email) === row.canonical_email);
+      const joinDate = user ? parseDate(user.created_date || user.created_at) : null;
+      if (joinDate && joinDate >= last90Start) recentlyConvertedUsers.add(row.canonical_user_id);
+    }
+    const newPaidPer90Days = recentlyConvertedUsers.size;
+    const avgFirstBilling = financiallyEligible.length > 0
+      ? round2(financiallyEligible.reduce((s, r) => s + (r.canonical_amount || 0), 0) / financiallyEligible.length)
+      : 0;
+    const newPaidPerDay = newPaidPer90Days / 90;
+
+    function newRevenueForecast(days) {
+      return round2(newPaidPerDay * days * avgFirstBilling);
+    }
+
+    const forecast = {
+      assumptions: {
+        monthlyRetention: RETENTION.month,
+        annualRetention: RETENTION.year,
+        newPaidMethod: 'recent_90d_trend × avg_first_billing',
+        newPaidPer90Days,
+        newPaidPerDay: round2(newPaidPerDay * 30) + ' per 30d (approx)',
+        avgFirstBillingAmount: avgFirstBilling,
+      },
+      committed: {
+        next30: committedRenewal(30),
+        next90: committedRenewal(90),
+        next365: committedRenewal(365),
+      },
+      expectedRenewal: {
+        next30: expectedRenewal(30),
+        next90: expectedRenewal(90),
+        next365: expectedRenewal(365),
+      },
+      newRevenue: {
+        next30: newRevenueForecast(30),
+        next90: newRevenueForecast(90),
+        next365: newRevenueForecast(365),
+      },
+      totalExpected: {
+        next30: round2(expectedRenewal(30) + newRevenueForecast(30)),
+        next90: round2(expectedRenewal(90) + newRevenueForecast(90)),
+        next365: round2(expectedRenewal(365) + newRevenueForecast(365)),
+      },
+    };
 
     // ── Step 8: New users ──
     const newUsers = {
@@ -687,6 +770,7 @@ Deno.serve(async (req) => {
         totalModuleEntitlements: entitlementSets.pipekeeper.size + entitlementSets.whiskeykeeper.size + entitlementSets.cigarkeeper.size + entitlementSets.winekeeper.size,
       },
       renewals: renewalPeriods,
+      forecast,
       reconciliation: {
         totalPaidAccounts: paidUsers,
         duplicatesMerged,

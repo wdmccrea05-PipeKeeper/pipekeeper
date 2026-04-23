@@ -46,6 +46,12 @@ export default function UserReport() {
   const moduleCoverage = data.moduleCoverage || {};
   const renewals = data.renewals || {};
   const reconciliation = data.reconciliation || {};
+  const forecast = data.forecast || {};
+  const forecastAssumptions = forecast.assumptions || {};
+  const forecastCommitted = forecast.committed || {};
+  const forecastExpectedRenewal = forecast.expectedRenewal || {};
+  const forecastNew = forecast.newRevenue || {};
+  const forecastTotal = forecast.totalExpected || {};
   const reasonCounts = reconciliation.reasonCounts || {};
   const signupSources = accounts.signupSources || {};
   const newUsers = accounts.newUsers || {};
@@ -76,19 +82,64 @@ export default function UserReport() {
         </div>
       </Section>
 
-      <Section title="B. Revenue Metrics">
+      <Section title="B. Run-Rate Metrics (not a forecast)">
+        <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">MRR and ARR are annualized run-rate figures based on current active contracts. They are not revenue predictions.</p>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <Card title="Active Paid Contracts" value={subscriptions.activePaidContracts ?? 0} />
           <Card title="Monthly Subs" value={subscriptions.monthly ?? 0} />
           <Card title="Annual Subs" value={subscriptions.annual ?? 0} />
           <Card title="MRR" value={`$${formatMoney(revenue.mrr)}`} />
-          <Card title="ARR" value={`$${formatMoney(revenue.arr)}`} />
+          <Card title="ARR (run-rate)" value={`$${formatMoney(revenue.arr)}`} />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
           <Card title="Known Revenue Rows" value={revenue.knownRevenueRows ?? 0} />
-          <Card title="Unknown Product" value={reasonCounts.unknown_product ?? 0} warn={(reasonCounts.unknown_product ?? 0) > 0} />
-          <Card title="Missing Interval" value={reasonCounts.missing_interval ?? 0} warn={(reasonCounts.missing_interval ?? 0) > 0} />
-          <Card title="Missing Amount" value={reasonCounts.missing_amount ?? 0} warn={(reasonCounts.missing_amount ?? 0) > 0} />
+          <Card title="Unknown Product" value={reconciliation.unknownProductCount ?? 0} warn={(reconciliation.unknownProductCount ?? 0) > 0} />
+          <Card title="Missing Interval" value={reconciliation.missingIntervalCount ?? 0} warn={(reconciliation.missingIntervalCount ?? 0) > 0} />
+          <Card title="Missing Amount" value={reconciliation.missingAmountCount ?? 0} warn={(reconciliation.missingAmountCount ?? 0) > 0} />
+        </div>
+      </Section>
+
+      <Section title="B2. Committed Renewal Revenue">
+        <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">
+          Exact renewal amounts from financially eligible active contracts with known renewal dates. No probability weighting — these are confirmed upcoming charges.
+        </p>
+        <div className="grid grid-cols-3 gap-3">
+          <ForecastCard title="Committed — Next 30 Days" amount={forecastCommitted.next30?.revenue} sub={`${forecastCommitted.next30?.customers ?? 0} customers · ${forecastCommitted.next30?.subscriptions ?? 0} subs`} color="blue" />
+          <ForecastCard title="Committed — Next 90 Days" amount={forecastCommitted.next90?.revenue} sub={`${forecastCommitted.next90?.customers ?? 0} customers · ${forecastCommitted.next90?.subscriptions ?? 0} subs`} color="blue" />
+          <ForecastCard title="Committed — Next 12 Months" amount={forecastCommitted.next365?.revenue} sub={`${forecastCommitted.next365?.customers ?? 0} customers · ${forecastCommitted.next365?.subscriptions ?? 0} subs`} color="blue" />
+        </div>
+      </Section>
+
+      <Section title="B3. Expected Revenue Forecast">
+        <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">
+          Weighted by retention probability (monthly: {(forecastAssumptions.monthlyRetention * 100).toFixed(0)}%, annual: {(forecastAssumptions.annualRetention * 100).toFixed(0)}%) plus forecasted new subscription revenue.
+        </p>
+        <div className="grid grid-cols-3 gap-3">
+          <ForecastCard title="Expected Total — Next 30 Days" amount={forecastTotal.next30} color="green" />
+          <ForecastCard title="Expected Total — Next 90 Days" amount={forecastTotal.next90} color="green" />
+          <ForecastCard title="Expected Total — Next 12 Months" amount={forecastTotal.next365} color="green" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+          <ForecastCard title="Expected Renewals — 30d" amount={forecastExpectedRenewal.next30} sub="weighted by retention" color="amber" />
+          <ForecastCard title="Expected Renewals — 90d" amount={forecastExpectedRenewal.next90} sub="weighted by retention" color="amber" />
+          <ForecastCard title="Expected Renewals — 12m" amount={forecastExpectedRenewal.next365} sub="weighted by retention" color="amber" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+          <ForecastCard title="New Revenue — 30d" amount={forecastNew.next30} sub="new subs forecast" color="purple" />
+          <ForecastCard title="New Revenue — 90d" amount={forecastNew.next90} sub="new subs forecast" color="purple" />
+          <ForecastCard title="New Revenue — 12m" amount={forecastNew.next365} sub="new subs forecast" color="purple" />
+        </div>
+      </Section>
+
+      <Section title="B4. Forecast Assumptions">
+        <div className="rounded-xl border border-[#8b6239]/25 bg-[#1f1712]/70 p-4 text-xs text-[#E0D8C8]/80 space-y-1.5">
+          <p><span className="text-[#D4A574] font-semibold">Monthly retention:</span> {(forecastAssumptions.monthlyRetention * 100).toFixed(0)}% — probability a monthly subscriber renews each period</p>
+          <p><span className="text-[#D4A574] font-semibold">Annual retention:</span> {(forecastAssumptions.annualRetention * 100).toFixed(0)}% — probability an annual subscriber renews</p>
+          <p><span className="text-[#D4A574] font-semibold">New revenue method:</span> {forecastAssumptions.newPaidMethod}</p>
+          <p><span className="text-[#D4A574] font-semibold">New paid users (last 90d):</span> {forecastAssumptions.newPaidPer90Days}</p>
+          <p><span className="text-[#D4A574] font-semibold">Avg new paid per 30d:</span> {forecastAssumptions.newPaidPerDay}</p>
+          <p><span className="text-[#D4A574] font-semibold">Avg first billing amount:</span> ${formatMoney(forecastAssumptions.avgFirstBillingAmount)}</p>
+          <p className="pt-1 text-[#E0D8C8]/40 italic">Retention assumptions are conservative defaults. Update in the backend function RETENTION constant as historical data becomes available.</p>
         </div>
       </Section>
 
@@ -184,6 +235,24 @@ function Card({ title, value, warn = false }) {
     <div className={`rounded-xl border p-4 ${warn ? 'border-yellow-700/40 bg-yellow-900/10' : 'border-[#8b6239]/25 bg-[#1f1712]/70'}`}>
       <p className="text-xs uppercase tracking-wider text-[#E0D8C8]/60">{title}</p>
       <p className={`text-2xl font-semibold mt-1 ${warn ? 'text-yellow-300' : 'text-[#F5F1E7]'}`}>{value}</p>
+    </div>
+  );
+}
+
+const FORECAST_COLORS = {
+  blue:   'border-blue-700/40 bg-blue-900/10 text-blue-200',
+  green:  'border-emerald-700/40 bg-emerald-900/10 text-emerald-200',
+  amber:  'border-amber-700/40 bg-amber-900/10 text-amber-200',
+  purple: 'border-purple-700/40 bg-purple-900/10 text-purple-200',
+};
+
+function ForecastCard({ title, amount, sub, color = 'blue' }) {
+  const cls = FORECAST_COLORS[color] || FORECAST_COLORS.blue;
+  return (
+    <div className={`rounded-xl border p-4 ${cls}`}>
+      <p className="text-xs uppercase tracking-wider opacity-70">{title}</p>
+      <p className="text-2xl font-semibold mt-1">${formatMoney(amount)}</p>
+      {sub ? <p className="text-xs mt-1 opacity-60">{sub}</p> : null}
     </div>
   );
 }
