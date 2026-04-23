@@ -1,188 +1,165 @@
-/**
- * USER SUBSCRIPTION REPORT V3 — RECONCILIATION-DRIVEN
- *
- * Comprehensive reporting with:
- * - Subscription + user entitlement reconciliation
- * - Release-date-aware historical product inference
- * - Explicit reason codes for all exclusions
- * - Deduped paid user counts from unified reconciliation table
- * - Product mix from normalized + historically inferred rows
- */
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import Stripe from 'npm:stripe@14.21.0';
 
-const REPORT_VERSION = 'v3-reconciliation';
+const REPORT_VERSION = 'v4-canonical-contract-entitlement-model';
+const KNOWN_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
 
-const PRODUCT_RELEASE_DATES = {
-  PIPEKEEPER_PUBLIC_RELEASE: new Date('2020-01-01'),
-  WHISKEYKEEPER_PUBLIC_RELEASE: new Date('2024-01-15'),
-  CIGARKEEPER_PUBLIC_RELEASE: new Date('2026-04-20'),
-  WINEKEEPER_PUBLIC_RELEASE: new Date('2099-12-31'),
+const AMOUNT_PLAN_MAP = {
+  1.99: { modules: ['pipekeeper'], interval: 'monthly' },
+  19.99: { modules: ['pipekeeper'], interval: 'annual' },
+  2.99: { modules: ['whiskeykeeper'], interval: 'monthly' },
+  29.99: { modules: ['whiskeykeeper'], interval: 'annual' },
+  4.99: { modules: ['pipekeeper', 'whiskeykeeper'], interval: 'monthly' },
+  49.99: { modules: ['pipekeeper', 'whiskeykeeper'], interval: 'annual' },
+  7.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], interval: 'monthly' },
+  79.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], interval: 'annual' },
+  8.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], interval: 'monthly' },
+  89.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], interval: 'annual' },
 };
 
-// Reason codes for exclusions/non-counting
-const REASON_CODES = {
-  UNKNOWN_PRODUCT: 'unknown_product',
-  UNKNOWN_INTERVAL: 'unknown_interval',
-  MISSING_AMOUNT: 'missing_amount',
-  DUPLICATE_MERGED: 'duplicate_subscription_merged',
-  MANUAL_ADMIN: 'manual_admin_access',
-  LEGACY_GRANT: 'legacy_grant',
-  NO_ACTIVE_SUB: 'no_active_subscription',
-  MALFORMED_STATUS: 'malformed_status',
-  REFUNDED_CANCELED: 'refunded_or_canceled',
-  RENEWAL_UNKNOWN: 'renewal_unknown',
-  MISMATCH: 'unresolved_mismatch',
-  COUNTED: 'counted_as_paying_user',
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function norm(v) {
+function norm(v: unknown) {
   return String(v ?? '').trim().toLowerCase();
 }
 
-function parseDate(v) {
+function parseDate(v: unknown): Date | null {
   if (!v) return null;
-  const d = new Date(v);
+  const d = new Date(String(v));
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function splitMods(csv) {
+function splitMods(csv: unknown): string[] {
   return String(csv || '')
     .split(',')
-    .map((m) => m.trim().toLowerCase())
+    .map((m) => norm(m))
     .filter(Boolean);
 }
 
-function inferProductFromReleaseDate(createdDate) {
-  if (!createdDate) return null;
-  const date = new Date(createdDate);
-  if (date < PRODUCT_RELEASE_DATES.WHISKEYKEEPER_PUBLIC_RELEASE) {
-    return 'pipekeeper'; // Only product available before WhiskeyKeeper
-  }
-  return null; // Cannot infer after multi-product era
+function uniq<T>(arr: T[]) {
+  return Array.from(new Set(arr));
 }
 
-// ─── Amount to Plan Mapping ────────────────────────────────────────────────────
-
-const AMOUNT_TO_PLAN = {
-  1.99: { modules: ['pipekeeper'], interval: 'monthly', bundle: null },
-  19.99: { modules: ['pipekeeper'], interval: 'annual', bundle: null },
-  2.99: { modules: ['whiskeykeeper'], interval: 'monthly', bundle: null },
-  29.99: { modules: ['whiskeykeeper'], interval: 'annual', bundle: null },
-  4.99: { modules: ['pipekeeper', 'whiskeykeeper'], interval: 'monthly', bundle: 'Founders' },
-  49.99: { modules: ['pipekeeper', 'whiskeykeeper'], interval: 'annual', bundle: 'Founders' },
-  7.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], interval: 'monthly', bundle: '3-Module' },
-  79.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], interval: 'annual', bundle: '3-Module' },
-  8.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], interval: 'monthly', bundle: '4-Module' },
-  89.99: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], interval: 'annual', bundle: '4-Module' },
-};
-
-function inferFromAmount(amount, interval) {
-  const a = parseFloat(Number(amount).toFixed(2));
-  const entry = AMOUNT_TO_PLAN[a];
-  if (entry && (entry.interval === interval || interval === null || interval === 'unknown')) {
-    return entry;
-  }
-  return null;
+function inferFromAmount(amount: number, interval: string | null) {
+  const rounded = parseFloat(Number(amount || 0).toFixed(2));
+  const inferred = AMOUNT_PLAN_MAP[rounded as keyof typeof AMOUNT_PLAN_MAP];
+  if (!inferred) return null;
+  if (interval && inferred.interval !== interval) return null;
+  return inferred;
 }
 
-// ─── Product + Interval Classification ────────────────────────────────────────
-
-function classifyProduct(sub, interval, releaseDateInference) {
-  // 1. modules_csv (TRUSTED)
-  const modulesFromCsv = splitMods(sub.modules_csv);
-  for (const m of modulesFromCsv) {
-    if (['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'].includes(m)) {
-      return { product: m, inferred: false, reason: 'modules_csv' };
-    }
-  }
-
-  // 2. product_kind (TRUSTED)
-  const pk = norm(sub.product_kind || '');
-  if (pk === 'bundle') {
-    return { product: 'bundle', inferred: false, reason: 'product_kind_bundle' };
-  }
-  if (['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'].includes(pk)) {
-    return { product: pk, inferred: false, reason: 'product_kind' };
-  }
-
-  // 3. Bundle signals (TRUSTED)
-  const bundleFields = [sub.bundle_name, sub.checkout_type, sub.plan_name, sub.name].map(norm);
-  if (bundleFields.some((f) => f.includes('bundle') || f.includes('founders'))) {
-    return { product: 'bundle', inferred: false, reason: 'bundle_signal' };
-  }
-
-  // 4. Amount + interval inference (STRONG)
-  const amount = Math.max(0, Number(sub.amount || 0));
-  if (amount > 0) {
-    const inference = inferFromAmount(amount, interval);
-    if (inference && inference.modules.length > 0) {
-      const product = inference.modules.length > 1 ? 'bundle' : inference.modules[0];
-      return { product, inferred: true, reason: 'amount_interval' };
-    }
-  }
-
-  // 5. Historical release date inference (STRONG for legacy rows)
-  if (releaseDateInference) {
-    return { product: releaseDateInference, inferred: true, reason: 'historical_release_date' };
-  }
-
-  // 6. User entitlement fallback (WEAK)
-  // (checked at reconciliation level, not here)
-
-  return { product: 'unknown', inferred: false, reason: 'no_inference' };
-}
-
-function classifyInterval(sub) {
-  const direct = norm(sub.billing_interval || sub.billing_period || '');
+function classifyInterval(sub: Record<string, unknown>) {
+  const direct = norm(sub.billing_interval || sub.billing_period || sub.interval || '');
   if (direct === 'month' || direct === 'monthly') return { interval: 'monthly', inferred: false };
   if (direct === 'year' || direct === 'yearly' || direct === 'annual') return { interval: 'annual', inferred: false };
-
   const planId = norm(sub.price_id || sub.stripe_price_id || sub.apple_product_id || sub.plan_id || '');
-  if (planId.includes('annual') || planId.includes('yearly')) return { interval: 'annual', inferred: false };
-  if (planId.includes('monthly')) return { interval: 'monthly', inferred: false };
-
-  const amount = Math.max(0, Number(sub.amount || 0));
-  if (amount > 0) {
-    const inference = inferFromAmount(amount);
-    if (inference) return { interval: inference.interval, inferred: true };
-  }
-
+  if (planId.includes('annual') || planId.includes('yearly') || planId.includes('year')) return { interval: 'annual', inferred: false };
+  if (planId.includes('monthly') || planId.includes('month')) return { interval: 'monthly', inferred: false };
+  const fromAmount = inferFromAmount(Math.max(0, Number(sub.amount || 0)), null);
+  if (fromAmount) return { interval: fromAmount.interval, inferred: true };
   return { interval: 'unknown', inferred: false };
 }
 
-function inferRenewalDate(sub, interval) {
-  const explicit = parseDate(sub.current_period_end);
-  if (explicit) return { date: explicit, inferred: false };
-
-  if (interval !== 'unknown') {
-    const start = parseDate(sub.current_period_start || sub.started_at || sub.created_date);
-    if (start) {
-      const renewal = new Date(start);
-      if (interval === 'monthly') renewal.setMonth(renewal.getMonth() + 1);
-      else renewal.setFullYear(renewal.getFullYear() + 1);
-      return { date: renewal, inferred: true };
-    }
-  }
-
-  return { date: null, inferred: false };
+function detectProvider(sub: Record<string, unknown>) {
+  const provider = norm(sub.provider || '');
+  if (provider === 'stripe') return 'stripe';
+  if (provider === 'apple' || provider === 'ios' || sub.apple_product_id) return 'apple';
+  if (provider === 'google' || provider === 'android' || provider === 'googleplay') return 'google';
+  if (sub.stripe_subscription_id || sub.stripe_price_id) return 'stripe';
+  return 'web';
 }
 
-function isActivePaid(sub, now) {
+function getProviderSubscriptionId(sub: Record<string, unknown>) {
+  return String(sub.provider_subscription_id || sub.stripe_subscription_id || sub.apple_original_transaction_id || sub.id || '');
+}
+
+function inferRenewalDate(sub: Record<string, unknown>, interval: string) {
+  const explicit = parseDate(sub.current_period_end);
+  if (explicit) return { renewalDate: explicit, inferred: false };
+  if (interval === 'unknown') return { renewalDate: null, inferred: false };
+  const start = parseDate(sub.current_period_start || sub.started_at || sub.created_date);
+  if (!start) return { renewalDate: null, inferred: false };
+  const renewal = new Date(start);
+  if (interval === 'monthly') renewal.setMonth(renewal.getMonth() + 1);
+  else renewal.setFullYear(renewal.getFullYear() + 1);
+  return { renewalDate: renewal, inferred: true };
+}
+
+function deriveTier(sub: Record<string, unknown>) {
+  const tier = norm(sub.entitlement_tier || sub.subscription_tier || sub.tier || '');
+  if (tier === 'premium') return 'premium';
+  if (tier === 'pro') return 'pro';
+  return 'pro';
+}
+
+function resolveExplicitProduct(sub: Record<string, unknown>) {
+  const candidates = [
+    sub.product_kind,
+    sub.plan_name,
+    sub.name,
+    sub.description,
+    sub.price_id,
+    sub.stripe_price_id,
+    sub.apple_product_id,
+    sub.plan_id,
+    sub.productId,
+  ].map((v) => norm(v));
+  if (candidates.some((v) => v.includes('bundle') || v.includes('founders'))) return 'bundle';
+  for (const m of KNOWN_MODULES) {
+    if (candidates.some((v) => v.includes(m))) return m;
+  }
+  if (candidates.some((v) => v.includes('cigar'))) return 'cigarkeeper';
+  if (candidates.some((v) => v.includes('wine'))) return 'winekeeper';
+  if (candidates.some((v) => v.includes('whiskey'))) return 'whiskeykeeper';
+  return null;
+}
+
+function resolveCanonicalProductAndModules(sub: Record<string, unknown>, interval: string) {
+  const rawModules = uniq(splitMods(sub.modules_csv));
+  const explicitModules = rawModules.filter((m) => KNOWN_MODULES.includes(m));
+  const unknownModules = rawModules.filter((m) => !KNOWN_MODULES.includes(m));
+  const explicitProduct = resolveExplicitProduct(sub);
+  const amount = Math.max(0, Number(sub.amount || 0));
+  const amountInference = inferFromAmount(amount, interval === 'unknown' ? null : interval);
+
+  if (explicitModules.length > 1) {
+    return { product: 'bundle', modules: explicitModules, inferred: false, confidence: 'high', reason: 'modules_csv_bundle', explicitProduct, explicitModules, unknownModules };
+  }
+  if (explicitModules.length === 1 && explicitProduct && explicitProduct !== explicitModules[0]) {
+    return { product: 'unknown', modules: [], inferred: false, confidence: 'low', reason: 'product_module_conflict', explicitProduct, explicitModules, unknownModules };
+  }
+  if (explicitModules.length === 1) {
+    return { product: explicitModules[0], modules: explicitModules, inferred: false, confidence: 'high', reason: 'modules_csv_single', explicitProduct, explicitModules, unknownModules };
+  }
+
+  if (explicitProduct && explicitProduct !== 'bundle') {
+    return { product: explicitProduct, modules: [explicitProduct], inferred: false, confidence: 'high', reason: 'explicit_product', explicitProduct, explicitModules, unknownModules };
+  }
+  if (explicitProduct === 'bundle') {
+    if (amountInference?.modules?.length > 1) {
+      return { product: 'bundle', modules: amountInference.modules, inferred: true, confidence: 'medium', reason: 'bundle_plus_amount', explicitProduct, explicitModules, unknownModules };
+    }
+    return { product: 'unknown', modules: [], inferred: false, confidence: 'low', reason: 'bundle_without_modules', explicitProduct, explicitModules, unknownModules };
+  }
+
+  if (amountInference?.modules?.length > 0) {
+    const modules = amountInference.modules;
+    const product = modules.length > 1 ? 'bundle' : modules[0];
+    return { product, modules, inferred: true, confidence: 'medium', reason: 'amount_interval_inference', explicitProduct, explicitModules, unknownModules };
+  }
+
+  return { product: 'unknown', modules: [], inferred: false, confidence: 'low', reason: 'unresolved', explicitProduct, explicitModules, unknownModules };
+}
+
+function isActivePaid(sub: Record<string, unknown>, now: Date) {
   const status = norm(sub.status || '');
-  if (!['active', 'trialing', 'past_due'].includes(status)) return false;
+  // Providers emit both "trial" and "trialing"; keep both for compatibility.
+  if (!['active', 'trialing', 'trial', 'past_due'].includes(status)) return false;
   const end = parseDate(sub.current_period_end);
   if (end && end <= now) return false;
   return true;
 }
 
-function getCalendarRange(type, now) {
+function getCalendarRange(type: string, now: Date) {
   const start = new Date(now);
-  let end;
-
+  let end = new Date(now);
   switch (type) {
     case 'week': {
       const dow = start.getUTCDay();
@@ -214,35 +191,30 @@ function getCalendarRange(type, now) {
       break;
     }
   }
-
   return { start, end };
 }
-
-// ─── Main Handler ─────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (user?.role !== 'admin') {
+    const caller = await base44.auth.me();
+    if (caller?.role !== 'admin') {
       return Response.json({ error: 'Admin required' }, { status: 403 });
     }
 
-    // Fetch all data
-    const fetchAll = async (entity) => {
-      const items = [];
+    const fetchAll = async (entity: { list: (a: null, b: number, c: number) => Promise<unknown> }) => {
+      const rows: Record<string, unknown>[] = [];
       let skip = 0;
       const PAGE = 100;
       while (true) {
-        let page = await entity.list(null, PAGE, skip);
+        let page: unknown = await entity.list(null, PAGE, skip);
         if (typeof page === 'string') page = JSON.parse(page);
-        if (!Array.isArray(page) || !page.length) break;
-        items.push(...page);
+        if (!Array.isArray(page) || page.length === 0) break;
+        rows.push(...(page as Record<string, unknown>[]));
         if (page.length < PAGE) break;
         skip += PAGE;
       }
-      return items;
+      return rows;
     };
 
     const [allUsers, allSubs] = await Promise.all([
@@ -258,197 +230,309 @@ Deno.serve(async (req) => {
       year: getCalendarRange('year', now),
     };
 
-    // ─── BUILD RECONCILIATION TABLE ────────────────────────────────────────────
+    const trustedContracts: Record<string, unknown>[] = [];
+    const inferredContracts: Record<string, unknown>[] = [];
+    const exceptionContracts: Record<string, unknown>[] = [];
+    const reasonCounts: Record<string, number> = {
+      counted_as_paying_user: 0,
+      unknown_product: 0,
+      unknown_interval: 0,
+      unknown_module_token: 0,
+      product_module_conflict: 0,
+      inferred_contract: 0,
+      manual_admin_access: 0,
+      duplicate_subscription_merged: 0,
+    };
 
-    const reconciliation = new Map(); // user_id → reconciliation record
-
+    const seenContracts = new Set<string>();
     for (const sub of allSubs) {
       if (!isActivePaid(sub, now)) continue;
 
-      const { interval } = classifyInterval(sub);
-      const releaseDateInference = inferProductFromReleaseDate(sub.created_date || sub.started_at);
-      const { product, inferred: productInferred, reason: productReason } = classifyProduct(sub, interval, releaseDateInference);
-      const { date: renewalAt, inferred: renewalInferred } = inferRenewalDate(sub, interval);
+      const intervalResult = classifyInterval(sub);
+      const resolved = resolveCanonicalProductAndModules(sub, intervalResult.interval);
+      const { renewalDate, inferred: renewalInferred } = inferRenewalDate(sub, intervalResult.interval);
 
-      const userId = sub.user_id || norm(sub.user_email || '');
-      if (!userId) continue;
-
-      let rec = reconciliation.get(userId);
-      if (!rec) {
-        rec = {
-          user_id: userId,
-          user_email: norm(sub.user_email || ''),
-          subscriptions: [],
-          reason_codes: new Set(),
-          entitlementTier: null,
-          entitlementModules: [],
-          canonicalProduct: null,
-          status: 'pending',
-        };
-        reconciliation.set(userId, rec);
+      const userId = String(sub.user_id || norm(sub.user_email || ''));
+      const provider = detectProvider(sub);
+      const providerSubscriptionId = getProviderSubscriptionId(sub);
+      const fallbackDedupeKey = String(sub.id || `${userId}|${provider}|${norm(sub.price_id || sub.stripe_price_id || sub.apple_product_id || '')}|${norm(sub.created_date || sub.started_at || '')}`);
+      const dedupeKey = `${userId}|${provider}|${providerSubscriptionId || fallbackDedupeKey}`;
+      if (seenContracts.has(dedupeKey)) {
+        reasonCounts.duplicate_subscription_merged++;
+        continue;
+      }
+      seenContracts.add(dedupeKey);
+      if (Array.isArray(resolved.unknownModules) && resolved.unknownModules.length > 0) {
+        reasonCounts.unknown_module_token += resolved.unknownModules.length;
       }
 
-      const amount = Math.max(0, Number(sub.amount || 0));
-      rec.subscriptions.push({
-        id: sub.id,
-        product,
-        productInferred,
-        productReason,
-        interval,
-        amount,
-        renewalAt,
-        renewalInferred,
+      const row = {
+        user_id: userId,
+        user_email: norm(sub.user_email || ''),
+        provider,
+        provider_subscription_id: providerSubscriptionId,
+        canonical_product: resolved.product,
+        modules_granted: resolved.modules,
+        billing_interval: intervalResult.interval,
+        billed_amount: Math.max(0, Number(sub.amount || 0)),
+        renewal_date: renewalDate ? renewalDate.toISOString() : null,
         status: norm(sub.status || ''),
-        createdDate: sub.created_date || sub.started_at,
+        source_confidence: resolved.confidence,
+        source_reason: resolved.reason,
+        source_product_signal: resolved.explicitProduct || null,
+        source_module_signal: resolved.explicitModules || [],
+        source_unknown_module_tokens: resolved.unknownModules || [],
+        interval_inferred: intervalResult.inferred,
+        renewal_inferred: renewalInferred,
+      };
+
+      if (!userId) {
+        exceptionContracts.push({ ...row, exception_type: 'missing_user_id' });
+        continue;
+      }
+      if (intervalResult.interval === 'unknown') {
+        reasonCounts.unknown_interval++;
+        exceptionContracts.push({ ...row, exception_type: 'unknown_interval' });
+        continue;
+      }
+      if (resolved.reason === 'product_module_conflict') {
+        reasonCounts.product_module_conflict++;
+        exceptionContracts.push({ ...row, exception_type: 'product_module_conflict' });
+        continue;
+      }
+      if (resolved.product === 'unknown' || resolved.modules.length === 0) {
+        reasonCounts.unknown_product++;
+        exceptionContracts.push({ ...row, exception_type: 'unknown_product' });
+        continue;
+      }
+
+      const isInferred = resolved.inferred || intervalResult.inferred;
+      if (isInferred) {
+        reasonCounts.inferred_contract++;
+        inferredContracts.push(row);
+      } else {
+        trustedContracts.push(row);
+      }
+    }
+
+    const entitlements: Record<string, unknown>[] = trustedContracts.flatMap((c) => {
+      const modules = Array.isArray(c.modules_granted) ? c.modules_granted : [];
+      return modules.map((module) => ({
+        user_id: c.user_id,
+        module,
+        source_contract: c.provider_subscription_id,
+        tier: deriveTier(c as Record<string, unknown>),
+        active: true,
+      }));
+    });
+
+    const entitlementsByUser = new Map<string, string[]>();
+    for (const e of entitlements) {
+      const userId = String(e.user_id || '');
+      if (!entitlementsByUser.has(userId)) entitlementsByUser.set(userId, []);
+      entitlementsByUser.get(userId)!.push(String(e.module));
+    }
+
+    const contractsByUser = new Map<string, Record<string, unknown>[]>();
+    for (const c of trustedContracts) {
+      const userId = String(c.user_id || '');
+      if (!contractsByUser.has(userId)) contractsByUser.set(userId, []);
+      contractsByUser.get(userId)!.push(c);
+    }
+
+    const userRows = new Map<string, Record<string, unknown>>();
+    for (const u of allUsers) {
+      const userId = String(u.id || norm(u.email || ''));
+      if (!userId) continue;
+      const modules = uniq(entitlementsByUser.get(userId) || []);
+      const activeContractCount = (contractsByUser.get(userId) || []).length;
+      const paidUser = activeContractCount > 0;
+      userRows.set(userId, {
+        user_id: userId,
+        email: norm(u.email || ''),
+        paid_user: paidUser,
+        effective_modules: modules,
+        active_contract_count: activeContractCount,
       });
     }
 
-    // Enrich with user entitlements
-    for (const u of allUsers) {
-      const email = norm(u.email || '');
-      const userId = u.id || email;
-
-      let rec = reconciliation.get(userId);
-      if (!rec && (u.has_paid_access || u.entitlement_tier === 'pro')) {
-        // User has entitlements but no subscription records — possible manual grant
-        rec = {
-          user_id: userId,
-          user_email: email,
-          subscriptions: [],
-          reason_codes: new Set([REASON_CODES.MANUAL_ADMIN]),
-          entitlementTier: u.entitlement_tier,
-          entitlementModules: splitMods(u.paid_modules_csv),
-          canonicalProduct: null,
-          status: 'manual_grant',
-        };
-        reconciliation.set(userId, rec);
-      } else if (rec) {
-        rec.entitlementTier = u.entitlement_tier;
-        rec.entitlementModules = splitMods(u.paid_modules_csv);
-      }
+    for (const c of trustedContracts) {
+      const userId = String(c.user_id || '');
+      if (userRows.has(userId)) continue;
+      const modules = uniq(entitlementsByUser.get(userId) || []);
+      userRows.set(userId, {
+        user_id: userId,
+        email: String(c.user_email || ''),
+        paid_user: true,
+        effective_modules: modules,
+        active_contract_count: (contractsByUser.get(userId) || []).length,
+      });
     }
 
-    // ─── FINALIZE RECONCILIATION & REASON CODES ─────────────────────────────────
+    const manualGrantUsers = allUsers
+      .filter((u) => {
+        const userId = String(u.id || norm(u.email || ''));
+        const hasCanonicalContract = (contractsByUser.get(userId) || []).length > 0;
+        const isMarkedPaid = Boolean(u.has_paid_access) || norm(u.entitlement_tier || '') === 'pro';
+        return isMarkedPaid && !hasCanonicalContract;
+      })
+      .map((u) => ({
+        user_id: String(u.id || norm(u.email || '')),
+        email: norm(u.email || ''),
+        paid_modules_csv: u.paid_modules_csv || '',
+        entitlement_tier: u.entitlement_tier || '',
+      }));
+    reasonCounts.manual_admin_access = manualGrantUsers.length;
 
-    const payingUsers = [];
-    const reasonCounts = {};
-    Object.values(REASON_CODES).forEach((code) => {
-      reasonCounts[code] = 0;
+    const users = Array.from(userRows.values());
+    const paidUsers = users.filter((u) => Boolean(u.paid_user));
+    reasonCounts.counted_as_paying_user = paidUsers.length;
+
+    const paidAccounts = new Set(trustedContracts.map((c) => String(c.user_id || ''))).size;
+    const discrepancy = paidAccounts - paidUsers.length;
+
+    const productMix: Record<string, number> = {
+      pipekeeper: 0,
+      whiskeykeeper: 0,
+      cigarkeeper: 0,
+      winekeeper: 0,
+      bundle: 0,
+    };
+    trustedContracts.forEach((c) => {
+      const p = String(c.canonical_product || 'unknown');
+      if (productMix[p] !== undefined) productMix[p]++;
     });
 
-    for (const rec of reconciliation.values()) {
-      if (rec.subscriptions.length === 0 && !rec.entitlementTier) continue; // Skip stale
-
-      // Resolve canonical product
-      const products = rec.subscriptions.map((s) => s.product).filter((p) => p !== 'unknown');
-      if (products.length > 0) {
-        rec.canonicalProduct = products.includes('bundle') ? 'bundle' : products[0];
-      } else if (rec.entitlementModules.length > 0) {
-        rec.canonicalProduct = rec.entitlementModules.length > 1 ? 'bundle' : rec.entitlementModules[0];
-      }
-
-      // Determine status
-      if (rec.subscriptions.length > 1) {
-        rec.reason_codes.add(REASON_CODES.DUPLICATE_MERGED);
-      }
-      if (!rec.canonicalProduct) {
-        rec.reason_codes.add(REASON_CODES.UNKNOWN_PRODUCT);
-      }
-
-      // Count as paying user if: has active sub OR valid entitlement
-      const hasActiveSub = rec.subscriptions.length > 0;
-      const hasValidEntitlement = rec.entitlementTier === 'pro' && rec.entitlementModules.length > 0;
-
-      if (hasActiveSub || hasValidEntitlement) {
-        rec.status = 'paying_user';
-        rec.reason_codes.add(REASON_CODES.COUNTED);
-        payingUsers.push(rec);
-      }
-
-      // Count reason codes
-      for (const code of rec.reason_codes) {
-        reasonCounts[code]++;
-      }
+    const moduleCoverageByUser: Record<string, number> = {
+      pipekeeper: 0,
+      whiskeykeeper: 0,
+      cigarkeeper: 0,
+      winekeeper: 0,
+    };
+    for (const module of KNOWN_MODULES) {
+      moduleCoverageByUser[module] = paidUsers.filter((u) => Array.isArray(u.effective_modules) && u.effective_modules.includes(module)).length;
     }
 
-    const uniquePayingUsers = payingUsers.length;
-    const totalPaidAccounts = allSubs.filter((s) => isActivePaid(s, now)).length;
-
-    // ─── REVENUE CALCULATIONS ──────────────────────────────────────────────────
-
-    const revenueRows = payingUsers.flatMap((rec) => rec.subscriptions);
+    const financialEligibleContracts = trustedContracts.filter((c) => {
+      const amount = Number(c.billed_amount || 0);
+      const interval = String(c.billing_interval || 'unknown');
+      return amount > 0 && (interval === 'monthly' || interval === 'annual');
+    });
 
     let mrr = 0;
-    const productCounts = {};
-    const monthlyCount = revenueRows.filter((r) => r.interval === 'monthly').length;
-    const annualCount = revenueRows.filter((r) => r.interval === 'annual').length;
-
-    for (const row of revenueRows) {
-      if (row.interval === 'monthly') mrr += row.amount;
-      else if (row.interval === 'annual') mrr += row.amount / 12;
-
-      if (row.product && row.product !== 'unknown') {
-        productCounts[row.product] = (productCounts[row.product] || 0) + 1;
-      }
+    for (const c of financialEligibleContracts) {
+      const amount = Number(c.billed_amount || 0);
+      if (c.billing_interval === 'monthly') mrr += amount;
+      else if (c.billing_interval === 'annual') mrr += amount / 12;
     }
     mrr = parseFloat(mrr.toFixed(2));
 
-    // ─── RENEWALS ──────────────────────────────────────────────────────────────
-
-    const calcRenewal = (start, end) => {
-      const renewing = revenueRows.filter((r) => r.renewalAt && r.renewalAt >= start && r.renewalAt <= end);
-      const customers = new Set(renewing.map((_, i) => payingUsers[i]?.user_id)).size;
-      const revenue = parseFloat(renewing.reduce((sum, r) => sum + r.amount, 0).toFixed(2));
-      const confirmed = renewing.filter((r) => !r.renewalInferred).length;
-      const inferred = renewing.filter((r) => r.renewalInferred).length;
-      return { customers, subscriptions: renewing.length, revenue, confirmed, inferred };
+    const calcRenewal = (start: Date, end: Date) => {
+      const renewing = financialEligibleContracts.filter((c) => {
+        const d = parseDate(c.renewal_date);
+        return Boolean(d && d >= start && d <= end);
+      });
+      const customerIds = new Set(renewing.map((c) => String(c.user_id || '')));
+      const revenue = parseFloat(renewing.reduce((sum, c) => sum + Number(c.billed_amount || 0), 0).toFixed(2));
+      const confirmed = renewing.filter((c) => !c.renewal_inferred).length;
+      const inferred = renewing.filter((c) => c.renewal_inferred).length;
+      return { customers: customerIds.size, subscriptions: renewing.length, revenue, confirmed, inferred };
     };
 
+    const payingUsersList = paidUsers.map((u) => {
+      const mods = Array.isArray(u.effective_modules) ? u.effective_modules : [];
+      const canonicalProduct = mods.length > 1 ? 'bundle' : mods[0] || 'unknown';
+      return {
+        user_id: u.user_id,
+        email: u.email,
+        status: 'paying_user',
+        canonicalProduct,
+        modules: mods,
+        subscriptionCount: u.active_contract_count,
+        reasonCodes: ['counted_as_paying_user'],
+      };
+    });
+
     return Response.json({
-      meta: { generatedAt: now.toISOString(), reportVersion: REPORT_VERSION },
+      meta: {
+        generatedAt: now.toISOString(),
+        reportVersion: REPORT_VERSION,
+      },
+
+      metricDefinitions: {
+        paidUsers: 'Unique users with >=1 trusted canonical active paid contract.',
+        paidAccounts: 'Unique billing-account identities (user_id) with >=1 trusted canonical active paid contract. This matches paid users because billing is anchored to user_id.',
+        billingContracts: 'Trusted canonical active paid contract rows.',
+        entitlements: 'Trusted effective user×module entitlements derived from trusted canonical contracts.',
+      },
+
       reconciliation: {
-        totalPaidAccounts,
-        uniquePayingUsers,
-        discrepancy: totalPaidAccounts - uniquePayingUsers,
+        totalPaidAccounts: paidAccounts,
+        uniquePayingUsers: paidUsers.length,
+        discrepancy,
         reasonCounts,
+        unknownProductRows: exceptionContracts.filter((r) => r.exception_type === 'unknown_product').length,
       },
+
       accounts: {
-        totalUsers: allUsers.length,
-        paidUsers: uniquePayingUsers,
-        freeUsers: allUsers.length - uniquePayingUsers,
-        paidPercentage: allUsers.length > 0 ? parseFloat(((uniquePayingUsers / allUsers.length) * 100).toFixed(1)) : 0,
+        totalUsers: users.length,
+        paidUsers: paidUsers.length,
+        freeUsers: users.length - paidUsers.length,
+        paidPercentage: users.length > 0 ? parseFloat(((paidUsers.length / users.length) * 100).toFixed(1)) : 0,
       },
+
       subscriptions: {
-        totalActivePaid: totalPaidAccounts,
-        uniquePayingUsers,
-        monthly: monthlyCount,
-        annual: annualCount,
+        totalActivePaid: trustedContracts.length,
+        uniquePayingUsers: paidUsers.length,
+        monthly: trustedContracts.filter((c) => c.billing_interval === 'monthly').length,
+        annual: trustedContracts.filter((c) => c.billing_interval === 'annual').length,
       },
+
+      moduleCoverage: {
+        byUserCount: moduleCoverageByUser,
+        totalEntitlements: entitlements.length,
+      },
+
       revenue: {
         mrr,
         arr: parseFloat((mrr * 12).toFixed(2)),
-        byProduct: productCounts,
+        byProduct: productMix,
       },
+
       renewals: {
         week: calcRenewal(ranges.week.start, ranges.week.end),
         month: calcRenewal(ranges.month.start, ranges.month.end),
         quarter: calcRenewal(ranges.quarter.start, ranges.quarter.end),
         year: calcRenewal(ranges.year.start, ranges.year.end),
       },
-      payingUsersList: payingUsers.map((rec) => ({
-        user_id: rec.user_id,
-        email: rec.user_email,
-        status: rec.status,
-        canonicalProduct: rec.canonicalProduct,
-        modules: rec.entitlementModules,
-        subscriptionCount: rec.subscriptions.length,
-        reasonCodes: Array.from(rec.reason_codes),
-      })),
+
+      datasets: {
+        users,
+        billingContracts: trustedContracts,
+        entitlements,
+      },
+
+      exceptions: {
+        inferredContracts: {
+          count: inferredContracts.length,
+          samples: inferredContracts.slice(0, 25),
+        },
+        unresolvedContracts: {
+          count: exceptionContracts.length,
+          samples: exceptionContracts.slice(0, 25),
+        },
+        manualGrantUsers: {
+          count: manualGrantUsers.length,
+          samples: manualGrantUsers.slice(0, 25),
+        },
+      },
+
+      payingUsersList,
     });
   } catch (error) {
-    console.error('[V3-Reconciliation]', error);
+    console.error('[V3-CanonicalModel]', error);
     return Response.json(
-      { error: String(error?.message || error), reportVersion: REPORT_VERSION },
+      { error: String((error as Error)?.message || error), reportVersion: REPORT_VERSION },
       { status: 500 },
     );
   }
