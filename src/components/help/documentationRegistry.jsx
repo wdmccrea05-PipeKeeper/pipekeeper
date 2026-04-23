@@ -354,6 +354,101 @@ export const HELP_ARTICLES = [
     relatedArticles: ['whiskeykeeper-overview', 'curator-expert-actions', 'whiskey-pricing'],
   },
 
+  // ─── CIGARKEEPER ────────────────────────────────────────────────────────────
+  {
+    id: 'cigarkeeper-overview',
+    title: 'CigarKeeper Overview',
+    module: 'cigarkeeper',
+    category: 'getting-started',
+    summary: 'CigarKeeper helps you manage your cigar collection, humidors, and smoking sessions.',
+    body: 'CigarKeeper has four main sections: Cigars, Sessions, Humidors, and Insights. In Cigars, you track every cigar you own with brand, line, vitola, wrapper, binder, filler, strength, body, quantity, and storage location. In Humidors, you manage your humidor inventory and receive maintenance alerts for humidity checks and humidity aid replacement. In Sessions, you log every cigar you smoke — including cigars outside your collection — with tasting notes, burn and draw quality, pairing details, and an enjoyment rating. The Insights tab shows analytics including your most-smoked brands, vitola breakdown, session frequency, and collection value.',
+    keywords: ['cigarkeeper', 'cigar', 'humidor', 'collection', 'overview', 'getting started', 'module'],
+    questions: [
+      'what is cigarkeeper',
+      'how do i use cigarkeeper',
+      'how do i start cigarkeeper',
+      'what can i track in cigarkeeper',
+      'how do i enable cigarkeeper',
+    ],
+    synonyms: ['cigar module', 'cigar tracker', 'cigar collection manager'],
+    relatedArticles: ['add-cigar', 'log-cigar-session', 'cigar-humidor', 'cigar-insights'],
+  },
+  {
+    id: 'add-cigar',
+    title: 'Adding a Cigar',
+    module: 'cigarkeeper',
+    category: 'how-to',
+    summary: 'Add a new cigar to your collection with brand, vitola, wrapper, and inventory details.',
+    body: 'To add a cigar, click "Add Cigar" from the CigarKeeper page or use Quick Access (⚡ lightning bolt in the header). You can search by brand or name to auto-fill details, or enter them manually. Key fields include: Brand, Line (e.g. Oliva Serie V), Vitola (size/shape like Robusto or Toro), Wrapper origin or descriptor, Binder, Filler, Body (mild through full), Strength, Country of Origin, and Flavor Notes. Set your Quantity and Unit Type (single, 5-pack, box, bundle, partial). Assign the cigar to a Humidor from the storage section. Optionally add purchase price, estimated value, photos, a personal rating, and notes. Toggle Favorite to mark a preferred cigar. Click Save.',
+    keywords: ['add cigar', 'new cigar', 'create cigar', 'cigar entry', 'record cigar', 'vitola', 'wrapper', 'brand', 'quantity'],
+    questions: [
+      'how do i add a cigar',
+      'how do i record a new cigar',
+      'how do i enter a cigar',
+      'how do i create a cigar record',
+      'where do i add cigars',
+    ],
+    synonyms: ['new cigar', 'create cigar', 'log cigar', 'add to collection'],
+    relatedArticles: ['cigarkeeper-overview', 'log-cigar-session', 'cigar-humidor'],
+  },
+  {
+    id: 'log-cigar-session',
+    title: 'Logging a Cigar Session',
+    module: 'cigarkeeper',
+    category: 'how-to',
+    summary: 'Record a smoking session for any cigar — from your collection or smoked elsewhere.',
+    body: 'Tap "Log Session" from CigarKeeper or from a cigar\'s detail page. You can log a session for a cigar in your collection — select the cigar from the picker — or toggle "Smoked outside my collection" to record a cigar you tried elsewhere. For in-collection cigars you can choose to decrement the quantity. Fill in: Date, Duration, Pairing (drink or food), First/Second/Final third notes, Flavor Progression, Burn Quality, Draw Quality, Ash Quality, Touch-ups and Relights counts, Strength Impression, Overall Enjoyment (1–5), and Would Buy Again. After the session you can add the cigar to your Wishlist or mark it as Not For Me to influence future recommendations. Tap Save.',
+    keywords: ['log session', 'cigar session', 'record session', 'smoking log', 'tasting notes', 'burn quality', 'draw quality', 'enjoyment', 'out of collection'],
+    questions: [
+      'how do i log a cigar session',
+      'how do i record a session',
+      'how do i log a cigar i smoked outside my collection',
+      'how do i add tasting notes for a cigar',
+      'where is the cigar session log',
+      'how do i rate a cigar',
+    ],
+    synonyms: ['cigar session log', 'session record', 'smoke log', 'cigar notes'],
+    relatedArticles: ['cigarkeeper-overview', 'add-cigar', 'cigar-humidor'],
+  },
+  {
+    id: 'cigar-humidor',
+    title: 'Managing Humidors',
+    module: 'cigarkeeper',
+    category: 'how-to',
+    summary: 'Set up humidors, track maintenance, and receive alerts when checks are due.',
+    body: 'From CigarKeeper, go to the Humidors tab and tap "Add Humidor". Give it a name, set the capacity (maximum cigar count), target humidity %, target temperature, and maintenance alert intervals — one for humidity checks and one for humidity aid replacement. Once set up, CigarKeeper tracks the time since your last maintenance event and shows alerts when a check is due or overdue. To log a maintenance event (humidity check, temperature check, aid refill, aid replacement, cleaning, or seasonal adjustment), open the humidor and tap "Log Maintenance". Recording a maintenance event resets the alert timer. Cigars can be assigned to a humidor from the cigar\'s add or edit form. The humidor detail page shows all assigned cigars and their quantity.',
+    keywords: ['humidor', 'maintenance', 'humidity', 'alert', 'check', 'aid', 'replacement', 'capacity', 'temperature', 'cigar storage'],
+    questions: [
+      'how do i set up a humidor',
+      'how do i add a humidor',
+      'how do i track humidor maintenance',
+      'how do i log a humidity check',
+      'what is a humidor alert',
+      'how do i assign a cigar to a humidor',
+      'how do i reset a maintenance alert',
+    ],
+    synonyms: ['humidor setup', 'humidity tracking', 'humidor management', 'cigar storage'],
+    relatedArticles: ['cigarkeeper-overview', 'add-cigar', 'log-cigar-session'],
+  },
+  {
+    id: 'cigar-insights',
+    title: 'CigarKeeper Insights & Analytics',
+    module: 'cigarkeeper',
+    category: 'features',
+    summary: 'View session analytics, brand breakdowns, collection value, and AI-powered recommendations.',
+    body: 'The CigarKeeper Insights tab aggregates your collection and session data into actionable analytics. View your session frequency chart, most-smoked brands and vitolas, top-rated cigars, flavor profile breakdown, body and strength distribution, and collection value estimate. The AI can surface recommendations based on your session history — cigars you have enjoyed most, brands worth restocking, and gaps in your collection. Use the Curator to ask for personalised cigar recommendations based on your taste profile.',
+    keywords: ['cigar insights', 'analytics', 'session analytics', 'brand breakdown', 'vitola', 'collection value', 'recommendations', 'statistics'],
+    questions: [
+      'how do i see cigar insights',
+      'where are my cigar analytics',
+      'how do i view cigar statistics',
+      'how do i see my most smoked cigars',
+      'how do i see cigar collection value',
+    ],
+    synonyms: ['cigar analytics', 'cigar stats', 'session stats', 'cigar dashboard'],
+    relatedArticles: ['cigarkeeper-overview', 'log-cigar-session', 'add-cigar'],
+  },
+
   // ─── PIPE DETAIL ─────────────────────────────────────────────────────────────
   {
     id: 'pipe-detail-features',
@@ -544,6 +639,16 @@ export const TOPIC_SHORTCUTS = {
   'interchangeable bowls': 'interchangeable-bowls',
   'falcon pipe': 'interchangeable-bowls',
   'find similar': 'pipe-detail-features',
+  'cigarkeeper': 'cigarkeeper-overview',
+  'cigar overview': 'cigarkeeper-overview',
+  'add cigar': 'add-cigar',
+  'new cigar': 'add-cigar',
+  'cigar session': 'log-cigar-session',
+  'log cigar': 'log-cigar-session',
+  'humidor': 'cigar-humidor',
+  'humidor maintenance': 'cigar-humidor',
+  'cigar insights': 'cigar-insights',
+  'cigar analytics': 'cigar-insights',
 };
 
 // ─── NORMALISE QUERY ──────────────────────────────────────────────────────────
@@ -659,6 +764,7 @@ const DOCUMENTATION = {
   curator: { tutorials: [], troubleshooting: [], features: [] },
   pipekeeper: { tutorials: [], troubleshooting: [], features: [] },
   whiskeykeeper: { tutorials: [], troubleshooting: [], features: [] },
+  cigarkeeper: { tutorials: [], troubleshooting: [], features: [] },
   bundle: { tutorials: [], troubleshooting: [] },
 };
 
@@ -690,6 +796,9 @@ export function getContextualHelp(screenName) {
     'curator': 'curator-overview',
     'expert-actions': 'curator-expert-actions',
     'whiskey': 'whiskeykeeper-overview',
+    'cigar': 'cigarkeeper-overview',
+    'cigars': 'cigarkeeper-overview',
+    'humidor': 'cigar-humidor',
   };
   const id = map[screenName];
   return id ? { article: getArticleById(id) } : null;

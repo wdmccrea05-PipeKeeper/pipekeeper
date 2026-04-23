@@ -8,6 +8,7 @@ const MODULE_COLOR = {
   hub: 'text-[#D4A574] border-[rgba(212,165,116,0.25)] bg-[rgba(212,165,116,0.07)]',
   pipekeeper: 'text-[#a87d52] border-[rgba(168,125,82,0.25)] bg-[rgba(168,125,82,0.07)]',
   whiskeykeeper: 'text-[#c4a35a] border-[rgba(196,163,90,0.25)] bg-[rgba(196,163,90,0.07)]',
+  cigarkeeper: 'text-[#b87c5a] border-[rgba(184,124,90,0.25)] bg-[rgba(184,124,90,0.07)]',
   curator: 'text-[#8ab4c4] border-[rgba(138,180,196,0.25)] bg-[rgba(138,180,196,0.07)]',
 };
 
@@ -15,6 +16,7 @@ const MODULE_LABEL = {
   hub: 'Hub',
   pipekeeper: 'PipeKeeper',
   whiskeykeeper: 'WhiskeyKeeper',
+  cigarkeeper: 'CigarKeeper',
   curator: 'Curator',
 };
 
@@ -31,6 +33,10 @@ const TUTORIAL_IDS_ORDERED = [
   'add-bottle',
   'log-tasting',
   'whiskey-inventory',
+  'cigarkeeper-overview',
+  'add-cigar',
+  'log-cigar-session',
+  'cigar-humidor',
   'collection-insights',
   'sharing-stories',
   'global-search',
@@ -105,6 +111,7 @@ export default function TutorialSelector({ user, subscription }) {
       .filter(a => {
         // Always show hub + curator articles
         if (['hub', 'curator'].includes(a.module)) return true;
+        if (a.module === 'cigarkeeper') return activeModules.includes('cigarkeeper');
         return activeModules.includes(a.module);
       });
   }, [activeModules]);
