@@ -345,11 +345,14 @@ export default function HowTo() {
               ))}
             </ol>
           </Q>
-          <Q id="tier-diff" q={t("howTo.tierDiffQ")}>
+          <Q id="tier-diff" q="What is the difference between Free and Pro?">
             <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.tierDiffSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
+              <li><strong>Free:</strong> PipeKeeper allows up to 5 pipes and 10 blends; WhiskeyKeeper allows up to 10 bottles; CigarKeeper allows up to 10 cigars. Basic features, no AI features.</li>
+              <li><strong>Pro:</strong> Unlimited items per module, AI pairings, collection optimization, AI identification, break-in schedules, valuation tools, Value &amp; Strategy section, export reports, and priority support.</li>
+              <li>Each module (PipeKeeper, WhiskeyKeeper, and CigarKeeper) can be subscribed to individually.</li>
+              <li>The <strong>Founders Bundle</strong> includes PipeKeeper and WhiskeyKeeper together at a discounted rate. CigarKeeper is not included in the Founders Bundle.</li>
+              <li>A <strong>3-Module Bundle</strong> covers PipeKeeper, WhiskeyKeeper, and CigarKeeper together at a further discount.</li>
+              <li>Founding members have grandfathered lifetime Pro access to PipeKeeper and WhiskeyKeeper.</li>
             </ol>
           </Q>
         </Section>
