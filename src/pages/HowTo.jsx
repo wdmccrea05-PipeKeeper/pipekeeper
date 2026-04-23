@@ -262,7 +262,41 @@ export default function HowTo() {
           </Q>
         </Section>
 
-        <Section title="Managing Cigars">
+        <Section title="Managing Whiskey (WhiskeyKeeper)">
+          <Q id="add-bottle" q="How do I add a whiskey bottle to my collection?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Go to <strong>WhiskeyKeeper</strong> from the nav or Collection Hub.</li>
+              <li>Tap <strong>Add Bottle</strong> or use the <strong>+</strong> button.</li>
+              <li>Search by name to auto-fill distillery, region, type, and age — or enter details manually.</li>
+              <li>Set purchase price, fill level, and any tasting notes.</li>
+              <li>Tap <strong>Save</strong> to add it to your collection.</li>
+            </ol>
+          </Q>
+          <Q id="whiskey-inventory" q="How does inventory tracking work for whiskey?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Each bottle has an inventory unit — Full, High, Medium, Low, or Empty.</li>
+              <li>Open a bottle's detail page and update the <strong>Fill Level</strong> as you work through it.</li>
+              <li>You can also track multiple bottles of the same expression using the bottle count field.</li>
+            </ol>
+          </Q>
+          <Q id="whiskey-tasting" q="How do I log a whiskey tasting?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Open the bottle's detail page and tap <strong>Log Tasting</strong>.</li>
+              <li>Record flavor notes, rating, and any pairing or occasion details.</li>
+              <li>Tasting history appears in the bottle's detail view and in WhiskeyKeeper Insights.</li>
+            </ol>
+          </Q>
+          <Q id="whiskey-value" q="How does bottle valuation work?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Open any bottle's detail page and scroll to <strong>Value &amp; Strategy</strong>.</li>
+              <li>The system computes a current value using retail, aftermarket, and collector price signals.</li>
+              <li>Tap <strong>Save Checkpoint</strong> to record a timestamped value snapshot for tracking over time.</li>
+              <li>Add manual <strong>Price Observations</strong> from auctions or retailers to improve accuracy.</li>
+            </ol>
+          </Q>
+        </Section>
+
+        <Section title="Managing Cigars (CigarKeeper)">
           <Q id="add-cigar" q="How do I add a cigar to my collection?">
             <ol className="list-decimal list-inside space-y-2">
               <li>Go to <strong>CigarKeeper</strong> from the nav or Collection Hub.</li>
