@@ -556,7 +556,16 @@ function CigarDetailInner() {
     } catch { setPriceObservations([]); return []; }
   }
 
+  // Track whether we've already run the one-shot market valuation patch for this cigar
+  const marketValuationAppliedRef = useRef(false);
+
   // Auto-seed snapshot and load valuation data when cigar is loaded
+  useEffect(() => {
+    if (!cigar?.id || !user?.email) return;
+    // Reset the guard whenever the cigar changes
+    marketValuationAppliedRef.current = false;
+  }, [cigar?.id, user?.email]);
+
   useEffect(() => {
     if (!cigar?.id || !user?.email) return;
     let mounted = true;
@@ -566,8 +575,9 @@ function CigarDetailInner() {
         loadPriceObservations(cigar.id),
       ]);
 
-      // Apply market valuation from observations if available
-      if (cigar && observations.length > 0) {
+      // Apply market valuation from observations ONCE — guard prevents re-triggering on invalidate
+      if (cigar && observations.length > 0 && !marketValuationAppliedRef.current) {
+        marketValuationAppliedRef.current = true;
         const derivation = deriveCigarMarketValuation(cigar, { observations, snapshots });
         const patch = buildCigarMarketValuationPatch(cigar, derivation);
         if (patch) {
