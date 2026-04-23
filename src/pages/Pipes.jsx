@@ -110,34 +110,43 @@ export default function PipesPage() {
       }
       return scopedEntities.Pipe.create(data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
-      setShowForm(false);
-      toast.success(t("notifications.created"));
-    },
-    onError: (error) => {
-      toast.error(error.message || t("pipesPage.failedToAddPipe"));
-    }
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => safeUpdate('Pipe', id, data, user?.email),
-    onSuccess: () => {
-      invalidatePipeQueries(queryClient, user?.email);
-      setShowForm(false);
-      setEditingPipe(null);
-      toast.success(t('notifications.updated') || 'Pipe updated');
-    },
-    onError: (error) => {
-      toast.error(error.message || t('pipesPage.failedToAddPipe') || 'Failed to update pipe');
-    },
   });
 
-  const handleSave = (data) => {
-    if (editingPipe) {
-      updateMutation.mutate({ id: editingPipe.id, data });
-    } else {
-      createMutation.mutate(data);
+  const handleSave = async (data) => {
+    try {
+      if (import.meta.env.DEV) {
+        console.debug('[Pipes] submitting pipe payload', {
+          mode: editingPipe ? 'update' : 'create',
+          pipeId: editingPipe?.id || null,
+          payload: data,
+        });
+      }
+      if (editingPipe) {
+        await updateMutation.mutateAsync({ id: editingPipe.id, data });
+        await invalidatePipeQueries(queryClient, user?.email);
+        toast.success(t('notifications.updated') || 'Pipe updated');
+      } else {
+        await createMutation.mutateAsync(data);
+        await queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
+        toast.success(t("notifications.created"));
+      }
+      setShowForm(false);
+      setEditingPipe(null);
+    } catch (error) {
+      const message = error?.message || t('pipesPage.failedToAddPipe') || 'Failed to update pipe';
+      console.error('[Pipes] save failed', {
+        mode: editingPipe ? 'update' : 'create',
+        pipeId: editingPipe?.id || null,
+        payload: data,
+        reason: message,
+        rawError: error,
+      });
+      toast.error(message);
+      throw new Error(message);
     }
   };
 

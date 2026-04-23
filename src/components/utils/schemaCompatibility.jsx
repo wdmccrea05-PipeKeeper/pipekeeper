@@ -3,6 +3,161 @@
  * Ensures backward compatibility when reading bowls_used, usage_characteristics, etc.
  */
 const DATE_ONLY_RE = /^(\d{4})-(\d{2})-(\d{2})/;
+export const PIPE_EDITABLE_FIELDS = [
+  "name",
+  "maker",
+  "country_of_origin",
+  "shape",
+  "bowlStyle",
+  "shankShape",
+  "bend",
+  "sizeClass",
+  "length_mm",
+  "weight_grams",
+  "bowl_height_mm",
+  "bowl_width_mm",
+  "bowl_diameter_mm",
+  "bowl_depth_mm",
+  "chamber_volume",
+  "stem_material",
+  "bowl_material",
+  "finish",
+  "filter_type",
+  "year_made",
+  "purchase_date",
+  "stamping",
+  "condition",
+  "purchase_price",
+  "estimated_value",
+  "notes",
+  "usage_characteristics",
+  "smoking_characteristics",
+  "photos",
+  "stamping_photos",
+  "is_favorite",
+  "ai_excluded",
+  "interchangeable_bowls",
+];
+
+const PIPE_TEXT_FIELDS = new Set([
+  "name",
+  "maker",
+  "country_of_origin",
+  "shape",
+  "bowlStyle",
+  "shankShape",
+  "bend",
+  "sizeClass",
+  "chamber_volume",
+  "stem_material",
+  "bowl_material",
+  "finish",
+  "filter_type",
+  "year_made",
+  "purchase_date",
+  "stamping",
+  "condition",
+  "notes",
+  "usage_characteristics",
+  "smoking_characteristics",
+]);
+
+const PIPE_NUMBER_FIELDS = new Set([
+  "length_mm",
+  "weight_grams",
+  "bowl_height_mm",
+  "bowl_width_mm",
+  "bowl_diameter_mm",
+  "bowl_depth_mm",
+  "purchase_price",
+  "estimated_value",
+]);
+
+function normalizePipePhotoArray(input) {
+  if (Array.isArray(input)) {
+    return input
+      .map((value) => (typeof value === "string" ? value.trim() : ""))
+      .filter(Boolean);
+  }
+  if (typeof input === "string" && input.trim()) return [input.trim()];
+  return [];
+}
+
+function normalizeBoolean(value, fallback = false) {
+  if (value === undefined || value === null || value === "") return fallback;
+  return Boolean(value);
+}
+
+function normalizePipeField(field, value) {
+  if (value === undefined) return undefined;
+  if (field === "photos" || field === "stamping_photos") return normalizePipePhotoArray(value);
+  if (field === "interchangeable_bowls") return Array.isArray(value) ? value : [];
+  if (field === "is_favorite" || field === "ai_excluded") return normalizeBoolean(value, false);
+  if (PIPE_TEXT_FIELDS.has(field)) return value == null ? "" : String(value);
+  if (PIPE_NUMBER_FIELDS.has(field)) {
+    if (value === null || value === "") return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return value;
+}
+
+export function normalizePipeFormData(pipe = null) {
+  const defaults = {
+    name: "",
+    maker: "",
+    country_of_origin: "",
+    shape: "",
+    bowlStyle: "",
+    shankShape: "",
+    bend: "",
+    sizeClass: "",
+    length_mm: "",
+    weight_grams: "",
+    bowl_height_mm: "",
+    bowl_width_mm: "",
+    bowl_diameter_mm: "",
+    bowl_depth_mm: "",
+    chamber_volume: "",
+    stem_material: "",
+    bowl_material: "",
+    finish: "",
+    filter_type: "",
+    year_made: "",
+    purchase_date: "",
+    stamping: "",
+    condition: "",
+    purchase_price: "",
+    estimated_value: "",
+    notes: "",
+    usage_characteristics: "",
+    smoking_characteristics: "",
+    photos: [],
+    stamping_photos: [],
+    is_favorite: false,
+    ai_excluded: false,
+    interchangeable_bowls: [],
+  };
+
+  if (!pipe) return defaults;
+
+  const next = { ...defaults };
+  for (const field of PIPE_EDITABLE_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(pipe, field)) {
+      next[field] = normalizePipeField(field, pipe[field]);
+    }
+  }
+
+  const fallbackPhotos = [pipe?.photo, pipe?.photo_url, pipe?.image, pipe?.image_url].filter(Boolean);
+  next.photos = normalizePipePhotoArray(pipe?.photos ?? fallbackPhotos);
+  next.stamping_photos = normalizePipePhotoArray(pipe?.stamping_photos);
+
+  if (!next.usage_characteristics && pipe?.smoking_characteristics) {
+    next.usage_characteristics = String(pipe.smoking_characteristics);
+  }
+  next.smoking_characteristics = "";
+  return next;
+}
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -89,29 +244,30 @@ export function prepareLogData(data) {
  * CRITICAL: Preserves photos and stamping_photos arrays
  */
 export function preparePipeData(data) {
-  const characteristics = data.usage_characteristics || data.smoking_characteristics || "";
-  const result = {
-    ...data,
-  };
-  
+  const source = data || {};
+  const characteristics = source.usage_characteristics || source.smoking_characteristics || "";
+  const result = {};
+
+  for (const field of PIPE_EDITABLE_FIELDS) {
+    const normalized = normalizePipeField(field, source[field]);
+    if (normalized !== undefined && normalized !== null) {
+      result[field] = normalized;
+    }
+  }
+
   if (characteristics) {
-    result.usage_characteristics = characteristics;
-    result.smoking_characteristics = ""; // Clear legacy field when updating
+    result.usage_characteristics = String(characteristics);
+    result.smoking_characteristics = "";
   }
 
   // Ensure photos arrays are included even if empty (prevents data loss on edit)
-  if (!Array.isArray(result.photos)) {
-    result.photos = [];
-  }
-  if (!Array.isArray(result.stamping_photos)) {
-    result.stamping_photos = [];
-  }
+  result.photos = normalizePipePhotoArray(source.photos);
+  result.stamping_photos = normalizePipePhotoArray(source.stamping_photos);
+  result.interchangeable_bowls = Array.isArray(source.interchangeable_bowls) ? source.interchangeable_bowls : [];
+  result.is_favorite = normalizeBoolean(source.is_favorite, false);
+  result.ai_excluded = normalizeBoolean(source.ai_excluded, false);
 
-  // Avoid sending undefined fields on partial edits (can overwrite existing values
-  // in backends that treat update payloads as full replacements).
-  return Object.fromEntries(
-    Object.entries(result).filter(([, value]) => value !== undefined && value !== null)
-  );
+  return result;
 }
 
 /**
