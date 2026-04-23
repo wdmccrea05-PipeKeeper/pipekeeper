@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +46,6 @@ import CigarValuationModal from '@/components/cigars/CigarValuationModal';
 import { getCigarReadinessWithContext } from '@/platform/agingReadiness';
 import { getCigarInventoryMetrics } from '@/platform/cigarInventory';
 import EnrichButton from '@/components/shared/EnrichButton';
-import { calculateCigarValue } from '@/utils/cigarValuation';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import {
@@ -52,6 +53,16 @@ import {
   getCigarQuickActionPatch,
   getCigarQuickActionSuccessMessage,
 } from '@/platform/cigarQuickActions';
+import UnifiedValuationCard from '@/components/valuation/UnifiedValuationCard';
+import {
+  buildValuationSnapshot,
+  resolveValueTrend,
+} from '@/components/valuation/valueEngine';
+import {
+  seedInitialSnapshotIfMissing,
+  refreshItemValue,
+} from '@/components/valuation/valueRefreshService';
+import { deriveCigarMarketValuation, buildCigarMarketValuationPatch } from '@/utils/cigarMarketValuation';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -92,7 +103,6 @@ const READINESS_STYLE = {
 
 const CONFIDENCE_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' };
 const CONFIDENCE_COLOR = { high: '#6FCF97', medium: '#D4A574', low: 'rgba(224,216,200,0.55)' };
-const VALUATION_CONFIDENCE_LABEL = { high: 'High', medium: 'Medium', low: 'Low' };
 
 const HUMIDOR_HEALTH_STYLE = {
   stable:      { bg: 'rgba(76,175,130,0.1)',  border: 'rgba(76,175,130,0.3)',  color: '#6FCF97' },
@@ -516,53 +526,91 @@ function CigarDetailInner() {
     staleTime: 60000,
   });
 
-  const valuation = useMemo(() => (cigar ? calculateCigarValue(cigar) : null), [cigar]);
+  const [valueSnapshots, setValueSnapshots] = useState([]);
+  const [priceObservations, setPriceObservations] = useState([]);
+  const [showSnapshotModal, setShowSnapshotModal] = useState(false);
+  const [showObservationModal, setShowObservationModal] = useState(false);
+  const [isRefreshingValue, setIsRefreshingValue] = useState(false);
+
+  async function loadValueSnapshots(cigarId) {
+    if (!cigarId || !user?.email) { setValueSnapshots([]); return []; }
+    try {
+      const rows = await base44.entities.ItemValueSnapshot.filter(
+        { item_id: cigarId, created_by: user.email, module_key: 'cigarkeeper' },
+        '-snapshot_date', 20
+      ).catch(() => []);
+      setValueSnapshots(rows || []);
+      return rows || [];
+    } catch { setValueSnapshots([]); return []; }
+  }
+
+  async function loadPriceObservations(cigarId) {
+    if (!cigarId || !user?.email) { setPriceObservations([]); return []; }
+    try {
+      const rows = await base44.entities.PriceObservation.filter(
+        { item_id: cigarId, created_by: user.email, module_key: 'cigarkeeper' },
+        '-observed_date', 20
+      ).catch(() => []);
+      setPriceObservations(rows || []);
+      return rows || [];
+    } catch { setPriceObservations([]); return []; }
+  }
+
+  // Auto-seed snapshot and load valuation data when cigar is loaded
+  useEffect(() => {
+    if (!cigar?.id || !user?.email) return;
+    let mounted = true;
+    (async () => {
+      const [snapshots, observations] = await Promise.all([
+        loadValueSnapshots(cigar.id),
+        loadPriceObservations(cigar.id),
+      ]);
+
+      // Apply market valuation from observations if available
+      if (cigar && observations.length > 0) {
+        const derivation = deriveCigarMarketValuation(cigar, { observations, snapshots });
+        const patch = buildCigarMarketValuationPatch(cigar, derivation);
+        if (patch) {
+          await base44.entities.Cigar.update(cigar.id, patch).catch(() => {});
+          queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user.email] });
+        }
+      }
+
+      if (mounted && snapshots.length === 0) {
+        const seeded = await seedInitialSnapshotIfMissing(
+          cigar, 'cigarkeeper', 'cigar', user.email, base44, snapshots, {}
+        );
+        if (seeded && mounted) await loadValueSnapshots(cigar.id);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [cigar?.id, user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const valuationSnapshot = useMemo(
+    () => cigar ? buildValuationSnapshot(cigar, 'cigarkeeper', { valueHistory: valueSnapshots }) : null,
+    [cigar, valueSnapshots]
+  );
+  const valueTrend = useMemo(() => resolveValueTrend(valueSnapshots), [valueSnapshots]);
+
+  async function handleRefreshValueNow() {
+    if (!cigar || !user?.email || isRefreshingValue) return;
+    setIsRefreshingValue(true);
+    try {
+      const newSnap = await refreshItemValue(cigar, 'cigarkeeper', 'cigar', user.email, base44, { valueHistory: valueSnapshots });
+      if (newSnap) {
+        setValueSnapshots(prev => [newSnap, ...prev]);
+        await loadValueSnapshots(cigar.id);
+      }
+    } finally {
+      setIsRefreshingValue(false);
+    }
+  }
 
   const displayValue = useMemo(() => {
-    if (!valuation || valuation.isMissing) return '—';
-    if (valuation.estimatedTotalValue != null) return formatFromBase(valuation.estimatedTotalValue);
-    return formatFromBase(0);
-  }, [valuation, formatFromBase]);
-  const valuationDisplay = useMemo(() => {
-    if (!valuation) return null;
-    const totalDisplay = valuation.estimatedTotalValue != null
-      ? formatFromBase(valuation.estimatedTotalValue)
-      : valuation.isMissing
-      ? '—'
-      : formatFromBase(0);
-    const replacementDisplay = valuation.replacementCostEstimate != null
-      ? formatFromBase(valuation.replacementCostEstimate)
-      : valuation.isMissing
-      ? '—'
-      : formatFromBase(0);
-    const purchaseBasisDisplay = valuation.remainingCostBasis != null
-      ? formatFromBase(valuation.remainingCostBasis)
-      : valuation.isMissing
-      ? '—'
-      : formatFromBase(0);
-    return {
-      unit: valuation.estimatedUnitValue != null ? formatFromBase(valuation.estimatedUnitValue) : '—',
-      total: totalDisplay,
-      replacement: replacementDisplay,
-      purchaseBasis: purchaseBasisDisplay,
-    };
-  }, [valuation, formatFromBase]);
-  const valuationSourceDisplay = useMemo(() => {
-    if (!valuation) return '—';
-    if (valuation.source === 'manual_entry' || valuation.source === 'manual_override') {
-      return cigar?.valuation_source || valuation?.sourceLabel || '—';
-    }
-    if (valuation.source === 'market_derived') {
-      return cigar?.market_valuation_source || cigar?.valuation_source || valuation?.sourceLabel || '—';
-    }
-    return valuation?.sourceLabel || cigar?.valuation_source || '—';
-  }, [valuation, cigar]);
-  const valuationUpdatedDisplay = useMemo(() => {
-    if (valuation?.source === 'market_derived') {
-      return formatDate(cigar?.market_valuation_updated_at || cigar?.valuation_updated_at);
-    }
-    return formatDate(cigar?.valuation_updated_at || cigar?.market_valuation_updated_at);
-  }, [valuation, cigar]);
+    if (!valuationSnapshot || !valuationSnapshot.currentValue) return '—';
+    return formatFromBase(valuationSnapshot.currentValue);
+  }, [valuationSnapshot, formatFromBase]);
+
   const inventoryMetrics = useMemo(
     () => (cigar ? getCigarInventoryMetrics(cigar, sessions) : null),
     [cigar, sessions]
@@ -869,40 +917,20 @@ function CigarDetailInner() {
         />
       </div>
 
-      <div
-        className="rounded-2xl p-4 space-y-2"
-        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,107,63,0.2)' }}
-      >
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h2 className="text-sm font-semibold tracking-wide uppercase" style={{ color: '#D4A574' }}>
-            Valuation
-          </h2>
-          <Button variant="ghost" size="sm" onClick={() => setValuationModalOpen(true)}>
-            Update valuation
-          </Button>
-        </div>
-        {valuation?.isMissing ? (
-          <p className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>
-            Add purchase price or estimated value to start tracking value.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-            <InfoRow label="Estimated unit value" value={valuationDisplay?.unit} />
-            <InfoRow label="Estimated total value" value={valuationDisplay?.total} />
-            <InfoRow label="Replacement estimate" value={valuationDisplay?.replacement} />
-            <InfoRow label="Purchase basis" value={valuationDisplay?.purchaseBasis} />
-            <InfoRow label="Source" value={valuationSourceDisplay} />
-            <InfoRow label="Confidence" value={VALUATION_CONFIDENCE_LABEL[valuation?.confidenceScore] || 'Low'} />
-            <InfoRow label="Last updated" value={valuationUpdatedDisplay} />
-            <InfoRow label="Manual override" value={cigar.manual_valuation_enabled ? 'Enabled' : 'Off'} />
-          </div>
-        )}
-        {(valuation?.isStale || valuation?.needsReview) && (
-          <p className="text-xs" style={{ color: '#E0B450' }}>
-            {valuation?.isStale ? 'Valuation is stale and should be reviewed.' : 'Valuation confidence is low; review recommended.'}
-          </p>
-        )}
-      </div>
+      <UnifiedValuationCard
+        item={cigar}
+        itemType="cigar"
+        moduleKey="cigarkeeper"
+        valuationSnapshot={valuationSnapshot}
+        valueTrend={valueTrend}
+        valueSnapshots={valueSnapshots}
+        priceObservations={priceObservations}
+        onAddSnapshot={() => setShowSnapshotModal(true)}
+        onAddObservation={() => setShowObservationModal(true)}
+        onEditValuation={() => setValuationModalOpen(true)}
+        onRefreshNow={handleRefreshValueNow}
+        isRefreshing={isRefreshingValue}
+      />
 
       {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -1022,15 +1050,12 @@ function CigarDetailInner() {
               type="number"
               onSave={(v) => saveField('purchase_price', v)}
             />
-            <InfoRow label="Estimated Unit Value" value={valuationDisplay?.unit || '—'} />
-            <InfoRow label="Estimated Total Value" value={valuationDisplay?.total || '—'} />
-            <InfoRow label="Replacement Estimate" value={valuationDisplay?.replacement || '—'} />
-            <InfoRow label="Valuation Source" value={valuationSourceDisplay} />
-            <InfoRow label="Valuation Confidence" value={VALUATION_CONFIDENCE_LABEL[valuation?.confidenceScore] || 'Low'} />
-            <InfoRow label="Valuation Updated" value={valuationUpdatedDisplay} />
+            <InfoRow label="Estimated Value" value={displayValue} />
+            <InfoRow label="Valuation Confidence" value={valuationSnapshot?.confidence || '—'} />
+            <InfoRow label="Valuation Source" value={valuationSnapshot?.source || '—'} />
             <div className="py-2" style={{ borderBottom: '1px solid rgba(140,107,63,0.1)' }}>
               <Button size="sm" variant="ghost" onClick={() => setValuationModalOpen(true)}>
-                Edit valuation
+                Edit valuation inputs
               </Button>
             </div>
             <EditableInfoRow
@@ -1169,6 +1194,200 @@ function CigarDetailInner() {
         cigar={cigar}
         onSave={handleSaveValuation}
       />
+
+      {showSnapshotModal && (
+        <CigarSnapshotModal
+          cigar={cigar}
+          valuationSnapshot={valuationSnapshot}
+          userEmail={user?.email}
+          onClose={() => setShowSnapshotModal(false)}
+          onSaved={() => { setShowSnapshotModal(false); loadValueSnapshots(cigar.id); }}
+        />
+      )}
+
+      {showObservationModal && (
+        <CigarObservationModal
+          cigar={cigar}
+          userEmail={user?.email}
+          onClose={() => setShowObservationModal(false)}
+          onSaved={() => { setShowObservationModal(false); loadPriceObservations(cigar.id); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Save Checkpoint Modal ─────────────────────────────────────────────────────
+
+function CigarSnapshotModal({ cigar, valuationSnapshot, userEmail, onClose, onSaved }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    snapshot_date: today,
+    computed_current_value: String(valuationSnapshot?.currentValue || ''),
+    retail_value: String(cigar?.retail_price || ''),
+    market_value: String(cigar?.market_estimated_total_value || ''),
+    value_confidence: valuationSnapshot?.confidence || 'medium',
+    source: valuationSnapshot?.source || '',
+    notes: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const toN = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : null; };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await base44.entities.ItemValueSnapshot.create({
+        module_key: 'cigarkeeper',
+        item_type: 'cigar',
+        item_id: cigar.id,
+        created_by: userEmail,
+        snapshot_date: form.snapshot_date,
+        computed_current_value: toN(form.computed_current_value),
+        computed_value: toN(form.computed_current_value),
+        retail_value: toN(form.retail_value),
+        market_value: toN(form.market_value),
+        value_confidence: form.value_confidence,
+        confidence: form.value_confidence,
+        source: form.source || null,
+        rarity_score: valuationSnapshot?.rarityScore ?? null,
+        replacement_difficulty: valuationSnapshot?.replacementDifficulty || null,
+        recommendation: valuationSnapshot?.holdRecommendation || null,
+        notes: form.notes || null,
+        is_auto_generated: false,
+      });
+      onSaved();
+    } catch { toast.error('Failed to save checkpoint'); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]"
+        style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.25)' }}>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">Save Value Checkpoint</h3>
+        <div className="space-y-3">
+          {[
+            { label: 'Snapshot Date', field: 'snapshot_date', type: 'date' },
+            { label: 'Current Value (total)', field: 'computed_current_value', type: 'number' },
+            { label: 'Retail Value (total)', field: 'retail_value', type: 'number' },
+            { label: 'Market Value (total)', field: 'market_value', type: 'number' },
+            { label: 'Source', field: 'source', type: 'text' },
+            { label: 'Notes', field: 'notes', type: 'text' },
+          ].map(({ label, field, type }) => (
+            <div key={field}>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
+              <Input type={type} value={form[field]}
+                onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))}
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" />
+            </div>
+          ))}
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Confidence</label>
+            <Select value={form.value_confidence} onValueChange={v => setForm(prev => ({ ...prev, value_confidence: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end pt-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save Checkpoint'}</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Add Market Observation Modal ──────────────────────────────────────────────
+
+function CigarObservationModal({ cigar, userEmail, onClose, onSaved }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    observed_date: today,
+    observed_price: '',
+    price_type: 'retail',
+    source_name: '',
+    source_url: '',
+    condition_note: '',
+    region: '',
+    currency: 'USD',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!form.observed_price) return;
+    setSaving(true);
+    try {
+      await base44.entities.PriceObservation.create({
+        module_key: 'cigarkeeper',
+        item_type: 'cigar',
+        item_id: cigar.id,
+        created_by: userEmail,
+        observed_price: Number(form.observed_price),
+        price_type: form.price_type,
+        source_name: form.source_name || null,
+        source_url: form.source_url || null,
+        observed_date: form.observed_date,
+        condition_note: form.condition_note || null,
+        region: form.region || null,
+        currency: form.currency || 'USD',
+        is_manual: true,
+      });
+      onSaved();
+    } catch { toast.error('Failed to save observation'); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]"
+        style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(59,130,246,0.25)' }}>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Market Observation</h3>
+        <div className="space-y-3">
+          {[
+            { label: 'Observed Date', field: 'observed_date', type: 'date' },
+            { label: 'Price *', field: 'observed_price', type: 'number' },
+            { label: 'Source Name', field: 'source_name', type: 'text' },
+            { label: 'Source URL', field: 'source_url', type: 'text' },
+            { label: 'Condition Note', field: 'condition_note', type: 'text' },
+            { label: 'Region', field: 'region', type: 'text' },
+            { label: 'Currency', field: 'currency', type: 'text' },
+          ].map(({ label, field, type }) => (
+            <div key={field}>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
+              <Input type={type} value={form[field]}
+                onChange={e => setForm(prev => ({ ...prev, [field]: e.target.value }))}
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" />
+            </div>
+          ))}
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Price Type</label>
+            <Select value={form.price_type} onValueChange={v => setForm(prev => ({ ...prev, price_type: v }))}>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="retail">Retail</SelectItem>
+                <SelectItem value="aftermarket">Aftermarket</SelectItem>
+                <SelectItem value="auction">Auction</SelectItem>
+                <SelectItem value="collector">Collector</SelectItem>
+                <SelectItem value="estimate">Estimate</SelectItem>
+                <SelectItem value="private_sale">Private Sale</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end pt-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving || !form.observed_price}
+            style={{ background: 'linear-gradient(135deg,rgba(59,130,246,0.8),rgba(37,99,235,0.9))', color: '#F5F1E7' }}>
+            {saving ? 'Saving…' : 'Save Observation'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
