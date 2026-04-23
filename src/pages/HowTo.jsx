@@ -331,11 +331,13 @@ export default function HowTo() {
         </Section>
 
         <Section title={t("howTo.subscriptions")}>
-          <Q id="upgrade" q={t("howTo.upgradeQ")}>
+          <Q id="upgrade" q="How do I upgrade to Pro?">
             <ol className="list-decimal list-inside space-y-2">
-              {tArray("howTo.upgradeSteps").map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
+              <li>Go to the <strong>Subscription</strong> page (accessible from Profile or the upgrade prompts).</li>
+              <li>Choose what you want to unlock: <strong>PipeKeeper Pro</strong>, <strong>WhiskeyKeeper Pro</strong>, <strong>CigarKeeper Pro</strong>, the <strong>Founders Bundle</strong> (PipeKeeper + WhiskeyKeeper), or the <strong>3-Module Bundle</strong> (PipeKeeper + WhiskeyKeeper + CigarKeeper).</li>
+              <li>Select a monthly or annual plan (annual saves ~17%).</li>
+              <li>Complete payment via the secure checkout.</li>
+              <li>Your Pro features activate immediately.</li>
             </ol>
           </Q>
           <Q id="cancel" q={t("howTo.cancelQ")}>
