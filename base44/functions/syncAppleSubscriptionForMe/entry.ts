@@ -197,14 +197,71 @@ Deno.serve(async (req) => {
     
     // Only mark paid when server-side expiry check confirms subscription is still active
     const shouldMarkPaid = effectiveActive;
-    const grantedModulesCsv = shouldMarkPaid ? modulesCsv : '';
-    const pipekeeper_paid = shouldMarkPaid && activeModules.includes('pipekeeper');
-    const whiskeykeeper_paid = shouldMarkPaid && activeModules.includes('whiskeykeeper');
-    
+
     if (shouldMarkPaid && !isVerified) {
       console.warn(`[syncAppleSubscriptionForMe] Granting access based on unverified client claim for user ${userId}. originalTransactionId=${originalTransactionId}`);
     }
-    
+
+    // ── Merge earned-access modules so iOS sync never overwrites referral rewards ──
+    // Fetch all currently active ReferralEarnedAccess records for this user and
+    // union their modules with the iOS subscription modules.  This ensures that
+    // a user who has both an iOS paid subscription AND referral-earned access
+    // retains both module sets after every app-launch sync.
+    const nowTs = new Date();
+    let earnedModules: string[] = [];
+    try {
+      const earnedRecords = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
+        user_id: userId,
+        status: 'active',
+      });
+      earnedModules = [...new Set(
+        (earnedRecords || [])
+          .filter((r: any) => r.end_at && new Date(r.end_at) > nowTs && r.module)
+          .map((r: any) => String(r.module).toLowerCase())
+      )];
+    } catch (earnedErr) {
+      // Non-fatal — proceed with iOS modules only
+      console.warn('[syncAppleSubscriptionForMe] Could not fetch earned-access records (non-fatal):', earnedErr);
+    }
+
+    // Union of iOS subscription modules + referral-earned modules
+    const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+    const iosModules: string[] = shouldMarkPaid ? activeModules : [];
+    const allActiveModules: string[] = [...new Set([...iosModules, ...earnedModules])];
+
+    const grantedModulesCsv = allActiveModules.join(',') || '';
+    const hasAnyAccess = allActiveModules.length > 0 || shouldMarkPaid;
+
+    // Compute all four per-module flags — do not leave any unwritten
+    const modulePaidFlags: Record<string, boolean> = {};
+    for (const mod of ALL_MODULES) {
+      modulePaidFlags[`${mod}_paid`] = allActiveModules.includes(mod);
+    }
+
+    // Earned-access metadata for canonical fields
+    let referralEarnedAccess = false;
+    let referralEarnedModule: string | null = null;
+    let referralEarnedExpiresAt: string | null = null;
+    try {
+      const allEarned = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
+        user_id: userId,
+        status: 'active',
+      });
+      const stillActive = (allEarned || []).filter(
+        (r: any) => r.end_at && new Date(r.end_at) > nowTs
+      );
+      if (stillActive.length > 0) {
+        referralEarnedAccess = true;
+        const sorted = [...stillActive].sort(
+          (a: any, b: any) => new Date(b.end_at).getTime() - new Date(a.end_at).getTime()
+        );
+        referralEarnedModule = sorted[0].module || null;
+        referralEarnedExpiresAt = sorted[0].end_at || null;
+      }
+    } catch {
+      // Non-fatal — canonical earned fields will remain unchanged if this fails
+    }
+
     const users = await base44.asServiceRole.entities.User.filter({ email: emailLower });
     if (!users || users.length === 0) {
       await base44.asServiceRole.entities.User.create({
@@ -216,29 +273,31 @@ Deno.serve(async (req) => {
         subscription_tier: shouldMarkPaid ? tier : 'free',
         subscription_provider: 'apple',
         paid_modules_csv: grantedModulesCsv,
-        pipekeeper_paid,
-        whiskeykeeper_paid,
-        has_paid_access: shouldMarkPaid,
-        // FIX ISSUE-11 + ISSUE-05: Write entitlement_tier for canonical resolver
-        entitlement_tier: shouldMarkPaid ? tier : 'free',
+        ...modulePaidFlags,
+        has_paid_access: hasAnyAccess,
+        entitlement_tier: hasAnyAccess ? tier : 'free',
+        referral_earned_access: referralEarnedAccess,
+        referral_earned_module: referralEarnedModule,
+        referral_earned_expires_at: referralEarnedExpiresAt,
         platform: 'ios'
       });
-      console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
+      console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}, allModules=${grantedModulesCsv}`);
     } else {
-      const updates = {
+      const updates: Record<string, any> = {
         subscription_level: shouldMarkPaid ? 'paid' : 'free',
         subscription_status: status,
         subscription_tier: shouldMarkPaid ? tier : 'free',
         subscription_provider: 'apple',
         paid_modules_csv: grantedModulesCsv,
-        pipekeeper_paid,
-        whiskeykeeper_paid,
-        has_paid_access: shouldMarkPaid,
-        // FIX ISSUE-11 + ISSUE-05: Write entitlement_tier (flat) and data.entitlement_tier (nested)
-        entitlement_tier: shouldMarkPaid ? tier : 'free',
+        ...modulePaidFlags,
+        has_paid_access: hasAnyAccess,
+        entitlement_tier: hasAnyAccess ? tier : 'free',
+        referral_earned_access: referralEarnedAccess,
+        referral_earned_module: referralEarnedModule,
+        referral_earned_expires_at: referralEarnedExpiresAt,
         data: {
           ...(users[0].data || {}),
-          entitlement_tier: shouldMarkPaid ? tier : 'free',
+          entitlement_tier: hasAnyAccess ? tier : 'free',
           subscription_tier: shouldMarkPaid ? tier : 'free',
           subscription_level: shouldMarkPaid ? 'paid' : 'free',
           subscription_status: status,
@@ -250,7 +309,32 @@ Deno.serve(async (req) => {
         updates.platform = 'ios';
       }
       await base44.asServiceRole.entities.User.update(users[0].id, updates);
-      console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
+      console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}, allModules=${grantedModulesCsv}`);
+    }
+
+    // ── Upsert UserEntitlement row with merged state ────────────────────────────
+    try {
+      const existingEnt = await base44.asServiceRole.entities.UserEntitlement.filter({ user_id: userId });
+      const entData = {
+        user_id: userId,
+        user_email: emailLower,
+        has_access: hasAnyAccess,
+        modules: allActiveModules,
+        pipekeeper: allActiveModules.includes('pipekeeper'),
+        whiskeykeeper: allActiveModules.includes('whiskeykeeper'),
+        cigarkeeper: allActiveModules.includes('cigarkeeper'),
+        winekeeper: allActiveModules.includes('winekeeper'),
+        primary_product: allActiveModules[0] || null,
+        primary_provider: shouldMarkPaid ? 'apple' : (referralEarnedAccess ? 'referral' : null),
+        computed_at: nowTs.toISOString(),
+      };
+      if (existingEnt?.length > 0) {
+        await base44.asServiceRole.entities.UserEntitlement.update(existingEnt[0].id, entData);
+      } else {
+        await base44.asServiceRole.entities.UserEntitlement.create(entData);
+      }
+    } catch (entErr) {
+      console.warn('[syncAppleSubscriptionForMe] Could not upsert UserEntitlement (non-fatal):', entErr);
     }
     
     // ── Referral qualification: fire when a referred user's iOS sub becomes active ──
@@ -274,7 +358,7 @@ Deno.serve(async (req) => {
     }
 
     // Log successful sync for monitoring
-    console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${emailLower} userId=${userId} tier=${tier} status=${status} active=${active} verified=${isVerified}`);
+    console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${emailLower} userId=${userId} tier=${tier} status=${status} active=${active} verified=${isVerified} allModules=${grantedModulesCsv}`);
 
     return Response.json({
       ok: true,
@@ -284,10 +368,12 @@ Deno.serve(async (req) => {
       status,
       active,
       modules_csv: grantedModulesCsv,
+      ios_modules_csv: modulesCsv,
+      earned_modules: earnedModules,
       plan_key: productAccess.planKey,
       user_id: userId,
       provider_subscription_id: providerSubId,
-      access_granted: shouldMarkPaid
+      access_granted: hasAnyAccess,
     });
   } catch (error) {
     console.error(`[syncAppleSubscriptionForMe] ERROR:`, error);
