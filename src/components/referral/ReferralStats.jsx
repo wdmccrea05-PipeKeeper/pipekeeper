@@ -7,12 +7,12 @@ import { Users, UserCheck, Gift, Star } from 'lucide-react';
 
 function StatTile({ icon: Icon, label, value, color }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-white/[0.03] p-4 space-y-1">
-      <div className="flex items-center gap-2 text-xs text-[#E0D8C8]/50 uppercase tracking-wide">
-        <Icon className="w-3.5 h-3.5" style={{ color }} />
+    <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5 space-y-2">
+      <div className="flex items-center gap-2 text-xs font-semibold text-[#E0D8C8]/60 uppercase tracking-widest">
+        <Icon className="w-4 h-4 shrink-0" style={{ color }} />
         {label}
       </div>
-      <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{value}</p>
+      <p className="text-3xl font-bold" style={{ color: '#F5F1E7' }}>{value}</p>
     </div>
   );
 }

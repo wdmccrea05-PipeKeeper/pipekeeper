@@ -140,40 +140,40 @@ export default function ReferralDashboard() {
 
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-[#F5F1E7]" style={{ fontFamily: 'Georgia, serif' }}>
+          <h1 className="text-3xl font-bold text-[#F5F1E7]" style={{ fontFamily: 'Georgia, serif' }}>
             Refer a Friend
           </h1>
-          <p className="text-[#E0D8C8]/60 text-sm mt-1">
+          <p className="text-[#E0D8C8]/70 text-base mt-2">
             Earn free months when friends you invite become paid subscribers.
           </p>
         </div>
 
         {/* How it works */}
-        <div className="p-5 rounded-2xl" style={cardStyle}>
-          <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide mb-3">How it works</h3>
+        <div className="p-6 rounded-2xl" style={cardStyle}>
+          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest mb-5">How it works</h3>
           <div className="grid grid-cols-3 gap-4 text-center">
             {[
               { step: '1', text: 'Share your personal link' },
               { step: '2', text: 'Friend signs up and subscribes' },
               { step: '3', text: 'You earn 1 free module month ($2.99)' },
             ].map(item => (
-              <div key={item.step} className="space-y-1">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center mx-auto text-sm font-bold"
-                  style={{ background: 'rgba(212,165,116,0.15)', color: '#D4A574' }}>
+              <div key={item.step} className="space-y-2">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center mx-auto text-sm font-bold"
+                  style={{ background: 'rgba(212,165,116,0.18)', color: '#D4A574' }}>
                   {item.step}
                 </div>
-                <p className="text-xs text-[#E0D8C8]/70">{item.text}</p>
+                <p className="text-sm text-[#E0D8C8]/80 leading-snug">{item.text}</p>
               </div>
             ))}
           </div>
-          <div className="mt-3 space-y-1 text-center">
-            <p className="text-xs text-[#E0D8C8]/40">
+          <div className="mt-5 pt-4 border-t border-white/8 space-y-1.5 text-center">
+            <p className="text-sm text-[#E0D8C8]/55">
               1 qualified referral = 1 free module month (up to $2.99)
             </p>
-            <p className="text-xs text-[#E0D8C8]/40">
+            <p className="text-sm text-[#E0D8C8]/55">
               12 qualified referrals = 1 free module year (up to $29.99)
             </p>
-            <p className="text-xs text-[#E0D8C8]/25 mt-1">
+            <p className="text-xs text-[#E0D8C8]/30 mt-1">
               Reward value is fixed and does not vary by plan or bundle.
             </p>
           </div>
@@ -183,8 +183,8 @@ export default function ReferralDashboard() {
         <ReferralStats program={program} />
 
         {/* Share panel */}
-        <div className="p-5 rounded-2xl space-y-4" style={cardStyle}>
-          <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">Your Referral Link</h3>
+        <div className="p-6 rounded-2xl space-y-4" style={cardStyle}>
+          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest">Your Referral Link</h3>
           <ReferralSharePanel
             program={program}
             onInviteClick={() => setShowInviteForm(true)}
@@ -192,15 +192,15 @@ export default function ReferralDashboard() {
         </div>
 
         {/* Progress toward milestones */}
-        <div className="p-5 rounded-2xl space-y-4" style={cardStyle}>
-          <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">Your Progress</h3>
+        <div className="p-6 rounded-2xl space-y-4" style={cardStyle}>
+          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest">Your Progress</h3>
           <ReferralProgressBar program={program} />
         </div>
 
         {/* Reward history */}
         {rewards.length > 0 && (
-          <div className="p-5 rounded-2xl space-y-4" style={cardStyle}>
-            <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">Your Rewards</h3>
+          <div className="p-6 rounded-2xl space-y-4" style={cardStyle}>
+            <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest">Your Rewards</h3>
             <ReferralRewardCards rewards={rewards} onRefresh={loadData} />
           </div>
         )}
@@ -264,7 +264,7 @@ export default function ReferralDashboard() {
           </div>
         )}
 
-        <p className="text-xs text-[#E0D8C8]/30 text-center pb-4">
+        <p className="text-sm text-[#E0D8C8]/40 text-center pb-4 leading-relaxed">
           Rewards are granted after a referred friend completes a paid subscription. Self-referrals and duplicate accounts do not qualify.
         </p>
       </div>

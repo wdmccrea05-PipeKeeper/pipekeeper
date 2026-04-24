@@ -1,5 +1,8 @@
 export default [
-
+  // Global ignores — standalone object with ONLY ignores key (ESLint flat config spec)
+  {
+    ignores: [],
+  },
   {
     // All JS/JSX/TS/TSX files — vitest globals + browser globals
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
