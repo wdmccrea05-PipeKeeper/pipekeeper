@@ -42,7 +42,26 @@ function modulesFromPlanKey(planKey: string): string[] {
   return [];
 }
 
+// Hardcoded price ID → modules mapping (canonical, non-negotiable)
+const HARDCODED_PRICE_TO_MODULES: Record<string, string[]> = {
+  'price_1SsDgEDycvQWC88PmdvlxFDa': ['pipekeeper'],
+  'price_1SsDU6DycvQWC88PIwpmt7Oc': ['pipekeeper'],
+  'price_1TBfcdDycvQWC88PV0OV4t9B': ['whiskeykeeper'],
+  'price_1TBfd7DycvQWC88PHrCnHl1X': ['whiskeykeeper'],
+  'price_1TBfbJDycvQWC88PIjsHAufT': ['cigarkeeper'],
+  'price_1TBfaeDycvQWC88PkAHy3qIC': ['cigarkeeper'],
+  'price_1TKgGnDycvQWC88PwdJo75R5': ['pipekeeper', 'whiskeykeeper'],
+  'price_1TBfhVDycvQWC88PdZ1jQNwX': ['pipekeeper', 'whiskeykeeper'],
+  'price_1TBfdyDycvQWC88PPKSN5uVJ': ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+  'price_1TBfekDycvQWC88P5nZsEr7j': ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+};
+
+// Try hardcoded price map first, then env-var plan key lookup
+// Returns null for hardcoded prices (modules resolved directly via modulesFromPriceId)
 function determinePlanKeyFromPrice(priceId: string | null) {
+  if (!priceId) return null;
+  // Hardcoded IDs: modules are resolved directly, no plan key needed
+  if (HARDCODED_PRICE_TO_MODULES[priceId]) return null;
   const priceMap: Record<string, string> = {
     [Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY') || '']: 'pipekeeper_pro_monthly',
     [Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL') || '']: 'pipekeeper_pro_annual',
@@ -59,7 +78,16 @@ function determinePlanKeyFromPrice(priceId: string | null) {
     [Deno.env.get('VITE_STRIPE_FOUNDERS_MONTHLY') || '']: 'founders_bundle_monthly',
     [Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL') || '']: 'founders_bundle_annual',
   };
-  return priceId ? (priceMap[priceId] || null) : null;
+  return priceMap[priceId] || null;
+}
+
+// Resolve modules directly from price ID (hardcoded first, then plan key)
+function modulesFromPriceId(priceId: string | null): string[] {
+  if (!priceId) return [];
+  const hardcoded = HARDCODED_PRICE_TO_MODULES[priceId];
+  if (hardcoded) return hardcoded;
+  const planKey = determinePlanKeyFromPrice(priceId);
+  return planKey ? modulesFromPlanKey(planKey) : [];
 }
 
 function statusRank(status: string): number {
@@ -84,13 +112,20 @@ function splitModulesCsv(csv: unknown): string[] {
   );
 }
 
-function extractModulesFromMetadata(sub: Stripe.Subscription, planKey: string | null): string[] {
+function extractModulesFromMetadata(sub: Stripe.Subscription, priceId: string | null, planKey: string | null): string[] {
+  // 1. Try hardcoded price ID map first (most authoritative)
+  if (priceId) {
+    const fromHardcoded = modulesFromPriceId(priceId);
+    if (fromHardcoded.length > 0) return fromHardcoded;
+  }
+  // 2. Try metadata modules_csv
   const metadataModules = String(sub.metadata?.modules_csv || '')
     .split(',')
     .map((m) => m.trim().toLowerCase())
     .filter(Boolean);
-
-  return metadataModules.length > 0 ? metadataModules : modulesFromPlanKey(planKey || '');
+  if (metadataModules.length > 0) return metadataModules;
+  // 3. Fall back to plan key
+  return modulesFromPlanKey(planKey || '');
 }
 
 function choosePrimarySubscription(candidates: Array<{ customerId: string; subscription: Stripe.Subscription }>) {
@@ -182,7 +217,7 @@ Deno.serve(async (req) => {
       const item = subscription.items?.data?.[0];
       const priceId = item?.price?.id || null;
       const planKey = determinePlanKeyFromPrice(priceId);
-      const subModules = unique(extractModulesFromMetadata(subscription, planKey));
+      const subModules = unique(extractModulesFromMetadata(subscription, priceId, planKey));
       modulesBySubscription.set(subscription.id, subModules);
 
       const normalizedStatus = String(subscription.status || '').toLowerCase();
@@ -256,28 +291,47 @@ Deno.serve(async (req) => {
       : null;
     const subscriptionStatus = mapStripeStatus(primarySubscription.status);
 
-    // Preserve legacy module access only when paid and current subscription modules could not be resolved.
-    // This protects legitimate paid users during transient metadata/plan mapping drift.
-    const preservedUserModules =
-      hasPaidAccess && unionModules.length === 0
-        ? splitModulesCsv(user?.paid_modules_csv)
-        : [];
-    if (hasPaidAccess && unionModules.length === 0 && preservedUserModules.length > 0) {
-      console.warn(
-        `[syncSubscriptionForMe] using paid_modules_csv fallback for ${email} because qualifying subscriptions resolved zero modules`,
-      );
+    // SAFE RULE: never clear module flags when paid and modules could not be resolved.
+    // Preserve existing flags (paid_modules_csv → individual flags → empty).
+    let preservedUserModules: string[] = [];
+    if (hasPaidAccess && unionModules.length === 0) {
+      // Try paid_modules_csv first
+      const fromCsv = splitModulesCsv(user?.paid_modules_csv);
+      if (fromCsv.length > 0) {
+        preservedUserModules = fromCsv;
+      } else {
+        // Fall back to individual flag fields
+        const fromFlags: string[] = [];
+        if (user?.pipekeeper_paid)    fromFlags.push('pipekeeper');
+        if (user?.whiskeykeeper_paid) fromFlags.push('whiskeykeeper');
+        if (user?.cigarkeeper_paid)   fromFlags.push('cigarkeeper');
+        if (user?.winekeeper_paid)    fromFlags.push('winekeeper');
+        preservedUserModules = fromFlags;
+      }
+      if (preservedUserModules.length > 0) {
+        console.warn(
+          `[syncSubscriptionForMe] preserving existing module flags for ${email} because qualifying subscriptions resolved zero modules`,
+        );
+      }
     }
     const activeModules = unionModules.length > 0 ? unionModules : preservedUserModules;
+    const entitlementSyncState = hasPaidAccess && unionModules.length === 0
+      ? 'needs_review'
+      : 'synced';
 
     const pipekeeper_paid = activeModules.includes('pipekeeper');
     const whiskeykeeper_paid = activeModules.includes('whiskeykeeper');
     const cigarkeeper_paid = activeModules.includes('cigarkeeper');
     const winekeeper_paid = activeModules.includes('winekeeper');
+    const hasBundle = activeModules.length > 1;
+    const entitlementTier = hasPaidAccess
+      ? (hasBundle ? `bundle_${activeModules.length}` : 'pro')
+      : 'free';
 
     await base44.asServiceRole.entities.User.update(userId, {
       stripe_customer_id: customerId,
       subscription_provider: 'stripe',
-      entitlement_tier: hasPaidAccess ? 'pro' : 'free',
+      entitlement_tier: entitlementTier,
       has_paid_access: hasPaidAccess,
       pipekeeper_paid,
       whiskeykeeper_paid,
@@ -287,13 +341,14 @@ Deno.serve(async (req) => {
       subscription_tier: hasPaidAccess ? 'pro' : null,
       subscription_level: hasPaidAccess ? 'paid' : 'free',
       subscription_status: subscriptionStatus,
+      entitlement_sync_state: entitlementSyncState,
       updated_date: new Date().toISOString(),
     });
 
     return Response.json({
       status: 'synced',
       hasPaidAccess,
-      tier: hasPaidAccess ? 'pro' : 'free',
+      tier: entitlementTier,
       subscriptionStatus: String(primarySubscription.status || '').toLowerCase(),
       planKey: primaryPlanKey,
       activeModules,
