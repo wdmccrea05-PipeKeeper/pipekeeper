@@ -5,6 +5,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import CurrencySwitcher from "@/components/nav/CurrencySwitcher";
 import BackButton from "@/components/navigation/BackButton";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
+import GlobalReferralBanner from "@/components/referral/GlobalReferralBanner";
 import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -48,6 +49,8 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </header>
+
+      <GlobalReferralBanner />
 
       <main className="pb-28 md:pb-16">
         <div className="ck-page-shell pt-4 md:pt-6">

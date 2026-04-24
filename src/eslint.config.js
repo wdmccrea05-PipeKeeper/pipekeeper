@@ -4,31 +4,7 @@ export default [
     ignores: [],
   },
   {
-    // Test files — explicitly disable no-undef with test runner globals
-    files: ['**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/__tests__/**'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      globals: {
-        describe: 'readonly',
-        test: 'readonly',
-        it: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        vi: 'readonly',
-        jest: 'readonly',
-      },
-    },
-    rules: {
-      'no-undef': 'off',
-      'no-unused-vars': 'off',
-    },
-  },
-  {
-    // All JS/JSX/TS/TSX files — vitest globals + browser globals
+    // All JS/JSX/TS/TSX files — browser globals
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
     languageOptions: {
       ecmaVersion: 2022,
@@ -66,7 +42,20 @@ export default [
         Set: 'readonly',
         Symbol: 'readonly',
         process: 'readonly',
-        // Vitest / Jest test globals
+      },
+    },
+    rules: {
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+    },
+  },
+  {
+    // Test files — override with test runner globals (more specific, comes after general rule)
+    files: ['**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/__tests__/**'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
         describe: 'readonly',
         test: 'readonly',
         it: 'readonly',
