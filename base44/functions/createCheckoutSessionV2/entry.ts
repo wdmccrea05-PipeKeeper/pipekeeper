@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
     const appSlug = resolveAppSlugFromTier(moduleKey);
     const appEnvironment = String(Deno.env.get("APP_ENV") || Deno.env.get("ENVIRONMENT") || "production").trim().toLowerCase();
     if (!priceId) {
-      return Response.json({ error: `No price configured for module="${moduleKey}" interval="${interval}". Use createModuleCheckoutSession for explicit module-based checkout.` }, { status: 400 });
+      return Response.json({ error: `No price configured for module="${moduleKey}" interval="${interval}". Supported modules: pipekeeper, whiskeykeeper, cigarkeeper, winekeeper, founders_bundle, three_module_bundle.` }, { status: 400 });
     }
 
     // Get or create customer

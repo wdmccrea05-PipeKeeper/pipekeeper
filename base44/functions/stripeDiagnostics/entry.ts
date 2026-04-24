@@ -82,6 +82,8 @@ Deno.serve(async (req) => {
       whiskeykeeper_annual:     Deno.env.get("VITE_STRIPE_WHISKEYKEEPER_ANNUAL")  || "MISSING",
       cigarkeeper_monthly:      Deno.env.get("VITE_STRIPE_CIGARKEEPER_MONTHLY")   || "MISSING",
       cigarkeeper_annual:       Deno.env.get("VITE_STRIPE_CIGARKEEPER_ANNUAL")    || "MISSING",
+      winekeeper_monthly:       Deno.env.get("VITE_STRIPE_WINEKEEPER_MONTHLY")    || "MISSING",
+      winekeeper_annual:        Deno.env.get("VITE_STRIPE_WINEKEEPER_ANNUAL")     || "MISSING",
       founders_bundle_monthly:  Deno.env.get("VITE_STRIPE_FOUNDERS_MONTHLY")      || "MISSING",
       founders_bundle_annual:   Deno.env.get("VITE_STRIPE_FOUNDERS_ANNUAL")       || "MISSING",
       three_module_monthly:     Deno.env.get("VITE_STRIPE_THREE_BUNDLE_MONTHLY")  || "MISSING",
