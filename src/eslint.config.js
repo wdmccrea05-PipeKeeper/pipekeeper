@@ -1,14 +1,20 @@
 export default [
-  // Global ignores — these files are excluded from all lint rules
+  // Global ignores — standalone object with ONLY ignores key (ESLint flat config spec)
   {
     ignores: [
+      '**/curator/__tests__/curatorCoverage.test.jsx',
+      '**/utils/__tests__/entitlements.test.jsx',
       'src/components/curator/__tests__/curatorCoverage.test.jsx',
       'src/components/utils/__tests__/entitlements.test.jsx',
     ],
   },
   {
-    // Test files — vitest globals injected at runtime, never flag as undefined
-    files: ['**/__tests__/**/*.{js,jsx,ts,tsx}', '**/*.test.{js,jsx,ts,tsx}', '**/*.spec.{js,jsx,ts,tsx}'],
+    // All test files — vitest globals injected at runtime
+    files: [
+      '**/__tests__/**/*.{js,jsx,ts,tsx}',
+      '**/*.test.{js,jsx,ts,tsx}',
+      '**/*.spec.{js,jsx,ts,tsx}',
+    ],
     languageOptions: {
       globals: {
         describe: 'readonly',
@@ -30,6 +36,10 @@ export default [
   },
   {
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+    ignores: [
+      '**/curator/__tests__/curatorCoverage.test.jsx',
+      '**/utils/__tests__/entitlements.test.jsx',
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -65,7 +75,6 @@ export default [
         Set: 'readonly',
         Symbol: 'readonly',
         process: 'readonly',
-        // Vitest globals
         describe: 'readonly',
         test: 'readonly',
         it: 'readonly',

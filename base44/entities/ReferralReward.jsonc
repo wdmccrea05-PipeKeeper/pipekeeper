@@ -1,0 +1,114 @@
+{
+  "name": "ReferralReward",
+  "type": "object",
+  "description": "Master reward ledger. One row per reward granted to a referrer. Tracks Stripe and iOS fulfillment separately.",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Referrer user ID (the one who earns the reward)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Referrer email"
+    },
+    "source_referral_event_id": {
+      "type": "string",
+      "description": "FK to ReferralEvent that triggered this reward \u2014 always required"
+    },
+    "source_subscription_credit_id": {
+      "type": "string",
+      "description": "FK to SubscriptionCredit if one was also created"
+    },
+    "reward_type": {
+      "type": "string",
+      "enum": [
+        "free_month",
+        "free_year"
+      ],
+      "description": "Type of reward earned"
+    },
+    "months_granted": {
+      "type": "number",
+      "description": "1 for free_month, 12 for free_year"
+    },
+    "billing_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "ios",
+        "google",
+        "unknown"
+      ],
+      "description": "Billing provider of the referrer at time of reward grant"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "ready_to_apply",
+        "awaiting_user_redemption",
+        "applied",
+        "redeemed",
+        "failed",
+        "expired",
+        "canceled"
+      ],
+      "default": "pending",
+      "description": "Current fulfillment status of this reward"
+    },
+    "provider_reward_reference": {
+      "type": "string",
+      "description": "Stripe coupon/discount ID, or Apple offer code reference, or other provider-specific ID"
+    },
+    "provider_subscription_id": {
+      "type": "string",
+      "description": "The subscription ID this reward was applied to"
+    },
+    "granted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When reward was created / granted"
+    },
+    "applied_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Stripe applied the reward to billing"
+    },
+    "redeemed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When iOS user redeemed the reward in-app"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expiration date \u2014 especially for iOS unredeemed rewards"
+    },
+    "failure_reason": {
+      "type": "string",
+      "description": "Error message if fulfillment failed"
+    },
+    "fulfillment_attempts": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times fulfillment was attempted"
+    },
+    "last_fulfillment_attempt_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "string",
+      "description": "JSON blob for additional provider-specific metadata"
+    }
+  },
+  "required": [
+    "user_id",
+    "source_referral_event_id",
+    "reward_type",
+    "billing_provider",
+    "months_granted",
+    "granted_at",
+    "status"
+  ]
+}

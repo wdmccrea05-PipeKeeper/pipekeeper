@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { AlertCircle, RefreshCw, AlertTriangle, TrendingUp } from 'lucide-react';
+import { AlertCircle, RefreshCw, AlertTriangle, TrendingUp, CreditCard, Smartphone, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function Tile({ label, value, warn }) {
@@ -165,6 +165,87 @@ export default function ReferralAdminReport() {
                 </table>
               </div>
             </section>
+
+            {/* Reward ledger by provider */}
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1 flex items-center gap-2">
+                <Gift className="w-4 h-4" /> Reward Ledger by Provider
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Stripe */}
+                <div className="rounded-xl border border-[#8b6239]/25 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#F5F1E7] mb-2">
+                    <CreditCard className="w-4 h-4 text-[#D4A574]" /> Stripe Rewards
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      ['Total', data.rewards.stripe?.total || 0],
+                      ['Pending', data.rewards.stripe?.pending || 0],
+                      ['Applied', data.rewards.stripe?.applied || 0],
+                      ['Failed', data.rewards.stripe?.failed || 0],
+                    ].map(([label, val]) => (
+                      <Tile key={label} label={label} value={val} warn={label === 'Failed' && val > 0} />
+                    ))}
+                  </div>
+                </div>
+                {/* iOS */}
+                <div className="rounded-xl border border-[#8b6239]/25 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#F5F1E7] mb-2">
+                    <Smartphone className="w-4 h-4 text-[#D4A574]" /> App Store (iOS) Rewards
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      ['Total', data.rewards.ios?.total || 0],
+                      ['Awaiting', data.rewards.ios?.awaitingRedemption || 0],
+                      ['Redeemed', data.rewards.ios?.redeemed || 0],
+                      ['Failed', data.rewards.ios?.failed || 0],
+                    ].map(([label, val]) => (
+                      <Tile key={label} label={label} value={val} warn={label === 'Failed' && val > 0} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Reward audit trail */}
+            {data.rewardAudit?.length > 0 && (
+              <section className="space-y-3">
+                <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Reward Audit Trail</h2>
+                <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-[#2a1f18]">
+                      <tr>
+                        {['User', 'Type', 'Provider', 'Status', 'Granted', 'Applied/Redeemed', 'Ref', 'Attempts', 'Failure'].map(h => (
+                          <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/60">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.rewardAudit.map((r) => (
+                        <tr key={r.id} className="border-t border-[#8b6239]/15 hover:bg-white/[0.02]">
+                          <td className="px-3 py-2 font-mono text-[#E0D8C8]/80 max-w-[130px] truncate">{r.userEmail}</td>
+                          <td className="px-3 py-2 text-[#D4A574]">{r.rewardType}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/70">{r.provider}</td>
+                          <td className="px-3 py-2">
+                            <span className={`font-medium ${
+                              r.status === 'applied' || r.status === 'redeemed' ? 'text-green-400' :
+                              r.status === 'failed' ? 'text-red-400' :
+                              r.status === 'awaiting_user_redemption' ? 'text-amber-400' :
+                              'text-[#E0D8C8]/70'
+                            }`}>{r.status}</span>
+                          </td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{r.grantedAt ? new Date(r.grantedAt).toLocaleDateString() : '—'}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{r.appliedAt ? new Date(r.appliedAt).toLocaleDateString() : r.redeemedAt ? new Date(r.redeemedAt).toLocaleDateString() : '—'}</td>
+                          <td className="px-3 py-2 font-mono text-[#E0D8C8]/50 max-w-[100px] truncate" title={r.providerRef}>{r.providerRef || '—'}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{r.attempts}</td>
+                          <td className="px-3 py-2 text-red-400/80 max-w-[150px] truncate" title={r.failureReason}>{r.failureReason || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
 
             {/* Per-user program summary */}
             <section className="space-y-3">

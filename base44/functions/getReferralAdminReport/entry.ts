@@ -1,6 +1,6 @@
 /**
  * getReferralAdminReport
- * Admin-only: aggregated referral funnel stats, top referrers, fraud flags.
+ * Admin-only: full referral funnel stats, reward audit by provider, fraud flags.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -11,12 +11,14 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    const [events, programs, credits] = await Promise.all([
+    const [events, programs, credits, referralRewards] = await Promise.all([
       base44.asServiceRole.entities.ReferralEvent.list('-invite_sent_at', 500),
       base44.asServiceRole.entities.ReferralProgram.list('-qualified_referrals', 100),
       base44.asServiceRole.entities.SubscriptionCredit.filter({ source: 'referral' }),
+      base44.asServiceRole.entities.ReferralReward.list('-granted_at', 500),
     ]);
 
+    // ─── Funnel ───────────────────────────────────────────────────────────────
     const statusCounts = {};
     const fraudFlags = [];
     const topReferrers = {};
@@ -32,6 +34,7 @@ Deno.serve(async (req) => {
           fraudReason: ev.fraud_reason,
           status: ev.status,
           manualReview: ev.manual_review_required,
+          qualifiedAt: ev.subscription_started_at,
         });
       }
       if (ev.referrer_email) {
@@ -47,6 +50,35 @@ Deno.serve(async (req) => {
     const topReferrersList = Object.values(topReferrers)
       .sort((a, b) => b.qualified - a.qualified)
       .slice(0, 20);
+
+    // ─── Reward ledger audit by provider ─────────────────────────────────────
+    const rewardsByProvider = { stripe: {}, ios: {}, google: {}, unknown: {} };
+    for (const r of referralRewards) {
+      const p = r.billing_provider || 'unknown';
+      if (!rewardsByProvider[p]) rewardsByProvider[p] = {};
+      rewardsByProvider[p][r.status] = (rewardsByProvider[p][r.status] || 0) + 1;
+    }
+
+    const stripeRewards = referralRewards.filter(r => r.billing_provider === 'stripe');
+    const iosRewards = referralRewards.filter(r => r.billing_provider === 'ios');
+
+    const rewardAuditList = referralRewards.slice(0, 200).map(r => ({
+      id: r.id,
+      userId: r.user_id,
+      userEmail: r.user_email,
+      rewardType: r.reward_type,
+      monthsGranted: r.months_granted,
+      provider: r.billing_provider,
+      status: r.status,
+      grantedAt: r.granted_at,
+      appliedAt: r.applied_at,
+      redeemedAt: r.redeemed_at,
+      expiresAt: r.expires_at,
+      failureReason: r.failure_reason,
+      attempts: r.fulfillment_attempts,
+      providerRef: r.provider_reward_reference,
+      sourceEventId: r.source_referral_event_id,
+    }));
 
     const totalCreditsMonths = credits.reduce((sum, c) => sum + (c.months_granted || 0), 0);
 
@@ -68,7 +100,24 @@ Deno.serve(async (req) => {
         totalMonthsGranted: totalCreditsMonths,
         pendingCredits: credits.filter(c => c.status === 'pending').length,
         appliedCredits: credits.filter(c => c.status === 'applied').length,
+        // ReferralReward ledger
+        totalRewards: referralRewards.length,
+        stripe: {
+          total: stripeRewards.length,
+          pending: stripeRewards.filter(r => r.status === 'pending').length,
+          applied: stripeRewards.filter(r => r.status === 'applied').length,
+          failed: stripeRewards.filter(r => r.status === 'failed').length,
+        },
+        ios: {
+          total: iosRewards.length,
+          pending: iosRewards.filter(r => r.status === 'pending').length,
+          awaitingRedemption: iosRewards.filter(r => r.status === 'awaiting_user_redemption').length,
+          redeemed: iosRewards.filter(r => r.status === 'redeemed').length,
+          failed: iosRewards.filter(r => r.status === 'failed').length,
+          expired: iosRewards.filter(r => r.status === 'expired').length,
+        },
       },
+      rewardAudit: rewardAuditList,
       fraudFlags,
       topReferrers: topReferrersList,
       programs: programs.slice(0, 50).map(p => ({

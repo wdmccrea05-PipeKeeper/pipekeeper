@@ -2,7 +2,7 @@
  * ReferralDashboard - subscriber referral program page
  * Shows referral link, invite form, stats, and progress toward rewards.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { ArrowLeft, UserPlus, X, Mail, Lock } from 'lucide-react';
@@ -13,11 +13,13 @@ import { toast } from 'sonner';
 import ReferralSharePanel from '@/components/referral/ReferralSharePanel';
 import ReferralStats from '@/components/referral/ReferralStats';
 import ReferralProgressBar from '@/components/referral/ReferralProgressBar';
+import ReferralRewardCards from '@/components/referral/ReferralRewardCards';
 import { Link } from 'react-router-dom';
 
 export default function ReferralDashboard() {
   const { user, hasPaid, isLoading } = useCurrentUser();
   const [program, setProgram] = useState(null);
+  const [rewards, setRewards] = useState([]);
   const [loadingProgram, setLoadingProgram] = useState(true);
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [emailFields, setEmailFields] = useState(['']);
@@ -25,15 +27,27 @@ export default function ReferralDashboard() {
   const [selectedModule, setSelectedModule] = useState(null);
   const [sending, setSending] = useState(false);
 
+  const loadData = useCallback(async () => {
+    if (!hasPaid) { setLoadingProgram(false); return; }
+    setLoadingProgram(true);
+    try {
+      const [programRes, rewardsRes] = await Promise.all([
+        base44.functions.invoke('getOrCreateReferralProgram', {}),
+        base44.functions.invoke('getReferralRewards', {}),
+      ]);
+      setProgram(programRes?.data?.program || null);
+      setRewards(rewardsRes?.data?.rewards || []);
+    } catch {
+      toast.error('Failed to load referral data');
+    } finally {
+      setLoadingProgram(false);
+    }
+  }, [hasPaid]);
+
   useEffect(() => {
     if (isLoading || !user) return;
-    if (!hasPaid) { setLoadingProgram(false); return; }
-
-    base44.functions.invoke('getOrCreateReferralProgram', {})
-      .then(res => setProgram(res?.data?.program || null))
-      .catch(err => toast.error('Failed to load referral program'))
-      .finally(() => setLoadingProgram(false));
-  }, [user, hasPaid, isLoading]);
+    loadData();
+  }, [user, hasPaid, isLoading, loadData]);
 
   const handleSendInvites = async (e) => {
     e.preventDefault();
@@ -58,8 +72,7 @@ export default function ReferralDashboard() {
         setPersonalMessage('');
         setShowInviteForm(false);
         // Refresh program stats
-        const updated = await base44.functions.invoke('getOrCreateReferralProgram', {});
-        setProgram(updated?.data?.program || program);
+        await loadData();
       }
 
       for (const err of errors) {
@@ -174,6 +187,14 @@ export default function ReferralDashboard() {
           <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">Your Progress</h3>
           <ReferralProgressBar program={program} />
         </div>
+
+        {/* Reward history */}
+        {rewards.length > 0 && (
+          <div className="p-5 rounded-2xl space-y-4" style={cardStyle}>
+            <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">Your Rewards</h3>
+            <ReferralRewardCards rewards={rewards} onRefresh={loadData} />
+          </div>
+        )}
 
         {/* Inline invite form */}
         {showInviteForm && (
