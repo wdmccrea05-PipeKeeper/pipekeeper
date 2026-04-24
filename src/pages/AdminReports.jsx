@@ -11,13 +11,8 @@ import { AlertCircle, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import SubscriptionMigrationCard from '@/components/admin/SubscriptionMigrationCard';
 import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCard';
-import RepairProAccessCard from '@/components/admin/RepairProAccessCard';
-import RepairStripeByEmailCard from '@/components/admin/RepairStripeByEmailCard';
 import StripeDiagnosticsCard from '@/components/admin/StripeDiagnosticsCard';
-import ReconcileEntitlementsCard from '@/components/admin/ReconcileEntitlementsCard';
-import ReconcileEntitlementsBatchCard from '@/components/admin/ReconcileEntitlementsBatchCard';
 
 export default function AdminReports() {
   const navigate = useNavigate();
@@ -25,7 +20,6 @@ export default function AdminReports() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = useState(null);
-  const [backfilling, setBackfilling] = useState(false);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['admin-reports'],
@@ -74,18 +68,6 @@ export default function AdminReports() {
     },
     onError: () => toast.error(t('admin.failedToBlockUser')),
   });
-
-  const handleBackfillStripe = async () => {
-    setBackfilling(true);
-    try {
-      const result = await base44.functions.invoke('syncStripeSubscriptions');
-      toast.success(result.data?.message || t('admin.stripeBackfillCompleted'));
-    } catch (error) {
-      toast.error(t('admin.backfillFailedMsg', { error: error.message || t('common.unknown') }));
-    } finally {
-      setBackfilling(false);
-    }
-  };
 
   if (!isAdmin) {
     return (
@@ -263,14 +245,6 @@ export default function AdminReports() {
              >
                {t('admin.userSubscriptionReport')}
              </Button>
-             <Button
-               onClick={handleBackfillStripe}
-               disabled={backfilling}
-               variant="outline"
-               className="w-full sm:w-auto text-xs sm:text-sm whitespace-nowrap"
-             >
-               {backfilling ? t('admin.syncing') : t('admin.backfillStripe')}
-             </Button>
            </div>
          </div>
        </div>
@@ -351,34 +325,9 @@ export default function AdminReports() {
           <SubscriptionProviderCard me={user} />
           </div>
 
-          {/* Subscription Migration Card */}
-          <div className="mb-6">
-          <SubscriptionMigrationCard />
-          </div>
-
-          {/* Repair Pro Access Card */}
-          <div className="mb-6">
-          <RepairProAccessCard />
-          </div>
-
-          {/* Repair Stripe by Email Card */}
-          <div className="mb-6">
-          <RepairStripeByEmailCard />
-          </div>
-
           {/* Stripe Diagnostics Card */}
           <div className="mb-6">
           <StripeDiagnosticsCard />
-          </div>
-
-          {/* Reconcile Entitlements Card */}
-          <div className="mb-6">
-          <ReconcileEntitlementsCard />
-          </div>
-
-          {/* Reconcile Entitlements Batch Card */}
-          <div className="mb-6">
-          <ReconcileEntitlementsBatchCard />
           </div>
           </div>
           </div>

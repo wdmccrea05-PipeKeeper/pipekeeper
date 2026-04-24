@@ -36,23 +36,22 @@ export default function EntitlementAudit() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
-  // Batch reconcile state
+  // Batch repair state
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchResult, setBatchResult] = useState(null);
-  const [batchSize, setBatchSize] = useState("100");
 
   // Single-user repair state
   const [repairEmail, setRepairEmail] = useState("");
   const [repairLoading, setRepairLoading] = useState(false);
   const [repairResult, setRepairResult] = useState(null);
 
-  const runBatchReconcile = useCallback(async (dryRun) => {
+  const runBatchRepair = useCallback(async (dryRun) => {
     setBatchLoading(true);
     setBatchResult(null);
     try {
-      const response = await base44.functions.invoke("repairEntitlementsBatch", {
+      const response = await base44.functions.invoke("auditAndRepairModuleEntitlements", {
         dryRun,
-        batchSize: parseInt(batchSize, 10) || 100,
+        batchAll: true,
       });
       setBatchResult(response.data);
       if (response.data.ok) {
@@ -70,7 +69,7 @@ export default function EntitlementAudit() {
     } finally {
       setBatchLoading(false);
     }
-  }, [batchSize, queryClient]);
+  }, [queryClient, t]);
 
   const runSingleRepair = useCallback(async (dryRun) => {
     if (!repairEmail.trim()) {
@@ -80,7 +79,7 @@ export default function EntitlementAudit() {
     setRepairLoading(true);
     setRepairResult(null);
     try {
-      const response = await base44.functions.invoke("repairUserEntitlementByEmail", {
+      const response = await base44.functions.invoke("auditAndRepairModuleEntitlements", {
         email: repairEmail.trim(),
         dryRun,
       });
@@ -107,7 +106,7 @@ export default function EntitlementAudit() {
     } finally {
       setRepairLoading(false);
     }
-  }, [repairEmail, queryClient]);
+  }, [repairEmail, queryClient, t]);
 
   return (
     <div className="space-y-6">
@@ -230,23 +229,9 @@ export default function EntitlementAudit() {
             </AlertDescription>
           </Alert>
 
-          <div className="space-y-2">
-            <Label htmlFor="batch-size" className="text-indigo-900">{t("admin.batchSizeLabel")}</Label>
-            <Input
-              id="batch-size"
-              type="number"
-              min="1"
-              max="500"
-              value={batchSize}
-              onChange={(e) => setBatchSize(e.target.value)}
-              disabled={batchLoading}
-              className="w-32"
-            />
-          </div>
-
           <div className="flex gap-3">
             <Button
-              onClick={() => runBatchReconcile(true)}
+              onClick={() => runBatchRepair(true)}
               disabled={batchLoading}
               variant="outline"
               className="border-indigo-400 text-indigo-900 hover:bg-indigo-100"
@@ -254,7 +239,7 @@ export default function EntitlementAudit() {
               {batchLoading ? <><RefreshCw className="w-4 h-4 mr-1 animate-spin" />{t("admin.running")}</> : t("admin.dryRunBtn")}
             </Button>
             <Button
-              onClick={() => runBatchReconcile(false)}
+              onClick={() => runBatchRepair(false)}
               disabled={batchLoading}
               className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
