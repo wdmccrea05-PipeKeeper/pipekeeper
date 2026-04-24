@@ -151,29 +151,29 @@ export default function ReferralDashboard() {
         {/* How it works */}
         <div className="p-6 rounded-2xl" style={cardStyle}>
           <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest mb-5">How it works</h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-6 text-center">
             {[
               { step: '1', text: 'Share your personal link' },
               { step: '2', text: 'Friend signs up and subscribes' },
               { step: '3', text: 'You earn 1 free module month ($2.99)' },
             ].map(item => (
-              <div key={item.step} className="space-y-2">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center mx-auto text-sm font-bold"
+              <div key={item.step} className="space-y-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto text-base font-bold"
                   style={{ background: 'rgba(212,165,116,0.18)', color: '#D4A574' }}>
                   {item.step}
                 </div>
-                <p className="text-sm text-[#E0D8C8]/80 leading-snug">{item.text}</p>
+                <p className="text-base text-[#E0D8C8] leading-snug">{item.text}</p>
               </div>
             ))}
           </div>
-          <div className="mt-5 pt-4 border-t border-white/8 space-y-1.5 text-center">
-            <p className="text-sm text-[#E0D8C8]/55">
+          <div className="mt-6 pt-5 border-t border-white/10 space-y-2 text-center">
+            <p className="text-sm text-[#E0D8C8]/70">
               1 qualified referral = 1 free module month (up to $2.99)
             </p>
-            <p className="text-sm text-[#E0D8C8]/55">
+            <p className="text-sm text-[#E0D8C8]/70">
               12 qualified referrals = 1 free module year (up to $29.99)
             </p>
-            <p className="text-xs text-[#E0D8C8]/30 mt-1">
+            <p className="text-sm text-[#E0D8C8]/45 mt-1">
               Reward value is fixed and does not vary by plan or bundle.
             </p>
           </div>
