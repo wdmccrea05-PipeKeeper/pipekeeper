@@ -135,6 +135,24 @@ Deno.serve(async (req) => {
     const totalSharesOpened = programs.reduce((s, p) => s + (p.shares_opened || 0), 0);
     const totalRecipientClicks = programs.reduce((s, p) => s + (p.recipient_clicks || 0), 0);
 
+    // ─── Earned access audit list ─────────────────────────────────────────────
+    const earnedAccessAudit = earnedAccessRecords.slice(0, 200).map(a => ({
+      id: a.id,
+      userId: a.user_id,
+      userEmail: a.user_email,
+      module: a.module,
+      rewardType: a.reward_type,
+      monthsGranted: a.months_granted,
+      status: a.status,
+      grantedAt: a.granted_at,
+      activatedAt: a.activated_at,
+      startAt: a.start_at,
+      endAt: a.end_at,
+      sourceRewardId: a.source_reward_id,
+      sourceEventId: a.source_referral_event_id,
+      isRevenue: false,
+    }));
+
     return Response.json({
       ok: true,
       funnel: {
@@ -190,6 +208,7 @@ Deno.serve(async (req) => {
         },
       },
       rewardAudit: rewardAuditList,
+      earnedAccessAudit,
       fraudFlags,
       manualReviewQueue,
       topReferrers: topReferrersList,

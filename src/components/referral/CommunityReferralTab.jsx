@@ -110,12 +110,10 @@ export default function CommunityReferralTab() {
       {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-[#F5F1E7]" style={{ fontFamily: 'Georgia, serif' }}>
-          Refer a Friend
+          Invite Friends. Earn Pro Time.
         </h2>
         <p className="text-[#E0D8C8]/60 text-sm mt-1">
-          {hasPaid
-            ? 'Earn free months when friends you invite become paid subscribers.'
-            : 'Invite friends who subscribe — earn free module access, even as a free user.'}
+          Share CollectionKeeper with friends. When someone joins through your invite and becomes a paid subscriber, you earn free subscription time.
         </p>
       </div>
 
@@ -126,7 +124,7 @@ export default function CommunityReferralTab() {
           {[
             { step: '1', text: 'Share your personal link' },
             { step: '2', text: 'Friend signs up and subscribes' },
-            { step: '3', text: hasPaid ? 'You earn 1 free module month' : 'You earn 1 free module month — no subscription required' },
+            { step: '3', text: 'You earn free Pro time — even as a free user' },
           ].map(item => (
             <div key={item.step} className="space-y-1">
               <div className="w-7 h-7 rounded-full flex items-center justify-center mx-auto text-sm font-bold"
@@ -140,11 +138,11 @@ export default function CommunityReferralTab() {
         <div className="mt-3 space-y-1 text-center">
           <p className="text-xs text-[#E0D8C8]/40">1 qualified referral = 1 free module month</p>
           <p className="text-xs text-[#E0D8C8]/40">12 qualified referrals = 1 free module year</p>
-          {!hasPaid && (
-            <p className="text-xs text-[#D4A574]/70 mt-2">
-              Free users: earned access lets you pick one module to unlock for the reward period.
-            </p>
-          )}
+          <p className="text-xs text-[#D4A574]/70 mt-2">
+            {hasPaid
+              ? 'Rewards are applied automatically to your next billing renewal.'
+              : 'Choose which module to unlock with your earned reward — no subscription required.'}
+          </p>
         </div>
       </div>
 
@@ -158,7 +156,9 @@ export default function CommunityReferralTab() {
               You have {pendingAccess.length} unclaimed reward{pendingAccess.length > 1 ? 's' : ''}
             </h3>
           </div>
-          <p className="text-xs text-[#E0D8C8]/60">Choose a module to unlock your earned free access.</p>
+          <p className="text-xs text-[#E0D8C8]/60">
+            You earned Pro time. Choose which module to unlock with your reward.
+          </p>
           <ReferralModuleSelector
             accessRecord={pendingAccess[0]}
             onActivated={() => loadData()}

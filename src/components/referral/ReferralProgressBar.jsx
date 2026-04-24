@@ -12,11 +12,12 @@ export default function ReferralProgressBar({ program }) {
   if (!program) return null;
 
   const qualified = program.qualified_referrals || 0;
-  const nextMonthTarget = Math.ceil((qualified + 1) / REFERRALS_PER_FREE_MONTH) * REFERRALS_PER_FREE_MONTH;
-  const progressToNextMonth = (qualified % REFERRALS_PER_FREE_MONTH) / REFERRALS_PER_FREE_MONTH;
+  // Since every referral earns a free month, show cumulative months earned toward the next year milestone
+  const monthsEarned = program.earned_free_months || 0;
+  const progressToNextMonth = REFERRALS_PER_FREE_MONTH === 1 ? 1 : (qualified % REFERRALS_PER_FREE_MONTH) / REFERRALS_PER_FREE_MONTH;
 
   const progressToYear = (qualified % MONTHS_PER_FREE_YEAR) / MONTHS_PER_FREE_YEAR;
-  const nextYearTarget = Math.ceil((qualified + 1) / MONTHS_PER_FREE_YEAR) * MONTHS_PER_FREE_YEAR;
+  const nextYearTarget = MONTHS_PER_FREE_YEAR - (qualified % MONTHS_PER_FREE_YEAR);
 
   return (
     <div className="space-y-4">
@@ -28,7 +29,7 @@ export default function ReferralProgressBar({ program }) {
             <span>Free month</span>
           </div>
           <span className="text-sm text-[#E0D8C8]/60">
-            {qualified % REFERRALS_PER_FREE_MONTH}/{REFERRALS_PER_FREE_MONTH} qualified referral{REFERRALS_PER_FREE_MONTH !== 1 ? 's' : ''}
+            {qualified % MONTHS_PER_FREE_YEAR}/{MONTHS_PER_FREE_YEAR} toward free year
           </span>
         </div>
         <div className="h-2.5 rounded-full bg-white/10 overflow-hidden">
@@ -41,9 +42,9 @@ export default function ReferralProgressBar({ program }) {
           />
         </div>
         <p className="text-sm text-[#E0D8C8]/50 mt-1.5">
-          {qualified >= nextMonthTarget - REFERRALS_PER_FREE_MONTH
-            ? `✓ ${program.earned_free_months || 0} free month${(program.earned_free_months || 0) !== 1 ? 's' : ''} earned`
-            : `${nextMonthTarget - qualified} more to next free month`}
+          {monthsEarned > 0
+            ? `✓ ${monthsEarned} free month${monthsEarned !== 1 ? 's' : ''} earned`
+            : '1 qualified referral earns your first free month'}
         </p>
       </div>
 
@@ -70,7 +71,7 @@ export default function ReferralProgressBar({ program }) {
         <p className="text-sm text-[#E0D8C8]/50 mt-1.5">
           {(program.earned_free_years || 0) > 0
             ? `✓ ${program.earned_free_years} free year${program.earned_free_years !== 1 ? 's' : ''} earned`
-            : `${nextYearTarget - qualified} more to a free year`}
+            : `${nextYearTarget} more referral${nextYearTarget !== 1 ? 's' : ''} to a free year`}
         </p>
       </div>
     </div>

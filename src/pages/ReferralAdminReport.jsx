@@ -331,6 +331,48 @@ export default function ReferralAdminReport() {
               </section>
             )}
 
+            {/* Earned Access audit (free users — non-revenue) */}
+            {data.earnedAccessAudit?.length > 0 && (
+              <section className="space-y-3">
+                <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide border-b border-emerald-800/30 pb-1 flex items-center gap-2">
+                  <Gift className="w-4 h-4" /> Referral-Earned Access Records ({data.earnedAccessAudit.length})
+                </h2>
+                <p className="text-xs text-[#E0D8C8]/40">These are non-revenue access grants. Never counted as paid subscription revenue.</p>
+                <div className="rounded-xl border border-emerald-800/25 overflow-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-[#1a2a1f]">
+                      <tr>
+                        {['User', 'Module', 'Reward Type', 'Months', 'Status', 'Granted', 'Activated', 'Expires'].map(h => (
+                          <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/60">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.earnedAccessAudit.map((a) => (
+                        <tr key={a.id} className="border-t border-emerald-800/15 hover:bg-white/[0.02]">
+                          <td className="px-3 py-2 font-mono text-[#E0D8C8]/80 max-w-[130px] truncate">{a.userEmail}</td>
+                          <td className="px-3 py-2 text-emerald-300 capitalize">{a.module || <span className="text-amber-400">pending</span>}</td>
+                          <td className="px-3 py-2 text-[#D4A574]">{a.rewardType}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/70">{a.monthsGranted}</td>
+                          <td className="px-3 py-2">
+                            <span className={`font-medium ${
+                              a.status === 'active' ? 'text-green-400' :
+                              a.status === 'pending_module_selection' ? 'text-amber-400' :
+                              a.status === 'expired' ? 'text-[#6b7280]' :
+                              'text-[#E0D8C8]/60'
+                            }`}>{a.status}</span>
+                          </td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{a.grantedAt ? new Date(a.grantedAt).toLocaleDateString() : '—'}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{a.activatedAt ? new Date(a.activatedAt).toLocaleDateString() : '—'}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{a.endAt ? new Date(a.endAt).toLocaleDateString() : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
             {/* Per-user program summary */}
             <section className="space-y-3">
               <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">All Referral Programs</h2>

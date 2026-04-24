@@ -13,7 +13,7 @@
  *   pending_rewards     — rewards not yet applied/redeemed
  */
 import React from 'react';
-import { Mail, Copy, Share2, MousePointer, CheckCircle, Gift, Clock } from 'lucide-react';
+import { Mail, Copy, MousePointer, CheckCircle, Gift, Clock, Star } from 'lucide-react';
 
 function StatTile({ icon: Icon, label, value, color }) {
   return (
@@ -62,6 +62,12 @@ export default function ReferralStats({ program }) {
       color: '#D4A574',
     },
     {
+      icon: Star,
+      label: 'Free Years Earned',
+      value: program.earned_free_years ?? 0,
+      color: '#f59e0b',
+    },
+    {
       icon: Clock,
       label: 'Pending Rewards',
       value: program.pending_rewards ?? 0,
@@ -70,7 +76,7 @@ export default function ReferralStats({ program }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {tiles.map(t => (
         <StatTile key={t.label} {...t} />
       ))}

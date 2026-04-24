@@ -3,7 +3,7 @@
  * Shows earned rewards with provider-aware messaging and iOS redemption CTA.
  */
 import React, { useState } from 'react';
-import { Gift, Star, CheckCircle, Clock, AlertCircle, Smartphone, CreditCard, RefreshCw } from 'lucide-react';
+import { Gift, Star, CheckCircle, Clock, AlertCircle, Smartphone, CreditCard, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -61,6 +61,13 @@ function rewardBody(reward) {
     return `You earned ${label}. Redeem your reward in-app to apply it to your App Store subscription.`;
   }
 
+  // Free user / referral-earned path
+  if (reward.status === 'ready_to_apply' || reward.status === 'pending') {
+    return `You earned ${label}. Choose a module in the Referral tab above to activate your free access.`;
+  }
+  if (reward.status === 'applied') {
+    return `You earned ${label}. Your referral-earned Pro access is active.`;
+  }
   return `You earned ${label}.`;
 }
 
@@ -79,7 +86,12 @@ function ProviderBadge({ provider }) {
       </span>
     );
   }
-  return null;
+  // Free user referral-earned access
+  return (
+    <span className="flex items-center gap-1 text-xs text-emerald-400/70">
+      <Zap className="w-3 h-3" /> Earned Access
+    </span>
+  );
 }
 
 function RewardCard({ reward, onRedeemed }) {
