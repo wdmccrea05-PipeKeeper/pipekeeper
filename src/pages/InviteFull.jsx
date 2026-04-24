@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Mail, UserPlus, CheckCircle, X, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from 'react-router-dom';
+import { REFERRAL_BASE_URL } from '@/lib/config/referralConfig';
 
 export default function InviteFull() {
   const { user, hasPaid, isLoading } = useCurrentUser();
@@ -88,7 +89,7 @@ export default function InviteFull() {
 ${inviterName} has invited you to join CollectionKeeper — a purpose-built app for managing and understanding your pipe, tobacco, and whiskey collection.
 
 Get started here:
-https://collectionkeeper.base44.app
+${REFERRAL_BASE_URL}
 
 Welcome aboard,
 The CollectionKeeper Team

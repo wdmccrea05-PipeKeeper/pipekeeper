@@ -25,12 +25,19 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    const [events, programs, credits, referralRewards, earnedAccessRecords] = await Promise.all([
+    const [events, programs, credits, referralRewards, earnedAccessRecords, expiryHealthRecords] = await Promise.all([
       base44.asServiceRole.entities.ReferralEvent.list('-invite_sent_at', 500),
       base44.asServiceRole.entities.ReferralProgram.list('-qualified_referrals', 100),
       base44.asServiceRole.entities.SubscriptionCredit.filter({ source: 'referral' }),
       base44.asServiceRole.entities.ReferralReward.list('-granted_at', 500),
       base44.asServiceRole.entities.ReferralEarnedAccess.list('-granted_at', 200).catch(() => []),
+      base44.asServiceRole.entities.RemoteConfig.filter({ environment: 'live', is_active: true })
+        .then(rows => (rows || []).filter(r =>
+          r.key === 'referral_expiry_last_run_at' ||
+          r.key === 'referral_expiry_last_expired_count' ||
+          r.key === 'referral_expiry_last_synced_count'
+        ))
+        .catch(() => []),
     ]);
 
     // ─── Funnel ───────────────────────────────────────────────────────────────
@@ -153,8 +160,30 @@ Deno.serve(async (req) => {
       isRevenue: false,
     }));
 
+    // ─── Expiry job health ────────────────────────────────────────────────────
+    const expiryHealthMap = Object.fromEntries(
+      (expiryHealthRecords || []).map(r => [r.key, r.value])
+    );
+    const expiryJobLastRunAt = expiryHealthMap['referral_expiry_last_run_at'] || null;
+    const expiryJobLastExpiredCount = expiryHealthMap['referral_expiry_last_expired_count'] != null
+      ? Number(expiryHealthMap['referral_expiry_last_expired_count'])
+      : null;
+    const expiryJobLastSyncedCount = expiryHealthMap['referral_expiry_last_synced_count'] != null
+      ? Number(expiryHealthMap['referral_expiry_last_synced_count'])
+      : null;
+    // Warn if no run has been recorded or last run was more than 26 hours ago
+    const expiryJobStale = !expiryJobLastRunAt ||
+      (Date.now() - new Date(expiryJobLastRunAt).getTime()) > 26 * 60 * 60 * 1000;
+
     return Response.json({
       ok: true,
+      expiryJobHealth: {
+        lastRunAt: expiryJobLastRunAt,
+        lastExpiredCount: expiryJobLastExpiredCount,
+        lastSyncedCount: expiryJobLastSyncedCount,
+        isStale: expiryJobStale,
+        schedulerNote: 'Runs daily at 06:00 UTC via .github/workflows/expire-referral-access.yml',
+      },
       funnel: {
         // Email invite steps
         invites_sent: statusCounts.invited || 0,

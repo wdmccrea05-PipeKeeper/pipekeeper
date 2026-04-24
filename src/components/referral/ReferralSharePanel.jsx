@@ -7,6 +7,7 @@ import { Copy, Check, Share2, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import { buildReferralLink } from '@/lib/config/referralConfig';
 
 const MODULE_OPTIONS = [
   { key: null, label: 'General' },
@@ -20,9 +21,7 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
   const [selectedModule, setSelectedModule] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const APP_URL = 'https://collectionkeeper.base44.app';
-  const baseLink = `${APP_URL}?ref=${program?.referral_code}`;
-  const shareLink = selectedModule ? `${baseLink}&m=${selectedModule}` : baseLink;
+  const shareLink = buildReferralLink(program?.referral_code, selectedModule);
 
   // Track referrer-side share actions (copy / share) as their own counter,
   // not as funnel ReferralEvent rows.
