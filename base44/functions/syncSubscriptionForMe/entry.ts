@@ -57,15 +57,11 @@ const HARDCODED_PRICE_TO_MODULES: Record<string, string[]> = {
 };
 
 // Try hardcoded price map first, then env-var plan key lookup
+// Returns null for hardcoded prices (modules resolved directly via modulesFromPriceId)
 function determinePlanKeyFromPrice(priceId: string | null) {
   if (!priceId) return null;
-  // Hardcoded map overrides env vars
-  if (HARDCODED_PRICE_TO_MODULES[priceId]) {
-    const mods = HARDCODED_PRICE_TO_MODULES[priceId];
-    if (mods.length === 1) {
-      return `${mods[0]}_pro_monthly`; // approximation — modules still resolved directly
-    }
-  }
+  // Hardcoded IDs: modules are resolved directly, no plan key needed
+  if (HARDCODED_PRICE_TO_MODULES[priceId]) return null;
   const priceMap: Record<string, string> = {
     [Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY') || '']: 'pipekeeper_pro_monthly',
     [Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL') || '']: 'pipekeeper_pro_annual',

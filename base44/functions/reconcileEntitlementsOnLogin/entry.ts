@@ -229,10 +229,10 @@ Deno.serve(async (req) => {
       console.warn(`[reconcileEntitlementsOnLogin] Active subscription for ${email} but no modules resolved. Preserving: [${preserved.join(',')}]`);
 
       await base44.asServiceRole.entities.User.update(user.id, {
-        pipekeeper_paid: preserved.includes('pipekeeper') || (user.pipekeeper_paid ?? false),
-        whiskeykeeper_paid: preserved.includes('whiskeykeeper') || (user.whiskeykeeper_paid ?? false),
-        cigarkeeper_paid: preserved.includes('cigarkeeper') || (user.cigarkeeper_paid ?? false),
-        winekeeper_paid: preserved.includes('winekeeper') || (user.winekeeper_paid ?? false),
+        pipekeeper_paid: preserved.includes('pipekeeper'),
+        whiskeykeeper_paid: preserved.includes('whiskeykeeper'),
+        cigarkeeper_paid: preserved.includes('cigarkeeper'),
+        winekeeper_paid: preserved.includes('winekeeper'),
         has_paid_access: true,
         entitlement_sync_state: 'needs_review',
         updated_date: new Date().toISOString(),

@@ -56,14 +56,14 @@ export function extractPriceId(record: Record<string, unknown>): string | null {
   // Direct fields
   if (record.price_id && typeof record.price_id === 'string') return record.price_id;
   if (record.stripe_price_id && typeof record.stripe_price_id === 'string') return record.stripe_price_id;
-  if (record.productId && typeof record.productId === 'string') return record.productId as string;
-  if (record.product_id && typeof record.product_id === 'string') return record.product_id as string;
+  if (record.productId && typeof record.productId === 'string') return record.productId;
+  if (record.product_id && typeof record.product_id === 'string') return record.product_id;
   // Metadata object
   const meta = record.metadata;
   if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
     const m = meta as Record<string, unknown>;
-    if (m.price_id && typeof m.price_id === 'string') return m.price_id as string;
-    if (m.stripe_price_id && typeof m.stripe_price_id === 'string') return m.stripe_price_id as string;
+    if (m.price_id && typeof m.price_id === 'string') return m.price_id;
+    if (m.stripe_price_id && typeof m.stripe_price_id === 'string') return m.stripe_price_id;
   }
   // Metadata as JSON string
   if (meta && typeof meta === 'string') {
@@ -275,8 +275,8 @@ export async function resolveModuleEntitlements(
   return {
     modules,
     hasPaidAccess: true,
-    hasUnresolvedSubscription: hasUnresolvedSubscription && allModules.size === 0,
-    syncState: 'synced',
+    hasUnresolvedSubscription,
+    syncState: hasUnresolvedSubscription ? 'needs_review' : 'synced',
     priceIds: allPriceIds,
     sources,
     logs,
