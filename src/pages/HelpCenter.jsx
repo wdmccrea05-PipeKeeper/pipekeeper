@@ -136,6 +136,12 @@ export default function HelpCenter() {
                     {t('help.troubleshooting', 'Troubleshooting')}
                   </Button>
                 </Link>
+                <a href="/ReferralDashboard">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Mail className="w-4 h-4 mr-2" />
+                    {t('help.referralProgram', 'Referral Program')}
+                  </Button>
+                </a>
               </CardContent>
             </Card>
           </TabsContent>
