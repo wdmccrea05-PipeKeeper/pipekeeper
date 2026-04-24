@@ -28,13 +28,19 @@ function getStripeCouponId(rewardType) {
   return Deno.env.get('STRIPE_REFERRAL_MONTH_COUPON_ID') || null;
 }
 
+// Reward caps — monthly max $2.99, annual max $29.99
+const STRIPE_REWARD_CAPS = {
+  free_month: 299,   // cents
+  free_year: 2999,   // cents
+};
+
 function buildStripeRewardCouponParams(rewardType) {
   // Fallback: dynamic coupon creation when no env coupon ID is configured.
-  // Fixed-value — independent of plan price.
+  // Fixed-value — capped at reward maximums, independent of plan price.
   if (rewardType === 'free_year') {
     return {
       name: 'CollectionKeeper Referral — 1 Free Module Year ($29.99)',
-      amount_off: 2999,
+      amount_off: STRIPE_REWARD_CAPS.free_year,
       currency: 'usd',
       duration: 'once',
       max_redemptions: 1,
@@ -42,7 +48,7 @@ function buildStripeRewardCouponParams(rewardType) {
   }
   return {
     name: 'CollectionKeeper Referral — 1 Free Module Month ($2.99)',
-    amount_off: 299,
+    amount_off: STRIPE_REWARD_CAPS.free_month,
     currency: 'usd',
     duration: 'once',
     max_redemptions: 1,
@@ -224,24 +230,51 @@ async function fulfillStripe(base44, reward, now) {
   }
 
   try {
+    // Fetch current subscription to determine actual renewal amount for cap enforcement
+    let renewalAmountCents = null;
+    try {
+      const stripeSub = await stripe.subscriptions.retrieve(stripeSubId, {
+        expand: ['items.data.price'],
+      });
+      renewalAmountCents = stripeSub?.items?.data?.[0]?.price?.unit_amount || null;
+    } catch {
+      console.warn('[fulfillReferralReward] Could not fetch Stripe subscription for cap check');
+    }
+
+    // Enforce reward cap: never discount more than actual renewal amount
+    const maxRewardCents = STRIPE_REWARD_CAPS[reward.reward_type] || 299;
+    const cappedAmountCents = renewalAmountCents
+      ? Math.min(maxRewardCents, renewalAmountCents)
+      : maxRewardCents;
+
     // Prefer pre-configured coupon ID from env — avoids creating ad-hoc coupons.
     // Fall back to dynamic coupon creation if env IDs are not yet configured.
     const configuredCouponId = getStripeCouponId(reward.reward_type);
     let couponId;
+    let usedConfiguredCoupon = false;
 
     if (configuredCouponId) {
       // Validate the configured coupon still exists in Stripe
       try {
-        await stripe.coupons.retrieve(configuredCouponId);
-        couponId = configuredCouponId;
+        const existing = await stripe.coupons.retrieve(configuredCouponId);
+        // Only use pre-configured coupon if its amount_off matches our cap
+        if (existing.amount_off && existing.amount_off <= maxRewardCents) {
+          couponId = configuredCouponId;
+          usedConfiguredCoupon = true;
+        } else {
+          console.warn(`[fulfillReferralReward] Pre-configured coupon ${configuredCouponId} amount_off=${existing.amount_off} exceeds cap=${maxRewardCents} — creating capped coupon`);
+        }
       } catch {
-        console.warn(`[fulfillReferralReward] Configured coupon ${configuredCouponId} not found in Stripe — creating dynamic coupon`);
-        const coupon = await stripe.coupons.create(buildStripeRewardCouponParams(reward.reward_type));
-        couponId = coupon.id;
+        console.warn(`[fulfillReferralReward] Configured coupon ${configuredCouponId} not found in Stripe — creating capped coupon`);
       }
-    } else {
-      // No env coupon configured — create dynamically
-      const coupon = await stripe.coupons.create(buildStripeRewardCouponParams(reward.reward_type));
+    }
+
+    if (!couponId) {
+      const params = buildStripeRewardCouponParams(reward.reward_type);
+      // Override amount_off with capped value if subscriber's plan is cheaper
+      params.amount_off = cappedAmountCents;
+      params.name = `${params.name} [capped:${cappedAmountCents}c]`;
+      const coupon = await stripe.coupons.create(params);
       couponId = coupon.id;
     }
 
@@ -256,6 +289,13 @@ async function fulfillStripe(base44, reward, now) {
       provider_reward_reference: couponId,
       provider_subscription_id: stripeSubId,
       failure_reason: null,
+      metadata: JSON.stringify({
+        coupon_id: couponId,
+        capped_amount_cents: cappedAmountCents,
+        renewal_amount_cents: renewalAmountCents,
+        used_configured_coupon: usedConfiguredCoupon,
+        applied_at: now,
+      }),
     });
 
     return Response.json({
@@ -264,7 +304,8 @@ async function fulfillStripe(base44, reward, now) {
       status: 'applied',
       couponId,
       subscriptionId: stripeSubId,
-      usedConfiguredCoupon: !!configuredCouponId,
+      cappedAmountCents,
+      usedConfiguredCoupon,
     });
 
   } catch (stripeErr) {

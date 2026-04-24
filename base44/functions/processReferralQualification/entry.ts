@@ -2,20 +2,30 @@
  * processReferralQualification
  *
  * Called when a referred user converts to a paid subscriber.
- * Handles fraud checks, qualification, SubscriptionCredit creation,
- * ReferralReward creation, and routes fulfillment by billing provider.
+ * Provider-aware fraud scoring: iOS referrals with null amount are NOT penalized
+ * since iOS client sync does not provide transaction amount.
  *
- * Reward config — single source of truth:
+ * Fraud scoring:
+ *   - self_referral: +100 (instant flag)
+ *   - duplicate_referral_already_qualified: +100 (instant flag)
+ *   - same_email_domain (non-public): +30
+ *   - suspiciously_fast_signup (<2 min): +40
+ *   - subscription_amount_too_low: +50 — ONLY for non-iOS providers where amount is expected
+ *
+ * Thresholds: fraud_flagged >= 80, manual_review >= 40
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const REWARD_CONFIG = {
   REFERRALS_PER_FREE_MONTH: 1,
   MONTHS_PER_FREE_YEAR: 12,
+  // Only enforced for Stripe/Google where amount is always available
   MIN_SUBSCRIPTION_AMOUNT_CENTS: 100,
 };
 
-/** Resolve billing provider from any available source */
+const PUBLIC_EMAIL_DOMAINS = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'me.com', 'protonmail.com'];
+
+/** Resolve billing provider from body first, then contracts, then legacy subs */
 function resolveProvider(body, contracts, legacySubs) {
   if (body.billingProvider) return body.billingProvider;
   const contract = contracts?.find(c => c.is_active) || contracts?.[0];
@@ -33,9 +43,9 @@ Deno.serve(async (req) => {
       referredUserId,
       referredEmail,
       subscriptionId,
-      subscriptionAmount,
+      subscriptionAmount,   // may be null for iOS — do NOT penalize if provider = ios
       subscriptionInterval,
-      billingProvider, // stripe | ios | google — caller should pass this
+      billingProvider,      // stripe | ios | google | unknown
     } = body;
 
     if (!referredUserId && !referredEmail) {
@@ -79,25 +89,41 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, reason: 'already_processed', status: event.status });
     }
 
+    // ─── Determine the provider for this qualification ────────────────────────
+    // Use caller-supplied billingProvider first (most reliable),
+    // then try to infer from referred user's subscription data.
+    const referredContracts = await base44.asServiceRole.entities.ActiveContract.filter({
+      user_id: referredId,
+      is_active: true,
+    }).catch(() => []);
+    const referredSubs = await base44.asServiceRole.entities.Subscription.filter({
+      user_id: referredId,
+    }).catch(() => []);
+
+    const qualificationProvider = resolveProvider({ billingProvider }, referredContracts, referredSubs);
+    const isIosQualification = qualificationProvider === 'ios';
+
     // ─── Fraud checks ─────────────────────────────────────────────────────────
     let fraudScore = 0;
     const fraudReasons = [];
 
+    // 1. Self-referral (instant flag)
     if (referrerId === referredId) {
       fraudScore += 100;
       fraudReasons.push('self_referral');
     }
 
+    // 2. Same non-public email domain
     const referrerEmail = event.referrer_email || '';
     const referredEmailVal = referredUser.email || '';
     const referrerDomain = referrerEmail.split('@')[1];
     const referredDomain = referredEmailVal.split('@')[1];
-    const publicDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'me.com'];
-    if (referrerDomain && referrerDomain === referredDomain && !publicDomains.includes(referrerDomain)) {
+    if (referrerDomain && referrerDomain === referredDomain && !PUBLIC_EMAIL_DOMAINS.includes(referrerDomain)) {
       fraudScore += 30;
       fraudReasons.push('same_email_domain');
     }
 
+    // 3. Suspiciously fast signup (< 2 minutes from invite to signup)
     if (event.invite_sent_at && event.signup_at) {
       const delta = new Date(event.signup_at) - new Date(event.invite_sent_at);
       if (delta < 2 * 60 * 1000) {
@@ -106,6 +132,7 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 4. Already qualified (duplicate referral)
     const existingQualified = await base44.asServiceRole.entities.ReferralEvent.filter({
       referred_user_id: referredId,
       status: 'qualified',
@@ -115,10 +142,14 @@ Deno.serve(async (req) => {
       fraudReasons.push('duplicate_referral_already_qualified');
     }
 
-    const amountCents = Math.round((subscriptionAmount || 0) * 100);
-    if (amountCents < REWARD_CONFIG.MIN_SUBSCRIPTION_AMOUNT_CENTS) {
-      fraudScore += 50;
-      fraudReasons.push('subscription_amount_too_low');
+    // 5. Amount check — SKIP for iOS since amount is never available from client sync.
+    //    For Stripe and Google, a very low/zero amount is a fraud signal.
+    if (!isIosQualification) {
+      const amountCents = Math.round((subscriptionAmount || 0) * 100);
+      if (amountCents < REWARD_CONFIG.MIN_SUBSCRIPTION_AMOUNT_CENTS) {
+        fraudScore += 50;
+        fraudReasons.push('subscription_amount_too_low');
+      }
     }
 
     const fraudFlagged = fraudScore >= 80;
@@ -138,7 +169,7 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, reason: 'fraud_flagged', fraudScore, fraudReasons });
     }
 
-    // ─── Mark event qualified ─────────────────────────────────────────────────
+    // ─── Mark event qualified or in manual review ──────────────────────────────
     await base44.asServiceRole.entities.ReferralEvent.update(event.id, {
       status: manualReview ? 'activated' : 'qualified',
       fraud_score: fraudScore,
@@ -151,20 +182,19 @@ Deno.serve(async (req) => {
     });
 
     if (manualReview) {
-      return Response.json({ ok: true, qualified: false, manualReview: true, fraudScore });
+      return Response.json({ ok: true, qualified: false, manualReview: true, fraudScore, qualificationProvider });
     }
 
-    // ─── Resolve referrer's billing provider ──────────────────────────────────
+    // ─── Resolve REFERRER's billing provider (for reward fulfillment routing) ──
     const referrerContracts = await base44.asServiceRole.entities.ActiveContract.filter({
       user_id: referrerId,
       is_active: true,
     }).catch(() => []);
-
     const referrerSubs = await base44.asServiceRole.entities.Subscription.filter({
       user_id: referrerId,
     }).catch(() => []);
 
-    const detectedProvider = resolveProvider({ billingProvider }, referrerContracts, referrerSubs);
+    const referrerProvider = resolveProvider({}, referrerContracts, referrerSubs);
 
     // ─── Get ReferralProgram ──────────────────────────────────────────────────
     const programs = await base44.asServiceRole.entities.ReferralProgram.filter({ user_id: referrerId });
@@ -192,7 +222,7 @@ Deno.serve(async (req) => {
       const rewardType = newYearsGranted > 0 ? 'free_year' : 'free_month';
       const monthsGranted = newYearsGranted > 0 ? 12 * newYearsGranted : newMonthsGranted;
 
-      // 1. Create SubscriptionCredit (audit ledger)
+      // 1. SubscriptionCredit (audit ledger)
       const credit = await base44.asServiceRole.entities.SubscriptionCredit.create({
         user_id: referrerId,
         user_email: program.user_email,
@@ -202,11 +232,12 @@ Deno.serve(async (req) => {
         months_granted: monthsGranted,
         granted_at: now,
         status: 'pending',
-        notes: `Earned for qualifying referral #${newQualifiedCount}`,
+        notes: `Earned for qualifying referral #${newQualifiedCount} (provider: ${qualificationProvider})`,
       });
       creditId = credit.id;
 
-      // 2. Create ReferralReward (master fulfillment ledger)
+      // 2. ReferralReward (master fulfillment ledger)
+      // billing_provider here is the REFERRER's provider — determines how the reward is fulfilled
       const reward = await base44.asServiceRole.entities.ReferralReward.create({
         user_id: referrerId,
         user_email: program.user_email,
@@ -214,21 +245,25 @@ Deno.serve(async (req) => {
         source_subscription_credit_id: creditId,
         reward_type: rewardType,
         months_granted: monthsGranted,
-        billing_provider: detectedProvider,
+        billing_provider: referrerProvider,
         status: 'pending',
         granted_at: now,
         fulfillment_attempts: 0,
+        metadata: JSON.stringify({
+          qualification_provider: qualificationProvider, // which provider the referrED used
+          referrer_provider: referrerProvider,           // which provider the referrER uses
+        }),
       });
       rewardId = reward.id;
 
-      // 3. Update event with credit ref
+      // 3. Update event
       await base44.asServiceRole.entities.ReferralEvent.update(event.id, {
         status: 'rewarded',
         reward_granted_at: now,
         subscription_credit_id: creditId,
       });
 
-      // 4. Update ReferralProgram counters
+      // 4. Update ReferralProgram counters — only increment invites_sent-derived metrics, not here
       await base44.asServiceRole.entities.ReferralProgram.update(program.id, {
         qualified_referrals: newQualifiedCount,
         earned_free_months: (program.earned_free_months || 0) + monthsGranted,
@@ -237,11 +272,10 @@ Deno.serve(async (req) => {
         last_reward_at: now,
       });
 
-      // 5. Trigger fulfillment (fire-and-forget — don't block response)
+      // 5. Trigger fulfillment (fire-and-forget)
       base44.asServiceRole.functions.invoke('fulfillReferralReward', { rewardId }).catch(() => {});
 
     } else {
-      // Qualified but no new reward milestone yet — just update counters
       await base44.asServiceRole.entities.ReferralProgram.update(program.id, {
         qualified_referrals: newQualifiedCount,
       });
@@ -257,7 +291,8 @@ Deno.serve(async (req) => {
       newQualifiedCount,
       newMonthsGranted,
       newYearsGranted,
-      detectedProvider,
+      qualificationProvider,
+      referrerProvider,
       creditId,
       rewardId,
     });

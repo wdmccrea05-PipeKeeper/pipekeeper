@@ -2,6 +2,7 @@
  * sendReferralInvite
  * Sends visually polished, brand-consistent referral invite emails.
  * Includes HTML + plain text, module-aware copy, and ReferralEvent audit logging.
+ * Increments invites_sent (not total_referrals) on the ReferralProgram.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -14,7 +15,6 @@ const MODULE_LABELS = {
   winekeeper: 'WineKeeper',
 };
 
-// Escape HTML special characters to prevent injection
 function esc(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -24,7 +24,6 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-// Module-aware body copy
 function getModuleCopy(inviterName, module) {
   const safe = esc(inviterName);
   switch (module) {
@@ -46,11 +45,7 @@ function buildHtmlEmail({ inviterName, referralLink, module, personalMessage }) 
   const safeLink = esc(referralLink);
   const moduleLabel = module ? esc(MODULE_LABELS[module] || '') : null;
   const introCopy = getModuleCopy(inviterName, module);
-
-  // Sanitize and truncate personal message
-  const safeNote = personalMessage
-    ? esc(String(personalMessage).slice(0, 400))
-    : null;
+  const safeNote = personalMessage ? esc(String(personalMessage).slice(0, 400)) : null;
 
   const personalNoteSection = safeNote ? `
     <tr>
@@ -74,56 +69,39 @@ function buildHtmlEmail({ inviterName, referralLink, module, personalMessage }) 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>You've been invited to CollectionKeeper</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f0eb; font-family: Georgia, 'Times New Roman', serif; -webkit-font-smoothing: antialiased;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f4f0eb;">
     <tr>
       <td align="center" style="padding: 32px 16px;">
-
-        <!-- Email card -->
         <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width: 560px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
-
-          <!-- Header bar -->
           <tr>
             <td style="background-color: #1e1410; padding: 20px 32px; text-align: center;">
               <p style="margin: 0; font-family: Georgia, serif; font-size: 18px; font-weight: normal; color: #c8a97e; letter-spacing: 0.08em;">COLLECTIONKEEPER</p>
               <p style="margin: 4px 0 0 0; font-size: 11px; color: rgba(200,169,126,0.6); letter-spacing: 0.12em; font-family: Arial, sans-serif; text-transform: uppercase;">One App. Every Collection.</p>
             </td>
           </tr>
-
-          <!-- Body -->
           <tr>
             <td style="padding: 36px 40px 8px 40px;">
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
-
-                <!-- Headline -->
                 <tr>
                   <td style="padding: 0 0 20px 0;">
                     <h1 style="margin: 0; font-family: Georgia, serif; font-size: 22px; font-weight: normal; color: #1e1410; line-height: 1.3;">You've been invited to CollectionKeeper</h1>
                   </td>
                 </tr>
-
                 ${moduleChip}
-
-                <!-- Intro -->
                 <tr>
                   <td style="padding: 0 0 20px 0;">
                     <p style="margin: 0; font-size: 16px; color: #3d2e20; line-height: 1.7; font-family: Arial, sans-serif;">${introCopy}</p>
                   </td>
                 </tr>
-
                 ${personalNoteSection}
-
-                <!-- Product explanation -->
                 <tr>
                   <td style="padding: 0 0 28px 0;">
                     <p style="margin: 0; font-size: 15px; color: #5a4535; line-height: 1.7; font-family: Arial, sans-serif;">CollectionKeeper includes dedicated tools like PipeKeeper, WhiskeyKeeper, and CigarKeeper, built to help collectors track what they own, log notes and sessions, and better understand their collections over time.</p>
                   </td>
                 </tr>
-
-                <!-- CTA button -->
                 <tr>
                   <td style="padding: 0 0 16px 0;" align="center">
                     <a href="${safeLink}"
@@ -133,8 +111,6 @@ function buildHtmlEmail({ inviterName, referralLink, module, personalMessage }) 
                     </a>
                   </td>
                 </tr>
-
-                <!-- Fallback link -->
                 <tr>
                   <td style="padding: 0 0 32px 0;" align="center">
                     <p style="margin: 0; font-size: 12px; color: #9a8070; font-family: Arial, sans-serif;">If the button does not work, use this link:</p>
@@ -143,29 +119,21 @@ function buildHtmlEmail({ inviterName, referralLink, module, personalMessage }) 
                     </p>
                   </td>
                 </tr>
-
               </table>
             </td>
           </tr>
-
-          <!-- Divider -->
           <tr>
             <td style="padding: 0 40px;">
               <hr style="border: none; border-top: 1px solid #ede8e2; margin: 0;" />
             </td>
           </tr>
-
-          <!-- Footer -->
           <tr>
             <td style="padding: 24px 40px 32px 40px;">
               <p style="margin: 0 0 6px 0; font-size: 12px; color: #9a8070; font-family: Arial, sans-serif; line-height: 1.6;">This invitation was sent by <strong style="color: #5a4535;">${safeName}</strong> through CollectionKeeper.</p>
               <p style="margin: 0; font-size: 12px; color: #b0a090; font-family: Arial, sans-serif;">If you did not expect this invitation, you can safely ignore this email.</p>
             </td>
           </tr>
-
         </table>
-        <!-- End email card -->
-
       </td>
     </tr>
   </table>
@@ -178,7 +146,6 @@ function buildPlainTextEmail({ inviterName, referralLink, module, personalMessag
   const introCopy = module
     ? `${inviterName} invited you to check out CollectionKeeper${moduleLabel ? `'s ${moduleLabel} tools` : ''}.`
     : `${inviterName} thought you might like CollectionKeeper — a better way to organize and enjoy your collections.`;
-
   const noteSection = personalMessage
     ? `\nPersonal note from ${inviterName}:\n"${String(personalMessage).slice(0, 400)}"\n`
     : '';
@@ -212,7 +179,7 @@ Deno.serve(async (req) => {
       personalMessage = '',
       module = null,
       referralCode,
-      preview = false,  // preview mode: return rendered email without sending
+      preview = false,
     } = body;
 
     if (!referralCode) return Response.json({ error: 'referralCode required' }, { status: 400 });
@@ -221,15 +188,12 @@ Deno.serve(async (req) => {
     const userEmail = String(user.email || '').toLowerCase();
     const inviterName = user.full_name || 'A CollectionKeeper member';
     const now = new Date().toISOString();
-
     const referralLink = `${APP_URL}?ref=${referralCode}${module ? `&m=${module}` : ''}`;
-
     const emailData = { inviterName, referralLink, module, personalMessage };
     const htmlBody = buildHtmlEmail(emailData);
     const plainText = buildPlainTextEmail(emailData);
     const subject = `${inviterName} invited you to CollectionKeeper`;
 
-    // Preview mode — return rendered templates without sending
     if (preview) {
       return Response.json({ ok: true, preview: true, subject, html: htmlBody, text: plainText });
     }
@@ -246,20 +210,15 @@ Deno.serve(async (req) => {
         results.push({ email, ok: false, error: 'invalid email' });
         continue;
       }
-
       if (email === userEmail) {
         results.push({ email, ok: false, error: 'self_referral' });
         continue;
       }
-
       const existingUsers = await base44.asServiceRole.entities.User.filter({ email });
       if (existingUsers && existingUsers.length > 0) {
         results.push({ email, ok: false, error: 'already_user' });
         continue;
       }
-
-      let sendStatus = 'failed';
-      let sendError = null;
 
       try {
         await base44.integrations.Core.SendEmail({
@@ -269,9 +228,7 @@ Deno.serve(async (req) => {
           from_name: 'CollectionKeeper Invitations',
         });
 
-        sendStatus = 'sent';
-
-        // Audit log: ReferralEvent
+        // Create ReferralEvent row — status = 'invited', channel = 'email'
         await base44.asServiceRole.entities.ReferralEvent.create({
           referrer_user_id: userId,
           referrer_email: userEmail,
@@ -286,23 +243,19 @@ Deno.serve(async (req) => {
 
         results.push({ email, ok: true });
       } catch (err) {
-        sendError = err.message;
         results.push({ email, ok: false, error: err.message });
-      }
-
-      // Log send attempt regardless of outcome
-      if (import.meta?.env?.DEV) {
-        console.log(`[sendReferralInvite] to=${email} status=${sendStatus} module=${module || 'general'} error=${sendError || 'none'}`);
       }
     }
 
-    // Update total_referrals count on ReferralProgram
+    // Increment invites_sent (not total_referrals) on ReferralProgram
     const sentCount = results.filter(r => r.ok).length;
     if (sentCount > 0) {
-      const programs = await base44.entities.ReferralProgram.filter({ user_id: userId });
+      const programs = await base44.asServiceRole.entities.ReferralProgram.filter({ user_id: userId });
       if (programs && programs.length > 0) {
         const prog = programs[0];
-        await base44.entities.ReferralProgram.update(prog.id, {
+        await base44.asServiceRole.entities.ReferralProgram.update(prog.id, {
+          invites_sent: (prog.invites_sent || 0) + sentCount,
+          // Keep total_referrals in sync = invites_sent for backwards compat
           total_referrals: (prog.total_referrals || 0) + sentCount,
         });
       }

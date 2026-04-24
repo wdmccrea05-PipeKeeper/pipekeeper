@@ -1,7 +1,7 @@
 {
   "name": "ReferralProgram",
   "type": "object",
-  "description": "One row per subscriber. Tracks their referral code, link, and aggregated reward state.",
+  "description": "One row per subscriber. Tracks their referral code, link, and aggregated reward state. Each counter has a single, unambiguous meaning.",
   "properties": {
     "user_id": {
       "type": "string",
@@ -23,32 +23,55 @@
       "type": "boolean",
       "default": true
     },
+    "invites_sent": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of email invites sent via the invite form"
+    },
+    "links_copied": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times the referrer copied their link to clipboard"
+    },
+    "shares_opened": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times the referrer opened the native share sheet"
+    },
+    "recipient_clicks": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of unique anonymous recipient link clicks (tracked via trackReferralClick channel=link)"
+    },
     "total_referrals": {
       "type": "number",
       "default": 0,
-      "description": "Total invites sent"
+      "description": "Legacy: kept in sync with invites_sent for backwards compatibility. Use invites_sent for display."
     },
     "qualified_referrals": {
       "type": "number",
       "default": 0,
-      "description": "Referrals that converted to paid"
+      "description": "Referrals that converted to a paid subscription and passed fraud checks"
     },
     "earned_free_months": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Total free months earned (cumulative)"
     },
     "earned_free_years": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Total free years earned (cumulative)"
     },
     "pending_rewards": {
       "type": "number",
       "default": 0,
-      "description": "Rewards not yet applied"
+      "description": "Rewards not yet applied or redeemed"
     },
     "last_reward_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "When the most recent reward was granted"
     }
   },
   "required": [

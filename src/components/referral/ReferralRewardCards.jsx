@@ -88,31 +88,34 @@ function RewardCard({ reward, onRedeemed }) {
   const StatusIcon = meta.icon;
 
   const handleIosRedeem = async () => {
-    // Step 1: trigger Apple offer code redemption sheet (client-side StoreKit)
-    // This is done via the native bridge — signal the native layer if available
     setRedeeming(true);
+    // The resolved Apple offer identifier is stored in reward.provider_reward_reference
+    // by fulfillReferralReward. Always pass it through to the native layer.
+    const offerIdentifier = reward.provider_reward_reference || null;
+
     try {
       if (window?.webkit?.messageHandlers?.storeKit?.postMessage) {
-        // Native iOS WebView: signal StoreKit to open offer redemption
+        // Native iOS WebView bridge: pass the resolved offer identifier so StoreKit
+        // can present the correct offer code redemption sheet.
+        // The native layer is responsible for:
+        //   1. Opening the StoreKit offer code sheet with this identifier
+        //   2. Collecting transactionId + productId from StoreKit on success
+        //   3. Calling redeemIosReferralReward with { rewardId, offerReference, transactionId, productId, outcome }
         window.webkit.messageHandlers.storeKit.postMessage({
           action: 'presentOfferCodeRedeemSheet',
           rewardId: reward.id,
+          offerIdentifier,   // pass resolved identifier to native layer
         });
-        // Native layer will call redeemIosReferralReward when done
         toast.info('Opening App Store redemption…');
+        // UI will refresh when native layer calls back via redeemIosReferralReward
       } else {
-        // Fallback for web preview — simulate a confirmation
-        const res = await base44.functions.invoke('redeemIosReferralReward', {
-          rewardId: reward.id,
-          outcome: 'redeemed',
-          offerReference: `web-preview-${Date.now()}`,
-        });
-        if (res?.data?.ok) {
-          toast.success('Reward redeemed!');
-          onRedeemed?.();
-        } else {
-          toast.error(res?.data?.reason || 'Redemption failed');
-        }
+        // Web preview fallback — cannot complete a real StoreKit redemption.
+        // Show an informational message rather than simulating success.
+        toast.info(
+          offerIdentifier
+            ? `Offer code: ${offerIdentifier} — redeem in the iOS app.`
+            : 'Open the CollectionKeeper iOS app to redeem this reward.'
+        );
       }
     } catch (err) {
       toast.error('Redemption failed. Please try again.');

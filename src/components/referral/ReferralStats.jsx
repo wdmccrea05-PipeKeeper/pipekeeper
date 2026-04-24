@@ -1,9 +1,19 @@
 /**
  * ReferralStats
- * Grid of referral funnel stats for the subscriber dashboard.
+ * Displays accurate per-action referral metrics.
+ * Each metric means exactly one thing — no mixed event types.
+ *
+ * Metric semantics:
+ *   invites_sent      — emails sent via the invite form
+ *   links_copied      — referrer copied their link
+ *   shares_opened     — referrer opened native share sheet
+ *   recipient_clicks  — anonymous recipient clicked the referral URL
+ *   qualified_referrals — conversions that cleared fraud checks
+ *   earned_free_months  — free months earned (cumulative)
+ *   pending_rewards     — rewards not yet applied/redeemed
  */
 import React from 'react';
-import { Users, UserCheck, Gift, Star } from 'lucide-react';
+import { Mail, Copy, Share2, MousePointer, CheckCircle, Gift, Clock } from 'lucide-react';
 
 function StatTile({ icon: Icon, label, value, color }) {
   return (
@@ -12,7 +22,7 @@ function StatTile({ icon: Icon, label, value, color }) {
         <Icon className="w-4 h-4 shrink-0" style={{ color }} />
         {label}
       </div>
-      <p className="text-3xl font-bold" style={{ color: '#F5F1E7' }}>{value}</p>
+      <p className="text-3xl font-bold" style={{ color: '#F5F1E7' }}>{value ?? 0}</p>
     </div>
   );
 }
@@ -20,12 +30,50 @@ function StatTile({ icon: Icon, label, value, color }) {
 export default function ReferralStats({ program }) {
   if (!program) return null;
 
+  const tiles = [
+    {
+      icon: Mail,
+      label: 'Invites Sent',
+      value: program.invites_sent ?? program.total_referrals ?? 0,
+      color: '#D4A574',
+    },
+    {
+      icon: Copy,
+      label: 'Links Copied',
+      value: program.links_copied ?? 0,
+      color: '#D4A574',
+    },
+    {
+      icon: MousePointer,
+      label: 'Recipient Clicks',
+      value: program.recipient_clicks ?? 0,
+      color: '#D4A574',
+    },
+    {
+      icon: CheckCircle,
+      label: 'Qualified',
+      value: program.qualified_referrals ?? 0,
+      color: '#2e7d5c',
+    },
+    {
+      icon: Gift,
+      label: 'Free Months Earned',
+      value: program.earned_free_months ?? 0,
+      color: '#D4A574',
+    },
+    {
+      icon: Clock,
+      label: 'Pending Rewards',
+      value: program.pending_rewards ?? 0,
+      color: program.pending_rewards > 0 ? '#f59e0b' : '#6b7280',
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <StatTile icon={Users} label="Invites Sent" value={program.total_referrals || 0} color="#D4A574" />
-      <StatTile icon={UserCheck} label="Qualified" value={program.qualified_referrals || 0} color="#2e7d5c" />
-      <StatTile icon={Gift} label="Free Months" value={program.earned_free_months || 0} color="#A35C5C" />
-      <StatTile icon={Star} label="Free Years" value={program.earned_free_years || 0} color="#f59e0b" />
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {tiles.map(t => (
+        <StatTile key={t.label} {...t} />
+      ))}
     </div>
   );
 }

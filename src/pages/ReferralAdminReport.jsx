@@ -76,21 +76,37 @@ export default function ReferralAdminReport() {
 
         {data && (
           <>
-            {/* Funnel */}
+            {/* Share actions summary */}
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Referral Funnel</h2>
+              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Referrer Share Actions</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  ['Invites Sent', data.shareActions?.invites_sent ?? data.funnel.invites_sent ?? 0],
+                  ['Links Copied', data.shareActions?.links_copied ?? 0],
+                  ['Shares Opened', data.shareActions?.shares_opened ?? 0],
+                  ['Recipient Clicks', data.shareActions?.recipient_clicks ?? data.funnel.recipient_clicks ?? 0],
+                ].map(([label, val]) => (
+                  <Tile key={label} label={label} value={val} />
+                ))}
+              </div>
+            </section>
+
+            {/* Conversion funnel */}
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Conversion Funnel</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
                 {[
-                  ['Invited', data.funnel.invited],
-                  ['Clicked', data.funnel.clicked],
                   ['Signed Up', data.funnel.signed_up],
                   ['Activated', data.funnel.activated],
                   ['Qualified', data.funnel.qualified],
                   ['Rewarded', data.funnel.rewarded],
                   ['Rejected', data.funnel.rejected],
-                  ['Fraud', data.funnel.fraud_flagged],
+                  ['Fraud Flagged', data.funnel.fraud_flagged],
+                  ['Manual Review', data.funnel.manual_review_pending],
+                  ['Total Events', data.funnel.total_events],
                 ].map(([label, val]) => (
-                  <Tile key={label} label={label} value={val} warn={label === 'Fraud' && val > 0} />
+                  <Tile key={label} label={label} value={val}
+                    warn={(label === 'Fraud Flagged' || label === 'Manual Review') && val > 0} />
                 ))}
               </div>
             </section>
@@ -106,12 +122,45 @@ export default function ReferralAdminReport() {
               </div>
             </section>
 
+            {/* Manual review queue */}
+            {data.manualReviewQueue?.length > 0 && (
+              <section className="space-y-3">
+                <h2 className="text-sm font-semibold text-amber-400 uppercase tracking-wide border-b border-amber-800/30 pb-1 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" /> Manual Review Queue ({data.manualReviewQueue.length})
+                </h2>
+                <p className="text-xs text-[#E0D8C8]/50">These referrals have a fraud score of 40–79. They have not been auto-rejected and require admin review before reward fulfillment.</p>
+                <div className="rounded-xl border border-amber-800/30 overflow-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-[#2a1f18]">
+                      <tr>
+                        {['Referrer', 'Referred', 'Score', 'Reason', 'Status'].map(h => (
+                          <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/60">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.manualReviewQueue.map((f, i) => (
+                        <tr key={i} className="border-t border-amber-800/15">
+                          <td className="px-3 py-2 text-[#E0D8C8]/80 font-mono">{f.referrerEmail}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/80 font-mono">{f.referredEmail}</td>
+                          <td className="px-3 py-2 text-amber-300 font-bold">{f.fraudScore}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60 max-w-[200px] truncate">{f.fraudReason}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/80">{f.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
             {/* Fraud flags */}
             {data.fraudFlags.length > 0 && (
               <section className="space-y-3">
                 <h2 className="text-sm font-semibold text-yellow-400 uppercase tracking-wide border-b border-yellow-800/30 pb-1 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" /> Fraud / Manual Review ({data.fraudFlags.length})
+                  <AlertTriangle className="w-4 h-4" /> Fraud Flagged ({data.fraudFlags.length})
                 </h2>
+                <p className="text-xs text-[#E0D8C8]/50">Note: iOS referrals are never penalized for null subscription amount — this is expected since iOS client sync does not provide transaction amounts.</p>
                 <div className="rounded-xl border border-yellow-800/30 overflow-auto">
                   <table className="w-full text-xs">
                     <thead className="bg-[#2a1f18]">
@@ -147,18 +196,19 @@ export default function ReferralAdminReport() {
                 <table className="w-full text-sm">
                   <thead className="bg-[#2a1f18]">
                     <tr>
-                      {['Email', 'Invited', 'Qualified', 'Rewarded'].map(h => (
-                        <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/70 font-semibold">{h}</th>
+                      {['Email', 'Invites Sent', 'Recipient Clicks', 'Qualified', 'Rewarded'].map(h => (
+                       <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/70 font-semibold">{h}</th>
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.topReferrers.map((r, i) => (
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {data.topReferrers.map((r, i) => (
                       <tr key={i} className="border-t border-[#8b6239]/15 hover:bg-white/[0.02]">
-                        <td className="px-3 py-2 font-mono text-xs text-[#E0D8C8]/90">{r.email}</td>
-                        <td className="px-3 py-2 text-[#E0D8C8]/80">{r.invited}</td>
-                        <td className="px-3 py-2 text-[#E0D8C8]/80">{r.qualified}</td>
-                        <td className="px-3 py-2 text-[#E0D8C8]/80">{r.rewarded}</td>
+                       <td className="px-3 py-2 font-mono text-xs text-[#E0D8C8]/90">{r.email}</td>
+                       <td className="px-3 py-2 text-[#E0D8C8]/80">{r.invitesSent}</td>
+                       <td className="px-3 py-2 text-[#E0D8C8]/80">{r.recipientClicks}</td>
+                       <td className="px-3 py-2 text-[#E0D8C8]/80">{r.qualified}</td>
+                       <td className="px-3 py-2 text-[#E0D8C8]/80">{r.rewarded}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -257,7 +307,7 @@ export default function ReferralAdminReport() {
                 <table className="w-full text-sm">
                   <thead className="bg-[#2a1f18]">
                     <tr>
-                      {['Email', 'Code', 'Sent', 'Qualified', 'Free Months', 'Free Years', 'Pending'].map(h => (
+                      {['Email', 'Code', 'Invites Sent', 'Links Copied', 'Shares', 'Clicks', 'Qualified', 'Free Months', 'Pending'].map(h => (
                         <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/70 font-semibold text-xs">{h}</th>
                       ))}
                     </tr>
@@ -266,12 +316,14 @@ export default function ReferralAdminReport() {
                     {data.programs.map((p, i) => (
                       <tr key={i} className="border-t border-[#8b6239]/15 hover:bg-white/[0.02]">
                         <td className="px-3 py-2 font-mono text-xs text-[#E0D8C8]/90">{p.userEmail}</td>
-                        <td className="px-3 py-2 font-mono text-xs text-[#D4A574]">{p.code}</td>
-                        <td className="px-3 py-2 text-[#E0D8C8]/80">{p.totalReferrals}</td>
-                        <td className="px-3 py-2 text-[#E0D8C8]/80">{p.qualifiedReferrals}</td>
-                        <td className="px-3 py-2 text-[#E0D8C8]/80">{p.earnedFreeMonths}</td>
-                        <td className="px-3 py-2 text-[#E0D8C8]/80">{p.earnedFreeYears}</td>
-                        <td className="px-3 py-2 text-[#E0D8C8]/80">{p.pendingRewards}</td>
+                         <td className="px-3 py-2 font-mono text-xs text-[#D4A574]">{p.code}</td>
+                         <td className="px-3 py-2 text-[#E0D8C8]/80">{p.invitesSent}</td>
+                         <td className="px-3 py-2 text-[#E0D8C8]/80">{p.linksCopied}</td>
+                         <td className="px-3 py-2 text-[#E0D8C8]/80">{p.sharesOpened}</td>
+                         <td className="px-3 py-2 text-[#E0D8C8]/80">{p.recipientClicks}</td>
+                         <td className="px-3 py-2 text-[#E0D8C8]/80">{p.qualifiedReferrals}</td>
+                         <td className="px-3 py-2 text-[#E0D8C8]/80">{p.earnedFreeMonths}</td>
+                         <td className="px-3 py-2 text-[#E0D8C8]/80">{p.pendingRewards}</td>
                       </tr>
                     ))}
                   </tbody>

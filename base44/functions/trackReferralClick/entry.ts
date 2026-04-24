@@ -1,13 +1,21 @@
 /**
  * trackReferralClick
  *
- * Called when a visitor opens a ?ref=... URL.
- * Creates or updates a ReferralEvent row with link_clicked_at and status = clicked.
- * Does NOT require authentication — visitor may not be signed in yet.
- * Also increments total_referrals on the ReferralProgram when first click is recorded.
+ * Records referrer-side sharing actions (copy, share, native share open)
+ * and recipient-side URL clicks as distinct, semantically correct event types.
  *
- * Payload: { referralCode, module?, channel? }
- * channel: 'link' | 'copy' | 'share' | 'email'
+ * channel values and their meaning:
+ *   'link'   — recipient clicked a shared referral URL (opens the app)
+ *   'copy'   — referrer copied their link to clipboard
+ *   'share'  — referrer opened native share sheet
+ *
+ * IMPORTANT: 'link' = recipient_clicked (external, anonymous, no auth required)
+ *            'copy' and 'share' = referrer action (internal, authenticated preferred)
+ *
+ * Does NOT use ReferralEvent.status = 'clicked' for copy/share — those are
+ * internal referrer actions, not funnel steps.
+ *
+ * Payload: { referralCode, module?, channel }
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -33,40 +41,56 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, reason: 'invalid_code' });
     }
 
-    // Look for an existing "clicked" or "invited" event with no referred_user_id yet
-    // (an anonymous pre-signup click)
-    const existingClicks = await base44.asServiceRole.entities.ReferralEvent.filter({
-      referral_code: referralCode,
-      status: 'clicked',
-    });
-
-    // Only create a new anonymous click event if there isn't a very recent one
-    // (debounce: avoid spamming on page reloads)
-    const recentCutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // 5 min
-    const veryRecent = existingClicks.find(e => !e.referred_user_id && e.link_clicked_at > recentCutoff);
-
-    if (!veryRecent) {
-      await base44.asServiceRole.entities.ReferralEvent.create({
-        referrer_user_id: program.user_id,
-        referrer_email: program.user_email,
+    // ─── Recipient-side link click (anonymous, funnel step) ───────────────────
+    if (channel === 'link') {
+      // Debounce: don't spam on page reloads — 5-min window
+      const recentCutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const recentClicks = await base44.asServiceRole.entities.ReferralEvent.filter({
         referral_code: referralCode,
-        invite_channel: channel,
-        link_clicked_at: now,
         status: 'clicked',
-        fraud_score: 0,
-        manual_review_required: false,
       });
+      const veryRecent = recentClicks.find(e => !e.referred_user_id && e.link_clicked_at > recentCutoff);
 
-      // Increment total_referrals on program for copy/share channel events
-      // (email invites already increment total_referrals when sendReferralInvite is called)
-      if (channel === 'copy' || channel === 'share' || channel === 'link') {
+      if (!veryRecent) {
+        await base44.asServiceRole.entities.ReferralEvent.create({
+          referrer_user_id: program.user_id,
+          referrer_email: program.user_email,
+          referral_code: referralCode,
+          invite_channel: 'link',
+          link_clicked_at: now,
+          status: 'clicked',
+          fraud_score: 0,
+          manual_review_required: false,
+        });
+
+        // Increment recipient_clicks on the program
         await base44.asServiceRole.entities.ReferralProgram.update(program.id, {
-          total_referrals: (program.total_referrals || 0) + 1,
+          recipient_clicks: (program.recipient_clicks || 0) + 1,
         });
       }
+
+      return Response.json({ ok: true, tracked: !veryRecent, debounced: !!veryRecent, channel: 'link' });
     }
 
-    return Response.json({ ok: true, tracked: !veryRecent, debounced: !!veryRecent });
+    // ─── Referrer-side share actions (copy / share) ──────────────────────────
+    // These are internal actions by the referrer, NOT funnel steps.
+    // We update program-level counters only — no ReferralEvent row created.
+    if (channel === 'copy') {
+      await base44.asServiceRole.entities.ReferralProgram.update(program.id, {
+        links_copied: (program.links_copied || 0) + 1,
+      });
+      return Response.json({ ok: true, tracked: true, channel: 'copy' });
+    }
+
+    if (channel === 'share') {
+      await base44.asServiceRole.entities.ReferralProgram.update(program.id, {
+        shares_opened: (program.shares_opened || 0) + 1,
+      });
+      return Response.json({ ok: true, tracked: true, channel: 'share' });
+    }
+
+    return Response.json({ ok: false, reason: 'unknown_channel', channel });
+
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

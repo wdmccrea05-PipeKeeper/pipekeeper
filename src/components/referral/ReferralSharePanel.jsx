@@ -23,13 +23,15 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
   const baseLink = `${APP_URL}?ref=${program?.referral_code}`;
   const shareLink = selectedModule ? `${baseLink}&m=${selectedModule}` : baseLink;
 
+  // Track referrer-side share actions (copy / share) as their own counter,
+  // not as funnel ReferralEvent rows.
   const trackShare = (channel) => {
     if (!program?.referral_code) return;
     base44.functions.invoke('trackReferralClick', {
       referralCode: program.referral_code,
       module: selectedModule,
       channel,
-    }).catch(() => {}); // fire-and-forget
+    }).catch(() => {});
   };
 
   const copyLink = async () => {
@@ -37,7 +39,7 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
     setCopied(true);
     toast.success('Referral link copied!');
     setTimeout(() => setCopied(false), 2000);
-    trackShare('copy');
+    trackShare('copy'); // increments links_copied on program
   };
 
   const nativeShare = async () => {
@@ -48,9 +50,9 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
           text: 'I use CollectionKeeper to manage my collection — you should check it out.',
           url: shareLink,
         });
-        trackShare('share');
+        trackShare('share'); // increments shares_opened on program
       } catch {
-        // User dismissed native share — don't track
+        // User dismissed native share — do not track dismissed action
       }
     } else {
       copyLink();
