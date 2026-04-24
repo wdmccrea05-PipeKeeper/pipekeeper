@@ -1,0 +1,73 @@
+name: Expire Referral Earned Access
+
+# Runs daily at 06:00 UTC to expire ReferralEarnedAccess records whose
+# end_at has passed and recompute entitlement flags for affected users.
+#
+# Required GitHub secret:
+#   BASE44_APP_URL — full base URL of the deployed Base44 app
+#                    e.g. https://collectionkeeper.base44.app
+#
+# The expireReferralEarnedAccess function accepts unauthenticated automation
+# invocations (no user context → isAutomation = true path) so no API key
+# is required beyond the correct app endpoint URL.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # daily at 06:00 UTC
+  workflow_dispatch:        # allow manual trigger for testing / catch-up runs
+
+# Minimal permissions — this workflow only makes an outbound HTTP call.
+# No repository contents, packages, or tokens are needed.
+permissions: {}
+
+jobs:
+  expire-referral-earned-access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Invoke expireReferralEarnedAccess
+        env:
+          BASE44_APP_URL: ${{ secrets.BASE44_APP_URL }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${BASE44_APP_URL:-}" ]; then
+            echo "ERROR: BASE44_APP_URL secret is not configured." >&2
+            echo "Set it to the full base URL of your Base44 deployment," >&2
+            echo "e.g. https://collectionkeeper.base44.app" >&2
+            exit 1
+          fi
+
+          ENDPOINT="${BASE44_APP_URL%/}/api/v1/functions/expireReferralEarnedAccess"
+
+          echo "Calling: $ENDPOINT"
+
+          RESPONSE=$(curl -sf \
+            --max-time 60 \
+            --retry 3 \
+            --retry-delay 10 \
+            --retry-max-time 120 \
+            -X POST "$ENDPOINT" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            -w "\n%{http_code}")
+
+          HTTP_BODY=$(echo "$RESPONSE" | head -n -1)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+
+          echo "HTTP status: $HTTP_CODE"
+          echo "Response:    $HTTP_BODY"
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "ERROR: expireReferralEarnedAccess returned HTTP $HTTP_CODE" >&2
+            exit 1
+          fi
+
+          # Surface key fields from JSON response for the Actions log
+          EXPIRED=$(echo "$HTTP_BODY" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('expired',0))" 2>/dev/null || echo "?")
+          SYNCED=$(echo "$HTTP_BODY" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('usersResynced',0))" 2>/dev/null || echo "?")
+
+          echo "Records expired: $EXPIRED  |  Users resynced: $SYNCED"

@@ -13,6 +13,7 @@ const MODULE_OPTIONS = [
   { key: 'pipekeeper', label: 'PipeKeeper' },
   { key: 'whiskeykeeper', label: 'WhiskeyKeeper' },
   { key: 'cigarkeeper', label: 'CigarKeeper' },
+  { key: 'winekeeper', label: 'WineKeeper' },
 ];
 
 export default function ReferralSharePanel({ program, onInviteClick }) {

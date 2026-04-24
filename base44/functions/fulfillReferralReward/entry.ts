@@ -15,6 +15,8 @@ import Stripe from 'npm:stripe@14.21.0';
 const REWARD_CONFIG = {
   // iOS: unredeemed rewards expire after 90 days
   IOS_REWARD_EXPIRY_DAYS: 90,
+  // Stripe: stop retrying after this many attempts to avoid orphaned-coupon accumulation
+  MAX_FULFILLMENT_ATTEMPTS: 5,
 };
 
 // ─── Stripe: read preconfigured coupon/promo IDs from env ────────────────────
@@ -53,6 +55,23 @@ function buildStripeRewardCouponParams(rewardType) {
     duration: 'once',
     max_redemptions: 1,
   };
+}
+
+// ─── iOS offer env validation ─────────────────────────────────────────────────
+// Returns a list of missing env var names. An empty array means all identifiers
+// are explicitly configured.
+function getMissingIosOfferEnvVars() {
+  const required = [
+    'IOS_REFERRAL_SINGLE_MONTHLY_MONTH_OFFER',
+    'IOS_REFERRAL_SINGLE_ANNUAL_YEAR_OFFER',
+    'IOS_REFERRAL_THREE_MONTHLY_MONTH_OFFER',
+    'IOS_REFERRAL_THREE_ANNUAL_YEAR_OFFER',
+    'IOS_REFERRAL_ALL_MONTHLY_MONTH_OFFER',
+    'IOS_REFERRAL_ALL_ANNUAL_YEAR_OFFER',
+    'IOS_REFERRAL_FOUNDERS_MONTHLY_MONTH_OFFER',
+    'IOS_REFERRAL_FOUNDERS_ANNUAL_YEAR_OFFER',
+  ];
+  return required.filter(key => !Deno.env.get(key));
 }
 
 // ─── iOS offer identifier mapping ────────────────────────────────────────────
@@ -142,6 +161,21 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
     const attempts = (reward.fulfillment_attempts || 0) + 1;
+
+    // Hard cap on retries — stop accumulating orphaned Stripe coupons / log spam
+    if (attempts > REWARD_CONFIG.MAX_FULFILLMENT_ATTEMPTS) {
+      console.warn(`[fulfillReferralReward] Reward ${rewardId} exceeded max attempts (${attempts - 1}). Marking abandoned.`);
+      await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
+        status: 'failed',
+        failure_reason: `Exceeded max fulfillment attempts (${REWARD_CONFIG.MAX_FULFILLMENT_ATTEMPTS}). Manual intervention required.`,
+      });
+      return Response.json({
+        ok: false,
+        reason: 'max_attempts_exceeded',
+        attempts: attempts - 1,
+        maxAttempts: REWARD_CONFIG.MAX_FULFILLMENT_ATTEMPTS,
+      }, { status: 422 });
+    }
 
     await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
       fulfillment_attempts: attempts,
@@ -328,6 +362,19 @@ async function fulfillStripe(base44, reward, now) {
     let couponId;
     let usedConfiguredCoupon = false;
 
+    // Reuse a previously created dynamic coupon stored from a prior attempt.
+    // This prevents creating a new orphaned coupon on every retry.
+    const previouslySavedCouponId = (() => {
+      if (configuredCouponId == null && reward.provider_reward_reference) {
+        // Only reuse if the stored reference looks like a Stripe coupon ID
+        const ref = String(reward.provider_reward_reference);
+        if (/^[a-zA-Z0-9_\-]+$/.test(ref)) {
+          return ref;
+        }
+      }
+      return null;
+    })();
+
     if (configuredCouponId) {
       // Validate the configured coupon still exists in Stripe
       try {
@@ -344,6 +391,20 @@ async function fulfillStripe(base44, reward, now) {
       }
     }
 
+    if (!couponId && previouslySavedCouponId) {
+      // Try to reuse the coupon created on a prior attempt rather than creating another one
+      try {
+        const existing = await stripe.coupons.retrieve(previouslySavedCouponId);
+        if (existing && !existing.deleted) {
+          couponId = previouslySavedCouponId;
+          console.log(`[fulfillReferralReward] Reusing previously created coupon ${couponId} for reward ${reward.id} (attempt ${attempts})`);
+        }
+      } catch {
+        // Coupon no longer exists in Stripe — create a fresh one below
+        console.warn(`[fulfillReferralReward] Previously saved coupon ${previouslySavedCouponId} not found — creating new coupon`);
+      }
+    }
+
     if (!couponId) {
       const params = buildStripeRewardCouponParams(reward.reward_type);
       // Override amount_off with capped value if subscriber's plan is cheaper
@@ -351,6 +412,10 @@ async function fulfillStripe(base44, reward, now) {
       params.name = `${params.name} [capped:${cappedAmountCents}c]`;
       const coupon = await stripe.coupons.create(params);
       couponId = coupon.id;
+      // Persist immediately so subsequent retries can reuse this coupon
+      await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
+        provider_reward_reference: couponId,
+      });
     }
 
     // Apply coupon to subscription
@@ -399,6 +464,24 @@ async function fulfillStripe(base44, reward, now) {
 async function fulfillIos(base44, reward, now) {
   const expiryDays = REWARD_CONFIG.IOS_REWARD_EXPIRY_DAYS;
   const expiresAt = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
+
+  // Validate that all required iOS offer env vars are explicitly configured.
+  // Fallback strings are not valid App Store Connect identifiers.
+  const missingEnvVars = getMissingIosOfferEnvVars();
+  if (missingEnvVars.length > 0) {
+    const reason = `iOS offer env vars not configured: ${missingEnvVars.join(', ')}`;
+    console.error(`[fulfillReferralReward] ${reason}. Reward ${reward.id} cannot be fulfilled until these secrets are set.`);
+    await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
+      status: 'failed',
+      failure_reason: reason,
+    });
+    return Response.json({
+      ok: false,
+      reason: 'ios_offer_env_not_configured',
+      missingEnvVars,
+      message: 'Set all IOS_REFERRAL_* env secrets in your Base44 deployment before iOS rewards can be fulfilled.',
+    }, { status: 503 });
+  }
 
   // Resolve referrer's active Apple subscription to pick the correct offer identifier
   let planKey = null;

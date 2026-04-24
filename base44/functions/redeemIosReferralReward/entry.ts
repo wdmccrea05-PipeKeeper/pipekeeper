@@ -92,15 +92,22 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Dedup: check if this transactionId has already been recorded on another reward
-      const existingRewards = await base44.asServiceRole.entities.ReferralReward.filter({
-        user_id: reward.user_id,
+      // Dedup: check if this transactionId has already been used on ANY redeemed reward
+      // across ALL users (not just the current user) to prevent cross-account reuse.
+      const allRedeemedRewards = await base44.asServiceRole.entities.ReferralReward.filter({
         status: 'redeemed',
       }).catch(() => []);
-      for (const r of existingRewards || []) {
+      for (const r of allRedeemedRewards || []) {
         const meta = JSON.parse(r.metadata || '{}');
         if (meta.transaction_id === txId || meta.original_transaction_id === txId) {
-          console.warn(`[redeemIosReferralReward] Duplicate transactionId ${txId} for user ${reward.user_id}`);
+          const isSameReward = r.id === reward.id;
+          const isSameUser = r.user_id === reward.user_id;
+          console.warn(
+            `[redeemIosReferralReward] Duplicate transactionId ${txId} — ` +
+            `already recorded on reward ${r.id} (user ${r.user_id}). ` +
+            `Requester: reward ${rewardId} (user ${reward.user_id}). ` +
+            `sameReward=${isSameReward} sameUser=${isSameUser}`
+          );
           return Response.json({ ok: false, reason: 'duplicate_transaction_id' }, { status: 409 });
         }
       }
