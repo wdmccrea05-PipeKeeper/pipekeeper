@@ -365,10 +365,10 @@ async function fulfillStripe(base44, reward, now) {
     // Reuse a previously created dynamic coupon stored from a prior attempt.
     // This prevents creating a new orphaned coupon on every retry.
     const previouslySavedCouponId = (() => {
-      if (reward.provider_reward_reference && !configuredCouponId) {
-        // Only reuse if the stored reference looks like a Stripe coupon (not an offer code)
+      if (configuredCouponId == null && reward.provider_reward_reference) {
+        // Only reuse if the stored reference looks like a Stripe coupon ID
         const ref = String(reward.provider_reward_reference);
-        if (/^[a-zA-Z0-9_\-]+$/.test(ref) && !ref.includes(' ')) {
+        if (/^[a-zA-Z0-9_\-]+$/.test(ref)) {
           return ref;
         }
       }

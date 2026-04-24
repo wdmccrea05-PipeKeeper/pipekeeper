@@ -208,17 +208,17 @@ Deno.serve(async (req) => {
     // a user who has both an iOS paid subscription AND referral-earned access
     // retains both module sets after every app-launch sync.
     const nowTs = new Date();
+    let earnedRecords: any[] = [];
     let earnedModules: string[] = [];
     try {
-      const earnedRecords = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
+      earnedRecords = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
         user_id: userId,
         status: 'active',
-      });
-      earnedModules = [...new Set(
-        (earnedRecords || [])
-          .filter((r: any) => r.end_at && new Date(r.end_at) > nowTs && r.module)
-          .map((r: any) => String(r.module).toLowerCase())
-      )];
+      }) || [];
+      const stillActive = earnedRecords.filter(
+        (r: any) => r.end_at && new Date(r.end_at) > nowTs && r.module
+      );
+      earnedModules = [...new Set(stillActive.map((r: any) => String(r.module).toLowerCase()))];
     } catch (earnedErr) {
       // Non-fatal — proceed with iOS modules only
       console.warn('[syncAppleSubscriptionForMe] Could not fetch earned-access records (non-fatal):', earnedErr);
@@ -238,16 +238,12 @@ Deno.serve(async (req) => {
       modulePaidFlags[`${mod}_paid`] = allActiveModules.includes(mod);
     }
 
-    // Earned-access metadata for canonical fields
+    // Earned-access canonical fields — derived from the already-fetched records
     let referralEarnedAccess = false;
     let referralEarnedModule: string | null = null;
     let referralEarnedExpiresAt: string | null = null;
-    try {
-      const allEarned = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
-        user_id: userId,
-        status: 'active',
-      });
-      const stillActive = (allEarned || []).filter(
+    {
+      const stillActive = earnedRecords.filter(
         (r: any) => r.end_at && new Date(r.end_at) > nowTs
       );
       if (stillActive.length > 0) {
@@ -258,8 +254,6 @@ Deno.serve(async (req) => {
         referralEarnedModule = sorted[0].module || null;
         referralEarnedExpiresAt = sorted[0].end_at || null;
       }
-    } catch {
-      // Non-fatal — canonical earned fields will remain unchanged if this fails
     }
 
     const users = await base44.asServiceRole.entities.User.filter({ email: emailLower });

@@ -16,6 +16,10 @@ on:
     - cron: '0 6 * * *'   # daily at 06:00 UTC
   workflow_dispatch:        # allow manual trigger for testing / catch-up runs
 
+# Minimal permissions — this workflow only makes an outbound HTTP call.
+# No repository contents, packages, or tokens are needed.
+permissions: {}
+
 jobs:
   expire-referral-earned-access:
     runs-on: ubuntu-latest
