@@ -1,13 +1,5 @@
 export default [
-  // Global ignores — standalone object with ONLY ignores key (ESLint flat config spec)
-  {
-    ignores: [
-      '**/curator/__tests__/curatorCoverage.test.jsx',
-      '**/utils/__tests__/entitlements.test.jsx',
-      'src/components/curator/__tests__/curatorCoverage.test.jsx',
-      'src/components/utils/__tests__/entitlements.test.jsx',
-    ],
-  },
+
   {
     // All JS/JSX/TS/TSX files — vitest globals + browser globals
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
