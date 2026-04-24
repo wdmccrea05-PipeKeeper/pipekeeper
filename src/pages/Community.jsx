@@ -65,10 +65,10 @@ function CommunityPageInner() {
       return foundProfile;
     },
     enabled: !!user?.email,
-    staleTime: 0,       // always refetch — messaging toggle must reflect latest saved state
+    staleTime: 30_000,   // 30s to prevent refresh loops while keeping messaging toggle reasonably fresh
     gcTime: 60_000,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {

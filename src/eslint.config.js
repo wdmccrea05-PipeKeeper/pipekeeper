@@ -7,6 +7,8 @@ export default [
     // Test files — explicitly disable no-undef with test runner globals
     files: ['**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/__tests__/**'],
     languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
       globals: {
         describe: 'readonly',
         test: 'readonly',
