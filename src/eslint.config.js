@@ -4,7 +4,7 @@ export default [
     ignores: [],
   },
   {
-    // All JS/JSX/TS/TSX files — browser globals
+    // All JS/JSX/TS/TSX files — browser globals + test globals
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
     languageOptions: {
       ecmaVersion: 2022,
@@ -42,6 +42,17 @@ export default [
         Set: 'readonly',
         Symbol: 'readonly',
         process: 'readonly',
+        // Test globals (vitest/jest)
+        describe: 'readonly',
+        test: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        vi: 'readonly',
+        jest: 'readonly',
       },
     },
     rules: {

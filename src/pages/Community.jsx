@@ -21,7 +21,9 @@ import CommunityReferralTab from "@/components/referral/CommunityReferralTab";
 
 function CommunityPageInner() {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('discover');
+  const location = window.location;
+  const initialTab = location.state?.referralTab ? 'referral' : 'discover';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [profile, setProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSearchQuery, setActiveSearchQuery] = useState('');
