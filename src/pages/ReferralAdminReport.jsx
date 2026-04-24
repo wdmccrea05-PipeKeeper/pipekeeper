@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { AlertCircle, RefreshCw, AlertTriangle, TrendingUp, CreditCard, Smartphone, Gift } from 'lucide-react';
+import { AlertCircle, RefreshCw, AlertTriangle, TrendingUp, CreditCard, Smartphone, Gift, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function Tile({ label, value, warn }) {
@@ -76,6 +76,49 @@ export default function ReferralAdminReport() {
 
         {data && (
           <>
+            {/* Expiry job health */}
+            <section className={`rounded-xl border p-4 space-y-2 ${
+              data.expiryJobHealth?.isStale
+                ? 'border-red-700/40 bg-red-900/10'
+                : 'border-emerald-700/30 bg-emerald-900/10'
+            }`}>
+              <div className="flex items-center gap-2">
+                <Activity className={`w-4 h-4 ${data.expiryJobHealth?.isStale ? 'text-red-400' : 'text-emerald-400'}`} />
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-[#F5F1E7]">
+                  Expiry Job Health
+                </h2>
+                {data.expiryJobHealth?.isStale && (
+                  <span className="ml-2 text-xs font-bold text-red-400 uppercase">⚠ Stale / Never run</span>
+                )}
+                {!data.expiryJobHealth?.isStale && (
+                  <span className="ml-2 text-xs font-medium text-emerald-400">✓ Running</span>
+                )}
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+                <Tile
+                  label="Last Run"
+                  value={data.expiryJobHealth?.lastRunAt
+                    ? new Date(data.expiryJobHealth.lastRunAt).toLocaleString()
+                    : 'Never'}
+                  warn={!data.expiryJobHealth?.lastRunAt}
+                />
+                <Tile
+                  label="Records Expired"
+                  value={data.expiryJobHealth?.lastExpiredCount ?? '—'}
+                />
+                <Tile
+                  label="Users Resynced"
+                  value={data.expiryJobHealth?.lastSyncedCount ?? '—'}
+                />
+                <div className={`rounded-xl border p-4 ${data.expiryJobHealth?.isStale ? 'border-red-700/40 bg-red-900/10' : 'border-[#8b6239]/25 bg-[#1f1712]/70'}`}>
+                  <p className="text-xs uppercase tracking-wider text-[#E0D8C8]/50">Scheduler</p>
+                  <p className="text-xs text-[#E0D8C8]/70 mt-1 leading-snug">
+                    {data.expiryJobHealth?.schedulerNote || 'See .github/workflows/expire-referral-access.yml'}
+                  </p>
+                </div>
+              </div>
+            </section>
+
             {/* Share actions summary */}
             <section className="space-y-3">
               <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Referrer Share Actions</h2>

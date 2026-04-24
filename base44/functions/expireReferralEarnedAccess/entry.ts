@@ -72,6 +72,11 @@ Deno.serve(async (req) => {
       synced++;
     }
 
+    // Persist health snapshot so admin can verify the job is running.
+    await persistExpiryHealth(base44, now, expired.length, synced).catch(e =>
+      console.warn('[expireReferralEarnedAccess] health persist failed (non-fatal):', e?.message)
+    );
+
     return Response.json({
       ok: true,
       expired: expired.length,
@@ -167,5 +172,47 @@ async function recomputeEntitlementsAfterExpiry(base44, userId, userEmail, now) 
     }
   } catch (e) {
     console.warn(`[expireReferralEarnedAccess] Could not update UserEntitlement for ${userId}:`, e?.message);
+  }
+}
+
+/**
+ * Persists a health snapshot to RemoteConfig so admin can verify the expiry job is running.
+ * Keys written:
+ *   referral_expiry_last_run_at        — ISO timestamp of the successful run
+ *   referral_expiry_last_expired_count — number of records expired in that run
+ *   referral_expiry_last_synced_count  — number of users re-synced
+ */
+async function persistExpiryHealth(base44, runAt, expiredCount, syncedCount) {
+  const runAtIso = (runAt instanceof Date ? runAt : new Date()).toISOString();
+  const entries = [
+    { key: 'referral_expiry_last_run_at', value: runAtIso },
+    { key: 'referral_expiry_last_expired_count', value: String(expiredCount) },
+    { key: 'referral_expiry_last_synced_count', value: String(syncedCount) },
+  ];
+
+  for (const { key, value } of entries) {
+    try {
+      const existing = await base44.asServiceRole.entities.RemoteConfig.filter({
+        key,
+        environment: 'live',
+      });
+      if (existing && existing.length > 0) {
+        await base44.asServiceRole.entities.RemoteConfig.update(existing[0].id, {
+          value,
+          is_active: true,
+          updated_by: 'expireReferralEarnedAccess',
+        });
+      } else {
+        await base44.asServiceRole.entities.RemoteConfig.create({
+          key,
+          value,
+          environment: 'live',
+          is_active: true,
+          updated_by: 'expireReferralEarnedAccess',
+        });
+      }
+    } catch (e) {
+      console.warn(`[expireReferralEarnedAccess] Could not persist health key ${key}:`, e?.message);
+    }
   }
 }
