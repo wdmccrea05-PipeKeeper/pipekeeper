@@ -14,6 +14,72 @@ const PRICE_ID_TO_MODULES = {
   'price_1TBfekDycvQWC88P5nZsEr7j': ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], // 3-Module Bundle Annual
 };
 
+// Extract price ID from various known fields
+function extractPriceId(record) {
+  if (!record) return null;
+  
+  // Direct fields
+  if (record.price_id) return record.price_id;
+  if (record.stripe_price_id) return record.stripe_price_id;
+  if (record.productId) return record.productId;
+  if (record.product_id) return record.product_id;
+  
+  // Metadata
+  if (record.metadata) {
+    const meta = typeof record.metadata === 'string' ? 
+      JSON.parse(record.metadata) : record.metadata;
+    if (meta.price_id) return meta.price_id;
+    if (meta.stripe_price_id) return meta.stripe_price_id;
+  }
+  
+  // Raw payload
+  if (record.raw_payload) {
+    try {
+      const payload = typeof record.raw_payload === 'string' ? 
+        JSON.parse(record.raw_payload) : record.raw_payload;
+      if (payload.items?.[0]?.price?.id) return payload.items[0].price.id;
+      if (payload.price_id) return payload.price_id;
+    } catch {}
+  }
+  
+  return null;
+}
+
+// Get active subscriptions from both sources
+async function getActiveSubscriptions(base44, normalizedEmail, userId) {
+  const active_statuses = ['active', 'trialing', 'past_due'];
+  const allSubs = [];
+  
+  // Source 1: ActiveContract
+  try {
+    const activeContracts = await base44.asServiceRole.entities.ActiveContract.filter({
+      is_active: true,
+    });
+    const matching = activeContracts.filter(ac => 
+      (ac.user_email && ac.user_email.toLowerCase() === normalizedEmail) ||
+      (ac.user_id === userId)
+    );
+    allSubs.push(...matching.map(ac => ({ ...ac, source: 'ActiveContract' })));
+  } catch (err) {
+    // Silent fail
+  }
+  
+  // Source 2: Subscription
+  try {
+    const subs = await base44.asServiceRole.entities.Subscription.filter({
+      user_email: normalizedEmail,
+    });
+    const matching = subs.filter(s => 
+      active_statuses.includes(String(s.status || '').toLowerCase())
+    );
+    allSubs.push(...matching.map(s => ({ ...s, source: 'Subscription' })));
+  } catch (err) {
+    // Silent fail
+  }
+  
+  return allSubs;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -33,6 +99,11 @@ Deno.serve(async (req) => {
       missingModuleFlags: [],
       bundleSubscriptions: [],
       needsManualReview: [],
+      sourceStats: {
+        activeContractFound: 0,
+        subscriptionFound: 0,
+        stripeRecords: 0,
+      },
       totalProcessed: emails.length,
       errors: [],
     };
@@ -41,53 +112,7 @@ Deno.serve(async (req) => {
       try {
         const normalizedEmail = email.trim().toLowerCase();
         
-        // Fetch active subscriptions for this user (via email or user_id)
-        let subscriptions = await base44.asServiceRole.entities.ActiveContract.filter({
-          user_email: normalizedEmail,
-          is_active: true,
-        });
-
-        if (subscriptions.length === 0) {
-          report.needsManualReview.push({
-            email: normalizedEmail,
-            reason: 'No active subscriptions found',
-          });
-          continue;
-        }
-
-        // Aggregate all modules from active subscriptions
-        const allModules = new Set();
-        const bundleDetected = [];
-
-        for (const sub of subscriptions) {
-          const modules = PRICE_ID_TO_MODULES[sub.provider_subscription_id] || 
-                          PRICE_ID_TO_MODULES[sub.price_id];
-          
-          if (!modules) {
-            report.needsManualReview.push({
-              email: normalizedEmail,
-              reason: `Unknown price_id: ${sub.price_id || sub.provider_subscription_id}`,
-            });
-            continue;
-          }
-
-          if (modules.length > 1) {
-            bundleDetected.push(modules.join(','));
-          }
-
-          modules.forEach(m => allModules.add(m));
-        }
-
-        // Build entitlement flags
-        const updates = {
-          pipekeeper_paid: allModules.has('pipekeeper'),
-          whiskeykeeper_paid: allModules.has('whiskeykeeper'),
-          cigarkeeper_paid: allModules.has('cigarkeeper'),
-          paid_modules_csv: Array.from(allModules).sort().join(','),
-          entitlement_sync_state: 'synced',
-        };
-
-        // Fetch user and check current state
+        // Get user record first
         let users = await base44.asServiceRole.entities.User.filter({
           email: normalizedEmail,
         });
@@ -101,6 +126,70 @@ Deno.serve(async (req) => {
         }
 
         const userRecord = users[0];
+        const userId = userRecord.id;
+        
+        // Get active subscriptions from all sources
+        const subscriptions = await getActiveSubscriptions(base44, normalizedEmail, userId);
+
+        if (subscriptions.length === 0) {
+          report.needsManualReview.push({
+            email: normalizedEmail,
+            reason: 'No active subscriptions found in any source',
+          });
+          continue;
+        }
+
+        // Track source distribution
+        const sources = new Set(subscriptions.map(s => s.source));
+        if (sources.has('ActiveContract')) report.sourceStats.activeContractFound++;
+        if (sources.has('Subscription')) report.sourceStats.subscriptionFound++;
+
+        // Aggregate all modules from active subscriptions
+        const allModules = new Set();
+        const bundleDetected = [];
+        const priceIds = [];
+
+        for (const sub of subscriptions) {
+          const priceId = extractPriceId(sub);
+          if (priceId) {
+            priceIds.push(priceId);
+            const modules = PRICE_ID_TO_MODULES[priceId];
+            
+            if (!modules) {
+              report.needsManualReview.push({
+                email: normalizedEmail,
+                reason: `Unknown price_id: ${priceId} (from ${sub.source})`,
+              });
+              continue;
+            }
+
+            if (modules.length > 1) {
+              bundleDetected.push(modules.join(','));
+            }
+
+            modules.forEach(m => allModules.add(m));
+          }
+        }
+
+        // If no modules resolved, flag for manual review
+        if (allModules.size === 0) {
+          report.needsManualReview.push({
+            email: normalizedEmail,
+            reason: `Found ${subscriptions.length} subscriptions but no recognizable price IDs: ${priceIds.join(', ')}`,
+            sources: Array.from(sources),
+          });
+          continue;
+        }
+
+        // Build entitlement flags
+        const updates = {
+          pipekeeper_paid: allModules.has('pipekeeper'),
+          whiskeykeeper_paid: allModules.has('whiskeykeeper'),
+          cigarkeeper_paid: allModules.has('cigarkeeper'),
+          paid_modules_csv: Array.from(allModules).sort().join(','),
+          entitlement_sync_state: 'synced',
+        };
+
         const changed = 
           userRecord.pipekeeper_paid !== updates.pipekeeper_paid ||
           userRecord.whiskeykeeper_paid !== updates.whiskeykeeper_paid ||
@@ -115,6 +204,8 @@ Deno.serve(async (req) => {
             modulesBefore: userRecord.paid_modules_csv || 'none',
             modulesAfter: updates.paid_modules_csv,
             bundleType: bundleDetected.length > 0 ? bundleDetected[0] : 'individual',
+            sources: Array.from(sources),
+            priceIds,
           });
 
           if (bundleDetected.length > 0) {
@@ -128,6 +219,7 @@ Deno.serve(async (req) => {
             email: normalizedEmail,
             status: 'already synced',
             modules: updates.paid_modules_csv,
+            sources: Array.from(sources),
           });
         }
       } catch (err) {
