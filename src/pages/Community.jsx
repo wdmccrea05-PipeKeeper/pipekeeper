@@ -10,13 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog, CheckCircle, XCircle, Clock, MapPin, MessageSquare, User, Send } from "lucide-react";
+import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog, CheckCircle, XCircle, Clock, MapPin, MessageSquare, User, Send, Gift } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import MessagingPanel from "@/components/community/MessagingPanel";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { SafeText } from "@/components/ui/SafeText";
+import CommunityReferralTab from "@/components/referral/CommunityReferralTab";
 
 function CommunityPageInner() {
   const { t } = useTranslation();
@@ -324,6 +325,10 @@ function CommunityPageInner() {
               <TabsTrigger value="invite" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <Send className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline ml-2">{t("communityExtended.invite")}</span>
+              </TabsTrigger>
+              <TabsTrigger value="referral" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
+                <Gift className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline ml-2">Refer a Friend</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1025,6 +1030,10 @@ function CommunityPageInner() {
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="referral">
+            <CommunityReferralTab />
           </TabsContent>
 
           <TabsContent value="invite">
