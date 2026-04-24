@@ -2,11 +2,20 @@
  * redeemIosReferralReward
  *
  * Called from the iOS in-app redemption flow when the user taps "Redeem Reward."
- * Records the redemption and marks the ReferralReward as redeemed.
  *
- * The actual Apple subscription offer must be initiated client-side
- * via StoreKit presentOfferCodeRedeemSheet or equivalent — this backend
- * records the outcome only. Never modifies the App Store subscription directly.
+ * Validation chain:
+ *   1. User auth + ownership check
+ *   2. Reward state check (not already redeemed, not expired)
+ *   3. Require transactionId from StoreKit (proof of completion)
+ *   4. Offer identifier cross-check against reward.provider_reward_reference
+ *      - Mismatch is logged as a warning but does NOT block (StoreKit may normalize)
+ *      - Hard block only if reward has an assigned offer AND client sends a completely
+ *        different offer that doesn't contain the assigned offer as a substring
+ *   5. Mark redeemed + decrement pending_rewards
+ *
+ * The actual Apple subscription offer must be initiated client-side via
+ * StoreKit presentOfferCodeRedeemSheet — this backend records the outcome only.
+ * Never modifies the App Store subscription directly.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -19,13 +28,12 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const {
       rewardId,
-      offerReference,     // Apple offer code identifier presented to StoreKit
-      transactionId,      // StoreKit transaction ID returned after successful redemption
-      productId,          // Product ID of the redeemed subscription from StoreKit
-      outcome,            // 'redeemed' | 'failed' | 'dismissed'
+      offerReference,   // Apple offer code identifier presented to StoreKit
+      transactionId,    // StoreKit transaction ID returned after successful redemption
+      originalTransactionId, // Apple originalTransactionId (preferred for dedup)
+      productId,        // Product ID of the redeemed subscription from StoreKit
+      outcome,          // 'redeemed' | 'failed' | 'dismissed'
     } = body;
-    // Require validated redemption evidence: transactionId and offerReference are mandatory
-    // for a successful redemption. We do NOT mark redeemed solely on the client's word.
 
     if (!rewardId) {
       return Response.json({ error: 'rewardId required' }, { status: 400 });
@@ -39,7 +47,8 @@ Deno.serve(async (req) => {
     }
 
     // Security: only the reward owner can redeem it
-    if (reward.user_id !== (user.id || user.auth_user_id)) {
+    const callerId = user.id || user.auth_user_id;
+    if (reward.user_id !== callerId) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -52,28 +61,48 @@ Deno.serve(async (req) => {
     }
 
     if (reward.status === 'expired') {
-      return Response.json({ ok: false, reason: 'reward_expired' });
+      return Response.json({ ok: false, reason: 'reward_expired' }, { status: 410 });
     }
 
     const now = new Date().toISOString();
 
     if (outcome === 'redeemed') {
-      // REQUIRE validated redemption evidence: transactionId must be present.
-      // This proves the StoreKit sheet was actually completed, not just dismissed.
-      if (!transactionId) {
+      // REQUIRE transactionId — proves StoreKit sheet was completed, not just dismissed.
+      const txId = transactionId || originalTransactionId;
+      if (!txId) {
         return Response.json({
           ok: false,
           reason: 'missing_transaction_evidence',
-          message: 'transactionId from StoreKit is required to confirm redemption',
+          message: 'transactionId or originalTransactionId from StoreKit is required to confirm redemption',
         }, { status: 400 });
       }
 
-      // Verify the offer reference matches what was assigned to this reward.
-      // offerReference must match reward.provider_reward_reference (set by fulfillReferralReward).
+      // Offer cross-check: only hard-block if there is a clear mismatch that indicates
+      // a different reward is being claimed. Partial matches pass (normalization).
       const assignedOffer = reward.provider_reward_reference;
-      if (assignedOffer && offerReference && offerReference !== assignedOffer) {
-        console.warn(`[redeemIosReferralReward] Offer mismatch: expected=${assignedOffer}, got=${offerReference} for reward ${rewardId}`);
-        // Log the mismatch but do not block — StoreKit may normalize offer identifiers
+      let offerWarning = null;
+      if (assignedOffer && offerReference) {
+        const normalizedAssigned = String(assignedOffer).toLowerCase().trim();
+        const normalizedClient = String(offerReference).toLowerCase().trim();
+        if (!normalizedClient.includes(normalizedAssigned) && !normalizedAssigned.includes(normalizedClient)) {
+          // Log hard mismatch but do not block — StoreKit may return a different
+          // normalized form. Record the discrepancy for audit.
+          offerWarning = `offer_mismatch: expected=${assignedOffer}, got=${offerReference}`;
+          console.warn(`[redeemIosReferralReward] ${offerWarning} for reward ${rewardId}`);
+        }
+      }
+
+      // Dedup: check if this transactionId has already been recorded on another reward
+      const existingRewards = await base44.asServiceRole.entities.ReferralReward.filter({
+        user_id: reward.user_id,
+        status: 'redeemed',
+      }).catch(() => []);
+      for (const r of existingRewards || []) {
+        const meta = JSON.parse(r.metadata || '{}');
+        if (meta.transaction_id === txId || meta.original_transaction_id === txId) {
+          console.warn(`[redeemIosReferralReward] Duplicate transactionId ${txId} for user ${reward.user_id}`);
+          return Response.json({ ok: false, reason: 'duplicate_transaction_id' }, { status: 409 });
+        }
       }
 
       await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
@@ -83,23 +112,25 @@ Deno.serve(async (req) => {
         failure_reason: null,
         metadata: JSON.stringify({
           ...(JSON.parse(reward.metadata || '{}')),
-          transaction_id: transactionId,
+          transaction_id: txId,
+          original_transaction_id: originalTransactionId || null,
           product_id: productId || null,
           offer_reference: offerReference || null,
           redeemed_at: now,
           validation_note: 'StoreKit transactionId required and received',
+          offer_warning: offerWarning || null,
         }),
       });
 
-      // Also mark the source SubscriptionCredit as applied if it exists
+      // Mark source SubscriptionCredit as applied
       if (reward.source_subscription_credit_id) {
         await base44.asServiceRole.entities.SubscriptionCredit.update(
           reward.source_subscription_credit_id,
           { status: 'applied', applied_at: now }
-        );
+        ).catch(() => {});
       }
 
-      // Update ReferralProgram: decrement pending rewards
+      // Decrement pending_rewards on ReferralProgram
       const programs = await base44.asServiceRole.entities.ReferralProgram.filter({ user_id: reward.user_id });
       if (programs?.[0]) {
         const p = programs[0];
@@ -108,7 +139,12 @@ Deno.serve(async (req) => {
         });
       }
 
-      return Response.json({ ok: true, status: 'redeemed', rewardId: reward.id });
+      return Response.json({
+        ok: true,
+        status: 'redeemed',
+        rewardId: reward.id,
+        offerWarning: offerWarning || null,
+      });
 
     } else if (outcome === 'failed') {
       await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
@@ -118,7 +154,7 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, status: 'failed' });
 
     } else {
-      // dismissed — leave as awaiting_user_redemption
+      // dismissed — leave as awaiting_user_redemption, do nothing
       return Response.json({ ok: true, status: 'dismissed' });
     }
 

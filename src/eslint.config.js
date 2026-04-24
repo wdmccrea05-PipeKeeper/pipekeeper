@@ -4,6 +4,14 @@ export default [
     ignores: [],
   },
   {
+    // Test files — explicitly disable no-undef with test runner globals
+    files: ['**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/__tests__/**'],
+    rules: {
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+    },
+  },
+  {
     // All JS/JSX/TS/TSX files — vitest globals + browser globals
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
     languageOptions: {

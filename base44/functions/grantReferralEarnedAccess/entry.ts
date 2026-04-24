@@ -1,25 +1,30 @@
 /**
  * grantReferralEarnedAccess
  *
- * Creates a ReferralEarnedAccess record for a free user who earned a referral reward
- * but has no active Stripe or iOS subscription.
+ * Creates or activates a ReferralEarnedAccess record for free users.
  *
- * Flow:
- *   1. Creates ReferralEarnedAccess with status=pending_module_selection
- *   2. If module is provided immediately, activates it and updates user entitlements
- *   3. Updates ReferralReward status to 'ready_to_apply'
+ * CREATE  (POST { rewardId })
+ *   → creates ReferralEarnedAccess with status=pending_module_selection
+ *   → sets ReferralReward.status = ready_to_apply
  *
- * Also used as a PATCH endpoint: calling with { accessId, module } activates a
- * pending_module_selection record and grants entitlement to the chosen module.
+ * ACTIVATE  (POST { accessId, module })
+ *   → activates a pending record for the chosen module
+ *   → synchronizes ALL canonical entitlement fields on the user
+ *   → handles multiple rewards / overlap correctly
  *
- * This is NON-REVENUE access — never counted in billing or subscription reports.
+ * Multiple-reward rules
+ *   - Same module: extend end_at from the later of (now, existing end_at)
+ *   - Different module: each module gets its own independent access window
+ *   - Overlap: union of all active earned-access modules is reflected in user flags
+ *
+ * NON-REVENUE — never counted in billing reports.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
 
-function addMonths(date, months) {
-  const d = new Date(date);
+function addMonths(fromDate, months) {
+  const d = new Date(fromDate);
   d.setMonth(d.getMonth() + months);
   return d.toISOString();
 }
@@ -33,16 +38,16 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { rewardId, module: selectedModule, accessId } = body;
 
-    // ─── PATCH: activate a pending access record with a module choice ─────────
+    // ─── ACTIVATE: called when user picks a module ────────────────────────────
     if (accessId && selectedModule) {
       if (!MODULES.includes(selectedModule)) {
         return Response.json({ error: 'invalid_module' }, { status: 400 });
       }
 
-      const records = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({ id: accessId });
+      const records = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({ id: accessId }).catch(() => []);
       const record = records?.[0];
       if (!record) return Response.json({ error: 'access_record_not_found' }, { status: 404 });
-      if (record.user_id !== user.id && record.user_email !== user.email) {
+      if (record.user_id !== (user.id || user.auth_user_id) && record.user_email !== user.email) {
         return Response.json({ error: 'forbidden' }, { status: 403 });
       }
       if (record.status === 'active') {
@@ -50,7 +55,24 @@ Deno.serve(async (req) => {
       }
 
       const now = new Date().toISOString();
-      const endAt = addMonths(now, record.months_granted || 1);
+
+      // Multiple-reward overlap: if same module already has active earned access,
+      // extend from that window's end rather than from now.
+      const existingForModule = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
+        user_id: record.user_id,
+        module: selectedModule,
+        status: 'active',
+      }).catch(() => []);
+
+      let startFrom = now;
+      if (existingForModule?.length > 0) {
+        const latestEnd = existingForModule.reduce((latest, a) => {
+          return a.end_at && new Date(a.end_at) > new Date(latest) ? a.end_at : latest;
+        }, now);
+        startFrom = latestEnd;
+      }
+
+      const endAt = addMonths(startFrom, record.months_granted || 1);
 
       await base44.asServiceRole.entities.ReferralEarnedAccess.update(accessId, {
         module: selectedModule,
@@ -60,8 +82,8 @@ Deno.serve(async (req) => {
         activated_at: now,
       });
 
-      // Grant module access on user entity
-      await grantModuleAccess(base44, record.user_id, record.user_email, selectedModule, endAt);
+      // Sync all canonical entitlement fields
+      await syncEntitlements(base44, record.user_id, record.user_email);
 
       return Response.json({ ok: true, activated: true, module: selectedModule, endAt });
     }
@@ -69,11 +91,11 @@ Deno.serve(async (req) => {
     // ─── CREATE: called from fulfillReferralReward for free users ────────────
     if (!rewardId) return Response.json({ error: 'rewardId required' }, { status: 400 });
 
-    const rewards = await base44.asServiceRole.entities.ReferralReward.filter({ id: rewardId });
+    const rewards = await base44.asServiceRole.entities.ReferralReward.filter({ id: rewardId }).catch(() => []);
     const reward = rewards?.[0];
     if (!reward) return Response.json({ error: 'reward_not_found' }, { status: 404 });
 
-    // Idempotency: check if already granted
+    // Idempotency
     const existing = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
       source_reward_id: rewardId,
     });
@@ -84,7 +106,6 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
 
-    // Create the access record — pending module selection unless one was supplied
     const newRecord = await base44.asServiceRole.entities.ReferralEarnedAccess.create({
       user_id: reward.user_id,
       user_email: reward.user_email,
@@ -102,7 +123,6 @@ Deno.serve(async (req) => {
       activated_at: selectedModule ? now : null,
     });
 
-    // Update reward → ready_to_apply (access exists, waiting for module selection or already active)
     await base44.asServiceRole.entities.ReferralReward.update(rewardId, {
       status: selectedModule ? 'applied' : 'ready_to_apply',
       applied_at: selectedModule ? now : null,
@@ -118,8 +138,7 @@ Deno.serve(async (req) => {
     });
 
     if (selectedModule) {
-      const endAt = addMonths(now, reward.months_granted || 1);
-      await grantModuleAccess(base44, reward.user_id, reward.user_email, selectedModule, endAt);
+      await syncEntitlements(base44, reward.user_id, reward.user_email);
     }
 
     return Response.json({
@@ -135,25 +154,67 @@ Deno.serve(async (req) => {
   }
 });
 
+// ─── Canonical entitlement sync ───────────────────────────────────────────────
 /**
- * Write module access flag and referral-earned entitlement onto the user record.
- * Also creates/updates a UserEntitlement row so access checks work without
- * changing the Subscription entity (keeping revenue data clean).
+ * Recomputes ALL access flags for a user from their live ReferralEarnedAccess records.
+ * This is the single source of truth for earned-access entitlement state.
+ *
+ * Writes:
+ *   - {module}_paid flags
+ *   - has_paid_access
+ *   - referral_earned_access / referral_earned_module / referral_earned_expires_at
+ *   - entitlement_tier
+ *   - paid_modules_csv
+ *   - UserEntitlement entity row
  */
-async function grantModuleAccess(base44, userId, userEmail, module, endAt) {
-  const moduleField = `${module}_paid`;
+async function syncEntitlements(base44, userId, userEmail) {
+  const now = new Date();
 
-  // Update user's module entitlement flag
+  // Load all earned-access records for this user
+  const allAccess = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
+    user_id: userId,
+  }).catch(() => []);
+
+  // Filter to currently active (status=active AND end_at in the future)
+  const activeRecords = (allAccess || []).filter(a =>
+    a.status === 'active' && a.end_at && new Date(a.end_at) > now
+  );
+
+  const activeModules = [...new Set(activeRecords.map(a => a.module).filter(Boolean))];
+  const hasAnyActive = activeModules.length > 0;
+
+  // Latest expiry across all active modules
+  const latestExpiry = activeRecords.reduce((latest, a) => {
+    if (!a.end_at) return latest;
+    return !latest || new Date(a.end_at) > new Date(latest) ? a.end_at : latest;
+  }, null);
+
+  // Primary module = the one expiring latest
+  const primaryModule = activeRecords.length > 0
+    ? activeRecords.sort((a, b) => new Date(b.end_at) - new Date(a.end_at))[0].module
+    : null;
+
+  // Build user flag patch
+  const userPatch = {
+    has_paid_access: hasAnyActive,
+    referral_earned_access: hasAnyActive,
+    referral_earned_module: primaryModule || null,
+    referral_earned_expires_at: latestExpiry || null,
+    // Canonical entitlement fields
+    entitlement_tier: hasAnyActive ? 'premium' : 'free',
+    paid_modules_csv: activeModules.join(',') || null,
+  };
+
+  // Per-module paid flags — set true for active modules, false when expired/removed
+  for (const mod of MODULES) {
+    userPatch[`${mod}_paid`] = activeModules.includes(mod);
+  }
+
+  // Apply to user record
   try {
-    await base44.asServiceRole.auth.updateUser(userId, {
-      [moduleField]: true,
-      has_paid_access: true,
-      referral_earned_access: true,
-      referral_earned_module: module,
-      referral_earned_expires_at: endAt,
-    });
+    await base44.asServiceRole.auth.updateUser(userId, userPatch);
   } catch (e) {
-    console.warn('[grantReferralEarnedAccess] Could not update user flags:', e?.message);
+    console.warn('[syncEntitlements] Could not update user:', e?.message);
   }
 
   // Upsert UserEntitlement row
@@ -162,26 +223,42 @@ async function grantModuleAccess(base44, userId, userEmail, module, endAt) {
     const entitlementData = {
       user_id: userId,
       user_email: userEmail,
-      has_access: true,
-      modules: [module],
-      [module]: true,
-      primary_product: module,
-      primary_provider: 'referral',
-      computed_at: new Date().toISOString(),
+      has_access: hasAnyActive,
+      modules: activeModules,
+      pipekeeper: activeModules.includes('pipekeeper'),
+      whiskeykeeper: activeModules.includes('whiskeykeeper'),
+      cigarkeeper: activeModules.includes('cigarkeeper'),
+      winekeeper: activeModules.includes('winekeeper'),
+      primary_product: primaryModule || null,
+      primary_provider: hasAnyActive ? 'referral' : null,
+      computed_at: now.toISOString(),
     };
 
     if (existing?.length > 0) {
+      // Preserve paid subscription entitlements — only overlay referral-earned fields
+      // if there's no active paid subscription on the existing entitlement row.
       const current = existing[0];
-      const mergedModules = [...new Set([...(current.modules || []), module])];
-      await base44.asServiceRole.entities.UserEntitlement.update(current.id, {
-        ...entitlementData,
-        modules: mergedModules,
-        [module]: true,
-      });
+      const hasPaidSub = current.primary_provider && current.primary_provider !== 'referral';
+
+      if (hasPaidSub) {
+        // Merge earned-access modules on top of paid subscription modules
+        const mergedModules = [...new Set([...(current.modules || []), ...activeModules])];
+        await base44.asServiceRole.entities.UserEntitlement.update(current.id, {
+          modules: mergedModules,
+          pipekeeper: mergedModules.includes('pipekeeper'),
+          whiskeykeeper: mergedModules.includes('whiskeykeeper'),
+          cigarkeeper: mergedModules.includes('cigarkeeper'),
+          winekeeper: mergedModules.includes('winekeeper'),
+          has_access: true,
+          computed_at: now.toISOString(),
+        });
+      } else {
+        await base44.asServiceRole.entities.UserEntitlement.update(current.id, entitlementData);
+      }
     } else {
       await base44.asServiceRole.entities.UserEntitlement.create(entitlementData);
     }
   } catch (e) {
-    console.warn('[grantReferralEarnedAccess] Could not upsert UserEntitlement:', e?.message);
+    console.warn('[syncEntitlements] Could not upsert UserEntitlement:', e?.message);
   }
 }
