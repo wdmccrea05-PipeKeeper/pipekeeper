@@ -74,12 +74,18 @@ Deno.serve(async (req) => {
       results.health = "UNHEALTHY";
     }
 
-    // Additional config checks
+    // Additional config checks – module-specific price IDs (no global Pro tier)
     results.details.price_ids = {
-      premium_monthly: Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "MISSING",
-      premium_annual: Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "MISSING",
-      pro_monthly: Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "MISSING",
-      pro_annual: Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "MISSING",
+      pipekeeper_monthly:       Deno.env.get("VITE_STRIPE_PIPEKEEPER_MONTHLY")    || "MISSING",
+      pipekeeper_annual:        Deno.env.get("VITE_STRIPE_PIPEKEEPER_ANNUAL")     || "MISSING",
+      whiskeykeeper_monthly:    Deno.env.get("VITE_STRIPE_WHISKEYKEEPER_MONTHLY") || "MISSING",
+      whiskeykeeper_annual:     Deno.env.get("VITE_STRIPE_WHISKEYKEEPER_ANNUAL")  || "MISSING",
+      cigarkeeper_monthly:      Deno.env.get("VITE_STRIPE_CIGARKEEPER_MONTHLY")   || "MISSING",
+      cigarkeeper_annual:       Deno.env.get("VITE_STRIPE_CIGARKEEPER_ANNUAL")    || "MISSING",
+      founders_bundle_monthly:  Deno.env.get("VITE_STRIPE_FOUNDERS_MONTHLY")      || "MISSING",
+      founders_bundle_annual:   Deno.env.get("VITE_STRIPE_FOUNDERS_ANNUAL")       || "MISSING",
+      three_module_monthly:     Deno.env.get("VITE_STRIPE_THREE_BUNDLE_MONTHLY")  || "MISSING",
+      three_module_annual:      Deno.env.get("VITE_STRIPE_THREE_BUNDLE_ANNUAL")   || "MISSING",
     };
 
     results.details.webhook_secret = Deno.env.get("STRIPE_WEBHOOK_SECRET") 

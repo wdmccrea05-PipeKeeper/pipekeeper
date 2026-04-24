@@ -15,16 +15,32 @@ function getStripeClient() {
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
 
-// Price ID mapping
-const PRICE_MAP = {
-  premium: {
-    monthly: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim(),
-    annual: (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim(),
+// Module-specific price ID mapping (no global Pro tier)
+const MODULE_PRICE_MAP: Record<string, Record<string, string>> = {
+  pipekeeper: {
+    monthly: (Deno.env.get("VITE_STRIPE_PIPEKEEPER_MONTHLY") || "").trim(),
+    annual:  (Deno.env.get("VITE_STRIPE_PIPEKEEPER_ANNUAL")  || "").trim(),
   },
-  pro: {
-    monthly: (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim(),
-    annual: (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim(),
-  }
+  whiskeykeeper: {
+    monthly: (Deno.env.get("VITE_STRIPE_WHISKEYKEEPER_MONTHLY") || "").trim(),
+    annual:  (Deno.env.get("VITE_STRIPE_WHISKEYKEEPER_ANNUAL")  || "").trim(),
+  },
+  cigarkeeper: {
+    monthly: (Deno.env.get("VITE_STRIPE_CIGARKEEPER_MONTHLY") || "").trim(),
+    annual:  (Deno.env.get("VITE_STRIPE_CIGARKEEPER_ANNUAL")  || "").trim(),
+  },
+  winekeeper: {
+    monthly: (Deno.env.get("VITE_STRIPE_WINEKEEPER_MONTHLY") || "").trim(),
+    annual:  (Deno.env.get("VITE_STRIPE_WINEKEEPER_ANNUAL")  || "").trim(),
+  },
+  founders_bundle: {
+    monthly: (Deno.env.get("VITE_STRIPE_FOUNDERS_MONTHLY") || "").trim(),
+    annual:  (Deno.env.get("VITE_STRIPE_FOUNDERS_ANNUAL")  || "").trim(),
+  },
+  three_module_bundle: {
+    monthly: (Deno.env.get("VITE_STRIPE_THREE_BUNDLE_MONTHLY") || "").trim(),
+    annual:  (Deno.env.get("VITE_STRIPE_THREE_BUNDLE_ANNUAL")  || "").trim(),
+  },
 };
 
 function getPlatform(req) {
@@ -55,19 +71,34 @@ async function safePersistCustomerId(base44, email, customerId) {
   }
 }
 
-function getPriceIdFromTierAndInterval(tier, interval) {
-  const normalizedTier = String(tier || "").toLowerCase();
+// Resolve module key from caller-supplied "tier" or "module" value
+function resolveModuleKey(input: unknown): string {
+  const raw = String(input || "").trim().toLowerCase();
+  // Accept canonical module names and common shorthands
+  const aliases: Record<string, string> = {
+    pipe: "pipekeeper",
+    whiskey: "whiskeykeeper",
+    cigar: "cigarkeeper",
+    wine: "winekeeper",
+    founders: "founders_bundle",
+    founders_bundle: "founders_bundle",
+    "three_module_bundle": "three_module_bundle",
+    three: "three_module_bundle",
+  };
+  return aliases[raw] || raw;
+}
+
+function getPriceIdFromModuleAndInterval(moduleKey: string, interval: string): string {
   const normalizedInterval = String(interval || "").toLowerCase();
-  
-  let intervalKey = normalizedInterval;
+  let intervalKey: string;
   if (normalizedInterval === "month" || normalizedInterval === "monthly") {
     intervalKey = "monthly";
   } else if (normalizedInterval === "year" || normalizedInterval === "yearly" || normalizedInterval === "annual") {
     intervalKey = "annual";
+  } else {
+    intervalKey = normalizedInterval;
   }
-  
-  const priceId = PRICE_MAP[normalizedTier]?.[intervalKey];
-  return priceId || "";
+  return MODULE_PRICE_MAP[moduleKey]?.[intervalKey] || "";
 }
 
 function resolveAppSlugFromTier(tier: unknown) {
@@ -102,19 +133,22 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     
     const tier = body?.tier;
+    const module = body?.module;
     const interval = body?.interval;
     
-    if (!tier || !interval) {
-      return Response.json({ error: "Missing tier or interval" }, { status: 400 });
+    // Accept either "module" or "tier" field – treat them as the module/product key
+    const rawModuleInput = module || tier;
+    if (!rawModuleInput || !interval) {
+      return Response.json({ error: "Missing module (or tier) and interval" }, { status: 400 });
     }
 
-    // COLLAPSE: Premium → Pro for all new purchases
-    const normalizedTier = String(tier).toLowerCase() === "premium" ? "pro" : tier;
-    const priceId = getPriceIdFromTierAndInterval(normalizedTier, interval);
-    const appSlug = resolveAppSlugFromTier(normalizedTier);
+    // Resolve canonical module key (e.g. "pipekeeper", "founders_bundle")
+    const moduleKey = resolveModuleKey(rawModuleInput);
+    const priceId = getPriceIdFromModuleAndInterval(moduleKey, interval);
+    const appSlug = resolveAppSlugFromTier(moduleKey);
     const appEnvironment = String(Deno.env.get("APP_ENV") || Deno.env.get("ENVIRONMENT") || "production").trim().toLowerCase();
     if (!priceId) {
-      return Response.json({ error: "Invalid tier/interval combination. Supported: pro + monthly/annual." }, { status: 400 });
+      return Response.json({ error: `No price configured for module="${moduleKey}" interval="${interval}". Use createModuleCheckoutSession for explicit module-based checkout.` }, { status: 400 });
     }
 
     // Get or create customer
@@ -148,7 +182,7 @@ Deno.serve(async (req) => {
         user_email: emailLower,
         user_id: userId,
         platform: platform,
-        tier: normalizedTier,
+        tier: moduleKey,
         interval: interval === "annual" ? "annual" : "monthly",
       },
       subscription_data: {
@@ -161,7 +195,7 @@ Deno.serve(async (req) => {
           user_email: emailLower,
           user_id: userId,
           platform: platform,
-          tier: normalizedTier,
+          tier: moduleKey,
           interval: interval === "annual" ? "annual" : "monthly",
         },
       },

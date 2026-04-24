@@ -94,10 +94,23 @@ export async function reconcileUserEntitlements(
           stripeStatus = bestSub.status;
 
           const priceId = bestSub.items?.data?.[0]?.price?.id;
-          const proMonthly = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
-          const proAnnual = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
+          // Use module-specific env-var price map — there is no global Pro tier
+          const modulePriceIds = [
+            Deno.env.get("VITE_STRIPE_PIPEKEEPER_MONTHLY"),
+            Deno.env.get("VITE_STRIPE_PIPEKEEPER_ANNUAL"),
+            Deno.env.get("VITE_STRIPE_WHISKEYKEEPER_MONTHLY"),
+            Deno.env.get("VITE_STRIPE_WHISKEYKEEPER_ANNUAL"),
+            Deno.env.get("VITE_STRIPE_CIGARKEEPER_MONTHLY"),
+            Deno.env.get("VITE_STRIPE_CIGARKEEPER_ANNUAL"),
+            Deno.env.get("VITE_STRIPE_WINEKEEPER_MONTHLY"),
+            Deno.env.get("VITE_STRIPE_WINEKEEPER_ANNUAL"),
+            Deno.env.get("VITE_STRIPE_THREE_BUNDLE_MONTHLY"),
+            Deno.env.get("VITE_STRIPE_THREE_BUNDLE_ANNUAL"),
+            Deno.env.get("VITE_STRIPE_FOUNDERS_MONTHLY"),
+            Deno.env.get("VITE_STRIPE_FOUNDERS_ANNUAL"),
+          ].filter(Boolean);
 
-          if (priceId === proMonthly || priceId === proAnnual) {
+          if (priceId && modulePriceIds.includes(priceId)) {
             stripeTier = "pro";
           } else if (isActiveStatus(bestSub.status)) {
             stripeTier = "premium";

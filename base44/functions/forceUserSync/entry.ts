@@ -86,10 +86,31 @@ Deno.serve(async (req) => {
       }, { status: 404 });
     }
     
-    const PRICE_ID_PRO_MONTHLY = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
-    const PRICE_ID_PRO_ANNUAL = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
+    // Resolve tier from price ID using module-specific price map
+    function buildModulePriceMap() {
+      const e = Deno.env;
+      const map: Record<string, string> = {};
+      const add = (envKey: string, label: string) => {
+        const id = e.get(envKey);
+        if (id) map[id] = label;
+      };
+      add("VITE_STRIPE_PIPEKEEPER_MONTHLY", "pro");
+      add("VITE_STRIPE_PIPEKEEPER_ANNUAL", "pro");
+      add("VITE_STRIPE_WHISKEYKEEPER_MONTHLY", "pro");
+      add("VITE_STRIPE_WHISKEYKEEPER_ANNUAL", "pro");
+      add("VITE_STRIPE_CIGARKEEPER_MONTHLY", "pro");
+      add("VITE_STRIPE_CIGARKEEPER_ANNUAL", "pro");
+      add("VITE_STRIPE_WINEKEEPER_MONTHLY", "pro");
+      add("VITE_STRIPE_WINEKEEPER_ANNUAL", "pro");
+      add("VITE_STRIPE_THREE_BUNDLE_MONTHLY", "pro");
+      add("VITE_STRIPE_THREE_BUNDLE_ANNUAL", "pro");
+      add("VITE_STRIPE_FOUNDERS_MONTHLY", "pro");
+      add("VITE_STRIPE_FOUNDERS_ANNUAL", "pro");
+      return map;
+    }
+    const modulePriceMap = buildModulePriceMap();
     const priceId = sub.items?.data?.[0]?.price?.id;
-    const tier = (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL) ? "pro" : "premium";
+    const tier = priceId && modulePriceMap[priceId] ? modulePriceMap[priceId] : "premium";
     
     const existing = await base44.asServiceRole.entities.Subscription.filter({
       stripe_subscription_id: sub.id

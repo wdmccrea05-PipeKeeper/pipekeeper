@@ -363,12 +363,18 @@ Deno.serve(async (req) => {
         passed.push('Stripe Webhook: Secret is configured');
       }
       
-      // Verify price IDs are set
+      // Verify module-specific price IDs are set (no global Pro tier)
       const priceIds = [
-        'STRIPE_PRICE_ID_PREMIUM_MONTHLY',
-        'STRIPE_PRICE_ID_PREMIUM_ANNUAL',
-        'STRIPE_PRICE_ID_PRO_MONTHLY',
-        'STRIPE_PRICE_ID_PRO_ANNUAL'
+        'VITE_STRIPE_PIPEKEEPER_MONTHLY',
+        'VITE_STRIPE_PIPEKEEPER_ANNUAL',
+        'VITE_STRIPE_WHISKEYKEEPER_MONTHLY',
+        'VITE_STRIPE_WHISKEYKEEPER_ANNUAL',
+        'VITE_STRIPE_CIGARKEEPER_MONTHLY',
+        'VITE_STRIPE_CIGARKEEPER_ANNUAL',
+        'VITE_STRIPE_FOUNDERS_MONTHLY',
+        'VITE_STRIPE_FOUNDERS_ANNUAL',
+        'VITE_STRIPE_THREE_BUNDLE_MONTHLY',
+        'VITE_STRIPE_THREE_BUNDLE_ANNUAL',
       ];
       
       const missingPriceIds = priceIds.filter(id => !Deno.env.get(id));

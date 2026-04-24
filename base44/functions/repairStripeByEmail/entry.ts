@@ -6,8 +6,6 @@ if (typeof Deno?.serve !== "function") {
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { getStripeClient, safeStripeError, stripeSanityCheck } from "./_utils/stripe.js";
 
-const PRICE_ID_PRO_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY") || "").trim();
-const PRICE_ID_PRO_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL") || "").trim();
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
 const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
 
@@ -80,9 +78,6 @@ async function resolveTier(stripeSub, stripe) {
         if (productName.includes("premium")) return "premium";
       }
       
-      if (priceId === PRICE_ID_PRO_MONTHLY || priceId === PRICE_ID_PRO_ANNUAL) {
-        return "pro";
-      }
       if (priceId === PRICE_ID_PREMIUM_MONTHLY || priceId === PRICE_ID_PREMIUM_ANNUAL) {
         return "premium";
       }
