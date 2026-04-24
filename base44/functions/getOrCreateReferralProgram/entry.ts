@@ -7,14 +7,28 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const APP_URL = (Deno.env.get('APP_URL') || 'https://collectionkeeper.base44.app').replace(/\/$/, '');
 
-function generateCode(userId) {
+function generateCode(userId, attempt = 0) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = 'CK-';
   const seed = userId.replace(/[^a-z0-9]/gi, '').slice(-8).toUpperCase();
   for (let i = 0; i < 6; i++) {
-    const charSeed = seed.charCodeAt(i % seed.length) + i;
+    const charSeed = seed.charCodeAt(i % seed.length) + i + attempt * 7;
     code += chars[charSeed % chars.length];
   }
+  return code;
+}
+
+async function generateUniqueCode(base44, userId) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = generateCode(userId, attempt);
+    const existing = await base44.asServiceRole.entities.ReferralProgram.filter({ referral_code: code });
+    if (!existing || existing.length === 0) return code;
+    console.warn(`[getOrCreateReferralProgram] Code collision on attempt ${attempt}: ${code}`);
+  }
+  // Fallback: fully random code
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'CK-';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
 }
 
@@ -39,8 +53,8 @@ Deno.serve(async (req) => {
     let program = programs?.[0] || null;
 
     if (!program) {
-      // Create new program
-      const code = generateCode(userId);
+      // Create new program with uniqueness-checked code
+      const code = await generateUniqueCode(base44, userId);
       const link = `${APP_URL}?ref=${code}${module ? `&m=${module}` : ''}`;
       program = await base44.entities.ReferralProgram.create({
         user_id: userId,

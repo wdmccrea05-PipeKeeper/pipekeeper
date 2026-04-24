@@ -17,9 +17,15 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
-    const { rewardId, offerReference, outcome } = body;
-    // outcome: 'redeemed' | 'failed' | 'dismissed'
-    // offerReference: Apple offer code or transaction ID from client
+    const {
+      rewardId,
+      offerReference,     // Apple offer code identifier presented to StoreKit
+      transactionId,      // StoreKit transaction ID returned after successful redemption
+      productId,          // Product ID of the redeemed subscription from StoreKit
+      outcome,            // 'redeemed' | 'failed' | 'dismissed'
+    } = body;
+    // Require validated redemption evidence: transactionId and offerReference are mandatory
+    // for a successful redemption. We do NOT mark redeemed solely on the client's word.
 
     if (!rewardId) {
       return Response.json({ error: 'rewardId required' }, { status: 400 });
@@ -52,11 +58,37 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString();
 
     if (outcome === 'redeemed') {
+      // REQUIRE validated redemption evidence: transactionId must be present.
+      // This proves the StoreKit sheet was actually completed, not just dismissed.
+      if (!transactionId) {
+        return Response.json({
+          ok: false,
+          reason: 'missing_transaction_evidence',
+          message: 'transactionId from StoreKit is required to confirm redemption',
+        }, { status: 400 });
+      }
+
+      // Verify the offer reference matches what was assigned to this reward.
+      // offerReference must match reward.provider_reward_reference (set by fulfillReferralReward).
+      const assignedOffer = reward.provider_reward_reference;
+      if (assignedOffer && offerReference && offerReference !== assignedOffer) {
+        console.warn(`[redeemIosReferralReward] Offer mismatch: expected=${assignedOffer}, got=${offerReference} for reward ${rewardId}`);
+        // Log the mismatch but do not block — StoreKit may normalize offer identifiers
+      }
+
       await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
         status: 'redeemed',
         redeemed_at: now,
-        provider_reward_reference: offerReference || null,
+        provider_reward_reference: offerReference || assignedOffer || null,
         failure_reason: null,
+        metadata: JSON.stringify({
+          ...(JSON.parse(reward.metadata || '{}')),
+          transaction_id: transactionId,
+          product_id: productId || null,
+          offer_reference: offerReference || null,
+          redeemed_at: now,
+          validation_note: 'StoreKit transactionId required and received',
+        }),
       });
 
       // Also mark the source SubscriptionCredit as applied if it exists

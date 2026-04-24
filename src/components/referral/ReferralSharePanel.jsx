@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Copy, Check, Share2, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
 
 const MODULE_OPTIONS = [
   { key: null, label: 'General' },
@@ -22,20 +23,35 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
   const baseLink = `${APP_URL}?ref=${program?.referral_code}`;
   const shareLink = selectedModule ? `${baseLink}&m=${selectedModule}` : baseLink;
 
+  const trackShare = (channel) => {
+    if (!program?.referral_code) return;
+    base44.functions.invoke('trackReferralClick', {
+      referralCode: program.referral_code,
+      module: selectedModule,
+      channel,
+    }).catch(() => {}); // fire-and-forget
+  };
+
   const copyLink = async () => {
     await navigator.clipboard.writeText(shareLink);
     setCopied(true);
     toast.success('Referral link copied!');
     setTimeout(() => setCopied(false), 2000);
+    trackShare('copy');
   };
 
   const nativeShare = async () => {
     if (navigator.share) {
-      await navigator.share({
-        title: 'Join CollectionKeeper',
-        text: 'I use CollectionKeeper to manage my collection — you should check it out.',
-        url: shareLink,
-      });
+      try {
+        await navigator.share({
+          title: 'Join CollectionKeeper',
+          text: 'I use CollectionKeeper to manage my collection — you should check it out.',
+          url: shareLink,
+        });
+        trackShare('share');
+      } catch {
+        // User dismissed native share — don't track
+      }
     } else {
       copyLink();
     }

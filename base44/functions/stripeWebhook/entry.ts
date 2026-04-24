@@ -303,6 +303,26 @@ async function upsertSubscriptionFromStripe(
   return row;
 }
 
+async function triggerReferralQualification(base44: any, userEmail: string, subscriptionId: string, amountCents: number, interval: string) {
+  try {
+    // Find the user to get their ID and check if they have referral attribution
+    const users = await base44.asServiceRole.entities.User.filter({ email: normEmail(userEmail) });
+    const user = users?.[0];
+    if (!user || !user.referred_by_code) return; // Not a referred user
+
+    await base44.asServiceRole.functions.invoke('processReferralQualification', {
+      referredUserId: user.id,
+      referredEmail: normEmail(userEmail),
+      subscriptionId,
+      subscriptionAmount: amountCents / 100,
+      subscriptionInterval: interval || 'month',
+      billingProvider: 'stripe',
+    });
+  } catch (err) {
+    console.warn('[stripeWebhook] referral qualification trigger failed (non-fatal):', err);
+  }
+}
+
 async function handleCheckoutCompleted(base44: any, stripe: Stripe, session: Stripe.Checkout.Session) {
   const metadata = (session.metadata || {}) as Record<string, string>;
   const customerEmail = normEmail(session.customer_details?.email || metadata.user_email || '');
@@ -326,13 +346,22 @@ async function handleCheckoutCompleted(base44: any, stripe: Stripe, session: Str
   });
 
   await upsertSubscriptionFromStripe(base44, stripeSub, metadata, customerEmail || null);
+
+  // ── Referral qualification: fire when a new paid subscription is created ──
+  if (customerEmail && stripeSub.status === 'active') {
+    const amountCents = stripeSub.items?.data?.[0]?.price?.unit_amount || 0;
+    const interval = stripeSub.items?.data?.[0]?.price?.recurring?.interval || 'month';
+    await triggerReferralQualification(base44, customerEmail, subscriptionId, amountCents, interval);
+  }
 }
 
 async function handleSubscriptionChanged(base44: any, stripeSub: Stripe.Subscription, eventType: string) {
   await upsertSubscriptionFromStripe(base44, stripeSub, {}, null);
 
+  const userEmail = normEmail(stripeSub.metadata?.user_email || '');
+
   await logEvent(base44, eventType, {
-    user_email: normEmail(stripeSub.metadata?.user_email || ''),
+    user_email: userEmail,
     subscriptionId: stripeSub.id,
     status: stripeSub.status,
     cancel_at_period_end: stripeSub.cancel_at_period_end,
@@ -341,6 +370,14 @@ async function handleSubscriptionChanged(base44: any, stripeSub: Stripe.Subscrip
       : null,
     metadata: stripeSub.metadata || {},
   });
+
+  // ── Referral qualification: fire when subscription transitions to active ──
+  // customer.subscription.created covers first activation
+  if (eventType === 'customer.subscription.created' && stripeSub.status === 'active' && userEmail) {
+    const amountCents = stripeSub.items?.data?.[0]?.price?.unit_amount || 0;
+    const interval = stripeSub.items?.data?.[0]?.price?.recurring?.interval || 'month';
+    await triggerReferralQualification(base44, userEmail, stripeSub.id, amountCents, interval);
+  }
 }
 
 Deno.serve(async (req) => {

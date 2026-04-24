@@ -12,39 +12,104 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import Stripe from 'npm:stripe@14.21.0';
 
 // ─── Reward config (single source of truth) ──────────────────────────────────
-// Fixed-value rewards: independent of the referred user's plan, bundle, or spend.
-// 1 qualified referral = 1 free module month = $2.99 max value
-// 12 qualified referrals = 1 free module year = $29.99 max value
 const REWARD_CONFIG = {
-  REFERRALS_PER_FREE_MONTH: 1,
-  MONTHS_PER_FREE_YEAR: 12,
-  // Fixed reward amounts in cents — NEVER derived from subscription price
-  FREE_MONTH_AMOUNT_CENTS: 299,   // $2.99
-  FREE_YEAR_AMOUNT_CENTS: 2999,   // $29.99
   // iOS: unredeemed rewards expire after 90 days
   IOS_REWARD_EXPIRY_DAYS: 90,
 };
 
+// ─── Stripe: read preconfigured coupon/promo IDs from env ────────────────────
+// Set STRIPE_REFERRAL_MONTH_COUPON_ID and STRIPE_REFERRAL_YEAR_COUPON_ID in your
+// Stripe dashboard, then add them as env secrets. If not set, falls back to
+// dynamic coupon creation as a safety net.
+function getStripeCouponId(rewardType) {
+  if (rewardType === 'free_year') {
+    return Deno.env.get('STRIPE_REFERRAL_YEAR_COUPON_ID') || null;
+  }
+  return Deno.env.get('STRIPE_REFERRAL_MONTH_COUPON_ID') || null;
+}
+
 function buildStripeRewardCouponParams(rewardType) {
-  // Fixed-value coupons — not percent_off, not mirrored from the subscriber's plan.
-  // amount_off is always the fixed module price regardless of what plan they're on.
+  // Fallback: dynamic coupon creation when no env coupon ID is configured.
+  // Fixed-value — independent of plan price.
   if (rewardType === 'free_year') {
     return {
       name: 'CollectionKeeper Referral — 1 Free Module Year ($29.99)',
-      amount_off: REWARD_CONFIG.FREE_YEAR_AMOUNT_CENTS,
+      amount_off: 2999,
       currency: 'usd',
       duration: 'once',
       max_redemptions: 1,
     };
   }
-  // free_month — fixed $2.99 credit
   return {
     name: 'CollectionKeeper Referral — 1 Free Module Month ($2.99)',
-    amount_off: REWARD_CONFIG.FREE_MONTH_AMOUNT_CENTS,
+    amount_off: 299,
     currency: 'usd',
     duration: 'once',
     max_redemptions: 1,
   };
+}
+
+// ─── iOS offer identifier mapping ────────────────────────────────────────────
+// Maps referrer's active subscription SKU family + reward type → Apple offer identifier.
+// Identifiers must exactly match your App Store Connect offer codes.
+const IOS_OFFER_MAP = {
+  // Single module subscriptions (any single keeper)
+  single_monthly: {
+    free_month: Deno.env.get('IOS_REFERRAL_SINGLE_MONTHLY_MONTH_OFFER') || 'Referral Module Month Reward',
+    free_year:  Deno.env.get('IOS_REFERRAL_SINGLE_ANNUAL_YEAR_OFFER')   || 'Referral Module Year Reward',
+  },
+  single_annual: {
+    free_month: Deno.env.get('IOS_REFERRAL_SINGLE_MONTHLY_MONTH_OFFER') || 'Referral Module Month Reward',
+    free_year:  Deno.env.get('IOS_REFERRAL_SINGLE_ANNUAL_YEAR_OFFER')   || 'Referral Module Year Reward',
+  },
+  // 3-module bundle
+  three_monthly: {
+    free_month: Deno.env.get('IOS_REFERRAL_THREE_MONTHLY_MONTH_OFFER')  || 'Referral Module Month Reward - Three Monthly',
+    free_year:  Deno.env.get('IOS_REFERRAL_THREE_ANNUAL_YEAR_OFFER')    || 'referral_module_year_three_annual',
+  },
+  three_annual: {
+    free_month: Deno.env.get('IOS_REFERRAL_THREE_MONTHLY_MONTH_OFFER')  || 'Referral Module Month Reward - Three Monthly',
+    free_year:  Deno.env.get('IOS_REFERRAL_THREE_ANNUAL_YEAR_OFFER')    || 'referral_module_year_three_annual',
+  },
+  // All-module (4-module) bundle
+  all_monthly: {
+    free_month: Deno.env.get('IOS_REFERRAL_ALL_MONTHLY_MONTH_OFFER')    || 'referral_module_all_monthly',
+    free_year:  Deno.env.get('IOS_REFERRAL_ALL_ANNUAL_YEAR_OFFER')      || 'referral_module_all_annual',
+  },
+  all_annual: {
+    free_month: Deno.env.get('IOS_REFERRAL_ALL_MONTHLY_MONTH_OFFER')    || 'referral_module_all_monthly',
+    free_year:  Deno.env.get('IOS_REFERRAL_ALL_ANNUAL_YEAR_OFFER')      || 'referral_module_all_annual',
+  },
+  // Founders bundle
+  founders_monthly: {
+    free_month: Deno.env.get('IOS_REFERRAL_FOUNDERS_MONTHLY_MONTH_OFFER') || 'referral_module_founders_monthly',
+    free_year:  Deno.env.get('IOS_REFERRAL_FOUNDERS_ANNUAL_YEAR_OFFER')   || 'referral_module_founders_annual',
+  },
+  founders_annual: {
+    free_month: Deno.env.get('IOS_REFERRAL_FOUNDERS_MONTHLY_MONTH_OFFER') || 'referral_module_founders_monthly',
+    free_year:  Deno.env.get('IOS_REFERRAL_FOUNDERS_ANNUAL_YEAR_OFFER')   || 'referral_module_founders_annual',
+  },
+};
+
+/**
+ * Determine the SKU family key from the referrer's active iOS subscription planKey.
+ * Uses the REFERRER's subscription, not the referred friend's.
+ */
+function resolveIosSkuFamily(planKey) {
+  const key = String(planKey || '').toLowerCase();
+  if (key.includes('founders') && key.includes('annual')) return 'founders_annual';
+  if (key.includes('founders')) return 'founders_monthly';
+  if ((key.includes('four_module') || key.includes('all')) && key.includes('annual')) return 'all_annual';
+  if (key.includes('four_module') || key.includes('all')) return 'all_monthly';
+  if (key.includes('three_module') && key.includes('annual')) return 'three_annual';
+  if (key.includes('three_module')) return 'three_monthly';
+  if (key.includes('annual') || key.includes('year')) return 'single_annual';
+  return 'single_monthly';
+}
+
+function resolveIosOfferIdentifier(planKey, rewardType) {
+  const family = resolveIosSkuFamily(planKey);
+  return (IOS_OFFER_MAP[family] || IOS_OFFER_MAP['single_monthly'])[rewardType] || 'Referral Module Month Reward';
 }
 
 Deno.serve(async (req) => {
@@ -159,19 +224,36 @@ async function fulfillStripe(base44, reward, now) {
   }
 
   try {
-    // Create a fixed-value coupon — independent of the subscriber's plan price
-    const couponParams = buildStripeRewardCouponParams(reward.reward_type);
-    const coupon = await stripe.coupons.create(couponParams);
+    // Prefer pre-configured coupon ID from env — avoids creating ad-hoc coupons.
+    // Fall back to dynamic coupon creation if env IDs are not yet configured.
+    const configuredCouponId = getStripeCouponId(reward.reward_type);
+    let couponId;
+
+    if (configuredCouponId) {
+      // Validate the configured coupon still exists in Stripe
+      try {
+        await stripe.coupons.retrieve(configuredCouponId);
+        couponId = configuredCouponId;
+      } catch {
+        console.warn(`[fulfillReferralReward] Configured coupon ${configuredCouponId} not found in Stripe — creating dynamic coupon`);
+        const coupon = await stripe.coupons.create(buildStripeRewardCouponParams(reward.reward_type));
+        couponId = coupon.id;
+      }
+    } else {
+      // No env coupon configured — create dynamically
+      const coupon = await stripe.coupons.create(buildStripeRewardCouponParams(reward.reward_type));
+      couponId = coupon.id;
+    }
 
     // Apply coupon to subscription
     await stripe.subscriptions.update(stripeSubId, {
-      coupon: coupon.id,
+      coupon: couponId,
     });
 
     await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
       status: 'applied',
       applied_at: now,
-      provider_reward_reference: coupon.id,
+      provider_reward_reference: couponId,
       provider_subscription_id: stripeSubId,
       failure_reason: null,
     });
@@ -180,8 +262,9 @@ async function fulfillStripe(base44, reward, now) {
       ok: true,
       provider: 'stripe',
       status: 'applied',
-      couponId: coupon.id,
+      couponId,
       subscriptionId: stripeSubId,
+      usedConfiguredCoupon: !!configuredCouponId,
     });
 
   } catch (stripeErr) {
@@ -195,16 +278,47 @@ async function fulfillStripe(base44, reward, now) {
 
 // ─── iOS fulfillment ──────────────────────────────────────────────────────────
 // Do NOT mutate the App Store subscription from the backend.
-// Instead mark as awaiting_user_redemption so the app can surface a redemption CTA.
+// Resolve the correct Apple offer identifier based on the referrer's active subscription SKU,
+// then mark as awaiting_user_redemption so the app can present the correct offer code sheet.
 async function fulfillIos(base44, reward, now) {
   const expiryDays = REWARD_CONFIG.IOS_REWARD_EXPIRY_DAYS;
   const expiresAt = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
 
+  // Resolve referrer's active Apple subscription to pick the correct offer identifier
+  let planKey = null;
+  try {
+    const contracts = await base44.asServiceRole.entities.ActiveContract.filter({
+      user_id: reward.user_id,
+      provider: 'apple',
+      is_active: true,
+    });
+    if (contracts?.[0]?.product) {
+      planKey = contracts[0].product;
+    }
+    if (!planKey) {
+      const subs = await base44.asServiceRole.entities.Subscription.filter({
+        user_id: reward.user_id,
+        provider: 'apple',
+        status: 'active',
+      });
+      planKey = subs?.[0]?.plan_key || subs?.[0]?.planKey || null;
+    }
+  } catch {
+    // Non-fatal — will use default offer
+  }
+
+  const offerIdentifier = resolveIosOfferIdentifier(planKey, reward.reward_type);
+
   await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
     status: 'awaiting_user_redemption',
     expires_at: expiresAt,
+    provider_reward_reference: offerIdentifier, // Store resolved offer ID for client and audit
     failure_reason: null,
-    // No provider_reward_reference yet — set when user initiates Apple offer redemption
+    metadata: JSON.stringify({
+      ios_offer_identifier: offerIdentifier,
+      sku_family: resolveIosSkuFamily(planKey),
+      resolved_plan_key: planKey,
+    }),
   });
 
   return Response.json({
@@ -212,6 +326,7 @@ async function fulfillIos(base44, reward, now) {
     provider: 'ios',
     status: 'awaiting_user_redemption',
     expiresAt,
-    message: 'iOS reward marked for in-app redemption. No App Store billing mutation performed.',
+    offerIdentifier,
+    message: 'iOS reward marked for in-app redemption. Present offerIdentifier to StoreKit.',
   });
 }

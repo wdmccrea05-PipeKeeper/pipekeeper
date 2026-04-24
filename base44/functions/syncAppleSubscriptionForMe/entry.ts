@@ -253,6 +253,26 @@ Deno.serve(async (req) => {
       console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}`);
     }
     
+    // ── Referral qualification: fire when a referred user's iOS sub becomes active ──
+    // Only trigger when transitioning to active (not on every sync)
+    if (shouldMarkPaid && (!existingAppleSub || existingAppleSub.status !== 'active')) {
+      try {
+        const referredUser = users?.[0] || null;
+        if (referredUser?.referred_by_code) {
+          await base44.asServiceRole.functions.invoke('processReferralQualification', {
+            referredUserId: userId,
+            referredEmail: emailLower,
+            subscriptionId: providerSubId,
+            subscriptionAmount: null, // Amount not available from iOS client sync
+            subscriptionInterval: productAccess.billingInterval || 'month',
+            billingProvider: 'ios',
+          });
+        }
+      } catch (refErr) {
+        console.warn('[syncAppleSubscriptionForMe] referral qualification trigger failed (non-fatal):', refErr);
+      }
+    }
+
     // Log successful sync for monitoring
     console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${emailLower} userId=${userId} tier=${tier} status=${status} active=${active} verified=${isVerified}`);
 

@@ -9,41 +9,13 @@ export default [
     ],
   },
   {
-    // All test files — vitest globals injected at runtime
-    files: [
-      '**/__tests__/**/*.{js,jsx,ts,tsx}',
-      '**/*.test.{js,jsx,ts,tsx}',
-      '**/*.spec.{js,jsx,ts,tsx}',
-    ],
-    languageOptions: {
-      globals: {
-        describe: 'readonly',
-        test: 'readonly',
-        it: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        vi: 'readonly',
-        jest: 'readonly',
-      },
-    },
-    rules: {
-      'no-undef': 'off',
-      'no-unused-vars': 'off',
-    },
-  },
-  {
+    // All JS/JSX/TS/TSX files — vitest globals + browser globals
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
-    ignores: [
-      '**/curator/__tests__/curatorCoverage.test.jsx',
-      '**/utils/__tests__/entitlements.test.jsx',
-    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
+        // Browser
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
@@ -75,6 +47,7 @@ export default [
         Set: 'readonly',
         Symbol: 'readonly',
         process: 'readonly',
+        // Vitest / Jest test globals
         describe: 'readonly',
         test: 'readonly',
         it: 'readonly',
@@ -89,6 +62,7 @@ export default [
     },
     rules: {
       'no-undef': 'off',
+      'no-unused-vars': 'off',
     },
   },
 ];

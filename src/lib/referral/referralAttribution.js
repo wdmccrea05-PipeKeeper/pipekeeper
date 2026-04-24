@@ -9,16 +9,26 @@ const SOURCE_KEY = 'ck_referral_source';
 const ATTRIBUTED_KEY = 'ck_referral_attributed';
 
 /**
- * Call once at app startup. Captures ?ref= from URL and saves to localStorage.
+ * Call once at app startup. Captures ?ref= from URL, saves to localStorage,
+ * and fires an anonymous click-tracking event to the backend.
  */
 export function captureReferralFromUrl() {
   try {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
-    const module = params.get('m');
+    const moduleKey = params.get('m');
     if (ref && !localStorage.getItem(ATTRIBUTED_KEY)) {
       localStorage.setItem(STORAGE_KEY, ref);
-      localStorage.setItem(SOURCE_KEY, module ? `link_${module}` : 'link');
+      localStorage.setItem(SOURCE_KEY, moduleKey ? `link_${moduleKey}` : 'link');
+
+      // Fire click-tracking event — anonymous, fire-and-forget
+      // Uses fetch directly since the SDK may not be initialized yet at startup
+      const appId = import.meta?.env?.VITE_APP_ID || '';
+      fetch(`/api/v1/apps/${appId}/functions/trackReferralClick`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralCode: ref, module: moduleKey, channel: 'link' }),
+      }).catch(() => {});
     }
   } catch (_) {}
 }
