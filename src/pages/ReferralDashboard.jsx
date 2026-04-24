@@ -154,7 +154,7 @@ export default function ReferralDashboard() {
             {[
               { step: '1', text: 'Share your personal link' },
               { step: '2', text: 'Friend signs up and subscribes' },
-              { step: '3', text: 'You earn 1 free month' },
+              { step: '3', text: 'You earn 1 free module month ($2.99)' },
             ].map(item => (
               <div key={item.step} className="space-y-1">
                 <div className="w-7 h-7 rounded-full flex items-center justify-center mx-auto text-sm font-bold"
@@ -165,9 +165,17 @@ export default function ReferralDashboard() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-[#E0D8C8]/40 text-center mt-3">
-            12 qualified referrals = 1 free year
-          </p>
+          <div className="mt-3 space-y-1 text-center">
+            <p className="text-xs text-[#E0D8C8]/40">
+              1 qualified referral = 1 free module month (up to $2.99)
+            </p>
+            <p className="text-xs text-[#E0D8C8]/40">
+              12 qualified referrals = 1 free module year (up to $29.99)
+            </p>
+            <p className="text-xs text-[#E0D8C8]/25 mt-1">
+              Reward value is fixed and does not vary by plan or bundle.
+            </p>
+          </div>
         </div>
 
         {/* Stats */}

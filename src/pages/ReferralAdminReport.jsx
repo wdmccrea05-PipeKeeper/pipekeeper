@@ -215,7 +215,7 @@ export default function ReferralAdminReport() {
                   <table className="w-full text-xs">
                     <thead className="bg-[#2a1f18]">
                       <tr>
-                        {['User', 'Type', 'Provider', 'Status', 'Granted', 'Applied/Redeemed', 'Ref', 'Attempts', 'Failure'].map(h => (
+                        {['User', 'Type', 'Fixed Value', 'Provider', 'Status', 'Granted', 'Applied/Redeemed', 'Ref', 'Attempts', 'Failure'].map(h => (
                           <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/60">{h}</th>
                         ))}
                       </tr>
@@ -225,6 +225,9 @@ export default function ReferralAdminReport() {
                         <tr key={r.id} className="border-t border-[#8b6239]/15 hover:bg-white/[0.02]">
                           <td className="px-3 py-2 font-mono text-[#E0D8C8]/80 max-w-[130px] truncate">{r.userEmail}</td>
                           <td className="px-3 py-2 text-[#D4A574]">{r.rewardType}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/70 font-mono">
+                            {r.rewardType === 'free_year' ? '$29.99' : '$2.99'}
+                          </td>
                           <td className="px-3 py-2 text-[#E0D8C8]/70">{r.provider}</td>
                           <td className="px-3 py-2">
                             <span className={`font-medium ${

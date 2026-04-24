@@ -12,31 +12,36 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import Stripe from 'npm:stripe@14.21.0';
 
 // ─── Reward config (single source of truth) ──────────────────────────────────
+// Fixed-value rewards: independent of the referred user's plan, bundle, or spend.
+// 1 qualified referral = 1 free module month = $2.99 max value
+// 12 qualified referrals = 1 free module year = $29.99 max value
 const REWARD_CONFIG = {
   REFERRALS_PER_FREE_MONTH: 1,
   MONTHS_PER_FREE_YEAR: 12,
+  // Fixed reward amounts in cents — NEVER derived from subscription price
+  FREE_MONTH_AMOUNT_CENTS: 299,   // $2.99
+  FREE_YEAR_AMOUNT_CENTS: 2999,   // $29.99
   // iOS: unredeemed rewards expire after 90 days
   IOS_REWARD_EXPIRY_DAYS: 90,
-  // Stripe coupon duration: once (applies to next invoice)
-  STRIPE_COUPON_DURATION: 'once',
 };
 
-function buildStripeRewardCouponParams(rewardType, billingInterval) {
-  // For a free_month on a monthly plan: 100% off for 1 month
-  // For a free_month on an annual plan: apply equivalent prorated credit as percentage
-  // For free_year: 100% off for 1 period (best handled as amount_off or percent_off 100 once)
+function buildStripeRewardCouponParams(rewardType) {
+  // Fixed-value coupons — not percent_off, not mirrored from the subscriber's plan.
+  // amount_off is always the fixed module price regardless of what plan they're on.
   if (rewardType === 'free_year') {
     return {
-      name: 'CollectionKeeper Referral — Free Year',
-      percent_off: 100,
+      name: 'CollectionKeeper Referral — 1 Free Module Year ($29.99)',
+      amount_off: REWARD_CONFIG.FREE_YEAR_AMOUNT_CENTS,
+      currency: 'usd',
       duration: 'once',
       max_redemptions: 1,
     };
   }
-  // free_month — one full billing cycle free
+  // free_month — fixed $2.99 credit
   return {
-    name: 'CollectionKeeper Referral — Free Month',
-    percent_off: 100,
+    name: 'CollectionKeeper Referral — 1 Free Module Month ($2.99)',
+    amount_off: REWARD_CONFIG.FREE_MONTH_AMOUNT_CENTS,
+    currency: 'usd',
     duration: 'once',
     max_redemptions: 1,
   };
@@ -154,8 +159,8 @@ async function fulfillStripe(base44, reward, now) {
   }
 
   try {
-    // Create a one-time coupon
-    const couponParams = buildStripeRewardCouponParams(reward.reward_type, 'month');
+    // Create a fixed-value coupon — independent of the subscriber's plan price
+    const couponParams = buildStripeRewardCouponParams(reward.reward_type);
     const coupon = await stripe.coupons.create(couponParams);
 
     // Apply coupon to subscription

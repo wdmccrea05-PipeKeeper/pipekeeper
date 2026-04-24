@@ -26,20 +26,26 @@ function rewardTitle(reward) {
   return base;
 }
 
+const REWARD_VALUE = {
+  free_month: '$2.99',
+  free_year: '$29.99',
+};
+
 function rewardBody(reward) {
   const isYear = reward.reward_type === 'free_year';
-  const label = isYear ? '1 free year' : '1 free month';
+  const value = REWARD_VALUE[reward.reward_type] || '';
+  const label = isYear ? `1 free module year (${value})` : `1 free module month (${value})`;
 
   if (reward.billing_provider === 'stripe') {
     if (reward.status === 'applied') {
       return isYear
-        ? 'You earned a free year. Your reward has been applied to your subscription.'
-        : 'You earned 1 free month. It will be applied automatically to your next renewal.';
+        ? `Your ${value} module year credit has been applied to your subscription.`
+        : `Your ${value} module month credit has been applied to your next renewal.`;
     }
     if (reward.status === 'failed') {
       return 'We were unable to apply this reward automatically. Please contact support.';
     }
-    return `You earned ${label}. It will be applied automatically to your next renewal.`;
+    return `You earned ${label}. The fixed credit will be applied automatically to your next renewal.`;
   }
 
   if (reward.billing_provider === 'ios') {
