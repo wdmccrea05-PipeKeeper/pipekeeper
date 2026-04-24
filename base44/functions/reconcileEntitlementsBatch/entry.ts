@@ -5,6 +5,39 @@ import Stripe from "npm:stripe@17.5.0";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
+// Hardcoded price ID → module mapping (canonical, non-negotiable)
+const HARDCODED_PRICE_TO_MODULES = {
+  'price_1SsDgEDycvQWC88PmdvlxFDa': ['pipekeeper'],
+  'price_1SsDU6DycvQWC88PIwpmt7Oc': ['pipekeeper'],
+  'price_1TBfcdDycvQWC88PV0OV4t9B': ['whiskeykeeper'],
+  'price_1TBfd7DycvQWC88PHrCnHl1X': ['whiskeykeeper'],
+  'price_1TBfbJDycvQWC88PIjsHAufT': ['cigarkeeper'],
+  'price_1TBfaeDycvQWC88PkAHy3qIC': ['cigarkeeper'],
+  'price_1TKgGnDycvQWC88PwdJo75R5': ['pipekeeper', 'whiskeykeeper'],
+  'price_1TBfhVDycvQWC88PdZ1jQNwX': ['pipekeeper', 'whiskeykeeper'],
+  'price_1TBfdyDycvQWC88PPKSN5uVJ': ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+  'price_1TBfekDycvQWC88P5nZsEr7j': ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+};
+
+function modulesFromPlanKey(planKey) {
+  const key = String(planKey || '').toLowerCase();
+  if (key.startsWith('pipekeeper_'))    return ['pipekeeper'];
+  if (key.startsWith('whiskeykeeper_')) return ['whiskeykeeper'];
+  if (key.startsWith('cigarkeeper_'))   return ['cigarkeeper'];
+  if (key.startsWith('winekeeper_'))    return ['winekeeper'];
+  if (key.includes('three_module'))     return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+  if (key.includes('four_module'))      return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+  if (key.includes('founders'))         return ['pipekeeper', 'whiskeykeeper'];
+  return [];
+}
+
+function modulesFromPriceId(priceId) {
+  if (!priceId) return [];
+  return HARDCODED_PRICE_TO_MODULES[priceId] || [];
+}
+
+function unique(arr) { return [...new Set(arr)]; }
+
 function getStripe() {
   const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
   if (!key || !key.startsWith("sk_")) throw new Error("Invalid STRIPE_SECRET_KEY");
@@ -12,52 +45,57 @@ function getStripe() {
 }
 
 function isActiveStatus(status) {
-  return ["active", "trialing", "trial"].includes((status || "").toLowerCase());
+  return ["active", "trialing", "trial", "past_due", "incomplete"].includes((status || "").toLowerCase());
 }
 
-function getTierPriority(tier) {
-  const t = (tier || "").toLowerCase();
-  if (t === "pro") return 3;
-  if (t === "premium") return 2;
-  return 1;
+function buildPreservedModules(userEntity) {
+  const mods = [];
+  if (userEntity.pipekeeper_paid)    mods.push('pipekeeper');
+  if (userEntity.whiskeykeeper_paid) mods.push('whiskeykeeper');
+  if (userEntity.cigarkeeper_paid)   mods.push('cigarkeeper');
+  if (userEntity.winekeeper_paid)    mods.push('winekeeper');
+  if (mods.length > 0) return mods;
+  const csv = String(userEntity.paid_modules_csv || '').trim();
+  if (csv) return csv.split(',').map(m => m.trim().toLowerCase()).filter(Boolean);
+  return [];
 }
 
 async function reconcileUser(base44, userEntity, stripe, localSubsByUserId) {
   const email = normEmail(userEntity.email);
-  const currentTier = userEntity.entitlement_tier || userEntity.data?.entitlement_tier || userEntity.subscription_tier || "free";
-  const currentLevel = userEntity.subscription_level || "free";
-  const currentStatus = userEntity.subscription_status || "";
   let stripeCustomerId = userEntity.stripe_customer_id || null;
 
-  // Check if user already has entitlement fields set correctly in data blob
-  const hasDataBlob = !!(userEntity.data?.entitlement_tier);
-  const dataBlobTier = userEntity.data?.entitlement_tier || "free";
-
-  // Check local Subscription entity first (avoids Stripe API call for most users)
+  // Collect active subscriptions from local DB
   const localSubs = localSubsByUserId[userEntity.id] || [];
-  const localActiveSub = localSubs
-    .filter(s => isActiveStatus(s.status))
-    .sort((a, b) => getTierPriority(b.tier) - getTierPriority(a.tier))[0] || null;
+  const activeSubs = localSubs.filter(s => isActiveStatus(s.status));
 
-  let stripeTier = null;
-  let stripeStatus = null;
-  let appleTier = null;
-  let appleStatus = null;
+  // Build module set from local subscriptions
+  const allModules = new Set();
+  let hasActiveSubscription = activeSubs.length > 0;
 
-  // Set from local Subscription entity (fast path — no external API calls)
-  if (localActiveSub) {
-    if (localActiveSub.provider === "apple") {
-      appleTier = localActiveSub.tier || "premium";
-      appleStatus = localActiveSub.status;
-    } else {
-      stripeTier = localActiveSub.tier || "premium";
-      stripeStatus = localActiveSub.status;
-      if (localActiveSub.stripe_customer_id) stripeCustomerId = localActiveSub.stripe_customer_id;
+  for (const sub of activeSubs) {
+    // Try price_id → hardcoded map first
+    const priceId = sub.price_id || sub.stripe_price_id || null;
+    const fromPrice = modulesFromPriceId(priceId);
+    if (fromPrice.length > 0) {
+      fromPrice.forEach(m => allModules.add(m));
+      continue;
+    }
+    // Try plan_key
+    const planKey = sub.plan_key || sub.planKey || null;
+    const fromKey = planKey ? modulesFromPlanKey(planKey) : [];
+    if (fromKey.length > 0) {
+      fromKey.forEach(m => allModules.add(m));
+      continue;
+    }
+    // Try modules_csv
+    const csv = String(sub.modules_csv || '').trim();
+    if (csv) {
+      csv.split(',').map(m => m.trim().toLowerCase()).filter(Boolean).forEach(m => allModules.add(m));
     }
   }
 
-  // Only hit Stripe API if user has a stripe_customer_id but no local subscription found
-  if (!localActiveSub && stripeCustomerId) {
+  // If no local active sub and stripe customer exists, check Stripe API
+  if (!hasActiveSubscription && stripeCustomerId) {
     try {
       const subsResponse = await stripe.subscriptions.list({
         customer: stripeCustomerId,
@@ -65,55 +103,67 @@ async function reconcileUser(base44, userEntity, stripe, localSubsByUserId) {
         limit: 5,
         expand: ["data.items.data.price"],
       });
-      const activeSub = subsResponse.data?.find(s => s.status === "active" || s.status === "trialing");
+      const activeSub = subsResponse.data?.find(s => isActiveStatus(s.status));
       if (activeSub) {
-        stripeStatus = activeSub.status;
+        hasActiveSubscription = true;
         const priceId = activeSub.items?.data?.[0]?.price?.id;
-        const proMonthly = Deno.env.get("STRIPE_PRICE_ID_PRO_MONTHLY");
-        const proAnnual = Deno.env.get("STRIPE_PRICE_ID_PRO_ANNUAL");
-        stripeTier = (priceId === proMonthly || priceId === proAnnual) ? "pro" : "premium";
+        const fromPrice = modulesFromPriceId(priceId);
+        if (fromPrice.length > 0) {
+          fromPrice.forEach(m => allModules.add(m));
+        } else {
+          // Try metadata/modules_csv from Stripe subscription
+          const metaCsv = String(activeSub.metadata?.modules_csv || '').trim();
+          if (metaCsv) {
+            metaCsv.split(',').map(m => m.trim().toLowerCase()).filter(Boolean).forEach(m => allModules.add(m));
+          }
+        }
+        if (!stripeCustomerId) stripeCustomerId = activeSub.customer;
       }
     } catch (e) {
       console.warn(`[reconcileEntitlementsBatch] Stripe check failed for ${email}:`, e?.message);
     }
   }
 
-  // === RESOLVE FINAL TIER ===
-  let finalTier = "free";
-  let finalStatus = "inactive";
-  let providerUsed = "none";
+  // SAFE RULE: if active subscription exists but modules not resolved, preserve existing flags
+  let finalModules = unique([...allModules]);
+  let syncState = 'synced';
 
-  const stripeActive = stripeTier && isActiveStatus(stripeStatus);
-  const appleActive = appleTier && isActiveStatus(appleStatus);
-
-  if (stripeActive && appleActive) {
-    if (getTierPriority(stripeTier) >= getTierPriority(appleTier)) {
-      finalTier = stripeTier; finalStatus = stripeStatus; providerUsed = "stripe";
-    } else {
-      finalTier = appleTier; finalStatus = appleStatus; providerUsed = "apple";
-    }
-  } else if (stripeActive) {
-    finalTier = stripeTier; finalStatus = stripeStatus; providerUsed = "stripe";
-  } else if (appleActive) {
-    finalTier = appleTier; finalStatus = appleStatus; providerUsed = "apple";
-  } else {
-    // Preserve existing paid tier if no active subscription found (don't downgrade)
-    finalTier = currentTier !== "free" ? currentTier : "free";
-    finalStatus = currentStatus || "inactive";
-    providerUsed = currentTier !== "free" ? "preserved" : "none";
+  if (!hasActiveSubscription) {
+    // Confirmed no active subscription — free
+    finalModules = [];
+    syncState = 'synced';
+  } else if (finalModules.length === 0) {
+    // Active subscription but unresolved modules — preserve existing, mark needs_review
+    finalModules = buildPreservedModules(userEntity);
+    syncState = 'needs_review';
+    console.warn(`[reconcileEntitlementsBatch] Active subscription for ${email} but no modules resolved. Preserving: [${finalModules.join(',')}]`);
   }
 
-  const finalLevel = finalTier === "free" ? "free" : "paid";
+  const hasPaidAccess = hasActiveSubscription;
+  const hasBundle = finalModules.length > 1;
+  const entitlementTier = hasPaidAccess
+    ? (hasBundle ? `bundle_${finalModules.length}` : 'pro')
+    : 'free';
 
-  // Only mark changed if data blob is missing OR tier is wrong
+  // Check if anything changed
+  const currentModulesCsv = (userEntity.paid_modules_csv || '').trim();
+  const finalModulesCsv = finalModules.join(',');
   const changed =
-    !hasDataBlob ||
-    dataBlobTier !== finalTier ||
-    finalTier !== (userEntity.subscription_tier || "free") ||
-    finalLevel !== currentLevel ||
+    userEntity.has_paid_access !== hasPaidAccess ||
+    currentModulesCsv !== finalModulesCsv ||
+    !!userEntity.pipekeeper_paid !== finalModules.includes('pipekeeper') ||
+    !!userEntity.whiskeykeeper_paid !== finalModules.includes('whiskeykeeper') ||
+    !!userEntity.cigarkeeper_paid !== finalModules.includes('cigarkeeper') ||
     (stripeCustomerId && !userEntity.stripe_customer_id);
 
-  return { finalTier, finalLevel, finalStatus, stripeCustomerId, providerUsed, changed };
+  return {
+    finalModules,
+    hasPaidAccess,
+    entitlementTier,
+    syncState,
+    stripeCustomerId,
+    changed,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -164,18 +214,17 @@ Deno.serve(async (req) => {
           fixed++;
           if (!dryRun) {
             const updates = {
-              subscription_tier: result.finalTier,
-              subscription_level: result.finalLevel,
-              subscription_status: result.finalStatus,
-              // Write canonical entitlement_tier (top-level AND data blob) so resolver finds it
-              entitlement_tier: result.finalTier,
-              data: {
-                ...(userEntity.data || {}),
-                entitlement_tier: result.finalTier,
-                subscription_tier: result.finalTier,
-                subscription_level: result.finalLevel,
-                subscription_status: result.finalStatus,
-              },
+              // Module-specific flags (canonical)
+              pipekeeper_paid: result.finalModules.includes('pipekeeper'),
+              whiskeykeeper_paid: result.finalModules.includes('whiskeykeeper'),
+              cigarkeeper_paid: result.finalModules.includes('cigarkeeper'),
+              winekeeper_paid: result.finalModules.includes('winekeeper'),
+              paid_modules_csv: result.finalModules.join(','),
+              has_paid_access: result.hasPaidAccess,
+              has_bundle_access: result.finalModules.length > 1,
+              entitlement_tier: result.entitlementTier,
+              subscription_level: result.hasPaidAccess ? 'paid' : 'free',
+              entitlement_sync_state: result.syncState,
             };
             if (result.stripeCustomerId && !userEntity.stripe_customer_id) {
               updates.stripe_customer_id = result.stripeCustomerId;
@@ -186,11 +235,10 @@ Deno.serve(async (req) => {
             sampleFixes.push({
               email: userEntity.email,
               before: {
-                tier: userEntity.subscription_tier || userEntity.data?.subscription_tier || "free",
-                level: userEntity.subscription_level || userEntity.data?.subscription_level || "free",
+                modules: userEntity.paid_modules_csv || 'none',
+                hasPaidAccess: userEntity.has_paid_access,
               },
-              after: { tier: result.finalTier, level: result.finalLevel },
-              providerUsed: result.providerUsed,
+              after: { modules: result.finalModules.join(','), hasPaidAccess: result.hasPaidAccess, tier: result.entitlementTier, syncState: result.syncState },
             });
           }
         } else {
