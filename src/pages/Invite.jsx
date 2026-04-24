@@ -1,5 +1,5 @@
 import React from "react";
-import InviteFull from "./InviteFull";
+import InviteFull from "./InviteFull.jsx";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

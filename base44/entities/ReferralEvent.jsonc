@@ -1,0 +1,105 @@
+{
+  "name": "ReferralEvent",
+  "type": "object",
+  "description": "One row per referral lifecycle. Tracks from invite sent through to reward.",
+  "properties": {
+    "referrer_user_id": {
+      "type": "string"
+    },
+    "referrer_email": {
+      "type": "string"
+    },
+    "referred_user_id": {
+      "type": "string"
+    },
+    "referred_email": {
+      "type": "string"
+    },
+    "referral_code": {
+      "type": "string"
+    },
+    "invite_channel": {
+      "type": "string",
+      "enum": [
+        "email",
+        "link",
+        "copy",
+        "share"
+      ],
+      "default": "email"
+    },
+    "invite_sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "link_clicked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signup_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trial_started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subscription_started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subscription_id": {
+      "type": "string"
+    },
+    "subscription_amount": {
+      "type": "number"
+    },
+    "subscription_interval": {
+      "type": "string",
+      "enum": [
+        "month",
+        "year",
+        "unknown"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "invited",
+        "clicked",
+        "signed_up",
+        "activated",
+        "qualified",
+        "rewarded",
+        "rejected",
+        "fraud_flagged"
+      ],
+      "default": "invited"
+    },
+    "fraud_score": {
+      "type": "number",
+      "default": 0,
+      "description": "0-100 risk score"
+    },
+    "fraud_reason": {
+      "type": "string"
+    },
+    "manual_review_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "reward_granted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subscription_credit_id": {
+      "type": "string",
+      "description": "FK to SubscriptionCredit"
+    }
+  },
+  "required": [
+    "referrer_user_id",
+    "referral_code",
+    "status"
+  ]
+}

@@ -168,6 +168,28 @@
     "paid_modules_csv": {
       "type": "string",
       "description": "Comma-separated list of paid modules (pipekeeper, whiskeykeeper, etc.)"
+    },
+    "referred_by_user_id": {
+      "type": "string",
+      "description": "User ID of the referrer"
+    },
+    "referred_by_code": {
+      "type": "string",
+      "description": "Referral code used at signup"
+    },
+    "referral_attributed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When referral attribution was recorded"
+    },
+    "referral_source": {
+      "type": "string",
+      "description": "Channel/context of the referral (email, link, etc.)"
+    },
+    "is_referral_signup": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if user signed up via a referral link"
     }
   },
   "required": []

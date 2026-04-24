@@ -1,0 +1,58 @@
+{
+  "name": "ReferralProgram",
+  "type": "object",
+  "description": "One row per subscriber. Tracks their referral code, link, and aggregated reward state.",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Internal platform user ID"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email (lowercase)"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "Unique short code e.g. PK-ABC123"
+    },
+    "referral_link": {
+      "type": "string",
+      "description": "Full referral URL"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "total_referrals": {
+      "type": "number",
+      "default": 0,
+      "description": "Total invites sent"
+    },
+    "qualified_referrals": {
+      "type": "number",
+      "default": 0,
+      "description": "Referrals that converted to paid"
+    },
+    "earned_free_months": {
+      "type": "number",
+      "default": 0
+    },
+    "earned_free_years": {
+      "type": "number",
+      "default": 0
+    },
+    "pending_rewards": {
+      "type": "number",
+      "default": 0,
+      "description": "Rewards not yet applied"
+    },
+    "last_reward_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "referral_code"
+  ]
+}

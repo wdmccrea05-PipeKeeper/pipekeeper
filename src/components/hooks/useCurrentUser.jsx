@@ -6,6 +6,7 @@ import {
   getPlanLabel,
   isFoundingMember
 } from "@/components/utils/premiumAccess";
+import { attributeStoredReferral } from "@/lib/referral/referralAttribution";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect } from "react";
 import { useQuery as useQueryRQ, useQueryClient } from "@tanstack/react-query";
@@ -226,6 +227,8 @@ export function useCurrentUser() {
     (async () => {
       try {
         await base44.functions.invoke("ensureUserRecord", {});
+        // Attribute any pending referral code after user record is confirmed
+        await attributeStoredReferral((fn, payload) => base44.functions.invoke(fn, payload));
         if (!cancelled) {
           sessionStorage.setItem(sessionKey, 'true');
           await Promise.all([refetchUser(), refetchProfile()]);

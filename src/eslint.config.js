@@ -1,4 +1,11 @@
 export default [
+  // Global ignores — these files are excluded from all lint rules
+  {
+    ignores: [
+      'src/components/curator/__tests__/curatorCoverage.test.jsx',
+      'src/components/utils/__tests__/entitlements.test.jsx',
+    ],
+  },
   {
     // Test files — vitest globals injected at runtime, never flag as undefined
     files: ['**/__tests__/**/*.{js,jsx,ts,tsx}', '**/*.test.{js,jsx,ts,tsx}', '**/*.spec.{js,jsx,ts,tsx}'],
@@ -20,13 +27,6 @@ export default [
       'no-undef': 'off',
       'no-unused-vars': 'off',
     },
-  },
-  {
-    // Explicitly ignore lint for these two recurring files
-    ignores: [
-      'src/components/curator/__tests__/curatorCoverage.test.jsx',
-      'src/components/utils/__tests__/entitlements.test.jsx',
-    ],
   },
   {
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],

@@ -40,6 +40,8 @@ import CigarDetail from "@/pages/CigarDetail";
 import CigarFormPage from "@/pages/CigarFormPage";
 import CigarInsights from "@/pages/CigarInsights";
 import SessionHistory from "@/pages/SessionHistory";
+import ReferralDashboard from "@/pages/ReferralDashboard";
+import ReferralAdminReport from "@/pages/ReferralAdminReport";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import ModuleSelectionModal from "@/components/onboarding/ModuleSelectionModal";
@@ -356,6 +358,24 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="SessionHistory">
             <SessionHistory />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/ReferralDashboard"
+        element={
+          <LayoutWrapper currentPageName="ReferralDashboard">
+            <ReferralDashboard />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/ReferralAdminReport"
+        element={
+          <LayoutWrapper currentPageName="ReferralAdminReport">
+            <ReferralAdminReport />
           </LayoutWrapper>
         }
       />
