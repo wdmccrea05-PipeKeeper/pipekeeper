@@ -13,7 +13,6 @@ import {
   Wrench,
   FileBarChart2,
   BarChart3,
-  TestTube2,
   List,
   Flame,
 } from "lucide-react";
@@ -130,12 +129,6 @@ export default function ModuleNav({ currentPageName, user }) {
           label: t("nav.curatorAnalytics"),
           icon: BarChart3,
           path: "/CuratorAnalyticsDashboard",
-        },
-        {
-          page: "SubscriptionE2ETest",
-          label: t("nav.subscriptionE2ETest"),
-          icon: TestTube2,
-          path: "/SubscriptionE2ETest",
         },
       ]
     : [];

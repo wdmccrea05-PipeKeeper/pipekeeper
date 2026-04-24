@@ -79,7 +79,6 @@ import PublicProfile from './pages/PublicProfile';
 import PublicSharedRecord from './pages/PublicSharedRecord';
 import Subscription from './pages/Subscription';
 import SubscriptionCancelled from './pages/SubscriptionCancelled';
-import SubscriptionE2ETest from './pages/SubscriptionE2ETest';
 import SubscriptionEventsLog from './pages/SubscriptionEventsLog';
 import SubscriptionFull from './pages/SubscriptionFull';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
@@ -136,7 +135,6 @@ export const PAGES = {
     "PublicSharedRecord": PublicSharedRecord,
     "Subscription": Subscription,
     "SubscriptionCancelled": SubscriptionCancelled,
-    "SubscriptionE2ETest": SubscriptionE2ETest,
     "SubscriptionEventsLog": SubscriptionEventsLog,
     "SubscriptionFull": SubscriptionFull,
     "SubscriptionSuccess": SubscriptionSuccess,

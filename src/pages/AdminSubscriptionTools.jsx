@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import NormalizeSubscriptionsCard from "@/components/admin/NormalizeSubscriptionsCard";
+import EntitlementAudit from "@/components/admin/EntitlementAudit";
 
 export default function AdminSubscriptionTools() {
   const { user, isLoading } = useCurrentUser();
@@ -143,7 +143,7 @@ export default function AdminSubscriptionTools() {
         </div>
 
         <div className="mb-6">
-          <NormalizeSubscriptionsCard />
+          <EntitlementAudit />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
