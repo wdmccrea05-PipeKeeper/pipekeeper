@@ -28,7 +28,6 @@ export default function ReferralDashboard() {
   const [sending, setSending] = useState(false);
 
   const loadData = useCallback(async () => {
-    if (!hasPaid) { setLoadingProgram(false); return; }
     setLoadingProgram(true);
     try {
       const [programRes, rewardsRes] = await Promise.all([
@@ -42,12 +41,14 @@ export default function ReferralDashboard() {
     } finally {
       setLoadingProgram(false);
     }
-  }, [hasPaid]);
+  }, []);
 
   useEffect(() => {
     if (isLoading || !user) return;
+    if (!hasPaid) { setLoadingProgram(false); return; }
     loadData();
-  }, [user, hasPaid, isLoading, loadData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, user?.id, hasPaid]);
 
   const handleSendInvites = async (e) => {
     e.preventDefault();
