@@ -55,7 +55,7 @@ export default function GlobalReferralBanner() {
   };
 
   const handleCTA = () => {
-    navigate('/Community', { state: { referralTab: true } });
+    navigate('/ReferralDashboard');
   };
 
   if (isLoading || isDismissed || !user) {
