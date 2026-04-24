@@ -25,11 +25,12 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    const [events, programs, credits, referralRewards] = await Promise.all([
+    const [events, programs, credits, referralRewards, earnedAccessRecords] = await Promise.all([
       base44.asServiceRole.entities.ReferralEvent.list('-invite_sent_at', 500),
       base44.asServiceRole.entities.ReferralProgram.list('-qualified_referrals', 100),
       base44.asServiceRole.entities.SubscriptionCredit.filter({ source: 'referral' }),
       base44.asServiceRole.entities.ReferralReward.list('-granted_at', 500),
+      base44.asServiceRole.entities.ReferralEarnedAccess.list('-granted_at', 200).catch(() => []),
     ]);
 
     // ─── Funnel ───────────────────────────────────────────────────────────────
@@ -90,6 +91,13 @@ Deno.serve(async (req) => {
     // ─── Reward ledger by provider ────────────────────────────────────────────
     const stripeRewards = referralRewards.filter(r => r.billing_provider === 'stripe');
     const iosRewards = referralRewards.filter(r => r.billing_provider === 'ios');
+    const freeUserRewards = referralRewards.filter(r => !['stripe', 'ios'].includes(r.billing_provider) || r.status === 'ready_to_apply');
+
+    // Earned access breakdown (non-revenue)
+    const earnedAccessByModule = {};
+    for (const a of earnedAccessRecords) {
+      if (a.module) earnedAccessByModule[a.module] = (earnedAccessByModule[a.module] || 0) + 1;
+    }
 
     const rewardAuditList = referralRewards.slice(0, 200).map(r => {
       let metadata = {};
@@ -170,6 +178,15 @@ Deno.serve(async (req) => {
           redeemed: iosRewards.filter(r => r.status === 'redeemed').length,
           failed: iosRewards.filter(r => r.status === 'failed').length,
           expired: iosRewards.filter(r => r.status === 'expired').length,
+        },
+        // Non-revenue referral-earned access (free users) — NEVER counted as paid revenue
+        referralEarned: {
+          total: earnedAccessRecords.length,
+          pendingModuleSelection: earnedAccessRecords.filter(a => a.status === 'pending_module_selection').length,
+          active: earnedAccessRecords.filter(a => a.status === 'active').length,
+          expired: earnedAccessRecords.filter(a => a.status === 'expired').length,
+          byModule: earnedAccessByModule,
+          isRevenue: false,
         },
       },
       rewardAudit: rewardAuditList,

@@ -152,24 +152,99 @@ Deno.serve(async (req) => {
     const provider = reward.billing_provider;
 
     if (provider === 'stripe') {
-      return await fulfillStripe(base44, reward, now);
+      // Verify the user still has an active Stripe sub. If not, fall through to free-user path.
+      const hasActiveSub = await hasActiveStripeSubscription(base44, reward.user_id);
+      if (hasActiveSub) {
+        return await fulfillStripe(base44, reward, now);
+      }
+      // Stripe user whose subscription lapsed — treat as free user
+      console.log(`[fulfillReferralReward] User ${reward.user_id} has no active Stripe sub, routing to referral_earned_access`);
     }
 
     if (provider === 'ios') {
-      return await fulfillIos(base44, reward, now);
+      // iOS flow: mark for in-app redemption (does not require active sub check — user may have churned)
+      // But if the user has an active iOS sub, use the standard iOS offer flow.
+      const hasActiveIos = await hasActiveIosSubscription(base44, reward.user_id);
+      if (hasActiveIos) {
+        return await fulfillIos(base44, reward, now);
+      }
+      // iOS user without active sub — fall through to free-user path
+      console.log(`[fulfillReferralReward] User ${reward.user_id} has no active iOS sub, routing to referral_earned_access`);
     }
 
-    // Unknown / no subscription — leave as pending, admin can retry
-    await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
-      status: 'pending',
-      failure_reason: `Unknown or missing provider: ${provider}`,
-    });
-    return Response.json({ ok: false, reason: 'unknown_provider', provider });
+    // ─── Free user / no active subscription ───────────────────────────────────
+    // Grant referral-earned promotional access directly.
+    // This is NON-REVENUE access — never counted in billing reports.
+    return await fulfillFreeUserReferralAccess(base44, reward, now);
 
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
+
+// ─── Active subscription checks ──────────────────────────────────────────────
+
+async function hasActiveStripeSubscription(base44, userId) {
+  try {
+    const contracts = await base44.asServiceRole.entities.ActiveContract.filter({
+      user_id: userId, provider: 'stripe', is_active: true,
+    });
+    if (contracts?.length > 0) return true;
+    const subs = await base44.asServiceRole.entities.Subscription.filter({
+      user_id: userId, provider: 'stripe', status: 'active',
+    });
+    return (subs?.length > 0);
+  } catch { return false; }
+}
+
+async function hasActiveIosSubscription(base44, userId) {
+  try {
+    const contracts = await base44.asServiceRole.entities.ActiveContract.filter({
+      user_id: userId, provider: 'apple', is_active: true,
+    });
+    if (contracts?.length > 0) return true;
+    const subs = await base44.asServiceRole.entities.Subscription.filter({
+      user_id: userId, provider: 'apple', status: 'active',
+    });
+    return (subs?.length > 0);
+  } catch { return false; }
+}
+
+// ─── Free user fulfillment (referral-earned access) ───────────────────────────
+// Creates a ReferralEarnedAccess record. User will be prompted to select a module
+// in the referral dashboard before access becomes active.
+async function fulfillFreeUserReferralAccess(base44, reward, now) {
+  try {
+    const result = await base44.asServiceRole.functions.invoke('grantReferralEarnedAccess', {
+      rewardId: reward.id,
+    });
+    const data = result?.data || result;
+
+    if (data?.ok) {
+      return Response.json({
+        ok: true,
+        provider: 'referral_earned',
+        status: data.status || 'ready_to_apply',
+        accessId: data.accessId,
+        requiresModuleSelection: data.requiresModuleSelection !== false,
+        message: 'Referral-earned access created. User must select a module to activate.',
+      });
+    }
+
+    // grantReferralEarnedAccess failed — mark the reward as failed
+    await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
+      status: 'failed',
+      failure_reason: `grantReferralEarnedAccess failed: ${JSON.stringify(data)}`,
+    });
+    return Response.json({ ok: false, reason: 'referral_earned_access_failed', detail: data });
+  } catch (err) {
+    await base44.asServiceRole.entities.ReferralReward.update(reward.id, {
+      status: 'failed',
+      failure_reason: `free_user_fulfillment_error: ${err.message}`,
+    });
+    return Response.json({ ok: false, reason: 'free_user_fulfillment_error', error: err.message }, { status: 500 });
+  }
+}
 
 // ─── Stripe fulfillment ───────────────────────────────────────────────────────
 async function fulfillStripe(base44, reward, now) {

@@ -198,7 +198,7 @@ function RewardCard({ reward, onRedeemed }) {
   );
 }
 
-export default function ReferralRewardCards({ rewards, onRefresh }) {
+export default function ReferralRewardCards({ rewards, earnedAccess = [], onRefresh }) {
   if (!rewards || rewards.length === 0) {
     return (
       <p className="text-xs text-[#E0D8C8]/40 text-center py-4">

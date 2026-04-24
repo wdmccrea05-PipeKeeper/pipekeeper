@@ -221,7 +221,37 @@ export default function ReferralAdminReport() {
               <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1 flex items-center gap-2">
                 <Gift className="w-4 h-4" /> Reward Ledger by Provider
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Referral Earned (free users — non-revenue) */}
+                {data.rewards.referralEarned && (
+                  <div className="rounded-xl border border-emerald-800/30 p-4 space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-[#F5F1E7] mb-1">
+                      <Gift className="w-4 h-4 text-emerald-400" /> Referral-Earned Access
+                    </div>
+                    <p className="text-xs text-emerald-300/60 mb-2">Free users — NOT revenue</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        ['Total', data.rewards.referralEarned.total],
+                        ['Pending Selection', data.rewards.referralEarned.pendingModuleSelection],
+                        ['Active', data.rewards.referralEarned.active],
+                        ['Expired', data.rewards.referralEarned.expired],
+                      ].map(([label, val]) => (
+                        <Tile key={label} label={label} value={val} />
+                      ))}
+                    </div>
+                    {Object.keys(data.rewards.referralEarned.byModule || {}).length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        <p className="text-xs text-[#E0D8C8]/40 uppercase tracking-wide">By Module</p>
+                        {Object.entries(data.rewards.referralEarned.byModule).map(([mod, count]) => (
+                          <div key={mod} className="flex justify-between text-xs">
+                            <span className="text-[#E0D8C8]/70 capitalize">{mod}</span>
+                            <span className="text-emerald-300 font-bold">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {/* Stripe */}
                 <div className="rounded-xl border border-[#8b6239]/25 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-semibold text-[#F5F1E7] mb-2">
@@ -284,6 +314,7 @@ export default function ReferralAdminReport() {
                               r.status === 'applied' || r.status === 'redeemed' ? 'text-green-400' :
                               r.status === 'failed' ? 'text-red-400' :
                               r.status === 'awaiting_user_redemption' ? 'text-amber-400' :
+                              r.status === 'ready_to_apply' ? 'text-emerald-300' :
                               'text-[#E0D8C8]/70'
                             }`}>{r.status}</span>
                           </td>

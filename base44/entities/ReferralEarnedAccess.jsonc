@@ -1,0 +1,94 @@
+{
+  "name": "ReferralEarnedAccess",
+  "type": "object",
+  "description": "Direct entitlement grant for free users who earned referral rewards without an active billing subscription. Non-revenue access \u2014 must never be counted as paid subscription revenue.",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Internal platform user ID"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email (lowercase)"
+    },
+    "source_reward_id": {
+      "type": "string",
+      "description": "FK to ReferralReward that triggered this access grant"
+    },
+    "source_referral_event_id": {
+      "type": "string",
+      "description": "FK to ReferralEvent for full audit trail"
+    },
+    "reward_type": {
+      "type": "string",
+      "enum": [
+        "free_month",
+        "free_year"
+      ],
+      "description": "Type of reward that earned this access"
+    },
+    "months_granted": {
+      "type": "number",
+      "description": "1 for free_month, 12 for free_year"
+    },
+    "module": {
+      "type": "string",
+      "enum": [
+        "pipekeeper",
+        "whiskeykeeper",
+        "cigarkeeper",
+        "winekeeper"
+      ],
+      "description": "Which module this access grants. Selected by user at redemption time."
+    },
+    "access_source": {
+      "type": "string",
+      "default": "referral_reward",
+      "description": "Always referral_reward \u2014 distinguishes from paid subscriptions in reporting"
+    },
+    "is_revenue": {
+      "type": "boolean",
+      "default": false,
+      "description": "Always false \u2014 referral-earned access is never counted as revenue"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_module_selection",
+        "active",
+        "expired",
+        "voided"
+      ],
+      "default": "pending_module_selection",
+      "description": "pending_module_selection = user needs to pick a module. active = access is live."
+    },
+    "start_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When access begins (set when module is selected)"
+    },
+    "end_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When access expires"
+    },
+    "granted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this record was created"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When user selected a module and access became active"
+    }
+  },
+  "required": [
+    "user_id",
+    "source_reward_id",
+    "reward_type",
+    "months_granted",
+    "granted_at",
+    "status"
+  ]
+}
