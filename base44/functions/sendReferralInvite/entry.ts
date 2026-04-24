@@ -202,6 +202,50 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'emails array required' }, { status: 400 });
     }
 
+    // ── Rate limiting: per-request cap ────────────────────────────────────────
+    const MAX_PER_REQUEST = 10;
+    if (emails.length > MAX_PER_REQUEST) {
+      return Response.json({
+        error: `Too many recipients. Maximum ${MAX_PER_REQUEST} emails per request.`,
+        code: 'per_request_limit',
+      }, { status: 429 });
+    }
+
+    // ── Rate limiting: per-user per-day cap ───────────────────────────────────
+    const MAX_PER_DAY = 20;
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    try {
+      const recentInvites = await base44.asServiceRole.entities.ReferralEvent.filter({
+        referrer_user_id: userId,
+        invite_channel: 'email',
+        status: 'invited',
+      });
+      const sentLast24h = (recentInvites || []).filter(
+        (ev: any) => ev.invite_sent_at && ev.invite_sent_at >= oneDayAgo
+      ).length;
+      if (sentLast24h >= MAX_PER_DAY) {
+        console.warn(`[sendReferralInvite] Rate limit hit: user ${userId} has sent ${sentLast24h} invites in the last 24h`);
+        return Response.json({
+          error: `Daily invite limit reached (${MAX_PER_DAY} per day). Please try again tomorrow.`,
+          code: 'daily_limit',
+          sentToday: sentLast24h,
+        }, { status: 429 });
+      }
+      // Also ensure this batch won't push over the daily cap
+      const remainingCapacity = MAX_PER_DAY - sentLast24h;
+      if (emails.length > remainingCapacity) {
+        return Response.json({
+          error: `This batch would exceed your daily invite limit. You can send ${remainingCapacity} more invite(s) today.`,
+          code: 'daily_limit_partial',
+          sentToday: sentLast24h,
+          remainingCapacity,
+        }, { status: 429 });
+      }
+    } catch (rateErr) {
+      // Non-fatal: if the rate-limit check itself fails, log and proceed
+      console.warn('[sendReferralInvite] Could not check daily invite count (non-fatal):', rateErr);
+    }
+
     const results = [];
 
     for (const rawEmail of emails) {
