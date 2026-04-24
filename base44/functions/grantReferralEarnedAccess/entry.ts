@@ -156,11 +156,13 @@ Deno.serve(async (req) => {
 
 // ─── Canonical entitlement sync ───────────────────────────────────────────────
 /**
- * Recomputes ALL access flags for a user from their live ReferralEarnedAccess records.
- * This is the single source of truth for earned-access entitlement state.
+ * Recomputes ALL access flags for a user from their live records.
+ * Merges BOTH earned-access AND paid subscriptions into a single canonical state.
+ *
+ * This is the single source of truth for entitlement state.
  *
  * Writes:
- *   - {module}_paid flags
+ *   - {module}_paid flags (union of paid + earned modules)
  *   - has_paid_access
  *   - referral_earned_access / referral_earned_module / referral_earned_expires_at
  *   - entitlement_tier
@@ -168,46 +170,56 @@ Deno.serve(async (req) => {
  *   - UserEntitlement entity row
  */
 async function syncEntitlements(base44, userId, userEmail) {
-  const now = new Date();
+  const nowTs = new Date();
 
-  // Load all earned-access records for this user
-  const allAccess = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
+  // ─── Load all earned-access records ───────────────────────────────────────────
+  const allEarned = await base44.asServiceRole.entities.ReferralEarnedAccess.filter({
     user_id: userId,
   }).catch(() => []);
 
-  // Filter to currently active (status=active AND end_at in the future)
-  const activeRecords = (allAccess || []).filter(a =>
-    a.status === 'active' && a.end_at && new Date(a.end_at) > now
+  const activeEarned = (allEarned || []).filter(a =>
+    a.status === 'active' && a.end_at && new Date(a.end_at) > nowTs
   );
 
-  const activeModules = [...new Set(activeRecords.map(a => a.module).filter(Boolean))];
-  const hasAnyActive = activeModules.length > 0;
+  const earnedModules = [...new Set(activeEarned.map(a => a.module).filter(Boolean))];
 
-  // Latest expiry across all active modules
-  const latestExpiry = activeRecords.reduce((latest, a) => {
+  const latestEarnedExpiry = activeEarned.reduce((latest, a) => {
     if (!a.end_at) return latest;
     return !latest || new Date(a.end_at) > new Date(latest) ? a.end_at : latest;
   }, null);
 
-  // Primary module = the one expiring latest
-  const primaryModule = activeRecords.length > 0
-    ? activeRecords.sort((a, b) => new Date(b.end_at) - new Date(a.end_at))[0].module
+  const primaryEarnedModule = activeEarned.length > 0
+    ? activeEarned.sort((a, b) => new Date(b.end_at) - new Date(a.end_at))[0].module
     : null;
 
-  // Build user flag patch
+  // ─── Load all paid subscriptions ──────────────────────────────────────────────
+  const paidContracts = await base44.asServiceRole.entities.ActiveContract.filter({
+    user_id: userId,
+    is_active: true,
+  }).catch(() => []);
+
+  const hasPaidSub = (paidContracts || []).length > 0;
+  const paidModules = hasPaidSub
+    ? (paidContracts || []).flatMap(c => c.modules || []).filter(Boolean)
+    : [];
+
+  // ─── Compute union of all active modules ──────────────────────────────────────
+  const allActiveModules = [...new Set([...earnedModules, ...paidModules])];
+  const hasAnyAccess = allActiveModules.length > 0 || hasPaidSub;
+
+  // ─── Build user patch (canonical access state) ───────────────────────────────
   const userPatch = {
-    has_paid_access: hasAnyActive,
-    referral_earned_access: hasAnyActive,
-    referral_earned_module: primaryModule || null,
-    referral_earned_expires_at: latestExpiry || null,
-    // Canonical entitlement fields
-    entitlement_tier: hasAnyActive ? 'premium' : 'free',
-    paid_modules_csv: activeModules.join(',') || null,
+    has_paid_access: hasAnyAccess,
+    referral_earned_access: earnedModules.length > 0,
+    referral_earned_module: primaryEarnedModule || null,
+    referral_earned_expires_at: latestEarnedExpiry || null,
+    entitlement_tier: hasAnyAccess ? 'premium' : 'free',
+    paid_modules_csv: allActiveModules.join(',') || null,
   };
 
-  // Per-module paid flags — set true for active modules, false when expired/removed
+  // Per-module paid flags — union of paid + earned
   for (const mod of MODULES) {
-    userPatch[`${mod}_paid`] = activeModules.includes(mod);
+    userPatch[`${mod}_paid`] = allActiveModules.includes(mod);
   }
 
   // Apply to user record
@@ -217,44 +229,25 @@ async function syncEntitlements(base44, userId, userEmail) {
     console.warn('[syncEntitlements] Could not update user:', e?.message);
   }
 
-  // Upsert UserEntitlement row
+  // ─── Upsert UserEntitlement row ──────────────────────────────────────────────
   try {
     const existing = await base44.asServiceRole.entities.UserEntitlement.filter({ user_id: userId });
     const entitlementData = {
       user_id: userId,
       user_email: userEmail,
-      has_access: hasAnyActive,
-      modules: activeModules,
-      pipekeeper: activeModules.includes('pipekeeper'),
-      whiskeykeeper: activeModules.includes('whiskeykeeper'),
-      cigarkeeper: activeModules.includes('cigarkeeper'),
-      winekeeper: activeModules.includes('winekeeper'),
-      primary_product: primaryModule || null,
-      primary_provider: hasAnyActive ? 'referral' : null,
-      computed_at: now.toISOString(),
+      has_access: hasAnyAccess,
+      modules: allActiveModules,
+      pipekeeper: allActiveModules.includes('pipekeeper'),
+      whiskeykeeper: allActiveModules.includes('whiskeykeeper'),
+      cigarkeeper: allActiveModules.includes('cigarkeeper'),
+      winekeeper: allActiveModules.includes('winekeeper'),
+      primary_product: allActiveModules[0] || null,
+      primary_provider: hasPaidSub ? (paidContracts[0]?.provider || null) : (earnedModules.length > 0 ? 'referral' : null),
+      computed_at: nowTs.toISOString(),
     };
 
     if (existing?.length > 0) {
-      // Preserve paid subscription entitlements — only overlay referral-earned fields
-      // if there's no active paid subscription on the existing entitlement row.
-      const current = existing[0];
-      const hasPaidSub = current.primary_provider && current.primary_provider !== 'referral';
-
-      if (hasPaidSub) {
-        // Merge earned-access modules on top of paid subscription modules
-        const mergedModules = [...new Set([...(current.modules || []), ...activeModules])];
-        await base44.asServiceRole.entities.UserEntitlement.update(current.id, {
-          modules: mergedModules,
-          pipekeeper: mergedModules.includes('pipekeeper'),
-          whiskeykeeper: mergedModules.includes('whiskeykeeper'),
-          cigarkeeper: mergedModules.includes('cigarkeeper'),
-          winekeeper: mergedModules.includes('winekeeper'),
-          has_access: true,
-          computed_at: now.toISOString(),
-        });
-      } else {
-        await base44.asServiceRole.entities.UserEntitlement.update(current.id, entitlementData);
-      }
+      await base44.asServiceRole.entities.UserEntitlement.update(existing[0].id, entitlementData);
     } else {
       await base44.asServiceRole.entities.UserEntitlement.create(entitlementData);
     }
