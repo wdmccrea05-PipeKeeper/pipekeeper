@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { AlertCircle, RefreshCw, AlertTriangle, TrendingUp, CreditCard, Smartphone, Gift, Activity } from 'lucide-react';
+import { AlertCircle, RefreshCw, AlertTriangle, TrendingUp, CreditCard, Smartphone, Gift, Activity, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function Tile({ label, value, warn }) {
@@ -76,6 +76,29 @@ export default function ReferralAdminReport() {
 
         {data && (
           <>
+            {/* ── Abuse Protection Metrics ── */}
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1 flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4" /> Abuse Protection Metrics
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Tile label="Total Invites Sent" value={data.shareActions?.invites_sent ?? data.funnel?.invites_sent ?? 0} />
+                <Tile label="Conversions (Qualified)" value={data.funnel?.qualified ?? 0} />
+                <Tile label="Rewards Granted" value={data.rewards?.totalCreditsGranted ?? 0} />
+                <Tile
+                  label="Suspicious Accounts"
+                  value={(data.funnel?.fraud_flagged ?? 0) + (data.funnel?.manual_review_pending ?? 0)}
+                  warn={(data.funnel?.fraud_flagged ?? 0) + (data.funnel?.manual_review_pending ?? 0) > 0}
+                />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Tile label="Self-Referrals Blocked" value={data.abuseStats?.selfReferralsBlocked ?? '—'} />
+                <Tile label="Cooldown Blocks (90d)" value={data.abuseStats?.cooldownBlocks ?? '—'} />
+                <Tile label="Monthly Cap Hits" value={data.abuseStats?.monthlyCapHits ?? '—'} warn={(data.abuseStats?.monthlyCapHits ?? 0) > 0} />
+                <Tile label="Reward Cap Blocks" value={data.abuseStats?.rewardCapBlocks ?? '—'} warn={(data.abuseStats?.rewardCapBlocks ?? 0) > 0} />
+              </div>
+            </section>
+
             {/* Expiry job health */}
             <section className={`rounded-xl border p-4 space-y-2 ${
               data.expiryJobHealth?.isStale

@@ -49,6 +49,17 @@ export default [
         Set: 'readonly',
         Symbol: 'readonly',
         process: 'readonly',
+        // Test globals (vitest/jest) — included here so all files see them
+        describe: 'readonly',
+        test: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        vi: 'readonly',
+        jest: 'readonly',
       },
     },
     rules: {

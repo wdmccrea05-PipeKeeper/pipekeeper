@@ -216,40 +216,66 @@ Deno.serve(async (req) => {
       }, { status: 429 });
     }
 
-    // ── Rate limiting: per-user per-day cap ───────────────────────────────────
+    // ── Fetch all referral events for this user once ───────────────────────────
     const MAX_PER_DAY = 20;
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const MAX_PER_MONTH = 100;
+    const RECIPIENT_COOLDOWN_DAYS = 90;
+    const now_ts = Date.now();
+    const oneDayAgo = new Date(now_ts - 24 * 60 * 60 * 1000).toISOString();
+    const oneMonthAgo = new Date(now_ts - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const ninetyDaysAgo = new Date(now_ts - RECIPIENT_COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+    let allUserInvites = [];
     try {
-      const recentInvites = await base44.asServiceRole.entities.ReferralEvent.filter({
+      allUserInvites = await base44.asServiceRole.entities.ReferralEvent.filter({
         referrer_user_id: userId,
         invite_channel: 'email',
-        status: 'invited',
-      });
-      const sentLast24h = (recentInvites || []).filter(
-        (ev: any) => ev.invite_sent_at && ev.invite_sent_at >= oneDayAgo
-      ).length;
-      if (sentLast24h >= MAX_PER_DAY) {
-        console.warn(`[sendReferralInvite] Rate limit hit: user ${userId} has sent ${sentLast24h} invites in the last 24h`);
-        return Response.json({
-          error: `Daily invite limit reached (${MAX_PER_DAY} per day). Please try again tomorrow.`,
-          code: 'daily_limit',
-          sentToday: sentLast24h,
-        }, { status: 429 });
-      }
-      // Also ensure this batch won't push over the daily cap
-      const remainingCapacity = MAX_PER_DAY - sentLast24h;
-      if (emails.length > remainingCapacity) {
-        return Response.json({
-          error: `This batch would exceed your daily invite limit. You can send ${remainingCapacity} more invite(s) today.`,
-          code: 'daily_limit_partial',
-          sentToday: sentLast24h,
-          remainingCapacity,
-        }, { status: 429 });
-      }
-    } catch (rateErr) {
-      // Non-fatal: if the rate-limit check itself fails, log and proceed
-      console.warn('[sendReferralInvite] Could not check daily invite count (non-fatal):', rateErr);
+      }) || [];
+    } catch (e) {
+      console.warn('[sendReferralInvite] Could not load user invite history (non-fatal):', e);
     }
+
+    // Per-day cap
+    const sentLast24h = allUserInvites.filter(ev => ev.invite_sent_at && ev.invite_sent_at >= oneDayAgo).length;
+    if (sentLast24h >= MAX_PER_DAY) {
+      return Response.json({
+        error: `Daily invite limit reached (${MAX_PER_DAY}/day). Please try again tomorrow.`,
+        code: 'daily_limit',
+        sentToday: sentLast24h,
+        remainingToday: 0,
+      }, { status: 429 });
+    }
+    const remainingToday = MAX_PER_DAY - sentLast24h;
+    if (emails.length > remainingToday) {
+      return Response.json({
+        error: `This batch would exceed your daily limit. You can send ${remainingToday} more invite(s) today.`,
+        code: 'daily_limit_partial',
+        sentToday: sentLast24h,
+        remainingToday,
+      }, { status: 429 });
+    }
+
+    // Per-month cap
+    const sentThisMonth = allUserInvites.filter(ev => ev.invite_sent_at && ev.invite_sent_at >= oneMonthAgo).length;
+    if (sentThisMonth >= MAX_PER_MONTH) {
+      return Response.json({
+        error: `Monthly invite limit reached (${MAX_PER_MONTH}/month). Limit resets in 30 days.`,
+        code: 'monthly_limit',
+        sentThisMonth,
+        remainingToday,
+      }, { status: 429 });
+    }
+
+    // Build set of recently-invited recipients (90-day cooldown)
+    const recentRecipients = new Set(
+      allUserInvites
+        .filter(ev => ev.invite_sent_at && ev.invite_sent_at >= ninetyDaysAgo && ev.referred_email)
+        .map(ev => String(ev.referred_email).toLowerCase())
+    );
+
+    // Domain-based self-referral heuristic
+    const inviterDomain = userEmail.split('@')[1] || '';
+    const PERSONAL_DOMAINS = new Set(['gmail.com','yahoo.com','hotmail.com','outlook.com','icloud.com','me.com','live.com','aol.com','protonmail.com','pm.me']);
 
     const results = [];
 
@@ -259,10 +285,22 @@ Deno.serve(async (req) => {
         results.push({ email, ok: false, error: 'invalid email' });
         continue;
       }
-      if (email === userEmail) {
+
+      // Self-referral: exact match or same non-personal domain
+      const recipientDomain = email.split('@')[1] || '';
+      const sameExact = email === userEmail;
+      const sameDomain = inviterDomain && recipientDomain === inviterDomain && !PERSONAL_DOMAINS.has(inviterDomain);
+      if (sameExact || sameDomain) {
         results.push({ email, ok: false, error: 'self_referral' });
         continue;
       }
+
+      // 90-day recipient cooldown
+      if (recentRecipients.has(email)) {
+        results.push({ email, ok: false, error: 'recipient_cooldown', message: `${email} was already invited recently. Please wait 90 days before re-inviting.` });
+        continue;
+      }
+
       const existingUsers = await base44.asServiceRole.entities.User.filter({ email });
       if (existingUsers && existingUsers.length > 0) {
         results.push({ email, ok: false, error: 'already_user' });
@@ -326,7 +364,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({ ok: true, results, sent: sentCount });
+    return Response.json({
+      ok: true,
+      results,
+      sent: sentCount,
+      sentToday: sentLast24h + sentCount,
+      remainingToday: Math.max(0, remainingToday - sentCount),
+      sentThisMonth: sentThisMonth + sentCount,
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -236,6 +236,15 @@ Deno.serve(async (req) => {
           isRevenue: false,
         },
       },
+      // ── Abuse stats derived from event data ────────────────────────────────
+      abuseStats: {
+        // Self-referrals and cooldown blocks are pre-filtered in sendReferralInvite (not logged as events)
+        // — we infer from fraud_reason strings in events
+        selfReferralsBlocked: events.filter(e => String(e.fraud_reason || '').includes('self')).length,
+        cooldownBlocks: events.filter(e => String(e.fraud_reason || '').includes('cooldown')).length,
+        monthlyCapHits: events.filter(e => String(e.fraud_reason || '').includes('monthly_reward_cap')).length,
+        rewardCapBlocks: events.filter(e => String(e.fraud_reason || '').includes('monthly_reward_cap_hit')).length,
+      },
       rewardAudit: rewardAuditList,
       earnedAccessAudit,
       fraudFlags,

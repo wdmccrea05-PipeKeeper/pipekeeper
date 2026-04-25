@@ -33,6 +33,8 @@ export default function CommunityReferralTab() {
   const [emailFields, setEmailFields] = useState(['']);
   const [personalMessage, setPersonalMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [remainingToday, setRemainingToday] = useState(20);
+  const [sentToday, setSentToday] = useState(0);
 
   const loadData = useCallback(async () => {
     setLoadingProgram(true);
@@ -82,10 +84,15 @@ export default function CommunityReferralTab() {
         await loadData();
       }
 
+      // Update daily counters from response
+      if (data?.remainingToday !== undefined) setRemainingToday(data.remainingToday);
+      if (data?.sentToday !== undefined) setSentToday(data.sentToday);
+
       for (const err of errors) {
         if (err.error === 'already_user') toast.info(`${err.email} is already a member`);
         else if (err.error === 'self_referral') toast.error('You cannot refer yourself');
-        else if (err.error === 'daily_limit' || err.error === 'daily_limit_partial') toast.error(data?.error || 'Daily invite limit reached');
+        else if (err.error === 'recipient_cooldown') toast.warning(err.message || `${err.email} was already invited recently`);
+        else if (err.error === 'daily_limit' || err.error === 'daily_limit_partial' || err.error === 'monthly_limit') toast.error(data?.error || 'Invite limit reached');
         else toast.warning(`${err.email}: ${err.error}`);
       }
 
@@ -221,7 +228,12 @@ export default function CommunityReferralTab() {
       {showInviteForm && (
         <div className="p-5 rounded-2xl space-y-4" style={{ ...cardStyle, borderColor: 'rgba(163,92,92,0.35)' }}>
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-[#F5F1E7]">Send Email Invites</h3>
+            <div>
+              <h3 className="text-sm font-semibold text-[#F5F1E7]">Send Email Invites</h3>
+              <p className="text-xs mt-0.5" style={{ color: remainingToday <= 3 ? '#f59e0b' : 'rgba(224,216,200,0.45)' }}>
+                {remainingToday} invite{remainingToday !== 1 ? 's' : ''} remaining today
+              </p>
+            </div>
             <button onClick={() => setShowInviteForm(false)} className="text-[#E0D8C8]/40 hover:text-[#E0D8C8]">
               <X className="w-4 h-4" />
             </button>

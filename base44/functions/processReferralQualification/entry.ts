@@ -203,6 +203,22 @@ Deno.serve(async (req) => {
     }
 
     const program = programs[0];
+
+    // ─── Max 5 reward credits per referrer per month ──────────────────────────
+    const MAX_REWARDS_PER_MONTH = 5;
+    const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const recentRewards = await base44.asServiceRole.entities.ReferralReward.filter({ user_id: referrerId }).catch(() => []);
+    const rewardsThisMonth = (recentRewards || []).filter(r => r.granted_at && r.granted_at >= oneMonthAgo).length;
+    if (rewardsThisMonth >= MAX_REWARDS_PER_MONTH) {
+      console.warn(`[processReferralQualification] Monthly reward cap hit for referrer ${referrerId}: ${rewardsThisMonth} rewards this month`);
+      // Still mark as qualified but skip reward grant — log it
+      await base44.asServiceRole.entities.ReferralEvent.update(event.id, {
+        status: 'qualified',
+        fraud_reason: (fraudReasons.join(', ') || '') + ` | monthly_reward_cap_hit (${rewardsThisMonth}/${MAX_REWARDS_PER_MONTH})`,
+      });
+      return Response.json({ ok: true, qualified: true, rewarded: false, reason: 'monthly_reward_cap', rewardsThisMonth });
+    }
+
     const newQualifiedCount = (program.qualified_referrals || 0) + 1;
     const prevQualifiedCount = program.qualified_referrals || 0;
 
