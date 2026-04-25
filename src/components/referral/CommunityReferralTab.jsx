@@ -71,7 +71,8 @@ export default function CommunityReferralTab() {
       });
       const data = res?.data;
       const sent = data?.sent || 0;
-      const errors = (data?.results || []).filter(r => !r.ok);
+      const results = data?.results || [];
+      const errors = results.filter(r => !r.ok);
 
       if (sent > 0) {
         toast.success(`${sent} invite${sent !== 1 ? 's' : ''} sent!`);
@@ -84,10 +85,21 @@ export default function CommunityReferralTab() {
       for (const err of errors) {
         if (err.error === 'already_user') toast.info(`${err.email} is already a member`);
         else if (err.error === 'self_referral') toast.error('You cannot refer yourself');
-        else if (err.error !== 'invalid email') toast.warning(`${err.email}: ${err.error}`);
+        else if (err.error === 'daily_limit' || err.error === 'daily_limit_partial') toast.error(data?.error || 'Daily invite limit reached');
+        else toast.warning(`${err.email}: ${err.error}`);
       }
-    } catch {
-      toast.error('Failed to send invites');
+
+      // Handle rate limit errors returned at the top level
+      if (!data?.ok && data?.error) {
+        toast.error(data.error);
+      }
+
+      if (sent === 0 && errors.length === 0 && results.length === 0) {
+        toast.error('No invites were sent. Please check the email addresses and try again.');
+      }
+    } catch (err) {
+      console.error('[sendReferralInvite] error:', err);
+      toast.error('Failed to send invites. Please try again.');
     } finally {
       setSending(false);
     }

@@ -4,8 +4,15 @@ export default [
     ignores: [],
   },
   {
+    // Global rule override — disable no-undef everywhere (handled by TypeScript/IDE)
+    rules: {
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+    },
+  },
+  {
     // All JS/JSX/TS/TSX files — browser globals only
-    files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+    files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx', '**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
