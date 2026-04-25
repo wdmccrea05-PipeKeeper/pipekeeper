@@ -182,8 +182,41 @@ Deno.serve(async (req) => {
 
     const hasActiveSubscription = activeSubs.length > 0 || activeContracts.length > 0;
 
-    // If no active subscriptions at all → free tier
+    // If no active subscriptions at all → check for existing paid flags before clearing
     if (!hasActiveSubscription) {
+      const preservedModules = buildPreservedModules(user);
+
+      // SAFE RULE: if user has existing paid flags, do NOT clear them just because local
+      // subscription lookup returned empty. Preserve and mark for review instead.
+      if (preservedModules.length > 0) {
+        console.warn(
+          `[reconcileEntitlementsOnLogin] No active subscription found for ${email} but user has existing paid flags: [${preservedModules.join(',')}]. Preserving and marking needs_review.`
+        );
+
+        await base44.asServiceRole.entities.User.update(user.id, {
+          pipekeeper_paid: preservedModules.includes('pipekeeper'),
+          whiskeykeeper_paid: preservedModules.includes('whiskeykeeper'),
+          cigarkeeper_paid: preservedModules.includes('cigarkeeper'),
+          winekeeper_paid: preservedModules.includes('winekeeper'),
+          has_paid_access: true,
+          entitlement_sync_state: 'needs_review',
+          updated_date: new Date().toISOString(),
+        });
+
+        return Response.json({
+          success: true,
+          entitlementTier: user.entitlement_tier || 'pro',
+          paidModules: preservedModules,
+          hasPaidAccess: true,
+          hasBundleAccess: preservedModules.length > 1,
+          subscriptionCount: 0,
+          syncState: 'needs_review',
+          warning: 'No local active subscription found; preserved existing paid modules',
+          reason: 'no local active subscription found; preserved existing paid modules',
+        });
+      }
+
+      // No paid flags and no active subscription → safe to set free
       await base44.asServiceRole.entities.User.update(user.id, {
         pipekeeper_paid: false,
         whiskeykeeper_paid: false,

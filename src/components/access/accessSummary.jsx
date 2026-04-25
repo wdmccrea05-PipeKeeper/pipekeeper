@@ -30,8 +30,8 @@ const STRIPE_PRODUCT_MAP = {
   winekeeper_pro_monthly: { modules: ['winekeeper'], billingPeriod: 'monthly' },
   winekeeper_pro_annual: { modules: ['winekeeper'], billingPeriod: 'annual' },
 
-  three_module_bundle_monthly: { modules: [], billingPeriod: 'monthly' },
-  three_module_bundle_annual: { modules: [], billingPeriod: 'annual' },
+  three_module_bundle_monthly: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], billingPeriod: 'monthly' },
+  three_module_bundle_annual: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], billingPeriod: 'annual' },
   four_module_bundle_monthly: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], billingPeriod: 'monthly' },
   four_module_bundle_annual: { modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], billingPeriod: 'annual' },
 };
@@ -131,8 +131,8 @@ function mapSubscriptionToModules(subscription) {
 
   if (planKey.startsWith('three_module_bundle_')) {
     const metadataModules = parseMetadataModules(subscription);
-    // Use metadata modules if present; otherwise keep empty
-    modules = metadataModules.length ? metadataModules.slice(0, 3) : [];
+    // Use metadata modules if present; otherwise use canonical 3-module set
+    modules = metadataModules.length ? metadataModules.slice(0, 3) : ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
   }
 
   return { modules, planKey, billingPeriod: mapped.billingPeriod };

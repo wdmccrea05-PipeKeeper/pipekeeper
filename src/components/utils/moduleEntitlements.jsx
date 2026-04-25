@@ -86,7 +86,7 @@ function resolveBundleModules(user) {
   }
 
   if (hints.some((h) => h.includes('three_module_bundle') || h.includes('bundle_3'))) {
-    return [];
+    return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'].filter((m) => isModuleLaunched(m));
   }
 
   return [];
