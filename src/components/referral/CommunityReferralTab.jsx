@@ -76,6 +76,16 @@ export default function CommunityReferralTab() {
       const results = data?.results || [];
       const errors = results.filter(r => !r.ok);
 
+      // Handle top-level rate limit errors first
+      if (!data?.ok && data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      // Update daily counters from response
+      if (data?.remainingToday !== undefined) setRemainingToday(data.remainingToday);
+      if (data?.sentToday !== undefined) setSentToday(data.sentToday);
+
       if (sent > 0) {
         toast.success(`${sent} invite${sent !== 1 ? 's' : ''} sent!`);
         setEmailFields(['']);
@@ -84,24 +94,17 @@ export default function CommunityReferralTab() {
         await loadData();
       }
 
-      // Update daily counters from response
-      if (data?.remainingToday !== undefined) setRemainingToday(data.remainingToday);
-      if (data?.sentToday !== undefined) setSentToday(data.sentToday);
-
+      // Show per-email errors
       for (const err of errors) {
-        if (err.error === 'already_user') toast.info(`${err.email} is already a member`);
+        if (err.error === 'already_user') toast.info(`${err.email} is already a CollectionKeeper member`);
         else if (err.error === 'self_referral') toast.error('You cannot refer yourself');
         else if (err.error === 'recipient_cooldown') toast.warning(err.message || `${err.email} was already invited recently`);
         else if (err.error === 'daily_limit' || err.error === 'daily_limit_partial' || err.error === 'monthly_limit') toast.error(data?.error || 'Invite limit reached');
         else toast.warning(`${err.email}: ${err.error}`);
       }
 
-      // Handle rate limit errors returned at the top level
-      if (!data?.ok && data?.error) {
-        toast.error(data.error);
-      }
-
-      if (sent === 0 && errors.length === 0 && results.length === 0) {
+      // Only show generic fallback if there were no results at all (truly silent failure)
+      if (sent === 0 && results.length === 0) {
         toast.error('No invites were sent. Please check the email addresses and try again.');
       }
     } catch (err) {
