@@ -1,80 +1,32 @@
+/**
+ * RETIRED: updateUserEntitlement
+ *
+ * This function set a global entitlement_tier / subscription_tier field on the
+ * User record. It is incompatible with the module-specific entitlement system,
+ * which tracks access via pipekeeper_paid / whiskeykeeper_paid / cigarkeeper_paid
+ * / winekeeper_paid / paid_modules_csv flags.
+ *
+ * Setting a global tier without writing module flags causes the canonical
+ * moduleEntitlements resolver (hasModuleProAccess) to treat the user as free.
+ *
+ * Use auditAndRepairModuleEntitlements to set correct module flags from
+ * Subscription / ActiveContract records.
+ */
+
 // Runtime guard: Enforce Deno environment
-if (typeof Deno?.serve !== "function") {
-  throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
+if (typeof Deno?.serve !== 'function') {
+  throw new Error('FATAL: Invalid runtime - Base44 requires Deno.serve');
 }
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-
-Deno.serve(async (req) => {
-  try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Admin access required' }, { status: 403 });
-    }
-
-    const body = await req.json();
-    const { email, tier } = body;
-
-    if (!email) {
-      return Response.json({ error: 'Email required' }, { status: 400 });
-    }
-
-    if (!tier || !['premium', 'pro', 'free'].includes(tier.toLowerCase())) {
-      return Response.json({ error: 'Invalid tier. Must be premium, pro, or free' }, { status: 400 });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedTier = tier.toLowerCase();
-
-    console.log(`[updateEntitlement] Updating ${normalizedEmail} to ${normalizedTier}`);
-
-    // Get user
-    const users = await base44.asServiceRole.entities.User.filter({ email: normalizedEmail });
-    
-    if (!users || users.length === 0) {
-      return Response.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const targetUser = users[0];
-    const beforeTier = targetUser.data?.entitlement_tier || targetUser.data?.subscription_tier || 'free';
-
-    // Clean and update user data
-    const cleanData = { ...(targetUser.data || {}) };
-    delete cleanData.data; // Remove any nested structure
-
-    cleanData.entitlement_tier = normalizedTier;
-    cleanData.subscription_tier = normalizedTier;
-    cleanData.subscription_level = normalizedTier === 'free' ? 'free' : 'paid';
-    cleanData.subscription_status = normalizedTier === 'free' ? 'inactive' : 'active';
-
-    await base44.asServiceRole.entities.User.update(targetUser.id, {
-      // Canonical entitlement fields (top-level, read by backend resolver and frontend)
-      entitlement_tier: normalizedTier,
-      // Legacy fields kept for backward compatibility
-      subscription_tier: normalizedTier,
-      subscription_level: normalizedTier === 'free' ? 'free' : 'paid',
-      subscription_status: normalizedTier === 'free' ? 'inactive' : 'active',
-      // Nested data blob sync
-      data: cleanData
-    });
-
-    console.log(`[updateEntitlement] Updated ${normalizedEmail}: ${beforeTier} → ${normalizedTier}`);
-
-    return Response.json({
-      ok: true,
-      email: normalizedEmail,
-      before: beforeTier,
-      after: normalizedTier,
-      message: `User entitlement updated successfully. User must log out and back in to see changes.`
-    });
-
-  } catch (error) {
-    console.error('[updateEntitlement] Error:', error);
-    return Response.json({ 
-      ok: false, 
-      error: error.message 
-    }, { status: 500 });
-  }
+Deno.serve(async (_req) => {
+  return Response.json(
+    {
+      ok: false,
+      error: 'RETIRED',
+      message:
+        'updateUserEntitlement has been retired. It wrote a global tier without module-specific flags. Use auditAndRepairModuleEntitlements to repair pipekeeper_paid / whiskeykeeper_paid / cigarkeeper_paid flags.',
+      canonical: 'auditAndRepairModuleEntitlements',
+    },
+    { status: 410 }
+  );
 });
