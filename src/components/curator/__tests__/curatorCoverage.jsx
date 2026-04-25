@@ -1,4 +1,4 @@
-/* global describe, test, expect, beforeEach, afterEach */
+/* eslint-disable */
 /**
  * Curator Coverage & Anti-Repetition Tests
  *

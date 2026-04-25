@@ -169,6 +169,11 @@ If you did not expect this invitation, you can safely ignore this email.`;
 
 Deno.serve(async (req) => {
   try {
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    if (!RESEND_API_KEY) {
+      return Response.json({ error: 'RESEND_API_KEY is not configured. Please add it in app secrets.' }, { status: 500 });
+    }
+
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -265,12 +270,28 @@ Deno.serve(async (req) => {
       }
 
       try {
-        await base44.integrations.Core.SendEmail({
-          to: email,
-          subject,
-          body: htmlBody,
-          from_name: 'CollectionKeeper Invitations',
+        const resendRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'CollectionKeeper Invitations <noreply@collectionkeeper.app>',
+            to: [email],
+            subject,
+            html: htmlBody,
+            text: plainText,
+          }),
         });
+
+        if (!resendRes.ok) {
+          const errBody = await resendRes.json().catch(() => ({}));
+          console.error(`[sendReferralInvite] Resend error for ${email}:`, errBody);
+          throw new Error(errBody?.message || `Resend responded with status ${resendRes.status}`);
+        }
+
+        console.log(`[sendReferralInvite] Email sent via Resend to ${email}`);
 
         // Create ReferralEvent row — status = 'invited', channel = 'email'
         await base44.asServiceRole.entities.ReferralEvent.create({
