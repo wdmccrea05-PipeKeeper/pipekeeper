@@ -69,7 +69,7 @@ export default [
   },
   {
     // Test files — add test globals (more specific, comes after general rule)
-    files: ['**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/__tests__/**', '**/__tests__/**/*', 'src/**/__tests__/**/*'],
+    files: ['**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/__tests__/**/*.js', '**/__tests__/**/*.jsx', '**/__tests__/**/*.ts', '**/__tests__/**/*.tsx'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
