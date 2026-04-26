@@ -79,7 +79,7 @@ function CommunityPageInner() {
     }
   }, [userProfile]);
 
-  const communitySubtitle = t('communityExtended.connectEnthusiasts', 'Connect with fellow enthusiasts');
+  const communitySubtitle = 'Connect with fellow enthusiasts';
 
   const blocked = Array.isArray(userProfile?.blocked_users) ? userProfile.blocked_users : [];
 
