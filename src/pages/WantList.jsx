@@ -22,12 +22,14 @@ const PLACEHOLDERS = {
   blend: "e.g. Carter Hall, Orlik Golden Sliced…",
   pipe: "e.g. Falcon Standard, Peterson 312…",
   bottle: "e.g. Blanton's Single Barrel, Eagle Rare…",
+  cigar: "e.g. Padron 1964, Arturo Fuente Opus X…",
 };
 
 const SEARCH_PROMPTS = {
   blend: (q) => `Find exact tobacco blend matches for "${q}". Return up to 8 results as JSON with "items" array. Each item: name, manufacturer, blend_type, strength, cut, description, flavor_notes.`,
   pipe: (q) => `Find exact tobacco pipe matches for "${q}". Return up to 8 results as JSON with "items" array. Each item: name, maker, model, shape, bowl_material, description.`,
   bottle: (q) => `Find exact whiskey bottle matches for "${q}". Return up to 8 results as JSON with "items" array. Each item: name, distillery, expression, whiskey_type, type, age, abv, description.`,
+  cigar: (q) => `Find exact cigar matches for "${q}". Return up to 8 results as JSON with "items" array. Each item: name, brand, vitola, wrapper, strength, country_of_origin, description.`,
 };
 
 const SEARCH_SCHEMA = {
@@ -59,6 +61,7 @@ function subtitleFor(itemType, item) {
   if (itemType === "blend") return item.manufacturer;
   if (itemType === "pipe") return item.maker || item.model;
   if (itemType === "bottle") return item.distillery;
+  if (itemType === "cigar") return item.brand || item.vitola;
   return "";
 }
 
@@ -80,6 +83,7 @@ const BASE_ITEM_TYPES = [
   { value: "blend", label: "Blend", itemType: "blend", moduleKey: "pipekeeper" },
   { value: "pipe", label: "Pipe", itemType: "pipe", moduleKey: "pipekeeper" },
   { value: "bottle", label: "Whiskey", itemType: "bottle", moduleKey: "whiskeykeeper" },
+  { value: "cigar", label: "Cigar", itemType: "cigar", moduleKey: "cigarkeeper" },
 ];
 
 // ─── Manual add forms ───────────────────────────────────────────────────────
@@ -100,6 +104,14 @@ function ManualForm({ itemType, onSubmit, onBack }) {
           { key: "name", label: "Blend Name", required: true },
           { key: "manufacturer", label: "Manufacturer", required: true },
           { key: "blend_type", label: "Blend Type (optional)" },
+          { key: "notes", label: "Notes (optional)", multiline: true },
+        ]
+      : itemType === "cigar"
+      ? [
+          { key: "name", label: "Cigar Name", required: true },
+          { key: "brand", label: "Brand", required: true },
+          { key: "vitola", label: "Vitola / Size (optional)" },
+          { key: "wrapper", label: "Wrapper (optional)" },
           { key: "notes", label: "Notes (optional)", multiline: true },
         ]
       : [
@@ -221,7 +233,7 @@ function AddItemFlow({ onDone, onBack }) {
 
       const payload = {
         name: item.name,
-        item_type: itemType === "bottle" ? "bottle" : itemType,
+        item_type: itemType,
         brand,
         blend_name: itemType === "blend" ? item.name : undefined,
         pipe_model: itemType === "pipe" ? item.model : undefined,
