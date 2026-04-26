@@ -149,6 +149,16 @@ html {
   -webkit-overflow-scrolling: touch;
 }
 
+/* ─── Form field labels ─── */
+.ck-field-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: rgba(224, 216, 200, 0.80);
+  margin-bottom: 0.375rem;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

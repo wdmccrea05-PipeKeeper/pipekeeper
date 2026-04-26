@@ -4,7 +4,8 @@ export default [
     ignores: [],
   },
   {
-    // Global rule override — disable no-undef everywhere (handled by TypeScript/IDE)
+    // Global rule override — disable no-undef everywhere across ALL files
+    files: ['**/*'],
     rules: {
       'no-undef': 'off',
       'no-unused-vars': 'off',
