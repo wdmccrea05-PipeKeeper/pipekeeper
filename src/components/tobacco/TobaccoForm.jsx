@@ -535,22 +535,14 @@ Return complete and accurate information based on the blend name or description 
                  ) : (
                    <div className="w-32 h-32 rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
                      <PhotoUploader 
-                       onPhotosSelected={(files) => {
-                         const file = Array.from(files)[0];
-                         if (file) {
-                           const reader = new FileReader();
-                           reader.onload = (event) => {
-                             setCropperImage(event.target.result);
-                             setCropperType('photo');
-                           };
-                           reader.readAsDataURL(file);
-                         }
+                       onPhotosSelected={(urls) => {
+                         const url = Array.isArray(urls) ? urls[urls.length - 1] : null;
+                         if (url) handleChange('photo', url);
                        }}
                        showSearchOption={false}
                        recordType="blend"
                        recordData={formData}
                        existingPhotos={[]}
-                       hideExisting
                      />
                    </div>
                  )}
@@ -596,22 +588,14 @@ Return complete and accurate information based on the blend name or description 
                  ) : (
                    <div className="w-32 h-32 rounded-lg border-2 border-dashed border-stone-300 hover:border-amber-400 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-stone-400 hover:text-amber-600">
                      <PhotoUploader 
-                       onPhotosSelected={(files) => {
-                         const file = Array.from(files)[0];
-                         if (file) {
-                           const reader = new FileReader();
-                           reader.onload = (event) => {
-                             setCropperImage(event.target.result);
-                             setCropperType('logo');
-                           };
-                           reader.readAsDataURL(file);
-                         }
+                       onPhotosSelected={(urls) => {
+                         const url = Array.isArray(urls) ? urls[urls.length - 1] : null;
+                         if (url) handleChange('logo', url);
                        }}
                        showSearchOption={false}
                        recordType="blend"
                        recordData={formData}
                        existingPhotos={[]}
-                       hideExisting
                      />
                    </div>
                  )}
