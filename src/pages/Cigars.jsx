@@ -335,6 +335,7 @@ function CigarsInner() {
     try {
       await base44.entities.Cigar.update(assignTargetCigar.id, {
         humidor_id: humidorId,
+        created_by: assignTargetCigar.created_by || user?.email,
         ...(humidorId ? {} : {
           humidor_tray: null,
           humidor_shelf: null,
@@ -358,7 +359,7 @@ function CigarsInner() {
     try {
       const patch = getCigarQuickActionPatch(cigar, action);
       if (!patch) return;
-      await base44.entities.Cigar.update(cigar.id, patch);
+      await base44.entities.Cigar.update(cigar.id, { ...patch, created_by: cigar.created_by || user?.email });
       updateCigarInCache(cigar.id, patch);
       invalidateCigars();
       toast.success(getCigarQuickActionSuccessMessage(normalizedAction, cigar, patch));
@@ -415,7 +416,7 @@ function CigarsInner() {
           if (action === 'clear_flags') return { id: cigar.id, patch: { wishlist: false, shopping_list: false, restock_flag: false, ...NOT_FOR_ME_FLAGS_PATCH } };
           return null;
         }).filter(Boolean);
-        await Promise.all(patches.map(({ id, patch }) => base44.entities.Cigar.update(id, patch)));
+        await Promise.all(patches.map(({ id, patch }) => base44.entities.Cigar.update(id, { ...patch, created_by: (cigars.find(c => c.id === id)?.created_by) || user?.email })));
       }
       setSelectedCigarIds([]);
       setSelectMode(false);

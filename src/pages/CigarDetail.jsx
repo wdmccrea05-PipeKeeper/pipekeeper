@@ -469,7 +469,7 @@ function CigarDetailInner() {
   const [imageFailed, setImageFailed] = useState(false);
 
   const saveField = async (field, value) => {
-    await base44.entities.Cigar.update(cigar.id, { [field]: value });
+    await base44.entities.Cigar.update(cigar.id, { [field]: value, created_by: cigar.created_by || user?.email });
     queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
     queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
     queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
@@ -581,7 +581,7 @@ function CigarDetailInner() {
         const derivation = deriveCigarMarketValuation(cigar, { observations, snapshots });
         const patch = buildCigarMarketValuationPatch(cigar, derivation);
         if (patch) {
-          await base44.entities.Cigar.update(cigar.id, patch).catch(() => {});
+          await base44.entities.Cigar.update(cigar.id, { ...patch, created_by: cigar.created_by || user?.email }).catch(() => {});
           queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user.email] });
         }
       }
@@ -640,7 +640,7 @@ function CigarDetailInner() {
   const handleToggleFavorite = async () => {
     if (!cigar) return;
     try {
-      await base44.entities.Cigar.update(cigar.id, { is_favorite: !cigar.is_favorite });
+      await base44.entities.Cigar.update(cigar.id, { is_favorite: !cigar.is_favorite, created_by: cigar.created_by || user?.email });
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
     } catch {
       toast.error('Failed to update favorite');
@@ -653,7 +653,7 @@ function CigarDetailInner() {
       return;
     }
     try {
-      await base44.entities.Cigar.update(cigar.id, patch);
+      await base44.entities.Cigar.update(cigar.id, { ...patch, created_by: cigar.created_by || user?.email });
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
       queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
       queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
@@ -677,7 +677,7 @@ function CigarDetailInner() {
 
   const handleSaveValuation = async (patch) => {
     try {
-      await base44.entities.Cigar.update(cigar.id, patch);
+      await base44.entities.Cigar.update(cigar.id, { ...patch, created_by: cigar.created_by || user?.email });
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
       queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
       queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
@@ -895,7 +895,7 @@ function CigarDetailInner() {
           icon={Package}
           placeholder="# sticks"
           onSave={async (val) => {
-            await base44.entities.Cigar.update(cigar.id, { singles_equivalent: val, quantity: val });
+            await base44.entities.Cigar.update(cigar.id, { singles_equivalent: val, quantity: val, created_by: cigar.created_by || user?.email });
             queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
             toast.success('Sticks updated');
           }}
@@ -915,7 +915,7 @@ function CigarDetailInner() {
           placeholder="1–5"
           onSave={async (val) => {
             const clamped = val != null ? Math.min(5, Math.max(0, val)) : null;
-            await base44.entities.Cigar.update(cigar.id, { rating: clamped });
+            await base44.entities.Cigar.update(cigar.id, { rating: clamped, created_by: cigar.created_by || user?.email });
             queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
             toast.success('Rating updated');
           }}
@@ -1079,12 +1079,13 @@ function CigarDetailInner() {
                 value={cigar.humidor_id || ''}
                 onChange={async (e) => {
                   const val = e.target.value || null;
-                  await base44.entities.Cigar.update(cigar.id, val ? { humidor_id: val } : {
+                  await base44.entities.Cigar.update(cigar.id, val ? { humidor_id: val, created_by: cigar.created_by || user?.email } : {
                     humidor_id: null,
                     humidor_tray: null,
                     humidor_shelf: null,
                     humidor_drawer: null,
                     humidor_section: null,
+                    created_by: cigar.created_by || user?.email,
                   });
                   queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
                   queryClient.invalidateQueries({ queryKey: ['humidor-for-cigar'] });
