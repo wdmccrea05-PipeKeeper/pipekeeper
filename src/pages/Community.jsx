@@ -79,13 +79,7 @@ function CommunityPageInner() {
     }
   }, [userProfile]);
 
-  const communitySubtitle = useMemo(() => {
-    const pipe = userProfile?.pipekeeper_enabled !== false;
-    const whiskey = userProfile?.whiskeykeeper_enabled === true;
-    if (pipe && whiskey) return t('communityExtended.connectPipeAndWhiskey', 'Connect with pipe & whiskey enthusiasts');
-    if (whiskey) return t('communityExtended.connectWhiskey', 'Connect with whiskey enthusiasts');
-    return t('communityExtended.connectEnthusiasts', 'Connect with pipe enthusiasts');
-  }, [userProfile, t]);
+  const communitySubtitle = t('communityExtended.connectEnthusiasts', 'Connect with fellow enthusiasts');
 
   const blocked = Array.isArray(userProfile?.blocked_users) ? userProfile.blocked_users : [];
 
