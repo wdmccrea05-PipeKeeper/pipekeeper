@@ -10,6 +10,9 @@ import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import CigarHighlightCard from '@/components/cigars/CigarHighlightCard';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
+import { getCigarHighlights } from '@/components/cigars/getCigarHighlights';
+import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
+import { useCurrency } from '@/lib/currency/useCurrency';
 import { getCollectionInsights } from '@/platform/cigarInsights';
 import {
   daysBetween,
@@ -127,6 +130,7 @@ function CigarKeeperInner() {
   const { t, lang } = useTranslation();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
+  const { formatFromBase } = useCurrency();
   const [sessionModalOpen, setSessionModalOpen] = useState(false);
 
   const { data: cigars = [] } = useQuery({
@@ -173,6 +177,11 @@ function CigarKeeperInner() {
   const insights = useMemo(
     () => getCollectionInsights(cigars, humidors, sessions),
     [cigars, humidors, sessions]
+  );
+
+  const highlights = useMemo(
+    () => getCigarHighlights(cigars, formatFromBase),
+    [cigars, formatFromBase]
   );
 
   const actionItems = [
@@ -298,6 +307,34 @@ function CigarKeeperInner() {
       )}
 
       <ModuleQuickLaunch actions={quickLaunchActions} />
+
+      {highlights.length > 0 && (
+        <div>
+          <h2
+            className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
+            style={{ color: 'rgba(180,140,75,0.8)' }}
+          >
+            {t('home.highlights', 'Collection Highlights')}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {highlights.map((highlight) => (
+              <WhiskeyHighlightCard
+                key={highlight.key}
+                title={highlight.title}
+                value={highlight.value}
+                subtitle={highlight.subtitle}
+                accent={highlight.accent}
+                photo={highlight.photo}
+                onClick={() => {
+                  if (highlight.cigarId) {
+                    navigate(`/Cigars?highlight=${encodeURIComponent(highlight.cigarId)}`);
+                  }
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Humidor alerts */}
       {alertHumidors.length > 0 && (
