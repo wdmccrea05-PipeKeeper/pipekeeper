@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -261,6 +261,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
   const [form, setForm] = useState({ ...DEFAULT_SESSION });
   const [shouldDecrement, setShouldDecrement] = useState(true);
   const [saving, setSaving] = useState(false);
+  const prevIsOpenRef = useRef(isOpen);
 
   const { data: cigars = [] } = useQuery({
     queryKey: ['cigars', user?.email],
@@ -269,6 +270,12 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
   });
 
   useEffect(() => {
+    const wasOpen = prevIsOpenRef.current;
+    prevIsOpenRef.current = isOpen;
+
+    // Only reset/initialize when the modal transitions open or closed — not on every re-render
+    if (wasOpen === isOpen) return;
+
     if (!isOpen) {
       setForm({ ...DEFAULT_SESSION });
       setCigarMode('collection');
