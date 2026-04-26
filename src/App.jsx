@@ -98,8 +98,22 @@ const AuthenticatedApp = () => {
       navigateToLogin();
     }
     return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 p-6"
+        style={{ background: 'linear-gradient(135deg, #0f0b08 0%, #1a1410 50%, #0f0b08 100%)' }}>
+        <div className="w-8 h-8 border-4 border-[rgba(180,140,75,0.3)] border-t-[#D4A574] rounded-full animate-spin"></div>
+        <div className="text-center max-w-sm">
+          <p className="text-[#F5F1E7] font-semibold mb-1">Redirecting to sign in…</p>
+          <p className="text-[rgba(224,216,200,0.6)] text-sm">
+            If the verification window closed, you'll be able to enter your code again on the next screen.
+          </p>
+        </div>
+        <button
+          onClick={() => navigateToLogin()}
+          className="mt-2 px-4 py-2 rounded-lg text-sm font-semibold"
+          style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}
+        >
+          Go to Sign In
+        </button>
       </div>
     );
   }
