@@ -180,6 +180,62 @@ const WHISKEY_PROGRESSION_MAP = {
   },
 };
 
+// ─── Cigar progression data ───────────────────────────────────────────────────
+
+const CIGAR_PROGRESSION_PRODUCTS = {
+  'Connecticut':    'Arturo Fuente Hemingway Short Story',
+  'Colorado':       'Oliva Serie O',
+  'Maduro':         'Padron 1964 Anniversary Series',
+  'Colorado Claro': 'Romeo y Julieta 1875',
+  'Colorado Maduro':'Alec Bradley Tempus',
+  'Oscuro':         'Liga Privada No. 9',
+  'Natural':        'Montecristo White Series',
+  'Claro':          'Macanudo Cafe',
+};
+
+const CIGAR_WRAPPER_PROGRESSION_MAP = {
+  'Connecticut': {
+    next: ['Colorado', 'Colorado Claro'],
+    rationale: () =>
+      `Connecticut wrappers are approachable and mild — the natural next step is a Colorado ` +
+      `or Natural wrapper, which brings more body and complexity without jumping into full strength. ` +
+      `It's the same refined smoke, turned up a notch.`,
+    recommendation: 'A Colorado-wrapped cigar bridges mild Connecticuts and fuller-bodied profiles',
+    action: 'Add a Colorado-wrapped cigar to your Want List',
+  },
+  'Colorado': {
+    next: ['Maduro', 'Colorado Maduro'],
+    rationale: () =>
+      `Colorado smokers often find Maduro the logical next horizon — the dark, fermented wrapper ` +
+      `adds sweetness, cocoa, and earth that Colorado hints at but never fully delivers. ` +
+      `It's a richer, more complex dimension of the same body level.`,
+    recommendation: 'A Maduro-wrapped cigar deepens the complexity your Colorado collection points toward',
+    action: 'Add a Maduro to your Want List',
+  },
+  'Maduro': {
+    next: ['Oscuro', 'Colorado Maduro'],
+    rationale: () =>
+      `Maduro enthusiasts often explore Oscuro next — the darkest and most intensely fermented ` +
+      `wrapper, delivering concentrated sweetness and deep earth that even Maduros can't fully match. ` +
+      `It's for when Maduro isn't quite enough.`,
+    recommendation: 'An Oscuro cigar is the natural culmination for Maduro lovers',
+    action: 'Add an Oscuro-wrapped cigar to your Want List',
+  },
+  'Natural': {
+    next: ['Colorado', 'Colorado Claro'],
+    rationale: () =>
+      `Natural wrappers are a great foundation. Moving to a Colorado brings noticeably more ` +
+      `body and depth without a dramatic strength jump — the same clean burn, more flavor.`,
+    recommendation: 'A Colorado wrapper adds depth to your Natural-forward collection',
+    action: 'Add a Colorado-wrapped cigar to your Want List',
+  },
+};
+
+const ALL_CIGAR_WRAPPERS = [
+  'Connecticut', 'Colorado Claro', 'Colorado', 'Natural',
+  'Colorado Maduro', 'Maduro', 'Oscuro',
+];
+
 // Peated whiskey type identifiers — used to apply dislikes filter
 const peatedTypes = ['Islay', 'Peated'];
 
@@ -625,6 +681,131 @@ function generatePipeShapeExpansion(pipes, blends) {
   })];
 }
 
+function generateCigarExpansion(cigars, preferences = {}) {
+  if (cigars.length < 2) return [];
+  const results = [];
+  const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
+  const seenNextTypes = new Set();
+
+  // Count wrapper types
+  const wrapperCounts = {};
+  for (const cigar of cigars) {
+    const w = cigar.wrapper || cigar.wrapper_color;
+    if (w && w !== 'Unknown') wrapperCounts[w] = (wrapperCounts[w] || 0) + 1;
+  }
+  const sortedWrappers = Object.entries(wrapperCounts).sort((a, b) => b[1] - a[1]);
+  const ownedWrappers = new Set(sortedWrappers.map(([w]) => w));
+
+  // 1. Progression-based suggestions
+  for (const [dominant] of sortedWrappers) {
+    if (results.length >= 2) break;
+    const progression = CIGAR_WRAPPER_PROGRESSION_MAP[dominant];
+    if (!progression) continue;
+    const nextWrapper = progression.next.find((w) => !ownedWrappers.has(w) && !seenNextTypes.has(w));
+    if (!nextWrapper) continue;
+    if (dislikes.some((d) => nextWrapper.toLowerCase().includes(d.toLowerCase()))) continue;
+
+    const candidateProduct = CIGAR_PROGRESSION_PRODUCTS[nextWrapper] || '';
+    if (candidateProduct && cigars.some((c) => hasWordOverlap(candidateProduct, c.name || ''))) continue;
+
+    seenNextTypes.add(nextWrapper);
+    const specificProduct = CIGAR_PROGRESSION_PRODUCTS[nextWrapper] || `${nextWrapper} Wrapper Cigar`;
+    const confidence = computeConfidence({
+      preferenceAlignment:   0.75,
+      usageHistoryRelevance: 0.5,
+      dataCompleteness:      sortedWrappers.length >= 2 ? 0.8 : 0.5,
+      diversityContribution: 0.9,
+    });
+
+    results.push(createRecommendation({
+      category:             CATEGORY.GROW_EXPAND,
+      goal:                 `cigar_wrapper_expansion_${nextWrapper.replace(/[\s/]/g, '_').toLowerCase()}`,
+      actionType:           ACTION_TYPE.SHOPPING_LIST_ACTION,
+      title:                `Explore ${specificProduct}`,
+      summary:              progression.rationale(),
+      whyItMatters:         progression.rationale(),
+      recommendationText:   progression.action,
+      gapReason:            `You lack ${nextWrapper}-wrapped cigars in your collection`,
+      whatItAdds:           progression.action.split('.')[0],
+      collectionConnection: progression.recommendation,
+      contextTag:           nextWrapper,
+      moduleKey:            MODULE_KEY.CIGAR,
+      ownershipContext:     OWNERSHIP_CONTEXT.EXTERNAL,
+      priority:             PRIORITY.MEDIUM,
+      fitBadge:             confidenceToFitBadge(confidence),
+      priorityBadge:        priorityToBadge(PRIORITY.MEDIUM),
+      confidence,
+      items: [{
+        id:              `grow_cigar_${nextWrapper.replace(/[\s/]/g, '_').toLowerCase()}`,
+        recordId:        null,
+        recordType:      'cigar_suggestion',
+        recordName:      specificProduct,
+        itemName:        specificProduct,
+        ownershipStatus: 'wishlist',
+        shoppingType:    'buy_new_item',
+        itemType:        'cigar',
+        suggestedWrapper: nextWrapper,
+        rationale:       progression.rationale(),
+      }],
+      actionPayload: {
+        shoppingType:    'buy_new_item',
+        itemType:        'cigar',
+        suggestedWrapper: nextWrapper,
+        specificProduct,
+      },
+    }));
+  }
+
+  // 2. Fill from unrepresented wrapper families
+  if (results.length < 2) {
+    for (const wrapper of ALL_CIGAR_WRAPPERS) {
+      if (results.length >= 2) break;
+      if (ownedWrappers.has(wrapper) || seenNextTypes.has(wrapper)) continue;
+      if (dislikes.some((d) => wrapper.toLowerCase().includes(d.toLowerCase()))) continue;
+
+      seenNextTypes.add(wrapper);
+      const specificProduct = CIGAR_PROGRESSION_PRODUCTS[wrapper] || `${wrapper} Wrapper Cigar`;
+      results.push(createRecommendation({
+        category:             CATEGORY.GROW_EXPAND,
+        goal:                 `cigar_wrapper_expansion_${wrapper.replace(/[\s/]/g, '_').toLowerCase()}`,
+        actionType:           ACTION_TYPE.SHOPPING_LIST_ACTION,
+        title:                `Explore ${specificProduct}`,
+        summary:              `A ${wrapper}-wrapped cigar would add a new dimension to your collection.`,
+        whyItMatters:         `${wrapper} wrappers offer a distinct character your current cigars don't cover — a natural next step for any enthusiast exploring new profiles.`,
+        recommendationText:   `Add a ${wrapper}-wrapped cigar to your Want List`,
+        gapReason:            `${wrapper}-wrapped cigars are absent from your collection`,
+        contextTag:           wrapper,
+        moduleKey:            MODULE_KEY.CIGAR,
+        ownershipContext:     OWNERSHIP_CONTEXT.EXTERNAL,
+        priority:             PRIORITY.LOW,
+        fitBadge:             'Medium Fit',
+        priorityBadge:        'Low Priority',
+        confidence:           'medium',
+        items: [{
+          id:              `grow_cigar_gap_${wrapper.replace(/[\s/]/g, '_').toLowerCase()}`,
+          recordId:        null,
+          recordType:      'cigar_suggestion',
+          recordName:      specificProduct,
+          itemName:        specificProduct,
+          ownershipStatus: 'wishlist',
+          shoppingType:    'buy_new_item',
+          itemType:        'cigar',
+          suggestedWrapper: wrapper,
+          rationale:       `Diversify your cigar collection with a ${wrapper}-wrapped selection.`,
+        }],
+        actionPayload: {
+          shoppingType:    'buy_new_item',
+          itemType:        'cigar',
+          suggestedWrapper: wrapper,
+          specificProduct,
+        },
+      }));
+    }
+  }
+
+  return results;
+}
+
 // ─── Main Engine Entry Point ─────────────────────────────────────────────────
 
 /**
@@ -645,6 +826,7 @@ export function generateGrowExpandRecommendations(context = {}) {
     pipes       = [],
     blends      = [],
     bottles     = [],
+    cigars      = [],
     smokingLogs = [],
     preferences = {},
     activeModules = {},
@@ -653,20 +835,23 @@ export function generateGrowExpandRecommendations(context = {}) {
   const pipeActive    = activeModules.pipekeeper    !== false;
   const tobaccoActive = activeModules.tobacco       !== false;
   const whiskeyActive = activeModules.whiskeykeeper !== false;
+  const cigarActive   = activeModules.cigarkeeper   !== false;
 
   // RULE 3: Module gating enforced globally once
-  const gatedPipes = pipeActive ? pipes : [];
-  const gatedBlends = tobaccoActive ? blends : [];
+  const gatedPipes   = pipeActive    ? pipes   : [];
+  const gatedBlends  = tobaccoActive ? blends  : [];
   const gatedBottles = whiskeyActive ? bottles : [];
+  const gatedCigars  = cigarActive   ? cigars  : [];
 
-  const totalItems = gatedPipes.length + gatedBlends.length + gatedBottles.length;
-  const whiskeyOnlyMode = whiskeyActive && !pipeActive && !tobaccoActive;
-  const minItems = whiskeyOnlyMode ? 1 : 3;
+  const totalItems = gatedPipes.length + gatedBlends.length + gatedBottles.length + gatedCigars.length;
+  const whiskeyOnlyMode = whiskeyActive && !pipeActive && !tobaccoActive && !cigarActive;
+  const cigarOnlyMode   = cigarActive   && !pipeActive && !tobaccoActive && !whiskeyActive;
+  const minItems = (whiskeyOnlyMode || cigarOnlyMode) ? 1 : 3;
   if (totalItems < minItems) {
     console.error('ENGINE_FAILURE', {
       engine: 'growExpandEngine',
       reason: 'insufficient_data',
-      dataCounts: { pipes: gatedPipes.length, blends: gatedBlends.length, bottles: gatedBottles.length },
+      dataCounts: { pipes: gatedPipes.length, blends: gatedBlends.length, bottles: gatedBottles.length, cigars: gatedCigars.length },
       activeModules,
     });
     return [];
@@ -713,6 +898,18 @@ export function generateGrowExpandRecommendations(context = {}) {
       }
     }
     generators.push('pipeExpansion');
+  }
+
+  // Cigar wrapper expansion — only when CigarKeeper is active
+  if (cigarActive && gatedCigars.length > 0) {
+    const cigarExpansion = generateCigarExpansion(gatedCigars, preferences);
+    for (const rec of cigarExpansion) {
+      if (!seen.has(rec.goal)) {
+        results.push(rec);
+        seen.add(rec.goal);
+      }
+    }
+    generators.push('cigarExpansion');
   }
 
   // ─── Fallbacks: produce at least one suggestion when the collection has items
