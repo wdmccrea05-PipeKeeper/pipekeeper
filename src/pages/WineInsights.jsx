@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { Wine, TrendingUp, Star, Calendar, AlertCircle } from 'lucide-react';
+import { Wine, TrendingUp, Star, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import { useCurrency } from '@/lib/currency/useCurrency';
@@ -50,7 +50,6 @@ export default function WineInsights() {
   const stats = useMemo(() => {
     const totalBottles = wines.length;
     const totalInCellar = wines.reduce((s, w) => s + (w.quantity || 1), 0);
-    // Rich value resolution: manual override > market total > estimated total > estimated unit*qty > estimated_value > purchase
     const totalValue = wines.reduce((s, w) => {
       const qty = w.quantity || 1;
       if (w.manual_valuation_enabled && w.manual_estimated_value > 0) return s + w.manual_estimated_value * qty;
@@ -119,7 +118,6 @@ export default function WineInsights() {
         <StatCard label={t('wine.avgRating', 'Avg Rating')} value={stats.avgRating} icon={Star} accent="#D4A574" />
       </div>
 
-      {/* Drinking window summary */}
       <div
         className="rounded-xl p-5"
         style={{ background: 'rgba(46,125,92,0.08)', border: '1px solid rgba(46,125,92,0.25)' }}
@@ -141,7 +139,6 @@ export default function WineInsights() {
         </div>
       </div>
 
-      {/* Style breakdown */}
       {Object.keys(stats.styleBreakdown).length > 0 && (
         <div className="rounded-xl p-5" style={{ background: 'rgba(42,28,20,0.7)', border: '1px solid rgba(139,58,58,0.25)' }}>
           <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'rgba(180,140,75,0.8)' }}>
@@ -158,7 +155,6 @@ export default function WineInsights() {
         </div>
       )}
 
-      {/* Region breakdown */}
       {Object.keys(stats.regionBreakdown).length > 0 && (
         <div className="rounded-xl p-5" style={{ background: 'rgba(42,28,20,0.7)', border: '1px solid rgba(139,58,58,0.25)' }}>
           <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'rgba(180,140,75,0.8)' }}>
@@ -175,7 +171,6 @@ export default function WineInsights() {
         </div>
       )}
 
-      {/* Valuation health */}
       {wines.length > 0 && (stats.unvalued > 0 || stats.lowConfidence > 0) && (
         <div className="rounded-xl p-4" style={{ background: 'rgba(180,140,75,0.07)', border: '1px solid rgba(180,140,75,0.22)' }}>
           <div className="flex items-center gap-2 mb-3">
