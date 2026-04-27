@@ -5,8 +5,10 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PhotoUploader from '@/components/PhotoUploader';
+import WineStyleSelect from '@/components/wine/WineStyleSelect';
+import WineVarietalSelect from '@/components/wine/WineVarietalSelect';
+import { getStyleKey, buildVarietalDisplay, migrateWineVarietals } from '@/lib/wine/wineTaxonomy';
 
-const STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
 const SIZES = ['375ml', '500ml', '750ml', '1L', '1.5L', '3L', 'Other'];
 
 function Field({ label, children }) {
