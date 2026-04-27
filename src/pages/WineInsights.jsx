@@ -34,6 +34,7 @@ const TABS = [
   { key: 'value', label: 'Value' },
   { key: 'usage', label: 'Usage' },
   { key: 'statistics', label: 'Statistics' },
+  { key: 'trends', label: 'Trends' },
   { key: 'reports', label: 'Reports' },
   { key: 'sessions', label: 'Sessions' },
   { key: 'drinkingwindow', label: 'Drinking Window' },
@@ -271,6 +272,42 @@ export default function WineInsights() {
           )}
 
           {wines.length === 0 && <InsightsEmptyState message="Add wines to see collection statistics." icon={Wine} />}
+        </div>
+      )}
+
+      {/* TRENDS */}
+      {activeTab === 'trends' && (
+        <div className="space-y-4">
+          {wines.length === 0 && tastings.length === 0 ? (
+            <InsightsEmptyState message="Add wines and log tastings to see trends." icon={Wine} />
+          ) : (
+            <>
+              <InsightsKpiGrid>
+                <InsightStatCard icon={Wine} label="Total Tastings" value={stats.tastingCount} accent={ACCENT} />
+                <InsightStatCard icon={TrendingUp} label="Collection Value" value={formatFromBase(Math.round(stats.totalValue))} accent={ACCENT} />
+                <InsightStatCard icon={Star} label="Average Rating" value={stats.avgRating} accent={WINE_GOLD} />
+                <InsightStatCard icon={BookOpen} label="Bottles in Cellar" value={stats.totalInCellar} accent={ACCENT} />
+              </InsightsKpiGrid>
+              <InsightPanel>
+                <InsightSectionHeading accent={WINE_GOLD}>Recent Tastings</InsightSectionHeading>
+                {tastings.length > 0 ? (
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
+                    {[...tastings].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 30).map(t => (
+                      <div key={t.id} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(139,58,58,0.07)', border: '1px solid rgba(139,58,58,0.15)' }}>
+                        <div>
+                          <p className="text-sm font-medium text-[#F5F1E7]">{t.wine_name || 'Wine tasting'}</p>
+                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{t.date ? new Date(t.date).toLocaleDateString() : 'Unknown date'}</p>
+                        </div>
+                        {t.rating != null && <p className="text-sm font-semibold text-[#F5F1E7]">★ {t.rating}</p>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <InsightsEmptyState message="Log wine tastings to see activity trends." icon={Wine} />
+                )}
+              </InsightPanel>
+            </>
+          )}
         </div>
       )}
 

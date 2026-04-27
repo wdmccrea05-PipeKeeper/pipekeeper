@@ -3,14 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import {
   calculateCellaredOzFromBlend,
   calculateTobaccoCollectionValue,
 } from "@/components/utils/tobaccoQuantityHelpers";
-import CollectionInsightsPanel from "@/components/home/CollectionInsightsPanel";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import PipeKeeperModuleNav from "@/components/modules/PipeKeeperModuleNav";
 import {
@@ -20,7 +18,7 @@ import {
   Star,
   Trophy,
   TrendingUp,
-  Calendar,
+  Calendar as CalendarIcon,
   Award,
   Share2,
   Zap,
@@ -35,28 +33,47 @@ import {
   isWithinInterval,
   parseISO,
 } from "date-fns";
-import { getBowlsUsed } from "@/components/utils/schemaCompatibility";
-import { Badge } from "@/components/ui/badge";
+import { getBowlsUsed, toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 import { PIPE_SILHOUETTE_URL } from "@/components/utils/collectionConstants";
-import { StatusCard, CATEGORY_COLORS } from "@/components/ui/HeroCard";
+import { CATEGORY_COLORS } from "@/components/ui/HeroCard";
 import CollectorStory from "@/components/story/CollectorStory";
 import StoryTrigger from "@/components/story/StoryTrigger";
 import { generateStoryCards } from "@/components/story/generateStoryCards";
+import {
+  InsightsPageShell,
+  InsightsHeader,
+  InsightsTabBar,
+  InsightsKpiGrid,
+  InsightStatCard,
+  InsightPanel,
+  InsightSectionHeading,
+  InsightsEmptyState,
+  InsightsSessionPanel,
+} from "@/components/insights/InsightsShell";
+import { Calendar } from "@/components/ui/calendar";
+import { buildSessionCalendarData } from "@/lib/sessionHistory/calendarData";
+import SmokingLogPanel from "@/components/home/SmokingLogPanel";
+import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
+import TrendsReport from "@/components/tobacco/TrendsReport";
+import PipeValuationTab from "@/components/pipes/PipeValuationTab";
+import RotationPlanner from "@/components/pipes/RotationPlanner";
+import CollectionReportExporter from "@/components/export/CollectionReportExporter";
+import SmokingLogReportExporter from "@/components/export/SmokingLogReportExporter";
+import AgingReportExporter from "@/components/export/AgingReportExporter";
+import ProFeatureLock from "@/components/subscription/ProFeatureLock";
 
-const DEFAULT_INSIGHTS_TAB = "log";
-
-function getTabFromUrl() {
-  try {
-    return (
-      new URLSearchParams(window.location.search).get("tab") ||
-      DEFAULT_INSIGHTS_TAB
-    );
-  } catch {
-    return DEFAULT_INSIGHTS_TAB;
-  }
-}
+const TABS = [
+  { key: 'summary', label: 'Summary' },
+  { key: 'value', label: 'Value' },
+  { key: 'usage', label: 'Usage' },
+  { key: 'statistics', label: 'Statistics' },
+  { key: 'trends', label: 'Trends' },
+  { key: 'reports', label: 'Reports' },
+  { key: 'sessions', label: 'Sessions' },
+  { key: 'rotation', label: 'Rotation' },
+];
 
 // ── Image-selection helpers ───────────────────────────────────────────────────
 function getPipeImage(pipe) {
@@ -992,11 +1009,9 @@ function computeLongestStreak(logs) {
 export default function Insights() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
-  const hasPipekeeperPro = hasModuleProAccess(user, "pipekeeper");
   const navigate = useNavigate();
   // Subscribe to currency context so the component re-renders when the user changes currency
   const { selectedCurrency, formatFromBase } = useCurrency();
-  const initialTab = getTabFromUrl();
 
   const highlightRefs = useRef({});
   const storyRef = useRef(null);
@@ -1121,6 +1136,25 @@ export default function Insights() {
     [smokingLogs]
   );
 
+  const [activeInsightsTab, setActiveInsightsTab] = useState('summary');
+  const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
+
+  const pipeSessionRows = useMemo(() => smokingLogs.map(s => ({
+    id: `pipe_${s.id}`,
+    moduleType: 'pipe',
+    date: s.date,
+    itemLabel: s.blend_name || s.pipe_name || 'Smoking session',
+    rating: s.rating ?? null,
+    notes: s.notes || '',
+  })), [smokingLogs]);
+
+  const { byDate: pipeByDate, highlightedDates: pipeHighlights } = useMemo(
+    () => buildSessionCalendarData(pipeSessionRows, 'pipe'),
+    [pipeSessionRows]
+  );
+
+  const pipeSelectedDayRows = useMemo(() => pipeByDate[calSelectedDate] || [], [pipeByDate, calSelectedDate]);
+
   const hasData = pipes.length > 0 || blends.length > 0 || smokingLogs.length > 0;
 
   const fullStoryCards = useMemo(() => {
@@ -1213,10 +1247,9 @@ export default function Insights() {
   };
 
   return (
-    <div className="space-y-6">
+    <InsightsPageShell>
       <PipeKeeperModuleNav currentPageName="Insights" />
-      
-      <div className="space-y-10">
+
       {activeStory && (
         <StoryCardModal
           {...activeStory}
@@ -1232,426 +1265,222 @@ export default function Insights() {
         storyCards={fullStoryCards}
       />
 
-      <div className="relative">
-        <div
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 20% 50%, rgba(180, 140, 75, 0.08) 0%, transparent 60%)",
-          }}
-        />
-        <div className="relative flex items-start justify-between gap-3 py-2">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
-                  border: "1px solid rgba(120, 90, 65, 0.45)",
-                  boxShadow:
-                    "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
-                }}
-              >
-                <BarChart3
-                  className="w-5 h-5"
-                  style={{
-                    color: "rgba(180, 140, 75, 1)",
-                    filter: "drop-shadow(0 0 4px rgba(180,140,75,0.7))",
-                  }}
-                />
-              </div>
+      <InsightsHeader
+        title={t("insights.title")}
+        subtitle={t("insights.subtitle")}
+      />
 
-              <h1
-                className="text-3xl sm:text-4xl font-bold tracking-tight break-words"
-                style={{
-                  color: "#F5F1E7",
-                  fontFamily: "'Georgia', serif",
-                  textShadow: "0 2px 6px rgba(0,0,0,0.7)",
-                  wordBreak: "break-word",
-                  hyphens: "none"
-                }}
-              >
-                {t("insights.title")}
-              </h1>
+      <InsightsTabBar tabs={TABS} activeTab={activeInsightsTab} onTabChange={setActiveInsightsTab} />
 
-              {hasPipekeeperPro && (
-                <Badge
-                  className="border-0 text-xs"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, rgba(180, 140, 75, 0.9), rgba(160, 120, 65, 1))",
-                    color: "#1a120a",
-                  }}
-                >
-                  {t("subscription.proBadge")}
-                </Badge>
-              )}
-            </div>
-
-            <p
-              className="text-base sm:pl-14"
-              style={{ color: "rgba(224, 216, 200, 0.75)" }}
-            >
-              {t("insights.subtitle")}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-        <StatusCard
-          icon={Flame}
-          label={t("insights.snapshotSessions")}
-          value={smokingLogs.length}
-          accent={CATEGORY_COLORS.pipe}
-          sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`}
-          bgImage={analyticsImages.snapshotSessions}
-        />
-        <StatusCard
-          icon={isAppleBuild ? Leaf : BarChart3}
-          label={t("home.pipesInCollection")}
-          value={pipes.length}
-          accent={CATEGORY_COLORS.general}
-          bgImage={analyticsImages.snapshotPipes}
-        />
-        <StatusCard
-          icon={Leaf}
-          label={t("home.tobaccoBlends")}
-          value={blends.length}
-          accent={CATEGORY_COLORS.tobacco}
-          sub={`${totalCellaredOz.toFixed(1)} ${t("units.oz")} ${t("home.cellared")}`}
-          bgImage={analyticsImages.snapshotBlends}
-        />
-        <StatusCard
-          icon={TrendingUp}
-          label={t("home.totalValue")}
-          value={formatFromBase(Math.round(totalCollectionValue))}
-          accent={CATEGORY_COLORS.value}
-          bgImage={analyticsImages.snapshotValue}
-        />
-        <StatusCard
-          icon={Clock}
-          label={t("insights.snapshotStreak")}
-          value={`${longestStreak}d`}
-          accent={CATEGORY_COLORS.streak}
-          sub={t("insights.snapshotConsecutiveDays")}
-          bgImage={analyticsImages.streak}
-          useBlurredBg={true}
-        />
-        <StatusCard
-          icon={Calendar}
-          label={t("insights.snapshotAvgWeek")}
-          value={
-            smokingLogs.length > 0
-              ? (
-                  smokingLogs.length /
-                  Math.max(
-                    1,
-                    Math.ceil(
-                      differenceInCalendarDays(
-                        now,
-                        parseISO(
-                          smokingLogs[
-                            smokingLogs.length - 1
-                          ]?.date?.slice(0, 10) || now.toISOString().slice(0, 10)
-                        )
-                      ) / 7
-                    )
-                  )
-                ).toFixed(1)
-              : "—"
-          }
-          accent={CATEGORY_COLORS.activity}
-          sub={t("insights.snapshotSessionsPerWeek")}
-          bgImage={analyticsImages.snapshotAvg}
-        />
-      </div>
-
-      {hasData && (
-        <div className="space-y-7">
-          <div className="relative">
-            <div
-              className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent 0%, rgba(180, 140, 75, 0.25) 40%, rgba(180, 140, 75, 0.25) 60%, transparent 100%)",
-              }}
+      {/* SUMMARY */}
+      {activeInsightsTab === 'summary' && (
+        <div className="space-y-6">
+          <InsightsKpiGrid>
+            <InsightStatCard icon={Flame} label={t("insights.snapshotSessions")} value={smokingLogs.length} accent={CATEGORY_COLORS.pipe} sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`} />
+            <InsightStatCard icon={isAppleBuild ? Leaf : BarChart3} label={t("home.pipesInCollection")} value={pipes.length} accent={CATEGORY_COLORS.general} />
+            <InsightStatCard icon={Leaf} label={t("home.tobaccoBlends")} value={blends.length} accent={CATEGORY_COLORS.tobacco} sub={`${totalCellaredOz.toFixed(1)} ${t("units.oz")} ${t("home.cellared")}`} />
+            <InsightStatCard icon={TrendingUp} label={t("home.totalValue")} value={formatFromBase(Math.round(totalCollectionValue))} accent={CATEGORY_COLORS.value} />
+            <InsightStatCard icon={Clock} label={t("insights.snapshotStreak")} value={`${longestStreak}d`} accent={CATEGORY_COLORS.streak} sub={t("insights.snapshotConsecutiveDays")} />
+            <InsightStatCard
+              icon={CalendarIcon}
+              label={t("insights.snapshotAvgWeek")}
+              value={smokingLogs.length > 0
+                ? (smokingLogs.length / Math.max(1, Math.ceil(differenceInCalendarDays(now, parseISO(smokingLogs[smokingLogs.length - 1]?.date?.slice(0, 10) || now.toISOString().slice(0, 10))) / 7))).toFixed(1)
+                : "—"}
+              accent={CATEGORY_COLORS.activity}
+              sub={t("insights.snapshotSessionsPerWeek")}
             />
-            <div className="relative flex items-start gap-3 py-3">
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
-                  border: "1px solid rgba(120, 90, 65, 0.45)",
-                  boxShadow:
-                    "0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
-                }}
-              >
-                <Trophy
-                  className="w-5 h-5"
-                  style={{
-                    color: "rgba(180, 140, 75, 1)",
-                    filter: "drop-shadow(0 0 5px rgba(180,140,75,0.75))",
-                  }}
-                />
-              </div>
+          </InsightsKpiGrid>
 
-              <div className="flex-1 min-w-0">
-                <h2
-                  className="text-xl sm:text-2xl font-bold tracking-tight"
+          {hasData && (
+            <div className="space-y-4">
+              <div className="relative flex items-start gap-3 py-2">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
                   style={{
-                    color: "#F5F1E7",
-                    fontFamily: "'Georgia', serif",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.6)",
+                    background: "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
+                    border: "1px solid rgba(120, 90, 65, 0.45)",
                   }}
                 >
-                  {t("insights.topHighlights", "Top Highlights")}
-                </h2>
-                <p
-                  className="text-xs uppercase tracking-[0.12em] font-semibold mt-1"
-                  style={{ color: "rgba(180, 140, 75, 0.75)" }}
-                >
-                  {t("insights.topHighlightsSub", "Your collection's best moments")}
-                </p>
+                  <Trophy className="w-5 h-5" style={{ color: "rgba(180, 140, 75, 1)" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl font-bold tracking-tight" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
+                    {t("insights.topHighlights", "Top Highlights")}
+                  </h2>
+                  <p className="text-xs uppercase tracking-[0.12em] font-semibold mt-0.5" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
+                    {t("insights.topHighlightsSub", "Your collection's best moments")}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  {fullStoryCards.length > 0 && (
+                    <StoryTrigger onClick={() => setShowFullStory(true)} variant="secondary" size="small" />
+                  )}
+                  <button
+                    onClick={() => navigate(createPageUrl("CollectionInsightsShare"))}
+                    className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 active:scale-95"
+                    style={{ background: "linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)", color: "rgba(28,18,10,1)", border: "1px solid rgba(140,105,60,0.8)" }}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t("insights.shareInsights", "Share Insights")}</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="flex gap-2 shrink-0">
-                {fullStoryCards.length > 0 && (
-                  <StoryTrigger
-                    onClick={() => setShowFullStory(true)}
-                    variant="secondary"
-                    size="small"
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {mostUsedPipe && (() => {
+                  const img = getPipeImage(mostUsedPipe.pipe);
+                  return (
+                    <HighlightCard
+                      title={t("insights.highlightMostSmoked")} value={mostUsedPipe.pipe.name}
+                      sub={`${mostUsedPipe.count} ${t("insights.highlightBowls")}`} accent="#C87941" icon={Star}
+                      patternIndex={0} artifactImage={img} heroImage={img} silhouetteType="pipe"
+                      cardRef={(el) => { highlightRefs.current.mostPipe = el; }}
+                      onShare={() => handleShareCard("mostPipe")}
+                      onStory={() => setActiveStory({ title: t("insights.highlightMostSmoked"), value: mostUsedPipe.pipe.name, sub: `${mostUsedPipe.count} ${t("insights.highlightBowls")}`, accent: "#C87941", icon: Star, artifactImage: img, heroImage: img, silhouetteType: "pipe" })}
+                    />
+                  );
+                })()}
+
+                {mostUsedBlend && (() => {
+                  const img = getBlendImage(mostUsedBlend.blend);
+                  return (
+                    <HighlightCard
+                      title={t("insights.highlightFavoriteBlend")} value={mostUsedBlend.blend.name}
+                      sub={`${mostUsedBlend.count} ${t("insights.highlightBowls")}`} accent="#4A9C6A" icon={Leaf}
+                      patternIndex={1} artifactImage={img} heroImage={img} silhouetteType="leaf"
+                      cardRef={(el) => { highlightRefs.current.mostBlend = el; }}
+                      onShare={() => handleShareCard("mostBlend")}
+                      onStory={() => setActiveStory({ title: t("insights.highlightFavoriteBlend"), value: mostUsedBlend.blend.name, sub: `${mostUsedBlend.count} ${t("insights.highlightBowls")}`, accent: "#4A9C6A", icon: Leaf, artifactImage: img, heroImage: img, silhouetteType: "leaf" })}
+                    />
+                  );
+                })()}
+
+                {longestStreak > 0 && (
+                  <HighlightCard
+                    title={t("insights.highlightLongestStreak")} value={`${longestStreak} days`}
+                    sub={t("insights.highlightConsecutive")} accent="#8B5CF6" icon={Zap}
+                    patternIndex={2} artifactImage={analyticsImages.streak} heroImage={analyticsImages.streak} silhouetteType="pipe"
+                    cardRef={(el) => { highlightRefs.current.streak = el; }}
+                    onShare={() => handleShareCard("streak")}
+                    onStory={() => setActiveStory({ title: t("insights.highlightLongestStreak"), value: `${longestStreak} days`, sub: t("insights.highlightConsecutive"), accent: "#8B5CF6", icon: Zap, artifactImage: analyticsImages.streak, heroImage: analyticsImages.streak, silhouetteType: "pipe" })}
                   />
                 )}
-                <button
-                  onClick={() => navigate(createPageUrl("CollectionInsightsShare"))}
-                  className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 active:scale-95"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)",
-                    color: "rgba(28,18,10,1)",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)",
-                    border: "1px solid rgba(140,105,60,0.8)",
-                  }}
-                  title="Generate shareable collection insights"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("insights.shareInsights", "Share Insights")}</span>
-                </button>
+
+                {mostValuablePipe && (() => {
+                  const img = getPipeImage(mostValuablePipe);
+                  return (
+                    <HighlightCard
+                      title={t("insights.highlightMostValuable")} value={mostValuablePipe.name}
+                      sub={formatFromBase(mostValuablePipe.estimated_value)} accent="#C0392B" icon={Award}
+                      patternIndex={3} artifactImage={img} heroImage={img} silhouetteType="pipe"
+                      cardRef={(el) => { highlightRefs.current.valuePipe = el; }}
+                      onShare={() => handleShareCard("valuePipe")}
+                      onStory={() => setActiveStory({ title: t("insights.highlightMostValuable"), value: mostValuablePipe.name, sub: formatFromBase(mostValuablePipe.estimated_value), accent: "#C0392B", icon: Award, artifactImage: img, heroImage: img, silhouetteType: "pipe" })}
+                    />
+                  );
+                })()}
+
+                {smokingLogs.length > 0 && (
+                  <HighlightCard
+                    title={t("insights.highlightTotalSessions")} value={smokingLogs.length}
+                    sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`} accent="#22D3EE" icon={Flame}
+                    patternIndex={4} artifactImage={analyticsImages.sessions} heroImage={analyticsImages.sessions} silhouetteType="pipe"
+                    cardRef={(el) => { highlightRefs.current.totalSessions = el; }}
+                    onShare={() => handleShareCard("totalSessions")}
+                    onStory={() => setActiveStory({ title: t("insights.highlightTotalSessions"), value: smokingLogs.length, sub: `${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`, accent: "#22D3EE", icon: Flame, artifactImage: analyticsImages.sessions, heroImage: analyticsImages.sessions, silhouetteType: "pipe" })}
+                  />
+                )}
+
+                {blends.length > 0 && (
+                  <HighlightCard
+                    title={t("insights.highlightCellarValue")} value={formatFromBase(Math.round(totalCollectionValue))}
+                    sub={`${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`} accent="#10B981" icon={TrendingUp}
+                    patternIndex={5} artifactImage={analyticsImages.collectionValue} heroImage={analyticsImages.collectionValue} silhouetteType="leaf"
+                    cardRef={(el) => { highlightRefs.current.collectionValue = el; }}
+                    onShare={() => handleShareCard("collectionValue")}
+                    onStory={() => setActiveStory({ title: t("insights.highlightCellarValue"), value: formatFromBase(Math.round(totalCollectionValue)), sub: `${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`, accent: "#10B981", icon: TrendingUp, artifactImage: analyticsImages.collectionValue, heroImage: analyticsImages.collectionValue, silhouetteType: "leaf" })}
+                  />
+                )}
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mostUsedPipe &&
-              (() => {
-                const img = getPipeImage(mostUsedPipe.pipe);
-                return (
-                  <HighlightCard
-                    title={t("insights.highlightMostSmoked")}
-                    value={mostUsedPipe.pipe.name}
-                    sub={`${mostUsedPipe.count} ${t("insights.highlightBowls")}`}
-                    accent="#C87941"
-                    icon={Star}
-                    patternIndex={0}
-                    artifactImage={img}
-                    heroImage={img}
-                    silhouetteType="pipe"
-                    cardRef={(el) => {
-                      highlightRefs.current.mostPipe = el;
-                    }}
-                    onShare={() => handleShareCard("mostPipe")}
-                    onStory={() =>
-                      setActiveStory({
-                        title: t("insights.highlightMostSmoked"),
-                        value: mostUsedPipe.pipe.name,
-                        sub: `${mostUsedPipe.count} ${t(
-                          "insights.highlightBowls"
-                        )}`,
-                        accent: "#C87941",
-                        icon: Star,
-                        artifactImage: img,
-                        heroImage: img,
-                        silhouetteType: "pipe",
-                      })
-                    }
-                  />
-                );
-              })()}
-
-            {mostUsedBlend &&
-              (() => {
-                const img = getBlendImage(mostUsedBlend.blend);
-                return (
-                  <HighlightCard
-                    title={t("insights.highlightFavoriteBlend")}
-                    value={mostUsedBlend.blend.name}
-                    sub={`${mostUsedBlend.count} ${t("insights.highlightBowls")}`}
-                    accent="#4A9C6A"
-                    icon={Leaf}
-                    patternIndex={1}
-                    artifactImage={img}
-                    heroImage={img}
-                    silhouetteType="leaf"
-                    cardRef={(el) => {
-                      highlightRefs.current.mostBlend = el;
-                    }}
-                    onShare={() => handleShareCard("mostBlend")}
-                    onStory={() =>
-                      setActiveStory({
-                        title: t("insights.highlightFavoriteBlend"),
-                        value: mostUsedBlend.blend.name,
-                        sub: `${mostUsedBlend.count} ${t(
-                          "insights.highlightBowls"
-                        )}`,
-                        accent: "#4A9C6A",
-                        icon: Leaf,
-                        artifactImage: img,
-                        heroImage: img,
-                        silhouetteType: "leaf",
-                      })
-                    }
-                  />
-                );
-              })()}
-
-            {longestStreak > 0 && (
-              <HighlightCard
-                title={t("insights.highlightLongestStreak")}
-                value={`${longestStreak} days`}
-                sub={t("insights.highlightConsecutive")}
-                accent="#8B5CF6"
-                icon={Zap}
-                patternIndex={2}
-                artifactImage={analyticsImages.streak}
-                heroImage={analyticsImages.streak}
-                silhouetteType="pipe"
-                cardRef={(el) => {
-                  highlightRefs.current.streak = el;
-                }}
-                onShare={() => handleShareCard("streak")}
-                onStory={() =>
-                  setActiveStory({
-                    title: t("insights.highlightLongestStreak"),
-                    value: `${longestStreak} days`,
-                    sub: t("insights.highlightConsecutive"),
-                    accent: "#8B5CF6",
-                    icon: Zap,
-                    artifactImage: analyticsImages.streak,
-                    heroImage: analyticsImages.streak,
-                    silhouetteType: "pipe",
-                  })
-                }
-              />
-            )}
-
-            {mostValuablePipe &&
-              (() => {
-                const img = getPipeImage(mostValuablePipe);
-                return (
-                  <HighlightCard
-                    title={t("insights.highlightMostValuable")}
-                    value={mostValuablePipe.name}
-                    sub={formatFromBase(mostValuablePipe.estimated_value)}
-                    accent="#C0392B"
-                    icon={Award}
-                    patternIndex={3}
-                    artifactImage={img}
-                    heroImage={img}
-                    silhouetteType="pipe"
-                    cardRef={(el) => {
-                      highlightRefs.current.valuePipe = el;
-                    }}
-                    onShare={() => handleShareCard("valuePipe")}
-                    onStory={() =>
-                      setActiveStory({
-                        title: t("insights.highlightMostValuable"),
-                        value: mostValuablePipe.name,
-                        sub: formatFromBase(mostValuablePipe.estimated_value),
-                        accent: "#C0392B",
-                        icon: Award,
-                        artifactImage: img,
-                        heroImage: img,
-                        silhouetteType: "pipe",
-                      })
-                    }
-                  />
-                );
-              })()}
-
-            {smokingLogs.length > 0 && (
-              <HighlightCard
-                title={t("insights.highlightTotalSessions")}
-                value={smokingLogs.length}
-                sub={`${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`}
-                accent="#22D3EE"
-                icon={Flame}
-                patternIndex={4}
-                artifactImage={analyticsImages.sessions}
-                heroImage={analyticsImages.sessions}
-                silhouetteType="pipe"
-                cardRef={(el) => {
-                  highlightRefs.current.totalSessions = el;
-                }}
-                onShare={() => handleShareCard("totalSessions")}
-                onStory={() =>
-                  setActiveStory({
-                    title: t("insights.highlightTotalSessions"),
-                    value: smokingLogs.length,
-                    sub: `${sessionsThisWeek} ${t("insights.snapshotThisWeek")}`,
-                    accent: "#22D3EE",
-                    icon: Flame,
-                    artifactImage: analyticsImages.sessions,
-                    heroImage: analyticsImages.sessions,
-                    silhouetteType: "pipe",
-                  })
-                }
-              />
-            )}
-
-            {blends.length > 0 && (
-              <HighlightCard
-                title={t("insights.highlightCellarValue")}
-                value={formatFromBase(Math.round(totalCollectionValue))}
-                sub={`${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`}
-                accent="#10B981"
-                icon={TrendingUp}
-                patternIndex={5}
-                artifactImage={analyticsImages.collectionValue}
-                heroImage={analyticsImages.collectionValue}
-                silhouetteType="leaf"
-                cardRef={(el) => {
-                  highlightRefs.current.collectionValue = el;
-                }}
-                onShare={() => handleShareCard("collectionValue")}
-                onStory={() =>
-                  setActiveStory({
-                    title: t("insights.highlightCellarValue"),
-                    value: formatFromBase(Math.round(totalCollectionValue)),
-                    sub: `${pipes.length} ${t("home.pipesInCollection")} · ${blends.length} ${t("home.tobaccoBlends")}`,
-                    accent: "#10B981",
-                    icon: TrendingUp,
-                    artifactImage: analyticsImages.collectionValue,
-                    heroImage: analyticsImages.collectionValue,
-                    silhouetteType: "leaf",
-                  })
-                }
-              />
-            )}
-          </div>
+          {!hasData && <InsightsEmptyState message="Add pipes and blends to see collection insights." icon={Leaf} />}
         </div>
       )}
 
-      <div className="mt-2">
-        <CollectionInsightsPanel
-          pipes={pipes}
-          blends={blends}
-          user={user}
-          activeTab={initialTab}
+      {/* VALUE */}
+      {activeInsightsTab === 'value' && (
+        pipes.length === 0
+          ? <InsightsEmptyState message="Add pipes to see value insights." icon={TrendingUp} />
+          : <PipeValuationTab pipes={pipes} />
+      )}
+
+      {/* USAGE */}
+      {activeInsightsTab === 'usage' && (
+        pipes.length === 0 || blends.length === 0
+          ? <InsightsEmptyState message="Add pipes and blends to see usage insights." icon={Flame} />
+          : <SmokingLogPanel pipes={pipes} blends={blends} user={user} />
+      )}
+
+      {/* STATISTICS */}
+      {activeInsightsTab === 'statistics' && (
+        pipes.length === 0 && blends.length === 0
+          ? <InsightsEmptyState message="Add pipes and blends to see collection statistics." icon={BarChart3} />
+          : <TobaccoCollectionStats user={user} blends={blends} />
+      )}
+
+      {/* TRENDS */}
+      {activeInsightsTab === 'trends' && (
+        <ProFeatureLock featureName="Trends Report">
+          {pipes.length === 0 && blends.length === 0
+            ? <InsightsEmptyState message="Add pipes and blends to see trends." icon={TrendingUp} />
+            : <TrendsReport logs={smokingLogs} pipes={pipes} blends={blends} user={user} />
+          }
+        </ProFeatureLock>
+      )}
+
+      {/* REPORTS */}
+      {activeInsightsTab === 'reports' && (
+        pipes.length === 0 && blends.length === 0
+          ? <InsightsEmptyState message="Add pipes and blends to generate reports." icon={Leaf} />
+          : <InsightPanel>
+              <InsightSectionHeading>{t('insights.reports', 'Export Reports')}</InsightSectionHeading>
+              <div className="space-y-4">
+                <SmokingLogReportExporter user={user} />
+                <AgingReportExporter user={user} />
+                <CollectionReportExporter user={user} />
+              </div>
+            </InsightPanel>
+      )}
+
+      {/* SESSIONS */}
+      {activeInsightsTab === 'sessions' && (
+        <InsightsSessionPanel
+          calendar={
+            <Calendar
+              mode="single"
+              selected={new Date(`${calSelectedDate}T12:00:00`)}
+              onSelect={(date) => { if (date) setCalSelectedDate(toLocalDateYmd(date)); }}
+              modifiers={{ hasSessions: pipeHighlights }}
+              modifiersClassNames={{ hasSessions: 'ring-1 ring-[#C87941] ring-offset-0' }}
+            />
+          }
+          selectedDate={calSelectedDate}
+          onSelectDate={setCalSelectedDate}
+          dayRows={pipeSelectedDayRows}
+          emptyLabel="No sessions logged for this day."
         />
-      </div>
-      </div>
-    </div>
+      )}
+
+      {/* ROTATION */}
+      {activeInsightsTab === 'rotation' && (
+        pipes.length === 0
+          ? <InsightsEmptyState message="Add pipes to use the rotation planner." icon={Flame} />
+          : <RotationPlanner user={user} />
+      )}
+    </InsightsPageShell>
   );
 }
+

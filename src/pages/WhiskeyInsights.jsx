@@ -37,7 +37,7 @@ const TABS = [
   { key: 'summary', label: 'Summary' },
   { key: 'value', label: 'Value' },
   { key: 'usage', label: 'Usage' },
-  { key: 'stats', label: 'Statistics' },
+  { key: 'statistics', label: 'Statistics' },
   { key: 'trends', label: 'Trends' },
   { key: 'reports', label: 'Reports' },
   { key: 'sessions', label: 'Sessions' },
@@ -358,7 +358,7 @@ export default function WhiskeyInsightsPage() {
         )}
 
         {/* STATS */}
-        {activeTab === 'stats' && <WhiskeyAnalyticsTab bottles={bottles} />}
+        {activeTab === 'statistics' && <WhiskeyAnalyticsTab bottles={bottles} />}
 
         {/* TRENDS */}
         {activeTab === 'trends' && <WhiskeyTrendsTab bottles={bottles} tastingLogs={tastingLogs} />}
