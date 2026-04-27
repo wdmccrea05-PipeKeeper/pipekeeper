@@ -7,14 +7,19 @@ import PipeKeeperModuleNav from '@/components/modules/PipeKeeperModuleNav';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
-import { Flame, BookOpen, Heart, DollarSign, Award, TrendingUp } from 'lucide-react';
+import { Flame, BookOpen, Heart, DollarSign, Award, TrendingUp, FileText } from 'lucide-react';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import CollectionReportExporter from '@/components/export/CollectionReportExporter';
+import SmokingLogReportExporter from '@/components/export/SmokingLogReportExporter';
+import AgingReportExporter from '@/components/export/AgingReportExporter';
 import {
   InsightsPageShell,
   InsightsHeader,
   InsightsTabBar,
   InsightsKpiGrid,
   InsightStatCard,
+  InsightPanel,
+  InsightSectionHeading,
   InsightsHighlightGrid,
   InsightsHighlightCard,
   InsightsEmptyState,
@@ -26,6 +31,8 @@ const TABS = [
   { key: 'value', label: 'Value' },
   { key: 'usage', label: 'Usage' },
   { key: 'statistics', label: 'Statistics' },
+  { key: 'trends', label: 'Trends' },
+  { key: 'reports', label: 'Reports' },
   { key: 'sessions', label: 'Sessions' },
 ];
 
@@ -68,7 +75,6 @@ export default function PipeKeeperInsights() {
 
   const isLoading = pipesLoading || blendsLoading || logsLoading;
 
-  // Session calendar data
   const pipeSessionRows = useMemo(() => (smokingLogs || []).map(s => ({
     id: `pipe_${s.id}`,
     moduleType: 'pipe',
@@ -84,7 +90,6 @@ export default function PipeKeeperInsights() {
   );
   const selectedDayRows = useMemo(() => byDate[calSelectedDate] || [], [byDate, calSelectedDate]);
 
-  // KPIs
   const totalPipes = pipes.length;
   const totalBlends = blends.length;
   const totalSessions = smokingLogs.length;
@@ -131,7 +136,6 @@ export default function PipeKeeperInsights() {
 
       <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* SUMMARY */}
       {activeTab === 'summary' && (
         <div className="space-y-6">
           <InsightsKpiGrid>
@@ -178,7 +182,6 @@ export default function PipeKeeperInsights() {
         </div>
       )}
 
-      {/* VALUE */}
       {activeTab === 'value' && (
         <div className="space-y-4">
           <InsightsKpiGrid>
@@ -189,7 +192,6 @@ export default function PipeKeeperInsights() {
         </div>
       )}
 
-      {/* USAGE */}
       {activeTab === 'usage' && (
         <div className="space-y-4">
           <InsightsKpiGrid>
@@ -200,7 +202,6 @@ export default function PipeKeeperInsights() {
         </div>
       )}
 
-      {/* STATISTICS */}
       {activeTab === 'statistics' && (
         <div className="space-y-4">
           <InsightsKpiGrid>
@@ -213,7 +214,56 @@ export default function PipeKeeperInsights() {
         </div>
       )}
 
-      {/* SESSIONS */}
+      {activeTab === 'trends' && (
+        <div className="space-y-4">
+          {totalSessions === 0 && pipes.length === 0 ? (
+            <InsightsEmptyState message="Add pipes and log sessions to see trends." icon={TrendingUp} />
+          ) : (
+            <>
+              <InsightsKpiGrid>
+                <InsightStatCard label="Total Sessions" value={totalSessions} icon={BookOpen} accent="#8B5CF6" />
+                <InsightStatCard label="Last 30 Days" value={last30Sessions} icon={Award} accent="#D4A574" />
+                <InsightStatCard label="Pipes" value={totalPipes} icon={Flame} accent="#B48C4B" />
+                <InsightStatCard label="Collection Value" value={totalPipeValue > 0 ? formatFromBase(totalPipeValue) : '—'} icon={TrendingUp} accent="#D4A574" />
+              </InsightsKpiGrid>
+              <InsightPanel>
+                <InsightSectionHeading>Recent Sessions</InsightSectionHeading>
+                {smokingLogs.length > 0 ? (
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
+                    {[...smokingLogs].slice(0, 30).map(s => (
+                      <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(180,140,75,0.06)', border: '1px solid rgba(180,140,75,0.12)' }}>
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: '#F5F1E7' }}>{s.blend_name || s.pipe_name || 'Session'}</p>
+                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{s.date ? new Date(s.date).toLocaleDateString() : 'Unknown date'}</p>
+                        </div>
+                        {s.rating != null && <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>★ {s.rating}</p>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <InsightsEmptyState message="Log smoking sessions to see activity trends." icon={BookOpen} />
+                )}
+              </InsightPanel>
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'reports' && (
+        pipes.length === 0 && blends.length === 0 ? (
+          <InsightsEmptyState message="Add pipes and blends to generate reports." icon={FileText} />
+        ) : (
+          <InsightPanel>
+            <InsightSectionHeading>Export Reports</InsightSectionHeading>
+            <div className="space-y-4">
+              <SmokingLogReportExporter user={user} />
+              <AgingReportExporter user={user} />
+              <CollectionReportExporter user={user} />
+            </div>
+          </InsightPanel>
+        )
+      )}
+
       {activeTab === 'sessions' && (
         <InsightsSessionPanel
           calendar={

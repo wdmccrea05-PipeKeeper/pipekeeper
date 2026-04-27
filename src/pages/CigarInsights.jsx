@@ -26,6 +26,7 @@ const TABS = [
   { key: 'value', label: 'Value' },
   { key: 'usage', label: 'Usage' },
   { key: 'statistics', label: 'Statistics' },
+  { key: 'trends', label: 'Trends' },
   { key: 'reports', label: 'Reports' },
   { key: 'sessions', label: 'Sessions' },
 ];
@@ -156,6 +157,44 @@ function CigarInsightsInner() {
             <CigarInsights user={user} cigars={cigars} sessions={sessions} humidors={humidors} snapshots={valueSnapshots} />
           ) : (
             <InsightsEmptyState message="Add cigars to see collection statistics." icon={Cigarette} />
+          )}
+        </div>
+      )}
+
+      {/* TRENDS */}
+      {activeTab === 'trends' && (
+        <div className="space-y-4">
+          {sessions.length === 0 && cigars.length === 0 ? (
+            <InsightsEmptyState message="Add cigars and log sessions to see trends." icon={Cigarette} />
+          ) : (
+            <>
+              <InsightsKpiGrid>
+                <InsightStatCard icon={BookOpen} label="Total Sessions" value={sessions.length} accent="#B07D4A" />
+                <InsightStatCard icon={Cigarette} label="Cigars Tracked" value={cigars.length} accent="#8B5E3C" />
+                <InsightStatCard icon={Heart} label="Favorites" value={favorites} accent="#C0392B" />
+                <InsightStatCard icon={DollarSign} label="Collection Value" value={formatFromBase(Math.round(totalValue))} accent="#B07D4A" />
+              </InsightsKpiGrid>
+              <div className="rounded-2xl p-5 space-y-3" style={{ background: 'linear-gradient(135deg, rgba(42,31,24,0.5), rgba(31,21,16,0.5))', border: '1px solid rgba(180,140,75,0.15)' }}>
+                <h3 className="text-base font-semibold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>Session Activity</h3>
+                {sessions.length > 0 ? (
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
+                    {[...sessions].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 30).map(s => (
+                      <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(180,140,75,0.06)', border: '1px solid rgba(180,140,75,0.12)' }}>
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: '#F5F1E7' }}>{s.cigar_name || [s.external_cigar_brand, s.external_cigar_name].filter(Boolean).join(' ') || 'Cigar session'}</p>
+                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{s.date ? new Date(s.date).toLocaleDateString() : 'Unknown date'}</p>
+                        </div>
+                        {s.overall_enjoyment != null && (
+                          <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>★ {s.overall_enjoyment}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <InsightsEmptyState message="Log cigar sessions to see activity trends." icon={Cigarette} />
+                )}
+              </div>
+            </>
           )}
         </div>
       )}
