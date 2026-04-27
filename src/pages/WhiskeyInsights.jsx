@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import jsPDF from 'jspdf';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { useQuery } from '@tanstack/react-query';
@@ -7,24 +7,41 @@ import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import { WhiskeyAnalyticsTab, WhiskeyTrendsTab, getTopBottlesToHold, getBottlesSafeToOpen, getReplacementRiskBottles, getValueConcentration } from '@/components/whiskey/WhiskeyInsightsAnalytics';
-import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
-import { TrendingUp, Award, Trophy, Star, Zap, ShieldCheck, Sparkles, AlertTriangle, DollarSign } from 'lucide-react';
+import { TrendingUp, Award, Trophy, Star, Zap, ShieldCheck, Sparkles, AlertTriangle, DollarSign, BookOpen, FileText, Download } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { toast } from 'sonner';
 import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'date-fns';
-import { StatusCard, CATEGORY_COLORS } from '@/components/ui/HeroCard';
+import { CATEGORY_COLORS } from '@/components/ui/HeroCard';
 import { DIFFICULTY_LABELS } from '@/components/valuation/valueEngine';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import WhiskeyInsuranceExporter from '@/components/export/WhiskeyInsuranceExporter';
-import {
-  selectWhiskeyMetrics,
-  getBottleUnitValue,
-  selectOpenBottleValue,
-  selectSealedBottleValue,
-} from '@/lib/collection/whiskeySelectors';
+import { selectWhiskeyMetrics, getBottleUnitValue, selectOpenBottleValue, selectSealedBottleValue } from '@/lib/collection/whiskeySelectors';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
+import {
+  InsightsPageShell,
+  InsightsHeader,
+  InsightsTabBar,
+  InsightsKpiGrid,
+  InsightStatCard,
+  InsightPanel,
+  InsightSectionHeading,
+  InsightsHighlightGrid,
+  InsightsHighlightCard,
+  InsightsEmptyState,
+  InsightsSessionPanel,
+} from '@/components/insights/InsightsShell';
+
+const TABS = [
+  { key: 'summary', label: 'Summary' },
+  { key: 'value', label: 'Value' },
+  { key: 'usage', label: 'Usage' },
+  { key: 'stats', label: 'Statistics' },
+  { key: 'trends', label: 'Trends' },
+  { key: 'reports', label: 'Reports' },
+  { key: 'sessions', label: 'Sessions' },
+];
 
 export default function WhiskeyInsightsPage() {
   const { t } = useTranslation();
@@ -33,16 +50,12 @@ export default function WhiskeyInsightsPage() {
   const formatCurrency = formatFromBase;
   const [activeTab, setActiveTab] = useState('summary');
   const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
-  const highlightRefs = useRef({});
 
   const { data: bottles = [], isLoading: bottlesLoading } = useQuery({
     queryKey: ['bottles', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const result = await base44.entities.Bottle
-        .filter({ created_by: user.email }, '-updated_date', 1000)
-        .catch(() => []);
-      return Array.isArray(result) ? result : [];
+      return base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 1000).catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: 30_000,
@@ -52,10 +65,7 @@ export default function WhiskeyInsightsPage() {
     queryKey: ['tasting-logs', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const result = await base44.entities.TastingLog
-        .filter({ created_by: user.email }, '-tasting_date', 1000)
-        .catch(() => []);
-      return Array.isArray(result) ? result : [];
+      return base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 1000).catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: 30_000,
@@ -65,10 +75,7 @@ export default function WhiskeyInsightsPage() {
     queryKey: ['whiskey-inventory', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const result = await base44.entities.WhiskeyInventoryUnit
-        .filter({ created_by: user.email })
-        .catch(() => []);
-      return Array.isArray(result) ? result : [];
+      return base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }).catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: 30_000,
@@ -77,59 +84,30 @@ export default function WhiskeyInsightsPage() {
   const isDataLoading = !!user?.email && (bottlesLoading || logsLoading || inventoryLoading);
 
   const whiskeySessions = useMemo(() => (tastingLogs || []).map(log => ({
-    id: `whiskey_${log.id}`,
-    moduleType: 'whiskey',
-    date: log.tasting_date,
+    id: `whiskey_${log.id}`, moduleType: 'whiskey', date: log.tasting_date,
     itemLabel: log.bottle_name || 'Whiskey tasting',
-    rating: log.rating ?? null,
-    notes: log.notes || '',
+    rating: log.rating ?? null, notes: log.notes || '',
   })), [tastingLogs]);
 
   const { byDate: whiskeyByDate, highlightedDates: whiskeyHighlights } = useMemo(
-    () => buildSessionCalendarData(whiskeySessions, 'whiskey'),
-    [whiskeySessions]
+    () => buildSessionCalendarData(whiskeySessions, 'whiskey'), [whiskeySessions]
   );
   const whiskeySelectedDayRows = useMemo(() => whiskeyByDate[calSelectedDate] || [], [whiskeyByDate, calSelectedDate]);
 
-  // Canonical whiskey metrics via shared selector layer — single source of truth
-  const whiskeyMetrics = useMemo(
-    () => selectWhiskeyMetrics(bottles, inventoryUnits, tastingLogs),
-    [bottles, inventoryUnits, tastingLogs]
-  );
-  const bottleTypes = whiskeyMetrics.bottle_types;
-  const totalBottles = whiskeyMetrics.total_bottles;
-  const openBottles = whiskeyMetrics.open_bottles;
-  const sealedBottles = whiskeyMetrics.sealed_bottles;
-  const totalTastings = whiskeyMetrics.total_tastings;
-  const totalValue = whiskeyMetrics.collection_value;
+  const whiskeyMetrics = useMemo(() => selectWhiskeyMetrics(bottles, inventoryUnits, tastingLogs), [bottles, inventoryUnits, tastingLogs]);
+  const { bottle_types: bottleTypes, total_bottles: totalBottles, open_bottles: openBottles, sealed_bottles: sealedBottles, total_tastings: totalTastings, collection_value: totalValue } = whiskeyMetrics;
 
   const now = new Date();
   const oneWeekAgo = subDays(now, 7);
-  const tastingsThisWeek = useMemo(
-    () =>
-      tastingLogs.filter((l) => {
-        try {
-          if (!l?.tasting_date) return false;
-          const d = parseISO(l.tasting_date.slice(0, 10));
-          return isWithinInterval(d, { start: oneWeekAgo, end: now });
-        } catch {
-          return false;
-        }
-      }).length,
-    [tastingLogs, oneWeekAgo, now]
-  );
-
-  // FIXED: sum per-bottle canonical values using canonical priority
-  // totalValue is now derived from whiskeyMetrics above (unit_value × unit_count per bottle)
+  const tastingsThisWeek = useMemo(() => tastingLogs.filter(l => {
+    try { if (!l?.tasting_date) return false; const d = parseISO(l.tasting_date.slice(0, 10)); return isWithinInterval(d, { start: oneWeekAgo, end: now }); } catch { return false; }
+  }).length, [tastingLogs, oneWeekAgo, now]);
 
   const averageRating = useMemo(() => {
     const rated = bottles.filter(b => b.rating != null && b.rating !== '' && Number(b.rating) > 0);
-    return rated.length > 0
-      ? (rated.reduce((sum, b) => sum + Number(b.rating), 0) / rated.length).toFixed(2)
-      : 0;
+    return rated.length > 0 ? (rated.reduce((sum, b) => sum + Number(b.rating), 0) / rated.length).toFixed(2) : 0;
   }, [bottles]);
 
-  // Canonical single-bottle value via shared selector
   const getBottleValue = (b) => getBottleUnitValue(b);
 
   const mostValuedBottle = useMemo(() => {
@@ -148,41 +126,20 @@ export default function WhiskeyInsightsPage() {
 
   const mostTastedBottle = useMemo(() => {
     if (!tastingLogs.length) return null;
-
     const tasted = {};
-    tastingLogs.forEach((log) => {
-      const rawName = typeof log?.bottle_name === 'string' ? log.bottle_name.trim() : '';
-      if (!rawName) return;
-      tasted[rawName] = (tasted[rawName] || 0) + 1;
-    });
-
+    tastingLogs.forEach(log => { const rawName = typeof log?.bottle_name === 'string' ? log.bottle_name.trim() : ''; if (!rawName) return; tasted[rawName] = (tasted[rawName] || 0) + 1; });
     const topEntry = Object.entries(tasted).sort((a, b) => b[1] - a[1])[0];
     if (!topEntry) return null;
-
     const [topName, count] = topEntry;
-
-    const matchedBottle =
-      bottles.find((b) => b?.id && tastingLogs.some((l) => l?.bottle_id === b.id && (l?.bottle_name || '').trim() === topName)) ||
-      bottles.find((b) => (b?.name || '').trim().toLowerCase() === topName.toLowerCase()) ||
-      null;
-
-    return {
-      name: matchedBottle?.name || topName,
-      bottle: matchedBottle,
-      count,
-      photo: matchedBottle?.photo || null,
-    };
+    const matchedBottle = bottles.find(b => b?.id && tastingLogs.some(l => l?.bottle_id === b.id && (l?.bottle_name || '').trim() === topName)) || bottles.find(b => (b?.name || '').trim().toLowerCase() === topName.toLowerCase()) || null;
+    return { name: matchedBottle?.name || topName, bottle: matchedBottle, count, photo: matchedBottle?.photo || null };
   }, [tastingLogs, bottles]);
 
   const tastingPerWeek = useMemo(() => {
     if (!tastingLogs.length) return 0;
-    const oldestLog = [...tastingLogs].sort((a, b) => {
-      const aDate = new Date(a.tasting_date || 0);
-      const bDate = new Date(b.tasting_date || 0);
-      return aDate - bDate;
-    })[0];
-    if (!oldestLog) return 0;
-    const weeks = Math.max(1, Math.ceil(differenceInCalendarDays(now, new Date(oldestLog.tasting_date)) / 7));
+    const oldest = [...tastingLogs].sort((a, b) => new Date(a.tasting_date || 0) - new Date(b.tasting_date || 0))[0];
+    if (!oldest) return 0;
+    const weeks = Math.max(1, Math.ceil(differenceInCalendarDays(now, new Date(oldest.tasting_date)) / 7));
     return (tastingLogs.length / weeks).toFixed(1);
   }, [tastingLogs]);
 
@@ -190,69 +147,32 @@ export default function WhiskeyInsightsPage() {
   const bottlesSafeToOpen = useMemo(() => getBottlesSafeToOpen(bottles, 5), [bottles]);
   const replacementRiskBottles = useMemo(() => getReplacementRiskBottles(bottles, 5), [bottles]);
   const valueConcentration = useMemo(() => getValueConcentration(bottles), [bottles]);
-
-  const sealedValue = useMemo(
-    () => selectSealedBottleValue(bottles, inventoryUnits),
-    [bottles, inventoryUnits]
-  );
-
-  const openValue = useMemo(
-    () => selectOpenBottleValue(bottles, inventoryUnits),
-    [bottles, inventoryUnits]
-  );
-
-  const hasData = bottles.length > 0 || tastingLogs.length > 0 || inventoryUnits.length > 0;
-
-  const handleShareCard = async (key) => {
-    // Share card functionality - placeholder
-    toast.success('Card shared!');
-  };
+  const sealedValue = useMemo(() => selectSealedBottleValue(bottles, inventoryUnits), [bottles, inventoryUnits]);
+  const openValue = useMemo(() => selectOpenBottleValue(bottles, inventoryUnits), [bottles, inventoryUnits]);
 
   const handleExportPDF = useCallback(() => {
     try {
       const doc = new jsPDF();
       const date = new Date().toLocaleDateString();
-
-      doc.setFontSize(20);
-      doc.setTextColor(40, 20, 10);
-      doc.text('WhiskeyKeeper — Collection Report', 20, 22);
-
-      doc.setFontSize(10);
-      doc.setTextColor(100, 80, 60);
-      doc.text(`Generated: ${date}`, 20, 30);
-
-      doc.setFontSize(14);
-      doc.setTextColor(40, 20, 10);
-      doc.text('Collection Summary', 20, 44);
-
-      doc.setFontSize(11);
-      doc.setTextColor(60, 40, 20);
+      doc.setFontSize(20); doc.setTextColor(40, 20, 10); doc.text('WhiskeyKeeper — Collection Report', 20, 22);
+      doc.setFontSize(10); doc.setTextColor(100, 80, 60); doc.text(`Generated: ${date}`, 20, 30);
+      doc.setFontSize(14); doc.setTextColor(40, 20, 10); doc.text('Collection Summary', 20, 44);
+      doc.setFontSize(11); doc.setTextColor(60, 40, 20);
       doc.text(`Bottle Types: ${bottleTypes}`, 20, 54);
       doc.text(`Total Bottles: ${totalBottles}`, 20, 62);
       doc.text(`Open Bottles: ${openBottles}`, 20, 70);
       doc.text(`Total Tastings: ${totalTastings}`, 20, 78);
       doc.text(`Collection Value: ${formatCurrency(Math.round(totalValue))}`, 20, 86);
       doc.text(`Average Rating: ${averageRating}/5`, 20, 94);
-
-      if (mostValuedBottle) {
-        doc.text(`Most Valued: ${mostValuedBottle.name} (${formatCurrency(getBottleValue(mostValuedBottle))})`, 20, 102);
-      }
-
-      // Bottles table
-      doc.setFontSize(14);
-      doc.setTextColor(40, 20, 10);
-      doc.text('Bottles', 20, 118);
-
-      doc.setFontSize(9);
-      doc.setTextColor(60, 40, 20);
+      if (mostValuedBottle) doc.text(`Most Valued: ${mostValuedBottle.name} (${formatCurrency(getBottleValue(mostValuedBottle))})`, 20, 102);
+      doc.setFontSize(14); doc.setTextColor(40, 20, 10); doc.text('Bottles', 20, 118);
+      doc.setFontSize(9); doc.setTextColor(60, 40, 20);
       const headers = ['Name', 'Type', 'Country', 'Value', 'Rating'];
       const colX = [20, 80, 120, 150, 180];
       headers.forEach((h, i) => doc.text(h, colX[i], 126));
-      doc.setDrawColor(180, 140, 75);
-      doc.line(20, 128, 190, 128);
-
+      doc.setDrawColor(180, 140, 75); doc.line(20, 128, 190, 128);
       let y = 135;
-      bottles.forEach((b) => {
+      bottles.forEach(b => {
         if (y > 270) { doc.addPage(); y = 20; }
         const val = getBottleValue(b);
         doc.text(String(b.name || '').slice(0, 28), colX[0], y);
@@ -262,526 +182,238 @@ export default function WhiskeyInsightsPage() {
         doc.text(b.rating ? String(b.rating) : '—', colX[4], y);
         y += 8;
       });
-
-      // Tastings
-      if (tastingLogs.length > 0) {
-        if (y > 250) { doc.addPage(); y = 20; }
-        y += 6;
-        doc.setFontSize(14);
-        doc.setTextColor(40, 20, 10);
-        doc.text('Tasting History', 20, y);
-        y += 10;
-        doc.setFontSize(9);
-        doc.setTextColor(60, 40, 20);
-        tastingLogs.slice(0, 30).forEach((l) => {
-          if (y > 275) { doc.addPage(); y = 20; }
-          const dateStr = l.tasting_date ? new Date(l.tasting_date).toLocaleDateString() : '—';
-          doc.text(`${dateStr}  ${String(l.bottle_name || '').slice(0, 35)}${l.rating ? `  ★${l.rating}` : ''}`, 20, y);
-          y += 7;
-        });
-      }
-
       doc.save(`whiskeykeeper-report-${new Date().toISOString().slice(0, 10)}.pdf`);
-    } catch (err) {
-      console.error('[WhiskeyInsights] PDF export failed:', err);
-    }
+    } catch (err) { console.error('[WhiskeyInsights] PDF export failed:', err); }
   }, [bottles, tastingLogs, bottleTypes, totalBottles, openBottles, totalTastings, totalValue, averageRating, mostValuedBottle]);
 
-
-
-  if (!user?.email) {
-    return null;
-  }
+  if (!user?.email) return null;
 
   if (bottles.length === 0 && tastingLogs.length === 0 && inventoryUnits.length === 0 && !isDataLoading) {
     return (
-      <div
-        className="rounded-[24px] p-12 text-center"
-        style={{
-          background: 'linear-gradient(145deg, rgba(38,22,12,0.65) 0%, rgba(25,15,10,0.9) 100%)',
-          border: '1px solid rgba(140,105,65,0.18)',
-        }}
-      >
-        <div className="text-[20px] font-semibold mb-3" style={{ color: '#F5F5F7' }}>
-          No Insights Yet
+      <LockedModuleGuard moduleKey="whiskeykeeper">
+        <div className="space-y-6">
+          <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
+          <InsightsHeader title={t('whiskeykeeper.insightsTitle', 'Collection Insights')} subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')} />
+          <InsightsEmptyState message="Add bottles to reveal trends, value, and opportunities." />
         </div>
-        <div className="text-[16px]" style={{ color: '#A1A1AA' }}>
-          Add bottles to reveal trends, value, and opportunities.
-        </div>
-      </div>
+      </LockedModuleGuard>
     );
   }
 
   return (
     <LockedModuleGuard moduleKey="whiskeykeeper">
-    <div className="space-y-6">
-      <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
+      <InsightsPageShell>
+        <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
+        <InsightsHeader
+          title={t('whiskeykeeper.insightsTitle', 'Collection Insights')}
+          subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')}
+        />
 
+        <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
 
+        {/* SUMMARY */}
+        {activeTab === 'summary' && (
+          <div className="space-y-6">
+            <InsightsKpiGrid>
+              <InsightStatCard icon={WhiskeyKeeperIcon} label="Bottle Types" value={bottleTypes} sub="Distinct labels" accent="#C87941" />
+              <InsightStatCard icon={Trophy} label="Total Bottles" value={totalBottles} sub={inventoryUnits.length > 0 ? `${openBottles} open · ${sealedBottles} sealed` : undefined} accent="#C87941" />
+              <InsightStatCard icon={Zap} label={t('insights.openBottles', 'Open Bottles')} value={openBottles} accent="#EF4444" />
+              <InsightStatCard icon={Star} label={t('insights.totalTastings', 'Total Tastings')} value={totalTastings} sub={`${tastingsThisWeek} this week`} accent={CATEGORY_COLORS.tobacco} />
+              <InsightStatCard icon={TrendingUp} label={t('insights.collectionValue', 'Collection Value')} value={formatCurrency(Math.round(totalValue))} accent={CATEGORY_COLORS.value} />
+              <InsightStatCard icon={Award} label={t('insights.averageRating', 'Average Rating')} value={`${averageRating}/5`} accent="#8B5CF6" />
+            </InsightsKpiGrid>
 
-      <div>
-        <h1
-          className="text-3xl sm:text-4xl font-bold tracking-tight mb-2 break-words"
-          style={{
-            color: '#F5F1E7',
-            fontFamily: "'Georgia', serif",
-            textShadow: '0 2px 6px rgba(0,0,0,0.7)',
-            wordBreak: "break-word",
-            hyphens: "none"
-          }}
-        >
-          {t('whiskeykeeper.insightsTitle', 'Collection Insights')}
-        </h1>
-        <p style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
-          {t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')}
-        </p>
-      </div>
-
-        <div className="space-y-8">
-          {/* Tab Navigation */}
-          <div className="flex gap-2 flex-wrap" style={{ borderBottom: '1px solid rgba(180,140,75,0.2)' }}>
-            {[
-              { key: 'summary', label: t('insights.tabSummary', 'Summary') },
-              { key: 'value', label: t('insights.tabValue', 'Value') },
-              { key: 'usage', label: t('insights.tabUsage', 'Usage') },
-              { key: 'stats', label: t('insights.tabStats', 'Statistics') },
-              { key: 'trends', label: t('insights.tabTrends', 'Trends') },
-              { key: 'reports', label: t('insights.tabReports', 'Reports') },
-              { key: 'sessions', label: 'Sessions' }
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className="px-4 py-2 rounded-lg font-medium transition-all"
-                style={{
-                  color: activeTab === key ? '#D4A574' : 'rgba(224,216,200,0.7)',
-                  background: activeTab === key ? 'rgba(180,140,75,0.15)' : 'transparent',
-                  borderBottom: activeTab === key ? '2px solid #D4A574' : 'none',
-                }}
-              >
-                {label}
-              </button>
-            ))}
+            <InsightsHighlightGrid>
+              {mostTastedBottle && (
+                <InsightsHighlightCard title={t('insights.mostTastedBottle', 'Most Tasted Bottle')} value={mostTastedBottle.name} subtitle={`${mostTastedBottle.count} tastings`} accent="#C87941" photo={mostTastedBottle.photo} />
+              )}
+              {mostValuedBottle && (
+                <InsightsHighlightCard title={t('insights.mostValuedBottle', 'Most Valued Bottle')} value={mostValuedBottle.name} subtitle={formatCurrency(getBottleValue(mostValuedBottle))} accent="#C0392B" photo={mostValuedBottle.photo} />
+              )}
+              {oldestBottle && (
+                <InsightsHighlightCard
+                  title={t('insights.oldestBottle', 'Oldest Bottle')}
+                  value={oldestBottle.name}
+                  subtitle={oldestBottle.purchase_date && !Number.isNaN(new Date(oldestBottle.purchase_date).getTime()) ? new Date(oldestBottle.purchase_date).getFullYear().toString() : 'Unknown'}
+                  accent="#10B981"
+                  photo={oldestBottle.photo}
+                />
+              )}
+            </InsightsHighlightGrid>
           </div>
+        )}
 
-          {/* Summary Tab */}
-          {activeTab === 'summary' && (
-            <div className="space-y-6">
-              {/* Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <StatusCard
-                  icon={WhiskeyKeeperIcon}
-                  label="Bottle Types"
-                  value={bottleTypes}
-                  sub="Distinct labels"
-                  accent="#C87941"
-                />
-                <StatusCard
-                  icon={Trophy}
-                  label="Total Bottles"
-                  value={totalBottles}
-                  sub={inventoryUnits.length > 0 ? `${openBottles} open · ${sealedBottles} sealed` : 'physical inventory'}
-                  accent="#C87941"
-                />
-                <StatusCard
-                  icon={Zap}
-                  label={t('insights.openBottles', 'Open Bottles')}
-                  value={openBottles}
-                  accent="#EF4444"
-                />
-                <StatusCard
-                  icon={Star}
-                  label={t('insights.totalTastings', 'Total Tastings')}
-                  value={totalTastings}
-                  sub={`${tastingsThisWeek} ${t('insights.thisWeek', 'This Week')}`}
-                  accent={CATEGORY_COLORS.tobacco}
-                />
-                <StatusCard
-                  icon={TrendingUp}
-                  label={t('insights.collectionValue', 'Collection Value')}
-                  value={formatCurrency(Math.round(totalValue))}
-                  accent={CATEGORY_COLORS.value}
-                />
-                <StatusCard
-                  icon={Award}
-                  label={t('insights.averageRating', 'Average Rating')}
-                  value={`${averageRating}/5`}
-                  accent="#8B5CF6"
-                />
-              </div>
-
-              {/* Highlight Cards */}
-              <div className="space-y-4">
-                <h2 className="text-xl font-bold" style={{ color: '#F5F1E7' }}>
-                  {t('insights.highlights', 'Collection Highlights')}
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {mostTastedBottle && (
-                    <WhiskeyHighlightCard
-                      title={t('insights.mostTastedBottle', 'Most Tasted Bottle')}
-                      value={mostTastedBottle.name}
-                      subtitle={`${mostTastedBottle.count} tastings`}
-                      accent="#C87941"
-                      photo={mostTastedBottle.photo}
-                    />
-                  )}
-
-                  {mostValuedBottle && (
-                    <WhiskeyHighlightCard
-                      title={t('insights.mostValuedBottle', 'Most Valued Bottle')}
-                      value={mostValuedBottle.name}
-                      subtitle={formatCurrency(getBottleValue(mostValuedBottle))}
-                      accent="#C0392B"
-                      photo={mostValuedBottle.photo}
-                    />
-                  )}
-
-                  {oldestBottle && (
-                    <WhiskeyHighlightCard
-                      title={t('insights.oldestBottle', 'Oldest Bottle')}
-                      value={oldestBottle.name}
-                      subtitle={
-                        oldestBottle.purchase_date && !Number.isNaN(new Date(oldestBottle.purchase_date).getTime())
-                          ? new Date(oldestBottle.purchase_date).getFullYear().toString()
-                          : 'Unknown'
-                      }
-                      accent="#10B981"
-                      photo={oldestBottle.photo}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Usage Tab */}
-          {activeTab === 'usage' && (
-            <div className="rounded-2xl p-6" style={{
-              background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
-              border: '1px solid rgba(180, 140, 75, 0.15)',
-            }}>
-              <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-                {t('insights.tastingActivity', 'Tasting Activity')}
-              </h3>
+        {/* USAGE */}
+        {activeTab === 'usage' && (
+          <div className="space-y-4">
+            <InsightsKpiGrid>
+              <InsightStatCard icon={BookOpen} label="Total Tastings" value={totalTastings} accent="#8B5CF6" />
+              <InsightStatCard icon={Zap} label="This Week" value={tastingsThisWeek} accent="#C87941" />
+              <InsightStatCard icon={Star} label="Per Week (avg)" value={tastingPerWeek} accent="#D4A574" />
+            </InsightsKpiGrid>
+            <InsightPanel>
+              <InsightSectionHeading>{t('insights.tastingActivity', 'Tasting Activity')}</InsightSectionHeading>
               {tastingLogs.length > 0 ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {[...new Map(tastingLogs.map(l => [l.id, l])).values()].slice(0, 50).map((log) => (
-                    <div key={log.id} className="p-4 rounded-lg" style={{
-                      background: 'rgba(180,140,75,0.05)',
-                      border: '1px solid rgba(180,140,75,0.15)',
-                    }}>
-                      <p style={{ color: '#F5F1E7' }} className="font-medium">{log.bottle_name}</p>
+                  {[...new Map(tastingLogs.map(l => [l.id, l])).values()].slice(0, 50).map(log => (
+                    <div key={log.id} className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.05)', border: '1px solid rgba(180,140,75,0.15)' }}>
+                      <p className="text-sm font-medium text-[#F5F1E7]">{log.bottle_name}</p>
                       <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                        {log.tasting_date && !Number.isNaN(new Date(log.tasting_date).getTime())
-                          ? new Date(log.tasting_date).toLocaleDateString()
-                          : 'Unknown date'}{log.rating ? ` · ★ ${log.rating}` : ''}
+                        {log.tasting_date && !Number.isNaN(new Date(log.tasting_date).getTime()) ? new Date(log.tasting_date).toLocaleDateString() : 'Unknown date'}{log.rating ? ` · ★ ${log.rating}` : ''}
                       </p>
-                      {log.notes ? <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.75)' }}>{log.notes}</p> : null}
+                      {log.notes && <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.75)' }}>{log.notes}</p>}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p style={{ color: 'rgba(224,216,200,0.6)' }}>No Tastings Logged</p>
+                <InsightsEmptyState message="No tastings logged yet." />
               )}
-            </div>
-          )}
+            </InsightPanel>
+          </div>
+        )}
 
-          {/* Value Tab */}
-          {activeTab === 'value' && (
-            <div className="space-y-6">
-              {/* Value exposure overview */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <StatusCard
-                  icon={TrendingUp}
-                  label="Canonical Collection Value"
-                  value={formatCurrency(Math.round(totalValue))}
-                  sub="Engine-computed (canonical priority)"
-                  accent={CATEGORY_COLORS.value}
-                />
-                {inventoryUnits.length > 0 && (
-                  <>
-                    <StatusCard
-                      icon={ShieldCheck}
-                      label="Sealed / Reserve Value"
-                      value={formatCurrency(Math.round(sealedValue))}
-                      sub="Value held in sealed bottles"
-                      accent="#10B981"
-                    />
-                    <StatusCard
-                      icon={Zap}
-                      label="Open Bottle Exposure"
-                      value={formatCurrency(Math.round(openValue))}
-                      sub="Value at risk in open bottles"
-                      accent="#EF4444"
-                    />
-                  </>
-                )}
-                {valueConcentration.topPct > 0 && (
-                  <StatusCard
-                    icon={DollarSign}
-                    label="Value Concentration"
-                    value={`${valueConcentration.topPct}%`}
-                    sub={`Top 20% of bottles hold ${valueConcentration.topPct}% of value`}
-                    accent="#8B5CF6"
-                  />
-                )}
-              </div>
+        {/* VALUE */}
+        {activeTab === 'value' && (
+          <div className="space-y-6">
+            <InsightsKpiGrid>
+              <InsightStatCard icon={TrendingUp} label="Collection Value" value={formatCurrency(Math.round(totalValue))} sub="Engine-computed" accent={CATEGORY_COLORS.value} />
+              {inventoryUnits.length > 0 && (
+                <>
+                  <InsightStatCard icon={ShieldCheck} label="Sealed / Reserve Value" value={formatCurrency(Math.round(sealedValue))} sub="Held in sealed bottles" accent="#10B981" />
+                  <InsightStatCard icon={Zap} label="Open Bottle Exposure" value={formatCurrency(Math.round(openValue))} sub="At risk in open bottles" accent="#EF4444" />
+                </>
+              )}
+              {valueConcentration.topPct > 0 && (
+                <InsightStatCard icon={DollarSign} label="Value Concentration" value={`${valueConcentration.topPct}%`} sub="Top 20% of bottles" accent="#8B5CF6" />
+              )}
+            </InsightsKpiGrid>
 
-              {/* Top bottles to hold */}
-              {topBottlesToHold.length > 0 && (
-                <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))', border: '1px solid rgba(239,68,68,0.2)' }}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <ShieldCheck className="w-4 h-4 text-red-400" />
-                    <h3 className="text-lg font-semibold text-[#F5F1E7]">Top Bottles to Hold</h3>
-                  </div>
-                  <div className="space-y-2">
-                    {topBottlesToHold.map((b, i) => (
-                      <div key={b.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                        <div>
-                          <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
-                          <p className="text-xs text-[#D8C7A6]/60">{b.distillery || b.type || '—'}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(getBottleValue(b))}</p>
-                          <p className="text-xs text-[#D8C7A6]/60">Rarity {b._rarityScore}/100</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+            {topBottlesToHold.length > 0 && (
+              <InsightPanel>
+                <div className="flex items-center gap-2 mb-3">
+                  <ShieldCheck className="w-4 h-4 text-red-400" />
+                  <InsightSectionHeading>Top Bottles to Hold</InsightSectionHeading>
                 </div>
-              )}
-
-              {/* Bottles safe to open */}
-              {bottlesSafeToOpen.length > 0 && (
-                <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))', border: '1px solid rgba(16,185,129,0.2)' }}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="w-4 h-4 text-emerald-400" />
-                    <h3 className="text-lg font-semibold text-[#F5F1E7]">Safe to Open</h3>
-                  </div>
-                  <div className="space-y-2">
-                    {bottlesSafeToOpen.map((b, i) => (
-                      <div key={b.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
-                        <div>
-                          <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
-                          <p className="text-xs text-[#D8C7A6]/60">{b.type || '—'} · {b.country || '—'}</p>
-                        </div>
+                <div className="space-y-2">
+                  {topBottlesToHold.map((b, i) => (
+                    <div key={b.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                      <div>
+                        <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
+                        <p className="text-xs" style={{ color: 'rgba(216,199,166,0.6)' }}>{b.distillery || b.type || '—'}</p>
+                      </div>
+                      <div className="text-right">
                         <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(getBottleValue(b))}</p>
+                        <p className="text-xs" style={{ color: 'rgba(216,199,166,0.6)' }}>Rarity {b._rarityScore}/100</p>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </InsightPanel>
+            )}
 
-              {/* Replacement risk */}
-              {replacementRiskBottles.length > 0 && (
-                <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))', border: '1px solid rgba(251,191,36,0.2)' }}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                    <h3 className="text-lg font-semibold text-[#F5F1E7]">Replacement Risk</h3>
-                    <span className="text-xs text-[#D8C7A6]/60">Hard to replace if opened</span>
-                  </div>
-                  <div className="space-y-2">
-                    {replacementRiskBottles.map((b, i) => (
-                      <div key={b.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)' }}>
-                        <div>
-                          <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
-                          <p className="text-xs text-[#D8C7A6]/60">{b._difficulty ? DIFFICULTY_LABELS[b._difficulty] : '—'}</p>
-                        </div>
-                        <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(getBottleValue(b))}</p>
+            {bottlesSafeToOpen.length > 0 && (
+              <InsightPanel>
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <InsightSectionHeading>Safe to Open</InsightSectionHeading>
+                </div>
+                <div className="space-y-2">
+                  {bottlesSafeToOpen.map((b, i) => (
+                    <div key={b.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
+                      <div>
+                        <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
+                        <p className="text-xs" style={{ color: 'rgba(216,199,166,0.6)' }}>{b.type || '—'} · {b.country || '—'}</p>
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(getBottleValue(b))}</p>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </InsightPanel>
+            )}
 
-              {topBottlesToHold.length === 0 && bottlesSafeToOpen.length === 0 && replacementRiskBottles.length === 0 && (
-                <p style={{ color: 'rgba(224,216,200,0.6)' }}>Add bottle details (age, type, production status) to enable value strategy insights.</p>
-              )}
-            </div>
-          )}
+            {replacementRiskBottles.length > 0 && (
+              <InsightPanel>
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                  <InsightSectionHeading>Replacement Risk</InsightSectionHeading>
+                </div>
+                <div className="space-y-2">
+                  {replacementRiskBottles.map((b, i) => (
+                    <div key={b.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)' }}>
+                      <div>
+                        <p className="text-sm font-medium text-[#F5F1E7]">{b.name || '—'}</p>
+                        <p className="text-xs" style={{ color: 'rgba(216,199,166,0.6)' }}>{b._difficulty ? DIFFICULTY_LABELS[b._difficulty] : '—'}</p>
+                      </div>
+                      <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(getBottleValue(b))}</p>
+                    </div>
+                  ))}
+                </div>
+              </InsightPanel>
+            )}
 
-          {/* Stats Tab */}
-          {activeTab === 'stats' && (
-            <WhiskeyAnalyticsTab bottles={bottles} />
-          )}
+            {topBottlesToHold.length === 0 && bottlesSafeToOpen.length === 0 && replacementRiskBottles.length === 0 && (
+              <InsightsEmptyState message="Add bottle details (age, type, production status) to enable value strategy insights." />
+            )}
+          </div>
+        )}
 
-          {/* Trends Tab */}
-          {activeTab === 'trends' && (
-            <WhiskeyTrendsTab bottles={bottles} tastingLogs={tastingLogs} />
-          )}
+        {/* STATS */}
+        {activeTab === 'stats' && <WhiskeyAnalyticsTab bottles={bottles} />}
 
-          {/* Sessions Tab */}
-          {activeTab === 'sessions' && (
+        {/* TRENDS */}
+        {activeTab === 'trends' && <WhiskeyTrendsTab bottles={bottles} tastingLogs={tastingLogs} />}
+
+        {/* SESSIONS */}
+        {activeTab === 'sessions' && (
+          <InsightsSessionPanel
+            calendar={
+              <Calendar
+                mode="single"
+                selected={new Date(`${calSelectedDate}T12:00:00`)}
+                onSelect={(date) => { if (date) setCalSelectedDate(toLocalDateYmd(date)); }}
+                modifiers={{ hasSessions: whiskeyHighlights }}
+                modifiersClassNames={{ hasSessions: 'ring-1 ring-[#B48C4B] ring-offset-0' }}
+              />
+            }
+            selectedDate={calSelectedDate}
+            onSelectDate={setCalSelectedDate}
+            dayRows={whiskeySelectedDayRows}
+            emptyLabel="No tastings logged for this day."
+          />
+        )}
+
+        {/* REPORTS */}
+        {activeTab === 'reports' && (
+          <InsightPanel>
+            <InsightSectionHeading>{t('insights.reports', 'Export Reports')}</InsightSectionHeading>
             <div className="space-y-4">
-              <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-                <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-3">
-                  <Calendar
-                    mode="single"
-                    selected={new Date(`${calSelectedDate}T12:00:00`)}
-                    onSelect={(date) => { if (date) setCalSelectedDate(toLocalDateYmd(date)); }}
-                    modifiers={{ hasSessions: whiskeyHighlights }}
-                    modifiersClassNames={{ hasSessions: 'ring-1 ring-[#B48C4B] ring-offset-0' }}
-                  />
-                </div>
-                <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-5">
-                  <h2 className="text-lg font-semibold mb-3 text-[#F5F1E7]">{calSelectedDate}</h2>
-                  {whiskeySelectedDayRows.length === 0 ? (
-                    <p className="text-[#D8C7A6]/75">No tastings logged for this day.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {whiskeySelectedDayRows.map((row) => (
-                        <div key={row.id} className="rounded-xl p-3 border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)]">
-                          <p className="text-sm font-semibold text-[#F5F1E7]">{row.itemLabel}</p>
-                          {row.rating != null && <p className="text-xs text-[#D8C7A6]/70 mt-1">Rating: {row.rating}</p>}
-                          {row.notes ? <p className="text-sm text-[#E0D8C8] mt-2 whitespace-pre-wrap">{row.notes}</p> : null}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              <div className="p-4 rounded-xl" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
+                <h4 className="font-semibold text-[#F5F1E7] mb-1">Collection Summary</h4>
+                <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
+                  {bottleTypes} bottle type{bottleTypes !== 1 ? 's' : ''}, {totalBottles} total bottle{totalBottles !== 1 ? 's' : ''}
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  <button onClick={handleExportPDF} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'rgba(163,92,92,0.3)', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.4)' }}>
+                    <FileText className="w-4 h-4 inline mr-1" />Export PDF
+                  </button>
+                  <button onClick={async () => {
+                    const csv = [['Bottle Type (Name)', 'Whiskey Style', 'Country', 'Retail Price', 'Rating'].join(','), ...bottles.map(b => [`"${b.name || ''}"`, b.type || '', b.country || '', b.retail_price || 0, b.rating || ''].join(','))].join('\n');
+                    const link = document.createElement('a'); link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); link.download = `collection-summary-${new Date().toISOString().slice(0, 10)}.csv`; link.click();
+                  }} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'rgba(180,140,75,0.25)', color: '#F5F1E7' }}>
+                    <Download className="w-4 h-4 inline mr-1" />Export CSV
+                  </button>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Reports Tab */}
-          {activeTab === 'reports' && (
-            <div className="rounded-2xl p-6" style={{
-              background: 'linear-gradient(135deg, rgba(42, 31, 24, 0.5), rgba(31, 21, 16, 0.5))',
-              border: '1px solid rgba(180, 140, 75, 0.15)',
-            }}>
-              <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-                {t('insights.reports', 'Export Reports')}
-              </h3>
-              <div className="space-y-4">
-                <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
-                  <h4 className="font-semibold text-[#F5F1E7] mb-2">Collection Summary</h4>
-                   <p className="text-sm text-[#D8C7A6]/80 mb-3">
-                     Export your collection — {bottleTypes} bottle type{bottleTypes !== 1 ? 's' : ''}, {totalBottles} total bottle{totalBottles !== 1 ? 's' : ''}
-                   </p>
-                   <div className="flex gap-2 flex-wrap">
-                   <button
-                     onClick={handleExportPDF}
-                     className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                     style={{ background: 'rgba(163,92,92,0.3)', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.4)' }}
-                   >
-                     Export as PDF
-                   </button>
-                   <button 
-                     onClick={async () => {
-                      try {
-                        const csv = [
-                          ['Bottle Type (Name)', 'Whiskey Style', 'Country', 'Retail Price', 'Rating', 'Inventory Units', 'Open Units', 'Sealed Units'].join(','),
-                          ...bottles.map(b => {
-                           const units = inventoryUnits.filter(u => u.bottle_id === b.id);
-                           const openUnits = units.filter(u => u.status === 'open').length;
-                           const sealedUnits = units.filter(u => u.status === 'reserve' || u.status === 'drinking').length;
-                           const totalUnits = units.length > 0 ? units.length : (Number(b.bottle_count) || 1);
-                           return [
-                             `"${b.name || ''}"`,
-                             b.type || '',
-                             b.country || '',
-                             b.retail_price || 0,
-                             b.rating || '',
-                             totalUnits,
-                             openUnits,
-                             sealedUnits,
-                           ].join(',');
-                          })
-                        ].join('\n');
-
-                        const link = document.createElement('a');
-                        link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-                        link.download = `collection-summary-${new Date().toISOString().slice(0,10)}.csv`;
-                        link.click();
-                      } catch (e) {
-                        console.error('Export failed:', e);
-                      }
-                    }}
-                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                    style={{ background: 'rgba(180,140,75,0.25)', color: '#F5F1E7' }}
-                    >
-                    Export as CSV
-                    </button>
-                    </div>
-                    </div>
-
-                <div className="p-4 rounded-lg" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)' }}>
-                 <h4 className="font-semibold text-[#F5F1E7] mb-2">Tasting History</h4>
-                 <p className="text-sm text-[#D8C7A6]/80 mb-3">Export your tasting log with dates and notes</p>
-                 <div className="flex gap-2 flex-wrap">
-                 <button
-                   onClick={() => {
-                     const doc = new jsPDF();
-                     let y = 18;
-                     doc.setFontSize(16);
-                     doc.text('WhiskeyKeeper Tasting History', 14, y);
-                     y += 10;
-                     doc.setFontSize(10);
-                     tastingLogs.forEach((log, index) => {
-                       const title = log?.bottle_name || 'Untitled tasting';
-                       const date = log?.tasting_date
-                         ? new Date(log.tasting_date).toLocaleDateString()
-                         : 'Unknown date';
-                       const rating =
-                         log?.rating !== null && log?.rating !== undefined && log?.rating !== ''
-                           ? `Rating: ${log.rating}`
-                           : 'Rating: —';
-                       const notes = (log?.notes || '').trim() || 'No notes';
-                       const block = [`${index + 1}. ${title}`, `Date: ${date}`, rating, `Notes: ${notes}`, ''];
-                       block.forEach((line) => {
-                         if (y > 275) { doc.addPage(); y = 18; }
-                         doc.text(line, 14, y);
-                         y += 6;
-                       });
-                     });
-                     doc.save('whiskeykeeper-tasting-history.pdf');
-                   }}
-                   className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                   style={{ background: 'rgba(163,92,92,0.3)', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.4)' }}
-                 >
-                   Export as PDF
-                 </button>
-                 <button 
-                   onClick={async () => {
-                     try {
-                       const csv = [
-                         ['Date', 'Bottle', 'Rating', 'Notes'].join(','),
-                         ...tastingLogs.map(l => [
-                           l.tasting_date && !Number.isNaN(new Date(l.tasting_date).getTime())
-                             ? new Date(l.tasting_date).toLocaleDateString()
-                             : '',
-                           `"${l.bottle_name || ''}"`,
-                           l.rating || '',
-                           `"${(l.notes || '').replace(/"/g, '""')}"`
-                         ].join(','))
-                       ].join('\n');
-
-                       const link = document.createElement('a');
-                       link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-                       link.download = `tasting-log-${new Date().toISOString().slice(0,10)}.csv`;
-                       link.click();
-                     } catch (e) {
-                       console.error('Export failed:', e);
-                     }
-                   }}
-                   className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                   style={{ background: 'rgba(139,92,246,0.25)', color: '#F5F1E7' }}
-                 >
-                   Export as CSV
-                 </button>
-                 </div>
-                </div>
-
-                <div className="p-4 rounded-lg" style={{ background: 'rgba(46,125,92,0.08)', border: '1px solid rgba(46,125,92,0.22)' }}>
-                  <h4 className="font-semibold text-[#F5F1E7] mb-2">Insurance Report</h4>
-                  <p className="text-sm text-[#D8C7A6]/80 mb-3">Export a detailed insurance report with photos, values, and descriptions</p>
-                  <WhiskeyInsuranceExporter user={user} bottles={bottles} inventoryUnits={inventoryUnits} />
-                </div>
+              <div className="p-4 rounded-xl" style={{ background: 'rgba(46,125,92,0.08)', border: '1px solid rgba(46,125,92,0.22)' }}>
+                <h4 className="font-semibold text-[#F5F1E7] mb-1">Insurance Report</h4>
+                <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>Export a detailed insurance report with photos, values, and descriptions</p>
+                <WhiskeyInsuranceExporter user={user} bottles={bottles} inventoryUnits={inventoryUnits} />
               </div>
             </div>
-          )}
-        </div>
-    </div>
+          </InsightPanel>
+        )}
+      </InsightsPageShell>
     </LockedModuleGuard>
   );
 }
