@@ -59,6 +59,8 @@ import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import TrendsReport from "@/components/tobacco/TrendsReport";
 import PipeValuationTab from "@/components/pipes/PipeValuationTab";
 import RotationPlanner from "@/components/pipes/RotationPlanner";
+import PairingGrid from "@/components/home/PairingGrid";
+import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
 import CollectionReportExporter from "@/components/export/CollectionReportExporter";
 import SmokingLogReportExporter from "@/components/export/SmokingLogReportExporter";
 import AgingReportExporter from "@/components/export/AgingReportExporter";
@@ -72,6 +74,8 @@ const TABS = [
   { key: 'trends', label: 'Trends' },
   { key: 'reports', label: 'Reports' },
   { key: 'sessions', label: 'Sessions' },
+  { key: 'pairings', label: 'Pairings' },
+  { key: 'aging', label: 'Aging' },
   { key: 'rotation', label: 'Rotation' },
 ];
 
@@ -1266,8 +1270,8 @@ export default function Insights() {
       />
 
       <InsightsHeader
-        title={t("insights.title")}
-        subtitle={t("insights.subtitle")}
+        title={t("pipekeeper.insightsTitle", "PipeKeeper Insights")}
+        subtitle={t("pipekeeper.insightsSubtitle", "Explore your pipe and tobacco collection data")}
       />
 
       <InsightsTabBar tabs={TABS} activeTab={activeInsightsTab} onTabChange={setActiveInsightsTab} />
@@ -1472,6 +1476,20 @@ export default function Insights() {
           dayRows={pipeSelectedDayRows}
           emptyLabel="No sessions logged for this day."
         />
+      )}
+
+      {/* PAIRINGS */}
+      {activeInsightsTab === 'pairings' && (
+        pipes.length === 0 || blends.length === 0
+          ? <InsightsEmptyState message="Add pipes and blends to see pairing analytics." icon={Leaf} />
+          : <PairingGrid user={user} pipes={pipes} blends={blends} />
+      )}
+
+      {/* AGING */}
+      {activeInsightsTab === 'aging' && (
+        blends.length === 0
+          ? <InsightsEmptyState message="Add tobacco blends to your cellar to see aging insights." icon={Leaf} />
+          : <CellarAgingDashboard user={user} />
       )}
 
       {/* ROTATION */}
