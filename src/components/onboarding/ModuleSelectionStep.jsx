@@ -19,6 +19,11 @@ const MODULES = [
     label: "CigarKeeper",
     description: "Track cigars, humidors, inventory, and cigar sessions.",
   },
+  {
+    key: "winekeeper",
+    label: "WineKeeper",
+    description: "Curate your wine cellar with drinking windows, tasting logs, and valuations.",
+  },
 ];
 
 export default function ModuleSelectionStep({
@@ -34,13 +39,11 @@ export default function ModuleSelectionStep({
 
   const accessibleModules = useMemo(() => {
     const set = new Set(activeModules || []);
-    // Free users always get pipekeeper and whiskeykeeper — they are free-tier modules.
-    // This ensures brand new users with no subscription can still see and select modules.
+    // All modules are free-tier accessible (gating happens inside each module).
     set.add("pipekeeper");
     set.add("whiskeykeeper");
-    if (canAccessCigarInternal) {
-      set.add("cigarkeeper");
-    }
+    set.add("cigarkeeper");
+    set.add("winekeeper");
     return set;
   }, [activeModules, tester, canAccessCigarInternal]);
 

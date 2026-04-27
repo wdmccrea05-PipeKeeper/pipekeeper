@@ -36,6 +36,9 @@ import ShoppingList from "@/pages/ShoppingList";
 import SupportPublic from "@/pages/SupportPublic";
 import CigarKeeper from "@/pages/CigarKeeper";
 import Cigars from "@/pages/Cigars";
+import WineKeeper from "@/pages/WineKeeper";
+import Wines from "@/pages/Wines";
+import WineInsights from "@/pages/WineInsights";
 import CigarDetail from "@/pages/CigarDetail";
 import CigarFormPage from "@/pages/CigarFormPage";
 import CigarInsights from "@/pages/CigarInsights";
@@ -66,6 +69,14 @@ const WhiskeyReleaseRoute = ({ currentPageName, children }) => (
 const CigarReleaseRoute = ({ currentPageName, children }) => (
   <LayoutWrapper currentPageName={currentPageName}>
     <LockedModuleGuard moduleKey="cigarkeeper">
+      {children}
+    </LockedModuleGuard>
+  </LayoutWrapper>
+);
+
+const WineReleaseRoute = ({ currentPageName, children }) => (
+  <LayoutWrapper currentPageName={currentPageName}>
+    <LockedModuleGuard moduleKey="winekeeper">
       {children}
     </LockedModuleGuard>
   </LayoutWrapper>
@@ -373,6 +384,33 @@ const AuthenticatedApp = () => {
           <LayoutWrapper currentPageName="SessionHistory">
             <SessionHistory />
           </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/WineKeeper"
+        element={
+          <WineReleaseRoute currentPageName="WineKeeper">
+            <WineKeeper />
+          </WineReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/Wines"
+        element={
+          <WineReleaseRoute currentPageName="Wines">
+            <Wines />
+          </WineReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/WineInsights"
+        element={
+          <WineReleaseRoute currentPageName="WineInsights">
+            <WineInsights />
+          </WineReleaseRoute>
         }
       />
 

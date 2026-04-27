@@ -15,6 +15,7 @@ import {
   BarChart3,
   List,
   Flame,
+  Wine,
 } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
@@ -82,6 +83,15 @@ export default function ModuleNav({ currentPageName, user }) {
         label: t("nav.cigarkeeper"),
         icon: Flame,
         path: "/CigarKeeper",
+      });
+    }
+
+    if (enabled.winekeeper) {
+      items.push({
+        page: "WineKeeper",
+        label: t("nav.winekeeper", "WineKeeper"),
+        icon: Wine,
+        path: "/WineKeeper",
       });
     }
 

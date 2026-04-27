@@ -3,14 +3,6 @@ export default [
     ignores: [],
   },
   {
-    // Test files — disable all rules entirely
-    files: ['**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/*.spec.js', '**/*.spec.jsx', '**/*.spec.ts', '**/*.spec.tsx'],
-    rules: {
-      'no-undef': 'off',
-      'no-unused-vars': 'off',
-    },
-  },
-  {
     // All files — disable the two rules that cause noise
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
     languageOptions: {

@@ -61,21 +61,29 @@ export default function ModulePricingTiers({
             currentTier === 'bundle_2',
           savings: getBundleSavings(billingPeriod, ['pipekeeper', 'whiskeykeeper']),
         } : null,
-        activeModules.includes('pipekeeper') && activeModules.includes('whiskeykeeper') && activeModules.includes('cigarkeeper') ? {
+        activeModules.length >= 3 ? {
           id: 'bundle-three-module',
           type: 'bundle_three_module',
-          modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+          modules: activeModules.slice(0, 3),
           displayName: t('subscriptionFull.threeModuleBundle'),
           price: 799, // $7.99
           priceAnnual: 7999, // $79.99
-          description: t('subscription.threeModuleBundleDescription'),
+          description: t('subscription.threeModuleBundleDescription', 'Any 3 modules of your choice.'),
           isBest: true,
-          isSelected:
-            selectedModules.length === 3 &&
-            selectedModules.includes('pipekeeper') &&
-            selectedModules.includes('whiskeykeeper') &&
-            selectedModules.includes('cigarkeeper'),
-          savings: getBundleSavings(billingPeriod, ['pipekeeper', 'whiskeykeeper', 'cigarkeeper']),
+          isSelected: selectedModules.length === 3,
+          savings: getBundleSavings(billingPeriod, activeModules.slice(0, 3)),
+        } : null,
+        activeModules.length >= 4 ? {
+          id: 'bundle-four-module',
+          type: 'bundle_four_module',
+          modules: activeModules,
+          displayName: t('subscriptionFull.fourModuleBundle', 'All 4 Modules Bundle'),
+          price: 899, // $8.99
+          priceAnnual: 8999, // $89.99
+          description: t('subscription.fourModuleBundleDescription', 'All four modules — best value.'),
+          isBest: true,
+          isSelected: selectedModules.length === 4,
+          savings: getBundleSavings(billingPeriod, activeModules),
         } : null,
       ].filter(Boolean);
   }, [activeModules, selectedModules, currentTier, billingPeriod, t]);

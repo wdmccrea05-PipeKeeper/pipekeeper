@@ -84,6 +84,7 @@ const BASE_ITEM_TYPES = [
   { value: "pipe", label: "Pipe", itemType: "pipe", moduleKey: "pipekeeper" },
   { value: "bottle", label: "Whiskey", itemType: "bottle", moduleKey: "whiskeykeeper" },
   { value: "cigar", label: "Cigar", itemType: "cigar", moduleKey: "cigarkeeper" },
+  { value: "wine", label: "Wine", itemType: "wine", moduleKey: "winekeeper" },
 ];
 
 // ─── Manual add forms ───────────────────────────────────────────────────────
@@ -112,6 +113,14 @@ function ManualForm({ itemType, onSubmit, onBack }) {
           { key: "brand", label: "Brand", required: true },
           { key: "vitola", label: "Vitola / Size (optional)" },
           { key: "wrapper", label: "Wrapper (optional)" },
+          { key: "notes", label: "Notes (optional)", multiline: true },
+        ]
+      : itemType === "wine"
+      ? [
+          { key: "name", label: "Wine Name", required: true },
+          { key: "producer", label: "Producer / Winery", required: true },
+          { key: "vintage", label: "Vintage (optional)" },
+          { key: "varietal", label: "Varietal / Style (optional)" },
           { key: "notes", label: "Notes (optional)", multiline: true },
         ]
       : [

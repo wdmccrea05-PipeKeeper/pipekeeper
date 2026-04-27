@@ -7,11 +7,19 @@
  *   launched — available to production users, subject to entitlements
  */
 
+// ─── Feature flags for WineKeeper gating ─────────────────────────────────────
+// Set WINEKEEPER_PUBLIC_ENABLED = true when ready for public launch.
+// Set WINEKEEPER_ADMIN_ENABLED = true to allow admin/internal tester access.
+export const WINEKEEPER_PUBLIC_ENABLED = false;
+export const WINEKEEPER_ADMIN_ENABLED = true;
+
 export const MODULE_RELEASE_STATES = {
   pipekeeper: 'launched',
   whiskeykeeper: 'launched',
   cigarkeeper: 'launched',
-  winekeeper: 'blocked',
+  // WineKeeper is INTERNAL ONLY — not publicly released.
+  // Change to 'launched' only when WINEKEEPER_PUBLIC_ENABLED is true.
+  winekeeper: WINEKEEPER_PUBLIC_ENABLED ? 'launched' : 'internal',
 };
 
 const LOCAL_OVERRIDE_PREFIX = 'ck_module_override_';

@@ -1,0 +1,63 @@
+{
+  "name": "WineTasting",
+  "type": "object",
+  "description": "A tasting log entry for a wine bottle in the WineKeeper collection.",
+  "properties": {
+    "wine_id": {
+      "type": "string",
+      "description": "ID of the Wine record being tasted"
+    },
+    "wine_name": {
+      "type": "string",
+      "description": "Snapshot of the wine name at time of tasting"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the tasting"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Overall rating 1-5"
+    },
+    "notes": {
+      "type": "string",
+      "description": "General tasting notes"
+    },
+    "aroma_notes": {
+      "type": "string",
+      "description": "Aroma / nose notes"
+    },
+    "palate_notes": {
+      "type": "string",
+      "description": "Palate / taste notes"
+    },
+    "finish_notes": {
+      "type": "string",
+      "description": "Finish notes"
+    },
+    "food_pairing": {
+      "type": "string",
+      "description": "Food pairing on this occasion"
+    },
+    "occasion": {
+      "type": "string",
+      "description": "Occasion or context"
+    },
+    "would_buy_again": {
+      "type": "boolean",
+      "description": "Whether the user would purchase this wine again"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who logged this tasting"
+    }
+  },
+  "required": [
+    "wine_id",
+    "date",
+    "created_by"
+  ]
+}

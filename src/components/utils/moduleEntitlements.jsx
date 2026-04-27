@@ -86,6 +86,14 @@ function resolveBundleModules(user) {
   }
 
   if (hints.some((h) => h.includes('three_module_bundle') || h.includes('bundle_3'))) {
+    // Prefer explicitly selected modules stored on the user record.
+    // Fall back to legacy default (pipekeeper, whiskeykeeper, cigarkeeper) if no selection is stored.
+    const selectedCsv = user?.selected_modules_csv || user?.paid_modules_csv || '';
+    const selectedModules = parseCsvModules(selectedCsv);
+    if (selectedModules.length >= 2) {
+      return selectedModules;
+    }
+    // Legacy default — users who purchased before flexible 3-module bundles existed
     return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'].filter((m) => isModuleLaunched(m));
   }
 

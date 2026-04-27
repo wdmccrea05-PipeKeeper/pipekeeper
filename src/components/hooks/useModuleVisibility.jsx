@@ -53,15 +53,10 @@ function buildAccessibleModules(profile, activeModules, user) {
     }
   }
 
-  // During onboarding (prefs not yet set), also grant access to launched modules
-  // that have been explicitly enabled in the profile so newly-selected modules
-  // (including cigarkeeper for free users) become accessible immediately.
-  if (profile?.module_preferences_set !== true) {
-    for (const key of getLaunchedToggleableModules(user)) {
-      if (profile?.[`${key}_enabled`] === true) {
-        accessible.add(key);
-      }
-    }
+  // All launched modules are free-tier accessible — gating happens inside the module,
+  // not at the visibility level. Always grant all launched modules to all users.
+  for (const key of getLaunchedToggleableModules(user)) {
+    accessible.add(key);
   }
 
   return accessible;
@@ -87,8 +82,8 @@ function buildVisibility({ profile, user, activeModules }) {
     }
 
     if (!prefsSet) {
-      // Before first module selection, only explicitly entitled modules should show.
-      visibility[key] = (activeModules || []).includes(key);
+      // Before first module selection, all accessible launched modules show by default.
+      visibility[key] = accessible.has(key);
       continue;
     }
 
@@ -127,8 +122,8 @@ function buildModuleStates({ profile, user, activeModules, visibility }) {
       enabled: !!visibility.winekeeper,
       accessible: accessible.has("winekeeper"),
       visible: accessible.has("winekeeper"),
-      canToggle: tester && accessible.has("winekeeper"),
-      testerOnly: true,
+      canToggle: launchedToggleable.has("winekeeper"),
+      testerOnly: false,
     },
     cigarkeeper: {
       key: "cigarkeeper",
