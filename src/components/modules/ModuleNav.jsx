@@ -14,7 +14,7 @@ import {
   FileBarChart2,
   BarChart3,
   List,
-  Flame,
+  Cigarette,
   Wine,
 } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
@@ -81,7 +81,7 @@ export default function ModuleNav({ currentPageName, user }) {
       items.push({
         page: "CigarKeeper",
         label: t("nav.cigarkeeper"),
-        icon: Flame,
+        icon: Cigarette,
         path: "/CigarKeeper",
       });
     }

@@ -265,7 +265,15 @@ function CigarKeeperInner() {
     <ModulePageShell
       title={t('cigarkeeper.title')}
       subtitle={t('cigarkeeper.description')}
-      icon={<Cigarette className="w-6 h-6" style={{ color: '#D4A574' }} />}
+      icon={
+        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#D4A574" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="10" width="16" height="4" rx="2" />
+          <line x1="18" y1="10" x2="22" y2="10" />
+          <line x1="18" y1="14" x2="22" y2="14" />
+          <path d="M20 7 Q21 5 19 3" />
+          <path d="M17 8 Q18 6 16 4" />
+        </svg>
+      }
       accentColor="#8C6B3F"
       onBackToHub={() => navigate('/CollectionHub')}
       stats={cigarStats}

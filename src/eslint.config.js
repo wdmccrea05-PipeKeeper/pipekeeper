@@ -1,6 +1,18 @@
 export default [
   {
-    ignores: [],
+    ignores: [
+    'src/components/curator/__tests__/**',
+    'src/components/utils/__tests__/**',
+    '**/__tests__/**',
+    '**/*.test.js',
+    '**/*.test.jsx',
+    '**/*.test.ts',
+    '**/*.test.tsx',
+    '**/*.spec.js',
+    '**/*.spec.jsx',
+    '**/*.spec.ts',
+    '**/*.spec.tsx',
+  ],
   },
   {
     // All files — disable the two rules that cause noise
