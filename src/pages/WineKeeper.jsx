@@ -91,7 +91,16 @@ function WineKeeperInner() {
     if (wines.length === 0) return [];
     const cards = [];
 
-    const totalValue = wines.reduce((sum, w) => sum + (w.estimated_value || 0) * (w.quantity || 1), 0);
+    const totalValue = wines.reduce((sum, w) => {
+      const qty = w.quantity || 1;
+      if (w.manual_valuation_enabled && w.manual_estimated_value > 0) return sum + w.manual_estimated_value * qty;
+      if (w.estimated_total_value > 0) return sum + w.estimated_total_value;
+      if (w.market_estimated_total_value > 0) return sum + w.market_estimated_total_value;
+      if (w.estimated_unit_value > 0) return sum + w.estimated_unit_value * qty;
+      if (w.market_estimated_unit_value > 0) return sum + w.market_estimated_unit_value * qty;
+      if (w.estimated_value > 0) return sum + w.estimated_value * qty;
+      return sum;
+    }, 0);
     if (totalValue > 0) {
       cards.push({
         key: 'totalValue',

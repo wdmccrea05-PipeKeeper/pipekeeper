@@ -17,11 +17,24 @@ import { MODULE_TYPES } from "../moduleTypes.js";
  * @returns {number|null}
  */
 function resolveWineValue(rawWine) {
-  const v =
-    Number(rawWine.estimated_value) ||
-    Number(rawWine.purchase_price) ||
-    null;
-  return v && Number.isFinite(v) ? v : null;
+  // Priority: manual override → market total → estimated total → estimated unit*qty → purchase price
+  if (rawWine.manual_valuation_enabled && Number(rawWine.manual_estimated_value) > 0) {
+    const qty = Number(rawWine.quantity) || 1;
+    return Number(rawWine.manual_estimated_value) * qty;
+  }
+  const qty = Number(rawWine.quantity) || 1;
+  const candidates = [
+    Number(rawWine.estimated_total_value),
+    Number(rawWine.market_estimated_total_value),
+    Number(rawWine.estimated_unit_value) * qty,
+    Number(rawWine.market_estimated_unit_value) * qty,
+    Number(rawWine.estimated_value) * qty,
+    Number(rawWine.purchase_price),
+  ];
+  for (const v of candidates) {
+    if (Number.isFinite(v) && v > 0) return v;
+  }
+  return null;
 }
 
 /**

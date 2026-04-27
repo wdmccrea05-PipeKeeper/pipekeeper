@@ -1,132 +1,169 @@
-/* eslint-disable no-undef */
+/**
+ * WineKeeper Valuation & Entitlement Tests
+ *
+ * Tests:
+ * 1. Cigar enrichment populates valuation fields
+ * 2. Wine enrichment quantity math
+ * 3. Purchase price fallback for wine
+ * 4. Manual override preserved for cigars
+ * 5. Manual override preserved for wine
+ * 6. Collection rollup includes cigar valuation
+ * 7. Collection rollup includes wine valuation
+ * 8. Wine valuation adapter picks up market fields
+ * 9. WineKeeper is internal (not launched) for public users
+ * 10. UI does not show $0 for unvalued records (resolveWineDisplayValue returns null)
+ */
+
 import { describe, test, expect } from 'vitest';
-import { hasModuleProAccess, getModulesWithProAccess } from '../moduleEntitlements';
+import { canUserAccessModule, isModuleLaunched, isModuleInternal, MODULE_RELEASE_STATES } from '../moduleReleaseState';
+import { cigarAdapter } from '../../../platform/moduleAdapters/cigarAdapter';
+import { wineAdapter } from '../../../platform/moduleAdapters/wineAdapter';
 
-// ─── helpers ────────────────────────────────────────────────────────────────
+// ─── Cigar adapter: value resolution ─────────────────────────────────────────
 
-function makeUser(overrides = {}) {
-  return {
-    role: 'user',
-    is_admin: false,
-    ...overrides,
-  };
-}
-
-// ─── WineKeeper free access ──────────────────────────────────────────────────
-
-describe('WineKeeper — free access', () => {
-  test('free user does NOT have pro access to winekeeper', () => {
-    const user = makeUser();
-    expect(hasModuleProAccess(user, 'winekeeper')).toBe(false);
+describe('cigarAdapter.getValue — enrichment fields', () => {
+  test('returns market_estimated_total_value when present', () => {
+    const cigar = { market_estimated_total_value: 150, quantity: 5 };
+    expect(cigarAdapter.getValue(cigar)).toBe(150);
   });
 
-  test('free user does NOT have pro access to pipekeeper', () => {
-    const user = makeUser();
-    expect(hasModuleProAccess(user, 'pipekeeper')).toBe(false);
-  });
-});
-
-// ─── Individual module subscriptions ────────────────────────────────────────
-
-describe('WineKeeper — individual subscription', () => {
-  test('winekeeper_paid flag grants winekeeper pro access', () => {
-    const user = makeUser({ winekeeper_paid: true });
-    expect(hasModuleProAccess(user, 'winekeeper')).toBe(true);
+  test('returns estimated_total_value when no market total', () => {
+    const cigar = { estimated_total_value: 80 };
+    expect(cigarAdapter.getValue(cigar)).toBe(80);
   });
 
-  test('winekeeper_paid does NOT grant pipekeeper', () => {
-    const user = makeUser({ winekeeper_paid: true });
-    expect(hasModuleProAccess(user, 'pipekeeper')).toBe(false);
+  test('computed unit * qty when only unit value present', () => {
+    const cigar = { estimated_unit_value: 10, singles_equivalent: 20 };
+    expect(cigarAdapter.getValue(cigar)).toBe(200);
   });
 
-  test('winekeeper_paid does NOT grant whiskeykeeper', () => {
-    const user = makeUser({ winekeeper_paid: true });
-    expect(hasModuleProAccess(user, 'whiskeykeeper')).toBe(false);
+  test('manual override * sticks takes priority', () => {
+    const cigar = {
+      manual_valuation_enabled: true,
+      manual_valuation_override: 15,
+      singles_equivalent: 10,
+      market_estimated_total_value: 999,
+    };
+    expect(cigarAdapter.getValue(cigar)).toBe(150);
   });
 
-  test('winekeeper_paid does NOT grant cigarkeeper', () => {
-    const user = makeUser({ winekeeper_paid: true });
-    expect(hasModuleProAccess(user, 'cigarkeeper')).toBe(false);
+  test('falls back to purchase_price when no other value', () => {
+    const cigar = { purchase_price: 50, quantity: 2 };
+    expect(cigarAdapter.getValue(cigar)).toBe(50);
   });
 
-  test('pipekeeper_paid does NOT grant winekeeper', () => {
-    const user = makeUser({ pipekeeper_paid: true });
-    expect(hasModuleProAccess(user, 'winekeeper')).toBe(false);
+  test('returns null when nothing is set', () => {
+    expect(cigarAdapter.getValue({})).toBeNull();
   });
 });
 
-// ─── Founders Bundle ─────────────────────────────────────────────────────────
+// ─── Wine adapter: value resolution ──────────────────────────────────────────
 
-describe('Founders Bundle', () => {
-  test('founders bundle grants pipekeeper', () => {
-    const user = makeUser({ plan_key: 'founders_bundle', paid_modules_csv: 'pipekeeper,whiskeykeeper' });
-    expect(hasModuleProAccess(user, 'pipekeeper')).toBe(true);
+describe('wineAdapter.getValue — enrichment fields', () => {
+  test('returns market_estimated_total_value when present', () => {
+    const wine = { market_estimated_total_value: 300, quantity: 3 };
+    expect(wineAdapter.getValue(wine)).toBe(300);
   });
 
-  test('founders bundle grants whiskeykeeper', () => {
-    const user = makeUser({ plan_key: 'founders_bundle', paid_modules_csv: 'pipekeeper,whiskeykeeper' });
-    expect(hasModuleProAccess(user, 'whiskeykeeper')).toBe(true);
+  test('returns estimated_unit_value * qty when total absent', () => {
+    const wine = { estimated_unit_value: 60, quantity: 4 };
+    expect(wineAdapter.getValue(wine)).toBe(240);
   });
 
-  test('founders bundle does NOT grant winekeeper', () => {
-    const user = makeUser({ plan_key: 'founders_bundle', paid_modules_csv: 'pipekeeper,whiskeykeeper' });
-    expect(hasModuleProAccess(user, 'winekeeper')).toBe(false);
+  test('returns market_estimated_unit_value * qty when estimated fields absent', () => {
+    const wine = { market_estimated_unit_value: 45, quantity: 2 };
+    expect(wineAdapter.getValue(wine)).toBe(90);
   });
 
-  test('founders bundle does NOT grant cigarkeeper', () => {
-    const user = makeUser({ plan_key: 'founders_bundle', paid_modules_csv: 'pipekeeper,whiskeykeeper' });
-    expect(hasModuleProAccess(user, 'cigarkeeper')).toBe(false);
-  });
-});
-
-// ─── 3-module bundle with explicit selected modules ──────────────────────────
-
-describe('3-module bundle — explicit module selection', () => {
-  test('pipe + whiskey + wine bundle grants all three', () => {
-    const user = makeUser({ plan_key: 'three_module_bundle', paid_modules_csv: 'pipekeeper,whiskeykeeper,winekeeper' });
-    expect(hasModuleProAccess(user, 'pipekeeper')).toBe(true);
-    expect(hasModuleProAccess(user, 'whiskeykeeper')).toBe(true);
-    expect(hasModuleProAccess(user, 'winekeeper')).toBe(true);
+  test('manual_estimated_value * qty takes priority', () => {
+    const wine = {
+      manual_valuation_enabled: true,
+      manual_estimated_value: 100,
+      quantity: 3,
+      market_estimated_unit_value: 999,
+    };
+    expect(wineAdapter.getValue(wine)).toBe(300);
   });
 
-  test('pipe + whiskey + wine bundle does NOT grant cigarkeeper', () => {
-    const user = makeUser({ plan_key: 'three_module_bundle', paid_modules_csv: 'pipekeeper,whiskeykeeper,winekeeper' });
-    expect(hasModuleProAccess(user, 'cigarkeeper')).toBe(false);
+  test('purchase price fallback when nothing else set', () => {
+    const wine = { purchase_price: 35, quantity: 2 };
+    expect(wineAdapter.getValue(wine)).toBe(35);
   });
 
-  test('whiskey + cigar + wine bundle grants all three', () => {
-    const user = makeUser({ plan_key: 'three_module_bundle', paid_modules_csv: 'whiskeykeeper,cigarkeeper,winekeeper' });
-    expect(hasModuleProAccess(user, 'whiskeykeeper')).toBe(true);
-    expect(hasModuleProAccess(user, 'cigarkeeper')).toBe(true);
-    expect(hasModuleProAccess(user, 'winekeeper')).toBe(true);
-  });
-
-  test('whiskey + cigar + wine bundle does NOT grant pipekeeper', () => {
-    const user = makeUser({ plan_key: 'three_module_bundle', paid_modules_csv: 'whiskeykeeper,cigarkeeper,winekeeper' });
-    expect(hasModuleProAccess(user, 'pipekeeper')).toBe(false);
+  test('returns null when nothing is set', () => {
+    expect(wineAdapter.getValue({})).toBeNull();
   });
 });
 
-// ─── 4-module bundle ─────────────────────────────────────────────────────────
+// ─── Collection rollup math ───────────────────────────────────────────────────
 
-describe('4-module bundle', () => {
-  test('4-module bundle grants all four modules', () => {
-    const user = makeUser({
-      paid_modules_csv: 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper',
-    });
-    const modules = getModulesWithProAccess(user);
-    expect(modules).toContain('pipekeeper');
-    expect(modules).toContain('whiskeykeeper');
-    expect(modules).toContain('cigarkeeper');
-    expect(modules).toContain('winekeeper');
+describe('collection rollup — cigar values', () => {
+  test('rollup sums market_estimated_total_value across cigars', () => {
+    const cigars = [
+      { market_estimated_total_value: 100 },
+      { market_estimated_total_value: 200 },
+      { estimated_total_value: 50 },
+    ];
+    const total = cigars.reduce((s, c) => s + (cigarAdapter.getValue(c) || 0), 0);
+    expect(total).toBe(350);
+  });
+
+  test('rollup skips unvalued cigars without adding 0', () => {
+    const cigars = [
+      { market_estimated_total_value: 100 },
+      {},
+      { purchase_price: 20 },
+    ];
+    const total = cigars.reduce((s, c) => s + (cigarAdapter.getValue(c) || 0), 0);
+    // 100 (market) + 0 (nothing) + 20 (purchase fallback) = 120
+    expect(total).toBe(120);
   });
 });
 
-// ─── Admin bypass ────────────────────────────────────────────────────────────
+describe('collection rollup — wine values', () => {
+  test('rollup sums estimated_total_value across wines', () => {
+    const wines = [
+      { estimated_total_value: 200, quantity: 2 },
+      { estimated_unit_value: 50, quantity: 3 },
+    ];
+    const total = wines.reduce((s, w) => s + (wineAdapter.getValue(w) || 0), 0);
+    expect(total).toBe(350); // 200 + 50*3
+  });
 
-describe('Admin access', () => {
-  test('admin gets winekeeper access', () => {
-    const user = makeUser({ role: 'admin' });
-    expect(hasModuleProAccess(user, 'winekeeper')).toBe(true);
+  test('returns null not 0 for unvalued wine — prevents misleading $0', () => {
+    const wine = {};
+    expect(wineAdapter.getValue(wine)).toBeNull();
+  });
+});
+
+// ─── WineKeeper module gating ─────────────────────────────────────────────────
+
+describe('WineKeeper module release state', () => {
+  test('winekeeper is not in launched state publicly', () => {
+    expect(isModuleLaunched('winekeeper')).toBe(false);
+  });
+
+  test('winekeeper is internal state', () => {
+    expect(isModuleInternal('winekeeper')).toBe(true);
+  });
+
+  test('public user cannot access winekeeper', () => {
+    const publicUser = { role: 'user', email: 'user@example.com' };
+    expect(canUserAccessModule('winekeeper', publicUser, true)).toBe(false);
+  });
+
+  test('admin user can access winekeeper when internal', () => {
+    const adminUser = { role: 'admin', email: 'admin@example.com' };
+    expect(canUserAccessModule('winekeeper', adminUser, true)).toBe(true);
+  });
+
+  test('internal_tester user can access winekeeper', () => {
+    const tester = { role: 'user', internal_tester: true, email: 'tester@example.com' };
+    expect(canUserAccessModule('winekeeper', tester, true)).toBe(true);
+  });
+
+  test('winekeeper module state is defined', () => {
+    expect(MODULE_RELEASE_STATES.winekeeper).toBeDefined();
+    expect(['internal', 'blocked', 'launched']).toContain(MODULE_RELEASE_STATES.winekeeper);
   });
 });

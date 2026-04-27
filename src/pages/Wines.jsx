@@ -10,9 +10,21 @@ import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import WineForm from '@/components/wine/WineForm';
 import LogWineTastingModal from '@/components/wine/LogWineTastingModal';
+import EnrichButton from '@/components/shared/EnrichButton';
 import { useCurrency } from '@/lib/currency/useCurrency';
 
-function WineCard({ wine, onEdit, onDelete, onLogTasting, formatFromBase, t }) {
+function resolveWineDisplayValue(wine) {
+  const qty = wine.quantity || 1;
+  if (wine.manual_valuation_enabled && wine.manual_estimated_value > 0) return wine.manual_estimated_value * qty;
+  if (wine.estimated_total_value > 0) return wine.estimated_total_value;
+  if (wine.market_estimated_total_value > 0) return wine.market_estimated_total_value;
+  if (wine.estimated_unit_value > 0) return wine.estimated_unit_value * qty;
+  if (wine.market_estimated_unit_value > 0) return wine.market_estimated_unit_value * qty;
+  if (wine.estimated_value > 0) return wine.estimated_value * qty;
+  return null;
+}
+
+function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, formatFromBase, t }) {
   const drinkingStatus = useMemo(() => {
     if (!wine.drinking_window_start || !wine.drinking_window_end) return null;
     const now = new Date();
@@ -71,11 +83,18 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, formatFromBase, t }) {
               ×{wine.quantity} {t('wine.bottles', 'btls')}
             </span>
           )}
-          {wine.estimated_value > 0 && (
-            <span className="text-xs ml-auto" style={{ color: 'rgba(224,216,200,0.55)' }}>
-              {formatFromBase(wine.estimated_value)}
-            </span>
-          )}
+          {(() => {
+            const displayVal = resolveWineDisplayValue(wine);
+            if (!displayVal) return (
+              <span className="text-xs ml-auto italic" style={{ color: 'rgba(224,216,200,0.35)' }}>Not valued yet</span>
+            );
+            const conf = wine.valuation_confidence || wine.market_valuation_confidence;
+            return (
+              <span className="text-xs ml-auto" style={{ color: conf === 'low' ? 'rgba(224,216,200,0.45)' : 'rgba(224,216,200,0.65)' }}>
+                {conf === 'low' ? '~' : ''}{formatFromBase(displayVal)}
+              </span>
+            );
+          })()}
         </div>
 
         <div className="flex gap-2 mt-3">
@@ -86,6 +105,7 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, formatFromBase, t }) {
           >
             {t('wine.logTasting', 'Log Tasting')}
           </button>
+          <EnrichButton itemType="wine" record={wine} onEnriched={onEnriched} />
           <button onClick={() => onEdit(wine)} className="p-1.5 rounded-lg transition-opacity hover:opacity-70" style={{ color: 'rgba(224,216,200,0.5)' }}>
             <Edit2 className="w-3.5 h-3.5" />
           </button>
@@ -226,6 +246,7 @@ export default function Wines() {
               onEdit={setEditingWine}
               onDelete={handleDelete}
               onLogTasting={setTastingWine}
+              onEnriched={() => queryClient.invalidateQueries({ queryKey: ['wines', user?.email] })}
               formatFromBase={formatFromBase}
               t={t}
             />

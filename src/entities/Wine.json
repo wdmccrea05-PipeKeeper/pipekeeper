@@ -5,7 +5,7 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Name of the wine (e.g. specific cuvée or product name)"
+      "description": "Name of the wine"
     },
     "producer": {
       "type": "string",
@@ -17,16 +17,16 @@
     },
     "appellation": {
       "type": "string",
-      "description": "Appellation or sub-region (e.g. Pauillac, Rutherford, Barossa Valley)"
+      "description": "Appellation or sub-region"
     },
     "varietal": {
       "type": "string",
-      "description": "Primary grape variety (e.g. Cabernet Sauvignon, Chardonnay)"
+      "description": "Primary grape variety"
     },
     "blend_components": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Grape varieties in the blend (e.g. [\"Cabernet Sauvignon\", \"Merlot\"])"
+      "description": "Grape varieties in the blend"
     },
     "vintage": {
       "type": "number",
@@ -39,7 +39,7 @@
     },
     "bottle_size": {
       "type": "string",
-      "description": "Bottle format (e.g. 750ml, Magnum, Jeroboam)"
+      "description": "Bottle format (e.g. 750ml, Magnum)"
     },
     "abv": {
       "type": "number",
@@ -52,34 +52,16 @@
     "drink_window_start": {
       "type": "string",
       "format": "date",
-      "description": "Start of the recommended drinking window (YYYY-MM-DD or YYYY)"
+      "description": "Start of the recommended drinking window"
     },
     "drink_window_end": {
       "type": "string",
       "format": "date",
-      "description": "End of the recommended drinking window (YYYY-MM-DD or YYYY)"
-    },
-    "peak_window_start": {
-      "type": "string",
-      "format": "date",
-      "description": "Start of the peak drinking window (YYYY-MM-DD or YYYY)"
-    },
-    "peak_window_end": {
-      "type": "string",
-      "format": "date",
-      "description": "End of the peak drinking window (YYYY-MM-DD or YYYY)"
+      "description": "End of the recommended drinking window"
     },
     "storage_location_id": {
       "type": "string",
       "description": "Foreign key to a StorageLocation record"
-    },
-    "bin": {
-      "type": "string",
-      "description": "Bin label or identifier within the storage location"
-    },
-    "rack_position": {
-      "type": "string",
-      "description": "Specific rack or slot position within the bin"
     },
     "purchase_price": {
       "type": "number",
@@ -87,19 +69,76 @@
     },
     "estimated_value": {
       "type": "number",
-      "description": "Current estimated market value"
+      "description": "Legacy estimated per-bottle value (kept for compatibility)"
+    },
+    "estimated_unit_value": {
+      "type": "number",
+      "description": "Current estimated per-bottle value"
+    },
+    "estimated_total_value": {
+      "type": "number",
+      "description": "Current estimated total value for all bottles in inventory"
+    },
+    "replacement_cost_estimate": {
+      "type": "number",
+      "description": "Estimated replacement cost for this record"
+    },
+    "valuation_source": {
+      "type": "string",
+      "description": "Where valuation was sourced from"
+    },
+    "valuation_confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence level for current valuation data"
+    },
+    "valuation_notes": {
+      "type": "string",
+      "description": "Free-text valuation notes"
+    },
+    "valuation_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when valuation data was last updated"
+    },
+    "manual_valuation_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, manual_estimated_value takes priority over derived valuation"
+    },
+    "manual_estimated_value": {
+      "type": "number",
+      "description": "Manual per-bottle override value used when manual valuation is enabled"
+    },
+    "market_estimated_unit_value": {
+      "type": "number",
+      "description": "System-derived market per-bottle estimate from enrichment"
+    },
+    "market_estimated_total_value": {
+      "type": "number",
+      "description": "System-derived total market value estimate for current quantity"
+    },
+    "market_replacement_cost_estimate": {
+      "type": "number",
+      "description": "System-derived replacement estimate for the full baseline quantity"
+    },
+    "market_valuation_source": {
+      "type": "string",
+      "description": "System-derived market valuation source summary"
+    },
+    "market_valuation_confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence level of system-derived market valuation"
+    },
+    "market_valuation_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when market valuation was last refreshed by the system"
     },
     "quantity": {
       "type": "number",
       "description": "Number of bottles in inventory"
-    },
-    "barcode": {
-      "type": "string",
-      "description": "Generic barcode value"
-    },
-    "upc": {
-      "type": "string",
-      "description": "Universal Product Code"
     },
     "notes": {
       "type": "string",
@@ -120,24 +159,9 @@
       "default": false,
       "description": "Whether this wine is excluded from AI recommendations"
     },
-    "public_visibility": {
-      "type": "boolean",
-      "default": true,
-      "description": "Whether this wine is visible to other users on public profiles"
-    },
     "created_by": {
       "type": "string",
       "description": "Email of the user who created this record"
-    },
-    "created_date": {
-      "type": "string",
-      "format": "date-time",
-      "description": "ISO timestamp when this record was created"
-    },
-    "updated_date": {
-      "type": "string",
-      "format": "date-time",
-      "description": "ISO timestamp when this record was last updated"
     }
   },
   "required": ["name", "producer", "created_by"]

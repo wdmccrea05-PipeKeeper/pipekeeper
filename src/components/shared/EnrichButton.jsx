@@ -294,6 +294,99 @@ Enums:
   return updates;
 }
 
+async function enrichWine(record) {
+  const quantity = Number(record?.quantity) || 1;
+  const needsMarketValuation = !Number(record?.market_estimated_unit_value);
+
+  const result = await base44.integrations.Core.InvokeLLM({
+    prompt: `You are a fine wine expert doing data enrichment for a collector app.
+Return only high-confidence metadata. Use null when uncertain.
+
+Record:
+- name: "${record.name || ''}"
+- producer: "${record.producer || ''}"
+- vintage: "${record.vintage || ''}"
+- varietal: "${record.varietal || ''}"
+- region: "${record.region || ''}"
+- appellation: "${record.appellation || ''}"
+- country_of_origin: "${record.country_of_origin || ''}"
+- style: "${record.style || ''}"
+- bottle_size: "${record.bottle_size || '750ml'}"
+- abv: "${record.abv || ''}"
+- purchase_price: "${record.purchase_price || ''}"
+
+Tasks:
+1. Fill any missing fields (varietal, region, appellation, country, style, abv) if you know them with high confidence.
+2. Estimate current market value per bottle (retail / market price for this vintage/producer/wine).
+3. Provide valuation_source (e.g. "Wine-Searcher market reference"), valuation_confidence (high/medium/low), and brief valuation_notes.
+
+Rules:
+- If vintage is known, use it in valuation — vintage matters significantly.
+- If bottle_size is not 750ml, adjust accordingly.
+- If only purchase_price is available and you cannot find market data, return estimated_unit_value = purchase_price and valuation_confidence = "low".
+- Do not fabricate precision. Low confidence is fine.`,
+    add_context_from_internet: true,
+    response_json_schema: {
+      type: 'object',
+      properties: {
+        varietal: { type: ['string', 'null'] },
+        region: { type: ['string', 'null'] },
+        appellation: { type: ['string', 'null'] },
+        country_of_origin: { type: ['string', 'null'] },
+        style: { type: ['string', 'null'] },
+        abv: { type: ['number', 'null'] },
+        drink_window_start: { type: ['string', 'null'] },
+        drink_window_end: { type: ['string', 'null'] },
+        estimated_unit_value: { type: ['number', 'null'] },
+        valuation_source: { type: ['string', 'null'] },
+        valuation_confidence: { type: ['string', 'null'] },
+        valuation_notes: { type: ['string', 'null'] },
+      },
+    },
+  });
+
+  const updates = {};
+
+  ['varietal', 'region', 'appellation', 'country_of_origin', 'style'].forEach((field) => {
+    const next = cleanText(result?.[field]);
+    if (next && !cleanText(record?.[field])) updates[field] = next;
+  });
+
+  if (result?.abv && !record?.abv) updates.abv = result.abv;
+  if (result?.drink_window_start && !record?.drink_window_start) updates.drink_window_start = result.drink_window_start;
+  if (result?.drink_window_end && !record?.drink_window_end) updates.drink_window_end = result.drink_window_end;
+
+  const inferredUnit = toPositiveNumber(result?.estimated_unit_value);
+  const valuationConfidence = cleanText(result?.valuation_confidence)?.toLowerCase();
+  const normalizedConfidence = ['high', 'medium', 'low'].includes(valuationConfidence) ? valuationConfidence : 'low';
+  const valuationSource = cleanText(result?.valuation_source);
+  const valuationNotes = cleanText(result?.valuation_notes);
+
+  // Fall back to purchase price if enrichment found nothing
+  const unitValue = inferredUnit || toPositiveNumber(record?.purchase_price);
+  const unitConfidence = inferredUnit ? normalizedConfidence : 'low';
+  const unitSource = inferredUnit ? (valuationSource || 'Market reference') : 'Purchase price (fallback)';
+
+  if (needsMarketValuation && unitValue) {
+    const nowIso = new Date().toISOString();
+    updates.market_estimated_unit_value = unitValue;
+    updates.market_estimated_total_value = Number((unitValue * quantity).toFixed(2));
+    updates.market_replacement_cost_estimate = Number((unitValue * quantity).toFixed(2));
+    updates.market_valuation_source = unitSource;
+    updates.market_valuation_confidence = unitConfidence;
+    updates.market_valuation_updated_at = nowIso;
+    if (!record?.valuation_source && unitSource) updates.valuation_source = unitSource;
+    if (!record?.valuation_updated_at) updates.valuation_updated_at = nowIso;
+    if (!record?.valuation_confidence) updates.valuation_confidence = unitConfidence;
+    if (!record?.valuation_notes && valuationNotes) updates.valuation_notes = valuationNotes;
+    // Also populate the canonical estimated fields for backward compat with adapter/totals
+    if (!record?.estimated_unit_value) updates.estimated_unit_value = unitValue;
+    if (!record?.estimated_total_value) updates.estimated_total_value = Number((unitValue * quantity).toFixed(2));
+  }
+
+  return updates;
+}
+
 export default function EnrichButton({ itemType, record, onEnriched }) {
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
@@ -360,6 +453,20 @@ export default function EnrichButton({ itemType, record, onEnriched }) {
           await Promise.resolve(onEnriched?.({ ...record, ...updates }));
         } else {
           toast.info(t('enrichButton.cigarNoUpdates'));
+        }
+      } else if (itemType === 'wine') {
+        const updates = await enrichWine(record);
+        if (Object.keys(updates).length > 0) {
+          await base44.entities.Wine.update(record.id, updates);
+          const valuationUpdated = updates.market_estimated_unit_value || updates.estimated_unit_value;
+          if (valuationUpdated) {
+            toast.success(`Wine enriched with valuation — ${Object.keys(updates).length} fields updated`);
+          } else {
+            toast.success(`Wine enriched — ${Object.keys(updates).length} fields updated`);
+          }
+          await Promise.resolve(onEnriched?.({ ...record, ...updates }));
+        } else {
+          toast.info('Wine metadata is already complete. Try adding more details (producer, vintage, region) to improve valuation.');
         }
       }
     } catch (e) {

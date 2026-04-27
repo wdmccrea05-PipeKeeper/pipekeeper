@@ -14,11 +14,22 @@ import { MODULE_TYPES } from "../moduleTypes.js";
  * @returns {number|null}
  */
 function resolveCigarValue(rawCigar) {
-  const v =
-    Number(rawCigar.estimated_value) ||
-    Number(rawCigar.purchase_price) ||
-    null;
-  return v && Number.isFinite(v) ? v : null;
+  // Priority: manual override → market total → estimated total → estimated unit*qty → purchase price
+  if (rawCigar.manual_valuation_enabled && Number(rawCigar.manual_valuation_override) > 0) {
+    const sticks = Number(rawCigar.singles_equivalent) || Number(rawCigar.quantity) || 1;
+    return Number(rawCigar.manual_valuation_override) * sticks;
+  }
+  const candidates = [
+    Number(rawCigar.estimated_total_value),
+    Number(rawCigar.market_estimated_total_value),
+    Number(rawCigar.estimated_unit_value) * (Number(rawCigar.singles_equivalent) || Number(rawCigar.quantity) || 1),
+    Number(rawCigar.estimated_value),
+    Number(rawCigar.purchase_price),
+  ];
+  for (const v of candidates) {
+    if (Number.isFinite(v) && v > 0) return v;
+  }
+  return null;
 }
 
 /**
