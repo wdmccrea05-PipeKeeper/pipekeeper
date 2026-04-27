@@ -4,6 +4,9 @@
  * Provides: header, tab bar, KPI grid, and panel wrapper.
  */
 import React from 'react';
+import InsightHighlightCard from './InsightHighlightCard';
+
+export { InsightHighlightCard };
 
 // ── Page Shell ──────────────────────────────────────────────────────────────
 
@@ -160,42 +163,10 @@ export function InsightsHighlightGrid({ children }) {
 }
 
 // ── Highlight Card ────────────────────────────────────────────────────────────
+// Re-exported from the canonical shared component so all module Insights pages
+// receive the same hero-style card (aspect-[3/2], photo BG, gradient, vignette).
 
-export function InsightsHighlightCard({ title, value, subtitle, accent = '#D4A574', photo }) {
-  return (
-    <div
-      className="rounded-xl overflow-hidden relative"
-      style={{
-        background: photo
-          ? undefined
-          : `linear-gradient(135deg, ${accent}22, ${accent}0a)`,
-        border: `1px solid ${accent}33`,
-        minHeight: 120,
-      }}
-    >
-      {photo && (
-        <img
-          src={photo}
-          alt={value}
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
-        />
-      )}
-      <div className="relative p-4">
-        <p className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: `${accent}CC` }}>
-          {title}
-        </p>
-        <p className="text-lg font-bold leading-snug" style={{ color: '#F5F1E7' }}>
-          {value}
-        </p>
-        {subtitle && (
-          <p className="text-sm mt-0.5" style={{ color: 'rgba(224,216,200,0.65)' }}>
-            {subtitle}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
+export { InsightHighlightCard as InsightsHighlightCard };
 
 // ── Empty State ───────────────────────────────────────────────────────────────
 

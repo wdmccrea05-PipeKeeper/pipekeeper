@@ -176,6 +176,7 @@ export default {
     whiskeyDescription: "Track your whiskey collection with tasting notes, bottle inventory, and valuations.",
     whiskeyTagline: "Whiskey collection intelligence",
     winekeeperDescription: "Wine cellar management — curate, age, and value your collection.",
+    winekeeperTagline: "Wine cellar intelligence",
     cigarkeeperDescription: "Curate and track your cigar collection with humidor management and session logs.",
     cigarkeeperTagline: "Your complete cigar collection platform",
     aiCuratorDescription: "Get personalized insights, rotation advice, and collection recommendations tailored to your actual collection.",
