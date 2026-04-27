@@ -1,40 +1,82 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Wine, BookOpen, BarChart3, Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Wine, BarChart3, Plus, BookOpen, FileSpreadsheet } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function WineKeeperModuleNav({ currentPageName }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const tabs = [
     { path: '/WineKeeper', label: t('winekeeper.overview', 'Overview'), icon: Wine },
-    { path: '/Wines', label: t('wine.collection', 'Collection'), icon: Wine },
+    { path: '/Wines', label: t('wine.collection', 'Wine Collection'), icon: Wine },
     { path: '/WineInsights', label: t('nav.insights', 'Insights'), icon: BarChart3 },
   ];
 
   return (
-    <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
-      {tabs.map(({ path, label, icon: Icon }) => {
-        const isActive = location.pathname === path || (currentPageName && path.includes(currentPageName));
-        return (
-          <Link
-            key={path}
-            to={path}
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap',
-              isActive
-                ? 'bg-[rgba(139,58,58,0.35)] border border-[rgba(139,58,58,0.55)]'
-                : 'border border-transparent hover:bg-white/6 hover:border-[rgba(139,58,58,0.2)]'
-            )}
-            style={{ color: isActive ? '#F5F1E7' : 'rgba(224,216,200,0.72)' }}
-          >
-            <Icon className="w-3.5 h-3.5" style={{ color: isActive ? '#C47070' : 'rgba(180,140,75,0.65)' }} />
-            {label}
-          </Link>
-        );
-      })}
+    <div className="flex items-center justify-between gap-3">
+      {/* ── Left: tabs ── */}
+      <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+        {tabs.map(({ path, label, icon: Icon }) => {
+          const isActive = location.pathname === path || (currentPageName && path.includes(currentPageName));
+          return (
+            <Link
+              key={path}
+              to={path}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap"
+              style={{
+                color: isActive ? '#F5F1E7' : 'rgba(224,216,200,0.78)',
+                background: isActive ? 'rgba(107,58,58,0.42)' : 'transparent',
+                border: isActive ? '1px solid rgba(139,58,58,0.35)' : '1px solid transparent',
+              }}
+            >
+              <Icon
+                className="w-4 h-4"
+                style={{ color: isActive ? '#C47070' : 'rgba(180,140,75,0.78)' }}
+              />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* ── Right: action buttons ── */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <Button
+          onClick={() => navigate('/Wines?action=add')}
+          size="sm"
+          variant="ghost"
+          className="gap-1 text-xs"
+          title={t('wine.addBottle', 'Add Bottle')}
+        >
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('wine.addBottle', 'Add Bottle')}</span>
+        </Button>
+
+        <Button
+          onClick={() => navigate('/Wines?action=tasting')}
+          size="sm"
+          variant="ghost"
+          className="gap-1 text-xs"
+          title={t('wine.logTasting', 'Log Tasting')}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('wine.logTasting', 'Log Tasting')}</span>
+        </Button>
+
+        <Button
+          onClick={() => navigate('/Import?type=winekeeper_wines')}
+          size="sm"
+          variant="ghost"
+          className="gap-1 text-xs"
+          title={t('import.bulkImport', 'Bulk Import')}
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('import.bulkImport', 'Bulk Import')}</span>
+        </Button>
+      </div>
     </div>
   );
 }
