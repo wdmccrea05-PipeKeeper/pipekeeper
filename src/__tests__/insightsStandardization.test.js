@@ -102,9 +102,93 @@ describe('Insights standardization', () => {
       expect(hasRotationPanel).toBe(true);
     });
 
+    it('PipeKeeper includes Pairings tab', () => {
+      const src = readPage('Insights.jsx');
+      expect(src).toContain("key: 'pairings'");
+      const hasPairingsPanel = src.includes("activeTab === 'pairings'") || src.includes("activeInsightsTab === 'pairings'");
+      expect(hasPairingsPanel).toBe(true);
+    });
+
+    it('PipeKeeper includes Aging tab', () => {
+      const src = readPage('Insights.jsx');
+      expect(src).toContain("key: 'aging'");
+      const hasAgingPanel = src.includes("activeTab === 'aging'") || src.includes("activeInsightsTab === 'aging'");
+      expect(hasAgingPanel).toBe(true);
+    });
+
     it('WineKeeper includes Drinking Window tab', () => {
       const src = readPage('WineInsights.jsx');
       expect(src).toContain("key: 'drinkingwindow'");
+    });
+  });
+
+  describe('Pairings tab content', () => {
+    it('PipeKeeper Pairings tab has pairing analytics or empty state', () => {
+      const src = readPage('Insights.jsx');
+      const hasPairings = src.includes('PairingGrid') || src.includes('PairingMatrix') || src.includes('InsightsEmptyState');
+      expect(hasPairings, 'PipeKeeper must render pairing analytics or an empty state in the Pairings tab').toBe(true);
+    });
+  });
+
+  describe('Aging tab content', () => {
+    it('PipeKeeper Aging tab has cellar aging analytics or empty state', () => {
+      const src = readPage('Insights.jsx');
+      const hasAging = src.includes('CellarAgingDashboard') || src.includes('AgingReportExporter') || src.includes('InsightsEmptyState');
+      expect(hasAging, 'PipeKeeper must render cellar aging analytics or an empty state in the Aging tab').toBe(true);
+    });
+  });
+
+  describe('Rotation tab content', () => {
+    it('PipeKeeper Rotation tab has rotation analytics or empty state', () => {
+      const src = readPage('Insights.jsx');
+      const hasRotation = src.includes('RotationPlanner') || src.includes('InsightsEmptyState');
+      expect(hasRotation, 'PipeKeeper must render rotation analytics or an empty state in the Rotation tab').toBe(true);
+    });
+  });
+
+  describe('module-specific page titles', () => {
+    it('PipeKeeper Insights title uses "PipeKeeper Insights"', () => {
+      const src = readPage('Insights.jsx');
+      expect(src).toContain('PipeKeeper Insights');
+    });
+
+    it('WhiskeyKeeper Insights title uses "WhiskeyKeeper Insights"', () => {
+      const src = readPage('WhiskeyInsights.jsx');
+      expect(src).toContain('WhiskeyKeeper Insights');
+    });
+
+    it('CigarKeeper Insights title uses "CigarKeeper Insights"', () => {
+      const src = readPage('CigarInsights.jsx');
+      expect(src).toContain('CigarKeeper Insights');
+    });
+
+    it('WineKeeper Insights title uses "WineKeeper Insights"', () => {
+      const src = readPage('WineInsights.jsx');
+      expect(src).toContain('WineKeeper Insights');
+    });
+
+    it('PipeKeeper Insights title does not use generic "Collection Insights"', () => {
+      const src = readPage('Insights.jsx');
+      // The InsightsHeader must not fall back to "Collection Insights"
+      expect(src).not.toContain("'Collection Insights'");
+      expect(src).not.toContain('"Collection Insights"');
+    });
+
+    it('WhiskeyKeeper Insights title does not use generic "Collection Insights" as fallback', () => {
+      const src = readPage('WhiskeyInsights.jsx');
+      expect(src).not.toContain("'Collection Insights'");
+      expect(src).not.toContain('"Collection Insights"');
+    });
+  });
+
+  describe('mobile tab bar handles extra PipeKeeper tabs', () => {
+    it('PipeKeeper InsightsTabBar has flex-wrap to handle extra tabs', () => {
+      const shellSrc = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/components/insights/InsightsShell.jsx'),
+        'utf8'
+      );
+      // InsightsTabBar uses flex-wrap so tabs wrap on mobile instead of overflowing
+      expect(shellSrc).toContain('flex-wrap');
     });
   });
 

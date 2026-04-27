@@ -376,7 +376,7 @@ function CigarInsightsInner() {
     <InsightsPageShell>
       <CigarKeeperModuleNav currentPageName="CigarInsights" />
       <InsightsHeader
-        title="Cigar Insights"
+        title="CigarKeeper Insights"
         subtitle="Analytics and trends from your cigar collection and sessions"
       />
 
