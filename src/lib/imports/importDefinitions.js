@@ -401,6 +401,102 @@ function duplicateKeyCigar(payload) {
   return compactString([payload.brand, payload.line, payload.vitola, payload.purchase_date, payload.unit_type].join('|'));
 }
 
+function coerceWinePayload(row, extras) {
+  const purchasePrice = parseNumber(row.purchase_price);
+  const estimatedUnitValue = parseNumber(row.estimated_unit_value ?? row.estimated_value);
+  const estimatedTotalValue = parseNumber(row.estimated_total_value);
+  const replacementCostEstimate = parseNumber(row.replacement_cost_estimate);
+  const manualEstimatedValue = parseNumber(row.manual_estimated_value);
+  const marketEstimatedUnitValue = parseNumber(row.market_estimated_unit_value);
+  const marketEstimatedTotalValue = parseNumber(row.market_estimated_total_value);
+  const quantity = parseNumber(row.quantity);
+  const vintage = parseInteger(row.vintage);
+  const abv = parseNumber(row.abv);
+  const rating = parseRating(row.rating);
+  const favorite = parseBoolean(row.favorite);
+  const manualValuationEnabled = parseBoolean(row.manual_valuation_enabled);
+  const purchaseDate = parseDate(row.purchase_date);
+  const drinkWindowStart = parseDate(row.drinking_window_start ?? row.drink_window_start);
+  const drinkWindowEnd = parseDate(row.drinking_window_end ?? row.drink_window_end);
+  const valuationConfidence = parseEnum((row.valuation_confidence || '').toLowerCase(), ['high', 'medium', 'low']);
+  const marketValuationConfidence = parseEnum((row.market_valuation_confidence || '').toLowerCase(), ['high', 'medium', 'low']);
+
+  const WINE_STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
+  const styleRaw = (row.style || '').toLowerCase();
+  const normalizedStyle = styleRaw === 'rose' ? 'rosé' : styleRaw;
+  const style = WINE_STYLES.find((s) => s === normalizedStyle) || (row.style || undefined);
+
+  const errors = [];
+  if (!purchasePrice.ok) errors.push('purchase_price is invalid');
+  if (!estimatedUnitValue.ok) errors.push('estimated_unit_value is invalid');
+  if (!estimatedTotalValue.ok) errors.push('estimated_total_value is invalid');
+  if (!replacementCostEstimate.ok) errors.push('replacement_cost_estimate is invalid');
+  if (!manualEstimatedValue.ok) errors.push('manual_estimated_value is invalid');
+  if (!marketEstimatedUnitValue.ok) errors.push('market_estimated_unit_value is invalid');
+  if (!marketEstimatedTotalValue.ok) errors.push('market_estimated_total_value is invalid');
+  if (!quantity.ok) errors.push('quantity is invalid');
+  if (!vintage.ok) errors.push('vintage is invalid');
+  if (!abv.ok) errors.push('abv is invalid');
+  if (!rating.ok) errors.push('rating is invalid');
+  if (!favorite.ok) errors.push('favorite is invalid');
+  if (!manualValuationEnabled.ok) errors.push('manual_valuation_enabled is invalid');
+  if (!purchaseDate.ok) errors.push('purchase_date is invalid');
+  if (!drinkWindowStart.ok) errors.push('drinking_window_start is invalid');
+  if (!drinkWindowEnd.ok) errors.push('drinking_window_end is invalid');
+
+  const importedMetadata = toNoteLines({
+    appellation: row.appellation,
+    blend_components: row.blend_components,
+    bottle_size: row.bottle_size,
+    storage_location: row.storage_location,
+    tags: row.tags,
+    valuation_source: row.valuation_source,
+  });
+
+  const payload = {
+    name: row.name || undefined,
+    producer: row.producer || row.winery || undefined,
+    vintage: vintage.value,
+    varietal: row.varietal || undefined,
+    style: style || undefined,
+    region: row.region || undefined,
+    appellation: row.appellation || undefined,
+    country_of_origin: row.country_of_origin || row.country || undefined,
+    bottle_size: row.bottle_size || undefined,
+    abv: abv.value,
+    quantity: quantity.value ?? 1,
+    purchase_price: purchasePrice.value,
+    purchase_date: purchaseDate.value,
+    drinking_window_start: drinkWindowStart.value,
+    drinking_window_end: drinkWindowEnd.value,
+    estimated_value: estimatedUnitValue.value,
+    estimated_unit_value: estimatedUnitValue.value,
+    estimated_total_value: estimatedTotalValue.value,
+    replacement_cost_estimate: replacementCostEstimate.value,
+    manual_valuation_enabled: manualValuationEnabled.value,
+    manual_estimated_value: manualEstimatedValue.value,
+    market_estimated_unit_value: marketEstimatedUnitValue.value,
+    market_estimated_total_value: marketEstimatedTotalValue.value,
+    valuation_source: row.valuation_source || undefined,
+    valuation_confidence: valuationConfidence.value,
+    market_valuation_confidence: marketValuationConfidence.value,
+    rating: rating.value,
+    is_favorite: favorite.value,
+    notes: [row.notes, importedMetadata ? `Imported metadata: ${importedMetadata}` : ''].filter(Boolean).join('\n'),
+  };
+
+  const warnings = [];
+  if (!row.producer && !row.winery) warnings.push('producer not provided (required for duplicate detection)');
+  if (!row.vintage) warnings.push('vintage not provided');
+  if (extras?.unsupportedColumns?.length) warnings.push(`Unsupported columns ignored: ${extras.unsupportedColumns.join(', ')}`);
+
+  return { payload, errors, warnings };
+}
+
+function duplicateKeyWine(payload) {
+  return compactString([payload.producer, payload.name, payload.vintage, payload.purchase_date].join('|'));
+}
+
 /**
  * Import definition schema:
  * - id/module/label/template metadata for UI/template downloads
@@ -616,6 +712,60 @@ const IMPORT_DEFINITIONS = [
     listForUser: (userEmail) => base44.entities.Cigar.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
     duplicateKey: duplicateKeyCigar,
   },
+  {
+    id: 'winekeeper_wines',
+    moduleLabel: 'WineKeeper',
+    label: 'Wines',
+    templateFile: 'WineKeeper_Wines_Template.csv',
+    entity: 'Wine',
+    allowedColumns: [
+      'name', 'producer', 'winery', 'vintage', 'varietal', 'blend_components', 'style', 'region',
+      'appellation', 'country_of_origin', 'country', 'bottle_size', 'abv', 'quantity',
+      'purchase_date', 'purchase_price', 'storage_location', 'drinking_window_start', 'drinking_window_end',
+      'drink_window_start', 'drink_window_end', 'rating', 'notes', 'tags', 'estimated_value',
+      'estimated_unit_value', 'estimated_total_value', 'replacement_cost_estimate',
+      'manual_valuation_enabled', 'manual_estimated_value', 'valuation_source', 'valuation_confidence',
+      'valuation_notes', 'market_estimated_unit_value', 'market_estimated_total_value',
+      'market_valuation_source', 'market_valuation_confidence', 'favorite',
+    ],
+    aliases: {
+      winery: 'producer',
+      country: 'country_of_origin',
+      drink_window_start: 'drinking_window_start',
+      drink_window_end: 'drinking_window_end',
+      qty: 'quantity',
+    },
+    requiredColumns: ['name', 'producer'],
+    optionalColumns: ['vintage', 'varietal', 'style', 'region', 'country_of_origin', 'purchase_date', 'notes'],
+    example: {
+      name: 'Château Margaux',
+      producer: 'Château Margaux',
+      vintage: '2015',
+      varietal: 'Cabernet Sauvignon',
+      style: 'red',
+      region: 'Bordeaux',
+      appellation: 'Margaux AOC',
+      country_of_origin: 'France',
+      bottle_size: '750ml',
+      abv: '13.5',
+      quantity: '3',
+      purchase_date: '2022-06-10',
+      purchase_price: '650',
+      storage_location: 'Main Cellar',
+      drinking_window_start: '2025-01-01',
+      drinking_window_end: '2045-01-01',
+      rating: '4.8',
+      notes: 'Anniversary bottle',
+      tags: 'bordeaux,investment',
+      estimated_value: '750',
+      valuation_confidence: 'high',
+      favorite: 'yes',
+    },
+    parseRow: coerceWinePayload,
+    create: (payload) => base44.entities.Wine.create(payload),
+    listForUser: (userEmail) => base44.entities.Wine.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
+    duplicateKey: duplicateKeyWine,
+  },
 ];
 
 export const importDefinitions = IMPORT_DEFINITIONS.reduce((acc, def) => {
@@ -624,6 +774,33 @@ export const importDefinitions = IMPORT_DEFINITIONS.reduce((acc, def) => {
 }, {});
 
 export const importDefinitionList = IMPORT_DEFINITIONS;
+
+/**
+ * Download a CSV import template for the given definition.
+ * Generates a one-row CSV with headers and example values.
+ */
+export function downloadImportTemplate(definition) {
+  if (!definition) return;
+  const headerLine = definition.allowedColumns.join(',');
+  const exampleLine = definition.allowedColumns
+    .map((column) => {
+      const raw = definition.example?.[column] ?? '';
+      const value = String(raw);
+      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    })
+    .join(',');
+  const csv = `${headerLine}\n${exampleLine}\n`;
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = definition.templateFile;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function mapRowToCanonical(headers, values, definition) {
   const row = {};
