@@ -54,6 +54,11 @@ export default function AddToWantListModal({
       payload.pipe_shape = item.shape;
       payload.pipe_finish = item.finish;
       payload.pipe_material = item.bowl_material;
+    } else if (itemType === "wine") {
+      payload.producer = item.maker || item.producer;
+      payload.vintage = item.vintage;
+      payload.region = item.region;
+      payload.varietal = item.varietal;
     }
 
     setSaving(true);

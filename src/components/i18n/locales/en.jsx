@@ -457,6 +457,12 @@ export default {
     byStyle: "By Style",
     byRegion: "By Region",
     tastingCount: "{{count}} tastings logged",
+    photos: "Photos",
+    manualValuationOverride: "Manual Valuation Override",
+    manualEstimatedValue: "Manual Estimated Value ($)",
+    addToWantList: "Add to Want List",
+    sortProducer: "Producer",
+    sortDrinkWindow: "Drink Window",
   },
 
   photos: {

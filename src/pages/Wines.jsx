@@ -5,12 +5,13 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Wine, Plus, Search, Star, Edit2, Trash2 } from 'lucide-react';
+import { Wine, Plus, Search, Star, Edit2, Trash2, Heart, BookmarkPlus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import WineForm from '@/components/wine/WineForm';
 import LogWineTastingModal from '@/components/wine/LogWineTastingModal';
 import EnrichButton from '@/components/shared/EnrichButton';
+import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
 import { useCurrency } from '@/lib/currency/useCurrency';
 
 function resolveWineDisplayValue(wine) {
@@ -24,7 +25,7 @@ function resolveWineDisplayValue(wine) {
   return null;
 }
 
-function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, formatFromBase, t }) {
+function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWantList, formatFromBase, t }) {
   const drinkingStatus = useMemo(() => {
     if (!wine.drinking_window_start || !wine.drinking_window_end) return null;
     const now = new Date();
@@ -106,6 +107,9 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, formatFrom
             {t('wine.logTasting', 'Log Tasting')}
           </button>
           <EnrichButton itemType="wine" record={wine} onEnriched={onEnriched} />
+          <button onClick={() => onAddToWantList(wine)} className="p-1.5 rounded-lg transition-opacity hover:opacity-70" title="Add to Want List" style={{ color: 'rgba(224,216,200,0.5)' }}>
+            <BookmarkPlus className="w-3.5 h-3.5" />
+          </button>
           <button onClick={() => onEdit(wine)} className="p-1.5 rounded-lg transition-opacity hover:opacity-70" style={{ color: 'rgba(224,216,200,0.5)' }}>
             <Edit2 className="w-3.5 h-3.5" />
           </button>
@@ -129,6 +133,7 @@ export default function Wines() {
   const [showForm, setShowForm] = useState(urlParams.get('action') === 'add');
   const [editingWine, setEditingWine] = useState(null);
   const [tastingWine, setTastingWine] = useState(null);
+  const [wantListWine, setWantListWine] = useState(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('name');
 
@@ -157,9 +162,16 @@ export default function Wines() {
     }
     list.sort((a, b) => {
       if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === 'producer') return (a.producer || '').localeCompare(b.producer || '');
       if (sortBy === 'vintage') return (b.vintage || 0) - (a.vintage || 0);
       if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
-      if (sortBy === 'value') return ((b.estimated_value || 0) * (b.quantity || 1)) - ((a.estimated_value || 0) * (a.quantity || 1));
+      if (sortBy === 'value') return (resolveWineDisplayValue(b) || 0) - (resolveWineDisplayValue(a) || 0);
+      if (sortBy === 'region') return (a.region || '').localeCompare(b.region || '');
+      if (sortBy === 'drink_window') {
+        const aStart = a.drinking_window_start ? new Date(a.drinking_window_start).getTime() : Infinity;
+        const bStart = b.drinking_window_start ? new Date(b.drinking_window_start).getTime() : Infinity;
+        return aStart - bStart;
+      }
       return 0;
     });
     return list;
@@ -222,9 +234,12 @@ export default function Wines() {
           style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
         >
           <option value="name">{t('wine.sortName', 'Name')}</option>
+          <option value="producer">{t('wine.producer', 'Producer')}</option>
           <option value="vintage">{t('wine.sortVintage', 'Vintage')}</option>
           <option value="rating">{t('wine.sortRating', 'Rating')}</option>
           <option value="value">{t('wine.sortValue', 'Value')}</option>
+          <option value="region">{t('wine.region', 'Region')}</option>
+          <option value="drink_window">{t('wine.drinkingWindowSummary', 'Drink Window')}</option>
         </select>
       </div>
 
@@ -246,6 +261,7 @@ export default function Wines() {
               onEdit={setEditingWine}
               onDelete={handleDelete}
               onLogTasting={setTastingWine}
+              onAddToWantList={setWantListWine}
               onEnriched={() => queryClient.invalidateQueries({ queryKey: ['wines', user?.email] })}
               formatFromBase={formatFromBase}
               t={t}
@@ -260,6 +276,15 @@ export default function Wines() {
           isOpen={!!tastingWine}
           onClose={() => setTastingWine(null)}
           onSaved={() => { setTastingWine(null); queryClient.invalidateQueries({ queryKey: ['wine-tastings-summary'] }); }}
+        />
+      )}
+
+      {wantListWine && (
+        <AddToWantListModal
+          open={!!wantListWine}
+          onOpenChange={(open) => { if (!open) setWantListWine(null); }}
+          item={{ name: wantListWine.name, maker: wantListWine.producer, image: wantListWine.photos?.[0] }}
+          itemType="wine"
         />
       )}
     </div>
