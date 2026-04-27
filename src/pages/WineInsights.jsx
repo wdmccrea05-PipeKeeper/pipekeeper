@@ -127,17 +127,19 @@ export default function WineInsights() {
             <InsightStatCard label="Drink Now" value={stats.drinkingNow} icon={CalendarIcon} accent="#2E7D5C" />
           </InsightsKpiGrid>
 
-          <InsightsHighlightGrid>
-            {stats.topByRating[0] && (
-              <InsightsHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} />
-            )}
-            {stats.topByValue[0] && (
-              <InsightsHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={stats.topByValue[0].estimated_value ? formatFromBase(stats.topByValue[0].estimated_value) : '—'} accent="#2E7D5C" />
-            )}
-            {stats.drinkingNow > 0 && (
-              <InsightsHighlightCard title="In Drinking Window" value={`${stats.drinkingNow} bottle${stats.drinkingNow !== 1 ? 's' : ''}`} subtitle="Ready to open" accent={WINE_GOLD} />
-            )}
-          </InsightsHighlightGrid>
+          {wines.length > 0 && (
+            <InsightsHighlightGrid>
+              {stats.topByRating[0] && (
+                <InsightsHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} />
+              )}
+              {stats.topByValue[0] && (
+                <InsightsHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={stats.topByValue[0].estimated_value ? formatFromBase(stats.topByValue[0].estimated_value) : '—'} accent="#2E7D5C" />
+              )}
+              {stats.drinkingNow > 0 && (
+                <InsightsHighlightCard title="In Drinking Window" value={`${stats.drinkingNow} bottle${stats.drinkingNow !== 1 ? 's' : ''}`} subtitle="Ready to open" accent={WINE_GOLD} />
+              )}
+            </InsightsHighlightGrid>
+          )}
 
           {wines.length === 0 && (
             <InsightsEmptyState message="Add wines to your cellar to see insights." icon={Wine} />

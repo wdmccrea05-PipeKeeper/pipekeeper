@@ -43,6 +43,7 @@ const REQUIRED_KEYS = [
   'freeTier.upgradePrompt',
   'hub.restockPriority',
   'hub.cigarCrownJewel',
+  'hub.winekeeperTagline',
 ];
 
 const NON_EN_REQUIRED_KEYS = [
