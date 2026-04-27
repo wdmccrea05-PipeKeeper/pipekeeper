@@ -6,13 +6,13 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Plus, Flame, Glasses, BarChart3 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-
 import { selectWhiskeyMetrics } from '@/lib/collection/whiskeySelectors';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
-
+import ModulePageShell from '@/components/modules/ModulePageShell';
 import { getWhiskeyHighlights } from '@/components/whiskey/getWhiskeyHighlights';
 import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
+import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { useCurrency } from '@/lib/currency/useCurrency';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
@@ -22,7 +22,6 @@ function WhiskeyKeeperInner() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const [showAddModal, setShowAddModal] = useState(false);
-  // Subscribe to currency context so the component re-renders when the user changes currency
   const { formatFromBase } = useCurrency();
 
   const { data: bottles = [] } = useQuery({
@@ -52,103 +51,46 @@ function WhiskeyKeeperInner() {
     [bottles, inventoryUnits]
   );
 
-  const highlights = useMemo(() => {
-    return getWhiskeyHighlights(bottles, inventoryUnits, formatFromBase);
-  }, [bottles, inventoryUnits, formatFromBase]);
+  const highlights = useMemo(
+    () => getWhiskeyHighlights(bottles, inventoryUnits, formatFromBase),
+    [bottles, inventoryUnits, formatFromBase]
+  );
+
+  const whiskeyStats = [
+    { label: t('whiskey.collectionValue'), value: formatFromBase(Math.round(whiskeyMetrics.collection_value)) },
+    { label: t('whiskey.bottleTypes'), value: whiskeyMetrics.bottle_types },
+    { label: t('whiskey.inventory'), value: whiskeyMetrics.total_bottles },
+    { label: t('whiskey.avgAbv', 'Avg ABV'), value: whiskeyMetrics.avg_abv ? `${whiskeyMetrics.avg_abv.toFixed(1)}%` : '—' },
+  ];
 
   const quickLaunchActions = [
-    {
-      key: 'addBottle',
-      Icon: Plus,
-      label: t('whiskey.addBottle'),
-      onClick: () => setShowAddModal(true)
-    },
-    {
-      key: 'browseCollection',
-      Icon: Glasses,
-      label: t('whiskey.yourCollection'),
-      onClick: () => navigate('/Whiskey')
-    },
-    {
-      key: 'logTasting',
-      Icon: Flame,
-      label: t('quickActions.logTasting'),
-      onClick: () => navigate('/Tastings')
-    },
-    {
-      key: 'insights',
-      Icon: BarChart3,
-      label: t('nav.insights'),
-      onClick: () => navigate('/WhiskeyInsights')
-    },
-    {
-      key: 'curator',
-      iconImage: CURATOR_ICON,
-      label: t('quickActions.collectionCurator'),
-      onClick: () => navigate('/Curator')
-    }
+    { key: 'addBottle', Icon: Plus, label: t('whiskey.addBottle'), onClick: () => setShowAddModal(true) },
+    { key: 'browseCollection', Icon: Glasses, label: t('whiskey.yourCollection'), onClick: () => navigate('/Whiskey') },
+    { key: 'logTasting', Icon: Flame, label: t('quickActions.logTasting'), onClick: () => navigate('/Tastings') },
+    { key: 'insights', Icon: BarChart3, label: t('nav.insights'), onClick: () => navigate('/WhiskeyInsights') },
+    { key: 'curator', iconImage: CURATOR_ICON, label: t('quickActions.collectionCurator'), onClick: () => navigate('/Curator') },
   ];
 
   return (
-    <div className="space-y-8">
+    <ModulePageShell
+      title={t('whiskeykeeper.title', 'WhiskeyKeeper')}
+      subtitle={t('whiskeykeeper.description', 'Track, value, and explore your whiskey collection')}
+      icon={<WhiskeyKeeperIcon className="w-6 h-6" style={{ color: '#D47C7C' }} />}
+      accentColor="#B66565"
+      onBackToHub={() => navigate('/CollectionHub')}
+      stats={whiskeyStats}
+      moduleNav={<WhiskeyKeeperModuleNav currentPageName={null} />}
+      actions={<ModuleQuickLaunch actions={quickLaunchActions} />}
+    >
       <AddFlowModal
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
         initialItemType="bottle"
       />
 
-      <WhiskeyKeeperModuleNav currentPageName={null} />
-
-      <div
-        className="rounded-lg p-5"
-        style={{
-          background: 'linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))',
-          border: '1px solid rgba(120, 90, 65, 0.3)',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)'
-        }}
-      >
-        <h2
-          className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
-          style={{ color: 'rgba(180, 140, 75, 0.8)' }}
-        >
-          {t('home.collectionSummary')}
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskey.collectionValue')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {formatFromBase(Math.round(whiskeyMetrics.collection_value))}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskey.bottleTypes')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
-              {whiskeyMetrics.bottle_types}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskey.inventory')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#B4824B' }}>
-              {whiskeyMetrics.total_bottles}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <ModuleQuickLaunch actions={quickLaunchActions} />
-
       {highlights.length > 0 && (
         <div>
-          <h2
-            className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
-            style={{ color: 'rgba(180, 140, 75, 0.8)' }}
-          >
+          <h2 className="text-xs font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: 'rgba(180,140,75,0.8)' }}>
             {t('home.highlights')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -170,7 +112,7 @@ function WhiskeyKeeperInner() {
           </div>
         </div>
       )}
-    </div>
+    </ModulePageShell>
   );
 }
 
