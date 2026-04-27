@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { Button } from '@/components/ui/button';
 import { Leaf, BookOpen, TrendingUp, Sparkles, List } from 'lucide-react';
 import PipeIdentifier from '@/components/ai/PipeIdentifier';
 import { createPageUrl } from '@/components/utils/createPageUrl';
@@ -15,6 +14,7 @@ import { checkFreeTierLimit } from '@/components/utils/freeTierLimits';
 import PipeKeeperModuleNav from './PipeKeeperModuleNav';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
+import ModulePageShell from './ModulePageShell';
 import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import LogSessionModal from '@/components/home/LogSessionModal';
@@ -170,38 +170,31 @@ export default function PipeKeeperModule() {
     }
   ];
 
+  const pipeStats = [
+    { label: t('home.totalValue'), value: hideValues ? '—' : formatFromBase(Math.round(totalPipeValue)) },
+    { label: t('home.pipesInCollection'), value: hideCollectionCounts ? '—' : pipes.length },
+    { label: t('home.tobaccoBlends'), value: hideCollectionCounts ? '—' : blends.length },
+    { label: t('home.cellared'), value: formatWeight(totalCellaredOz, 'oz') },
+  ];
+
   return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <img
-              src="/branding/pipekeeper-logo.png?v=1"
-              alt={t('pipekeeper.title')}
-              className="w-11 h-11 object-contain"
-              style={{
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.28))',
-                backgroundColor: 'transparent',
-              }}
-              draggable={false}
-            />
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>
-              {t('pipekeeper.title')}
-            </h1>
-          </div>
-          <p className="text-base sm:pl-14" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
-            {t('pipekeeper.description')}
-          </p>
-        </div>
-        <Button onClick={() => navigate('/CollectionHub')} variant="ghost" className="text-sm text-[#E0D8C8] hover:bg-white/10">
-           {t('common.backToHub')}
-        </Button>
-      </div>
-
-      {/* Module Navigation - landing has no active tab */}
-      <PipeKeeperModuleNav currentPageName={null} />
-
+    <ModulePageShell
+      title={t('pipekeeper.title')}
+      subtitle={t('pipekeeper.description')}
+      icon={
+        <img
+          src="/branding/pipekeeper-logo.png?v=1"
+          alt={t('pipekeeper.title')}
+          className="w-8 h-8 object-contain"
+          draggable={false}
+        />
+      }
+      accentColor="#C89752"
+      onBackToHub={() => navigate('/CollectionHub')}
+      stats={pipeStats}
+      moduleNav={<PipeKeeperModuleNav currentPageName={null} />}
+      actions={<ModuleQuickLaunch actions={quickLaunchActions} />}
+    >
       {/* Free Tier Limit Warnings */}
       {pipeLimit.atLimit && !hasPipekeeperPro && (
         <FreeTierUpgradePrompt
@@ -218,58 +211,10 @@ export default function PipeKeeperModule() {
         />
       )}
 
-      {/* Summary Cards */}
-      <div className="rounded-lg p-5" style={{
-        background: 'linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))',
-        border: '1px solid rgba(120, 90, 65, 0.3)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)'
-      }}>
-        <h2 className="text-sm uppercase tracking-[0.12em] font-semibold mb-4" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
-          {t('home.collectionSummary')}
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('home.totalValue')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#D4A574' }}>
-              {hideValues ? '—' : formatFromBase(Math.round(totalPipeValue))}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('home.pipesInCollection')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#B48C4B' }}>
-              {hideCollectionCounts ? '—' : pipes.length}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('home.tobaccoBlends')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#5A7C5A' }}>
-              {hideCollectionCounts ? '—' : blends.length}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('home.cellared')}
-            </p>
-            <p className="text-2xl font-bold" style={{ color: '#B4824B' }}>
-              {formatWeight(totalCellaredOz, 'oz')}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Launch */}
-      <ModuleQuickLaunch actions={quickLaunchActions} />
-
       {/* Highlights */}
       {(mostSmokedPipe || mostValuablePipe || favoriteBlends.length > 0) && (
         <div>
-          <h2 className="text-sm uppercase tracking-[0.12em] font-semibold mb-4" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: 'rgba(180,140,75,0.8)' }}>
             {t('home.highlights')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -336,17 +281,16 @@ export default function PipeKeeperModule() {
         isLoading={pipesLoading || blendsLoading}
       />
 
-      {/* Add Flow Modal */}
       <AddFlowModal
         open={addFlowOpen}
         onClose={() => { setAddFlowOpen(false); setAddFlowType(null); }}
         initialItemType={addFlowType}
-        onCreated={() => { 
+        onCreated={() => {
           handlePipeAdded();
           setAddFlowOpen(false);
           setAddFlowType(null);
         }}
       />
-    </div>
+    </ModulePageShell>
   );
 }

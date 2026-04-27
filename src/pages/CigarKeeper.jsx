@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { Button } from '@/components/ui/button';
 import { Cigarette, Plus, BarChart3, BookOpen, Grid3X3, AlertTriangle, TrendingDown, Clock, Droplets } from 'lucide-react';
+import ModulePageShell from '@/components/modules/ModulePageShell';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 import { base44 } from '@/api/base44Client';
@@ -254,47 +254,24 @@ function CigarKeeperInner() {
     },
   ];
 
+  const cigarStats = [
+    { label: t('cigars.totalCigars', 'Total Cigars'), value: cigars.length },
+    { label: t('cigars.totalSticks', 'Total Sticks'), value: insights.totalSticks ?? cigars.reduce((s, c) => s + (c.quantity || 1), 0) },
+    { label: t('cigars.humidors', 'Humidors'), value: humidors.length },
+    { label: t('cigars.sessionsLogged', 'Sessions'), value: sessions.length },
+  ];
+
   return (
-    <div className="space-y-8 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(135deg, rgba(140,107,63,0.4), rgba(100,74,45,0.5))',
-                border: '1px solid rgba(140,107,63,0.45)',
-              }}
-            >
-              <Cigarette className="w-6 h-6" style={{ color: '#D4A574' }} />
-            </div>
-            <h1
-              className="text-2xl sm:text-4xl font-bold tracking-tight"
-              style={{
-                color: '#F5F1E7',
-                fontFamily: "'Georgia', serif",
-                textShadow: '0 2px 6px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {t('cigarkeeper.title')}
-            </h1>
-          </div>
-          <p className="text-sm sm:text-base" style={{ color: 'rgba(224,216,200,0.75)' }}>
-            {t('cigarkeeper.description')}
-          </p>
-        </div>
-        <Button
-          onClick={() => navigate('/CollectionHub')}
-          variant="outline"
-          className="text-sm shrink-0"
-        >
-          {t('common.backToHub')}
-        </Button>
-      </div>
-
-      <CigarKeeperModuleNav currentPageName={null} onLogSession={() => setSessionModalOpen(true)} />
-
+    <ModulePageShell
+      title={t('cigarkeeper.title')}
+      subtitle={t('cigarkeeper.description')}
+      icon={<Cigarette className="w-6 h-6" style={{ color: '#D4A574' }} />}
+      accentColor="#8C6B3F"
+      onBackToHub={() => navigate('/CollectionHub')}
+      stats={cigarStats}
+      moduleNav={<CigarKeeperModuleNav currentPageName={null} onLogSession={() => setSessionModalOpen(true)} />}
+      actions={<ModuleQuickLaunch actions={quickLaunchActions} />}
+    >
       <CigarHighlightCard cigars={cigars} sessions={sessions} humidors={humidors} />
 
       {actionItems.length > 0 && (
@@ -314,12 +291,10 @@ function CigarKeeperInner() {
         </div>
       )}
 
-      <ModuleQuickLaunch actions={quickLaunchActions} />
-
       {highlights.length > 0 && (
         <div>
           <h2
-            className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
+            className="text-xs font-semibold uppercase tracking-[0.14em] mb-4"
             style={{ color: 'rgba(180,140,75,0.8)' }}
           >
             {t('home.highlights', 'Collection Highlights')}
@@ -348,7 +323,7 @@ function CigarKeeperInner() {
       {alertHumidors.length > 0 && (
         <div>
           <h2
-            className="text-sm uppercase tracking-[0.12em] font-semibold mb-3"
+            className="text-xs font-semibold uppercase tracking-[0.14em] mb-3"
             style={{ color: 'rgba(224,85,85,0.8)' }}
           >
             {t('cigars.humidorsNeedingAttention')}
@@ -369,7 +344,7 @@ function CigarKeeperInner() {
       {recentSessions.length > 0 && (
         <div>
           <h2
-            className="text-sm uppercase tracking-[0.12em] font-semibold mb-4"
+            className="text-xs font-semibold uppercase tracking-[0.14em] mb-4"
             style={{ color: 'rgba(180,140,75,0.8)' }}
           >
             {t('cigars.recentSessions')}
@@ -387,9 +362,7 @@ function CigarKeeperInner() {
         onClose={() => setSessionModalOpen(false)}
         onSessionSaved={() => setSessionModalOpen(false)}
       />
-
-
-    </div>
+    </ModulePageShell>
   );
 }
 

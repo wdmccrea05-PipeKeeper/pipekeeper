@@ -59,4 +59,11 @@ export default [
       'no-unused-vars': 'off',
     },
   },
+  {
+    // Test files — explicitly disable no-undef (vitest globals may be imported or injected)
+    files: ['**/__tests__/**', '**/*.test.*', '**/*.spec.*'],
+    rules: {
+      'no-undef': 'off',
+    },
+  },
 ];
