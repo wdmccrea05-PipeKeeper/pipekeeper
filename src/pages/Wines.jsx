@@ -10,6 +10,7 @@ import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import WineForm from '@/components/wine/WineForm';
 import LogWineTastingModal from '@/components/wine/LogWineTastingModal';
+import AddWineModal from '@/components/wine/AddWineModal';
 import EnrichButton from '@/components/shared/EnrichButton';
 import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
 import { useCurrency } from '@/lib/currency/useCurrency';
@@ -131,6 +132,7 @@ export default function Wines() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const [showForm, setShowForm] = useState(urlParams.get('action') === 'add');
+  const [showAddModal, setShowAddModal] = useState(false);
   const [editingWine, setEditingWine] = useState(null);
   const [tastingWine, setTastingWine] = useState(null);
   const [wantListWine, setWantListWine] = useState(null);
@@ -211,7 +213,7 @@ export default function Wines() {
           {t('wine.collection', 'Wine Collection')}
           <span className="text-sm font-normal ml-2" style={{ color: 'rgba(224,216,200,0.5)' }}>({wines.length})</span>
         </h1>
-        <Button onClick={() => setShowForm(true)} style={{ background: '#8B3A3A', color: '#F5F1E7' }} size="sm">
+        <Button onClick={() => setShowAddModal(true)} style={{ background: '#8B3A3A', color: '#F5F1E7' }} size="sm">
           <Plus className="w-4 h-4 mr-1" />
           {t('wine.addBottle', 'Add Bottle')}
         </Button>
@@ -287,6 +289,11 @@ export default function Wines() {
           itemType="wine"
         />
       )}
+
+      <AddWineModal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+      />
     </div>
   );
 }
