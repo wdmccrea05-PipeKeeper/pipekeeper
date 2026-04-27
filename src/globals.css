@@ -149,6 +149,37 @@ html {
   -webkit-overflow-scrolling: touch;
 }
 
+/* ─── Page shell — responsive horizontal + vertical gutter ─── */
+.ck-page-shell {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;      /* 16px mobile */
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .ck-page-shell {
+    padding-left: 1.5rem;  /* 24px tablet */
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ck-page-shell {
+    padding-left: 2.5rem;  /* 40px desktop */
+    padding-right: 2.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .ck-page-shell {
+    padding-left: 3rem;    /* 48px wide desktop */
+    padding-right: 3rem;
+  }
+}
+
 /* ─── Form field labels ─── */
 .ck-field-label {
   display: block;

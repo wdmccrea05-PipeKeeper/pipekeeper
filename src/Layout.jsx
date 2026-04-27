@@ -53,7 +53,7 @@ export default function Layout({ children, currentPageName }) {
       <GlobalReferralBanner />
 
       <main className="pb-28 md:pb-16">
-        <div className="ck-page-shell pt-4 md:pt-6">
+        <div className="ck-page-shell pt-6 md:pt-8 lg:pt-10">
           {children}
         </div>
       </main>
