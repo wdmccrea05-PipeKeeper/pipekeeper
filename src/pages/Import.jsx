@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { analyzeImportRows, executeImportRows, importDefinitionList, importDefinitions } from '@/lib/imports/importDefinitions';
+import { analyzeImportRows, executeImportRows, importDefinitionList, importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
 import { parseCsvText } from '@/lib/imports/csvImportUtils';
 
 // Maps each import definition id prefix to a module key
@@ -38,29 +38,6 @@ function SummaryBadge({ tone = 'default', label, value }) {
       <div className="text-xs opacity-80">{label}</div>
     </div>
   );
-}
-
-function downloadTemplate(definition) {
-  const headerLine = definition.allowedColumns.join(',');
-  const exampleLine = definition.allowedColumns
-    .map((column) => {
-      const raw = definition.example?.[column] ?? '';
-      const value = String(raw);
-      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-        return `"${value.replace(/"/g, '""')}"`;
-      }
-      return value;
-    })
-    .join(',');
-
-  const csv = `${headerLine}\n${exampleLine}\n`;
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = definition.templateFile;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 function buildImportTypeFromLocation(locationSearch) {
@@ -165,7 +142,6 @@ export default function ImportPage() {
   const availableDefinitions = useMemo(
     () => importDefinitionList.filter((def) => {
       const moduleKey = IMPORT_MODULE_MAP[def.id];
-      if (moduleKey === 'winekeeper') return false;
       // If no mapping found, show it; if mapped, require module to be accessible
       return !moduleKey || accessible[moduleKey];
     }),
@@ -217,6 +193,9 @@ export default function ImportPage() {
       invalidateEntityQueries(queryClient, 'cigars', user.email);
       invalidateEntityQueries(queryClient, 'cigars-summary', user.email);
       invalidateEntityQueries(queryClient, 'humidors', user.email);
+    } else if (definition.entity === 'Wine') {
+      invalidateEntityQueries(queryClient, 'wines', user.email);
+      invalidateEntityQueries(queryClient, 'wines-summary', user.email);
     }
   };
 
@@ -367,7 +346,7 @@ export default function ImportPage() {
                 </Select>
               </div>
               <div className="flex items-end">
-                <Button className="w-full" variant="outline" disabled={!definition} onClick={() => definition && downloadTemplate(definition)}>
+                <Button className="w-full" variant="outline" disabled={!definition} onClick={() => definition && downloadImportTemplate(definition)}>
                   <Download className="w-4 h-4 mr-2" />
                   Download Template
                 </Button>

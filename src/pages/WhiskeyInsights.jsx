@@ -15,6 +15,7 @@ import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'd
 import { StatusCard, CATEGORY_COLORS } from '@/components/ui/HeroCard';
 import { DIFFICULTY_LABELS } from '@/components/valuation/valueEngine';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import WhiskeyInsuranceExporter from '@/components/export/WhiskeyInsuranceExporter';
 import {
   selectWhiskeyMetrics,
   getBottleUnitValue,
@@ -774,115 +775,7 @@ export default function WhiskeyInsightsPage() {
                 <div className="p-4 rounded-lg" style={{ background: 'rgba(46,125,92,0.08)', border: '1px solid rgba(46,125,92,0.22)' }}>
                   <h4 className="font-semibold text-[#F5F1E7] mb-2">Insurance Report</h4>
                   <p className="text-sm text-[#D8C7A6]/80 mb-3">Export a detailed insurance report with photos, values, and descriptions</p>
-                  <div className="flex gap-2 flex-wrap">
-                    <button
-                      onClick={async () => {
-                        try {
-                          const doc = new jsPDF();
-                          const pw = doc.internal.pageSize.getWidth();
-                          const ph = doc.internal.pageSize.getHeight();
-                          const fmtMoney = (n) => n > 0 ? formatFromBase(n) : '—';
-
-                          doc.setFontSize(20);
-                          doc.setTextColor(40, 20, 10);
-                          doc.text('WhiskeyKeeper — Insurance Report', pw / 2, 20, { align: 'center' });
-                          doc.setFontSize(10);
-                          doc.setTextColor(100, 80, 60);
-                          doc.text(`Generated: ${new Date().toLocaleDateString()}`, pw / 2, 28, { align: 'center' });
-                          doc.text(`Owner: ${user?.full_name || user?.email || ''}`, pw / 2, 34, { align: 'center' });
-
-                          const totalVal = totalValue; // canonical value from shared selectors
-                          doc.setFontSize(11);
-                          doc.setTextColor(60, 40, 20);
-                          doc.text(`Total Collection Value: ${fmtMoney(totalVal)}`, 20, 44);
-                          doc.text(`Total Bottle Types: ${bottleTypes}`, 20, 51);
-
-                          const loadImg = (url) => new Promise((resolve) => {
-                            const img = new Image();
-                            img.crossOrigin = 'anonymous';
-                            img.onload = () => {
-                              try {
-                                const canvas = document.createElement('canvas');
-                                canvas.width = img.naturalWidth;
-                                canvas.height = img.naturalHeight;
-                                canvas.getContext('2d').drawImage(img, 0, 0);
-                                resolve(canvas.toDataURL('image/jpeg', 0.75));
-                              } catch { resolve(null); }
-                            };
-                            img.onerror = () => resolve(null);
-                            img.src = url;
-                          });
-
-                          let y = 62;
-                          for (const [idx, bottle] of bottles.entries()) {
-                            if (y > ph - 60) { doc.addPage(); y = 20; }
-
-                            doc.setDrawColor(180, 140, 75);
-                            doc.setLineWidth(0.4);
-                            doc.line(20, y, pw - 20, y);
-                            y += 5;
-
-                            const photo = bottle.photo || (Array.isArray(bottle.photos) ? bottle.photos[0] : null);
-                            let imgX = 20;
-                            let textX = 20;
-                            if (photo) {
-                              const dataUrl = await loadImg(photo);
-                              if (dataUrl) {
-                                const imgW = 35;
-                                const imgH = 50;
-                                if (y + imgH > ph - 20) { doc.addPage(); y = 20; }
-                                doc.addImage(dataUrl, 'JPEG', imgX, y, imgW, imgH);
-                                textX = imgX + imgW + 5;
-                              }
-                            }
-
-                            const textStartY = y;
-                            doc.setFont(undefined, 'bold');
-                            doc.setFontSize(10);
-                            doc.setTextColor(40, 20, 10);
-                            doc.text(`${idx + 1}. ${bottle.name || 'Unnamed'}`, textX, textStartY + 6);
-
-                            doc.setFont(undefined, 'normal');
-                            doc.setFontSize(9);
-                            doc.setTextColor(60, 40, 20);
-                            let ty = textStartY + 12;
-
-                            const fields = [
-                              bottle.distillery ? `Distillery: ${bottle.distillery}` : null,
-                              [bottle.type, bottle.region, bottle.country].filter(Boolean).join(' | ') || null,
-                              [bottle.age ? `Age: ${bottle.age} yr` : null, bottle.abv ? `ABV: ${bottle.abv}%` : null, bottle.bottle_size || null].filter(Boolean).join(' | ') || null,
-                              `Value: ${fmtMoney(getBottleValue(bottle))}`,
-                              bottle.purchase_price ? `Purchase Price: ${fmtMoney(bottle.purchase_price)}` : null,
-                              bottle.purchase_date ? `Purchased: ${new Date(bottle.purchase_date).toLocaleDateString()}` : null,
-                            ].filter(Boolean);
-
-                            fields.forEach((line) => {
-                              if (ty > ph - 20) { doc.addPage(); ty = 20; }
-                              doc.text(line, textX, ty);
-                              ty += 5;
-                            });
-
-                            if (bottle.notes) {
-                              const notesLines = doc.splitTextToSize(`Notes: ${bottle.notes}`, pw - textX - 20);
-                              if (ty + notesLines.length * 4.5 > ph - 20) { doc.addPage(); ty = 20; }
-                              doc.text(notesLines, textX, ty);
-                              ty += notesLines.length * 4.5;
-                            }
-
-                            y = Math.max(ty, y + (photo ? 55 : 0)) + 6;
-                          }
-
-                          doc.save(`whiskey-insurance-report-${new Date().toISOString().slice(0,10)}.pdf`);
-                        } catch(err) {
-                          console.error('Insurance report failed:', err);
-                        }
-                      }}
-                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                      style={{ background: 'rgba(46,125,92,0.3)', color: '#F5F1E7', border: '1px solid rgba(46,125,92,0.4)' }}
-                    >
-                      Export as PDF
-                    </button>
-                  </div>
+                  <WhiskeyInsuranceExporter user={user} bottles={bottles} inventoryUnits={inventoryUnits} />
                 </div>
               </div>
             </div>
