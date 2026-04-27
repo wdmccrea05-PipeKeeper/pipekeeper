@@ -5,6 +5,8 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
 import { Cigarette, Plus, BarChart3, BookOpen, Grid3X3, AlertTriangle, TrendingDown, Clock, Droplets } from 'lucide-react';
+
+const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 import { base44 } from '@/api/base44Client';
 import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
@@ -243,6 +245,12 @@ function CigarKeeperInner() {
       Icon: BarChart3,
       label: t('nav.insights'),
       onClick: () => navigate('/CigarInsights'),
+    },
+    {
+      key: 'curator',
+      iconImage: CURATOR_ICON,
+      label: t('quickActions.collectionCurator'),
+      onClick: () => navigate('/Curator'),
     },
   ];
 
