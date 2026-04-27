@@ -148,13 +148,18 @@ export default function ModuleNav({ currentPageName, user }) {
   return (
     <div className="flex items-center gap-1 pb-1 min-w-0">
       <div className="hidden md:flex flex-wrap items-center gap-1">
-        {items.map((item) => (
-          <NavItem
-            key={item.page}
-            item={item}
-            isActive={location.pathname.startsWith(item.path)}
-          />
-        ))}
+        {items.map((item) => {
+          const isActive = item.path === '/' 
+            ? location.pathname === '/'
+            : location.pathname.startsWith(item.path);
+          return (
+            <NavItem
+              key={item.page}
+              item={item}
+              isActive={isActive}
+            />
+          );
+        })}
       </div>
 
       <div className="md:hidden relative">
