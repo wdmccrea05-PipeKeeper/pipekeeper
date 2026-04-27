@@ -68,10 +68,10 @@ const MODULE_META = {
   },
   winekeeper: {
     labelKey: 'hub.winekeeper',
-    route: null,
+    route: 'WineKeeper',
     accent: '#8F6BAA',
     descriptionKey: 'hub.winekeeperDescription',
-    taglineKey: 'hub.comingSoon',
+    taglineKey: 'hub.winekeeperTagline',
   },
   cigarkeeper: {
     labelKey: 'hub.cigarkeeper',
@@ -308,13 +308,14 @@ export default function CollectionHub() {
   const whiskeyOpenable = enabled.whiskeykeeper;
   const pipekeeperOpenable = enabled.pipekeeper;
   const cigarOpenable = enabled.cigarkeeper;
+  const wineOpenable = enabled.winekeeper;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['collection-hub-dashboard', user?.email, pipekeeperOpenable, whiskeyOpenable, cigarOpenable],
+    queryKey: ['collection-hub-dashboard', user?.email, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable],
     enabled: !!user?.email,
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
-      const [pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions, whiskeyInventory] = await Promise.all([
+      const [pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions, whiskeyInventory, wines, wineTastings] = await Promise.all([
         pipekeeperOpenable
           ? base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
           : Promise.resolve([]),
@@ -339,9 +340,15 @@ export default function CollectionHub() {
         whiskeyOpenable
           ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }).catch(() => [])
           : Promise.resolve([]),
+        wineOpenable
+          ? base44.entities.Wine.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          : Promise.resolve([]),
+        wineOpenable
+          ? base44.entities.WineTasting.filter({ created_by: user.email }, '-date', 250).catch(() => [])
+          : Promise.resolve([]),
       ]);
 
-      return { pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions, whiskeyInventory };
+      return { pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions, whiskeyInventory, wines, wineTastings };
     },
   });
 
@@ -353,6 +360,8 @@ export default function CollectionHub() {
   const cigars = cigarOpenable ? data?.cigars || [] : [];
   const cigarSessions = cigarOpenable ? data?.cigarSessions || [] : [];
   const whiskeyInventory = whiskeyOpenable ? data?.whiskeyInventory || [] : [];
+  const wines = wineOpenable ? data?.wines || [] : [];
+  const wineTastings = wineOpenable ? data?.wineTastings || [] : [];
 
   // Canonical whiskey metrics via shared selector layer
   const whiskeyMetrics = useMemo(
@@ -533,8 +542,8 @@ export default function CollectionHub() {
     };
   }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, whiskeyMetrics]);
 
-  const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route && k !== 'winekeeper');
-  const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route && k !== 'winekeeper');
+  const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
+  const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);
 
   const totalBlendOzDisplay = isLoading ? '—' : (metrics.totalBlendOz % 1 === 0 ? String(metrics.totalBlendOz) : metrics.totalBlendOz.toFixed(1)) + ' oz';
 
@@ -554,6 +563,12 @@ export default function CollectionHub() {
     { label: t('hub.cigarTypesLabel'), value: isLoading ? '—' : cigars.length },
     { label: t('hub.sticksOwnedLabel'), value: isLoading ? '—' : metrics.totalCigarSticks },
     { label: t('hub.sessionsLoggedLabel'), value: isLoading ? '—' : cigarSessions.length },
+  ];
+
+  const wineStats = [
+    { label: t('hub.bottleTypes'), value: isLoading ? '—' : wines.length },
+    { label: t('hub.totalBottles'), value: isLoading ? '—' : wines.length },
+    { label: t('wine.collectionValue'), value: isLoading ? '—' : formatFromBase(wines.reduce((sum, w) => sum + (Number(w.estimated_value) || 0), 0)) },
   ];
 
   const topHighlights = useMemo(() => buildHubHighlightCandidates({
@@ -743,6 +758,8 @@ export default function CollectionHub() {
                     ? whiskeyStats
                     : moduleKey === 'cigarkeeper'
                     ? cigarStats
+                    : moduleKey === 'winekeeper'
+                    ? wineStats
                     : []
                 }
                 onOpen={() => navigate(createPageUrl(MODULE_META[moduleKey].route))}

@@ -4,6 +4,7 @@ import { WhiskeyKeeperIcon } from '@/components/icons/WhiskeyKeeperIcon';
 export const MODULE_ICONS = {
   pipekeeper: PipeIcon,
   whiskeykeeper: WhiskeyKeeperIcon,
+  winekeeper: 'https://media.base44.com/images/public/694956e18d119cc497192525/9c58601f9_generated_image.png',
 };
 
 export function getModuleIcon(moduleKey) {
