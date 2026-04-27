@@ -406,10 +406,10 @@ export const VARIETAL_ALIASES = {
 
   // Tempranillo aliases
   tempranillo: 'Tempranillo',
-  tinta de toro: 'Tempranillo',
-  tinta del país: 'Tempranillo',
+  'tinta de toro': 'Tempranillo',
+  'tinta del país': 'Tempranillo',
   cencibel: 'Tempranillo',
-  tinta roriz: 'Tempranillo',
+  'tinta roriz': 'Tempranillo',
   aragonés: 'Tempranillo',
 
   // Mourvèdre / Monastrell / Mataro
