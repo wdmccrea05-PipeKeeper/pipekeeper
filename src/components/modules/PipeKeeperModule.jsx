@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Leaf, BookOpen, TrendingUp, Sparkles, List } from 'lucide-react';
+import PipeIcon from '@/components/icons/PipeIcon';
 import PipeIdentifier from '@/components/ai/PipeIdentifier';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
@@ -181,14 +182,7 @@ export default function PipeKeeperModule() {
     <ModulePageShell
       title={t('pipekeeper.title')}
       subtitle={t('pipekeeper.description')}
-      icon={
-        <img
-          src="/branding/pipekeeper-logo.png?v=1"
-          alt={t('pipekeeper.title')}
-          className="w-8 h-8 object-contain"
-          draggable={false}
-        />
-      }
+      icon={<PipeIcon className="w-6 h-6" style={{ color: '#C89752' }} />}
       accentColor="#C89752"
       onBackToHub={() => navigate('/CollectionHub')}
       stats={pipeStats}
