@@ -10,9 +10,9 @@ import { buildSessionCalendarData } from "@/lib/sessionHistory/calendarData";
 import { sortByLabel } from "@/lib/sorting/alphabetical";
 import { X, Star } from "lucide-react";
 
-const MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar"];
+const MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar", "wine"];
 
-function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions = [] }) {
+function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions = [], wineTastings = [] }) {
   const pipeRows = (smokingLogs || []).map((log) => ({
     id: `pipe_${log.id}`,
     moduleType: "pipe",
@@ -43,7 +43,16 @@ function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions =
     notes: session.notes || "",
   }));
 
-  return [...pipeRows, ...whiskeyRows, ...cigarRows];
+  const wineRows = (wineTastings || []).map((tasting) => ({
+    id: `wine_${tasting.id}`,
+    moduleType: "wine",
+    date: tasting.date,
+    itemLabel: tasting.wine_name || "Wine tasting",
+    rating: tasting.rating ?? null,
+    notes: tasting.notes || "",
+  }));
+
+  return [...pipeRows, ...whiskeyRows, ...cigarRows, ...wineRows];
 }
 
 export default function SessionHistory() {
@@ -57,12 +66,13 @@ export default function SessionHistory() {
     queryKey: ["session-history-calendar", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
-      const [smokingLogs, tastingLogs, cigarSessions] = await Promise.all([
+      const [smokingLogs, tastingLogs, cigarSessions, wineTastings] = await Promise.all([
         base44.entities.SmokingLog.filter({ created_by: user.email }, "-date", 1000).catch(() => []),
         base44.entities.TastingLog.filter({ created_by: user.email }, "-tasting_date", 1000).catch(() => []),
         base44.entities.CigarSession.filter({ created_by: user.email }, "-date", 1000).catch(() => []),
+        base44.entities.WineTasting.filter({ created_by: user.email }, "-date", 1000).catch(() => []),
       ]);
-      return { smokingLogs, tastingLogs, cigarSessions };
+      return { smokingLogs, tastingLogs, cigarSessions, wineTastings };
     },
   });
 

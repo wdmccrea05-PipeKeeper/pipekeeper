@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Wine, BarChart3, Plus, BookOpen, FileSpreadsheet } from 'lucide-react';
+import { Wine, BarChart3, Plus, BookOpen, FileSpreadsheet, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
@@ -12,6 +12,7 @@ export default function WineKeeperModuleNav({ currentPageName }) {
   const tabs = [
     { path: '/WineKeeper', label: t('winekeeper.overview', 'Overview'), icon: Wine },
     { path: '/Wines', label: t('wine.collection', 'Wine Collection'), icon: Wine },
+    { path: '/SessionHistory?module=wine', label: t('sessionHistory.title', 'Tasting History'), icon: CalendarDays },
     { path: '/WineInsights', label: t('nav.insights', 'Insights'), icon: BarChart3 },
   ];
 
@@ -20,7 +21,8 @@ export default function WineKeeperModuleNav({ currentPageName }) {
       {/* ── Left: tabs ── */}
       <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
         {tabs.map(({ path, label, icon: Icon }) => {
-          const isActive = location.pathname === path || (currentPageName && path.includes(currentPageName));
+          const pathBase = path.split('?')[0];
+          const isActive = location.pathname === pathBase || (currentPageName && pathBase.includes(currentPageName));
           return (
             <Link
               key={path}
