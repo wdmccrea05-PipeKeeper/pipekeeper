@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { deriveWineValuationPatch } from '@/lib/valuation/wineValuation';
+import { deriveCigarValuationPatch, shouldRefreshCigarValuation } from '@/lib/valuation/cigarValuation';
 
 // Keep flavor tags concise so detail cards stay readable while still being useful.
 const MAX_FLAVOR_NOTES = 8;
@@ -177,7 +179,7 @@ async function enrichCigar(record) {
   const shouldImproveAliases = !Array.isArray(record.aliases) || record.aliases.length < 2;
   const shouldImproveFlavor = !Array.isArray(record.flavor_notes) || record.flavor_notes.length < 3;
   const hasPhoto = Array.isArray(record.photos) && record.photos.length > 0;
-  const needsMarketValuation = !toPositiveNumber(record.market_estimated_unit_value);
+  const willRefreshValuation = shouldRefreshCigarValuation(record);
 
   const result = await base44.integrations.Core.InvokeLLM({
     prompt: `You are a cigar expert doing production data enrichment for a collector app.
@@ -203,9 +205,18 @@ Also provide useful canonicalization:
 - normalize aliases
 - seed flavor notes if sparse
 - production status
-- pricing clue (msrp_per_stick or estimated_unit_value)
+- current MSRP or retail estimate per stick (msrp_per_stick)
+- secondary/market estimate if relevant (estimated_unit_value)
+- replacement cost per stick
+- comparable count (number of price references used)
+- production/availability status
 - valuation_source / confidence / notes
 - image_url if a trustworthy product image is known
+
+Valuation rules:
+- Per-stick market value is required when available.
+- Use production status, limited/discontinued status, vitola, wrapper, brand/line, and source confidence.
+- Do not fake precision. Low confidence is acceptable, blank valuation is not when purchase price or comparable data exists.
 
 Enums:
 - strength/body: mild | mild_medium | medium | medium_full | full
@@ -268,35 +279,19 @@ Enums:
     updates.photos = [imageUrl];
   }
 
-  const valuationConfidence = cleanText(result?.valuation_confidence)?.toLowerCase();
-  const normalizedConfidence = ['high', 'medium', 'low'].includes(valuationConfidence) ? valuationConfidence : 'low';
-  const valuationSource = cleanText(result?.valuation_source);
-  const valuationNotes = cleanText(result?.valuation_notes);
-  const inferredUnit = toPositiveNumber(result?.estimated_unit_value) || toPositiveNumber(result?.msrp_per_stick);
-  if (needsMarketValuation && inferredUnit) {
-    const sticks = getRemainingSticks(record);
-    const nowIso = new Date().toISOString();
-    updates.market_estimated_unit_value = inferredUnit;
-    updates.market_estimated_total_value = Number((inferredUnit * sticks).toFixed(2));
-    updates.market_replacement_cost_estimate = Number((inferredUnit * sticks).toFixed(2));
-    updates.market_valuation_source = valuationSource || 'Market reference';
-    updates.market_valuation_confidence = normalizedConfidence;
-    updates.market_valuation_updated_at = nowIso;
-    const derivedComparableCount = toPositiveNumber(result?.comparable_count);
-    const existingComparableCount = toPositiveNumber(record?.market_comparable_count);
-    updates.market_comparable_count = derivedComparableCount || existingComparableCount || 1;
-    if (!record?.valuation_source && valuationSource) updates.valuation_source = valuationSource;
-    if (!record?.valuation_updated_at) updates.valuation_updated_at = nowIso;
-    if (!record?.valuation_confidence && normalizedConfidence) updates.valuation_confidence = normalizedConfidence;
-    if (!record?.valuation_notes && valuationNotes) updates.valuation_notes = valuationNotes;
+  if (willRefreshValuation) {
+    const valuationPatch = deriveCigarValuationPatch(record, result);
+    Object.assign(updates, valuationPatch);
   }
 
   return updates;
 }
 
 async function enrichWine(record) {
-  const quantity = Number(record?.quantity) || 1;
-  const needsMarketValuation = !Number(record?.market_estimated_unit_value);
+  // Skip if manual override is active — never auto-overwrite user's manual valuation.
+  if (record?.manual_valuation_enabled) {
+    return {};
+  }
 
   const result = await base44.integrations.Core.InvokeLLM({
     prompt: `You are a fine wine expert doing data enrichment for a collector app.
@@ -317,14 +312,16 @@ Record:
 
 Tasks:
 1. Fill any missing fields (varietal, region, appellation, country, style, abv) if you know them with high confidence.
-2. Estimate current market value per bottle (retail / market price for this vintage/producer/wine).
-3. Provide valuation_source (e.g. "Wine-Searcher market reference"), valuation_confidence (high/medium/low), and brief valuation_notes.
+2. Estimate current retail/market value per bottle for this vintage/producer/wine.
+3. Estimate replacement cost (cost to replace a bottle at current market).
+4. Provide comparable_count (number of comparable listings or data points used).
+5. Provide valuation_source (e.g. "Wine-Searcher market reference"), valuation_confidence (high/medium/low), and brief valuation_notes.
 
 Rules:
 - If vintage is known, use it in valuation — vintage matters significantly.
 - If bottle_size is not 750ml, adjust accordingly.
 - If only purchase_price is available and you cannot find market data, return estimated_unit_value = purchase_price and valuation_confidence = "low".
-- Do not fabricate precision. Low confidence is fine.`,
+- Do not fabricate precision. Low confidence is acceptable, blank valuation is not when purchase price or comparable data exists.`,
     add_context_from_internet: true,
     response_json_schema: {
       type: 'object',
@@ -338,6 +335,8 @@ Rules:
         drink_window_start: { type: ['string', 'null'] },
         drink_window_end: { type: ['string', 'null'] },
         estimated_unit_value: { type: ['number', 'null'] },
+        replacement_cost_estimate: { type: ['number', 'null'] },
+        comparable_count: { type: ['number', 'null'] },
         valuation_source: { type: ['string', 'null'] },
         valuation_confidence: { type: ['string', 'null'] },
         valuation_notes: { type: ['string', 'null'] },
@@ -356,33 +355,8 @@ Rules:
   if (result?.drink_window_start && !record?.drink_window_start) updates.drink_window_start = result.drink_window_start;
   if (result?.drink_window_end && !record?.drink_window_end) updates.drink_window_end = result.drink_window_end;
 
-  const inferredUnit = toPositiveNumber(result?.estimated_unit_value);
-  const valuationConfidence = cleanText(result?.valuation_confidence)?.toLowerCase();
-  const normalizedConfidence = ['high', 'medium', 'low'].includes(valuationConfidence) ? valuationConfidence : 'low';
-  const valuationSource = cleanText(result?.valuation_source);
-  const valuationNotes = cleanText(result?.valuation_notes);
-
-  // Fall back to purchase price if enrichment found nothing
-  const unitValue = inferredUnit || toPositiveNumber(record?.purchase_price);
-  const unitConfidence = inferredUnit ? normalizedConfidence : 'low';
-  const unitSource = inferredUnit ? (valuationSource || 'Market reference') : 'Purchase price (fallback)';
-
-  if (needsMarketValuation && unitValue) {
-    const nowIso = new Date().toISOString();
-    updates.market_estimated_unit_value = unitValue;
-    updates.market_estimated_total_value = Number((unitValue * quantity).toFixed(2));
-    updates.market_replacement_cost_estimate = Number((unitValue * quantity).toFixed(2));
-    updates.market_valuation_source = unitSource;
-    updates.market_valuation_confidence = unitConfidence;
-    updates.market_valuation_updated_at = nowIso;
-    if (!record?.valuation_source && unitSource) updates.valuation_source = unitSource;
-    if (!record?.valuation_updated_at) updates.valuation_updated_at = nowIso;
-    if (!record?.valuation_confidence) updates.valuation_confidence = unitConfidence;
-    if (!record?.valuation_notes && valuationNotes) updates.valuation_notes = valuationNotes;
-    // Also populate the canonical estimated fields for backward compat with adapter/totals
-    if (!record?.estimated_unit_value) updates.estimated_unit_value = unitValue;
-    if (!record?.estimated_total_value) updates.estimated_total_value = Number((unitValue * quantity).toFixed(2));
-  }
+  const valuationPatch = deriveWineValuationPatch(record, result);
+  Object.assign(updates, valuationPatch);
 
   return updates;
 }
