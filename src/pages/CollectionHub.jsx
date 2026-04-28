@@ -507,18 +507,34 @@ export default function CollectionHub() {
       : null;
 
     const cigarCrownJewel = cigarOpenable
-      ? [...cigars]
-          .filter((c) => getCigarAvailableQuantity(c) > 0)
-          .map((c) => {
-            const totalValue = getCigarUnitValue(c) * getCigarAvailableQuantity(c);
-            const score =
-              totalValue * 0.6 +
-              Number(c.rating || 0) * 25 +
-              (c.is_favorite ? 30 : 0) +
-              (logsByCigar[c.id] || 0) * 2;
-            return { ...c, __totalValue: totalValue, __crownScore: score };
-          })
-          .sort((a, b) => Number(b.__crownScore || 0) - Number(a.__crownScore || 0))[0] || null
+       ? [...cigars]
+           .filter((c) => getCigarAvailableQuantity(c) > 0)
+           .map((c) => {
+             const totalValue = getCigarUnitValue(c) * getCigarAvailableQuantity(c);
+             const score =
+               totalValue * 0.6 +
+               Number(c.rating || 0) * 25 +
+               (c.is_favorite ? 30 : 0) +
+               (logsByCigar[c.id] || 0) * 2;
+             return { ...c, __totalValue: totalValue, __crownScore: score };
+           })
+           .sort((a, b) => Number(b.__crownScore || 0) - Number(a.__crownScore || 0))[0] || null
+       : null;
+
+    const topRatedWine = wineOpenable
+      ? [...wines]
+          .filter((w) => Number(w.rating || 0) >= 4)
+          .sort((a, b) => (Number(b.rating || 0) - Number(a.rating || 0)) || (getWineTotalValue(b) - getWineTotalValue(a)))[0] || null
+      : null;
+
+    const readyToDrinkWine = wineOpenable
+      ? wines.find((w) => {
+          const start = w.drink_window_start || w.drinking_window_start;
+          const end = w.drink_window_end || w.drinking_window_end;
+          if (!start || !end) return false;
+          const now = new Date();
+          return now >= new Date(start) && now <= new Date(end);
+        }) || null
       : null;
 
     const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, cigarSessions, { limit: 5 });
@@ -555,12 +571,14 @@ export default function CollectionHub() {
       restockPriorityCigar,
       cigarCrownJewel,
       mostValuableWine,
+      topRatedWine,
+      readyToDrinkWine,
       recentActivity,
       totalCigarSticks,
       totalBlendOz,
       totalBottleCount,
     };
-  }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, wines, wineTastings, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable, whiskeyMetrics]);
+  }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, wines, wineTastings, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable, whiskeyMetrics, getWineTotalValue]);
 
   const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
   const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);

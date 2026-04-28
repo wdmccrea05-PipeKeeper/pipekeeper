@@ -199,7 +199,7 @@ export function buildHubHighlightCandidates({
       route: `/CigarDetail?id=${encodeURIComponent(metrics.cigarCrownJewel.id)}`,
       score: 78 + Math.min(25, cigarCrownJewelValue / 30) + toNumber(metrics.cigarCrownJewel.rating) * 2,
     } : null,
-    // WineKeeper highlight — internal/admin only
+    // WineKeeper highlights — internal/admin only
     winekeeperOpenable && metrics.mostValuableWine && wineValue > 0 ? {
       id: 'top-wine',
       recordType: 'wine',
@@ -210,8 +210,34 @@ export function buildHubHighlightCandidates({
       heroImage: metrics.mostValuableWine.photos?.[0],
       bgImage: metrics.mostValuableWine.photos?.[0],
       accent: '#8B4B6B',
-      route: `/Wines?id=${encodeURIComponent(metrics.mostValuableWine.id)}`,
+      route: `/WineDetail?id=${encodeURIComponent(metrics.mostValuableWine.id)}`,
       score: 71 + Math.min(29, wineValue / 40),
+    } : null,
+    winekeeperOpenable && metrics.topRatedWine && toNumber(metrics.topRatedWine.rating) >= 4 ? {
+      id: 'top-rated-wine',
+      recordType: 'wine',
+      recordId: metrics.topRatedWine.id,
+      title: t('hub.topRatedWine', 'Top Rated Wine'),
+      value: metrics.topRatedWine.name,
+      subtitle: `${toNumber(metrics.topRatedWine.rating).toFixed(1)}/5`,
+      heroImage: metrics.topRatedWine.photos?.[0],
+      bgImage: metrics.topRatedWine.photos?.[0],
+      accent: '#A0567A',
+      route: `/WineDetail?id=${encodeURIComponent(metrics.topRatedWine.id)}`,
+      score: 75 + toNumber(metrics.topRatedWine.rating) * 3,
+    } : null,
+    winekeeperOpenable && metrics.readyToDrinkWine ? {
+      id: 'ready-to-drink-wine',
+      recordType: 'wine',
+      recordId: metrics.readyToDrinkWine.id,
+      title: t('hub.readyToDrink', 'Ready to Drink'),
+      value: metrics.readyToDrinkWine.name,
+      subtitle: `Drink Now${metrics.readyToDrinkWine.vintage ? ` · ${metrics.readyToDrinkWine.vintage}` : ''}`,
+      heroImage: metrics.readyToDrinkWine.photos?.[0],
+      bgImage: metrics.readyToDrinkWine.photos?.[0],
+      accent: '#2E7D5C',
+      route: `/WineDetail?id=${encodeURIComponent(metrics.readyToDrinkWine.id)}`,
+      score: 68 + (metrics.readyToDrinkWine.is_favorite ? 10 : 0),
     } : null,
   ];
 

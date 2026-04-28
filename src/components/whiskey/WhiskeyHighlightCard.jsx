@@ -8,6 +8,7 @@ export default function WhiskeyHighlightCard({
   photo,
   onClick,
   className,
+  imageFit = 'cover', // 'cover' or 'contain' for wine bottles
 }) {
   return (
     <div
@@ -19,7 +20,7 @@ export default function WhiskeyHighlightCard({
         backgroundImage: photo
           ? `url('${photo}')`
           : 'linear-gradient(135deg, rgba(60,40,25,0.9), rgba(40,25,15,0.95))',
-        backgroundSize: 'cover',
+        backgroundSize: imageFit,
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}

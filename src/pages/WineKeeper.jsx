@@ -15,6 +15,7 @@ import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
+import WineStoryHighlights from '@/components/wine/WineStoryHighlights';
 import { selectWineCollectionValue, selectTotalWineBottles, selectWineReadyToDrinkCount, getWinePrimaryImage } from '@/lib/collection/wineSelectors';
 
 function formatDate(value) {
@@ -273,6 +274,7 @@ function WineKeeperInner() {
                 subtitle={h.subtitle}
                 accent={h.accent}
                 photo={h.photo}
+                imageFit="contain"
                 onClick={() => h.wineId && navigate(`/Wines?highlight=${encodeURIComponent(h.wineId)}`)}
               />
             ))}
@@ -310,7 +312,7 @@ function WineKeeperInner() {
             </Button>
           </div>
           <div
-            className="rounded-xl p-5"
+            className="rounded-xl p-5 mb-5"
             style={{ background: 'rgba(163,92,92,0.08)', border: '1px solid rgba(139,58,58,0.2)' }}
           >
             <div className="space-y-3 text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.85)' }}>
@@ -351,6 +353,9 @@ function WineKeeperInner() {
               )}
             </div>
           </div>
+
+          {/* Story highlights cards */}
+          <WineStoryHighlights wines={wines} tastings={tastings} t={t} />
         </div>
       )}
 
