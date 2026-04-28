@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
-import { Wine, Plus, BarChart3, BookOpen } from 'lucide-react';
+import { Wine, Plus, BarChart3, BookOpen, Share2 } from 'lucide-react';
 import ModulePageShell from '@/components/modules/ModulePageShell';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
@@ -14,6 +14,8 @@ import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
+import ShareRecordModal from '@/components/share/ShareRecordModal';
+import { selectWineCollectionValue, selectTotalWineBottles, selectWineReadyToDrinkCount, getWinePrimaryImage } from '@/lib/collection/wineSelectors';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -60,6 +62,7 @@ function WineKeeperInner() {
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const { data: wines = [] } = useQuery({
     queryKey: ['wines-summary', user?.email],
@@ -178,6 +181,52 @@ function WineKeeperInner() {
     { label: t('wine.avgRating', 'Avg Rating'), value: avgRating },
   ];
 
+  // Story narrative and metadata
+  const collectionValue = useMemo(() => selectWineCollectionValue(wines), [wines]);
+  const totalBottles = useMemo(() => selectTotalWineBottles(wines), [wines]);
+  const readyToDrink = useMemo(() => selectWineReadyToDrinkCount(wines), [wines]);
+  
+  const topProducer = useMemo(() => {
+    if (wines.length === 0) return null;
+    const producers = {};
+    wines.forEach(w => {
+      if (w.producer) producers[w.producer] = (producers[w.producer] || 0) + 1;
+    });
+    return Object.entries(producers).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  }, [wines]);
+
+  const topVarietal = useMemo(() => {
+    if (wines.length === 0) return null;
+    const varietals = {};
+    wines.forEach(w => {
+      if (w.varietal) varietals[w.varietal] = (varietals[w.varietal] || 0) + 1;
+    });
+    return Object.entries(varietals).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  }, [wines]);
+
+  const favoriteRegion = useMemo(() => {
+    if (wines.length === 0) return null;
+    const regions = {};
+    wines.forEach(w => {
+      const region = w.appellation || w.region || w.country_of_origin;
+      if (region) regions[region] = (regions[region] || 0) + 1;
+    });
+    return Object.entries(regions).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  }, [wines]);
+
+  const highestRatedWine = useMemo(() => {
+    if (wines.length === 0) return null;
+    const rated = wines.filter(w => w.rating > 0).sort((a, b) => b.rating - a.rating);
+    return rated[0] || null;
+  }, [wines]);
+
+  const mostValuableWine = useMemo(() => {
+    if (wines.length === 0) return null;
+    return wines
+      .map(w => ({ ...w, value: w.estimated_value || w.estimated_unit_value || w.purchase_price || 0 }))
+      .sort((a, b) => b.value - a.value)[0] || null;
+  }, [wines]);
+
   return (
     <>
     <ModulePageShell
@@ -243,6 +292,78 @@ function WineKeeperInner() {
           </div>
         </div>
       )}
+
+      {wines.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(180,140,75,0.8)' }}>
+              {t('wine.myWineStory', 'My Wine Story')}
+            </h2>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowShareModal(true)}
+              className="text-xs text-[#C47070] hover:bg-white/5"
+            >
+              <Share2 className="w-3.5 h-3.5 mr-1.5" />
+              {t('common.share', 'Share')}
+            </Button>
+          </div>
+          <div
+            className="rounded-xl p-5"
+            style={{ background: 'rgba(163,92,92,0.08)', border: '1px solid rgba(139,58,58,0.2)' }}
+          >
+            <div className="space-y-3 text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.85)' }}>
+              <p>
+                {wines.length === 1
+                  ? t('wine.storyOne', 'You have one wine in your collection.')
+                  : t('wine.storyMultiple', `You've curated a collection of ${wines.length} wines`)}
+                {totalBottles > wines.length && ` with ${totalBottles} total bottles in your cellar`}.
+                {collectionValue > 0 && ` Your collection is valued at ${formatFromBase(collectionValue)}.`}
+              </p>
+              {topProducer && (
+                <p>
+                  {t('wine.storyProducer', 'Your most represented producer is')} <span className="font-semibold text-[#F5F1E7]">{topProducer}</span>,
+                  {topVarietal && ` complemented by ${topVarietal} as your primary varietal`}.
+                </p>
+              )}
+              {favoriteRegion && (
+                <p>
+                  {t('wine.storyRegion', 'You have a particular affinity for wines from')} <span className="font-semibold text-[#F5F1E7]">{favoriteRegion}</span>.
+                </p>
+              )}
+              {highestRatedWine && (
+                <p>
+                  {t('wine.storyRated', 'Your highest-rated wine is')} <span className="font-semibold text-[#F5F1E7]">{highestRatedWine.name}</span>
+                  {highestRatedWine.producer && ` from ${highestRatedWine.producer}`}
+                  {highestRatedWine.rating && ` at ${highestRatedWine.rating}/5 stars`}.
+                </p>
+              )}
+              {readyToDrink > 0 && (
+                <p>
+                  {t('wine.storyReady', `You currently have ${readyToDrink} wine${readyToDrink === 1 ? '' : 's'} at peak drinking window.`)}
+                </p>
+              )}
+              {tastings.length > 0 && (
+                <p>
+                  {t('wine.storyTastings', `You've logged ${tastings.length} tasting${tastings.length === 1 ? '' : 's'}, building a rich tasting history.`)}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wines.length === 0 && (
+        <div
+          className="rounded-xl p-6 text-center"
+          style={{ background: 'rgba(163,92,92,0.08)', border: '1px solid rgba(139,58,58,0.2)' }}
+        >
+          <p style={{ color: 'rgba(224,216,200,0.6)' }} className="text-sm">
+            {t('wine.storyEmpty', 'Start adding wines to build your WineKeeper story.')}
+          </p>
+        </div>
+      )}
     </ModulePageShell>
 
     <AddFlowModal
@@ -250,6 +371,13 @@ function WineKeeperInner() {
       onClose={() => setShowAddModal(false)}
       initialItemType="wine"
     />
+
+    {showShareModal && (
+      <ShareRecordModal
+        type="wine_collection"
+        onClose={() => setShowShareModal(false)}
+      />
+    )}
     </>
   );
 }
