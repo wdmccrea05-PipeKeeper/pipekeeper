@@ -34,11 +34,11 @@ Deno.serve(async (req) => {
 
     // Optional filters from request body
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
-    const filterEmail = body.email ? String(body.email).trim().toLowerCase() : null;
+    const filterEmail = (body.email || body.created_by) ? String(body.email || body.created_by).trim().toLowerCase() : null;
     const filterName = body.pipe_name ? String(body.pipe_name).trim().toLowerCase() : null;
     const filterIds = Array.isArray(body.pipe_ids) ? body.pipe_ids.map(String) : body.pipe_id ? [String(body.pipe_id)] : null;
 
-    // Fetch pipes — scoped by email if provided, otherwise all (paginated)
+    // Fetch pipes — scoped by email/created_by if provided, otherwise all (paginated)
     const allPipes = [];
     if (filterEmail) {
       const emailPipes = await base44.asServiceRole.entities.Pipe.filter({ created_by: filterEmail }, '-created_date', 500);
