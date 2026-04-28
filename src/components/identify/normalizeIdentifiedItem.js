@@ -191,10 +191,42 @@ function normalizeCigar(raw, source) {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
+ * Normalize a raw wine LLM result into the canonical candidate shape.
+ */
+function normalizeWine(raw, source = 'search') {
+  const producer = raw.producer || raw.winery || '';
+  const name = raw.name || raw.wine_name || '';
+
+  const details = {
+    producer,
+    vintage: raw.vintage ? Number(raw.vintage) : null,
+    varietal: raw.varietal || raw.grape_variety || '',
+    region: raw.region || '',
+    appellation: raw.appellation || '',
+    style: raw.style || raw.wine_type || '',
+    abv: raw.abv ? Number(raw.abv) : null,
+    description: raw.description || '',
+    barcode: raw._inputBarcode || raw.barcode || '',
+    upc: raw.upc || '',
+    ean: raw.ean || '',
+  };
+
+  const valuationSeed = {
+    retail_price: raw.retail_price ?? raw.estimated_price ?? null,
+    vintage: details.vintage,
+    region: details.region,
+    varietal: details.varietal,
+    producer,
+  };
+
+  return { name, maker: producer, category: details.varietal || details.style, details, valuationSeed, source };
+}
+
+/**
  * Normalize a raw LLM result into the canonical candidate shape.
  *
  * @param {object} rawResult - Raw LLM response object for a single item
- * @param {"pipe"|"blend"|"bottle"|"cigar"} itemType
+ * @param {"pipe"|"blend"|"bottle"|"cigar"|"wine"} itemType
  * @param {"upc"|"photo"|"search"} source
  * @returns {NormalizedCandidate}
  */
@@ -204,6 +236,7 @@ export function normalizeSingleCandidate(rawResult, itemType, source = 'search')
   if (itemType === 'blend') return normalizeBlend(rawResult, source);
   if (itemType === 'bottle') return normalizeBottle(rawResult, source);
   if (itemType === 'cigar') return normalizeCigar(rawResult, source);
+  if (itemType === 'wine') return normalizeWine(rawResult, source);
   return { name: rawResult.name || '', maker: '', category: '', details: rawResult, valuationSeed: {}, source };
 }
 
@@ -351,6 +384,24 @@ export function buildQuickAddPayload(identifiedItem, itemType) {
     };
   }
 
+  if (itemType === 'wine') {
+    return {
+      ...base,
+      producer: maker,
+      vintage: details.vintage ?? undefined,
+      varietal: details.varietal || undefined,
+      region: details.region || undefined,
+      appellation: details.appellation || undefined,
+      style: details.style || undefined,
+      abv: details.abv ?? undefined,
+      notes: details.description || undefined,
+      purchase_price: valuationSeed.retail_price ?? undefined,
+      barcode: details.barcode || undefined,
+      upc: details.upc || undefined,
+      ean: details.ean || undefined,
+    };
+  }
+
   return base;
 }
 
@@ -417,6 +468,18 @@ export function buildValuationSeedData(identifiedItem, itemType) {
       release_type: valuationSeed.release_type || null,
       rarity_hint: valuationSeed.rarity_hint || null,
       maker: valuationSeed.maker || null,
+    };
+  }
+
+  if (itemType === 'wine') {
+    return {
+      purchase_price: valuationSeed.retail_price ?? null,
+      value_source: 'identify',
+      value_confidence: valuationSeed.retail_price ? 'medium' : 'low',
+      vintage: valuationSeed.vintage || null,
+      region: valuationSeed.region || null,
+      varietal: valuationSeed.varietal || null,
+      producer: valuationSeed.producer || null,
     };
   }
 

@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { barcodesMatch } from '@/platform/productNormalization';
 
-const ENTITIES = { blend: 'TobaccoBlend', pipe: 'Pipe', bottle: 'Bottle', cigar: 'Cigar' };
+const ENTITIES = { blend: 'TobaccoBlend', pipe: 'Pipe', bottle: 'Bottle', cigar: 'Cigar', wine: 'Wine' };
 
 function buildRecord(itemType, result) {
   const clean = (v) => (v !== null && v !== undefined && v !== '') ? v : undefined;
@@ -76,6 +76,21 @@ function buildRecord(itemType, result) {
     upc: clean(result.upc),
     ean: clean(result.ean),
   };
+  if (itemType === 'wine') return {
+    name: result.name,
+    producer: clean(result.producer || result.winery),
+    vintage: clean(result.vintage) ? Number(result.vintage) : undefined,
+    varietal: clean(result.varietal || result.grape_variety),
+    region: clean(result.region),
+    appellation: clean(result.appellation),
+    style: clean(result.style || result.wine_type),
+    abv: clean(result.abv) ? Number(result.abv) : undefined,
+    notes: clean(result.description || result.notes),
+    purchase_price: clean(result.purchase_price),
+    barcode: clean(result.barcode),
+    upc: clean(result.upc),
+    ean: clean(result.ean),
+  };
   return { name: result.name };
 }
 
@@ -125,6 +140,11 @@ function getChips(itemType, result) {
     return parts.filter(Boolean);
   }
   if (itemType === 'cigar') return [result.vitola, result.wrapper, result.body].filter(Boolean);
+  if (itemType === 'wine') {
+    const parts = [result.style || result.wine_type, result.varietal || result.grape_variety];
+    if (result.vintage) parts.push(String(result.vintage));
+    return parts.filter(Boolean);
+  }
   return [];
 }
 
@@ -133,6 +153,7 @@ function getSubtitle(itemType, result) {
   if (itemType === 'pipe') return result.maker;
   if (itemType === 'bottle') return result.distillery;
   if (itemType === 'cigar') return result.brand;
+  if (itemType === 'wine') return result.producer || result.winery;
   return '';
 }
 

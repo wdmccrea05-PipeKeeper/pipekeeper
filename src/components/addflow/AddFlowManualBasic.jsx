@@ -10,6 +10,7 @@ const BLEND_TYPES = ['Virginia', 'Virginia/Perique', 'Virginia/Burley', 'English
 const SHAPES = ['Billiard', 'Apple', 'Bent Billiard', 'Dublin', 'Bulldog', 'Rhodesian', 'Canadian', 'Lovat', 'Poker', 'Freehand', 'Churchwarden', 'Calabash', 'Volcano', 'Horn', 'Other', 'Unknown'];
 const WHISKEY_TYPES = ['Single Malt Scotch', 'Blended Scotch', 'Bourbon', 'Rye', 'Irish', 'Japanese', 'Canadian', 'Tennessee', 'Single Grain', 'Other'];
 const VITOLAS = ['Robusto', 'Toro', 'Churchill', 'Corona', 'Lancero', 'Panatela', 'Belicoso', 'Torpedo', 'Figurado', 'Perfecto', 'Gordo', 'Gigante', 'Short Robusto', 'Petite Corona', 'Lonsdale', 'Other'];
+const WINE_STYLES = ['Red', 'White', 'Rosé', 'Sparkling', 'Dessert / Fortified', 'Orange', 'Other'];
 
 const FIELDS = {
   blend: [
@@ -32,6 +33,11 @@ const FIELDS = {
     { key: 'brand', label: 'Brand', required: false, type: 'input' },
     { key: 'vitola', label: 'Vitola / Size', required: false, type: 'select', options: VITOLAS },
   ],
+  wine: [
+    { key: 'name', label: 'Wine Name', required: true, type: 'input' },
+    { key: 'producer', label: 'Producer / Winery', required: false, type: 'input' },
+    { key: 'style', label: 'Style', required: false, type: 'select', options: WINE_STYLES },
+  ],
 };
 
 const inputStyle = {
@@ -41,8 +47,7 @@ const inputStyle = {
 };
 
 export default function AddFlowManualBasic({ itemType, typeLabel, onBack, onNext, onClose, data }) {
-  const fields = FIELDS[itemType] || FIELDS.blend;
-  const [values, setValues] = useState(() => {
+  const fields = FIELDS[itemType] || FIELDS.blend;  const [values, setValues] = useState(() => {
     const init = {};
     fields.forEach(f => { init[f.key] = data?.[f.key] || ''; });
     return init;

@@ -77,13 +77,15 @@ export default function InventoryStep({
   const showBlendFields = moduleType === INVENTORY_MODULES.BLEND;
   const showBottleFields = moduleType === INVENTORY_MODULES.BOTTLE;
   const showPipeFields = moduleType === INVENTORY_MODULES.PIPE;
+  const showWineFields = moduleType === INVENTORY_MODULES.WINE;
 
   const showQuantityField =
     !showPipeFields &&
-    (showBottleFields || formData.containerType === CONTAINER_TYPES.TIN || formData.containerType === CONTAINER_TYPES.POUCH || formData.containerType === CONTAINER_TYPES.BULK || formData.containerType === CONTAINER_TYPES.JAR);
+    (showBottleFields || showWineFields || formData.containerType === CONTAINER_TYPES.TIN || formData.containerType === CONTAINER_TYPES.POUCH || formData.containerType === CONTAINER_TYPES.BULK || formData.containerType === CONTAINER_TYPES.JAR);
 
   const quantityLabel = (() => {
     if (showBottleFields) return 'Bottles Owned';
+    if (showWineFields) return 'Bottles Owned';
     if (formData.containerType === CONTAINER_TYPES.TIN) return 'Tins Owned';
     if (formData.containerType === CONTAINER_TYPES.POUCH) return 'Pouches Owned';
     if (formData.containerType === CONTAINER_TYPES.BULK) return 'Total Ounces';
@@ -190,6 +192,21 @@ export default function InventoryStep({
           </>
         )}
 
+        {showWineFields && (
+          <div className="flex flex-col gap-2">
+            <SectionLabel>Status</SectionLabel>
+            <ChoicePills
+              options={config.statuses}
+              value={formData.status}
+              onChange={(value) => setField('status', value)}
+              labelMap={{
+                [STATUS_TYPES.OPEN]: 'Open',
+                [STATUS_TYPES.UNOPENED]: 'Unopened',
+              }}
+            />
+          </div>
+        )}
+
         {showBlendFields && (
           <div className="flex flex-col gap-2">
             <SectionLabel>Status</SectionLabel>
@@ -237,7 +254,7 @@ export default function InventoryStep({
           </div>
         )}
 
-        {showBottleFields && (
+        {(showBottleFields || showWineFields) && (
           <div className="flex flex-col gap-2">
             <SectionLabel>Purchase Price (Optional)</SectionLabel>
             <Input

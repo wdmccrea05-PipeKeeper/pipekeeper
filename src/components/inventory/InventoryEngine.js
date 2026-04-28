@@ -48,6 +48,10 @@ export class InventoryEngine {
       return this.buildPipePayload(formData);
     }
 
+    if (this.moduleType === INVENTORY_MODULES.WINE) {
+      return this.buildWinePayload(formData);
+    }
+
     return {};
   }
 
@@ -163,6 +167,18 @@ export class InventoryEngine {
       storage_status: formData.storage || STORAGE_TYPES.ACTIVE,
       acquisition_price: toNumber(formData.acquisitionPrice),
       acquisition_method: formData.acquisitionMethod || undefined,
+    });
+  }
+
+  buildWinePayload(formData = {}) {
+    return cleanObject({
+      quantity: toNumber(formData.quantity),
+      bottle_status: formData.status || STATUS_TYPES.UNOPENED,
+      storage: formData.storage || STORAGE_TYPES.BAR,
+      purchase_price: toNumber(formData.purchasePrice),
+      acquisition_method: formData.acquisitionMethod || undefined,
+      cellared_date:
+        formData.storage === STORAGE_TYPES.CELLAR ? formData.cellarDate || undefined : undefined,
     });
   }
 }

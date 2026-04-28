@@ -10,7 +10,7 @@ import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import WineForm from '@/components/wine/WineForm';
 import LogWineTastingModal from '@/components/wine/LogWineTastingModal';
-import AddWineModal from '@/components/wine/AddWineModal';
+import AddFlowModal from '@/components/addflow/AddFlowModal';
 import EnrichButton from '@/components/shared/EnrichButton';
 import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
 import { useCurrency } from '@/lib/currency/useCurrency';
@@ -131,8 +131,8 @@ export default function Wines() {
   const queryClient = useQueryClient();
 
   const urlParams = new URLSearchParams(window.location.search);
-  const [showForm, setShowForm] = useState(urlParams.get('action') === 'add');
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(urlParams.get('action') === 'add');
   const [editingWine, setEditingWine] = useState(null);
   const [tastingWine, setTastingWine] = useState(null);
   const [wantListWine, setWantListWine] = useState(null);
@@ -203,7 +203,6 @@ export default function Wines() {
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
       <WineKeeperModuleNav currentPageName="Wines" />
@@ -290,9 +289,11 @@ export default function Wines() {
         />
       )}
 
-      <AddWineModal
+      <AddFlowModal
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
+        onCreated={() => queryClient.invalidateQueries({ queryKey: ['wines', user?.email] })}
+        initialItemType="wine"
       />
     </div>
   );

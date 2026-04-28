@@ -2,6 +2,7 @@ export const INVENTORY_MODULES = {
   BLEND: 'blend',
   BOTTLE: 'bottle',
   PIPE: 'pipe',
+  WINE: 'wine',
 };
 
 export const CONTAINER_TYPES = {
@@ -77,6 +78,20 @@ export const inventoryConfig = {
       storage: STORAGE_TYPES.ACTIVE,
       ownershipStatus: STORAGE_TYPES.ACTIVE,
       acquisitionPrice: '',
+    },
+  },
+
+  [INVENTORY_MODULES.WINE]: {
+    label: 'Wine Cellar',
+    containers: null,
+    statuses: [STATUS_TYPES.UNOPENED, STATUS_TYPES.OPEN],
+    storageOptions: [STORAGE_TYPES.BAR, STORAGE_TYPES.CELLAR],
+    defaults: {
+      quantity: 1,
+      status: STATUS_TYPES.UNOPENED,
+      storage: STORAGE_TYPES.BAR,
+      cellarDate: '',
+      purchasePrice: '',
     },
   },
 };

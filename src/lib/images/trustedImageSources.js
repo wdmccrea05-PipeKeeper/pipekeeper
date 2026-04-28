@@ -29,6 +29,9 @@ export const BOTTLE_TIER2_DOMAINS = [
   'totalwine.com',
   'reservebar.com',
   'astorwines.com',
+  'wine-searcher.com',
+  'vivino.com',
+  'cellartracker.com',
 ];
 
 // ── Blend (tobacco) ───────────────────────────────────────────────────────────
@@ -84,11 +87,15 @@ export const TRUSTED_IMAGE_DOMAINS = {
   'nickollsandperks.co.uk':  { tier: 2, type: 'retailer',  entityTypes: ['bottle'],         isInternational: true,  referenceOnly: false },
   'royalmilewhiskies.com':   { tier: 2, type: 'retailer',  entityTypes: ['bottle'],         isInternational: true,  referenceOnly: false },
   'hardtofindwhisky.com':    { tier: 2, type: 'retailer',  entityTypes: ['bottle'],         isInternational: true,  referenceOnly: false },
-  'totalwine.com':           { tier: 2, type: 'retailer',  entityTypes: ['bottle'],         isInternational: false, referenceOnly: false },
+  'totalwine.com':           { tier: 2, type: 'retailer',  entityTypes: ['bottle', 'wine'], isInternational: false, referenceOnly: false },
   'reservebar.com':          { tier: 2, type: 'retailer',  entityTypes: ['bottle'],         isInternational: false, referenceOnly: false },
-  'astorwines.com':          { tier: 2, type: 'retailer',  entityTypes: ['bottle'],         isInternational: false, referenceOnly: false },
+  'astorwines.com':          { tier: 2, type: 'retailer',  entityTypes: ['bottle', 'wine'], isInternational: false, referenceOnly: false },
   'whiskyauctioneer.com':    { tier: 2, type: 'retailer',  entityTypes: ['bottle'],         isInternational: true,  referenceOnly: false },
-  'wine-searcher.com':       { tier: 3, type: 'database',  entityTypes: ['bottle'],         isInternational: true,  referenceOnly: false },
+  'wine-searcher.com':       { tier: 2, type: 'database',  entityTypes: ['bottle', 'wine'], isInternational: true,  referenceOnly: false },
+  'vivino.com':              { tier: 2, type: 'database',  entityTypes: ['wine'],           isInternational: true,  referenceOnly: false },
+  'cellartracker.com':       { tier: 2, type: 'database',  entityTypes: ['wine'],           isInternational: true,  referenceOnly: false },
+  'wineenthusiast.com':      { tier: 3, type: 'database',  entityTypes: ['wine'],           isInternational: true,  referenceOnly: false },
+  'winespectator.com':       { tier: 3, type: 'database',  entityTypes: ['wine'],           isInternational: true,  referenceOnly: false },
 
   // Tobacco blends — official tier 1
   'cornellanddiehl.com':     { tier: 1, type: 'official',  entityTypes: ['blend'],          isInternational: false, referenceOnly: false },

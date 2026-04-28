@@ -14,6 +14,7 @@ const CONDITIONS = ['Mint', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'E
 const CIGAR_BODY = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
 const CIGAR_INTENSITY_LABELS = { mild: 'Mild', mild_medium: 'Mild-Medium', medium: 'Medium', medium_full: 'Medium-Full', full: 'Full' };
 const WRAPPERS = ['Colorado Claro', 'Colorado', 'Colorado Maduro', 'Maduro', 'Oscuro', 'Natural', 'Claro', 'Double Claro (Candela)', 'Connecticut Shade', 'Connecticut Broadleaf', 'Ecuadorian Connecticut', 'Habano', 'San Andres Maduro', 'Cameroon', 'Sumatra', 'Indonesian', 'Other'];
+const WINE_STYLES = ['Red', 'White', 'Rosé', 'Sparkling', 'Dessert / Fortified', 'Orange', 'Other'];
 
 const inputStyle = {
   background: 'rgba(20,13,8,0.7)',
@@ -63,6 +64,11 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
     wrapper: data?.wrapper || '',
     binder: data?.binder || '',
     body: data?.body || '',
+    vintage: data?.vintage || '',
+    varietal: data?.varietal || '',
+    region: data?.region || '',
+    appellation: data?.appellation || '',
+    style: data?.style || '',
   });
 
   const set = (key, val) => setValues(prev => ({ ...prev, [key]: val }));
@@ -194,6 +200,62 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
                 value={values.flavor_notes_raw}
                 onChange={e => set('flavor_notes_raw', e.target.value)}
                 placeholder="e.g. Cedar, Leather, Coffee (comma separated)…"
+                style={inputStyle}
+                className="placeholder:text-[rgba(224,216,200,0.3)]"
+              />
+            </FieldRow>
+          </>
+        )}
+
+        {itemType === 'wine' && (
+          <>
+            <FieldRow label="Vintage">
+              <Input
+                type="number"
+                value={values.vintage}
+                onChange={e => set('vintage', e.target.value)}
+                placeholder="e.g. 2019"
+                style={inputStyle}
+                className="placeholder:text-[rgba(224,216,200,0.3)]"
+              />
+            </FieldRow>
+            <FieldRow label="Varietal / Grape">
+              <Input
+                value={values.varietal}
+                onChange={e => set('varietal', e.target.value)}
+                placeholder="e.g. Cabernet Sauvignon"
+                style={inputStyle}
+                className="placeholder:text-[rgba(224,216,200,0.3)]"
+              />
+            </FieldRow>
+            <FieldRow label="Region">
+              <Input
+                value={values.region}
+                onChange={e => set('region', e.target.value)}
+                placeholder="e.g. Bordeaux, Napa Valley"
+                style={inputStyle}
+                className="placeholder:text-[rgba(224,216,200,0.3)]"
+              />
+            </FieldRow>
+            <FieldRow label="Appellation">
+              <Input
+                value={values.appellation}
+                onChange={e => set('appellation', e.target.value)}
+                placeholder="e.g. Margaux AOC"
+                style={inputStyle}
+                className="placeholder:text-[rgba(224,216,200,0.3)]"
+              />
+            </FieldRow>
+            <FieldRow label="Style">
+              <StyledSelect value={values.style} onChange={v => set('style', v)} options={WINE_STYLES} placeholder="Select style…" />
+            </FieldRow>
+            <FieldRow label="ABV %">
+              <Input
+                type="number"
+                step="0.1"
+                value={values.abv}
+                onChange={e => set('abv', e.target.value)}
+                placeholder="e.g. 13.5"
                 style={inputStyle}
                 className="placeholder:text-[rgba(224,216,200,0.3)]"
               />

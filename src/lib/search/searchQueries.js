@@ -43,6 +43,36 @@ export function buildBottleQueries(name, distillery, type, region, country) {
 }
 
 /**
+ * Build query variants for a wine bottle.
+ *
+ * @param {string} name     - Wine name
+ * @param {string} producer - Producer / winery
+ * @param {string} [vintage] - Vintage year
+ * @param {string} [varietal] - Grape varietal
+ * @param {string} [region]  - Region
+ * @returns {string[]}
+ */
+export function buildWineQueries(name, producer, vintage, varietal, region) {
+  const base = [producer, name].filter(Boolean).join(' ').trim();
+  const queries = [];
+
+  if (base) {
+    queries.push(`${base} wine`);
+    queries.push(`${base} wine bottle`);
+    queries.push(`${base} official`);
+  }
+  if (vintage && base) queries.push(`${base} ${vintage}`);
+  if (varietal && base) queries.push(`${base} ${varietal}`);
+  if (region && base) queries.push(`${base} ${region}`);
+  if (base) {
+    queries.push(`${base} site:wine-searcher.com`);
+    queries.push(`${base} site:vivino.com`);
+  }
+
+  return [...new Set(queries.filter(Boolean))];
+}
+
+/**
  * Build query variants for a tobacco blend.
  *
  * @param {string} name         - Blend name
@@ -100,7 +130,7 @@ export function buildPipeQueries(maker, model, shape) {
  * @returns {string[]}
  */
 export function buildImageQueries(entityType, fields = {}) {
-  const { name, distillery, maker, manufacturer, region, country, shape } = fields;
+  const { name, distillery, maker, manufacturer, producer, region, country, shape } = fields;
 
   if (entityType === 'bottle') {
     return buildBottleQueries(name, distillery, null, region, country).map(
@@ -123,6 +153,16 @@ export function buildImageQueries(entityType, fields = {}) {
       `${base} pipe product photo`,
       `${base} pipe reference image site:smokingpipes.com`,
       `${base} pipe official catalog image`,
+    ].filter(Boolean);
+  }
+
+  if (entityType === 'wine') {
+    const base = [producer, name].filter(Boolean).join(' ').trim();
+    return [
+      `${base} wine bottle image`,
+      `${base} wine bottle product photo`,
+      `${base} site:wine-searcher.com`,
+      `${base} site:vivino.com`,
     ].filter(Boolean);
   }
 
@@ -235,6 +275,28 @@ Return JSON with an "items" array. Each item:
 - image_url (string or null)`;
   }
 
+  if (itemType === 'wine') {
+    return `Find exact wine matches for "${query}".
+${internationalNote}
+Rules:
+1. Return the exact match first.
+2. Include producer, vintage, varietal, and region when available.
+3. Return up to 8 wine results.
+
+Return JSON with an "items" array. Each item:
+- name (string) — full wine name
+- producer (string) — winery / producer name
+- vintage (number or null) — e.g. 2019
+- varietal (string or null) — grape variety, e.g. "Cabernet Sauvignon"
+- region (string or null) — e.g. "Bordeaux", "Napa Valley"
+- appellation (string or null) — e.g. "Pauillac AOC"
+- style (string or null) — red / white / rosé / sparkling / dessert
+- abv (number or null) — e.g. 13.5
+- description (string)
+- source_domain (string or null)
+- image_url (string or null) — bottle image from a trusted source if known`;
+  }
+
   return `Find matches for "${query}". Return JSON with an "items" array.`;
 }
 
@@ -280,6 +342,15 @@ export const QUICK_ADD_RESPONSE_SCHEMA = {
           filler:            { type: 'string' },
           body:              { type: 'string' },
           production_status: { type: 'string' },
+          // wine fields
+          producer:          { type: 'string' },
+          winery:            { type: 'string' },
+          vintage:           { type: 'number' },
+          varietal:          { type: 'string' },
+          grape_variety:     { type: 'string' },
+          appellation:       { type: 'string' },
+          style:             { type: 'string' },
+          wine_type:         { type: 'string' },
         },
       },
     },
@@ -294,7 +365,7 @@ export const QUICK_ADD_RESPONSE_SCHEMA = {
  * @returns {string}
  */
 export function buildImageSearchPrompt(entityType, fields = {}, options = {}) {
-  const { name, distillery, maker, manufacturer, region, country, shape } = fields;
+  const { name, distillery, maker, manufacturer, producer, region, country, shape } = fields;
   const { seed, broad } = options;
 
   const subject =
@@ -302,7 +373,9 @@ export function buildImageSearchPrompt(entityType, fields = {}, options = {}) {
       ? [distillery, name].filter(Boolean).join(' ')
       : entityType === 'blend'
         ? [manufacturer, name].filter(Boolean).join(' ')
-        : [maker, name].filter(Boolean).join(' ');
+        : entityType === 'wine'
+          ? [producer, name].filter(Boolean).join(' ')
+          : [maker, name].filter(Boolean).join(' ');
 
   const internationalHint =
     region || country ? ` (${[region, country].filter(Boolean).join(', ')})` : '';
@@ -312,7 +385,9 @@ export function buildImageSearchPrompt(entityType, fields = {}, options = {}) {
       ? 'masterofmalt.com, thewhiskyexchange.com, whiskybase.com, reservebar.com, totalwine.com, or an official distillery page'
       : entityType === 'blend'
         ? 'smokingpipes.com, pipesandcigars.com, tobaccopipes.com, cupojoes.com, tobaccoreviews.com, or an official manufacturer page'
-        : 'smokingpipes.com, pipedia.org, or an official maker page';
+        : entityType === 'wine'
+          ? 'wine-searcher.com, vivino.com, cellartracker.com, totalwine.com, or an official winery page'
+          : 'smokingpipes.com, pipedia.org, or an official maker page';
 
   const variationNote = seed
     ? '\n- This is a re-search request. Return DIFFERENT images from a previous attempt — use alternative sources or query angles.'
