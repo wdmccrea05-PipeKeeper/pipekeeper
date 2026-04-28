@@ -15,11 +15,11 @@ import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import WineForm from '@/components/wine/WineForm';
 import LogWineTastingModal from '@/components/wine/LogWineTastingModal';
 import EnrichButton from '@/components/shared/EnrichButton';
-import PhotoUploader from '@/components/PhotoUploader';
+import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
 import {
-  ArrowLeft, Star, Edit2, Trash2, BookOpen, BookmarkPlus, Camera,
-  MapPin, Wine, AlertTriangle, TrendingUp, Package, BarChart2, Zap,
+  ArrowLeft, Star, Edit2, Trash2, BookOpen, BookmarkPlus,
+  MapPin, Wine, AlertTriangle, TrendingUp, Package, BarChart2,
   CheckCircle, Clock, ChevronDown, ChevronUp, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -67,71 +67,7 @@ function MetricCard({ icon: Icon, label, value, subtext, color }) {
   );
 }
 
-// ─── Photo Gallery ────────────────────────────────────────────────────────────
-function PhotoGallery({ wine, onPhotosUpdate }) {
-  const [lightbox, setLightbox] = useState(null);
-  const [showUploader, setShowUploader] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const photos = wine.photos || [];
 
-  const handleSavePhotos = async (newPhotos) => {
-    setSaving(true);
-    await base44.entities.Wine.update(wine.id, { photos: newPhotos });
-    setSaving(false);
-    setShowUploader(false);
-    onPhotosUpdate(newPhotos);
-    toast.success('Photos saved');
-  };
-
-  return (
-    <div className="space-y-3">
-      {photos.length === 0 ? (
-        <div className="text-center py-6" style={{ color: 'rgba(224,216,200,0.4)' }}>
-          <Camera className="w-8 h-8 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">No photos yet</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-          {photos.map((photo, i) => (
-            <div key={i} className="aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setLightbox(photo)}>
-              <img src={photo} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
-            </div>
-          ))}
-        </div>
-      )}
-
-      <button
-        onClick={() => setShowUploader((v) => !v)}
-        className="text-sm px-3 py-1.5 rounded-lg"
-        style={{ background: 'rgba(139,58,58,0.15)', color: '#C47070', border: '1px solid rgba(139,58,58,0.3)' }}
-      >
-        <Camera className="w-3.5 h-3.5 inline mr-1.5" />
-        {photos.length > 0 ? 'Manage Photos' : 'Add Photos'}
-      </button>
-
-      {showUploader && (
-        <div className="rounded-xl p-4" style={{ background: 'rgba(20,14,10,0.6)', border: '1px solid rgba(180,140,75,0.15)' }}>
-          <PhotoUploader
-            existingPhotos={photos}
-            onPhotosSelected={(newPhotos) => handleSavePhotos(newPhotos)}
-            maxPhotos={8}
-            recordType="wine"
-          />
-          {saving && <p className="text-xs mt-2" style={{ color: 'rgba(224,216,200,0.5)' }}>Saving…</p>}
-        </div>
-      )}
-
-      {lightbox && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.9)' }} onClick={() => setLightbox(null)}>
-          <button className="absolute top-4 right-4 text-white opacity-70 hover:opacity-100" onClick={() => setLightbox(null)}>
-            <X className="w-6 h-6" />
-          </button>
-          <img src={lightbox} alt="Wine" className="max-w-[90vw] max-h-[90vh] object-contain rounded-xl" onClick={(e) => e.stopPropagation()} />
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── Valuation Panel ─────────────────────────────────────────────────────────
 function ValuationPanel({ wine, formatFromBase, onSaved }) {
@@ -532,6 +468,20 @@ export default function WineDetail() {
                 <Wine className="w-20 h-20" style={{ color: 'rgba(139,58,58,0.25)' }} />
               </div>
             )}
+            <div className="px-4 pb-2">
+              <InlinePhotoEditor
+                photos={wine.photos || []}
+                maxPhotos={6}
+                label="Photos"
+                entityType="wine"
+                recordName={wine.name || ''}
+                brand={wine.producer || ''}
+                onUpdate={async (newPhotos) => {
+                  await base44.entities.Wine.update(wine.id, { photos: newPhotos });
+                  handlePhotosUpdate(newPhotos);
+                }}
+              />
+            </div>
             <div className="p-5 space-y-2">
               <h1 className="text-xl font-bold leading-snug" style={{ color: '#F5F1E7' }}>{wine.name}</h1>
               <p className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.75)' }}>{wine.producer}</p>
@@ -618,11 +568,6 @@ export default function WineDetail() {
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.8)' }}>{wine.notes}</p>
               </div>
             )}
-          </SectionCard>
-
-          {/* Photo Gallery */}
-          <SectionCard title={`Photos (${(wine.photos || []).length})`}>
-            <PhotoGallery wine={wine} onPhotosUpdate={handlePhotosUpdate} />
           </SectionCard>
 
           {/* Valuation */}
