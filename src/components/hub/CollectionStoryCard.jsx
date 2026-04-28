@@ -34,6 +34,11 @@ function resolvePhoto(record, recordType) {
     return photos[0] || record.photo || record.image || null;
   }
 
+  if (recordType === 'wine') {
+    const photos = Array.isArray(record.photos) ? record.photos : [];
+    return photos[0] || record.photo || record.image || record.label_image || record.image_url || null;
+  }
+
   return null;
 }
 
@@ -43,6 +48,7 @@ function getRoute(recordType, id) {
   if (recordType === 'blend') return `/TobaccoDetail?id=${encodeURIComponent(id)}`;
   if (recordType === 'bottle') return `/BottleDetail?id=${encodeURIComponent(id)}`;
   if (recordType === 'cigar') return `/CigarDetail?id=${encodeURIComponent(id)}`;
+  if (recordType === 'wine') return `/WineDetail?id=${encodeURIComponent(id)}`;
   return null;
 }
 
@@ -58,7 +64,9 @@ async function getEntityRecord(recordType, id) {
           ? base44.entities.Bottle
           : recordType === 'cigar'
             ? base44.entities.Cigar
-            : null;
+            : recordType === 'wine'
+              ? base44.entities.Wine
+              : null;
 
   if (!entity) return null;
 
@@ -89,6 +97,9 @@ async function enrichHighlights(story) {
     ['topRatedCigar', 'cigar'],
     ['highestValueCigar', 'cigar'],
     ['mostValuedCigar', 'cigar'],
+    ['mostValuableWine', 'wine'],
+    ['topRatedWine', 'wine'],
+    ['readyToDrinkWine', 'wine'],
   ];
 
   await Promise.all(
@@ -195,6 +206,7 @@ export default function CollectionStoryCard() {
   const whiskeyVisible = !WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper'); // gated
   const pipeVisible = isModuleEnabled('pipekeeper');
   const cigarVisible = isModuleEnabled('cigarkeeper');
+  const wineVisible = isModuleEnabled('winekeeper');
 
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -310,6 +322,18 @@ export default function CollectionStoryCard() {
             <p className="text-2xl font-bold mt-2 text-[#C89752]">{m.totalCigarSticks || m.cigarSticks || 0}</p>
           </div>
         ) : null}
+        {wineVisible && (
+          <>
+            <div className="rounded-xl p-4 border border-[rgba(139,75,107,0.22)] bg-[rgba(139,75,107,0.10)]">
+              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">Wine Types</p>
+              <p className="text-2xl font-bold mt-2 text-[#8B4B6B]">{m.wineBottleTypes || 0}</p>
+            </div>
+            <div className="rounded-xl p-4 border border-[rgba(139,75,107,0.22)] bg-[rgba(139,75,107,0.10)]">
+              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">In Cellar</p>
+              <p className="text-2xl font-bold mt-2 text-[#8B4B6B]">{m.totalWineBottles || 0}</p>
+            </div>
+          </>
+        )}
         <div className="rounded-xl p-4 border border-[rgba(16,185,129,0.22)] bg-[rgba(16,185,129,0.10)]">
           <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.totalValueShort')}</p>
           <p className="text-2xl font-bold mt-2 text-[#10B981]">{valueDisplay}</p>
@@ -386,12 +410,40 @@ export default function CollectionStoryCard() {
           />
         ) : null}
 
+        {wineVisible && h.mostValuableWine ? (
+          <StoryCard
+            label="Most Valuable Wine"
+            title={h.mostValuableWine.name}
+            item={h.mostValuableWine}
+            navigate={navigate}
+          />
+        ) : null}
+
+        {wineVisible && h.topRatedWine ? (
+          <StoryCard
+            label="Top Rated Wine"
+            title={h.topRatedWine.name}
+            item={h.topRatedWine}
+            navigate={navigate}
+          />
+        ) : null}
+
+        {wineVisible && h.readyToDrinkWine ? (
+          <StoryCard
+            label="Ready to Drink"
+            title={h.readyToDrinkWine.name}
+            item={h.readyToDrinkWine}
+            navigate={navigate}
+          />
+        ) : null}
+
         {(() => {
           if (!h.mostValuableItem) return null;
           const rt = h.mostValuableItem.recordType;
-          const crownVisible =
+           const crownVisible =
             rt === 'bottle' ? whiskeyVisible
             : rt === 'cigar' ? cigarVisible
+            : rt === 'wine' ? wineVisible
             : pipeVisible;
           if (!crownVisible) return null;
           return (

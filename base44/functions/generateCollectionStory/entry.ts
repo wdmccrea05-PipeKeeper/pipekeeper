@@ -26,6 +26,31 @@ function getCigarSticks(cigar) {
   return Math.max(0, Number(cigar.singles_equivalent ?? cigar.quantity ?? 0));
 }
 
+function getWineQuantity(wine) {
+  return Math.max(0, Number(wine.quantity ?? 1));
+}
+
+function getWineTotalValue(wine) {
+  if (!wine) return 0;
+  const qty = getWineQuantity(wine);
+  if (wine.manual_valuation_enabled && Number(wine.manual_estimated_value) > 0) {
+    return Number(wine.manual_estimated_value) * qty;
+  }
+  if (Number(wine.estimated_total_value) > 0) return Number(wine.estimated_total_value);
+  if (Number(wine.market_estimated_total_value) > 0) return Number(wine.market_estimated_total_value);
+  if (Number(wine.estimated_unit_value) > 0) return Number(wine.estimated_unit_value) * qty;
+  if (Number(wine.market_estimated_unit_value) > 0) return Number(wine.market_estimated_unit_value) * qty;
+  if (Number(wine.estimated_value) > 0) return Number(wine.estimated_value) * qty;
+  if (Number(wine.purchase_price) > 0) return Number(wine.purchase_price) * qty;
+  return 0;
+}
+
+function getWinePrimaryImage(wine) {
+  if (!wine) return null;
+  const photos = Array.isArray(wine.photos) ? wine.photos : [];
+  return photos[0] || wine.photo || wine.image || wine.label_image || wine.image_url || null;
+}
+
 function formatValue(v) {
   if (!v) return '$0';
   return v >= 1000
@@ -48,17 +73,19 @@ function getBottleUsageKeyFromBottle(bottle) {
 function buildNarrative({ pipes, blends, bottleTypes, totalBottles, mostUsedPipe, mostTastedBottle,
   dominantBlendType, dominantWhiskyType, underusedCount, mostValuable, totalSessions,
   cigarTypes, totalCigarSticks, mostSmokedCigar, cigarSessions, humidorCount, dominantCigarStrength,
-  dominantCigarWrapper, dominantCigarCountry, topRatedCigar, highestValueCigar, restockCigarCount }) {
+  dominantCigarWrapper, dominantCigarCountry, topRatedCigar, highestValueCigar, restockCigarCount,
+  wineBottleTypes, totalWineBottles, topWineProducer, topWineVarietal, topWineRegion, readyToDrinkWineCount, mostValuableWine }) {
 
   const bottles = bottleTypes;
   const hasPipes = pipes > 0;
   const hasBlends = blends > 0;
   const hasBottles = bottleTypes > 0;
   const hasCigars = cigarTypes > 0;
-  const totalItems = pipes + blends + bottleTypes + cigarTypes;
+  const hasWines = wineBottleTypes > 0;
+  const totalItems = pipes + blends + bottleTypes + cigarTypes + wineBottleTypes;
 
   if (totalItems === 0) {
-    return "Your collection is just getting started. Add your first pipe, blend, bottle, or cigar to see your story unfold.";
+    return "Your collection is just getting started. Add your first pipe, blend, bottle, cigar, or wine to see your story unfold.";
   }
 
   const parts = [];
@@ -69,7 +96,9 @@ function buildNarrative({ pipes, blends, bottleTypes, totalBottles, mostUsedPipe
   const cigarInventoryNote = totalCigarSticks > 0 ? ` (${totalCigarSticks} sticks)` : '';
   const humidorNote = humidorCount > 0 ? ` across ${humidorCount} humidor${humidorCount === 1 ? '' : 's'}` : '';
 
-  if (hasPipes && hasBlends && hasBottles && hasCigars) {
+  if (hasPipes && hasBlends && hasBottles && hasCigars && hasWines) {
+    parts.push(`Your collection reflects a comprehensive multi-module enthusiast — ${pipes} pipes across ${blends} blends, a spirits shelf of ${bottleTypes} whiskey types${bottleInventoryNote}, ${wineBottleTypes} wines in your cellar${totalWineBottles > wineBottleTypes ? ` (${totalWineBottles} bottles)` : ''}, and a humidor of ${cigarTypes} cigar ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote}${humidorNote}.`);
+  } else if (hasPipes && hasBlends && hasBottles && hasCigars) {
     parts.push(`Your collection reflects a serious multi-module collector — ${pipes} pipes across ${blends} blends, a spirits shelf of ${bottleTypes} bottle types${bottleInventoryNote}, and a humidor of ${cigarTypes} cigar ${cigarTypes === 1 ? 'type' : 'types'}${cigarInventoryNote}${humidorNote}.`);
   } else if (hasPipes && hasBlends && hasBottles) {
     const balance = pipes > blends
@@ -151,8 +180,16 @@ function buildNarrative({ pipes, blends, bottleTypes, totalBottles, mostUsedPipe
     parts.push(`${restockCigarCount} cigar ${restockCigarCount === 1 ? 'entry is' : 'entries are'} flagged for restock priority.`);
   }
 
+  if (topWineProducer && hasWines) {
+    parts.push(`Your wine selections show a preference for ${topWineProducer} as a leading producer${topWineVarietal ? `, paired with a taste for ${topWineVarietal} as your primary varietal` : ''}${topWineRegion ? ` from ${topWineRegion}` : ''}.`);
+  }
+
+  if (readyToDrinkWineCount > 0) {
+    parts.push(`You currently have ${readyToDrinkWineCount} wine${readyToDrinkWineCount === 1 ? '' : 's'} at peak drinking window — ready to open.`);
+  }
+
   if (mostValuable && mostValuable.value > 0) {
-    const typeLabel = mostValuable.type === 'pipe' ? 'pipe' : mostValuable.type === 'blend' ? 'blend' : mostValuable.type === 'cigar' ? 'cigar' : 'bottle';
+    const typeLabel = mostValuable.type === 'pipe' ? 'pipe' : mostValuable.type === 'blend' ? 'blend' : mostValuable.type === 'cigar' ? 'cigar' : mostValuable.type === 'wine' ? 'wine' : 'bottle';
     parts.push(`The crown jewel of your collection is the ${mostValuable.name} — a ${typeLabel} valued at ${formatValue(mostValuable.value)}.`);
   }
 
@@ -202,9 +239,10 @@ Deno.serve(async (req) => {
     const includePipes = enabledModules.includes('pipekeeper');
     const includeWhiskey = enabledModules.includes('whiskeykeeper');
     const includeCigar = enabledModules.includes('cigarkeeper');
+    const includeWine = enabledModules.includes('winekeeper');
 
     // Fetch only AI-eligible module data in parallel
-    const [pipes, blends, bottles, logs, tastingLogs, inventoryUnits, cigars, cigarSessionsList, humidors] = await Promise.all([
+    const [pipes, blends, bottles, logs, tastingLogs, inventoryUnits, cigars, cigarSessionsList, humidors, wines, wineTastings] = await Promise.all([
       includePipes ? base44.entities.Pipe.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includePipes ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includeWhiskey ? base44.entities.Bottle.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
@@ -214,6 +252,8 @@ Deno.serve(async (req) => {
       includeCigar ? base44.entities.Cigar.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
       includeCigar ? base44.entities.CigarSession.filter({ created_by: user.email }, '-date', 500) : Promise.resolve([]),
       includeCigar ? base44.entities.HumidorLocation.filter({ created_by: user.email }, '-updated_date', 200) : Promise.resolve([]),
+      includeWine ? base44.entities.Wine.filter({ created_by: user.email }, '-created_date', 500) : Promise.resolve([]),
+      includeWine ? base44.entities.WineTasting.filter({ created_by: user.email }, '-date', 500) : Promise.resolve([]),
     ]);
 
     const pipesList = Array.isArray(pipes) ? pipes : [];
@@ -225,6 +265,8 @@ Deno.serve(async (req) => {
     const cigarsList = Array.isArray(cigars) ? cigars : [];
     const cigarSessionsData = Array.isArray(cigarSessionsList) ? cigarSessionsList : [];
     const humidorsList = Array.isArray(humidors) ? humidors : [];
+    const winesList = Array.isArray(wines) ? wines : [];
+    const wineTastingsList = Array.isArray(wineTastings) ? wineTastings : [];
 
     // Dual bottle metrics
     const bottleTypes = bottlesList.length; // distinct labels
@@ -274,12 +316,39 @@ Deno.serve(async (req) => {
       return status === 'restock' || getCigarSticks(c) <= 2;
     }).length;
 
+    // Wine metrics
+    const wineBottleTypes = winesList.length;
+    const totalWineBottles = winesList.reduce((s, w) => s + getWineQuantity(w), 0);
+    const wineCollectionValue = winesList.reduce((s, w) => s + getWineTotalValue(w), 0);
+    
+    const wineProducers = {};
+    const wineVarietals = {};
+    const wineRegions = {};
+    winesList.forEach(w => {
+      if (w.producer) wineProducers[w.producer] = (wineProducers[w.producer] || 0) + 1;
+      if (w.varietal) wineVarietals[w.varietal] = (wineVarietals[w.varietal] || 0) + 1;
+      const region = w.region || w.appellation || w.country_of_origin;
+      if (region) wineRegions[region] = (wineRegions[region] || 0) + 1;
+    });
+    const topWineProducer = Object.entries(wineProducers).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    const topWineVarietal = Object.entries(wineVarietals).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    const topWineRegion = Object.entries(wineRegions).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    
+    const readyToDrinkWineCount = winesList.filter(w => {
+      const start = w.drink_window_start || w.drinking_window_start;
+      const end = w.drink_window_end || w.drinking_window_end;
+      if (!start || !end) return false;
+      const now = new Date();
+      return new Date(start) <= now && new Date(end) >= now;
+    }).length;
+
     // Value totals
     const totalValue =
       pipesList.reduce((s, p) => s + getPipeValue(p), 0) +
       blendsList.reduce((s, b) => s + getTobaccoValue(b), 0) +
       bottlesList.reduce((s, b) => s + getBottleValue(b), 0) +
-      cigarsList.reduce((s, c) => s + getCigarValue(c), 0);
+      cigarsList.reduce((s, c) => s + getCigarValue(c), 0) +
+      wineCollectionValue;
 
     // Favorites
     const favorites = {
@@ -334,8 +403,29 @@ Deno.serve(async (req) => {
       ...blendsList.map(b => ({ name: b.name, id: b.id, type: 'blend', value: getTobaccoValue(b) })),
       ...bottlesList.map(b => ({ name: b.name, id: b.id, type: 'bottle', value: getBottleValue(b) })),
       ...cigarsList.map(c => ({ name: c.name, id: c.id, type: 'cigar', value: getCigarValue(c) })),
+      ...winesList.map(w => ({ name: w.name, id: w.id, type: 'wine', value: getWineTotalValue(w) })),
     ];
     const mostValuable = allItems.filter(i => i.value > 0).sort((a, b) => b.value - a.value)[0] || null;
+    
+    // Wine highlights
+    const mostValuableWine = winesList.length > 0
+      ? [...winesList]
+          .map(w => ({ ...w, value: getWineTotalValue(w) }))
+          .sort((a, b) => b.value - a.value)
+          .find(w => w.value > 0)
+      : null;
+    const topRatedWine = winesList.length > 0
+      ? [...winesList]
+          .filter(w => Number(w.rating) > 0)
+          .sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0))[0]
+      : null;
+    const readyToDrinkWine = winesList.find(w => {
+      const start = w.drink_window_start || w.drinking_window_start;
+      const end = w.drink_window_end || w.drinking_window_end;
+      if (!start || !end) return false;
+      const now = new Date();
+      return new Date(start) <= now && new Date(end) >= now;
+    });
 
     const narrative = buildNarrative({
       pipes: pipesList.length,
@@ -360,6 +450,13 @@ Deno.serve(async (req) => {
       topRatedCigar,
       highestValueCigar: highestValueCigar ? { ...highestValueCigar, value: highestValueCigar.__value || 0 } : null,
       restockCigarCount,
+      wineBottleTypes,
+      totalWineBottles,
+      topWineProducer,
+      topWineVarietal,
+      topWineRegion,
+      readyToDrinkWineCount,
+      mostValuableWine,
     });
 
     const story = {
@@ -384,6 +481,11 @@ Deno.serve(async (req) => {
         dominantCigarWrapper,
         dominantCigarCountry,
         restockCigarCount,
+        wineBottleTypes,
+        totalWineBottles,
+        wineValue: Math.round(wineCollectionValue),
+        wineTastings: wineTastingsList.length,
+        readyToDrinkWineCount,
       },
       highlights: {
         mostUsedPipe: mostUsedPipe
@@ -519,6 +621,35 @@ Deno.serve(async (req) => {
         underusedCount: underusedPipes.length,
         dominantBlendType,
         dominantWhiskyType,
+        mostValuableWine: mostValuableWine
+          ? {
+              id: mostValuableWine.id,
+              name: mostValuableWine.name,
+              recordType: 'wine',
+              photos: mostValuableWine.photos || [],
+              photo: getWinePrimaryImage(mostValuableWine),
+              value: Math.round(mostValuableWine.value || 0),
+            }
+          : null,
+        topRatedWine: topRatedWine
+          ? {
+              id: topRatedWine.id,
+              name: topRatedWine.name,
+              recordType: 'wine',
+              photos: topRatedWine.photos || [],
+              photo: getWinePrimaryImage(topRatedWine),
+              rating: Number(topRatedWine.rating || 0),
+            }
+          : null,
+        readyToDrinkWine: readyToDrinkWine
+          ? {
+              id: readyToDrinkWine.id,
+              name: readyToDrinkWine.name,
+              recordType: 'wine',
+              photos: readyToDrinkWine.photos || [],
+              photo: getWinePrimaryImage(readyToDrinkWine),
+            }
+          : null,
       },
     };
 

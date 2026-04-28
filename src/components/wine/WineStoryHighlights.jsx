@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react';
-import { Star, Award, Droplets } from 'lucide-react';
 import { getWinePrimaryImage, getWineTotalValue, selectWineReadyToDrinkCount } from '@/lib/collection/wineSelectors';
 
 /**
- * WineStoryHighlights — visual cards for wine collection story.
- * Matches WhiskeyKeeper/CigarKeeper highlight card styling.
+ * WineStoryHighlights — visual hero cards for wine collection story.
+ * Matches WhiskeyKeeper/PipeKeeper hero highlight card styling (aspect-[3/2], background images).
  */
 export default function WineStoryHighlights({ wines = [], tastings = [], t = (k) => k }) {
   const highlights = useMemo(() => {
@@ -90,55 +89,72 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
   if (highlights.length === 0) return null;
 
   return (
-    <div className="space-y-3">
-      {highlights.map((h) => {
-        const Icon = h.icon;
-        return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {highlights.map((h) => (
+        <div
+          key={h.key}
+          className="relative rounded-2xl overflow-hidden aspect-[3/2] group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
+          style={{
+            border: `1px solid ${h.accent}44`,
+            boxShadow: '0 12px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)',
+            backgroundImage: h.photo
+              ? `url('${h.photo}')`
+              : `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
+          {/* Accent radial + vignette */}
           <div
-            key={h.key}
-            className="rounded-xl overflow-hidden"
+            className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(145deg, rgba(39,27,18,0.85), rgba(25,17,11,0.95))',
-              border: `1px solid ${h.accent}40`,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.28)',
+              background: `radial-gradient(circle at 30% 10%, ${h.accent}28 0%, transparent 52%),
+                          linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.42) 55%, rgba(0,0,0,0.82) 100%)`,
             }}
-          >
-            <div className="flex gap-3 p-3">
-              {/* Image or gradient */}
-              <div
-                className="w-16 h-16 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center"
+          />
+
+          {/* Edge vignette */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'radial-gradient(ellipse at center, transparent 28%, rgba(0,0,0,0.38) 100%)',
+              boxShadow: 'inset 0 0 40px rgba(0,0,0,0.55)',
+            }}
+          />
+
+          {/* Bottom-anchored text content */}
+          <div className="absolute inset-0 flex flex-col justify-end p-4 z-10">
+            <p
+              className="text-[10px] sm:text-xs uppercase tracking-[0.1em] font-bold mb-1.5 drop-shadow-lg leading-tight"
+              style={{ color: h.accent }}
+            >
+              {h.title}
+            </p>
+            <p
+              className="text-lg sm:text-xl font-bold leading-tight line-clamp-2 drop-shadow-lg"
+              style={{
+                color: '#F5F1E7',
+                textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+                fontFamily: "'Georgia', serif",
+              }}
+            >
+              {h.value}
+            </p>
+            {h.subtitle && (
+              <p
+                className="text-xs mt-1.5 drop-shadow-md"
                 style={{
-                  background: h.photo
-                    ? `url(${h.photo})`
-                    : `linear-gradient(135deg, ${h.accent}33, ${h.accent}11)`,
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
+                  color: 'rgba(224,216,200,0.78)',
+                  textShadow: '0 1px 4px rgba(0,0,0,0.5)',
                 }}
               >
-                {!h.photo && (
-                  <Icon className="w-7 h-7" style={{ color: h.accent }} />
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] mb-0.5" style={{ color: h.accent }}>
-                  {h.title}
-                </p>
-                <p className="text-sm font-semibold text-[#F5F1E7] truncate">
-                  {h.value}
-                </p>
-                {h.subtitle && (
-                  <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                    {h.subtitle}
-                  </p>
-                )}
-              </div>
-            </div>
+                {h.subtitle}
+              </p>
+            )}
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 }
