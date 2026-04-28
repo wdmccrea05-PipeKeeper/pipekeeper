@@ -61,8 +61,10 @@ export async function aggregateCollection(userEmail) {
     const fetchCigar =
       shouldFetchModuleData('cigarkeeper', userContext) ||
       profileContext?.cigarkeeper_enabled === true;
+    // WineKeeper: internal/admin only — shouldFetchModuleData respects the 'internal' release state
+    const fetchWine = shouldFetchModuleData('winekeeper', userContext);
 
-    const [pipes, tobaccos, bottles, smokingLogs, tastingLogs, inventoryUnits, cigars, cigarSessions, humidors] = await Promise.all([
+    const [pipes, tobaccos, bottles, smokingLogs, tastingLogs, inventoryUnits, cigars, cigarSessions, humidors, wines, wineTastings] = await Promise.all([
       fetchPipe ? base44.entities.Pipe.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
       fetchPipe ? base44.entities.TobaccoBlend.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
       fetchWhiskey ? base44.entities.Bottle.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
@@ -72,6 +74,8 @@ export async function aggregateCollection(userEmail) {
       fetchCigar ? base44.entities.Cigar.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
       fetchCigar ? base44.entities.CigarSession.filter({ created_by: userEmail }, '-date', 1000).catch(() => []) : Promise.resolve([]),
       fetchCigar ? base44.entities.HumidorLocation.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
+      fetchWine ? base44.entities.Wine.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
+      fetchWine ? base44.entities.WineTasting.filter({ created_by: userEmail }, '-date', 200).catch(() => []) : Promise.resolve([]),
     ]);
 
     const pipesList = Array.isArray(pipes) ? pipes : [];
@@ -83,6 +87,8 @@ export async function aggregateCollection(userEmail) {
     const cigarsList = Array.isArray(cigars) ? cigars : [];
     const cigarSessionsList = Array.isArray(cigarSessions) ? cigarSessions : [];
     const humidorsList = Array.isArray(humidors) ? humidors : [];
+    const winesList = Array.isArray(wines) ? wines : [];
+    const wineTastingsList = Array.isArray(wineTastings) ? wineTastings : [];
 
     // === PIPES MODULE ===
     const pipesCount = pipesList.length;
@@ -152,6 +158,24 @@ export async function aggregateCollection(userEmail) {
         : 0,
       sessions: cigarSessionsList.length,
     };
+
+    // === WINE MODULE (internal/admin only) ===
+    const getWineValue = (wine) => {
+      const n = (v) => { const x = Number(v); return Number.isFinite(x) && x > 0 ? x : 0; };
+      return n(wine?.estimated_value) || n(wine?.purchase_price) || 0;
+    };
+    const wineStats = {
+      count: winesList.length,
+      value: winesList.reduce((sum, w) => sum + getWineValue(w), 0),
+      tastings: wineTastingsList.length,
+      favorite: winesList.filter(w => w.is_favorite).length,
+      rated: wineTastingsList.filter(wt => wt.rating).length,
+    };
+
+    // Most valuable wine (for highlights)
+    const mostValuableWine = winesList.length > 0
+      ? winesList.reduce((max, w) => getWineValue(w) > getWineValue(max) ? w : max)
+      : null;
 
     // === USAGE PATTERNS ===
     const pipeUsageMap = {};
@@ -279,13 +303,16 @@ export async function aggregateCollection(userEmail) {
             value: tobaccosList.reduce((max, b) => Math.max(max, getTobaccoValue(b)), 0),
           }
         : null,
+      mostValuableWine && getWineValue(mostValuableWine) > 0
+        ? { recordType: 'wine', record: mostValuableWine, value: getWineValue(mostValuableWine) }
+        : null,
     ].filter(Boolean);
 
     const mostValuableItem = allModuleValueLeaders.sort((a, b) => b.value - a.value)[0] || null;
 
     // === TOTALS ===
-    const totalItems = pipesCount + tobaccosCount + bottlesList.length + cigarsList.length;
-    const totalValue = pipesValue + tobaccosValue + whiskeyStats.value + cigarStats.value;
+    const totalItems = pipesCount + tobaccosCount + bottlesList.length + cigarsList.length + winesList.length;
+    const totalValue = pipesValue + tobaccosValue + whiskeyStats.value + cigarStats.value + wineStats.value;
 
     return {
       // Per-module statistics
@@ -293,6 +320,7 @@ export async function aggregateCollection(userEmail) {
       tobacco: tobaccoStats,
       whiskey: whiskeyStats,
       cigar: cigarStats,
+      wine: wineStats,
 
       // Combined totals
       total: {
@@ -301,6 +329,7 @@ export async function aggregateCollection(userEmail) {
         sessions: smokingLogsList.length,
         tastings: tastingLogsList.length,
         cigarSessions: cigarSessionsList.length,
+        wineTastings: wineTastingsList.length,
       },
 
       // Highlights
@@ -344,6 +373,14 @@ export async function aggregateCollection(userEmail) {
           recordType: mostValuableItem.recordType,
           value: mostValuableItem.value,
         } : null,
+        mostValuableWine: mostValuableWine && getWineValue(mostValuableWine) > 0 ? {
+          id: mostValuableWine.id,
+          name: mostValuableWine.name,
+          value: getWineValue(mostValuableWine),
+          varietal: mostValuableWine.varietal,
+          vintage: mostValuableWine.vintage,
+          photos: mostValuableWine.photos,
+        } : null,
         oldestBottle,
         oldestPipe,
         highestRatedBottle,
@@ -359,6 +396,8 @@ export async function aggregateCollection(userEmail) {
         humidors: humidorsList,
         smokingLogs: smokingLogsList,
         tastingLogs: tastingLogsList,
+        wines: winesList,
+        wineTastings: wineTastingsList,
       },
     };
   } catch (error) {
@@ -376,7 +415,8 @@ export function getEmptyAggregation() {
     tobacco: { count: 0, value: 0, favorite: 0, rated: 0, avgRating: 0, open: 0, cellared: 0 },
     whiskey: { bottleTypes: 0, totalBottles: 0, count: 0, value: 0, open: 0, unopened: 0, sealed: 0, favorite: 0, rated: 0, avgRating: 0, tastings: 0 },
     cigar: { cigarTypes: 0, totalSticks: 0, readyToSmoke: 0, humidorCount: 0, count: 0, value: 0, favorite: 0, rated: 0, avgRating: 0, sessions: 0 },
-    total: { items: 0, value: 0, sessions: 0, tastings: 0, cigarSessions: 0 },
+    wine: { count: 0, value: 0, tastings: 0, favorite: 0, rated: 0 },
+    total: { items: 0, value: 0, sessions: 0, tastings: 0, cigarSessions: 0, wineTastings: 0 },
     highlights: {
       mostUsedPipe: null,
       mostTastedBottle: null,
@@ -385,6 +425,7 @@ export function getEmptyAggregation() {
       highestRatedCigar: null,
       highestValueCigar: null,
       mostValuableItem: null,
+      mostValuableWine: null,
       oldestBottle: null,
       oldestPipe: null,
       highestRatedBottle: null,
@@ -398,6 +439,8 @@ export function getEmptyAggregation() {
       humidors: [],
       smokingLogs: [],
       tastingLogs: [],
+      wines: [],
+      wineTastings: [],
     },
   };
 }

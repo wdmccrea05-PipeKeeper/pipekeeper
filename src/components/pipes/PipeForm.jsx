@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 // NOTE: This component is intentionally large (~900 lines). Each FormSection is a
 // collapsible accordion section. Future refactor: split each section into a sub-component.
 // See section comments below for boundaries.
@@ -26,7 +26,7 @@ import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import { toast } from "sonner";
 import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
-import { preparePipeData, normalizePipeFormData } from "@/components/utils/schemaCompatibility";
+import { preparePipeData, normalizePipeFormData, buildPipeDirtyUpdate, isPipeEnumValid, PIPE_ENUM_SETS } from "@/components/utils/schemaCompatibility";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { CuratorEvents } from "@/components/utils/curatorEventLogger";
 import { sortByLabel, uniqueSortedStrings } from "@/lib/sorting/alphabetical";
@@ -58,6 +58,22 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
   const [onlineSearchType, setOnlineSearchType] = useState(null); // 'photo' | 'stamping'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+  // Track the original pipe data for dirty-field comparison on edits
+  const originalPipe = useMemo(() => pipe || null, [pipe]);
+
+  // Warn about invalid legacy enum values so user knows before saving
+  const legacyEnumWarnings = useMemo(() => {
+    if (!pipe) return []; // new pipe — no legacy
+    const warnings = [];
+    for (const field of Object.keys(PIPE_ENUM_SETS)) {
+      const val = pipe[field];
+      if (val && !isPipeEnumValid(field, val)) {
+        warnings.push({ field, value: val });
+      }
+    }
+    return warnings;
+  }, [pipe]);
 
   const { user, isTrial } = useCurrentUser();
   const entitlements = useEntitlements();
@@ -308,7 +324,13 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
     setIsSubmitting(true);
     try {
-      await onSave(preparePipeData(cleanedData));
+      // For edits: submit only changed (dirty) fields — prevents re-sending
+      // invalid legacy enum values that haven't been touched by the user.
+      // For new pipes: submit full validated payload.
+      const payload = originalPipe
+        ? buildPipeDirtyUpdate(cleanedData, originalPipe)
+        : preparePipeData(cleanedData);
+      await onSave(payload);
     } catch (error) {
       const reason = error?.message || t('errors.updateFailed') || 'Save failed';
       setSubmitError(reason);
@@ -975,6 +997,18 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       {/* ===== SECTION: Form Actions ===== */}
       {/* Actions */}
+      {legacyEnumWarnings.length > 0 && (
+        <div className="rounded-xl p-3 text-xs" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.25)', color: 'rgba(224,216,200,0.75)' }}>
+          <p className="font-semibold mb-1" style={{ color: '#D4A574' }}>Legacy field notice</p>
+          <p className="mb-1">This pipe has legacy values that are no longer in the current list. They will be preserved unless you change them:</p>
+          <ul className="list-disc list-inside space-y-0.5">
+            {legacyEnumWarnings.map(({ field, value }) => (
+              <li key={field}><span className="font-medium">{field}</span>: {value}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="sticky bottom-0 bg-[linear-gradient(180deg,rgba(22,18,14,0.94)_0%,rgba(18,14,11,0.97)_100%)] backdrop-blur-sm border-t border-[rgba(140,105,65,0.18)] p-4 sm:p-6 flex gap-3 justify-end -mx-6 sm:-mx-8 px-6 sm:px-8">
         {submitError ? (
           <div role="alert" aria-live="polite" className="mr-auto text-sm text-red-300 max-w-[70%] break-words">

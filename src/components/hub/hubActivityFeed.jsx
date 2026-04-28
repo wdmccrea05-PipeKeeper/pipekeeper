@@ -7,11 +7,12 @@ import { normalizeSmokingLog, normalizeTastingLog } from '@/components/utils/act
  * @param {string|null} userEmail
  * @param {object} options
  * @param {boolean} options.includeWhiskey
+ * @param {boolean} options.includeWine   - include wine tastings (admin/internal only)
  * @param {number}  options.limit
  * @returns {Promise<Array>}
  */
 export async function getRecentCrossModuleActivity(userEmail = null, options = {}) {
-  const { includeWhiskey = false, limit = 5 } = options;
+  const { includeWhiskey = false, includeWine = false, limit = 5 } = options;
 
   if (!userEmail) return [];
 
@@ -43,6 +44,26 @@ export async function getRecentCrossModuleActivity(userEmail = null, options = {
         }
       } catch (err) {
         console.warn('[hubActivityFeed] Error fetching tasting logs:', err?.message);
+      }
+    }
+
+    if (includeWine) {
+      try {
+        const wineTastings = await base44.entities.WineTasting.filter({ created_by: userEmail }, '-date', limit);
+        if (wineTastings?.length > 0) {
+          activities.push(...wineTastings.map((wt) => ({
+            id: wt.id,
+            type: 'wine_tasting',
+            title: wt.wine_name || 'Wine Tasting',
+            subtitle: wt.notes ? wt.notes.slice(0, 60) : '',
+            date: wt.date,
+            rating: wt.rating,
+            module: 'wine',
+            icon: '🍷',
+          })));
+        }
+      } catch (err) {
+        console.warn('[hubActivityFeed] Error fetching wine tastings:', err?.message);
       }
     }
 

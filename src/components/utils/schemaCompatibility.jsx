@@ -3,6 +3,118 @@
  * Ensures backward compatibility when reading bowls_used, usage_characteristics, etc.
  */
 const DATE_ONLY_RE = /^(\d{4})-(\d{2})-(\d{2})/;
+
+// ─── Canonical enum sets for Pipe fields ─────────────────────────────────────
+export const PIPE_ENUM_SETS = {
+  shape: new Set(["Billiard","Bent Billiard","Apple","Bent Apple","Dublin","Bent Dublin","Bulldog","Rhodesian","Canadian","Liverpool","Lovat","Lumberman","Prince","Author","Brandy","Pot","Tomato","Egg","Acorn","Pear","Cutty","Devil Anse","Hawkbill","Diplomat","Poker","Cherrywood","Duke","Don","Tankard","Churchwarden","Nosewarmer","Vest Pocket","MacArthur","Calabash","Reverse Calabash","Cavalier","Freehand","Blowfish","Volcano","Horn","Nautilus","Tomahawk","Bullmoose","Bullcap","Oom Paul (Hungarian)","Tyrolean","Unknown","Other"]),
+  bowlStyle: new Set(["Cylindrical (Straight Wall)","Conical (Tapered)","Rounded / Ball","Oval / Egg","Squat / Pot","Chimney (Tall)","Paneled","Faceted / Multi-Panel","Horn-Shaped","Freeform","Unknown"]),
+  shankShape: new Set(["Round","Diamond","Square","Oval","Paneled / Faceted","Military / Army Mount","Freeform","Unknown"]),
+  bend: new Set(["Straight","1/4 Bent","1/2 Bent","3/4 Bent","Full Bent","S-Bend","Unknown"]),
+  sizeClass: new Set(["Vest Pocket","Small","Standard","Large","Magnum / XL","Churchwarden","MacArthur","Unknown"]),
+  chamber_volume: new Set(["Small","Medium","Large","Extra Large"]),
+  stem_material: new Set(["Acrylic","Amber","Bone","Cumberland","Ebonite","Horn","Lucite","Other","Vulcanite"]),
+  bowl_material: new Set(["Briar","Meerschaum","Corn Cob","Clay","Olive Wood","Cherry Wood","Morta","Other"]),
+  finish: new Set(["Smooth","Sandblast","Rusticated","Partially Rusticated","Carved","Natural","Other"]),
+  filter_type: new Set(["None","6mm","9mm","Stinger","Other"]),
+  condition: new Set(["Mint","Excellent","Very Good","Good","Fair","Poor","Estate - Unrestored"]),
+};
+
+/**
+ * Check if a value is a valid enum for a given pipe field.
+ * Returns true for non-enum fields (no validation needed).
+ */
+export function isPipeEnumValid(field, value) {
+  if (!value && value !== 0) return true; // empty/null always ok
+  const enumSet = PIPE_ENUM_SETS[field];
+  if (!enumSet) return true; // not an enum field
+  return enumSet.has(value);
+}
+
+/**
+ * Map an invalid enum to a safe fallback ("Other" or "Unknown").
+ * Returns the original value if it's already valid.
+ */
+export function sanitizePipeEnum(field, value) {
+  if (!value) return value;
+  const enumSet = PIPE_ENUM_SETS[field];
+  if (!enumSet) return value;
+  if (enumSet.has(value)) return value;
+  // Map to safe fallback
+  if (enumSet.has('Other')) return 'Other';
+  if (enumSet.has('Unknown')) return 'Unknown';
+  return ''; // clear if no safe fallback
+}
+
+/**
+ * Build a dirty-fields-only update payload for an existing pipe.
+ * Compares the incoming full formData against the original pipe record.
+ * Enum fields with INVALID values are EXCLUDED unless the user changed them to a valid value.
+ * Photo arrays are included only when actually changed.
+ * 
+ * @param {object} formData - Normalized form data (from normalizePipeFormData)
+ * @param {object} originalPipe - Original pipe record from the database
+ * @returns {object} Minimal update payload with only changed, valid fields
+ */
+export function buildPipeDirtyUpdate(formData, originalPipe) {
+  if (!originalPipe) {
+    // New pipe — full payload (preparePipeData defined later in file, hoisted via function declaration pattern)
+    return preparePipeData(formData);
+  }
+
+  const dirty = {};
+
+  for (const field of PIPE_EDITABLE_FIELDS) {
+    const newVal = normalizePipeField(field, formData[field]);
+    const oldVal = normalizePipeField(field, originalPipe[field]);
+
+    // Photo arrays: compare JSON to detect actual changes
+    if (field === 'photos' || field === 'stamping_photos' || field === 'interchangeable_bowls') {
+      const newStr = JSON.stringify(newVal ?? []);
+      const oldStr = JSON.stringify(normalizePipeField(field, originalPipe[field]) ?? []);
+      if (newStr !== oldStr) {
+        dirty[field] = newVal;
+      }
+      continue;
+    }
+
+    // Boolean fields: include if changed
+    if (field === 'is_favorite' || field === 'ai_excluded') {
+      const newBool = normalizeBoolean(newVal, false);
+      const oldBool = normalizeBoolean(oldVal, false);
+      if (newBool !== oldBool) dirty[field] = newBool;
+      continue;
+    }
+
+    // Enum fields: only include if changed AND valid
+    if (PIPE_ENUM_SETS[field]) {
+      const strNew = newVal == null ? '' : String(newVal);
+      const strOld = oldVal == null ? '' : String(oldVal);
+      if (strNew !== strOld) {
+        // User changed the value — only send if the new value is valid
+        if (strNew === '' || isPipeEnumValid(field, strNew)) {
+          dirty[field] = strNew || null;
+        }
+        // else: user tried to change to invalid — skip silently (form UI blocks this)
+      }
+      // If unchanged, do NOT send — even if old value was invalid (prevents re-submission of bad legacy data)
+      continue;
+    }
+
+    // Text and number fields: include if meaningfully changed
+    const strNew = newVal == null ? '' : String(newVal);
+    const strOld = oldVal == null ? '' : String(oldVal);
+    if (strNew !== strOld) {
+      dirty[field] = newVal;
+    }
+  }
+
+  // Always sync usage_characteristics / smoking_characteristics together if either changed
+  if ('usage_characteristics' in dirty) {
+    dirty.smoking_characteristics = '';
+  }
+
+  return dirty;
+}
 export const PIPE_EDITABLE_FIELDS = [
   "name",
   "maker",
@@ -243,19 +355,24 @@ export function prepareLogData(data) {
 }
 
 /**
- * Prepare Pipe data for create/update
- * Ensures both new and legacy fields are set
- * CRITICAL: Preserves photos and stamping_photos arrays
+ * Prepare Pipe data for create/update (full payload — new pipes only).
+ * Ensures both new and legacy fields are set.
+ * CRITICAL: Preserves photos and stamping_photos arrays.
+ * Sanitizes enum fields — invalid values are mapped to Other/Unknown.
  */
 export function preparePipeData(data) {
   const source = data || {};
   const characteristics = source.usage_characteristics || source.smoking_characteristics || "";
   const result = {};
 
-  // Keep nulls/undefined out of the generic loop, then explicitly enforce always-on
-  // collection fields below (photos/stamping_photos/interchangeable_bowls/booleans).
   for (const field of PIPE_EDITABLE_FIELDS) {
-    const normalized = normalizePipeField(field, source[field]);
+    let normalized = normalizePipeField(field, source[field]);
+
+    // Sanitize enum fields — invalid values map to Other/Unknown
+    if (PIPE_ENUM_SETS[field] && normalized) {
+      normalized = sanitizePipeEnum(field, normalized) || normalized;
+    }
+
     if (normalized !== undefined && normalized !== null) {
       result[field] = normalized;
     }

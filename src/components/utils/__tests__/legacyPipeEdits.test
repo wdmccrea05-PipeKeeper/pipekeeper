@@ -1,0 +1,227 @@
+/**
+ * Legacy Pipe Edit Tests
+ *
+ * Verifies that:
+ * 1. Legacy pipes with invalid enum values can still save non-enum field edits
+ * 2. Dirty update excludes unchanged invalid enum values
+ * 3. Photos and stamping_photos are preserved unless changed
+ * 4. New valid enum values are sent normally
+ */
+
+import { describe, test, expect } from 'vitest';
+import { buildPipeDirtyUpdate, isPipeEnumValid, sanitizePipeEnum, PIPE_ENUM_SETS } from '../schemaCompatibility';
+
+// ─── Fixtures ─────────────────────────────────────────────────────────────────
+
+const legacyPipeWithInvalidShape = {
+  id: 'legacy-001',
+  name: 'Old Billiard',
+  maker: 'Dunhill',
+  shape: 'Classic Billiard', // invalid — not in current enum
+  condition: 'Excellent',
+  notes: '',
+  photos: ['https://example.com/photo1.jpg'],
+  stamping_photos: [],
+  is_favorite: false,
+  ai_excluded: false,
+  interchangeable_bowls: [],
+};
+
+const legacyPipeWithInvalidCondition = {
+  id: 'legacy-002',
+  name: 'Estate Pipe',
+  maker: 'Peterson',
+  shape: 'Dublin',
+  condition: 'Estate Restored', // invalid — not in current enum
+  notes: 'Nice patina',
+  photos: [],
+  stamping_photos: [],
+  is_favorite: false,
+  ai_excluded: false,
+  interchangeable_bowls: [],
+};
+
+// ─── Tests ─────────────────────────────────────────────────────────────────────
+
+describe('isPipeEnumValid', () => {
+  test('valid shape returns true', () => {
+    expect(isPipeEnumValid('shape', 'Billiard')).toBe(true);
+  });
+
+  test('invalid shape returns false', () => {
+    expect(isPipeEnumValid('shape', 'Classic Billiard')).toBe(false);
+  });
+
+  test('valid condition returns true', () => {
+    expect(isPipeEnumValid('condition', 'Excellent')).toBe(true);
+  });
+
+  test('invalid condition returns false', () => {
+    expect(isPipeEnumValid('condition', 'Estate Restored')).toBe(false);
+  });
+
+  test('empty value returns true (not an error)', () => {
+    expect(isPipeEnumValid('shape', '')).toBe(true);
+    expect(isPipeEnumValid('shape', null)).toBe(true);
+  });
+
+  test('non-enum field always returns true', () => {
+    expect(isPipeEnumValid('name', 'anything')).toBe(true);
+    expect(isPipeEnumValid('notes', 'some notes')).toBe(true);
+  });
+});
+
+describe('sanitizePipeEnum', () => {
+  test('valid value passes through unchanged', () => {
+    expect(sanitizePipeEnum('shape', 'Billiard')).toBe('Billiard');
+  });
+
+  test('invalid shape maps to Other', () => {
+    expect(sanitizePipeEnum('shape', 'Classic Billiard')).toBe('Other');
+  });
+
+  test('invalid condition maps to Other (if available) else Unknown', () => {
+    const result = sanitizePipeEnum('condition', 'Estate Restored');
+    // condition set has no Other, check for acceptable fallback
+    expect(['Other', 'Unknown', '']).toContain(result);
+  });
+
+  test('empty/null passes through unchanged', () => {
+    expect(sanitizePipeEnum('shape', '')).toBe('');
+    expect(sanitizePipeEnum('shape', null)).toBe(null);
+  });
+});
+
+describe('buildPipeDirtyUpdate — legacy pipe with invalid shape', () => {
+  test('can save notes edit without sending invalid shape', () => {
+    const updatedForm = {
+      ...legacyPipeWithInvalidShape,
+      notes: 'Updated notes for this pipe',
+    };
+    const payload = buildPipeDirtyUpdate(updatedForm, legacyPipeWithInvalidShape);
+
+    // Notes should be in the update
+    expect(payload.notes).toBe('Updated notes for this pipe');
+
+    // shape was not changed by user — must NOT appear in dirty payload
+    // (even though it's invalid, we don't re-send unchanged legacy values)
+    expect('shape' in payload).toBe(false);
+  });
+
+  test('photos are preserved when not changed', () => {
+    const updatedForm = {
+      ...legacyPipeWithInvalidShape,
+      notes: 'Some change',
+    };
+    const payload = buildPipeDirtyUpdate(updatedForm, legacyPipeWithInvalidShape);
+
+    // photos not changed — should NOT be in dirty payload
+    expect('photos' in payload).toBe(false);
+  });
+
+  test('photos ARE included when changed', () => {
+    const updatedForm = {
+      ...legacyPipeWithInvalidShape,
+      photos: ['https://example.com/photo1.jpg', 'https://example.com/new-photo.jpg'],
+    };
+    const payload = buildPipeDirtyUpdate(updatedForm, legacyPipeWithInvalidShape);
+
+    expect(payload.photos).toHaveLength(2);
+    expect(payload.photos[1]).toBe('https://example.com/new-photo.jpg');
+  });
+
+  test('stamping_photos preserved when not changed', () => {
+    const updatedForm = { ...legacyPipeWithInvalidShape, name: 'Renamed Pipe' };
+    const payload = buildPipeDirtyUpdate(updatedForm, legacyPipeWithInvalidShape);
+
+    expect('stamping_photos' in payload).toBe(false);
+  });
+});
+
+describe('buildPipeDirtyUpdate — legacy pipe with invalid condition', () => {
+  test('can save name edit without sending invalid condition', () => {
+    const updatedForm = {
+      ...legacyPipeWithInvalidCondition,
+      name: 'Renamed Estate Pipe',
+    };
+    const payload = buildPipeDirtyUpdate(updatedForm, legacyPipeWithInvalidCondition);
+
+    expect(payload.name).toBe('Renamed Estate Pipe');
+    expect('condition' in payload).toBe(false);
+  });
+
+  test('changing condition to valid value IS sent', () => {
+    const updatedForm = {
+      ...legacyPipeWithInvalidCondition,
+      condition: 'Very Good',
+    };
+    const payload = buildPipeDirtyUpdate(updatedForm, legacyPipeWithInvalidCondition);
+
+    expect(payload.condition).toBe('Very Good');
+  });
+
+  test('changing condition to another invalid value is NOT sent', () => {
+    const updatedForm = {
+      ...legacyPipeWithInvalidCondition,
+      condition: 'Another Invalid Value',
+    };
+    const payload = buildPipeDirtyUpdate(updatedForm, legacyPipeWithInvalidCondition);
+
+    // Should not send invalid new value
+    expect('condition' in payload).toBe(false);
+  });
+});
+
+describe('buildPipeDirtyUpdate — general dirty tracking', () => {
+  test('only changed fields are included', () => {
+    const original = {
+      id: 'pipe-003',
+      name: 'Test Pipe',
+      maker: 'Peterson',
+      shape: 'Billiard',
+      condition: 'Excellent',
+      notes: '',
+      photos: [],
+      stamping_photos: [],
+      is_favorite: false,
+      ai_excluded: false,
+      interchangeable_bowls: [],
+    };
+    const updated = { ...original, notes: 'New notes', is_favorite: true };
+    const payload = buildPipeDirtyUpdate(updated, original);
+
+    expect(payload.notes).toBe('New notes');
+    expect(payload.is_favorite).toBe(true);
+    expect('name' in payload).toBe(false);
+    expect('maker' in payload).toBe(false);
+    expect('shape' in payload).toBe(false);
+  });
+
+  test('null originalPipe returns full preparePipeData payload', () => {
+    const newPipeForm = {
+      name: 'Brand New Pipe',
+      maker: 'Savinelli',
+      shape: 'Apple',
+      condition: 'Mint',
+      notes: '',
+      photos: [],
+      stamping_photos: [],
+      is_favorite: false,
+      ai_excluded: false,
+      interchangeable_bowls: [],
+    };
+    const payload = buildPipeDirtyUpdate(newPipeForm, null);
+    expect(payload.name).toBe('Brand New Pipe');
+    expect(payload.shape).toBe('Apple');
+  });
+});
+
+describe('PIPE_ENUM_SETS coverage', () => {
+  test('all expected enum fields are defined', () => {
+    const expectedFields = ['shape', 'bowlStyle', 'shankShape', 'bend', 'sizeClass', 'chamber_volume', 'stem_material', 'bowl_material', 'finish', 'filter_type', 'condition'];
+    for (const field of expectedFields) {
+      expect(PIPE_ENUM_SETS[field]).toBeDefined();
+      expect(PIPE_ENUM_SETS[field].size).toBeGreaterThan(0);
+    }
+  });
+});
