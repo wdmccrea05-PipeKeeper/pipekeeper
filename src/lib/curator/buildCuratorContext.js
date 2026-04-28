@@ -33,17 +33,20 @@ export async function buildCuratorContextWithLogging(
     pipekeeper: stableModuleEnabled.pipekeeper !== false,
     tobacco: stableModuleEnabled.tobacco !== false,
     whiskeykeeper: stableModuleEnabled.whiskeykeeper !== false,
+    winekeeper: stableModuleEnabled.winekeeper !== false,
   };
   
   const pipesGated = !gateCheck.pipekeeper && context.pipes.length > 0;
   const blendsGated = !gateCheck.tobacco && context.blends.length > 0;
   const bottlesGated = !gateCheck.whiskeykeeper && context.bottles.length > 0;
+  const winesGated = !gateCheck.winekeeper && (context.wines?.length || 0) > 0;
   
-  if (pipesGated || blendsGated || bottlesGated) {
+  if (pipesGated || blendsGated || bottlesGated || winesGated) {
     console.error('MODULE_GATE_VIOLATION', {
       pipesGated,
       blendsGated,
       bottlesGated,
+      winesGated,
       modules: stableModuleEnabled,
     });
   }
@@ -54,9 +57,11 @@ export async function buildCuratorContextWithLogging(
       pipes: context.pipes?.length || 0,
       blends: context.blends?.length || 0,
       bottles: context.bottles?.length || 0,
+      wines: context.wines?.length || 0,
       smokingLogs: context.smokingLogs?.length || 0,
       tastingLogs: context.tastingLogs?.length || 0,
       acquisitionItems: context.acquisitionItems?.length || 0,
+      hasWinePreferences: !!(context.preferences?.wine_preferences || context.winePreferences),
     },
     activeModules: stableModuleEnabled,
     timestamp: new Date().toISOString(),

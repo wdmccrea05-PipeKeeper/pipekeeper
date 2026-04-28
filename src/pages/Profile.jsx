@@ -17,6 +17,7 @@ import { User, Crown, ArrowRight, LogOut, Upload, Pencil, Share2, Layers, Trash2
 import AvatarCropper from "@/components/pipes/AvatarCropper";
 import WhiskeyPreferencesSection from "@/components/profile/WhiskeyPreferencesSection";
 import CigarPreferencesSection from "@/components/profile/CigarPreferencesSection";
+import WinePreferencesSection from "@/components/profile/WinePreferencesSection";
 import ModuleVisibilitySettings from "@/components/profile/ModuleVisibilitySettings";
 import CurrencyPreferenceSetting from "@/components/profile/CurrencyPreferenceSetting";
 import FormSection from "@/components/forms/FormSection";
@@ -29,6 +30,7 @@ import { handleManageSubscription } from "@/components/utils/manageSubscription"
 import { PK_THEME } from "@/components/utils/pkTheme";
 
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { WINEKEEPER_PUBLIC_ENABLED, canUserAccessModule } from "@/components/utils/moduleReleaseState";
 
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
@@ -99,6 +101,7 @@ function consolidateProfiles(rows = []) {
     cigar_notes: pick(acc.cigar_notes, row.cigar_notes),
     whiskey_preferences: acc.whiskey_preferences || row.whiskey_preferences || null,
     cigar_preferences: acc.cigar_preferences || row.cigar_preferences || null,
+    wine_preferences: acc.wine_preferences || row.wine_preferences || null,
     pipekeeper_enabled: pickBool(acc.pipekeeper_enabled, row.pipekeeper_enabled),
     whiskeykeeper_enabled: pickBool(acc.whiskeykeeper_enabled, row.whiskeykeeper_enabled),
     winekeeper_enabled: pickBool(acc.winekeeper_enabled, row.winekeeper_enabled),
@@ -140,7 +143,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { user, provider, subscription, isLoading: userLoading, tier, planLabel, hasPaid, hasPro, isTrial } = useCurrentUser();
+  const { user, provider, subscription, isLoading: userLoading, tier, planLabel, hasPaid, hasPro, isTrial, isAdmin, winekeeper_paid } = useCurrentUser();
 
   const email = useMemo(() => normEmail(user?.email), [user?.email]);
   const userId = user?.id || null;
@@ -256,6 +259,20 @@ export default function ProfilePage() {
       occasions: [],
       pairings: [],
     },
+    wine_preferences: {
+      styles: [],
+      varietals: [],
+      regions: [],
+      drinking_goals: [],
+      pairing_interests: [],
+      flavor_profile: [],
+      cellar_strategy: '',
+      budget_everyday_min: '',
+      budget_everyday_max: '',
+      budget_special_min: '',
+      budget_special_max: '',
+      max_recommendation_price: '',
+    },
     // Module visibility: null = not yet set (system derives from release state)
     pipekeeper_enabled: null,
     whiskeykeeper_enabled: false,
@@ -325,6 +342,7 @@ export default function ProfilePage() {
       cigar_notes: source.cigar_notes || "",
       whiskey_preferences: source.whiskey_preferences || { types: [], flavors: [], drinking_style: [], cocktails: [] },
       cigar_preferences: source.cigar_preferences || { strengths: [], bodies: [], wrappers: [], origins: [], vitolas: [], flavors: [], occasions: [], pairings: [] },
+      wine_preferences: source.wine_preferences || { styles: [], varietals: [], regions: [], drinking_goals: [], pairing_interests: [], flavor_profile: [], cellar_strategy: '', budget_everyday_min: '', budget_everyday_max: '', budget_special_min: '', budget_special_max: '', max_recommendation_price: '' },
       pipekeeper_enabled: source.pipekeeper_enabled,
       whiskeykeeper_enabled: source.whiskeykeeper_enabled === true,
       winekeeper_enabled: source.winekeeper_enabled === true,
@@ -940,6 +958,32 @@ export default function ProfilePage() {
                 />
               </div>
             </FormSection>
+
+            {/* WineKeeper Preferences — gated to admin/internal or WineKeeper users */}
+            {(WINEKEEPER_PUBLIC_ENABLED || isAdmin || winekeeper_paid || canUserAccessModule('winekeeper', user)) && (
+              <FormSection title={t("profile.wineKeeperPreferences", "WineKeeper Preferences")}>
+                <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.48)' }}>
+                  {t("profile.usedByCuratorWine", "Used by Curator to personalize wine recommendations, cellar guidance, and cross-collection pairing suggestions.")}
+                </p>
+                <WinePreferencesSection
+                  preferences={formData.wine_preferences}
+                  onChange={(updated) => setFormData((p) => ({ ...p, wine_preferences: updated }))}
+                />
+                <div className="mt-4">
+                  <label className="ck-field-label block mb-1">{t("profile.wineNotesLabel", "Wine Notes for Recommendations")}</label>
+                  <textarea
+                    value={formData.wine_notes}
+                    onChange={(e) => setFormData((p) => ({ ...p, wine_notes: e.target.value }))}
+                    rows={3}
+                    placeholder={t("profile.wineNotesPlaceholder", "e.g. Love aged Burgundy, prefer dry reds, enjoy pairing with cigars or fine cheese...")}
+                    className="flex w-full rounded-xl px-4 py-2.5 text-base text-[#F5F1E7] bg-[rgba(20,14,10,0.70)] border border-[rgba(180,140,75,0.25)] placeholder:text-[rgba(224,216,200,0.55)] focus:outline-none focus:ring-2 focus:ring-[rgba(180,140,75,0.40)] transition-colors duration-150 min-h-[5rem]"
+                  />
+                  <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.4)' }}>
+                    {t("profile.wineNotesHint", "This note is shared with the Curator AI to improve wine recommendations.")}
+                  </p>
+                </div>
+              </FormSection>
+            )}
 
             {/* Public profile toggle */}
             <div className="flex items-center justify-between">

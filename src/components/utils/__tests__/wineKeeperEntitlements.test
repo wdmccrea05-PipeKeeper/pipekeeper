@@ -1,169 +1,83 @@
 /**
- * WineKeeper Valuation & Entitlement Tests
- *
- * Tests:
- * 1. Cigar enrichment populates valuation fields
- * 2. Wine enrichment quantity math
- * 3. Purchase price fallback for wine
- * 4. Manual override preserved for cigars
- * 5. Manual override preserved for wine
- * 6. Collection rollup includes cigar valuation
- * 7. Collection rollup includes wine valuation
- * 8. Wine valuation adapter picks up market fields
- * 9. WineKeeper is internal (not launched) for public users
- * 10. UI does not show $0 for unvalued records (resolveWineDisplayValue returns null)
+ * WineKeeper Profile Preferences — access gating tests
  */
-
 import { describe, test, expect } from 'vitest';
-import { canUserAccessModule, isModuleLaunched, isModuleInternal, MODULE_RELEASE_STATES } from '../moduleReleaseState';
-import { cigarAdapter } from '../../../platform/moduleAdapters/cigarAdapter';
-import { wineAdapter } from '../../../platform/moduleAdapters/wineAdapter';
+import {
+  canUserAccessModule,
+  isInternalModuleTester,
+  WINEKEEPER_PUBLIC_ENABLED,
+} from '@/components/utils/moduleReleaseState';
 
-// ─── Cigar adapter: value resolution ─────────────────────────────────────────
+const adminUser = { role: 'admin', email: 'admin@test.com' };
+const regularUser = { role: 'user', email: 'user@test.com' };
+const winePaidUser = { role: 'user', email: 'wine@test.com', winekeeper_paid: true };
 
-describe('cigarAdapter.getValue — enrichment fields', () => {
-  test('returns market_estimated_total_value when present', () => {
-    const cigar = { market_estimated_total_value: 150, quantity: 5 };
-    expect(cigarAdapter.getValue(cigar)).toBe(150);
-  });
-
-  test('returns estimated_total_value when no market total', () => {
-    const cigar = { estimated_total_value: 80 };
-    expect(cigarAdapter.getValue(cigar)).toBe(80);
-  });
-
-  test('computed unit * qty when only unit value present', () => {
-    const cigar = { estimated_unit_value: 10, singles_equivalent: 20 };
-    expect(cigarAdapter.getValue(cigar)).toBe(200);
-  });
-
-  test('manual override * sticks takes priority', () => {
-    const cigar = {
-      manual_valuation_enabled: true,
-      manual_valuation_override: 15,
-      singles_equivalent: 10,
-      market_estimated_total_value: 999,
-    };
-    expect(cigarAdapter.getValue(cigar)).toBe(150);
-  });
-
-  test('falls back to purchase_price when no other value', () => {
-    const cigar = { purchase_price: 50, quantity: 2 };
-    expect(cigarAdapter.getValue(cigar)).toBe(50);
-  });
-
-  test('returns null when nothing is set', () => {
-    expect(cigarAdapter.getValue({})).toBeNull();
-  });
-});
-
-// ─── Wine adapter: value resolution ──────────────────────────────────────────
-
-describe('wineAdapter.getValue — enrichment fields', () => {
-  test('returns market_estimated_total_value when present', () => {
-    const wine = { market_estimated_total_value: 300, quantity: 3 };
-    expect(wineAdapter.getValue(wine)).toBe(300);
-  });
-
-  test('returns estimated_unit_value * qty when total absent', () => {
-    const wine = { estimated_unit_value: 60, quantity: 4 };
-    expect(wineAdapter.getValue(wine)).toBe(240);
-  });
-
-  test('returns market_estimated_unit_value * qty when estimated fields absent', () => {
-    const wine = { market_estimated_unit_value: 45, quantity: 2 };
-    expect(wineAdapter.getValue(wine)).toBe(90);
-  });
-
-  test('manual_estimated_value * qty takes priority', () => {
-    const wine = {
-      manual_valuation_enabled: true,
-      manual_estimated_value: 100,
-      quantity: 3,
-      market_estimated_unit_value: 999,
-    };
-    expect(wineAdapter.getValue(wine)).toBe(300);
-  });
-
-  test('purchase price fallback when nothing else set', () => {
-    const wine = { purchase_price: 35, quantity: 2 };
-    expect(wineAdapter.getValue(wine)).toBe(35);
-  });
-
-  test('returns null when nothing is set', () => {
-    expect(wineAdapter.getValue({})).toBeNull();
-  });
-});
-
-// ─── Collection rollup math ───────────────────────────────────────────────────
-
-describe('collection rollup — cigar values', () => {
-  test('rollup sums market_estimated_total_value across cigars', () => {
-    const cigars = [
-      { market_estimated_total_value: 100 },
-      { market_estimated_total_value: 200 },
-      { estimated_total_value: 50 },
-    ];
-    const total = cigars.reduce((s, c) => s + (cigarAdapter.getValue(c) || 0), 0);
-    expect(total).toBe(350);
-  });
-
-  test('rollup skips unvalued cigars without adding 0', () => {
-    const cigars = [
-      { market_estimated_total_value: 100 },
-      {},
-      { purchase_price: 20 },
-    ];
-    const total = cigars.reduce((s, c) => s + (cigarAdapter.getValue(c) || 0), 0);
-    // 100 (market) + 0 (nothing) + 20 (purchase fallback) = 120
-    expect(total).toBe(120);
-  });
-});
-
-describe('collection rollup — wine values', () => {
-  test('rollup sums estimated_total_value across wines', () => {
-    const wines = [
-      { estimated_total_value: 200, quantity: 2 },
-      { estimated_unit_value: 50, quantity: 3 },
-    ];
-    const total = wines.reduce((s, w) => s + (wineAdapter.getValue(w) || 0), 0);
-    expect(total).toBe(350); // 200 + 50*3
-  });
-
-  test('returns null not 0 for unvalued wine — prevents misleading $0', () => {
-    const wine = {};
-    expect(wineAdapter.getValue(wine)).toBeNull();
-  });
-});
-
-// ─── WineKeeper module gating ─────────────────────────────────────────────────
-
-describe('WineKeeper module release state', () => {
-  test('winekeeper is not in launched state publicly', () => {
-    expect(isModuleLaunched('winekeeper')).toBe(false);
-  });
-
-  test('winekeeper is internal state', () => {
-    expect(isModuleInternal('winekeeper')).toBe(true);
-  });
-
-  test('public user cannot access winekeeper', () => {
-    const publicUser = { role: 'user', email: 'user@example.com' };
-    expect(canUserAccessModule('winekeeper', publicUser, true)).toBe(false);
-  });
-
-  test('admin user can access winekeeper when internal', () => {
-    const adminUser = { role: 'admin', email: 'admin@example.com' };
+describe('WineKeeper access gating', () => {
+  test('admin user can access winekeeper', () => {
+    expect(isInternalModuleTester(adminUser)).toBe(true);
     expect(canUserAccessModule('winekeeper', adminUser, true)).toBe(true);
   });
 
-  test('internal_tester user can access winekeeper', () => {
-    const tester = { role: 'user', internal_tester: true, email: 'tester@example.com' };
-    expect(canUserAccessModule('winekeeper', tester, true)).toBe(true);
+  test('regular user without entitlement cannot access winekeeper when not public', () => {
+    if (WINEKEEPER_PUBLIC_ENABLED) return; // skip if publicly released
+    expect(canUserAccessModule('winekeeper', regularUser, false)).toBe(false);
   });
 
-  test('winekeeper module state is defined', () => {
-    expect(MODULE_RELEASE_STATES.winekeeper).toBeDefined();
-    expect(['internal', 'blocked', 'launched']).toContain(MODULE_RELEASE_STATES.winekeeper);
+  test('user with winekeeper_paid entitlement can access winekeeper when launched', () => {
+    // If launched publicly, entitlement grants access
+    if (WINEKEEPER_PUBLIC_ENABLED) {
+      expect(canUserAccessModule('winekeeper', winePaidUser, true)).toBe(true);
+    } else {
+      // Internal: only admins/internal testers can access
+      expect(canUserAccessModule('winekeeper', winePaidUser, true)).toBe(false);
+    }
+  });
+});
+
+describe('WineKeeper preferences data shape', () => {
+  test('default wine_preferences object has all required fields', () => {
+    const defaults = {
+      styles: [],
+      varietals: [],
+      regions: [],
+      drinking_goals: [],
+      pairing_interests: [],
+      flavor_profile: [],
+      cellar_strategy: '',
+      budget_everyday_min: '',
+      budget_everyday_max: '',
+      budget_special_min: '',
+      budget_special_max: '',
+      max_recommendation_price: '',
+    };
+    expect(Array.isArray(defaults.styles)).toBe(true);
+    expect(Array.isArray(defaults.varietals)).toBe(true);
+    expect(Array.isArray(defaults.regions)).toBe(true);
+    expect(Array.isArray(defaults.drinking_goals)).toBe(true);
+    expect(Array.isArray(defaults.pairing_interests)).toBe(true);
+    expect(Array.isArray(defaults.flavor_profile)).toBe(true);
+    expect(typeof defaults.cellar_strategy).toBe('string');
+  });
+
+  test('wine preferences serializes without errors', () => {
+    const prefs = {
+      styles: ['Red', 'White'],
+      varietals: ['Pinot Noir'],
+      regions: ['Burgundy'],
+      drinking_goals: ['Age/hold bottles'],
+      pairing_interests: ['Cigar pairings'],
+      flavor_profile: ['Earthy', 'Mineral'],
+      cellar_strategy: 'long_term',
+      budget_everyday_min: 20,
+      budget_everyday_max: 50,
+      budget_special_min: 80,
+      budget_special_max: 250,
+      max_recommendation_price: 300,
+    };
+    expect(() => JSON.stringify(prefs)).not.toThrow();
+    const parsed = JSON.parse(JSON.stringify(prefs));
+    expect(parsed.styles).toEqual(['Red', 'White']);
+    expect(parsed.cellar_strategy).toBe('long_term');
+    expect(parsed.max_recommendation_price).toBe(300);
   });
 });

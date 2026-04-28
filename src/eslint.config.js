@@ -30,7 +30,7 @@ export default [
   },
   {
     // All app files — disable the two rules that cause noise
-    files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+    files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx', '**/*.test.jsx', '**/*.test.js', '**/*.spec.jsx', '**/*.spec.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
