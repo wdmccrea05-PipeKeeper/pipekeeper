@@ -180,6 +180,12 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
       const data = buildRecord(itemType, result);
       const cleanData = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
 
+      // Ensure created_by is set (required by Wine and other entities)
+      if (!cleanData.created_by) {
+        const me = await base44.auth.me();
+        if (me?.email) cleanData.created_by = me.email;
+      }
+
       const record = await base44.entities[ENTITIES[itemType]].create(cleanData);
       toast.success(`${typeLabel} added!`);
       onCreated(record);
@@ -197,6 +203,10 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
     try {
       const data = buildRecord(itemType, result);
       const cleanData = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
+      if (!cleanData.created_by) {
+        const me = await base44.auth.me();
+        if (me?.email) cleanData.created_by = me.email;
+      }
       const record = await base44.entities[ENTITIES[itemType]].create(cleanData);
       toast.success(`${typeLabel} added!`);
       onCreated(record);
