@@ -15,6 +15,241 @@
 import { calculateCigarValue } from '@/utils/cigarValuation';
 
 // ---------------------------------------------------------------------------
+// Rarity / Collectibility scoring — WhiskeyKeeper/WineKeeper-style model
+// ---------------------------------------------------------------------------
+
+/** Prestige brand tiers (global cigar brands with known collector demand) */
+const PRESTIGE_BRANDS = [
+  // Cuban
+  'cohiba', 'montecristo', 'trinidad', 'partagas', 'bolivar', 'romeo y julieta', 'h. upmann',
+  'punch', 'ramon allones', 'por larrañaga', 'el rey del mundo', 'sancho panza', 'quai d\'orsay',
+  // Nicaraguan premium
+  'padron', 'perdomo', 'arturo fuente', 'my father', 'joya de nicaragua', 'drew estate',
+  // Dominican/Honduran premium
+  'davidoff', 'zino', 'macanudo', 'oliva', 'rocky patel', 'alec bradley', 'liga privada',
+  'crowned heads', 'tatuaje', 'camacho', 'e.p. carrillo', 'avo', 'excalibur',
+  // Boutique / ultra-premium
+  'padrón', 'illusione', 'opus x', 'fuente fuente opus x', 'aniversario',
+];
+
+/** Prestige / rare wrapper leaf types */
+const RARE_WRAPPERS = [
+  'oscuro', 'maduro', 'rosado', 'colorado claro', 'candela', 'sun grown',
+  'cameroon', 'connecticut broadleaf', 'habano', 'corojo', 'criollo',
+  'pigtail', 'belicoso wrapper',
+];
+
+/** Rare / collectors-tier vitolas */
+const RARE_VITOLAS = [
+  'figurado', 'pyramid', 'belicoso', 'torpedo', 'diadema', 'gran toro', 'salomon',
+  'perfecto', 'culebra', 'double figurado', 'a', 'presidente',
+];
+
+function matchesListCI(str, list) {
+  if (!str) return false;
+  const s = str.toLowerCase();
+  return list.some((term) => s.includes(term.toLowerCase()));
+}
+
+function getCigarUnitValueForRarity(cigar) {
+  const valuation = calculateCigarValue(cigar);
+  return Number(valuation?.estimatedUnitValue || 0);
+}
+
+/**
+ * Compute a cigar-specific 0–100 rarity/collectibility score.
+ * Returns null when there is insufficient data (< 2 signals).
+ *
+ * Factor weights:
+ *   brand reputation         — 22 pts max
+ *   line / limited release   — 16 pts max
+ *   production status        — 14 pts max
+ *   market value             — 14 pts max
+ *   age (aging_start_date)   — 10 pts max
+ *   wrapper rarity           — 8 pts max
+ *   vitola rarity            — 6 pts max
+ *   origin / country         — 4 pts max
+ *   quantity scarcity        — 4 pts max
+ *   replacement difficulty   — 2 pts max
+ */
+export function getCigarRarityScore(cigar) {
+  if (!cigar) return null;
+
+  let totalPoints = 0;
+  let signalCount = 0;
+
+  // 1. Brand reputation — up to 22 pts
+  if (cigar.brand) {
+    signalCount++;
+    if (matchesListCI(cigar.brand, PRESTIGE_BRANDS)) {
+      totalPoints += 22;
+    } else if (cigar.brand.length > 2) {
+      totalPoints += 4; // Known brand, not prestige-listed
+    }
+  }
+
+  // 2. Line + limited release status — up to 16 pts
+  if (cigar.line || cigar.release_type) {
+    signalCount++;
+    const isLimitedLine = matchesListCI(cigar.line || '', ['limited', 'rare', 'exclusive', 'reserve', 'aniversario', 'opus', 'anniversary'])
+      || matchesListCI(cigar.release_type || '', ['limited', 'rare', 'exclusive', 'special', 'annual', 'seasonal']);
+    if (isLimitedLine) {
+      totalPoints += 16;
+    } else {
+      totalPoints += 3;
+    }
+  }
+
+  // 3. Production status — up to 14 pts
+  if (cigar.production_status) {
+    signalCount++;
+    const ps = String(cigar.production_status).toLowerCase();
+    if (ps === 'discontinued') totalPoints += 14;
+    else if (ps === 'limited') totalPoints += 12;
+    else if (ps === 'seasonal') totalPoints += 8;
+    else if (ps === 'in_production' || ps === 'regular') totalPoints += 2;
+  }
+
+  // 4. Market / unit value — up to 14 pts
+  const unitValue = getCigarUnitValueForRarity(cigar);
+  if (unitValue > 0) {
+    signalCount++;
+    if (unitValue >= 60)      totalPoints += 14;
+    else if (unitValue >= 35) totalPoints += 10;
+    else if (unitValue >= 20) totalPoints += 7;
+    else if (unitValue >= 10) totalPoints += 4;
+    else                      totalPoints += 1;
+  }
+
+  // 5. Age (time in cellar since aging_start_date) — up to 10 pts
+  if (cigar.aging_start_date) {
+    const ageDays = Math.max(0, (Date.now() - new Date(cigar.aging_start_date).getTime()) / (1000 * 60 * 60 * 24));
+    signalCount++;
+    if (ageDays >= 1825)      totalPoints += 10; // 5+ years
+    else if (ageDays >= 1095) totalPoints += 8;  // 3+ years
+    else if (ageDays >= 365)  totalPoints += 5;  // 1+ year
+    else if (ageDays >= 180)  totalPoints += 2;
+  }
+
+  // 6. Wrapper rarity — up to 8 pts
+  if (cigar.wrapper) {
+    signalCount++;
+    if (matchesListCI(cigar.wrapper, RARE_WRAPPERS)) {
+      totalPoints += 8;
+    } else {
+      totalPoints += 1;
+    }
+  }
+
+  // 7. Vitola rarity — up to 6 pts
+  if (cigar.vitola) {
+    signalCount++;
+    if (matchesListCI(cigar.vitola, RARE_VITOLAS)) {
+      totalPoints += 6;
+    } else {
+      totalPoints += 1;
+    }
+  }
+
+  // 8. Country of origin — up to 4 pts (Cuban / Nicaraguan premium origin)
+  if (cigar.country_of_origin) {
+    signalCount++;
+    const co = cigar.country_of_origin.toLowerCase();
+    if (co.includes('cuba') || co.includes('cuban')) totalPoints += 4;
+    else if (co.includes('nicaragua') || co.includes('dominican') || co.includes('honduras')) totalPoints += 2;
+    else totalPoints += 1;
+  }
+
+  // 9. Quantity scarcity — up to 4 pts
+  const qty = Number(cigar.singles_equivalent ?? cigar.quantity ?? 0);
+  if (qty > 0) {
+    signalCount++;
+    if (qty === 1)     totalPoints += 4;
+    else if (qty <= 3) totalPoints += 2;
+    else if (qty <= 6) totalPoints += 1;
+  }
+
+  // 10. Replacement difficulty — up to 2 pts
+  if (cigar.replacement_difficulty) {
+    signalCount++;
+    const rd = cigar.replacement_difficulty;
+    if (rd === 'very_hard') totalPoints += 2;
+    else if (rd === 'hard') totalPoints += 1;
+  }
+
+  // Require at least 2 signals for a meaningful score
+  if (signalCount < 2) return null;
+
+  return Math.min(100, Math.round(totalPoints));
+}
+
+/**
+ * Returns an object with score, label, confidence, factors, and reasoning.
+ * Mirrors WineKeeper/WhiskeyKeeper rarity result shape.
+ */
+export function getCigarRarityResult(cigar) {
+  if (!cigar) return null;
+
+  const score = getCigarRarityScore(cigar);
+
+  if (score === null) {
+    return {
+      score: null,
+      label: null,
+      confidence: 'insufficient',
+      factors: [],
+      reasoning: 'Not enough data to score rarity yet.',
+    };
+  }
+
+  const label =
+    score >= 90 ? 'Exceptional' :
+    score >= 70 ? 'Rare' :
+    score >= 50 ? 'Collectible' :
+    score >= 25 ? 'Notable' :
+    'Common';
+
+  const valuation = calculateCigarValue(cigar);
+  const confRaw = valuation?.confidenceScore || 'low';
+  const confidence = confRaw === 'high' ? 'high' : confRaw === 'medium' ? 'medium' : 'low';
+
+  const unitValue = getCigarUnitValueForRarity(cigar);
+  const factors = [];
+
+  if (cigar.brand) factors.push({ label: 'Brand', note: cigar.brand });
+  if (cigar.line) factors.push({ label: 'Line', note: cigar.line });
+  if (cigar.production_status) factors.push({ label: 'Production', note: cigar.production_status });
+  if (unitValue > 0) factors.push({ label: 'Value', note: `$${Math.round(unitValue)}/stick` });
+  if (cigar.wrapper) factors.push({ label: 'Wrapper', note: cigar.wrapper });
+  if (cigar.vitola) factors.push({ label: 'Vitola', note: cigar.vitola });
+  if (cigar.country_of_origin) factors.push({ label: 'Origin', note: cigar.country_of_origin });
+  if (cigar.replacement_difficulty) factors.push({ label: 'Replacement', note: cigar.replacement_difficulty.replace('_', ' ') });
+
+  const reasonParts = [
+    matchesListCI(cigar.brand || '', PRESTIGE_BRANDS) && 'Prestige brand',
+    matchesListCI(cigar.production_status || '', ['discontinued']) && 'Discontinued production',
+    matchesListCI(cigar.production_status || '', ['limited']) && 'Limited release',
+    matchesListCI(cigar.release_type || '', ['limited', 'rare', 'exclusive', 'annual', 'seasonal']) && 'Limited release type',
+    cigar.aging_start_date && (() => {
+      const days = Math.round((Date.now() - new Date(cigar.aging_start_date).getTime()) / (1000 * 60 * 60 * 24));
+      return days >= 365 ? `${Math.round(days / 365)}-year aged` : null;
+    })(),
+    matchesListCI(cigar.wrapper || '', RARE_WRAPPERS) && `Rare wrapper (${cigar.wrapper})`,
+    (cigar.country_of_origin || '').toLowerCase().includes('cuba') && 'Cuban origin',
+    unitValue >= 35 && `Value $${Math.round(unitValue)}/stick`,
+  ].filter(Boolean);
+
+  const reasoning = reasonParts.join('. ') || 'Score based on available data.';
+
+  return { score, label, confidence, factors, reasoning };
+}
+
+/** Convenience export — just the label string or null. */
+export function getCigarRarityLabel(cigar) {
+  return getCigarRarityResult(cigar)?.label || null;
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

@@ -63,6 +63,7 @@ import {
   refreshItemValue,
 } from '@/components/valuation/valueRefreshService';
 import { deriveCigarMarketValuation, buildCigarMarketValuationPatch } from '@/utils/cigarMarketValuation';
+import { getCigarRarityResult } from '@/lib/collection/cigarSelectors';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -941,6 +942,56 @@ function CigarDetailInner() {
         onRefreshNow={handleRefreshValueNow}
         isRefreshing={isRefreshingValue}
       />
+
+      {/* Rarity / Collectibility Panel */}
+      {(() => {
+        const rarity = getCigarRarityResult(cigar);
+        if (!rarity) return null;
+        const labelColor =
+          rarity.label === 'Exceptional' ? '#E0B450' :
+          rarity.label === 'Rare' ? '#D4A574' :
+          rarity.label === 'Collectible' ? '#6FCF97' :
+          rarity.label === 'Notable' ? '#7EC8E3' :
+          'rgba(224,216,200,0.55)';
+        const confColor = rarity.confidence === 'high' ? '#6FCF97' : rarity.confidence === 'medium' ? '#D4A574' : 'rgba(224,216,200,0.45)';
+        return (
+          <div className="rounded-2xl p-5" style={{ background: 'linear-gradient(145deg, rgba(40,28,18,0.95), rgba(27,19,13,0.98))', border: '1px solid rgba(140,107,63,0.25)' }}>
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+              <span className="text-xs uppercase tracking-[0.12em] font-semibold" style={{ color: 'rgba(224,216,200,0.55)' }}>Collectibility</span>
+              <div className="flex items-center gap-2">
+                {rarity.score != null && (
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: confColor }}>
+                    {rarity.confidence === 'insufficient' ? 'Insufficient data' : `${rarity.confidence} confidence`}
+                  </span>
+                )}
+              </div>
+            </div>
+            {rarity.score == null ? (
+              <p className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>{rarity.reasoning}</p>
+            ) : (
+              <>
+                <div className="flex items-end gap-3 mb-3">
+                  <span className="text-4xl font-bold tabular-nums" style={{ color: labelColor }}>{rarity.score}</span>
+                  <span className="text-lg font-semibold mb-0.5" style={{ color: labelColor }}>{rarity.label}</span>
+                  <span className="text-xs mb-1 ml-auto" style={{ color: 'rgba(224,216,200,0.4)' }}>out of 100</span>
+                </div>
+                {rarity.factors.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {rarity.factors.map((f) => (
+                      <span key={f.label} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(140,107,63,0.18)', color: '#D8C7A6', border: '1px solid rgba(140,107,63,0.25)' }}>
+                        {f.label}: {f.note}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {rarity.reasoning && (
+                  <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>{rarity.reasoning}</p>
+                )}
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1">

@@ -8,6 +8,7 @@ import { summarizeCigarReadiness, generateCollectionInsights, INSIGHT_TYPES } fr
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import { calculateCigarValue } from '@/utils/cigarValuation';
+import { getCigarRarityResult } from '@/lib/collection/cigarSelectors';
 import CigarInsuranceExporter from '@/components/export/CigarInsuranceExporter';
 
 const GOLD_PALETTE = ['#D4A574', '#B48C4B', '#8C6B3F', '#6B4F2E', '#F5D4A0', '#C4904A', '#A07840'];
@@ -211,6 +212,31 @@ export default function CigarInsights({ user, cigars = [], sessions = [], humido
     })
     .sort((a, b) => Number(b.valuation.estimatedTotalValue || 0) - Number(a.valuation.estimatedTotalValue || 0))
     .slice(0, 5);
+
+  // Rarity / collectibility lists
+  const rarityRows = React.useMemo(() => (
+    cigars.map((c) => ({ cigar: c, result: getCigarRarityResult(c) }))
+  ), [cigars]);
+
+  const highCollectibility = rarityRows
+    .filter((r) => r.result?.score != null && r.result.score >= 50)
+    .sort((a, b) => b.result.score - a.result.score)
+    .slice(0, 6);
+
+  const rareLimitedCigars = rarityRows
+    .filter((r) => {
+      const ps = String(r.cigar.production_status || '').toLowerCase();
+      return ps === 'discontinued' || ps === 'limited' || ps === 'seasonal';
+    })
+    .slice(0, 5);
+
+  const lowConfidenceRarity = rarityRows
+    .filter((r) => r.result?.score != null && r.result.confidence === 'low')
+    .slice(0, 5);
+
+  const unscoredCigars = rarityRows
+    .filter((r) => r.result?.score == null)
+    .slice(0, 5);
   const [tonightRecommendations, setTonightRecommendations] = React.useState([]);
 
   const thirtyDaysAgo = new Date(today);
@@ -381,6 +407,66 @@ export default function CigarInsights({ user, cigars = [], sessions = [], humido
           </div>
         </div>
       </div>
+
+      {/* Rarity & Collectibility */}
+      {(highCollectibility.length > 0 || rareLimitedCigars.length > 0 || unscoredCigars.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {highCollectibility.length > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <SectionHeading>Highest Collectibility</SectionHeading>
+              <div className="space-y-2">
+                {highCollectibility.map(({ cigar, result }) => (
+                  <div key={cigar.id} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="truncate text-[#E0D8C8]">{[cigar.brand, cigar.name].filter(Boolean).join(' · ') || cigar.name || 'Unnamed'}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                        style={{ background: 'rgba(180,140,75,0.18)', color: '#D4A574' }}>
+                        {result.label}
+                      </span>
+                      <span className="text-[#D4A574] font-semibold tabular-nums">{result.score}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {rareLimitedCigars.length > 0 && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <SectionHeading>Rare / Limited / Discontinued</SectionHeading>
+              <div className="space-y-2">
+                {rareLimitedCigars.map(({ cigar, result }) => (
+                  <div key={cigar.id} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="truncate text-[#E0D8C8]">{[cigar.brand, cigar.name].filter(Boolean).join(' · ') || cigar.name}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0"
+                      style={{ background: 'rgba(224,100,80,0.12)', color: '#E07060' }}>
+                      {cigar.production_status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {(lowConfidenceRarity.length > 0 || unscoredCigars.length > 0) && (
+            <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.15)' }}>
+              <SectionHeading>Needs Enrichment</SectionHeading>
+              <div className="space-y-1">
+                {unscoredCigars.map(({ cigar }) => (
+                  <div key={cigar.id} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="truncate text-[#E0D8C8]">{[cigar.brand, cigar.name].filter(Boolean).join(' · ') || cigar.name}</span>
+                    <span className="text-xs flex-shrink-0" style={{ color: 'rgba(224,216,200,0.45)' }}>No score</span>
+                  </div>
+                ))}
+                {lowConfidenceRarity.map(({ cigar, result }) => (
+                  <div key={cigar.id} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="truncate text-[#E0D8C8]">{[cigar.brand, cigar.name].filter(Boolean).join(' · ') || cigar.name}</span>
+                    <span className="text-xs flex-shrink-0" style={{ color: '#E0B450' }}>Low confidence · {result.score}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {(highestValueCigars.length > 0 || highValueLowStock.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
