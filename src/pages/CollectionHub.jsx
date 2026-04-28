@@ -453,7 +453,7 @@ export default function CollectionHub() {
 
     const mostValuableWine = wineOpenable
       ? [...wines]
-          .map((w) => ({ ...w, value: getWineTotalValue(w) }))
+          .map((w) => ({ ...w, value: getWineTotalValue(w), __primaryImage: getWinePrimaryImage(w) }))
           .sort((a, b) => b.value - a.value)
           .find((w) => w.value > 0) || null
       : null;
@@ -523,18 +523,21 @@ export default function CollectionHub() {
 
     const topRatedWine = wineOpenable
       ? [...wines]
+          .map((w) => ({ ...w, __primaryImage: getWinePrimaryImage(w) }))
           .filter((w) => Number(w.rating || 0) >= 4)
           .sort((a, b) => (Number(b.rating || 0) - Number(a.rating || 0)) || (getWineTotalValue(b) - getWineTotalValue(a)))[0] || null
       : null;
 
     const readyToDrinkWine = wineOpenable
-      ? wines.find((w) => {
-          const start = w.drink_window_start || w.drinking_window_start;
-          const end = w.drink_window_end || w.drinking_window_end;
-          if (!start || !end) return false;
-          const now = new Date();
-          return now >= new Date(start) && now <= new Date(end);
-        }) || null
+      ? wines
+          .map((w) => ({ ...w, __primaryImage: getWinePrimaryImage(w) }))
+          .find((w) => {
+            const start = w.drink_window_start || w.drinking_window_start;
+            const end = w.drink_window_end || w.drinking_window_end;
+            if (!start || !end) return false;
+            const now = new Date();
+            return now >= new Date(start) && now <= new Date(end);
+          }) || null
       : null;
 
     const recentActivity = buildUnifiedActivityFeed(smokeLogs, tastings, cigarSessions, { limit: 5 });
