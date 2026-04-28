@@ -47,13 +47,14 @@ export function buildHubHighlightCandidates({
   formatFromBase = (value) => `$${toNumber(value).toFixed(0)}`,
   getPipeValue = () => 0,
   getBottleValue = () => 0,
+  getWineTotalValue = () => 0,
 } = {}) {
   const pipeValue = toNumber(getPipeValue(metrics.mostValuablePipe));
   const bottleValue = toNumber(getBottleValue(metrics.mostValuableBottle));
   const cigarValue = toNumber(metrics.highestValueCigar?.__totalValue || 0);
   const cigarCrownJewelValue = toNumber(metrics.cigarCrownJewel?.__totalValue || 0);
   const restockQty = cigarQuantity(metrics.restockPriorityCigar);
-  const wineValue = toNumber(metrics.mostValuableWine?.value || 0);
+  const wineValue = metrics.mostValuableWine ? toNumber(getWineTotalValue(metrics.mostValuableWine)) : 0;
 
   const cards = [
     pipekeeperOpenable && metrics.mostSmokedPipe ? {

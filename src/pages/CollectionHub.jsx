@@ -578,7 +578,7 @@ export default function CollectionHub() {
       totalBlendOz,
       totalBottleCount,
     };
-  }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, wines, wineTastings, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable, whiskeyMetrics, getWineTotalValue]);
+  }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, wines, wineTastings, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable, whiskeyMetrics]);
 
   const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
   const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);
@@ -619,6 +619,7 @@ export default function CollectionHub() {
     formatFromBase,
     getPipeValue,
     getBottleValue,
+    getWineTotalValue,
   }), [pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable, metrics, t, formatFromBase]);
 
   const hasHighlights = topHighlights.length > 0;
