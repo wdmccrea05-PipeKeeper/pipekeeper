@@ -88,21 +88,21 @@ export default function HeroHighlightCard({
 
       {/* Foreground image layer for bottle mode */}
       {isBottleMode && photo && (
-        <div
-          className="absolute inset-0 flex items-center justify-end pointer-events-none"
-          style={{ paddingRight: '6%' }}
-        >
-          <img
-            src={photo}
-            alt=""
-            className="object-contain"
-            style={{
-              maxHeight: '88%',
-              maxWidth: '44%',
-              filter: `drop-shadow(0 0 20px ${accent}50) drop-shadow(0 8px 16px rgba(0,0,0,0.7))`,
-            }}
-          />
-        </div>
+        <img
+          src={photo}
+          alt=""
+          className="absolute pointer-events-none"
+          style={{
+            right: '4%',
+            bottom: '-10%',
+            height: '115%',
+            width: '55%',
+            maxHeight: 'none',
+            objectFit: 'contain',
+            opacity: 0.95,
+            filter: `drop-shadow(0 0 20px ${accent}50) drop-shadow(0 8px 24px rgba(0,0,0,0.75))`,
+          }}
+        />
       )}
 
       {/* Top brass accent */}
