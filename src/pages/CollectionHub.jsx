@@ -47,7 +47,7 @@ import {
 import { selectTotalSticks, selectCigarCollectionValue, getCigarAvailableQuantity, getCigarUnitValue } from '@/lib/collection/cigarSelectors';
 import { selectCellarValue as calculateTobaccoCollectionValue } from '@/lib/collection/tobaccoSelectors';
 import { selectPipeCollectionValue } from '@/lib/collection/pipeSelectors';
-import { selectWineCollectionValue, selectTotalWineBottles, selectWineCount, getWineTotalValue, selectWineReadyToDrinkCount } from '@/lib/collection/wineSelectors';
+import { selectWineCollectionValue, selectTotalWineBottles, selectWineCount, getWineTotalValue, selectWineReadyToDrinkCount, getWinePrimaryImage } from '@/lib/collection/wineSelectors';
 import { buildHubHighlightCandidates } from '@/components/hub/highlightSelection';
 
 
