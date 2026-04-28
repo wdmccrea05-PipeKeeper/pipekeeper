@@ -160,20 +160,20 @@ function StoryCard({ title, label, item, navigate }) {
                   backgroundImage: `url(${photo})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  filter: 'blur(24px) brightness(0.20) saturate(0.5)',
-                  opacity: 0.8,
-                  transform: 'scale(1.12)',
+                  filter: 'blur(32px) brightness(0.15) saturate(0.6)',
+                  opacity: 0.9,
+                  transform: 'scale(1.15)',
                 }}
               />
-              <div className="absolute inset-0 flex items-center justify-end pr-[6%]">
+              <div className="absolute inset-0 flex items-center justify-end pr-[8%]">
                 <img
                   src={photo}
                   alt={title}
                   style={{
-                    maxHeight: '88%',
-                    maxWidth: '50%',
+                    maxHeight: '92%',
+                    maxWidth: '55%',
                     objectFit: 'contain',
-                    filter: 'drop-shadow(0 0 16px rgba(139,75,107,0.4)) drop-shadow(0 6px 12px rgba(0,0,0,0.7))',
+                    filter: 'drop-shadow(0 0 20px rgba(139,75,107,0.5)) drop-shadow(0 8px 16px rgba(0,0,0,0.8))',
                   }}
                 />
               </div>
