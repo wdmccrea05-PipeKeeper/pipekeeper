@@ -26,7 +26,7 @@ export default function InsightHighlightCard({
         backgroundImage: photo
           ? `url('${photo}')`
           : `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
-        backgroundSize: 'cover',
+        backgroundSize: photo ? 'contain' : 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}

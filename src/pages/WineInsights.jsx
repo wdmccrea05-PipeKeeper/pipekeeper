@@ -130,10 +130,10 @@ export default function WineInsights() {
           {wines.length > 0 && (
             <InsightsHighlightGrid>
               {stats.topByRating[0] && (
-                <InsightsHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} />
+                <InsightsHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} photo={stats.topByRating[0].photos?.[0]} />
               )}
               {stats.topByValue[0] && (
-                <InsightsHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={stats.topByValue[0].estimated_value ? formatFromBase(stats.topByValue[0].estimated_value) : '—'} accent="#2E7D5C" />
+                <InsightsHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={stats.topByValue[0].estimated_value ? formatFromBase(stats.topByValue[0].estimated_value) : '—'} accent="#2E7D5C" photo={stats.topByValue[0].photos?.[0]} />
               )}
               {stats.drinkingNow > 0 && (
                 <InsightsHighlightCard title="In Drinking Window" value={`${stats.drinkingNow} bottle${stats.drinkingNow !== 1 ? 's' : ''}`} subtitle="Ready to open" accent={WINE_GOLD} />
