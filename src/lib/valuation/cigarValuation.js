@@ -86,7 +86,7 @@ export function deriveCigarValuationPatch(cigar, enrichmentResult) {
   if (!inferredUnit) return {};
 
   const totalValue = Math.round(inferredUnit * sticks * 100) / 100;
-  const replacementCost = Math.round(inferredUnit * sticks * 100) / 100;
+  const replacementCost = totalValue;
 
   const confidence = normalizeCigarValuationConfidence(enrichmentResult.valuation_confidence);
   const source =

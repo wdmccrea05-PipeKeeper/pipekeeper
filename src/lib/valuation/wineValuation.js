@@ -79,7 +79,7 @@ export function deriveWineValuationPatch(wine, enrichmentResult) {
   if (!unitValue) return {};
 
   const totalValue = Math.round(unitValue * quantity * 100) / 100;
-  const replacementCost = Math.round(unitValue * quantity * 100) / 100;
+  const replacementCost = totalValue;
 
   const confidence = normalizeWineValuationConfidence(
     enrichedUnit ? enrichmentResult.valuation_confidence : 'low',
