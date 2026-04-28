@@ -441,6 +441,13 @@ export default function CollectionHub() {
       ? [...bottles].sort((a, b) => Number(getBottleValue(b) || 0) - Number(getBottleValue(a) || 0))[0] || null
       : null;
 
+    const mostValuableWine = wineOpenable
+      ? [...wines]
+          .map((w) => ({ ...w, value: Number(w.estimated_value) || Number(w.purchase_price) || 0 }))
+          .sort((a, b) => b.value - a.value)
+          .find((w) => w.value > 0) || null
+      : null;
+
     const mostSmokedCigar = cigarOpenable
       ? [...cigars]
           .map((c) => ({ ...c, __count: logsByCigar[c.id] || 0 }))
@@ -535,12 +542,13 @@ export default function CollectionHub() {
       humidorFavoriteCigar,
       restockPriorityCigar,
       cigarCrownJewel,
+      mostValuableWine,
       recentActivity,
       totalCigarSticks,
       totalBlendOz,
       totalBottleCount,
     };
-  }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, whiskeyMetrics]);
+  }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, wines, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable, whiskeyMetrics]);
 
   const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
   const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);
@@ -575,12 +583,13 @@ export default function CollectionHub() {
     pipekeeperOpenable,
     whiskeyOpenable,
     cigarOpenable,
+    winekeeperOpenable: wineOpenable,
     metrics,
     t,
     formatFromBase,
     getPipeValue,
     getBottleValue,
-  }), [pipekeeperOpenable, whiskeyOpenable, cigarOpenable, metrics, t, formatFromBase]);
+  }), [pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable, metrics, t, formatFromBase]);
 
   const hasHighlights = topHighlights.length > 0;
 
@@ -596,8 +605,11 @@ export default function CollectionHub() {
     for (const log of cigarSessions) {
       rows.push({ id: `cigar_${log.id}`, moduleType: 'cigar', date: log.date, itemLabel: log.cigar_name || [log.external_cigar_brand, log.external_cigar_name].filter(Boolean).join(' ') || 'Cigar session', rating: log.overall_enjoyment ?? null, notes: log.notes || '' });
     }
+    for (const wt of wineTastings) {
+      rows.push({ id: `wine_${wt.id}`, moduleType: 'wine', date: wt.date, itemLabel: wt.wine_name || 'Wine tasting', rating: wt.rating ?? null, notes: wt.notes || '' });
+    }
     return rows;
-  }, [smokeLogs, tastings, cigarSessions]);
+  }, [smokeLogs, tastings, cigarSessions, wineTastings]);
 
   const { byDate: sessionsByDate, highlightedDates: calHighlights } = useMemo(
     () => buildSessionCalendarData(allSessionRows, 'all'),

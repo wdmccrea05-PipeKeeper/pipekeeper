@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { canUserAccessModule } from "@/components/utils/moduleReleaseState";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { toLocalDateYmd } from "@/components/utils/schemaCompatibility";
@@ -10,7 +11,7 @@ import { buildSessionCalendarData } from "@/lib/sessionHistory/calendarData";
 import { sortByLabel } from "@/lib/sorting/alphabetical";
 import { X, Star } from "lucide-react";
 
-const MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar", "wine"];
+const BASE_MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar"];
 
 function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions = [], wineTastings = [] }) {
   const pipeRows = (smokingLogs || []).map((log) => ({
@@ -57,7 +58,9 @@ function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions =
 
 export default function SessionHistory() {
   const { t } = useTranslation();
-  const { user } = useCurrentUser();
+  const { user, winekeeper_paid, isAdmin } = useCurrentUser();
+  const wineEnabled = winekeeper_paid || isAdmin || canUserAccessModule('winekeeper', user, true);
+  const MODULE_FILTERS = wineEnabled ? [...BASE_MODULE_FILTERS, "wine"] : BASE_MODULE_FILTERS;
   const [moduleFilter, setModuleFilter] = useState("all");
   const [selectedDate, setSelectedDate] = useState(toLocalDateYmd(new Date()));
   const [selectedSession, setSelectedSession] = useState(null);
@@ -70,7 +73,9 @@ export default function SessionHistory() {
         base44.entities.SmokingLog.filter({ created_by: user.email }, "-date", 1000).catch(() => []),
         base44.entities.TastingLog.filter({ created_by: user.email }, "-tasting_date", 1000).catch(() => []),
         base44.entities.CigarSession.filter({ created_by: user.email }, "-date", 1000).catch(() => []),
-        base44.entities.WineTasting.filter({ created_by: user.email }, "-date", 1000).catch(() => []),
+        wineEnabled
+          ? base44.entities.WineTasting.filter({ created_by: user.email }, "-date", 1000).catch(() => [])
+          : Promise.resolve([]),
       ]);
       return { smokingLogs, tastingLogs, cigarSessions, wineTastings };
     },
