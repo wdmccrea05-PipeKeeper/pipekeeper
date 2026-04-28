@@ -72,7 +72,7 @@ export default function HighlightCard({
             {title}
           </p>
           <p 
-            className="text-xl sm:text-2xl font-bold leading-tight break-words drop-shadow-lg"
+            className="text-xl sm:text-2xl font-bold leading-tight line-clamp-2 break-normal drop-shadow-lg"
             style={{ 
               color: '#F5F1E7',
               textShadow: '0 2px 8px rgba(0,0,0,0.6)',

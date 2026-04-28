@@ -144,7 +144,7 @@ export default function HeroHighlightCard({
           {/* Subtitle */}
           {subtitle && (
             <div
-              className="text-xs sm:text-sm font-semibold leading-snug break-words"
+              className="text-xs sm:text-sm font-semibold leading-snug line-clamp-2 break-normal"
               style={{
                 color: `${accent}dd`,
                 textShadow: '0 1px 2px rgba(0,0,0,0.6)',
