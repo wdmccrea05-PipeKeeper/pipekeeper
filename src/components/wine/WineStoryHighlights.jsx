@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
-import { getWinePrimaryImage, getWineTotalValue, selectWineReadyToDrinkCount } from '@/lib/collection/wineSelectors';
+import { getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
+import HeroHighlightCard from '@/components/shared/HeroHighlightCard';
 
 /**
  * WineStoryHighlights — visual hero cards for wine collection story.
- * Matches WhiskeyKeeper/PipeKeeper hero highlight card styling (aspect-[3/2], background images).
+ * Uses HeroHighlightCard with objectMode="bottle" for premium layered image presentation.
  */
-export default function WineStoryHighlights({ wines = [], tastings = [], t = (k) => k }) {
+export default function WineStoryHighlights({ wines = [], tastings = [], t = (k) => k, onNavigate }) {
   const highlights = useMemo(() => {
     const cards = [];
 
@@ -87,69 +88,16 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {highlights.map((h) => (
-        <div
+        <HeroHighlightCard
           key={h.key}
-          className="relative rounded-2xl overflow-hidden aspect-[3/2] group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
-          style={{
-            border: `1px solid ${h.accent}44`,
-            boxShadow: '0 12px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)',
-            backgroundImage: h.photo
-              ? `url('${h.photo}')`
-              : `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
-            backgroundSize: 'contain',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        >
-          {/* Accent radial + vignette */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `radial-gradient(circle at 30% 10%, ${h.accent}28 0%, transparent 52%),
-                          linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.42) 55%, rgba(0,0,0,0.82) 100%)`,
-            }}
-          />
-
-          {/* Edge vignette */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'radial-gradient(ellipse at center, transparent 28%, rgba(0,0,0,0.38) 100%)',
-              boxShadow: 'inset 0 0 40px rgba(0,0,0,0.55)',
-            }}
-          />
-
-          {/* Bottom-anchored text content */}
-          <div className="absolute inset-0 flex flex-col justify-end p-4 z-10">
-            <p
-              className="text-[10px] sm:text-xs uppercase tracking-[0.1em] font-bold mb-1.5 drop-shadow-lg leading-tight"
-              style={{ color: h.accent }}
-            >
-              {h.title}
-            </p>
-            <p
-              className="text-lg sm:text-xl font-bold leading-tight line-clamp-2 drop-shadow-lg"
-              style={{
-                color: '#F5F1E7',
-                textShadow: '0 2px 8px rgba(0,0,0,0.6)',
-                fontFamily: "'Georgia', serif",
-              }}
-            >
-              {h.value}
-            </p>
-            {h.subtitle && (
-              <p
-                className="text-xs mt-1.5 drop-shadow-md"
-                style={{
-                  color: 'rgba(224,216,200,0.78)',
-                  textShadow: '0 1px 4px rgba(0,0,0,0.5)',
-                }}
-              >
-                {h.subtitle}
-              </p>
-            )}
-          </div>
-        </div>
+          title={h.title}
+          value={h.value}
+          subtitle={h.subtitle}
+          photo={h.photo}
+          accent={h.accent}
+          objectMode="bottle"
+          onClick={() => onNavigate && onNavigate(h.key)}
+        />
       ))}
     </div>
   );

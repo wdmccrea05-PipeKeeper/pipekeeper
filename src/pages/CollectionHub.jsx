@@ -900,6 +900,7 @@ export default function CollectionHub() {
                 heroImage={card.heroImage}
                 bgImage={card.bgImage}
                 accent={card.accent}
+                objectMode={card.objectMode || 'cover'}
                 onClick={() => navigate(card.route)}
               />
             ))}

@@ -14,7 +14,9 @@ export default function CatalogPlate({
   accent = "#B48C4B",
   onClick,
   className,
+  objectMode = 'cover',
 }) {
+  const isBottleMode = objectMode === 'bottle';
   return (
     <div
       className={cn(
@@ -41,11 +43,11 @@ export default function CatalogPlate({
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage: `url(${bgImage || heroImage})`,
-            backgroundSize: "cover",
+            backgroundSize: isBottleMode ? "cover" : "cover",
             backgroundPosition: "center",
-            filter: "blur(20px) brightness(0.25) saturate(0.6) sepia(0.2)",
-            opacity: 0.8,
-            transform: "scale(1.15)",
+            filter: isBottleMode ? "blur(24px) brightness(0.22) saturate(0.5)" : "blur(20px) brightness(0.25) saturate(0.6) sepia(0.2)",
+            opacity: isBottleMode ? 0.85 : 0.8,
+            transform: isBottleMode ? "scale(1.12)" : "scale(1.15)",
           }}
         />
       )}
@@ -53,15 +55,20 @@ export default function CatalogPlate({
       {/* Hero image spotlight */}
       {heroImage && (
         <div
-          className="absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"
-          style={{ width: "50%" }}
+          className={isBottleMode ? "absolute inset-0 flex items-center justify-end pointer-events-none" : "absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"}
+          style={isBottleMode ? { paddingRight: "8%" } : { width: "50%" }}
         >
           <img
             src={heroImage}
             alt=""
             loading="lazy"
-            className="absolute"
-            style={{
+            className={isBottleMode ? "" : "absolute"}
+            style={isBottleMode ? {
+              maxHeight: "92%",
+              maxWidth: "55%",
+              objectFit: "contain",
+              filter: `drop-shadow(0 0 20px ${accent}50) drop-shadow(0 8px 16px rgba(0,0,0,0.7))`,
+            } : {
               right: "-5%",
               top: "50%",
               transform: `translateY(-50%) rotate(8deg)`,
@@ -72,13 +79,14 @@ export default function CatalogPlate({
               filter: `drop-shadow(0 0 16px ${accent}60) drop-shadow(0 4px 12px rgba(0,0,0,0.7))`,
             }}
           />
-          {/* Fade gradient */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(to right, rgba(32,22,15,1) 0%, rgba(32,22,15,0.5) 35%, transparent 70%)",
-            }}
-          />
+          {!isBottleMode && (
+            <div
+              className="absolute inset-0"
+              style={{
+                background: "linear-gradient(to right, rgba(32,22,15,1) 0%, rgba(32,22,15,0.5) 35%, transparent 70%)",
+              }}
+            />
+          )}
         </div>
       )}
 

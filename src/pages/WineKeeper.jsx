@@ -11,7 +11,7 @@ const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc4971
 import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
-import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
+import HeroHighlightCard from '@/components/shared/HeroHighlightCard';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
@@ -265,16 +265,16 @@ function WineKeeperInner() {
           <h2 className="text-xs font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: 'rgba(180,140,75,0.8)' }}>
             {t('home.highlights', 'Collection Highlights')}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {highlights.map((h) => (
-              <WhiskeyHighlightCard
+              <HeroHighlightCard
                 key={h.key}
                 title={h.title}
                 value={h.value}
                 subtitle={h.subtitle}
                 accent={h.accent}
                 photo={h.photo}
-                imageFit="contain"
+                objectMode="bottle"
                 onClick={() => h.wineId && navigate(`/Wines?highlight=${encodeURIComponent(h.wineId)}`)}
               />
             ))}

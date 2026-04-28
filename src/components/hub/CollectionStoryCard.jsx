@@ -152,11 +152,39 @@ function StoryCard({ title, label, item, navigate }) {
     >
       {photo ? (
         <>
-          <img
-            src={photo}
-            alt={title}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          {item?.recordType === 'wine' ? (
+            <>
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${photo})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  filter: 'blur(24px) brightness(0.20) saturate(0.5)',
+                  opacity: 0.8,
+                  transform: 'scale(1.12)',
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-end pr-[6%]">
+                <img
+                  src={photo}
+                  alt={title}
+                  style={{
+                    maxHeight: '88%',
+                    maxWidth: '50%',
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 0 16px rgba(139,75,107,0.4)) drop-shadow(0 6px 12px rgba(0,0,0,0.7))',
+                  }}
+                />
+              </div>
+            </>
+          ) : (
+            <img
+              src={photo}
+              alt={title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
           <div
             className="absolute inset-0"
             style={{
