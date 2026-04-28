@@ -212,7 +212,7 @@ function StoryCard({ title, label, item, navigate }) {
         </p>
 
         <p
-          className="text-lg sm:text-2xl font-bold leading-snug break-words"
+          className="text-lg sm:text-2xl font-bold leading-snug line-clamp-2 break-normal"
           style={{
             color: '#F5F1E7',
             textShadow: '0 3px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.7)',
