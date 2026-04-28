@@ -52,74 +52,85 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
 
   return (
     <div
-      className="rounded-xl overflow-hidden transition-all hover:shadow-lg cursor-pointer flex flex-col"
-      style={{ background: 'rgba(42,28,20,0.85)', border: '1px solid rgba(139,58,58,0.28)' }}
+      className="rounded-2xl overflow-hidden transition-all hover:border-[rgba(139,58,58,0.5)] hover:-translate-y-0.5 cursor-pointer flex flex-col"
+      style={{
+        background: 'linear-gradient(135deg, rgba(52,32,22,0.98), rgba(30,18,12,1))',
+        border: '1px solid rgba(139,58,58,0.28)',
+        boxShadow: '0 10px 28px rgba(0,0,0,0.42)',
+      }}
       onClick={(e) => {
         if (e.target.closest('button')) return;
         navigate(`/WineDetail?id=${wine.id}`);
       }}
     >
-      {photo ? (
-        <div className="h-32 overflow-hidden">
-          <img src={photo} alt={wine.name} className="w-full h-full object-cover" />
-        </div>
-      ) : (
-        <div className="h-32 flex items-center justify-center" style={{ background: 'rgba(139,58,58,0.08)' }}>
-          <Wine className="w-10 h-10" style={{ color: 'rgba(139,58,58,0.3)' }} />
-        </div>
-      )}
-
-      <div className="p-4 flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-sm leading-snug" style={{ color: '#F5F1E7' }}>{wine.name}</h3>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.65)' }}>
-              {[wine.producer, wine.vintage].filter(Boolean).join(' · ')}
-            </p>
-            {(wine.region || wine.appellation) && (
-              <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                {wine.appellation || wine.region}
-              </p>
-            )}
-            {wine.varietal && (
-              <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(224,216,200,0.4)' }}>{wine.varietal}</p>
-            )}
+      {/* Image area — same h-48 / object-contain as BottleCard */}
+      <div className="relative h-48 bg-gradient-to-b from-[#3d2020] to-[#200f0f]">
+        {photo ? (
+          <img src={photo} alt={wine.name} className="w-full h-48 object-contain" />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+            <Wine className="w-12 h-12" style={{ color: 'rgba(139,58,58,0.3)' }} />
           </div>
-          {wine.rating > 0 && (
-            <div className="flex items-center gap-1 shrink-0 mt-0.5">
-              <Star className="w-3 h-3" style={{ color: '#C47070', fill: '#C47070' }} />
-              <span className="text-xs font-semibold" style={{ color: '#C47070' }}>{wine.rating}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-          {wine.style && (
-            <span className="text-xs px-2 py-0.5 rounded-full capitalize" style={{ background: 'rgba(139,58,58,0.12)', color: '#C47070', border: '1px solid rgba(139,58,58,0.22)' }}>
+        )}
+        {wine.style && (
+          <div className="absolute top-3 left-3">
+            <span className="text-xs px-2 py-1 rounded-full capitalize font-medium" style={{ background: 'rgba(139,58,58,0.7)', color: '#F5E8E8', border: '1px solid rgba(139,58,58,0.5)' }}>
               {wine.style}
             </span>
+          </div>
+        )}
+        {wine.is_favorite && (
+          <div className="absolute top-3 right-3">
+            <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(212,165,116,0.75)', color: '#fff' }}>★</span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-5 flex flex-col flex-1 space-y-4">
+        <div className="min-w-0">
+          <h3 className="text-xl font-bold text-[#F5F1E7] leading-tight break-words">{wine.name}</h3>
+          <p className="text-sm text-[#E0D8C8] break-words mt-1.5 leading-relaxed">
+            {[wine.producer, wine.vintage ? String(wine.vintage) : null].filter(Boolean).join(' · ') || 'No details'}
+          </p>
+          {(wine.region || wine.appellation || wine.varietal) && (
+            <p className="text-xs mt-1 truncate" style={{ color: 'rgba(224,216,200,0.55)' }}>
+              {[wine.appellation || wine.region, wine.varietal].filter(Boolean).join(' · ')}
+            </p>
           )}
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-wrap">
           {dwStatus && (
             <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${DRINK_WINDOW_COLORS[dwStatus]}22`, color: DRINK_WINDOW_COLORS[dwStatus], border: `1px solid ${DRINK_WINDOW_COLORS[dwStatus]}44` }}>
               {DRINK_WINDOW_LABELS[dwStatus]}
             </span>
           )}
           {getWineQuantity(wine) > 1 && (
-            <span className="text-xs" style={{ color: 'rgba(224,216,200,0.45)' }}>×{getWineQuantity(wine)}</span>
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(224,216,200,0.65)' }}>×{getWineQuantity(wine)} btls</span>
           )}
-        </div>
-
-        <div className="mt-auto pt-2">
-          {totalValue > 0 ? (
-            <span className="text-xs" style={{ color: confidence === 'low' ? 'rgba(224,216,200,0.45)' : 'rgba(224,216,200,0.65)' }}>
-              {confidence === 'low' ? '~' : ''}{formatFromBase(totalValue)}
+          {wine.rating > 0 && (
+            <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-0.5" style={{ background: 'rgba(196,112,112,0.12)', color: '#C47070', border: '1px solid rgba(196,112,112,0.25)' }}>
+              <Star className="w-2.5 h-2.5 fill-current" /> {wine.rating}
             </span>
-          ) : (
-            <span className="text-xs italic" style={{ color: 'rgba(224,216,200,0.3)' }}>Not valued</span>
           )}
         </div>
 
-        <div className="flex gap-1.5 mt-3">
+        {/* Value panel — mirrors WhiskeyKeeper BottleCard style */}
+        <div className="rounded-xl p-3.5" style={{ background: 'rgba(139,58,58,0.10)', border: '1px solid rgba(139,58,58,0.18)' }}>
+          <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#D4A574' }}>
+            {totalValue > 0 ? (confidence === 'low' ? '~Estimated Value' : 'Collection Value') : 'Not Valued'}
+          </div>
+          <div className="text-xl font-bold mt-1" style={{ color: totalValue > 0 ? '#F5F1E7' : 'rgba(224,216,200,0.3)' }}>
+            {totalValue > 0 ? formatFromBase(totalValue) : '—'}
+          </div>
+          {wine.notes && (
+            <p className="text-sm mt-2 break-words" style={{ color: 'rgba(224,216,200,0.65)', lineHeight: '1.5' }}>
+              {wine.notes.slice(0, 80)}{wine.notes.length > 80 ? '…' : ''}
+            </p>
+          )}
+        </div>
+
+        <div className="flex gap-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => onLogTasting(wine)}
             className="flex-1 text-xs py-1.5 rounded-lg font-medium"

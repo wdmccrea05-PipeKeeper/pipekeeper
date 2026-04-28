@@ -17,6 +17,7 @@ import {
   Cigarette,
   CalendarDays,
   List,
+  Wine,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
@@ -46,7 +47,7 @@ import {
 import { selectTotalSticks, selectCigarCollectionValue, getCigarAvailableQuantity, getCigarUnitValue } from '@/lib/collection/cigarSelectors';
 import { selectCellarValue as calculateTobaccoCollectionValue } from '@/lib/collection/tobaccoSelectors';
 import { selectPipeCollectionValue } from '@/lib/collection/pipeSelectors';
-import { selectWineCollectionValue, selectTotalWineBottles, selectWineCount, getWineTotalValue } from '@/lib/collection/wineSelectors';
+import { selectWineCollectionValue, selectTotalWineBottles, selectWineCount, getWineTotalValue, selectWineReadyToDrinkCount } from '@/lib/collection/wineSelectors';
 import { buildHubHighlightCandidates } from '@/components/hub/highlightSelection';
 
 
@@ -733,6 +734,24 @@ export default function CollectionHub() {
               value={isLoading ? '—' : cigars.length}
               sub={isLoading ? '' : `${metrics.totalCigarSticks} ${t('hub.sticksOwnedLabel')}`}
               accent="#8C6B3F"
+            />
+          ) : null}
+          {wineOpenable ? (
+            <StatCard
+              icon={Wine}
+              label={t('hub.wine', 'Wine')}
+              value={isLoading ? '—' : selectWineCount(wines)}
+              sub={isLoading ? '' : `${selectTotalWineBottles(wines)} ${t('hub.bottlesOwnedLabel', 'bottles owned')}`}
+              accent="#8B4B6B"
+            />
+          ) : null}
+          {wineOpenable ? (
+            <StatCard
+              icon={Flame}
+              label={t('hub.wineTastings', 'Wine Tastings')}
+              value={isLoading ? '—' : wineTastings.length}
+              sub={isLoading ? '' : `${selectWineReadyToDrinkCount(wines)} ready to drink`}
+              accent="#A35C8B"
             />
           ) : null}
         </div>

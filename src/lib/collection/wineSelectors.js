@@ -121,41 +121,201 @@ export function getWineDrinkWindowStatus(wine) {
   return null;
 }
 
-/** Compute a simple 0-100 rarity/collectibility score based on available data. */
+// ---------------------------------------------------------------------------
+// Rarity / Collectibility scoring — WhiskeyKeeper-style weighted factors
+// ---------------------------------------------------------------------------
+
+/** Producer reputation tiers (well-known prestige producers). */
+const PRESTIGE_PRODUCERS = [
+  // Burgundy
+  'romanee-conti', 'drc', 'leroy', 'rousseau', 'lafarge', 'roumier', 'comte de vogue',
+  // Bordeaux
+  'petrus', 'le pin', 'cheval blanc', 'latour', 'lafite', 'mouton', 'margaux',
+  'haut-brion', 'ausone', 'pichon', 'ducru', 'leoville',
+  // Napa / US
+  'screaming eagle', 'harlan', 'opus one', 'bond', 'caymus', 'stag\'s leap',
+  // Rhone
+  'guigal', 'chapoutier', 'jaboulet', 'beaucastel',
+  // Italy
+  'sassicaia', 'ornellaia', 'gaja', 'solaia', 'tignanello', 'giacomo conterno',
+  // Spain
+  'vega sicilia', 'pingus',
+  // Other icons
+  'penfolds', 'henschke', 'giaconda',
+];
+
+const PRESTIGE_REGIONS = [
+  'romanée-conti', 'chambertin', 'montrachet', 'corton', 'petrus', 'pomerol',
+  'saint-émilion', 'barossa valley', 'napa valley', 'sonoma', 'willamette',
+  'priorat', 'brunello', 'barolo', 'barbaresco', 'champagne', 'hermitage',
+  'côte-rôtie', 'châteauneuf-du-pape', 'burgundy', 'bordeaux',
+];
+
+function matchesPrestige(str, list) {
+  if (!str) return false;
+  const s = str.toLowerCase();
+  return list.some((term) => s.includes(term));
+}
+
+/**
+ * Compute a wine-specific 0–100 rarity/collectibility score.
+ * Returns null when there is insufficient data to produce a meaningful score.
+ * Uses a weighted additive model with a confidence-derived divisor.
+ *
+ * Factor weights:
+ *   market value    — 30 pts max
+ *   vintage age     — 20 pts max
+ *   producer prestige — 20 pts max
+ *   region prestige — 10 pts max
+ *   drink window    — 10 pts max
+ *   quantity scarcity — 5 pts max
+ *   replacement difficulty — 5 pts max
+ *
+ * Minimum 2 signals required to return a score.
+ */
 export function getWineRarityScore(wine) {
   if (!wine) return null;
-  let score = 0;
-  let factors = 0;
 
+  let totalPoints = 0;
+  let signalCount = 0;
+  const maxPoints = 100;
+
+  // 1. Market / estimated unit value — up to 30 pts
   const unitValue = getWineUnitValue(wine);
   if (unitValue > 0) {
-    factors++;
-    // $0-50: 10pts, $50-150: 25, $150-500: 50, $500+: 75, $1000+: 90
-    if (unitValue >= 1000) score += 90;
-    else if (unitValue >= 500) score += 75;
-    else if (unitValue >= 150) score += 50;
-    else if (unitValue >= 50) score += 25;
-    else score += 10;
+    signalCount++;
+    if (unitValue >= 2000)      totalPoints += 30;
+    else if (unitValue >= 1000) totalPoints += 25;
+    else if (unitValue >= 500)  totalPoints += 20;
+    else if (unitValue >= 200)  totalPoints += 14;
+    else if (unitValue >= 75)   totalPoints += 8;
+    else                        totalPoints += 3;
   }
 
-  // Vintage age
+  // 2. Vintage age — up to 20 pts
   if (wine.vintage) {
-    factors++;
     const age = new Date().getFullYear() - Number(wine.vintage);
-    if (age >= 30) score += 90;
-    else if (age >= 20) score += 70;
-    else if (age >= 10) score += 40;
-    else if (age >= 5) score += 20;
-    else score += 5;
+    signalCount++;
+    if (age >= 40)      totalPoints += 20;
+    else if (age >= 25) totalPoints += 16;
+    else if (age >= 15) totalPoints += 11;
+    else if (age >= 8)  totalPoints += 6;
+    else if (age >= 3)  totalPoints += 2;
+    // 0–2 years: no age contribution
   }
 
-  // Drink window status contribution
-  const dwStatus = getWineDrinkWindowStatus(wine);
-  if (dwStatus === 'drink_now') { score += 20; factors++; }
-  else if (dwStatus === 'too_young') { score += 10; factors++; }
+  // 3. Producer prestige — up to 20 pts
+  if (wine.producer) {
+    signalCount++;
+    if (matchesPrestige(wine.producer, PRESTIGE_PRODUCERS)) {
+      totalPoints += 20;
+    } else if (wine.producer.length > 2) {
+      // Known producer entered (some value, not prestige-listed)
+      totalPoints += 3;
+    }
+  }
 
-  if (factors === 0) return null;
-  return Math.min(100, Math.round(score / factors));
+  // 4. Region / appellation prestige — up to 10 pts
+  const regionStr = [wine.region, wine.appellation, wine.country_of_origin].filter(Boolean).join(' ');
+  if (regionStr) {
+    signalCount++;
+    if (matchesPrestige(regionStr, PRESTIGE_REGIONS)) {
+      totalPoints += 10;
+    } else {
+      totalPoints += 2;
+    }
+  }
+
+  // 5. Drinking window — up to 10 pts
+  const dwStatus = getWineDrinkWindowStatus(wine);
+  if (dwStatus) {
+    signalCount++;
+    if (dwStatus === 'drink_now')  totalPoints += 10;
+    else if (dwStatus === 'too_young') totalPoints += 5;
+    else if (dwStatus === 'past_peak') totalPoints += 2;
+  }
+
+  // 6. Quantity scarcity — up to 5 pts (fewer bottles = scarcer)
+  const qty = getWineQuantity(wine);
+  if (qty > 0) {
+    signalCount++;
+    if (qty === 1)      totalPoints += 5;
+    else if (qty <= 3)  totalPoints += 3;
+    else if (qty <= 6)  totalPoints += 1;
+  }
+
+  // 7. Replacement difficulty signal — up to 5 pts
+  if (wine.replacement_difficulty) {
+    signalCount++;
+    const rd = wine.replacement_difficulty;
+    if (rd === 'very_hard') totalPoints += 5;
+    else if (rd === 'hard') totalPoints += 3;
+    else if (rd === 'moderate') totalPoints += 1;
+  }
+
+  // Require at least 2 signals for a meaningful score
+  if (signalCount < 2) return null;
+
+  return Math.min(maxPoints, Math.round(totalPoints));
+}
+
+/**
+ * Returns an object with score, label, confidence, factors, and reasoning.
+ * Mirrors WhiskeyKeeper rarity result shape.
+ */
+export function getWineRarityResult(wine) {
+  if (!wine) return null;
+
+  const score = getWineRarityScore(wine);
+
+  if (score === null) {
+    return {
+      score: null,
+      label: null,
+      confidence: 'insufficient',
+      factors: [],
+      reasoning: 'Not enough data to score rarity yet.',
+    };
+  }
+
+  const label =
+    score >= 85 ? 'Exceptional' :
+    score >= 65 ? 'Rare' :
+    score >= 45 ? 'Collectible' :
+    score >= 25 ? 'Notable' :
+    'Common';
+
+  const confidence =
+    getWineValuationConfidence(wine) === 'high' || getWineValuationConfidence(wine) === 'manual'
+      ? 'high'
+      : getWineValuationConfidence(wine) === 'medium' ? 'medium' : 'low';
+
+  const unitValue = getWineUnitValue(wine);
+  const factors = [];
+
+  if (unitValue > 0) factors.push({ label: 'Market Value', note: `$${Math.round(unitValue)}/btl` });
+  if (wine.vintage) factors.push({ label: 'Vintage', note: `${wine.vintage} (${new Date().getFullYear() - Number(wine.vintage)} yrs)` });
+  if (wine.producer) factors.push({ label: 'Producer', note: wine.producer });
+  if (wine.region || wine.appellation) factors.push({ label: 'Region', note: wine.appellation || wine.region });
+  const dwStatus = getWineDrinkWindowStatus(wine);
+  if (dwStatus) factors.push({ label: 'Drinking Window', note: { drink_now: 'Drink Now', too_young: 'Too Young', past_peak: 'Past Peak' }[dwStatus] });
+  if (wine.replacement_difficulty) factors.push({ label: 'Replacement', note: wine.replacement_difficulty.replace('_', ' ') });
+
+  const reasoning = [
+    unitValue > 0 && `Market value $${Math.round(unitValue)}/btl`,
+    wine.vintage && `${new Date().getFullYear() - Number(wine.vintage)}-year-old vintage`,
+    matchesPrestige(wine.producer, PRESTIGE_PRODUCERS) && 'Prestige producer',
+    matchesPrestige([wine.region, wine.appellation, wine.country_of_origin].filter(Boolean).join(' '), PRESTIGE_REGIONS) && 'Prestigious region',
+    dwStatus === 'drink_now' && 'Currently in drinking window',
+  ].filter(Boolean).join('. ') || 'Score based on available data.';
+
+  return { score, label, confidence, factors, reasoning };
+}
+
+/** Convenience export — just the label string. */
+export function getWineRarityLabel(wine) {
+  const result = getWineRarityResult(wine);
+  return result?.label || null;
 }
 
 // ---------------------------------------------------------------------------
@@ -250,4 +410,9 @@ export function selectWineCollectionValue(wines) {
 export function selectUnvaluedWineCount(wines) {
   if (!Array.isArray(wines)) return 0;
   return wines.filter((w) => !hasWineValuation(w)).length;
+}
+
+export function selectWineReadyToDrinkCount(wines) {
+  if (!Array.isArray(wines)) return 0;
+  return wines.filter((w) => getWineDrinkWindowStatus(w) === 'drink_now').length;
 }

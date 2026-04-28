@@ -7,7 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import {
   getWineTotalValue, getWineUnitValue, getWineQuantity,
-  getWineDrinkWindowStatus, getWineRarityScore, getWinePrimaryImage,
+  getWineDrinkWindowStatus, getWineRarityScore, getWineRarityResult, getWinePrimaryImage,
   hasWineValuation, getWineValuationSource, getWineValuationConfidence,
   getWineRegionDisplay,
 } from '@/lib/collection/wineSelectors';
@@ -181,31 +181,26 @@ function ValuationPanel({ wine, formatFromBase, onSaved }) {
 
 // ─── Rarity Panel ────────────────────────────────────────────────────────────
 function RarityPanel({ wine, formatFromBase }) {
-  const score = getWineRarityScore(wine);
-  const unitValue = getWineUnitValue(wine);
-  const hasVintage = !!wine.vintage;
-  const dwStatus = getWineDrinkWindowStatus(wine);
+  const result = getWineRarityResult(wine);
 
-  const factors = [
-    hasVintage && { label: 'Vintage', note: `${wine.vintage} (${new Date().getFullYear() - Number(wine.vintage)} years)` },
-    unitValue > 0 && { label: 'Market Value', note: formatFromBase(unitValue) + '/btl' },
-    dwStatus && { label: 'Drinking Window', note: DRINK_WINDOW_LABELS[dwStatus] },
-    wine.producer && { label: 'Producer', note: wine.producer },
-    wine.region && { label: 'Region', note: wine.region },
-  ].filter(Boolean);
-
-  if (score === null) {
+  if (!result || result.score === null) {
     return (
       <div className="text-center py-6" style={{ color: 'rgba(224,216,200,0.4)' }}>
         <BarChart2 className="w-8 h-8 mx-auto mb-2 opacity-30" />
-        <p className="text-sm">Not enough data to score rarity yet.</p>
-        <p className="text-xs mt-1">Add vintage, region, and valuation to generate a score.</p>
+        <p className="text-sm font-medium">Not enough data to score rarity yet.</p>
+        <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.3)' }}>Add vintage, producer, region, and valuation to generate a score.</p>
       </div>
     );
   }
 
-  const color = score >= 70 ? '#D4A574' : score >= 40 ? '#6B8FC4' : '#C47070';
-  const label = score >= 70 ? 'Collectible' : score >= 40 ? 'Notable' : 'Common';
+  const { score, label, confidence, factors, reasoning } = result;
+
+  const color =
+    score >= 85 ? '#D4A574' :
+    score >= 65 ? '#C47070' :
+    score >= 45 ? '#6B8FC4' :
+    score >= 25 ? '#7EB584' :
+    'rgba(224,216,200,0.5)';
 
   return (
     <div className="space-y-4">
@@ -216,26 +211,38 @@ function RarityPanel({ wine, formatFromBase }) {
         <div>
           <p className="text-base font-semibold" style={{ color }}>{label}</p>
           <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>Collectibility score out of 100</p>
+          {confidence && confidence !== 'insufficient' && (
+            <span className="text-xs px-2 py-0.5 rounded-full mt-1 inline-block" style={{
+              background: confidence === 'high' ? 'rgba(46,125,92,0.12)' : confidence === 'medium' ? 'rgba(180,140,75,0.12)' : 'rgba(139,58,58,0.12)',
+              color: confidence === 'high' ? '#4EAD80' : confidence === 'medium' ? '#D4A574' : '#C47070',
+              border: `1px solid ${confidence === 'high' ? 'rgba(46,125,92,0.25)' : confidence === 'medium' ? 'rgba(180,140,75,0.25)' : 'rgba(139,58,58,0.25)'}`,
+            }}>
+              {confidence} confidence
+            </span>
+          )}
         </div>
       </div>
 
       {/* Score bar */}
       <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-        <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, background: `linear-gradient(90deg, ${color}88, ${color})` }} />
+        <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, background: `linear-gradient(90deg, ${color}66, ${color})` }} />
       </div>
 
-      <div className="space-y-1.5">
-        {factors.map((f, i) => (
-          <div key={i} className="flex justify-between items-center text-sm py-1" style={{ borderBottom: '1px solid rgba(180,140,75,0.06)' }}>
-            <span style={{ color: 'rgba(224,216,200,0.55)' }}>{f.label}</span>
-            <span style={{ color: '#F5F1E7' }}>{f.note}</span>
-          </div>
-        ))}
-      </div>
+      {/* Contributing factors */}
+      {factors.length > 0 && (
+        <div className="space-y-1.5">
+          {factors.map((f, i) => (
+            <div key={i} className="flex justify-between items-center text-sm py-1" style={{ borderBottom: '1px solid rgba(180,140,75,0.06)' }}>
+              <span style={{ color: 'rgba(224,216,200,0.55)' }}>{f.label}</span>
+              <span style={{ color: '#F5F1E7' }}>{f.note}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
-      <p className="text-xs" style={{ color: 'rgba(224,216,200,0.35)' }}>
-        Score is based on vintage age, market value, and drinking window. Add more data to improve accuracy.
-      </p>
+      {reasoning && (
+        <p className="text-xs italic" style={{ color: 'rgba(224,216,200,0.4)' }}>{reasoning}</p>
+      )}
     </div>
   );
 }
@@ -461,13 +468,16 @@ export default function WineDetail() {
         <div className="lg:col-span-1 space-y-4">
           {/* Hero card */}
           <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(42,28,20,0.9)', border: '1px solid rgba(139,58,58,0.3)' }}>
-            {photo ? (
-              <img src={photo} alt={wine.name} className="w-full aspect-[3/4] object-cover" />
-            ) : (
-              <div className="w-full aspect-[3/4] flex items-center justify-center" style={{ background: 'rgba(139,58,58,0.06)' }}>
-                <Wine className="w-20 h-20" style={{ color: 'rgba(139,58,58,0.25)' }} />
-              </div>
-            )}
+            {/* Hero image — object-contain so full bottle shows, same treatment as WhiskeyKeeper */}
+            <div className="w-full bg-gradient-to-b from-[#3d2020] to-[#200f0f]" style={{ minHeight: '280px' }}>
+              {photo ? (
+                <img src={photo} alt={wine.name} className="w-full object-contain" style={{ maxHeight: '360px', minHeight: '280px' }} />
+              ) : (
+                <div className="w-full flex items-center justify-center" style={{ minHeight: '280px', background: 'rgba(139,58,58,0.06)' }}>
+                  <Wine className="w-20 h-20" style={{ color: 'rgba(139,58,58,0.25)' }} />
+                </div>
+              )}
+            </div>
             <div className="px-4 pb-2">
               <InlinePhotoEditor
                 photos={wine.photos || []}

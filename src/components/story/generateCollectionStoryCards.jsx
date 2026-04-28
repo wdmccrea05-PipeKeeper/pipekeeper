@@ -11,7 +11,7 @@
  * takes raw collection arrays. Do not merge them — different data shapes.
  */
 
-import { Star, Leaf, TrendingUp, Award, Sparkles, BarChart3, Heart, Flame, Droplets } from 'lucide-react';
+import { Star, Leaf, TrendingUp, Award, Sparkles, BarChart3, Heart, Flame, Droplets, Wine } from 'lucide-react';
 
 /**
  * @param {Object} story - enriched story object with .highlights, .metrics, .narrative
@@ -30,20 +30,23 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   const hasWhiskey = enabledModules.length === 0 || enabledModules.includes('whiskeykeeper');
   const hasPipe = enabledModules.length === 0 || enabledModules.includes('pipekeeper');
   const hasCigar = enabledModules.length === 0 || enabledModules.includes('cigarkeeper');
-  const isCombined = (hasWhiskey ? 1 : 0) + (hasPipe ? 1 : 0) + (hasCigar ? 1 : 0) >= 2;
+  const hasWine = enabledModules.length === 0 || enabledModules.includes('winekeeper');
+  const isCombined = (hasWhiskey ? 1 : 0) + (hasPipe ? 1 : 0) + (hasCigar ? 1 : 0) + (hasWine ? 1 : 0) >= 2;
 
   const cards = [];
 
   // 1. Opening snapshot — module-aware
-  const moduleNames = [hasPipe && 'pipes', hasWhiskey && 'whiskey', hasCigar && 'cigars'].filter(Boolean);
-  const openingLabel = isCombined ? 'Collection Snapshot' : hasPipe ? 'Pipe & Tobacco Snapshot' : hasCigar ? 'Cigar Snapshot' : 'Whiskey Snapshot';
+  const moduleNames = [hasPipe && 'pipes', hasWhiskey && 'whiskey', hasCigar && 'cigars', hasWine && 'wine'].filter(Boolean);
+  const openingLabel = isCombined ? 'Collection Snapshot' : hasPipe ? 'Pipe & Tobacco Snapshot' : hasCigar ? 'Cigar Snapshot' : hasWine ? 'Wine Snapshot' : 'Whiskey Snapshot';
   const openingSubtitle = isCombined
     ? `A curated collection across ${moduleNames.join(', ')}.`
     : hasPipe
       ? 'A curated pipe and tobacco collection.'
       : hasCigar
         ? 'A curated cigar collection.'
-        : 'A curated whiskey collection.';
+        : hasWine
+          ? 'A curated wine collection.'
+          : 'A curated whiskey collection.';
 
   cards.push({
     title: openingLabel,
@@ -176,6 +179,57 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     });
   }
 
+  // 4f. Most valuable wine
+  if (hasWine && h.mostValuableWine) {
+    const record = h.mostValuableWine._record || null;
+    const photo = record?.photos?.[0] || record?.photo || null;
+    cards.push({
+      title: h.mostValuableWine.name,
+      value: h.mostValuableWine.name,
+      sub: h.mostValuableWine.value ? `Valued at ${fmt(h.mostValuableWine.value)}` : 'Top wine in your cellar',
+      accent: '#8B4B6B',
+      icon: Wine,
+      heroImage: photo,
+      bgImage: photo,
+      silhouetteType: 'wine',
+      label: 'Top Wine',
+    });
+  }
+
+  // 4g. Top rated wine
+  if (hasWine && h.topRatedWine) {
+    const record = h.topRatedWine._record || null;
+    const photo = record?.photos?.[0] || record?.photo || null;
+    cards.push({
+      title: h.topRatedWine.name,
+      value: h.topRatedWine.name,
+      sub: h.topRatedWine.rating ? `${h.topRatedWine.rating}★ rated` : 'Top rated wine',
+      accent: '#A0567A',
+      icon: Star,
+      heroImage: photo,
+      bgImage: photo,
+      silhouetteType: 'wine',
+      label: 'Top Rated Wine',
+    });
+  }
+
+  // 4h. Wine ready to drink
+  if (hasWine && h.readyToDrinkWine) {
+    const record = h.readyToDrinkWine._record || null;
+    const photo = record?.photos?.[0] || record?.photo || null;
+    cards.push({
+      title: h.readyToDrinkWine.name,
+      value: h.readyToDrinkWine.name,
+      sub: `Drink Now${h.readyToDrinkWine.vintage ? ` · ${h.readyToDrinkWine.vintage}` : ''}`,
+      accent: '#2E7D5C',
+      icon: Droplets,
+      heroImage: photo,
+      bgImage: photo,
+      silhouetteType: 'wine',
+      label: 'Ready to Drink',
+    });
+  }
+
   // 5. Crown jewel (most valuable item)
   if (h.mostValuableItem) {
     const record = h.mostValuableItem._record || null;
@@ -212,7 +266,8 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   const pipeCount = hasPipe ? (m.pipes || 0) + (m.blends || 0) : 0;
   const bottleCount = hasWhiskey ? (m.totalBottles || 0) : 0;
   const cigarCount = hasCigar ? (m.cigarTypes || m.cigars || 0) : 0;
-  const hasCounts = pipeCount + bottleCount + cigarCount > 0;
+  const wineCount = hasWine ? (m.wineBottles || m.wines || 0) : 0;
+  const hasCounts = pipeCount + bottleCount + cigarCount + wineCount > 0;
   if (hasCounts) {
     const parts = [];
     if (hasPipe && m.pipes) parts.push(`${m.pipes} pipe${m.pipes !== 1 ? 's' : ''}`);
@@ -226,7 +281,14 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
       const cs = m.totalCigarSticks || m.cigarSticks;
       parts.push(`${cs} stick${cs !== 1 ? 's' : ''}`);
     }
-    const countLabel = isCombined ? 'By the Numbers' : hasPipe ? 'Collection Count' : hasCigar ? 'Cigar Count' : 'Bottle Count';
+    if (hasWine && (m.wineBottles || m.wines)) {
+      const wb = m.wineBottles || m.wines;
+      parts.push(`${wb} wine bottle${wb !== 1 ? 's' : ''}`);
+    }
+    if (hasWine && m.wineTastings) {
+      parts.push(`${m.wineTastings} wine tasting${m.wineTastings !== 1 ? 's' : ''}`);
+    }
+    const countLabel = isCombined ? 'By the Numbers' : hasPipe ? 'Collection Count' : hasCigar ? 'Cigar Count' : hasWine ? 'Wine Collection' : 'Bottle Count';
     cards.push({
       title: countLabel,
       value: parts[0] || 'Your Collection',
@@ -252,20 +314,22 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     });
   }
 
-  // 8. Sessions / tastings / cigar sessions
+  // 8. Sessions / tastings / cigar sessions / wine tastings
   const sessions = hasPipe ? Number(m.sessions || 0) : 0;
   const tastings = hasWhiskey ? Number(m.tastings || 0) : 0;
   const cigarSessions = hasCigar ? Number(m.cigarSessions || 0) : 0;
-  if (sessions + tastings + cigarSessions > 0) {
+  const wineTastings = hasWine ? Number(m.wineTastings || 0) : 0;
+  if (sessions + tastings + cigarSessions + wineTastings > 0) {
     const desc = [
       sessions > 0 ? `${sessions} smoke${sessions !== 1 ? 's' : ''}` : null,
       tastings > 0 ? `${tastings} tasting${tastings !== 1 ? 's' : ''}` : null,
       cigarSessions > 0 ? `${cigarSessions} cigar session${cigarSessions !== 1 ? 's' : ''}` : null,
+      wineTastings > 0 ? `${wineTastings} wine tasting${wineTastings !== 1 ? 's' : ''}` : null,
     ].filter(Boolean).join(' · ');
-    const expLabel = isCombined ? 'Experiences Logged' : hasPipe ? 'Smoking Sessions' : hasCigar ? 'Cigar Sessions' : 'Tastings Logged';
+    const expLabel = isCombined ? 'Experiences Logged' : hasPipe ? 'Smoking Sessions' : hasCigar ? 'Cigar Sessions' : hasWine ? 'Wine Tastings' : 'Tastings Logged';
     cards.push({
       title: expLabel,
-      value: (sessions || 0) + (tastings || 0) + (cigarSessions || 0),
+      value: sessions + tastings + cigarSessions + wineTastings,
       sub: desc,
       accent: '#8B5CF6',
       icon: Flame,
