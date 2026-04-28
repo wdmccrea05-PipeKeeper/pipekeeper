@@ -17,6 +17,7 @@ const t = (key) => ({
 const formatFromBase = (value) => `$${Number(value || 0).toFixed(0)}`;
 const getPipeValue = (pipe) => Number(pipe?.value || 0);
 const getBottleValue = (bottle) => Number(bottle?.value || 0);
+const getWineTotalValue = (wine) => Number(wine?.__totalValue || wine?.estimated_total_value || 0);
 
 describe('buildHubHighlightCandidates', () => {
   it('includes cigar highlight cards when cigar data is meaningful', () => {
@@ -65,4 +66,59 @@ describe('buildHubHighlightCandidates', () => {
     expect(cards.some((card) => card.recordType === 'pipe')).toBe(true);
     expect(cards.some((card) => card.recordType === 'bottle')).toBe(true);
   });
+
+  it('includes wine highlight cards with objectMode="bottle" when wine data is present', () => {
+    const wine = {
+      id: 'wine1',
+      name: 'Château Margaux',
+      vintage: '2015',
+      rating: 4.8,
+      __totalValue: 1500,
+      __primaryImage: 'https://example.com/margaux.jpg',
+    };
+    const ratedWine = {
+      id: 'wine2',
+      name: 'Opus One',
+      vintage: '2018',
+      rating: 4.6,
+      __primaryImage: null,
+    };
+    const cards = buildHubHighlightCandidates({
+      winekeeperOpenable: true,
+      t,
+      formatFromBase,
+      getPipeValue,
+      getBottleValue,
+      getWineTotalValue,
+      metrics: {
+        mostValuableWine: wine,
+        topRatedWine: ratedWine,
+      },
+    });
+
+    const wineCards = cards.filter((card) => card.recordType === 'wine');
+    expect(wineCards.length).toBeGreaterThan(0);
+    wineCards.forEach((card) => {
+      expect(card.objectMode).toBe('bottle');
+    });
+  });
+
+  it('wine highlight cards include the correct route and score', () => {
+    const wine = { id: 'wine1', name: 'Penfolds Grange', __totalValue: 800, __primaryImage: null };
+    const cards = buildHubHighlightCandidates({
+      winekeeperOpenable: true,
+      t,
+      formatFromBase,
+      getPipeValue,
+      getBottleValue,
+      getWineTotalValue,
+      metrics: { mostValuableWine: wine },
+    });
+
+    const wineCard = cards.find((c) => c.recordType === 'wine');
+    expect(wineCard).toBeTruthy();
+    expect(wineCard.route).toContain('/WineDetail');
+    expect(wineCard.score).toBeGreaterThan(0);
+  });
 });
+

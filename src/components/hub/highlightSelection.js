@@ -41,17 +41,20 @@ export function buildHubHighlightCandidates({
   pipekeeperOpenable = false,
   whiskeyOpenable = false,
   cigarOpenable = false,
+  winekeeperOpenable = false,
   metrics = {},
   t = defaultTranslate,
   formatFromBase = (value) => `$${toNumber(value).toFixed(0)}`,
   getPipeValue = () => 0,
   getBottleValue = () => 0,
+  getWineTotalValue = () => 0,
 } = {}) {
   const pipeValue = toNumber(getPipeValue(metrics.mostValuablePipe));
   const bottleValue = toNumber(getBottleValue(metrics.mostValuableBottle));
   const cigarValue = toNumber(metrics.highestValueCigar?.__totalValue || 0);
   const cigarCrownJewelValue = toNumber(metrics.cigarCrownJewel?.__totalValue || 0);
   const restockQty = cigarQuantity(metrics.restockPriorityCigar);
+  const wineValue = metrics.mostValuableWine ? toNumber(getWineTotalValue(metrics.mostValuableWine)) : 0;
 
   const cards = [
     pipekeeperOpenable && metrics.mostSmokedPipe ? {
@@ -196,6 +199,49 @@ export function buildHubHighlightCandidates({
       accent: '#D4A574',
       route: `/CigarDetail?id=${encodeURIComponent(metrics.cigarCrownJewel.id)}`,
       score: 78 + Math.min(25, cigarCrownJewelValue / 30) + toNumber(metrics.cigarCrownJewel.rating) * 2,
+    } : null,
+    // WineKeeper highlights
+    winekeeperOpenable && metrics.mostValuableWine && wineValue > 0 ? {
+      id: 'top-wine',
+      recordType: 'wine',
+      recordId: metrics.mostValuableWine.id,
+      title: t('hub.topWine', 'Top Wine'),
+      value: metrics.mostValuableWine.name,
+      subtitle: formatFromBase(wineValue),
+      heroImage: metrics.mostValuableWine.__primaryImage || metrics.mostValuableWine.photos?.[0],
+      bgImage: metrics.mostValuableWine.__primaryImage || metrics.mostValuableWine.photos?.[0],
+      accent: '#8B4B6B',
+      objectMode: 'bottle',
+      route: `/WineDetail?id=${encodeURIComponent(metrics.mostValuableWine.id)}`,
+      score: 71 + Math.min(29, wineValue / 40),
+    } : null,
+    winekeeperOpenable && metrics.topRatedWine && toNumber(metrics.topRatedWine.rating) >= 4 ? {
+      id: 'top-rated-wine',
+      recordType: 'wine',
+      recordId: metrics.topRatedWine.id,
+      title: t('hub.topRatedWine', 'Top Rated Wine'),
+      value: metrics.topRatedWine.name,
+      subtitle: `${toNumber(metrics.topRatedWine.rating).toFixed(1)}/5`,
+      heroImage: metrics.topRatedWine.__primaryImage || metrics.topRatedWine.photos?.[0],
+      bgImage: metrics.topRatedWine.__primaryImage || metrics.topRatedWine.photos?.[0],
+      accent: '#A0567A',
+      objectMode: 'bottle',
+      route: `/WineDetail?id=${encodeURIComponent(metrics.topRatedWine.id)}`,
+      score: 75 + toNumber(metrics.topRatedWine.rating) * 3,
+    } : null,
+    winekeeperOpenable && metrics.readyToDrinkWine ? {
+      id: 'ready-to-drink-wine',
+      recordType: 'wine',
+      recordId: metrics.readyToDrinkWine.id,
+      title: t('hub.readyToDrink', 'Ready to Drink'),
+      value: metrics.readyToDrinkWine.name,
+      subtitle: `Drink Now${metrics.readyToDrinkWine.vintage ? ` · ${metrics.readyToDrinkWine.vintage}` : ''}`,
+      heroImage: metrics.readyToDrinkWine.__primaryImage || metrics.readyToDrinkWine.photos?.[0],
+      bgImage: metrics.readyToDrinkWine.__primaryImage || metrics.readyToDrinkWine.photos?.[0],
+      accent: '#2E7D5C',
+      objectMode: 'bottle',
+      route: `/WineDetail?id=${encodeURIComponent(metrics.readyToDrinkWine.id)}`,
+      score: 68 + (metrics.readyToDrinkWine.is_favorite ? 10 : 0),
     } : null,
   ];
 

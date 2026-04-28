@@ -18,7 +18,7 @@ export default function HeroHighlightCard({
   objectMode = 'cover',
   className,
 }) {
-  const isBotleMode = objectMode === 'bottle';
+  const isBottleMode = objectMode === 'bottle';
   const isContainMode = objectMode === 'contain';
 
   return (
@@ -30,19 +30,31 @@ export default function HeroHighlightCard({
         boxShadow: '0 12px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)',
       }}
     >
-      {/* Background layer */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: photo ? `url('${photo}')` : `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
-          backgroundSize: isContainMode ? 'contain' : 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
+      {/* Background layer — suppressed in bottle mode (blurred bg used instead) */}
+      {!isBottleMode && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: photo ? `url('${photo}')` : `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
+            backgroundSize: isContainMode ? 'contain' : 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+      )}
+
+      {/* Fallback gradient for bottle mode when no photo */}
+      {isBottleMode && !photo && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
+          }}
+        />
+      )}
 
       {/* Blurred background layer for bottle mode */}
-      {isBotleMode && photo && (
+      {isBottleMode && photo && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -75,18 +87,18 @@ export default function HeroHighlightCard({
       />
 
       {/* Foreground image layer for bottle mode */}
-      {isBotleMode && photo && (
+      {isBottleMode && photo && (
         <div
           className="absolute inset-0 flex items-center justify-end pointer-events-none"
-          style={{ paddingRight: '8%' }}
+          style={{ paddingRight: '6%' }}
         >
           <img
             src={photo}
             alt=""
             className="object-contain"
             style={{
-              maxHeight: '92%',
-              maxWidth: '55%',
+              maxHeight: '88%',
+              maxWidth: '44%',
               filter: `drop-shadow(0 0 20px ${accent}50) drop-shadow(0 8px 16px rgba(0,0,0,0.7))`,
             }}
           />
@@ -112,8 +124,11 @@ export default function HeroHighlightCard({
           {title}
         </div>
 
-        {/* Bottom-anchored text */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
+        {/* Bottom-anchored text — constrained to left 55% in bottle mode to avoid foreground overlap */}
+        <div
+          className="absolute bottom-0 left-0 p-4 sm:p-6"
+          style={isBottleMode ? { maxWidth: '55%', right: 'auto' } : { right: 0 }}
+        >
           {/* Main value */}
           <div
             className="text-lg sm:text-2xl font-bold leading-tight line-clamp-2 mb-1"
