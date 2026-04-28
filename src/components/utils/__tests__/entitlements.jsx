@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Unit tests for buildEntitlements (entitlements.jsx)
  *

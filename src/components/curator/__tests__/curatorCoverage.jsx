@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Curator Coverage & Anti-Repetition Tests
  *

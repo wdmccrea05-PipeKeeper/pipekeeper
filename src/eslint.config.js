@@ -1,6 +1,10 @@
 export default [
   {
     ignores: [
+      // Extensionless test/spec files (no .js/.jsx extension — linter treats as plain JS)
+      '**/*.test',
+      '**/*.spec',
+      // Standard test file extensions
       'src/**/__tests__/**',
       'src/**/*.test.js',
       'src/**/*.test.jsx',
@@ -22,7 +26,7 @@ export default [
     ],
   },
   {
-    // All files — disable the two rules that cause noise
+    // All app files — disable the two rules that cause noise
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
     languageOptions: {
       ecmaVersion: 2022,
@@ -60,7 +64,7 @@ export default [
         Set: 'readonly',
         Symbol: 'readonly',
         process: 'readonly',
-        // Vitest / Jest globals — declared globally so ALL files see them
+        // Vitest / Jest globals
         describe: 'readonly',
         test: 'readonly',
         it: 'readonly',
@@ -76,13 +80,6 @@ export default [
     rules: {
       'no-undef': 'off',
       'no-unused-vars': 'off',
-    },
-  },
-  {
-    // Test files — explicitly disable no-undef (vitest globals may be imported or injected)
-    files: ['**/__tests__/**', '**/*.test.*', '**/*.spec.*'],
-    rules: {
-      'no-undef': 'off',
     },
   },
 ];
