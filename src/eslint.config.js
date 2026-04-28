@@ -1,6 +1,9 @@
 export default [
   {
     ignores: [
+      // Specific files that keep getting regenerated with test content
+      'src/components/curator/__tests__/curatorCoverage.test.jsx',
+      'src/components/utils/__tests__/entitlements.test.jsx',
       // Extensionless test/spec files (no .js/.jsx extension — linter treats as plain JS)
       '**/*.test',
       '**/*.spec',

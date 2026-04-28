@@ -26,7 +26,7 @@ function resolveWineDisplayValue(wine) {
   return null;
 }
 
-function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWantList, formatFromBase, t }) {
+function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWantList, formatFromBase, t, navigate }) {
   const drinkingStatus = useMemo(() => {
     if (!wine.drinking_window_start || !wine.drinking_window_end) return null;
     const now = new Date();
@@ -39,8 +39,13 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
 
   return (
     <div
-      className="rounded-xl overflow-hidden transition-all hover:shadow-lg"
+      className="rounded-xl overflow-hidden transition-all hover:shadow-lg cursor-pointer"
       style={{ background: 'rgba(42,28,20,0.85)', border: '1px solid rgba(139,58,58,0.28)' }}
+      onClick={(e) => {
+        // Don't navigate if clicking action buttons
+        if (e.target.closest('button')) return;
+        navigate(`/WineDetail?id=${wine.id}`);
+      }}
     >
       {wine.photos?.[0] ? (
         <div className="h-32 overflow-hidden">
@@ -266,6 +271,7 @@ export default function Wines() {
               onEnriched={() => queryClient.invalidateQueries({ queryKey: ['wines', user?.email] })}
               formatFromBase={formatFromBase}
               t={t}
+              navigate={navigate}
             />
           ))}
         </div>

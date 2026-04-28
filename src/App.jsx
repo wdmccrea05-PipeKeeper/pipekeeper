@@ -37,6 +37,7 @@ import SupportPublic from "@/pages/SupportPublic";
 import CigarKeeper from "@/pages/CigarKeeper";
 import Cigars from "@/pages/Cigars";
 import WineKeeper from "@/pages/WineKeeper";
+import WineDetail from "@/pages/WineDetail";
 import Wines from "@/pages/Wines";
 import WineInsights from "@/pages/WineInsights";
 import CigarDetail from "@/pages/CigarDetail";
@@ -401,6 +402,15 @@ const AuthenticatedApp = () => {
         element={
           <WineReleaseRoute currentPageName="Wines">
             <Wines />
+          </WineReleaseRoute>
+        }
+      />
+
+      <Route
+        path="/WineDetail"
+        element={
+          <WineReleaseRoute currentPageName="WineDetail">
+            <WineDetail />
           </WineReleaseRoute>
         }
       />
