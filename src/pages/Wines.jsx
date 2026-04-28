@@ -5,7 +5,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Wine, Plus, Search, Star, Edit2, Trash2, Heart, BookmarkPlus } from 'lucide-react';
+import { Wine, Plus, Search, Star, Edit2, Trash2, BookmarkPlus, Filter, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import WineForm from '@/components/wine/WineForm';
@@ -14,112 +14,127 @@ import AddFlowModal from '@/components/addflow/AddFlowModal';
 import EnrichButton from '@/components/shared/EnrichButton';
 import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import {
+  getWineTotalValue, getWineQuantity, getWineDrinkWindowStatus,
+  getWinePrimaryImage, sortWines, filterWines, searchWines,
+  hasWineValuation, getWineValuationConfidence,
+} from '@/lib/collection/wineSelectors';
 
-function resolveWineDisplayValue(wine) {
-  const qty = wine.quantity || 1;
-  if (wine.manual_valuation_enabled && wine.manual_estimated_value > 0) return wine.manual_estimated_value * qty;
-  if (wine.estimated_total_value > 0) return wine.estimated_total_value;
-  if (wine.market_estimated_total_value > 0) return wine.market_estimated_total_value;
-  if (wine.estimated_unit_value > 0) return wine.estimated_unit_value * qty;
-  if (wine.market_estimated_unit_value > 0) return wine.market_estimated_unit_value * qty;
-  if (wine.estimated_value > 0) return wine.estimated_value * qty;
-  return null;
-}
+const SORT_OPTIONS = [
+  { value: 'name_asc', label: 'Name A–Z' },
+  { value: 'name_desc', label: 'Name Z–A' },
+  { value: 'producer_asc', label: 'Producer A–Z' },
+  { value: 'vintage_desc', label: 'Vintage Newest' },
+  { value: 'vintage_asc', label: 'Vintage Oldest' },
+  { value: 'value_desc', label: 'Highest Value' },
+  { value: 'value_asc', label: 'Lowest Value' },
+  { value: 'rating_desc', label: 'Highest Rating' },
+  { value: 'quantity_desc', label: 'Most Bottles' },
+  { value: 'drink_now', label: 'Drink Now' },
+  { value: 'drink_window', label: 'Drink Soon' },
+  { value: 'region_asc', label: 'Region' },
+  { value: 'varietal_asc', label: 'Varietal' },
+  { value: 'style_asc', label: 'Style' },
+  { value: 'recently_added', label: 'Recently Added' },
+  { value: 'recently_updated', label: 'Recently Updated' },
+  { value: 'needs_valuation', label: 'Needs Valuation' },
+];
 
-function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWantList, formatFromBase, t, navigate }) {
-  const drinkingStatus = useMemo(() => {
-    if (!wine.drinking_window_start || !wine.drinking_window_end) return null;
-    const now = new Date();
-    const start = new Date(wine.drinking_window_start);
-    const end = new Date(wine.drinking_window_end);
-    if (now < start) return { label: t('wine.tooYoung', 'Too Young'), color: '#6B8FC4' };
-    if (now > end) return { label: t('wine.pastPeak', 'Past Peak'), color: '#A35C5C' };
-    return { label: t('wine.drinkNow', 'Drink Now'), color: '#2E7D5C' };
-  }, [wine, t]);
+const STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
+const DRINK_WINDOW_LABELS = { drink_now: 'Drink Now', too_young: 'Too Young', past_peak: 'Past Peak' };
+const DRINK_WINDOW_COLORS = { drink_now: '#2E7D5C', too_young: '#6B8FC4', past_peak: '#A35C5C' };
+
+function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWantList, formatFromBase, navigate }) {
+  const dwStatus = getWineDrinkWindowStatus(wine);
+  const totalValue = getWineTotalValue(wine);
+  const confidence = getWineValuationConfidence(wine);
+  const photo = getWinePrimaryImage(wine);
 
   return (
     <div
-      className="rounded-xl overflow-hidden transition-all hover:shadow-lg cursor-pointer"
+      className="rounded-xl overflow-hidden transition-all hover:shadow-lg cursor-pointer flex flex-col"
       style={{ background: 'rgba(42,28,20,0.85)', border: '1px solid rgba(139,58,58,0.28)' }}
       onClick={(e) => {
-        // Don't navigate if clicking action buttons
         if (e.target.closest('button')) return;
         navigate(`/WineDetail?id=${wine.id}`);
       }}
     >
-      {wine.photos?.[0] ? (
+      {photo ? (
         <div className="h-32 overflow-hidden">
-          <img src={wine.photos[0]} alt={wine.name} className="w-full h-full object-cover" />
+          <img src={photo} alt={wine.name} className="w-full h-full object-cover" />
         </div>
       ) : (
-        <div className="h-32 flex items-center justify-center" style={{ background: 'rgba(139,58,58,0.1)' }}>
-          <Wine className="w-10 h-10" style={{ color: 'rgba(139,58,58,0.4)' }} />
+        <div className="h-32 flex items-center justify-center" style={{ background: 'rgba(139,58,58,0.08)' }}>
+          <Wine className="w-10 h-10" style={{ color: 'rgba(139,58,58,0.3)' }} />
         </div>
       )}
 
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="font-semibold text-sm truncate" style={{ color: '#F5F1E7' }}>{wine.name}</h3>
-            <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(224,216,200,0.6)' }}>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold text-sm leading-snug" style={{ color: '#F5F1E7' }}>{wine.name}</h3>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.65)' }}>
               {[wine.producer, wine.vintage].filter(Boolean).join(' · ')}
             </p>
-            {wine.region && (
-              <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{wine.region}</p>
+            {(wine.region || wine.appellation) && (
+              <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(224,216,200,0.45)' }}>
+                {wine.appellation || wine.region}
+              </p>
+            )}
+            {wine.varietal && (
+              <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(224,216,200,0.4)' }}>{wine.varietal}</p>
             )}
           </div>
           {wine.rating > 0 && (
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1 shrink-0 mt-0.5">
               <Star className="w-3 h-3" style={{ color: '#C47070', fill: '#C47070' }} />
               <span className="text-xs font-semibold" style={{ color: '#C47070' }}>{wine.rating}</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-2 mt-3 flex-wrap">
-          {drinkingStatus && (
-            <span
-              className="text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ background: `${drinkingStatus.color}22`, color: drinkingStatus.color, border: `1px solid ${drinkingStatus.color}44` }}
-            >
-              {drinkingStatus.label}
+        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+          {wine.style && (
+            <span className="text-xs px-2 py-0.5 rounded-full capitalize" style={{ background: 'rgba(139,58,58,0.12)', color: '#C47070', border: '1px solid rgba(139,58,58,0.22)' }}>
+              {wine.style}
             </span>
           )}
-          {wine.quantity > 1 && (
-            <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              ×{wine.quantity} {t('wine.bottles', 'btls')}
+          {dwStatus && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${DRINK_WINDOW_COLORS[dwStatus]}22`, color: DRINK_WINDOW_COLORS[dwStatus], border: `1px solid ${DRINK_WINDOW_COLORS[dwStatus]}44` }}>
+              {DRINK_WINDOW_LABELS[dwStatus]}
             </span>
           )}
-          {(() => {
-            const displayVal = resolveWineDisplayValue(wine);
-            if (!displayVal) return (
-              <span className="text-xs ml-auto italic" style={{ color: 'rgba(224,216,200,0.35)' }}>Not valued yet</span>
-            );
-            const conf = wine.valuation_confidence || wine.market_valuation_confidence;
-            return (
-              <span className="text-xs ml-auto" style={{ color: conf === 'low' ? 'rgba(224,216,200,0.45)' : 'rgba(224,216,200,0.65)' }}>
-                {conf === 'low' ? '~' : ''}{formatFromBase(displayVal)}
-              </span>
-            );
-          })()}
+          {getWineQuantity(wine) > 1 && (
+            <span className="text-xs" style={{ color: 'rgba(224,216,200,0.45)' }}>×{getWineQuantity(wine)}</span>
+          )}
         </div>
 
-        <div className="flex gap-2 mt-3">
+        <div className="mt-auto pt-2">
+          {totalValue > 0 ? (
+            <span className="text-xs" style={{ color: confidence === 'low' ? 'rgba(224,216,200,0.45)' : 'rgba(224,216,200,0.65)' }}>
+              {confidence === 'low' ? '~' : ''}{formatFromBase(totalValue)}
+            </span>
+          ) : (
+            <span className="text-xs italic" style={{ color: 'rgba(224,216,200,0.3)' }}>Not valued</span>
+          )}
+        </div>
+
+        <div className="flex gap-1.5 mt-3">
           <button
             onClick={() => onLogTasting(wine)}
-            className="flex-1 text-xs py-1.5 rounded-lg font-medium transition-all"
+            className="flex-1 text-xs py-1.5 rounded-lg font-medium"
             style={{ background: 'rgba(139,58,58,0.2)', color: '#C47070', border: '1px solid rgba(139,58,58,0.3)' }}
           >
-            {t('wine.logTasting', 'Log Tasting')}
+            Log Tasting
           </button>
           <EnrichButton itemType="wine" record={wine} onEnriched={onEnriched} />
-          <button onClick={() => onAddToWantList(wine)} className="p-1.5 rounded-lg transition-opacity hover:opacity-70" title="Add to Want List" style={{ color: 'rgba(224,216,200,0.5)' }}>
+          <button onClick={() => onAddToWantList(wine)} className="p-1.5 rounded-lg hover:opacity-70" title="Add to Want List" style={{ color: 'rgba(224,216,200,0.5)' }}>
             <BookmarkPlus className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => onEdit(wine)} className="p-1.5 rounded-lg transition-opacity hover:opacity-70" style={{ color: 'rgba(224,216,200,0.5)' }}>
+          <button onClick={() => onEdit(wine)} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: 'rgba(224,216,200,0.5)' }}>
             <Edit2 className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => onDelete(wine)} className="p-1.5 rounded-lg transition-opacity hover:opacity-70" style={{ color: 'rgba(224,216,200,0.4)' }}>
+          <button onClick={() => onDelete(wine)} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: 'rgba(224,216,200,0.35)' }}>
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -129,20 +144,21 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
 }
 
 export default function Wines() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const urlParams = new URLSearchParams(window.location.search);
-  const [showForm, setShowForm] = useState(false);
   const [showAddModal, setShowAddModal] = useState(urlParams.get('action') === 'add');
   const [editingWine, setEditingWine] = useState(null);
   const [tastingWine, setTastingWine] = useState(null);
   const [wantListWine, setWantListWine] = useState(null);
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('name');
+  const [sortBy, setSortBy] = useState('name_asc');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({});
 
   const { data: wines = [], isLoading } = useQuery({
     queryKey: ['wines', user?.email],
@@ -160,76 +176,54 @@ export default function Wines() {
   });
 
   const filtered = useMemo(() => {
-    let list = [...wines];
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter((w) =>
-        [w.name, w.producer, w.region, w.varietal, w.vintage?.toString()].some((v) => v?.toLowerCase().includes(q))
-      );
-    }
-    list.sort((a, b) => {
-      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
-      if (sortBy === 'producer') return (a.producer || '').localeCompare(b.producer || '');
-      if (sortBy === 'vintage') return (b.vintage || 0) - (a.vintage || 0);
-      if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
-      if (sortBy === 'value') return (resolveWineDisplayValue(b) || 0) - (resolveWineDisplayValue(a) || 0);
-      if (sortBy === 'region') return (a.region || '').localeCompare(b.region || '');
-      if (sortBy === 'drink_window') {
-        const aStart = a.drinking_window_start ? new Date(a.drinking_window_start).getTime() : Infinity;
-        const bStart = b.drinking_window_start ? new Date(b.drinking_window_start).getTime() : Infinity;
-        return aStart - bStart;
-      }
-      return 0;
-    });
+    let list = searchWines(wines, search);
+    list = filterWines(list, filters);
+    list = sortWines(list, sortBy);
     return list;
-  }, [wines, search, sortBy]);
+  }, [wines, search, sortBy, filters]);
 
   const handleDelete = (wine) => {
-    if (window.confirm(`${t('common.confirmDelete', 'Delete')} "${wine.name}"?`)) {
-      deleteMutation.mutate(wine.id);
-    }
+    if (window.confirm(`Delete "${wine.name}"?`)) deleteMutation.mutate(wine.id);
   };
 
-  const handleSaved = () => {
-    setShowForm(false);
-    setEditingWine(null);
-    queryClient.invalidateQueries({ queryKey: ['wines'] });
-  };
+  const setFilter = (key, val) => setFilters((prev) => val ? { ...prev, [key]: val } : Object.fromEntries(Object.entries(prev).filter(([k]) => k !== key)));
 
-  if (showForm || editingWine) {
+  if (editingWine) {
     return (
       <div className="space-y-6">
         <WineKeeperModuleNav currentPageName="Wines" />
         <WineForm
           wine={editingWine}
-          onSaved={handleSaved}
-          onCancel={() => { setShowForm(false); setEditingWine(null); }}
+          onSaved={() => { setEditingWine(null); queryClient.invalidateQueries({ queryKey: ['wines'] }); }}
+          onCancel={() => setEditingWine(null)}
         />
       </div>
     );
   }
+
   return (
     <div className="space-y-6">
       <WineKeeperModuleNav currentPageName="Wines" />
 
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-bold" style={{ color: '#F5F1E7' }}>
-          {t('wine.collection', 'Wine Collection')}
+          Wine Collection
           <span className="text-sm font-normal ml-2" style={{ color: 'rgba(224,216,200,0.5)' }}>({wines.length})</span>
         </h1>
         <Button onClick={() => setShowAddModal(true)} style={{ background: '#8B3A3A', color: '#F5F1E7' }} size="sm">
           <Plus className="w-4 h-4 mr-1" />
-          {t('wine.addBottle', 'Add Bottle')}
+          Add Bottle
         </Button>
       </div>
 
-      <div className="flex gap-3 flex-wrap">
+      {/* Search + Sort + Filter row */}
+      <div className="flex gap-3 flex-wrap items-center">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(224,216,200,0.4)' }} />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('wine.searchPlaceholder', 'Search by name, producer, region, varietal…')}
+            placeholder="Search name, producer, region, varietal…"
             className="pl-9"
           />
         </div>
@@ -239,23 +233,67 @@ export default function Wines() {
           className="rounded-xl px-3 py-2 text-sm"
           style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
         >
-          <option value="name">{t('wine.sortName', 'Name')}</option>
-          <option value="producer">{t('wine.producer', 'Producer')}</option>
-          <option value="vintage">{t('wine.sortVintage', 'Vintage')}</option>
-          <option value="rating">{t('wine.sortRating', 'Rating')}</option>
-          <option value="value">{t('wine.sortValue', 'Value')}</option>
-          <option value="region">{t('wine.region', 'Region')}</option>
-          <option value="drink_window">{t('wine.drinkingWindowSummary', 'Drink Window')}</option>
+          {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
+        <button
+          onClick={() => setShowFilters((v) => !v)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm"
+          style={{ background: Object.keys(filters).length > 0 ? 'rgba(139,58,58,0.25)' : 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+        >
+          <Filter className="w-4 h-4" />
+          Filters {Object.keys(filters).length > 0 ? `(${Object.keys(filters).length})` : ''}
+          <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+        </button>
       </div>
 
+      {/* Filter panel */}
+      {showFilters && (
+        <div className="rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" style={{ background: 'rgba(42,28,20,0.7)', border: '1px solid rgba(180,140,75,0.15)' }}>
+          <div>
+            <label className="ck-field-label">Style</label>
+            <select value={filters.style || ''} onChange={(e) => setFilter('style', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
+              <option value="">All</option>
+              {STYLES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="ck-field-label">Drink Window</label>
+            <select value={filters.drink_window || ''} onChange={(e) => setFilter('drink_window', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
+              <option value="">All</option>
+              <option value="drink_now">Drink Now</option>
+              <option value="too_young">Too Young</option>
+              <option value="past_peak">Past Peak</option>
+            </select>
+          </div>
+          <div>
+            <label className="ck-field-label">Valuation</label>
+            <select value={filters.valued || ''} onChange={(e) => setFilter('valued', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
+              <option value="">All</option>
+              <option value="valued">Valued</option>
+              <option value="unvalued">Needs Valuation</option>
+            </select>
+          </div>
+          <div>
+            <label className="ck-field-label">Vintage From</label>
+            <Input type="number" value={filters.vintage_min || ''} onChange={(e) => setFilter('vintage_min', e.target.value)} placeholder="e.g. 2010" className="text-sm" />
+          </div>
+          <div>
+            <label className="ck-field-label">Vintage To</label>
+            <Input type="number" value={filters.vintage_max || ''} onChange={(e) => setFilter('vintage_max', e.target.value)} placeholder="e.g. 2023" className="text-sm" />
+          </div>
+          {Object.keys(filters).length > 0 && (
+            <button onClick={() => setFilters({})} className="text-xs underline mt-2" style={{ color: '#C47070' }}>Clear filters</button>
+          )}
+        </div>
+      )}
+
       {isLoading ? (
-        <div className="text-center py-12" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('common.loading')}</div>
+        <div className="text-center py-12" style={{ color: 'rgba(224,216,200,0.5)' }}>Loading…</div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12">
           <Wine className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(139,58,58,0.4)' }} />
           <p style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {search ? t('wine.noBottlesFound', 'No bottles found') : t('wine.noBottlesYet', 'No bottles yet')}
+            {search || Object.keys(filters).length > 0 ? 'No bottles match your filters.' : 'No bottles yet. Add your first wine!'}
           </p>
         </div>
       ) : (
@@ -270,7 +308,6 @@ export default function Wines() {
               onAddToWantList={setWantListWine}
               onEnriched={() => queryClient.invalidateQueries({ queryKey: ['wines', user?.email] })}
               formatFromBase={formatFromBase}
-              t={t}
               navigate={navigate}
             />
           ))}
@@ -290,7 +327,7 @@ export default function Wines() {
         <AddToWantListModal
           open={!!wantListWine}
           onOpenChange={(open) => { if (!open) setWantListWine(null); }}
-          item={{ name: wantListWine.name, maker: wantListWine.producer, image: wantListWine.photos?.[0] }}
+          item={{ name: wantListWine.name, maker: wantListWine.producer, image: getWinePrimaryImage(wantListWine) }}
           itemType="wine"
         />
       )}
