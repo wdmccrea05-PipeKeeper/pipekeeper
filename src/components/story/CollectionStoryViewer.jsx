@@ -183,17 +183,18 @@ function CollectionStorySlide({ card }) {
           <div className="flex flex-col items-center justify-center flex-1 px-6 text-center gap-5">
             <BrandLogo compact showWordmark={false} imageClassName="w-16 h-16" />
             <h2
-               className="font-bold w-full"
+               className="font-bold w-full text-center"
                style={{
                   color: accent,
                   fontFamily: "'Georgia', serif",
-                  fontSize: 'clamp(1.4rem, 6vw, 2.4rem)',
+                  fontSize: 'clamp(1.4rem, 6vw, 2.2rem)',
                   whiteSpace: 'normal',
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
+                  wordWrap: 'break-word',
+                  wordBreak: 'normal',
                   paddingLeft: '1rem',
                   paddingRight: '1rem',
-                  lineHeight: 1.2,
+                  lineHeight: 1.3,
+                  minWidth: '0',
                }}
              >
                {card.value}
