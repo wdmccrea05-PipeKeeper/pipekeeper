@@ -10,6 +10,7 @@ import WineVarietalSelect from '@/components/wine/WineVarietalSelect';
 import { getStyleKey, buildVarietalDisplay, migrateWineVarietals } from '@/lib/wine/wineTaxonomy';
 
 const SIZES = ['375ml', '500ml', '750ml', '1L', '1.5L', '3L', 'Other'];
+const STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
 
 function Field({ label, children }) {
   return (
