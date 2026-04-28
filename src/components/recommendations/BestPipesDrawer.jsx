@@ -46,6 +46,7 @@ export default function BestPipesDrawer({
             )}
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors text-[#D8C7A6]"
           >
@@ -162,6 +163,7 @@ export default function BestPipesDrawer({
             style={{ borderColor: "rgba(180,140,75,0.15)" }}
           >
             <button
+              type="button"
               onClick={onRetry}
               className="text-xs flex items-center gap-1 hover:opacity-80 transition-opacity"
               style={{ color: "#B48C4B" }}
@@ -169,6 +171,7 @@ export default function BestPipesDrawer({
               <RefreshCw className="w-3 h-3" /> Refresh
             </button>
             <button
+              type="button"
               onClick={onClose}
               className="text-xs hover:opacity-80 transition-opacity"
               style={{ color: "rgba(216,199,166,0.6)" }}
