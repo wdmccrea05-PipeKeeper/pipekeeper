@@ -101,24 +101,24 @@ function CollectionStorySlide({ card }) {
             )}
 
             <h2
-               className="font-bold leading-tight text-center w-full overflow-hidden"
+               className="font-bold leading-tight text-center w-full"
                style={{
-                 fontSize:
-                   String(card.value).length > 30
-                     ? 'clamp(1.4rem, 5vw, 2rem)'
-                     : String(card.value).length > 20
-                     ? 'clamp(1.6rem, 5.5vw, 2.4rem)'
-                     : String(card.value).length > 12
-                     ? 'clamp(2rem, 7vw, 3rem)'
-                     : 'clamp(2.4rem, 8vw, 3.8rem)',
-                 color: '#F5F1E7',
-                 fontFamily: "'Georgia', serif",
-                 wordBreak: 'break-word',
-                 overflowWrap: 'break-word',
-                 hyphens: 'none',
-                 whiteSpace: 'normal',
-                 maxWidth: '100%',
-                 paddingX: '1rem',
+                  fontSize:
+                    String(card.value).length > 30
+                      ? 'clamp(1.4rem, 5vw, 2rem)'
+                      : String(card.value).length > 20
+                      ? 'clamp(1.6rem, 5.5vw, 2.4rem)'
+                      : String(card.value).length > 12
+                      ? 'clamp(2rem, 7vw, 3rem)'
+                      : 'clamp(2.4rem, 8vw, 3.8rem)',
+                  color: '#F5F1E7',
+                  fontFamily: "'Georgia', serif",
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  maxWidth: '100%',
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
                }}
              >
                {card.value}
@@ -145,26 +145,27 @@ function CollectionStorySlide({ card }) {
             </div>
             <div className="mt-auto pb-10 px-6">
               <h2
-                 className="font-bold leading-snug overflow-hidden"
-                 style={{
-                   fontSize:
-                     String(card.value).length > 30
-                       ? 'clamp(1.3rem, 4.5vw, 1.8rem)'
-                       : String(card.value).length > 20
-                       ? 'clamp(1.6rem, 5.5vw, 2.2rem)'
-                       : 'clamp(2rem, 7vw, 2.8rem)',
-                   color: '#F5F1E7',
-                   fontFamily: "'Georgia', serif",
-                   textShadow: '0 3px 14px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.7)',
-                   wordBreak: 'break-word',
-                   overflowWrap: 'break-word',
-                   hyphens: 'none',
-                   maxWidth: '100%',
-                   paddingX: '1rem',
-                 }}
-               >
-                 {card.value}
-               </h2>
+                  className="font-bold leading-snug"
+                  style={{
+                    fontSize:
+                      String(card.value).length > 30
+                        ? 'clamp(1.3rem, 4.5vw, 1.8rem)'
+                        : String(card.value).length > 20
+                        ? 'clamp(1.6rem, 5.5vw, 2.2rem)'
+                        : 'clamp(2rem, 7vw, 2.8rem)',
+                    color: '#F5F1E7',
+                    fontFamily: "'Georgia', serif",
+                    textShadow: '0 3px 14px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.7)',
+                    whiteSpace: 'normal',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    maxWidth: '100%',
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                  }}
+                >
+                  {card.value}
+                </h2>
               {card.sub && (
                 <p
                   className="text-sm mt-2 leading-relaxed"
@@ -184,13 +185,15 @@ function CollectionStorySlide({ card }) {
             <h2
                className="font-bold w-full"
                style={{
-                 color: accent,
-                 fontFamily: "'Georgia', serif",
-                 fontSize: 'clamp(1.4rem, 6vw, 2.4rem)',
-                 wordBreak: 'break-word',
-                 overflowWrap: 'anywhere',
-                 hyphens: 'none',
-                 lineHeight: 1.2,
+                  color: accent,
+                  fontFamily: "'Georgia', serif",
+                  fontSize: 'clamp(1.4rem, 6vw, 2.4rem)',
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  lineHeight: 1.2,
                }}
              >
                {card.value}
