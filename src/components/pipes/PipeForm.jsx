@@ -330,10 +330,57 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       const payload = originalPipe
         ? buildPipeDirtyUpdate(cleanedData, originalPipe)
         : preparePipeData(cleanedData);
+
+      // F.1 — Empty dirty payload guard: nothing actually changed
+      if (originalPipe && Object.keys(payload).length === 0) {
+        toast.info('No changes to save.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // F.2 — Invalid changed enum guard: user explicitly set an invalid value
+      if (originalPipe) {
+        const invalidChangedFields = [];
+        for (const field of Object.keys(PIPE_ENUM_SETS)) {
+          const newVal = cleanedData[field];
+          const oldVal = originalPipe[field];
+          const strNew = newVal == null ? '' : String(newVal);
+          const strOld = oldVal == null ? '' : String(oldVal);
+          // Only flag if the user changed it AND new value is invalid
+          if (strNew !== strOld && strNew !== '' && !isPipeEnumValid(field, strNew)) {
+            invalidChangedFields.push({ field, value: strNew });
+          }
+        }
+        if (invalidChangedFields.length > 0) {
+          const fieldList = invalidChangedFields.map(({ field, value }) => `${field}: "${value}"`).join(', ');
+          setSubmitError(`Cannot save: invalid value(s) for ${fieldList}. Please select a valid option from the list.`);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // F.3 — Dev/admin debug logging on save attempt
+      if (import.meta?.env?.DEV || user?.role === 'admin') {
+        console.group('[PipeForm] Save attempt');
+        console.log('pipe id:', originalPipe?.id);
+        console.log('pipe name:', originalPipe?.name);
+        console.log('dirty payload:', payload);
+        const omitted = legacyEnumWarnings.filter(({ field }) => !(field in payload));
+        if (omitted.length > 0) console.log('omitted invalid legacy fields:', omitted);
+        console.groupEnd();
+      }
+
       await onSave(payload);
     } catch (error) {
       const reason = error?.message || t('errors.updateFailed') || 'Save failed';
       setSubmitError(reason);
+      if (import.meta?.env?.DEV || user?.role === 'admin') {
+        console.error('[PipeForm] Save failed:', {
+          pipeId: originalPipe?.id,
+          pipeName: originalPipe?.name,
+          error: reason,
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

@@ -32,23 +32,40 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Fetch all pipes (paginated in batches of 200)
-    const allPipes = [];
-    let skip = 0;
-    const batchSize = 200;
+    // Optional filters from request body
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const filterEmail = body.email ? String(body.email).trim().toLowerCase() : null;
+    const filterName = body.pipe_name ? String(body.pipe_name).trim().toLowerCase() : null;
+    const filterIds = Array.isArray(body.pipe_ids) ? body.pipe_ids.map(String) : body.pipe_id ? [String(body.pipe_id)] : null;
 
-    while (true) {
-      const batch = await base44.asServiceRole.entities.Pipe.list('-created_date', batchSize, skip);
-      if (!batch || batch.length === 0) break;
-      allPipes.push(...batch);
-      if (batch.length < batchSize) break;
-      skip += batchSize;
+    // Fetch pipes — scoped by email if provided, otherwise all (paginated)
+    const allPipes = [];
+    if (filterEmail) {
+      const emailPipes = await base44.asServiceRole.entities.Pipe.filter({ created_by: filterEmail }, '-created_date', 500);
+      allPipes.push(...(emailPipes || []));
+    } else {
+      let skip = 0;
+      const batchSize = 200;
+      while (true) {
+        const batch = await base44.asServiceRole.entities.Pipe.list('-created_date', batchSize, skip);
+        if (!batch || batch.length === 0) break;
+        allPipes.push(...batch);
+        if (batch.length < batchSize) break;
+        skip += batchSize;
+      }
     }
+
+    // Apply name / id filters in-memory
+    const filteredPipes = allPipes.filter((p) => {
+      if (filterIds && !filterIds.includes(p.id)) return false;
+      if (filterName && !String(p.name || '').toLowerCase().includes(filterName)) return false;
+      return true;
+    });
 
     const auditResults = [];
     const fieldSummary = {};
 
-    for (const pipe of allPipes) {
+    for (const pipe of filteredPipes) {
       const issues = [];
 
       for (const [field, validSet] of Object.entries(PIPE_ENUM_SETS)) {
@@ -76,10 +93,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Attach dirty-update simulation: would the dirty update omit the invalid field?
+    for (const result of auditResults) {
+      for (const issue of result.issues) {
+        if (issue.field !== 'photos') {
+          const enumSet = PIPE_ENUM_SETS[issue.field];
+          issue.would_dirty_update_omit = !!(enumSet && !enumSet.has(issue.invalid_value));
+          issue.suggested_fix = enumSet?.has('Other') ? 'Other' : enumSet?.has('Unknown') ? 'Unknown' : null;
+        }
+      }
+    }
+
     return Response.json({
-      scanned: allPipes.length,
+      scanned: filteredPipes.length,
+      total_in_db: allPipes.length,
+      filters_applied: { email: filterEmail, name: filterName, ids: filterIds },
       records_with_issues: auditResults.length,
-      clean_records: allPipes.length - auditResults.length,
+      clean_records: filteredPipes.length - auditResults.length,
       field_summary: fieldSummary,
       records: auditResults,
       audit_timestamp: new Date().toISOString(),
