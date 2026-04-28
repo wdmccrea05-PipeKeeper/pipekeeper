@@ -1,26 +1,63 @@
 {
   "name": "WineTasting",
   "type": "object",
-  "description": "A tasting log entry for a wine bottle in the WineKeeper collection.",
+  "description": "A tasting log entry for a wine. Supports both collection wines (wine_id set) and out-of-collection/something-new pours.",
   "properties": {
     "wine_id": {
       "type": "string",
-      "description": "ID of the Wine record being tasted"
+      "description": "ID of the Wine record (nullable for out-of-collection tastings)"
     },
     "wine_name": {
       "type": "string",
       "description": "Snapshot of the wine name at time of tasting"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "collection",
+        "out_of_collection"
+      ],
+      "default": "collection",
+      "description": "Whether this was from the user's collection or an external pour"
+    },
+    "producer": {
+      "type": "string",
+      "description": "Producer / winery (used when source_type = out_of_collection)"
+    },
+    "vintage": {
+      "type": "number",
+      "description": "Vintage year (out-of-collection)"
+    },
+    "style": {
+      "type": "string",
+      "description": "Wine style e.g. red, white, sparkling (out-of-collection)"
+    },
+    "varietal": {
+      "type": "string",
+      "description": "Varietal or blend (out-of-collection)"
+    },
+    "region": {
+      "type": "string",
+      "description": "Region (out-of-collection)"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country of origin (out-of-collection)"
     },
     "date": {
       "type": "string",
       "format": "date",
       "description": "Date of the tasting"
     },
+    "serving_method": {
+      "type": "string",
+      "description": "How the wine was served (e.g. Standard Glass, Decanted, Blind Tasting)"
+    },
     "rating": {
       "type": "number",
       "minimum": 0,
       "maximum": 5,
-      "description": "Overall rating 1-5"
+      "description": "Overall rating (0.5 increments, 0.5\u20135)"
     },
     "notes": {
       "type": "string",
@@ -46,9 +83,37 @@
       "type": "string",
       "description": "Occasion or context"
     },
+    "context": {
+      "type": "string",
+      "description": "Selected context chip (e.g. Dinner, Wine Club, At Home)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User-defined tags"
+    },
     "would_buy_again": {
       "type": "boolean",
       "description": "Whether the user would purchase this wine again"
+    },
+    "acquisition_intent": {
+      "type": "string",
+      "enum": [
+        "just_log",
+        "add_to_collection",
+        "wishlist",
+        "shopping_list",
+        "not_for_me"
+      ],
+      "default": "just_log",
+      "description": "What the user wants to do with this out-of-collection wine"
+    },
+    "ai_excluded": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true (not_for_me), exclude from AI recommendations"
     },
     "created_by": {
       "type": "string",
@@ -56,7 +121,6 @@
     }
   },
   "required": [
-    "wine_id",
     "date",
     "created_by"
   ]

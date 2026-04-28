@@ -1,22 +1,7 @@
 export default [
+  // ── Global ignores (must be a standalone object with only `ignores`) ──────
   {
     ignores: [
-      // Specific files that keep getting regenerated with test content
-      'src/components/curator/__tests__/curatorCoverage.test.jsx',
-      'src/components/utils/__tests__/entitlements.test.jsx',
-      // Extensionless test/spec files (no .js/.jsx extension — linter treats as plain JS)
-      '**/*.test',
-      '**/*.spec',
-      // Standard test file extensions
-      'src/**/__tests__/**',
-      'src/**/*.test.js',
-      'src/**/*.test.jsx',
-      'src/**/*.test.ts',
-      'src/**/*.test.tsx',
-      'src/**/*.spec.js',
-      'src/**/*.spec.jsx',
-      'src/**/*.spec.ts',
-      'src/**/*.spec.tsx',
       '**/__tests__/**',
       '**/*.test.js',
       '**/*.test.jsx',
@@ -26,16 +11,18 @@ export default [
       '**/*.spec.jsx',
       '**/*.spec.ts',
       '**/*.spec.tsx',
+      '**/*.test',
+      '**/*.spec',
     ],
   },
+
+  // ── App source files ───────────────────────────────────────────────────────
   {
-    // All app files — disable the two rules that cause noise
-    files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx', '**/*.test.jsx', '**/*.test.js', '**/*.spec.jsx', '**/*.spec.js'],
+    files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
-        // Browser
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
@@ -67,7 +54,7 @@ export default [
         Set: 'readonly',
         Symbol: 'readonly',
         process: 'readonly',
-        // Vitest / Jest globals
+        // Vitest / Jest globals (also needed here for any inline test helpers)
         describe: 'readonly',
         test: 'readonly',
         it: 'readonly',

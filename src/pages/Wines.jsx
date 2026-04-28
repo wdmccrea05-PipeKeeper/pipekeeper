@@ -328,6 +328,7 @@ export default function Wines() {
       {tastingWine && (
         <LogWineTastingModal
           wine={tastingWine}
+          wines={wines}
           isOpen={!!tastingWine}
           onClose={() => setTastingWine(null)}
           onSaved={() => { setTastingWine(null); queryClient.invalidateQueries({ queryKey: ['wine-tastings-summary'] }); }}

@@ -612,8 +612,10 @@ export default function WineDetail() {
       {logTasting && (
         <LogWineTastingModal
           wine={wine}
+          wines={[wine]}
           isOpen={logTasting}
           onClose={() => setLogTasting(false)}
+          defaultMode="collection"
           onSaved={() => {
             setLogTasting(false);
             queryClient.invalidateQueries({ queryKey: ['wine-tastings', wineId] });
