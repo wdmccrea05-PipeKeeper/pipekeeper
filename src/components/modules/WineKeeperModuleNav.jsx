@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Wine, BarChart3, Plus, BookOpen, FileSpreadsheet, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import AddFlowModal from '@/components/addflow/AddFlowModal';
 
 export default function WineKeeperModuleNav({ currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const tabs = [
     { path: '/WineKeeper', label: t('winekeeper.overview', 'Overview'), icon: Wine },
@@ -17,6 +19,7 @@ export default function WineKeeperModuleNav({ currentPageName }) {
   ];
 
   return (
+    <>
     <div className="flex items-center justify-between gap-3">
       {/* ── Left: tabs ── */}
       <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
@@ -47,7 +50,7 @@ export default function WineKeeperModuleNav({ currentPageName }) {
       {/* ── Right: action buttons ── */}
       <div className="flex items-center gap-2 flex-shrink-0">
         <Button
-          onClick={() => navigate('/Wines?action=add')}
+          onClick={() => setShowAddModal(true)}
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
@@ -80,5 +83,12 @@ export default function WineKeeperModuleNav({ currentPageName }) {
         </Button>
       </div>
     </div>
+
+    <AddFlowModal
+      open={showAddModal}
+      onClose={() => setShowAddModal(false)}
+      initialItemType="wine"
+    />
+    </>
   );
 }

@@ -194,6 +194,40 @@ export function normalizeCigarResult(raw) {
 }
 
 /**
+ * Normalise a single LLM result item for a wine query.
+ *
+ * @param {Object} raw
+ * @returns {Object}
+ */
+export function normalizeWineResult(raw) {
+  const domain = raw.source_domain || null;
+  const { tier, type: sourceType, isInternational } = getDomainInfo(domain);
+
+  return {
+    id: nextId(),
+    entityType: 'wine',
+    title: raw.name || '',
+    subtitle: raw.producer || raw.winery || '',
+    sourceDomain: domain,
+    sourceTier: tier,
+    sourceType,
+    url: raw.source_url || '',
+    imageUrl: extractImageUrl(raw),
+    matchedName: raw.name || '',
+    matchedBrand: raw.producer || raw.winery || null,
+    matchedType: raw.varietal || raw.grape_variety || null,
+    regionHint: raw.region || null,
+    countryHint: null,
+    confidenceScore: 0,
+    confidenceLabel: 'Low',
+    confidenceReason: '',
+    isInternationalSource: isInternational,
+    isExactMatch: false,
+    metadata: { ...raw },
+  };
+}
+
+/**
  * Normalise a single LLM image result.
  *
  * @param {Object} raw
@@ -246,6 +280,7 @@ export function normalizeLLMResult(raw, entityType) {
   if (entityType === 'blend')  return normalizeBlendResult(raw);
   if (entityType === 'pipe')   return normalizePipeResult(raw);
   if (entityType === 'cigar')  return normalizeCigarResult(raw);
+  if (entityType === 'wine')   return normalizeWineResult(raw);
   if (entityType === 'image')  return normalizeImageResult(raw);
   return normalizeBottleResult(raw);
 }

@@ -16,11 +16,13 @@ const TYPE_LABELS = {
   blend: 'Blend',
   bottle: 'Bottle',
   cigar: 'Cigar',
+  wine: 'Wine',
 };
 
 function getInventoryStepName(itemType, mode) {
   if (itemType === 'blend') return mode === 'quick' ? 'inventoryQuick' : 'inventoryManual';
   if (itemType === 'bottle') return mode === 'quick' ? 'inventoryQuick' : 'inventoryManual';
+  if (itemType === 'wine') return mode === 'quick' ? 'inventoryQuick' : 'inventoryManual';
   if (itemType === 'pipe') return mode === 'manual' ? 'inventoryManual' : null;
   return null;
 }
@@ -53,6 +55,10 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
     close();
 
     if (!record?.id) return;
+    if (itemType === 'wine') {
+      navigate(`/Wines?highlight=${encodeURIComponent(record.id)}`);
+      return;
+    }
     const route =
       itemType === 'blend'
         ? '/TobaccoDetail'
@@ -75,8 +81,8 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
       manualBasic: 'choice',
       manualDetails: 'manualBasic',
       inventoryManual: 'manualDetails',
-      manualImages: (itemType === 'blend' || itemType === 'bottle' || itemType === 'pipe') ? 'inventoryManual' : 'manualDetails',
-      imagesQuick: itemType === 'blend' || itemType === 'bottle' ? 'inventoryQuick' : 'quickConfirm',
+      manualImages: (itemType === 'blend' || itemType === 'bottle' || itemType === 'wine' || itemType === 'pipe') ? 'inventoryManual' : 'manualDetails',
+      imagesQuick: itemType === 'blend' || itemType === 'bottle' || itemType === 'wine' ? 'inventoryQuick' : 'quickConfirm',
     };
 
     const next = previous[step];
@@ -189,6 +195,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
                   manufacturer: record.manufacturer || searchResult?.manufacturer,
                   maker: record.maker || searchResult?.maker,
                   distillery: record.distillery || searchResult?.distillery,
+                  producer: record.producer || searchResult?.producer,
                   blend_type: searchResult?.blend_type,
                   cut: searchResult?.cut,
                   strength: searchResult?.strength,
@@ -198,6 +205,10 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
                   type: searchResult?.whiskey_type,
                   age: searchResult?.age,
                   abv: searchResult?.abv,
+                  vintage: searchResult?.vintage,
+                  varietal: searchResult?.varietal,
+                  region: searchResult?.region,
+                  style: searchResult?.style,
                 });
 
                 setStep(nextInventory);

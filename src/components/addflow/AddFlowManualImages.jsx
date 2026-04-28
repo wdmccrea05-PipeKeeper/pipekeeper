@@ -17,6 +17,7 @@ const ENTITIES = {
   pipe: 'Pipe',
   bottle: 'Bottle',
   cigar: 'Cigar',
+  wine: 'Wine',
 };
 
 function cleanObject(obj) {
@@ -83,6 +84,21 @@ function buildBaseRecord(itemType, data) {
     });
   }
 
+  if (itemType === 'wine') {
+    return cleanObject({
+      name: data.name,
+      producer: data.producer,
+      vintage: data.vintage ? Number(data.vintage) : undefined,
+      varietal: data.varietal,
+      region: data.region,
+      appellation: data.appellation,
+      style: data.style,
+      abv: data.abv ? Number(data.abv) : undefined,
+      notes: data.notes,
+      photos: Array.isArray(data.photos) && data.photos.length ? data.photos : undefined,
+    });
+  }
+
   return cleanObject({ name: data.name });
 }
 
@@ -114,6 +130,7 @@ function buildNormalizedKey(itemType, data) {
   if (itemType === 'bottle') return normalizeBottleKey({ brand: data.distillery, name: data.name });
   if (itemType === 'blend')  return normalizeBlendKey({ brand: data.manufacturer, name: data.name });
   if (itemType === 'pipe')   return normalizePipeKey({ maker: data.maker, name: data.name, shape: data.shape });
+  if (itemType === 'wine')   return normalizeBottleKey({ brand: data.producer, name: data.name });
   return '';
 }
 
@@ -121,6 +138,7 @@ function buildDisplayName(itemType, data) {
   if (itemType === 'bottle') return [data.distillery, data.name].filter(Boolean).join(' — ');
   if (itemType === 'blend')  return [data.manufacturer, data.name].filter(Boolean).join(' — ');
   if (itemType === 'pipe')   return [data.maker, data.name, data.shape].filter(Boolean).join(' ');
+  if (itemType === 'wine')   return [data.producer, data.name].filter(Boolean).join(' — ');
   return data.name || '';
 }
 
@@ -152,6 +170,7 @@ async function promoteUploadToLibrary(itemType, data, imageUrl, referenceOnly = 
   if (itemType === 'bottle') payload.brand = data.distillery || null;
   if (itemType === 'blend')  payload.brand = data.manufacturer || null;
   if (itemType === 'pipe')   { payload.maker = data.maker || null; payload.shape = data.shape || null; }
+  if (itemType === 'wine')   payload.brand = data.producer || null;
 
   try {
     const entry = await upsertLibraryImageEntry(payload);
@@ -826,7 +845,7 @@ async function createCellarLogsForBlend(blendId, data, blendName) {
 
 export default function AddFlowManualImages({ itemType, typeLabel, data, onBack, onCreated }) {
   const [imageUrl, setImageUrl] = useState(
-    itemType === 'blend' ? data.logo || '' : (itemType === 'pipe' || itemType === 'cigar') ? data.photos?.[0] || '' : data.photo || ''
+    itemType === 'blend' ? data.logo || '' : (itemType === 'pipe' || itemType === 'cigar' || itemType === 'wine') ? data.photos?.[0] || '' : data.photo || ''
   );
   const [imageMeta, setImageMeta]           = useState(null);
   const [uploading, setUploading]           = useState(false);
@@ -845,7 +864,9 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         ? 'Pipe Photo'
         : itemType === 'cigar'
           ? 'Cigar Photo'
-          : 'Bottle Photo';
+          : itemType === 'wine'
+            ? 'Wine Bottle Photo'
+            : 'Bottle Photo';
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
@@ -881,6 +902,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         if (itemType === 'pipe') finalData.photos = [imageUrl];
         if (itemType === 'bottle') finalData.photo = imageUrl;
         if (itemType === 'cigar') finalData.photos = [imageUrl];
+        if (itemType === 'wine') finalData.photos = [imageUrl];
       }
 
       // Persist image source metadata when the user selected from suggestions
@@ -895,7 +917,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
       // If we have a quick record ID, update it instead of creating a new one
       if (finalData._quickRecord?.id) {
-        const bottleSafeInventory = itemType === 'bottle'
+        const bottleSafeInventory = (itemType === 'bottle' || itemType === 'wine')
           ? cleanObject({ purchase_price: inventoryPayload.purchase_price })
           : inventoryPayload;
 
@@ -906,6 +928,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           ...(itemType === 'pipe' ? { photos: finalData.photos } : {}),
           ...(itemType === 'bottle' ? { photo: finalData.photo } : {}),
           ...(itemType === 'cigar' ? { photos: finalData.photos } : {}),
+          ...(itemType === 'wine' ? { photos: finalData.photos } : {}),
         });
 
         await base44.entities[ENTITIES[itemType]].update(finalData._quickRecord.id, updateData);
@@ -915,7 +938,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         }
 
         // Async side-effects: library promotion + record link (non-blocking)
-        if (imageUrl && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe')) {
+        if (imageUrl && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe' || itemType === 'wine')) {
           const isUserUpload  = !imageMeta?._isInternalMatch;
           const libraryImageId = imageMeta?._libraryImageId || null;
 
@@ -961,7 +984,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       }
 
       // Async side-effects: library promotion + record link (non-blocking)
-      if (imageUrl && created?.id && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe')) {
+      if (imageUrl && created?.id && (itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe' || itemType === 'wine')) {
         const isUserUpload   = !imageMeta?._isInternalMatch;
         const libraryImageId = imageMeta?._libraryImageId || null;
 
@@ -1115,7 +1138,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         )}
 
         {/* ── Internal library matches (Tier 1 — shown first) ── */}
-        {(itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
+        {(itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe' || itemType === 'wine') && (
           <>
             <div style={{ height: 1, background: 'rgba(180,140,75,0.1)' }} />
             <InternalLibraryMatches
@@ -1130,7 +1153,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         )}
 
         {/* ── External pipeline suggestions (optional, collapsed by default) ── */}
-        {(itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe') && (
+        {(itemType === 'bottle' || itemType === 'blend' || itemType === 'pipe' || itemType === 'wine') && (
           <>
             <div style={{ height: 1, background: 'rgba(180,140,75,0.06)' }} />
             <button

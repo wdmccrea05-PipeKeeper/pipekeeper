@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -13,6 +13,7 @@ import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import AddFlowModal from '@/components/addflow/AddFlowModal';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -58,6 +59,7 @@ function WineKeeperInner() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const { data: wines = [] } = useQuery({
     queryKey: ['wines-summary', user?.email],
@@ -157,7 +159,7 @@ function WineKeeperInner() {
   }, [wines, formatFromBase, t]);
 
   const quickLaunchActions = [
-    { key: 'addWine', Icon: Plus, label: t('wine.addBottle', 'Add Bottle'), onClick: () => navigate('/Wines?action=add') },
+    { key: 'addWine', Icon: Plus, label: t('wine.addBottle', 'Add Bottle'), onClick: () => setShowAddModal(true) },
     { key: 'collection', Icon: Wine, label: t('wine.collection', 'Wine Collection'), onClick: () => navigate('/Wines') },
     { key: 'logTasting', Icon: BookOpen, label: t('wine.logTasting', 'Log Tasting'), onClick: () => navigate('/Wines?action=tasting') },
     { key: 'insights', Icon: BarChart3, label: t('nav.insights', 'Insights'), onClick: () => navigate('/WineInsights') },
@@ -177,6 +179,7 @@ function WineKeeperInner() {
   ];
 
   return (
+    <>
     <ModulePageShell
       title={t('winekeeper.title', 'WineKeeper')}
       subtitle={t('winekeeper.description', 'Curate, age, and value your wine collection')}
@@ -199,7 +202,7 @@ function WineKeeperInner() {
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.6)' }}>
             {t('wine.startTracking', 'Start tracking your wine collection')}
           </p>
-          <Button onClick={() => navigate('/Wines?action=add')} style={{ background: '#8B3A3A', color: '#F5F1E7' }}>
+          <Button onClick={() => setShowAddModal(true)} style={{ background: '#8B3A3A', color: '#F5F1E7' }}>
             <Plus className="w-4 h-4 mr-2" />
             {t('wine.addFirstBottle', 'Add Your First Bottle')}
           </Button>
@@ -241,6 +244,13 @@ function WineKeeperInner() {
         </div>
       )}
     </ModulePageShell>
+
+    <AddFlowModal
+      open={showAddModal}
+      onClose={() => setShowAddModal(false)}
+      initialItemType="wine"
+    />
+    </>
   );
 }
 
