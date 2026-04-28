@@ -24,7 +24,6 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
         subtitle: mostValuable.producer ? `${mostValuable.producer}${mostValuable.vintage ? ` · ${mostValuable.vintage}` : ''}` : mostValuable.vintage || '',
         photo: getWinePrimaryImage(mostValuable),
         accent: '#8B4B6B',
-        icon: Award,
       });
     }
 
@@ -42,7 +41,6 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
         subtitle: `${Number(highestRated.rating || 0).toFixed(1)}/5 ${highestRated.vintage ? `· ${highestRated.vintage}` : ''}`.trim(),
         photo: getWinePrimaryImage(highestRated),
         accent: '#A0567A',
-        icon: Star,
       });
     }
 
@@ -62,7 +60,6 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
         subtitle: `${readyToDrink.producer || ''}${readyToDrink.vintage ? ` · ${readyToDrink.vintage}` : ''}`.trim(),
         photo: getWinePrimaryImage(readyToDrink),
         accent: '#2E7D5C',
-        icon: Droplets,
       });
     }
 
@@ -79,7 +76,6 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
         subtitle: recentTasting.rating ? `${Number(recentTasting.rating).toFixed(1)}/5 · ${new Date(recentTasting.date).toLocaleDateString()}` : new Date(recentTasting.date).toLocaleDateString(),
         photo: linkedWine ? getWinePrimaryImage(linkedWine) : null,
         accent: '#D47C7C',
-        icon: Star,
       });
     }
 
