@@ -46,6 +46,7 @@ import {
 import { selectTotalSticks, selectCigarCollectionValue, getCigarAvailableQuantity, getCigarUnitValue } from '@/lib/collection/cigarSelectors';
 import { selectCellarValue as calculateTobaccoCollectionValue } from '@/lib/collection/tobaccoSelectors';
 import { selectPipeCollectionValue } from '@/lib/collection/pipeSelectors';
+import { selectWineCollectionValue, selectTotalWineBottles, selectWineCount, getWineTotalValue } from '@/lib/collection/wineSelectors';
 import { buildHubHighlightCandidates } from '@/components/hub/highlightSelection';
 
 
@@ -382,8 +383,11 @@ export default function CollectionHub() {
     const cigarValue = cigarOpenable
       ? selectCigarCollectionValue(cigars)
       : 0;
+    const wineValue = wineOpenable
+      ? selectWineCollectionValue(wines)
+      : 0;
 
-    const totalValue = pipeValue + tobaccoValue + whiskeyValue + cigarValue;
+    const totalValue = pipeValue + tobaccoValue + whiskeyValue + cigarValue + wineValue;
 
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
@@ -402,7 +406,12 @@ export default function CollectionHub() {
       return Number.isFinite(dt) && dt >= weekAgo;
     }).length;
 
-    const recentSessionsCount = recentSmokeCount + recentTastingCount + recentCigarSessionCount;
+    const recentWineTastingCount = wineTastings.filter((wt) => {
+      const dt = new Date(wt.date || wt.tasting_date || wt.created_date || 0).getTime();
+      return Number.isFinite(dt) && dt >= weekAgo;
+    }).length;
+
+    const recentSessionsCount = recentSmokeCount + recentTastingCount + recentCigarSessionCount + recentWineTastingCount;
 
     const logsByPipe = smokeLogs.reduce((acc, log) => {
       if (log.pipe_id) acc[log.pipe_id] = (acc[log.pipe_id] || 0) + 1;
@@ -443,7 +452,7 @@ export default function CollectionHub() {
 
     const mostValuableWine = wineOpenable
       ? [...wines]
-          .map((w) => ({ ...w, value: Number(w.estimated_value) || Number(w.purchase_price) || 0 }))
+          .map((w) => ({ ...w, value: getWineTotalValue(w) }))
           .sort((a, b) => b.value - a.value)
           .find((w) => w.value > 0) || null
       : null;
@@ -527,10 +536,12 @@ export default function CollectionHub() {
 
     return {
       totalValue,
+      wineValue,
       recentSessionsCount,
       recentSmokeCount,
       recentTastingCount,
       recentCigarSessionCount,
+      recentWineTastingCount,
       mostSmokedPipe,
       favoriteBlend,
       mostValuablePipe,
@@ -548,7 +559,7 @@ export default function CollectionHub() {
       totalBlendOz,
       totalBottleCount,
     };
-  }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, wines, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable, whiskeyMetrics]);
+  }, [pipes, blends, bottles, whiskeyInventory, smokeLogs, tastings, cigars, cigarSessions, wines, wineTastings, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable, whiskeyMetrics]);
 
   const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
   const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);
@@ -574,9 +585,9 @@ export default function CollectionHub() {
   ];
 
   const wineStats = [
-    { label: t('hub.bottleTypes'), value: isLoading ? '—' : wines.length },
-    { label: t('hub.totalBottles'), value: isLoading ? '—' : wines.length },
-    { label: t('wine.collectionValue'), value: isLoading ? '—' : formatFromBase(wines.reduce((sum, w) => sum + (Number(w.estimated_value) || 0), 0)) },
+    { label: t('hub.bottleTypes'), value: isLoading ? '—' : selectWineCount(wines) },
+    { label: t('hub.totalBottles'), value: isLoading ? '—' : selectTotalWineBottles(wines) },
+    { label: t('wine.collectionValue'), value: isLoading ? '—' : formatFromBase(metrics.wineValue || 0) },
   ];
 
   const topHighlights = useMemo(() => buildHubHighlightCandidates({
@@ -606,7 +617,7 @@ export default function CollectionHub() {
       rows.push({ id: `cigar_${log.id}`, moduleType: 'cigar', date: log.date, itemLabel: log.cigar_name || [log.external_cigar_brand, log.external_cigar_name].filter(Boolean).join(' ') || 'Cigar session', rating: log.overall_enjoyment ?? null, notes: log.notes || '' });
     }
     for (const wt of wineTastings) {
-      rows.push({ id: `wine_${wt.id}`, moduleType: 'wine', date: wt.date, itemLabel: wt.wine_name || 'Wine tasting', rating: wt.rating ?? null, notes: wt.notes || '' });
+      rows.push({ id: `wine_${wt.id}`, moduleType: 'wine', date: wt.date || wt.tasting_date || wt.created_date, itemLabel: wt.wine_name || wt.name || wt.producer || 'Wine tasting', rating: wt.rating ?? null, notes: wt.notes || '' });
     }
     return rows;
   }, [smokeLogs, tastings, cigarSessions, wineTastings]);
@@ -748,9 +759,11 @@ export default function CollectionHub() {
         pipeEnabled={pipekeeperOpenable}
         whiskeyEnabled={whiskeyOpenable}
         cigarEnabled={cigarOpenable}
+        wineEnabled={wineOpenable}
         onSelectPipe={() => navigate('/PipeKeeper?action=log-smoke')}
         onSelectWhiskey={() => navigate('/Tastings?action=log')}
         onSelectCigar={() => navigate('/CigarKeeper')}
+        onSelectWine={() => navigate('/Wines?action=log')}
         onSelectCombined={handleOpenCombinedSessionFlow}
         onSelectWhiskeyCigar={handleOpenWhiskeyCigarFlow}
       />

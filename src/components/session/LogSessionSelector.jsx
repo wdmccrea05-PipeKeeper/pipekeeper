@@ -12,9 +12,11 @@ export default function LogSessionSelector({
   pipeEnabled = false,
   whiskeyEnabled = false,
   cigarEnabled = false,
+  wineEnabled = false,
   onSelectPipe,
   onSelectWhiskey,
   onSelectCigar,
+  onSelectWine,
   onSelectCombined,
   onSelectWhiskeyCigar,
 }) {
@@ -92,6 +94,24 @@ export default function LogSessionSelector({
       onClick: () => {
         onClose?.();
         onSelectCombined?.();
+      },
+    });
+  }
+
+  if (wineEnabled) {
+    options.push({
+      key: "wine",
+      label: t('session.wineTasting', 'Wine Tasting'),
+      sublabel: t('session.wineTastingDesc', 'Log a wine tasting note'),
+      Icon: GlassWater,
+      accent: "#B87EC7",
+      background:
+        "linear-gradient(135deg,rgba(143,107,170,0.20),rgba(100,72,130,0.10))",
+      border: "1px solid rgba(143,107,170,0.38)",
+      iconBackground: "rgba(143,107,170,0.18)",
+      onClick: () => {
+        onClose?.();
+        onSelectWine?.();
       },
     });
   }
