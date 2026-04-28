@@ -95,9 +95,10 @@ export default function HeroHighlightCard({
           style={{
             right: '4%',
             bottom: '-10%',
-            height: '115%',
-            width: '55%',
-            maxHeight: 'none',
+            height: 'auto',
+            width: 'auto',
+            maxHeight: '88%',
+            maxWidth: '45%',
             objectFit: 'contain',
             opacity: 0.95,
             filter: `drop-shadow(0 0 20px ${accent}50) drop-shadow(0 8px 24px rgba(0,0,0,0.75))`,
