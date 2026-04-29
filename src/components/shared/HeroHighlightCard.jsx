@@ -18,6 +18,8 @@ export default function HeroHighlightCard({
   objectMode = 'cover',
   className,
 }) {
+  const useCssCover = objectMode === 'cover' || objectMode === 'bottle';
+
   return (
     <div
       className={`relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl aspect-[3/2] ${className || ''}`}
@@ -25,22 +27,30 @@ export default function HeroHighlightCard({
       style={{
         border: `1px solid ${accent}44`,
         boxShadow: '0 12px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)',
+        ...(useCssCover && photo
+          ? {
+              backgroundImage: `url('${photo}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            }
+          : {}),
       }}
     >
-      {/* Background layer */}
-      {photo ? (
+      {/* Background layer — contain mode only uses img; cover/bottle use CSS backgroundImage */}
+      {!useCssCover && photo ? (
         <img
           src={photo}
           alt=""
           className="absolute inset-0 w-full h-full pointer-events-none"
-          style={{ objectFit: objectMode === 'contain' ? 'contain' : 'cover', objectPosition: 'center' }}
+          style={{ objectFit: 'contain', objectPosition: 'center' }}
         />
-      ) : (
+      ) : !photo ? (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ background: 'linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)' }}
         />
-      )}
+      ) : null}
 
       {/* Accent radial gradient for depth */}
       <div

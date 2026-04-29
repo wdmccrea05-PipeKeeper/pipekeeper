@@ -4,10 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
-import { Wine, Plus, BarChart3, BookOpen } from 'lucide-react';
+import { Wine, Plus, BarChart3, BookOpen, Share2 } from 'lucide-react';
 import ModulePageShell from '@/components/modules/ModulePageShell';
 import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
-import ModuleStorySection from '@/components/modules/ModuleStorySection';
 import ModuleRecentActivitySection from '@/components/modules/ModuleRecentActivitySection';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
@@ -18,9 +17,6 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import {
-  selectWineCollectionValue,
-  selectTotalWineBottles,
-  selectWineReadyToDrinkCount,
   getWinePrimaryImage,
   getWineTotalValue,
   getWineDisplayName,
@@ -185,6 +181,7 @@ function WineKeeperInner() {
     { key: 'collection', Icon: Wine, label: t('wine.collection', 'Wine Collection'), onClick: () => navigate('/Wines') },
     { key: 'logTasting', Icon: BookOpen, label: t('wine.logTasting', 'Log Tasting'), onClick: () => navigate('/Wines?action=tasting') },
     { key: 'insights', Icon: BarChart3, label: t('nav.insights', 'Insights'), onClick: () => navigate('/WineInsights') },
+    { key: 'shareStory', Icon: Share2, label: t('wine.shareStory', 'Share Story'), onClick: () => setShowShareModal(true) },
     { key: 'curator', iconImage: CURATOR_ICON, label: t('quickActions.collectionCurator', 'Collection Curator'), onClick: () => navigate('/Curator') },
   ];
 
@@ -199,52 +196,6 @@ function WineKeeperInner() {
     { label: t('wine.tastingsLogged', 'Tastings'), value: tastings.length },
     { label: t('wine.avgRating', 'Avg Rating'), value: avgRating },
   ];
-
-  // Story narrative and metadata
-  const collectionValue = useMemo(() => selectWineCollectionValue(wines), [wines]);
-  const totalBottles = useMemo(() => selectTotalWineBottles(wines), [wines]);
-  const readyToDrink = useMemo(() => selectWineReadyToDrinkCount(wines), [wines]);
-  
-  const topProducer = useMemo(() => {
-    if (wines.length === 0) return null;
-    const producers = {};
-    wines.forEach(w => {
-      if (w.producer) producers[w.producer] = (producers[w.producer] || 0) + 1;
-    });
-    return Object.entries(producers).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-  }, [wines]);
-
-  const topVarietal = useMemo(() => {
-    if (wines.length === 0) return null;
-    const varietals = {};
-    wines.forEach(w => {
-      if (w.varietal) varietals[w.varietal] = (varietals[w.varietal] || 0) + 1;
-    });
-    return Object.entries(varietals).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-  }, [wines]);
-
-  const favoriteRegion = useMemo(() => {
-    if (wines.length === 0) return null;
-    const regions = {};
-    wines.forEach(w => {
-      const region = w.appellation || w.region || w.country_of_origin;
-      if (region) regions[region] = (regions[region] || 0) + 1;
-    });
-    return Object.entries(regions).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-  }, [wines]);
-
-  const highestRatedWine = useMemo(() => {
-    if (wines.length === 0) return null;
-    const rated = wines.filter(w => w.rating > 0).sort((a, b) => b.rating - a.rating);
-    return rated[0] || null;
-  }, [wines]);
-
-  const mostValuableWine = useMemo(() => {
-    if (wines.length === 0) return null;
-    return [...wines]
-      .sort((a, b) => getWineTotalValue(b) - getWineTotalValue(a))
-      .find(w => getWineTotalValue(w) > 0) || null;
-  }, [wines]);
 
   return (
     <>
@@ -280,54 +231,6 @@ function WineKeeperInner() {
 
       {/* Collection Highlights */}
       <ModuleHighlightsSection highlights={highlights} />
-
-      {/* My WineKeeper Story */}
-      {wines.length > 0 && (
-        <ModuleStorySection
-          title={t('wine.myWinekeeperStory', 'My WineKeeper Story')}
-          accent="#8B3A3A"
-          onShare={() => setShowShareModal(true)}
-          narrative={
-            <>
-              <p>
-                {wines.length === 1
-                  ? t('wine.storyOne', 'You have one wine in your collection.')
-                  : t('wine.storyMultiple', `You've curated a collection of ${wines.length} wines`)}
-                {totalBottles > wines.length && ` with ${totalBottles} total bottles in your cellar`}.
-                {collectionValue > 0 && ` Your collection is valued at ${formatFromBase(collectionValue)}.`}
-              </p>
-              {topProducer && (
-                <p>
-                  {t('wine.storyProducer', 'Your most represented producer is')} <span className="font-semibold text-[#F5F1E7]">{topProducer}</span>
-                  {topVarietal && `, complemented by ${topVarietal} as your primary varietal`}.
-                </p>
-              )}
-              {favoriteRegion && (
-                <p>
-                  {t('wine.storyRegion', 'You have a particular affinity for wines from')} <span className="font-semibold text-[#F5F1E7]">{favoriteRegion}</span>.
-                </p>
-              )}
-              {highestRatedWine && (
-                <p>
-                  {t('wine.storyRated', 'Your highest-rated wine is')} <span className="font-semibold text-[#F5F1E7]">{getWineDisplayName(highestRatedWine)}</span>
-                  {getWineProducer(highestRatedWine) && ` from ${getWineProducer(highestRatedWine)}`}
-                  {highestRatedWine.rating && ` at ${highestRatedWine.rating}/5 stars`}.
-                </p>
-              )}
-              {readyToDrink > 0 && (
-                <p>
-                  {t('wine.storyReady', `You currently have ${readyToDrink} wine${readyToDrink === 1 ? '' : 's'} at peak drinking window.`)}
-                </p>
-              )}
-              {tastings.length > 0 && (
-                <p>
-                  {t('wine.storyTastings', `You've logged ${tastings.length} tasting${tastings.length === 1 ? '' : 's'}, building a rich tasting history.`)}
-                </p>
-              )}
-            </>
-          }
-        />
-      )}
 
       {/* Recent Tastings */}
       {recentTastings.length > 0 && (

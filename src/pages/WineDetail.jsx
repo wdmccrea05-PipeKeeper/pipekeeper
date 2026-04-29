@@ -20,7 +20,7 @@ import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
 import {
   ArrowLeft, Star, Edit2, Trash2, BookOpen, BookmarkPlus,
   MapPin, Wine, AlertTriangle, TrendingUp, Package, BarChart2,
-  CheckCircle, Clock, ChevronDown, ChevronUp, X,
+  CheckCircle, Clock, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
 

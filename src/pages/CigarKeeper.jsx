@@ -5,14 +5,11 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Cigarette, Plus, BarChart3, BookOpen, Grid3X3, AlertTriangle, TrendingDown, Clock, Droplets } from 'lucide-react';
 import ModulePageShell from '@/components/modules/ModulePageShell';
-
-const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 import { base44 } from '@/api/base44Client';
 import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
-import CigarHighlightCard from '@/components/cigars/CigarHighlightCard';
-import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import { getCigarHighlights } from '@/components/cigars/getCigarHighlights';
+import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { getCollectionInsights } from '@/platform/cigarInsights';
@@ -23,6 +20,8 @@ import {
   getHumidorMaintenanceStatus,
   humidorNeedsAttention,
 } from '@/components/cigars/humidorMaintenanceUtils';
+
+const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
 function formatDate(value, locale) {
   if (!value) return '—';
@@ -285,8 +284,6 @@ function CigarKeeperInner() {
       moduleNav={<CigarKeeperModuleNav currentPageName={null} onLogSession={() => setSessionModalOpen(true)} />}
       actions={<ModuleQuickLaunch actions={quickLaunchActions} />}
     >
-      <CigarHighlightCard cigars={cigars} sessions={sessions} humidors={humidors} />
-
       {actionItems.length > 0 && (
         <div className="space-y-2">
           {actionItems.map(({ key, icon: Icon, color, bg, border, label, onClick }) => (

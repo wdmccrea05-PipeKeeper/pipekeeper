@@ -66,25 +66,22 @@ describe('Module homepage standardization', () => {
     });
   });
 
-  describe('WineKeeper uses ModuleStorySection', () => {
-    it('WineKeeper imports ModuleStorySection', () => {
+  describe('WineKeeper does not use inline ModuleStorySection', () => {
+    it('WineKeeper does not import ModuleStorySection', () => {
       const src = readPage('WineKeeper.jsx');
-      expect(src, 'WineKeeper must import ModuleStorySection').toContain('ModuleStorySection');
+      expect(src, 'WineKeeper must not import ModuleStorySection (removed in favour of Share Story action)').not.toContain('ModuleStorySection');
     });
 
-    it('WineKeeper renders <ModuleStorySection', () => {
+    it('WineKeeper does not render <ModuleStorySection', () => {
       const src = readPage('WineKeeper.jsx');
-      expect(src, 'WineKeeper must render <ModuleStorySection').toContain('<ModuleStorySection');
+      expect(src, 'WineKeeper must not render <ModuleStorySection').not.toContain('<ModuleStorySection');
     });
   });
 
-  describe('WineKeeper story has image highlight cards', () => {
-    it('WineKeeper passes storyHighlights to ModuleStorySection', () => {
+  describe('WineKeeper has Share Story quick action instead of inline story block', () => {
+    it('WineKeeper quick actions include a share story trigger', () => {
       const src = readPage('WineKeeper.jsx');
-      expect(
-        src,
-        'WineKeeper ModuleStorySection must receive storyHighlights prop'
-      ).toContain('storyHighlights=');
+      expect(src, 'WineKeeper must have a shareStory or showShareModal action').toMatch(/shareStory|showShareModal/);
     });
 
     it('WineKeeper does not have a text-only story block (no custom inline story div)', () => {
