@@ -13,7 +13,7 @@ import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import CigarHighlightCard from '@/components/cigars/CigarHighlightCard';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import { getCigarHighlights } from '@/components/cigars/getCigarHighlights';
-import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
+import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { getCollectionInsights } from '@/platform/cigarInsights';
 import {
@@ -182,8 +182,13 @@ function CigarKeeperInner() {
   );
 
   const highlights = useMemo(
-    () => getCigarHighlights(cigars, formatFromBase),
-    [cigars, formatFromBase]
+    () => getCigarHighlights(cigars, formatFromBase).map((h) => ({
+      ...h,
+      onClick: h.cigarId
+        ? () => navigate(`/Cigars?highlight=${encodeURIComponent(h.cigarId)}`)
+        : undefined,
+    })),
+    [cigars, formatFromBase, navigate]
   );
 
   const actionItems = [
@@ -300,31 +305,7 @@ function CigarKeeperInner() {
       )}
 
       {highlights.length > 0 && (
-        <div>
-          <h2
-            className="text-xs font-semibold uppercase tracking-[0.14em] mb-4"
-            style={{ color: 'rgba(180,140,75,0.8)' }}
-          >
-            {t('home.highlights')}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {highlights.map((highlight) => (
-              <WhiskeyHighlightCard
-                key={highlight.key}
-                title={highlight.title}
-                value={highlight.value}
-                subtitle={highlight.subtitle}
-                accent={highlight.accent}
-                photo={highlight.photo}
-                onClick={() => {
-                  if (highlight.cigarId) {
-                    navigate(`/Cigars?highlight=${encodeURIComponent(highlight.cigarId)}`);
-                  }
-                }}
-              />
-            ))}
-          </div>
-        </div>
+        <ModuleHighlightsSection highlights={highlights} />
       )}
 
       {/* Humidor alerts */}

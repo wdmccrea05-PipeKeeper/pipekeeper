@@ -11,9 +11,9 @@ import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav'
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import ModulePageShell from '@/components/modules/ModulePageShell';
 import { getWhiskeyHighlights } from '@/components/whiskey/getWhiskeyHighlights';
-import WhiskeyHighlightCard from '@/components/whiskey/WhiskeyHighlightCard';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -52,8 +52,13 @@ function WhiskeyKeeperInner() {
   );
 
   const highlights = useMemo(
-    () => getWhiskeyHighlights(bottles, inventoryUnits, formatFromBase),
-    [bottles, inventoryUnits, formatFromBase]
+    () => getWhiskeyHighlights(bottles, inventoryUnits, formatFromBase).map((h) => ({
+      ...h,
+      onClick: h.bottleId
+        ? () => navigate(`/Whiskey?highlight=${encodeURIComponent(h.bottleId)}`)
+        : undefined,
+    })),
+    [bottles, inventoryUnits, formatFromBase, navigate]
   );
 
   const whiskeyStats = [
@@ -89,28 +94,7 @@ function WhiskeyKeeperInner() {
       />
 
       {highlights.length > 0 && (
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: 'rgba(180,140,75,0.8)' }}>
-            {t('home.highlights')}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {highlights.map((highlight) => (
-              <WhiskeyHighlightCard
-                key={highlight.key}
-                title={highlight.title}
-                value={highlight.value}
-                subtitle={highlight.subtitle}
-                accent={highlight.accent}
-                photo={highlight.photo}
-                onClick={() => {
-                  if (highlight.bottleId) {
-                    navigate(`/Whiskey?highlight=${encodeURIComponent(highlight.bottleId)}`);
-                  }
-                }}
-              />
-            ))}
-          </div>
-        </div>
+        <ModuleHighlightsSection highlights={highlights} />
       )}
     </ModulePageShell>
   );

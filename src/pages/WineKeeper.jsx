@@ -4,18 +4,28 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
-import { Wine, Plus, BarChart3, BookOpen, Share2 } from 'lucide-react';
+import { Wine, Plus, BarChart3, BookOpen } from 'lucide-react';
 import ModulePageShell from '@/components/modules/ModulePageShell';
+import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
+import ModuleStorySection from '@/components/modules/ModuleStorySection';
+import ModuleRecentActivitySection from '@/components/modules/ModuleRecentActivitySection';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
-import { InsightsHighlightCard, InsightsHighlightGrid } from '@/components/insights/InsightsShell';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
-import { selectWineCollectionValue, selectTotalWineBottles, selectWineReadyToDrinkCount, getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
+import {
+  selectWineCollectionValue,
+  selectTotalWineBottles,
+  selectWineReadyToDrinkCount,
+  getWinePrimaryImage,
+  getWineTotalValue,
+  getWineDisplayName,
+  getWineProducer,
+} from '@/lib/collection/wineSelectors';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -106,11 +116,13 @@ function WineKeeperInner() {
       cards.push({
         key: 'mostValuable',
         title: t('wine.mostValuable', 'Most Valuable'),
-        value: mostVal.name,
-        subtitle: mostVal.producer ? `${mostVal.producer}${mostVal.vintage ? ` · ${mostVal.vintage}` : ''}` : mostVal.vintage || formatFromBase(mostVal._tv),
+        value: getWineDisplayName(mostVal),
+        subtitle: getWineProducer(mostVal)
+          ? `${getWineProducer(mostVal)}${mostVal.vintage ? ` · ${mostVal.vintage}` : ''}`
+          : mostVal.vintage || formatFromBase(mostVal._tv),
         accent: '#8B3A3A',
         photo: getWinePrimaryImage(mostVal),
-        wineId: mostVal.id,
+        onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(mostVal.id)}`),
       });
     }
 
@@ -127,11 +139,11 @@ function WineKeeperInner() {
       cards.push({
         key: 'drinkingNow',
         title: t('wine.drinkingNow', 'Drink Now'),
-        value: dw.name,
-        subtitle: `${dw.producer || ''}${dw.vintage ? ` · ${dw.vintage}` : ''}`.trim() || t('wine.drinkingNowSubtitle', 'at peak drinking window'),
+        value: getWineDisplayName(dw),
+        subtitle: [getWineProducer(dw), dw.vintage].filter(Boolean).join(' · ') || t('wine.drinkingNowSubtitle', 'at peak drinking window'),
         accent: '#2E7D5C',
         photo: getWinePrimaryImage(dw),
-        wineId: dw.id,
+        onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(dw.id)}`),
       });
     }
 
@@ -141,11 +153,11 @@ function WineKeeperInner() {
       cards.push({
         key: 'topRated',
         title: t('wine.topRated', 'Top Rated'),
-        value: rated[0].name,
-        subtitle: `★ ${rated[0].rating}/5${rated[0].producer ? ` · ${rated[0].producer}` : ''}`,
+        value: getWineDisplayName(rated[0]),
+        subtitle: `★ ${rated[0].rating}/5${getWineProducer(rated[0]) ? ` · ${getWineProducer(rated[0])}` : ''}`,
         accent: '#8B4B6B',
         photo: getWinePrimaryImage(rated[0]),
-        wineId: rated[0].id,
+        onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(rated[0].id)}`),
       });
     }
 
@@ -156,17 +168,17 @@ function WineKeeperInner() {
         cards.push({
           key: 'favorite',
           title: t('wine.favorites', 'Favorites'),
-          value: favorites[0].name,
-          subtitle: favorites[0].producer || '',
+          value: getWineDisplayName(favorites[0]),
+          subtitle: getWineProducer(favorites[0]) || '',
           accent: '#8B3A3A',
           photo: getWinePrimaryImage(favorites[0]),
-          wineId: favorites[0].id,
+          onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(favorites[0].id)}`),
         });
       }
     }
 
     return cards.slice(0, 4);
-  }, [wines, formatFromBase, t]);
+  }, [wines, formatFromBase, t, navigate]);
 
   const quickLaunchActions = [
     { key: 'addWine', Icon: Plus, label: t('wine.addBottle', 'Add Bottle'), onClick: () => setShowAddModal(true) },
@@ -266,56 +278,17 @@ function WineKeeperInner() {
       }
     >
 
-      {highlights.length > 0 && (
-        <InsightsHighlightGrid>
-          {highlights.map((h) => (
-            <InsightsHighlightCard
-              key={h.key}
-              title={h.title}
-              value={h.value}
-              subtitle={h.subtitle}
-              accent={h.accent}
-              photo={h.photo}
-              onClick={() => h.wineId && navigate(`/Wines?highlight=${encodeURIComponent(h.wineId)}`)}
-            />
-          ))}
-        </InsightsHighlightGrid>
-      )}
+      {/* Collection Highlights */}
+      <ModuleHighlightsSection highlights={highlights} />
 
-      {recentTastings.length > 0 && (
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: 'rgba(180,140,75,0.8)' }}>
-            {t('wine.recentTastings', 'Recent Tastings')}
-          </h2>
-          <div className="space-y-3">
-            {recentTastings.map((tasting) => (
-              <RecentTastingCard key={tasting.id} tasting={tasting} t={t} />
-            ))}
-          </div>
-        </div>
-      )}
-
+      {/* My WineKeeper Story */}
       {wines.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: 'rgba(180,140,75,0.8)' }}>
-              {t('wine.myWineStory', 'My Wine Story')}
-            </h2>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setShowShareModal(true)}
-              className="text-xs text-[#C47070] hover:bg-white/5"
-            >
-              <Share2 className="w-3.5 h-3.5 mr-1.5" />
-              {t('common.share', 'Share')}
-            </Button>
-          </div>
-          <div
-            className="rounded-xl p-5 mb-5"
-            style={{ background: 'rgba(163,92,92,0.08)', border: '1px solid rgba(139,58,58,0.2)' }}
-          >
-            <div className="space-y-3 text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.85)' }}>
+        <ModuleStorySection
+          title={t('wine.myWinekeeperStory', 'My WineKeeper Story')}
+          accent="#8B3A3A"
+          onShare={() => setShowShareModal(true)}
+          narrative={
+            <>
               <p>
                 {wines.length === 1
                   ? t('wine.storyOne', 'You have one wine in your collection.')
@@ -325,8 +298,8 @@ function WineKeeperInner() {
               </p>
               {topProducer && (
                 <p>
-                  {t('wine.storyProducer', 'Your most represented producer is')} <span className="font-semibold text-[#F5F1E7]">{topProducer}</span>,
-                  {topVarietal && ` complemented by ${topVarietal} as your primary varietal`}.
+                  {t('wine.storyProducer', 'Your most represented producer is')} <span className="font-semibold text-[#F5F1E7]">{topProducer}</span>
+                  {topVarietal && `, complemented by ${topVarietal} as your primary varietal`}.
                 </p>
               )}
               {favoriteRegion && (
@@ -336,8 +309,8 @@ function WineKeeperInner() {
               )}
               {highestRatedWine && (
                 <p>
-                  {t('wine.storyRated', 'Your highest-rated wine is')} <span className="font-semibold text-[#F5F1E7]">{highestRatedWine.name}</span>
-                  {highestRatedWine.producer && ` from ${highestRatedWine.producer}`}
+                  {t('wine.storyRated', 'Your highest-rated wine is')} <span className="font-semibold text-[#F5F1E7]">{getWineDisplayName(highestRatedWine)}</span>
+                  {getWineProducer(highestRatedWine) && ` from ${getWineProducer(highestRatedWine)}`}
                   {highestRatedWine.rating && ` at ${highestRatedWine.rating}/5 stars`}.
                 </p>
               )}
@@ -351,22 +324,23 @@ function WineKeeperInner() {
                   {t('wine.storyTastings', `You've logged ${tastings.length} tasting${tastings.length === 1 ? '' : 's'}, building a rich tasting history.`)}
                 </p>
               )}
-            </div>
+            </>
+          }
+          storyHighlights={highlights}
+        />
+      )}
+
+      {/* Recent Tastings */}
+      {recentTastings.length > 0 && (
+        <ModuleRecentActivitySection title={t('wine.recentTastings', 'Recent Tastings')}>
+          <div className="space-y-3">
+            {recentTastings.map((tasting) => (
+              <RecentTastingCard key={tasting.id} tasting={tasting} t={t} />
+            ))}
           </div>
-
-        </div>
+        </ModuleRecentActivitySection>
       )}
 
-      {wines.length === 0 && (
-        <div
-          className="rounded-xl p-6 text-center"
-          style={{ background: 'rgba(163,92,92,0.08)', border: '1px solid rgba(139,58,58,0.2)' }}
-        >
-          <p style={{ color: 'rgba(224,216,200,0.6)' }} className="text-sm">
-            {t('wine.storyEmpty', 'Start adding wines to build your WineKeeper story.')}
-          </p>
-        </div>
-      )}
     </ModulePageShell>
 
     <AddFlowModal

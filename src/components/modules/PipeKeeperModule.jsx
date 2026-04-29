@@ -13,7 +13,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import { calculateCellaredOzFromBlend } from '@/components/utils/tobaccoQuantityHelpers';
 import { checkFreeTierLimit } from '@/components/utils/freeTierLimits';
 import PipeKeeperModuleNav from './PipeKeeperModuleNav';
-import CatalogPlate from '@/components/home/CatalogPlate';
+import ModuleHighlightsSection from './ModuleHighlightsSection';
 import ModuleQuickLaunch from './ModuleQuickLaunch';
 import ModulePageShell from './ModulePageShell';
 import { useProfilePrivacy } from '@/components/hooks/useProfilePrivacy';
@@ -120,6 +120,44 @@ export default function PipeKeeperModule() {
     navigate(location.pathname, { replace: true });
   };
 
+  const pipeHighlights = useMemo(() => {
+    const items = [];
+    if (mostSmokedPipe) {
+      items.push({
+        key: 'mostSmoked',
+        title: t('home.mostSmoked'),
+        value: mostSmokedPipe.name,
+        subtitle: mostSmokedPipe.maker,
+        accent: '#C87941',
+        photo: mostSmokedPipe.photos?.[0] || null,
+        onClick: () => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`)),
+      });
+    }
+    if (mostValuablePipe && !hideValues) {
+      items.push({
+        key: 'mostValuable',
+        title: t('home.mostValuable'),
+        value: formatFromBase(mostValuablePipe.estimated_value),
+        subtitle: mostValuablePipe.name,
+        accent: '#B4824B',
+        photo: mostValuablePipe.photos?.[0] || null,
+        onClick: () => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostValuablePipe.id)}`)),
+      });
+    }
+    if (favoriteBlends.length > 0) {
+      items.push({
+        key: 'favoriteBlend',
+        title: t('home.favoriteBlend'),
+        value: favoriteBlends[0].name,
+        subtitle: favoriteBlends[0].manufacturer,
+        accent: '#5A7C5A',
+        photo: favoriteBlends[0].logo || favoriteBlends[0].photo || null,
+        onClick: () => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlends[0].id)}`)),
+      });
+    }
+    return items;
+  }, [mostSmokedPipe, mostValuablePipe, hideValues, favoriteBlends, formatFromBase, navigate, t]);
+
   const quickLaunchActions = [
     {
       key: 'addPipe',
@@ -206,48 +244,7 @@ export default function PipeKeeperModule() {
       )}
 
       {/* Highlights */}
-      {(mostSmokedPipe || mostValuablePipe || favoriteBlends.length > 0) && (
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: 'rgba(180,140,75,0.8)' }}>
-            {t('home.highlights')}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {mostSmokedPipe && (
-              <CatalogPlate
-                title={t('home.mostSmoked')}
-                value={mostSmokedPipe.name}
-                subtitle={mostSmokedPipe.maker}
-                heroImage={mostSmokedPipe.photos?.[0]}
-                bgImage={mostSmokedPipe.photos?.[0]}
-                accent="#C87941"
-                onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`))}
-              />
-            )}
-            {mostValuablePipe && !hideValues && (
-              <CatalogPlate
-                title={t('home.mostValuable')}
-                value={formatFromBase(mostValuablePipe.estimated_value)}
-                subtitle={mostValuablePipe.name}
-                heroImage={mostValuablePipe.photos?.[0]}
-                bgImage={mostValuablePipe.photos?.[0]}
-                accent="#B4824B"
-                onClick={() => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostValuablePipe.id)}`))}
-              />
-            )}
-            {favoriteBlends.length > 0 && (
-              <CatalogPlate
-                title={t('home.favoriteBlend')}
-                value={favoriteBlends[0].name}
-                subtitle={favoriteBlends[0].manufacturer}
-                heroImage={favoriteBlends[0].logo || favoriteBlends[0].photo}
-                bgImage={favoriteBlends[0].logo || favoriteBlends[0].photo}
-                accent="#5A7C5A"
-                onClick={() => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlends[0].id)}`))}
-              />
-            )}
-          </div>
-        </div>
-      )}
+      <ModuleHighlightsSection highlights={pipeHighlights} />
 
       {/* AI Pipe Identifier Modal */}
       {showIdentifier && (
