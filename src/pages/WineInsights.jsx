@@ -21,8 +21,6 @@ import {
   InsightStatCard,
   InsightPanel,
   InsightSectionHeading,
-  InsightsHighlightGrid,
-  InsightsHighlightCard,
   InsightsEmptyState,
   InsightsSessionPanel,
 } from '@/components/insights/InsightsShell';
