@@ -11,6 +11,8 @@ import {
   buildRedundancyFinding,
   noDataResponses,
 } from '@/components/curator/curatorVoiceLayer';
+import { classifyDiagnosticIntent, DIAGNOSTIC_INTENT } from '@/lib/curator/curatorIntentClassifier.js';
+import { analyzeWineOptimizationIssues } from '@/lib/curator/wineOptimization.js';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -364,8 +366,139 @@ function safeCuratorFallback(context, question) {
  * Build a rich LLM prompt with full collection context.
  * This is the master intelligence layer — handles ALL query types with expert domain knowledge.
  */
+// ─── Wine diagnostic response builder ────────────────────────────────────────
+
+/**
+ * Build a local (non-LLM) diagnostic response for a wine collection issue.
+ * Queries the wine records from collection context and formats a structured reply.
+ *
+ * @param {{ intent: string, module: string }} diagnosticIntent
+ * @param {object[]} wines — wine records from collectionContext
+ * @returns {string} Formatted response text
+ */
+function buildWineDiagnosticResponse(diagnosticIntent, wines = []) {
+  if (!diagnosticIntent) return null;
+
+  const issues = analyzeWineOptimizationIssues(wines);
+  const intentId = diagnosticIntent.intent;
+
+  // Wine missing drinking window
+  if (intentId === DIAGNOSTIC_INTENT.WINE_MISSING_DRINKING_WINDOW) {
+    const issue = issues.find((i) => i.type === 'missing_drinking_window');
+    const affected = issue?.records || [];
+
+    if (!wines.length) {
+      return "Your WineKeeper collection is empty. Once you add wines, Curator will identify which ones need drinking-window data.";
+    }
+
+    if (!affected.length) {
+      return "All wines in your collection already have drinking-window data. No action needed.";
+    }
+
+    const wineLines = affected.slice(0, 10).map((w) => {
+      const label = [w.name || w.wine_name, w.producer, w.vintage, w.region].filter(Boolean).join(' · ');
+      return `- ${label}`;
+    });
+    const moreCount = Math.max(0, affected.length - 10);
+    const moreNote = moreCount > 0 ? `\n- …and ${moreCount} more` : '';
+
+    const autoFixable = issue?.autoFixable
+      ? '\n\nI can estimate drinking windows from vintage, producer, varietal, region, and style, then save suggested drink-from/drink-by dates for review.'
+      : '';
+
+    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} missing drinking-window data:\n${wineLines.join('\n')}${moreNote}${autoFixable}\n\nOptions:\n- Auto-Fix Safe: estimate windows from vintage + style for wines with enough data\n- Review & Apply: see proposed dates before saving\n- Open Records: view the affected wines directly`;
+  }
+
+  // Wine missing valuation
+  if (intentId === DIAGNOSTIC_INTENT.WINE_MISSING_VALUATION) {
+    const issue = issues.find((i) => i.type === 'missing_valuation');
+    const affected = issue?.records || [];
+
+    if (!wines.length) {
+      return "Your WineKeeper collection is empty. Once you add wines, Curator will flag which ones are missing valuation data.";
+    }
+
+    if (!affected.length) {
+      return "All wines in your collection have valuation data. No action needed.";
+    }
+
+    const wineLines = affected.slice(0, 10).map((w) => {
+      const label = [w.name || w.wine_name, w.producer, w.vintage].filter(Boolean).join(' · ');
+      return `- ${label}`;
+    });
+    const moreCount = Math.max(0, affected.length - 10);
+    const moreNote = moreCount > 0 ? `\n- …and ${moreCount} more` : '';
+
+    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} without valuation data:\n${wineLines.join('\n')}${moreNote}\n\nOptions:\n- Auto-Fix Safe: bootstrap from purchase price where available\n- Review & Apply: confirm proposed valuations before saving\n- Open Records: view and update the affected wines manually`;
+  }
+
+  // Wine stale valuation
+  if (intentId === DIAGNOSTIC_INTENT.WINE_STALE_VALUATION) {
+    const issue = issues.find((i) => i.type === 'stale_valuation');
+    const affected = issue?.records || [];
+
+    if (!affected.length) {
+      return "All wines in your collection have current valuation data. No refresh needed.";
+    }
+
+    const wineLines = affected.slice(0, 8).map((w) => {
+      const label = [w.name || w.wine_name, w.producer, w.vintage].filter(Boolean).join(' · ');
+      return `- ${label}`;
+    });
+    const moreCount = Math.max(0, affected.length - 8);
+    const moreNote = moreCount > 0 ? `\n- …and ${moreCount} more` : '';
+
+    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} with stale valuation data:\n${wineLines.join('\n')}${moreNote}\n\nOptions:\n- Auto-Fix Safe: refresh market estimates\n- Review & Apply: confirm updated values before saving`;
+  }
+
+  // Wine missing core metadata
+  if (intentId === DIAGNOSTIC_INTENT.WINE_MISSING_METADATA || intentId === 'missing_core_metadata') {
+    const issue = issues.find((i) => i.type === 'missing_core_metadata');
+    const affected = issue?.records || [];
+
+    if (!wines.length) {
+      return "Your WineKeeper collection is empty. Once you add wines, Curator will identify records with incomplete metadata.";
+    }
+
+    if (!affected.length) {
+      return "All wines in your collection have complete core metadata. No action needed.";
+    }
+
+    const wineLines = affected.slice(0, 10).map((w) => {
+      const missing = ['producer', 'vintage', 'style', 'varietal', 'region', 'country'].filter((f) => !w[f]);
+      const label = [w.name || w.wine_name || '(unnamed)'].filter(Boolean).join('');
+      return `- ${label} [missing: ${missing.join(', ')}]`;
+    });
+    const moreCount = Math.max(0, affected.length - 10);
+    const moreNote = moreCount > 0 ? `\n- …and ${moreCount} more` : '';
+
+    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} with incomplete metadata:\n${wineLines.join('\n')}${moreNote}\n\nCompleting producer, vintage, style, and region unlocks drinking-window estimation, rarity scoring, and more accurate Curator recommendations.`;
+  }
+
+  // General wine issues or collection evaluation
+  if (intentId === DIAGNOSTIC_INTENT.WINE_EVALUATE_ISSUES || intentId === DIAGNOSTIC_INTENT.COLLECTION_EVALUATION) {
+    if (!wines.length) {
+      return "Your WineKeeper collection is empty. Once you add wines, Curator will analyze which records need attention.";
+    }
+
+    const summary = issues.map((issue) => `- ${issue.title}: ${issue.records.length} wine${issue.records.length > 1 ? 's' : ''}`);
+
+    if (!summary.length) {
+      return `Your ${wines.length} wines look complete — no missing data detected.`;
+    }
+
+    return `Here's a summary of your WineKeeper collection issues:\n${summary.join('\n')}\n\nAsk me about any of these to see the specific wines and options.`;
+  }
+
+  // Fallback for other diagnostic types (pipe photos, whiskey notes, etc.)
+  return null;
+}
+
+/**
+ * Build a rich LLM prompt with full collection context.
+ * This is the master intelligence layer — handles ALL query types with expert domain knowledge.
+ */
 function buildLLMPrompt(userMessage, context = {}, history = [], entityContext = {}) {
-  const pipes = context.pipes || [];
   const blends = context.blends || [];
   const bottles = context.bottles || [];
   const smokingLogs = context.smokingLogs || [];
@@ -431,10 +564,22 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
     `- ${i.name}${i.item_type ? ` [${i.item_type}]` : ''}${i.priority ? ` priority:${i.priority}` : ''}`
   );
 
+  // ── Wine collection lines ────────────────────────────────────────────────
+  const wines = context.wines || [];
+  const wineLines = wines.slice(0, 60).map((w) => {
+    const windowStatus = w.drink_window_status || '';
+    const windowRange = w.drinking_window_start && w.drinking_window_end
+      ? ` window:${w.drinking_window_start}-${w.drinking_window_end}`
+      : ' MISSING_WINDOW';
+    const val = w.estimated_unit_value || w.market_estimated_unit_value || w.purchase_price || null;
+    return `- ${w.name}${w.producer ? ` by ${w.producer}` : ''}${w.vintage ? ` ${w.vintage}` : ''}${w.style ? ` [${w.style}]` : ''}${w.varietal ? ` ${w.varietal}` : ''}${w.region ? ` ${w.region}` : ''}${windowRange}${windowStatus ? ` status:${windowStatus}` : ''}${val ? ` est:$${val}` : ' UNVALUED'}`;
+  });
+
   const collectionSummary = [
     blendLines.length > 0 ? `TOBACCO CELLAR (${blends.length} blends):\n${blendLines.join('\n')}` : 'TOBACCO CELLAR: empty',
     pipeLines.length > 0 ? `\nPIPE COLLECTION (${pipes.length} pipes):\n${pipeLines.join('\n')}` : '',
     bottleLines.length > 0 ? `\nWHISKEY SHELF (${bottles.length} bottles):\n${bottleLines.join('\n')}` : '',
+    wineLines.length > 0 ? `\nWINE CELLAR (${wines.length} wines):\n${wineLines.join('\n')}` : '',
     wantListLines.length > 0 ? `\nWANT LIST / ACQUISITION QUEUE:\n${wantListLines.join('\n')}` : '',
     smokingLogs.length > 0 ? `\nTotal smoking sessions logged: ${smokingLogs.length}` : '',
     tastingLogs.length > 0 ? `\nTotal whiskey tastings logged: ${tastingLogs.length}` : '',
@@ -450,7 +595,16 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
     ? `USER CONSTRAINTS: ${JSON.stringify(entityContext.constraints)}\n`
     : '';
 
-  return `You are Curator — a world-class collector intelligence assistant specializing in pipe tobacco, whiskey, cigars, and fine collectibles. You combine the knowledge of an expert tobacconist, master sommelier, and seasoned collector advisor.
+  return `You are Curator — a world-class collector intelligence assistant specializing in pipe tobacco, whiskey, cigars, fine wines, and collectibles. You combine the knowledge of an expert tobacconist, master sommelier, and seasoned collector advisor.
+
+═══ CRITICAL: DIAGNOSTIC ROUTING ═══
+When the user references a collection issue label, report title, dashboard card, or phrase like "records without X" / "wines missing Y", treat it as a request to ANALYZE THE USER'S ACTUAL COLLECTION DATA — NOT as a product name.
+Examples that must NEVER be treated as product names:
+- "Wines Without a Drinking Window" → analyze WINE CELLAR records with MISSING_WINDOW
+- "Cigars Without Valuation" → analyze cigar records missing valuation data
+- "Pipes Missing Photos" → analyze PipeKeeper records without photos
+- "Whiskeys Without Tasting Notes" → analyze WhiskeyKeeper records missing notes
+Only treat a phrase as a product name if the user explicitly asks about a specific product (e.g., "Tell me about Laphroaig 10yr").
 
 ═══ USER COLLECTION ═══
 ${collectionSummary || 'No collection data yet.'}
@@ -459,7 +613,7 @@ ${currentSubject}${constraints}${recentHistory ? `═══ CONVERSATION HISTORY
 ═══ YOUR MISSION ═══
 Answer the user's question with the precision of a trusted expert. You have two roles:
 1. COLLECTION ANALYST: Use the actual collection data above to give personalized insights
-2. DOMAIN EXPERT: Use your deep knowledge of tobacco/whiskey to recommend products, explain styles, and guide purchases — even for items NOT in the collection
+2. DOMAIN EXPERT: Use your deep knowledge of tobacco/whiskey/wine to recommend products, explain styles, and guide purchases — even for items NOT in the collection
 
 ═══ ANSWER RULES ═══
 SIMILARITY/RECOMMENDATIONS: Always give 4-7 specific named products with WHY each matches. Use flavor profile, strength, blend type, style. Never say "I need more information."
@@ -471,6 +625,7 @@ PURCHASE GUIDANCE: Give specific product names with price context. Factor what t
 PAIRING: Explain the interaction — not just "goes well together." Why do these flavors complement or contrast?
 REDUNDANCY: Name specific items that overlap. Explain what makes them redundant.
 UNDERUSED: Look at sessions count and lastSmoked days. Items with 0 sessions or 60+ days = underused.
+WINE DIAGNOSTICS: When user asks about wines missing drinking window, valuation, or metadata, list the specific wines from WINE CELLAR above marked MISSING_WINDOW or UNVALUED. Never reference external wine products or producers not in the collection.
 
 ═══ FORMAT RULES ═══
 - Lead with the direct answer — no preamble or caveats
@@ -1368,7 +1523,7 @@ export default function ExpertTobacconistChat({
 
   useEffect(() => {
     if (initialEntityContext) {
-      const { id, name, type, ownershipHint } = initialEntityContext;
+      const { id, name, type, ownershipHint, structuredIssueContext } = initialEntityContext;
       if (name) {
         setEntityContext((prev) => ({
           ...prev,
@@ -1380,6 +1535,8 @@ export default function ExpertTobacconistChat({
           relatedEntities: [],
           rankedCandidates: [],
           rankedCursor: 0,
+          // Preserve structured issue context so sendMessage can use it for diagnostic routing
+          structuredIssueContext: structuredIssueContext || null,
         }));
       }
     }
@@ -1440,6 +1597,21 @@ export default function ExpertTobacconistChat({
     setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content: text }]);
     setInput('');
     try {
+      // ── Diagnostic intent check (MUST run before LLM routing) ──────────────
+      // Intercepts collection issue labels (e.g., "Wines Without a Drinking Window")
+      // so they are never misrouted to the LLM as product/blend name lookups.
+      const diagnosticIntent = classifyDiagnosticIntent(text, entityContext.structuredIssueContext);
+      if (diagnosticIntent) {
+        const wines = Array.isArray(collectionContext?.wines) ? collectionContext.wines : [];
+        const diagnosticReply = buildWineDiagnosticResponse(diagnosticIntent, wines);
+        if (diagnosticReply) {
+          setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: diagnosticReply }]);
+          return;
+        }
+        // diagnosticReply is null for non-wine diagnostic types (pipes, whiskey, etc.)
+        // Fall through to LLM which has diagnostic guardrails in its prompt.
+      }
+
       const intent = classifyIntent(text);
       const useLLM = needsLLM(text, intent);
 
@@ -1451,16 +1623,18 @@ export default function ExpertTobacconistChat({
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
         const cleanReply = llmReply.trim() || 'I was not able to generate a response. Please try rephrasing.';
-        // Update entity context with any named product mentioned
-        const namedProductMatch = text.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z&][a-zA-Z']+){1,4})\b/g);
-        if (namedProductMatch?.[0]) {
-          setEntityContext((prev) => ({
-            ...prev,
-            subject: { name: namedProductMatch[0], type: 'external', id: null },
-            topicIntent: 'similarity_query',
-            lastClaimType: 'llm_recommendation',
-            lastEvidenceClass: 'STRONG',
-          }));
+        // Update entity context with any named product mentioned (skip for diagnostic phrases)
+        if (!diagnosticIntent) {
+          const namedProductMatch = text.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z&][a-zA-Z']+){1,4})\b/g);
+          if (namedProductMatch?.[0]) {
+            setEntityContext((prev) => ({
+              ...prev,
+              subject: { name: namedProductMatch[0], type: 'external', id: null },
+              topicIntent: 'similarity_query',
+              lastClaimType: 'llm_recommendation',
+              lastEvidenceClass: 'STRONG',
+            }));
+          }
         }
         setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: cleanReply }]);
         return;

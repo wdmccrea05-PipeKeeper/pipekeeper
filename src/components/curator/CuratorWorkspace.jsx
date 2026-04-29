@@ -117,7 +117,25 @@ function buildEntityContextFromPayload(payload = {}) {
   const id   = payload?.id || payload?.recordId || null;
   const type = payload?.recordType || payload?.itemType || payload?.linked_entity_type || 'item';
   if (!name) return null;
-  return { id, name, type };
+
+  // Detect optimization issue payloads and attach structured context so
+  // Curator chat can route diagnostics without relying on title text.
+  const goal = payload?.goal || '';
+  const moduleKey = payload?.moduleKey || '';
+  const isWineIssue = moduleKey === 'wine' || moduleKey === 'winekeeper';
+  const structuredIssueContext = goal
+    ? {
+        source:     'optimization_issue',
+        module:     isWineIssue ? 'winekeeper' : (moduleKey || 'unknown'),
+        issue_type: goal,
+        record_ids: Array.isArray(payload?.items)
+          ? payload.items.map((i) => i?.id || i?.recordId).filter(Boolean)
+          : [],
+        title:      name,
+      }
+    : null;
+
+  return { id, name, type, structuredIssueContext };
 }
 
 function buildSessionPrompt(pairing = {}) {
