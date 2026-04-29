@@ -11,7 +11,7 @@ const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc4971
 import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
-import HeroHighlightCard from '@/components/shared/HeroHighlightCard';
+import { InsightsHighlightCard, InsightsHighlightGrid } from '@/components/insights/InsightsShell';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
@@ -98,56 +98,72 @@ function WineKeeperInner() {
     if (wines.length === 0) return [];
     const cards = [];
 
-    const totalValue = selectWineCollectionValue(wines);
-    if (totalValue > 0) {
+    // Most Valuable Wine
+    const mostVal = [...wines]
+      .map((w) => ({ ...w, _tv: getWineTotalValue(w) }))
+      .sort((a, b) => b._tv - a._tv)
+      .find((w) => w._tv > 0);
+    if (mostVal) {
       cards.push({
-        key: 'totalValue',
-        title: t('wine.collectionValue', 'Collection Value'),
-        value: formatFromBase(totalValue),
-        subtitle: `${wines.length} ${t('wine.bottles', 'bottles')}`,
+        key: 'mostValuable',
+        title: t('wine.mostValuable', 'Most Valuable'),
+        value: mostVal.name,
+        subtitle: mostVal.producer ? `${mostVal.producer}${mostVal.vintage ? ` · ${mostVal.vintage}` : ''}` : mostVal.vintage || formatFromBase(mostVal._tv),
         accent: '#8B3A3A',
+        photo: getWinePrimaryImage(mostVal),
+        wineId: mostVal.id,
       });
     }
 
+    // Drink Now — show actual wine name and photo
+    const now = new Date();
+    const drinkingNow = wines.filter((w) => {
+      const start = w.drinking_window_start || w.drink_window_start;
+      const end = w.drinking_window_end || w.drink_window_end;
+      if (!start || !end) return false;
+      return new Date(start) <= now && new Date(end) >= now;
+    });
+    if (drinkingNow.length > 0) {
+      const dw = drinkingNow[0];
+      cards.push({
+        key: 'drinkingNow',
+        title: t('wine.drinkingNow', 'Drink Now'),
+        value: dw.name,
+        subtitle: `${dw.producer || ''}${dw.vintage ? ` · ${dw.vintage}` : ''}`.trim() || t('wine.drinkingNowSubtitle', 'at peak drinking window'),
+        accent: '#2E7D5C',
+        photo: getWinePrimaryImage(dw),
+        wineId: dw.id,
+      });
+    }
+
+    // Highest Rated Wine
     const rated = wines.filter((w) => w.rating > 0).sort((a, b) => b.rating - a.rating);
     if (rated.length > 0) {
       cards.push({
         key: 'topRated',
         title: t('wine.topRated', 'Top Rated'),
         value: rated[0].name,
-        subtitle: `${rated[0].producer || ''} · ${rated[0].vintage || ''} · ★ ${rated[0].rating}/5`,
-        accent: '#8B3A3A',
+        subtitle: `★ ${rated[0].rating}/5${rated[0].producer ? ` · ${rated[0].producer}` : ''}`,
+        accent: '#8B4B6B',
         photo: getWinePrimaryImage(rated[0]),
         wineId: rated[0].id,
       });
     }
 
-    const drinkingNow = wines.filter((w) => {
-      if (!w.drinking_window_start || !w.drinking_window_end) return false;
-      const now = new Date();
-      return new Date(w.drinking_window_start) <= now && new Date(w.drinking_window_end) >= now;
-    });
-    if (drinkingNow.length > 0) {
-      cards.push({
-        key: 'drinkingNow',
-        title: t('wine.drinkingNow', 'Drink Now'),
-        value: String(drinkingNow.length),
-        subtitle: t('wine.drinkingNowSubtitle', 'bottles at peak'),
-        accent: '#2E7D5C',
-      });
-    }
-
-    const favorites = wines.filter((w) => w.is_favorite);
-    if (favorites.length > 0) {
-      cards.push({
-        key: 'favorite',
-        title: t('wine.favorites', 'Favorites'),
-        value: favorites[0].name,
-        subtitle: favorites[0].producer || '',
-        accent: '#8B3A3A',
-        photo: getWinePrimaryImage(favorites[0]),
-        wineId: favorites[0].id,
-      });
+    // Fallback: favorite wine
+    if (cards.length < 3) {
+      const favorites = wines.filter((w) => w.is_favorite);
+      if (favorites.length > 0) {
+        cards.push({
+          key: 'favorite',
+          title: t('wine.favorites', 'Favorites'),
+          value: favorites[0].name,
+          subtitle: favorites[0].producer || '',
+          accent: '#8B3A3A',
+          photo: getWinePrimaryImage(favorites[0]),
+          wineId: favorites[0].id,
+        });
+      }
     }
 
     return cards.slice(0, 4);
@@ -252,25 +268,19 @@ function WineKeeperInner() {
     >
 
       {highlights.length > 0 && (
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: 'rgba(180,140,75,0.8)' }}>
-            {t('home.highlights', 'Collection Highlights')}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {highlights.map((h) => (
-              <HeroHighlightCard
-                key={h.key}
-                title={h.title}
-                value={h.value}
-                subtitle={h.subtitle}
-                accent={h.accent}
-                photo={h.photo}
-                objectMode="cover"
-                onClick={() => h.wineId && navigate(`/Wines?highlight=${encodeURIComponent(h.wineId)}`)}
-              />
-            ))}
-          </div>
-        </div>
+        <InsightsHighlightGrid>
+          {highlights.map((h) => (
+            <InsightsHighlightCard
+              key={h.key}
+              title={h.title}
+              value={h.value}
+              subtitle={h.subtitle}
+              accent={h.accent}
+              photo={h.photo}
+              onClick={() => h.wineId && navigate(`/Wines?highlight=${encodeURIComponent(h.wineId)}`)}
+            />
+          ))}
+        </InsightsHighlightGrid>
       )}
 
       {recentTastings.length > 0 && (

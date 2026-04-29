@@ -9,7 +9,6 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import WineInsuranceExporter from '@/components/export/WineInsuranceExporter';
 import { importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
 import { selectWineCollectionValue, selectUnvaluedWineCount, hasWineValuation, getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
-import HeroHighlightCard from '@/components/shared/HeroHighlightCard';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
@@ -21,6 +20,8 @@ import {
   InsightStatCard,
   InsightPanel,
   InsightSectionHeading,
+  InsightsHighlightGrid,
+  InsightsHighlightCard,
   InsightsEmptyState,
   InsightsSessionPanel,
 } from '@/components/insights/InsightsShell';
@@ -127,17 +128,17 @@ export default function WineInsights() {
           </InsightsKpiGrid>
 
           {wines.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <InsightsHighlightGrid>
               {stats.topByRating[0] && (
-                <HeroHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} photo={getWinePrimaryImage(stats.topByRating[0])} objectMode="cover" />
+                <InsightsHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} photo={getWinePrimaryImage(stats.topByRating[0])} />
               )}
-              {stats.topByValue[0] && (
-                <HeroHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={getWineTotalValue(stats.topByValue[0]) > 0 ? formatFromBase(getWineTotalValue(stats.topByValue[0])) : '—'} accent="#2E7D5C" photo={getWinePrimaryImage(stats.topByValue[0])} objectMode="cover" />
+              {stats.topByValue[0] && getWineTotalValue(stats.topByValue[0]) > 0 && (
+                <InsightsHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={formatFromBase(getWineTotalValue(stats.topByValue[0]))} accent="#2E7D5C" photo={getWinePrimaryImage(stats.topByValue[0])} />
               )}
-              {stats.drinkingNow > 0 && (
-                <HeroHighlightCard title="In Drinking Window" value={`${stats.drinkingNow} bottle${stats.drinkingNow !== 1 ? 's' : ''}`} subtitle="Ready to open" accent={WINE_GOLD} objectMode="cover" />
+              {stats.drinkingNowWines?.[0] && (
+                <InsightsHighlightCard title="Drink Now" value={stats.drinkingNowWines[0].name} subtitle={`${stats.drinkingNowWines[0].producer || ''}${stats.drinkingNowWines[0].vintage ? ` · ${stats.drinkingNowWines[0].vintage}` : ''}`.trim() || 'Ready to open'} accent={WINE_GOLD} photo={getWinePrimaryImage(stats.drinkingNowWines[0])} />
               )}
-            </div>
+            </InsightsHighlightGrid>
           )}
 
           {wines.length === 0 && (

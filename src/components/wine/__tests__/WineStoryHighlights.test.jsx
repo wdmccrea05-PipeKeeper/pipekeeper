@@ -3,10 +3,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import WineStoryHighlights from '../WineStoryHighlights';
 
-// Mock HeroHighlightCard to capture the props it receives
-vi.mock('@/components/shared/HeroHighlightCard', () => ({
-  default: ({ objectMode, title, value }) => (
-    <div data-testid="hero-highlight-card" data-object-mode={objectMode}>
+// Mock InsightsHighlightCard (now used instead of HeroHighlightCard)
+vi.mock('@/components/insights/InsightsShell', () => ({
+  InsightsHighlightCard: ({ title, value }) => (
+    <div data-testid="hero-highlight-card" data-object-mode="cover">
       <span>{title}</span>
       <span>{value}</span>
     </div>

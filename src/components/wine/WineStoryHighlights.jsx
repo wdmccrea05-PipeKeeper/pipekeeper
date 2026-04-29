@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
-import HeroHighlightCard from '@/components/shared/HeroHighlightCard';
+import { InsightsHighlightCard } from '@/components/insights/InsightsShell';
 
 /**
  * WineStoryHighlights — visual hero cards for wine collection story.
@@ -88,14 +88,13 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {highlights.map((h) => (
-        <HeroHighlightCard
+        <InsightsHighlightCard
           key={h.key}
           title={h.title}
           value={h.value}
           subtitle={h.subtitle}
           photo={h.photo}
           accent={h.accent}
-          objectMode="cover"
           onClick={() => onNavigate && onNavigate(h.key)}
         />
       ))}
