@@ -216,7 +216,7 @@ function WineKeeperInner() {
     if (wines.length === 0) return null;
     return [...wines]
       .sort((a, b) => getWineTotalValue(b) - getWineTotalValue(a))
-      .find(w => getWineTotalValue(w) > 0) || wines[0];
+      .find(w => getWineTotalValue(w) > 0) || null;
   }, [wines]);
 
   return (
