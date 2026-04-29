@@ -165,14 +165,20 @@ function StoryCard({ title, label, item, navigate }) {
                   transform: 'scale(1.15)',
                 }}
               />
-              <div className="absolute inset-0 flex items-center justify-end pr-[8%]">
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <img
                   src={photo}
                   alt={title}
+                  className="absolute"
                   style={{
-                    maxHeight: '92%',
-                    maxWidth: '55%',
+                    right: '-4%',
+                    bottom: '-20%',
+                    height: '150%',
+                    width: '72%',
+                    maxHeight: 'none',
+                    maxWidth: 'none',
                     objectFit: 'contain',
+                    objectPosition: 'center bottom',
                     filter: 'drop-shadow(0 0 20px rgba(139,75,107,0.5)) drop-shadow(0 8px 16px rgba(0,0,0,0.8))',
                   }}
                 />

@@ -55,7 +55,7 @@ describe('HeroHighlightCard', () => {
     expect(unblurredCoverDivs.length).toBe(0);
   });
 
-  it('bottle mode foreground image has constrained maxHeight and maxWidth', () => {
+  it('bottle mode foreground image uses full-height fill style (no thumbnail constraints)', () => {
     const { container } = render(
       <HeroHighlightCard
         title="Top Wine"
@@ -67,11 +67,12 @@ describe('HeroHighlightCard', () => {
 
     const img = container.querySelector('img');
     expect(img).toBeTruthy();
-    // maxHeight should be 88%, maxWidth should be within 42-48% range
-    expect(img.style.maxHeight).toBe('88%');
-    const maxWidth = parseFloat(img.style.maxWidth);
-    expect(maxWidth).toBeGreaterThanOrEqual(42);
-    expect(maxWidth).toBeLessThanOrEqual(48);
+    // maxHeight and maxWidth must be 'none' — no thumbnail constraints
+    expect(img.style.maxHeight).toBe('none');
+    expect(img.style.maxWidth).toBe('none');
+    // height and width must be the large fill values
+    expect(img.style.height).toBe('150%');
+    expect(img.style.width).toBe('72%');
   });
 
   it('bottle mode renders fallback gradient when no photo', () => {

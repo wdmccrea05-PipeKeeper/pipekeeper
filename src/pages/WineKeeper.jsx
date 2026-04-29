@@ -16,7 +16,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import WineStoryHighlights from '@/components/wine/WineStoryHighlights';
-import { selectWineCollectionValue, selectTotalWineBottles, selectWineReadyToDrinkCount, getWinePrimaryImage } from '@/lib/collection/wineSelectors';
+import { selectWineCollectionValue, selectTotalWineBottles, selectWineReadyToDrinkCount, getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -98,16 +98,7 @@ function WineKeeperInner() {
     if (wines.length === 0) return [];
     const cards = [];
 
-    const totalValue = wines.reduce((sum, w) => {
-      const qty = w.quantity || 1;
-      if (w.manual_valuation_enabled && w.manual_estimated_value > 0) return sum + w.manual_estimated_value * qty;
-      if (w.estimated_total_value > 0) return sum + w.estimated_total_value;
-      if (w.market_estimated_total_value > 0) return sum + w.market_estimated_total_value;
-      if (w.estimated_unit_value > 0) return sum + w.estimated_unit_value * qty;
-      if (w.market_estimated_unit_value > 0) return sum + w.market_estimated_unit_value * qty;
-      if (w.estimated_value > 0) return sum + w.estimated_value * qty;
-      return sum;
-    }, 0);
+    const totalValue = selectWineCollectionValue(wines);
     if (totalValue > 0) {
       cards.push({
         key: 'totalValue',
@@ -126,7 +117,7 @@ function WineKeeperInner() {
         value: rated[0].name,
         subtitle: `${rated[0].producer || ''} · ${rated[0].vintage || ''} · ★ ${rated[0].rating}/5`,
         accent: '#8B3A3A',
-        photo: rated[0].photos?.[0],
+        photo: getWinePrimaryImage(rated[0]),
         wineId: rated[0].id,
       });
     }
@@ -154,7 +145,7 @@ function WineKeeperInner() {
         value: favorites[0].name,
         subtitle: favorites[0].producer || '',
         accent: '#8B3A3A',
-        photo: favorites[0].photos?.[0],
+        photo: getWinePrimaryImage(favorites[0]),
         wineId: favorites[0].id,
       });
     }
@@ -223,9 +214,9 @@ function WineKeeperInner() {
 
   const mostValuableWine = useMemo(() => {
     if (wines.length === 0) return null;
-    return wines
-      .map(w => ({ ...w, value: w.estimated_value || w.estimated_unit_value || w.purchase_price || 0 }))
-      .sort((a, b) => b.value - a.value)[0] || null;
+    return [...wines]
+      .sort((a, b) => getWineTotalValue(b) - getWineTotalValue(a))
+      .find(w => getWineTotalValue(w) > 0) || null;
   }, [wines]);
 
   return (

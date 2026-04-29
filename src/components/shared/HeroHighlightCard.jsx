@@ -93,13 +93,14 @@ export default function HeroHighlightCard({
           alt=""
           className="absolute pointer-events-none"
           style={{
-            right: '4%',
-            bottom: '-10%',
-            height: 'auto',
-            width: 'auto',
-            maxHeight: '88%',
-            maxWidth: '45%',
+            right: '-4%',
+            bottom: '-20%',
+            height: '150%',
+            width: '72%',
+            maxHeight: 'none',
+            maxWidth: 'none',
             objectFit: 'contain',
+            objectPosition: 'center bottom',
             opacity: 0.95,
             filter: `drop-shadow(0 0 20px ${accent}50) drop-shadow(0 8px 24px rgba(0,0,0,0.75))`,
           }}
@@ -128,7 +129,7 @@ export default function HeroHighlightCard({
         {/* Bottom-anchored text — constrained to left 55% in bottle mode to avoid foreground overlap */}
         <div
           className="absolute bottom-0 left-0 p-4 sm:p-6"
-          style={isBottleMode ? { maxWidth: '55%', right: 'auto' } : { right: 0 }}
+          style={isBottleMode ? { maxWidth: '60%', right: 'auto' } : { right: 0 }}
         >
           {/* Main value */}
           <div
