@@ -58,8 +58,8 @@ function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions =
 
 export default function SessionHistory() {
   const { t } = useTranslation();
-  const { user, winekeeper_paid, isAdmin } = useCurrentUser();
-  const wineEnabled = winekeeper_paid || isAdmin || canUserAccessModule('winekeeper', user, true);
+  const { user } = useCurrentUser();
+  const wineEnabled = canUserAccessModule('winekeeper', user, true);
   const MODULE_FILTERS = wineEnabled ? [...BASE_MODULE_FILTERS, "wine"] : BASE_MODULE_FILTERS;
   const [moduleFilter, setModuleFilter] = useState("all");
   const [selectedDate, setSelectedDate] = useState(toLocalDateYmd(new Date()));

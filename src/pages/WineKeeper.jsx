@@ -21,6 +21,8 @@ import {
   getWineTotalValue,
   getWineDisplayName,
   getWineProducer,
+  selectTotalWineBottles,
+  selectWineCollectionValue,
 } from '@/lib/collection/wineSelectors';
 
 function formatDate(value) {
@@ -157,7 +159,47 @@ function WineKeeperInner() {
       });
     }
 
-    // Fallback: favorite wine
+    // Fallback: Collection Value
+    if (cards.length < 3) {
+      const cv = selectWineCollectionValue(wines);
+      if (cv > 0) {
+        const tb = selectTotalWineBottles(wines);
+        cards.push({
+          key: 'collectionValue',
+          title: t('wine.collectionValue', 'Collection Value'),
+          value: formatFromBase(cv),
+          subtitle: `${tb} ${tb === 1 ? t('wine.bottleSingular', 'bottle') : t('wine.bottlePlural', 'bottles')}`,
+          accent: '#4A7C5E',
+          photo: null,
+          onClick: () => navigate('/WineInsights'),
+        });
+      }
+    }
+
+    // Fallback: Top Producer
+    if (cards.length < 3) {
+      const producerMap = {};
+      wines.forEach((w) => {
+        const p = getWineProducer(w);
+        if (p) producerMap[p] = (producerMap[p] || 0) + 1;
+      });
+      const topProducerEntry = Object.entries(producerMap).sort((a, b) => b[1] - a[1])[0];
+      if (topProducerEntry) {
+        const [producer, count] = topProducerEntry;
+        const sample = wines.find((w) => getWineProducer(w) === producer);
+        cards.push({
+          key: 'topProducer',
+          title: t('wine.topProducer', 'Top Producer'),
+          value: producer,
+          subtitle: `${count} ${count === 1 ? t('wine.bottleSingular', 'bottle') : t('wine.bottlePlural', 'bottles')}`,
+          accent: '#7B5EA7',
+          photo: getWinePrimaryImage(sample),
+          onClick: () => navigate('/Wines'),
+        });
+      }
+    }
+
+    // Fallback: Favorites
     if (cards.length < 3) {
       const favorites = wines.filter((w) => w.is_favorite);
       if (favorites.length > 0) {
@@ -173,7 +215,24 @@ function WineKeeperInner() {
       }
     }
 
-    return cards.slice(0, 4);
+    // Fallback: Recently Added
+    if (cards.length < 3) {
+      const byDate = [...wines].sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
+      if (byDate.length > 0) {
+        const recent = byDate[0];
+        cards.push({
+          key: 'recentlyAdded',
+          title: t('wine.recentlyAdded', 'Recently Added'),
+          value: getWineDisplayName(recent),
+          subtitle: getWineProducer(recent) || (recent.vintage ? String(recent.vintage) : ''),
+          accent: '#3A6B8B',
+          photo: getWinePrimaryImage(recent),
+          onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(recent.id)}`),
+        });
+      }
+    }
+
+    return cards.slice(0, 3);
   }, [wines, formatFromBase, t, navigate]);
 
   const quickLaunchActions = [
@@ -185,16 +244,14 @@ function WineKeeperInner() {
     { key: 'curator', iconImage: CURATOR_ICON, label: t('quickActions.collectionCurator', 'Collection Curator'), onClick: () => navigate('/Curator') },
   ];
 
-  const ratedWines = wines.filter(w => w.rating > 0);
-  const avgRating = ratedWines.length > 0
-    ? (ratedWines.reduce((s, w) => s + w.rating, 0) / ratedWines.length).toFixed(1)
-    : '—';
+  const totalBottles = selectTotalWineBottles(wines);
+  const collectionValue = selectWineCollectionValue(wines);
 
   const wineStats = [
-    { label: t('wine.totalBottles', 'Total Bottles'), value: wines.length },
-    { label: t('wine.totalInCellar', 'In Cellar'), value: wines.reduce((s, w) => s + (w.quantity || 1), 0) },
+    { label: t('wine.bottleTypes', 'Bottle Types'), value: wines.length },
+    { label: t('wine.totalBottles', 'Total Bottles'), value: totalBottles },
+    { label: t('wine.collectionValue', 'Collection Value'), value: collectionValue > 0 ? formatFromBase(collectionValue) : '—' },
     { label: t('wine.tastingsLogged', 'Tastings'), value: tastings.length },
-    { label: t('wine.avgRating', 'Avg Rating'), value: avgRating },
   ];
 
   return (
