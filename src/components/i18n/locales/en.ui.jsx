@@ -2780,7 +2780,7 @@ const enUI = {
     bundlesTitle: "Bundles",
     bundlesSubtitle: "Founders Bundle (Pipe + Whiskey) and Three Module Bundle",
     threeModuleBundle: "3-Module Bundle",
-    currentlyOnPro: "You're currently on the Pro plan.",
+    fourModuleBundle: "All 4 Modules Bundle",
     currentlyOnPremium: "You're currently on the Premium plan.",
     subUpdated: "✅ Subscription updated",
     fullAccessPrompt: "You've had full access — choose how you'd like to continue.",

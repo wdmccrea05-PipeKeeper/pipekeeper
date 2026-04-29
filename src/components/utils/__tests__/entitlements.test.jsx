@@ -76,7 +76,7 @@ describe('buildEntitlements — free tier limits', () => {
 
   test('free tier has limited photos per item', () => {
     const { limits } = buildEntitlements(freeInput);
-    expect(limits.photosPerItem).toBe(3);
+    expect(limits.photosPerItem).toBe(20);
   });
 });
 

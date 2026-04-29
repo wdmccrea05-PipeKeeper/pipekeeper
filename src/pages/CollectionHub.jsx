@@ -761,16 +761,16 @@ export default function CollectionHub() {
           {wineOpenable ? (
             <StatCard
               icon={Wine}
-              label={t('hub.wine', 'Wine')}
+              label={t('hub.wine')}
               value={isLoading ? '—' : selectWineCount(wines)}
-              sub={isLoading ? '' : `${selectTotalWineBottles(wines)} ${t('hub.bottlesOwnedLabel', 'bottles owned')}`}
+              sub={isLoading ? '' : `${selectTotalWineBottles(wines)} ${t('hub.bottlesOwnedLabel')}`}
               accent="#8B4B6B"
             />
           ) : null}
           {wineOpenable ? (
             <StatCard
               icon={Flame}
-              label={t('hub.wineTastings', 'Wine Tastings')}
+              label={t('hub.wineTastings')}
               value={isLoading ? '—' : wineTastings.length}
               sub={isLoading ? '' : `${selectWineReadyToDrinkCount(wines)} ready to drink`}
               accent="#A35C8B"

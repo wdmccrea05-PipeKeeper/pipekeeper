@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -33,6 +33,20 @@ export default function PipePhotoGallery({ photos = [], isOpen = false, onClose,
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, currentIndex, totalPhotos]);
 
+  const touchStartX = useRef(null);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (delta > 50) handlePrev();
+    else if (delta < -50) handleNext();
+  };
+
   if (!isOpen || totalPhotos === 0) return null;
 
   const photo = validPhotos[currentIndex];
@@ -42,6 +56,8 @@ export default function PipePhotoGallery({ photos = [], isOpen = false, onClose,
       className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4"
       onClick={onClose}
       onTouchMove={(e) => e.stopPropagation()}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Image container — click to close */}
       <div

@@ -255,10 +255,10 @@ function CigarKeeperInner() {
   ];
 
   const cigarStats = [
-    { label: t('cigars.totalCigars', 'Total Cigars'), value: cigars.length },
-    { label: t('cigars.totalSticks', 'Total Sticks'), value: insights.totalSticks ?? cigars.reduce((s, c) => s + (c.quantity || 1), 0) },
-    { label: t('cigars.humidors', 'Humidors'), value: humidors.length },
-    { label: t('cigars.sessionsLogged', 'Sessions'), value: sessions.length },
+    { label: t('cigars.totalCigars'), value: cigars.length },
+    { label: t('cigars.totalSticks'), value: insights.totalSticks ?? cigars.reduce((s, c) => s + (c.quantity || 1), 0) },
+    { label: t('cigars.humidors'), value: humidors.length },
+    { label: t('cigars.sessionsLogged'), value: sessions.length },
   ];
 
   return (
@@ -305,7 +305,7 @@ function CigarKeeperInner() {
             className="text-xs font-semibold uppercase tracking-[0.14em] mb-4"
             style={{ color: 'rgba(180,140,75,0.8)' }}
           >
-            {t('home.highlights', 'Collection Highlights')}
+            {t('home.highlights')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {highlights.map((highlight) => (
