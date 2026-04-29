@@ -1798,10 +1798,10 @@ export function generateRecommendations(context = {}) {
     ),
     ...generatePairingRecommendations(context),
     ...generateGrowExpandRecommendations({
-      pipes:         context.pipes || [],
       blends:        context.blends || [],
       bottles:       context.bottles || [],
       cigars:        context.cigars || [],
+      pipes:         context.pipes || [],
       wines:         context.wines || [],
       smokingLogs:   context.smokingLogs || [],
       preferences:   context.preferences || {},

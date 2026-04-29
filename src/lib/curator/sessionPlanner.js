@@ -230,6 +230,16 @@ function planCigarSession(context = {}) {
   }));
 }
 
+// ─── Wine session scoring constants ──────────────────────────────────────────
+// Baseline score when no prior tasting exists — high enough to make untasted
+// wines attractive candidates without dominating wines that are urgently ripe.
+const WINE_NEVER_TASTED_BASELINE   = 50;
+// Cap on recency-derived score to prevent very old untasted wines from
+// drowning out drinking-window urgency signals.
+const WINE_MAX_RECENCY_SCORE       = 55;
+// Multiplier converts days-since-last-tasting to a recency score.
+const WINE_RECENCY_DAYS_MULTIPLIER = 0.75;
+
 function scoreWine(wine, wineTastings = []) {
   const logs = wineTastings.filter(
     (l) => l?.wine_id === wine.id || l?.wineId === wine.id
@@ -250,7 +260,9 @@ function scoreWine(wine, wineTastings = []) {
   const inWindow = drinkWindowStatus === 'in_window' || drinkWindowStatus === 'drink_now';
 
   // Recency score: how long since last tasting
-  const recencyScore = daysSinceLast === null ? 50 : Math.min(55, daysSinceLast * 0.75);
+  const recencyScore = daysSinceLast === null
+    ? WINE_NEVER_TASTED_BASELINE
+    : Math.min(WINE_MAX_RECENCY_SCORE, daysSinceLast * WINE_RECENCY_DAYS_MULTIPLIER);
 
   // Drinking-window urgency
   const windowScore = pastPeak ? 30 : atPeak ? 25 : inWindow ? 18 : 0;

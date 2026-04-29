@@ -108,8 +108,9 @@ function getDrinkWindowProfile(wine) {
   if (style && DRINKING_WINDOW_BY_STYLE[style]) {
     return DRINKING_WINDOW_BY_STYLE[style];
   }
-  // Default: generic red
-  return DRINKING_WINDOW_BY_STYLE['Red'];
+  // Neutral fallback: use a generic mid-range profile rather than defaulting to Red,
+  // which would incorrectly age-gate whites, sparklings, and rosés.
+  return { minAge: 0, maxAge: 8, peakStart: 1, peakEnd: 5 };
 }
 
 function calcDrinkWindowStatus(age, profile) {
@@ -359,8 +360,9 @@ export function buildWineRarityPatch(wine) {
   }
 
   // Varietal rarity
-  const rarityVarietals = ['Nebbiolo', 'Barolo', 'Barbaresco', 'Pétrus', 'Amarone'];
-  if (rarityVarietals.some((v) => (wine.varietal || '').includes(v))) {
+  // Named collectible wine types — includes varietals and prestigious producers/châteaux
+  const collectibleWineTypes = ['Nebbiolo', 'Barolo', 'Barbaresco', 'Pétrus', 'Amarone'];
+  if (collectibleWineTypes.some((v) => (wine.varietal || '').includes(v))) {
     rarityScore += 25;
     collectibilityScore += 25;
     factors.push(`rare varietal (${wine.varietal})`);
