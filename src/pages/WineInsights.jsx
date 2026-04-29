@@ -130,14 +130,36 @@ export default function WineInsights() {
           {wines.length > 0 && (
             <InsightsHighlightGrid>
               {stats.topByRating[0] && (
-                <InsightsHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} photo={getWinePrimaryImage(stats.topByRating[0])} />
+                <InsightsHighlightCard
+                  title="Top Rated Wine"
+                  value={stats.topByRating[0].name}
+                  subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`}
+                  accent={ACCENT}
+                  photo={getWinePrimaryImage(stats.topByRating[0])}
+                />
               )}
               {stats.topByValue[0] && getWineTotalValue(stats.topByValue[0]) > 0 && (
-                <InsightsHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={formatFromBase(getWineTotalValue(stats.topByValue[0]))} accent="#2E7D5C" photo={getWinePrimaryImage(stats.topByValue[0])} />
+                <InsightsHighlightCard
+                  title="Most Valued Wine"
+                  value={stats.topByValue[0].name}
+                  subtitle={formatFromBase(getWineTotalValue(stats.topByValue[0]))}
+                  accent="#2E7D5C"
+                  photo={getWinePrimaryImage(stats.topByValue[0])}
+                />
               )}
-              {stats.drinkingNowWines?.[0] && (
-                <InsightsHighlightCard title="Drink Now" value={stats.drinkingNowWines[0].name} subtitle={`${stats.drinkingNowWines[0].producer || ''}${stats.drinkingNowWines[0].vintage ? ` · ${stats.drinkingNowWines[0].vintage}` : ''}`.trim() || 'Ready to open'} accent={WINE_GOLD} photo={getWinePrimaryImage(stats.drinkingNowWines[0])} />
-              )}
+              {stats.drinkingNowWines?.[0] && (() => {
+                const dw = stats.drinkingNowWines[0];
+                const sub = `${dw.producer || ''}${dw.vintage ? ` · ${dw.vintage}` : ''}`.trim() || 'Ready to open';
+                return (
+                  <InsightsHighlightCard
+                    title="Drink Now"
+                    value={dw.name}
+                    subtitle={sub}
+                    accent={WINE_GOLD}
+                    photo={getWinePrimaryImage(dw)}
+                  />
+                );
+              })()}
             </InsightsHighlightGrid>
           )}
 
