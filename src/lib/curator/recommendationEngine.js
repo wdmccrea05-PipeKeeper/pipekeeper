@@ -28,6 +28,7 @@ import { generatePurchaseRestockRecommendations } from './purchaseRestockEngine.
 import { generateGrowExpandRecommendations } from './growExpandEngine.js';
 import { normalizeAcquisitionState } from './acquisitionNormalizer.js';
 import { filterAiEligibleItems } from '../../platform/aiEligibility.js';
+import { shouldRefreshWineValuation, getWineValuationStatus } from '../valuation/wineValuation.js';
 
 // ─── Thresholds ───────────────────────────────────────────────────────────────
 
@@ -1523,7 +1524,245 @@ function analyzeWhiskeyCollection(context) {
   return recommendations;
 }
 
-// ─── Main Engine Entry Point ──────────────────────────────────────────────────
+// ─── Category A+B: Wine Record Optimization ──────────────────────────────────
+
+/**
+ * Wine-specific record optimization and collection analysis.
+ * Active when WineKeeper module is enabled.
+ */
+function analyzeWineCollection(context) {
+  const wines = context.wines || [];
+  const recommendations = [];
+
+  if (!wines.length) return recommendations;
+
+  // ── Wines missing core metadata ───────────────────────────────────────────
+  const CORE_FIELDS = [
+    { key: 'producer',        label: 'producer' },
+    { key: 'vintage',         label: 'vintage' },
+    { key: 'style',           label: 'style' },
+    { key: 'varietal',        label: 'varietal' },
+    { key: 'region',          label: 'region' },
+    { key: 'country',         label: 'country' },
+    { key: 'quantity',        label: 'quantity' },
+  ];
+
+  const winesMissingMeta = wines.filter((w) =>
+    CORE_FIELDS.some(({ key }) => !w[key])
+  );
+
+  if (winesMissingMeta.length > 0) {
+    const items = winesMissingMeta.slice(0, MAX_ITEMS_PER_REC).map((w) => {
+      const missing = CORE_FIELDS.filter(({ key }) => !w[key]).map(({ label }) => label);
+      return {
+        id: w.id,
+        recordId: w.id,
+        recordType: 'wine',
+        recordName: w.name,
+        itemName: w.name,
+        ownershipStatus: 'owned',
+        missingFields: missing,
+        proposedChange: null,
+      };
+    });
+
+    recommendations.push(createRecommendation({
+      category:           CATEGORY.RECORD_OPTIMIZATION,
+      goal:               'wine_missing_core_metadata',
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      title:              'Wines Missing Core Metadata',
+      summary:            `${items.length} wine${items.length > 1 ? 's have' : ' has'} incomplete records. Missing fields include producer, vintage, style, varietal, region, or country.`,
+      whyItMatters:       'Wine metadata is essential for accurate pairing recommendations, drinking-window calculations, and valuation. Without it, wines cannot be fully included in Curator analysis.',
+      recommendationText: 'Open each wine record and fill in the missing fields — producer, vintage, style, varietal, region, and country are most critical.',
+      moduleKey:          MODULE_KEY.WINE,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           items.length >= 5 ? PRIORITY.HIGH : PRIORITY.MEDIUM,
+      confidence:         'high',
+      items,
+      actionPayload: { type: 'open_wine_edit', fields: CORE_FIELDS.map((f) => f.key) },
+    }));
+  }
+
+  // ── Wines missing drinking window ─────────────────────────────────────────
+  const winesMissingWindow = wines.filter(
+    (w) => !w.drink_from && !w.drink_by && !w.drinking_window
+  );
+
+  if (winesMissingWindow.length > 0) {
+    const items = winesMissingWindow.slice(0, MAX_ITEMS_PER_REC).map((w) => ({
+      id: w.id,
+      recordId: w.id,
+      recordType: 'wine',
+      recordName: w.name,
+      itemName: w.name,
+      ownershipStatus: 'owned',
+      missingFields: ['drinking window'],
+      proposedChange: null,
+    }));
+
+    recommendations.push(createRecommendation({
+      category:           CATEGORY.RECORD_OPTIMIZATION,
+      goal:               'wine_missing_drinking_window',
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      title:              'Wines Without a Drinking Window',
+      summary:            `${items.length} wine${items.length > 1 ? 's are' : ' is'} missing a drinking window. Without one, Curator cannot flag wines that are ready to drink or past peak.`,
+      whyItMatters:       'The drinking window is what separates a cellar from a collection you can actually use. Wines without this data cannot surface in "drink now" or "hold" recommendations.',
+      recommendationText: 'Add a drink_from / drink_by range for each wine. Use the vintage year and style as a guide if you are unsure.',
+      moduleKey:          MODULE_KEY.WINE,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           PRIORITY.MEDIUM,
+      confidence:         'medium',
+      items,
+      actionPayload: { type: 'open_wine_edit', fields: ['drink_from', 'drink_by'] },
+    }));
+  }
+
+  // ── Wines missing valuation ───────────────────────────────────────────────
+  const winesMissingValuation = wines.filter(
+    (w) => !w.manual_valuation_enabled && !Number(w.market_estimated_unit_value) && !Number(w.estimated_unit_value) && !Number(w.purchase_price)
+  );
+
+  if (winesMissingValuation.length > 0) {
+    const items = winesMissingValuation.slice(0, MAX_ITEMS_PER_REC).map((w) => ({
+      id: w.id,
+      recordId: w.id,
+      recordType: 'wine',
+      recordName: w.name,
+      itemName: w.name,
+      ownershipStatus: 'owned',
+      missingFields: ['valuation'],
+      proposedChange: null,
+    }));
+
+    recommendations.push(createRecommendation({
+      category:           CATEGORY.RECORD_OPTIMIZATION,
+      goal:               'wine_missing_valuation',
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      title:              'Wines Without Valuation Data',
+      summary:            `${items.length} wine${items.length > 1 ? 's have' : ' has'} no pricing or valuation data. Your collection value is understated.`,
+      whyItMatters:       'Valuation data allows Curator to calculate the total value of your cellar and surface high-value wines that may need special attention.',
+      recommendationText: 'Run Wine Valuation Enrichment for these wines, or add a purchase price manually to bootstrap the valuation.',
+      moduleKey:          MODULE_KEY.WINE,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           PRIORITY.LOW,
+      confidence:         'medium',
+      items,
+      actionPayload: { type: 'estimate_wine_value' },
+    }));
+  }
+
+  // ── Wines with stale or low-confidence valuation ──────────────────────────
+  const winesNeedValuationRefresh = wines.filter(
+    (w) => !w.manual_valuation_enabled &&
+      (Number(w.market_estimated_unit_value) > 0 || Number(w.estimated_unit_value) > 0) &&
+      shouldRefreshWineValuation(w)
+  );
+
+  if (winesNeedValuationRefresh.length > 0) {
+    const items = winesNeedValuationRefresh.slice(0, MAX_ITEMS_PER_REC).map((w) => {
+      const status = getWineValuationStatus(w);
+      return {
+        id: w.id,
+        recordId: w.id,
+        recordType: 'wine',
+        recordName: w.name,
+        itemName: w.name,
+        ownershipStatus: 'owned',
+        missingFields: ['valuation refresh'],
+        valuationStatus: status.status,
+        proposedChange: null,
+      };
+    });
+
+    recommendations.push(createRecommendation({
+      category:           CATEGORY.RECORD_OPTIMIZATION,
+      goal:               'wine_stale_valuation',
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      title:              'Wines with Stale or Low-Confidence Valuation',
+      summary:            `${items.length} wine${items.length > 1 ? 's have' : ' has'} valuation data that is outdated or low-confidence and should be refreshed.`,
+      whyItMatters:       'Wine values shift with vintages and market conditions. A 30-day-old valuation may no longer reflect real market prices.',
+      recommendationText: 'Run Wine Valuation Refresh for each listed wine to update market estimates from current data.',
+      moduleKey:          MODULE_KEY.WINE,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           PRIORITY.LOW,
+      confidence:         'high',
+      items,
+      actionPayload: { type: 'refresh_wine_valuation' },
+    }));
+  }
+
+  // ── Wines missing rarity/collectibility scoring ───────────────────────────
+  const winesMissingRarity = wines.filter(
+    (w) => !w.rarity_score && !w.collectibility_score && !w.rarity_notes
+  );
+
+  if (winesMissingRarity.length >= 3) {
+    const items = winesMissingRarity.slice(0, MAX_ITEMS_PER_REC).map((w) => ({
+      id: w.id,
+      recordId: w.id,
+      recordType: 'wine',
+      recordName: w.name,
+      itemName: w.name,
+      ownershipStatus: 'owned',
+      missingFields: ['rarity/collectibility'],
+      proposedChange: null,
+    }));
+
+    recommendations.push(createRecommendation({
+      category:           CATEGORY.RECORD_OPTIMIZATION,
+      goal:               'wine_missing_rarity',
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      title:              'Wines Without Rarity / Collectibility Scores',
+      summary:            `${items.length} wine${items.length > 1 ? 's have' : ' has'} no rarity or collectibility data. These scores help prioritize which bottles to hold vs. drink.`,
+      whyItMatters:       'Rarity and collectibility scoring surfaces the wines in your cellar that appreciate in value and should be held — not opened prematurely.',
+      recommendationText: 'Calculate Rarity / Collectibility for each listed wine using the enrichment action.',
+      moduleKey:          MODULE_KEY.WINE,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           PRIORITY.LOW,
+      confidence:         'medium',
+      items,
+      actionPayload: { type: 'calculate_wine_rarity' },
+    }));
+  }
+
+  // ── Wines missing tasting notes ───────────────────────────────────────────
+  const winesMissingTastingNotes = wines.filter(
+    (w) => !w.tasting_notes && !w.notes && !w.flavor_profile
+  );
+
+  if (winesMissingTastingNotes.length >= 2) {
+    const items = winesMissingTastingNotes.slice(0, MAX_ITEMS_PER_REC).map((w) => ({
+      id: w.id,
+      recordId: w.id,
+      recordType: 'wine',
+      recordName: w.name,
+      itemName: w.name,
+      ownershipStatus: 'owned',
+      missingFields: ['tasting notes'],
+      proposedChange: null,
+    }));
+
+    recommendations.push(createRecommendation({
+      category:           CATEGORY.RECORD_OPTIMIZATION,
+      goal:               'wine_missing_tasting_notes',
+      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      title:              'Wines Without Tasting Notes',
+      summary:            `${items.length} wine${items.length > 1 ? 's have' : ' has'} no tasting notes. Pairing and "what to drink tonight" recommendations are limited without flavor profile data.`,
+      whyItMatters:       'Tasting notes and flavor profiles are the primary signal Curator uses to match wines to pairings and recommend drinks based on mood or food.',
+      recommendationText: 'Add tasting notes for each wine — even brief flavor descriptors help Curator make more accurate pairing suggestions.',
+      moduleKey:          MODULE_KEY.WINE,
+      ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
+      priority:           PRIORITY.LOW,
+      confidence:         'medium',
+      items,
+      actionPayload: { type: 'open_wine_edit', fields: ['tasting_notes', 'notes'] },
+    }));
+  }
+
+  return recommendations;
+}
+
+
 
 /**
  * Generate all structured recommendations for a collection.
@@ -1534,12 +1773,14 @@ function analyzeWhiskeyCollection(context) {
  */
 export function generateRecommendations(context = {}) {
   const whiskeyActive = context.activeModules?.whiskeykeeper !== false;
+  const wineActive    = context.activeModules?.winekeeper    !== false;
 
   const allRecommendations = [
     ...analyzeMetadata(context),
     ...analyzeBalance(context),
     ...analyzeUtilization(context),
     ...(whiskeyActive ? analyzeWhiskeyCollection(context) : []),
+    ...(wineActive    ? analyzeWineCollection(context)    : []),
     ...generatePurchaseRestockRecommendations({
       blends:             context.blends || [],
       bottles:            context.bottles || [],

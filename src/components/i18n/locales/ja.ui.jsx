@@ -1131,6 +1131,7 @@ const jaUI = {
       tobacco: "タバコ",
       whiskey: "Whiskey",
       cigar: "葉巻",
+      wine: "ワイン",
     },
     summary: {
       autoFixable: "自動修正可能",

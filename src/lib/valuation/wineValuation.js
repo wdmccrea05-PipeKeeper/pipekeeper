@@ -50,6 +50,83 @@ export function shouldRefreshWineValuation(wine) {
 }
 
 /**
+ * Build a plain-text LLM prompt for estimating wine valuation.
+ *
+ * @param {object} wine   Wine record
+ * @returns {string}      Prompt string
+ */
+export function buildWineValuationPrompt(wine) {
+  if (!wine) return '';
+  const parts = [
+    `Wine: ${wine.name || 'Unknown'}`,
+    wine.producer ? `Producer: ${wine.producer}` : null,
+    wine.vintage ? `Vintage: ${wine.vintage}` : null,
+    wine.style ? `Style: ${wine.style}` : null,
+    wine.varietal ? `Varietal: ${wine.varietal}` : null,
+    wine.region ? `Region: ${wine.region}` : null,
+    wine.country ? `Country: ${wine.country}` : null,
+    wine.quantity ? `Quantity: ${wine.quantity}` : null,
+    wine.purchase_price ? `Purchase price: $${wine.purchase_price}` : null,
+  ].filter(Boolean);
+
+  return [
+    ...parts,
+    '',
+    'Please estimate the current market value per bottle (estimated_unit_value in USD), ' +
+    'provide a valuation_confidence (high/medium/low), valuation_source, valuation_notes, ' +
+    'and comparable_count (number of comparable sales used).',
+  ].join('\n');
+}
+
+/**
+ * Return a structured status object describing the current valuation state of a wine.
+ *
+ * Status values:
+ *   'manual'   — manual_valuation_enabled is set; no auto-overwrite
+ *   'valued'   — has a recent high/medium-confidence market value
+ *   'stale'    — has a market value but it is older than 30 days
+ *   'low'      — has a market value but confidence is low
+ *   'missing'  — no market value at all
+ *
+ * @param {object} wine
+ * @returns {{ status: string, reason: string }}
+ */
+export function getWineValuationStatus(wine) {
+  if (!wine) return { status: 'missing', reason: 'No wine record provided.' };
+
+  if (wine.manual_valuation_enabled) {
+    return { status: 'manual', reason: 'Manual valuation override is active.' };
+  }
+
+  const hasMarketValue = Number(wine.market_estimated_unit_value) > 0;
+  if (!hasMarketValue) {
+    return { status: 'missing', reason: 'No market value recorded.' };
+  }
+
+  const confidence = normalizeWineValuationConfidence(
+    wine.valuation_confidence || wine.market_valuation_confidence,
+  );
+  if (confidence === 'low') {
+    return { status: 'low', reason: 'Valuation confidence is low.' };
+  }
+
+  const updatedAt = wine.valuation_updated_at || wine.market_valuation_updated_at;
+  if (!updatedAt) {
+    return { status: 'stale', reason: 'Valuation timestamp is missing.' };
+  }
+  const updatedDate = new Date(updatedAt);
+  if (Number.isNaN(updatedDate.getTime())) {
+    return { status: 'stale', reason: 'Valuation timestamp is invalid.' };
+  }
+  const daysSince = (Date.now() - updatedDate.getTime()) / (1000 * 60 * 60 * 24);
+  if (daysSince > REFRESH_AFTER_DAYS) {
+    return { status: 'stale', reason: `Valuation is ${Math.floor(daysSince)} days old (threshold: ${REFRESH_AFTER_DAYS}).` };
+  }
+
+  return { status: 'valued', reason: 'Recent market valuation with acceptable confidence.' };
+}
+
+/**
  * Build a complete valuation patch from a wine record and the LLM enrichment result.
  *
  * - Respects manual_valuation_enabled: returns {} if manual override is active.

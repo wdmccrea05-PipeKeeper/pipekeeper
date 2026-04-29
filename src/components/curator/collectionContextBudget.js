@@ -72,9 +72,11 @@ export function buildSafeCollectionContext(rawContext = {}) {
   const pipes = Array.isArray(rawContext.pipes) ? rawContext.pipes : [];
   const blends = Array.isArray(rawContext.blends) ? rawContext.blends : [];
   const bottles = Array.isArray(rawContext.bottles) ? rawContext.bottles : [];
+  const wines = Array.isArray(rawContext.wines) ? rawContext.wines : [];
   const smokingLogs = Array.isArray(rawContext.smokingLogs) ? rawContext.smokingLogs : [];
   const tastingLogs = Array.isArray(rawContext.tastingLogs) ? rawContext.tastingLogs : [];
-  const allLogs = [...smokingLogs, ...tastingLogs];
+  const wineTastingLogs = Array.isArray(rawContext.wineTastingLogs) ? rawContext.wineTastingLogs : [];
+  const allLogs = [...smokingLogs, ...tastingLogs, ...wineTastingLogs];
 
   const mode = selectContextMode(pipes, blends, bottles, allLogs);
 
@@ -82,10 +84,12 @@ export function buildSafeCollectionContext(rawContext = {}) {
   const eligiblePipes = filterAiEligibleItems(pipes);
   const eligibleBlends = filterAiEligibleItems(blends);
   const eligibleBottles = filterAiEligibleItems(bottles);
+  const eligibleWines = filterAiEligibleItems(wines);
 
   const eligiblePipeIds = eligiblePipes.map((p) => p.id);
   const eligibleBlendIds = eligibleBlends.map((b) => b.id);
   const eligibleBottleIds = eligibleBottles.map((b) => b.id);
+  const eligibleWineIds = eligibleWines.map((w) => w.id);
 
   // ── Build summaries (detail level varies by mode) ────────────────────────
   const pipeSummaries = eligiblePipes.map((p) =>
@@ -100,6 +104,10 @@ export function buildSafeCollectionContext(rawContext = {}) {
     _bottleSummary(b, mode, tastingLogs)
   );
 
+  const wineSummaries = eligibleWines.map((w) =>
+    _wineSummary(w, mode, wineTastingLogs)
+  );
+
   // ── Aggregated log stats (no raw log objects sent to LLM) ────────────────
   const logStats = _buildLogStats(smokingLogs, tastingLogs, pipes, blends, bottles);
 
@@ -108,17 +116,23 @@ export function buildSafeCollectionContext(rawContext = {}) {
     eligiblePipeIds,
     eligibleBlendIds,
     eligibleBottleIds,
+    eligibleWineIds,
     pipeSummaries,
     blendSummaries,
     bottleSummaries,
+    wineSummaries,
     logStats,
+    winePreferences: rawContext.winePreferences || null,
+    wineNotes: rawContext.wineNotes || null,
     totals: {
       pipes: pipes.length,
       blends: blends.length,
       bottles: bottles.length,
+      wines: wines.length,
       eligiblePipes: eligiblePipes.length,
       eligibleBlends: eligibleBlends.length,
       eligibleBottles: eligibleBottles.length,
+      eligibleWines: eligibleWines.length,
       smokingLogs: smokingLogs.length,
       tastingLogs: tastingLogs.length,
     },
@@ -141,8 +155,8 @@ export function buildPromptBlock(safeContext) {
 
   const lines = [
     `COLLECTION CONTEXT [mode: ${safeContext.mode}]`,
-    `Totals: ${safeContext.totals?.pipes || 0} pipes, ${safeContext.totals?.blends || 0} blends, ${safeContext.totals?.bottles || 0} bottles`,
-    `Eligible: ${safeContext.totals?.eligiblePipes || 0} pipes, ${safeContext.totals?.eligibleBlends || 0} blends, ${safeContext.totals?.eligibleBottles || 0} bottles`,
+    `Totals: ${safeContext.totals?.pipes || 0} pipes, ${safeContext.totals?.blends || 0} blends, ${safeContext.totals?.bottles || 0} bottles, ${safeContext.totals?.wines || 0} wines`,
+    `Eligible: ${safeContext.totals?.eligiblePipes || 0} pipes, ${safeContext.totals?.eligibleBlends || 0} blends, ${safeContext.totals?.eligibleBottles || 0} bottles, ${safeContext.totals?.eligibleWines || 0} wines`,
     `Logs: ${safeContext.totals?.smokingLogs || 0} smoking, ${safeContext.totals?.tastingLogs || 0} tasting`,
     '',
   ];
@@ -162,6 +176,37 @@ export function buildPromptBlock(safeContext) {
   if (safeContext.bottleSummaries?.length > 0) {
     lines.push('BOTTLES:');
     safeContext.bottleSummaries.forEach((s) => lines.push(`  - ${s}`));
+    lines.push('');
+  }
+
+  if (safeContext.wineSummaries?.length > 0) {
+    lines.push('WINES:');
+    safeContext.wineSummaries.forEach((s) => lines.push(`  - ${s}`));
+    lines.push('');
+  }
+
+  if (safeContext.winePreferences) {
+    const wp = safeContext.winePreferences;
+    const parts = [];
+    if (wp.styles?.length)          parts.push(`styles: ${wp.styles.join(', ')}`);
+    if (wp.varietals?.length)        parts.push(`varietals: ${wp.varietals.join(', ')}`);
+    if (wp.regions?.length)          parts.push(`regions: ${wp.regions.join(', ')}`);
+    if (wp.drinking_goals?.length)   parts.push(`goals: ${wp.drinking_goals.join(', ')}`);
+    if (wp.pairing_interests?.length) parts.push(`pairings: ${wp.pairing_interests.join(', ')}`);
+    if (wp.flavor_profile?.length)   parts.push(`flavors: ${wp.flavor_profile.join(', ')}`);
+    if (wp.cellar_strategy)          parts.push(`cellar: ${wp.cellar_strategy}`);
+    if (wp.budget_everyday_max)      parts.push(`everyday budget: $${wp.budget_everyday_min || 0}–$${wp.budget_everyday_max}`);
+    if (wp.budget_special_max)       parts.push(`special budget: $${wp.budget_special_min || 0}–$${wp.budget_special_max}`);
+    if (wp.max_recommendation_price) parts.push(`max price: $${wp.max_recommendation_price}`);
+    if (parts.length) {
+      lines.push('WINE PREFERENCES:');
+      parts.forEach((p) => lines.push(`  ${p}`));
+      lines.push('');
+    }
+  }
+
+  if (safeContext.wineNotes) {
+    lines.push(`WINE NOTES: ${safeContext.wineNotes}`);
     lines.push('');
   }
 
@@ -194,6 +239,14 @@ function _bottleSummary(bottle, mode, tastingLogs) {
     return `[${bottle.id}] ${bottle.name || '—'} | ${bottle.type || '—'} | rating: ${bottle.rating || '—'} | tastings: ${tastings}`;
   }
   return `[${bottle.id}] ${bottle.name || '—'} | tastings: ${tastings}`;
+}
+
+function _wineSummary(wine, mode, wineTastingLogs) {
+  const tastings = wineTastingLogs.filter((l) => l.wine_id === wine.id).length;
+  if (mode === 'small') {
+    return `[${wine.id}] ${wine.name || '—'} | ${wine.producer || '—'} | ${wine.vintage || '—'} | ${wine.style || '—'} | qty: ${wine.quantity || 1} | tastings: ${tastings}`;
+  }
+  return `[${wine.id}] ${wine.name || '—'} | ${wine.vintage || '—'} | tastings: ${tastings}`;
 }
 
 function _blendOz(blend) {

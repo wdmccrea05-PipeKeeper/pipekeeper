@@ -1176,6 +1176,7 @@ const plUI = {
       tobacco: "Tytoń",
       whiskey: "Whiskey",
       cigar: "Cygara",
+      wine: "Wino",
     },
     summary: {
       autoFixable: "Do automatycznej naprawy",

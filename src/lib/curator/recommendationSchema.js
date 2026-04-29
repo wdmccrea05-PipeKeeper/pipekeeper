@@ -93,6 +93,7 @@ export const MODULE_KEY = {
   TOBACCO: 'tobacco',
   WHISKEY: 'whiskey',
   CIGAR:   'cigar',
+  WINE:    'wine',
   MULTI:   'multi',
 };
 

@@ -3485,6 +3485,7 @@ const enUI = {
       tobacco: "Tobacco",
       whiskey: "Whiskey",
       cigar: "Cigar",
+      wine: "Wine",
     },
     summary: {
       autoFixable: "Auto-Fixable",
