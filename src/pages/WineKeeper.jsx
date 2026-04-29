@@ -265,7 +265,7 @@ function WineKeeperInner() {
                 subtitle={h.subtitle}
                 accent={h.accent}
                 photo={h.photo}
-                objectMode="bottle"
+                objectMode="cover"
                 onClick={() => h.wineId && navigate(`/Wines?highlight=${encodeURIComponent(h.wineId)}`)}
               />
             ))}

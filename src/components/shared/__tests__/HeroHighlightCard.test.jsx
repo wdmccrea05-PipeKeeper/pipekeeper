@@ -12,7 +12,7 @@ describe('HeroHighlightCard', () => {
     expect(getByText('Château Margaux')).toBeTruthy();
   });
 
-  it('bottle mode renders blurred background and foreground image when photo is provided', () => {
+  it('bottle mode renders as cover (full-card image, no foreground thumbnail)', () => {
     const { container } = render(
       <HeroHighlightCard
         title="Top Wine"
@@ -22,17 +22,19 @@ describe('HeroHighlightCard', () => {
       />
     );
 
-    // Should have a blurred background div
-    const blurredBg = container.querySelector('[style*="blur"]');
-    expect(blurredBg).toBeTruthy();
-
-    // Should have foreground img element
+    // No foreground img element — bottle mode now uses cover treatment
     const img = container.querySelector('img');
-    expect(img).toBeTruthy();
-    expect(img.src).toContain('bottle.jpg');
+    expect(img).toBeNull();
+
+    // Background div should use the photo url with cover sizing
+    const allDivs = container.querySelectorAll('div[style]');
+    const bgDiv = Array.from(allDivs).find((div) =>
+      (div.getAttribute('style') || '').includes('bottle.jpg')
+    );
+    expect(bgDiv).toBeTruthy();
   });
 
-  it('bottle mode does NOT render the unblurred cover background when photo is provided', () => {
+  it('bottle mode renders cover background (unblurred) when photo is provided', () => {
     const { container } = render(
       <HeroHighlightCard
         title="Top Wine"
@@ -44,18 +46,17 @@ describe('HeroHighlightCard', () => {
 
     // Find divs with backgroundImage set to the photo URL
     const allDivs = container.querySelectorAll('div[style]');
-    const unblurredCoverDivs = Array.from(allDivs).filter((div) => {
+    const coverDivs = Array.from(allDivs).filter((div) => {
       const style = div.getAttribute('style') || '';
       return (
         style.includes('bottle.jpg') &&
-        style.includes('backgroundSize') &&
         !style.includes('blur')
       );
     });
-    expect(unblurredCoverDivs.length).toBe(0);
+    expect(coverDivs.length).toBeGreaterThan(0);
   });
 
-  it('bottle mode foreground image uses full-height fill style (no thumbnail constraints)', () => {
+  it('bottle mode renders no foreground image (cover treatment, no thumbnail constraints)', () => {
     const { container } = render(
       <HeroHighlightCard
         title="Top Wine"
@@ -65,14 +66,9 @@ describe('HeroHighlightCard', () => {
       />
     );
 
+    // No foreground img should exist — bottle mode is now cover-only
     const img = container.querySelector('img');
-    expect(img).toBeTruthy();
-    // maxHeight and maxWidth must be 'none' — no thumbnail constraints
-    expect(img.style.maxHeight).toBe('none');
-    expect(img.style.maxWidth).toBe('none');
-    // height and width must be the large fill values
-    expect(img.style.height).toBe('150%');
-    expect(img.style.width).toBe('72%');
+    expect(img).toBeNull();
   });
 
   it('bottle mode renders fallback gradient when no photo', () => {

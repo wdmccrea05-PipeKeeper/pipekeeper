@@ -2,11 +2,11 @@ import React from 'react';
 
 /**
  * HeroHighlightCard — Premium highlight card supporting multiple image presentations.
- * 
+ *
  * objectMode options:
- * - "cover": Full-card image (PipeKeeper, CigarKeeper, Tobacco)
- * - "contain": Simple centered image (legacy, not recommended)
- * - "bottle": Layered presentation with blurred background + foreground contained image (WineKeeper, Whiskey details)
+ * - "cover": Full-card image (PipeKeeper, CigarKeeper, Tobacco, WineKeeper highlights)
+ * - "contain": Simple centered image (detail/gallery where full bottle visibility matters)
+ * - "bottle": Alias for "cover" — full-card cover treatment, no foreground thumbnail
  */
 export default function HeroHighlightCard({
   title,
@@ -18,9 +18,6 @@ export default function HeroHighlightCard({
   objectMode = 'cover',
   className,
 }) {
-  const isBottleMode = objectMode === 'bottle';
-  const isContainMode = objectMode === 'contain';
-
   return (
     <div
       className={`relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl aspect-[3/2] ${className || ''}`}
@@ -30,43 +27,16 @@ export default function HeroHighlightCard({
         boxShadow: '0 12px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)',
       }}
     >
-      {/* Background layer — suppressed in bottle mode (blurred bg used instead) */}
-      {!isBottleMode && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: photo ? `url('${photo}')` : `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
-            backgroundSize: isContainMode ? 'contain' : 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        />
-      )}
-
-      {/* Fallback gradient for bottle mode when no photo */}
-      {isBottleMode && !photo && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
-          }}
-        />
-      )}
-
-      {/* Blurred background layer for bottle mode */}
-      {isBottleMode && photo && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url('${photo}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'blur(24px) brightness(0.22) saturate(0.5)',
-            opacity: 0.85,
-            transform: 'scale(1.12)',
-          }}
-        />
-      )}
+      {/* Background layer */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: photo ? `url('${photo}')` : `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
+          backgroundSize: objectMode === 'contain' ? 'contain' : 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
 
       {/* Accent radial gradient for depth */}
       <div
@@ -85,27 +55,6 @@ export default function HeroHighlightCard({
           boxShadow: 'inset 0 0 40px rgba(0,0,0,0.55)',
         }}
       />
-
-      {/* Foreground image layer for bottle mode */}
-      {isBottleMode && photo && (
-        <img
-          src={photo}
-          alt=""
-          className="absolute pointer-events-none"
-          style={{
-            right: '-4%',
-            bottom: '-20%',
-            height: '150%',
-            width: '72%',
-            maxHeight: 'none',
-            maxWidth: 'none',
-            objectFit: 'contain',
-            objectPosition: 'center bottom',
-            opacity: 0.95,
-            filter: `drop-shadow(0 0 20px ${accent}50) drop-shadow(0 8px 24px rgba(0,0,0,0.75))`,
-          }}
-        />
-      )}
 
       {/* Top brass accent */}
       <div
@@ -126,10 +75,9 @@ export default function HeroHighlightCard({
           {title}
         </div>
 
-        {/* Bottom-anchored text — constrained to left 55% in bottle mode to avoid foreground overlap */}
+        {/* Bottom-anchored text */}
         <div
-          className="absolute bottom-0 left-0 p-4 sm:p-6"
-          style={isBottleMode ? { maxWidth: '60%', right: 'auto' } : { right: 0 }}
+          className="absolute bottom-0 left-0 right-0 p-4 sm:p-6"
         >
           {/* Main value */}
           <div

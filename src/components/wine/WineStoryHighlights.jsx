@@ -4,7 +4,7 @@ import HeroHighlightCard from '@/components/shared/HeroHighlightCard';
 
 /**
  * WineStoryHighlights — visual hero cards for wine collection story.
- * Uses HeroHighlightCard with objectMode="bottle" for premium layered image presentation.
+ * Uses HeroHighlightCard with objectMode="cover" for premium full-card image presentation.
  */
 export default function WineStoryHighlights({ wines = [], tastings = [], t = (k) => k, onNavigate }) {
   const highlights = useMemo(() => {
@@ -95,7 +95,7 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
           subtitle={h.subtitle}
           photo={h.photo}
           accent={h.accent}
-          objectMode="bottle"
+          objectMode="cover"
           onClick={() => onNavigate && onNavigate(h.key)}
         />
       ))}

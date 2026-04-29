@@ -67,7 +67,7 @@ describe('buildHubHighlightCandidates', () => {
     expect(cards.some((card) => card.recordType === 'bottle')).toBe(true);
   });
 
-  it('includes wine highlight cards with objectMode="bottle" when wine data is present', () => {
+  it('includes wine highlight cards with objectMode="cover" when wine data is present', () => {
     const wine = {
       id: 'wine1',
       name: 'Château Margaux',
@@ -99,7 +99,7 @@ describe('buildHubHighlightCandidates', () => {
     const wineCards = cards.filter((card) => card.recordType === 'wine');
     expect(wineCards.length).toBeGreaterThan(0);
     wineCards.forEach((card) => {
-      expect(card.objectMode).toBe('bottle');
+      expect(card.objectMode).toBe('cover');
     });
   });
 
