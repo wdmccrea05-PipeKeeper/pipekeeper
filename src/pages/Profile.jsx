@@ -959,8 +959,9 @@ export default function ProfilePage() {
               </div>
             </FormSection>
 
-            {/* WineKeeper Preferences — gated to admin/internal or WineKeeper users */}
-            {(WINEKEEPER_PUBLIC_ENABLED || isAdmin || winekeeper_paid || canUserAccessModule('winekeeper', user)) && (
+            {/* WineKeeper Preferences — gated to admin/internal testers only while release state is internal.
+                winekeeper_paid alone does NOT grant access; canUserAccessModule enforces the release gate. */}
+            {(WINEKEEPER_PUBLIC_ENABLED || isAdmin || canUserAccessModule('winekeeper', user)) && (
               <FormSection title={t("profile.wineKeeperPreferences", "WineKeeper Preferences")}>
                 <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.48)' }}>
                   {t("profile.usedByCuratorWine", "Used by Curator to personalize wine recommendations, cellar guidance, and cross-collection pairing suggestions.")}
