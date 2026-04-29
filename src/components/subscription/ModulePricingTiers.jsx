@@ -68,7 +68,7 @@ export default function ModulePricingTiers({
           displayName: t('subscriptionFull.threeModuleBundle'),
           price: 799, // $7.99
           priceAnnual: 7999, // $79.99
-          description: t('subscription.threeModuleBundleDescription', 'Any 3 modules of your choice.'),
+          description: t('subscription.threeModuleBundleDescription'),
           isBest: true,
           isSelected: selectedModules.length === 3,
           savings: getBundleSavings(billingPeriod, activeModules.slice(0, 3)),
@@ -77,10 +77,10 @@ export default function ModulePricingTiers({
           id: 'bundle-four-module',
           type: 'bundle_four_module',
           modules: activeModules,
-          displayName: t('subscriptionFull.fourModuleBundle', 'All 4 Modules Bundle'),
+          displayName: t('subscriptionFull.fourModuleBundle'),
           price: 899, // $8.99
           priceAnnual: 8999, // $89.99
-          description: t('subscription.fourModuleBundleDescription', 'All four modules — best value.'),
+          description: t('subscription.fourModuleBundleDescription'),
           isBest: true,
           isSelected: selectedModules.length === 4,
           savings: getBundleSavings(billingPeriod, activeModules),

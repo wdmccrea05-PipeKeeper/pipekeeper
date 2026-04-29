@@ -163,6 +163,10 @@ export default {
     pipeRecords: "Pipe records",
     tastingLogsLabel: "Tasting logs",
     bottlesOwnedLabel: "bottles owned",
+    wineTastings: "Wine Tastings",
+    topWine: "Top Wine",
+    topRatedWine: "Top Rated Wine",
+    readyToDrink: "Ready to Drink",
     sticksOwnedLabel: "sticks owned",
     blendTypesLabel: "Blend types",
     blendQtyLabel: "Blend qty",
@@ -1134,6 +1138,10 @@ export default {
     addFirstCigarBtn: "Add your first cigar",
     result: "result",
     results: "results",
+    totalCigars: "Total Cigars",
+    totalSticks: "Total Sticks",
+    humidors: "Humidors",
+    sessionsLogged: "Sessions",
   },
 
   curator: {
