@@ -9,6 +9,7 @@ const MODULE_COLORS = {
   tobacco: { bg: 'rgba(74,124,92,0.12)',  text: 'rgba(100,180,130,0.9)', border: 'rgba(74,124,92,0.25)',  label: 'Tobacco' },
   pipe:    { bg: 'rgba(180,140,75,0.12)', text: 'rgba(212,165,116,1)',   border: 'rgba(180,140,75,0.26)', label: 'Pipe' },
   cigar:   { bg: 'rgba(180,100,50,0.12)', text: 'rgba(220,140,90,0.9)', border: 'rgba(180,100,50,0.25)', label: 'Cigar' },
+  wine:    { bg: 'rgba(120,40,80,0.14)',  text: 'rgba(210,130,160,0.95)', border: 'rgba(140,50,90,0.30)', label: 'Wine' },
 };
 
 function ModulePill({ moduleKey, active, onClick }) {
@@ -119,7 +120,7 @@ function SessionCard({ candidate, onBuildSession, onAskCurator }) {
           style={{ background: '#C6A15B', color: '#0B0B0C', fontSize: '14px' }}
         >
           <Calendar className="w-4 h-4" />
-          Build Session
+          {candidate.moduleKey === 'wine' ? 'Log Tasting' : 'Build Session'}
         </button>
         <button
           type="button"
@@ -178,6 +179,7 @@ export default function CuratorPlanSession({
   const pipeActive    = !!activeModules.pipekeeper;
   const whiskeyActive = !!activeModules.whiskeykeeper;
   const cigarActive   = !!activeModules.cigarkeeper;
+  const wineActive    = !!activeModules.winekeeper;
 
   // Build available module filters based on what is enabled
   const availableModules = useMemo(() => {
@@ -186,8 +188,9 @@ export default function CuratorPlanSession({
     if (pipeActive)    mods.push('pipe');
     if (pipeActive)    mods.push('tobacco');
     if (cigarActive)   mods.push('cigar');
+    if (wineActive)    mods.push('wine');
     return mods;
-  }, [pipeActive, whiskeyActive, cigarActive]);
+  }, [pipeActive, whiskeyActive, cigarActive, wineActive]);
 
   const isMultiModule = availableModules.length > 1;
 
@@ -208,6 +211,7 @@ export default function CuratorPlanSession({
       leftItem: candidate.itemType === 'bottle' ? candidate.item : null,
       blendBridge: candidate.itemType === 'blend' ? candidate.item : null,
       cigarItem: candidate.itemType === 'cigar' ? candidate.item : null,
+      wineItem: candidate.itemType === 'wine' ? candidate.item : null,
       title: name,
       _sessionCandidate: candidate,
     });

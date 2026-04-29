@@ -205,6 +205,59 @@ export function buildCigarSessionReason(cigar, scoreData) {
   return `${name} is a balanced cigar-session candidate right now based on recency, inventory, and your collection profile.`;
 }
 
+// ─── Wine session reason builders ────────────────────────────────────────────
+
+const WINE_REASON_NEVER_TASTED = [
+  (name) => `${name} has no tasting logged yet. Opening it now creates the first data point Curator can use for drinking-window and cellar-balance recommendations.`,
+  (name) => `There's no session history on ${name}. A pour tonight starts its record — even one note tells Curator whether it's drinking well now.`,
+  (name) => `${name} is in your cellar with no logged tastings. Opening it is how you find out if the timing is right or if it needs more rest.`,
+  (name) => `No tasting data exists for ${name}. One session closes that gap and turns it from a static cellar entry into an active recommendation candidate.`,
+];
+
+const WINE_REASON_IN_WINDOW = [
+  (name) => `${name} is currently inside its drinking window — the cellar balance and timing both point to opening it now.`,
+  (name) => `${name} is drinking well right now. Opening it within the window is the right move before conditions shift.`,
+  (name) => `The drinking window on ${name} is open. Cellaring it further carries diminishing returns at this stage.`,
+];
+
+const WINE_REASON_AT_PEAK = [
+  (name) => `${name} is at or approaching its peak window. Pour it now — holding it longer risks missing the optimal experience.`,
+  (name) => `Timing is right for ${name}. Peak drinking windows close gradually; opening it now is the correct decision.`,
+];
+
+const WINE_REASON_PAST_PEAK = [
+  (name) => `${name} may be past its intended peak window. Opening it sooner rather than later is advisable — waiting will not improve it.`,
+  (name) => `${name} has exceeded its drinking window estimate. It's worth opening now and evaluating while it still shows well.`,
+];
+
+const WINE_REASON_LONG_GAP = [
+  (name, days) => `${name} hasn't had a tasting logged in ${days} days. Revisiting it now captures how it's evolved in the cellar since your last note.`,
+  (name, days) => `${days} days since your last pour of ${name}. Wines shift — this is likely a different experience than your last entry suggests.`,
+];
+
+export function buildWineSessionReason(wine, scoreData) {
+  const { lastTastedDays, drinkWindowStatus, sessionCount } = scoreData;
+  const name = wine.name || wine.wine_name || 'This wine';
+  const seed = wine.id || name;
+
+  if (lastTastedDays === null) {
+    return pickVariant(seed, WINE_REASON_NEVER_TASTED)(name);
+  }
+  if (drinkWindowStatus === 'past_peak') {
+    return pickVariant(seed, WINE_REASON_PAST_PEAK)(name);
+  }
+  if (drinkWindowStatus === 'peak' || drinkWindowStatus === 'at_peak') {
+    return pickVariant(seed, WINE_REASON_AT_PEAK)(name);
+  }
+  if (drinkWindowStatus === 'in_window' || drinkWindowStatus === 'drink_now') {
+    return pickVariant(seed, WINE_REASON_IN_WINDOW)(name);
+  }
+  if (lastTastedDays >= 60) {
+    return pickVariant(seed, WINE_REASON_LONG_GAP)(name, lastTastedDays);
+  }
+  return `${name} is a strong session candidate based on recency, cellar balance, and your collection profile.`;
+}
+
 // ─── Pairing narrative builders ───────────────────────────────────────────────
 // Each blendType × whiskeyType combination has a structurally distinct narrative.
 // Narratives do NOT reuse "this works because" or identical opening structures.

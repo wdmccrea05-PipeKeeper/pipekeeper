@@ -806,6 +806,205 @@ function generateCigarExpansion(cigars, preferences = {}) {
   return results;
 }
 
+// ─── Wine varietal/style progression data ────────────────────────────────────
+
+const WINE_VARIETAL_PROGRESSION = {
+  'Cabernet Sauvignon': {
+    next: ['Merlot', 'Malbec', 'Nebbiolo'],
+    rationale: () =>
+      `Cabernet Sauvignon is a strong foundation, but Nebbiolo or Malbec would add structure and ` +
+      `tannin profiles that open new food pairing territory your current reds can't cover.`,
+    recommendation: 'Add a Nebbiolo or Malbec to complement your Cabernet collection',
+    action: 'Add a Nebbiolo or Malbec to your Want List',
+  },
+  'Merlot': {
+    next: ['Cabernet Franc', 'Sangiovese'],
+    rationale: () =>
+      `Merlot lovers often discover that Cabernet Franc brings similar plum and dark fruit character ` +
+      `with an herbaceous edge that creates distinct food pairing opportunities.`,
+    recommendation: 'Cabernet Franc adds herbal complexity to a Merlot-anchored collection',
+    action: 'Add a Cabernet Franc to your Want List',
+  },
+  'Pinot Noir': {
+    next: ['Gamay', 'Nebbiolo', 'Grenache'],
+    rationale: () =>
+      `Pinot Noir's lighter, elegant profile has a natural companion in Gamay — similar weight ` +
+      `and freshness, distinct character. Nebbiolo offers the same elegance with more structure.`,
+    recommendation: 'Gamay or Nebbiolo extends the light-red profile of your collection',
+    action: 'Add a Gamay or Nebbiolo to your Want List',
+  },
+  'Chardonnay': {
+    next: ['Viognier', 'White Burgundy', 'Chenin Blanc'],
+    rationale: () =>
+      `Chardonnay collections benefit from a high-acid contrast. Chenin Blanc or Viognier fills ` +
+      `food pairing gaps that oaked Chardonnay simply cannot cover.`,
+    recommendation: 'Add a Chenin Blanc or Viognier for high-acid food pairing coverage',
+    action: 'Add a Chenin Blanc or Viognier to your Want List',
+  },
+  'Sauvignon Blanc': {
+    next: ['Grüner Veltliner', 'Riesling', 'Albariño'],
+    rationale: () =>
+      `Sauvignon Blanc handles seafood and salad pairings well, but a Riesling or Albariño covers ` +
+      `a wider acid spectrum and adds aromatic range your current whites don't have.`,
+    recommendation: 'A Riesling or Albariño adds aromatic and acid variety to your white wine collection',
+    action: 'Add a Riesling or Albariño to your Want List',
+  },
+  'Riesling': {
+    next: ['Grüner Veltliner', 'Gewürztraminer', 'Pinot Gris'],
+    rationale: () =>
+      `Riesling collectors often find Gewürztraminer a natural step — same aromatic intensity, ` +
+      `a very different flavor register. Pinot Gris adds weight and texture without losing freshness.`,
+    recommendation: 'Gewürztraminer or Pinot Gris extends your aromatic white wine range',
+    action: 'Add a Gewürztraminer or Pinot Gris to your Want List',
+  },
+  'Sparkling': {
+    next: ['Champagne', 'Crémant', 'Cava'],
+    rationale: () =>
+      `A sparkling wine collection without a traditional-method Champagne or Crémant is missing ` +
+      `the benchmark — the autolytic complexity and precision that defines the category.`,
+    recommendation: 'Add a traditional-method Champagne or Crémant as a benchmark',
+    action: 'Add a Champagne or Crémant to your Want List',
+  },
+};
+
+const ALL_WINE_VARIETAL_GAPS = [
+  { varietal: 'Riesling', style: 'White', reason: 'High-acid food pairing coverage' },
+  { varietal: 'Pinot Noir', style: 'Red', reason: 'Light, elegant red for food pairing' },
+  { varietal: 'Nebbiolo', style: 'Red', reason: 'Age-worthy structured red' },
+  { varietal: 'Chenin Blanc', style: 'White', reason: 'Versatile acid-driven white' },
+  { varietal: 'Sparkling', style: 'Sparkling', reason: 'Celebration and aperitif coverage' },
+  { varietal: 'Cabernet Sauvignon', style: 'Red', reason: 'Cellar-anchor red' },
+  { varietal: 'Chardonnay', style: 'White', reason: 'Benchmark white for food pairing' },
+];
+
+function generateWineExpansion(wines, preferences = {}) {
+  if (wines.length < 1) return [];
+  const results = [];
+  const dislikes = preferences.disliked_flavors || preferences.dislikes || [];
+  const seenGoals = new Set();
+
+  // Count varietals and styles in collection
+  const varietalCounts = {};
+  const styleCounts = {};
+  for (const wine of wines) {
+    const v = wine.varietal || wine.varietals || wine.grape_variety;
+    const s = wine.style || wine.wine_type;
+    if (v) varietalCounts[v] = (varietalCounts[v] || 0) + 1;
+    if (s) styleCounts[s] = (styleCounts[s] || 0) + 1;
+  }
+
+  const ownedVarietals = new Set(Object.keys(varietalCounts));
+  const sortedVarietals = Object.entries(varietalCounts).sort((a, b) => b[1] - a[1]);
+
+  // 1. Progression-based suggestions from owned varietals
+  for (const [dominant] of sortedVarietals) {
+    if (results.length >= 3) break;
+    const progression = WINE_VARIETAL_PROGRESSION[dominant];
+    if (!progression) continue;
+
+    const nextVarietal = progression.next.find((v) => !ownedVarietals.has(v));
+    if (!nextVarietal) continue;
+    if (dislikes.some((d) => nextVarietal.toLowerCase().includes(d.toLowerCase()))) continue;
+
+    const goal = `wine_varietal_expansion_${nextVarietal.replace(/[\s/]/g, '_').toLowerCase()}`;
+    if (seenGoals.has(goal)) continue;
+    seenGoals.add(goal);
+
+    const confidence = computeConfidence({
+      preferenceAlignment:   sortedVarietals.length >= 2 ? 0.75 : 0.5,
+      usageHistoryRelevance: 0.5,
+      dataCompleteness:      wines.length >= 3 ? 0.8 : 0.5,
+      diversityContribution: 0.9,
+    });
+
+    results.push(createRecommendation({
+      category:             CATEGORY.GROW_EXPAND,
+      goal,
+      actionType:           ACTION_TYPE.SHOPPING_LIST_ACTION,
+      title:                `Explore a ${nextVarietal}`,
+      summary:              progression.rationale(),
+      whyItMatters:         progression.rationale(),
+      recommendationText:   progression.action,
+      gapReason:            `${nextVarietal} is absent from your wine collection`,
+      whatItAdds:           progression.recommendation,
+      collectionConnection: progression.recommendation,
+      contextTag:           nextVarietal,
+      moduleKey:            MODULE_KEY.WINE,
+      ownershipContext:     OWNERSHIP_CONTEXT.EXTERNAL,
+      priority:             PRIORITY.MEDIUM,
+      fitBadge:             confidenceToFitBadge(confidence),
+      priorityBadge:        priorityToBadge(PRIORITY.MEDIUM),
+      confidence,
+      items: [{
+        id:              `grow_wine_${nextVarietal.replace(/[\s/]/g, '_').toLowerCase()}`,
+        recordId:        null,
+        recordType:      'wine_suggestion',
+        recordName:      nextVarietal,
+        itemName:        `${nextVarietal} Wine`,
+        ownershipStatus: 'wishlist',
+        shoppingType:    'buy_new_item',
+        itemType:        'wine',
+        suggestedVarietal: nextVarietal,
+        rationale:       progression.rationale(),
+      }],
+      actionPayload: {
+        shoppingType:     'buy_new_item',
+        itemType:         'wine',
+        suggestedVarietal: nextVarietal,
+      },
+    }));
+  }
+
+  // 2. Fill remaining slots from entirely unrepresented varietals/gaps
+  if (results.length < 3) {
+    for (const { varietal, style, reason } of ALL_WINE_VARIETAL_GAPS) {
+      if (results.length >= 3) break;
+      if (ownedVarietals.has(varietal)) continue;
+      if (dislikes.some((d) => varietal.toLowerCase().includes(d.toLowerCase()))) continue;
+      const goal = `wine_varietal_expansion_${varietal.replace(/[\s/]/g, '_').toLowerCase()}`;
+      if (seenGoals.has(goal)) continue;
+      seenGoals.add(goal);
+
+      results.push(createRecommendation({
+        category:             CATEGORY.GROW_EXPAND,
+        goal,
+        actionType:           ACTION_TYPE.SHOPPING_LIST_ACTION,
+        title:                `Add a ${varietal} to Your Cellar`,
+        summary:              `A ${varietal} would add ${reason.toLowerCase()} — a dimension your current wine collection doesn't fully cover.`,
+        whyItMatters:         `${varietal} covers a distinct style and pairing profile. ${reason}.`,
+        recommendationText:   `Add a ${style} ${varietal} to your Want List`,
+        gapReason:            `${varietal} is absent from your wine collection`,
+        contextTag:           varietal,
+        moduleKey:            MODULE_KEY.WINE,
+        ownershipContext:     OWNERSHIP_CONTEXT.EXTERNAL,
+        priority:             PRIORITY.LOW,
+        fitBadge:             'Medium Fit',
+        priorityBadge:        'Low Priority',
+        confidence:           'medium',
+        items: [{
+          id:              `grow_wine_gap_${varietal.replace(/[\s/]/g, '_').toLowerCase()}`,
+          recordId:        null,
+          recordType:      'wine_suggestion',
+          recordName:      `${varietal} Wine`,
+          itemName:        `${varietal} Wine`,
+          ownershipStatus: 'wishlist',
+          shoppingType:    'buy_new_item',
+          itemType:        'wine',
+          suggestedVarietal: varietal,
+          rationale:       `Diversify your wine collection with a ${varietal}.`,
+        }],
+        actionPayload: {
+          shoppingType:     'buy_new_item',
+          itemType:         'wine',
+          suggestedVarietal: varietal,
+        },
+      }));
+    }
+  }
+
+  return results;
+}
+
 // ─── Main Engine Entry Point ─────────────────────────────────────────────────
 
 /**
@@ -827,6 +1026,7 @@ export function generateGrowExpandRecommendations(context = {}) {
     blends      = [],
     bottles     = [],
     cigars      = [],
+    wines       = [],
     smokingLogs = [],
     preferences = {},
     activeModules = {},
@@ -836,22 +1036,26 @@ export function generateGrowExpandRecommendations(context = {}) {
   const tobaccoActive = activeModules.tobacco       !== false;
   const whiskeyActive = activeModules.whiskeykeeper !== false;
   const cigarActive   = activeModules.cigarkeeper   !== false;
+  const wineActive    = !!activeModules.winekeeper;
 
   // RULE 3: Module gating enforced globally once
   const gatedPipes   = pipeActive    ? pipes   : [];
   const gatedBlends  = tobaccoActive ? blends  : [];
   const gatedBottles = whiskeyActive ? bottles : [];
   const gatedCigars  = cigarActive   ? cigars  : [];
+  const gatedWines   = wineActive    ? wines   : [];
 
-  const totalItems = gatedPipes.length + gatedBlends.length + gatedBottles.length + gatedCigars.length;
-  const whiskeyOnlyMode = whiskeyActive && !pipeActive && !tobaccoActive && !cigarActive;
-  const cigarOnlyMode   = cigarActive   && !pipeActive && !tobaccoActive && !whiskeyActive;
-  const minItems = (whiskeyOnlyMode || cigarOnlyMode) ? 1 : 3;
+  const totalItems    = gatedPipes.length + gatedBlends.length + gatedBottles.length + gatedCigars.length + gatedWines.length;
+  const nonWineItems  = gatedPipes.length + gatedBlends.length + gatedBottles.length + gatedCigars.length;
+  const whiskeyOnlyMode = whiskeyActive && !pipeActive && !tobaccoActive && !cigarActive && !wineActive;
+  const cigarOnlyMode   = cigarActive   && !pipeActive && !tobaccoActive && !whiskeyActive && !wineActive;
+  const wineOnlyMode    = wineActive    && nonWineItems === 0 && gatedWines.length >= 1;
+  const minItems = (whiskeyOnlyMode || cigarOnlyMode || wineOnlyMode) ? 1 : 3;
   if (totalItems < minItems) {
     console.error('ENGINE_FAILURE', {
       engine: 'growExpandEngine',
       reason: 'insufficient_data',
-      dataCounts: { pipes: gatedPipes.length, blends: gatedBlends.length, bottles: gatedBottles.length, cigars: gatedCigars.length },
+      dataCounts: { pipes: gatedPipes.length, blends: gatedBlends.length, bottles: gatedBottles.length, cigars: gatedCigars.length, wines: gatedWines.length },
       activeModules,
     });
     return [];
@@ -910,6 +1114,18 @@ export function generateGrowExpandRecommendations(context = {}) {
       }
     }
     generators.push('cigarExpansion');
+  }
+
+  // Wine varietal expansion — only when WineKeeper is active
+  if (wineActive && gatedWines.length > 0) {
+    const wineExpansion = generateWineExpansion(gatedWines, preferences);
+    for (const rec of wineExpansion) {
+      if (!seen.has(rec.goal)) {
+        results.push(rec);
+        seen.add(rec.goal);
+      }
+    }
+    generators.push('wineExpansion');
   }
 
   // ─── Fallbacks: produce at least one suggestion when the collection has items

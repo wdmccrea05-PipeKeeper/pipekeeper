@@ -21,4 +21,26 @@ describe('CuratorPlanSession', () => {
     expect(screen.getByRole('button', { name: 'Tobacco' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Cigar' })).toBeTruthy();
   });
+
+  it('shows Wine chip when WineKeeper is active', () => {
+    render(
+      <CuratorPlanSession
+        collectionContext={{}}
+        activeModules={{ pipekeeper: true, whiskeykeeper: true, winekeeper: true }}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Wine' })).toBeTruthy();
+  });
+
+  it('does NOT show Wine chip when WineKeeper is disabled', () => {
+    render(
+      <CuratorPlanSession
+        collectionContext={{}}
+        activeModules={{ pipekeeper: true, whiskeykeeper: true, winekeeper: false }}
+      />
+    );
+
+    expect(screen.queryByRole('button', { name: 'Wine' })).toBeNull();
+  });
 });
