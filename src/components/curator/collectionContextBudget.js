@@ -76,7 +76,7 @@ export function buildSafeCollectionContext(rawContext = {}) {
   const smokingLogs = Array.isArray(rawContext.smokingLogs) ? rawContext.smokingLogs : [];
   const tastingLogs = Array.isArray(rawContext.tastingLogs) ? rawContext.tastingLogs : [];
   const wineTastingLogs = Array.isArray(rawContext.wineTastingLogs) ? rawContext.wineTastingLogs : [];
-  const allLogs = [...smokingLogs, ...tastingLogs];
+  const allLogs = [...smokingLogs, ...tastingLogs, ...wineTastingLogs];
 
   const mode = selectContextMode(pipes, blends, bottles, allLogs);
 
