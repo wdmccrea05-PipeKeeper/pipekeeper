@@ -9,17 +9,15 @@
 
 // ─── Feature flags for WineKeeper gating ─────────────────────────────────────
 // Set WINEKEEPER_PUBLIC_ENABLED = true when ready for public launch.
-// Set WINEKEEPER_ADMIN_ENABLED = true to allow admin/internal tester access.
 export const WINEKEEPER_PUBLIC_ENABLED = false;
-export const WINEKEEPER_ADMIN_ENABLED = true;
 
 export const MODULE_RELEASE_STATES = {
   pipekeeper: 'launched',
   whiskeykeeper: 'launched',
   cigarkeeper: 'launched',
-  // WineKeeper is INTERNAL ONLY — not publicly released.
+  // WineKeeper is INTERNAL ONLY — admin/tester access, not yet publicly released.
   // Change to 'launched' only when WINEKEEPER_PUBLIC_ENABLED is true.
-  winekeeper: WINEKEEPER_PUBLIC_ENABLED ? 'launched' : 'internal',
+  winekeeper: 'internal',
 };
 
 const LOCAL_OVERRIDE_PREFIX = 'ck_module_override_';
@@ -153,7 +151,7 @@ export function canUserAccessModule(moduleKey, user, hasEntitlement = true) {
   const state = getEffectiveModuleReleaseState(moduleKey, user);
 
   if (state === 'blocked') return false;
-  if (state === 'internal') return canAccessInternalModuleForTesting(moduleKey, user);
+  if (state === 'internal') return isInternalModuleTester(user);
   if (state === 'launched') return !!hasEntitlement;
   return false;
 }
@@ -162,7 +160,7 @@ export function shouldShowModuleInNav(moduleKey, user, hasEntitlement = true) {
   const state = getEffectiveModuleReleaseState(moduleKey, user);
 
   if (state === 'blocked') return false;
-  if (state === 'internal') return canAccessInternalModuleForTesting(moduleKey, user);
+  if (state === 'internal') return isInternalModuleTester(user);
   return !!hasEntitlement;
 }
 
@@ -170,7 +168,7 @@ export function shouldFetchModuleData(moduleKey, user, hasEntitlement = true) {
   const state = getEffectiveModuleReleaseState(moduleKey, user);
 
   if (state === 'blocked') return false;
-  if (state === 'internal') return canAccessInternalModuleForTesting(moduleKey, user);
+  if (state === 'internal') return isInternalModuleTester(user);
   return !!hasEntitlement;
 }
 

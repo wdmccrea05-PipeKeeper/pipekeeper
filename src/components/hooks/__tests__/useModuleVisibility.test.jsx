@@ -96,7 +96,7 @@ describe("useModuleVisibility", () => {
     expect(result.current.moduleStates.cigarkeeper.enabled).toBe(true);
   });
 
-  it("keeps WineKeeper blocked and non-toggleable", () => {
+  it("makes WineKeeper accessible and toggleable for admins, blocked for regular users", () => {
     const user = { role: "admin" };
     const profile = {
       module_preferences_set: true,
@@ -107,8 +107,8 @@ describe("useModuleVisibility", () => {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.moduleStates.winekeeper.accessible).toBe(false);
-    expect(result.current.moduleStates.winekeeper.canToggle).toBe(false);
-    expect(result.current.moduleStates.winekeeper.enabled).toBe(false);
+    expect(result.current.moduleStates.winekeeper.accessible).toBe(true);
+    expect(result.current.moduleStates.winekeeper.canToggle).toBe(true);
+    expect(result.current.moduleStates.winekeeper.enabled).toBe(true);
   });
 });

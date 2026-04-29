@@ -32,13 +32,13 @@ import { CuratorEvents } from "@/components/utils/curatorEventLogger";
 import { sortByLabel, uniqueSortedStrings } from "@/lib/sorting/alphabetical";
 
 const SHAPES = ["Billiard", "Bent Billiard", "Apple", "Bent Apple", "Dublin", "Bent Dublin", "Bulldog", "Rhodesian", "Canadian", "Liverpool", "Lovat", "Lumberman", "Prince", "Author", "Brandy", "Pot", "Tomato", "Egg", "Acorn", "Pear", "Cutty", "Devil Anse", "Hawkbill", "Diplomat", "Poker", "Cherrywood", "Duke", "Don", "Tankard", "Churchwarden", "Nosewarmer", "Vest Pocket", "MacArthur", "Calabash", "Reverse Calabash", "Cavalier", "Freehand", "Blowfish", "Volcano", "Horn", "Nautilus", "Tomahawk", "Bullmoose", "Bullcap", "Oom Paul (Hungarian)", "Tyrolean", "Unknown", "Other"];
-const BOWL_STYLES = ["Cylindrical (Straight Wall)", "Conical (Tapered)", "Rounded / Ball", "Oval / Egg", "Squat / Pot", "Chimney (Tall)", "Paneled", "Faceted / Multi-Panel", "Horn-Shaped", "Freeform", "Unknown"];
-const SHANK_SHAPES = ["Round", "Diamond", "Square", "Oval", "Paneled / Faceted", "Military / Army Mount", "Freeform", "Unknown"];
+const BOWL_STYLES = ["Chimney (Tall)", "Conical (Tapered)", "Cylindrical (Straight Wall)", "Faceted / Multi-Panel", "Freeform", "Horn-Shaped", "Oval / Egg", "Paneled", "Rounded / Ball", "Squat / Pot", "Unknown"];
+const SHANK_SHAPES = ["Diamond", "Freeform", "Military / Army Mount", "Oval", "Paneled / Faceted", "Round", "Square", "Unknown"];
 const BENDS = ["Straight", "1/4 Bent", "1/2 Bent", "3/4 Bent", "Full Bent", "S-Bend", "Unknown"];
 const SIZE_CLASSES = ["Vest Pocket", "Small", "Standard", "Large", "Magnum / XL", "Churchwarden", "MacArthur", "Unknown"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
 const STEM_MATERIALS = ["Acrylic", "Amber", "Bone", "Cumberland", "Ebonite", "Horn", "Lucite", "Other", "Vulcanite"];
-const FINISHES = ["Smooth", "Sandblast", "Rusticated", "Partially Rusticated", "Carved", "Natural", "Other"];
+const FINISHES = ["Carved", "Natural", "Partially Rusticated", "Rusticated", "Sandblast", "Smooth", "Other"];
 const CHAMBER_VOLUMES = ["Small", "Medium", "Large", "Extra Large"];
 const CONDITIONS = ["Mint", "Excellent", "Very Good", "Good", "Fair", "Poor", "Estate - Unrestored"];
 const FILTER_TYPES = ["None", "6mm", "9mm", "Stinger", "Other"];
@@ -279,7 +279,9 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
     // Check photo limits
     const totalPhotos = (formData.photos?.length || 0) + (formData.stamping_photos?.length || 0);
-    if (totalPhotos > photoLimit) {
+    const originalPhotoCount = (originalPipe?.photos?.length || 0) + (originalPipe?.stamping_photos?.length || 0);
+    // Only block if adding new photos beyond limit (don't block editing when existing photos exceed limit)
+    if (totalPhotos > photoLimit && totalPhotos > originalPhotoCount) {
       toast.error(t("limits.photosLimit", { limit: photoLimit }));
       return;
     }
@@ -667,7 +669,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               <SelectTrigger>
                 <SelectValue placeholder={t("common.selectPlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent onOpenAutoFocus={(e) => e.preventDefault()}>
                 {BOWL_STYLES.map(style => <SelectItem key={style} value={style}>{t(`bowlStyles.${style}`, style)}</SelectItem>)}
               </SelectContent>
             </Select>

@@ -59,6 +59,9 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import EnrichButton from '@/components/shared/EnrichButton';
 import { safeUpdate } from '@/components/utils/safeUpdate';
 import PipePhotoGallery from '@/components/pipes/PipePhotoGallery';
+import { Calendar } from '@/components/ui/calendar';
+import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
+import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
@@ -502,6 +505,9 @@ export default function PipeDetail() {
   const [isRefreshingValue, setIsRefreshingValue] = useState(false);
   const [showPhotoGallery, setShowPhotoGallery] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [smokingLogs, setSmokingLogs] = useState([]);
+  const [sessionsOpen, setSessionsOpen] = useState(false);
+  const [selectedSessionDay, setSelectedSessionDay] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -536,11 +542,16 @@ export default function PipeDetail() {
           ).catch(() => []),
         ]);
 
+        const logs = await base44.entities.SmokingLog.filter(
+          { pipe_id: pipeId, created_by: user.email }, '-date', 500
+        ).catch(() => []);
+
         if (mounted) {
           setPipe(pipeRecord);
           setBlends(Array.isArray(blendsList) ? blendsList : []);
           setValueSnapshots(snapshots || []);
           setPriceObservations(observations || []);
+          setSmokingLogs(logs || []);
 
           // Auto-seed the first value snapshot if none exist yet
           if (pipeRecord && user?.email && (snapshots || []).length === 0) {
@@ -884,7 +895,7 @@ export default function PipeDetail() {
 
             <InlinePhotoEditor
               photos={pipe.photos || []}
-              maxPhotos={5}
+              maxPhotos={20}
               label="Photos"
               entityType="pipe"
               recordName={pipe.name || ''}
@@ -1055,6 +1066,7 @@ export default function PipeDetail() {
         </button>
 
         {detailCardOpen && (
+          <>
           <Tabs defaultValue="condition" className="w-full">
             <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2 overflow-x-auto">
               <TabsList className="bg-transparent gap-0.5 flex-nowrap min-w-max">
@@ -1156,7 +1168,7 @@ export default function PipeDetail() {
                   ) : null}
                   <InlinePhotoEditor
                     photos={pipe.stamping_photos || []}
-                    maxPhotos={5}
+                    maxPhotos={20}
                     label="Stamping Photos"
                     onUpdate={async (updatedPhotos) => {
                       await handlePipeUpdate({ stamping_photos: updatedPhotos });
@@ -1209,6 +1221,98 @@ export default function PipeDetail() {
               </div>
             </TabsContent>
           </Tabs>
+
+          {/* Sessions Calendar Preview */}
+          {smokingLogs.length > 0 && (() => {
+            const sessionRows = smokingLogs.map((log) => ({
+              id: log.id,
+              moduleType: 'pipe',
+              date: log.date || log.created_date,
+              itemLabel: log.tobacco_blend_name || '',
+              rating: log.rating,
+              notes: log.notes,
+            }));
+            const { byDate, highlightedDates } = buildSessionCalendarData(sessionRows, 'all');
+            const selectedKey = selectedSessionDay ? toLocalDateYmd(selectedSessionDay) : null;
+            const dayLogs = selectedKey ? (byDate[selectedKey] || []) : [];
+
+            return (
+              <div
+                className="rounded-2xl p-5 mt-4"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(180,140,75,0.14)',
+                }}
+              >
+                <button
+                  type="button"
+                  className="flex items-center justify-between w-full mb-0"
+                  onClick={() => setSessionsOpen((v) => !v)}
+                >
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-[#F5F1E7]">Sessions</p>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[rgba(180,140,75,0.18)] text-[#D4A574] font-medium">
+                      {smokingLogs.length}
+                    </span>
+                  </div>
+                  {sessionsOpen ? (
+                    <ChevronUp className="w-4 h-4 text-[#D8C7A6]/60" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-[#D8C7A6]/60" />
+                  )}
+                </button>
+
+                {sessionsOpen && (
+                  <div className="mt-4 space-y-4">
+                    <Calendar
+                      mode="single"
+                      selected={selectedSessionDay}
+                      onSelect={setSelectedSessionDay}
+                      modifiers={{ highlighted: highlightedDates }}
+                      modifiersClassNames={{
+                        highlighted: 'bg-[rgba(180,140,75,0.3)] text-[#F5F1E7] rounded-full font-semibold',
+                      }}
+                      className="rounded-xl border border-[rgba(180,140,75,0.18)] bg-[rgba(255,255,255,0.02)] text-[#F5F1E7] w-full"
+                    />
+                    {selectedKey && (
+                      <div className="space-y-2">
+                        <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 font-semibold">
+                          {selectedKey}
+                        </p>
+                        {dayLogs.length === 0 ? (
+                          <p className="text-sm text-[#E0D8C8]/50">No sessions on this day.</p>
+                        ) : (
+                          dayLogs.map((log, i) => (
+                            <div
+                              key={log.id || i}
+                              className="rounded-xl p-3"
+                              style={{
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(180,140,75,0.12)',
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium text-[#F5F1E7]">
+                                  {log.itemLabel || 'Smoke'}
+                                </p>
+                                {log.rating != null && (
+                                  <span className="text-xs text-[#D4A574]">★ {log.rating}</span>
+                                )}
+                              </div>
+                              {log.notes && (
+                                <p className="text-xs text-[#E0D8C8]/60 mt-1 line-clamp-2">{log.notes}</p>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </> 
         )}
       </div>
 

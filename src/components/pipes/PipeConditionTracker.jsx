@@ -2,10 +2,63 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+
+function SegmentedControl({ options, value, onChange }) {
+  return (
+    <div className="flex gap-1.5">
+      {options.map((opt) => {
+        const selected = value === opt.value;
+        return (
+          <button
+            key={opt.label}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={`flex-1 py-2.5 text-sm font-medium rounded-xl border transition-all ${
+              selected
+                ? 'bg-[rgba(180,140,75,0.25)] border-[rgba(180,140,75,0.5)] text-[#F5F1E7]'
+                : 'bg-transparent border-[rgba(255,255,255,0.12)] text-[#E0D8C8]/70 hover:bg-white/5'
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const CAKE_OPTIONS = [
+  { label: 'None', value: 0 },
+  { label: 'Thin', value: 25 },
+  { label: 'Building', value: 50 },
+  { label: 'Good', value: 75 },
+  { label: 'Heavy', value: 100 },
+];
+
+const OXIDATION_OPTIONS = [
+  { label: 'None', value: 0 },
+  { label: 'Light', value: 25 },
+  { label: 'Moderate', value: 50 },
+  { label: 'Heavy', value: 100 },
+];
+
+const WEAR_OPTIONS = [
+  { label: 'New', value: 0 },
+  { label: 'Light', value: 25 },
+  { label: 'Moderate', value: 50 },
+  { label: 'Heavy', value: 100 },
+];
+
+function snapToNearest(value, options) {
+  if (!options || options.length === 0) return value;
+  return options.reduce((prev, curr) =>
+    Math.abs(curr.value - value) < Math.abs(prev.value - value) ? curr : prev,
+    options[0]
+  ).value;
+}
 
 export default function PipeConditionTracker({ pipe, onUpdate }) {
   const { t } = useTranslation();
@@ -53,8 +106,8 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
       <CardContent className="space-y-6">
         <div>
           <Label>{t("conditionTracker.overallCondition")}</Label>
-          <Select 
-            value={condition.overall_condition} 
+          <Select
+            value={condition.overall_condition}
             onValueChange={(value) => handleUpdate('overall_condition', value)}
           >
             <SelectTrigger>
@@ -73,7 +126,7 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <Label>{t("conditionTracker.cakeLevel")}</Label>
             <div className="flex items-center gap-2">
               <cakeStatus.icon className={`w-4 h-4 ${cakeStatus.color}`} />
@@ -82,20 +135,15 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
               </Badge>
             </div>
           </div>
-          <Slider
-            value={[condition.cake_level]}
-            onValueChange={([value]) => handleUpdate('cake_level', value)}
-            max={100}
-            step={5}
-            className="mb-2"
+          <SegmentedControl
+            options={CAKE_OPTIONS}
+            value={snapToNearest(condition.cake_level, CAKE_OPTIONS)}
+            onChange={(value) => handleUpdate('cake_level', value)}
           />
-          <p className="text-xs text-[#E0D8C8]/60">
-            {condition.cake_level}% - {t("conditionTracker.optimalRange")}
-          </p>
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <Label>{t("conditionTracker.stemOxidation")}</Label>
             <div className="flex items-center gap-2">
               <stemStatus.icon className={`w-4 h-4 ${stemStatus.color}`} />
@@ -104,34 +152,20 @@ export default function PipeConditionTracker({ pipe, onUpdate }) {
               </Badge>
             </div>
           </div>
-          <Slider
-            value={[condition.stem_oxidation]}
-            onValueChange={([value]) => handleUpdate('stem_oxidation', value)}
-            max={100}
-            step={5}
-            className="mb-2"
+          <SegmentedControl
+            options={OXIDATION_OPTIONS}
+            value={snapToNearest(condition.stem_oxidation, OXIDATION_OPTIONS)}
+            onChange={(value) => handleUpdate('stem_oxidation', value)}
           />
-          <p className="text-xs text-[#E0D8C8]/60">
-            {condition.stem_oxidation}% {t("conditionTracker.oxidation")}
-          </p>
         </div>
 
         <div>
-          <Label className="mb-2 block">{t("conditionTracker.generalWear")}</Label>
-          <Slider
-            value={[condition.wear_level]}
-            onValueChange={([value]) => handleUpdate('wear_level', value)}
-            max={100}
-            step={5}
-            className="mb-2"
+          <Label className="mb-3 block">{t("conditionTracker.generalWear")}</Label>
+          <SegmentedControl
+            options={WEAR_OPTIONS}
+            value={snapToNearest(condition.wear_level, WEAR_OPTIONS)}
+            onChange={(value) => handleUpdate('wear_level', value)}
           />
-          <p className="text-xs text-[#E0D8C8]/60">
-            {condition.wear_level}% {t("conditionTracker.wear")} - {
-              condition.wear_level < 20 ? t("conditionTracker.minimalWear") :
-              condition.wear_level < 50 ? t("conditionTracker.lightWear") :
-              condition.wear_level < 75 ? t("conditionTracker.moderateWear") : t("conditionTracker.heavyWear")
-            }
-          </p>
         </div>
       </CardContent>
     </Card>

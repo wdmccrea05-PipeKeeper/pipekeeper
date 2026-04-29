@@ -8,7 +8,6 @@ import {
   isModuleLaunched,
   isModuleBlocked,
   isModuleInternal,
-  canAccessInternalModuleForTesting,
 } from "@/components/utils/moduleReleaseState";
 import { useCanonicalProfile } from "@/utils/getCanonicalUserProfile";
 
@@ -21,7 +20,7 @@ function normalizeBoolean(value) {
 function getLaunchedToggleableModules(user) {
   return MODULE_KEYS.filter((key) => {
     if (isModuleBlocked(key, user)) return false;
-    if (isModuleInternal(key, user)) return canAccessInternalModuleForTesting(key, user);
+    if (isModuleInternal(key, user)) return isInternalModuleTester(user);
     return isModuleLaunched(key, user);
   });
 }
@@ -29,16 +28,14 @@ function getLaunchedToggleableModules(user) {
 function buildAccessibleModules(profile, activeModules, user) {
   const accessible = new Set();
 
-  // Paid access / subscription-derived access
+  // Paid access / subscription-derived access (internal modules are excluded from activeModules)
   for (const key of activeModules || []) {
-    if (!isModuleBlocked(key, user)) {
-      if (!isModuleInternal(key, user) || canAccessInternalModuleForTesting(key, user)) {
-        accessible.add(key);
-      }
+    if (!isModuleBlocked(key, user) && !isModuleInternal(key, user)) {
+      accessible.add(key);
     }
   }
 
-  // Internal tester override
+  // Internal tester override: admins/testers get all non-blocked modules
   if (isInternalModuleTester(user)) {
     for (const key of MODULE_KEYS) {
       if (!isModuleBlocked(key, user)) accessible.add(key);

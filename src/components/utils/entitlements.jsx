@@ -12,7 +12,7 @@ const FREE_LIMITS = {
   pipes: 5,
   tobaccos: 10,
   bottles: 10,
-  photosPerItem: 3,
+  photosPerItem: 20,
   smokingLogs: 100,
 };
 
