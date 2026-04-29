@@ -17,7 +17,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import {
   getWineTotalValue, getWineQuantity, getWineDrinkWindowStatus,
   getWinePrimaryImage, sortWines, filterWines, searchWines,
-  hasWineValuation, getWineValuationConfidence,
+  getWineValuationConfidence,
 } from '@/lib/collection/wineSelectors';
 
 const SORT_OPTIONS = [

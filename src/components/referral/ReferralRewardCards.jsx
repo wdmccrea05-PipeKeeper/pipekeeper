@@ -5,7 +5,6 @@
 import React, { useState } from 'react';
 import { Gift, Star, CheckCircle, Clock, AlertCircle, Smartphone, CreditCard, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
 const STATUS_META = {
