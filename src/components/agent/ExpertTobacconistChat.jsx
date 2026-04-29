@@ -499,6 +499,7 @@ function buildWineDiagnosticResponse(diagnosticIntent, wines = []) {
  * This is the master intelligence layer — handles ALL query types with expert domain knowledge.
  */
 function buildLLMPrompt(userMessage, context = {}, history = [], entityContext = {}) {
+  const pipes = context.pipes || [];
   const blends = context.blends || [];
   const bottles = context.bottles || [];
   const smokingLogs = context.smokingLogs || [];
@@ -1600,7 +1601,7 @@ export default function ExpertTobacconistChat({
       // ── Diagnostic intent check (MUST run before LLM routing) ──────────────
       // Intercepts collection issue labels (e.g., "Wines Without a Drinking Window")
       // so they are never misrouted to the LLM as product/blend name lookups.
-      const diagnosticIntent = classifyDiagnosticIntent(text, entityContext.structuredIssueContext);
+      const diagnosticIntent = classifyDiagnosticIntent(text, entityContext?.structuredIssueContext);
       if (diagnosticIntent) {
         const wines = Array.isArray(collectionContext?.wines) ? collectionContext.wines : [];
         const diagnosticReply = buildWineDiagnosticResponse(diagnosticIntent, wines);
