@@ -1569,17 +1569,17 @@ function analyzeWineCollection(context) {
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'wine_missing_core_metadata',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType:         ACTION_TYPE.AUTO_FIX,
       title:              'Wines Missing Core Metadata',
       summary:            `${items.length} wine${items.length > 1 ? 's have' : ' has'} incomplete records. Missing fields include producer, vintage, style, varietal, region, or country.`,
       whyItMatters:       'Wine metadata is essential for accurate pairing recommendations, drinking-window calculations, and valuation. Without it, wines cannot be fully included in Curator analysis.',
-      recommendationText: 'Open each wine record and fill in the missing fields — producer, vintage, style, varietal, region, and country are most critical.',
+      recommendationText: 'Auto-Fix will enrich each wine record with producer, vintage, style, varietal, region, and country using available data.',
       moduleKey:          MODULE_KEY.WINE,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           items.length >= 5 ? PRIORITY.HIGH : PRIORITY.MEDIUM,
       confidence:         'high',
       items,
-      actionPayload: { type: 'open_wine_edit', fields: CORE_FIELDS.map((f) => f.key) },
+      actionPayload: { type: 'auto_enrich_wine_metadata', fields: CORE_FIELDS.map((f) => f.key) },
     }));
   }
 
@@ -1603,17 +1603,17 @@ function analyzeWineCollection(context) {
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'wine_missing_drinking_window',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType:         ACTION_TYPE.AUTO_FIX,
       title:              'Wines Without a Drinking Window',
       summary:            `${items.length} wine${items.length > 1 ? 's are' : ' is'} missing a drinking window. Without one, Curator cannot flag wines that are ready to drink or past peak.`,
       whyItMatters:       'The drinking window is what separates a cellar from a collection you can actually use. Wines without this data cannot surface in "drink now" or "hold" recommendations.',
-      recommendationText: 'Add a drink_from / drink_by range for each wine. Use the vintage year and style as a guide if you are unsure.',
+      recommendationText: 'Auto-Fix will estimate drinking_window_start, drinking_window_end, and drink_window_status from vintage and style data.',
       moduleKey:          MODULE_KEY.WINE,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.MEDIUM,
       confidence:         'medium',
       items,
-      actionPayload: { type: 'open_wine_edit', fields: ['drink_from', 'drink_by'] },
+      actionPayload: { type: 'auto_estimate_wine_drinking_window', fields: ['drink_from', 'drink_by', 'drink_window_status'] },
     }));
   }
 
@@ -1637,17 +1637,17 @@ function analyzeWineCollection(context) {
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'wine_missing_valuation',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType:         ACTION_TYPE.AUTO_FIX,
       title:              'Wines Without Valuation Data',
       summary:            `${items.length} wine${items.length > 1 ? 's have' : ' has'} no pricing or valuation data. Your collection value is understated.`,
       whyItMatters:       'Valuation data allows Curator to calculate the total value of your cellar and surface high-value wines that may need special attention.',
-      recommendationText: 'Run Wine Valuation Enrichment for these wines, or add a purchase price manually to bootstrap the valuation.',
+      recommendationText: 'Auto-Fix will run Wine Valuation Enrichment and populate estimated_unit_value, market_estimated_unit_value, and related fields.',
       moduleKey:          MODULE_KEY.WINE,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,
       confidence:         'medium',
       items,
-      actionPayload: { type: 'estimate_wine_value' },
+      actionPayload: { type: 'auto_enrich_wine_valuation' },
     }));
   }
 
@@ -1677,17 +1677,17 @@ function analyzeWineCollection(context) {
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'wine_stale_valuation',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType:         ACTION_TYPE.AUTO_FIX,
       title:              'Wines with Stale or Low-Confidence Valuation',
       summary:            `${items.length} wine${items.length > 1 ? 's have' : ' has'} valuation data that is outdated or low-confidence and should be refreshed.`,
       whyItMatters:       'Wine values shift with vintages and market conditions. A 30-day-old valuation may no longer reflect real market prices.',
-      recommendationText: 'Run Wine Valuation Refresh for each listed wine to update market estimates from current data.',
+      recommendationText: 'Auto-Fix will refresh market valuation estimates from current data for each listed wine.',
       moduleKey:          MODULE_KEY.WINE,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,
       confidence:         'high',
       items,
-      actionPayload: { type: 'refresh_wine_valuation' },
+      actionPayload: { type: 'auto_refresh_wine_valuation' },
     }));
   }
 
@@ -1711,17 +1711,17 @@ function analyzeWineCollection(context) {
     recommendations.push(createRecommendation({
       category:           CATEGORY.RECORD_OPTIMIZATION,
       goal:               'wine_missing_rarity',
-      actionType:         ACTION_TYPE.REVIEW_REQUIRED,
+      actionType:         ACTION_TYPE.AUTO_FIX,
       title:              'Wines Without Rarity / Collectibility Scores',
       summary:            `${items.length} wine${items.length > 1 ? 's have' : ' has'} no rarity or collectibility data. These scores help prioritize which bottles to hold vs. drink.`,
       whyItMatters:       'Rarity and collectibility scoring surfaces the wines in your cellar that appreciate in value and should be held — not opened prematurely.',
-      recommendationText: 'Calculate Rarity / Collectibility for each listed wine using the enrichment action.',
+      recommendationText: 'Auto-Fix will calculate rarity_score, collectibility_score, and rarity_label for each listed wine.',
       moduleKey:          MODULE_KEY.WINE,
       ownershipContext:   OWNERSHIP_CONTEXT.IN_COLLECTION,
       priority:           PRIORITY.LOW,
       confidence:         'medium',
       items,
-      actionPayload: { type: 'calculate_wine_rarity' },
+      actionPayload: { type: 'auto_calculate_wine_rarity' },
     }));
   }
 
@@ -1798,9 +1798,11 @@ export function generateRecommendations(context = {}) {
     ),
     ...generatePairingRecommendations(context),
     ...generateGrowExpandRecommendations({
-      pipes:         context.pipes || [],
       blends:        context.blends || [],
       bottles:       context.bottles || [],
+      cigars:        context.cigars || [],
+      pipes:         context.pipes || [],
+      wines:         context.wines || [],
       smokingLogs:   context.smokingLogs || [],
       preferences:   context.preferences || {},
       activeModules: context.activeModules || {},

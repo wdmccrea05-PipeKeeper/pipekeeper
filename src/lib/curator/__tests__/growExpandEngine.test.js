@@ -294,3 +294,101 @@ describe('generateGrowExpandRecommendations — scoring', () => {
     }
   });
 });
+
+// ─── Wine expansion ───────────────────────────────────────────────────────────
+
+const makeWine = (overrides = {}) => ({
+  id: 'w1',
+  name: 'Test Cabernet',
+  varietal: 'Cabernet Sauvignon',
+  style: 'Red',
+  vintage: 2018,
+  region: 'Napa Valley',
+  country: 'USA',
+  quantity: 3,
+  ...overrides,
+});
+
+describe('generateGrowExpandRecommendations — wine expansion', () => {
+  it('returns wine suggestions when winekeeper is active', () => {
+    const wines = [makeWine()];
+    const result = generateGrowExpandRecommendations({
+      wines,
+      activeModules: { winekeeper: true },
+    });
+    expect(result.length).toBeGreaterThan(0);
+    const wineRec = result.find((r) => r.moduleKey === 'wine');
+    expect(wineRec).toBeDefined();
+    expect(wineRec.category).toBe(CATEGORY.GROW_EXPAND);
+  });
+
+  it('does NOT return wine suggestions when winekeeper is disabled', () => {
+    const wines = [makeWine()];
+    const result = generateGrowExpandRecommendations({
+      wines,
+      pipes: [makePipe()],
+      blends: [makeBlend(), makeBlend({ id: 'b2' }), makeBlend({ id: 'b3' })],
+      activeModules: { winekeeper: false, pipekeeper: true },
+    });
+    const wineRec = result.find((r) => r.moduleKey === 'wine');
+    expect(wineRec).toBeUndefined();
+  });
+
+  it('suggests varietal gap from progression for Cabernet collection', () => {
+    const wines = [makeWine({ varietal: 'Cabernet Sauvignon' })];
+    const result = generateGrowExpandRecommendations({
+      wines,
+      activeModules: { winekeeper: true },
+    });
+    const wineRec = result.find((r) => r.moduleKey === 'wine');
+    expect(wineRec).toBeDefined();
+    expect(wineRec.items[0].suggestedVarietal).toBeDefined();
+    // Merlot, Malbec, or Nebbiolo expected next
+    expect(['Merlot', 'Malbec', 'Nebbiolo']).toContain(wineRec.items[0].suggestedVarietal);
+  });
+
+  it('does NOT suggest a varietal already owned', () => {
+    const wines = [
+      makeWine({ varietal: 'Cabernet Sauvignon' }),
+      makeWine({ id: 'w2', varietal: 'Merlot' }),
+      makeWine({ id: 'w3', varietal: 'Malbec' }),
+    ];
+    const result = generateGrowExpandRecommendations({
+      wines,
+      activeModules: { winekeeper: true },
+    });
+    for (const rec of result.filter((r) => r.moduleKey === 'wine')) {
+      const suggested = rec.items[0].suggestedVarietal;
+      expect(['Cabernet Sauvignon', 'Merlot', 'Malbec']).not.toContain(suggested);
+    }
+  });
+
+  it('wine suggestions have required structure fields', () => {
+    const wines = [makeWine()];
+    const result = generateGrowExpandRecommendations({
+      wines,
+      activeModules: { winekeeper: true },
+    });
+    for (const rec of result.filter((r) => r.moduleKey === 'wine')) {
+      expect(rec).toHaveProperty('id');
+      expect(rec).toHaveProperty('goal');
+      expect(rec).toHaveProperty('title');
+      expect(rec).toHaveProperty('summary');
+      expect(rec).toHaveProperty('items');
+      expect(rec.category).toBe(CATEGORY.GROW_EXPAND);
+      expect(rec.items[0]).toHaveProperty('ownershipStatus', 'wishlist');
+      expect(rec.items[0]).toHaveProperty('itemType', 'wine');
+    }
+  });
+
+  it('wineonly mode allows single wine collection to generate suggestions', () => {
+    const wines = [makeWine()];
+    const result = generateGrowExpandRecommendations({
+      wines,
+      activeModules: { winekeeper: true, pipekeeper: false, whiskeykeeper: false, cigarkeeper: false },
+    });
+    expect(result.length).toBeGreaterThan(0);
+    expect(result[0].moduleKey).toBe('wine');
+  });
+});
+

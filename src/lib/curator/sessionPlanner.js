@@ -10,6 +10,7 @@ import {
   buildPipeSessionReason,
   buildBlendSessionReason,
   buildCigarSessionReason,
+  buildWineSessionReason,
 } from './curatorVoice.js';
 
 // ─── Scoring helpers ──────────────────────────────────────────────────────────
@@ -111,6 +112,7 @@ const buildBottleReason = buildBottleSessionReason;
 const buildPipeReason   = buildPipeSessionReason;
 const buildBlendReason  = buildBlendSessionReason;
 const buildCigarReason  = buildCigarSessionReason;
+const buildWineReason   = buildWineSessionReason;
 
 // ─── Module-specific planners ─────────────────────────────────────────────────
 
@@ -228,12 +230,118 @@ function planCigarSession(context = {}) {
   }));
 }
 
+// ─── Wine session scoring constants ──────────────────────────────────────────
+// Baseline score when no prior tasting exists — high enough to make untasted
+// wines attractive candidates without dominating wines that are urgently ripe.
+const WINE_NEVER_TASTED_BASELINE   = 50;
+// Cap on recency-derived score to prevent very old untasted wines from
+// drowning out drinking-window urgency signals.
+const WINE_MAX_RECENCY_SCORE       = 55;
+// Multiplier converts days-since-last-tasting to a recency score.
+const WINE_RECENCY_DAYS_MULTIPLIER = 0.75;
+
+function scoreWine(wine, wineTastings = []) {
+  const logs = wineTastings.filter(
+    (l) => l?.wine_id === wine.id || l?.wineId === wine.id
+  );
+  const lastDate = logs
+    .map((l) => l?.tasting_date || l?.date || l?.created_date)
+    .filter(Boolean).sort().reverse()[0];
+  const daysSinceLast = daysSince(lastDate);
+  const quantity = Math.max(0, Number(wine.quantity ?? 0));
+
+  if (quantity <= 0) {
+    return { total: 0, sessionCount: logs.length, lastTastedDays: daysSinceLast, drinkWindowStatus: null, noStock: true };
+  }
+
+  const drinkWindowStatus = wine.drink_window_status || wine.drinking_window_status || null;
+  const pastPeak = drinkWindowStatus === 'past_peak';
+  const atPeak   = drinkWindowStatus === 'peak' || drinkWindowStatus === 'at_peak';
+  const inWindow = drinkWindowStatus === 'in_window' || drinkWindowStatus === 'drink_now';
+
+  // Recency score: how long since last tasting
+  const recencyScore = daysSinceLast === null
+    ? WINE_NEVER_TASTED_BASELINE
+    : Math.min(WINE_MAX_RECENCY_SCORE, daysSinceLast * WINE_RECENCY_DAYS_MULTIPLIER);
+
+  // Drinking-window urgency
+  const windowScore = pastPeak ? 30 : atPeak ? 25 : inWindow ? 18 : 0;
+
+  // Frequency penalty (too many recent tastings = less urgent)
+  const freqScore = Math.max(0, 20 - logs.length * 3);
+
+  const rating = Number(wine.rating || 0);
+  const ratingScore = rating >= 4 ? 15 : rating >= 3 ? 8 : 0;
+
+  return {
+    total: recencyScore + windowScore + freqScore + ratingScore,
+    sessionCount: logs.length,
+    lastTastedDays: daysSinceLast,
+    drinkWindowStatus,
+    pastPeak,
+    atPeak,
+    inWindow,
+  };
+}
+
+function planWineSession(context = {}) {
+  const { wines = [], wineTastings = [] } = context;
+  if (!wines.length) return [];
+
+  const eligible = wines.filter((w) => !w?.not_for_me && !w?.ai_excluded);
+
+  const scored = eligible
+    .map((wine) => {
+      const scoreData = scoreWine(wine, wineTastings);
+      return { wine, scoreData };
+    })
+    .filter(({ scoreData }) => !scoreData.noStock && scoreData.total > 0)
+    .sort((a, b) => b.scoreData.total - a.scoreData.total);
+
+  return scored.slice(0, 5).map(({ wine, scoreData }) => {
+    const { drinkWindowStatus, lastTastedDays, pastPeak, atPeak, inWindow } = scoreData;
+    let whyNow;
+    if (lastTastedDays === null) {
+      whyNow = 'No tasting logged yet';
+    } else if (pastPeak) {
+      whyNow = 'Past drinking window';
+    } else if (atPeak) {
+      whyNow = 'At peak now';
+    } else if (inWindow) {
+      whyNow = 'In drinking window';
+    } else if (lastTastedDays >= 30) {
+      whyNow = `${lastTastedDays} days since last tasting`;
+    } else {
+      whyNow = `${scoreData.sessionCount} tasting${scoreData.sessionCount !== 1 ? 's' : ''} logged`;
+    }
+
+    const producer = wine.producer;
+    const vintage  = wine.vintage;
+    const style    = wine.style || wine.varietal || wine.wine_type;
+    const subtitle = [producer, vintage, style].filter(Boolean).join(' · ');
+
+    return {
+      id: `session_wine_${wine.id}`,
+      moduleKey: 'wine',
+      itemType: 'wine',
+      item: wine,
+      title: wine.name || wine.wine_name || 'Wine',
+      subtitle,
+      reason: buildWineReason(wine, scoreData),
+      whyNow,
+      whatToExpect: style || drinkWindowStatus || 'Wine tasting',
+      scoreData,
+    };
+  });
+}
+
 // ─── Main entry point ─────────────────────────────────────────────────────────
 
 export function buildSessionPlan(context = {}, activeModules = {}, targetModule = 'any') {
   const pipeActive    = activeModules.pipekeeper    !== false;
   const whiskeyActive = activeModules.whiskeykeeper !== false;
   const cigarActive   = activeModules.cigarkeeper   !== false;
+  const wineActive    = !!activeModules.winekeeper;
   const target = String(targetModule || 'any').toLowerCase();
   const results = [];
 
@@ -245,6 +353,9 @@ export function buildSessionPlan(context = {}, activeModules = {}, targetModule 
   }
   if (cigarActive && (target === 'any' || target === 'cigar')) {
     results.push(...planCigarSession(context));
+  }
+  if (wineActive && (target === 'any' || target === 'wine')) {
+    results.push(...planWineSession(context));
   }
 
   const filtered = target === 'any'

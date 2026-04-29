@@ -8,6 +8,7 @@ const MODULE_COLORS = {
   whiskey: { bg: 'rgba(74,124,156,0.12)', text: 'rgba(120,170,220,0.9)', border: 'rgba(74,124,156,0.25)', label: 'Whiskey' },
   cigar: { bg: 'rgba(180,100,50,0.12)', text: 'rgba(220,140,90,0.9)', border: 'rgba(180,100,50,0.25)', label: 'Cigar' },
   pipe: { bg: 'rgba(180,140,75,0.12)', text: 'rgba(212,165,116,1)', border: 'rgba(180,140,75,0.26)', label: 'Pipe' },
+  wine: { bg: 'rgba(120,40,80,0.14)', text: 'rgba(210,130,160,0.95)', border: 'rgba(140,50,90,0.30)', label: 'Wine' },
 };
 
 function normalizeModuleKey(value) {
@@ -15,6 +16,7 @@ function normalizeModuleKey(value) {
   if (raw.includes('whiskey') || raw.includes('bottle')) return 'whiskey';
   if (raw.includes('cigar')) return 'cigar';
   if (raw.includes('pipe')) return 'pipe';
+  if (raw.includes('wine')) return 'wine';
   return 'tobacco';
 }
 
@@ -146,18 +148,21 @@ function GrowSection({ label, suggestions, userEmail, onAskCurator }) {
   );
 }
 
-export default function CuratorGrowAndExpand({ sections = [], collectionContext = {}, userEmail, onAskCurator, onRefresh, isRefreshing = false }) {
+export default function CuratorGrowAndExpand({ sections = [], collectionContext = {}, userEmail, onAskCurator, onRefresh, isRefreshing = false, activeModules = {} }) {
   const suggestions = useMemo(() => {
     const fromSections = normalizeSectionSuggestions(sections);
     return fromSections.length ? fromSections : fallbackSuggestions(collectionContext);
   }, [sections, collectionContext]);
+
+  const wineActive = !!activeModules.winekeeper;
 
   const groups = useMemo(() => ({
     tobacco: suggestions.filter((s) => s.moduleKey === 'tobacco'),
     whiskey: suggestions.filter((s) => s.moduleKey === 'whiskey'),
     cigar: suggestions.filter((s) => s.moduleKey === 'cigar'),
     pipe: suggestions.filter((s) => s.moduleKey === 'pipe'),
-  }), [suggestions]);
+    wine: wineActive ? suggestions.filter((s) => s.moduleKey === 'wine') : [],
+  }), [suggestions, wineActive]);
 
   if (!suggestions.length) {
     return <div className="py-16 text-center"><TrendingUp className="w-10 h-10 mx-auto mb-3" style={{ color: 'rgba(140,105,65,0.3)' }} /><p className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>No growth suggestions yet</p></div>;
@@ -186,6 +191,7 @@ export default function CuratorGrowAndExpand({ sections = [], collectionContext 
       <GrowSection label="Whiskey Discoveries" suggestions={groups.whiskey} userEmail={userEmail} onAskCurator={onAskCurator} />
       <GrowSection label="Pipe Discoveries" suggestions={groups.pipe} userEmail={userEmail} onAskCurator={onAskCurator} />
       <GrowSection label="Cigar Discoveries" suggestions={groups.cigar} userEmail={userEmail} onAskCurator={onAskCurator} />
+      {wineActive && <GrowSection label="Wine Discoveries" suggestions={groups.wine} userEmail={userEmail} onAskCurator={onAskCurator} />}
     </div>
   );
 }
