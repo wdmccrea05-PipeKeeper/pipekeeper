@@ -326,7 +326,6 @@ function WineKeeperInner() {
               )}
             </>
           }
-          storyHighlights={highlights}
         />
       )}
 
