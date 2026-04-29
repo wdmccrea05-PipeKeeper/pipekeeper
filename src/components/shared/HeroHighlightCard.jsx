@@ -18,8 +18,6 @@ export default function HeroHighlightCard({
   objectMode = 'cover',
   className,
 }) {
-  const isContainMode = objectMode === 'contain';
-
   return (
     <div
       className={`relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl aspect-[3/2] ${className || ''}`}
@@ -34,7 +32,7 @@ export default function HeroHighlightCard({
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: photo ? `url('${photo}')` : `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
-          backgroundSize: isContainMode ? 'contain' : 'cover',
+          backgroundSize: objectMode === 'contain' ? 'contain' : 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         }}
