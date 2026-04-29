@@ -28,15 +28,19 @@ export default function HeroHighlightCard({
       }}
     >
       {/* Background layer */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: photo ? `url('${photo}')` : `linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)`,
-          backgroundSize: objectMode === 'contain' ? 'contain' : 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
+      {photo ? (
+        <img
+          src={photo}
+          alt=""
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ objectFit: objectMode === 'contain' ? 'contain' : 'cover', objectPosition: 'center' }}
+        />
+      ) : (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(135deg, rgba(42,28,18,0.97) 0%, rgba(28,18,12,0.99) 100%)' }}
+        />
+      )}
 
       {/* Accent radial gradient for depth */}
       <div
