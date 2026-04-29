@@ -129,13 +129,13 @@ export default function WineInsights() {
           {wines.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {stats.topByRating[0] && (
-                <HeroHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} photo={getWinePrimaryImage(stats.topByRating[0])} objectMode="bottle" />
+                <HeroHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} photo={getWinePrimaryImage(stats.topByRating[0])} objectMode="cover" />
               )}
               {stats.topByValue[0] && (
-                <HeroHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={getWineTotalValue(stats.topByValue[0]) > 0 ? formatFromBase(getWineTotalValue(stats.topByValue[0])) : '—'} accent="#2E7D5C" photo={getWinePrimaryImage(stats.topByValue[0])} objectMode="bottle" />
+                <HeroHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={getWineTotalValue(stats.topByValue[0]) > 0 ? formatFromBase(getWineTotalValue(stats.topByValue[0])) : '—'} accent="#2E7D5C" photo={getWinePrimaryImage(stats.topByValue[0])} objectMode="cover" />
               )}
               {stats.drinkingNow > 0 && (
-                <HeroHighlightCard title="In Drinking Window" value={`${stats.drinkingNow} bottle${stats.drinkingNow !== 1 ? 's' : ''}`} subtitle="Ready to open" accent={WINE_GOLD} objectMode="bottle" />
+                <HeroHighlightCard title="In Drinking Window" value={`${stats.drinkingNow} bottle${stats.drinkingNow !== 1 ? 's' : ''}`} subtitle="Ready to open" accent={WINE_GOLD} objectMode="cover" />
               )}
             </div>
           )}

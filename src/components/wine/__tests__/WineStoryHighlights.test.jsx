@@ -40,7 +40,7 @@ const wines = [
 ];
 
 describe('WineStoryHighlights', () => {
-  it('renders HeroHighlightCard components with objectMode="bottle"', () => {
+  it('renders HeroHighlightCard components with objectMode="cover"', () => {
     const { getAllByTestId } = render(
       <WineStoryHighlights wines={wines} tastings={[]} />
     );
@@ -48,7 +48,7 @@ describe('WineStoryHighlights', () => {
     const cards = getAllByTestId('hero-highlight-card');
     expect(cards.length).toBeGreaterThan(0);
     cards.forEach((card) => {
-      expect(card.getAttribute('data-object-mode')).toBe('bottle');
+      expect(card.getAttribute('data-object-mode')).toBe('cover');
     });
   });
 

@@ -95,7 +95,7 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
           subtitle={h.subtitle}
           photo={h.photo}
           accent={h.accent}
-          objectMode="bottle"
+          objectMode="cover"
           onClick={() => onNavigate && onNavigate(h.key)}
         />
       ))}
