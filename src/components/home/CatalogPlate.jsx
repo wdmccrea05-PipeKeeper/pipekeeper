@@ -55,18 +55,23 @@ export default function CatalogPlate({
       {/* Hero image spotlight */}
       {heroImage && (
         <div
-          className={isBottleMode ? "absolute inset-0 flex items-center justify-end pointer-events-none" : "absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"}
-          style={isBottleMode ? { paddingRight: "8%" } : { width: "50%" }}
+          className={isBottleMode ? "absolute inset-0 pointer-events-none overflow-hidden" : "absolute right-0 top-0 bottom-0 pointer-events-none overflow-hidden"}
+          style={isBottleMode ? {} : { width: "50%" }}
         >
           <img
             src={heroImage}
             alt=""
             loading="lazy"
-            className={isBottleMode ? "" : "absolute"}
+            className="absolute"
             style={isBottleMode ? {
-              maxHeight: "92%",
-              maxWidth: "55%",
+              right: "-4%",
+              bottom: "-22%",
+              height: "155%",
+              width: "72%",
+              maxHeight: "none",
+              maxWidth: "none",
               objectFit: "contain",
+              objectPosition: "center bottom",
               filter: `drop-shadow(0 0 20px ${accent}50) drop-shadow(0 8px 16px rgba(0,0,0,0.7))`,
             } : {
               right: "-5%",

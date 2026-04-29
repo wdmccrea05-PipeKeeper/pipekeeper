@@ -8,7 +8,8 @@ import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import WineInsuranceExporter from '@/components/export/WineInsuranceExporter';
 import { importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
-import { selectWineCollectionValue, selectUnvaluedWineCount, hasWineValuation } from '@/lib/collection/wineSelectors';
+import { selectWineCollectionValue, selectUnvaluedWineCount, hasWineValuation, getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
+import HeroHighlightCard from '@/components/shared/HeroHighlightCard';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
@@ -97,7 +98,7 @@ export default function WineInsights() {
     const tooYoung = wines.filter(w => w.drink_window_start && new Date(w.drink_window_start) > now);
     const pastPeak = wines.filter(w => w.drink_window_end && new Date(w.drink_window_end) < now);
 
-    const topByValue = [...wines].sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0)).slice(0, 3);
+    const topByValue = [...wines].sort((a, b) => getWineTotalValue(b) - getWineTotalValue(a)).slice(0, 3);
     const topByRating = [...wines].filter(w => w.rating > 0).sort((a, b) => b.rating - a.rating).slice(0, 1);
 
     return { totalBottles, totalInCellar, totalValue, avgRating, styleBreakdown, regionBreakdown, varietalBreakdown, drinkingNow: drinkingNow.length, tooYoung: tooYoung.length, pastPeak: pastPeak.length, tastingCount: tastings.length, unvalued, lowConfidence, topByValue, topByRating, drinkingNowWines: drinkingNow };
@@ -128,17 +129,17 @@ export default function WineInsights() {
           </InsightsKpiGrid>
 
           {wines.length > 0 && (
-            <InsightsHighlightGrid>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {stats.topByRating[0] && (
-                <InsightsHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} photo={stats.topByRating[0].photos?.[0]} />
+                <HeroHighlightCard title="Top Rated Wine" value={stats.topByRating[0].name} subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`} accent={ACCENT} photo={getWinePrimaryImage(stats.topByRating[0])} objectMode="bottle" />
               )}
               {stats.topByValue[0] && (
-                <InsightsHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={stats.topByValue[0].estimated_value ? formatFromBase(stats.topByValue[0].estimated_value) : '—'} accent="#2E7D5C" photo={stats.topByValue[0].photos?.[0]} />
+                <HeroHighlightCard title="Most Valued Wine" value={stats.topByValue[0].name} subtitle={getWineTotalValue(stats.topByValue[0]) > 0 ? formatFromBase(getWineTotalValue(stats.topByValue[0])) : '—'} accent="#2E7D5C" photo={getWinePrimaryImage(stats.topByValue[0])} objectMode="bottle" />
               )}
               {stats.drinkingNow > 0 && (
-                <InsightsHighlightCard title="In Drinking Window" value={`${stats.drinkingNow} bottle${stats.drinkingNow !== 1 ? 's' : ''}`} subtitle="Ready to open" accent={WINE_GOLD} />
+                <HeroHighlightCard title="In Drinking Window" value={`${stats.drinkingNow} bottle${stats.drinkingNow !== 1 ? 's' : ''}`} subtitle="Ready to open" accent={WINE_GOLD} objectMode="bottle" />
               )}
-            </InsightsHighlightGrid>
+            </div>
           )}
 
           {wines.length === 0 && (
@@ -166,7 +167,7 @@ export default function WineInsights() {
                       <p className="text-sm font-medium text-[#F5F1E7] truncate">{w.name}</p>
                       <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(216,199,166,0.6)' }}>{[w.producer, w.vintage].filter(Boolean).join(' · ')}</p>
                     </div>
-                    <span className="text-sm font-semibold" style={{ color: WINE_GOLD }}>{w.estimated_value ? formatFromBase(w.estimated_value) : '—'}</span>
+                    <span className="text-sm font-semibold" style={{ color: WINE_GOLD }}>{getWineTotalValue(w) > 0 ? formatFromBase(getWineTotalValue(w)) : '—'}</span>
                   </div>
                 ))}
               </div>
