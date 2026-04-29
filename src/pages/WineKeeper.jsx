@@ -15,7 +15,6 @@ import { InsightsHighlightCard, InsightsHighlightGrid } from '@/components/insig
 import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
-import WineStoryHighlights from '@/components/wine/WineStoryHighlights';
 import { selectWineCollectionValue, selectTotalWineBottles, selectWineReadyToDrinkCount, getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
 
 function formatDate(value) {
@@ -355,8 +354,6 @@ function WineKeeperInner() {
             </div>
           </div>
 
-          {/* Story highlights cards */}
-          <WineStoryHighlights wines={wines} tastings={tastings} t={t} />
         </div>
       )}
 
