@@ -3,6 +3,8 @@ import {
   deriveWineValuationPatch,
   shouldRefreshWineValuation,
   normalizeWineValuationConfidence,
+  buildWineValuationPrompt,
+  getWineValuationStatus,
 } from '../wineValuation';
 
 describe('normalizeWineValuationConfidence', () => {
@@ -128,5 +130,80 @@ describe('deriveWineValuationPatch', () => {
     const patch = deriveWineValuationPatch(wine, result);
     expect(patch.estimated_total_value).toBe(300);
     expect(patch.market_estimated_total_value).toBe(300);
+  });
+});
+
+describe('buildWineValuationPrompt', () => {
+  test('returns empty string for null input', () => {
+    expect(buildWineValuationPrompt(null)).toBe('');
+  });
+
+  test('includes wine name and producer', () => {
+    const wine = { name: 'Opus One', producer: 'Opus One Winery', vintage: 2015, style: 'Red Blend' };
+    const prompt = buildWineValuationPrompt(wine);
+    expect(prompt).toContain('Opus One');
+    expect(prompt).toContain('Opus One Winery');
+    expect(prompt).toContain('2015');
+    expect(prompt).toContain('Red Blend');
+  });
+
+  test('includes instructions to estimate value and confidence', () => {
+    const wine = { name: 'Test Wine' };
+    const prompt = buildWineValuationPrompt(wine);
+    expect(prompt).toContain('estimated_unit_value');
+    expect(prompt).toContain('valuation_confidence');
+  });
+
+  test('omits fields that are not set', () => {
+    const wine = { name: 'Minimal Wine' };
+    const prompt = buildWineValuationPrompt(wine);
+    expect(prompt).not.toContain('Producer:');
+    expect(prompt).not.toContain('Vintage:');
+  });
+});
+
+describe('getWineValuationStatus', () => {
+  test('returns missing for null', () => {
+    const { status } = getWineValuationStatus(null);
+    expect(status).toBe('missing');
+  });
+
+  test('returns manual when manual_valuation_enabled is true', () => {
+    const { status } = getWineValuationStatus({ manual_valuation_enabled: true, market_estimated_unit_value: 100 });
+    expect(status).toBe('manual');
+  });
+
+  test('returns missing when no market value present', () => {
+    const { status } = getWineValuationStatus({ name: 'Test' });
+    expect(status).toBe('missing');
+  });
+
+  test('returns low when confidence is low', () => {
+    const { status } = getWineValuationStatus({
+      market_estimated_unit_value: 80,
+      valuation_confidence: 'low',
+      valuation_updated_at: new Date().toISOString(),
+    });
+    expect(status).toBe('low');
+  });
+
+  test('returns stale when updated_at is older than 30 days', () => {
+    const old = new Date();
+    old.setDate(old.getDate() - 45);
+    const { status } = getWineValuationStatus({
+      market_estimated_unit_value: 80,
+      valuation_confidence: 'high',
+      valuation_updated_at: old.toISOString(),
+    });
+    expect(status).toBe('stale');
+  });
+
+  test('returns valued for recent high-confidence entry', () => {
+    const { status } = getWineValuationStatus({
+      market_estimated_unit_value: 120,
+      valuation_confidence: 'high',
+      valuation_updated_at: new Date().toISOString(),
+    });
+    expect(status).toBe('valued');
   });
 });

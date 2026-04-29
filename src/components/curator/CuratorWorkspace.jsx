@@ -538,7 +538,7 @@ export default function CuratorWorkspace({
   switch (activeSurface) {
     case 'record_optimization':
       return (
-        <>{modals}<CuratorResultsBoard sections={buckets.record_optimization} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
+        <>{modals}<CuratorResultsBoard sections={buckets.record_optimization} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} activeModules={moduleEnabled} /></>
       );
 
     case 'collection_optimization': {
@@ -553,7 +553,7 @@ export default function CuratorWorkspace({
       return showSpecializationReview || specRecs.length > 0 ? (
         <>{modals}<CuratorSpecializationReview specRecs={specRecs} collectionSections={nonSpecSections} onAction={handleAction} onAskCurator={(pipe) => handleAction('ask_curator', pipe)} onOpenGrowExpand={() => onSurfaceChange?.('grow_expand')} onDone={() => setShowSpecializationReview(false)} /></>
       ) : (
-        <>{modals}<CuratorResultsBoard sections={buckets.collection_optimization} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
+        <>{modals}<CuratorResultsBoard sections={buckets.collection_optimization} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} activeModules={moduleEnabled} /></>
       );
     }
 

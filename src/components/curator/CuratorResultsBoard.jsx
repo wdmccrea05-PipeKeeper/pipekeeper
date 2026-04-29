@@ -2,13 +2,15 @@ import React, { useMemo } from 'react';
 import CuratorRecommendationGroup from '@/components/curator/CuratorRecommendationGroup';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
-const SCOPE_OPTIONS = [
+const SCOPE_OPTIONS_BASE = [
   { key: 'all', labelKey: 'curator.scope.all' },
   { key: 'pipe', labelKey: 'curator.scope.pipe' },
   { key: 'tobacco', labelKey: 'curator.scope.tobacco' },
   { key: 'whiskey', labelKey: 'curator.scope.whiskey' },
   { key: 'cigar', labelKey: 'curator.scope.cigar' },
 ];
+
+const SCOPE_OPTION_WINE = { key: 'wine', labelKey: 'curator.scope.wine' };
 
 function normalizeScope(value) {
   return String(value || 'all').toLowerCase();
@@ -20,6 +22,7 @@ function normalizeModuleKey(value) {
   if (raw.includes('tobacco') || raw.includes('blend')) return 'tobacco';
   if (raw.includes('whiskey') || raw.includes('bottle')) return 'whiskey';
   if (raw.includes('cigar')) return 'cigar';
+  if (raw.includes('wine')) return 'wine';
   return raw;
 }
 
@@ -144,16 +147,21 @@ export default function CuratorResultsBoard(props) {
     onAction,
     onRefresh,
     isRefreshing = false,
+    activeModules = {},
   } = props;
 
   const sectionsInput = rawSections || recommendationSections || [];
   const scopeOptions = useMemo(
-    () =>
-      SCOPE_OPTIONS.map((scope) => ({
+    () => {
+      const opts = activeModules?.winekeeper
+        ? [...SCOPE_OPTIONS_BASE, SCOPE_OPTION_WINE]
+        : SCOPE_OPTIONS_BASE;
+      return opts.map((scope) => ({
         ...scope,
         label: t(scope.labelKey),
-      })),
-    [t]
+      }));
+    },
+    [t, activeModules]
   );
 
   // Internal scope state — used when parent doesn't control it
