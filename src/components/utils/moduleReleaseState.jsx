@@ -8,16 +8,19 @@
  */
 
 // ─── Feature flags for WineKeeper gating ─────────────────────────────────────
-// Set WINEKEEPER_PUBLIC_ENABLED = true when ready for public launch.
-export const WINEKEEPER_PUBLIC_ENABLED = false;
+// Set VITE_WINEKEEPER_PUBLIC_ENABLED=true in your environment to launch WineKeeper publicly.
+// When true: winekeeper state becomes 'launched' and appears in nav, Hub, Curator, subscription UI, reports, and story.
+// When false (default): winekeeper remains 'internal' — accessible only to admins/testers.
+export const WINEKEEPER_PUBLIC_ENABLED =
+  import.meta.env.VITE_WINEKEEPER_PUBLIC_ENABLED === 'true';
 
 export const MODULE_RELEASE_STATES = {
   pipekeeper: 'launched',
   whiskeykeeper: 'launched',
   cigarkeeper: 'launched',
-  // WineKeeper is INTERNAL ONLY — admin/tester access, not yet publicly released.
-  // Change to 'launched' only when WINEKEEPER_PUBLIC_ENABLED is true.
-  winekeeper: 'internal',
+  // WineKeeper state is driven by VITE_WINEKEEPER_PUBLIC_ENABLED env var.
+  // Set VITE_WINEKEEPER_PUBLIC_ENABLED=true to launch publicly.
+  winekeeper: WINEKEEPER_PUBLIC_ENABLED ? 'launched' : 'internal',
 };
 
 const LOCAL_OVERRIDE_PREFIX = 'ck_module_override_';

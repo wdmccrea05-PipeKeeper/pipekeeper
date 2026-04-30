@@ -101,7 +101,7 @@ export function buildStripeConfig() {
       priceId: import.meta.env.VITE_STRIPE_WINEKEEPER_MONTHLY || null,
       displayPrice: '$2.99',
       displayPeriod: '/month',
-      isAvailable: false,
+      isAvailable: isModuleLaunched('winekeeper') && !!import.meta.env.VITE_STRIPE_WINEKEEPER_MONTHLY,
       unavailableReason: !isModuleLaunched('winekeeper')
         ? 'WineKeeper is not publicly launched'
         : (import.meta.env.VITE_STRIPE_WINEKEEPER_MONTHLY ? undefined : 'VITE_STRIPE_WINEKEEPER_MONTHLY not configured'),
@@ -114,7 +114,7 @@ export function buildStripeConfig() {
       priceId: import.meta.env.VITE_STRIPE_WINEKEEPER_ANNUAL || null,
       displayPrice: '$29.99',
       displayPeriod: '/year',
-      isAvailable: false,
+      isAvailable: isModuleLaunched('winekeeper') && !!import.meta.env.VITE_STRIPE_WINEKEEPER_ANNUAL,
       unavailableReason: !isModuleLaunched('winekeeper')
         ? 'WineKeeper is not publicly launched'
         : (import.meta.env.VITE_STRIPE_WINEKEEPER_ANNUAL ? undefined : 'VITE_STRIPE_WINEKEEPER_ANNUAL not configured'),
@@ -151,7 +151,7 @@ export function buildStripeConfig() {
       priceId: import.meta.env.VITE_STRIPE_FOUR_BUNDLE_MONTHLY || null,
       displayPrice: '$8.99',
       displayPeriod: '/month',
-      isAvailable: false,
+      isAvailable: isModuleLaunched('winekeeper') && !!import.meta.env.VITE_STRIPE_FOUR_BUNDLE_MONTHLY,
       unavailableReason: !isModuleLaunched('winekeeper')
         ? '4-module bundle unavailable until WineKeeper is launched'
         : (import.meta.env.VITE_STRIPE_FOUR_BUNDLE_MONTHLY ? undefined : 'VITE_STRIPE_FOUR_BUNDLE_MONTHLY not configured'),
@@ -164,7 +164,7 @@ export function buildStripeConfig() {
       priceId: import.meta.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL || null,
       displayPrice: '$89.99',
       displayPeriod: '/year',
-      isAvailable: false,
+      isAvailable: isModuleLaunched('winekeeper') && !!import.meta.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL,
       unavailableReason: !isModuleLaunched('winekeeper')
         ? '4-module bundle unavailable until WineKeeper is launched'
         : (import.meta.env.VITE_STRIPE_FOUR_BUNDLE_ANNUAL ? undefined : 'VITE_STRIPE_FOUR_BUNDLE_ANNUAL not configured'),

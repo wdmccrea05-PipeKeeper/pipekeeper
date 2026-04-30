@@ -17,9 +17,11 @@
  */
 
 import { SUBSCRIPTION_PLANS, getPreferredPlanKeyForModule } from './subscriptionPlans';
-import { getModuleReleaseState } from '@/components/utils/moduleReleaseState';
+import { getModuleReleaseState, MODULE_RELEASE_STATES } from '@/components/utils/moduleReleaseState';
 
-const PUBLIC_BILLING_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+// Derive public billing modules dynamically from the release state registry.
+// Any module with state 'launched' is eligible for purchase in the subscription UI.
+const PUBLIC_BILLING_MODULES = Object.keys(MODULE_RELEASE_STATES);
 
 function isPubliclyLaunched(moduleKey) {
   return getModuleReleaseState(moduleKey) === 'launched';

@@ -26,6 +26,7 @@ import { getStripeConfig } from "@/components/subscription/stripeConfig";
 import { initiateCheckoutWithIntent } from "@/components/subscription/subscriptionHandler";
 import { syncAppleSubscriptionStatus } from "@/components/utils/appleSubscriptionSync";
 import { isModuleLaunched } from "@/components/utils/moduleReleaseState";
+import { getLaunchedModuleIds } from "@/components/utils/moduleAccess";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading, t }) {
   return (
@@ -178,7 +179,7 @@ export default function SubscriptionFull() {
 
   const availablePlans = useMemo(() => {
     const interval = selectedInterval === "annual" ? "annual" : "monthly";
-    const launchedSingleModules = ["pipekeeper", "whiskeykeeper", "cigarkeeper"].filter((moduleKey) =>
+    const launchedSingleModules = getLaunchedModuleIds().filter((moduleKey) =>
       isModuleLaunched(moduleKey, user)
     );
 
