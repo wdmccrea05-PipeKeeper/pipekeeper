@@ -25,7 +25,6 @@ import { SUBSCRIPTION_PLANS } from "@/lib/billing/subscriptionPlans";
 import { getStripeConfig } from "@/components/subscription/stripeConfig";
 import { initiateCheckoutWithIntent } from "@/components/subscription/subscriptionHandler";
 import { syncAppleSubscriptionStatus } from "@/components/utils/appleSubscriptionSync";
-import { isModuleLaunched } from "@/components/utils/moduleReleaseState";
 import { getLaunchedModuleIds } from "@/components/utils/moduleAccess";
 
 function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoading, t }) {
@@ -179,14 +178,14 @@ export default function SubscriptionFull() {
 
   const availablePlans = useMemo(() => {
     const interval = selectedInterval === "annual" ? "annual" : "monthly";
-    const launchedSingleModules = getLaunchedModuleIds().filter((moduleKey) =>
-      isModuleLaunched(moduleKey, user)
-    );
+    // getLaunchedModuleIds() already returns only launched modules
+    const launchedSingleModules = getLaunchedModuleIds();
 
     const keyOrder = [
       ...launchedSingleModules.map((moduleKey) => `${moduleKey}_pro_${interval}`),
       `founders_bundle_${interval}`,
       `three_module_bundle_${interval}`,
+      `four_module_bundle_${interval}`,
     ];
 
     return keyOrder
@@ -206,10 +205,14 @@ export default function SubscriptionFull() {
     whiskeykeeper_pro_annual: { name: t("subscriptionFull.plan.whiskeykeeperPro"), badge: null },
     cigarkeeper_pro_monthly: { name: t("subscriptionFull.plan.cigarkeeperPro"), badge: null },
     cigarkeeper_pro_annual: { name: t("subscriptionFull.plan.cigarkeeperPro"), badge: null },
+    winekeeper_pro_monthly: { name: t("subscriptionFull.plan.winekeeperPro"), badge: null },
+    winekeeper_pro_annual: { name: t("subscriptionFull.plan.winekeeperPro"), badge: null },
     founders_bundle_monthly: { name: t("subscriptionFull.plan.foundersBundle"), badge: t("subscriptionFull.badge.mostPopular") },
     founders_bundle_annual: { name: t("subscriptionFull.plan.foundersBundle"), badge: t("subscriptionFull.badge.mostPopular") },
     three_module_bundle_monthly: { name: t("subscriptionFull.plan.threeModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
     three_module_bundle_annual: { name: t("subscriptionFull.plan.threeModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
+    four_module_bundle_monthly: { name: t("subscriptionFull.plan.fourModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
+    four_module_bundle_annual: { name: t("subscriptionFull.plan.fourModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
   }), [t]);
 
   const planDescriptions = useMemo(() => ({
@@ -219,10 +222,14 @@ export default function SubscriptionFull() {
     whiskeykeeper_pro_annual: t("subscriptionFull.planDescription.whiskeykeeperPro"),
     cigarkeeper_pro_monthly: t("subscriptionFull.planDescription.cigarkeeperPro"),
     cigarkeeper_pro_annual: t("subscriptionFull.planDescription.cigarkeeperPro"),
+    winekeeper_pro_monthly: t("subscriptionFull.planDescription.winekeeperPro"),
+    winekeeper_pro_annual: t("subscriptionFull.planDescription.winekeeperPro"),
     founders_bundle_monthly: t("subscriptionFull.planDescription.foundersBundle"),
     founders_bundle_annual: t("subscriptionFull.planDescription.foundersBundle"),
     three_module_bundle_monthly: t("subscriptionFull.planDescription.threeModuleBundle"),
     three_module_bundle_annual: t("subscriptionFull.planDescription.threeModuleBundle"),
+    four_module_bundle_monthly: t("subscriptionFull.planDescription.fourModuleBundle"),
+    four_module_bundle_annual: t("subscriptionFull.planDescription.fourModuleBundle"),
   }), [t]);
 
   const groupedPlans = useMemo(() => ({
@@ -280,7 +287,9 @@ export default function SubscriptionFull() {
           .filter(Boolean);
 
         if (cancelableIds.length > 0) {
-          const targetBundle = option.targetPlanKey?.startsWith('three_module_bundle') ? 'three_module' : 'founders';
+          const targetBundle = option.targetPlanKey?.startsWith('four_module_bundle') ? 'four_module'
+            : option.targetPlanKey?.startsWith('three_module_bundle') ? 'three_module'
+            : 'founders';
           const upgradeRes = await base44.functions.invoke("handleBundleUpgrade", {
             currentSubscriptionIds: cancelableIds,
             targetBundleType: targetBundle,
@@ -389,7 +398,9 @@ export default function SubscriptionFull() {
             {t("subscriptionFull.alreadySubscribed")}
           </h1>
           <p className="text-[#e8d5b7]/70">
-            {subscriptionState.isThreeModuleBundle
+            {subscriptionState.isFourModuleBundle
+              ? t("subscriptionFull.allFourUnlocked")
+              : subscriptionState.isThreeModuleBundle
               ? t("subscriptionFull.allThreeUnlocked")
               : t("subscriptionFull.fullAccessThreeModules")}
           </p>

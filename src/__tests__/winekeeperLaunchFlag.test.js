@@ -219,3 +219,118 @@ describe('WineKeeper checkout success route', () => {
     expect(getModuleSuccessRoute('cigarkeeper')).toBe('/CigarKeeper');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8 — 4-module bundle subscription state (internal mode, pipe+whiskey+cigar scenario)
+// ─────────────────────────────────────────────────────────────────────────────
+describe('4-module bundle subscription state — internal (winekeeper not launched)', () => {
+  it('hasFullCoverage is true when user has all 3 launched modules individually', async () => {
+    const { getUserSubscriptionState } = await import('@/lib/billing/subscriptionState');
+    const state = getUserSubscriptionState({
+      activeSubscriptions: [
+        { status: 'active', plan_key: 'pipekeeper_pro_annual' },
+        { status: 'active', plan_key: 'whiskeykeeper_pro_annual' },
+        { status: 'active', plan_key: 'cigarkeeper_pro_annual' },
+      ],
+    });
+    expect(state.hasFullCoverage).toBe(true);
+    expect(state.hasPipekeeperPro).toBe(true);
+    expect(state.hasWhiskeykeeperPro).toBe(true);
+    expect(state.hasCigarkeeperPro).toBe(true);
+    // In internal mode winekeeper is not part of full coverage
+    expect(state.eligibleActions).not.toContain('add_winekeeper_module');
+    expect(state.eligibleActions).not.toContain('upgrade_to_four_module_bundle');
+  });
+
+  it('isFourModuleBundle is true when active plan is four_module_bundle', async () => {
+    const { getUserSubscriptionState } = await import('@/lib/billing/subscriptionState');
+    const state = getUserSubscriptionState({
+      activeSubscriptions: [{ status: 'active', plan_key: 'four_module_bundle_annual' }],
+    });
+    expect(state.isFourModuleBundle).toBe(true);
+    expect(state.hasFullCoverage).toBe(true);
+    expect(state.eligibleActions).toHaveLength(0);
+  });
+
+  it('three_module_bundle gives isThreeModuleBundle and no further 3-module upgrade offered', async () => {
+    const { getUserSubscriptionState } = await import('@/lib/billing/subscriptionState');
+    const state = getUserSubscriptionState({
+      activeSubscriptions: [{ status: 'active', plan_key: 'three_module_bundle_annual' }],
+    });
+    expect(state.isThreeModuleBundle).toBe(true);
+    // Without winekeeper launched, 3-module covers all → hasFullCoverage
+    expect(state.hasFullCoverage).toBe(true);
+    expect(state.eligibleActions).not.toContain('upgrade_to_three_module_bundle');
+    expect(state.eligibleActions).not.toContain('upgrade_to_four_module_bundle');
+  });
+});
+
+describe('4-module bundle subscription state — launched (winekeeper launched)', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.stubEnv('VITE_WINEKEEPER_PUBLIC_ENABLED', 'true');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it('three_module_bundle subscriber sees upgrade_to_four_module_bundle when wine launches', async () => {
+    const { getUserSubscriptionState } = await import('@/lib/billing/subscriptionState');
+    const state = getUserSubscriptionState({
+      activeSubscriptions: [{ status: 'active', plan_key: 'three_module_bundle_annual' }],
+    });
+    // User has 3 modules but not wine — not full coverage when 4 are launched
+    expect(state.hasFullCoverage).toBe(false);
+    expect(state.eligibleActions).toContain('add_winekeeper_module');
+    expect(state.eligibleActions).toContain('upgrade_to_four_module_bundle');
+  });
+
+  it('user with all 4 modules individually has full coverage', async () => {
+    const { getUserSubscriptionState } = await import('@/lib/billing/subscriptionState');
+    const state = getUserSubscriptionState({
+      activeSubscriptions: [
+        { status: 'active', plan_key: 'pipekeeper_pro_annual' },
+        { status: 'active', plan_key: 'whiskeykeeper_pro_annual' },
+        { status: 'active', plan_key: 'cigarkeeper_pro_annual' },
+        { status: 'active', plan_key: 'winekeeper_pro_annual' },
+      ],
+    });
+    expect(state.hasFullCoverage).toBe(true);
+    expect(state.hasWinekeeperPro).toBe(true);
+    expect(state.eligibleActions).toHaveLength(0);
+  });
+
+  it('four_module_bundle subscriber has full coverage when wine is launched', async () => {
+    const { getUserSubscriptionState } = await import('@/lib/billing/subscriptionState');
+    const state = getUserSubscriptionState({
+      activeSubscriptions: [{ status: 'active', plan_key: 'four_module_bundle_annual' }],
+    });
+    expect(state.isFourModuleBundle).toBe(true);
+    expect(state.hasFullCoverage).toBe(true);
+    expect(state.eligibleActions).toHaveLength(0);
+  });
+
+  it('pipe-only subscriber sees add_winekeeper_module eligible when wine launched', async () => {
+    const { getUserSubscriptionState } = await import('@/lib/billing/subscriptionState');
+    const state = getUserSubscriptionState({
+      activeSubscriptions: [{ status: 'active', plan_key: 'pipekeeper_pro_annual' }],
+    });
+    expect(state.eligibleActions).toContain('add_winekeeper_module');
+    expect(state.eligibleActions).toContain('upgrade_to_four_module_bundle');
+  });
+
+  it('getModulesFromPlanKey returns canonical modules for three_module_bundle', async () => {
+    const { getModulesFromPlanKey } = await import('@/components/subscription/subscriptionHandler');
+    const modules = getModulesFromPlanKey('three_module_bundle_annual');
+    expect(modules).toEqual(expect.arrayContaining(['pipekeeper', 'whiskeykeeper', 'cigarkeeper']));
+    expect(modules.length).toBe(3);
+  });
+
+  it('getModulesFromPlanKey returns all 4 for four_module_bundle', async () => {
+    const { getModulesFromPlanKey } = await import('@/components/subscription/subscriptionHandler');
+    const modules = getModulesFromPlanKey('four_module_bundle_annual');
+    expect(modules).toEqual(expect.arrayContaining(['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']));
+  });
+});

@@ -17,11 +17,12 @@
  */
 
 import { SUBSCRIPTION_PLANS, getPreferredPlanKeyForModule } from './subscriptionPlans';
-import { getModuleReleaseState, MODULE_RELEASE_STATES } from '@/components/utils/moduleReleaseState';
+import { getModuleReleaseState, MODULE_RELEASE_STATES, isModuleLaunched } from '@/components/utils/moduleReleaseState';
 
 // Derive public billing modules dynamically from the release state registry.
-// Any module with state 'launched' is eligible for purchase in the subscription UI.
-const PUBLIC_BILLING_MODULES = Object.keys(MODULE_RELEASE_STATES);
+// Only modules with state 'launched' are eligible for purchase.
+const PUBLIC_BILLING_MODULES = Object.keys(MODULE_RELEASE_STATES)
+  .filter((moduleKey) => isModuleLaunched(moduleKey));
 
 function isPubliclyLaunched(moduleKey) {
   return getModuleReleaseState(moduleKey) === 'launched';
@@ -54,22 +55,33 @@ function getOptionPriority(option, subscriptionState) {
   const hasPipe = !!moduleFlags.pipekeeper;
   const hasWhiskey = !!moduleFlags.whiskeykeeper;
   const hasCigar = !!moduleFlags.cigarkeeper;
+  const hasWine = !!moduleFlags.winekeeper;
   const isFoundersOnlyBundle = !!subscriptionState?.isFoundersOnlyBundle;
+  const wineLaunched = isModuleLaunched('winekeeper');
+
+  // 4-module bundle is the top priority when wine is launched and user doesn't have it
+  if (wineLaunched && !hasWine) {
+    if (option.action === 'upgrade_to_four_module_bundle') return 5;
+    if (option.action === 'add_winekeeper_module') return 15;
+  }
 
   if (isFoundersOnlyBundle) {
     if (option.action === 'add_cigarkeeper_module') return 10;
     if (option.action === 'upgrade_to_three_module_bundle') return 20;
+    if (option.action === 'upgrade_to_four_module_bundle') return 25;
   }
 
   if (hasPipe && hasWhiskey && !hasCigar) {
     if (option.action === 'add_cigarkeeper_module') return 10;
     if (option.action === 'upgrade_to_three_module_bundle') return 20;
+    if (option.action === 'upgrade_to_four_module_bundle') return 25;
   }
 
   if (hasPipe && !hasWhiskey && !hasCigar) {
     if (option.action === 'upgrade_to_bundle') return 10;
     if (option.action === 'add_whiskeykeeper_module') return 20;
     if (option.action === 'upgrade_to_three_module_bundle') return 30;
+    if (option.action === 'upgrade_to_four_module_bundle') return 35;
     if (option.action === 'add_cigarkeeper_module') return 40;
   }
 
@@ -77,11 +89,13 @@ function getOptionPriority(option, subscriptionState) {
     if (option.action === 'upgrade_to_bundle') return 10;
     if (option.action === 'add_pipekeeper_module') return 20;
     if (option.action === 'upgrade_to_three_module_bundle') return 30;
+    if (option.action === 'upgrade_to_four_module_bundle') return 35;
     if (option.action === 'add_cigarkeeper_module') return 40;
   }
 
   if (!hasPipe && !hasWhiskey && hasCigar) {
     if (option.action === 'upgrade_to_three_module_bundle') return 10;
+    if (option.action === 'upgrade_to_four_module_bundle') return 15;
     if (option.action === 'add_pipekeeper_module') return 20;
     if (option.action === 'add_whiskeykeeper_module') return 30;
   }
@@ -89,13 +103,16 @@ function getOptionPriority(option, subscriptionState) {
   if (hasPipe && !hasWhiskey && hasCigar) {
     if (option.action === 'add_whiskeykeeper_module') return 10;
     if (option.action === 'upgrade_to_three_module_bundle') return 20;
+    if (option.action === 'upgrade_to_four_module_bundle') return 25;
   }
 
   if (!hasPipe && hasWhiskey && hasCigar) {
     if (option.action === 'add_pipekeeper_module') return 10;
     if (option.action === 'upgrade_to_three_module_bundle') return 20;
+    if (option.action === 'upgrade_to_four_module_bundle') return 25;
   }
 
+  if (option.action === 'upgrade_to_four_module_bundle') return 45;
   if (option.action === 'upgrade_to_three_module_bundle') return 50;
   if (option.action === 'upgrade_to_bundle') return 60;
   if (option.action?.startsWith('add_')) return 70;
@@ -156,24 +173,41 @@ export function getAvailableUpgradeOptions(subscriptionState) {
     hasFullCoverage,
     isFoundersOnlyBundle,
     isThreeModuleBundle,
+    isFourModuleBundle,
     activePlanKeys = [],
     eligibleActions = [],
     moduleFlags = {},
   } = subscriptionState;
 
-  // Users with full coverage (3-module bundle or all 3 individually): nothing to upgrade to
+  // Users with full coverage: nothing to upgrade to
   if (hasFullCoverage) return [];
 
   const options = [];
   const launchedModules = PUBLIC_BILLING_MODULES.filter((m) => isPubliclyLaunched(m));
   const paidModules = launchedModules.filter((m) => moduleFlags[m]);
-  const hasPipe = moduleFlags.pipekeeper;
-  const hasWhiskey = moduleFlags.whiskeykeeper;
-  const hasCigar = moduleFlags.cigarkeeper;
+
+  // ── 4-Module Bundle upgrade ───────────────────────────────────────────────
+  // Offered when WineKeeper is launched and user isn't already on the 4-bundle
+  if (eligibleActions.includes('upgrade_to_four_module_bundle')) {
+    const currentPlanKey = activePlanKeys[0] || null;
+    const fourBundlePlanKey = pickBundlePlanKey(activePlanKeys, 'four_module_bundle');
+    const fourBundlePlan = SUBSCRIPTION_PLANS[fourBundlePlanKey];
+
+    options.push({
+      action: 'upgrade_to_four_module_bundle',
+      actionType: 'upgrade_existing',
+      label: 'Upgrade to 4-Module Bundle',
+      description: 'Get PipeKeeper, WhiskeyKeeper, CigarKeeper, and WineKeeper — all four in one subscription.',
+      targetPlanKey: fourBundlePlanKey,
+      currentPlanKey,
+      displayPrice: fourBundlePlan?.displayPrice,
+      displayTerm: fourBundlePlan?.term,
+    });
+  }
 
   // ── Founders Bundle upgrade ────────────────────────────────────────────────
   // Offered to: individual PK or WK subscribers (not already on any bundle)
-  if (!isFoundersOnlyBundle && !isThreeModuleBundle && eligibleActions.includes('upgrade_to_bundle')) {
+  if (!isFoundersOnlyBundle && !isThreeModuleBundle && !isFourModuleBundle && eligibleActions.includes('upgrade_to_bundle')) {
     const currentPlanKey = pickCurrentPlanKey(activePlanKeys, paidModules[0] || 'pipekeeper');
     const bundlePlanKey = pickBundlePlanKey(activePlanKeys, 'founders_bundle');
     const bundlePlan = SUBSCRIPTION_PLANS[bundlePlanKey];
@@ -191,7 +225,7 @@ export function getAvailableUpgradeOptions(subscriptionState) {
   }
 
   // ── 3-Module Bundle upgrade ───────────────────────────────────────────────
-  // Offered to everyone who doesn't already have all 3 modules
+  // Offered to users who don't already have a 3 or 4-module bundle
   if (eligibleActions.includes('upgrade_to_three_module_bundle')) {
     const currentPlanKey = activePlanKeys[0] || null;
     const threeBundlePlanKey = pickBundlePlanKey(activePlanKeys, 'three_module_bundle');
@@ -201,7 +235,7 @@ export function getAvailableUpgradeOptions(subscriptionState) {
       action: 'upgrade_to_three_module_bundle',
       actionType: 'upgrade_existing',
       label: 'Upgrade to 3-Module Bundle',
-      description: 'Get PipeKeeper, WhiskeyKeeper, and CigarKeeper — all three in one subscription.',
+      description: 'Get any three Keeper modules — PipeKeeper, WhiskeyKeeper, CigarKeeper, or WineKeeper — in one subscription.',
       targetPlanKey: threeBundlePlanKey,
       currentPlanKey,
       displayPrice: threeBundlePlan?.displayPrice,
@@ -221,6 +255,7 @@ export function getAvailableUpgradeOptions(subscriptionState) {
       pipekeeper: 'PipeKeeper',
       whiskeykeeper: 'WhiskeyKeeper',
       cigarkeeper: 'CigarKeeper',
+      winekeeper: 'WineKeeper',
     };
     const labelPrefix = labelMap[moduleKey] || moduleKey;
 
@@ -242,7 +277,7 @@ export function getAvailableUpgradeOptions(subscriptionState) {
 /**
  * Returns the new-purchase options shown to free users.
  * These are all purchasable plans with actionType = 'new_purchase'.
- * Includes: individual modules + Founders Bundle + 3-Module Bundle.
+ * Includes: individual modules + Founders Bundle + 3-Module Bundle + 4-Module Bundle (when WineKeeper launched).
  */
 export function getNewPurchaseOptions() {
   const individualPlans = PUBLIC_BILLING_MODULES
@@ -253,6 +288,8 @@ export function getNewPurchaseOptions() {
   const bundlePlans = [
     SUBSCRIPTION_PLANS.founders_bundle_annual,
     SUBSCRIPTION_PLANS.three_module_bundle_annual,
+    // 4-module bundle is only included when WineKeeper is launched
+    isPubliclyLaunched('winekeeper') ? SUBSCRIPTION_PLANS.four_module_bundle_annual : null,
   ].filter(Boolean);
 
   return [...individualPlans, ...bundlePlans].map((plan) => ({
@@ -269,8 +306,11 @@ export function getNewPurchaseOptions() {
 }
 
 function getNewPurchaseDescription(plan) {
+  if (plan.key?.startsWith('four_module_bundle')) {
+    return 'Unlock all four modules — PipeKeeper, WhiskeyKeeper, CigarKeeper, and WineKeeper — in one subscription.';
+  }
   if (plan.key?.startsWith('three_module_bundle')) {
-    return 'Unlock PipeKeeper, WhiskeyKeeper, and CigarKeeper — all three in one subscription.';
+    return 'Unlock any three Keeper modules — PipeKeeper, WhiskeyKeeper, CigarKeeper, or WineKeeper — in one subscription.';
   }
   if (plan.key?.startsWith('founders_bundle')) {
     return 'Unlock PipeKeeper + WhiskeyKeeper in one Founders Bundle subscription.';
@@ -283,6 +323,9 @@ function getNewPurchaseDescription(plan) {
   }
   if (plan.module === 'cigarkeeper') {
     return 'Unlock unlimited CigarKeeper access with humidor, inventory, and session tools.';
+  }
+  if (plan.module === 'winekeeper') {
+    return 'Unlock unlimited WineKeeper access with cellar management and tasting tools.';
   }
   return '';
 }

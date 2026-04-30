@@ -124,14 +124,12 @@ export function getModulesFromPlanKey(planKey, metadata) {
   }
 
   if (planKey.includes('three_module')) {
-    // For 3-module bundles, use metadata.activeModules if available
+    // For 3-module bundles, use metadata.activeModules if available (flexible module selection)
     if (metadata?.activeModules && Array.isArray(metadata.activeModules)) {
       return metadata.activeModules.slice(0, 3);
     }
-    // Safe fallback: only pipekeeper (the only currently-launched module).
-    // Do NOT default to ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'] since those
-    // modules are not yet launched for normal users.
-    return ['pipekeeper'];
+    // Fall back to the canonical plan definition (pipe+whiskey+cigar)
+    return SUBSCRIPTION_PLANS[planKey]?.modules || ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
   }
 
   if (planKey.includes('pipekeeper')) return ['pipekeeper'];

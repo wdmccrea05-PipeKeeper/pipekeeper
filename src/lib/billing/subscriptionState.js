@@ -8,7 +8,7 @@
  */
 
 import { SUBSCRIPTION_PLANS } from './subscriptionPlans';
-import { isModuleLaunched } from '@/components/utils/moduleReleaseState';
+import { isModuleLaunched, MODULE_RELEASE_STATES } from '@/components/utils/moduleReleaseState';
 
 const MODULE_KEYS = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
 
@@ -41,7 +41,9 @@ const WINEKEEPER_PLAN_KEYS = new Set(
 );
 
 const ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due']);
-const PUBLIC_PURCHASABLE_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper']
+// Derive purchasable modules dynamically — includes all currently-launched modules.
+// When WineKeeper is launched (VITE_WINEKEEPER_PUBLIC_ENABLED=true), it is included here.
+const PUBLIC_PURCHASABLE_MODULES = Object.keys(MODULE_RELEASE_STATES)
   .filter((moduleKey) => isModuleLaunched(moduleKey));
 
 function isActiveSubscription(sub) {
@@ -137,24 +139,32 @@ export function getUserSubscriptionState({
   hasCigarkeeperPro = hasCigarkeeperPro || paidModules.includes('cigarkeeper');
   hasWinekeeperPro = hasWinekeeperPro || paidModules.includes('winekeeper');
 
-  // Determine whether this is a "full" bundle (all 3 public modules) or partial (Founders only)
+  // Determine whether this is a "full" bundle or partial (Founders only)
+  const isFourModuleBundle = activePlanKeys.some((k) => String(k).includes('four_module_bundle'));
   const isThreeModuleBundle = activePlanKeys.some((k) => String(k).includes('three_module_bundle'));
-  const isFoundersOnlyBundle = hasBundle && !isThreeModuleBundle;
-  // Full coverage = 3-module bundle OR founders + separately purchased cigar OR all 3 individually
-  const hasAllThree = hasPipekeeperPro && hasWhiskeykeeperPro && hasCigarkeeperPro;
-  const hasFullCoverage = isThreeModuleBundle || hasAllThree;
+  const isFoundersOnlyBundle = hasBundle && !isThreeModuleBundle && !isFourModuleBundle;
+  // Full coverage = 4-module bundle OR the user holds all currently-launched public modules individually
+  const coveredModules = {
+    pipekeeper: hasPipekeeperPro,
+    whiskeykeeper: hasWhiskeykeeperPro,
+    cigarkeeper: hasCigarkeeperPro,
+    winekeeper: hasWinekeeperPro,
+  };
+  const hasAllLaunched = PUBLIC_PURCHASABLE_MODULES.every((m) => coveredModules[m]);
+  const hasFullCoverage = isFourModuleBundle || hasAllLaunched;
 
   // Determine eligible upgrade actions
   const eligibleActions = [];
 
   const hasAnyPaidModule = hasPipekeeperPro || hasWhiskeykeeperPro || hasCigarkeeperPro || hasWinekeeperPro;
 
-  // Full 3-module bundle users have nothing left to upgrade to
+  // Full coverage users have nothing left to upgrade to
   if (!hasFullCoverage && hasAnyPaidModule) {
     const paidModuleMap = {
       pipekeeper: hasPipekeeperPro,
       whiskeykeeper: hasWhiskeykeeperPro,
       cigarkeeper: hasCigarkeeperPro,
+      winekeeper: hasWinekeeperPro,
     };
 
     for (const moduleKey of PUBLIC_PURCHASABLE_MODULES) {
@@ -168,9 +178,14 @@ export function getUserSubscriptionState({
       eligibleActions.push('upgrade_to_bundle');
     }
 
-    // Always offer 3-module bundle upgrade if user doesn't already have all 3
-    if (!isThreeModuleBundle) {
+    // Offer 3-module bundle upgrade if user isn't already on a 3 or 4-module bundle
+    if (!isThreeModuleBundle && !isFourModuleBundle) {
       eligibleActions.push('upgrade_to_three_module_bundle');
+    }
+
+    // Offer 4-module bundle upgrade when WineKeeper is launched and user isn't already on the 4-bundle
+    if (!isFourModuleBundle && isModuleLaunched('winekeeper')) {
+      eligibleActions.push('upgrade_to_four_module_bundle');
     }
   }
   // Free users have no eligible upgrade actions in this list;
@@ -184,6 +199,7 @@ export function getUserSubscriptionState({
     hasBundle,
     isFoundersOnlyBundle,
     isThreeModuleBundle,
+    isFourModuleBundle,
     hasFullCoverage,
     paidModules,
     moduleFlags: {
@@ -225,8 +241,11 @@ export function getCurrentPlanLabel(subscriptionState) {
   if (hasBundle) {
     if (activePlanKeys.some((k) => String(k).includes('four_module'))) return '4-Module Bundle';
     if (activePlanKeys.some((k) => String(k).includes('three_module'))) return '3-Module Bundle';
-    // Founders bundle + separately purchased CigarKeeper
-    if (hasCigarkeeperPro) return 'Founders Bundle + CigarKeeper';
+    // Founders bundle + separately purchased module(s)
+    if (hasCigarkeeperPro || hasWinekeeperPro) {
+      const extras = [hasCigarkeeperPro && 'CigarKeeper', hasWinekeeperPro && 'WineKeeper'].filter(Boolean).join(' + ');
+      return `Founders Bundle + ${extras}`;
+    }
     return 'Founders Bundle';
   }
 
