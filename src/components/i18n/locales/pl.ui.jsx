@@ -994,6 +994,7 @@ const plUI = {
     trackedTastings: "Śledzone degustacje",
     inHumidor: "W humidorze",
     acrossActiveCollections: "Przez aktywne kolekcje",
+    winekeeperTagline: "Inteligencja piwnicy winnej",
     cigars: "Cygara",
   },
 
