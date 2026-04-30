@@ -3,8 +3,8 @@
  *
  * Verifies that winekeeper_paid=true alone does NOT grant access to the
  * WineKeeper Preferences section while the module release state is 'internal'.
- * Access requires WINEKEEPER_PUBLIC_ENABLED, admin role, or explicit
- * internal-tester status (canUserAccessModule returns true).
+ * Access requires admin role or explicit internal-tester status, both enforced
+ * through canUserAccessModule('winekeeper', user, true) — the canonical gate.
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -23,26 +23,25 @@ describe("WineKeeper Profile Preferences gating", () => {
       winekeeper_paid: true,
       paid_modules_csv: "winekeeper",
     };
-    // The old bug: winekeeper_paid was a standalone condition; this verifies the gate holds.
-    const canAccess = WINEKEEPER_PUBLIC_ENABLED || paidNonAdmin.role === "admin" || canUserAccessModule("winekeeper", paidNonAdmin);
-    expect(canAccess).toBe(false);
+    // Canonical gate: canUserAccessModule returns false for internal modules when
+    // the user is not an internal tester, regardless of paid flags.
+    expect(canUserAccessModule("winekeeper", paidNonAdmin, true)).toBe(false);
   });
 
-  it("admin user can access WineKeeper Preferences regardless of paid status", () => {
+  it("admin user can access WineKeeper Preferences via canonical gate", () => {
     const adminUser = { role: "admin", winekeeper_paid: false };
-    const canAccess = WINEKEEPER_PUBLIC_ENABLED || adminUser.role === "admin" || canUserAccessModule("winekeeper", adminUser);
-    expect(canAccess).toBe(true);
+    // canUserAccessModule('winekeeper', admin, true) is true because
+    // admin role satisfies isInternalModuleTester, which internal modules require.
+    expect(canUserAccessModule("winekeeper", adminUser, true)).toBe(true);
   });
 
-  it("internal_tester user can access WineKeeper Preferences", () => {
+  it("internal_tester user can access WineKeeper Preferences via canonical gate", () => {
     const tester = { role: "user", internal_tester: true, winekeeper_paid: false };
-    const canAccess = WINEKEEPER_PUBLIC_ENABLED || tester.role === "admin" || canUserAccessModule("winekeeper", tester);
-    expect(canAccess).toBe(true);
+    expect(canUserAccessModule("winekeeper", tester, true)).toBe(true);
   });
 
   it("regular non-paid user cannot access WineKeeper Preferences", () => {
     const freeUser = { role: "user", winekeeper_paid: false };
-    const canAccess = WINEKEEPER_PUBLIC_ENABLED || freeUser.role === "admin" || canUserAccessModule("winekeeper", freeUser);
-    expect(canAccess).toBe(false);
+    expect(canUserAccessModule("winekeeper", freeUser, true)).toBe(false);
   });
 });

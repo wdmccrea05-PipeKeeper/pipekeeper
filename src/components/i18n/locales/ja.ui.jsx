@@ -1114,6 +1114,7 @@ const jaUI = {
     restockPriority: "補充優先",
     sticksLeft: "本残り",
     cigarCrownJewel: "葉巻の至宝",
+    winekeeperTagline: "ワインセラーインテリジェンス",
     shareCollectionFallback: "CollectionKeeperで私のコレクションを見てください！",
     shareLinkCopied: "共有リンクをクリップボードにコピーしました！",
     couldNotCopyLink: "リンクをコピーできませんでした。",
