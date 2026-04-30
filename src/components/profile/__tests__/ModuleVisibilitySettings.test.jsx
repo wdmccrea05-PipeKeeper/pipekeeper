@@ -34,8 +34,8 @@ vi.mock("@/components/utils/moduleReleaseState", async () => {
   return {
     ...actual,
     isModuleLaunched: (moduleKey) => moduleKey === "pipekeeper" || moduleKey === "whiskeykeeper",
-    isModuleInternal: (moduleKey) => moduleKey === "cigarkeeper",
-    isModuleBlocked: (moduleKey) => moduleKey === "winekeeper",
+    isModuleInternal: (moduleKey) => moduleKey === "cigarkeeper" || moduleKey === "winekeeper",
+    isModuleBlocked: (moduleKey) => moduleKey !== "pipekeeper" && moduleKey !== "whiskeykeeper" && moduleKey !== "cigarkeeper" && moduleKey !== "winekeeper",
   };
 });
 
