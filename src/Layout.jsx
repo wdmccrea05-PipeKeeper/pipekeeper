@@ -7,12 +7,13 @@ import BackButton from "@/components/navigation/BackButton";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import GlobalReferralBanner from "@/components/referral/GlobalReferralBanner";
 import { Button } from "@/components/ui/button";
-import { Zap } from "lucide-react";
+import { Menu, X, Zap } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function Layout({ children, currentPageName }) {
   const [quickAccessOpen, setQuickAccessOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useCurrentUser();
   const { t } = useTranslation();
 
@@ -42,12 +43,41 @@ export default function Layout({ children, currentPageName }) {
                   <Zap className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">{t('nav.quickAccess', 'Quick Access')}</span>
                 </Button>
+
+                {/* Hamburger — mobile/tablet only */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMenuOpen((o) => !o)}
+                  className="md:hidden text-[#E0D8C8] hover:bg-white/10"
+                  aria-label={menuOpen ? t('nav.closeMenu', 'Close menu') : t('nav.openMenu', 'Open menu')}
+                >
+                  {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </Button>
               </div>
             </div>
 
-            <ModuleNav currentPageName={currentPageName} user={user} />
+            {/* Desktop nav row */}
+            <div className="hidden md:block">
+              <ModuleNav currentPageName={currentPageName} user={user} />
+            </div>
           </div>
         </div>
+
+        {/* Mobile / tablet nav drawer */}
+        {menuOpen && (
+          <div className="md:hidden border-t border-white/10 bg-[rgba(20,15,12,0.97)]">
+            <div className="ck-page-shell py-3">
+              <ModuleNav
+                currentPageName={currentPageName}
+                user={user}
+                vertical
+                onItemClick={() => setMenuOpen(false)}
+              />
+            </div>
+          </div>
+        )}
       </header>
 
       <GlobalReferralBanner />
