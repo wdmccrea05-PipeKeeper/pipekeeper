@@ -46,7 +46,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
 
   return (
     <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-1 overflow-x-auto">
+      <div className="flex flex-wrap items-center gap-1">
         {items.map((item) => (
           <NavItem
             key={item.page}

@@ -1068,8 +1068,8 @@ export default function PipeDetail() {
         {detailCardOpen && (
           <>
           <Tabs defaultValue="condition" className="w-full">
-            <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2 overflow-x-auto">
-              <TabsList className="bg-transparent gap-0.5 flex-nowrap min-w-max">
+            <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2">
+              <TabsList className="bg-transparent gap-0.5">
                 <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Condition
                 </TabsTrigger>

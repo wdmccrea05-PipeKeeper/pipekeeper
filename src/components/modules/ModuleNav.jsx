@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { cn } from "@/lib/utils";
@@ -46,7 +46,6 @@ function NavItem({ item, isActive }) {
 }
 
 export default function ModuleNav({ currentPageName, user }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { t } = useTranslation();
   const { enabled } = useEnabledModules();
@@ -145,68 +144,20 @@ export default function ModuleNav({ currentPageName, user }) {
 
   const items = [...baseItems, ...adminItems];
 
-  // Shared scroll nav for mobile + tablet (below lg)
-  const scrollNav = (
-    <div className="relative lg:hidden w-full" style={{ paddingBottom: '8px' }}>
-      {/* Left fade edge */}
-      <div className="pointer-events-none absolute left-0 top-0 z-10"
-        style={{ bottom: '8px', width: '24px', background: 'linear-gradient(to right, rgba(20,15,12,0.9), transparent)' }} />
-      {/* Right fade edge */}
-      <div className="pointer-events-none absolute right-0 top-0 z-10"
-        style={{ bottom: '8px', width: '24px', background: 'linear-gradient(to left, rgba(20,15,12,0.9), transparent)' }} />
-
-      <div className="flex items-center gap-2 px-1 nav-scroll-bar"
-        style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '6px' }}>
-        {items.map((item) => {
-          const isActive = item.path === '/'
-            ? location.pathname === '/'
-            : location.pathname.startsWith(item.path);
-          return (
-            <Link
-              key={item.page}
-              to={createPageUrl(item.page)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex-shrink-0 border",
-                isActive
-                  ? "bg-[rgba(100,66,34,0.55)] border-[rgba(180,140,75,0.38)]"
-                  : "border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.04)]"
-              )}
-              style={{ color: isActive ? "#F5F1E7" : "rgba(224,216,200,0.76)" }}
-            >
-              {item.icon ? (
-                <item.icon
-                  className="w-3.5 h-3.5 flex-shrink-0"
-                  style={{ color: isActive ? "#D4A574" : "rgba(180,140,75,0.72)" }}
-                />
-              ) : null}
-              <span className="whitespace-nowrap">{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-
   return (
-    <div className="flex items-center gap-1 pb-1 min-w-0 w-full">
-      {/* Desktop: wrap */}
-      <div className="hidden lg:flex flex-wrap items-center gap-1">
-        {items.map((item) => {
-          const isActive = item.path === '/'
-            ? location.pathname === '/'
-            : location.pathname.startsWith(item.path);
-          return (
-            <NavItem
-              key={item.page}
-              item={item}
-              isActive={isActive}
-            />
-          );
-        })}
-      </div>
-
-      {/* Mobile + Tablet: horizontal scrollable pills */}
-      {scrollNav}
+    <div className="flex flex-wrap items-center gap-1 pb-1 min-w-0 w-full">
+      {items.map((item) => {
+        const isActive = item.path === '/'
+          ? location.pathname === '/'
+          : location.pathname.startsWith(item.path);
+        return (
+          <NavItem
+            key={item.page}
+            item={item}
+            isActive={isActive}
+          />
+        );
+      })}
     </div>
   );
 }

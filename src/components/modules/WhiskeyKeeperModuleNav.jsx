@@ -19,7 +19,7 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
 
   return (
     <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2 overflow-x-auto">
+      <div className="flex flex-wrap items-center gap-2">
         {items.map((item) => {
           const active = currentPageName === item.page;
           return (
