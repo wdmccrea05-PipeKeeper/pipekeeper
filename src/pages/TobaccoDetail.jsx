@@ -296,7 +296,7 @@ function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Purchase Price ($)</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Purchase Price ($) — per unit</label>
               <Input type="number" value={form.purchase_price} onChange={e => setForm(p => ({ ...p, purchase_price: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. 15.00" />
             </div>
             <div>
