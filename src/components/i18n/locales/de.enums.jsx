@@ -85,6 +85,10 @@ const deEnums = {
     preferredBlendTypes: "Bevorzugte Mischungstypen", preferredPipeShapes: "Bevorzugte Pfeifenformen",
     hideHomeValues: "Sammlungswerte auf der Startseite ausblenden",
     hideHomeValuesDesc: "Blendet Pipe- und Tabaksammlungswerte von Ihrem Startseiten-Dashboard aus.",
+    yourOwnView: "Eigene Ansicht",
+    personalHideTotals: "Summen in meinen Dashboards ausblenden",
+    personalHideTotalsDesc: "Blendet alle Zählungen, Werte und Summen in Ihren eigenen Modul-Dashboards aus. Hat keinen Einfluss auf die Einstellungen Ihres öffentlichen Profils.",
+    publicProfileView: "Öffentliches & Community-Profil",
   },
   faqExtended: {
     pageTitle: "FAQ", pageSubtitle: "Definitionen, allgemeine Informationen und Haftungsausschlüsse",
