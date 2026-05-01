@@ -203,8 +203,16 @@ export function normalizeValuationInputs(item, moduleKey) {
         // manualValueOverride is the highest-priority value source; it also doubles as collectorValue.
         collectorValue: manualValueOverride > 0 ? manualValueOverride : toNum(item.manual_market_value),
         estimatedValue: aiEstimatedValue > 0 && totalOz > 0 ? aiEstimatedValue * totalOz : 0,
-        marketValue: pricePerOz > 0 && totalOz > 0 ? pricePerOz * totalOz : 0,
-        purchaseValue: toNum(item.cost_basis),
+        // marketValue: market_estimated_total_value → market_estimated_unit_value × oz → price_per_oz × oz
+        marketValue: (() => {
+          const metv = toNum(item.market_estimated_total_value);
+          if (metv > 0) return metv;
+          const meuv = toNum(item.market_estimated_unit_value);
+          if (meuv > 0 && totalOz > 0) return meuv * totalOz;
+          return pricePerOz > 0 && totalOz > 0 ? pricePerOz * totalOz : 0;
+        })(),
+        // purchaseValue: cost_basis takes precedence; fallback to purchase_price
+        purchaseValue: toNum(item.cost_basis) || toNum(item.purchase_price),
         manualValueOverride: manualValueOverride > 0 ? manualValueOverride : null,
       };
     }
