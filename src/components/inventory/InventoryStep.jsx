@@ -256,7 +256,7 @@ export default function InventoryStep({
           </div>
         )}
 
-        {(showBottleFields || showWineFields || showCigarFields) && (
+        {(showBottleFields || showWineFields || showCigarFields || showBlendFields) && (
           <div className="flex flex-col gap-2">
             <SectionLabel>Purchase Price (Optional)</SectionLabel>
             <Input

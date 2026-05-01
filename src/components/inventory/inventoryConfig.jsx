@@ -47,6 +47,7 @@ export const inventoryConfig = {
       storage: STORAGE_TYPES.ACTIVE,
       size: '',
       cellarDate: '',
+      purchasePrice: '',
     },
   },
 
