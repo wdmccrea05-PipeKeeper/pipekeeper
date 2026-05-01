@@ -145,11 +145,54 @@ export default function ModuleNav({ currentPageName, user }) {
 
   const items = [...baseItems, ...adminItems];
 
-  return (
-    <div className="flex items-center gap-1 pb-1 min-w-0">
-      <div className="hidden md:flex flex-wrap items-center gap-1">
+  // Shared scroll nav for mobile + tablet (below lg)
+  const scrollNav = (
+    <div className="relative lg:hidden w-full">
+      {/* Left fade edge */}
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 z-10"
+        style={{ background: 'linear-gradient(to right, rgba(20,15,12,0.9), transparent)' }} />
+      {/* Right fade edge */}
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 z-10"
+        style={{ background: 'linear-gradient(to left, rgba(20,15,12,0.9), transparent)' }} />
+
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 px-1"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
         {items.map((item) => {
-          const isActive = item.path === '/' 
+          const isActive = item.path === '/'
+            ? location.pathname === '/'
+            : location.pathname.startsWith(item.path);
+          return (
+            <Link
+              key={item.page}
+              to={createPageUrl(item.page)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex-shrink-0 border",
+                isActive
+                  ? "bg-[rgba(100,66,34,0.55)] border-[rgba(180,140,75,0.38)]"
+                  : "border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.04)]"
+              )}
+              style={{ color: isActive ? "#F5F1E7" : "rgba(224,216,200,0.76)" }}
+            >
+              {item.icon ? (
+                <item.icon
+                  className="w-3.5 h-3.5 flex-shrink-0"
+                  style={{ color: isActive ? "#D4A574" : "rgba(180,140,75,0.72)" }}
+                />
+              ) : null}
+              <span className="whitespace-nowrap">{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex items-center gap-1 pb-1 min-w-0 w-full">
+      {/* Desktop: wrap */}
+      <div className="hidden lg:flex flex-wrap items-center gap-1">
+        {items.map((item) => {
+          const isActive = item.path === '/'
             ? location.pathname === '/'
             : location.pathname.startsWith(item.path);
           return (
@@ -162,50 +205,8 @@ export default function ModuleNav({ currentPageName, user }) {
         })}
       </div>
 
-      <div className="md:hidden relative">
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all hover:bg-white/6 border border-transparent hover:border-[rgba(180,140,75,0.18)]"
-          style={{ color: "rgba(224,216,200,0.78)" }}
-        >
-          {mobileOpen ? "✕" : "☰"}
-        </button>
-
-        {mobileOpen && (
-          <div className="absolute top-12 left-0 bg-[rgba(22,16,12,0.98)] border border-[rgba(180,140,75,0.28)] rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.65)] z-50 min-w-[220px] max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto py-2">
-            {items.map((item) => {
-              const isActive = location.pathname.startsWith(item.path);
-
-              return (
-                <Link
-                  key={item.page}
-                  to={createPageUrl(item.page)}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-all hover:bg-white/5 border-b border-[rgba(180,140,75,0.16)] last:border-b-0 whitespace-nowrap",
-                    isActive && "bg-[#6b4a2d]/55"
-                  )}
-                  style={{
-                    color: isActive ? "#F5F1E7" : "rgba(224,216,200,0.78)",
-                  }}
-                >
-                  {item.icon ? (
-                    <item.icon
-                      className="w-4 h-4 flex-shrink-0"
-                      style={{
-                        color: isActive
-                          ? "#D4A574"
-                          : "rgba(180,140,75,0.78)",
-                      }}
-                    />
-                  ) : null}
-                  <span className="truncate">{item.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {/* Mobile + Tablet: horizontal scrollable pills */}
+      {scrollNav}
     </div>
   );
 }

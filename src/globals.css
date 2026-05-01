@@ -190,6 +190,11 @@ html {
   margin-bottom: 0.375rem;
 }
 
+/* Hide scrollbar on horizontal nav scroll */
+.overflow-x-auto::-webkit-scrollbar {
+  display: none;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

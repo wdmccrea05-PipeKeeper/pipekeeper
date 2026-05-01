@@ -1,5 +1,8 @@
 export default [
-  // ── Global ignores (must be a standalone object with only `ignores`) ──────
+  // ── Global ignores ────────────────────────────────────────────────────────
+  {
+    ignores: ['**/__tests__/**', '**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/*.spec.js', '**/*.spec.jsx'],
+  },
   // ── App source files ───────────────────────────────────────────────────────
   {
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
