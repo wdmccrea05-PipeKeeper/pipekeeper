@@ -2663,6 +2663,8 @@ const enUI = {
     personalHideTotals: "Hide totals from my dashboards",
     personalHideTotalsDesc: "Hides all counts, values, and totals in your own module dashboards. Does not affect your public profile settings.",
     publicProfileView: "Public & community profile",
+    toggleStatusVisible: "Visible",
+    toggleStatusHidden: "Hidden",
     clenchingPreference: "Clenching preference",
     smokeDurationPreference: "Smoke duration preference",
     pipeSizePreference: "Pipe size preference",
