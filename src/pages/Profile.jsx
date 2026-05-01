@@ -723,22 +723,32 @@ export default function ProfilePage() {
                       <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.personalHideTotals")}</span>
                       <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.personalHideTotalsDesc")}</p>
                     </div>
-                    <Switch
-                      checked={formData.personal_hide_totals}
-                      onCheckedChange={(v) => setFormData((p) => ({ ...p, personal_hide_totals: !!v }))}
-                      className="data-[state=checked]:bg-[#A35C5C]"
-                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs" style={{ color: formData.personal_hide_totals ? 'rgba(163,92,92,0.9)' : 'rgba(224,216,200,0.5)' }}>
+                        {formData.personal_hide_totals ? t("profileExtended.toggleStatusHidden") : t("profileExtended.toggleStatusVisible")}
+                      </span>
+                      <Switch
+                        checked={!!formData.personal_hide_totals}
+                        onCheckedChange={(v) => setFormData((p) => ({ ...p, personal_hide_totals: !!v }))}
+                        className="data-[state=checked]:bg-[#A35C5C]"
+                      />
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.hideHomeValues")}</span>
                       <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideHomeValuesDesc")}</p>
                     </div>
-                    <Switch
-                      checked={formData.home_hide_collection_values}
-                      onCheckedChange={(v) => setFormData((p) => ({ ...p, home_hide_collection_values: !!v }))}
-                      className="data-[state=checked]:bg-[#A35C5C]"
-                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs" style={{ color: formData.home_hide_collection_values ? 'rgba(163,92,92,0.9)' : 'rgba(224,216,200,0.5)' }}>
+                        {formData.home_hide_collection_values ? t("profileExtended.toggleStatusHidden") : t("profileExtended.toggleStatusVisible")}
+                      </span>
+                      <Switch
+                        checked={!!formData.home_hide_collection_values}
+                        onCheckedChange={(v) => setFormData((p) => ({ ...p, home_hide_collection_values: !!v }))}
+                        className="data-[state=checked]:bg-[#A35C5C]"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -753,11 +763,16 @@ export default function ProfilePage() {
                   <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideValues")}</span>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideValuesDesc")}</p>
                 </div>
-                <Switch
-                  checked={formData.privacy_hide_values}
-                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
-                  className="data-[state=checked]:bg-[#A35C5C]"
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs" style={{ color: formData.privacy_hide_values ? 'rgba(163,92,92,0.9)' : 'rgba(224,216,200,0.5)' }}>
+                    {formData.privacy_hide_values ? t("profileExtended.toggleStatusHidden") : t("profileExtended.toggleStatusVisible")}
+                  </span>
+                  <Switch
+                    checked={!!formData.privacy_hide_values}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
+                    className="data-[state=checked]:bg-[#A35C5C]"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-between">
@@ -765,11 +780,16 @@ export default function ProfilePage() {
                   <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideInventory")}</span>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideInventoryDesc")}</p>
                 </div>
-                <Switch
-                  checked={formData.privacy_hide_inventory}
-                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
-                  className="data-[state=checked]:bg-[#A35C5C]"
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs" style={{ color: formData.privacy_hide_inventory ? 'rgba(163,92,92,0.9)' : 'rgba(224,216,200,0.5)' }}>
+                    {formData.privacy_hide_inventory ? t("profileExtended.toggleStatusHidden") : t("profileExtended.toggleStatusVisible")}
+                  </span>
+                  <Switch
+                    checked={!!formData.privacy_hide_inventory}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
+                    className="data-[state=checked]:bg-[#A35C5C]"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-between">
@@ -777,11 +797,16 @@ export default function ProfilePage() {
                   <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideCollectionCounts")}</span>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideCollectionCountsDesc")}</p>
                 </div>
-                <Switch
-                  checked={formData.privacy_hide_collection_counts}
-                  onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
-                  className="data-[state=checked]:bg-[#A35C5C]"
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs" style={{ color: formData.privacy_hide_collection_counts ? 'rgba(163,92,92,0.9)' : 'rgba(224,216,200,0.5)' }}>
+                    {formData.privacy_hide_collection_counts ? t("profileExtended.toggleStatusHidden") : t("profileExtended.toggleStatusVisible")}
+                  </span>
+                  <Switch
+                    checked={!!formData.privacy_hide_collection_counts}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
+                    className="data-[state=checked]:bg-[#A35C5C]"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-between">
