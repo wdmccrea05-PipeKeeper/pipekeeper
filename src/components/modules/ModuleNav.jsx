@@ -147,16 +147,16 @@ export default function ModuleNav({ currentPageName, user }) {
 
   // Shared scroll nav for mobile + tablet (below lg)
   const scrollNav = (
-    <div className="relative lg:hidden w-full">
+    <div className="relative lg:hidden w-full" style={{ paddingBottom: '8px' }}>
       {/* Left fade edge */}
-      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 z-10"
-        style={{ background: 'linear-gradient(to right, rgba(20,15,12,0.9), transparent)' }} />
+      <div className="pointer-events-none absolute left-0 top-0 z-10"
+        style={{ bottom: '8px', width: '24px', background: 'linear-gradient(to right, rgba(20,15,12,0.9), transparent)' }} />
       {/* Right fade edge */}
-      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 z-10"
-        style={{ background: 'linear-gradient(to left, rgba(20,15,12,0.9), transparent)' }} />
+      <div className="pointer-events-none absolute right-0 top-0 z-10"
+        style={{ bottom: '8px', width: '24px', background: 'linear-gradient(to left, rgba(20,15,12,0.9), transparent)' }} />
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 px-1 nav-scroll-bar"
-        style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex items-center gap-2 px-1 nav-scroll-bar"
+        style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '6px' }}>
         {items.map((item) => {
           const isActive = item.path === '/'
             ? location.pathname === '/'
