@@ -717,16 +717,29 @@ export default function ProfilePage() {
                 <p className="text-xs uppercase tracking-widest font-semibold mb-3" style={{ color: 'rgba(224,216,200,0.4)' }}>
                   {t("profileExtended.yourOwnView")}
                 </p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.personalHideTotals")}</span>
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.personalHideTotalsDesc")}</p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.personalHideTotals")}</span>
+                      <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.personalHideTotalsDesc")}</p>
+                    </div>
+                    <Switch
+                      checked={formData.personal_hide_totals}
+                      onCheckedChange={(v) => setFormData((p) => ({ ...p, personal_hide_totals: !!v }))}
+                      className="data-[state=checked]:bg-[#A35C5C]"
+                    />
                   </div>
-                  <Switch
-                    checked={formData.personal_hide_totals}
-                    onCheckedChange={(v) => setFormData((p) => ({ ...p, personal_hide_totals: !!v }))}
-                    className="data-[state=checked]:bg-[#A35C5C]"
-                  />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.hideHomeValues")}</span>
+                      <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideHomeValuesDesc")}</p>
+                    </div>
+                    <Switch
+                      checked={formData.home_hide_collection_values}
+                      onCheckedChange={(v) => setFormData((p) => ({ ...p, home_hide_collection_values: !!v }))}
+                      className="data-[state=checked]:bg-[#A35C5C]"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -767,18 +780,6 @@ export default function ProfilePage() {
                 <Switch
                   checked={formData.privacy_hide_collection_counts}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
-                  className="data-[state=checked]:bg-[#A35C5C]"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.hideHomeValues")}</span>
-                  <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideHomeValuesDesc")}</p>
-                </div>
-                <Switch
-                  checked={formData.home_hide_collection_values}
-                  onCheckedChange={(v) => setFormData((p) => ({ ...p, home_hide_collection_values: !!v }))}
                   className="data-[state=checked]:bg-[#A35C5C]"
                 />
               </div>
