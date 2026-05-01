@@ -43,7 +43,15 @@ export function getBlendTotalOz(blend) {
 /**
  * Return the canonical value for one TobaccoBlend record.
  *
- * Priority: manual_market_value → ai_estimated_value × total_oz → price_per_oz × total_oz → 0
+ * Priority:
+ *   1. manual_market_value
+ *   2. market_estimated_total_value
+ *   3. ai_estimated_value × total_oz
+ *   4. market_estimated_unit_value × total_oz
+ *   5. price_per_oz × total_oz
+ *   6. purchase_price
+ *   7. cost_basis
+ *   8. 0
  *
  * @param {object} blend
  * @returns {number}
@@ -53,15 +61,25 @@ export function getBlendValue(blend) {
 
   if (n(blend.manual_market_value) > 0) return n(blend.manual_market_value);
 
+  if (n(blend.market_estimated_total_value) > 0) return n(blend.market_estimated_total_value);
+
   const totalOz = getBlendTotalOz(blend);
 
   if (n(blend.ai_estimated_value) > 0 && totalOz > 0) {
     return n(blend.ai_estimated_value) * totalOz;
   }
 
+  if (n(blend.market_estimated_unit_value) > 0 && totalOz > 0) {
+    return n(blend.market_estimated_unit_value) * totalOz;
+  }
+
   if (n(blend.price_per_oz) > 0 && totalOz > 0) {
     return n(blend.price_per_oz) * totalOz;
   }
+
+  if (n(blend.purchase_price) > 0) return n(blend.purchase_price);
+
+  if (n(blend.cost_basis) > 0) return n(blend.cost_basis);
 
   return 0;
 }

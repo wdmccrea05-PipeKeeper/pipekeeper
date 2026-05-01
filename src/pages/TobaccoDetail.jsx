@@ -228,29 +228,54 @@ function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onCl
 function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
+    // Pricing fields
+    purchase_price: String(blend?.purchase_price || ''),
+    purchase_price_type: blend?.purchase_price_type || '',
+    cost_basis: String(blend?.cost_basis || ''),
+    price_per_oz: String(blend?.price_per_oz || ''),
+    ai_estimated_value: String(blend?.ai_estimated_value || ''),
     manual_market_value: String(blend?.manual_market_value || ''),
+    market_estimated_unit_value: String(blend?.market_estimated_unit_value || ''),
+    market_estimated_total_value: String(blend?.market_estimated_total_value || ''),
+    valuation_source: blend?.valuation_source || '',
+    valuation_confidence: blend?.valuation_confidence || '',
+    valuation_notes: blend?.valuation_notes || '',
+    // Rarity / production fields
     production_status: blend?.production_status || '',
+    manufacturer_status: blend?.manufacturer_status || '',
     is_seasonal: !!(blend?.seasonal || blend?.is_seasonal),
     regional_exclusive: !!(blend?.regional_exclusive || blend?.region_exclusive || blend?.regional_exclusivity),
     is_limited: !!(blend?.limited_batch || blend?.is_limited || blend?.is_limited_release),
     rarity_score_override: String(blend?.rarity_score_override || ''),
     rarity_notes: blend?.rarity_notes || '',
-    manufacturer_status: blend?.manufacturer_status || '',
   });
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
     try {
+      const toN = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : null; };
       const updates = {
-        manual_market_value: form.manual_market_value ? Number(form.manual_market_value) : null,
+        // Pricing
+        purchase_price: toN(form.purchase_price),
+        purchase_price_type: form.purchase_price_type || null,
+        cost_basis: toN(form.cost_basis),
+        price_per_oz: toN(form.price_per_oz),
+        ai_estimated_value: toN(form.ai_estimated_value),
+        manual_market_value: toN(form.manual_market_value),
+        market_estimated_unit_value: toN(form.market_estimated_unit_value),
+        market_estimated_total_value: toN(form.market_estimated_total_value),
+        valuation_source: form.valuation_source || null,
+        valuation_confidence: form.valuation_confidence || null,
+        valuation_notes: form.valuation_notes || null,
+        // Rarity / production
         production_status: form.production_status || null,
+        manufacturer_status: form.manufacturer_status || null,
         seasonal: form.is_seasonal,
         regional_exclusive: form.regional_exclusive,
         is_limited: form.is_limited,
-        rarity_score_override: form.rarity_score_override ? Number(form.rarity_score_override) : null,
+        rarity_score_override: toN(form.rarity_score_override),
         rarity_notes: form.rarity_notes || null,
-        manufacturer_status: form.manufacturer_status || null,
       };
       await scopedEntities.TobaccoBlend.update(blend.id, updates);
       onSaved(updates);
@@ -263,14 +288,87 @@ function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(251,191,36,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('valuation.editInputs', 'Edit Valuation Inputs')}</h3>
+      <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(251,191,36,0.25)' }}>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('valuation.editInputs', 'Pricing & Valuation Inputs')}</h3>
         <p className="text-xs text-[#D8C7A6]/60">These fields feed directly into the shared valuation engine.</p>
+
+        <p className="text-xs font-semibold text-[#D4A574] uppercase tracking-wider pt-1">Pricing</p>
         <div className="space-y-3">
-          <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Manual Market Value ($) — current value override</label>
-            <Input type="number" value={form.manual_market_value} onChange={e => setForm(p => ({ ...p, manual_market_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Purchase Price ($)</label>
+              <Input type="number" value={form.purchase_price} onChange={e => setForm(p => ({ ...p, purchase_price: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. 15.00" />
+            </div>
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Purchase Type</label>
+              <Select value={form.purchase_price_type || 'none'} onValueChange={v => setForm(p => ({ ...p, purchase_price_type: v === 'none' ? '' : v }))}>
+                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Not set —</SelectItem>
+                  <SelectItem value="tin">Per Tin</SelectItem>
+                  <SelectItem value="oz">Per Oz</SelectItem>
+                  <SelectItem value="pouch">Per Pouch</SelectItem>
+                  <SelectItem value="lot">Lot / Bundle</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Cost Basis ($) — total paid</label>
+              <Input type="number" value={form.cost_basis} onChange={e => setForm(p => ({ ...p, cost_basis: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. 45.00" />
+            </div>
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Price per Oz ($/oz)</label>
+              <Input type="number" value={form.price_per_oz} onChange={e => setForm(p => ({ ...p, price_per_oz: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. 1.25" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Market Unit Value ($/oz)</label>
+              <Input type="number" value={form.market_estimated_unit_value} onChange={e => setForm(p => ({ ...p, market_estimated_unit_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="current $/oz" />
+            </div>
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Market Total Value ($)</label>
+              <Input type="number" value={form.market_estimated_total_value} onChange={e => setForm(p => ({ ...p, market_estimated_total_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="total lot value" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">AI Estimated Value ($/oz)</label>
+              <Input type="number" value={form.ai_estimated_value} onChange={e => setForm(p => ({ ...p, ai_estimated_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="AI per-oz estimate" />
+            </div>
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Manual Market Value ($) — override</label>
+              <Input type="number" value={form.manual_market_value} onChange={e => setForm(p => ({ ...p, manual_market_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="manual override" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Valuation Source</label>
+              <Input type="text" value={form.valuation_source} onChange={e => setForm(p => ({ ...p, valuation_source: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. Smokingpipes.com" />
+            </div>
+            <div>
+              <label className="text-xs text-[#D8C7A6] block mb-1">Valuation Confidence</label>
+              <Select value={form.valuation_confidence || 'none'} onValueChange={v => setForm(p => ({ ...p, valuation_confidence: v === 'none' ? '' : v }))}>
+                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Not set —</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-[#D8C7A6] block mb-1">Valuation Notes</label>
+            <Input type="text" value={form.valuation_notes} onChange={e => setForm(p => ({ ...p, valuation_notes: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="Any notes about the valuation…" />
+          </div>
+        </div>
+
+        <p className="text-xs font-semibold text-[#D4A574] uppercase tracking-wider pt-2">Rarity &amp; Production</p>
+        <div className="space-y-3">
           <div>
             <label className="text-xs text-[#D8C7A6] block mb-1">Production Status</label>
             <Select value={form.production_status || 'none'} onValueChange={v => setForm(p => ({ ...p, production_status: v === 'none' ? '' : v }))}>
@@ -324,6 +422,7 @@ function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
             <Input type="number" min="0" max="100" value={form.rarity_score_override} onChange={e => setForm(p => ({ ...p, rarity_score_override: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="Leave blank for auto" />
           </div>
         </div>
+
         <div className="flex gap-3 justify-end pt-2">
           <Button variant="outline" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(251,191,36,0.8),rgba(217,160,32,0.9))', color: '#1a120d' }}>
@@ -895,13 +994,28 @@ export default function TobaccoDetail() {
         <EditTobaccoValuationModal
           blend={blend}
           onClose={() => setShowEditValuationModal(false)}
-          onSaved={(updates) => {
-            setBlend(prev => ({ ...prev, ...updates }));
+          onSaved={async (updates) => {
+            const merged = { ...blend, ...updates };
+            setBlend(merged);
             setShowEditValuationModal(false);
             toast.success('Valuation inputs updated');
             // Reload snapshots so Value History reflects the new inputs
             reloadSnapshots();
             queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
+            // Recompute value snapshot with new pricing data
+            try {
+              await refreshItemValue(
+                merged,
+                'pipekeeper',
+                'tobacco',
+                userEmail,
+                base44,
+                { valueHistory: valueSnapshots }
+              );
+              await reloadSnapshots();
+            } catch (refreshErr) {
+              console.warn('[TobaccoDetail] valuation refresh after pricing save failed', refreshErr);
+            }
           }}
         />
       )}

@@ -25,8 +25,8 @@
 import React, { useState } from 'react';
 import {
   TrendingUp, TrendingDown, Minus, ShieldCheck, Unlock, HelpCircle,
-  PlusCircle, Eye, ChevronDown, ChevronUp, Zap, AlertTriangle,
-  RefreshCw, Settings, MapPin, Globe, AlertCircle, Loader2, Sparkles,
+  PlusCircle, Eye, ChevronDown, ChevronUp, Zap, DollarSign,
+  RefreshCw, MapPin, Globe, AlertCircle, Loader2, Sparkles,
 } from 'lucide-react';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { useValuation } from '@/lib/valuation/useValuation';
@@ -222,7 +222,6 @@ export default function UnifiedValuationCard({
   onRefreshNow,
   isRefreshing = false,
 }) {
-  const [showSettings, setShowSettings] = useState(false);
   const { formatFromBase } = useCurrency();
 
   // Valuation breakdown data (You Paid, Local Value, Global Benchmark, Gain/Loss)
@@ -308,9 +307,9 @@ export default function UnifiedValuationCard({
             <button type="button" onClick={onEditValuation}
               className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors min-h-[36px]"
               style={{ background: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.22)' }}
-              title="Edit valuation inputs">
-              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-              <span>Edit Inputs</span>
+              title="Edit pricing and valuation inputs">
+              <DollarSign className="w-3.5 h-3.5 shrink-0" />
+              <span>Pricing</span>
             </button>
           )}
           {onRefreshNow && (
@@ -322,12 +321,6 @@ export default function UnifiedValuationCard({
               <span>{isRefreshing ? 'Refreshing…' : 'Refresh'}</span>
             </button>
           )}
-          <button type="button"
-            className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors min-h-[36px]"
-            style={{ background: 'rgba(180,140,75,0.08)', color: 'rgba(212,165,116,0.65)', border: '1px solid rgba(180,140,75,0.18)' }}
-            onClick={() => setShowSettings(!showSettings)} title="Valuation settings">
-            <Settings className="w-3.5 h-3.5 shrink-0" />
-          </button>
         </div>
       </div>
 
