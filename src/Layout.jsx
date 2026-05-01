@@ -21,7 +21,7 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen" style={{ backgroundColor: '#140f0c' }}>
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(20,15,12,0.88)] backdrop-blur-md">
         <div className="ck-page-shell">
-          <div className="flex flex-col py-3 md:py-4">
+          <div className="flex flex-col gap-3 py-3 md:py-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <BackButton currentPageName={currentPageName} />
@@ -59,7 +59,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
 
             {/* Desktop nav row */}
-            <div className="hidden md:block mt-3">
+            <div className="hidden md:block">
               <ModuleNav currentPageName={currentPageName} user={user} />
             </div>
           </div>
