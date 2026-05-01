@@ -86,6 +86,7 @@ function consolidateProfiles(rows = []) {
     privacy_hide_inventory: pickBool(acc.privacy_hide_inventory, row.privacy_hide_inventory),
     privacy_hide_collection_counts: pickBool(acc.privacy_hide_collection_counts, row.privacy_hide_collection_counts),
     home_hide_collection_values: pickBool(acc.home_hide_collection_values, row.home_hide_collection_values),
+    personal_hide_totals: pickBool(acc.personal_hide_totals, row.personal_hide_totals),
     show_social_media: pickBool(acc.show_social_media, row.show_social_media),
     clenching_preference: pick(acc.clenching_preference, row.clenching_preference),
     smoke_duration_preference: pick(acc.smoke_duration_preference, row.smoke_duration_preference),
@@ -117,7 +118,7 @@ function consolidateProfiles(rows = []) {
   const MASTER_BOOL_FIELDS = [
     'enable_messaging', 'allow_comments', 'is_public', 'show_location',
     'allow_web_lookups', 'privacy_hide_values', 'privacy_hide_inventory',
-    'privacy_hide_collection_counts', 'home_hide_collection_values', 'show_social_media',
+    'privacy_hide_collection_counts', 'home_hide_collection_values', 'personal_hide_totals', 'show_social_media',
   ];
   for (const field of MASTER_BOOL_FIELDS) {
     if (typeof master[field] === 'boolean') {
@@ -232,6 +233,7 @@ export default function ProfilePage() {
     privacy_hide_inventory: false,
     privacy_hide_collection_counts: false,
     home_hide_collection_values: false,
+    personal_hide_totals: false,
     show_social_media: false,
     clenching_preference: "Sometimes",
     smoke_duration_preference: "No Preference",
@@ -326,6 +328,7 @@ export default function ProfilePage() {
       enable_messaging: source.enable_messaging ?? false,
       allow_web_lookups: source.allow_web_lookups !== false,
       home_hide_collection_values: source.home_hide_collection_values ?? false,
+      personal_hide_totals: source.personal_hide_totals ?? false,
       privacy_hide_values: source.privacy_hide_values ?? false,
       privacy_hide_inventory: source.privacy_hide_inventory ?? false,
       privacy_hide_collection_counts: source.privacy_hide_collection_counts ?? false,
@@ -708,8 +711,35 @@ export default function ProfilePage() {
 
             {/* Privacy */}
             <FormSection title="Privacy & Visibility">
+
+              {/* ── Personal view ─────────────────────────────────────────── */}
+              <div className="pb-3 mb-1 border-b" style={{ borderColor: 'rgba(224,216,200,0.1)' }}>
+                <p className="text-xs uppercase tracking-widest font-semibold mb-3" style={{ color: 'rgba(224,216,200,0.4)' }}>
+                  {t("profileExtended.yourOwnView")}
+                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profileExtended.personalHideTotals")}</span>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.personalHideTotalsDesc")}</p>
+                  </div>
+                  <Switch
+                    checked={formData.personal_hide_totals}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, personal_hide_totals: !!v }))}
+                    className="data-[state=checked]:bg-[#A35C5C]"
+                  />
+                </div>
+              </div>
+
+              {/* ── Public / community profile ────────────────────────────── */}
+              <p className="text-xs uppercase tracking-widest font-semibold mb-3" style={{ color: 'rgba(224,216,200,0.4)' }}>
+                {t("profileExtended.publicProfileView")}
+              </p>
+
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideValues")}</span>
+                <div>
+                  <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideValues")}</span>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideValuesDesc")}</p>
+                </div>
                 <Switch
                   checked={formData.privacy_hide_values}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
@@ -718,7 +748,10 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideInventory")}</span>
+                <div>
+                  <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideInventory")}</span>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideInventoryDesc")}</p>
+                </div>
                 <Switch
                   checked={formData.privacy_hide_inventory}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
@@ -727,7 +760,10 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideCollectionCounts")}</span>
+                <div>
+                  <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideCollectionCounts")}</span>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.hideCollectionCountsDesc")}</p>
+                </div>
                 <Switch
                   checked={formData.privacy_hide_collection_counts}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
@@ -759,6 +795,7 @@ export default function ProfilePage() {
                 />
               </div>
             </FormSection>
+
 
             {/* Pipe / Tobacco Preferences */}
             <FormSection title={t("profile.pipeTobaccoPreferences", "Pipe & Tobacco Preferences")}>

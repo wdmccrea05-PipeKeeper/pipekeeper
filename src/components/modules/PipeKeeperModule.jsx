@@ -32,7 +32,7 @@ export default function PipeKeeperModule() {
   const params = new URLSearchParams(location.search);
 
   const { user, isLoading: isUserLoading } = useCurrentUser();
-  const { hideValues, hideCollectionCounts } = useProfilePrivacy();
+  const { hideValues, hideCollectionCounts, personalHideTotals } = useProfilePrivacy();
   const queryClient = useQueryClient();
   
   const [showSmokingLog, setShowSmokingLog] = useState(false);
@@ -133,7 +133,7 @@ export default function PipeKeeperModule() {
         onClick: () => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`)),
       });
     }
-    if (mostValuablePipe && !hideValues) {
+    if (mostValuablePipe && !personalHideTotals) {
       items.push({
         key: 'mostValuable',
         title: t('home.mostValuable'),
@@ -156,7 +156,7 @@ export default function PipeKeeperModule() {
       });
     }
     return items;
-  }, [mostSmokedPipe, mostValuablePipe, hideValues, favoriteBlends, formatFromBase, navigate, t]);
+  }, [mostSmokedPipe, mostValuablePipe, personalHideTotals, favoriteBlends, formatFromBase, navigate, t]);
 
   const quickLaunchActions = [
     {
@@ -210,9 +210,9 @@ export default function PipeKeeperModule() {
   ];
 
   const pipeStats = [
-    { label: t('home.totalValue'), value: hideValues ? '—' : formatFromBase(Math.round(totalPipeValue)) },
-    { label: t('home.pipesInCollection'), value: hideCollectionCounts ? '—' : pipes.length },
-    { label: t('home.tobaccoBlends'), value: hideCollectionCounts ? '—' : blends.length },
+    { label: t('home.totalValue'), value: personalHideTotals ? '—' : formatFromBase(Math.round(totalPipeValue)) },
+    { label: t('home.pipesInCollection'), value: personalHideTotals ? '—' : pipes.length },
+    { label: t('home.tobaccoBlends'), value: personalHideTotals ? '—' : blends.length },
     { label: t('home.cellared'), value: formatWeight(totalCellaredOz, 'oz') },
   ];
 
