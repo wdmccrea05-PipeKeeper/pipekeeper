@@ -22,7 +22,7 @@ export default function WineKeeperModuleNav({ currentPageName }) {
     <>
     <div className="flex items-center justify-between gap-3">
       {/* ── Left: tabs ── */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex flex-wrap items-center gap-1">
         {tabs.map(({ path, label, icon: Icon }) => {
           const pathBase = path.split('?')[0];
           const isActive = location.pathname === pathBase || (currentPageName && pathBase.includes(currentPageName));

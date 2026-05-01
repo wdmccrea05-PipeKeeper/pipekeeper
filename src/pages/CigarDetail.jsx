@@ -994,7 +994,7 @@ function CigarDetailInner() {
       })()}
 
       {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex flex-wrap gap-2">
         {TABS.map((t) => (
           <TabBtn key={t.key} label={t.label} active={activeTab === t.key} onClick={() => setActiveTab(t.key)} />
         ))}
