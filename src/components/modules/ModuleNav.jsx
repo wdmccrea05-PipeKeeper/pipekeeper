@@ -22,12 +22,14 @@ import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import { useEnabledModules } from "@/components/hooks/useEnabledKeeperModules";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-function NavItem({ item, isActive }) {
+function NavItem({ item, isActive, onClick, vertical }) {
   return (
     <Link
       to={createPageUrl(item.page)}
+      onClick={onClick}
       className={cn(
         "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+        vertical && "w-full",
         isActive
           ? "bg-[rgba(100,66,34,0.55)] border border-[rgba(180,140,75,0.38)]"
           : "border border-transparent hover:bg-white/6 hover:border-[rgba(180,140,75,0.15)]"
@@ -45,7 +47,7 @@ function NavItem({ item, isActive }) {
   );
 }
 
-export default function ModuleNav({ currentPageName, user }) {
+export default function ModuleNav({ currentPageName, user, vertical = false, onItemClick }) {
   const location = useLocation();
   const { t } = useTranslation();
   const { enabled } = useEnabledModules();
@@ -145,7 +147,7 @@ export default function ModuleNav({ currentPageName, user }) {
   const items = [...baseItems, ...adminItems];
 
   return (
-    <div className="flex flex-wrap items-center gap-1 pb-1 min-w-0 w-full">
+    <div className={vertical ? "flex flex-col gap-1 w-full" : "flex flex-wrap items-center gap-1 pb-1 min-w-0 w-full"}>
       {items.map((item) => {
         const isActive = item.path === '/'
           ? location.pathname === '/'
@@ -155,6 +157,8 @@ export default function ModuleNav({ currentPageName, user }) {
             key={item.page}
             item={item}
             isActive={isActive}
+            vertical={vertical}
+            onClick={onItemClick}
           />
         );
       })}
