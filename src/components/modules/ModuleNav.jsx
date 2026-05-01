@@ -155,8 +155,8 @@ export default function ModuleNav({ currentPageName, user }) {
       <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 z-10"
         style={{ background: 'linear-gradient(to left, rgba(20,15,12,0.9), transparent)' }} />
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 px-1"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 px-1 nav-scroll-bar"
+        style={{ WebkitOverflowScrolling: 'touch' }}>
         {items.map((item) => {
           const isActive = item.path === '/'
             ? location.pathname === '/'

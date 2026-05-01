@@ -190,9 +190,25 @@ html {
   margin-bottom: 0.375rem;
 }
 
-/* Hide scrollbar on horizontal nav scroll */
-.overflow-x-auto::-webkit-scrollbar {
-  display: none;
+/* Nav scroll bar — visible white pill */
+.nav-scroll-bar::-webkit-scrollbar {
+  height: 4px;
+}
+.nav-scroll-bar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+.nav-scroll-bar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+}
+.nav-scroll-bar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+/* Firefox */
+.nav-scroll-bar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.55) rgba(255, 255, 255, 0.08);
 }
 
 @layer utilities {
