@@ -78,14 +78,16 @@ export default function InventoryStep({
   const showBottleFields = moduleType === INVENTORY_MODULES.BOTTLE;
   const showPipeFields = moduleType === INVENTORY_MODULES.PIPE;
   const showWineFields = moduleType === INVENTORY_MODULES.WINE;
+  const showCigarFields = moduleType === INVENTORY_MODULES.CIGAR;
 
   const showQuantityField =
     !showPipeFields &&
-    (showBottleFields || showWineFields || formData.containerType === CONTAINER_TYPES.TIN || formData.containerType === CONTAINER_TYPES.POUCH || formData.containerType === CONTAINER_TYPES.BULK || formData.containerType === CONTAINER_TYPES.JAR);
+    (showBottleFields || showWineFields || showCigarFields || formData.containerType === CONTAINER_TYPES.TIN || formData.containerType === CONTAINER_TYPES.POUCH || formData.containerType === CONTAINER_TYPES.BULK || formData.containerType === CONTAINER_TYPES.JAR);
 
   const quantityLabel = (() => {
     if (showBottleFields) return 'Bottles Owned';
     if (showWineFields) return 'Bottles Owned';
+    if (showCigarFields) return 'Sticks Owned';
     if (formData.containerType === CONTAINER_TYPES.TIN) return 'Tins Owned';
     if (formData.containerType === CONTAINER_TYPES.POUCH) return 'Pouches Owned';
     if (formData.containerType === CONTAINER_TYPES.BULK) return 'Total Ounces';
@@ -137,7 +139,7 @@ export default function InventoryStep({
             <Input
               type="number"
               min="0"
-              step={showBottleFields || formData.containerType === CONTAINER_TYPES.TIN || formData.containerType === CONTAINER_TYPES.POUCH ? '1' : '0.01'}
+              step={showBottleFields || showWineFields || showCigarFields || formData.containerType === CONTAINER_TYPES.TIN || formData.containerType === CONTAINER_TYPES.POUCH ? '1' : '0.01'}
               value={formData.quantity ?? ''}
               onChange={(e) => setField('quantity', e.target.value)}
               placeholder={showBottleFields ? '1' : 'Enter quantity'}
@@ -254,7 +256,7 @@ export default function InventoryStep({
           </div>
         )}
 
-        {(showBottleFields || showWineFields) && (
+        {(showBottleFields || showWineFields || showCigarFields) && (
           <div className="flex flex-col gap-2">
             <SectionLabel>Purchase Price (Optional)</SectionLabel>
             <Input
@@ -263,7 +265,7 @@ export default function InventoryStep({
               step="0.01"
               value={formData.purchasePrice ?? ''}
               onChange={(e) => setField('purchasePrice', e.target.value)}
-              placeholder="e.g. 69.99"
+              placeholder="e.g. 12.50"
               className="text-sm"
             />
           </div>

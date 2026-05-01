@@ -23,6 +23,7 @@ function getInventoryStepName(itemType, mode) {
   if (itemType === 'blend') return mode === 'quick' ? 'inventoryQuick' : 'inventoryManual';
   if (itemType === 'bottle') return mode === 'quick' ? 'inventoryQuick' : 'inventoryManual';
   if (itemType === 'wine') return mode === 'quick' ? 'inventoryQuick' : 'inventoryManual';
+  if (itemType === 'cigar') return mode === 'manual' ? 'inventoryManual' : null;
   if (itemType === 'pipe') return mode === 'manual' ? 'inventoryManual' : null;
   return null;
 }
@@ -81,7 +82,7 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
       manualBasic: 'choice',
       manualDetails: 'manualBasic',
       inventoryManual: 'manualDetails',
-      manualImages: (itemType === 'blend' || itemType === 'bottle' || itemType === 'wine' || itemType === 'pipe') ? 'inventoryManual' : 'manualDetails',
+      manualImages: (itemType === 'blend' || itemType === 'bottle' || itemType === 'wine' || itemType === 'pipe' || itemType === 'cigar') ? 'inventoryManual' : 'manualDetails',
       imagesQuick: itemType === 'blend' || itemType === 'bottle' || itemType === 'wine' ? 'inventoryQuick' : 'quickConfirm',
     };
 

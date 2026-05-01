@@ -81,6 +81,7 @@ function buildBaseRecord(itemType, data) {
       flavor_notes: Array.isArray(data.flavor_notes) && data.flavor_notes.length ? data.flavor_notes : undefined,
       personal_notes: data.personal_notes || data.notes,
       photos: Array.isArray(data.photos) && data.photos.length ? data.photos : undefined,
+      purchase_price: data.purchase_price ? Number(data.purchase_price) : undefined,
     });
   }
 
@@ -917,8 +918,8 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
       // If we have a quick record ID, update it instead of creating a new one
       if (finalData._quickRecord?.id) {
-        const bottleSafeInventory = (itemType === 'bottle' || itemType === 'wine')
-          ? cleanObject({ purchase_price: inventoryPayload.purchase_price })
+        const bottleSafeInventory = (itemType === 'bottle' || itemType === 'wine' || itemType === 'cigar')
+          ? cleanObject({ purchase_price: inventoryPayload.purchase_price, quantity: inventoryPayload.quantity })
           : inventoryPayload;
 
         const updateData = cleanObject({
