@@ -213,7 +213,8 @@ describe("ModuleVisibilitySettings", () => {
     // Scope to the CigarKeeper card so we don't click PipeKeeper's Free button
     const cigarCard = screen.getByText("CigarKeeper").closest(".rounded-xl");
     const freeButtons = within(cigarCard).getAllByRole("button", { name: /free/i });
-    expect(freeButtons.length).toBeGreaterThanOrEqual(1);
+    // Expect exactly 2: one desktop-hidden (sm:flex), one mobile-hidden (sm:hidden)
+    expect(freeButtons.length).toBe(2);
     fireEvent.click(freeButtons[0]);
 
     await waitFor(() => {
