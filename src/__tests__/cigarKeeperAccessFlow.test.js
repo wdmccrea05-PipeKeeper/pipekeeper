@@ -199,6 +199,11 @@ describe("Scenarios 6 & 7 – CigarKeeper Pro upgrade shows monthly and annual p
 
 // ─── Scenario 8: Subscription page does not show "No plans available" ────────
 
+/** Returns true when a merged plan should appear in the bundles section (fixed filter). */
+function isBundleType(type) {
+  return type === "bundle" || type === "three_bundle" || type === "four_bundle" || type === "founders";
+}
+
 describe("Scenario 8 – subscription page plans include CigarKeeper when configured", () => {
   it("stripeConfig type for individual plans is 'single'", () => {
     // If stripeConfig is used as-is, its type field ('single') differs from SUBSCRIPTION_PLANS ('single_module').
@@ -237,10 +242,8 @@ describe("Scenario 8 – subscription page plans include CigarKeeper when config
     const stripePlan = getStripeConfig().three_module_bundle_monthly;
     const merged = { ...appPlan, ...stripePlan };
     // stripeConfig type is 'three_bundle'; fixed filter accepts it
-    const isBundleFixed = merged.type === "bundle" || merged.type === "three_bundle" || merged.type === "four_bundle" || merged.type === "founders";
-    const isBundleOld = merged.type === "bundle";
-    expect(isBundleFixed).toBe(true);
-    expect(isBundleOld).toBe(false); // old filter would miss it
+    expect(isBundleType(merged.type)).toBe(true);
+    expect(merged.type).not.toBe("bundle"); // old filter would miss it
   });
 
   it("merged founders bundle plan passes the fixed 'bundles' filter", () => {
@@ -248,8 +251,7 @@ describe("Scenario 8 – subscription page plans include CigarKeeper when config
     const stripePlan = getStripeConfig().founders_bundle_monthly;
     const merged = { ...appPlan, ...stripePlan };
     // stripeConfig type is 'founders'; fixed filter accepts it
-    const isBundleFixed = merged.type === "bundle" || merged.type === "three_bundle" || merged.type === "four_bundle" || merged.type === "founders";
-    expect(isBundleFixed).toBe(true);
+    expect(isBundleType(merged.type)).toBe(true);
   });
 });
 
