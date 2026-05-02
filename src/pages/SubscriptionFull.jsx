@@ -225,8 +225,12 @@ export default function SubscriptionFull() {
   }), [t]);
 
   const groupedPlans = useMemo(() => ({
-    individual: availablePlans.filter((plan) => plan.type === "single_module"),
-    bundles: availablePlans.filter((plan) => plan.type === "bundle"),
+    // Accept both SUBSCRIPTION_PLANS type ('single_module') and stripeConfig type ('single')
+    individual: availablePlans.filter((plan) => plan.type === "single_module" || plan.type === "single"),
+    // Accept all bundle-type variants from both sources
+    bundles: availablePlans.filter((plan) =>
+      plan.type === "bundle" || plan.type === "three_bundle" || plan.type === "four_bundle" || plan.type === "founders"
+    ),
   }), [availablePlans]);
 
   const handleUpgrade = async (planKey) => {
