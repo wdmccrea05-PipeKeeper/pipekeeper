@@ -197,17 +197,20 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
           // Allow toggle for launched modules that are accessible (already enabled or entitlements met)
           const canToggle = !!(state?.canToggle && state?.accessible);
           const isSavingThis = saving === mod.id;
+          const showTierButtons = canToggle && paidModuleIds.includes(mod.id);
 
           return (
             <div
               key={mod.id}
-              className={`flex items-center justify-between gap-4 p-3 rounded-xl border transition-all ${
+              className={`rounded-xl border transition-all ${
                 enabled
                   ? "bg-stone-800/50 border-stone-700"
                   : "bg-stone-800/30 border-stone-700/50"
-              }`}
+              } ${canToggle ? "cursor-pointer" : ""}`}
+              onClick={canToggle ? () => handleModuleVisibility(mod.id, !enabled) : undefined}
             >
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+              {/* Main row: icon + name + right-side controls */}
+              <div className="flex items-center gap-3 p-3">
                 <ModuleIcon
                   src={mod.icon}
                   alt={mod.label}
@@ -240,45 +243,73 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                       : mod.description}
                   </p>
                 </div>
+
+                {/* Right-side controls — stop propagation so row onClick is not double-fired */}
+                <div
+                  className="flex items-center gap-2 flex-shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {showTierButtons ? (
+                    <>
+                      {/* Pro/Free buttons: visible on desktop (sm:), hidden on mobile */}
+                      <div className="hidden sm:flex gap-2">
+                        <Button
+                          size="sm"
+                          variant={paidFlagByModule[mod.id] ? "default" : "outline"}
+                          onClick={() => handleSetTierAndEnable(mod.id, true)}
+                          disabled={isSavingThis}
+                          className="text-xs"
+                        >
+                          Pro
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={!paidFlagByModule[mod.id] && enabled ? "default" : "outline"}
+                          onClick={() => handleSetTierAndEnable(mod.id, false)}
+                          disabled={isSavingThis}
+                          className="text-xs"
+                        >
+                          Free
+                        </Button>
+                      </div>
+                      <Switch
+                        checked={enabled}
+                        onCheckedChange={(value) => handleModuleVisibility(mod.id, value)}
+                        disabled={isSavingThis}
+                      />
+                    </>
+                  ) : !canToggle ? (
+                    <Lock className="w-3.5 h-3.5 text-stone-500" title="Unavailable" />
+                  ) : null}
+                </div>
               </div>
 
-              <div className="flex items-center gap-3 flex-shrink-0">
-                {canToggle && paidModuleIds.includes(mod.id) ? (
-                  <>
-                    <Switch
-                      checked={enabled}
-                      onCheckedChange={(value) => handleModuleVisibility(mod.id, value)}
-                      disabled={isSavingThis}
-                    />
-                    <div className="flex gap-2 flex-shrink-0">
-                      <Button
-                        size="sm"
-                        variant={
-                          paidFlagByModule[mod.id] ? "default" : "outline"
-                        }
-                        onClick={() => handleSetTierAndEnable(mod.id, true)}
-                        disabled={isSavingThis}
-                        className="text-xs"
-                      >
-                        Pro
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={
-                          !paidFlagByModule[mod.id] && enabled ? "default" : "outline"
-                        }
-                        onClick={() => handleSetTierAndEnable(mod.id, false)}
-                        disabled={isSavingThis}
-                        className="text-xs"
-                      >
-                        Free
-                      </Button>
-                    </div>
-                  </>
-                ) : !canToggle ? (
-                  <Lock className="w-3.5 h-3.5 text-stone-500" title="Unavailable" />
-                ) : null}
-              </div>
+              {/* Mobile-only: Pro/Free buttons as a full-width row below the main row */}
+              {showTierButtons && (
+                <div
+                  className="sm:hidden flex gap-2 px-3 pb-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button
+                    size="sm"
+                    variant={paidFlagByModule[mod.id] ? "default" : "outline"}
+                    onClick={() => handleSetTierAndEnable(mod.id, true)}
+                    disabled={isSavingThis}
+                    className="flex-1 min-h-[44px] text-sm"
+                  >
+                    Pro
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={!paidFlagByModule[mod.id] && enabled ? "default" : "outline"}
+                    onClick={() => handleSetTierAndEnable(mod.id, false)}
+                    disabled={isSavingThis}
+                    className="flex-1 min-h-[44px] text-sm"
+                  >
+                    Free
+                  </Button>
+                </div>
+              )}
             </div>
           );
         })}
