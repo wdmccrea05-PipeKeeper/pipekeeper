@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
-import { canAccessInternalModuleForTesting, isInternalModuleTester } from "@/components/utils/moduleReleaseState";
+import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const MODULES = [
@@ -34,21 +34,21 @@ export default function ModuleSelectionStep({
 }) {
   const { activeModules = [] } = useAccessSummary();
   const tester = isInternalModuleTester(user);
-  const canAccessCigarInternal = canAccessInternalModuleForTesting("cigarkeeper", user);
   const { t } = useTranslation();
 
   const accessibleModules = useMemo(() => {
     const set = new Set(activeModules || []);
-    // All modules are free-tier accessible (gating happens inside each module).
+    // Launched modules are free-tier accessible — gating happens inside each module.
     set.add("pipekeeper");
     set.add("whiskeykeeper");
     set.add("cigarkeeper");
-    set.add("winekeeper");
+    // WineKeeper is internal-only; only expose it to internal testers.
+    if (tester) set.add("winekeeper");
     return set;
-  }, [activeModules, tester, canAccessCigarInternal]);
+  }, [activeModules, tester]);
 
-  // All defined modules are selectable — access is gated on features inside each module,
-  // not on visibility in the picker. CigarKeeper is shown only if internally accessible.
+  // Launched modules are selectable; internal modules (WineKeeper) are only selectable
+  // for internal testers and are already excluded from accessibleModules above.
   const selectableModules = MODULES.filter((module) =>
     accessibleModules.has(module.key)
   );
