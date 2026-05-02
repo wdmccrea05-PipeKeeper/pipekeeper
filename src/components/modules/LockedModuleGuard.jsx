@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import BrandLogo from '@/components/branding/BrandLogo';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
+import { hasModuleProAccess, hasModuleFreeAccess } from '@/components/utils/moduleEntitlements';
 import { hasPaidAccess } from '@/components/utils/premiumAccess';
 
 const MODULE_LABELS = {
@@ -115,12 +115,13 @@ export default function LockedModuleGuard({ moduleKey, children }) {
     );
   }
 
-  // 3. Module is launched but user has not paid for it (per-module entitlement check)
+  // 3. Module is launched but user has no access tier (pro or free).
+  //    Launched modules are free-tier accessible — limits are enforced inside each module.
   //    Admins and legacy broad-access users are always granted access.
   const isAdmin = String(user?.role || '').toLowerCase() === 'admin' || user?.is_admin === true;
   const hasLegacyAccess = Boolean(user?.isFoundingMember || user?.legacy_broad_module_access);
 
-  if (!isAdmin && !hasLegacyAccess && !hasModuleProAccess(user, key)) {
+  if (!isAdmin && !hasLegacyAccess && !hasModuleProAccess(user, key) && !hasModuleFreeAccess(user, key)) {
     // If user has any paid access at all (wrong module), show upgrade prompt.
     // Otherwise show the standard subscribe CTA.
     const hasSomePaidAccess = hasPaidAccess(user, subscription);
