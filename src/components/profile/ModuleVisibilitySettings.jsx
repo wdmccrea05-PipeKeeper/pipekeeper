@@ -216,7 +216,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-stone-100 text-sm">{mod.label}</span>
 
-                    {mod.internalModule && canAccessInternalModuleForTesting(mod.id, effectiveUser) ? (
+                    {mod.internalModule && !mod.launched && canAccessInternalModuleForTesting(mod.id, effectiveUser) ? (
                       <Badge className="text-[10px] bg-purple-100 text-purple-700 border-0 px-1.5 py-0">
                         {t("profile.internalPreview", "Internal Preview")}
                       </Badge>
