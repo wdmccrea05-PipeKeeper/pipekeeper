@@ -41,7 +41,7 @@ const WINEKEEPER_PLAN_KEYS = new Set(
 );
 
 const ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due']);
-const PUBLIC_PURCHASABLE_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper']
+const PUBLIC_PURCHASABLE_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']
   .filter((moduleKey) => isModuleLaunched(moduleKey));
 
 function isActiveSubscription(sub) {
@@ -139,22 +139,30 @@ export function getUserSubscriptionState({
 
   // Determine whether this is a "full" bundle (all 3 public modules) or partial (Founders only)
   const isThreeModuleBundle = activePlanKeys.some((k) => String(k).includes('three_module_bundle'));
-  const isFoundersOnlyBundle = hasBundle && !isThreeModuleBundle;
-  // Full coverage = 3-module bundle OR founders + separately purchased cigar OR all 3 individually
+  const isFourModuleBundle = activePlanKeys.some((k) => String(k).includes('four_module_bundle'));
+  const isFoundersOnlyBundle = hasBundle && !isThreeModuleBundle && !isFourModuleBundle;
   const hasAllThree = hasPipekeeperPro && hasWhiskeykeeperPro && hasCigarkeeperPro;
-  const hasFullCoverage = isThreeModuleBundle || hasAllThree;
+  const hasAllFour = hasAllThree && hasWinekeeperPro;
+  // Full coverage depends on whether WineKeeper is launched:
+  // - WineKeeper launched: requires all 4 modules (or 4-module bundle)
+  // - WineKeeper not launched: requires all 3 core modules (or 3-module bundle)
+  const isWinekeeperLaunched = isModuleLaunched('winekeeper');
+  const hasFullCoverage = isWinekeeperLaunched
+    ? (isFourModuleBundle || hasAllFour)
+    : (isThreeModuleBundle || hasAllThree);
 
   // Determine eligible upgrade actions
   const eligibleActions = [];
 
   const hasAnyPaidModule = hasPipekeeperPro || hasWhiskeykeeperPro || hasCigarkeeperPro || hasWinekeeperPro;
 
-  // Full 3-module bundle users have nothing left to upgrade to
+  // Full coverage users have nothing left to upgrade to
   if (!hasFullCoverage && hasAnyPaidModule) {
     const paidModuleMap = {
       pipekeeper: hasPipekeeperPro,
       whiskeykeeper: hasWhiskeykeeperPro,
       cigarkeeper: hasCigarkeeperPro,
+      winekeeper: hasWinekeeperPro,
     };
 
     for (const moduleKey of PUBLIC_PURCHASABLE_MODULES) {
@@ -168,9 +176,14 @@ export function getUserSubscriptionState({
       eligibleActions.push('upgrade_to_bundle');
     }
 
-    // Always offer 3-module bundle upgrade if user doesn't already have all 3
-    if (!isThreeModuleBundle) {
+    // Offer 3-module bundle upgrade if user doesn't already have all 3 core modules
+    if (!isThreeModuleBundle && !isFourModuleBundle) {
       eligibleActions.push('upgrade_to_three_module_bundle');
+    }
+
+    // Offer 4-module bundle upgrade when WineKeeper is launched and user lacks all 4
+    if (isWinekeeperLaunched && !isFourModuleBundle) {
+      eligibleActions.push('upgrade_to_four_module_bundle');
     }
   }
   // Free users have no eligible upgrade actions in this list;
@@ -184,6 +197,7 @@ export function getUserSubscriptionState({
     hasBundle,
     isFoundersOnlyBundle,
     isThreeModuleBundle,
+    isFourModuleBundle,
     hasFullCoverage,
     paidModules,
     moduleFlags: {

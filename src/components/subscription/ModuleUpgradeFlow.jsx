@@ -178,7 +178,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
         pipekeeper: '/PipeKeeper',
         whiskeykeeper: '/WhiskeyKeeper',
         cigarkeeper: '/CigarKeeper',
-        winekeeper: '/CollectionHub',
+        winekeeper: '/WineKeeper',
       };
 
       const nextPath =
