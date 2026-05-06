@@ -7,7 +7,7 @@ const MODULE_ROUTE_MAP = {
   pipekeeper: '/PipeKeeper',
   whiskeykeeper: '/WhiskeyKeeper',
   cigarkeeper: '/CigarKeeper',
-  winekeeper: '/CollectionHub',
+  winekeeper: '/WineKeeper',
 };
 
 /**

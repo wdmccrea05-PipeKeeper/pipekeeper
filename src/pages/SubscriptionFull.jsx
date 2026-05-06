@@ -178,7 +178,7 @@ export default function SubscriptionFull() {
 
   const availablePlans = useMemo(() => {
     const interval = selectedInterval === "annual" ? "annual" : "monthly";
-    const launchedSingleModules = ["pipekeeper", "whiskeykeeper", "cigarkeeper"].filter((moduleKey) =>
+    const launchedSingleModules = ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"].filter((moduleKey) =>
       isModuleLaunched(moduleKey, user)
     );
 
@@ -186,6 +186,7 @@ export default function SubscriptionFull() {
       ...launchedSingleModules.map((moduleKey) => `${moduleKey}_pro_${interval}`),
       `founders_bundle_${interval}`,
       `three_module_bundle_${interval}`,
+      ...(isModuleLaunched("winekeeper", user) ? [`four_module_bundle_${interval}`] : []),
     ];
 
     return keyOrder
@@ -205,10 +206,14 @@ export default function SubscriptionFull() {
     whiskeykeeper_pro_annual: { name: t("subscriptionFull.plan.whiskeykeeperPro"), badge: null },
     cigarkeeper_pro_monthly: { name: t("subscriptionFull.plan.cigarkeeperPro"), badge: null },
     cigarkeeper_pro_annual: { name: t("subscriptionFull.plan.cigarkeeperPro"), badge: null },
+    winekeeper_pro_monthly: { name: t("subscriptionFull.plan.winekeeperPro"), badge: null },
+    winekeeper_pro_annual: { name: t("subscriptionFull.plan.winekeeperPro"), badge: null },
     founders_bundle_monthly: { name: t("subscriptionFull.plan.foundersBundle"), badge: t("subscriptionFull.badge.mostPopular") },
     founders_bundle_annual: { name: t("subscriptionFull.plan.foundersBundle"), badge: t("subscriptionFull.badge.mostPopular") },
     three_module_bundle_monthly: { name: t("subscriptionFull.plan.threeModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
     three_module_bundle_annual: { name: t("subscriptionFull.plan.threeModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
+    four_module_bundle_monthly: { name: t("subscriptionFull.plan.fourModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
+    four_module_bundle_annual: { name: t("subscriptionFull.plan.fourModuleBundle"), badge: t("subscriptionFull.badge.bestValue") },
   }), [t]);
 
   const planDescriptions = useMemo(() => ({
@@ -218,10 +223,14 @@ export default function SubscriptionFull() {
     whiskeykeeper_pro_annual: t("subscriptionFull.planDescription.whiskeykeeperPro"),
     cigarkeeper_pro_monthly: t("subscriptionFull.planDescription.cigarkeeperPro"),
     cigarkeeper_pro_annual: t("subscriptionFull.planDescription.cigarkeeperPro"),
+    winekeeper_pro_monthly: t("subscriptionFull.planDescription.winekeeperPro"),
+    winekeeper_pro_annual: t("subscriptionFull.planDescription.winekeeperPro"),
     founders_bundle_monthly: t("subscriptionFull.planDescription.foundersBundle"),
     founders_bundle_annual: t("subscriptionFull.planDescription.foundersBundle"),
     three_module_bundle_monthly: t("subscriptionFull.planDescription.threeModuleBundle"),
     three_module_bundle_annual: t("subscriptionFull.planDescription.threeModuleBundle"),
+    four_module_bundle_monthly: t("subscriptionFull.planDescription.fourModuleBundle"),
+    four_module_bundle_annual: t("subscriptionFull.planDescription.fourModuleBundle"),
   }), [t]);
 
   const groupedPlans = useMemo(() => ({
