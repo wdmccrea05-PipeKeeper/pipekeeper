@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
-import { isInternalModuleTester } from "@/components/utils/moduleReleaseState";
+import { isInternalModuleTester, isModuleLaunched } from "@/components/utils/moduleReleaseState";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const MODULES = [
@@ -42,12 +42,12 @@ export default function ModuleSelectionStep({
     set.add("pipekeeper");
     set.add("whiskeykeeper");
     set.add("cigarkeeper");
-    // WineKeeper is internal-only; only expose it to internal testers.
-    if (tester) set.add("winekeeper");
+    // WineKeeper: include if launched (VITE_WINEKEEPER_PUBLIC_ENABLED=true) or internal tester.
+    if (isModuleLaunched("winekeeper") || tester) set.add("winekeeper");
     return set;
   }, [activeModules, tester]);
 
-  // Launched modules are selectable; internal modules (WineKeeper) are only selectable
+  // Launched modules are selectable; internal modules are only selectable
   // for internal testers and are already excluded from accessibleModules above.
   const selectableModules = MODULES.filter((module) =>
     accessibleModules.has(module.key)
