@@ -253,29 +253,11 @@ describe('WineKeeper single-module checkout routes to /WineKeeper (not /Collecti
 import { readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
-function findExtensionlessTests(dir, results = []) {
-  try {
-    const entries = readdirSync(dir);
-    for (const entry of entries) {
-      const fullPath = join(dir, entry);
-      try {
-        const stat = statSync(fullPath);
-        if (stat.isDirectory()) {
-          if (entry === 'node_modules' || entry === '.git') continue;
-          findExtensionlessTests(fullPath, results);
-        } else if ((entry.endsWith('.test') || entry.endsWith('.spec')) && !entry.includes('.')) {
-          // Ends with .test or .spec but has no further extension (i.e., it IS the full name)
-          results.push(fullPath);
-        }
-      } catch {}
-    }
-  } catch {}
-  return results;
-}
-
 describe('No extensionless test files remain in src/', () => {
   it('find src -name "*.test" returns zero results', () => {
     // Check for files named exactly "something.test" (no .js/.jsx/.ts/.tsx extension)
+    // A file like "foo.test" has parts ['foo', 'test'] — exactly 2 parts, last is 'test'.
+    // A proper test file like "foo.test.js" has parts ['foo', 'test', 'js'] — 3+ parts.
     const srcDir = new URL('../../src', import.meta.url).pathname;
     const found = [];
     function scan(dir) {
@@ -287,13 +269,9 @@ describe('No extensionless test files remain in src/', () => {
             if (stat.isDirectory()) {
               if (entry !== 'node_modules') scan(fullPath);
             } else {
-              // Extensionless test: name ends with ".test" but is not ".test.js" etc.
-              // i.e., the file extension IS ".test" (no second extension after the dot)
+              // Extensionless test: exactly one dot, and the extension is 'test' or 'spec'
               const parts = entry.split('.');
-              if (parts.length === 2 && parts[1] === 'test') {
-                found.push(fullPath);
-              }
-              if (parts.length === 2 && parts[1] === 'spec') {
+              if (parts.length === 2 && (parts[1] === 'test' || parts[1] === 'spec')) {
                 found.push(fullPath);
               }
             }
