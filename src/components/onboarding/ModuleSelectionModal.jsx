@@ -16,9 +16,16 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
   const canSelectCigarKeeper =
     isModuleLaunched('cigarkeeper', user) ||
     canAccessInternalModuleForTesting('cigarkeeper', user);
-  const [selected, setSelected] = useState({ pipekeeper: true, whiskeykeeper: false, cigarkeeper: false });
+  const canSelectWineKeeper =
+    isModuleLaunched('winekeeper', user) ||
+    canAccessInternalModuleForTesting('winekeeper', user);
+  const [selected, setSelected] = useState({ pipekeeper: true, whiskeykeeper: false, cigarkeeper: false, winekeeper: false });
   const [saving, setSaving] = useState(false);
-  const hasAnySelected = selected.pipekeeper || selected.whiskeykeeper || (canSelectCigarKeeper && selected.cigarkeeper);
+  const hasAnySelected =
+    selected.pipekeeper ||
+    selected.whiskeykeeper ||
+    (canSelectCigarKeeper && selected.cigarkeeper) ||
+    (canSelectWineKeeper && selected.winekeeper);
 
   const userHasAnyPaid =
     !!user?.pipekeeper_paid ||
@@ -174,6 +181,42 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                   </h3>
                   <p className="text-xs text-[#E0D8C8] mt-1">
                     {t("onboarding.cigarkeeperDesc", "Track cigars, humidors, inventory, and sessions. Free tier: 10 cigars, 1 humidor. Upgrade anytime.")}
+                  </p>
+                </div>
+                <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
+                  Free
+                </Badge>
+              </div>
+            </button>
+          ) : null}
+
+          {canSelectWineKeeper ? (
+            <button
+              onClick={() => handleToggle('winekeeper')}
+              className={`w-full p-4 rounded-xl border-2 transition-all text-left ${selected.winekeeper ? 'bg-stone-800/60 border-[#D4A574]' : 'bg-stone-800/20 border-stone-700'}`}
+            >
+              <div className="flex items-start gap-4">
+                <input
+                  type="checkbox"
+                  checked={selected.winekeeper}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    handleToggle('winekeeper');
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-5 h-5 mt-1 cursor-pointer"
+                />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-[#F5F1E7] flex items-center gap-2">
+                    <img
+                      src={MODULE_ICONS.winekeeper}
+                      alt="WineKeeper"
+                      className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
+                    />
+                    WineKeeper
+                  </h3>
+                  <p className="text-xs text-[#E0D8C8] mt-1">
+                    {t("onboarding.winekeeperDesc", "Manage your wine cellar with bottle tracking and tasting notes. Free tier: 10 bottles.")}
                   </p>
                 </div>
                 <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">

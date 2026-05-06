@@ -24,6 +24,7 @@ import { getAvailableUpgradeOptions } from "@/lib/billing/upgradePaths";
 import { SUBSCRIPTION_PLANS } from "@/lib/billing/subscriptionPlans";
 import { getStripeConfig } from "@/components/subscription/stripeConfig";
 import { initiateCheckoutWithIntent } from "@/components/subscription/subscriptionHandler";
+import { getModuleSuccessRoute } from "@/components/subscription/moduleRoutes";
 import { syncAppleSubscriptionStatus } from "@/components/utils/appleSubscriptionSync";
 import { isModuleLaunched } from "@/components/utils/moduleReleaseState";
 
@@ -251,13 +252,18 @@ export default function SubscriptionFull() {
 
     setMessage("");
     try {
+      // For single-module plans route back to that module; bundles go to Hub
+      const singleModuleKeys = ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"];
+      const matchedModule = singleModuleKeys.find((m) => planKey.startsWith(`${m}_`));
+      const successNext = matchedModule ? getModuleSuccessRoute(matchedModule) : "/CollectionHub";
+
       await initiateCheckoutWithIntent(
         {
           actionType: "new_purchase",
           currentPlanKey: null,
           targetPlanKey: planKey,
         },
-        `/SubscriptionSuccessFlow?next=${encodeURIComponent("/CollectionHub")}`,
+        `/SubscriptionSuccessFlow?next=${encodeURIComponent(successNext)}`,
         "/Subscription"
       );
     } catch (e) {

@@ -89,12 +89,15 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
       launched: isModuleLaunched("winekeeper", effectiveUser),
       internalModule: isModuleInternal("winekeeper", effectiveUser),
       blocked: isModuleBlocked("winekeeper", effectiveUser),
-      allowToggle: false,
+      allowToggle:
+        isModuleLaunched("winekeeper", effectiveUser) ||
+        canAccessInternalModuleForTesting("winekeeper", effectiveUser),
       alcoholRelated: true,
-      // Hide entirely from public users. WineKeeper is 'internal' — only internal testers
-      // (admins/explicitly granted users) should see it. canAccessInternalModuleForTesting
-      // is the canonical gate for internal modules.
-      hidden: !canAccessInternalModuleForTesting("winekeeper", effectiveUser),
+      // Hide from public users only when WineKeeper is internal AND user cannot access it for testing.
+      // When WINEKEEPER_PUBLIC_ENABLED=true, isModuleInternal returns false, so hidden is false.
+      hidden:
+        isModuleInternal("winekeeper", effectiveUser) &&
+        !canAccessInternalModuleForTesting("winekeeper", effectiveUser),
     },
     {
       id: "cigarkeeper",
