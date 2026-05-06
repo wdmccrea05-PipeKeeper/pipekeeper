@@ -1,11 +1,4 @@
 export default [
-  // ── Ignore test files that use injected globals (vitest/jest) ──────────────
-  {
-    ignores: [
-      'src/components/curator/__tests__/curatorCoverage.test.jsx',
-      'src/components/utils/__tests__/entitlements.test.jsx',
-    ],
-  },
   // ── App source files ───────────────────────────────────────────────────────────
   {
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
