@@ -61,7 +61,7 @@ function getOptionPriority(option, subscriptionState) {
     if (option.action === 'upgrade_to_four_module_bundle') return 25;
   }
 
-  if (hasPipe && hasWhiskey && hasCigar && !hasWine) {
+  if (hasPipe && hasWhiskey && hasCigar && !hasWine && isModuleLaunched('winekeeper')) {
     if (option.action === 'upgrade_to_four_module_bundle') return 10;
     if (option.action === 'add_winekeeper_module') return 20;
   }

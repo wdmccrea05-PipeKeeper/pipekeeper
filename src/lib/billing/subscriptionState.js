@@ -146,6 +146,9 @@ export function getUserSubscriptionState({
   // Full coverage depends on whether WineKeeper is launched:
   // - WineKeeper launched: requires all 4 modules (or 4-module bundle)
   // - WineKeeper not launched: requires all 3 core modules (or 3-module bundle)
+  // Note: a 4-module bundle holder when WineKeeper is not yet launched is treated as
+  // having full coverage (hasAllThree = true) — they are not shown additional upgrade
+  // options since they already own all publicly available modules.
   const isWinekeeperLaunched = isModuleLaunched('winekeeper');
   const hasFullCoverage = isWinekeeperLaunched
     ? (isFourModuleBundle || hasAllFour)
