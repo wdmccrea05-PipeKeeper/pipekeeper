@@ -15,8 +15,7 @@ export const MODULE_RELEASE_STATES = {
   pipekeeper: 'launched',
   whiskeykeeper: 'launched',
   cigarkeeper: 'launched',
-  // WineKeeper becomes 'launched' when VITE_WINEKEEPER_PUBLIC_ENABLED=true; otherwise internal-only.
-  winekeeper: WINEKEEPER_PUBLIC_ENABLED ? 'launched' : 'internal',
+  winekeeper: 'launched',
 };
 
 const LOCAL_OVERRIDE_PREFIX = 'ck_module_override_';
