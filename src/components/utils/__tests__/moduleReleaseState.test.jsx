@@ -17,13 +17,16 @@ describe("moduleReleaseState launched CigarKeeper model", () => {
     expect(shouldFetchModuleData("cigarkeeper", user, false)).toBe(false);
   });
 
-  it("still allows internal-tester detection via explicit grants", () => {
+  it("paid entitlement alone does NOT grant internal access (only internal_tester/admin does)", () => {
     const user = {
       role: "user",
       paid_modules_csv: "pipekeeper,cigarkeeper",
       cigarkeeper_paid: true,
     };
-    expect(canAccessInternalModuleForTesting("cigarkeeper", user)).toBe(true);
+    // canAccessInternalModuleForTesting must only return true for admins/internal-testers,
+    // not for users who merely hold a paid entitlement. (CigarKeeper is launched, so this
+    // function is not the access gate here, but the return value must still be correct.)
+    expect(canAccessInternalModuleForTesting("cigarkeeper", user)).toBe(false);
   });
 
   it("keeps WineKeeper blocked even if explicitly listed in entitlements", () => {

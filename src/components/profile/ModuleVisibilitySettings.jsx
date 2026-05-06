@@ -15,7 +15,6 @@ import {
   isModuleBlocked,
   canAccessInternalModuleForTesting,
 } from "@/components/utils/moduleReleaseState";
-import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { Switch } from "@/components/ui/switch";
 
@@ -55,7 +54,6 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     cigarkeeper: cigarkeeperPaid,
     winekeeper: winekeeperPaid,
   };
-  const paidModuleIds = Object.keys(paidFlagByModule);
 
   const MODULE_CONFIG = [
     {
@@ -115,22 +113,17 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   async function handleSetTierAndEnable(moduleId, isPaid) {
     const hasEntitlement = !!paidFlagByModule[moduleId];
 
+    // Pro button without entitlement → route to Subscription/Upgrade.
+    // Active Modules must never mutate paid entitlement flags.
     if (isPaid && !hasEntitlement) {
       navigate("/Subscription");
       return;
     }
 
+    // Free or Pro with entitlement → only manage module visibility.
+    // Entitlements are owned by Stripe/Apple/admin grant — never touched here.
     setSaving(moduleId);
     try {
-      const key = `${moduleId}_paid`;
-      const validPaidKeys = paidModuleIds.map((id) => `${id}_paid`);
-      if (!validPaidKeys.includes(key)) {
-        throw new Error("Unsupported module entitlement key");
-      }
-
-      // Important: this only changes local module mode.
-      // It must NOT mutate or cancel the actual subscription.
-      await base44.auth.updateMe({ [key]: !!isPaid });
       await setModuleEnabled(moduleId, true);
 
       await Promise.all([
@@ -200,7 +193,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
           // Allow toggle for launched modules that are accessible (already enabled or entitlements met)
           const canToggle = !!(state?.canToggle && state?.accessible);
           const isSavingThis = saving === mod.id;
-          const showTierButtons = canToggle && paidModuleIds.includes(mod.id);
+          const showTierButtons = canToggle && mod.id in paidFlagByModule;
 
           return (
             <div

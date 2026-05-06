@@ -22,6 +22,12 @@ import {
   getCigarUnitValue,
   getCigarAvailableQuantity,
 } from '@/lib/collection/cigarSelectors';
+import {
+  getWineTotalValue,
+  selectWineCollectionValue,
+  selectTotalWineBottles,
+  selectWineCount,
+} from '@/lib/collection/wineSelectors';
 
 
 
@@ -160,21 +166,20 @@ export async function aggregateCollection(userEmail) {
     };
 
     // === WINE MODULE (internal/admin only) ===
-    const getWineValue = (wine) => {
-      const n = (v) => { const x = Number(v); return Number.isFinite(x) && x > 0 ? x : 0; };
-      return n(wine?.estimated_value) || n(wine?.purchase_price) || 0;
-    };
+    // All metrics derived from canonical wineSelectors — no ad-hoc calculations here.
     const wineStats = {
-      count: winesList.length,
-      value: winesList.reduce((sum, w) => sum + getWineValue(w), 0),
+      wineTypes: selectWineCount(winesList),       // distinct wine entries
+      totalBottles: selectTotalWineBottles(winesList), // sum of all quantities
+      count: selectWineCount(winesList),           // legacy alias
+      value: selectWineCollectionValue(winesList), // canonical priority chain
       tastings: wineTastingsList.length,
       favorite: winesList.filter(w => w.is_favorite).length,
       rated: wineTastingsList.filter(wt => wt.rating).length,
     };
 
-    // Most valuable wine (for highlights)
+    // Most valuable wine (for highlights) — uses canonical getWineTotalValue
     const mostValuableWine = winesList.length > 0
-      ? winesList.reduce((max, w) => getWineValue(w) > getWineValue(max) ? w : max)
+      ? winesList.reduce((max, w) => getWineTotalValue(w) > getWineTotalValue(max) ? w : max)
       : null;
 
     // === USAGE PATTERNS ===
@@ -303,8 +308,8 @@ export async function aggregateCollection(userEmail) {
             value: tobaccosList.reduce((max, b) => Math.max(max, getTobaccoValue(b)), 0),
           }
         : null,
-      mostValuableWine && getWineValue(mostValuableWine) > 0
-        ? { recordType: 'wine', record: mostValuableWine, value: getWineValue(mostValuableWine) }
+      mostValuableWine && getWineTotalValue(mostValuableWine) > 0
+        ? { recordType: 'wine', record: mostValuableWine, value: getWineTotalValue(mostValuableWine) }
         : null,
     ].filter(Boolean);
 
@@ -373,10 +378,10 @@ export async function aggregateCollection(userEmail) {
           recordType: mostValuableItem.recordType,
           value: mostValuableItem.value,
         } : null,
-        mostValuableWine: mostValuableWine && getWineValue(mostValuableWine) > 0 ? {
+        mostValuableWine: mostValuableWine && getWineTotalValue(mostValuableWine) > 0 ? {
           id: mostValuableWine.id,
           name: mostValuableWine.name,
-          value: getWineValue(mostValuableWine),
+          value: getWineTotalValue(mostValuableWine),
           varietal: mostValuableWine.varietal,
           vintage: mostValuableWine.vintage,
           photos: mostValuableWine.photos,
@@ -415,7 +420,7 @@ export function getEmptyAggregation() {
     tobacco: { count: 0, value: 0, favorite: 0, rated: 0, avgRating: 0, open: 0, cellared: 0 },
     whiskey: { bottleTypes: 0, totalBottles: 0, count: 0, value: 0, open: 0, unopened: 0, sealed: 0, favorite: 0, rated: 0, avgRating: 0, tastings: 0 },
     cigar: { cigarTypes: 0, totalSticks: 0, readyToSmoke: 0, humidorCount: 0, count: 0, value: 0, favorite: 0, rated: 0, avgRating: 0, sessions: 0 },
-    wine: { count: 0, value: 0, tastings: 0, favorite: 0, rated: 0 },
+    wine: { wineTypes: 0, totalBottles: 0, count: 0, value: 0, tastings: 0, favorite: 0, rated: 0 },
     total: { items: 0, value: 0, sessions: 0, tastings: 0, cigarSessions: 0, wineTastings: 0 },
     highlights: {
       mostUsedPipe: null,

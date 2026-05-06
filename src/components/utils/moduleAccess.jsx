@@ -165,16 +165,33 @@ export function filterByModuleEligibility(moduleId, moduleStates, data) {
 
 /**
  * Build a module-filtered collection context for AI/story/recommendations.
- * Returns { pipes, blends, bottles } with non-eligible data zeroed out.
+ * Returns { pipes, blends, bottles, cigars, cigarSessions, wines, wineTastings }
+ * with non-eligible data zeroed out.
  *
  * @param {object} moduleStates
- * @param {object} collections — { pipes, blends, bottles }
+ * @param {object} collections — { pipes, blends, bottles, cigars, cigarSessions, wines, wineTastings }
  */
 export function buildAIEligibleCollection(moduleStates, collections) {
-  const { pipes = [], blends = [], bottles = [] } = collections;
+  const {
+    pipes = [],
+    blends = [],
+    bottles = [],
+    cigars = [],
+    cigarSessions = [],
+    wines = [],
+    wineTastings = [],
+  } = collections;
+  const pipekeeperEligible = isModuleAIEligible('pipekeeper', moduleStates);
+  const whiskeykeeperEligible = isModuleAIEligible('whiskeykeeper', moduleStates);
+  const cigarkeeperEligible = isModuleAIEligible('cigarkeeper', moduleStates);
+  const winekeeperEligible = isModuleAIEligible('winekeeper', moduleStates);
   return {
-    pipes: isModuleAIEligible('pipekeeper', moduleStates) ? pipes : [],
-    blends: isModuleAIEligible('pipekeeper', moduleStates) ? blends : [], // blends belong to pipekeeper
-    bottles: isModuleAIEligible('whiskeykeeper', moduleStates) ? bottles : [],
+    pipes: pipekeeperEligible ? pipes : [],
+    blends: pipekeeperEligible ? blends : [], // blends belong to pipekeeper
+    bottles: whiskeykeeperEligible ? bottles : [],
+    cigars: cigarkeeperEligible ? cigars : [],
+    cigarSessions: cigarkeeperEligible ? cigarSessions : [],
+    wines: winekeeperEligible ? wines : [],
+    wineTastings: winekeeperEligible ? wineTastings : [],
   };
 }

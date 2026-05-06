@@ -114,7 +114,10 @@ export function isInternalModuleTester(user) {
 
 export function canAccessInternalModuleForTesting(moduleKey, user) {
   if (!user) return false;
-  return isInternalModuleTester(user) || hasExplicitModuleEntitlement(moduleKey, user);
+  // Only admins/internal testers may access internal modules.
+  // Paid entitlement alone (e.g. winekeeper_paid) must NOT expose a still-internal module.
+  // Explicit pre-launch access requires internal_tester=true or an admin role.
+  return isInternalModuleTester(user);
 }
 
 export function getModuleReleaseState(moduleKey) {

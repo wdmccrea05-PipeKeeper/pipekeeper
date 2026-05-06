@@ -298,7 +298,11 @@ export default function SubscriptionFull() {
           .filter(Boolean);
 
         if (cancelableIds.length > 0) {
-          const targetBundle = option.targetPlanKey?.startsWith('three_module_bundle') ? 'three_module' : 'founders';
+          const targetBundle = option.targetPlanKey?.startsWith('four_module_bundle')
+            ? 'bundle_4'
+            : option.targetPlanKey?.startsWith('three_module_bundle')
+            ? 'bundle_3'
+            : 'founders';
           const upgradeRes = await base44.functions.invoke("handleBundleUpgrade", {
             currentSubscriptionIds: cancelableIds,
             targetBundleType: targetBundle,
