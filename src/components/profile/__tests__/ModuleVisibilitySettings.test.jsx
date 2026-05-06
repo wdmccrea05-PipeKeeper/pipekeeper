@@ -33,13 +33,17 @@ vi.mock("react-router-dom", async () => {
 });
 
 // CigarKeeper is launched in production — only WineKeeper is internal.
+const isModuleLaunchedMock = vi.fn((moduleKey) =>
+  moduleKey === "pipekeeper" || moduleKey === "whiskeykeeper" || moduleKey === "cigarkeeper"
+);
+const isModuleInternalMock = vi.fn((moduleKey) => moduleKey === "winekeeper");
+
 vi.mock("@/components/utils/moduleReleaseState", async () => {
   const actual = await vi.importActual("@/components/utils/moduleReleaseState");
   return {
     ...actual,
-    isModuleLaunched: (moduleKey) =>
-      moduleKey === "pipekeeper" || moduleKey === "whiskeykeeper" || moduleKey === "cigarkeeper",
-    isModuleInternal: (moduleKey) => moduleKey === "winekeeper",
+    isModuleLaunched: (...args) => isModuleLaunchedMock(...args),
+    isModuleInternal: (...args) => isModuleInternalMock(...args),
     isModuleBlocked: () => false,
     canAccessInternalModuleForTesting: (moduleKey, user) => {
       if (!user) return false;
@@ -47,6 +51,11 @@ vi.mock("@/components/utils/moduleReleaseState", async () => {
       if (role === "admin" || role === "owner" || user.is_admin === true) return true;
       if (user.internal_tester === true || user.is_internal_tester === true) return true;
       return false;
+    },
+    isInternalModuleTester: (user) => {
+      if (!user) return false;
+      const role = String(user.role || "").toLowerCase();
+      return role === "admin" || role === "owner" || user.is_admin === true || user.internal_tester === true;
     },
   };
 });
@@ -87,6 +96,12 @@ describe("ModuleVisibilitySettings", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     updateMeMock.mockResolvedValue({});
+    // Reset to default state: winekeeper is internal (not launched)
+    isModuleLaunchedMock.mockImplementation(
+      (moduleKey) =>
+        moduleKey === "pipekeeper" || moduleKey === "whiskeykeeper" || moduleKey === "cigarkeeper"
+    );
+    isModuleInternalMock.mockImplementation((moduleKey) => moduleKey === "winekeeper");
   });
 
   // ── Existing coverage ────────────────────────────────────────────────────
@@ -296,5 +311,97 @@ describe("ModuleVisibilitySettings", () => {
     // 3 toggleable modules (pipekeeper, whiskeykeeper, cigarkeeper) × 2 buttons each
     expect(freeButtons.length).toBe(6);
     expect(proButtons.length).toBe(6);
+  });
+});
+
+// ── WineKeeper launch-aware visibility tests ─────────────────────────────────
+
+describe("ModuleVisibilitySettings — WineKeeper launch-aware visibility", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    updateMeMock.mockResolvedValue({});
+    // Default: winekeeper is internal (not launched)
+    isModuleLaunchedMock.mockImplementation(
+      (moduleKey) =>
+        moduleKey === "pipekeeper" || moduleKey === "whiskeykeeper" || moduleKey === "cigarkeeper"
+    );
+    isModuleInternalMock.mockImplementation((moduleKey) => moduleKey === "winekeeper");
+  });
+
+  it("WineKeeper is hidden for public users when module is internal and flag is false", () => {
+    useCurrentUserMock.mockReturnValue({ hasPaid: false });
+    useModuleVisibilityMock.mockReturnValue({
+      moduleStates: makeModuleStates(),
+      setModuleEnabled: vi.fn(),
+      isLoading: false,
+      user: null,
+    });
+
+    renderWithQueryClient(<ModuleVisibilitySettings user={regularUser} />);
+
+    expect(screen.queryByText("WineKeeper")).toBeNull();
+  });
+
+  it("WineKeeper is visible for internal testers even when not launched", () => {
+    useCurrentUserMock.mockReturnValue({ hasPaid: false });
+    const internalTester = { role: "user", internal_tester: true };
+    useModuleVisibilityMock.mockReturnValue({
+      moduleStates: {
+        ...makeModuleStates(),
+        winekeeper: { enabled: false, accessible: true, canToggle: true },
+      },
+      setModuleEnabled: vi.fn(),
+      isLoading: false,
+      user: null,
+    });
+
+    renderWithQueryClient(<ModuleVisibilitySettings user={internalTester} />);
+
+    expect(screen.queryByText("WineKeeper")).not.toBeNull();
+  });
+
+  it("WineKeeper is visible when module is launched (WINEKEEPER_PUBLIC_ENABLED=true)", () => {
+    // Simulate WineKeeper launched
+    isModuleLaunchedMock.mockImplementation(() => true);
+    isModuleInternalMock.mockImplementation(() => false);
+
+    useCurrentUserMock.mockReturnValue({ hasPaid: false });
+    useModuleVisibilityMock.mockReturnValue({
+      moduleStates: {
+        ...makeModuleStates(),
+        winekeeper: { enabled: false, accessible: true, canToggle: true },
+      },
+      setModuleEnabled: vi.fn(),
+      isLoading: false,
+      user: null,
+    });
+
+    renderWithQueryClient(<ModuleVisibilitySettings user={regularUser} />);
+
+    expect(screen.queryByText("WineKeeper")).not.toBeNull();
+  });
+
+  it("WineKeeper is toggleable when module is launched", () => {
+    // Simulate WineKeeper launched
+    isModuleLaunchedMock.mockImplementation(() => true);
+    isModuleInternalMock.mockImplementation(() => false);
+
+    useCurrentUserMock.mockReturnValue({ hasPaid: false });
+    useModuleVisibilityMock.mockReturnValue({
+      moduleStates: {
+        ...makeModuleStates(),
+        winekeeper: { enabled: false, accessible: true, canToggle: true },
+      },
+      setModuleEnabled: vi.fn(),
+      isLoading: false,
+      user: null,
+    });
+
+    renderWithQueryClient(<ModuleVisibilitySettings user={regularUser} />);
+
+    const wineCard = screen.getByText("WineKeeper").closest(".rounded-xl");
+    expect(wineCard).toBeTruthy();
+    // Switch should be present when launched
+    expect(within(wineCard).queryByRole("checkbox", { hidden: true })).toBeTruthy();
   });
 });

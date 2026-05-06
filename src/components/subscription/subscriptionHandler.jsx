@@ -128,10 +128,8 @@ export function getModulesFromPlanKey(planKey, metadata) {
     if (metadata?.activeModules && Array.isArray(metadata.activeModules)) {
       return metadata.activeModules.slice(0, 3);
     }
-    // Safe fallback: only pipekeeper (the only currently-launched module).
-    // Do NOT default to ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'] since those
-    // modules are not yet launched for normal users.
-    return ['pipekeeper'];
+    // Default to the three original modules for 3-module bundles.
+    return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
   }
 
   if (planKey.includes('pipekeeper')) return ['pipekeeper'];

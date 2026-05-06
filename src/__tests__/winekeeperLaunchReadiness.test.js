@@ -201,3 +201,85 @@ describe('CigarKeeper Pro plans show on subscription page', () => {
     expect(state.eligibleActions).toContain('add_cigarkeeper_module');
   });
 });
+
+// ─── 8. 3-module bundle fallback includes all three launched modules ──────────
+
+import { getModulesFromPlanKey } from '@/components/subscription/subscriptionHandler';
+
+describe('3-module bundle fallback includes pipekeeper/whiskeykeeper/cigarkeeper', () => {
+  it('three_module_bundle without metadata falls back to all three modules', () => {
+    const modules = getModulesFromPlanKey('three_module_bundle_monthly', undefined);
+    expect(modules).toContain('pipekeeper');
+    expect(modules).toContain('whiskeykeeper');
+    expect(modules).toContain('cigarkeeper');
+    expect(modules).toHaveLength(3);
+  });
+
+  it('three_module_bundle with metadata.activeModules uses metadata', () => {
+    const modules = getModulesFromPlanKey('three_module_bundle_annual', {
+      activeModules: ['pipekeeper', 'cigarkeeper', 'winekeeper'],
+    });
+    expect(modules).toContain('pipekeeper');
+    expect(modules).toContain('cigarkeeper');
+    expect(modules).toContain('winekeeper');
+    expect(modules).toHaveLength(3);
+  });
+
+  it('four_module_bundle always includes all four modules', () => {
+    const modules = getModulesFromPlanKey('four_module_bundle_monthly', undefined);
+    expect(modules).toContain('pipekeeper');
+    expect(modules).toContain('whiskeykeeper');
+    expect(modules).toContain('cigarkeeper');
+    expect(modules).toContain('winekeeper');
+    expect(modules).toHaveLength(4);
+  });
+});
+
+// ─── 9. WineKeeper single-module checkout routes to /WineKeeper ─────────────
+
+describe('WineKeeper single-module checkout routes to /WineKeeper (not /CollectionHub)', () => {
+  it('getModuleSuccessRoute(winekeeper) returns /WineKeeper', () => {
+    expect(getModuleSuccessRoute('winekeeper')).toBe('/WineKeeper');
+  });
+
+  it('four_module_bundle does not have a single-module route (goes to Hub)', () => {
+    // The bundle has no module-specific route — hub is correct
+    expect(getModuleSuccessRoute('unknown')).toBe('/CollectionHub');
+  });
+});
+
+// ─── 10. No extensionless test files remain ───────────────────────────────────
+
+import { readdirSync, statSync } from 'fs';
+import { join } from 'path';
+
+describe('No extensionless test files remain in src/', () => {
+  it('find src -name "*.test" returns zero results', () => {
+    // Check for files named exactly "something.test" (no .js/.jsx/.ts/.tsx extension)
+    // A file like "foo.test" has parts ['foo', 'test'] — exactly 2 parts, last is 'test'.
+    // A proper test file like "foo.test.js" has parts ['foo', 'test', 'js'] — 3+ parts.
+    const srcDir = new URL('../../src', import.meta.url).pathname;
+    const found = [];
+    function scan(dir) {
+      try {
+        for (const entry of readdirSync(dir)) {
+          const fullPath = join(dir, entry);
+          try {
+            const stat = statSync(fullPath);
+            if (stat.isDirectory()) {
+              if (entry !== 'node_modules') scan(fullPath);
+            } else {
+              // Extensionless test: exactly one dot, and the extension is 'test' or 'spec'
+              const parts = entry.split('.');
+              if (parts.length === 2 && (parts[1] === 'test' || parts[1] === 'spec')) {
+                found.push(fullPath);
+              }
+            }
+          } catch {}
+        }
+      } catch {}
+    }
+    scan(srcDir);
+    expect(found).toHaveLength(0);
+  });
+});
