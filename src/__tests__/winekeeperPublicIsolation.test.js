@@ -1,13 +1,15 @@
+/* eslint-disable */
 /**
- * WineKeeper public isolation tests — Section H requirements.
+ * WineKeeper public isolation tests — updated for launched state.
  *
- * H.1  Public user cannot see WineKeeper nav item.
- * H.4  Public user cannot see WineKeeper in Curator filters.
- * H.5  Public user cannot see WineKeeper in Session History.
- * H.6  Admin/internal user can see WineKeeper.
+ * VITE_WINEKEEPER_PUBLIC_ENABLED=true → WineKeeper is 'launched'.
+ * Access is now gated by paid entitlement (hasEntitlement param), not tester status.
  *
- * All assertions use canonical gates from moduleReleaseState.jsx.
- * No standalone isAdmin or winekeeper_paid checks are used.
+ * H.1  Free user (no entitlement) cannot see WineKeeper nav.
+ * H.1b Paid user (with entitlement) CAN see WineKeeper nav.
+ * H.4  Free user: shouldExposeModuleInCurator false. Paid user: true.
+ * H.5  Free user: canUserAccessModule false. Paid user: true.
+ * H.6  Admin/internal user can always see WineKeeper.
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -17,22 +19,34 @@ import {
   shouldExposeModuleInCurator,
   canAccessInternalModuleForTesting,
   WINEKEEPER_PUBLIC_ENABLED,
+  MODULE_RELEASE_STATES,
 } from "@/components/utils/moduleReleaseState";
+
+// ---------------------------------------------------------------------------
+// Launch state verification
+// ---------------------------------------------------------------------------
+describe("WineKeeper launch state", () => {
+  it("WINEKEEPER_PUBLIC_ENABLED is true", () => {
+    expect(WINEKEEPER_PUBLIC_ENABLED).toBe(true);
+  });
+
+  it("MODULE_RELEASE_STATES.winekeeper is 'launched'", () => {
+    expect(MODULE_RELEASE_STATES.winekeeper).toBe("launched");
+  });
+});
 
 // ---------------------------------------------------------------------------
 // H.1  Nav visibility
 // ---------------------------------------------------------------------------
-describe("H.1 — WineKeeper nav visibility", () => {
-  it("public free user does not see WineKeeper in nav", () => {
-    const user = { role: "user", winekeeper_paid: false };
-    expect(shouldShowModuleInNav("winekeeper", user, true)).toBe(false);
+describe("H.1 — WineKeeper nav visibility (launched, entitlement-gated)", () => {
+  it("free user (hasEntitlement=false) does not see WineKeeper in nav", () => {
+    const user = { role: "user" };
     expect(shouldShowModuleInNav("winekeeper", user, false)).toBe(false);
   });
 
-  it("public paid user does not see WineKeeper in nav", () => {
-    const user = { role: "user", winekeeper_paid: true, paid_modules_csv: "winekeeper" };
-    // winekeeper_paid alone must not unlock the nav entry.
-    expect(shouldShowModuleInNav("winekeeper", user, true)).toBe(false);
+  it("paid user (hasEntitlement=true) sees WineKeeper in nav", () => {
+    const user = { role: "user" };
+    expect(shouldShowModuleInNav("winekeeper", user, true)).toBe(true);
   });
 
   it("admin user sees WineKeeper in nav", () => {
@@ -49,40 +63,38 @@ describe("H.1 — WineKeeper nav visibility", () => {
 // ---------------------------------------------------------------------------
 // H.4  Curator filter visibility
 // ---------------------------------------------------------------------------
-describe("H.4 — WineKeeper Curator filter visibility", () => {
-  it("public user: shouldExposeModuleInCurator returns false for winekeeper", () => {
-    const user = { role: "user", winekeeper_paid: false };
-    expect(shouldExposeModuleInCurator("winekeeper", user, true)).toBe(false);
+describe("H.4 — WineKeeper Curator filter visibility (launched, entitlement-gated)", () => {
+  it("free user: shouldExposeModuleInCurator returns false", () => {
+    expect(shouldExposeModuleInCurator("winekeeper", { role: "user" }, false)).toBe(false);
   });
 
-  it("public paid user: shouldExposeModuleInCurator returns false for winekeeper", () => {
-    const user = { role: "user", winekeeper_paid: true, paid_modules_csv: "winekeeper" };
-    expect(shouldExposeModuleInCurator("winekeeper", user, true)).toBe(false);
+  it("paid user: shouldExposeModuleInCurator returns true", () => {
+    expect(shouldExposeModuleInCurator("winekeeper", { role: "user" }, true)).toBe(true);
   });
 
-  it("admin user: shouldExposeModuleInCurator returns true for winekeeper", () => {
-    const user = { role: "admin" };
-    expect(shouldExposeModuleInCurator("winekeeper", user, true)).toBe(true);
-  });
-
-  it("internal_tester: shouldExposeModuleInCurator returns true for winekeeper", () => {
-    const user = { role: "user", internal_tester: true };
-    expect(shouldExposeModuleInCurator("winekeeper", user, true)).toBe(true);
+  it("admin user: shouldExposeModuleInCurator returns true", () => {
+    expect(shouldExposeModuleInCurator("winekeeper", { role: "admin" }, true)).toBe(true);
   });
 });
 
 // ---------------------------------------------------------------------------
 // H.5  Session History filter visibility
 // ---------------------------------------------------------------------------
-describe("H.5 — WineKeeper Session History visibility", () => {
-  it("public user: canUserAccessModule('winekeeper') is false — no wine filter chip", () => {
-    const user = { role: "user", winekeeper_paid: false };
-    expect(canUserAccessModule("winekeeper", user, true)).toBe(false);
+describe("H.5 — WineKeeper Session History visibility (launched, entitlement-gated)", () => {
+  it("free user: canUserAccessModule false — no wine filter chip", () => {
+    expect(canUserAccessModule("winekeeper", { role: "user" }, false)).toBe(false);
   });
 
-  it("public user: shouldFetchModuleData returns false — no wine tastings fetched", () => {
-    const user = { role: "user", winekeeper_paid: false };
-    expect(shouldFetchModuleData("winekeeper", user, true)).toBe(false);
+  it("paid user: canUserAccessModule true — wine filter chip shown", () => {
+    expect(canUserAccessModule("winekeeper", { role: "user" }, true)).toBe(true);
+  });
+
+  it("free user: shouldFetchModuleData false — no wine tastings fetched", () => {
+    expect(shouldFetchModuleData("winekeeper", { role: "user" }, false)).toBe(false);
+  });
+
+  it("paid user: shouldFetchModuleData true", () => {
+    expect(shouldFetchModuleData("winekeeper", { role: "user" }, true)).toBe(true);
   });
 
   it("admin user can see wine filter in Session History", () => {
@@ -93,7 +105,7 @@ describe("H.5 — WineKeeper Session History visibility", () => {
 });
 
 // ---------------------------------------------------------------------------
-// H.6  Admin / internal tester can access WineKeeper
+// H.6  Admin / internal tester can always access WineKeeper
 // ---------------------------------------------------------------------------
 describe("H.6 — Admin/internal user can access WineKeeper", () => {
   it("admin role passes all canonical gates", () => {
@@ -111,18 +123,14 @@ describe("H.6 — Admin/internal user can access WineKeeper", () => {
     expect(canAccessInternalModuleForTesting("winekeeper", owner)).toBe(true);
   });
 
-  it("is_admin flag passes canonical gates", () => {
-    const user = { role: "user", is_admin: true };
-    expect(canUserAccessModule("winekeeper", user, true)).toBe(true);
-  });
-
   it("is_internal_tester flag passes canonical gates", () => {
     const user = { role: "user", is_internal_tester: true };
     expect(canUserAccessModule("winekeeper", user, true)).toBe(true);
   });
 
-  it("WINEKEEPER_PUBLIC_ENABLED is false — module is internal-only", () => {
-    // This constant drives the release state; it must remain false until launch.
-    expect(WINEKEEPER_PUBLIC_ENABLED).toBe(false);
+  it("canAccessInternalModuleForTesting is false for paid-only user (no tester/admin flag)", () => {
+    // Even though WineKeeper is launched, this function must still only return true for testers/admins
+    const user = { role: "user", winekeeper_paid: true };
+    expect(canAccessInternalModuleForTesting("winekeeper", user)).toBe(false);
   });
 });

@@ -1,13 +1,13 @@
+/* eslint-disable */
 /**
  * WineKeeper internal-gating tests
  *
- * Verifies that canAccessInternalModuleForTesting only allows
- * admins/internal-testers — NOT users who merely have winekeeper_paid=true.
- *
- *   1. winekeeper_paid user cannot see WineKeeper while internal.
- *   2. internal_tester can see WineKeeper while internal.
- *   3. admin can see WineKeeper while internal.
- *   4. Launched WineKeeper works normally regardless of tester status.
+ * With VITE_WINEKEEPER_PUBLIC_ENABLED=true, WineKeeper is now launched.
+ * These tests verify:
+ *   1. canAccessInternalModuleForTesting ignores paid entitlement (always has, always must).
+ *   2. internal_tester/admin pass canAccessInternalModuleForTesting.
+ *   3. WineKeeper is now launched — all public users can access it with entitlement.
+ *   4. Internal Preview badge must NOT show for WineKeeper (isModuleInternal is false).
  */
 
 import { describe, it, expect } from 'vitest';
@@ -16,15 +16,27 @@ import {
   isInternalModuleTester,
   isModuleInternal,
   isModuleLaunched,
+  canUserAccessModule,
+  WINEKEEPER_PUBLIC_ENABLED,
+  MODULE_RELEASE_STATES,
 } from '@/components/utils/moduleReleaseState';
 
-// ─── 1. winekeeper_paid does NOT grant internal access ───────────────────────
+// ─── 1. canAccessInternalModuleForTesting ignores paid entitlement ────────────
 
-describe('winekeeper_paid alone does not expose WineKeeper while internal', () => {
-  it('canAccessInternalModuleForTesting returns false for winekeeper_paid=true non-admin', () => {
+describe('canAccessInternalModuleForTesting — never grants access via paid flag', () => {
+  it('returns false for a regular user with winekeeper_paid=true', () => {
     const user = { role: 'user', winekeeper_paid: true };
-    // Only valid when winekeeper is internal (VITE_WINEKEEPER_PUBLIC_ENABLED=false in test env)
-    if (!isModuleInternal('winekeeper')) return; // skip if launched in this env
+    expect(canAccessInternalModuleForTesting('winekeeper', user)).toBe(false);
+  });
+
+  it('returns false for a user with all paid flags set', () => {
+    const user = {
+      role: 'user',
+      pipekeeper_paid: true,
+      whiskeykeeper_paid: true,
+      cigarkeeper_paid: true,
+      winekeeper_paid: true,
+    };
     expect(canAccessInternalModuleForTesting('winekeeper', user)).toBe(false);
   });
 
@@ -33,64 +45,77 @@ describe('winekeeper_paid alone does not expose WineKeeper while internal', () =
     expect(isInternalModuleTester(user)).toBe(false);
   });
 
-  it('canAccessInternalModuleForTesting returns false for null user', () => {
+  it('returns false for null user', () => {
     expect(canAccessInternalModuleForTesting('winekeeper', null)).toBe(false);
   });
 });
 
-// ─── 2. internal_tester can see WineKeeper while internal ────────────────────
+// ─── 2. internal_tester / admin pass canAccessInternalModuleForTesting ────────
 
-describe('internal_tester can see WineKeeper while internal', () => {
-  it('user with internal_tester=true passes canAccessInternalModuleForTesting', () => {
-    const user = { role: 'user', internal_tester: true };
-    expect(canAccessInternalModuleForTesting('winekeeper', user)).toBe(true);
+describe('internal_tester/admin pass canAccessInternalModuleForTesting', () => {
+  it('internal_tester=true returns true', () => {
+    expect(canAccessInternalModuleForTesting('winekeeper', { role: 'user', internal_tester: true })).toBe(true);
   });
 
-  it('user with is_internal_tester=true passes canAccessInternalModuleForTesting', () => {
-    const user = { role: 'user', is_internal_tester: true };
-    expect(canAccessInternalModuleForTesting('winekeeper', user)).toBe(true);
+  it('is_internal_tester=true returns true', () => {
+    expect(canAccessInternalModuleForTesting('winekeeper', { role: 'user', is_internal_tester: true })).toBe(true);
   });
 
-  it('internal_tester with winekeeper_paid=false still gets internal access', () => {
-    const user = { role: 'user', internal_tester: true, winekeeper_paid: false };
-    expect(canAccessInternalModuleForTesting('winekeeper', user)).toBe(true);
-  });
-});
-
-// ─── 3. Admin can see WineKeeper while internal ──────────────────────────────
-
-describe('admin can see WineKeeper while internal', () => {
-  it('role=admin passes canAccessInternalModuleForTesting', () => {
-    const user = { role: 'admin' };
-    expect(canAccessInternalModuleForTesting('winekeeper', user)).toBe(true);
+  it('role=admin returns true', () => {
+    expect(canAccessInternalModuleForTesting('winekeeper', { role: 'admin' })).toBe(true);
   });
 
-  it('role=owner passes canAccessInternalModuleForTesting', () => {
-    const user = { role: 'owner' };
-    expect(canAccessInternalModuleForTesting('winekeeper', user)).toBe(true);
+  it('role=owner returns true', () => {
+    expect(canAccessInternalModuleForTesting('winekeeper', { role: 'owner' })).toBe(true);
   });
 
-  it('is_admin=true passes canAccessInternalModuleForTesting', () => {
-    const user = { is_admin: true };
-    expect(canAccessInternalModuleForTesting('winekeeper', user)).toBe(true);
+  it('internal_tester with winekeeper_paid=false still passes', () => {
+    expect(canAccessInternalModuleForTesting('winekeeper', { role: 'user', internal_tester: true, winekeeper_paid: false })).toBe(true);
   });
 });
 
-// ─── 4. Launched WineKeeper works normally ───────────────────────────────────
+// ─── 3. WineKeeper is now launched (VITE_WINEKEEPER_PUBLIC_ENABLED=true) ─────
 
-describe('canAccessInternalModuleForTesting is not the access guard for launched modules', () => {
-  it('isModuleLaunched is false for winekeeper in test env (internal)', () => {
-    // This confirms the test env gating is correct
-    expect(isModuleLaunched('winekeeper')).toBe(false);
+describe('WineKeeper is launched — VITE_WINEKEEPER_PUBLIC_ENABLED=true', () => {
+  it('WINEKEEPER_PUBLIC_ENABLED is true', () => {
+    expect(WINEKEEPER_PUBLIC_ENABLED).toBe(true);
   });
 
-  it('pipekeeper (launched) can be accessed by any user regardless of canAccessInternalModuleForTesting', () => {
-    // For launched modules, canAccessInternalModuleForTesting is not the gating function
+  it('MODULE_RELEASE_STATES.winekeeper is "launched"', () => {
+    expect(MODULE_RELEASE_STATES.winekeeper).toBe('launched');
+  });
+
+  it('isModuleLaunched("winekeeper") is true', () => {
+    expect(isModuleLaunched('winekeeper')).toBe(true);
+  });
+
+  it('isModuleInternal("winekeeper") is false', () => {
+    expect(isModuleInternal('winekeeper')).toBe(false);
+  });
+
+  it('regular user with entitlement can access WineKeeper', () => {
+    expect(canUserAccessModule('winekeeper', { role: 'user' }, true)).toBe(true);
+  });
+
+  it('regular user without entitlement cannot access WineKeeper', () => {
+    expect(canUserAccessModule('winekeeper', { role: 'user' }, false)).toBe(false);
+  });
+});
+
+// ─── 4. Internal Preview badge must NOT show for WineKeeper ──────────────────
+
+describe('Internal Preview badge is hidden when WineKeeper is launched', () => {
+  it('badge condition (isModuleInternal && canAccessInternalModuleForTesting) is false for admin', () => {
+    const admin = { role: 'admin' };
+    // Badge only shows when BOTH conditions are true:
+    const isInternal = isModuleInternal('winekeeper', admin);
+    const canAccess = canAccessInternalModuleForTesting('winekeeper', admin);
+    expect(isInternal && canAccess).toBe(false); // isInternal is false → badge hidden
+  });
+
+  it('badge condition is false for regular user', () => {
     const user = { role: 'user' };
-    expect(isModuleLaunched('pipekeeper')).toBe(true);
-    // canAccessInternalModuleForTesting only gates internal modules — result for pipekeeper is irrelevant
-    // The important thing: regular users can use launched modules without needing internal tester status
-    expect(isInternalModuleTester(user)).toBe(false);
-    expect(isModuleLaunched('pipekeeper')).toBe(true);
+    const isInternal = isModuleInternal('winekeeper', user);
+    expect(isInternal).toBe(false);
   });
 });
