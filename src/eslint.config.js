@@ -1,5 +1,34 @@
+const testGlobals = {
+  describe: 'readonly',
+  test: 'readonly',
+  it: 'readonly',
+  expect: 'readonly',
+  beforeEach: 'readonly',
+  afterEach: 'readonly',
+  beforeAll: 'readonly',
+  afterAll: 'readonly',
+  vi: 'readonly',
+  jest: 'readonly',
+  console: 'readonly',
+  process: 'readonly',
+};
+
 export default [
-  // ── App source files ───────────────────────────────────────────────────────────
+  // ── Global ignores (no `files` key = applies to all) ───────────────────────
+  {
+    ignores: [
+      '**/__tests__/**',
+      '**/*.test.js',
+      '**/*.test.jsx',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.spec.js',
+      '**/*.spec.jsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+    ],
+  },
+  // ── App source files ───────────────────────────────────────────────────────
   {
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
     languageOptions: {
@@ -37,43 +66,7 @@ export default [
         Set: 'readonly',
         Symbol: 'readonly',
         process: 'readonly',
-        // Vitest / Jest globals
-        describe: 'readonly',
-        test: 'readonly',
-        it: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        vi: 'readonly',
-        jest: 'readonly',
-      },
-    },
-    rules: {
-      'no-undef': 'off',
-      'no-unused-vars': 'off',
-    },
-  },
-  // ── Test files — explicitly disable no-undef (test globals are injected at runtime) ──
-  {
-    files: ['**/__tests__/**', '**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx', '**/*.spec.js', '**/*.spec.jsx'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      globals: {
-        describe: 'readonly',
-        test: 'readonly',
-        it: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        vi: 'readonly',
-        jest: 'readonly',
-        console: 'readonly',
-        process: 'readonly',
+        ...testGlobals,
       },
     },
     rules: {

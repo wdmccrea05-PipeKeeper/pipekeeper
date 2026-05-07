@@ -18,7 +18,7 @@ export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden" style={{ backgroundColor: '#140f0c' }}>
+    <div className="min-h-[100dvh] flex flex-col" style={{ backgroundColor: '#140f0c' }}>
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(20,15,12,0.88)] backdrop-blur-md pt-[env(safe-area-inset-top)]">
         <div className="ck-page-shell">
           <div className="flex flex-col gap-3 py-3 md:py-4">
@@ -45,16 +45,15 @@ export default function Layout({ children, currentPageName }) {
                 </Button>
 
                 {/* Hamburger — mobile/tablet only */}
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
                   onClick={() => setMenuOpen((o) => !o)}
-                  className="md:hidden text-[#E0D8C8] hover:bg-white/10"
+                  style={{ minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: '#E0D8C8' }}
+                  className="md:hidden hover:bg-white/10 active:bg-white/20 transition-colors"
                   aria-label={menuOpen ? t('nav.closeMenu', 'Close menu') : t('nav.openMenu', 'Open menu')}
                 >
-                  {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                </Button>
+                  {menuOpen ? <X style={{ width: 28, height: 28 }} /> : <Menu style={{ width: 28, height: 28 }} />}
+                </button>
               </div>
             </div>
 
@@ -82,7 +81,7 @@ export default function Layout({ children, currentPageName }) {
 
       <GlobalReferralBanner />
 
-      <main className="flex-1 overflow-y-auto pb-28 md:pb-16 [@supports(-webkit-touch-callout:none)]:[-webkit-overflow-scrolling:touch]">
+      <main className="flex-1 pb-28 md:pb-16">
         <div className="ck-page-shell pt-6 md:pt-8 lg:pt-10">
           {children}
         </div>
