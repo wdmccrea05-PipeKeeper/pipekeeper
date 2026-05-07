@@ -34,8 +34,9 @@ function n(v) {
 export function getBlendTotalOz(blend) {
   if (!blend) return 0;
 
-  // Legacy and newer schemas may store tobacco quantity under different field names.
-  // Prefer explicit quantity fields first, then fall back to container rollup fields.
+  // Newer records can store explicit totals in quantity/cellar_quantity, while older
+  // records store container-derived totals in tin/bulk/pouch rollup fields.
+  // Prefer explicit totals first, then fall back to rollup fields for legacy data.
   const explicitQty =
     n(blend.quantity ?? blend.quantity_owned ?? blend.total_quantity) +
     n(blend.cellar_quantity ?? blend.cellared_quantity);
@@ -83,10 +84,10 @@ export function getBlendValue(blend) {
     return n(blend.market_estimated_unit_value) * quantity;
   }
 
-  const estimatedUnitValue =
+  const unitValueFromAnySource =
     n(blend.estimated_unit_value) || n(blend.ai_estimated_value) || n(blend.estimated_value);
-  if (estimatedUnitValue > 0 && quantity > 0) {
-    return estimatedUnitValue * quantity;
+  if (unitValueFromAnySource > 0 && quantity > 0) {
+    return unitValueFromAnySource * quantity;
   }
 
   if (n(blend.purchase_price) > 0 && quantity > 0) {
