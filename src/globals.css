@@ -144,8 +144,7 @@ div {
 }
 
 /* Enforce mobile-safe scrolling */
-body,
-html {
+body {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }

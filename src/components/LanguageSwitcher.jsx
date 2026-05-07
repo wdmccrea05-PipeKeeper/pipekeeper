@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useTranslation, SUPPORTED_LANGS, setLanguage } from "@/components/i18n/safeTranslation";
 import { normalizeLng } from "@/components/i18n/normalizeLng";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectTrigger,
@@ -28,14 +29,15 @@ export default function LanguageSwitcher({ className = "" }) {
   return (
     <Select value={current} onValueChange={handleLanguageChange}>
       <SelectTrigger
-        className={`h-9 min-w-[130px] 
-        bg-[rgba(28,21,16,0.9)] 
-        text-[#F5F1E7] 
-        border border-[rgba(180,140,75,0.35)]
-        rounded-lg
-        px-3
-        focus:ring-1 focus:ring-[#D4A574]
-        ${className}`}
+        className={cn(
+          'h-9 min-w-[130px]',
+          'bg-[rgba(28,21,16,0.9)]',
+          'text-[#F5F1E7]',
+          'border border-[rgba(180,140,75,0.35)]',
+          'rounded-lg px-3',
+          'focus:ring-1 focus:ring-[#D4A574]',
+          className
+        )}
       >
         <SelectValue className="text-[#F5F1E7]" />
       </SelectTrigger>
