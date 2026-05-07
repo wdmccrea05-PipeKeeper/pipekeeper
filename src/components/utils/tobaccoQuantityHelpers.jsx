@@ -106,8 +106,7 @@ export function getCellarBreakdownFromLogs(cellarLogs, blends = []) {
  * Uses manual_market_value or ai_estimated_value per oz
  * FIXED: Uses single source of truth to avoid double-counting
  */
-export function calculateTobaccoCollectionValue(blends, cellarLogs = []) {
-  void cellarLogs;
+export function calculateTobaccoCollectionValue(blends, _cellarLogs = []) {
   return selectCellarValue(Array.isArray(blends) ? blends : []);
 }
 

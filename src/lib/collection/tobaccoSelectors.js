@@ -34,6 +34,8 @@ function n(v) {
 export function getBlendTotalOz(blend) {
   if (!blend) return 0;
 
+  // Legacy and newer schemas may store tobacco quantity under different field names.
+  // Prefer explicit quantity fields first, then fall back to container rollup fields.
   const explicitQty =
     n(blend.quantity ?? blend.quantity_owned ?? blend.total_quantity) +
     n(blend.cellar_quantity ?? blend.cellared_quantity);
