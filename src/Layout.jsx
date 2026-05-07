@@ -48,11 +48,11 @@ export default function Layout({ children, currentPageName }) {
                 <button
                   type="button"
                   onClick={() => setMenuOpen((o) => !o)}
-                  style={{ minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: '#E0D8C8' }}
-                  className="md:hidden hover:bg-white/10 active:bg-white/20 transition-colors"
+                  style={{ width: 48, height: 48, minWidth: 48, minHeight: 48, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#E0D8C8', padding: 0 }}
+                  className="md:hidden"
                   aria-label={menuOpen ? t('nav.closeMenu', 'Close menu') : t('nav.openMenu', 'Open menu')}
                 >
-                  {menuOpen ? <X style={{ width: 28, height: 28 }} /> : <Menu style={{ width: 28, height: 28 }} />}
+                  {menuOpen ? <X style={{ width: 30, height: 30, display: 'block' }} /> : <Menu style={{ width: 30, height: 30, display: 'block' }} />}
                 </button>
               </div>
             </div>
