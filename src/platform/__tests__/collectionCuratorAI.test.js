@@ -136,6 +136,20 @@ describe("buildAIContext — module structure", () => {
     expect(normalized.module_type).toBe(MODULE_TYPES.TOBACCO);
   });
 
+  test("normalizes blend estimated_value from canonical quantity-based valuation chain", () => {
+    const ctx = buildAIContext({
+      blends: [{
+        id: "b1",
+        name: "Test Blend",
+        quantity: 2,
+        cellar_quantity: 1,
+        estimated_unit_value: 12,
+      }],
+    });
+    const normalized = ctx.itemsByModule[MODULE_TYPES.TOBACCO][0];
+    expect(normalized.estimated_value).toBe(36);
+  });
+
   test("builds usage profiles for pipes", () => {
     const ctx = buildAIContext({
       pipes: [{ id: "p1", name: "Billiard", shape: "billiard", chamber_volume: "medium" }],

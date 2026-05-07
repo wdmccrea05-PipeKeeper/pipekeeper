@@ -33,6 +33,15 @@ function n(v) {
  */
 export function getBlendTotalOz(blend) {
   if (!blend) return 0;
+
+  // Newer records can store explicit totals in quantity/cellar_quantity, while older
+  // records store container-derived totals in tin/bulk/pouch rollup fields.
+  // Prefer explicit totals first, then fall back to rollup fields for legacy data.
+  const explicitQty =
+    n(blend.quantity ?? blend.quantity_owned ?? blend.total_quantity) +
+    n(blend.cellar_quantity ?? blend.cellared_quantity);
+  if (explicitQty > 0) return explicitQty;
+
   return (
     n(blend.tin_total_quantity_oz) +
     n(blend.bulk_total_quantity_oz) +
@@ -40,18 +49,22 @@ export function getBlendTotalOz(blend) {
   );
 }
 
+export function getBlendValuationQuantity(blend) {
+  if (!blend) return 0;
+  return getBlendTotalOz(blend);
+}
+
 /**
  * Return the canonical value for one TobaccoBlend record.
  *
  * Priority:
- *   1. manual_market_value
- *   2. market_estimated_total_value
- *   3. ai_estimated_value × total_oz
- *   4. market_estimated_unit_value × total_oz
- *   5. price_per_oz × total_oz
- *   6. purchase_price
- *   7. cost_basis
- *   8. 0
+ *   1. manual_override_total
+ *   2. estimated_total_value
+ *   3. market_estimated_total_value
+ *   4. market_estimated_unit_value × quantity
+ *   5. estimated_unit_value × quantity
+ *   6. purchase_price × quantity
+ *   7. 0
  *
  * @param {object} blend
  * @returns {number}
@@ -59,27 +72,27 @@ export function getBlendTotalOz(blend) {
 export function getBlendValue(blend) {
   if (!blend) return 0;
 
-  if (n(blend.manual_market_value) > 0) return n(blend.manual_market_value);
+  const manualOverrideTotal = n(blend.manual_override_total) || n(blend.manual_market_value);
+  if (manualOverrideTotal > 0) return manualOverrideTotal;
 
+  if (n(blend.estimated_total_value) > 0) return n(blend.estimated_total_value);
   if (n(blend.market_estimated_total_value) > 0) return n(blend.market_estimated_total_value);
 
-  const totalOz = getBlendTotalOz(blend);
+  const quantity = getBlendValuationQuantity(blend);
 
-  if (n(blend.ai_estimated_value) > 0 && totalOz > 0) {
-    return n(blend.ai_estimated_value) * totalOz;
+  if (n(blend.market_estimated_unit_value) > 0 && quantity > 0) {
+    return n(blend.market_estimated_unit_value) * quantity;
   }
 
-  if (n(blend.market_estimated_unit_value) > 0 && totalOz > 0) {
-    return n(blend.market_estimated_unit_value) * totalOz;
+  const unitValueFromAnySource =
+    n(blend.estimated_unit_value) || n(blend.ai_estimated_value) || n(blend.estimated_value);
+  if (unitValueFromAnySource > 0 && quantity > 0) {
+    return unitValueFromAnySource * quantity;
   }
 
-  if (n(blend.price_per_oz) > 0 && totalOz > 0) {
-    return n(blend.price_per_oz) * totalOz;
+  if (n(blend.purchase_price) > 0 && quantity > 0) {
+    return n(blend.purchase_price) * quantity;
   }
-
-  if (n(blend.purchase_price) > 0) return n(blend.purchase_price);
-
-  if (n(blend.cost_basis) > 0) return n(blend.cost_basis);
 
   return 0;
 }
@@ -269,7 +282,7 @@ export function computeBlendStrategy(blend) {
 
   const difficulty = computeBlendReplacementDifficulty(blend);
   const agingPotential = (blend.aging_potential || '').toLowerCase();
-  const totalOz = n(blend.tin_total_quantity_oz) + n(blend.bulk_total_quantity_oz) + n(blend.pouch_total_quantity_oz);
+  const totalOz = getBlendTotalOz(blend);
 
   if (difficulty === BLEND_DIFFICULTY_LEVELS.VERY_HARD) {
     return {

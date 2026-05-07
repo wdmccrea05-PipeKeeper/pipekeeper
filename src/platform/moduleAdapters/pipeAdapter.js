@@ -7,6 +7,7 @@
 // is preserved — the adapter only provides translation, not modification.
 
 import { MODULE_TYPES } from "../moduleTypes.js";
+import { getBlendValue } from "@/lib/collection/tobaccoSelectors";
 
 /**
  * PipeKeeper pipe adapter.
@@ -91,7 +92,7 @@ export const tobaccoAdapter = {
       id: rawBlend.id,
       module_type: MODULE_TYPES.TOBACCO,
       name: rawBlend.name ?? rawBlend.blend_name ?? null,
-      estimated_value: rawBlend.estimated_value ?? null,
+      estimated_value: getBlendValue(rawBlend),
       purchase_price: rawBlend.purchase_price ?? null,
       favorite: rawBlend.is_favorite ?? false,
       ai_excluded: rawBlend.ai_excluded ?? false,

@@ -18,8 +18,8 @@ export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#140f0c' }}>
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(20,15,12,0.88)] backdrop-blur-md">
+    <div className="min-h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden" style={{ backgroundColor: '#140f0c' }}>
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(20,15,12,0.88)] backdrop-blur-md pt-[env(safe-area-inset-top)]">
         <div className="ck-page-shell">
           <div className="flex flex-col gap-3 py-3 md:py-4">
             <div className="flex items-center justify-between gap-3">
@@ -82,7 +82,7 @@ export default function Layout({ children, currentPageName }) {
 
       <GlobalReferralBanner />
 
-      <main className="pb-28 md:pb-16">
+      <main className="flex-1 overflow-y-auto pb-28 md:pb-16 [@supports(-webkit-touch-callout:none)]:[-webkit-overflow-scrolling:touch]">
         <div className="ck-page-shell pt-6 md:pt-8 lg:pt-10">
           {children}
         </div>
