@@ -18,7 +18,7 @@ export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ backgroundColor: '#140f0c' }}>
+    <div className="min-h-[100dvh] max-h-[100dvh] flex flex-col" style={{ backgroundColor: '#140f0c' }}>
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(20,15,12,0.88)] backdrop-blur-md pt-[env(safe-area-inset-top)]">
         <div className="ck-page-shell">
           <div className="flex flex-col gap-3 py-3 md:py-4">
@@ -30,7 +30,7 @@ export default function Layout({ children, currentPageName }) {
 
               <div className="flex items-center gap-2">
                 <CurrencySwitcher className="w-[80px] sm:w-[100px]" />
-                <LanguageSwitcher className="w-[90px] sm:w-[110px] sm:min-w-[130px]" />
+                <LanguageSwitcher className="min-w-[80px] w-[80px] sm:w-[110px] sm:min-w-[130px]" />
 
                 <Button
                   type="button"
@@ -81,7 +81,7 @@ export default function Layout({ children, currentPageName }) {
 
       <GlobalReferralBanner />
 
-      <main className="flex-1 pb-28 md:pb-16">
+      <main className="flex-1 overflow-y-auto pb-28 md:pb-16">
         <div className="ck-page-shell pt-6 md:pt-8 lg:pt-10">
           {children}
         </div>
