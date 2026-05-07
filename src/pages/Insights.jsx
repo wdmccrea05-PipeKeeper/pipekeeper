@@ -9,6 +9,7 @@ import {
   calculateCellaredOzFromBlend,
   calculateTobaccoCollectionValue,
 } from "@/components/utils/tobaccoQuantityHelpers";
+import { selectPipeCollectionValue } from "@/lib/collection/pipeSelectors";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import PipeKeeperModuleNav from "@/components/modules/PipeKeeperModuleNav";
 import {
@@ -1060,7 +1061,7 @@ export default function Insights() {
   });
 
   const totalPipeValue = useMemo(
-    () => pipes.reduce((sum, p) => sum + (Number(p?.estimated_value) || 0), 0),
+    () => selectPipeCollectionValue(pipes),
     [pipes]
   );
 
@@ -1501,4 +1502,3 @@ export default function Insights() {
     </InsightsPageShell>
   );
 }
-

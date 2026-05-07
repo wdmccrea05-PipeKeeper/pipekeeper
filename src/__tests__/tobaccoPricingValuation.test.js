@@ -15,40 +15,48 @@ import { normalizeValuationInputs, computeCurrentValue } from '../components/val
 
 describe('getBlendValue', () => {
   const baseBlend = {
-    tin_total_quantity_oz: 8,
-    bulk_total_quantity_oz: 4,
-    pouch_total_quantity_oz: 0,
+    quantity: 3,
+    cellar_quantity: 2,
   };
 
-  it('returns manual_market_value first', () => {
-    expect(getBlendValue({ ...baseBlend, manual_market_value: 50, market_estimated_total_value: 40, ai_estimated_value: 2 })).toBe(50);
+  it('returns manual_override_total first', () => {
+    expect(getBlendValue({ ...baseBlend, manual_override_total: 50, estimated_total_value: 40, market_estimated_total_value: 30 })).toBe(50);
   });
 
-  it('returns market_estimated_total_value second', () => {
-    expect(getBlendValue({ ...baseBlend, market_estimated_total_value: 40, ai_estimated_value: 2 })).toBe(40);
+  it('returns estimated_total_value second', () => {
+    expect(getBlendValue({ ...baseBlend, estimated_total_value: 40, market_estimated_total_value: 30 })).toBe(40);
   });
 
-  it('returns ai_estimated_value × total_oz third', () => {
-    // totalOz = 12, ai_estimated_value = 2 → 24
-    expect(getBlendValue({ ...baseBlend, ai_estimated_value: 2, market_estimated_unit_value: 1 })).toBe(24);
+  it('returns market_estimated_total_value third', () => {
+    expect(getBlendValue({ ...baseBlend, market_estimated_total_value: 30, market_estimated_unit_value: 2 })).toBe(30);
   });
 
-  it('returns market_estimated_unit_value × total_oz fourth', () => {
-    // totalOz = 12, market_estimated_unit_value = 1.5 → 18
-    expect(getBlendValue({ ...baseBlend, market_estimated_unit_value: 1.5, price_per_oz: 1 })).toBe(18);
+  it('returns market_estimated_unit_value × quantity fourth', () => {
+    // quantity = 3 + 2(cellar) = 5
+    expect(getBlendValue({ ...baseBlend, market_estimated_unit_value: 2 })).toBe(10);
   });
 
-  it('returns price_per_oz × total_oz fifth', () => {
-    // totalOz = 12, price_per_oz = 1 → 12
-    expect(getBlendValue({ ...baseBlend, price_per_oz: 1, purchase_price: 5 })).toBe(12);
+  it('returns estimated_unit_value × quantity fifth', () => {
+    expect(getBlendValue({ ...baseBlend, estimated_unit_value: 3 })).toBe(15);
   });
 
-  it('falls back to purchase_price', () => {
-    expect(getBlendValue({ ...baseBlend, purchase_price: 15, cost_basis: 10 })).toBe(15);
+  it('falls back to purchase_price × quantity', () => {
+    expect(getBlendValue({ ...baseBlend, purchase_price: 4 })).toBe(20);
   });
 
-  it('falls back to cost_basis', () => {
-    expect(getBlendValue({ ...baseBlend, cost_basis: 10 })).toBe(10);
+  it('supports legacy manual_market_value alias', () => {
+    expect(getBlendValue({ ...baseBlend, manual_market_value: 25 })).toBe(25);
+  });
+
+  it('uses legacy quantity rollup fields when quantity/cellar_quantity are absent', () => {
+    expect(
+      getBlendValue({
+        tin_total_quantity_oz: 8,
+        bulk_total_quantity_oz: 4,
+        pouch_total_quantity_oz: 0,
+        market_estimated_unit_value: 2,
+      })
+    ).toBe(24);
   });
 
   it('returns 0 when no value data present', () => {

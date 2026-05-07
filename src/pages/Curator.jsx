@@ -115,8 +115,8 @@ export default function CuratorPage() {
   }, [surface, SURFACES]);
 
   return (
-    <div className="min-h-screen" style={{ background: '#0B0B0C' }}>
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-6 sm:py-8 md:py-10">
+    <div className="min-h-[100dvh]" style={{ background: '#0B0B0C' }}>
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-4 sm:py-6 md:py-8">
         <header className="mb-8">
           <div className="flex items-center gap-3 mb-3">
             <img src={CURATOR_ICON} alt="" className="w-9 h-9 object-cover rounded" style={{ filter: 'hue-rotate(35deg) saturate(0.8) brightness(1.1)' }} aria-hidden="true" />

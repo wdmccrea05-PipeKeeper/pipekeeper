@@ -3,6 +3,8 @@
  * Single source of truth for all quantity rollups across Stats, Exports, Home
  */
 
+import { selectCellarValue } from '@/lib/collection/tobaccoSelectors';
+
 /**
  * Calculate total ounces from TobaccoBlend entity fields
  */
@@ -105,20 +107,8 @@ export function getCellarBreakdownFromLogs(cellarLogs, blends = []) {
  * FIXED: Uses single source of truth to avoid double-counting
  */
 export function calculateTobaccoCollectionValue(blends, cellarLogs = []) {
-  if (!Array.isArray(blends)) return 0;
-  
-  return blends.reduce((sum, blend) => {
-    if (!blend) return sum;
-    
-    const valuePerOz = Number(blend.manual_market_value) || Number(blend.ai_estimated_value) || 0;
-    if (valuePerOz <= 0) return sum;
-    
-    // FIXED: Use total quantity directly from entity fields (single source of truth)
-    // Entity fields already represent the complete inventory (open + cellared)
-    const totalOz = calculateTotalOzFromBlend(blend);
-    
-    return sum + (valuePerOz * totalOz);
-  }, 0);
+  void cellarLogs;
+  return selectCellarValue(Array.isArray(blends) ? blends : []);
 }
 
 /**
