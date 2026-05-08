@@ -30,6 +30,55 @@ function removeUndefinedValues(input = {}) {
   return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
 }
 
+function normalizeFlavorProfileForSave(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(
+    value
+      .filter((entry) => entry !== null && entry !== undefined)
+      .map((entry) => String(entry).trim())
+      .filter(Boolean)
+  )];
+}
+
+function sanitizeSerializableValue(value) {
+  if (value === undefined || typeof value === "function" || typeof value === "symbol") {
+    return undefined;
+  }
+
+  if (value === null) return null;
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? undefined : value.toISOString();
+  }
+
+  if (value instanceof Set) {
+    return sanitizeSerializableValue(Array.from(value.values()));
+  }
+
+  if (value instanceof Map) {
+    return sanitizeSerializableValue(Object.fromEntries(value.entries()));
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => sanitizeSerializableValue(entry))
+      .filter((entry) => entry !== undefined);
+  }
+
+  if (typeof value === "object") {
+    const next = {};
+    for (const [key, entry] of Object.entries(value)) {
+      const sanitized = sanitizeSerializableValue(entry);
+      if (sanitized !== undefined) {
+        next[key] = sanitized;
+      }
+    }
+    return next;
+  }
+
+  return value;
+}
+
 /**
  * Safe entity update that verifies ownership and sends only explicit updates.
  * Avoids legacy-record incompatibility from re-sending stale/deprecated fields.
@@ -81,9 +130,18 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
       ...updates,
       ...createdByField,
     });
+    const sanitized = sanitizeSerializableValue(merged) || {};
+
+    if (entityName === "TobaccoBlend") {
+      const normalizedFlavorProfile = normalizeFlavorProfileForSave(sanitized.flavor_profile);
+      sanitized.flavor_profile = normalizedFlavorProfile;
+      if ("flavor_notes" in sanitized) {
+        sanitized.flavor_notes = normalizedFlavorProfile;
+      }
+    }
     
     // Perform update using the ID that actually worked (current.id)
-    return await base44.entities[entityName].update(current.id, merged);
+    return await base44.entities[entityName].update(current.id, sanitized);
   } catch (error) {
     console.error(`safeUpdate failed for ${entityName}:`, error);
     throw new Error(normalizeErrorMessage(error));

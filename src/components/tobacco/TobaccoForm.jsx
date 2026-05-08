@@ -323,10 +323,21 @@ Return complete and accurate information based on the blend name or description 
       const rounded = Math.round(num * 100) / 100;
       return rounded % 1 === 0 ? Math.round(rounded) : rounded;
     };
+    const normalizeStringArray = (value) => {
+      if (!Array.isArray(value)) return [];
+      return [...new Set(
+        value
+          .filter((entry) => entry !== null && entry !== undefined)
+          .map((entry) => String(entry).trim())
+          .filter(Boolean)
+      )];
+    };
     const normalizedFlavorProfile = normalizeFlavorProfile(formData.flavor_profile);
+    const normalizedComponents = normalizeStringArray(formData.tobacco_components);
 
     const cleanedData = {
       ...formData,
+      tobacco_components: normalizedComponents,
       flavor_profile: normalizedFlavorProfile,
       flavor_notes: normalizedFlavorProfile,
       tin_size_oz: roundOptional(formData.tin_size_oz),
@@ -344,7 +355,10 @@ Return complete and accurate information based on the blend name or description 
       pouch_pouches_cellared: roundOptional(formData.pouch_pouches_cellared),
       rating: formData.rating ? Math.round(Number(formData.rating)) : null,
     };
-    onSave(cleanedData);
+    const sanitizedPayload = Object.fromEntries(
+      Object.entries(cleanedData).filter(([, value]) => value !== undefined)
+    );
+    onSave(sanitizedPayload);
   };
 
   const filteredLogos = React.useMemo(() => {

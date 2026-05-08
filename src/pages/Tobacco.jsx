@@ -142,11 +142,25 @@ export default function TobaccoPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => safeUpdate('TobaccoBlend', id, data, user?.email),
+    mutationFn: ({ id, data }) => {
+      if (import.meta.env.DEV) {
+        console.debug('[Tobacco Update Payload]', JSON.stringify(data, null, 2));
+      }
+      return safeUpdate('TobaccoBlend', id, data, user?.email);
+    },
     onSuccess: () => {
       invalidateBlendQueries(queryClient, user?.email);
       setShowForm(false);
       setEditingBlend(null);
+      toast.success(t('inventory.saved') || 'Blend updated');
+    },
+    onError: (error, variables) => {
+      console.error('Failed to update tobacco blend', {
+        error,
+        payload: variables?.data,
+        blendId: variables?.id,
+      });
+      toast.error(error?.message || t('tobaccoPage.failedToUpdateBlends') || 'Unable to update blend');
     },
   });
 
@@ -218,6 +232,7 @@ export default function TobaccoPage() {
     },
     onError: (err, variables, context) => {
       queryClient.setQueryData(['blends', user?.email, sortBy], context?.previousBlends);
+      toast.error(err?.message || t("tobaccoPage.failedToUpdateBlends"));
     },
   });
 
