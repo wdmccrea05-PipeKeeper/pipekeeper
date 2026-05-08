@@ -162,6 +162,86 @@ describe("safeUpdate", () => {
     expect(payload.updatedAt).toBe("2026-01-01T00:00:00.000Z");
     expect(payload).not.toHaveProperty("badFn");
   });
+
+  it("preserves explicit boolean false values", async () => {
+    getMock.mockResolvedValue({
+      id: "pipe-bool-1",
+      created_by: "user@example.com",
+      ai_excluded: true,
+    });
+    updateMock.mockResolvedValue({ id: "pipe-bool-1" });
+
+    await safeUpdate("Pipe", "pipe-bool-1", { ai_excluded: false }, "user@example.com");
+
+    expect(updateMock).toHaveBeenCalledWith("pipe-bool-1", {
+      ai_excluded: false,
+      created_by: "user@example.com",
+    });
+  });
+
+  it("does not wipe flavor_profile on unrelated TobaccoBlend updates", async () => {
+    getMock.mockResolvedValue({
+      id: "blend-keep-flavor-1",
+      created_by: "user@example.com",
+      flavor_profile: ["Sweet", "Spice"],
+    });
+    updateMock.mockResolvedValue({ id: "blend-keep-flavor-1" });
+
+    await safeUpdate("TobaccoBlend", "blend-keep-flavor-1", { name: "Renamed Blend" }, "user@example.com");
+
+    const [, payload] = updateMock.mock.calls.at(-1);
+    expect(payload).toMatchObject({
+      name: "Renamed Blend",
+      created_by: "user@example.com",
+    });
+    expect(payload).not.toHaveProperty("flavor_profile");
+    expect(payload).not.toHaveProperty("flavor_notes");
+  });
+
+  it("merges incoming photos with current photos by default to prevent stale overwrite", async () => {
+    getMock.mockResolvedValue({
+      id: "pipe-photo-merge-1",
+      created_by: "user@example.com",
+      photos: ["https://cdn.example.com/existing.jpg"],
+    });
+    updateMock.mockResolvedValue({ id: "pipe-photo-merge-1" });
+
+    await safeUpdate(
+      "Pipe",
+      "pipe-photo-merge-1",
+      { photos: ["https://cdn.example.com/new.jpg"] },
+      "user@example.com"
+    );
+
+    const [, payload] = updateMock.mock.calls.at(-1);
+    expect(payload.photos).toEqual([
+      "https://cdn.example.com/new.jpg",
+      "https://cdn.example.com/existing.jpg",
+    ]);
+  });
+
+  it("supports explicit full photo replacement when replace_photos is true", async () => {
+    getMock.mockResolvedValue({
+      id: "pipe-photo-replace-1",
+      created_by: "user@example.com",
+      photos: ["https://cdn.example.com/existing.jpg"],
+    });
+    updateMock.mockResolvedValue({ id: "pipe-photo-replace-1" });
+
+    await safeUpdate(
+      "Pipe",
+      "pipe-photo-replace-1",
+      {
+        photos: ["https://cdn.example.com/replaced.jpg"],
+        replace_photos: true,
+      },
+      "user@example.com"
+    );
+
+    const [, payload] = updateMock.mock.calls.at(-1);
+    expect(payload.photos).toEqual(["https://cdn.example.com/replaced.jpg"]);
+    expect(payload).not.toHaveProperty("replace_photos");
+  });
 });
 
 // ---------------------------------------------------------------------------

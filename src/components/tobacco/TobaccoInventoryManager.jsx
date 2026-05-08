@@ -93,22 +93,28 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
   };
 
   const handleSave = () => {
+    const toNullableNumber = (value, { float = false } = {}) => {
+      if (value === '' || value === null || value === undefined) return null;
+      const parsed = float ? parseFloat(Number(value).toFixed(2)) : Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
     const cleanedData = {
-      tin_size_oz: formData.tin_size_oz ? parseFloat(Number(formData.tin_size_oz).toFixed(2)) : null,
-      tin_total_tins: formData.tin_total_tins ? Number(formData.tin_total_tins) : null,
-      tin_total_quantity_oz: formData.tin_total_quantity_oz ? parseFloat(Number(formData.tin_total_quantity_oz).toFixed(2)) : null,
-      tin_tins_open: formData.tin_tins_open ? Number(formData.tin_tins_open) : null,
-      tin_tins_cellared: formData.tin_tins_cellared ? Number(formData.tin_tins_cellared) : null,
+      tin_size_oz: toNullableNumber(formData.tin_size_oz, { float: true }),
+      tin_total_tins: toNullableNumber(formData.tin_total_tins),
+      tin_total_quantity_oz: toNullableNumber(formData.tin_total_quantity_oz, { float: true }),
+      tin_tins_open: toNullableNumber(formData.tin_tins_open),
+      tin_tins_cellared: toNullableNumber(formData.tin_tins_cellared),
       tin_cellared_date: formData.tin_cellared_date || null,
-      bulk_total_quantity_oz: formData.bulk_total_quantity_oz ? parseFloat(Number(formData.bulk_total_quantity_oz).toFixed(2)) : null,
-      bulk_open: formData.bulk_open ? parseFloat(Number(formData.bulk_open).toFixed(2)) : null,
-      bulk_cellared: formData.bulk_cellared ? parseFloat(Number(formData.bulk_cellared).toFixed(2)) : null,
+      bulk_total_quantity_oz: toNullableNumber(formData.bulk_total_quantity_oz, { float: true }),
+      bulk_open: toNullableNumber(formData.bulk_open, { float: true }),
+      bulk_cellared: toNullableNumber(formData.bulk_cellared, { float: true }),
       bulk_cellared_date: formData.bulk_cellared_date || null,
-      pouch_size_oz: formData.pouch_size_oz ? parseFloat(Number(formData.pouch_size_oz).toFixed(2)) : null,
-      pouch_total_pouches: formData.pouch_total_pouches ? Number(formData.pouch_total_pouches) : null,
-      pouch_total_quantity_oz: formData.pouch_total_quantity_oz ? parseFloat(Number(formData.pouch_total_quantity_oz).toFixed(2)) : null,
-      pouch_pouches_open: formData.pouch_pouches_open ? Number(formData.pouch_pouches_open) : null,
-      pouch_pouches_cellared: formData.pouch_pouches_cellared ? Number(formData.pouch_pouches_cellared) : null,
+      pouch_size_oz: toNullableNumber(formData.pouch_size_oz, { float: true }),
+      pouch_total_pouches: toNullableNumber(formData.pouch_total_pouches),
+      pouch_total_quantity_oz: toNullableNumber(formData.pouch_total_quantity_oz, { float: true }),
+      pouch_pouches_open: toNullableNumber(formData.pouch_pouches_open),
+      pouch_pouches_cellared: toNullableNumber(formData.pouch_pouches_cellared),
       pouch_cellared_date: formData.pouch_cellared_date || null,
     };
     onUpdate(cleanedData);

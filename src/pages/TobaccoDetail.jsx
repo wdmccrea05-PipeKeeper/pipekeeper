@@ -81,6 +81,7 @@ function AddItemValueSnapshotModal({ item, itemType, moduleKey, valuationSnapsho
       onSaved();
     } catch (e) {
       console.error('[TobaccoDetail] failed to save snapshot', e);
+      toast.error(e?.message || 'Failed to save value checkpoint');
     } finally {
       setSaving(false);
     }
@@ -175,6 +176,7 @@ function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onCl
       onSaved();
     } catch (e) {
       console.error('[TobaccoDetail] failed to save observation', e);
+      toast.error(e?.message || 'Failed to save observation');
     } finally {
       setSaving(false);
     }
@@ -282,6 +284,7 @@ function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
       onSaved(updates);
     } catch (e) {
       console.error('[TobaccoDetail] failed to save valuation inputs', e);
+      toast.error(e?.message || 'Failed to save valuation inputs');
     } finally {
       setSaving(false);
     }
@@ -813,8 +816,13 @@ export default function TobaccoDetail() {
               recordName={blend.name}
               brand={blend.manufacturer || ''}
               onUpdate={async (updatedPhotos) => {
-                await scopedEntities.TobaccoBlend.update(blend.id, { photos: updatedPhotos });
-                setBlend((prev) => ({ ...prev, photos: updatedPhotos }));
+                try {
+                  await scopedEntities.TobaccoBlend.update(blend.id, { photos: updatedPhotos });
+                  setBlend((prev) => ({ ...prev, photos: updatedPhotos }));
+                } catch (err) {
+                  console.error('[TobaccoDetail] photo update failed', err);
+                  toast.error(err?.message || 'Failed to update photos');
+                }
               }}
             />
           </div>
