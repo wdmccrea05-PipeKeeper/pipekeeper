@@ -12,6 +12,10 @@ vi.mock("@/api/base44Client", () => ({
         get: getMock,
         update: updateMock,
       },
+      TobaccoBlend: {
+        get: getMock,
+        update: updateMock,
+      },
     },
   },
 }));
@@ -85,6 +89,28 @@ describe("safeUpdate", () => {
     await expect(
       safeUpdate("Pipe", "pipe-4", { estimated_value: "bad" }, "user@example.com")
     ).rejects.toThrow("estimated_value must be a number");
+  });
+
+  it("includes changed flavor_profile array values for TobaccoBlend updates", async () => {
+    getMock.mockResolvedValue({
+      id: "blend-1",
+      name: "Old Blend",
+      created_by: "user@example.com",
+      flavor_profile: ["Sweet"],
+    });
+    updateMock.mockResolvedValue({ id: "blend-1" });
+
+    await safeUpdate(
+      "TobaccoBlend",
+      "blend-1",
+      { flavor_profile: ["Sweet", "Molasses"] },
+      "user@example.com"
+    );
+
+    expect(updateMock).toHaveBeenCalledWith("blend-1", {
+      flavor_profile: ["Sweet", "Molasses"],
+      created_by: "user@example.com",
+    });
   });
 });
 

@@ -41,6 +41,7 @@ import {
   seedInitialSnapshotIfMissing,
   refreshItemValue,
 } from '@/components/valuation/valueRefreshService';
+import { normalizeFlavorProfile } from '@/components/tobacco/flavorNotes';
 
 
 // ── Valuation modals ──────────────────────────────────────────────────────────
@@ -723,6 +724,7 @@ export default function TobaccoDetail() {
     (Number(blend.tin_total_quantity_oz) || 0) +
     (Number(blend.bulk_total_quantity_oz) || 0) +
     (Number(blend.pouch_total_quantity_oz) || 0);
+  const flavorProfile = normalizeFlavorProfile(blend.flavor_profile ?? blend.flavor_notes);
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 text-[#F5F1E7]">
@@ -865,14 +867,14 @@ export default function TobaccoDetail() {
               </div>
             </div>
 
-            {blend.flavor_notes && blend.flavor_notes.length > 0 && (
+            {flavorProfile.length > 0 && (
               <div
                 className="rounded-2xl p-5"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}
               >
                 <p className="text-sm font-semibold mb-3">Flavor Notes</p>
                 <div className="flex flex-wrap gap-2">
-                  {blend.flavor_notes.map((note, idx) => (
+                  {flavorProfile.map((note, idx) => (
                     <span
                       key={idx}
                       className="px-3 py-1 rounded-full text-sm bg-[rgba(180,140,75,0.14)] border border-[rgba(180,140,75,0.2)]"

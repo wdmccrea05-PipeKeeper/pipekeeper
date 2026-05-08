@@ -4,7 +4,7 @@ export function cleanFlavorNote(value) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-export function normalizeFlavorNotes(value) {
+export function normalizeFlavorProfile(value) {
   const values = Array.isArray(value)
     ? value
     : typeof value === 'string'
@@ -25,15 +25,18 @@ export function normalizeFlavorNotes(value) {
   return [...unique.values()];
 }
 
+export function normalizeFlavorNotes(value) {
+  return normalizeFlavorProfile(value);
+}
+
 export function hasFlavorNote(values = [], note) {
   const target = cleanFlavorNote(note)?.toLowerCase();
   if (!target) return false;
-  return normalizeFlavorNotes(values).some((value) => value.toLowerCase() === target);
+  return normalizeFlavorProfile(values).some((value) => value.toLowerCase() === target);
 }
 
 export function removeFlavorNote(values = [], note) {
   const target = cleanFlavorNote(note)?.toLowerCase();
-  if (!target) return normalizeFlavorNotes(values);
-  return normalizeFlavorNotes(values).filter((value) => value.toLowerCase() !== target);
+  if (!target) return normalizeFlavorProfile(values);
+  return normalizeFlavorProfile(values).filter((value) => value.toLowerCase() !== target);
 }
-
