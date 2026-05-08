@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,8 @@ import { useRecentValues } from "@/components/hooks/useRecentValues";
 import { Combobox } from "@/components/ui/combobox";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import FormSection from '@/components/forms/FormSection';
+import FlavorProfileField from '@/components/tobacco/FlavorProfileField';
+import { normalizeFlavorNotes } from '@/components/tobacco/flavorNotes';
 
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -35,42 +37,62 @@ const AGING_POTENTIAL = ["Poor", "Fair", "Good", "Excellent"];
 
 const COMMON_FLAVOR_NOTES = ["Earthy", "Sweet", "Nutty", "Woody", "Smoky", "Spicy", "Fruity", "Floral", "Tangy", "Creamy", "Peppery", "Chocolate", "Coffee", "Vanilla", "Honey", "Leather", "Grass", "Hay", "Citrus", "Plum", "Fig", "Raisin"];
 
+const DEFAULT_FORM_DATA = {
+  name: '',
+  manufacturer: '',
+  blend_type: '',
+  tobacco_components: [],
+  cut: '',
+  strength: '',
+  room_note: '',
+  flavor_notes: [],
+  tin_size_oz: '',
+  tin_total_tins: '',
+  tin_total_quantity_oz: '',
+  tin_tins_open: '',
+  tin_tins_cellared: '',
+  tin_cellared_date: '',
+  bulk_total_quantity_oz: '',
+  bulk_open: '',
+  bulk_cellared: '',
+  bulk_cellared_date: '',
+  pouch_size_oz: '',
+  pouch_total_pouches: '',
+  pouch_total_quantity_oz: '',
+  pouch_pouches_open: '',
+  pouch_pouches_cellared: '',
+  pouch_cellared_date: '',
+  production_status: '',
+  aging_potential: '',
+  rating: null,
+  notes: '',
+  photo: '',
+  logo: '',
+  is_favorite: false,
+  ai_excluded: false
+};
+
+function normalizeBlendFormData(blend) {
+  if (!blend) {
+    return { ...DEFAULT_FORM_DATA };
+  }
+
+  const sanitized = Object.fromEntries(
+    Object.entries(blend).map(([key, value]) => [key, value === null ? '' : value])
+  );
+
+  return {
+    ...DEFAULT_FORM_DATA,
+    ...sanitized,
+    tobacco_components: Array.isArray(blend.tobacco_components) ? blend.tobacco_components.filter(Boolean) : [],
+    flavor_notes: normalizeFlavorNotes(blend.flavor_notes),
+    rating: blend.rating ?? null,
+  };
+}
+
 export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState(blend || {
-    name: '',
-    manufacturer: '',
-    blend_type: '',
-    tobacco_components: [],
-    cut: '',
-    strength: '',
-    room_note: '',
-    flavor_notes: [],
-    tin_size_oz: '',
-    tin_total_tins: '',
-    tin_total_quantity_oz: '',
-    tin_tins_open: '',
-    tin_tins_cellared: '',
-    tin_cellared_date: '',
-    bulk_total_quantity_oz: '',
-    bulk_open: '',
-    bulk_cellared: '',
-    bulk_cellared_date: '',
-    pouch_size_oz: '',
-    pouch_total_pouches: '',
-    pouch_total_quantity_oz: '',
-    pouch_pouches_open: '',
-    pouch_pouches_cellared: '',
-    pouch_cellared_date: '',
-    production_status: '',
-    aging_potential: '',
-    rating: null,
-    notes: '',
-    photo: '',
-    logo: '',
-    is_favorite: false,
-    ai_excluded: false
-  });
+  const [formData, setFormData] = useState(() => normalizeBlendFormData(blend));
   const [uploading, setUploading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [newComponent, setNewComponent] = useState('');
@@ -88,6 +110,11 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const entitlements = useEntitlements();
   const { user } = useCurrentUser();
   const isPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
+
+  useEffect(() => {
+    setFormData(normalizeBlendFormData(blend));
+    setNewComponent('');
+  }, [blend]);
 
   // Auto-suggest recent values
   const { data: recentManufacturers = [] } = useRecentValues("TobaccoBlend", "manufacturer");
@@ -272,15 +299,6 @@ Return complete and accurate information based on the blend name or description 
     handleChange('tobacco_components', (formData.tobacco_components || []).filter((_, i) => i !== index));
   };
 
-  const toggleFlavorNote = (note) => {
-    const current = formData.flavor_notes || [];
-    if (current.includes(note)) {
-      handleChange('flavor_notes', current.filter(fn => fn !== note));
-    } else {
-      handleChange('flavor_notes', [...current, note]);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -302,6 +320,7 @@ Return complete and accurate information based on the blend name or description 
 
     const cleanedData = {
       ...formData,
+      flavor_notes: normalizeFlavorNotes(formData.flavor_notes),
       tin_size_oz: roundOptional(formData.tin_size_oz),
       tin_total_tins: roundOptional(formData.tin_total_tins),
       tin_total_quantity_oz: roundOptional(formData.tin_total_quantity_oz),
@@ -727,24 +746,21 @@ Return complete and accurate information based on the blend name or description 
       </FormSection>
 
       {/* Flavor Notes */}
-      <FormSection title="Flavor Profile" defaultOpen={false}>
-          <p className="text-sm text-[#D7C9B2]/70">{t("tobaccoExtended.flavorNotesDesc")}</p>
-          <div className="flex flex-wrap gap-2">
-            {COMMON_FLAVOR_NOTES.map(note => (
-              <Badge
-                key={note}
-                variant="secondary"
-                className={`cursor-pointer transition-colors ${
-                  formData.flavor_notes?.includes(note)
-                    ? 'bg-amber-600 text-white border-amber-700'
-                    : 'bg-stone-100 text-[#D7C9B2]/80 border-[rgba(140,105,65,0.28)] hover:bg-stone-200'
-                }`}
-                onClick={() => toggleFlavorNote(note)}
-              >
-                {t(`flavorNotes.${note}`, note)}
-              </Badge>
-            ))}
-          </div>
+      <FormSection
+        title="Flavor Profile"
+        defaultOpen={false}
+        summary={normalizeFlavorNotes(formData.flavor_notes).slice(0, 3).join(', ') || undefined}
+      >
+          <FlavorProfileField
+            value={formData.flavor_notes}
+            onChange={(value) => handleChange('flavor_notes', normalizeFlavorNotes(value))}
+            commonNotes={COMMON_FLAVOR_NOTES}
+            getNoteLabel={(note) => t(`flavorNotes.${note}`, note)}
+            description={t("tobaccoExtended.flavorNotesDesc")}
+            placeholder="Add custom flavor note…"
+            addLabel={t("common.add", "Add")}
+            selectedLabel="Selected notes"
+          />
       </FormSection>
 
       {/* Inventory & Status */}
