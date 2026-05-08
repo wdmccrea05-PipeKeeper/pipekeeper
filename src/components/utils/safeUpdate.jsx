@@ -45,6 +45,10 @@ function sanitizeSerializableValue(value) {
     return undefined;
   }
 
+  if (typeof value === "bigint") {
+    return String(value);
+  }
+
   if (value === null) return null;
 
   if (value instanceof Date) {
