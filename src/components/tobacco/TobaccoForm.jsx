@@ -323,11 +323,12 @@ Return complete and accurate information based on the blend name or description 
       const rounded = Math.round(num * 100) / 100;
       return rounded % 1 === 0 ? Math.round(rounded) : rounded;
     };
+    const normalizedFlavorProfile = normalizeFlavorProfile(formData.flavor_profile);
 
     const cleanedData = {
       ...formData,
-      flavor_profile: normalizeFlavorProfile(formData.flavor_profile),
-      flavor_notes: normalizeFlavorProfile(formData.flavor_profile),
+      flavor_profile: normalizedFlavorProfile,
+      flavor_notes: normalizedFlavorProfile,
       tin_size_oz: roundOptional(formData.tin_size_oz),
       tin_total_tins: roundOptional(formData.tin_total_tins),
       tin_total_quantity_oz: roundOptional(formData.tin_total_quantity_oz),
