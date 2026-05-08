@@ -232,7 +232,7 @@ export default function TobaccoPage() {
     },
     onError: (err, variables, context) => {
       queryClient.setQueryData(['blends', user?.email, sortBy], context?.previousBlends);
-      toast.error(err?.message || t("tobaccoPage.failedToUpdateBlends"));
+      toast.error(err?.message || t('tobaccoPage.failedToUpdateBlends'));
     },
   });
 
