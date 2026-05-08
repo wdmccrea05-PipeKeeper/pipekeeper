@@ -151,7 +151,7 @@ export default function GlobalReferralBanner() {
                 checked={dismissForever}
                 onChange={(e) => setDismissForever(e.target.checked)}
               />
-              <span>Don&apos;t show again</span>
+              <span>{"Don't show again"}</span>
             </label>
             <Button
               onClick={handleCTA}

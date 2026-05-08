@@ -187,14 +187,16 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
       }
     }
 
+    const finalPayload = sanitized;
+
     if (import.meta?.env?.DEV) {
       console.debug("[UPDATE:RAW]", updates);
       console.debug("[UPDATE:SANITIZED]", sanitized);
-      console.debug("[UPDATE:FINAL]", sanitized);
+      console.debug("[UPDATE:FINAL]", finalPayload);
     }
     
     // Perform update using the ID that actually worked (current.id)
-    return await base44.entities[entityName].update(current.id, sanitized);
+    return await base44.entities[entityName].update(current.id, finalPayload);
   } catch (error) {
     console.error(`safeUpdate failed for ${entityName}:`, error);
     throw new Error(normalizeErrorMessage(error));

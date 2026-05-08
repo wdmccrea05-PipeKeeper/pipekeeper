@@ -109,6 +109,7 @@ describe("safeUpdate", () => {
 
     expect(updateMock).toHaveBeenCalledWith("blend-1", {
       flavor_profile: ["Sweet", "Molasses"],
+      flavor_notes: ["Sweet", "Molasses"],
       created_by: "user@example.com",
     });
   });
@@ -130,6 +131,7 @@ describe("safeUpdate", () => {
 
     expect(updateMock).toHaveBeenCalledWith("blend-2", {
       flavor_profile: ["Sweet", "7"],
+      flavor_notes: ["Sweet", "7"],
       created_by: "user@example.com",
     });
   });
