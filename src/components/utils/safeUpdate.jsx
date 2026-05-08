@@ -40,6 +40,27 @@ function normalizeFlavorProfileForSave(value) {
   )];
 }
 
+function normalizePhotoArray(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(
+    value
+      .filter((entry) => entry !== null && entry !== undefined)
+      .map((entry) => String(entry).trim())
+      .filter(Boolean)
+  )];
+}
+
+function mergePhotoArrays(existing, incoming) {
+  const incomingNormalized = normalizePhotoArray(incoming);
+  const existingNormalized = normalizePhotoArray(existing);
+  if (incomingNormalized.length === 0) return [];
+  const merged = [...incomingNormalized];
+  for (const url of existingNormalized) {
+    if (!merged.includes(url)) merged.push(url);
+  }
+  return merged;
+}
+
 function sanitizeSerializableValue(value) {
   if (value === undefined || typeof value === "function" || typeof value === "symbol") {
     return undefined;
@@ -134,18 +155,48 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
       ...updates,
       ...createdByField,
     });
+    if (Object.prototype.hasOwnProperty.call(merged, "replace_photos")) delete merged.replace_photos;
+    if (Object.prototype.hasOwnProperty.call(merged, "replace_stamping_photos")) delete merged.replace_stamping_photos;
+    if (Object.prototype.hasOwnProperty.call(merged, "__replace_photos")) delete merged.__replace_photos;
+    if (Object.prototype.hasOwnProperty.call(merged, "__replace_stamping_photos")) delete merged.__replace_stamping_photos;
     const sanitized = sanitizeSerializableValue(merged) || {};
 
+    if (Object.prototype.hasOwnProperty.call(updates || {}, "photos")) {
+      const shouldReplacePhotos = updates?.replace_photos === true || updates?.__replace_photos === true;
+      sanitized.photos = shouldReplacePhotos
+        ? normalizePhotoArray(sanitized.photos)
+        : mergePhotoArrays(current?.photos, sanitized.photos);
+    }
+    if (Object.prototype.hasOwnProperty.call(updates || {}, "stamping_photos")) {
+      const shouldReplaceStamping = updates?.replace_stamping_photos === true || updates?.__replace_stamping_photos === true;
+      sanitized.stamping_photos = shouldReplaceStamping
+        ? normalizePhotoArray(sanitized.stamping_photos)
+        : mergePhotoArrays(current?.stamping_photos, sanitized.stamping_photos);
+    }
+
     if (entityName === "TobaccoBlend") {
-      const normalizedFlavorProfile = normalizeFlavorProfileForSave(sanitized.flavor_profile);
-      sanitized.flavor_profile = normalizedFlavorProfile;
-      if ("flavor_notes" in sanitized) {
+      const hasFlavorPayload =
+        Object.prototype.hasOwnProperty.call(sanitized, "flavor_profile") ||
+        Object.prototype.hasOwnProperty.call(sanitized, "flavor_notes");
+      if (hasFlavorPayload) {
+        const normalizedFlavorProfile = normalizeFlavorProfileForSave(
+          sanitized.flavor_profile ?? sanitized.flavor_notes
+        );
+        sanitized.flavor_profile = normalizedFlavorProfile;
         sanitized.flavor_notes = normalizedFlavorProfile;
       }
     }
+
+    const finalPayload = sanitized;
+
+    if (import.meta?.env?.DEV) {
+      console.debug("[UPDATE:RAW]", updates);
+      console.debug("[UPDATE:SANITIZED]", sanitized);
+      console.debug("[UPDATE:FINAL]", finalPayload);
+    }
     
     // Perform update using the ID that actually worked (current.id)
-    return await base44.entities[entityName].update(current.id, sanitized);
+    return await base44.entities[entityName].update(current.id, finalPayload);
   } catch (error) {
     console.error(`safeUpdate failed for ${entityName}:`, error);
     throw new Error(normalizeErrorMessage(error));

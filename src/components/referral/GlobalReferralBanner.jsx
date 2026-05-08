@@ -6,17 +6,36 @@ import { X, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const BANNER_DISMISSAL_KEY = 'pk_referral_banner_dismissed';
+const BANNER_DISMISSAL_FOREVER_GLOBAL_KEY = 'pk_referral_banner_dismissed_forever_global';
+const BANNER_DISMISSAL_FOREVER_PREFIX = 'pk_referral_banner_dismissed_forever_user:';
 const DISMISSAL_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function getUserForeverDismissalKey(userEmail) {
+  if (!userEmail) return null;
+  return `${BANNER_DISMISSAL_FOREVER_PREFIX}${String(userEmail).toLowerCase()}`;
+}
 
 export default function GlobalReferralBanner() {
   const navigate = useNavigate();
   const { user, isLoading } = useCurrentUser();
   const [isDismissed, setIsDismissed] = useState(false);
+  const [dismissForever, setDismissForever] = useState(false);
   const [earnedAccess, setEarnedAccess] = useState([]);
   const [loadingRewards, setLoadingRewards] = useState(false);
 
   // Check dismissal state on mount
   useEffect(() => {
+    const globalForeverDismissed = localStorage.getItem(BANNER_DISMISSAL_FOREVER_GLOBAL_KEY) === '1';
+    const userForeverKey = getUserForeverDismissalKey(user?.email);
+    const userForeverDismissed = userForeverKey
+      ? localStorage.getItem(userForeverKey) === '1'
+      : false;
+
+    if (globalForeverDismissed || userForeverDismissed) {
+      setIsDismissed(true);
+      return;
+    }
+
     const stored = sessionStorage.getItem(BANNER_DISMISSAL_KEY);
     if (stored) {
       const dismissedAt = parseInt(stored, 10);
@@ -28,7 +47,7 @@ export default function GlobalReferralBanner() {
         sessionStorage.removeItem(BANNER_DISMISSAL_KEY);
       }
     }
-  }, []);
+  }, [user?.email]);
 
   // Load earned access records to check for pending module selection
   useEffect(() => {
@@ -51,6 +70,15 @@ export default function GlobalReferralBanner() {
 
   const handleDismiss = () => {
     setIsDismissed(true);
+    if (dismissForever) {
+      localStorage.setItem(BANNER_DISMISSAL_FOREVER_GLOBAL_KEY, '1');
+      const userForeverKey = getUserForeverDismissalKey(user?.email);
+      if (userForeverKey) {
+        localStorage.setItem(userForeverKey, '1');
+      }
+      sessionStorage.removeItem(BANNER_DISMISSAL_KEY);
+      return;
+    }
     sessionStorage.setItem(BANNER_DISMISSAL_KEY, String(Date.now()));
   };
 
@@ -117,6 +145,14 @@ export default function GlobalReferralBanner() {
 
           {/* CTA + Close */}
           <div className="flex flex-col gap-2 flex-shrink-0">
+            <label className="inline-flex items-center gap-2 text-xs text-[#E0D8C8]/70">
+              <input
+                type="checkbox"
+                checked={dismissForever}
+                onChange={(e) => setDismissForever(e.target.checked)}
+              />
+              <span>{"Don't show again"}</span>
+            </label>
             <Button
               onClick={handleCTA}
               size="sm"

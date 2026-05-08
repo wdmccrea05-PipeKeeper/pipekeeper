@@ -13,6 +13,7 @@
 
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { safeUpdate } from '@/components/utils/safeUpdate';
 
 const RUNTIME_GUARD_ENABLED = true;
 const MAX_ITEMS_PER_PAGE = 1000;
@@ -94,7 +95,7 @@ export const TobaccoBlend = {
    * Update a tobacco blend (no additional scoping needed - SDK handles)
    */
   async update(id, data) {
-    return await base44.entities.TobaccoBlend.update(id, data);
+    return await safeUpdate('TobaccoBlend', id, data);
   },
 
   /**
@@ -144,7 +145,7 @@ export const Pipe = {
   },
 
   async update(id, data) {
-    return await base44.entities.Pipe.update(id, data);
+    return await safeUpdate('Pipe', id, data);
   },
 
   async delete(id) {
@@ -180,7 +181,7 @@ export const SmokingLog = {
   },
 
   async update(id, data) {
-    return await base44.entities.SmokingLog.update(id, data);
+    return await safeUpdate('SmokingLog', id, data);
   },
 
   async delete(id) {
