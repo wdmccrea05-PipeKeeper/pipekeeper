@@ -116,7 +116,6 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
 
   useEffect(() => {
     setFormData(normalizeBlendFormData(blend));
-    setNewComponent('');
   }, [blend]);
 
   // Auto-suggest recent values
@@ -756,7 +755,7 @@ Return complete and accurate information based on the blend name or description 
       >
           <FlavorProfileField
             value={formData.flavor_notes}
-            onChange={(value) => handleChange('flavor_notes', normalizeFlavorNotes(value))}
+            onChange={(value) => handleChange('flavor_notes', value)}
             commonNotes={COMMON_FLAVOR_NOTES}
             getNoteLabel={(note) => t(`flavorNotes.${note}`, note)}
             description={t("tobaccoExtended.flavorNotesDesc")}
