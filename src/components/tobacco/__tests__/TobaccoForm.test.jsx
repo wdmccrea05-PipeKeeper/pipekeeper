@@ -59,7 +59,7 @@ vi.mock('@/components/PhotoUploader', () => ({ default: () => <div /> }));
 vi.mock('@/components/ui/combobox', () => ({ Combobox: () => <div /> }));
 
 describe('TobaccoForm flavor profile', () => {
-  it('saves normalized flavor notes and reloads existing custom notes on edit', () => {
+  it('loads legacy string flavor notes into canonical flavor_profile and persists removal', () => {
     const onSave = vi.fn();
     const blend = {
       id: 'blend-1',
@@ -79,7 +79,39 @@ describe('TobaccoForm flavor profile', () => {
 
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
+        flavor_profile: ['Sweet'],
         flavor_notes: ['Sweet'],
+      })
+    );
+  });
+
+  it('adding custom flavor updates canonical formData flavor_profile in save payload', () => {
+    const onSave = vi.fn();
+    const { container } = render(<TobaccoForm blend={null} onSave={onSave} onCancel={vi.fn()} isLoading={false} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Flavor Profile/ }));
+    fireEvent.change(screen.getByLabelText('Add custom flavor note…'), { target: { value: 'Molasses' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    fireEvent.submit(container.querySelector('form'));
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        flavor_profile: ['Molasses'],
+      })
+    );
+  });
+
+  it('toggling predefined chip updates canonical flavor_profile payload', () => {
+    const onSave = vi.fn();
+    const { container } = render(<TobaccoForm blend={null} onSave={onSave} onCancel={vi.fn()} isLoading={false} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Flavor Profile/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle Sweet flavor note' }));
+    fireEvent.submit(container.querySelector('form'));
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        flavor_profile: ['Sweet'],
       })
     );
   });

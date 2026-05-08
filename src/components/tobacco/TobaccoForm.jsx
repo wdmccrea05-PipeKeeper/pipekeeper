@@ -26,7 +26,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import FormSection from '@/components/forms/FormSection';
 import FlavorProfileField from '@/components/tobacco/FlavorProfileField';
-import { normalizeFlavorNotes } from '@/components/tobacco/flavorNotes';
+import { normalizeFlavorProfile } from '@/components/tobacco/flavorNotes';
 
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
@@ -45,7 +45,7 @@ const DEFAULT_FORM_DATA = {
   cut: '',
   strength: '',
   room_note: '',
-  flavor_notes: [],
+  flavor_profile: [],
   tin_size_oz: '',
   tin_total_tins: '',
   tin_total_quantity_oz: '',
@@ -85,7 +85,7 @@ function normalizeBlendFormData(blend) {
     ...DEFAULT_FORM_DATA,
     ...sanitized,
     tobacco_components: Array.isArray(blend.tobacco_components) ? blend.tobacco_components.filter(Boolean) : [],
-    flavor_notes: normalizeFlavorNotes(blend.flavor_notes),
+    flavor_profile: normalizeFlavorProfile(blend.flavor_profile ?? blend.flavor_notes),
     rating: blend.rating ?? null,
   };
 }
@@ -110,8 +110,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const entitlements = useEntitlements();
   const { user } = useCurrentUser();
   const isPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
-  const flavorSummary = Array.isArray(formData.flavor_notes)
-    ? formData.flavor_notes.slice(0, 3).join(', ')
+  const flavorSummary = Array.isArray(formData.flavor_profile)
+    ? formData.flavor_profile.slice(0, 3).join(', ')
     : '';
 
   useEffect(() => {
@@ -189,7 +189,7 @@ Return complete and accurate information based on the blend name or description 
             cut: { type: "string" },
             strength: { type: "string" },
             room_note: { type: "string" },
-            flavor_notes: { type: "array", items: { type: "string" } },
+            flavor_profile: { type: "array", items: { type: "string" } },
             tin_size_oz: { type: "number" },
             production_status: { type: "string" },
             aging_potential: { type: "string" }
@@ -198,9 +198,13 @@ Return complete and accurate information based on the blend name or description 
       });
 
       if (result) {
+        const normalizedFlavorProfile = normalizeFlavorProfile(
+          result.flavor_profile ?? result.flavor_notes
+        );
         setFormData(prev => ({
           ...prev,
-          ...result
+          ...result,
+          flavor_profile: normalizedFlavorProfile,
         }));
         setSearchQuery('');
       }
@@ -322,7 +326,8 @@ Return complete and accurate information based on the blend name or description 
 
     const cleanedData = {
       ...formData,
-      flavor_notes: normalizeFlavorNotes(formData.flavor_notes),
+      flavor_profile: normalizeFlavorProfile(formData.flavor_profile),
+      flavor_notes: normalizeFlavorProfile(formData.flavor_profile),
       tin_size_oz: roundOptional(formData.tin_size_oz),
       tin_total_tins: roundOptional(formData.tin_total_tins),
       tin_total_quantity_oz: roundOptional(formData.tin_total_quantity_oz),
@@ -754,8 +759,8 @@ Return complete and accurate information based on the blend name or description 
         summary={flavorSummary || undefined}
       >
           <FlavorProfileField
-            value={formData.flavor_notes}
-            onChange={(value) => handleChange('flavor_notes', value)}
+            value={formData.flavor_profile}
+            onChange={(value) => handleChange('flavor_profile', value)}
             commonNotes={COMMON_FLAVOR_NOTES}
             getNoteLabel={(note) => t(`flavorNotes.${note}`, note)}
             description={t("tobaccoExtended.flavorNotesDesc")}
