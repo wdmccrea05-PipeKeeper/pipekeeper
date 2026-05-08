@@ -115,4 +115,48 @@ describe('TobaccoForm flavor profile', () => {
       })
     );
   });
+
+  it('invalid flavor_profile input normalizes safely to a string array', () => {
+    const onSave = vi.fn();
+    const blend = {
+      id: 'blend-2',
+      name: 'Safety Blend',
+      manufacturer: 'Acme',
+      flavor_profile: { bad: true },
+    };
+
+    fireEvent.submit(
+      render(<TobaccoForm blend={blend} onSave={onSave} onCancel={vi.fn()} isLoading={false} />)
+        .container.querySelector('form')
+    );
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        flavor_profile: [],
+        flavor_notes: [],
+      })
+    );
+  });
+
+  it('empty flavor_profile does not crash and saves clean arrays without undefined values', () => {
+    const onSave = vi.fn();
+    const blend = {
+      id: 'blend-3',
+      name: 'Empty Flavor Blend',
+      manufacturer: 'Acme',
+      flavor_profile: [],
+      tobacco_components: ['Virginia', undefined, '  '],
+    };
+
+    fireEvent.submit(
+      render(<TobaccoForm blend={blend} onSave={onSave} onCancel={vi.fn()} isLoading={false} />)
+        .container.querySelector('form')
+    );
+
+    const payload = onSave.mock.calls[0][0];
+    expect(payload.flavor_profile).toEqual([]);
+    expect(payload.flavor_notes).toEqual([]);
+    expect(payload.tobacco_components).toEqual(['Virginia']);
+    expect(JSON.stringify(payload)).not.toContain('undefined');
+  });
 });

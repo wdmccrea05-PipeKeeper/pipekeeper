@@ -112,6 +112,56 @@ describe("safeUpdate", () => {
       created_by: "user@example.com",
     });
   });
+
+  it("normalizes invalid TobaccoBlend flavor_profile values to safe string arrays", async () => {
+    getMock.mockResolvedValue({
+      id: "blend-2",
+      name: "Flavor Blend",
+      created_by: "user@example.com",
+    });
+    updateMock.mockResolvedValue({ id: "blend-2" });
+
+    await safeUpdate(
+      "TobaccoBlend",
+      "blend-2",
+      { flavor_profile: [null, "  Sweet  ", 7, undefined] },
+      "user@example.com"
+    );
+
+    expect(updateMock).toHaveBeenCalledWith("blend-2", {
+      flavor_profile: ["Sweet", "7"],
+      created_by: "user@example.com",
+    });
+  });
+
+  it("sanitizes non-serializable payload values before update", async () => {
+    getMock.mockResolvedValue({
+      id: "blend-3",
+      name: "Serializable Blend",
+      created_by: "user@example.com",
+    });
+    updateMock.mockResolvedValue({ id: "blend-3" });
+
+    await safeUpdate(
+      "TobaccoBlend",
+      "blend-3",
+      {
+        photos: ["https://example.com/a.jpg", undefined],
+        tags: new Set(["aromatic", "english"]),
+        metadata: new Map([["region", "US"]]),
+        updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+        badFn: () => "x",
+      },
+      "user@example.com"
+    );
+
+    const [, payload] = updateMock.mock.calls.at(-1);
+    expect(payload.photos).toEqual(["https://example.com/a.jpg"]);
+    expect(payload.tags).toEqual(["aromatic", "english"]);
+    expect(payload.metadata).toEqual({ region: "US" });
+    expect(payload.updatedAt).toBe("2026-01-01T00:00:00.000Z");
+    expect(payload).not.toHaveProperty("badFn");
+  });
 });
 
 // ---------------------------------------------------------------------------
