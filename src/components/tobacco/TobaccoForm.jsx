@@ -110,6 +110,9 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
   const entitlements = useEntitlements();
   const { user } = useCurrentUser();
   const isPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
+  const flavorSummary = Array.isArray(formData.flavor_notes)
+    ? formData.flavor_notes.slice(0, 3).join(', ')
+    : '';
 
   useEffect(() => {
     setFormData(normalizeBlendFormData(blend));
@@ -749,7 +752,7 @@ Return complete and accurate information based on the blend name or description 
       <FormSection
         title="Flavor Profile"
         defaultOpen={false}
-        summary={normalizeFlavorNotes(formData.flavor_notes).slice(0, 3).join(', ') || undefined}
+        summary={flavorSummary || undefined}
       >
           <FlavorProfileField
             value={formData.flavor_notes}

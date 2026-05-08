@@ -70,10 +70,10 @@ describe('FlavorProfileField', () => {
   it('keeps predefined chips working', () => {
     renderField();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Earthy' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle Earthy flavor note' }));
 
     expect(screen.getByRole('button', { name: 'Remove flavor note Earthy' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Earthy' }).className).toContain('bg-amber-600');
+    expect(screen.getByRole('button', { name: 'Toggle Earthy flavor note' }).className).toContain('bg-amber-600');
   });
 
   it('uses mobile-friendly classes without horizontal overflow', () => {
@@ -96,4 +96,3 @@ describe('FlavorProfileField', () => {
     expect(selectedNotesGroup.querySelector('.flex-wrap')).toBeTruthy();
   });
 });
-

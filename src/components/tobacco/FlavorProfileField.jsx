@@ -110,6 +110,7 @@ export default function FlavorProfileField({
               key={note}
               type="button"
               onClick={() => toggleNote(note)}
+              aria-label={`Toggle ${getNoteLabel(note)} flavor note`}
               className={`min-h-10 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
                 active
                   ? 'bg-amber-600 text-white border-amber-700 shadow-sm'
