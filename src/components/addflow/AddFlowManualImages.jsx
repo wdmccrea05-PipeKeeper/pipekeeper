@@ -938,7 +938,10 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         });
 
         await base44.entities[ENTITIES[itemType]].update(finalData._quickRecord.id, updateData);
-        const refreshedRecord = await base44.entities[ENTITIES[itemType]].get(finalData._quickRecord.id).catch(() => null);
+        const refreshedRecord = await base44.entities[ENTITIES[itemType]].get(finalData._quickRecord.id).catch((refreshError) => {
+          console.error('[AddFlowManualImages] failed to refresh record after update', refreshError);
+          return null;
+        });
 
         if (itemType === 'blend') {
           await createCellarLogsForBlend(finalData._quickRecord.id, { ...finalData, ...updateData }, finalData._quickRecord.name);

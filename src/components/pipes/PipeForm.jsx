@@ -468,7 +468,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <PhotoUploader
               onPhotosSelected={(photoUrls) => {
                 handleChange('photos', Array.isArray(photoUrls) ? photoUrls : []);
-                toast.success('Pipe photo added - click Save to persist');
+                toast.success('Pipe photo added to form');
               }}
               showSearchOption={false}
               recordType="pipe"
@@ -513,7 +513,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
             <PhotoUploader
               onPhotosSelected={(photoUrls) => {
                 handleChange('stamping_photos', Array.isArray(photoUrls) ? photoUrls : []);
-                toast.success('Stamping photo added - click Save to persist');
+                toast.success('Stamping photo added to form');
               }}
               showSearchOption={false}
               recordType="pipe"
