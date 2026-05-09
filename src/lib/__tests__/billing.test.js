@@ -231,7 +231,7 @@ describe('getAvailableUpgradeOptions', () => {
     expect(actions).toContain('upgrade_to_three_module_bundle');
   });
 
-  it('returns bundle + missing-module upgrade options for PK Pro user', () => {
+  it('returns bundle + missing-module upgrade options for PK Pro user when WineKeeper is launched', () => {
     const state = stateFor([makeSub('pipekeeper_pro_annual')]);
     const options = getAvailableUpgradeOptions(state);
 
@@ -239,8 +239,10 @@ describe('getAvailableUpgradeOptions', () => {
     expect(actions).toContain('upgrade_to_bundle');
     expect(actions).toContain('add_whiskeykeeper_module');
     expect(actions).toContain('add_cigarkeeper_module');
+    expect(actions).toContain('add_winekeeper_module');
     expect(actions).toContain('upgrade_to_three_module_bundle');
-    expect(options).toHaveLength(4);
+    expect(actions).toContain('upgrade_to_four_module_bundle');
+    expect(options).toHaveLength(6);
   });
 
   it('upgrade_to_bundle option for PK Pro uses founders_bundle_annual', () => {
@@ -308,11 +310,12 @@ describe('getAvailableUpgradeOptions', () => {
 // ─── getNewPurchaseOptions ───────────────────────────────────────────────────
 
 describe('getNewPurchaseOptions', () => {
-  it('returns 5 options for free users when CigarKeeper is launched', () => {
+  it('returns 7 options for free users when WineKeeper is launched', () => {
     const options = getNewPurchaseOptions();
-    expect(options.length).toBe(5);
+    expect(options.length).toBe(7);
     expect(options.some((o) => o.targetPlanKey?.startsWith('three_module_bundle'))).toBe(true);
-    expect(options.some((o) => o.targetPlanKey?.startsWith('winekeeper'))).toBe(false);
+    expect(options.some((o) => o.targetPlanKey?.startsWith('winekeeper'))).toBe(true);
+    expect(options.some((o) => o.targetPlanKey?.startsWith('four_module_bundle'))).toBe(true);
   });
 
   it('all options have actionType new_purchase', () => {

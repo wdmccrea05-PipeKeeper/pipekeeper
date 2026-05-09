@@ -29,14 +29,14 @@ describe("moduleReleaseState launched CigarKeeper model", () => {
     expect(canAccessInternalModuleForTesting("cigarkeeper", user)).toBe(false);
   });
 
-  it("keeps WineKeeper blocked even if explicitly listed in entitlements", () => {
+  it("allows WineKeeper when explicitly listed in entitlements", () => {
     const user = {
       role: "user",
       paid_modules_csv: "winekeeper",
       winekeeper_paid: true,
     };
-    expect(canUserAccessModule("winekeeper", user, true)).toBe(false);
-    expect(shouldShowModuleInNav("winekeeper", user, true)).toBe(false);
-    expect(shouldFetchModuleData("winekeeper", user, true)).toBe(false);
+    expect(canUserAccessModule("winekeeper", user, true)).toBe(true);
+    expect(shouldShowModuleInNav("winekeeper", user, true)).toBe(true);
+    expect(shouldFetchModuleData("winekeeper", user, true)).toBe(true);
   });
 });

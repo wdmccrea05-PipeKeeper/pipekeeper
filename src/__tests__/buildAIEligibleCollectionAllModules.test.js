@@ -32,12 +32,12 @@ const fullCollections = {
 
 describe('buildAIEligibleCollection — all modules enabled', () => {
   // moduleStates where every launched module is enabled:
-  // In the test env: pipekeeper, whiskeykeeper, cigarkeeper are launched; winekeeper is internal.
+  // In current config all four modules are launched.
   const allEnabledStates = {
     pipekeeper: true,
     whiskeykeeper: true,
     cigarkeeper: true,
-    // winekeeper is 'internal' in the test env → moduleExists returns false → never AI-eligible via states alone
+    winekeeper: true,
   };
 
   it('returns pipes when pipekeeper is enabled', () => {
@@ -84,20 +84,19 @@ describe('buildAIEligibleCollection — cigarkeeper disabled', () => {
   });
 });
 
-// ─── WineKeeper internal in test env → not AI-eligible ───────────────────────
+// ─── WineKeeper launched in current config → AI-eligible ─────────────────────
 
-describe('buildAIEligibleCollection — winekeeper internal (test env)', () => {
+describe('buildAIEligibleCollection — winekeeper launched', () => {
   const states = { pipekeeper: true, whiskeykeeper: true, cigarkeeper: true, winekeeper: true };
 
-  it('wines are empty when winekeeper is not launched (internal in test env)', () => {
-    // moduleExists('winekeeper') returns false in the test env because it is 'internal'
+  it('returns wines when winekeeper is launched', () => {
     const result = buildAIEligibleCollection(states, fullCollections);
-    expect(result.wines).toEqual([]);
+    expect(result.wines).toEqual(MOCK_WINES);
   });
 
-  it('wineTastings are empty when winekeeper is not launched', () => {
+  it('returns wineTastings when winekeeper is launched', () => {
     const result = buildAIEligibleCollection(states, fullCollections);
-    expect(result.wineTastings).toEqual([]);
+    expect(result.wineTastings).toEqual(MOCK_WINE_TASTINGS);
   });
 });
 
