@@ -16,6 +16,7 @@ describe('curator mobile layout safety contracts', () => {
     expect(src).toBeTruthy();
 
     expect(src.default).toContain('min-h-[100dvh]');
+    expect(src.default).toContain('pt-[env(safe-area-inset-top)]');
     expect(src.default).not.toContain('min-h-screen');
   });
 

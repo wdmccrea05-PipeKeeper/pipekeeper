@@ -7,9 +7,8 @@
  *   launched — available to production users, subject to entitlements
  */
 
-// ─── Feature flags for WineKeeper gating ─────────────────────────────────────
-// Set VITE_WINEKEEPER_PUBLIC_ENABLED=true in environment to publicly launch WineKeeper.
-export const WINEKEEPER_PUBLIC_ENABLED = import.meta.env.VITE_WINEKEEPER_PUBLIC_ENABLED === 'true';
+// WineKeeper is publicly launched by default, with an explicit env rollback escape hatch.
+export const WINEKEEPER_PUBLIC_ENABLED = import.meta.env.VITE_WINEKEEPER_PUBLIC_ENABLED !== 'false';
 
 export const MODULE_RELEASE_STATES = {
   pipekeeper: 'launched',

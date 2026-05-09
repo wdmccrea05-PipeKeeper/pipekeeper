@@ -115,7 +115,7 @@ export default function CuratorPage() {
   }, [surface, SURFACES]);
 
   return (
-    <div className="min-h-[100dvh]" style={{ background: '#0B0B0C' }}>
+    <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)]" style={{ background: '#0B0B0C' }}>
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-4 sm:py-6 md:py-8">
         <header className="mb-8">
           <div className="flex items-center gap-3 mb-3">

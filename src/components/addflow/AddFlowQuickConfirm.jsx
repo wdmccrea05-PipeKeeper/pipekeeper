@@ -40,6 +40,8 @@ function buildRecord(itemType, result) {
     barcode: clean(result.barcode),
     upc: clean(result.upc),
     ean: clean(result.ean),
+    photos: Array.isArray(result.photos) ? result.photos.filter(Boolean) : [],
+    stamping_photos: Array.isArray(result.stamping_photos) ? result.stamping_photos.filter(Boolean) : [],
   };
   if (itemType === 'bottle') return {
     name: result.name,

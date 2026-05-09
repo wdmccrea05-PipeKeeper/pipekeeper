@@ -48,6 +48,7 @@ export default function PhotoUploader({
 
   const handleCropSave = async (croppedDataUrl) => {
     setUploading(true);
+    let didSucceed = false;
     try {
       // Convert data URL to blob
       const res = await fetch(croppedDataUrl);
@@ -56,13 +57,15 @@ export default function PhotoUploader({
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       const newPhotos = [...existingPhotos, file_url];
       if (typeof onPhotosSelected === 'function') onPhotosSelected(newPhotos);
+      didSucceed = true;
     } catch (err) {
       console.error('[PhotoUploader] upload error:', err);
       toast.error('Failed to upload photo');
     } finally {
       setUploading(false);
-      // Close cropper modal after upload completes
-      setCropImageUrl(null);
+      if (didSucceed) {
+        setCropImageUrl(null);
+      }
     }
   };
 

@@ -28,21 +28,21 @@ import { getUserSubscriptionState } from '@/lib/billing/subscriptionState';
 import { hasModuleFreeAccess, hasModuleProAccess, getModuleTier } from '@/components/utils/moduleEntitlements';
 import { SUBSCRIPTION_PLANS } from '@/lib/billing/subscriptionPlans';
 
-// ─── 1. WineKeeper is launched (VITE_WINEKEEPER_PUBLIC_ENABLED=true) ─────────
+// ─── 1. WineKeeper launch state follows env flag ──────────────────────────────
 
-describe('WineKeeper is launched — WINEKEEPER_PUBLIC_ENABLED is true', () => {
-  it('WINEKEEPER_PUBLIC_ENABLED is true', () => {
-    expect(WINEKEEPER_PUBLIC_ENABLED).toBe(true);
+describe('WineKeeper launch state follows VITE_WINEKEEPER_PUBLIC_ENABLED', () => {
+  it('exposes launch flag as boolean', () => {
+    expect(typeof WINEKEEPER_PUBLIC_ENABLED).toBe('boolean');
   });
 
-  it('winekeeper release state is launched', () => {
-    expect(isModuleLaunched('winekeeper')).toBe(true);
-    expect(isModuleInternal('winekeeper')).toBe(false);
+  it('winekeeper release state matches launch flag', () => {
+    expect(isModuleLaunched('winekeeper')).toBe(WINEKEEPER_PUBLIC_ENABLED);
+    expect(isModuleInternal('winekeeper')).toBe(!WINEKEEPER_PUBLIC_ENABLED);
   });
 
   it('paid user can see WineKeeper in nav', () => {
     const user = { role: 'user', winekeeper_paid: true };
-    expect(shouldShowModuleInNav('winekeeper', user, true)).toBe(true);
+    expect(shouldShowModuleInNav('winekeeper', user, true)).toBe(WINEKEEPER_PUBLIC_ENABLED);
   });
 
   it('free user (no entitlement) cannot see WineKeeper in nav', () => {
@@ -52,11 +52,11 @@ describe('WineKeeper is launched — WINEKEEPER_PUBLIC_ENABLED is true', () => {
 
   it('paid user can access WineKeeper module', () => {
     const user = { role: 'user', winekeeper_paid: true };
-    expect(canUserAccessModule('winekeeper', user, true)).toBe(true);
+    expect(canUserAccessModule('winekeeper', user, true)).toBe(WINEKEEPER_PUBLIC_ENABLED);
   });
 
-  it('hasModuleFreeAccess returns true for winekeeper (launched)', () => {
-    expect(hasModuleFreeAccess({ role: 'user' }, 'winekeeper')).toBe(true);
+  it('hasModuleFreeAccess reflects launch status', () => {
+    expect(hasModuleFreeAccess({ role: 'user' }, 'winekeeper')).toBe(WINEKEEPER_PUBLIC_ENABLED);
   });
 });
 
@@ -109,18 +109,26 @@ describe('WineKeeper Stripe plans available when module is launched', () => {
 // ─── 4. subscriptionState includes WineKeeper when launched ──────────────────
 
 describe('subscriptionState includes WineKeeper when module is launched', () => {
-  it('getUserSubscriptionState adds winekeeper to eligibleActions when launched', () => {
+  it('getUserSubscriptionState winekeeper add-on action matches launch status', () => {
     const state = getUserSubscriptionState({
       activeSubscriptions: [{ status: 'active', plan_key: 'pipekeeper_pro_annual' }],
     });
-    expect(state.eligibleActions).toContain('add_winekeeper_module');
+    if (WINEKEEPER_PUBLIC_ENABLED) {
+      expect(state.eligibleActions).toContain('add_winekeeper_module');
+    } else {
+      expect(state.eligibleActions).not.toContain('add_winekeeper_module');
+    }
   });
 
-  it('three_module_bundle user sees upgrade_to_four_module_bundle when winekeeper is launched', () => {
+  it('three_module_bundle four-module upgrade action matches launch status', () => {
     const state = getUserSubscriptionState({
       activeSubscriptions: [{ status: 'active', plan_key: 'three_module_bundle_annual' }],
     });
-    expect(state.eligibleActions).toContain('upgrade_to_four_module_bundle');
+    if (WINEKEEPER_PUBLIC_ENABLED) {
+      expect(state.eligibleActions).toContain('upgrade_to_four_module_bundle');
+    } else {
+      expect(state.eligibleActions).not.toContain('upgrade_to_four_module_bundle');
+    }
   });
 });
 

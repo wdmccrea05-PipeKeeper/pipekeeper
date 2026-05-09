@@ -26,12 +26,14 @@ import {
 // Launch state verification
 // ---------------------------------------------------------------------------
 describe("WineKeeper launch state", () => {
-  it("WINEKEEPER_PUBLIC_ENABLED is true", () => {
+  it("WINEKEEPER_PUBLIC_ENABLED defaults to true", () => {
     expect(WINEKEEPER_PUBLIC_ENABLED).toBe(true);
   });
 
-  it("MODULE_RELEASE_STATES.winekeeper is 'launched'", () => {
-    expect(MODULE_RELEASE_STATES.winekeeper).toBe("launched");
+  it("MODULE_RELEASE_STATES.winekeeper follows launch flag", () => {
+    expect(MODULE_RELEASE_STATES.winekeeper).toBe(
+      WINEKEEPER_PUBLIC_ENABLED ? "launched" : "internal"
+    );
   });
 });
 
@@ -46,7 +48,7 @@ describe("H.1 — WineKeeper nav visibility (launched, entitlement-gated)", () =
 
   it("paid user (hasEntitlement=true) sees WineKeeper in nav", () => {
     const user = { role: "user" };
-    expect(shouldShowModuleInNav("winekeeper", user, true)).toBe(true);
+    expect(shouldShowModuleInNav("winekeeper", user, true)).toBe(WINEKEEPER_PUBLIC_ENABLED);
   });
 
   it("admin user sees WineKeeper in nav", () => {
@@ -69,7 +71,7 @@ describe("H.4 — WineKeeper Curator filter visibility (launched, entitlement-ga
   });
 
   it("paid user: shouldExposeModuleInCurator returns true", () => {
-    expect(shouldExposeModuleInCurator("winekeeper", { role: "user" }, true)).toBe(true);
+    expect(shouldExposeModuleInCurator("winekeeper", { role: "user" }, true)).toBe(WINEKEEPER_PUBLIC_ENABLED);
   });
 
   it("admin user: shouldExposeModuleInCurator returns true", () => {
@@ -86,7 +88,7 @@ describe("H.5 — WineKeeper Session History visibility (launched, entitlement-g
   });
 
   it("paid user: canUserAccessModule true — wine filter chip shown", () => {
-    expect(canUserAccessModule("winekeeper", { role: "user" }, true)).toBe(true);
+    expect(canUserAccessModule("winekeeper", { role: "user" }, true)).toBe(WINEKEEPER_PUBLIC_ENABLED);
   });
 
   it("free user: shouldFetchModuleData false — no wine tastings fetched", () => {
@@ -94,7 +96,7 @@ describe("H.5 — WineKeeper Session History visibility (launched, entitlement-g
   });
 
   it("paid user: shouldFetchModuleData true", () => {
-    expect(shouldFetchModuleData("winekeeper", { role: "user" }, true)).toBe(true);
+    expect(shouldFetchModuleData("winekeeper", { role: "user" }, true)).toBe(WINEKEEPER_PUBLIC_ENABLED);
   });
 
   it("admin user can see wine filter in Session History", () => {

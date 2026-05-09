@@ -44,7 +44,7 @@ describe("accessSummary internal module filtering", () => {
     expect(summary.activeModules).toEqual(["pipekeeper"]);
   });
 
-  it("keeps WineKeeper filtered out for public users even if listed in paid_modules_csv", () => {
+  it("includes WineKeeper for public users when listed in paid_modules_csv", () => {
     const user = {
       role: "user",
       entitlement_tier: "pro",
@@ -54,6 +54,6 @@ describe("accessSummary internal module filtering", () => {
     };
 
     const summary = buildAccessSummary(user, null);
-    expect(summary.activeModules).toEqual(["pipekeeper"]);
+    expect(summary.activeModules.sort()).toEqual(["pipekeeper", "winekeeper"].sort());
   });
 });
