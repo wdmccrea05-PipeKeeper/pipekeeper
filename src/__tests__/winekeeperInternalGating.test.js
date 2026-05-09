@@ -76,25 +76,27 @@ describe('internal_tester/admin pass canAccessInternalModuleForTesting', () => {
 
 // ─── 3. WineKeeper is now launched (VITE_WINEKEEPER_PUBLIC_ENABLED=true) ─────
 
-describe('WineKeeper is launched — VITE_WINEKEEPER_PUBLIC_ENABLED=true', () => {
-  it('WINEKEEPER_PUBLIC_ENABLED is true', () => {
-    expect(WINEKEEPER_PUBLIC_ENABLED).toBe(true);
+describe('WineKeeper release state follows VITE_WINEKEEPER_PUBLIC_ENABLED', () => {
+  it('WINEKEEPER_PUBLIC_ENABLED is boolean', () => {
+    expect(typeof WINEKEEPER_PUBLIC_ENABLED).toBe('boolean');
   });
 
-  it('MODULE_RELEASE_STATES.winekeeper is "launched"', () => {
-    expect(MODULE_RELEASE_STATES.winekeeper).toBe('launched');
+  it('MODULE_RELEASE_STATES.winekeeper follows env launch flag', () => {
+    expect(MODULE_RELEASE_STATES.winekeeper).toBe(
+      WINEKEEPER_PUBLIC_ENABLED ? 'launched' : 'internal'
+    );
   });
 
-  it('isModuleLaunched("winekeeper") is true', () => {
-    expect(isModuleLaunched('winekeeper')).toBe(true);
+  it('isModuleLaunched("winekeeper") matches launch flag', () => {
+    expect(isModuleLaunched('winekeeper')).toBe(WINEKEEPER_PUBLIC_ENABLED);
   });
 
-  it('isModuleInternal("winekeeper") is false', () => {
-    expect(isModuleInternal('winekeeper')).toBe(false);
+  it('isModuleInternal("winekeeper") is inverse of launch flag', () => {
+    expect(isModuleInternal('winekeeper')).toBe(!WINEKEEPER_PUBLIC_ENABLED);
   });
 
   it('regular user with entitlement can access WineKeeper', () => {
-    expect(canUserAccessModule('winekeeper', { role: 'user' }, true)).toBe(true);
+    expect(canUserAccessModule('winekeeper', { role: 'user' }, true)).toBe(WINEKEEPER_PUBLIC_ENABLED);
   });
 
   it('regular user without entitlement cannot access WineKeeper', () => {
@@ -105,17 +107,17 @@ describe('WineKeeper is launched — VITE_WINEKEEPER_PUBLIC_ENABLED=true', () =>
 // ─── 4. Internal Preview badge must NOT show for WineKeeper ──────────────────
 
 describe('Internal Preview badge is hidden when WineKeeper is launched', () => {
-  it('badge condition (isModuleInternal && canAccessInternalModuleForTesting) is false for admin', () => {
+  it('badge condition (isModuleInternal && canAccessInternalModuleForTesting) tracks launch/internal state for admin', () => {
     const admin = { role: 'admin' };
     // Badge only shows when BOTH conditions are true:
     const isInternal = isModuleInternal('winekeeper', admin);
     const canAccess = canAccessInternalModuleForTesting('winekeeper', admin);
-    expect(isInternal && canAccess).toBe(false); // isInternal is false → badge hidden
+    expect(isInternal && canAccess).toBe(!WINEKEEPER_PUBLIC_ENABLED);
   });
 
-  it('badge condition is false for regular user', () => {
+  it('badge condition for regular user follows launch/internal state', () => {
     const user = { role: 'user' };
     const isInternal = isModuleInternal('winekeeper', user);
-    expect(isInternal).toBe(false);
+    expect(isInternal).toBe(!WINEKEEPER_PUBLIC_ENABLED);
   });
 });
