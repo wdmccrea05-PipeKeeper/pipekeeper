@@ -466,24 +466,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           ))}
           <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
             <PhotoUploader
-              onPhotosSelected={(files) => {
-                const file = files?.[0];
-                if (!file) return;
-                try {
-                  const reader = new FileReader();
-                  reader.onload = (event) => {
-                    setCropperImage(event.target.result);
-                    setCropperType('photo');
-                  };
-                  reader.readAsDataURL(file);
-                } catch (err) {
-                  console.error('Error reading file:', err);
-                }
+              onPhotosSelected={(photoUrls) => {
+                handleChange('photos', Array.isArray(photoUrls) ? photoUrls : []);
+                toast.success('Pipe photo added - click Save to persist');
               }}
               showSearchOption={false}
               recordType="pipe"
               recordData={formData}
-              existingPhotos={[]}
+              existingPhotos={formData.photos || []}
               hideExisting
             />
           </div>
@@ -521,24 +511,14 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           ))}
           <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
             <PhotoUploader
-              onPhotosSelected={(files) => {
-                const file = files?.[0];
-                if (!file) return;
-                try {
-                  const reader = new FileReader();
-                  reader.onload = (event) => {
-                    setCropperImage(event.target.result);
-                    setCropperType('stamping');
-                  };
-                  reader.readAsDataURL(file);
-                } catch (err) {
-                  console.error('Error reading file:', err);
-                }
+              onPhotosSelected={(photoUrls) => {
+                handleChange('stamping_photos', Array.isArray(photoUrls) ? photoUrls : []);
+                toast.success('Stamping photo added - click Save to persist');
               }}
               showSearchOption={false}
               recordType="pipe"
               recordData={formData}
-              existingPhotos={[]}
+              existingPhotos={formData.stamping_photos || []}
               hideExisting
             />
           </div>

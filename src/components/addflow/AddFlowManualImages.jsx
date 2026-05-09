@@ -49,7 +49,8 @@ function buildBaseRecord(itemType, data) {
       finish: data.finish,
       condition: data.condition,
       notes: data.notes,
-      photos: Array.isArray(data.photos) && data.photos.length ? data.photos : undefined,
+      photos: Array.isArray(data.photos) ? data.photos.filter(Boolean) : [],
+      stamping_photos: Array.isArray(data.stamping_photos) ? data.stamping_photos.filter(Boolean) : [],
     });
   }
 
@@ -897,6 +898,10 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
     try {
       const finalData = { ...data };
+      if (itemType === 'pipe') {
+        finalData.photos = Array.isArray(finalData.photos) ? finalData.photos.filter(Boolean) : [];
+        finalData.stamping_photos = Array.isArray(finalData.stamping_photos) ? finalData.stamping_photos.filter(Boolean) : [];
+      }
 
       if (imageUrl) {
         if (itemType === 'blend') finalData.logo = imageUrl;
@@ -926,13 +931,14 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           ...bottleSafeInventory,
           ...imageMetaPayload,
           ...(itemType === 'blend' ? { logo: finalData.logo } : {}),
-          ...(itemType === 'pipe' ? { photos: finalData.photos } : {}),
+          ...(itemType === 'pipe' ? { photos: finalData.photos, stamping_photos: finalData.stamping_photos } : {}),
           ...(itemType === 'bottle' ? { photo: finalData.photo } : {}),
           ...(itemType === 'cigar' ? { photos: finalData.photos } : {}),
           ...(itemType === 'wine' ? { photos: finalData.photos } : {}),
         });
 
         await base44.entities[ENTITIES[itemType]].update(finalData._quickRecord.id, updateData);
+        const refreshedRecord = await base44.entities[ENTITIES[itemType]].get(finalData._quickRecord.id).catch(() => null);
 
         if (itemType === 'blend') {
           await createCellarLogsForBlend(finalData._quickRecord.id, { ...finalData, ...updateData }, finalData._quickRecord.name);
@@ -967,7 +973,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         }
 
         toast.success(`${typeLabel} saved!`);
-        onCreated?.({ ...finalData._quickRecord, ...updateData });
+        onCreated?.({ ...finalData._quickRecord, ...updateData, ...(refreshedRecord || {}) });
         return;
       }
 
