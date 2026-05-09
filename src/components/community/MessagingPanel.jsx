@@ -360,7 +360,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
       {/* Chat Sheet */}
       <Sheet open={!!selectedFriend} onOpenChange={() => setSelectedFriend(null)}>
-        <SheetContent className="w-full sm:max-w-lg flex flex-col" style={{ paddingTop: 'calc(1rem + var(--safe-area-top))' }}>
+        <SheetContent className="w-full sm:max-w-lg flex flex-col" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
           <SheetHeader>
             <SheetTitle className="flex items-center gap-3">
               <div className="relative">
@@ -523,7 +523,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
       {/* Inbox Sheet */}
       <Sheet open={showInbox} onOpenChange={setShowInbox}>
-        <SheetContent className="w-full sm:max-w-lg" style={{ paddingTop: 'calc(1rem + var(--safe-area-top))' }}>
+        <SheetContent className="w-full sm:max-w-lg" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
           <SheetHeader>
             <SheetTitle className="text-[#F5F1E7]">{t("messaging.messageInbox", "Message Inbox")}</SheetTitle>
             <SheetDescription className="sr-only">{t("messaging.inboxDescription", "Your messages")}</SheetDescription>

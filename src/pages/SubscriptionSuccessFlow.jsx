@@ -19,6 +19,14 @@ const MODULE_PAGE = {
   pipekeeper: '/Pipes',
   whiskeykeeper: '/Whiskey',
   cigarkeeper: '/Tobacco',
+  winekeeper: '/WineKeeper',
+};
+
+const MODULE_IMPORT_TYPE = {
+  pipekeeper: 'pipekeeper_pipes',
+  whiskeykeeper: 'whiskeykeeper_bottles',
+  cigarkeeper: 'cigarkeeper_cigars',
+  winekeeper: 'winekeeper_wines',
 };
 
 function toDisplayName(moduleKey) {
@@ -197,10 +205,12 @@ export default function SubscriptionSuccessFlow() {
       });
     }
 
+    const importType = primaryModule ? MODULE_IMPORT_TYPE[primaryModule] : null;
+
     actions.push(
       {
         label: t('subscription.importRecordsAction'),
-        onClick: () => navigate('/Import'),
+        onClick: () => navigate(importType ? `/Import?type=${encodeURIComponent(importType)}` : '/Import'),
       },
       {
         label: t('subscription.startCollectionAction'),
