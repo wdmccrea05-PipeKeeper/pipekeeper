@@ -939,7 +939,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
         await base44.entities[ENTITIES[itemType]].update(finalData._quickRecord.id, updateData);
         const refreshedRecord = await base44.entities[ENTITIES[itemType]].get(finalData._quickRecord.id).catch((refreshError) => {
-          console.error('[AddFlowManualImages] failed to refresh record after update', refreshError);
+          console.error(`[AddFlowManualImages] failed to refresh ${itemType} record after update:`, finalData._quickRecord.id, refreshError);
           return null;
         });
 

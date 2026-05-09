@@ -7,8 +7,8 @@
  *   launched — available to production users, subject to entitlements
  */
 
-// WineKeeper is now publicly launched.
-export const WINEKEEPER_PUBLIC_ENABLED = true;
+// WineKeeper is publicly launched by default, with an explicit env rollback escape hatch.
+export const WINEKEEPER_PUBLIC_ENABLED = import.meta.env.VITE_WINEKEEPER_PUBLIC_ENABLED !== 'false';
 
 export const MODULE_RELEASE_STATES = {
   pipekeeper: 'launched',

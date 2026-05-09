@@ -26,8 +26,8 @@ import {
 // Launch state verification
 // ---------------------------------------------------------------------------
 describe("WineKeeper launch state", () => {
-  it("WINEKEEPER_PUBLIC_ENABLED is boolean", () => {
-    expect(typeof WINEKEEPER_PUBLIC_ENABLED).toBe("boolean");
+  it("WINEKEEPER_PUBLIC_ENABLED defaults to true", () => {
+    expect(WINEKEEPER_PUBLIC_ENABLED).toBe(true);
   });
 
   it("MODULE_RELEASE_STATES.winekeeper follows launch flag", () => {
