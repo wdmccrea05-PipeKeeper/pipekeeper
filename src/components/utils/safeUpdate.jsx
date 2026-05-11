@@ -135,6 +135,8 @@ function sanitizeSerializableValue(value) {
  */
 export async function safeUpdate(entityName, id, updates, userEmail = null) {
   const rawPayload = updates || {};
+  const shouldDebugLogUpdateFlow =
+    import.meta?.env?.DEV || import.meta?.env?.VITE_DEBUG_UPDATE_FLOW === "true";
   try {
     // Try to fetch entity with both string and number ID types
     const idStr = String(id);
@@ -209,17 +211,20 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
 
     const finalPayload = sanitized;
 
-    console.debug("[UPDATE RAW]", rawPayload);
-    console.debug("[UPDATE SANITIZED]", sanitized);
-    console.debug("[UPDATE FINAL]", finalPayload);
+    if (shouldDebugLogUpdateFlow) {
+      console.debug("[UPDATE RAW]", rawPayload);
+      console.debug("[UPDATE SANITIZED]", sanitized);
+      console.debug("[UPDATE FINAL]", finalPayload);
+    }
     
     // Perform update using the ID that actually worked (current.id)
     const response = await base44.entities[entityName].update(current.id, finalPayload);
-    console.debug("[UPDATE RESPONSE]", response);
+    if (shouldDebugLogUpdateFlow) {
+      console.debug("[UPDATE RESPONSE]", response);
+    }
     return response;
   } catch (error) {
-    console.error("[UPDATE FAILED]", error);
-    console.error(`safeUpdate failed for ${entityName}:`, error);
+    console.error("[UPDATE FAILED]", { entityName, id, error });
     throw new Error(normalizeErrorMessage(error));
   }
 }
