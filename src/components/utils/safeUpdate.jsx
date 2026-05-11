@@ -30,6 +30,25 @@ function removeUndefinedValues(input = {}) {
   return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
 }
 
+const IMMUTABLE_UPDATE_FIELDS = new Set([
+  "id",
+  "created_date",
+  "updated_date",
+  "_id",
+  "_createdDate",
+  "_updatedDate",
+]);
+
+function stripImmutableUpdateFields(input = {}) {
+  const next = { ...input };
+  for (const field of IMMUTABLE_UPDATE_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(next, field)) {
+      delete next[field];
+    }
+  }
+  return next;
+}
+
 function normalizeFlavorProfileForSave(value) {
   if (!Array.isArray(value)) return [];
   return [...new Set(
@@ -115,6 +134,7 @@ function sanitizeSerializableValue(value) {
  * @returns {Promise} Updated entity
  */
 export async function safeUpdate(entityName, id, updates, userEmail = null) {
+  const rawPayload = updates || {};
   try {
     // Try to fetch entity with both string and number ID types
     const idStr = String(id);
@@ -148,11 +168,11 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
     // Re-sending the full current record can fail on legacy records that contain
     // deprecated/invalid fields no longer accepted by the current backend schema.
     const createdByField =
-      updates?.created_by === undefined && current?.created_by
+      rawPayload?.created_by === undefined && current?.created_by
         ? { created_by: current.created_by }
         : {};
     const merged = removeUndefinedValues({
-      ...updates,
+      ...stripImmutableUpdateFields(rawPayload),
       ...createdByField,
     });
     if (Object.prototype.hasOwnProperty.call(merged, "replace_photos")) delete merged.replace_photos;
@@ -161,14 +181,14 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
     if (Object.prototype.hasOwnProperty.call(merged, "__replace_stamping_photos")) delete merged.__replace_stamping_photos;
     const sanitized = sanitizeSerializableValue(merged) || {};
 
-    if (Object.prototype.hasOwnProperty.call(updates || {}, "photos")) {
-      const shouldReplacePhotos = updates?.replace_photos === true || updates?.__replace_photos === true;
+    if (Object.prototype.hasOwnProperty.call(rawPayload, "photos")) {
+      const shouldReplacePhotos = rawPayload?.replace_photos === true || rawPayload?.__replace_photos === true;
       sanitized.photos = shouldReplacePhotos
         ? normalizePhotoArray(sanitized.photos)
         : mergePhotoArrays(current?.photos, sanitized.photos);
     }
-    if (Object.prototype.hasOwnProperty.call(updates || {}, "stamping_photos")) {
-      const shouldReplaceStamping = updates?.replace_stamping_photos === true || updates?.__replace_stamping_photos === true;
+    if (Object.prototype.hasOwnProperty.call(rawPayload, "stamping_photos")) {
+      const shouldReplaceStamping = rawPayload?.replace_stamping_photos === true || rawPayload?.__replace_stamping_photos === true;
       sanitized.stamping_photos = shouldReplaceStamping
         ? normalizePhotoArray(sanitized.stamping_photos)
         : mergePhotoArrays(current?.stamping_photos, sanitized.stamping_photos);
@@ -189,15 +209,16 @@ export async function safeUpdate(entityName, id, updates, userEmail = null) {
 
     const finalPayload = sanitized;
 
-    if (import.meta?.env?.DEV) {
-      console.debug("[UPDATE:RAW]", updates);
-      console.debug("[UPDATE:SANITIZED]", sanitized);
-      console.debug("[UPDATE:FINAL]", finalPayload);
-    }
+    console.debug("[UPDATE RAW]", rawPayload);
+    console.debug("[UPDATE SANITIZED]", sanitized);
+    console.debug("[UPDATE FINAL]", finalPayload);
     
     // Perform update using the ID that actually worked (current.id)
-    return await base44.entities[entityName].update(current.id, finalPayload);
+    const response = await base44.entities[entityName].update(current.id, finalPayload);
+    console.debug("[UPDATE RESPONSE]", response);
+    return response;
   } catch (error) {
+    console.error("[UPDATE FAILED]", error);
     console.error(`safeUpdate failed for ${entityName}:`, error);
     throw new Error(normalizeErrorMessage(error));
   }

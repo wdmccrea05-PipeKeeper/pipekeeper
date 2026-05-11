@@ -181,6 +181,39 @@ describe("safeUpdate", () => {
     });
   });
 
+  it("strips immutable/system fields while preserving falsey edited values", async () => {
+    getMock.mockResolvedValue({
+      id: "blend-sanitize-1",
+      created_by: "user@example.com",
+    });
+    updateMock.mockResolvedValue({ id: "blend-sanitize-1" });
+
+    await safeUpdate(
+      "TobaccoBlend",
+      "blend-sanitize-1",
+      {
+        id: "blend-sanitize-1",
+        created_date: "2026-01-01T00:00:00.000Z",
+        updated_date: "2026-01-02T00:00:00.000Z",
+        name: "",
+        tin_total_tins: 0,
+        ai_excluded: false,
+      },
+      "user@example.com"
+    );
+
+    const [, payload] = updateMock.mock.calls.at(-1);
+    expect(payload).toMatchObject({
+      name: "",
+      tin_total_tins: 0,
+      ai_excluded: false,
+      created_by: "user@example.com",
+    });
+    expect(payload).not.toHaveProperty("id");
+    expect(payload).not.toHaveProperty("created_date");
+    expect(payload).not.toHaveProperty("updated_date");
+  });
+
   it("does not wipe flavor_profile on unrelated TobaccoBlend updates", async () => {
     getMock.mockResolvedValue({
       id: "blend-keep-flavor-1",
