@@ -159,4 +159,34 @@ describe('TobaccoForm flavor profile', () => {
     expect(payload.tobacco_components).toEqual(['Virginia']);
     expect(JSON.stringify(payload)).not.toContain('undefined');
   });
+
+  it('omits immutable/system fields from edit payloads', () => {
+    const onSave = vi.fn();
+    const blend = {
+      id: 'blend-immutable-1',
+      name: 'Immutable Blend',
+      manufacturer: 'Acme',
+      created_date: '2026-01-01T00:00:00.000Z',
+      updated_date: '2026-01-02T00:00:00.000Z',
+      created_by: 'test@example.com',
+      flavor_profile: ['Sweet'],
+    };
+
+    fireEvent.submit(
+      render(<TobaccoForm blend={blend} onSave={onSave} onCancel={vi.fn()} isLoading={false} />)
+        .container.querySelector('form')
+    );
+
+    const payload = onSave.mock.calls[0][0];
+    expect(payload).toMatchObject({
+      name: 'Immutable Blend',
+      manufacturer: 'Acme',
+      flavor_profile: ['Sweet'],
+      flavor_notes: ['Sweet'],
+    });
+    expect(payload).not.toHaveProperty('id');
+    expect(payload).not.toHaveProperty('created_date');
+    expect(payload).not.toHaveProperty('updated_date');
+    expect(payload).not.toHaveProperty('created_by');
+  });
 });

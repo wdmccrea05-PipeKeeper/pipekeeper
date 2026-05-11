@@ -72,6 +72,8 @@ const DEFAULT_FORM_DATA = {
   ai_excluded: false
 };
 
+const TOBACCO_EDITABLE_FIELDS = Object.keys(DEFAULT_FORM_DATA);
+
 function normalizeBlendFormData(blend) {
   if (!blend) {
     return { ...DEFAULT_FORM_DATA };
@@ -335,8 +337,15 @@ Return complete and accurate information based on the blend name or description 
     const normalizedFlavorProfile = normalizeFlavorProfile(formData.flavor_profile);
     const normalizedComponents = normalizeStringArray(formData.tobacco_components);
 
+    const editableFormData = TOBACCO_EDITABLE_FIELDS.reduce((acc, field) => {
+      if (Object.prototype.hasOwnProperty.call(formData, field)) {
+        acc[field] = formData[field];
+      }
+      return acc;
+    }, {});
+
     const cleanedData = {
-      ...formData,
+      ...editableFormData,
       tobacco_components: normalizedComponents,
       flavor_profile: normalizedFlavorProfile,
       flavor_notes: normalizedFlavorProfile,
