@@ -1,7 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import {
+  calculateRunRate,
+  inDateRange,
+  isReportingActiveStatus,
+  normalizeMetricInterval,
+  parseMetricDate,
+  periodRange,
+  rollingRange,
+  roundMoney,
+  summarizeRevenueRowsInRange,
+} from '../_shared/reportingMetrics.ts';
 
 const PAGE_SIZE = 100;
-const ACTIVE_STATUSES = new Set(['active', 'trialing', 'paid']);
 const ENTITLEMENT_ACTIVE_STATUSES = new Set(['active', 'granted', 'enabled', 'paid', 'pro']);
 const MONTH_ALIASES = ['month', 'monthly', 'mo'];
 const YEAR_ALIASES = ['year', 'yearly', 'annual', 'yr'];
@@ -13,7 +23,7 @@ const MODULE_ALIASES = {
 };
 const KNOWN_MODULES = new Set(['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']);
 const PRODUCT_ALIASES = [
-  { family: 'bundle', markers: ['founders_bundle', 'founders', 'bundle', '3_module_bundle', 'three_module_bundle', 'bundle_3'] },
+  { family: 'bundle', markers: ['founders_bundle', 'founders', '4_module_bundle', 'four_module_bundle', 'four_module', 'bundle_4', '3_module_bundle', 'three_module_bundle', 'three_module', 'bundle_3', 'bundle'] },
   { family: 'pipekeeper', markers: ['pipekeeper', 'pipe keeper', 'pk'] },
   { family: 'whiskeykeeper', markers: ['whiskeykeeper', 'whiskey keeper', 'wk', 'whiskey'] },
   { family: 'cigarkeeper', markers: ['cigarkeeper', 'cigar keeper', 'ck', 'cigar'] },
@@ -24,14 +34,6 @@ const PRODUCT_ALIASES = [
 
 function norm(v) { return String(v ?? '').trim().toLowerCase(); }
 function uniq(arr) { return [...new Set(arr)]; }
-function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
-
-function parseDate(v) {
-  if (!v) return null;
-  const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
-
 // Threshold below which a dollar amount is considered suspiciously low (likely intro/trial pricing)
 const INTRO_PRICE_THRESHOLD = 2.50; // $2.50 or less = likely introductory / promotional
 
@@ -47,7 +49,7 @@ function parseMoney(...values) {
     // Rule: integer >= 100 → divide by 100
     if (Number.isInteger(n) && n >= 100) n = n / 100;
     if (n <= 0) continue;
-    return round2(n);
+    return roundMoney(n);
   }
   return null;
 }
@@ -70,7 +72,7 @@ function median(arr) {
   if (arr.length === 0) return 0;
   const sorted = arr.slice().sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0 ? sorted[mid] : round2((sorted[mid - 1] + sorted[mid]) / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : roundMoney((sorted[mid - 1] + sorted[mid]) / 2);
 }
 
 function splitCsv(v) {
@@ -96,35 +98,6 @@ async function fetchAllSafe(entity) {
     console.warn('[v3] fetch failed:', e?.message || e);
     return [];
   }
-}
-
-function periodRange(kind, now) {
-  const start = new Date(now);
-  const end = new Date(now);
-  if (kind === 'week') {
-    const dow = start.getUTCDay();
-    const fromMonday = dow === 0 ? 6 : dow - 1;
-    start.setUTCDate(start.getUTCDate() - fromMonday);
-    start.setUTCHours(0, 0, 0, 0);
-    end.setTime(start.getTime());
-    end.setUTCDate(end.getUTCDate() + 7);
-  } else if (kind === 'month') {
-    start.setUTCDate(1); start.setUTCHours(0, 0, 0, 0);
-    end.setUTCMonth(start.getUTCMonth() + 1, 1); end.setUTCHours(0, 0, 0, 0);
-  } else if (kind === 'quarter') {
-    const q = Math.floor(start.getUTCMonth() / 3);
-    start.setUTCMonth(q * 3, 1); start.setUTCHours(0, 0, 0, 0);
-    end.setUTCMonth(q * 3 + 3, 1); end.setUTCHours(0, 0, 0, 0);
-  } else {
-    start.setUTCMonth(0, 1); start.setUTCHours(0, 0, 0, 0);
-    end.setUTCFullYear(start.getUTCFullYear() + 1, 0, 1); end.setUTCHours(0, 0, 0, 0);
-  }
-  return { start, end };
-}
-
-function inRange(d, range) {
-  if (!d) return false;
-  return d >= range.start && d < range.end;
 }
 
 // ─── Identity resolution (from ActiveContract) ────────────────────────────────
@@ -175,7 +148,8 @@ function resolveModulesRaw(row, familyHint) {
   if (familyHint === 'bundle') {
     const marker = norm(row.bundle_name || row.plan_key || row.product_kind || row.price_id || row.apple_product_id || row.productId || row.product_family || '');
     if (marker.includes('founders')) return ['pipekeeper', 'whiskeykeeper'];
-    if (marker.includes('3_module') || marker.includes('three_module') || marker.includes('bundle_3') || marker.includes('four')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+    if (marker.includes('4_module') || marker.includes('four_module') || marker.includes('bundle_4')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
+    if (marker.includes('3_module') || marker.includes('three_module') || marker.includes('bundle_3')) return ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
     return ['pipekeeper', 'whiskeykeeper'];
   }
   return [];
@@ -183,8 +157,8 @@ function resolveModulesRaw(row, familyHint) {
 
 function resolveInterval(row) {
   const direct = norm(row.billing_interval || row.billing_period || row.interval || row.plan_interval || row.recurring_interval || row.period || '');
-  if (MONTH_ALIASES.some((m) => direct.includes(m))) return 'month';
-  if (YEAR_ALIASES.some((y) => direct.includes(y))) return 'year';
+  const directInterval = normalizeMetricInterval(direct);
+  if (directInterval) return directInterval;
   const metaFields = [
     row.price_id, row.stripe_price_id, row.apple_product_id, row.plan_key, row.plan_id,
     row.product_kind, row.productId, row.product_family,
@@ -197,7 +171,7 @@ function resolveInterval(row) {
 
 function isActiveStatus(row) {
   const s = norm(row.status || row.contract_status || '');
-  if (ACTIVE_STATUSES.has(s)) return true;
+  if (isReportingActiveStatus(s)) return true;
   if (row.is_active === true) return true;
   if (row.active === true) return true;
   return false;
@@ -240,11 +214,11 @@ function extractFinancials(subRow) {
     subRow.metadata?.amount, subRow.metadata?.renewal_amount
   );
   const interval = resolveInterval(subRow);
-  const renewalDate = parseDate(subRow.current_period_end) ||
-    parseDate(subRow.renewal_date) ||
-    parseDate(subRow.next_billing_date) ||
-    parseDate(subRow.trial_end_date) ||
-    parseDate(subRow.metadata?.renewal_date) || null;
+  const renewalDate = parseMetricDate(subRow.current_period_end) ||
+    parseMetricDate(subRow.renewal_date) ||
+    parseMetricDate(subRow.next_billing_date) ||
+    parseMetricDate(subRow.trial_end_date) ||
+    parseMetricDate(subRow.metadata?.renewal_date) || null;
   return { amount, interval, renewalDate };
 }
 
@@ -314,12 +288,12 @@ function pickBestSubCandidate(candidates) {
     const bFin = financialScore(extractFinancials(b.sub));
     if (bFin !== aFin) return bFin - aFin;
     // prefer latest renewal date
-    const aRenewal = parseDate(a.sub.current_period_end || a.sub.renewal_date)?.getTime() || 0;
-    const bRenewal = parseDate(b.sub.current_period_end || b.sub.renewal_date)?.getTime() || 0;
+    const aRenewal = parseMetricDate(a.sub.current_period_end || a.sub.renewal_date)?.getTime() || 0;
+    const bRenewal = parseMetricDate(b.sub.current_period_end || b.sub.renewal_date)?.getTime() || 0;
     if (bRenewal !== aRenewal) return bRenewal - aRenewal;
     // prefer latest created date
-    const aCreated = parseDate(a.sub.created_date || a.sub.created_at)?.getTime() || 0;
-    const bCreated = parseDate(b.sub.created_date || b.sub.created_at)?.getTime() || 0;
+    const aCreated = parseMetricDate(a.sub.created_date || a.sub.created_at)?.getTime() || 0;
+    const bCreated = parseMetricDate(b.sub.created_date || b.sub.created_at)?.getTime() || 0;
     return bCreated - aCreated;
   })[0].sub;
 }
@@ -394,6 +368,9 @@ function buildHybridRow(acRow, usersByEmail, lookups) {
   let canonical_amount = acFinancials.amount;
   let canonical_billing_interval = acFinancials.interval;
   let canonical_renewal_date = acFinancials.renewalDate;
+  let canonical_started_at = parseMetricDate(
+    acRow.started_at || acRow.current_period_start || acRow.created_date || acRow.created_at,
+  );
   let financial_source = 'ActiveContract';
   let matchLevel = null;
 
@@ -405,6 +382,9 @@ function buildHybridRow(acRow, usersByEmail, lookups) {
     canonical_amount = subFin.amount || acFinancials.amount;
     canonical_billing_interval = subFin.interval || acFinancials.interval;
     canonical_renewal_date = subFin.renewalDate || acFinancials.renewalDate;
+    canonical_started_at = parseMetricDate(
+      match.sub.started_at || match.sub.current_period_start || match.sub.created_date || match.sub.created_at,
+    ) || canonical_started_at;
     financial_source = (subFin.amount || subFin.interval || subFin.renewalDate) ? 'merged' : 'ActiveContract';
   }
 
@@ -429,6 +409,7 @@ function buildHybridRow(acRow, usersByEmail, lookups) {
     canonical_amount,
     canonical_billing_interval,
     canonical_renewal_date,
+    canonical_started_at,
     is_active_paid_contract: isActive,
     is_financially_eligible,
     financial_source,
@@ -576,22 +557,21 @@ Deno.serve(async (req) => {
     }
 
     // ── Step 6: Revenue ──
-    const mrr = round2(financiallyEligible.reduce((sum, row) => {
-      if (row.canonical_billing_interval === 'year') return sum + (row.canonical_amount / 12);
-      return sum + row.canonical_amount;
-    }, 0));
-    const arr = round2(mrr * 12);
+    const { mrr, arr } = calculateRunRate(financiallyEligible, {
+      getAmount: (row) => row.canonical_amount || 0,
+      getInterval: (row) => row.canonical_billing_interval,
+    });
 
     // ── Step 7: Renewals (calendar-period buckets, unchanged) ──
     const renewalPeriods = {};
     for (const key of ['week', 'month', 'quarter', 'year']) {
       const range = periodRange(key, now);
-      const renewing = financiallyEligible.filter((r) => inRange(r.canonical_renewal_date, range));
-      renewalPeriods[key] = {
-        customers: uniq(renewing.map((r) => r.canonical_user_id)).length,
-        subscriptions: renewing.length,
-        revenue: round2(renewing.reduce((sum, r) => sum + (r.canonical_amount || 0), 0)),
-      };
+      renewalPeriods[key] = summarizeRevenueRowsInRange(financiallyEligible, range, {
+        getUserKey: (row) => row.canonical_user_id,
+        getAmount: (row) => row.canonical_amount || 0,
+        getInterval: (row) => row.canonical_billing_interval,
+        getDate: (row) => row.canonical_renewal_date,
+      });
     }
 
     // ── Step 7b: Forecast ──────────────────────────────────────────────────────
@@ -599,12 +579,8 @@ Deno.serve(async (req) => {
     const RETENTION = { month: 0.85, year: 0.75, unknown: 0.80 };
 
     // Helper: rolling window from now
-    function rollingEnd(days) {
-      const d = new Date(now); d.setUTCDate(d.getUTCDate() + days); return d;
-    }
     function inRolling(d, days) {
-      if (!d) return false;
-      return d >= now && d < rollingEnd(days);
+      return inDateRange(d, rollingRange(now, days));
     }
 
     // Committed renewal: rows WITH renewal_date in window, using actual amounts
@@ -613,7 +589,7 @@ Deno.serve(async (req) => {
       return {
         customers: uniq(rows.map((r) => r.canonical_user_id)).length,
         subscriptions: rows.length,
-        revenue: round2(rows.reduce((sum, r) => sum + (r.canonical_amount || 0), 0)),
+        revenue: roundMoney(rows.reduce((sum, r) => sum + (r.canonical_amount || 0), 0)),
       };
     }
 
@@ -624,7 +600,7 @@ Deno.serve(async (req) => {
         const p = RETENTION[r.canonical_billing_interval] ?? RETENTION.unknown;
         return sum + (r.canonical_amount || 0) * p;
       }, 0);
-      return round2(weighted);
+      return roundMoney(weighted);
     }
 
     // ── Avg First Billing — audited calculation ────────────────────────────────
@@ -664,7 +640,7 @@ Deno.serve(async (req) => {
     // Prefer standard amounts for forecast avg; fall back to all if no standard rows
     const avgSourceAmounts = standardBillingAmounts.length > 0 ? standardBillingAmounts : [...standardBillingAmounts, ...introBillingAmounts];
     const avgFirstBilling = avgSourceAmounts.length > 0
-      ? round2(avgSourceAmounts.reduce((s, v) => s + v, 0) / avgSourceAmounts.length)
+      ? roundMoney(avgSourceAmounts.reduce((s, v) => s + v, 0) / avgSourceAmounts.length)
       : 0;
 
     const billingAudit = {
@@ -674,8 +650,8 @@ Deno.serve(async (req) => {
       introPriceCount: introBillingAmounts.length,
       avgFirstBillingAmount: avgFirstBilling,
       avgSourceNote: standardBillingAmounts.length > 0 ? 'standard_prices_only' : 'all_prices_fallback',
-      minAmount: avgSourceAmounts.length > 0 ? round2(Math.min(...avgSourceAmounts)) : 0,
-      maxAmount: avgSourceAmounts.length > 0 ? round2(Math.max(...avgSourceAmounts)) : 0,
+      minAmount: avgSourceAmounts.length > 0 ? roundMoney(Math.min(...avgSourceAmounts)) : 0,
+      maxAmount: avgSourceAmounts.length > 0 ? roundMoney(Math.max(...avgSourceAmounts)) : 0,
       medianAmount: median(avgSourceAmounts),
       introPriceThreshold: INTRO_PRICE_THRESHOLD,
       introAmounts: introBillingAmounts.slice().sort((a, b) => a - b),
@@ -684,20 +660,23 @@ Deno.serve(async (req) => {
     };
 
     // New revenue forecast: based on recent 90-day new paid user trend
-    // Count distinct users whose FIRST paid contract was within last 90 days
+    // Count distinct users whose first financially eligible paid contract was within last 90 days
     const last90Start = new Date(now); last90Start.setUTCDate(last90Start.getUTCDate() - 90);
-    const recentlyConvertedUsers = new Set();
+    const firstPaidContractByUser = new Map();
     for (const row of financiallyEligible) {
       if (isMalformedBillingRow(row)) continue;
-      const user = users.find((u) => String(u.id) === row.canonical_user_id || norm(u.email) === row.canonical_email);
-      const joinDate = user ? parseDate(user.created_date || user.created_at) : null;
-      if (joinDate && joinDate >= last90Start) recentlyConvertedUsers.add(row.canonical_user_id);
+      const startedAt = row.canonical_started_at;
+      if (!startedAt) continue;
+      const existing = firstPaidContractByUser.get(row.canonical_user_id);
+      if (!existing || startedAt < existing) {
+        firstPaidContractByUser.set(row.canonical_user_id, startedAt);
+      }
     }
-    const newPaidPer90Days = recentlyConvertedUsers.size;
+    const newPaidPer90Days = [...firstPaidContractByUser.values()].filter((startedAt) => startedAt >= last90Start).length;
     const newPaidPerDay = newPaidPer90Days / 90;
 
     function newRevenueForecast(days) {
-      return round2(newPaidPerDay * days * avgFirstBilling);
+      return roundMoney(newPaidPerDay * days * avgFirstBilling);
     }
 
     const forecast = {
@@ -706,7 +685,9 @@ Deno.serve(async (req) => {
         annualRetention: RETENTION.year,
         newPaidMethod: 'recent_90d_trend × avg_first_billing (standard_prices_only)',
         newPaidPer90Days,
-        newPaidPerDay: round2(newPaidPerDay * 30) + ' per 30d (approx)',
+        newPaidPerDay,
+        newPaidPerDayLabel: `${roundMoney(newPaidPerDay * 30)} per 30d (approx)`,
+        newPaidPer30Days: roundMoney(newPaidPerDay * 30),
         avgFirstBillingAmount: avgFirstBilling,
         billingAudit,
       },
@@ -726,19 +707,19 @@ Deno.serve(async (req) => {
         next365: newRevenueForecast(365),
       },
       totalExpected: {
-        next30: round2(expectedRenewal(30) + newRevenueForecast(30)),
-        next90: round2(expectedRenewal(90) + newRevenueForecast(90)),
-        next365: round2(expectedRenewal(365) + newRevenueForecast(365)),
+        next30: roundMoney(expectedRenewal(30) + newRevenueForecast(30)),
+        next90: roundMoney(expectedRenewal(90) + newRevenueForecast(90)),
+        next365: roundMoney(expectedRenewal(365) + newRevenueForecast(365)),
       },
     };
 
     // ── Step 8: New users ──
     const newUsers = {
-      today: users.filter((u) => { const d = parseDate(u.created_date || u.created_at); if (!d) return false; const start = new Date(now); start.setHours(0, 0, 0, 0); return d >= start; }).length,
-      week: users.filter((u) => inRange(parseDate(u.created_date || u.created_at), periodRange('week', now))).length,
-      month: users.filter((u) => inRange(parseDate(u.created_date || u.created_at), periodRange('month', now))).length,
-      quarter: users.filter((u) => inRange(parseDate(u.created_date || u.created_at), periodRange('quarter', now))).length,
-      year: users.filter((u) => inRange(parseDate(u.created_date || u.created_at), periodRange('year', now))).length,
+      today: users.filter((u) => { const d = parseMetricDate(u.created_date || u.created_at); if (!d) return false; const start = new Date(now); start.setHours(0, 0, 0, 0); return d >= start; }).length,
+      week: users.filter((u) => inDateRange(parseMetricDate(u.created_date || u.created_at), periodRange('week', now))).length,
+      month: users.filter((u) => inDateRange(parseMetricDate(u.created_date || u.created_at), periodRange('month', now))).length,
+      quarter: users.filter((u) => inDateRange(parseMetricDate(u.created_date || u.created_at), periodRange('quarter', now))).length,
+      year: users.filter((u) => inDateRange(parseMetricDate(u.created_date || u.created_at), periodRange('year', now))).length,
     };
 
     const signupSources = users.reduce((acc, u) => {
@@ -787,7 +768,7 @@ Deno.serve(async (req) => {
           modules,
           status: 'paying_user',
           subscriptionCount: rows.length,
-          totalAmount: round2(totalAmount),
+          totalAmount: roundMoney(totalAmount),
           intervals,
           financialSources: uniq(rows.map((r) => r.financial_source)),
         };
@@ -829,7 +810,7 @@ Deno.serve(async (req) => {
       },
       accounts: {
         totalUsers, paidUsers, freeUsers,
-        paidPercentage: totalUsers ? round2((paidUsers / totalUsers) * 100) : 0,
+        paidPercentage: totalUsers ? roundMoney((paidUsers / totalUsers) * 100) : 0,
         signupSources, newUsers,
       },
       subscriptions: {

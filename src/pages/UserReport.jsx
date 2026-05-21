@@ -137,7 +137,7 @@ export default function UserReport() {
           <p><span className="text-[#D4A574] font-semibold">Annual retention:</span> {(forecastAssumptions.annualRetention * 100).toFixed(0)}% — probability an annual subscriber renews</p>
           <p><span className="text-[#D4A574] font-semibold">New revenue method:</span> {forecastAssumptions.newPaidMethod}</p>
           <p><span className="text-[#D4A574] font-semibold">New paid users (last 90d):</span> {forecastAssumptions.newPaidPer90Days}</p>
-          <p><span className="text-[#D4A574] font-semibold">Avg new paid per 30d:</span> {forecastAssumptions.newPaidPerDay}</p>
+          <p><span className="text-[#D4A574] font-semibold">Avg new paid per 30d:</span> {forecastAssumptions.newPaidPerDayLabel ?? forecastAssumptions.newPaidPer30Days ?? forecastAssumptions.newPaidPerDay}</p>
           <p><span className="text-[#D4A574] font-semibold">Avg first billing amount:</span> ${formatMoney(forecastAssumptions.avgFirstBillingAmount)}</p>
           <p className="pt-1 text-[#E0D8C8]/40 italic">Retention assumptions are conservative defaults. Update in the backend function RETENTION constant as historical data becomes available.</p>
         </div>
