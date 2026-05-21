@@ -132,25 +132,17 @@ Deno.serve(async (req) => {
     const avgTobaccoPerUser = 0;
 
     // Renewals: subscriptions whose current_period_end falls within [now, endDate]
-    const calculateRevenue = (renewalList) => {
-      return renewalList.reduce((sum, sub) => {
-        const provider = String(sub.provider || 'stripe').toLowerCase();
-        let amount = 0;
-
-        if (provider === 'stripe') {
-          const stripeId = sub.provider_subscription_id || sub.stripe_subscription_id;
-          amount = stripeId ? (stripeAmountMap[stripeId] || 0) : 0;
-          if (amount === 0) amount = Number(sub.amount) || 0;
-        } else if (provider === 'apple') {
-          // For Apple, use stored amount (no live API available)
-          amount = Number(sub.amount) || 0;
-        } else {
-          amount = Number(sub.amount) || 0;
-        }
-
-        return sum + amount;
-      }, 0);
+    const getSubscriptionAmount = (sub) => {
+      const provider = String(sub.provider || 'stripe').toLowerCase();
+      if (provider === 'stripe') {
+        const stripeId = sub.provider_subscription_id || sub.stripe_subscription_id;
+        const stripeAmount = stripeId ? (stripeAmountMap[stripeId] || 0) : 0;
+        return stripeAmount || Number(sub.amount) || 0;
+      }
+      return Number(sub.amount) || 0;
     };
+
+    const calculateRevenue = (renewalList) => renewalList.reduce((sum, sub) => sum + getSubscriptionAmount(sub), 0);
     const activeRenewalSubs = subscriptions.filter((sub) => String(sub.status || '').toLowerCase() === 'active');
     const breakdownByWindow = (endDate) => {
       const base = summarizeRevenueRowsInRange(
@@ -158,7 +150,7 @@ Deno.serve(async (req) => {
         { start: now, end: endDate },
         {
           getUserKey: (sub) => sub.user_email || sub.user_id || sub.created_by,
-          getAmount: (sub) => Number(calculateRevenue([sub])) || 0,
+          getAmount: (sub) => getSubscriptionAmount(sub),
           getInterval: (sub) => normalizeMetricInterval(sub.billing_interval),
           getDate: (sub) => parseMetricDate(sub.current_period_end),
         },

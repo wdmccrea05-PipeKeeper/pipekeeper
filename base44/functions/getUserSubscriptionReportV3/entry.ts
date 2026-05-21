@@ -23,7 +23,7 @@ const MODULE_ALIASES = {
 };
 const KNOWN_MODULES = new Set(['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']);
 const PRODUCT_ALIASES = [
-  { family: 'bundle', markers: ['founders_bundle', 'founders', '4_module_bundle', 'four_module_bundle', 'four_module', 'bundle_4', '3_module_bundle', 'three_module_bundle', 'three_module', 'bundle_3', 'bundle'] },
+  { family: 'bundle', markers: ['founders_bundle', 'founders', '4_module_bundle', 'four_module_bundle', 'four_module', 'bundle_4', '3_module_bundle', 'three_module_bundle', 'three_module', 'bundle_3'] },
   { family: 'pipekeeper', markers: ['pipekeeper', 'pipe keeper', 'pk'] },
   { family: 'whiskeykeeper', markers: ['whiskeykeeper', 'whiskey keeper', 'wk', 'whiskey'] },
   { family: 'cigarkeeper', markers: ['cigarkeeper', 'cigar keeper', 'ck', 'cigar'] },
