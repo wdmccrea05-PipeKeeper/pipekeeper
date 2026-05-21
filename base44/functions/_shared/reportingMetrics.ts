@@ -150,6 +150,9 @@ export function countUsersActiveWithin<T>(
   days: number,
   getActivityDate: (row: T) => Date | null,
 ) {
-  const range = rollingRange(new Date(now.getTime() - days * 24 * 60 * 60 * 1000), days);
+  const range = {
+    start: new Date(now.getTime() - days * 24 * 60 * 60 * 1000),
+    end: new Date(now),
+  };
   return rows.filter((row) => inDateRange(getActivityDate(row), range)).length;
 }
