@@ -9,6 +9,7 @@ import { useEnabledModules } from "@/components/hooks/useEnabledModules";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import LogSessionSelector from "@/components/session/LogSessionSelector";
 import CombinedSessionModal from "@/components/session/CombinedSessionModal";
+import LogTastingModal from "@/components/whiskey/LogTastingModal";
 
 function BottleQuickIcon({ className, style }) {
   return (
@@ -87,6 +88,7 @@ export default function QuickLaunch() {
 
   const [showLogSelector, setShowLogSelector] = useState(false);
   const [showCombinedModal, setShowCombinedModal] = useState(false);
+  const [showWhiskeyModal, setShowWhiskeyModal] = useState(false);
 
   const whiskeyEnabled = enabled.whiskeykeeper;
   const pipekeeperEnabled = enabled.pipekeeper;
@@ -94,7 +96,7 @@ export default function QuickLaunch() {
 
   const { data: combinedSessionData } = useQuery({
     queryKey: ["quick-launch-combined-session-data", user?.email, pipekeeperEnabled, whiskeyEnabled],
-    enabled: !!user?.email && hasDualSessionModules && showCombinedModal,
+    enabled: !!user?.email && hasDualSessionModules && (showCombinedModal || showWhiskeyModal),
     staleTime: 60 * 1000,
     queryFn: async () => {
       const [pipes, blends, bottles] = await Promise.all([
@@ -117,9 +119,25 @@ export default function QuickLaunch() {
     },
   });
 
+  // Whiskey-only tasting data (no pipekeeper needed)
+  const { data: whiskeyOnlyBottles } = useQuery({
+    queryKey: ["quick-launch-whiskey-bottles", user?.email],
+    enabled: !!user?.email && whiskeyEnabled && showWhiskeyModal && !hasDualSessionModules,
+    staleTime: 60 * 1000,
+    queryFn: async () => {
+      const bottles = await base44.entities.Bottle.filter({ created_by: user.email }, "-updated_date", 500).catch(() => []);
+      return Array.isArray(bottles) ? bottles : [];
+    },
+  });
+
   const handleOpenCombinedSessionFlow = () => {
     setShowLogSelector(false);
     setShowCombinedModal(true);
+  };
+
+  const handleOpenWhiskeyTasting = () => {
+    setShowLogSelector(false);
+    setShowWhiskeyModal(true);
   };
 
   const pipeActions = useMemo(
@@ -174,7 +192,9 @@ export default function QuickLaunch() {
         icon: BookOpen,
         path: "/Tastings?action=log",
         accent: "#C87941",
-        onClick: hasDualSessionModules ? () => setShowLogSelector(true) : undefined,
+        onClick: hasDualSessionModules
+          ? () => setShowLogSelector(true)
+          : () => setShowWhiskeyModal(true),
       },
       {
         label: t("nav.insights"),
@@ -237,7 +257,7 @@ export default function QuickLaunch() {
         pipeEnabled={pipekeeperEnabled}
         whiskeyEnabled={whiskeyEnabled}
         onSelectPipe={() => navigate("/PipeKeeper?action=log-smoke")}
-        onSelectWhiskey={() => navigate("/Tastings?action=log")}
+        onSelectWhiskey={handleOpenWhiskeyTasting}
         onSelectCombined={handleOpenCombinedSessionFlow}
       />
 
@@ -255,6 +275,22 @@ export default function QuickLaunch() {
           ]);
         }}
       />
+
+      {showWhiskeyModal && (
+        <LogTastingModal
+          isOpen={showWhiskeyModal}
+          bottles={hasDualSessionModules ? (combinedSessionData?.bottles || []) : (whiskeyOnlyBottles || [])}
+          onClose={() => setShowWhiskeyModal(false)}
+          onSaved={async () => {
+            setShowWhiskeyModal(false);
+            await Promise.all([
+              queryClient.invalidateQueries({ queryKey: ["quick-launch-whiskey-bottles"] }),
+              queryClient.invalidateQueries({ queryKey: ["quick-launch-combined-session-data"] }),
+              queryClient.invalidateQueries({ queryKey: ["collection-hub-dashboard"] }),
+            ]);
+          }}
+        />
+      )}
     </>
   );
 }
