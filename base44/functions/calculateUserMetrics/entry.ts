@@ -1,5 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import Stripe from 'npm:stripe@14.21.0';
+import {
+  countUsersActiveWithin,
+  isReportingActiveStatus,
+  normalizeMetricInterval,
+  parseMetricDate,
+  summarizeRevenueRowsInRange,
+} from '../_shared/reportingMetrics.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -35,8 +42,7 @@ Deno.serve(async (req) => {
       // Only fetch if we haven't fetched recently (cache for 1 hour in local scope)
       let stripeHasMore = true;
       let stripeStartingAfter = undefined;
-      let fetchCount = 0;
-      while (stripeHasMore && fetchCount < 2) {
+      while (stripeHasMore) {
         const params = { limit: 100, status: 'active', expand: ['data.plan'] };
         if (stripeStartingAfter) params.starting_after = stripeStartingAfter;
         const stripePage = await stripe.subscriptions.list(params);
@@ -50,7 +56,6 @@ Deno.serve(async (req) => {
         } else {
           stripeHasMore = false;
         }
-        fetchCount++;
       }
     } catch (stripeErr) {
       // Rate limit or other error — just use stored amounts
@@ -72,8 +77,7 @@ Deno.serve(async (req) => {
 
     // Count active paid subscribers — deduplicate by user identity
     const paidSubs = subscriptions.filter(sub => {
-      const status = String(sub.status || '').toLowerCase();
-      return status === 'active' || status === 'trialing' || status === 'trial';
+      return isReportingActiveStatus(sub.status);
     });
 
     const uniquePaidUsers = new Set();
@@ -110,79 +114,62 @@ Deno.serve(async (req) => {
 
     // Active user estimates
     const totalUsers = allUsers.length;
-    const estimatedDailyUsers = Math.round(totalUsers * 0.15);
-    const estimatedWeeklyUsers = Math.round(totalUsers * 0.35);
+    const dailyActiveUsers = countUsersActiveWithin(
+      allUsers,
+      now,
+      1,
+      (user) => parseMetricDate(user.updated_date || user.created_date),
+    );
+    const weeklyActiveUsers = countUsersActiveWithin(
+      allUsers,
+      now,
+      7,
+      (user) => parseMetricDate(user.updated_date || user.created_date),
+    );
 
     // Calculate avg pipes and tobacco per user (defer calculation on heavy data fetch)
     const avgPipesPerUser = 0;
     const avgTobaccoPerUser = 0;
 
     // Renewals: subscriptions whose current_period_end falls within [now, endDate]
-    const calculateRenewals = (endDate) => {
-      return subscriptions.filter(sub => {
-        const periodEnd = new Date(sub.current_period_end);
-        const status = String(sub.status || '').toLowerCase();
-        // Only count active (non-trial) subs whose period ends in the window
-        return periodEnd > now && periodEnd <= endDate && status === 'active';
-      });
+    const getSubscriptionAmount = (sub) => {
+      const provider = String(sub.provider || 'stripe').toLowerCase();
+      if (provider === 'stripe') {
+        const stripeId = sub.provider_subscription_id || sub.stripe_subscription_id;
+        const stripeAmount = stripeId ? (stripeAmountMap[stripeId] || 0) : 0;
+        return stripeAmount || Number(sub.amount) || 0;
+      }
+      return Number(sub.amount) || 0;
     };
 
-    const calculateRevenue = (renewalList) => {
-      return renewalList.reduce((sum, sub) => {
-        const provider = String(sub.provider || 'stripe').toLowerCase();
-        let amount = 0;
-
-        if (provider === 'stripe') {
-          const stripeId = sub.provider_subscription_id || sub.stripe_subscription_id;
-          amount = stripeId ? (stripeAmountMap[stripeId] || 0) : 0;
-          if (amount === 0) amount = Number(sub.amount) || 0;
-        } else if (provider === 'apple') {
-          // For Apple, use stored amount (no live API available)
-          amount = Number(sub.amount) || 0;
-        } else {
-          amount = Number(sub.amount) || 0;
-        }
-
-        return sum + amount;
-      }, 0);
-    };
-
-    // Returns breakdown using subscription-level counts (not user-deduped) for revenue,
-    // while also exposing a deduped customer count.
-    const breakdownByBillingInterval = (renewalList) => {
-      // Customer count: deduped by user identity
-      const uniqueCustomers = new Set();
-      renewalList.forEach(sub => {
-        const uid = sub.user_email || sub.user_id || sub.created_by;
-        if (uid) uniqueCustomers.add(uid);
+    const calculateRevenue = (renewalList) => renewalList.reduce((sum, sub) => sum + getSubscriptionAmount(sub), 0);
+    const activeRenewalSubs = subscriptions.filter((sub) => String(sub.status || '').toLowerCase() === 'active');
+    const breakdownByWindow = (endDate) => {
+      const base = summarizeRevenueRowsInRange(
+        activeRenewalSubs,
+        { start: now, end: endDate },
+        {
+          getUserKey: (sub) => sub.user_email || sub.user_id || sub.created_by,
+          getAmount: (sub) => getSubscriptionAmount(sub),
+          getInterval: (sub) => normalizeMetricInterval(sub.billing_interval),
+          getDate: (sub) => parseMetricDate(sub.current_period_end),
+        },
+      );
+      const monthlyRows = activeRenewalSubs.filter((sub) => {
+        const periodEnd = parseMetricDate(sub.current_period_end);
+        return periodEnd && periodEnd > now && periodEnd <= endDate && normalizeMetricInterval(sub.billing_interval) === 'month';
       });
-
-      // Billing-interval splits on ALL subscriptions (not deduped) for accurate revenue
-      const monthly = renewalList.filter(sub => {
-        const interval = String(sub.billing_interval || '').toLowerCase();
-        return interval === 'month' || interval === 'monthly';
-      });
-      const annual = renewalList.filter(sub => {
-        const interval = String(sub.billing_interval || '').toLowerCase();
-        return interval === 'year' || interval === 'yearly';
+      const annualRows = activeRenewalSubs.filter((sub) => {
+        const periodEnd = parseMetricDate(sub.current_period_end);
+        return periodEnd && periodEnd > now && periodEnd <= endDate && normalizeMetricInterval(sub.billing_interval) === 'year';
       });
       return {
-        customerCount: uniqueCustomers.size,
-        subscriptionCount: renewalList.length,
-        // keep `count` for any existing consumers
-        count: renewalList.length,
-        monthly: monthly.length,
-        annual: annual.length,
-        totalAmount: calculateRevenue(renewalList),
-        monthlyAmount: calculateRevenue(monthly),
-        annualAmount: calculateRevenue(annual),
+        ...base,
+        totalAmount: base.totalAmount,
+        monthlyAmount: calculateRevenue(monthlyRows),
+        annualAmount: calculateRevenue(annualRows),
       };
     };
-
-    const renewals7d = calculateRenewals(next7Days);
-    const renewals30d = calculateRenewals(next30Days);
-    const renewals90d = calculateRenewals(next90Days);
-    const renewals365d = calculateRenewals(next365Days);
 
     // Count by tier
     const proSubs = subscriptions.filter(sub => {
@@ -224,13 +211,13 @@ Deno.serve(async (req) => {
         quarter: newAccounts90d,
       },
       renewals: {
-        week: breakdownByBillingInterval(renewals7d),
-        month: breakdownByBillingInterval(renewals30d),
-        quarter: breakdownByBillingInterval(renewals90d),
-        year: breakdownByBillingInterval(renewals365d),
+        week: breakdownByWindow(next7Days),
+        month: breakdownByWindow(next30Days),
+        quarter: breakdownByWindow(next90Days),
+        year: breakdownByWindow(next365Days),
       },
-      dailyActiveUsers: estimatedDailyUsers,
-      weeklyActiveUsers: estimatedWeeklyUsers,
+      dailyActiveUsers,
+      weeklyActiveUsers,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
