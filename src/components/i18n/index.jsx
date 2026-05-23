@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { getLocaleForLanguage } from './locale.js';
 import { normalizeLng } from './normalizeLng.js';
 import en from './locales/en.jsx';
 import es from './locales/es.jsx';
@@ -49,6 +50,30 @@ const CRITICAL_FALLBACKS = {
     noResultsFound: 'No results found', noResultsMessage: 'Try another search term.',
     sectionQuickActions: 'Quick Actions', sectionPipes: 'Pipes', sectionTobacco: 'Tobacco',
     actionViewStats: 'View Insights', actionExportData: 'Export Data', actionAddPipe: 'Add Pipe', actionAddBlend: 'Add Blend',
+  },
+  insightsTabs: {
+    summary: 'Summary',
+    value: 'Value',
+    usage: 'Usage',
+    statistics: 'Statistics',
+    trends: 'Trends',
+    reports: 'Reports',
+    sessions: 'Sessions',
+    drinkingWindow: 'Drinking Window',
+  },
+  insightsShared: {
+    recentSessions: 'Recent Sessions',
+    recentTastings: 'Recent Tastings',
+    sessionActivity: 'Session Activity',
+    exportReports: 'Export Reports',
+    insuranceAndExportReports: 'Insurance & Export Reports',
+    totalSessions: 'Total Sessions',
+    collectionValue: 'Collection Value',
+    averageRating: 'Average Rating',
+    bottlesInCellar: 'Bottles in Cellar',
+    unknownDate: 'Unknown date',
+    noRecentTastings: 'No tastings logged yet.',
+    noRecentSessions: 'No sessions logged yet.',
   },
   hub: {
     title: 'CollectionKeeper',
@@ -141,6 +166,8 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
   return [lang, withCriticals];
 }));
 
+const I18nContext = createContext(null);
+
 function readLanguage(languageOverride = null) {
   if (languageOverride) return normalizeLng(languageOverride);
   try {
@@ -165,15 +192,17 @@ export function setLanguage(languageCode) {
   persistNormalizedLanguage(normalized);
   return normalized;
 }
-function useLang(languageOverride = null) {
+export function I18nProvider({ children, languageOverride = null }) {
   const [lang, setLang] = useState(() => readLanguage(languageOverride));
+
   useEffect(() => {
     const normalized = readLanguage(languageOverride);
     setLang(normalized);
     persistNormalizedLanguage(normalized);
   }, [languageOverride]);
+
   useEffect(() => {
-    if (languageOverride) return undefined;
+    if (languageOverride || typeof window === 'undefined') return undefined;
     const sync = () => setLang(readLanguage(null));
     window.addEventListener('storage', sync);
     window.addEventListener('pk:language-changed', sync);
@@ -182,7 +211,38 @@ function useLang(languageOverride = null) {
       window.removeEventListener('pk:language-changed', sync);
     };
   }, [languageOverride]);
-  return lang;
+
+  const value = useMemo(() => ({
+    lang,
+    locale: getLocaleForLanguage(lang),
+    setLanguage,
+  }), [lang]);
+
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+}
+export function useI18n() {
+  return useContext(I18nContext);
+}
+function useLang(languageOverride = null) {
+  const context = useI18n();
+  const [lang, setLang] = useState(() => readLanguage(languageOverride));
+  useEffect(() => {
+    if (context && !languageOverride) return undefined;
+    const normalized = readLanguage(languageOverride);
+    setLang(normalized);
+    persistNormalizedLanguage(normalized);
+  }, [languageOverride]);
+  useEffect(() => {
+    if (context || languageOverride) return undefined;
+    const sync = () => setLang(readLanguage(null));
+    window.addEventListener('storage', sync);
+    window.addEventListener('pk:language-changed', sync);
+    return () => {
+      window.removeEventListener('storage', sync);
+      window.removeEventListener('pk:language-changed', sync);
+    };
+  }, [context, languageOverride]);
+  return context && !languageOverride ? context.lang : lang;
 }
 function createTranslator(lang) {
   const translationPack = translations[lang] || translations.en || CRITICAL_FALLBACKS;
@@ -210,7 +270,7 @@ function createTranslator(lang) {
 export function useTranslation(languageOverride = null) {
   const lang = useLang(languageOverride);
   const t = useMemo(() => createTranslator(lang), [lang]);
-  return { t, lang };
+  return { t, lang, locale: getLocaleForLanguage(lang), setLanguage };
 }
 export function translate(key, varsOrFallback = {}, language = 'en') {
   return createTranslator(normalizeLng(language || 'en'))(key, varsOrFallback);
@@ -220,4 +280,4 @@ export const SUPPORTED_LANGS = [
   { code: 'de', label: 'Deutsch' }, { code: 'it', label: 'Italiano' }, { code: 'pt-BR', label: 'Português (BR)' },
   { code: 'nl', label: 'Nederlands' }, { code: 'pl', label: 'Polski' }, { code: 'ja', label: '日本語' }, { code: 'zh-Hans', label: '中文 (简体)' },
 ];
-export default { useTranslation, translate, SUPPORTED_LANGS, setLanguage };
+export default { I18nProvider, useI18n, useTranslation, translate, SUPPORTED_LANGS, setLanguage };

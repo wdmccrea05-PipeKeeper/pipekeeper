@@ -13,6 +13,7 @@ import { differenceInCalendarDays, parseISO, subDays, isWithinInterval } from 'd
 import { CATEGORY_COLORS } from '@/components/ui/HeroCard';
 import { DIFFICULTY_LABELS } from '@/components/valuation/valueEngine';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import WhiskeyInsuranceExporter from '@/components/export/WhiskeyInsuranceExporter';
 import { selectWhiskeyMetrics, getBottleUnitValue, selectOpenBottleValue, selectSealedBottleValue } from '@/lib/collection/whiskeySelectors';
 import { Calendar } from '@/components/ui/calendar';
@@ -34,23 +35,23 @@ import {
 import { MODULE_ACCENTS } from '@/lib/theme/tokens';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
-const TABS = [
-  { key: 'summary', label: 'Summary' },
-  { key: 'value', label: 'Value' },
-  { key: 'usage', label: 'Usage' },
-  { key: 'statistics', label: 'Statistics' },
-  { key: 'trends', label: 'Trends' },
-  { key: 'reports', label: 'Reports' },
-  { key: 'sessions', label: 'Sessions' },
-];
-
 export default function WhiskeyInsightsPage() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
+  const { formatDate } = useLocaleFormatting();
   const formatCurrency = formatFromBase;
   const [activeTab, setActiveTab] = useState('summary');
   const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
+  const tabs = useMemo(() => ([
+    { key: 'summary', label: t('insightsTabs.summary') },
+    { key: 'value', label: t('insightsTabs.value') },
+    { key: 'usage', label: t('insightsTabs.usage') },
+    { key: 'statistics', label: t('insightsTabs.statistics') },
+    { key: 'trends', label: t('insightsTabs.trends') },
+    { key: 'reports', label: t('insightsTabs.reports') },
+    { key: 'sessions', label: t('insightsTabs.sessions') },
+  ]), [t]);
 
   const { data: bottles = [], isLoading: bottlesLoading } = useQuery({
     queryKey: QUERY_KEYS.bottles(user?.email),
@@ -154,7 +155,7 @@ export default function WhiskeyInsightsPage() {
   const handleExportPDF = useCallback(() => {
     try {
       const doc = new jsPDF();
-      const date = new Date().toLocaleDateString();
+      const date = formatDate(new Date());
       doc.setFontSize(20); doc.setTextColor(40, 20, 10); doc.text('WhiskeyKeeper — Collection Report', 20, 22);
       doc.setFontSize(10); doc.setTextColor(100, 80, 60); doc.text(`Generated: ${date}`, 20, 30);
       doc.setFontSize(14); doc.setTextColor(40, 20, 10); doc.text('Collection Summary', 20, 44);
@@ -210,7 +211,7 @@ export default function WhiskeyInsightsPage() {
           subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')}
         />
 
-        <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.whiskeykeeper} />
+        <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.whiskeykeeper} />
 
         {/* SUMMARY */}
         {activeTab === 'summary' && (
@@ -260,14 +261,14 @@ export default function WhiskeyInsightsPage() {
                     <div key={log.id} className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.05)', border: '1px solid rgba(180,140,75,0.15)' }}>
                       <p className="text-sm font-medium text-[#F5F1E7]">{log.bottle_name}</p>
                       <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                        {log.tasting_date && !Number.isNaN(new Date(log.tasting_date).getTime()) ? new Date(log.tasting_date).toLocaleDateString() : 'Unknown date'}{log.rating ? ` · ★ ${log.rating}` : ''}
+                        {log.tasting_date && !Number.isNaN(new Date(log.tasting_date).getTime()) ? formatDate(log.tasting_date) : t('insightsShared.unknownDate')}{log.rating ? ` · ★ ${log.rating}` : ''}
                       </p>
                       {log.notes && <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.75)' }}>{log.notes}</p>}
                     </div>
                   ))}
                 </div>
               ) : (
-                <InsightsEmptyState message="No tastings logged yet." />
+                <InsightsEmptyState message={t('insightsShared.noRecentTastings')} />
               )}
             </InsightPanel>
           </div>

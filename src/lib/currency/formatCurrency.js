@@ -7,6 +7,7 @@
 
 import { BASE_CURRENCY } from './currencyConstants';
 import { convertFromBase } from './convertCurrency';
+import { getCurrentLocale } from '@/components/i18n/locale';
 
 /**
  * Format a pre-converted amount as a locale-aware currency string.
@@ -21,7 +22,7 @@ export function formatMoney(amount, currencyCode, locale) {
   if (!Number.isFinite(num)) return '—';
 
   const code = currencyCode || BASE_CURRENCY;
-  const loc = locale || undefined; // undefined = browser default
+  const loc = locale || getCurrentLocale();
 
   try {
     return new Intl.NumberFormat(loc, {

@@ -6,6 +6,7 @@ import { Wine, TrendingUp, Star, AlertCircle, Download, BookOpen, Calendar as Ca
 import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import WineInsuranceExporter from '@/components/export/WineInsuranceExporter';
 import { importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
 import { selectWineCollectionValue, selectUnvaluedWineCount, hasWineValuation, getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
@@ -31,23 +32,23 @@ import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 const ACCENT = '#8B3A3A';
 const WINE_GOLD = '#D4A574';
 
-const TABS = [
-  { key: 'summary', label: 'Summary' },
-  { key: 'value', label: 'Value' },
-  { key: 'usage', label: 'Usage' },
-  { key: 'statistics', label: 'Statistics' },
-  { key: 'trends', label: 'Trends' },
-  { key: 'reports', label: 'Reports' },
-  { key: 'sessions', label: 'Sessions' },
-  { key: 'drinkingwindow', label: 'Drinking Window' },
-];
-
 export default function WineInsights() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
+  const { formatDate } = useLocaleFormatting();
   const [activeTab, setActiveTab] = useState('summary');
   const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
+  const tabs = useMemo(() => ([
+    { key: 'summary', label: t('insightsTabs.summary') },
+    { key: 'value', label: t('insightsTabs.value') },
+    { key: 'usage', label: t('insightsTabs.usage') },
+    { key: 'statistics', label: t('insightsTabs.statistics') },
+    { key: 'trends', label: t('insightsTabs.trends') },
+    { key: 'reports', label: t('insightsTabs.reports') },
+    { key: 'sessions', label: t('insightsTabs.sessions') },
+    { key: 'drinkingwindow', label: t('insightsTabs.drinkingWindow') },
+  ]), [t]);
 
   const { data: wines = [] } = useQuery({
     queryKey: QUERY_KEYS.wines(user?.email),
@@ -115,7 +116,7 @@ export default function WineInsights() {
         subtitle="Analyze your wine cellar — value, drinking windows, and tasting history"
       />
 
-      <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.winekeeper} />
+      <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.winekeeper} />
 
       {/* SUMMARY */}
       {activeTab === 'summary' && (
@@ -239,7 +240,7 @@ export default function WineInsights() {
                   <div key={t.id} className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.05)', border: '1px solid rgba(180,140,75,0.15)' }}>
                     <p className="text-sm font-medium text-[#F5F1E7]">{t.wine_name}</p>
                     <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                      {t.date && !Number.isNaN(new Date(t.date).getTime()) ? new Date(t.date).toLocaleDateString() : '—'}{t.rating ? ` · ★ ${t.rating}` : ''}
+                      {t.date && !Number.isNaN(new Date(t.date).getTime()) ? formatDate(t.date) : '—'}{t.rating ? ` · ★ ${t.rating}` : ''}
                     </p>
                     {t.notes && <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.75)' }}>{t.notes}</p>}
                   </div>
@@ -322,7 +323,7 @@ export default function WineInsights() {
                       <div key={t.id} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(139,58,58,0.07)', border: '1px solid rgba(139,58,58,0.15)' }}>
                         <div>
                           <p className="text-sm font-medium text-[#F5F1E7]">{t.wine_name || 'Wine tasting'}</p>
-                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{t.date ? new Date(t.date).toLocaleDateString() : 'Unknown date'}</p>
+                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{t.date ? formatDate(t.date) : t('insightsShared.unknownDate')}</p>
                         </div>
                         {t.rating != null && <p className="text-sm font-semibold text-[#F5F1E7]">★ {t.rating}</p>}
                       </div>
