@@ -182,6 +182,12 @@ describe('Wines collection parity', () => {
       expect(invalidateQueriesMock).toHaveBeenCalledWith(expectedWineKey);
     });
 
-    expect(invalidateQueriesMock.mock.calls.filter(([arg]) => JSON.stringify(arg) === JSON.stringify(expectedWineKey))).toHaveLength(4);
+    const canonicalWineInvalidations = invalidateQueriesMock.mock.calls.filter(([arg]) => {
+      return Array.isArray(arg?.queryKey)
+        && arg.queryKey[0] === expectedWineKey.queryKey[0]
+        && arg.queryKey[1] === expectedWineKey.queryKey[1];
+    });
+
+    expect(canonicalWineInvalidations).toHaveLength(4);
   });
 });
