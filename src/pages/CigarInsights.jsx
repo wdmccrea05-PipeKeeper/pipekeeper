@@ -8,7 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
 import { Cigarette, BookOpen, Heart, DollarSign, TrendingUp, ShieldAlert, Flame, Clock3 } from 'lucide-react';
-import { calculateCigarValue } from '@/utils/cigarValuation';
+import { calculateCigarValue } from '@/lib/valuation/cigarValuation';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { summarizeCigarReadiness, generateCollectionInsights, INSIGHT_TYPES } from '@/platform/agingReadiness';
 import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
@@ -28,7 +28,12 @@ import {
   InsightPanel,
   InsightsEmptyState,
   InsightsSessionPanel,
+  InsightSectionHeading,
+  InsightsChartTooltip,
 } from '@/components/insights/InsightsShell';
+import { GOLD_PALETTE, MODULE_ACCENTS } from '@/lib/theme/tokens';
+import { buildTopN } from '@/lib/analytics/aggregateUtils';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -42,8 +47,6 @@ const TABS = [
   { key: 'sessions',   label: 'Sessions' },
 ];
 
-const GOLD_PALETTE = ['#D4A574', '#B48C4B', '#8C6B3F', '#6B4F2E', '#F5D4A0', '#C4904A', '#A07840'];
-
 const INSIGHT_CONFIG = {
   [INSIGHT_TYPES.SMOKE_NOW]:      { icon: Flame,       color: '#6FCF97', label: 'Smoke Now' },
   [INSIGHT_TYPES.REST_LONGER]:    { icon: Clock3,      color: '#D4A574', label: 'Rest Longer' },
@@ -52,36 +55,6 @@ const INSIGHT_CONFIG = {
   [INSIGHT_TYPES.OVERSTOCKED]:    { icon: Cigarette,   color: '#B48C4B', label: 'Overstocked' },
   [INSIGHT_TYPES.FAST_DEPLETING]: { icon: Flame,       color: '#E0B450', label: 'Running Low' },
 };
-
-// ── Shared sub-components ────────────────────────────────────────────────────
-
-function SectionHeading({ children }) {
-  return (
-    <h3 style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-      {children}
-    </h3>
-  );
-}
-
-const CustomTooltip = ({ active, payload }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-xl px-3 py-2 text-sm"
-      style={{ background: 'rgba(40,28,18,0.98)', border: '1px solid rgba(180,140,75,0.3)', color: '#F5F1E7' }}>
-      <p className="font-semibold">{payload[0].name || payload[0].payload?.name}</p>
-      <p style={{ color: '#D4A574' }}>{payload[0].value}</p>
-    </div>
-  );
-};
-
-function buildTopN(arr, key, n = 7) {
-  const counts = {};
-  arr.forEach((item) => {
-    const val = item[key];
-    if (val) counts[val] = (counts[val] || 0) + 1;
-  });
-  return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, n).map(([name, value]) => ({ name, value }));
-}
 
 function buildTopBrandsByAvgRating(cigars, minSessions = 1, n = 6) {
   const map = {};
@@ -104,7 +77,7 @@ function MiniChart({ data, title, horizontal = false }) {
   if (!data.length) return null;
   return (
     <InsightPanel>
-      <SectionHeading>{title}</SectionHeading>
+      <InsightSectionHeading>{title}</InsightSectionHeading>
       <ResponsiveContainer width="100%" height={Math.max(160, data.length * 32)}>
         <BarChart data={data} layout={horizontal ? 'vertical' : 'horizontal'}
           margin={{ top: 0, right: 8, bottom: 0, left: horizontal ? 80 : 0 }}>
@@ -119,7 +92,7 @@ function MiniChart({ data, title, horizontal = false }) {
               <YAxis tick={{ fill: 'rgba(224,216,200,0.5)', fontSize: 11 }} axisLine={false} tickLine={false} />
             </>
           )}
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(180,140,75,0.08)' }} />
+          <Tooltip content={<InsightsChartTooltip />} cursor={{ fill: 'rgba(180,140,75,0.08)' }} />
           <Bar dataKey="value" radius={[4, 4, 4, 4]}>
             {data.map((_, i) => <Cell key={i} fill={GOLD_PALETTE[i % GOLD_PALETTE.length]} />)}
           </Bar>
@@ -134,14 +107,14 @@ function MiniPie({ data, title }) {
   const total = data.reduce((s, d) => s + d.value, 0);
   return (
     <InsightPanel>
-      <SectionHeading>{title}</SectionHeading>
+      <InsightSectionHeading>{title}</InsightSectionHeading>
       <div className="flex items-center gap-4">
         <ResponsiveContainer width={140} height={140}>
           <PieChart>
             <Pie data={data} dataKey="value" cx="50%" cy="50%" innerRadius={35} outerRadius={60} paddingAngle={2}>
               {data.map((_, i) => <Cell key={i} fill={GOLD_PALETTE[i % GOLD_PALETTE.length]} />)}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<InsightsChartTooltip />} />
           </PieChart>
         </ResponsiveContainer>
         <div className="flex-1 space-y-1.5">
@@ -193,33 +166,33 @@ function CigarInsightsInner() {
   const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
 
   const { data: cigars = [], isLoading: cigarsLoading } = useQuery({
-    queryKey: ['cigars-insights', user?.email],
+    queryKey: QUERY_KEYS.cigars(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
       return base44.entities.Cigar.filter({ created_by: user?.email }, '-created_date').catch(() => []);
     },
     enabled: !!user?.email,
-    staleTime: 30_000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
-    queryKey: ['cigar-sessions-insights', user?.email],
+    queryKey: QUERY_KEYS.cigarSessions(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
       return base44.entities.CigarSession.filter({ created_by: user?.email }, '-date').catch(() => []);
     },
     enabled: !!user?.email,
-    staleTime: 30_000,
+    staleTime: STALE_TIME.SESSION_HISTORY,
   });
 
   const { data: humidors = [] } = useQuery({
-    queryKey: ['humidors-insights', user?.email],
+    queryKey: QUERY_KEYS.humidors(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
       return base44.entities.HumidorLocation.filter({ created_by: user?.email }).catch(() => []);
     },
     enabled: !!user?.email,
-    staleTime: 30_000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   // ── Derived data ────────────────────────────────────────────────────────────
@@ -380,7 +353,7 @@ function CigarInsightsInner() {
         subtitle="Analytics and trends from your cigar collection and sessions"
       />
 
-      <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+      <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.cigarkeeper} />
 
       {/* ── SUMMARY ─────────────────────────────────────────────────────── */}
       {activeTab === 'summary' && (
@@ -473,7 +446,7 @@ function CigarInsightsInner() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   {highestValueCigars.length > 0 && (
                     <InsightPanel>
-                      <SectionHeading>Highest Value Cigars</SectionHeading>
+                      <InsightSectionHeading>Highest Value Cigars</InsightSectionHeading>
                       <div className="space-y-2">
                         {highestValueCigars.map(({ cigar, valuation }) => (
                           <div key={cigar.id} className="flex justify-between gap-3 text-sm">
@@ -486,7 +459,7 @@ function CigarInsightsInner() {
                   )}
                   {highValueLowStock.length > 0 && (
                     <InsightPanel>
-                      <SectionHeading>High Value / Low Stock</SectionHeading>
+                      <InsightSectionHeading>High Value / Low Stock</InsightSectionHeading>
                       <div className="space-y-2">
                         {highValueLowStock.map(({ cigar, valuation }) => (
                           <div key={cigar.id} className="flex justify-between gap-3 text-sm">
@@ -503,7 +476,7 @@ function CigarInsightsInner() {
               )}
 
               <InsightPanel>
-                <SectionHeading>Valuation Attention</SectionHeading>
+                <InsightSectionHeading>Valuation Attention</InsightSectionHeading>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
                     <div className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>Needs valuation</div>
@@ -532,7 +505,7 @@ function CigarInsightsInner() {
 
           {/* Acquisition states */}
           <InsightPanel>
-            <SectionHeading>Acquisition States</SectionHeading>
+            <InsightSectionHeading>Acquisition States</InsightSectionHeading>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.3)' }}>
                 <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Wishlist</p>
@@ -556,7 +529,7 @@ function CigarInsightsInner() {
           {/* Tonight recommendations */}
           {tonightCandidates.length > 0 && (
             <InsightPanel>
-              <SectionHeading>What should I smoke tonight?</SectionHeading>
+              <InsightSectionHeading>What should I smoke tonight?</InsightSectionHeading>
               <div className="space-y-2">
                 {tonightCandidates.map(({ cigar, reasons }) => (
                   <div key={cigar.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
@@ -571,7 +544,7 @@ function CigarInsightsInner() {
           {/* Collection insights */}
           {collectionInsights.length > 0 && (
             <InsightPanel>
-              <SectionHeading>Collection Insights</SectionHeading>
+              <InsightSectionHeading>Collection Insights</InsightSectionHeading>
               <div className="space-y-2">
                 {collectionInsights.map(insight => <InsightRow key={`${insight.cigarId}-${insight.type}`} insight={insight} />)}
               </div>
@@ -583,7 +556,7 @@ function CigarInsightsInner() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {lowStockFavorites.length > 0 && (
                 <InsightPanel>
-                  <SectionHeading>Low Stock Favorites</SectionHeading>
+                  <InsightSectionHeading>Low Stock Favorites</InsightSectionHeading>
                   <div className="space-y-2">
                     {lowStockFavorites.map(c => (
                       <div key={c.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
@@ -598,7 +571,7 @@ function CigarInsightsInner() {
               )}
               {buyAgainCandidates.length > 0 && (
                 <InsightPanel>
-                  <SectionHeading>Buy Again Candidates</SectionHeading>
+                  <InsightSectionHeading>Buy Again Candidates</InsightSectionHeading>
                   <div className="space-y-2">
                     {buyAgainCandidates.map(({ cigar, avg, qty }) => (
                       <div key={cigar.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
@@ -615,7 +588,7 @@ function CigarInsightsInner() {
           {/* Recent sessions */}
           {recentSessionsSorted.length > 0 && (
             <InsightPanel>
-              <SectionHeading>Recent Sessions</SectionHeading>
+              <InsightSectionHeading>Recent Sessions</InsightSectionHeading>
               <div className="space-y-2">
                 {recentSessionsSorted.map(s => (
                   <div key={s.id} className="flex items-center gap-3 px-3 py-2 rounded-xl"
@@ -655,7 +628,7 @@ function CigarInsightsInner() {
               {/* Aging status */}
               {(readinessSummary.readyNow > 0 || readinessSummary.aging > 0 || readinessSummary.pastPeak > 0) && (
                 <InsightPanel>
-                  <SectionHeading>Aging Status</SectionHeading>
+                  <InsightSectionHeading>Aging Status</InsightSectionHeading>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(76,175,130,0.1)', border: '1px solid rgba(76,175,130,0.3)' }}>
                       <div className="text-2xl font-bold text-[#F5F1E7]">{readinessSummary.readyNow}</div>
@@ -705,7 +678,7 @@ function CigarInsightsInner() {
               </InsightsKpiGrid>
 
               <InsightPanel>
-                <SectionHeading>Session Activity</SectionHeading>
+                <InsightSectionHeading>Session Activity</InsightSectionHeading>
                 {sessions.length > 0 ? (
                   <div className="space-y-2 max-h-80 overflow-y-auto">
                     {[...sessions].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 30).map(s => (
@@ -739,7 +712,7 @@ function CigarInsightsInner() {
             <InsightsEmptyState message="Add cigars to generate reports." icon={Cigarette} />
           ) : (
             <InsightPanel>
-              <SectionHeading>Insurance &amp; Export Reports</SectionHeading>
+              <InsightSectionHeading>Insurance &amp; Export Reports</InsightSectionHeading>
               <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>
                 Generate insurer-ready exports with values, quantities, storage locations, and a generated date.
               </p>

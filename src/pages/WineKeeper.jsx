@@ -8,14 +8,12 @@ import { Wine, Plus, BarChart3, BookOpen, Share2 } from 'lucide-react';
 import ModulePageShell from '@/components/modules/ModulePageShell';
 import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
 import ModuleRecentActivitySection from '@/components/modules/ModuleRecentActivitySection';
-
-const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
-import ShareRecordModal from '@/components/share/ShareRecordModal';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 import {
   getWinePrimaryImage,
   getWineTotalValue,
@@ -24,6 +22,8 @@ import {
   selectTotalWineBottles,
   selectWineCollectionValue,
 } from '@/lib/collection/wineSelectors';
+
+const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
 function formatDate(value) {
   if (!value) return '—';
@@ -71,10 +71,9 @@ function WineKeeperInner() {
   const queryClient = useQueryClient();
   const { formatFromBase } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
 
   const { data: wines = [] } = useQuery({
-    queryKey: ['wines-summary', user?.email],
+    queryKey: QUERY_KEYS.wines(user?.email),
     queryFn: async () => {
       const result = await base44.entities.Wine.filter(
         { created_by: user?.email },
@@ -83,11 +82,11 @@ function WineKeeperInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const { data: tastings = [] } = useQuery({
-    queryKey: ['wine-tastings-summary', user?.email],
+    queryKey: QUERY_KEYS.wineTastingsSummary(user?.email),
     queryFn: async () => {
       const result = await base44.entities.WineTasting.filter(
         { created_by: user?.email },
@@ -97,7 +96,7 @@ function WineKeeperInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const recentTastings = tastings.slice(0, 5);
@@ -241,7 +240,7 @@ function WineKeeperInner() {
     { key: 'collection', Icon: Wine, label: t('wine.collection', 'Wine Collection'), onClick: () => navigate('/Wines') },
     { key: 'logTasting', Icon: BookOpen, label: t('wine.logTasting', 'Log Tasting'), onClick: () => navigate('/Wines?action=tasting') },
     { key: 'insights', Icon: BarChart3, label: t('nav.insights', 'Insights'), onClick: () => navigate('/WineInsights') },
-    { key: 'shareStory', Icon: Share2, label: t('wine.shareStory', 'Share Story'), onClick: () => setShowShareModal(true) },
+    { key: 'shareStory', Icon: Share2, label: t('wine.shareStory', 'Share Story'), onClick: () => navigate('/Wines') },
     { key: 'curator', iconImage: CURATOR_ICON, label: t('quickActions.collectionCurator', 'Collection Curator'), onClick: () => navigate('/Curator') },
   ];
 
@@ -309,17 +308,10 @@ function WineKeeperInner() {
       initialItemType="wine"
       onCreated={() => {
         queryClient.invalidateQueries({ queryKey: ['wines', user?.email] });
-        queryClient.invalidateQueries({ queryKey: ['wines-summary', user?.email] });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
         queryClient.invalidateQueries({ queryKey: ['wine-collection-summary', user?.email] });
       }}
     />
-
-    {showShareModal && (
-      <ShareRecordModal
-        type="wine_collection"
-        onClose={() => setShowShareModal(false)}
-      />
-    )}
     </>
   );
 }

@@ -12,6 +12,7 @@ import BottleCatalogSearch from './BottleCatalogSearch';
 
 import PhotoUploader from '@/components/PhotoUploader';
 import { toast } from 'sonner';
+import { getItemPhoto } from '@/lib/images/getItemPhoto';
 
 const DEFAULT_FORM = (defaultBottleType = 'whiskey') => ({
   bottle_type: defaultBottleType,
@@ -55,7 +56,7 @@ function toNumberOrNull(value) {
 }
 
 function getExistingPhoto(record) {
-  return record?.photo || record?.image || record?.image_url || '';
+  return getItemPhoto(record) || '';
 }
 
 export default function BottleForm({

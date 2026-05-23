@@ -13,6 +13,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { getHumidorHealth } from '@/platform/agingReadiness';
 import HumidorMaintenanceLog from './HumidorMaintenanceLog';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 import {
   daysBetween,
   getNextCheckDate,
@@ -622,7 +623,7 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['humidors', user?.email] });
-    queryClient.invalidateQueries({ queryKey: ['humidors-summary', user?.email] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.humidors(user?.email) });
     if (typeof onRefresh === 'function') onRefresh();
   };
 

@@ -2,13 +2,14 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 export default function AddWineModal({ open, onClose }) {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
   const handleCreated = () => {
-    queryClient.invalidateQueries({ queryKey: ['wines', user?.email] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
     queryClient.invalidateQueries({ queryKey: ['wine-collection-summary', user?.email] });
   };
 

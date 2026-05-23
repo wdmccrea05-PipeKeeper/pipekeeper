@@ -25,17 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useCurrency } from "@/lib/currency/useCurrency";
 import AddFlowModal from "@/components/addflow/AddFlowModal";
-
-function getBottlePhoto(bottle) {
-  return (
-    bottle?.photo ||
-    bottle?.image ||
-    bottle?.image_url ||
-    bottle?.photo_url ||
-    (Array.isArray(bottle?.photos) ? bottle.photos[0] : null) ||
-    null
-  );
-}
+import { getItemPhoto } from '@/lib/images/getItemPhoto';
 
 function safeText(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -53,7 +43,7 @@ function safeText(value, fallback = "—") {
 }
 
 function BottleGridCard({ bottle, onOpen }) {
-  const photo = getBottlePhoto(bottle);
+  const photo = getItemPhoto(bottle);
   const unitValue = resolveBottleUnitValue(bottle);
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
@@ -106,7 +96,7 @@ function BottleGridCard({ bottle, onOpen }) {
 }
 
 function BottleListRow({ bottle, onOpen }) {
-  const photo = getBottlePhoto(bottle);
+  const photo = getItemPhoto(bottle);
   const unitValue = resolveBottleUnitValue(bottle);
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();

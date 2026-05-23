@@ -9,6 +9,8 @@ import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { toast } from 'sonner';
 import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 const STATUS_CONFIG = {
   reserve: {
@@ -136,6 +138,7 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
 
 export default function InventoryManager({ bottle, onClose }) {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
   const [addStatus, setAddStatus] = useState('drinking');
   const [addFill, setAddFill] = useState('Full');
@@ -155,8 +158,7 @@ export default function InventoryManager({ bottle, onClose }) {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['inventory-units', bottle.id] });
-    queryClient.invalidateQueries({ queryKey: ['bottles'] });
-    queryClient.invalidateQueries({ queryKey: ['bottles-summary'] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bottles(user?.email) });
   };
 
   const handleAdd = async () => {

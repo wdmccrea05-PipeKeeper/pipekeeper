@@ -54,6 +54,7 @@ import {
 import { toast } from "sonner";
 import EnrichButton from "@/components/shared/EnrichButton";
 import { useCurrency } from "@/lib/currency/useCurrency";
+import { getItemPhoto } from '@/lib/images/getItemPhoto';
 
 function safePrimitive(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -115,17 +116,6 @@ function safeValueMeta(valueSource) {
   }
 
   return { label: "Value", confidence: null };
-}
-
-function getBottlePhoto(bottle) {
-  return (
-    bottle?.photo ||
-    bottle?.image ||
-    bottle?.image_url ||
-    bottle?.photo_url ||
-    (Array.isArray(bottle?.photos) ? bottle.photos[0] : null) ||
-    null
-  );
 }
 
 function formatDate(value) {
@@ -659,7 +649,7 @@ function BottleDetailInner() {
     };
   }, [bottleId, userEmail, userLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const photo = useMemo(() => getBottlePhoto(bottle), [bottle]);
+  const photo = useMemo(() => getItemPhoto(bottle), [bottle]);
   const displayName = useMemo(
     () => safePrimitive(bottle?.name, "Untitled Bottle"),
     [bottle]

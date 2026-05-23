@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -17,12 +17,19 @@ import LogWineTastingModal from '@/components/wine/LogWineTastingModal';
 import EnrichButton from '@/components/shared/EnrichButton';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
+import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
+import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
+import ShareRecordModal from '@/components/share/ShareRecordModal';
+import UnifiedValuationCard from '@/components/valuation/UnifiedValuationCard';
+import { buildValuationSnapshot, resolveValueTrend } from '@/components/valuation/valueEngine';
+import { refreshItemValue, seedInitialSnapshotIfMissing } from '@/components/valuation/valueRefreshService';
 import {
   ArrowLeft, Star, Edit2, Trash2, BookOpen, BookmarkPlus,
   MapPin, Wine, AlertTriangle, TrendingUp, Package, BarChart2,
-  CheckCircle, Clock, ChevronDown, ChevronUp,
+  CheckCircle, Clock, ChevronDown, ChevronUp, Search, Share2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 const DRINK_WINDOW_COLORS = { drink_now: '#2E7D5C', too_young: '#6B8FC4', past_peak: '#A35C5C' };
 const DRINK_WINDOW_LABELS = { drink_now: 'Drink Now', too_young: 'Too Young', past_peak: 'Past Peak' };
@@ -250,7 +257,7 @@ function RarityPanel({ wine, formatFromBase }) {
 // ─── Tasting Log ─────────────────────────────────────────────────────────────
 function TastingLog({ wineId, wineName, onOpenModal }) {
   const { data: tastings = [] } = useQuery({
-    queryKey: ['wine-tastings', wineId],
+    queryKey: QUERY_KEYS.wineTastings(wineId),
     queryFn: () => base44.entities.WineTasting.filter({ wine_id: wineId }, '-date', 50),
     enabled: !!wineId,
   });
@@ -350,17 +357,32 @@ export default function WineDetail() {
   const [editing, setEditing] = useState(false);
   const [logTasting, setLogTasting] = useState(false);
   const [wantListOpen, setWantListOpen] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showSimilar, setShowSimilar] = useState(false);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarResult, setSimilarResult] = useState(null);
+  const [similarError, setSimilarError] = useState(null);
+  const [valueSnapshots, setValueSnapshots] = useState([]);
+  const [priceObservations, setPriceObservations] = useState([]);
+  const [isRefreshingValue, setIsRefreshingValue] = useState(false);
 
   const { data: wine, isLoading } = useQuery({
-    queryKey: ['wine', wineId],
+    queryKey: QUERY_KEYS.wine(wineId),
     queryFn: () => base44.entities.Wine.get(wineId),
     enabled: !!wineId,
+  });
+
+  const { data: allWines = [] } = useQuery({
+    queryKey: QUERY_KEYS.wines(user?.email),
+    queryFn: async () => base44.entities.Wine.filter({ created_by: user?.email }, '-created_date').catch(() => []),
+    enabled: !!user?.email,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   const deleteMutation = useMutation({
     mutationFn: () => base44.entities.Wine.delete(wineId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wines'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
       navigate('/Wines');
     },
   });
@@ -370,18 +392,120 @@ export default function WineDetail() {
   };
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['wine', wineId] });
-    queryClient.invalidateQueries({ queryKey: ['wines'] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wine(wineId) });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
   };
 
   const handlePhotosUpdate = (photos) => {
-    queryClient.setQueryData(['wine', wineId], (prev) => prev ? { ...prev, photos } : prev);
-    queryClient.invalidateQueries({ queryKey: ['wines'] });
+    queryClient.setQueryData(QUERY_KEYS.wine(wineId), (prev) => prev ? { ...prev, photos } : prev);
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
   };
 
   const handleValuationSaved = (updates) => {
-    queryClient.setQueryData(['wine', wineId], (prev) => prev ? { ...prev, ...updates } : prev);
-    queryClient.invalidateQueries({ queryKey: ['wines'] });
+    queryClient.setQueryData(QUERY_KEYS.wine(wineId), (prev) => prev ? { ...prev, ...updates } : prev);
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
+  };
+
+  useEffect(() => {
+    if (!wineId || !user?.email) return;
+    let mounted = true;
+
+    async function loadValuationArtifacts() {
+      const [snapshots, observations] = await Promise.all([
+        base44.entities.ItemValueSnapshot.filter({
+          item_id: wineId,
+          module_key: 'winekeeper',
+          created_by: user.email,
+        }, '-snapshot_date', 20).catch(() => []),
+        base44.entities.PriceObservation.filter({
+          item_id: wineId,
+          module_key: 'winekeeper',
+          created_by: user.email,
+        }, '-observed_date', 20).catch(() => []),
+      ]);
+
+      if (!mounted) return;
+      setValueSnapshots(Array.isArray(snapshots) ? snapshots : []);
+      setPriceObservations(Array.isArray(observations) ? observations : []);
+    }
+
+    loadValuationArtifacts();
+    return () => { mounted = false; };
+  }, [wineId, user?.email]);
+
+  useEffect(() => {
+    if (!wine || !user?.email) return;
+    let mounted = true;
+
+    (async () => {
+      if (valueSnapshots.length === 0) {
+        const seeded = await seedInitialSnapshotIfMissing(
+          wine,
+          'winekeeper',
+          'wine',
+          user.email,
+          base44,
+          valueSnapshots,
+          {}
+        );
+        if (seeded && mounted) {
+          const snapshots = await base44.entities.ItemValueSnapshot.filter({
+            item_id: wine.id,
+            module_key: 'winekeeper',
+            created_by: user.email,
+          }, '-snapshot_date', 20).catch(() => []);
+          if (mounted) setValueSnapshots(Array.isArray(snapshots) ? snapshots : []);
+        }
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, [wine, user?.email, valueSnapshots]);
+
+  const valuationSnapshot = useMemo(
+    () => (wine ? buildValuationSnapshot(wine, 'winekeeper', { valueHistory: valueSnapshots }) : null),
+    [wine, valueSnapshots]
+  );
+  const valueTrend = useMemo(() => resolveValueTrend(valueSnapshots), [valueSnapshots]);
+
+  const handleRefreshValueNow = async () => {
+    if (!wine || !user?.email || isRefreshingValue) return;
+    setIsRefreshingValue(true);
+    try {
+      const newSnap = await refreshItemValue(wine, 'winekeeper', 'wine', user.email, base44, { valueHistory: valueSnapshots });
+      if (newSnap) {
+        setValueSnapshots((prev) => [newSnap, ...prev]);
+      }
+    } finally {
+      setIsRefreshingValue(false);
+    }
+  };
+
+  const handleFindSimilar = async () => {
+    if (!wine || !user?.email) return;
+    setShowSimilar(true);
+    setSimilarLoading(true);
+    setSimilarError(null);
+    setSimilarResult(null);
+
+    try {
+      const allTastings = await base44.entities.WineTasting
+        .filter({ created_by: user.email }, '-date', 100)
+        .catch(() => []);
+      const result = await runFindSimilar({
+        recordType: 'wine',
+        anchor: wine,
+        context: {
+          wines: allWines || [],
+          tastings: allTastings || [],
+        },
+      });
+      setSimilarResult(result);
+    } catch (error) {
+      setSimilarError(error?.message || 'Failed to find similar wines.');
+    } finally {
+      setSimilarLoading(false);
+    }
   };
 
   if (!wineId) { navigate('/Wines'); return null; }
@@ -442,9 +566,17 @@ export default function WineDetail() {
         </button>
         <div className="flex items-center gap-2 flex-wrap">
           <EnrichButton itemType="wine" record={wine} onEnriched={(updated) => {
-            queryClient.setQueryData(['wine', wineId], (prev) => prev ? { ...prev, ...updated } : prev);
+            queryClient.setQueryData(QUERY_KEYS.wine(wineId), (prev) => prev ? { ...prev, ...updated } : prev);
             invalidate();
           }} />
+          <Button size="sm" variant="outline" onClick={handleFindSimilar}>
+            <Search className="w-4 h-4 mr-1" />
+            Similar
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setShowShareModal(true)}>
+            <Share2 className="w-4 h-4 mr-1" />
+            Share
+          </Button>
           <Button size="sm" onClick={() => setLogTasting(true)} style={{ background: 'rgba(139,58,58,0.2)', color: '#C47070', border: '1px solid rgba(139,58,58,0.3)' }}>
             <BookOpen className="w-4 h-4 mr-1" />
             Log Tasting
@@ -580,8 +712,26 @@ export default function WineDetail() {
             )}
           </SectionCard>
 
-          {/* Valuation */}
-          <SectionCard title="Valuation">
+          {valuationSnapshot ? (
+            <UnifiedValuationCard
+              item={wine}
+              itemType="wine"
+              moduleKey="winekeeper"
+              valuationSnapshot={valuationSnapshot}
+              valueTrend={valueTrend}
+              valueSnapshots={valueSnapshots}
+              priceObservations={priceObservations}
+              onEditValuation={() => {}}
+              onRefreshNow={handleRefreshValueNow}
+              isRefreshing={isRefreshingValue}
+            />
+          ) : (
+            <SectionCard title="Valuation">
+              <ValuationPanel wine={wine} formatFromBase={formatFromBase} onSaved={handleValuationSaved} />
+            </SectionCard>
+          )}
+
+          <SectionCard title="Manual Valuation Controls" defaultOpen={false}>
             <ValuationPanel wine={wine} formatFromBase={formatFromBase} onSaved={handleValuationSaved} />
           </SectionCard>
 
@@ -600,7 +750,7 @@ export default function WineDetail() {
             <EnrichmentDetails
               wine={wine}
               onEnriched={(updated) => {
-                queryClient.setQueryData(['wine', wineId], (prev) => prev ? { ...prev, ...updated } : prev);
+                queryClient.setQueryData(QUERY_KEYS.wine(wineId), (prev) => prev ? { ...prev, ...updated } : prev);
                 invalidate();
               }}
             />
@@ -618,8 +768,8 @@ export default function WineDetail() {
           defaultMode="collection"
           onSaved={() => {
             setLogTasting(false);
-            queryClient.invalidateQueries({ queryKey: ['wine-tastings', wineId] });
-            queryClient.invalidateQueries({ queryKey: ['wine-tastings-summary'] });
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wineTastings(wineId) });
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wineTastingsSummary(user?.email) });
           }}
         />
       )}
@@ -633,6 +783,25 @@ export default function WineDetail() {
           itemType="wine"
         />
       )}
+
+      <ShareRecordModal
+        isOpen={showShareModal}
+        onOpenChange={setShowShareModal}
+        moduleType="wine"
+        record={wine}
+        userProfile={{ email: user?.email }}
+      />
+
+      <SimilarItemsDrawer
+        isOpen={showSimilar}
+        onClose={() => setShowSimilar(false)}
+        result={similarResult}
+        loading={similarLoading}
+        error={similarError}
+        onRetry={handleFindSimilar}
+        recordType="wine"
+        anchorName={wine?.name}
+      />
     </div>
   );
 }

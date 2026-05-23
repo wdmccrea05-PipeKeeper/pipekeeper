@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Wand2, Globe, Tags, DollarSign, Beaker, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 function WhiskeyBottleIcon({ className, style }) {
   return (
@@ -45,8 +46,7 @@ export default function WhiskeyAIUpdates() {
   });
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['bottles'] });
-    queryClient.invalidateQueries({ queryKey: ['bottles-summary'] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bottles(user?.email) });
     queryClient.invalidateQueries({ queryKey: ['bottles-ai'] });
     refetchBottles();
   };

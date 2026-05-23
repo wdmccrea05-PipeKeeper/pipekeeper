@@ -25,6 +25,8 @@ import {
   InsightsEmptyState,
   InsightsSessionPanel,
 } from '@/components/insights/InsightsShell';
+import { MODULE_ACCENTS } from '@/lib/theme/tokens';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 const ACCENT = '#8B3A3A';
 const WINE_GOLD = '#D4A574';
@@ -48,17 +50,17 @@ export default function WineInsights() {
   const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
 
   const { data: wines = [] } = useQuery({
-    queryKey: ['wines', user?.email],
+    queryKey: QUERY_KEYS.wines(user?.email),
     queryFn: async () => base44.entities.Wine.filter({ created_by: user?.email }, '-created_date').catch(() => []),
     enabled: !!user?.email,
-    staleTime: 30_000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   const { data: tastings = [] } = useQuery({
-    queryKey: ['wine-tastings-summary', user?.email],
+    queryKey: QUERY_KEYS.wineTastingsSummary(user?.email),
     queryFn: async () => base44.entities.WineTasting.filter({ created_by: user?.email }, '-date', 500).catch(() => []),
     enabled: !!user?.email,
-    staleTime: 30_000,
+    staleTime: STALE_TIME.SESSION_HISTORY,
   });
 
   const wineSessions = useMemo(() => (tastings || []).map(t => ({
@@ -113,7 +115,7 @@ export default function WineInsights() {
         subtitle="Analyze your wine cellar — value, drinking windows, and tasting history"
       />
 
-      <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+      <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.winekeeper} />
 
       {/* SUMMARY */}
       {activeTab === 'summary' && (

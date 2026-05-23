@@ -38,6 +38,8 @@ import {
   Check,
   X,
   MoreVertical,
+  Search,
+  Share2,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -64,6 +66,11 @@ import {
 } from '@/components/valuation/valueRefreshService';
 import { deriveCigarMarketValuation, buildCigarMarketValuationPatch } from '@/utils/cigarMarketValuation';
 import { getCigarRarityResult } from '@/lib/collection/cigarSelectors';
+import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
+import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
+import ShareRecordModal from '@/components/share/ShareRecordModal';
+import { getItemPhoto } from '@/lib/images/getItemPhoto';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -472,9 +479,7 @@ function CigarDetailInner() {
   const saveField = async (field, value) => {
     await base44.entities.Cigar.update(cigar.id, { [field]: value, created_by: cigar.created_by || user?.email });
     queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
-    queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
-    queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
-    queryClient.invalidateQueries({ queryKey: ['cigars-insights', user?.email] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
     toast.success('Updated');
   };
 
@@ -532,6 +537,11 @@ function CigarDetailInner() {
   const [showSnapshotModal, setShowSnapshotModal] = useState(false);
   const [showObservationModal, setShowObservationModal] = useState(false);
   const [isRefreshingValue, setIsRefreshingValue] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showSimilar, setShowSimilar] = useState(false);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarResult, setSimilarResult] = useState(null);
+  const [similarError, setSimilarError] = useState(null);
 
   async function loadValueSnapshots(cigarId) {
     if (!cigarId || !user?.email) { setValueSnapshots([]); return []; }
@@ -630,7 +640,7 @@ function CigarDetailInner() {
   const handleDelete = async () => {
     try {
       await base44.entities.Cigar.delete(cigar.id);
-      queryClient.invalidateQueries({ queryKey: ['cigars'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
       toast.success('Cigar deleted');
       navigate('/Cigars');
     } catch {
@@ -656,8 +666,7 @@ function CigarDetailInner() {
     try {
       await base44.entities.Cigar.update(cigar.id, { ...patch, created_by: cigar.created_by || user?.email });
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
-      queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
-      queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
       toast.success(action ? getCigarQuickActionSuccessMessage(action, cigar, patch) : 'Updated');
     } catch {
       toast.error('Failed to update cigar');
@@ -680,16 +689,38 @@ function CigarDetailInner() {
     try {
       await base44.entities.Cigar.update(cigar.id, { ...patch, created_by: cigar.created_by || user?.email });
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
-      queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
-      queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
-      queryClient.invalidateQueries({ queryKey: ['cigars-insights', user?.email] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
       toast.success('Valuation updated');
     } catch {
       toast.error('Failed to update valuation');
     }
   };
 
-  const photo = Array.isArray(cigar?.photos) ? cigar.photos[0] : cigar?.photos || '';
+  const handleFindSimilar = async () => {
+    if (!cigar || !user?.email) return;
+    setShowSimilar(true);
+    setSimilarLoading(true);
+    setSimilarResult(null);
+    setSimilarError(null);
+
+    try {
+      const allCigars = await base44.entities.Cigar.filter({ created_by: user.email }, '-created_date').catch(() => []);
+      const result = await runFindSimilar({
+        recordType: 'cigar',
+        anchor: cigar,
+        context: {
+          cigars: allCigars || [],
+        },
+      });
+      setSimilarResult(result);
+    } catch (error) {
+      setSimilarError(error?.message || 'Failed to find similar cigars.');
+    } finally {
+      setSimilarLoading(false);
+    }
+  };
+
+  const photo = getItemPhoto(cigar);
   const actionLabels = getCigarQuickActionLabels(cigar);
   const locationMeta = [
     cigar?.humidor_tray ? `Tray ${cigar.humidor_tray}` : null,
@@ -758,6 +789,24 @@ function CigarDetailInner() {
               style={{ color: cigar.is_favorite ? '#D4A574' : 'rgba(224,216,200,0.4)' }}
               fill={cigar.is_favorite ? '#D4A574' : 'none'}
             />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFindSimilar}
+            className="gap-1.5"
+          >
+            <Search className="w-4 h-4" />
+            Similar
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowShareModal(true)}
+            className="gap-1.5"
+          >
+            <Share2 className="w-4 h-4" />
+            Share
           </Button>
           <Button
             variant="outline"
@@ -1233,6 +1282,25 @@ function CigarDetailInner() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <ShareRecordModal
+        isOpen={showShareModal}
+        onOpenChange={setShowShareModal}
+        moduleType="cigar"
+        record={cigar}
+        userProfile={{ email: user?.email }}
+      />
+
+      <SimilarItemsDrawer
+        isOpen={showSimilar}
+        onClose={() => setShowSimilar(false)}
+        result={similarResult}
+        loading={similarLoading}
+        error={similarError}
+        onRetry={handleFindSimilar}
+        recordType="cigar"
+        anchorName={cigar?.name}
+      />
+
       <CigarSessionModal
         isOpen={sessionModalOpen}
         onClose={() => {
@@ -1244,9 +1312,9 @@ function CigarDetailInner() {
         onSessionSaved={() => {
           setSessionModalOpen(false);
           setEditingSession(null);
-          queryClient.invalidateQueries({ queryKey: ['cigar-sessions', id, user?.email] });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigarSessionsById(id, user?.email) });
           queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
-          queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
         }}
       />
 

@@ -25,6 +25,7 @@ import CigarCard from '@/components/cigars/CigarCard';
 import CigarListItem from '@/components/cigars/CigarListItem';
 import CigarForm from '@/components/cigars/CigarForm';
 import AddCigarModal from '@/components/cigars/AddCigarModal';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 import HumidorManager from '@/components/cigars/HumidorManager';
 import CollectorGridView from '@/components/ui/CollectorGridView';
 import { useCurrency } from '@/lib/currency/useCurrency';
@@ -176,7 +177,7 @@ function CigarsInner() {
   }, [actionParam, tabParam]);
 
   const { data: cigars = [], isLoading } = useQuery({
-    queryKey: ['cigars', user?.email],
+    queryKey: QUERY_KEYS.cigars(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
       const result = await base44.entities.Cigar.filter(
@@ -187,11 +188,11 @@ function CigarsInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   const { data: humidors = [] } = useQuery({
-    queryKey: ['humidors', user?.email],
+    queryKey: QUERY_KEYS.humidors(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
       const result = await base44.entities.HumidorLocation.filter(
@@ -200,7 +201,7 @@ function CigarsInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   const { data: sessions = [] } = useQuery({
@@ -301,18 +302,17 @@ function CigarsInner() {
   };
 
   const handleFormSubmit = () => {
-    queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
     setEditDialogOpen(false);
     setEditingCigar(null);
   };
 
   const invalidateCigars = () => {
-    queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
-    queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
   };
 
   const updateCigarInCache = (cigarId, patch) => {
-    queryClient.setQueryData(['cigars', user?.email], (prev = []) =>
+    queryClient.setQueryData(QUERY_KEYS.cigars(user?.email), (prev = []) =>
       Array.isArray(prev)
         ? prev.map((c) => (c.id === cigarId ? { ...c, ...patch } : c))
         : prev
