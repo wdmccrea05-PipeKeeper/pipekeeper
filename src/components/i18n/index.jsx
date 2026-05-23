@@ -233,8 +233,7 @@ function useLang(languageOverride = null) {
     persistNormalizedLanguage(normalized);
   }, [languageOverride]);
   useEffect(() => {
-    if (context && !languageOverride) return undefined;
-    if (languageOverride) return undefined;
+    if ((context && !languageOverride) || languageOverride) return undefined;
     const sync = () => setLang(readLanguage(null));
     window.addEventListener('storage', sync);
     window.addEventListener('pk:language-changed', sync);

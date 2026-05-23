@@ -186,7 +186,7 @@ export default function WhiskeyInsightsPage() {
       });
       doc.save(`whiskeykeeper-report-${new Date().toISOString().slice(0, 10)}.pdf`);
     } catch (err) { console.error('[WhiskeyInsights] PDF export failed:', err); }
-  }, [bottles, tastingLogs, bottleTypes, totalBottles, openBottles, totalTastings, totalValue, averageRating, mostValuedBottle, formatDate]);
+  }, [bottles, tastingLogs, bottleTypes, totalBottles, openBottles, totalTastings, totalValue, averageRating, mostValuedBottle]);
 
   if (!user?.email) return null;
 
