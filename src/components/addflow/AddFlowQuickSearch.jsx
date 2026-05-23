@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ChevronRight, Globe, Loader2, PenLine, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, ChevronRight, Globe, Loader2, PenLine, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { searchForRecord } from '@/lib/search/unifiedSearchService';
 
@@ -62,45 +61,63 @@ function descriptionFor(item) {
   return item.metadata?.description || item.description || '';
 }
 
+const DEBOUNCE_MS = 400;
+const MIN_CHARS = 2;
+
 export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSelect, onManual }) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [results, setResults] = useState([]);
+  const debounceRef = useRef(null);
+  const inputRef = useRef(null);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  // Live search with debounce
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (query.trim().length < MIN_CHARS) {
+      setResults([]);
+      setSearched(false);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
-    setSearched(false);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const { results: ranked } = await searchForRecord(query.trim(), itemType, { maxResults: 10 });
+        setResults(ranked);
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+        setSearched(true);
+      }
+    }, DEBOUNCE_MS);
 
-    try {
-      const { results: ranked } = await searchForRecord(query.trim(), itemType, { maxResults: 10 });
-      setResults(ranked);
-    } catch {
-      setResults([]);
-    } finally {
-      setLoading(false);
-      setSearched(true);
-    }
+    return () => clearTimeout(debounceRef.current);
+  }, [query, itemType]);
+
+  const handleClear = () => {
+    setQuery('');
+    setResults([]);
+    setSearched(false);
+    inputRef.current?.focus();
   };
 
   // When the user taps a result we pass back the metadata (raw LLM fields) so
   // AddFlowQuickConfirm can still access all the original properties.
   const handleSelect = (item) => {
     const payload = {
-      // Spread raw metadata fields for downstream compatibility
       ...item.metadata,
-      // Ensure unified shape fields are also present
       name: item.title || item.metadata?.name,
-      // Confidence provenance
       _confidenceScore: item.confidenceScore,
       _confidenceLabel: item.confidenceLabel,
       _confidenceReason: item.confidenceReason,
       _sourceDomain: item.sourceDomain,
       _sourceTier: item.sourceTier,
       _isExact: item.isExactMatch,
-      // Image from search if available
       _suggestedImageUrl: item.imageUrl || null,
     };
     onSelect(payload);
@@ -135,40 +152,38 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
       <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />
 
       <div className="px-6 py-5 flex flex-col gap-4">
-        <div className="flex gap-2">
+        {/* Search input — live dropdown */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'rgba(180,140,75,0.5)' }} />
           <Input
+            ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder={PLACEHOLDERS[itemType]}
-            className="flex-1"
+            autoFocus
+            className="pl-9 pr-9"
             style={{
               background: 'rgba(20,13,8,0.7)',
               border: '1px solid rgba(180,140,75,0.3)',
               color: '#F5F1E7',
             }}
           />
-          <Button
-            onClick={handleSearch}
-            disabled={loading || !query.trim()}
-            style={{
-              background: 'linear-gradient(135deg, rgba(180,140,75,0.9), rgba(150,115,60,0.9))',
-              color: '#1a1008',
-              fontWeight: 600,
-              flexShrink: 0,
-            }}
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          </Button>
+          {query && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              style={{ color: 'rgba(224,216,200,0.4)' }}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          {loading && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin pointer-events-none" style={{ color: 'rgba(180,140,75,0.6)' }} />
+          )}
         </div>
 
-        {loading && (
-          <div className="flex items-center justify-center py-10 gap-2" style={{ color: 'rgba(224,216,200,0.4)' }}>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-sm">Searching trusted sources…</span>
-          </div>
-        )}
-
+        {/* Results */}
         {!loading && results.length > 0 && (
           <div className="flex flex-col gap-2">
             {results.map((item, index) => (
@@ -191,11 +206,7 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
                     {item.isExactMatch && index === 0 && (
                       <span
                         className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
-                        style={{
-                          background: 'rgba(180,140,75,0.18)',
-                          color: '#D4A574',
-                          border: '1px solid rgba(180,140,75,0.3)',
-                        }}
+                        style={{ background: 'rgba(180,140,75,0.18)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.3)' }}
                       >
                         Exact Match
                       </span>
@@ -244,10 +255,10 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
           </div>
         )}
 
-        {!loading && !searched && (
+        {!loading && !searched && query.length < MIN_CHARS && (
           <div className="text-center py-8" style={{ color: 'rgba(224,216,200,0.3)' }}>
             <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">Enter a name above to search</p>
+            <p className="text-sm">Type to search</p>
           </div>
         )}
 
