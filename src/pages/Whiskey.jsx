@@ -26,6 +26,7 @@ import {
 import { useCurrency } from "@/lib/currency/useCurrency";
 import AddFlowModal from "@/components/addflow/AddFlowModal";
 import { getItemPhoto } from '@/lib/images/getItemPhoto';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 function safeText(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -165,22 +166,26 @@ function WhiskeyInner() {
   const { formatFromBase } = useCurrency();
   const queryClient = useQueryClient();
 
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('whiskeyViewMode') || "grid");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState('name');
   const [showAddModal, setShowAddModal] = useState(false);
 
   const userEmail = user?.email || null;
   const shouldOpenAdd = new URLSearchParams(location.search).get("action") === "add";
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    localStorage.setItem('whiskeyViewMode', mode);
+  };
 
   const { data: bottles = [], isLoading: loading } = useQuery({
-    queryKey: ['whiskey-collection', userEmail],
+    queryKey: QUERY_KEYS.bottles(userEmail),
     queryFn: async () => {
       const rows = await base44.entities.Bottle.filter({ created_by: userEmail }, '-updated_date', 500).catch(() => []);
       return Array.isArray(rows) ? rows : [];
     },
     enabled: !!userEmail && !userLoading,
-    staleTime: 30 * 1000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   // Open add modal if action=add
@@ -232,7 +237,7 @@ function WhiskeyInner() {
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
         initialItemType="bottle"
-        onCreated={() => queryClient.invalidateQueries({ queryKey: ['whiskey-collection', userEmail] })}
+        onCreated={() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bottles(userEmail) })}
       />
 
       <WhiskeyKeeperModuleNav currentPageName="Whiskey" />
@@ -296,7 +301,7 @@ function WhiskeyInner() {
           >
             <button
               type="button"
-              onClick={() => setViewMode("grid")}
+              onClick={() => handleViewModeChange("grid")}
               className="px-3 py-2 text-sm"
               style={{
                 background:
@@ -310,7 +315,7 @@ function WhiskeyInner() {
             </button>
             <button
               type="button"
-              onClick={() => setViewMode("list")}
+              onClick={() => handleViewModeChange("list")}
               className="px-3 py-2 text-sm"
               style={{
                 background:

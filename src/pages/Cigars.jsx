@@ -142,7 +142,7 @@ function CigarsInner() {
   const tabParam = searchParams.get('tab');
 
   const [activeTab, setActiveTab] = useState(tabParam || 'collection');
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('cigarsViewMode') || 'grid');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [filterBody, setFilterBody] = useState('');
@@ -165,6 +165,10 @@ function CigarsInner() {
   const [displayMode, setDisplayMode] = useState(() => {
     return localStorage.getItem('cigarsDisplayMode') === 'collector';
   });
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    localStorage.setItem('cigarsViewMode', mode);
+  };
 
   useEffect(() => {
     if (actionParam === 'add') {
@@ -545,7 +549,7 @@ function CigarsInner() {
                 <button
                   key={mode}
                   type="button"
-                  onClick={() => setViewMode(mode)}
+                  onClick={() => handleViewModeChange(mode)}
                   className="px-3 py-2"
                   style={{
                     background: viewMode === mode ? 'rgba(140,107,63,0.25)' : 'rgba(255,255,255,0.03)',

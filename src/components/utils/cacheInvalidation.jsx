@@ -2,6 +2,7 @@
  * Standardized cache invalidation utilities
  * Ensures both root and scoped query keys are invalidated
  */
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 /**
  * Invalidate all queries for a specific entity type
@@ -29,7 +30,12 @@ export function invalidateEntityQueries(queryClient, entityType, userEmail = nul
  * Invalidate pipe-related queries
  */
 export function invalidatePipeQueries(queryClient, userEmail = null) {
-  invalidateEntityQueries(queryClient, 'pipes', userEmail);
+  if (userEmail) {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pipes(userEmail) });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pipeSummary(userEmail) });
+  } else {
+    invalidateEntityQueries(queryClient, 'pipes', userEmail);
+  }
   invalidateEntityQueries(queryClient, 'pipe', userEmail);
   
   // Also invalidate related queries
@@ -38,7 +44,8 @@ export function invalidatePipeQueries(queryClient, userEmail = null) {
       const key = query.queryKey[0];
       return key === 'pairing-matrix' || 
              key === 'collection-optimization' ||
-             key === 'smoking-logs';
+             key === 'smoking-logs' ||
+             key === 'smoking-logs-summary';
     }
   });
 }
@@ -47,7 +54,13 @@ export function invalidatePipeQueries(queryClient, userEmail = null) {
  * Invalidate tobacco/blend-related queries
  */
 export function invalidateBlendQueries(queryClient, userEmail = null) {
-  invalidateEntityQueries(queryClient, 'blends', userEmail);
+  if (userEmail) {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.blends(userEmail) });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.blendSummary(userEmail) });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.smokingLogsSummary(userEmail) });
+  } else {
+    invalidateEntityQueries(queryClient, 'blends', userEmail);
+  }
   invalidateEntityQueries(queryClient, 'tobacco', userEmail);
   invalidateEntityQueries(queryClient, 'tobacco-blend', userEmail);
   invalidateEntityQueries(queryClient, 'tobacco-blends', userEmail);

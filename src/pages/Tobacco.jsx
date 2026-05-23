@@ -34,6 +34,7 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import { formatWeight } from "@/components/utils/localeFormatters";
 import AddFlowModal from "@/components/addflow/AddFlowModal";
 import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
 const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
@@ -75,20 +76,11 @@ export default function TobaccoPage() {
   const hasPipekeeperPro = hasModuleProAccess(user, 'pipekeeper');
 
   const { data: blends = [], isLoading } = useQuery({
-    queryKey: ['blends', user?.email, sortBy],
+    queryKey: QUERY_KEYS.blends(user?.email),
     queryFn: async () => {
       try {
-        const actualSort = sortBy === 'favorites' ? '-created_date' : sortBy;
-        const result = await scopedEntities.TobaccoBlend.listForUser(user?.email, actualSort);
-        let data = Array.isArray(result) ? result : [];
-        if (sortBy === 'favorites') {
-          data = data.sort((a, b) => {
-            if (a.is_favorite && !b.is_favorite) return -1;
-            if (!a.is_favorite && b.is_favorite) return 1;
-            return 0;
-          });
-        }
-        return data;
+        const result = await scopedEntities.TobaccoBlend.listForUser(user?.email, '-created_date');
+        return Array.isArray(result) ? result : [];
       } catch (err) {
         console.error('Blends load error:', err);
         return [];
@@ -96,7 +88,7 @@ export default function TobaccoPage() {
     },
     enabled: !!user?.email,
     retry: 2,
-    staleTime: 10000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   // Handle URL action parameter
@@ -223,15 +215,15 @@ export default function TobaccoPage() {
   const toggleFavoriteMutation = useMutation({
     mutationFn: ({ id, is_favorite }) => safeUpdate('TobaccoBlend', id, { is_favorite }, user?.email),
     onMutate: async ({ id, is_favorite }) => {
-      await queryClient.cancelQueries({ queryKey: ['blends', user?.email, sortBy] });
-      const previousBlends = queryClient.getQueryData(['blends', user?.email, sortBy]);
-      queryClient.setQueryData(['blends', user?.email, sortBy], (old) =>
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.blends(user?.email) });
+      const previousBlends = queryClient.getQueryData(QUERY_KEYS.blends(user?.email));
+      queryClient.setQueryData(QUERY_KEYS.blends(user?.email), (old) =>
         (old || []).map(b => b?.id === id ? { ...b, is_favorite } : b)
       );
       return { previousBlends };
     },
     onError: (err, variables, context) => {
-      queryClient.setQueryData(['blends', user?.email, sortBy], context?.previousBlends);
+      queryClient.setQueryData(QUERY_KEYS.blends(user?.email), context?.previousBlends);
       toast.error(err?.message || t('tobaccoPage.failedToUpdateBlends'));
     },
   });
@@ -240,17 +232,40 @@ export default function TobaccoPage() {
     toggleFavoriteMutation.mutate({ id: blend.id, is_favorite: !blend.is_favorite });
   };
 
-  const filteredBlends = (blends || []).filter(blend => {
-    if (!blend) return false;
-    const matchesSearch = !searchQuery || 
-      blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      blend.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase());
-    const activeType = typeFilter === '__none__' ? '' : typeFilter;
-    const activeStrength = strengthFilter === '__none__' ? '' : strengthFilter;
-    const matchesType = !activeType || blend.blend_type === activeType;
-    const matchesStrength = !activeStrength || blend.strength === activeStrength;
-    return matchesSearch && matchesType && matchesStrength;
-  });
+  const filteredBlends = React.useMemo(() => {
+    const filtered = (blends || []).filter(blend => {
+      if (!blend) return false;
+      const matchesSearch = !searchQuery ||
+        blend.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        blend.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase());
+      const activeType = typeFilter === '__none__' ? '' : typeFilter;
+      const activeStrength = strengthFilter === '__none__' ? '' : strengthFilter;
+      const matchesType = !activeType || blend.blend_type === activeType;
+      const matchesStrength = !activeStrength || blend.strength === activeStrength;
+      return matchesSearch && matchesType && matchesStrength;
+    });
+
+    return filtered.sort((a, b) => {
+      if (sortBy === 'favorites') {
+        if (a?.is_favorite && !b?.is_favorite) return -1;
+        if (!a?.is_favorite && b?.is_favorite) return 1;
+        return new Date(b?.created_date || 0).getTime() - new Date(a?.created_date || 0).getTime();
+      }
+      if (sortBy === 'name' || sortBy === '-name') {
+        const direction = sortBy === '-name' ? -1 : 1;
+        return direction * String(a?.name || '').localeCompare(String(b?.name || ''), undefined, { sensitivity: 'base', numeric: true });
+      }
+      if (sortBy === '-rating' || sortBy === 'rating') {
+        const direction = sortBy === '-rating' ? -1 : 1;
+        return direction * ((Number(a?.rating) || 0) - (Number(b?.rating) || 0));
+      }
+      if (sortBy === 'cellared_date' || sortBy === '-cellared_date') {
+        const direction = sortBy === '-cellared_date' ? -1 : 1;
+        return direction * (new Date(a?.cellared_date || 0).getTime() - new Date(b?.cellared_date || 0).getTime());
+      }
+      return new Date(b?.created_date || 0).getTime() - new Date(a?.created_date || 0).getTime();
+    });
+  }, [blends, searchQuery, typeFilter, strengthFilter, sortBy]);
 
   const totalTins = (blends || []).reduce((sum, b) => sum + (Number(b?.quantity_owned) || 0), 0);
 
