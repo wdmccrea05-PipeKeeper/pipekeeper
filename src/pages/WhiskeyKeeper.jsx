@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Plus, Flame, Glasses, BarChart3 } from 'lucide-react';
@@ -21,6 +21,7 @@ function WhiskeyKeeperInner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const { formatFromBase } = useCurrency();
 
@@ -91,6 +92,11 @@ function WhiskeyKeeperInner() {
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
         initialItemType="bottle"
+        onCreated={() => {
+          queryClient.invalidateQueries({ queryKey: ['bottles-summary', user?.email] });
+          queryClient.invalidateQueries({ queryKey: ['whiskey-inventory-summary', user?.email] });
+          queryClient.invalidateQueries({ queryKey: ['whiskey-collection', user?.email] });
+        }}
       />
 
       {highlights.length > 0 && (

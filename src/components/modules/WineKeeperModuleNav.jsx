@@ -3,12 +3,16 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Wine, BarChart3, Plus, BookOpen, FileSpreadsheet, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 
 export default function WineKeeperModuleNav({ currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
   const [showAddModal, setShowAddModal] = useState(false);
 
   const tabs = [
@@ -88,6 +92,11 @@ export default function WineKeeperModuleNav({ currentPageName }) {
       open={showAddModal}
       onClose={() => setShowAddModal(false)}
       initialItemType="wine"
+      onCreated={() => {
+        queryClient.invalidateQueries({ queryKey: ['wines', user?.email] });
+        queryClient.invalidateQueries({ queryKey: ['wines-summary', user?.email] });
+        queryClient.invalidateQueries({ queryKey: ['wine-collection-summary', user?.email] });
+      }}
     />
     </>
   );

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
@@ -68,6 +68,7 @@ function WineKeeperInner() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
+  const queryClient = useQueryClient();
   const { formatFromBase } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -306,6 +307,11 @@ function WineKeeperInner() {
       open={showAddModal}
       onClose={() => setShowAddModal(false)}
       initialItemType="wine"
+      onCreated={() => {
+        queryClient.invalidateQueries({ queryKey: ['wines', user?.email] });
+        queryClient.invalidateQueries({ queryKey: ['wines-summary', user?.email] });
+        queryClient.invalidateQueries({ queryKey: ['wine-collection-summary', user?.email] });
+      }}
     />
 
     {showShareModal && (
