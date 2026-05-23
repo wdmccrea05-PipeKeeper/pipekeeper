@@ -1189,15 +1189,22 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             )}
           </>
         )}
+      </div>
 
+      {/* Sticky save footer */}
+      <div
+        className="sticky bottom-0 px-6 pb-5 pt-3"
+        style={{ background: 'linear-gradient(to top, rgba(20,13,8,1) 80%, transparent)', zIndex: 10 }}
+      >
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full mt-2"
+          className="w-full"
           style={{
             background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))',
             color: '#fff',
             fontWeight: 600,
+            height: '2.75rem',
           }}
         >
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
