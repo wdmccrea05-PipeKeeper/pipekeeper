@@ -8,6 +8,7 @@ const PLACEHOLDERS = {
   pipe: 'e.g. Falcon Standard, Peterson 312, Savinelli 320…',
   bottle: 'e.g. Lagavulin 16, Nikka Coffey Grain, Eagle Rare…',
   cigar: 'e.g. Oliva Serie V, Arturo Fuente Hemingway…',
+  wine: 'e.g. Château Margaux, Opus One, Caymus Cabernet…',
 };
 
 // Confidence badge colours
@@ -50,6 +51,7 @@ function subtitleFor(itemType, item) {
   if (itemType === 'pipe') return item.maker || item.matchedBrand;
   if (itemType === 'bottle') return item.distillery || item.matchedBrand;
   if (itemType === 'cigar') return item.brand || item.matchedBrand;
+  if (itemType === 'wine') return item.producer || item.winery || item.matchedBrand;
   return '';
 }
 
@@ -144,7 +146,9 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
                 ? 'Search by maker, model, or shape'
                 : itemType === 'cigar'
                   ? 'Search by cigar name, brand, or line'
-                  : 'Search by bottle name, distillery, or expression'}
+                  : itemType === 'wine'
+                    ? 'Search by wine name, producer, or vintage'
+                    : 'Search by bottle name, distillery, or expression'}
           </p>
         </div>
       </div>
