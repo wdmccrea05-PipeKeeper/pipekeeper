@@ -10,6 +10,7 @@ import {
   getInventoryStatusSummary,
 } from '@/components/utils/whiskeyValueHelpers';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { getItemPhoto } from '@/lib/images/getItemPhoto';
 
 function Badge({ children, tone = 'default' }) {
   const tones = {
@@ -75,12 +76,7 @@ export default function BottleCard({
   );
   const valueLabel = useMemo(() => getBottleDisplayValueLabel(bottle), [bottle]);
 
-  const photo =
-    (Array.isArray(bottle?.photos) ? bottle.photos[0] : '') ||
-    bottle?.photo ||
-    bottle?.image ||
-    bottle?.image_url ||
-    '';
+  const photo = getItemPhoto(bottle) || '';
 
   return (
     <div

@@ -13,7 +13,7 @@ import {
   generatePublicShareUrl,
 } from "./shareUtils";
 import { getDefaultShareConfig, validateShareConfig } from "./shareFieldSelectors";
-import { PipeShareCard, TobaccoShareCard, WhiskeyShareCard, WineShareCard } from "./ShareCardRenderer";
+import { PipeShareCard, TobaccoShareCard, WhiskeyShareCard, WineShareCard, CigarShareCard } from "./ShareCardRenderer";
 
 export default function ShareRecordModal({
   isOpen,
@@ -29,9 +29,10 @@ export default function ShareRecordModal({
   const resolvedModuleType =
     moduleType ||
     (recordType === 'bottle' ? 'whiskey' : recordType) ||
+    (type === 'wine_collection' ? 'wine' : type) ||
     type ||
     null;
-  const resolvedOpen = typeof isOpen === 'boolean' ? isOpen : Boolean(record && (recordType || moduleType || type));
+  const resolvedOpen = typeof isOpen === 'boolean' ? isOpen : true;
   const resolvedOnOpenChange = onOpenChange || ((open) => { if (!open && typeof onClose === 'function') onClose(); });
   const { t } = useTranslation();
   const cardRef = useRef(null);
@@ -44,6 +45,8 @@ export default function ShareRecordModal({
     () => validateShareConfig(config, userProfile, privacySettings),
     [config, userProfile, privacySettings]
   );
+
+  if (!record || !resolvedModuleType) return null;
 
   const ensureShareRecord = async (cfg = validatedConfig) => {
     if (!record?.id) throw new Error("Missing record id");
@@ -145,6 +148,15 @@ export default function ShareRecordModal({
                 ? record?.manual_estimated_value || record?.market_estimated_total_value || record?.purchase_price
                 : undefined,
             }
+        : resolvedModuleType === "cigar"
+          ? {
+              ...record,
+              photo: validatedConfig.include_photos ? (record?.photo || record?.image || record?.image_url || (Array.isArray(record?.photos) ? record.photos[0] : undefined)) : undefined,
+              notes: validatedConfig.include_notes ? record?.notes : undefined,
+              estimated_value: validatedConfig.include_value
+                ? record?.market_estimated_total_value || record?.estimated_total_value || record?.market_replacement_cost_estimate
+                : undefined,
+            }
         : {
             ...record,
             photo: validatedConfig.include_photos ? record?.photo : undefined,
@@ -188,6 +200,7 @@ export default function ShareRecordModal({
               {resolvedModuleType === "tobacco" ? <TobaccoShareCard ref={cardRef} tobacco={recordForPreview} userProfile={userProfile} /> : null}
               {resolvedModuleType === "whiskey" ? <WhiskeyShareCard ref={cardRef} bottle={recordForPreview} userProfile={userProfile} /> : null}
               {resolvedModuleType === "wine" ? <WineShareCard ref={cardRef} wine={recordForPreview} userProfile={userProfile} /> : null}
+              {resolvedModuleType === "cigar" ? <CigarShareCard ref={cardRef} cigar={recordForPreview} userProfile={userProfile} /> : null}
             </div>
           ) : (
             <div className="space-y-4">

@@ -27,6 +27,7 @@ import ExternalItemSearch from "@/components/session/ExternalItemSearch";
 import ExternalItemManualEntry from "@/components/session/ExternalItemManualEntry";
 import SessionContextTags from "@/components/session/SessionContextTags";
 import PostSessionPrompt from "@/components/session/PostSessionPrompt";
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 const TOBACCO_DENSITY_GCM3 = 0.30;
 const BOWL_GEOMETRY_FACTOR = 0.85;
@@ -453,9 +454,9 @@ export default function LogSessionModal({
       }
 
       queryClient.invalidateQueries({ queryKey: ["smoking-logs"] });
-      queryClient.invalidateQueries({ queryKey: ["smoking-logs-summary", user?.email] });
-      queryClient.invalidateQueries({ queryKey: ["pipes-summary", user?.email] });
-      queryClient.invalidateQueries({ queryKey: ["blends-summary", user?.email] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.smokingLogsSummary(user?.email) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pipeSummary(user?.email) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.blendSummary(user?.email) });
       invalidateBlendQueries(queryClient, user?.email);
 
       const externalItems = [];

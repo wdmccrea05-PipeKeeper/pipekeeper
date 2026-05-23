@@ -257,12 +257,71 @@ Return JSON:
 }`;
 }
 
+function buildCigarSimilarPrompt(anchor, context) {
+  const { userProfile = null } = context;
+  const ownedNames = (context.cigars || []).map((cigar) => [cigar.brand, cigar.name].filter(Boolean).join(' ')).filter(Boolean);
+
+  const anchorDetails = [
+    anchor.brand && `Brand: ${anchor.brand}`,
+    anchor.line && `Line: ${anchor.line}`,
+    anchor.vitola && `Vitola: ${anchor.vitola}`,
+    anchor.wrapper && `Wrapper: ${anchor.wrapper}`,
+    anchor.country_of_origin && `Origin: ${anchor.country_of_origin}`,
+    anchor.strength && `Strength: ${anchor.strength}`,
+  ].filter(Boolean).join("\n");
+
+  const prefStr = userProfile ? [
+    userProfile.cigar_preferences?.wrappers?.length && `Preferred wrappers: ${userProfile.cigar_preferences.wrappers.join(", ")}`,
+    userProfile.cigar_preferences?.origins?.length && `Preferred origins: ${userProfile.cigar_preferences.origins.join(", ")}`,
+    userProfile.cigar_notes && `Cigar notes: ${userProfile.cigar_notes}`,
+  ].filter(Boolean).join("\n") : "";
+
+  return `You are a world-class cigar curator AI. Return VALID JSON only - no markdown, no prose outside JSON.
+
+TASK: Recommend exactly 3 cigars NOT in the user's collection that are similar to the anchor cigar.
+
+ANCHOR CIGAR:
+Name: ${anchor.name}
+${anchorDetails}
+
+OWNED CIGARS (NEVER recommend these):
+${ownedNames.map(n => `- ${n}`).join("\n") || "None"}
+
+USER PREFERENCES:
+${prefStr || "Not specified"}
+
+RULES:
+- Return exactly 3 items
+- Never recommend owned cigars
+- Only real, commercially available cigars
+- Each must be distinct
+- Ground in the anchor cigar's actual attributes
+
+Return JSON:
+{
+  "summary": "Brief intro sentence",
+  "items": [
+    {
+      "id": "sim_1",
+      "type": "similar_item",
+      "recordType": "cigar",
+      "title": "Cigar Name",
+      "category": "Wrapper / origin / vitola",
+      "explanation": "Why this is similar to ${anchor.name}",
+      "characteristics": ["trait 1", "trait 2"],
+      "whyFitsYou": "Personalized note"
+    }
+  ]
+}`;
+}
+
 export function buildFindSimilarPrompt(recordType, anchor, context) {
   switch (recordType) {
     case "blend": return buildBlendSimilarPrompt(anchor, context);
     case "pipe": return buildPipeSimilarPrompt(anchor, context);
     case "bottle": return buildBottleSimilarPrompt(anchor, context);
     case "wine": return buildWineSimilarPrompt(anchor, context);
+    case "cigar": return buildCigarSimilarPrompt(anchor, context);
     default: throw new Error(`Unsupported record type for Find Similar: ${recordType}`);
   }
 }
@@ -296,6 +355,8 @@ export async function runFindSimilar({ recordType, anchor, context }) {
   if (recordType === "blend") ownedItems = context?.blends || [];
   else if (recordType === "pipe") ownedItems = context?.pipes || [];
   else if (recordType === "bottle") ownedItems = context?.bottles || [];
+  else if (recordType === "wine") ownedItems = context?.wines || [];
+  else if (recordType === "cigar") ownedItems = context?.cigars || [];
 
   const ownedSet = buildOwnedSet(ownedItems);
 

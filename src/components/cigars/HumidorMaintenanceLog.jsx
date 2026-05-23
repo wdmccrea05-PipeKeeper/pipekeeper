@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Droplets, Thermometer, PackagePlus, RefreshCcw, Sparkles, Sun, ClipboardList, Plus, Trash2, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 import {
   LineChart,
   Line,
@@ -210,7 +211,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['humidor-maintenance-logs', humidorId] });
       queryClient.invalidateQueries({ queryKey: ['humidors', user?.email] });
-      queryClient.invalidateQueries({ queryKey: ['humidors-summary', user?.email] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.humidors(user?.email) });
       toast.success('Maintenance entry logged');
       setShowDialog(false);
       setForm({ ...EMPTY_FORM });

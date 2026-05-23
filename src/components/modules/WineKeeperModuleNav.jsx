@@ -6,6 +6,7 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 export default function WineKeeperModuleNav({ currentPageName }) {
   const location = useLocation();
@@ -93,8 +94,7 @@ export default function WineKeeperModuleNav({ currentPageName }) {
       onClose={() => setShowAddModal(false)}
       initialItemType="wine"
       onCreated={() => {
-        queryClient.invalidateQueries({ queryKey: ['wines', user?.email] });
-        queryClient.invalidateQueries({ queryKey: ['wines-summary', user?.email] });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
         queryClient.invalidateQueries({ queryKey: ['wine-collection-summary', user?.email] });
       }}
     />

@@ -62,6 +62,7 @@ import PipePhotoGallery from '@/components/pipes/PipePhotoGallery';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
+import { getItemPhoto } from '@/lib/images/getItemPhoto';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
@@ -742,7 +743,7 @@ export default function PipeDetail() {
     );
   }
 
-  const mainPhoto = pipe.photos?.[0];
+  const mainPhoto = getItemPhoto(pipe);
   const allPhotos = [
     ...(pipe.photos || []),
     ...(pipe.stamping_photos || [])

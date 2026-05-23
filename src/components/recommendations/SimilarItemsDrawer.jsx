@@ -15,6 +15,7 @@ const TYPE_LABELS = {
   pipe: "Pipes",
   bottle: "Pours",
   wine: "Wines",
+  cigar: "Cigars",
 };
 
 const LOADING_COPY = {
@@ -22,6 +23,7 @@ const LOADING_COPY = {
   pipe: "Finding similar pipes…",
   bottle: "Finding similar pours…",
   wine: "Finding similar wines…",
+  cigar: "Finding similar cigars…",
 };
 
 function SimilarItemCard({ item }) {

@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { computeSessionDecrement, getAvailableQuantity } from '@/platform/cigarInventory';
 import { CIGAR_STRENGTH_VALUES, formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import { sortByLabel } from '@/lib/sorting/alphabetical';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 const TODAY = new Date().toISOString().split('T')[0];
 
@@ -368,7 +369,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
             try {
               await base44.entities.Cigar.update(selectedCigar.id, decrementFields);
               queryClient.invalidateQueries({ queryKey: ['cigars'] });
-              queryClient.invalidateQueries({ queryKey: ['cigars-summary'] });
+              queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
               queryClient.invalidateQueries({ queryKey: ['cigar-detail'] });
             } catch {
               // Non-fatal: session was saved; inventory update failed silently

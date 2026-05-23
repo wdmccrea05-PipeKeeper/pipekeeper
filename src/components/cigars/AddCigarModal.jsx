@@ -2,14 +2,14 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 export default function AddCigarModal({ open, onClose }) {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
 
   const handleCreated = () => {
-    queryClient.invalidateQueries({ queryKey: ['cigars', user?.email] });
-    queryClient.invalidateQueries({ queryKey: ['cigars-summary', user?.email] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
   };
 
   return (

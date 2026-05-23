@@ -53,6 +53,8 @@ import {
   InsightsEmptyState,
   InsightsSessionPanel,
 } from "@/components/insights/InsightsShell";
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
+import { MODULE_ACCENTS } from '@/lib/theme/tokens';
 import { Calendar } from "@/components/ui/calendar";
 import { buildSessionCalendarData } from "@/lib/sessionHistory/calendarData";
 import SmokingLogPanel from "@/components/home/SmokingLogPanel";
@@ -1024,17 +1026,17 @@ export default function Insights() {
   const [showFullStory, setShowFullStory] = useState(false);
 
   const { data: pipes = [] } = useQuery({
-    queryKey: ["pipes", user?.email],
+    queryKey: QUERY_KEYS.pipes(user?.email),
     queryFn: async () => {
       const result = await base44.entities.Pipe.filter({ created_by: user?.email });
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.INSIGHTS,
   });
 
   const { data: blends = [] } = useQuery({
-    queryKey: ["blends", user?.email],
+    queryKey: QUERY_KEYS.blends(user?.email),
     queryFn: async () => {
       const result = await base44.entities.TobaccoBlend.filter({
         created_by: user?.email,
@@ -1042,22 +1044,22 @@ export default function Insights() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.INSIGHTS,
   });
 
   const { data: cellarLogs = [] } = useQuery({
-    queryKey: ["cellar-logs-all", user?.email],
+    queryKey: QUERY_KEYS.cellarLogs(user?.email),
     queryFn: () => base44.entities.CellarLog.filter({ created_by: user?.email }),
     enabled: !!user?.email,
-    staleTime: 30000,
+    staleTime: STALE_TIME.INSIGHTS,
   });
 
   const { data: smokingLogs = [] } = useQuery({
-    queryKey: ["smoking-logs", user?.email],
+    queryKey: QUERY_KEYS.smokingLogs(user?.email),
     queryFn: () =>
       base44.entities.SmokingLog.filter({ created_by: user?.email }, "-date", 1000),
     enabled: !!user?.email,
-    staleTime: 60000,
+    staleTime: STALE_TIME.SESSION_HISTORY,
   });
 
   const totalPipeValue = useMemo(
@@ -1275,7 +1277,7 @@ export default function Insights() {
         subtitle={t("pipekeeper.insightsSubtitle", "Explore your pipe and tobacco collection data")}
       />
 
-      <InsightsTabBar tabs={TABS} activeTab={activeInsightsTab} onTabChange={setActiveInsightsTab} />
+      <InsightsTabBar tabs={TABS} activeTab={activeInsightsTab} onTabChange={setActiveInsightsTab} activeAccent={MODULE_ACCENTS.pipekeeper} />
 
       {/* SUMMARY */}
       {activeInsightsTab === 'summary' && (

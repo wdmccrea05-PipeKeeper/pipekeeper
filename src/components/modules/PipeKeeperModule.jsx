@@ -21,6 +21,8 @@ import AddFlowModal from '@/components/addflow/AddFlowModal';
 import LogSessionModal from '@/components/home/LogSessionModal';
 import FreeTierUpgradePrompt from '@/components/subscription/FreeTierUpgradePrompt';
 import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
+import { getItemPhoto } from '@/lib/images/getItemPhoto';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -42,23 +44,23 @@ export default function PipeKeeperModule() {
 
   // Fetch data
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
-    queryKey: ['pipes-summary', user?.email],
+    queryKey: QUERY_KEYS.pipeSummary(user?.email),
     queryFn: async () => {
       const result = await base44.entities.Pipe.filter({ created_by: user?.email });
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const { data: blends = [], isLoading: blendsLoading } = useQuery({
-    queryKey: ['blends-summary', user?.email],
+    queryKey: QUERY_KEYS.blendSummary(user?.email),
     queryFn: async () => {
       const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   // Open LogSessionModal from URL param only after user and collection data are ready
@@ -71,10 +73,10 @@ export default function PipeKeeperModule() {
   }, [actionParam, isUserLoading, user?.email, pipesLoading, blendsLoading]);
 
   const { data: smokingLogs = [] } = useQuery({
-    queryKey: ['smoking-logs-summary', user?.email],
+    queryKey: QUERY_KEYS.smokingLogsSummary(user?.email),
     queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date'),
     enabled: !!user?.email,
-    staleTime: 60000,
+    staleTime: STALE_TIME.SESSION_HISTORY,
   });
 
   // Calculate metrics
@@ -110,8 +112,8 @@ export default function PipeKeeperModule() {
   const favoriteBlends = useMemo(() => blends.filter(b => b?.is_favorite), [blends]);
 
   const handlePipeAdded = () => {
-    queryClient.invalidateQueries({ queryKey: ['pipes-summary'] });
-    queryClient.invalidateQueries({ queryKey: ['pipes'] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pipeSummary(user?.email) });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pipes(user?.email) });
   };
 
   // Clear query param when modal closes
@@ -129,7 +131,7 @@ export default function PipeKeeperModule() {
         value: mostSmokedPipe.name,
         subtitle: mostSmokedPipe.maker,
         accent: '#C87941',
-        photo: mostSmokedPipe.photos?.[0] || null,
+        photo: getItemPhoto(mostSmokedPipe),
         onClick: () => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`)),
       });
     }
@@ -140,7 +142,7 @@ export default function PipeKeeperModule() {
         value: formatFromBase(mostValuablePipe.estimated_value),
         subtitle: mostValuablePipe.name,
         accent: '#B4824B',
-        photo: mostValuablePipe.photos?.[0] || null,
+        photo: getItemPhoto(mostValuablePipe),
         onClick: () => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostValuablePipe.id)}`)),
       });
     }
