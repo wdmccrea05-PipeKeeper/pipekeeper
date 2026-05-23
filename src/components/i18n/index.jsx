@@ -225,14 +225,15 @@ export function useI18n() {
 }
 function useLang(languageOverride = null) {
   const context = useI18n();
-  if (context && !languageOverride) return context.lang;
   const [lang, setLang] = useState(() => readLanguage(languageOverride));
   useEffect(() => {
+    if (context && !languageOverride) return undefined;
     const normalized = readLanguage(languageOverride);
     setLang(normalized);
     persistNormalizedLanguage(normalized);
   }, [languageOverride]);
   useEffect(() => {
+    if (context && !languageOverride) return undefined;
     if (languageOverride) return undefined;
     const sync = () => setLang(readLanguage(null));
     window.addEventListener('storage', sync);
@@ -241,8 +242,8 @@ function useLang(languageOverride = null) {
       window.removeEventListener('storage', sync);
       window.removeEventListener('pk:language-changed', sync);
     };
-  }, [languageOverride]);
-  return lang;
+  }, [context, languageOverride]);
+  return context && !languageOverride ? context.lang : lang;
 }
 function createTranslator(lang) {
   const translationPack = translations[lang] || translations.en || CRITICAL_FALLBACKS;
