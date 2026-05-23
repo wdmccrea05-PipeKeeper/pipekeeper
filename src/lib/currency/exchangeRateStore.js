@@ -90,6 +90,7 @@ export function setCurrentDisplayCurrency(currencyCode) {
     localStorage.setItem(CURRENCY_KEY, currencyCode);
     // Notify any legacy listeners that rely on the storage event.
     window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('pk:currency-changed', { detail: currencyCode }));
   } catch {
     // ignore
   }

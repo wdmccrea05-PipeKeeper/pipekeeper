@@ -18,10 +18,13 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
 
+import { useI18n } from '@/components/i18n/safeTranslation';
+import { getCurrentLocale } from '@/components/i18n/locale';
 import { fetchLatestRates } from './exchangeRateProvider';
 import {
   getCachedRates,
@@ -46,6 +49,8 @@ const CurrencyContext = createContext(null);
 // ---------------------------------------------------------------------------
 
 export function CurrencyProvider({ children }) {
+  const i18n = useI18n();
+  const locale = i18n?.locale || getCurrentLocale();
   const [selectedCurrency, setSelectedCurrencyState] = useState(
     () => getCurrentDisplayCurrency()
   );
@@ -118,6 +123,17 @@ export function CurrencyProvider({ children }) {
     };
   }, []); // intentionally empty — this effect runs once on mount to initialize
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const syncCurrency = () => setSelectedCurrencyState(getCurrentDisplayCurrency());
+    window.addEventListener('storage', syncCurrency);
+    window.addEventListener('pk:currency-changed', syncCurrency);
+    return () => {
+      window.removeEventListener('storage', syncCurrency);
+      window.removeEventListener('pk:currency-changed', syncCurrency);
+    };
+  }, []);
+
   // -------------------------------------------------------------------------
   // Currency selection
   // -------------------------------------------------------------------------
@@ -145,16 +161,16 @@ export function CurrencyProvider({ children }) {
   const formatFromBase = useCallback(
     (amount, toCurrency) => {
       const cur = toCurrency || selectedCurrency;
-      return formatMoneyFromBase(amount, cur, undefined, effectiveRates);
+      return formatMoneyFromBase(amount, cur, locale, effectiveRates);
     },
-    [selectedCurrency, effectiveRates]
+    [selectedCurrency, locale, effectiveRates]
   );
 
   // -------------------------------------------------------------------------
   // Context value
   // -------------------------------------------------------------------------
 
-  const value = {
+  const value = useMemo(() => ({
     selectedCurrency,
     setSelectedCurrency,
     rates: effectiveRates,
@@ -163,7 +179,18 @@ export function CurrencyProvider({ children }) {
     convertFromBase,
     formatFromBase,
     refreshRates,
-  };
+    locale,
+  }), [
+    selectedCurrency,
+    setSelectedCurrency,
+    effectiveRates,
+    isRatesLoading,
+    isRatesStale,
+    convertFromBase,
+    formatFromBase,
+    refreshRates,
+    locale,
+  ]);
 
   return React.createElement(CurrencyContext.Provider, { value }, children);
 }
@@ -189,10 +216,11 @@ export function useCurrency() {
       rates: fallbackRates,
       isRatesLoading: false,
       isRatesStale: true,
+      locale: getCurrentLocale(),
       convertFromBase: (amount, toCurrency) =>
         convertFromBaseUtil(amount, toCurrency || currency, fallbackRates),
       formatFromBase: (amount, toCurrency) =>
-        formatMoneyFromBase(amount, toCurrency || currency, undefined, fallbackRates),
+        formatMoneyFromBase(amount, toCurrency || currency, getCurrentLocale(), fallbackRates),
       refreshRates: async () => {},
     };
   }

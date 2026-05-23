@@ -10,6 +10,7 @@ import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
 import { Cigarette, BookOpen, Heart, DollarSign, TrendingUp, ShieldAlert, Flame, Clock3 } from 'lucide-react';
 import { calculateCigarValue } from '@/lib/valuation/cigarValuation';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import { summarizeCigarReadiness, generateCollectionInsights, INSIGHT_TYPES } from '@/platform/agingReadiness';
 import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import CigarInsuranceExporter from '@/components/export/CigarInsuranceExporter';
@@ -36,16 +37,6 @@ import { buildTopN } from '@/lib/analytics/aggregateUtils';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 // ── Constants ────────────────────────────────────────────────────────────────
-
-const TABS = [
-  { key: 'summary',    label: 'Summary' },
-  { key: 'value',      label: 'Value' },
-  { key: 'usage',      label: 'Usage' },
-  { key: 'statistics', label: 'Statistics' },
-  { key: 'trends',     label: 'Trends' },
-  { key: 'reports',    label: 'Reports' },
-  { key: 'sessions',   label: 'Sessions' },
-];
 
 const INSIGHT_CONFIG = {
   [INSIGHT_TYPES.SMOKE_NOW]:      { icon: Flame,       color: '#6FCF97', label: 'Smoke Now' },
@@ -162,8 +153,18 @@ function CigarInsightsInner() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
+  const { formatDate } = useLocaleFormatting();
   const [activeTab, setActiveTab] = useState('summary');
   const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
+  const tabs = useMemo(() => ([
+    { key: 'summary', label: t('insightsTabs.summary') },
+    { key: 'value', label: t('insightsTabs.value') },
+    { key: 'usage', label: t('insightsTabs.usage') },
+    { key: 'statistics', label: t('insightsTabs.statistics') },
+    { key: 'trends', label: t('insightsTabs.trends') },
+    { key: 'reports', label: t('insightsTabs.reports') },
+    { key: 'sessions', label: t('insightsTabs.sessions') },
+  ]), [t]);
 
   const { data: cigars = [], isLoading: cigarsLoading } = useQuery({
     queryKey: QUERY_KEYS.cigars(user?.email),
@@ -353,7 +354,7 @@ function CigarInsightsInner() {
         subtitle="Analytics and trends from your cigar collection and sessions"
       />
 
-      <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.cigarkeeper} />
+      <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.cigarkeeper} />
 
       {/* ── SUMMARY ─────────────────────────────────────────────────────── */}
       {activeTab === 'summary' && (
@@ -688,7 +689,7 @@ function CigarInsightsInner() {
                           <p className="text-sm font-medium text-[#F5F1E7]">
                             {s.cigar_name || [s.external_cigar_brand, s.external_cigar_name].filter(Boolean).join(' ') || 'Cigar session'}
                           </p>
-                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{s.date ? new Date(s.date).toLocaleDateString() : 'Unknown date'}</p>
+                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{s.date ? formatDate(s.date) : t('insightsShared.unknownDate')}</p>
                         </div>
                         {s.overall_enjoyment != null && (
                           <p className="text-sm font-semibold text-[#F5F1E7]">★ {s.overall_enjoyment}</p>

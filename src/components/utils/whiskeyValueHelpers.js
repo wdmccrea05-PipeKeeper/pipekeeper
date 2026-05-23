@@ -1,3 +1,5 @@
+import { formatCurrencyAmount } from '@/utils/currency';
+
 export function toNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -33,8 +35,7 @@ export function getBottleCount(bottle) {
  * @deprecated Use useCurrency().formatFromBase() in React components instead.
  */
 export function formatCurrency(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? `$${Math.round(n)}` : '—';
+  return formatCurrencyAmount(value);
 }
 
 export function buildInventoryCountByBottleId(inventoryUnits = []) {

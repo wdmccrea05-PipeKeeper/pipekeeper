@@ -2,6 +2,7 @@ import {
   computeCurrentValue,
   buildValuationSnapshot,
 } from '@/components/valuation/valueEngine';
+import { formatCurrencyAmount } from '@/utils/currency';
 
 export function toNumber(value) {
   const n = Number(value);
@@ -54,9 +55,7 @@ export function resolveBottleValueSource(bottle) {
  * Kept for backward compatibility but should not be used for new code.
  */
 export function formatCurrency(value) {
-  // Fallback: just round and return — reactive formatting requires useCurrency()
-  const n = Number(value);
-  return Number.isFinite(n) ? `$${Math.round(n)}` : '—';
+  return formatCurrencyAmount(value);
 }
 
 /**

@@ -232,6 +232,20 @@ const RULES = [
     minLength: 4,
     bypassIgnorePatterns: true,
   },
+  {
+    name: 'direct-locale-formatting',
+    pattern: /(\.toLocale(?:DateString|String)\([^)]*\))/g,
+    severity: 'warn',
+    minLength: 2,
+    bypassIgnorePatterns: true,
+  },
+  {
+    name: 'direct-intl-formatter',
+    pattern: /(new Intl\.(?:NumberFormat|DateTimeFormat|RelativeTimeFormat)\([^)]*\))/g,
+    severity: 'warn',
+    minLength: 2,
+    bypassIgnorePatterns: true,
+  },
 ];
 
 // Short patterns likely to be false positives (CSS classes, code fragments, etc.)
@@ -383,7 +397,10 @@ function main() {
   console.log('     then remove the inline English fallback string:');
   console.log('     Before: {t("common.saveButton", "Save")}');
   console.log('     After:  {t("common.saveButton")}');
-  console.log('  5. If a string is a proper noun or brand name, add it to');
+  console.log('  5. For locale/currency formatting findings, replace direct toLocale*/Intl');
+  console.log('     calls with the shared locale/currency helpers in src/components/utils/localeFormatters.jsx');
+  console.log('     or src/lib/currency/.');
+  console.log('  6. If a string is a proper noun or brand name, add it to');
   console.log('     src/components/i18n/auditConfig.json.jsx → properNounAllowlist.');
   console.log('─'.repeat(60));
   console.log();

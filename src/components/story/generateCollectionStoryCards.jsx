@@ -12,6 +12,7 @@
  */
 
 import { Star, Leaf, TrendingUp, Award, Sparkles, BarChart3, Heart, Flame, Droplets, Wine } from 'lucide-react';
+import { formatCurrencyAmount } from '@/utils/currency';
 
 /**
  * @param {Object} story - enriched story object with .highlights, .metrics, .narrative
@@ -24,7 +25,7 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
 
   const h = story.highlights || {};
   const m = story.metrics || {};
-  const fmt = formatCurrency || ((v) => `$${Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`);
+  const fmt = formatCurrency || ((v) => formatCurrencyAmount(Number(v || 0)));
 
   // If no modules specified, include all by default
   const hasWhiskey = enabledModules.length === 0 || enabledModules.includes('whiskeykeeper');

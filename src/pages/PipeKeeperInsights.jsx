@@ -9,6 +9,7 @@ import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
 import { Flame, BookOpen, Heart, DollarSign, Award, TrendingUp, FileText } from 'lucide-react';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import CollectionReportExporter from '@/components/export/CollectionReportExporter';
 import SmokingLogReportExporter from '@/components/export/SmokingLogReportExporter';
 import AgingReportExporter from '@/components/export/AgingReportExporter';
@@ -26,22 +27,22 @@ import {
   InsightsSessionPanel,
 } from '@/components/insights/InsightsShell';
 
-const TABS = [
-  { key: 'summary', label: 'Summary' },
-  { key: 'value', label: 'Value' },
-  { key: 'usage', label: 'Usage' },
-  { key: 'statistics', label: 'Statistics' },
-  { key: 'trends', label: 'Trends' },
-  { key: 'reports', label: 'Reports' },
-  { key: 'sessions', label: 'Sessions' },
-];
-
 export default function PipeKeeperInsights() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
+  const { formatDate } = useLocaleFormatting();
   const [activeTab, setActiveTab] = useState('summary');
   const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
+  const tabs = useMemo(() => ([
+    { key: 'summary', label: t('insightsTabs.summary') },
+    { key: 'value', label: t('insightsTabs.value') },
+    { key: 'usage', label: t('insightsTabs.usage') },
+    { key: 'statistics', label: t('insightsTabs.statistics') },
+    { key: 'trends', label: t('insightsTabs.trends') },
+    { key: 'reports', label: t('insightsTabs.reports') },
+    { key: 'sessions', label: t('insightsTabs.sessions') },
+  ]), [t]);
 
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: ['pipes-insights', user?.email],
@@ -134,7 +135,7 @@ export default function PipeKeeperInsights() {
         subtitle={t('pipekeeper.insightsSubtitle', 'Analytics and trends from your pipe collection and smoking sessions')}
       />
 
-      <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+      <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === 'summary' && (
         <div className="space-y-6">
@@ -234,7 +235,7 @@ export default function PipeKeeperInsights() {
                       <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(180,140,75,0.06)', border: '1px solid rgba(180,140,75,0.12)' }}>
                         <div>
                           <p className="text-sm font-medium" style={{ color: '#F5F1E7' }}>{s.blend_name || s.pipe_name || 'Session'}</p>
-                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{s.date ? new Date(s.date).toLocaleDateString() : 'Unknown date'}</p>
+                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{s.date ? formatDate(s.date) : t('insightsShared.unknownDate')}</p>
                         </div>
                         {s.rating != null && <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>★ {s.rating}</p>}
                       </div>

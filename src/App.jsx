@@ -50,7 +50,7 @@ import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import ModuleSelectionModal from "@/components/onboarding/ModuleSelectionModal";
 import { useModuleOnboarding } from "@/components/hooks/useModuleOnboarding";
-import { useTranslation } from "@/components/i18n/safeTranslation";
+import { I18nProvider } from "@/components/i18n/safeTranslation";
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -85,7 +85,6 @@ const WineReleaseRoute = ({ currentPageName, children }) => (
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-  const { lang } = useTranslation();
   const loginRedirectedRef = useRef(false);
   const { showModal, setShowModal } = useModuleOnboarding();
   const [moduleSelection, setModuleSelection] = useState(null);
@@ -144,7 +143,7 @@ const AuthenticatedApp = () => {
         }}
       />
       {shouldRenderOnboarding ? <OnboardingRouter initialSelection={moduleSelection} /> : null}
-      <Routes key={lang}>
+      <Routes>
       <Route path="/support-public" element={<SupportPublic />} />
       <Route path="/share/:moduleType/:shareToken" element={<PublicSharedRecord />} />
 
@@ -474,14 +473,16 @@ function App() {
     <GlobalErrorBoundary>
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
-          <Router basename="/">
-            <NavigationTracker />
-            <CurrencyProvider>
-              <MeasurementProvider>
-                <AuthenticatedApp />
-              </MeasurementProvider>
-            </CurrencyProvider>
-          </Router>
+          <I18nProvider>
+            <Router basename="/">
+              <NavigationTracker />
+              <CurrencyProvider>
+                <MeasurementProvider>
+                  <AuthenticatedApp />
+                </MeasurementProvider>
+              </CurrencyProvider>
+            </Router>
+          </I18nProvider>
         </QueryClientProvider>
       </AuthProvider>
     </GlobalErrorBoundary>

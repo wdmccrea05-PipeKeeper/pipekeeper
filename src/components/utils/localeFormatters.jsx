@@ -2,6 +2,10 @@
  * Locale-aware formatting utilities for numbers, dates, and currency
  * Respects user's selected language (pk_lang from localStorage)
  */
+import { useMemo } from 'react';
+import { useI18n } from '@/components/i18n/safeTranslation';
+import { getCurrentLocale } from '@/components/i18n/locale';
+import { useCurrency } from '@/lib/currency/useCurrency';
 import { formatMoneyFromBase } from '@/lib/currency/formatCurrency';
 import { getCachedRates, getCurrentDisplayCurrency } from '@/lib/currency/exchangeRateStore';
 
@@ -9,28 +13,7 @@ import { getCachedRates, getCurrentDisplayCurrency } from '@/lib/currency/exchan
  * Get locale code from pk_lang localStorage key
  */
 export function getLocale() {
-  let lang = 'en';
-  try {
-    lang = (typeof window !== 'undefined' && window?.localStorage?.getItem('pk_lang')) || 'en';
-  } catch {
-    lang = 'en';
-  }
-
-  // Map language codes to locale codes
-  const localeMap = {
-    'en': 'en-US',
-    'es': 'es-ES',
-    'fr': 'fr-FR',
-    'de': 'de-DE',
-    'it': 'it-IT',
-    'pt-BR': 'pt-BR',
-    'nl': 'nl-NL',
-    'pl': 'pl-PL',
-    'ja': 'ja-JP',
-    'zh-Hans': 'zh-CN',
-  };
-  
-  return localeMap[lang] || 'en-US';
+  return getCurrentLocale();
 }
 
 /**
@@ -164,4 +147,63 @@ export function formatMeasurement(value, unit = 'mm') {
   
   const formatted = formatNumber(value, 1);
   return `${formatted}${unit}`;
+}
+
+export function useLocaleFormatting() {
+  const i18n = useI18n();
+  const { selectedCurrency, rates, formatFromBase } = useCurrency();
+  const locale = i18n?.locale || getCurrentLocale();
+
+  return useMemo(() => ({
+    locale,
+    currency: selectedCurrency,
+    formatNumber: (value, decimals = 0) => {
+      if (value === null || value === undefined || isNaN(value)) return '—';
+      return new Intl.NumberFormat(locale, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      }).format(value);
+    },
+    formatDate: (date, style = 'medium') => {
+      if (!date) return '—';
+      const d = typeof date === 'string' ? new Date(date) : date;
+      if (isNaN(d.getTime())) return '—';
+      const options = {
+        short: { year: 'numeric', month: 'numeric', day: 'numeric' },
+        medium: { year: 'numeric', month: 'short', day: 'numeric' },
+        long: { year: 'numeric', month: 'long', day: 'numeric' },
+        full: { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' },
+      };
+      return new Intl.DateTimeFormat(locale, options[style] || options.medium).format(d);
+    },
+    formatDateTime: (date, includeTime = true) => {
+      if (!date) return '—';
+      const d = typeof date === 'string' ? new Date(date) : date;
+      if (isNaN(d.getTime())) return '—';
+      const options = includeTime
+        ? { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+        : { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Intl.DateTimeFormat(locale, options).format(d);
+    },
+    formatPercentage: (value, decimals = 0) => {
+      if (value === null || value === undefined || isNaN(value)) return '—';
+      return new Intl.NumberFormat(locale, {
+        style: 'percent',
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      }).format(value / 100);
+    },
+    formatCurrencyFromBase: formatFromBase,
+    formatCurrency: (value, options = {}) => {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+      const opts = typeof options === 'string' ? { currency: options } : options;
+      return formatMoneyFromBase(
+        Number(value),
+        opts.currency || selectedCurrency,
+        opts.locale || locale,
+        rates,
+        opts.baseCurrency || 'USD'
+      );
+    },
+  }), [locale, selectedCurrency, rates, formatFromBase]);
 }
