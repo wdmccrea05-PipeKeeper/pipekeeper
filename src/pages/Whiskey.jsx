@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useNavigate, useLocation } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   PlusCircle,
   Search,
@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCurrency } from "@/lib/currency/useCurrency";
+import AddFlowModal from "@/components/addflow/AddFlowModal";
 
 function getBottlePhoto(bottle) {
   return (
@@ -171,12 +172,13 @@ function WhiskeyInner() {
   const location = useLocation();
   const { user, isLoading: userLoading } = useCurrentUser();
   const { t } = useTranslation();
-  // Subscribe to currency context so the component re-renders when the user changes currency
   const { formatFromBase } = useCurrency();
+  const queryClient = useQueryClient();
 
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState('name');
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const userEmail = user?.email || null;
   const shouldOpenAdd = new URLSearchParams(location.search).get("action") === "add";
@@ -191,10 +193,10 @@ function WhiskeyInner() {
     staleTime: 30 * 1000,
   });
 
-  // Redirect to add form if action=add
+  // Open add modal if action=add
   useEffect(() => {
-    if (shouldOpenAdd) navigate('/BottleForm', { replace: false });
-  }, [shouldOpenAdd, navigate]);
+    if (shouldOpenAdd) setShowAddModal(true);
+  }, [shouldOpenAdd]);
 
   const filteredBottles = useMemo(() => {
     let results = bottles;
@@ -236,6 +238,13 @@ function WhiskeyInner() {
 
   return (
     <div className="space-y-6 p-6 md:p-8 text-[#F5F1E7]">
+      <AddFlowModal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        initialItemType="bottle"
+        onCreated={() => queryClient.invalidateQueries({ queryKey: ['whiskey-collection', userEmail] })}
+      />
+
       <WhiskeyKeeperModuleNav currentPageName="Whiskey" />
 
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
@@ -326,7 +335,7 @@ function WhiskeyInner() {
           </div>
 
           <Button
-            onClick={() => navigate("/BottleForm")}
+            onClick={() => setShowAddModal(true)}
             style={{
               background:
                 "linear-gradient(135deg, rgba(196,122,58,1), rgba(160,95,40,1))",
@@ -354,7 +363,7 @@ function WhiskeyInner() {
           <p className="text-[#D8C7A6]/76 mt-2">
             Add your first bottle to start building your whiskey vault.
           </p>
-          <Button className="mt-5" onClick={() => navigate("/BottleForm")}>
+          <Button className="mt-5" onClick={() => setShowAddModal(true)}>
             Add Whiskey
           </Button>
         </div>
