@@ -13,21 +13,31 @@ import {
   generatePublicShareUrl,
 } from "./shareUtils";
 import { getDefaultShareConfig, validateShareConfig } from "./shareFieldSelectors";
-import { PipeShareCard, TobaccoShareCard, WhiskeyShareCard } from "./ShareCardRenderer";
+import { PipeShareCard, TobaccoShareCard, WhiskeyShareCard, WineShareCard } from "./ShareCardRenderer";
 
 export default function ShareRecordModal({
   isOpen,
   onOpenChange,
   moduleType,
+  recordType,
+  type,
+  onClose,
   record,
   userProfile = {},
   privacySettings = {},
 }) {
+  const resolvedModuleType =
+    moduleType ||
+    (recordType === 'bottle' ? 'whiskey' : recordType) ||
+    type ||
+    null;
+  const resolvedOpen = typeof isOpen === 'boolean' ? isOpen : Boolean(record && (recordType || moduleType || type));
+  const resolvedOnOpenChange = onOpenChange || ((open) => { if (!open && typeof onClose === 'function') onClose(); });
   const { t } = useTranslation();
   const cardRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [shareRecord, setShareRecord] = useState(null);
-  const [config, setConfig] = useState(() => getDefaultShareConfig(moduleType));
+  const [config, setConfig] = useState(() => getDefaultShareConfig(resolvedModuleType));
   const [previewMode, setPreviewMode] = useState("options");
 
   const validatedConfig = useMemo(
@@ -40,7 +50,7 @@ export default function ShareRecordModal({
     if (shareRecord?.share_token) return shareRecord;
     const ownerEmail = userProfile?.email || userProfile?.user_email || record?.created_by;
     if (!ownerEmail) throw new Error("Missing owner email");
-    const created = await createOrGetShareRecord(moduleType, record.id, ownerEmail, cfg);
+    const created = await createOrGetShareRecord(resolvedModuleType, record.id, ownerEmail, cfg);
     setShareRecord(created);
     return created;
   };
@@ -65,7 +75,7 @@ export default function ShareRecordModal({
     setIsLoading(true);
     try {
       const share = await ensureShareRecord();
-      const success = await copyShareUrlToClipboard(moduleType, share.share_token);
+      const success = await copyShareUrlToClipboard(resolvedModuleType, share.share_token);
       if (!success) throw new Error("Clipboard failed");
       toast.success(t("share.linkCopied", { defaultValue: "Link copied" }));
     } catch (error) {
@@ -80,7 +90,7 @@ export default function ShareRecordModal({
     setIsLoading(true);
     try {
       const share = await ensureShareRecord();
-      const url = generatePublicShareUrl(moduleType, share.share_token);
+      const url = generatePublicShareUrl(resolvedModuleType, share.share_token);
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error(error);
@@ -97,7 +107,7 @@ export default function ShareRecordModal({
     }
     setIsLoading(true);
     try {
-      const fileName = `${moduleType}-${record?.id || "record"}.png`;
+      const fileName = `${resolvedModuleType || 'record'}-${record?.id || "record"}.png`;
       const ok = await exportShareCardAsImage(cardRef.current, fileName);
       if (!ok) throw new Error("Export failed");
       toast.success(t("share.cardExported", { defaultValue: "Share card downloaded" }));
@@ -110,14 +120,14 @@ export default function ShareRecordModal({
   };
 
   const recordForPreview =
-    moduleType === "pipe"
+    resolvedModuleType === "pipe"
       ? {
           ...record,
           photos: validatedConfig.include_photos ? record?.photos : undefined,
           notes: validatedConfig.include_notes ? record?.notes : undefined,
           estimated_value: validatedConfig.include_value ? record?.estimated_value : undefined,
         }
-      : moduleType === "whiskey"
+      : resolvedModuleType === "whiskey"
         ? {
             ...record,
             photo: validatedConfig.include_photos ? record?.photo : undefined,
@@ -126,6 +136,15 @@ export default function ShareRecordModal({
               ? record?.collector_value || record?.aftermarket_price || record?.retail_price || record?.purchase_price
               : undefined,
           }
+        : resolvedModuleType === "wine"
+          ? {
+              ...record,
+              photo: validatedConfig.include_photos ? (record?.photo || record?.image || record?.image_url || (Array.isArray(record?.photos) ? record.photos[0] : undefined)) : undefined,
+              notes: validatedConfig.include_notes ? record?.notes : undefined,
+              estimated_value: validatedConfig.include_value
+                ? record?.manual_estimated_value || record?.market_estimated_total_value || record?.purchase_price
+                : undefined,
+            }
         : {
             ...record,
             photo: validatedConfig.include_photos ? record?.photo : undefined,
@@ -141,7 +160,7 @@ export default function ShareRecordModal({
           };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={resolvedOpen} onOpenChange={resolvedOnOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", border: "1px solid rgba(180, 140, 75, 0.25)" }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2" style={{ color: "#FFFFFF" }}>
@@ -165,9 +184,10 @@ export default function ShareRecordModal({
 
           {previewMode === "card" ? (
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pb-4">
-              {moduleType === "pipe" ? <PipeShareCard ref={cardRef} pipe={recordForPreview} userProfile={userProfile} /> : null}
-              {moduleType === "tobacco" ? <TobaccoShareCard ref={cardRef} tobacco={recordForPreview} userProfile={userProfile} /> : null}
-              {moduleType === "whiskey" ? <WhiskeyShareCard ref={cardRef} bottle={recordForPreview} userProfile={userProfile} /> : null}
+              {resolvedModuleType === "pipe" ? <PipeShareCard ref={cardRef} pipe={recordForPreview} userProfile={userProfile} /> : null}
+              {resolvedModuleType === "tobacco" ? <TobaccoShareCard ref={cardRef} tobacco={recordForPreview} userProfile={userProfile} /> : null}
+              {resolvedModuleType === "whiskey" ? <WhiskeyShareCard ref={cardRef} bottle={recordForPreview} userProfile={userProfile} /> : null}
+              {resolvedModuleType === "wine" ? <WineShareCard ref={cardRef} wine={recordForPreview} userProfile={userProfile} /> : null}
             </div>
           ) : (
             <div className="space-y-4">
@@ -186,7 +206,7 @@ export default function ShareRecordModal({
                     <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includeValue", { defaultValue: "Include value" })}</label>
                     <Switch checked={validatedConfig.include_value} onCheckedChange={(checked) => handleUpdateConfig({ ...config, include_value: checked })} disabled={isLoading || userProfile?.privacy_hide_values} />
                   </div>
-                  {moduleType === "tobacco" ? (
+                  {resolvedModuleType === "tobacco" ? (
                     <div className="flex items-center justify-between">
                       <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includeInventory", { defaultValue: "Include inventory" })}</label>
                       <Switch checked={validatedConfig.include_inventory} onCheckedChange={(checked) => handleUpdateConfig({ ...config, include_inventory: checked })} disabled={isLoading || userProfile?.privacy_hide_inventory} />

@@ -195,11 +195,74 @@ Return JSON:
 }`;
 }
 
+function buildWineSimilarPrompt(anchor, context) {
+  const { tastings = [], userProfile = null } = context;
+  const ownedNames = (context.wines || []).map((wine) => wine.name).filter(Boolean);
+  const myTastings = tastings.filter((entry) => entry.wine_id === anchor.id).slice(0, 3);
+  const tastingNotesSummary = myTastings.map((entry) => entry.notes).filter(Boolean).join("; ");
+
+  const anchorDetails = [
+    anchor.style && `Style: ${anchor.style}`,
+    anchor.region && `Region: ${anchor.region}`,
+    anchor.country && `Country: ${anchor.country}`,
+    anchor.appellation && `Appellation: ${anchor.appellation}`,
+    anchor.varietal && `Varietal: ${anchor.varietal}`,
+    anchor.vintage && `Vintage: ${anchor.vintage}`,
+    anchor.producer && `Producer: ${anchor.producer}`,
+  ].filter(Boolean).join("\n");
+
+  const prefStr = userProfile ? [
+    userProfile.wine_preferences?.styles?.length && `Preferred styles: ${userProfile.wine_preferences.styles.join(", ")}`,
+    userProfile.wine_preferences?.regions?.length && `Preferred regions: ${userProfile.wine_preferences.regions.join(", ")}`,
+    userProfile.wine_notes && `Wine notes: ${userProfile.wine_notes}`,
+  ].filter(Boolean).join("\n") : "";
+
+  return `You are a world-class wine curator AI. Return VALID JSON only - no markdown, no prose outside JSON.
+
+TASK: Recommend exactly 3 wines NOT in the user's collection that are similar to the anchor wine.
+
+ANCHOR WINE:
+Name: ${anchor.name}
+${anchorDetails}
+${tastingNotesSummary ? `My tasting notes: ${tastingNotesSummary}` : ""}
+
+OWNED WINES (NEVER recommend these):
+${ownedNames.map(n => `- ${n}`).join("\n") || "None"}
+
+USER PREFERENCES:
+${prefStr || "Not specified"}
+
+RULES:
+- Return exactly 3 items
+- Never recommend owned wines
+- Only real, commercially available wines
+- Each must be distinct
+- Ground in the anchor wine's actual attributes
+
+Return JSON:
+{
+  "summary": "Brief intro sentence",
+  "items": [
+    {
+      "id": "sim_1",
+      "type": "similar_item",
+      "recordType": "wine",
+      "title": "Wine Name",
+      "category": "Style / region",
+      "explanation": "Why this is similar to ${anchor.name}",
+      "characteristics": ["trait 1", "trait 2"],
+      "whyFitsYou": "Personalized note"
+    }
+  ]
+}`;
+}
+
 export function buildFindSimilarPrompt(recordType, anchor, context) {
   switch (recordType) {
     case "blend": return buildBlendSimilarPrompt(anchor, context);
     case "pipe": return buildPipeSimilarPrompt(anchor, context);
     case "bottle": return buildBottleSimilarPrompt(anchor, context);
+    case "wine": return buildWineSimilarPrompt(anchor, context);
     default: throw new Error(`Unsupported record type for Find Similar: ${recordType}`);
   }
 }

@@ -14,12 +14,14 @@ const TYPE_LABELS = {
   blend: "Blends",
   pipe: "Pipes",
   bottle: "Pours",
+  wine: "Wines",
 };
 
 const LOADING_COPY = {
   blend: "Finding similar blends…",
   pipe: "Finding similar pipes…",
   bottle: "Finding similar pours…",
+  wine: "Finding similar wines…",
 };
 
 function SimilarItemCard({ item }) {

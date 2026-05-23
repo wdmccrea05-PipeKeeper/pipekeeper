@@ -5,10 +5,31 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, ChevronLeft } from "lucide-react";
 import { getShareByToken } from "@/components/share/shareUtils";
-import { buildPublicPipeShareView, buildPublicTobaccoShareView } from "@/components/share/shareFieldSelectors";
-import { PipeShareCard, TobaccoShareCard } from "@/components/share/ShareCardRenderer";
+import {
+  buildPublicPipeShareView,
+  buildPublicTobaccoShareView,
+  buildPublicWhiskeyShareView,
+  buildPublicWineShareView,
+} from "@/components/share/shareFieldSelectors";
+import { PipeShareCard, TobaccoShareCard, WhiskeyShareCard, WineShareCard } from "@/components/share/ShareCardRenderer";
 
 const LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
+
+function resolveShareEntityName(moduleType) {
+  if (moduleType === "pipe") return "Pipe";
+  if (moduleType === "tobacco") return "TobaccoBlend";
+  if (moduleType === "whiskey") return "Bottle";
+  if (moduleType === "wine") return "Wine";
+  return null;
+}
+
+function buildPublicRecord(moduleType, record, shareConfig, profile) {
+  if (moduleType === "pipe") return buildPublicPipeShareView(record, shareConfig, profile);
+  if (moduleType === "tobacco") return buildPublicTobaccoShareView(record, shareConfig, profile);
+  if (moduleType === "whiskey") return buildPublicWhiskeyShareView(record, shareConfig, profile);
+  if (moduleType === "wine") return buildPublicWineShareView(record, shareConfig, profile);
+  return null;
+}
 
 export default function PublicSharedRecord() {
   const { t } = useTranslation();
@@ -31,7 +52,11 @@ export default function PublicSharedRecord() {
           return;
         }
         setShareRecord(share);
-        const entityName = moduleType === "pipe" ? "Pipe" : "TobaccoBlend";
+        const entityName = resolveShareEntityName(moduleType);
+        if (!entityName) {
+          setError("notFound");
+          return;
+        }
         let found = null;
         try {
           found = await base44.entities[entityName].get(share.record_id);
@@ -50,7 +75,7 @@ export default function PublicSharedRecord() {
           profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
         } catch {}
         setUserProfile(profile);
-        setRecord(moduleType === "pipe" ? buildPublicPipeShareView(found, share.share_config || share, profile || {}) : buildPublicTobaccoShareView(found, share.share_config || share, profile || {}));
+        setRecord(buildPublicRecord(moduleType, found, share.share_config || share, profile || {}));
       } catch (e) {
         console.error(e);
         setError("loadFailed");
@@ -75,7 +100,12 @@ export default function PublicSharedRecord() {
       </div>
     </nav>
     <div className="max-w-3xl mx-auto px-4 py-12">
-      <div className="flex justify-center mb-12">{moduleType === "pipe" ? <PipeShareCard pipe={record} userProfile={userProfile} /> : <TobaccoShareCard tobacco={record} userProfile={userProfile} />}</div>
+      <div className="flex justify-center mb-12">
+        {moduleType === "pipe" ? <PipeShareCard pipe={record} userProfile={userProfile} /> : null}
+        {moduleType === "tobacco" ? <TobaccoShareCard tobacco={record} userProfile={userProfile} /> : null}
+        {moduleType === "whiskey" ? <WhiskeyShareCard bottle={record} userProfile={userProfile} /> : null}
+        {moduleType === "wine" ? <WineShareCard wine={record} userProfile={userProfile} /> : null}
+      </div>
       <div className="text-center max-w-md mx-auto"><div className="bg-gradient-to-br from-[#2a1f18] to-[#1f1510] border border-[rgba(180,140,75,0.25)] rounded-lg p-6"><p style={{ color: "rgba(224, 216, 200, 0.8)", marginBottom: 12, fontSize: 14 }}>{t("share.startOwnCollection")}</p><Button onClick={() => navigate("/")} className="w-full bg-[#A35C5C] hover:bg-[#8F4E4E]">{t("share.openPipeKeeper")}</Button><p style={{ color: "rgba(180, 140, 75, 0.6)", fontSize: 11, marginTop: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("share.poweredByPipeKeeper")}</p></div></div>
     </div>
   </div>;

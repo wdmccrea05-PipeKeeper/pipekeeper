@@ -16,6 +16,7 @@ import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 import {
   getWinePrimaryImage,
   getWineTotalValue,
@@ -74,7 +75,7 @@ function WineKeeperInner() {
   const [showShareModal, setShowShareModal] = useState(false);
 
   const { data: wines = [] } = useQuery({
-    queryKey: ['wines-summary', user?.email],
+    queryKey: QUERY_KEYS.wines(user?.email),
     queryFn: async () => {
       const result = await base44.entities.Wine.filter(
         { created_by: user?.email },
@@ -83,11 +84,11 @@ function WineKeeperInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const { data: tastings = [] } = useQuery({
-    queryKey: ['wine-tastings-summary', user?.email],
+    queryKey: QUERY_KEYS.wineTastingsSummary(user?.email),
     queryFn: async () => {
       const result = await base44.entities.WineTasting.filter(
         { created_by: user?.email },
@@ -97,7 +98,7 @@ function WineKeeperInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const recentTastings = tastings.slice(0, 5);
@@ -309,7 +310,7 @@ function WineKeeperInner() {
       initialItemType="wine"
       onCreated={() => {
         queryClient.invalidateQueries({ queryKey: ['wines', user?.email] });
-        queryClient.invalidateQueries({ queryKey: ['wines-summary', user?.email] });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
         queryClient.invalidateQueries({ queryKey: ['wine-collection-summary', user?.email] });
       }}
     />

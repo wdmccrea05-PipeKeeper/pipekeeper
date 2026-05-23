@@ -72,6 +72,66 @@ export function buildPublicTobaccoShareView(tobacco, shareConfig, userProfile = 
     view.photo = tobacco.photo;
   }
 
+  export function buildPublicWhiskeyShareView(bottle, shareConfig, userProfile = {}) {
+    const view = {
+      id: bottle.id,
+      name: bottle.name,
+      distillery: bottle.distillery,
+      type: bottle.type,
+      region: bottle.region,
+      country: bottle.country,
+      age: bottle.age,
+      abv: bottle.abv,
+      vintage: bottle.vintage,
+      rating: bottle.rating,
+    };
+
+    if (shareConfig.include_photos) {
+      view.photo = bottle.photo || bottle.image || bottle.image_url || (Array.isArray(bottle.photos) ? bottle.photos[0] : undefined);
+    }
+    if (shareConfig.include_notes && bottle.notes) {
+      view.notes = bottle.notes.substring(0, 300);
+    }
+    if (shareConfig.include_value) {
+      view.estimated_value = bottle.collector_value || bottle.aftermarket_price || bottle.retail_price || bottle.purchase_price || null;
+    }
+    view.shared_by = userProfile?.is_public && userProfile?.display_name ? userProfile.display_name : 'A Collector';
+    return view;
+  }
+
+  export function buildPublicWineShareView(wine, shareConfig, userProfile = {}) {
+    const view = {
+      id: wine.id,
+      name: wine.name,
+      producer: wine.producer,
+      style: wine.style,
+      region: wine.region,
+      appellation: wine.appellation,
+      country: wine.country || wine.country_of_origin,
+      varietal: wine.varietal,
+      vintage: wine.vintage,
+      rating: wine.rating,
+      quantity: wine.quantity,
+    };
+
+    if (shareConfig.include_photos) {
+      view.photo = wine.photo || wine.image || wine.image_url || (Array.isArray(wine.photos) ? wine.photos[0] : undefined);
+    }
+    if (shareConfig.include_notes && wine.notes) {
+      view.notes = wine.notes.substring(0, 300);
+    }
+    if (shareConfig.include_value) {
+      view.estimated_value =
+        wine.manual_estimated_value ||
+        wine.market_estimated_total_value ||
+        wine.market_replacement_cost_estimate ||
+        wine.purchase_price ||
+        null;
+    }
+    view.shared_by = userProfile?.is_public && userProfile?.display_name ? userProfile.display_name : 'A Collector';
+    return view;
+  }
+
   // Include logo if available
   if (tobacco.logo) {
     view.logo = tobacco.logo;

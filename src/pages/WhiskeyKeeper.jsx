@@ -14,6 +14,7 @@ import { getWhiskeyHighlights } from '@/components/whiskey/getWhiskeyHighlights'
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -26,17 +27,17 @@ function WhiskeyKeeperInner() {
   const { formatFromBase } = useCurrency();
 
   const { data: bottles = [] } = useQuery({
-    queryKey: ['bottles-summary', user?.email],
+    queryKey: QUERY_KEYS.bottles(user?.email),
     queryFn: async () => {
       const result = await base44.entities.Bottle.filter({ created_by: user?.email }, '-created_date').catch(() => []);
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const { data: inventoryUnits = [] } = useQuery({
-    queryKey: ['whiskey-inventory-summary', user?.email],
+    queryKey: QUERY_KEYS.whiskeyInventory(user?.email),
     queryFn: async () => {
       const result = await base44.entities.WhiskeyInventoryUnit
         .filter({ created_by: user.email }, '-created_date')
@@ -44,7 +45,7 @@ function WhiskeyKeeperInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const whiskeyMetrics = useMemo(
@@ -93,8 +94,8 @@ function WhiskeyKeeperInner() {
         onClose={() => setShowAddModal(false)}
         initialItemType="bottle"
         onCreated={() => {
-          queryClient.invalidateQueries({ queryKey: ['bottles-summary', user?.email] });
-          queryClient.invalidateQueries({ queryKey: ['whiskey-inventory-summary', user?.email] });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bottles(user?.email) });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.whiskeyInventory(user?.email) });
           queryClient.invalidateQueries({ queryKey: ['whiskey-collection', user?.email] });
         }}
       />

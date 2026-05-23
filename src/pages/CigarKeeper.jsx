@@ -11,6 +11,7 @@ import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import { getCigarHighlights } from '@/components/cigars/getCigarHighlights';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
+import ModuleRecentActivitySection from '@/components/modules/ModuleRecentActivitySection';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { getCollectionInsights } from '@/platform/cigarInsights';
 import {
@@ -20,6 +21,7 @@ import {
   getHumidorMaintenanceStatus,
   humidorNeedsAttention,
 } from '@/components/cigars/humidorMaintenanceUtils';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -135,7 +137,7 @@ function CigarKeeperInner() {
   const [sessionModalOpen, setSessionModalOpen] = useState(false);
 
   const { data: cigars = [] } = useQuery({
-    queryKey: ['cigars-summary', user?.email],
+    queryKey: QUERY_KEYS.cigars(user?.email),
     queryFn: async () => {
       const result = await base44.entities.Cigar.filter(
         { created_by: user?.email },
@@ -144,11 +146,11 @@ function CigarKeeperInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const { data: sessions = [] } = useQuery({
-    queryKey: ['cigar-sessions-summary', user?.email],
+    queryKey: QUERY_KEYS.cigarSessions(user?.email),
     queryFn: async () => {
       const result = await base44.entities.CigarSession.filter(
         { created_by: user?.email },
@@ -158,11 +160,11 @@ function CigarKeeperInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const { data: humidors = [] } = useQuery({
-    queryKey: ['humidors-summary', user?.email],
+    queryKey: QUERY_KEYS.humidors(user?.email),
     queryFn: async () => {
       const result = await base44.entities.HumidorLocation.filter(
         { created_by: user?.email }
@@ -170,7 +172,7 @@ function CigarKeeperInner() {
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
-    staleTime: 10000,
+    staleTime: STALE_TIME.HOMEPAGE,
   });
 
   const recentSessions = sessions.slice(0, 5);
@@ -307,40 +309,31 @@ function CigarKeeperInner() {
 
       {/* Humidor alerts */}
       {alertHumidors.length > 0 && (
-        <div>
-          <h2
-            className="text-xs font-semibold uppercase tracking-[0.14em] mb-3"
-            style={{ color: 'rgba(224,85,85,0.8)' }}
-          >
-            {t('cigars.humidorsNeedingAttention')}
-          </h2>
+        <ModuleRecentActivitySection
+          title={t('cigars.humidorsNeedingAttention')}
+          accent="rgba(224,85,85,0.8)"
+        >
           <div className="space-y-2">
             {alertHumidors.map((h) => (
-                <HumidorAlertCard
-                  key={h.id}
-                  humidor={h}
-                  t={t}
-                  onManage={() => navigate('/Cigars?tab=humidors')}
-                />
+              <HumidorAlertCard
+                key={h.id}
+                humidor={h}
+                t={t}
+                onManage={() => navigate('/Cigars?tab=humidors')}
+              />
             ))}
           </div>
-        </div>
+        </ModuleRecentActivitySection>
       )}
 
       {recentSessions.length > 0 && (
-        <div>
-          <h2
-            className="text-xs font-semibold uppercase tracking-[0.14em] mb-4"
-            style={{ color: 'rgba(180,140,75,0.8)' }}
-          >
-            {t('cigars.recentSessions')}
-          </h2>
+        <ModuleRecentActivitySection title={t('cigars.recentSessions')}>
           <div className="space-y-3">
             {recentSessions.map((session) => (
               <RecentSessionCard key={session.id} session={session} t={t} locale={lang} />
             ))}
           </div>
-        </div>
+        </ModuleRecentActivitySection>
       )}
 
       <CigarSessionModal

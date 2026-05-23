@@ -31,6 +31,8 @@ import {
   InsightsEmptyState,
   InsightsSessionPanel,
 } from '@/components/insights/InsightsShell';
+import { MODULE_ACCENTS } from '@/lib/theme/tokens';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 const TABS = [
   { key: 'summary', label: 'Summary' },
@@ -51,13 +53,13 @@ export default function WhiskeyInsightsPage() {
   const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
 
   const { data: bottles = [], isLoading: bottlesLoading } = useQuery({
-    queryKey: ['bottles', user?.email],
+    queryKey: QUERY_KEYS.bottles(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
       return base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 1000).catch(() => []);
     },
     enabled: !!user?.email,
-    staleTime: 30_000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   const { data: tastingLogs = [], isLoading: logsLoading } = useQuery({
@@ -67,17 +69,17 @@ export default function WhiskeyInsightsPage() {
       return base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 1000).catch(() => []);
     },
     enabled: !!user?.email,
-    staleTime: 30_000,
+    staleTime: STALE_TIME.SESSION_HISTORY,
   });
 
   const { data: inventoryUnits = [], isLoading: inventoryLoading } = useQuery({
-    queryKey: ['whiskey-inventory', user?.email],
+    queryKey: QUERY_KEYS.whiskeyInventory(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
       return base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }).catch(() => []);
     },
     enabled: !!user?.email,
-    staleTime: 30_000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   const isDataLoading = !!user?.email && (bottlesLoading || logsLoading || inventoryLoading);
@@ -208,7 +210,7 @@ export default function WhiskeyInsightsPage() {
           subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')}
         />
 
-        <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+        <InsightsTabBar tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.whiskeykeeper} />
 
         {/* SUMMARY */}
         {activeTab === 'summary' && (
