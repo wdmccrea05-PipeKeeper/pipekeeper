@@ -31,6 +31,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 
 import AddFlowModal from "@/components/addflow/AddFlowModal";
 import { useCurrency } from "@/lib/currency/useCurrency";
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 
 const SHAPES = ["Acorn", "Apple", "Author", "Bent", "Billiard", "Brandy", "Bulldog", "Calabash", "Canadian", "Cavalier", "Cherry Wood", "Chimney", "Churchwarden", "Cutty", "Devil Anse", "Dublin", "Egg", "Freehand", "Hawkbill", "Horn", "Hungarian", "Liverpool", "Lovat", "Nautilus", "Oom Paul", "Other", "Panel", "Poker", "Pot", "Prince", "Rhodesian", "Sitter", "Tomato", "Volcano", "Woodstock", "Zulu"];
@@ -64,7 +65,7 @@ export default function PipesPage() {
   const navigate = useNavigate();
 
   const { data: pipes = [], isLoading } = useQuery({
-    queryKey: ['pipes', user?.email],
+    queryKey: QUERY_KEYS.pipes(user?.email),
     queryFn: async () => {
       try {
         const result = await scopedEntities.Pipe.listForUser(user?.email, '-created_date');
@@ -76,7 +77,7 @@ export default function PipesPage() {
     },
     enabled: !!user?.email,
     retry: 2,
-    staleTime: 10000,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   // Handle URL action parameter — uses searchParams so it fires whenever URL changes
@@ -131,7 +132,7 @@ export default function PipesPage() {
         toast.success(t('notifications.updated') || 'Pipe updated');
       } else {
         await createMutation.mutateAsync(data);
-        await queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pipes(user?.email) });
         toast.success(t("notifications.created") || 'Pipe created');
       }
       setShowForm(false);
@@ -161,15 +162,15 @@ export default function PipesPage() {
   const toggleFavoriteMutation = useMutation({
     mutationFn: ({ id, is_favorite }) => safeUpdate('Pipe', id, { is_favorite }, user?.email),
     onMutate: async ({ id, is_favorite }) => {
-      await queryClient.cancelQueries({ queryKey: ['pipes', user?.email] });
-      const previousPipes = queryClient.getQueryData(['pipes', user?.email]);
-      queryClient.setQueryData(['pipes', user?.email], (old) =>
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.pipes(user?.email) });
+      const previousPipes = queryClient.getQueryData(QUERY_KEYS.pipes(user?.email));
+      queryClient.setQueryData(QUERY_KEYS.pipes(user?.email), (old) =>
         (old || []).map(p => p?.id === id ? { ...p, is_favorite } : p)
       );
       return { previousPipes };
     },
     onError: (err, variables, context) => {
-      queryClient.setQueryData(['pipes', user?.email], context?.previousPipes);
+      queryClient.setQueryData(QUERY_KEYS.pipes(user?.email), context?.previousPipes);
     },
   });
 
@@ -507,8 +508,8 @@ export default function PipesPage() {
           open={showAddFlow}
           onClose={() => setShowAddFlow(false)}
           initialItemType="pipe"
-          onCreated={(record) => {
-            queryClient.invalidateQueries({ queryKey: ['pipes', user?.email] });
+          onCreated={() => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pipes(user?.email) });
           }}
         />
       </div>

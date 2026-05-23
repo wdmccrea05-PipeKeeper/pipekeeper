@@ -5,15 +5,17 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Wine, Plus, Search, Star, Edit2, Trash2, BookmarkPlus, Filter, ChevronDown } from 'lucide-react';
+import { Wine, Plus, Search, Star, Edit2, Trash2, BookmarkPlus, Filter, ChevronDown, Grid3X3, List } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import WineForm from '@/components/wine/WineForm';
+import WineListItem from '@/components/wine/WineListItem';
 import LogWineTastingModal from '@/components/wine/LogWineTastingModal';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import EnrichButton from '@/components/shared/EnrichButton';
 import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 import {
   getWineTotalValue, getWineQuantity, getWineDrinkWindowStatus,
   getWinePrimaryImage, sortWines, filterWines, searchWines,
@@ -60,7 +62,7 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
       }}
       onClick={(e) => {
         if (e.target.closest('button')) return;
-        navigate(`/WineDetail?id=${wine.id}`);
+        navigate(`/WineDetail?id=${encodeURIComponent(wine.id)}`);
       }}
     >
       {/* Image area — same h-48 / object-contain as BottleCard */}
@@ -160,30 +162,40 @@ export default function Wines() {
   const { formatFromBase } = useCurrency();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const userEmail = user?.email ?? null;
 
   const urlParams = new URLSearchParams(window.location.search);
   const [showAddModal, setShowAddModal] = useState(urlParams.get('action') === 'add');
   const [editingWine, setEditingWine] = useState(null);
   const [tastingWine, setTastingWine] = useState(null);
   const [wantListWine, setWantListWine] = useState(null);
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('wineViewMode') || 'grid');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('name_asc');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({});
 
+  const invalidateWines = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(userEmail) });
+  const invalidateWineTastingsSummary = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wineTastingsSummary(userEmail) });
+  const openWineDetail = (wineId) => navigate(`/WineDetail?id=${encodeURIComponent(wineId)}`);
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    localStorage.setItem('wineViewMode', mode);
+  };
+
   const { data: wines = [], isLoading } = useQuery({
-    queryKey: ['wines', user?.email],
+    queryKey: QUERY_KEYS.wines(userEmail),
     queryFn: async () => {
-      const result = await base44.entities.Wine.filter({ created_by: user?.email }, '-created_date').catch(() => []);
+      const result = await base44.entities.Wine.filter({ created_by: userEmail }, '-created_date').catch(() => []);
       return Array.isArray(result) ? result : [];
     },
-    enabled: !!user?.email,
-    staleTime: 10000,
+    enabled: !!userEmail,
+    staleTime: STALE_TIME.COLLECTION,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Wine.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wines'] }),
+    onSuccess: invalidateWines,
   });
 
   const filtered = useMemo(() => {
@@ -205,7 +217,7 @@ export default function Wines() {
         <WineKeeperModuleNav currentPageName="Wines" />
         <WineForm
           wine={editingWine}
-          onSaved={() => { setEditingWine(null); queryClient.invalidateQueries({ queryKey: ['wines'] }); }}
+          onSaved={() => { setEditingWine(null); invalidateWines(); }}
           onCancel={() => setEditingWine(null)}
         />
       </div>
@@ -255,6 +267,30 @@ export default function Wines() {
           Filters {Object.keys(filters).length > 0 ? `(${Object.keys(filters).length})` : ''}
           <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </button>
+        <div className="flex border rounded-lg overflow-hidden" style={{ borderColor: 'rgba(180,140,75,0.25)' }} role="group" aria-label="View mode">
+          <Button
+            type="button"
+            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+            size="icon"
+            onClick={() => handleViewModeChange('grid')}
+            className={`rounded-none rounded-l-lg ${viewMode === 'grid' ? 'bg-[rgba(139,58,58,0.24)] text-[#F5F1E7]' : 'text-[#E0D8C8]/65 hover:bg-[rgba(255,255,255,0.05)]'}`}
+            aria-label="Grid view"
+            aria-pressed={viewMode === 'grid'}
+          >
+            <Grid3X3 className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+            size="icon"
+            onClick={() => handleViewModeChange('list')}
+            className={`rounded-none rounded-r-lg ${viewMode === 'list' ? 'bg-[rgba(139,58,58,0.24)] text-[#F5F1E7]' : 'text-[#E0D8C8]/65 hover:bg-[rgba(255,255,255,0.05)]'}`}
+            aria-label="List view"
+            aria-pressed={viewMode === 'list'}
+          >
+            <List className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Filter panel */}
@@ -307,7 +343,7 @@ export default function Wines() {
             {search || Object.keys(filters).length > 0 ? 'No bottles match your filters.' : 'No bottles yet. Add your first wine!'}
           </p>
         </div>
-      ) : (
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map((wine) => (
             <WineCard
@@ -317,9 +353,25 @@ export default function Wines() {
               onDelete={handleDelete}
               onLogTasting={setTastingWine}
               onAddToWantList={setWantListWine}
-              onEnriched={() => queryClient.invalidateQueries({ queryKey: ['wines', user?.email] })}
+              onEnriched={invalidateWines}
               formatFromBase={formatFromBase}
               navigate={navigate}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((wine) => (
+            <WineListItem
+              key={wine.id}
+              wine={wine}
+              onOpen={() => openWineDetail(wine.id)}
+              onEdit={setEditingWine}
+              onDelete={handleDelete}
+              onLogTasting={setTastingWine}
+              onEnriched={invalidateWines}
+              onAddToWantList={setWantListWine}
+              formatFromBase={formatFromBase}
             />
           ))}
         </div>
@@ -331,7 +383,7 @@ export default function Wines() {
           wines={wines}
           isOpen={!!tastingWine}
           onClose={() => setTastingWine(null)}
-          onSaved={() => { setTastingWine(null); queryClient.invalidateQueries({ queryKey: ['wine-tastings-summary'] }); }}
+          onSaved={() => { setTastingWine(null); invalidateWineTastingsSummary(); }}
         />
       )}
 
@@ -347,7 +399,7 @@ export default function Wines() {
       <AddFlowModal
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
-        onCreated={() => queryClient.invalidateQueries({ queryKey: ['wines', user?.email] })}
+        onCreated={invalidateWines}
         initialItemType="wine"
       />
     </div>
