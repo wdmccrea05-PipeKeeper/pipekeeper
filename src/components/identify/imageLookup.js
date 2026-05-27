@@ -8,7 +8,7 @@
  */
 
 import { base44 } from '@/api/base44Client';
-import { normalizeIdentifiedItem } from './normalizeIdentifiedItem';
+import { normalizeIdentifiedItem, normalizeSingleCandidate } from './normalizeIdentifiedItem';
 
 // ── LLM prompts per item type ─────────────────────────────────────────────────
 
@@ -26,10 +26,16 @@ Look for:
 9. Visible condition
 10. Era/age indicators and country of origin clues
 11. Any model or series numbers
+12. Shape number / shape code
+13. Line or series name
+14. Stem logo/marking
+15. Inferable dimensions (length, bowl/chamber)
 
 Search for any stamps or hallmarks you identify.
 Estimate whether this is a handmade artisan pipe or factory-made.
-Provide an estimated market value range if you can identify the maker/model.`;
+Provide an estimated market value range if you can identify the maker/model.
+
+Return multiple possible matches when uncertain.`;
 
 const BLEND_PHOTO_PROMPT = `Analyze the provided image(s) of a tobacco blend tin, pouch, or packaging. Identify the product and extract all visible details.
 
@@ -89,8 +95,12 @@ function promptForType(itemType) {
 const PIPE_SCHEMA = {
   type: 'object',
   properties: {
+    candidates: { type: 'array', items: { type: 'object' } },
     identified_maker: { type: 'string' },
+    line_or_series: { type: 'string' },
     model_or_series: { type: 'string' },
+    shape_number: { type: 'string' },
+    shape_code: { type: 'string' },
     country_of_origin: { type: 'string' },
     shape: { type: 'string' },
     bowlStyle: { type: 'string' },
@@ -98,16 +108,24 @@ const PIPE_SCHEMA = {
     bend: { type: 'string' },
     sizeClass: { type: 'string' },
     bowl_material: { type: 'string' },
+    material: { type: 'string' },
     stem_material: { type: 'string' },
+    stem_logo: { type: 'string' },
     finish: { type: 'string' },
     stamping_text: { type: 'string' },
     stampings: { type: 'array', items: { type: 'string' } },
     estimated_era: { type: 'string' },
+    era_date_range: { type: 'string' },
     condition: { type: 'string' },
+    condition_notes: { type: 'string' },
+    dimensions: { type: 'string' },
     confidence: { type: 'string' },
     confidence_score: { type: 'number' },
     estimated_value: { type: 'number' },
     estimated_value_range: { type: 'string' },
+    evidence_used: { type: 'array', items: { type: 'string' } },
+    missing_fields: { type: 'array', items: { type: 'string' } },
+    uncertain_fields: { type: 'array', items: { type: 'string' } },
     handmade_hint: { type: 'string' },
     identification_notes: { type: 'string' },
   },
@@ -189,6 +207,105 @@ function schemaForType(itemType) {
   return BOTTLE_SCHEMA;
 }
 
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
+const SUPPORTED_IDENTIFY_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+]);
+
+function logImageIdentify(event, payload = {}) {
+  // eslint-disable-next-line no-console
+  console.info('[ImageIdentify]', JSON.stringify({ event, ...payload }));
+}
+
+function createIdentifyError(code, userMessage, details = {}) {
+  const error = new Error(userMessage);
+  error.code = code;
+  error.userMessage = userMessage;
+  error.details = details;
+  return error;
+}
+
+function isValidHttpUrl(value) {
+  if (!value) return false;
+  try {
+    const url = new URL(String(value));
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function validateImageFiles(files) {
+  if (!Array.isArray(files) || files.length === 0) {
+    throw createIdentifyError('NO_IMAGES', 'Please add at least one image to identify this pipe.');
+  }
+
+  for (const file of files) {
+    const type = String(file?.type || '').toLowerCase();
+    if (!type.startsWith('image/')) {
+      throw createIdentifyError('UNSUPPORTED_FILE_TYPE', 'Unsupported file type. Please upload image files only.');
+    }
+    if (type && !SUPPORTED_IDENTIFY_TYPES.has(type)) {
+      throw createIdentifyError('UNSUPPORTED_FILE_TYPE', 'Unsupported image type. Please use JPG, PNG, WEBP, or HEIC.');
+    }
+    if (typeof file?.size === 'number' && file.size > MAX_IMAGE_SIZE_BYTES) {
+      throw createIdentifyError('IMAGE_TOO_LARGE', 'Image is too large. Please use images smaller than 10MB.');
+    }
+  }
+}
+
+function buildPipeFallbackSearchTerms(raw = {}, normalized = null) {
+  const top = normalized?.candidates?.[0] || {};
+  const details = top.details || {};
+  const terms = [
+    top.maker,
+    details.line_series,
+    details.shape_number,
+    details.shape,
+    details.stamping,
+    raw.stamping_text,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+  return terms || '';
+}
+
+function buildLowConfidenceFallback(itemType, raw = {}, reason = 'Low confidence image identification') {
+  const partialRaw = itemType === 'pipe'
+    ? {
+        identified_maker: raw.identified_maker || raw.maker || '',
+        model_or_series: raw.model_or_series || raw.name || 'Unidentified Pipe',
+        shape: raw.shape || '',
+        shape_number: raw.shape_number || raw.shape_code || '',
+        stamping_text: raw.stamping_text || '',
+        confidence: 'low',
+        confidence_score: 20,
+        identification_notes: reason,
+      }
+    : {
+        ...raw,
+        confidence: 'low',
+        confidence_score: 20,
+      };
+
+  const fallbackCandidate = normalizeSingleCandidate(partialRaw, itemType, 'photo');
+  return {
+    itemType,
+    confidence: 'low',
+    confidenceScore: 20,
+    candidates: fallbackCandidate ? [fallbackCandidate] : [],
+    selected: fallbackCandidate || null,
+    fallback: true,
+    fallbackMessage: reason || 'We could not identify this confidently, but found possible matches.',
+    fallbackSearchTerms: itemType === 'pipe' ? buildPipeFallbackSearchTerms(raw) : '',
+  };
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -198,10 +315,27 @@ function schemaForType(itemType) {
  * @returns {Promise<string[]>}
  */
 export async function uploadIdentifyImages(files) {
+  validateImageFiles(files);
+  logImageIdentify('upload_request_sent', { fileCount: files.length });
+
   const results = await Promise.all(
-    files.map((file) => base44.integrations.Core.UploadFile({ file }))
+    files.map(async (file) => {
+      try {
+        const response = await base44.integrations.Core.UploadFile({ file });
+        if (!response?.file_url) {
+          throw createIdentifyError('MISSING_IMAGE_URL', 'Upload completed but no image URL was returned.');
+        }
+        return response;
+      } catch (error) {
+        if (error?.code) throw error;
+        throw createIdentifyError('UPLOAD_FAILED', 'Failed to upload image. Please try again.', { message: error?.message });
+      }
+    })
   );
-  return results.map((r) => r.file_url).filter(Boolean);
+
+  const urls = results.map((r) => r.file_url).filter(Boolean);
+  logImageIdentify('upload_success', { uploadedCount: urls.length });
+  return urls;
 }
 
 /**
@@ -212,14 +346,66 @@ export async function uploadIdentifyImages(files) {
  * @returns {Promise<IdentifyResult>}
  */
 export async function identifyByImageUrls(imageUrls, itemType) {
-  const raw = await base44.integrations.Core.InvokeLLM({
-    prompt: promptForType(itemType),
-    add_context_from_internet: true,
-    file_urls: imageUrls,
-    response_json_schema: schemaForType(itemType),
+  if (!Array.isArray(imageUrls) || imageUrls.length === 0) {
+    throw createIdentifyError('NO_IMAGE_URLS', 'Missing image URL. Please re-upload and try again.');
+  }
+  if (imageUrls.some((url) => !isValidHttpUrl(url))) {
+    throw createIdentifyError('INVALID_IMAGE_URL', 'One or more uploaded images are invalid. Please upload again.');
+  }
+
+  logImageIdentify('ai_request_sent', { itemType, imageCount: imageUrls.length });
+
+  let raw;
+  try {
+    raw = await base44.integrations.Core.InvokeLLM({
+      prompt: promptForType(itemType),
+      add_context_from_internet: true,
+      file_urls: imageUrls,
+      response_json_schema: schemaForType(itemType),
+    });
+  } catch (error) {
+    const message = String(error?.message || '').toLowerCase();
+    if (message.includes('timeout')) {
+      throw createIdentifyError('NETWORK_TIMEOUT', 'Identification timed out. Please try again.');
+    }
+    if (message.includes('api key') || message.includes('unauthorized') || message.includes('forbidden')) {
+      throw createIdentifyError('MISSING_API_CONFIG', 'Image identification is temporarily unavailable. Please try again later.');
+    }
+    throw createIdentifyError('AI_REQUEST_FAILED', 'Photo identification failed. Please try again.', { message: error?.message });
+  }
+
+  if (!raw || typeof raw !== 'object') {
+    logImageIdentify('ai_response_malformed', { itemType });
+    return buildLowConfidenceFallback(itemType, {}, 'Malformed AI response');
+  }
+
+  logImageIdentify('ai_response_received', {
+    itemType,
+    hasCandidates: Array.isArray(raw.candidates),
+    confidence: raw.confidence || null,
+    confidenceScore: raw.confidence_score ?? null,
   });
 
-  return normalizeIdentifiedItem(raw, itemType, 'photo');
+  const normalized = normalizeIdentifiedItem(raw, itemType, 'photo');
+  const fallbackSearchTerms = buildPipeFallbackSearchTerms(raw, normalized);
+
+  if (!normalized.candidates.length) {
+    logImageIdentify('ai_response_empty', { itemType });
+    return buildLowConfidenceFallback(itemType, raw, 'Empty detection response');
+  }
+
+  logImageIdentify('ai_response_parsed', {
+    itemType,
+    candidateCount: normalized.candidates.length,
+    confidence: normalized.confidence,
+    confidenceScore: normalized.confidenceScore,
+    fallbackSearchTerms,
+  });
+
+  return {
+    ...normalized,
+    fallbackSearchTerms,
+  };
 }
 
 /**

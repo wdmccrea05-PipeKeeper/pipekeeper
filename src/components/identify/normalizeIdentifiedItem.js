@@ -54,25 +54,35 @@ export function confidenceToScore(level) {
 
 function normalizePipe(raw, source) {
   const maker = raw.identified_maker || raw.maker || '';
-  const model = raw.model_or_series || raw.model || raw.name || '';
+  const model = raw.model_or_series || raw.model || raw.line_or_series || raw.name || '';
   const name = model ? `${maker} ${model}`.trim() : maker;
 
   const details = {
+    line_series: raw.line_or_series || raw.model_or_series || raw.model || '',
+    shape_number: raw.shape_number || raw.shape_code || '',
     shape: raw.shape || '',
     bowlStyle: raw.bowlStyle || raw.bowl_style || '',
     shankShape: raw.shankShape || raw.shank_shape || '',
     bend: raw.bend || '',
     sizeClass: raw.sizeClass || raw.size_class || '',
     bowl_material: raw.bowl_material || '',
+    material: raw.material || '',
     stem_material: raw.stem_material || '',
+    stem_logo: raw.stem_logo || '',
     finish: raw.finish || '',
     stamping: Array.isArray(raw.stampings)
       ? raw.stampings.join(', ')
       : raw.stamping_text || raw.stamping || '',
-    year_made: raw.estimated_era || raw.year_made || '',
+    year_made: raw.year_made || raw.estimated_era || raw.era_date_range || '',
+    era_date_range: raw.era_date_range || raw.estimated_era || '',
     condition: raw.condition || '',
+    condition_notes: raw.condition_notes || '',
+    dimensions: raw.dimensions || '',
     country_of_origin: raw.country_of_origin || raw.country || '',
     notes: raw.identification_notes || raw.notes || '',
+    evidence_used: Array.isArray(raw.evidence_used) ? raw.evidence_used : [],
+    missing_fields: Array.isArray(raw.missing_fields) ? raw.missing_fields : [],
+    uncertain_fields: Array.isArray(raw.uncertain_fields) ? raw.uncertain_fields : [],
     photos: Array.isArray(raw.photos) ? raw.photos : [],
     barcode: raw._inputBarcode || raw.barcode || '',
     upc: raw.upc || '',
@@ -83,12 +93,22 @@ function normalizePipe(raw, source) {
     estimated_value: raw.estimated_value ?? null,
     estimated_value_range: raw.estimated_value_range || null,
     handmade_hint: raw.handmade_hint || null,
-    line_series: raw.model_or_series || raw.model || null,
+    line_series: details.line_series || null,
     maker,
     purchase_price: raw.original_price ?? raw.purchase_price ?? null,
   };
 
-  return { name, maker, category: details.shape, details, valuationSeed, source };
+  return {
+    name,
+    maker,
+    category: details.shape,
+    details,
+    valuationSeed,
+    source,
+    candidateConfidence: resolveConfidenceLevel(raw.confidence),
+    candidateConfidenceScore: typeof raw.confidence_score === 'number' ? raw.confidence_score : undefined,
+    evidence: details.evidence_used,
+  };
 }
 
 function normalizeBlend(raw, source) {
@@ -270,6 +290,12 @@ export function normalizeIdentifiedItem(rawResult, itemType, source = 'search') 
     .filter(Boolean)
     .map((c) => normalizeSingleCandidate(c, itemType, source));
 
+  candidates.sort((a, b) => {
+    const scoreA = Number(a?.candidateConfidenceScore ?? -1);
+    const scoreB = Number(b?.candidateConfidenceScore ?? -1);
+    return scoreB - scoreA;
+  });
+
   const confidence = resolveConfidenceLevel(rawResult.confidence);
   const confidenceScore = typeof rawResult.confidence_score === 'number'
     ? rawResult.confidence_score
@@ -317,6 +343,9 @@ export function buildQuickAddPayload(identifiedItem, itemType) {
       condition: details.condition,
       country_of_origin: details.country_of_origin,
       notes: details.notes,
+      line_series: details.line_series,
+      shape_number: details.shape_number,
+      stem_logo: details.stem_logo,
       photos: details.photos,
       estimated_value: valuationSeed.estimated_value ?? undefined,
       purchase_price: valuationSeed.purchase_price ?? undefined,

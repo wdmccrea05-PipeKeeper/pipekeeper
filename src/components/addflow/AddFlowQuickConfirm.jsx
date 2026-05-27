@@ -7,6 +7,26 @@ import { barcodesMatch } from '@/platform/productNormalization';
 
 const ENTITIES = { blend: 'TobaccoBlend', pipe: 'Pipe', bottle: 'Bottle', cigar: 'Cigar', wine: 'Wine' };
 
+function buildPipeNotes(result) {
+  const extras = [];
+  if (result?.line_series) extras.push(`Line/Series: ${result.line_series}`);
+  if (result?.shape_number) extras.push(`Shape Number: ${result.shape_number}`);
+  if (result?.stem_logo) extras.push(`Stem Logo: ${result.stem_logo}`);
+  if (result?.material) extras.push(`Material: ${result.material}`);
+  if (result?.era_date_range) extras.push(`Estimated Era: ${result.era_date_range}`);
+  if (result?.dimensions) extras.push(`Dimensions: ${result.dimensions}`);
+
+  const evidence = Array.isArray(result?.evidence_used) ? result.evidence_used : [];
+  if (evidence.length > 0) extras.push(`Evidence: ${evidence.join('; ')}`);
+
+  const uncertain = Array.isArray(result?.uncertain_fields) ? result.uncertain_fields : [];
+  if (uncertain.length > 0) extras.push(`Uncertain Fields: ${uncertain.join(', ')}`);
+
+  const notes = [result?.description, result?.notes].filter(Boolean).join('\n').trim();
+  if (!extras.length) return notes || undefined;
+  return [notes, extras.join('\n')].filter(Boolean).join('\n\n');
+}
+
 function buildRecord(itemType, result) {
   const clean = (v) => (v !== null && v !== undefined && v !== '') ? v : undefined;
   if (itemType === 'blend') return {
@@ -36,7 +56,7 @@ function buildRecord(itemType, result) {
     country_of_origin: clean(result.country_of_origin),
     estimated_value: clean(result.estimated_value),
     purchase_price: clean(result.purchase_price),
-    notes: clean(result.description),
+    notes: clean(buildPipeNotes(result)),
     barcode: clean(result.barcode),
     upc: clean(result.upc),
     ean: clean(result.ean),
@@ -134,7 +154,7 @@ function MetaChip({ value }) {
 
 function getChips(itemType, result) {
   if (itemType === 'blend') return [result.blend_type, result.strength].filter(Boolean);
-  if (itemType === 'pipe') return [result.shape, result.bowl_material].filter(Boolean);
+  if (itemType === 'pipe') return [result.shape, result.shape_number, result.line_series, result.bowl_material].filter(Boolean);
   if (itemType === 'bottle') {
     const parts = [result.whiskey_type || result.type];
     if (result.age) parts.push(`${result.age} yr`);
@@ -269,6 +289,11 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
           {(result?.barcode || result?.upc) && (
             <p className="text-xs mt-3" style={{ color: 'rgba(224,216,200,0.4)', fontFamily: 'monospace' }}>
               {result.upc || result.barcode}
+            </p>
+          )}
+          {itemType === 'pipe' && result?._identifyConfidence === 'low' && (
+            <p className="text-xs mt-3" style={{ color: 'rgba(224,216,200,0.65)' }}>
+              Low-confidence AI fields are shown as suggestions. Review details before saving.
             </p>
           )}
         </div>

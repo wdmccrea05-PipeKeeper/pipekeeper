@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import {
+  AlertTriangle,
   ArrowLeft,
   Barcode,
   Camera,
+  Search,
   Loader2,
   PenLine,
   Sparkles,
@@ -18,8 +20,10 @@ import {
   identifyByUPC,
   identifyByImageUrls,
   uploadIdentifyImages,
+  normalizeSingleCandidate,
 } from '@/components/identify/identifyEngine';
 import BarcodeScannerModal, { canAttemptLiveBarcodeScan } from '@/components/identify/BarcodeScannerModal';
+import { searchForRecord } from '@/lib/search/unifiedSearchService';
 
 // ── Sub-mode selector ─────────────────────────────────────────────────────────
 
@@ -274,7 +278,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       setPhotoUrls((prev) => [...prev, ...urls]);
     } catch (err) {
       console.error('Upload error:', err);
-      toast.error(t('addFlowIdentify.uploadError', 'Failed to upload photos'));
+      toast.error(err?.userMessage || t('addFlowIdentify.uploadError', 'Failed to upload photos'));
     } finally {
       setUploading(false);
       // reset so same file can be re-selected
@@ -294,7 +298,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       onResult(result);
     } catch (err) {
       console.error('Photo identify error:', err);
-      toast.error(t('addFlowIdentify.analyzeError', 'Photo identification failed. Please try again.'));
+      toast.error(err?.userMessage || t('addFlowIdentify.analyzeError', 'Photo identification failed. Please try again.'));
     } finally {
       setAnalyzing(false);
     }
@@ -368,6 +372,12 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
             />
           </label>
         </div>
+
+        {itemType === 'pipe' && (
+          <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.62)' }}>
+            Best results: upload the pipe side profile, stem logo, and any stamping or nomenclature.
+          </p>
+        )}
 
         {/* Uploaded photo thumbnails */}
         {photoUrls.length > 0 && (
@@ -446,7 +456,57 @@ function candidateMeta(c) {
   return chips.filter(Boolean).slice(0, 3);
 }
 
-function ResultsPanel({ result, onSelect, onBack, onManual }) {
+function candidateConfidenceScore(c, fallbackScore) {
+  if (typeof c?.candidateConfidenceScore === 'number') return c.candidateConfidenceScore;
+  return fallbackScore;
+}
+
+function isBlank(value) {
+  return value === undefined || value === null || value === '';
+}
+
+function mergeWithQuickSearchCandidate(aiCandidate, quickCandidate, identifyConfidence) {
+  if (!aiCandidate) return quickCandidate;
+  if (!quickCandidate) return aiCandidate;
+  if (identifyConfidence === 'low') return quickCandidate;
+
+  const mergedDetails = { ...(quickCandidate.details || {}) };
+  for (const [key, value] of Object.entries(aiCandidate.details || {})) {
+    if (identifyConfidence === 'high') {
+      if (!isBlank(value)) mergedDetails[key] = value;
+      continue;
+    }
+    if (isBlank(mergedDetails[key]) && !isBlank(value)) {
+      mergedDetails[key] = value;
+    }
+  }
+
+  return {
+    ...quickCandidate,
+    details: mergedDetails,
+    valuationSeed: {
+      ...(quickCandidate.valuationSeed || {}),
+      ...(identifyConfidence === 'high' ? (aiCandidate.valuationSeed || {}) : {}),
+    },
+  };
+}
+
+function buildPipeSearchTerms(result) {
+  if (!result) return '';
+  const candidate = result.candidates?.[0];
+  const details = candidate?.details || {};
+  const terms = [
+    candidate?.maker,
+    details.line_series,
+    details.shape_number,
+    details.shape,
+    details.stamping,
+    result.fallbackSearchTerms,
+  ].filter(Boolean).join(' ').trim();
+  return terms;
+}
+
+function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQuickSearch, onSelect, onSelectQuickSearch, onBack, onManual }) {
   const { t } = useTranslation();
   const { confidence, candidates = [] } = result || {};
 
@@ -473,6 +533,17 @@ function ResultsPanel({ result, onSelect, onBack, onManual }) {
       <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />
 
       <div className="px-6 py-5 flex flex-col gap-3">
+        {(result?.fallbackMessage || confidence === 'low') && (
+          <div className="rounded-xl p-3" style={{ border: '1px solid rgba(180,140,75,0.35)', background: 'rgba(180,140,75,0.09)' }}>
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 mt-0.5" style={{ color: '#D4A574' }} />
+              <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.78)' }}>
+                {result?.fallbackMessage || 'We could not identify this confidently, but found possible matches.'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {candidates.map((c, idx) => (
           <button
             key={idx}
@@ -500,7 +571,22 @@ function ResultsPanel({ result, onSelect, onBack, onManual }) {
                     {candidateMeta(c).map((chip, i) => (
                       <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(224,216,200,0.65)' }}>{chip}</span>
                     ))}
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(86,122,160,0.2)', color: 'rgba(180,210,235,0.9)' }}>
+                      {typeof candidateConfidenceScore(c, result?.confidenceScore) === 'number'
+                        ? `${candidateConfidenceScore(c, result?.confidenceScore)}% confidence`
+                        : 'Confidence N/A'}
+                    </span>
                   </div>
+                )}
+                {Array.isArray(c?.details?.evidence_used) && c.details.evidence_used.length > 0 && (
+                  <p className="text-[11px] mt-1.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                    Evidence: {c.details.evidence_used.slice(0, 2).join(' • ')}
+                  </p>
+                )}
+                {Array.isArray(c?.details?.uncertain_fields) && c.details.uncertain_fields.length > 0 && (
+                  <p className="text-[11px] mt-1.5" style={{ color: 'rgba(224,216,200,0.4)' }}>
+                    Uncertain: {c.details.uncertain_fields.join(', ')}
+                  </p>
                 )}
                 {c.description && (
                   <p className="text-xs mt-1.5 leading-relaxed" style={{ color: 'rgba(224,216,200,0.45)' }}>
@@ -516,6 +602,50 @@ function ResultsPanel({ result, onSelect, onBack, onManual }) {
           <p className="text-sm text-center py-6" style={{ color: 'rgba(224,216,200,0.4)' }}>
             {t('addFlowIdentify.noMatches', 'No matches found.')}
           </p>
+        )}
+
+        {(searchingQuickSearch || quickSearchMatches.length > 0 || quickSearchQuery) && (
+          <div className="rounded-xl p-3 mt-1" style={{ border: '1px solid rgba(86,122,160,0.3)', background: 'rgba(86,122,160,0.08)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Search className="w-3.5 h-3.5" style={{ color: 'rgba(140,180,220,0.85)' }} />
+              <p className="text-xs font-semibold" style={{ color: '#F5F1E7' }}>
+                {t('addFlowIdentify.quickSearchTitle', 'Database matches from extracted terms')}
+              </p>
+            </div>
+            {quickSearchQuery && (
+              <p className="text-[11px] mb-2" style={{ color: 'rgba(180,210,235,0.8)' }}>
+                Query: {quickSearchQuery}
+              </p>
+            )}
+            {searchingQuickSearch && (
+              <div className="flex items-center gap-2 py-1" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span className="text-xs">Searching…</span>
+              </div>
+            )}
+            {!searchingQuickSearch && quickSearchMatches.length === 0 && quickSearchQuery && (
+              <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                No quick-search matches found.
+              </p>
+            )}
+            {!searchingQuickSearch && quickSearchMatches.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                {quickSearchMatches.map((item, index) => (
+                  <button
+                    key={item.id || `${item.title}-${index}`}
+                    onClick={() => onSelectQuickSearch(item)}
+                    className="w-full text-left rounded-lg px-2.5 py-2 transition-colors hover:bg-white/10"
+                    style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+                  >
+                    <p className="text-xs font-semibold" style={{ color: '#F5F1E7' }}>{item.title || item.metadata?.name}</p>
+                    <p className="text-[11px]" style={{ color: 'rgba(224,216,200,0.55)' }}>
+                      {(item.metadata?.maker || item.metadata?.manufacturer || item.metadata?.subtitle || '').trim()}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         <button
@@ -544,11 +674,34 @@ function ResultsPanel({ result, onSelect, onBack, onManual }) {
  */
 export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual, onSelected, initialMode = 'selector' }) {
   const { t } = useTranslation();
+  const MAX_QUICK_SEARCH_RESULTS = 5;
   const [subMode, setSubMode] = useState(initialMode); // 'selector' | 'upc' | 'photo' | 'results'
   const [identifyResult, setIdentifyResult] = useState(null);
+  const [searchingQuickSearch, setSearchingQuickSearch] = useState(false);
+  const [quickSearchMatches, setQuickSearchMatches] = useState([]);
+  const [quickSearchQuery, setQuickSearchQuery] = useState('');
 
-  const handleResult = (result) => {
+  const handleResult = async (result) => {
     setIdentifyResult(result);
+    setQuickSearchMatches([]);
+    setQuickSearchQuery('');
+
+    if (itemType === 'pipe') {
+      const query = buildPipeSearchTerms(result);
+      if (query) {
+        setQuickSearchQuery(query);
+        setSearchingQuickSearch(true);
+        try {
+          const { results } = await searchForRecord(query, 'pipe', { maxResults: MAX_QUICK_SEARCH_RESULTS });
+          setQuickSearchMatches(results || []);
+        } catch {
+          setQuickSearchMatches([]);
+        } finally {
+          setSearchingQuickSearch(false);
+        }
+      }
+    }
+
     if (result?.confidence === 'high' && result?.candidates?.length === 1) {
       onSelected(result.candidates[0], result);
     } else {
@@ -564,6 +717,25 @@ export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual,
 
   const handleSelectCandidate = (candidate) => {
     onSelected(candidate, identifyResult);
+  };
+
+  const handleSelectQuickSearch = (item) => {
+    const quickCandidate = normalizeSingleCandidate(
+      { ...(item?.metadata || {}), name: item?.title || item?.metadata?.name || '' },
+      itemType,
+      'search'
+    );
+    const merged = mergeWithQuickSearchCandidate(
+      identifyResult?.candidates?.[0],
+      quickCandidate,
+      identifyResult?.confidence
+    );
+    onSelected(merged, {
+      ...identifyResult,
+      selectedMatchSource: 'quickSearch',
+      quickSearchQuery,
+      quickSearchCandidates: quickSearchMatches.length,
+    });
   };
 
   if (subMode === 'selector') {
@@ -612,7 +784,11 @@ export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual,
     return (
       <ResultsPanel
         result={identifyResult}
+        quickSearchMatches={quickSearchMatches}
+        quickSearchQuery={quickSearchQuery}
+        searchingQuickSearch={searchingQuickSearch}
         onSelect={handleSelectCandidate}
+        onSelectQuickSearch={handleSelectQuickSearch}
         onBack={backToSelector}
         onManual={onManual}
       />

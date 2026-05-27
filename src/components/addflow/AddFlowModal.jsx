@@ -10,6 +10,7 @@ import AddFlowManualImages from './AddFlowManualImages';
 import AddFlowIdentify from './AddFlowIdentify';
 import InventoryStep from '@/components/inventory/InventoryStep';
 import { buildQuickAddPayload, buildValuationSeedData } from '@/components/identify/identifyEngine';
+import { applyIdentifyConfidencePolicy } from './identifyPrefillPolicy';
 
 const TYPE_LABELS = {
   pipe: 'Pipe',
@@ -145,7 +146,8 @@ export default function AddFlowModal({ open, onClose, onCreated, initialItemType
               onBack={goBack}
               onManual={() => setStep('manualBasic')}
               onSelected={(candidate, identifyResult) => {
-                const payload = buildQuickAddPayload(candidate, itemType);
+                const basePayload = buildQuickAddPayload(candidate, itemType);
+                const payload = applyIdentifyConfidencePolicy(itemType, basePayload, identifyResult);
                 const valuationSeed = buildValuationSeedData(candidate, itemType);
                 setSearchResult({ ...payload, ...valuationSeed, _fromIdentify: true });
                 saveStepData({ ...payload, ...valuationSeed, _identifyResult: identifyResult });
