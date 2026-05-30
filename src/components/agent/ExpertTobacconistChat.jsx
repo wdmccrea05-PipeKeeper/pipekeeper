@@ -1571,7 +1571,7 @@ export default function ExpertTobacconistChat({
     if (preFillMessage) {
       setInput(preFillMessage);
       onPreFillConsumed?.();
-      setTimeout(() => inputRef.current?.focus(), 50);
+      // Don't auto-focus on preFill — iOS won't show keyboard without a user gesture
     }
   }, [preFillMessage, onPreFillConsumed]);
 
@@ -1717,30 +1717,11 @@ export default function ExpertTobacconistChat({
                 <button
                   key={prompt}
                   type="button"
-                  onClick={async () => {
+                  onClick={() => {
                     if (isSending) return;
+                    // Focus SYNCHRONOUSLY inside the gesture handler so iOS shows keyboard
+                    inputRef.current?.focus();
                     setInput(prompt);
-                    // On mobile submit immediately; on desktop focus the input
-                    if ('ontouchstart' in window) {
-                      // give React a tick to update input state, then send
-                      await new Promise((r) => setTimeout(r, 20));
-                      setIsSending(true);
-                      const userMsgId = `user-${Date.now()}`;
-                      setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content: prompt }]);
-                      setInput('');
-                      try {
-                        const llmPrompt = buildLLMPrompt(prompt, collectionContext, [], entityContext);
-                        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
-                        const llmReply = typeof response?.data === 'string' ? response.data : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
-                        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: llmReply.trim() || 'Try asking me something else about your collection.' }]);
-                      } catch {
-                        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: 'I ran into an issue. Please try again.' }]);
-                      } finally {
-                        setIsSending(false);
-                      }
-                    } else {
-                      setTimeout(() => inputRef.current?.focus(), 50);
-                    }
                   }}
                   className="text-left px-4 py-3 rounded-[12px] text-[13px] sm:text-[14px] transition-colors"
                   style={{ border: '1px solid rgba(255,255,255,0.07)', color: '#C8B898', background: 'rgba(255,255,255,0.02)' }}
@@ -1803,7 +1784,7 @@ export default function ExpertTobacconistChat({
       </div>
 
       {/* Input area */}
-      <div className="px-5 sm:px-7 pb-5 pt-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+      <div className="px-5 sm:px-7 pb-5 pt-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
         <div className="flex gap-2 sm:gap-3 items-end">
           <textarea
             ref={inputRef}
@@ -1817,20 +1798,20 @@ export default function ExpertTobacconistChat({
             autoComplete="off"
             autoCorrect="on"
             autoCapitalize="sentences"
-            className="flex-1 px-4 py-3 rounded-[14px] outline-none bg-transparent resize-none text-[14px] sm:text-[15px] leading-6"
-            style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7', minHeight: '48px', maxHeight: '120px' }}
+            className="flex-1 px-4 py-3 rounded-[14px] outline-none resize-none text-[14px] sm:text-[15px] leading-6"
+            style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7', background: 'rgba(255,255,255,0.04)', minHeight: '48px', maxHeight: '120px' }}
           />
           <button
             type="button"
             disabled={!canSend}
             onClick={sendMessage}
-            className="shrink-0 h-12 w-12 rounded-[12px] inline-flex items-center justify-center transition-opacity"
+            className="shrink-0 h-12 w-12 rounded-[12px] inline-flex items-center justify-center"
             style={{ background: '#C6A15B', color: '#0B0B0C', opacity: canSend ? 1 : 0.45 }}
           >
             <SendHorizontal className="w-4 h-4" />
           </button>
         </div>
-        <p className="text-[11px] mt-2" style={{ color: '#3A3830' }}>Enter to send · Shift+Enter for new line</p>
+        <p className="text-[11px] mt-2 hidden sm:block" style={{ color: '#3A3830' }}>Enter to send · Shift+Enter for new line</p>
       </div>
     </div>
   );

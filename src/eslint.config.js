@@ -14,20 +14,6 @@ const testGlobals = {
 };
 
 export default [
-  // ── Global ignores (no `files` key = applies to all) ───────────────────────
-  {
-    ignores: [
-      '**/__tests__/**',
-      '**/*.test.js',
-      '**/*.test.jsx',
-      '**/*.test.ts',
-      '**/*.test.tsx',
-      '**/*.spec.js',
-      '**/*.spec.jsx',
-      '**/*.spec.ts',
-      '**/*.spec.tsx',
-    ],
-  },
   // ── App source files ───────────────────────────────────────────────────────
   {
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
