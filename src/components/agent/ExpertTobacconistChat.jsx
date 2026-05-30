@@ -1675,7 +1675,7 @@ export default function ExpertTobacconistChat({
   const hasCollection = (collectionContext?.blends?.length || 0) + (collectionContext?.bottles?.length || 0) + (collectionContext?.pipes?.length || 0) > 0;
 
   return (
-    <div className="rounded-[18px] overflow-hidden flex flex-col min-h-[60dvh] max-h-[calc(100dvh-14rem)]" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}>
+    <div className="rounded-[18px] overflow-hidden flex flex-col" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}>
       {/* Header */}
       <div className="px-5 sm:px-7 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -1708,7 +1708,7 @@ export default function ExpertTobacconistChat({
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5" style={{ maxHeight: 'min(480px, 50dvh)', minHeight: 'min(260px, 36dvh)' }}>
+      <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5" style={{ maxHeight: '55vh', minHeight: '220px' }}>
         {messages.length === 0 ? (
           <div>
             <p className="text-[14px] mb-4" style={{ color: '#6B6860' }}>Ask a question or pick a prompt to get started.</p>
@@ -1717,7 +1717,31 @@ export default function ExpertTobacconistChat({
                 <button
                   key={prompt}
                   type="button"
-                  onClick={() => { setInput(prompt); setTimeout(() => inputRef.current?.focus(), 50); }}
+                  onClick={async () => {
+                    if (isSending) return;
+                    setInput(prompt);
+                    // On mobile submit immediately; on desktop focus the input
+                    if ('ontouchstart' in window) {
+                      // give React a tick to update input state, then send
+                      await new Promise((r) => setTimeout(r, 20));
+                      setIsSending(true);
+                      const userMsgId = `user-${Date.now()}`;
+                      setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content: prompt }]);
+                      setInput('');
+                      try {
+                        const llmPrompt = buildLLMPrompt(prompt, collectionContext, [], entityContext);
+                        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
+                        const llmReply = typeof response?.data === 'string' ? response.data : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
+                        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: llmReply.trim() || 'Try asking me something else about your collection.' }]);
+                      } catch {
+                        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: 'I ran into an issue. Please try again.' }]);
+                      } finally {
+                        setIsSending(false);
+                      }
+                    } else {
+                      setTimeout(() => inputRef.current?.focus(), 50);
+                    }
+                  }}
                   className="text-left px-4 py-3 rounded-[12px] text-[13px] sm:text-[14px] transition-colors"
                   style={{ border: '1px solid rgba(255,255,255,0.07)', color: '#C8B898', background: 'rgba(255,255,255,0.02)' }}
                 >
@@ -1786,8 +1810,13 @@ export default function ExpertTobacconistChat({
             value={input}
             onChange={(e) => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; }}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && canSend) { e.preventDefault(); sendMessage(); } }}
-            placeholder="Ask about your collection, pairings, what to buy, or anything collector-related…"
+            placeholder="Ask about your collection…"
             rows={1}
+            inputMode="text"
+            enterKeyHint="send"
+            autoComplete="off"
+            autoCorrect="on"
+            autoCapitalize="sentences"
             className="flex-1 px-4 py-3 rounded-[14px] outline-none bg-transparent resize-none text-[14px] sm:text-[15px] leading-6"
             style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#F5F5F7', minHeight: '48px', maxHeight: '120px' }}
           />
