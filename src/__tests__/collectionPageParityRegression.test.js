@@ -1,6 +1,7 @@
 import fs from 'node:fs';
+import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
 
 function readPage(fileName) {
   return fs.readFileSync(path.resolve(process.cwd(), 'src/pages', fileName), 'utf8');
