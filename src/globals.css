@@ -98,6 +98,13 @@ body {
   font-size: 16px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 *,
@@ -229,5 +236,30 @@ body {
 
   .hide-horizontal-overflow {
     overflow-x: hidden;
+  }
+
+  /* Mobile-safe text wrapping for cards and detail pages */
+  .text-wrap-mobile {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  .card-title-mobile {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Ensure flex containers don't overflow on mobile */
+  .flex-wrap-mobile {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .flex-col-mobile {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
   }
 }

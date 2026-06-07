@@ -13,6 +13,8 @@ const testGlobals = {
   process: 'readonly',
   global: 'readonly',
   globalThis: 'readonly',
+  Deno: 'readonly',
+  Buffer: 'readonly',
 };
 
 const browserGlobals = {
