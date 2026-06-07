@@ -93,13 +93,6 @@
       },
       "description": "Flavor characteristics"
     },
-    "flavor_profile": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Canonical flavor profile (predefined + custom notes)"
-    },
     "tin_size_oz": {
       "type": "number",
       "description": "Size of individual tin in ounces"

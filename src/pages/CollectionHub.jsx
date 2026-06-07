@@ -306,47 +306,47 @@ export default function CollectionHub() {
     },
   });
 
-  const { enabledModuleKeys, enabled } = useEnabledModules();
+  const { enabledModuleKeys, enabled, isLoading: modulesLoading } = useEnabledModules();
   const whiskeyOpenable = enabled.whiskeykeeper;
   const pipekeeperOpenable = enabled.pipekeeper;
   const cigarOpenable = enabled.cigarkeeper;
   const wineOpenable = enabled.winekeeper;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['collection-hub-dashboard', user?.email, pipekeeperOpenable, whiskeyOpenable, cigarOpenable, wineOpenable],
-    enabled: !!user?.email,
-    staleTime: 2 * 60 * 1000,
+    queryKey: ['collection-hub-dashboard', user?.email],
+    enabled: !!user?.email && !modulesLoading,
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const [pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions, whiskeyInventory, wines, wineTastings] = await Promise.all([
         pipekeeperOpenable
-          ? base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          ? base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
           : Promise.resolve([]),
         pipekeeperOpenable
-          ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
           : Promise.resolve([]),
         pipekeeperOpenable
-          ? base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 1000).catch(() => [])
+          ? base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 200).catch(() => [])
           : Promise.resolve([]),
         whiskeyOpenable
-          ? base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          ? base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
           : Promise.resolve([]),
         whiskeyOpenable
-          ? base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 250).catch(() => [])
+          ? base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 100).catch(() => [])
           : Promise.resolve([]),
         cigarOpenable
-          ? base44.entities.Cigar.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          ? base44.entities.Cigar.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
           : Promise.resolve([]),
         cigarOpenable
-          ? base44.entities.CigarSession.filter({ created_by: user.email }, '-date', 250).catch(() => [])
+          ? base44.entities.CigarSession.filter({ created_by: user.email }, '-date', 100).catch(() => [])
           : Promise.resolve([]),
         whiskeyOpenable
-          ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }).catch(() => [])
+          ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
           : Promise.resolve([]),
         wineOpenable
-          ? base44.entities.Wine.filter({ created_by: user.email }, '-updated_date', 500).catch(() => [])
+          ? base44.entities.Wine.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
           : Promise.resolve([]),
         wineOpenable
-          ? base44.entities.WineTasting.filter({ created_by: user.email }, '-date', 250).catch(() => [])
+          ? base44.entities.WineTasting.filter({ created_by: user.email }, '-date', 100).catch(() => [])
           : Promise.resolve([]),
       ]);
 
