@@ -242,12 +242,13 @@ body {
   .text-wrap-mobile {
     overflow-wrap: break-word;
     word-break: break-word;
-    hyphens: auto;
+    hyphens: none;
   }
 
   .card-title-mobile {
     overflow-wrap: break-word;
     word-break: break-word;
+    hyphens: none;
   }
 
   /* Ensure flex containers don't overflow on mobile */
@@ -261,5 +262,12 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0;
+  }
+
+  /* No hyphenation in cards */
+  .ck-card,
+  [class*="card"],
+  [class*="Card"] {
+    hyphens: none;
   }
 }
