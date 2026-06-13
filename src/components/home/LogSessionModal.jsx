@@ -375,6 +375,7 @@ export default function LogSessionModal({
           let remaining = Number(tobaccoUsed);
           const updateData = {};
 
+          // Bulk: reduce from open first, fall back to cellared
           if ((blendToReduce.bulk_open || 0) > 0 && remaining > 0) {
             const toReduce = Math.min(blendToReduce.bulk_open, remaining);
             updateData.bulk_open = Math.max(0, (blendToReduce.bulk_open || 0) - toReduce);
@@ -383,14 +384,34 @@ export default function LogSessionModal({
               (blendToReduce.bulk_total_quantity_oz || 0) - toReduce
             );
             remaining -= toReduce;
+          } else if ((blendToReduce.bulk_cellared || 0) > 0 && remaining > 0) {
+            const toReduce = Math.min(blendToReduce.bulk_cellared, remaining);
+            updateData.bulk_cellared = Math.max(0, (blendToReduce.bulk_cellared || 0) - toReduce);
+            updateData.bulk_total_quantity_oz = Math.max(
+              0,
+              (blendToReduce.bulk_total_quantity_oz || 0) - toReduce
+            );
+            remaining -= toReduce;
           }
 
+          // Tins: reduce from open first, fall back to cellared
           if ((blendToReduce.tin_tins_open || 0) > 0 && remaining > 0 && blendToReduce.tin_size_oz) {
             const tinsToOpen = Math.ceil(remaining / blendToReduce.tin_size_oz);
             const actualTinReduction = Math.min(tinsToOpen, blendToReduce.tin_tins_open);
             const actualOzReduction = Math.min(actualTinReduction * blendToReduce.tin_size_oz, remaining);
 
             updateData.tin_tins_open = Math.max(0, (blendToReduce.tin_tins_open || 0) - actualTinReduction);
+            updateData.tin_total_tins = Math.max(0, (blendToReduce.tin_total_tins || 0) - actualTinReduction);
+            updateData.tin_total_quantity_oz = Math.max(
+              0,
+              (blendToReduce.tin_total_quantity_oz || 0) - actualOzReduction
+            );
+          } else if ((blendToReduce.tin_tins_cellared || 0) > 0 && remaining > 0 && blendToReduce.tin_size_oz) {
+            const tinsToReduce = Math.ceil(remaining / blendToReduce.tin_size_oz);
+            const actualTinReduction = Math.min(tinsToReduce, blendToReduce.tin_tins_cellared);
+            const actualOzReduction = Math.min(actualTinReduction * blendToReduce.tin_size_oz, remaining);
+
+            updateData.tin_tins_cellared = Math.max(0, (blendToReduce.tin_tins_cellared || 0) - actualTinReduction);
             updateData.tin_total_tins = Math.max(0, (blendToReduce.tin_total_tins || 0) - actualTinReduction);
             updateData.tin_total_quantity_oz = Math.max(
               0,
