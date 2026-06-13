@@ -454,7 +454,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           </FormField>
           <FormField label="Production Status">
             <StyledSelect value={form.production_status} onValueChange={set('production_status')} placeholder="Select status">
-              {['regular_production', 'limited', 'seasonal', 'discontinued', 'unknown'].map((v) => (
+              {['discontinued', 'limited', 'regular_production', 'seasonal', 'unknown'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                 </SelectItem>
@@ -463,7 +463,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           </FormField>
           <FormField label="Release Type">
             <StyledSelect value={form.release_type} onValueChange={set('release_type')} placeholder="Select release type">
-              {['regular', 'limited_edition', 'annual_release', 'special_release', 'collaboration'].map((v) => (
+              {['annual_release', 'collaboration', 'limited_edition', 'regular', 'special_release'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                 </SelectItem>
@@ -590,7 +590,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             <FormField label="Humidor">
             <StyledSelect value={form.humidor_id || 'none'} onValueChange={handleHumidorChange} placeholder="Select humidor">
               <SelectItem value="none" style={selectItemStyle}>None</SelectItem>
-              {humidors.map((h) => (
+              {[...humidors].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((h) => (
                 <SelectItem key={h.id} value={h.id} style={selectItemStyle}>
                   {h.name}
                 </SelectItem>

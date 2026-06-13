@@ -34,11 +34,13 @@ import { sortByLabel, uniqueSortedStrings } from "@/lib/sorting/alphabetical";
 const SHAPES = ["Billiard", "Bent Billiard", "Apple", "Bent Apple", "Dublin", "Bent Dublin", "Bulldog", "Rhodesian", "Canadian", "Liverpool", "Lovat", "Lumberman", "Prince", "Author", "Brandy", "Pot", "Tomato", "Egg", "Acorn", "Pear", "Cutty", "Devil Anse", "Hawkbill", "Diplomat", "Poker", "Cherrywood", "Duke", "Don", "Tankard", "Churchwarden", "Nosewarmer", "Vest Pocket", "MacArthur", "Calabash", "Reverse Calabash", "Cavalier", "Freehand", "Blowfish", "Volcano", "Horn", "Nautilus", "Tomahawk", "Bullmoose", "Bullcap", "Oom Paul (Hungarian)", "Tyrolean", "Unknown", "Other"];
 const BOWL_STYLES = ["Chimney (Tall)", "Conical (Tapered)", "Cylindrical (Straight Wall)", "Faceted / Multi-Panel", "Freeform", "Horn-Shaped", "Oval / Egg", "Paneled", "Rounded / Ball", "Squat / Pot", "Unknown"];
 const SHANK_SHAPES = ["Diamond", "Freeform", "Military / Army Mount", "Oval", "Paneled / Faceted", "Round", "Square", "Unknown"];
+// Bends kept in natural size order (straight → full bent)
 const BENDS = ["Straight", "1/4 Bent", "1/2 Bent", "3/4 Bent", "Full Bent", "S-Bend", "Unknown"];
 const SIZE_CLASSES = ["Vest Pocket", "Small", "Standard", "Large", "Magnum / XL", "Churchwarden", "MacArthur", "Unknown"];
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
 const STEM_MATERIALS = ["Acrylic", "Amber", "Bone", "Cumberland", "Ebonite", "Horn", "Lucite", "Other", "Vulcanite"];
 const FINISHES = ["Carved", "Natural", "Partially Rusticated", "Rusticated", "Sandblast", "Smooth", "Other"];
+// Chamber volumes, conditions, and filter types kept in natural/logical order
 const CHAMBER_VOLUMES = ["Small", "Medium", "Large", "Extra Large"];
 const CONDITIONS = ["Mint", "Excellent", "Very Good", "Good", "Fair", "Poor", "Estate - Unrestored"];
 const FILTER_TYPES = ["None", "6mm", "9mm", "Stinger", "Other"];

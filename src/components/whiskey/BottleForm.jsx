@@ -350,16 +350,16 @@ export default function BottleForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Single Malt">Single Malt</SelectItem>
-                      <SelectItem value="Blended Malt">Blended Malt</SelectItem>
-                      <SelectItem value="Single Grain">Single Grain</SelectItem>
                       <SelectItem value="Blended Grain">Blended Grain</SelectItem>
+                      <SelectItem value="Blended Malt">Blended Malt</SelectItem>
                       <SelectItem value="Blended Whiskey">Blended Whiskey</SelectItem>
                       <SelectItem value="Bourbon">Bourbon</SelectItem>
-                      <SelectItem value="Rye">Rye</SelectItem>
-                      <SelectItem value="Tennessee Whiskey">Tennessee Whiskey</SelectItem>
                       <SelectItem value="Irish Whiskey">Irish Whiskey</SelectItem>
+                      <SelectItem value="Rye">Rye</SelectItem>
                       <SelectItem value="Scotch Whisky">Scotch Whisky</SelectItem>
+                      <SelectItem value="Single Grain">Single Grain</SelectItem>
+                      <SelectItem value="Single Malt">Single Malt</SelectItem>
+                      <SelectItem value="Tennessee Whiskey">Tennessee Whiskey</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -574,13 +574,13 @@ export default function BottleForm({
                       <SelectValue placeholder={t('whiskey.productionStatusPlaceholder', 'e.g. Discontinued')} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value="_none">Unknown</SelectItem>
                     <SelectItem value="Active">Active / Ongoing</SelectItem>
-                    <SelectItem value="Limited Edition">Limited Edition</SelectItem>
                     <SelectItem value="Allocated">Allocated</SelectItem>
-                    <SelectItem value="Single Cask">Single Cask</SelectItem>
                     <SelectItem value="Discontinued">Discontinued</SelectItem>
+                    <SelectItem value="Limited Edition">Limited Edition</SelectItem>
+                    <SelectItem value="Single Cask">Single Cask</SelectItem>
                     <SelectItem value="Vintage">Vintage</SelectItem>
+                    <SelectItem value="_none">Unknown</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

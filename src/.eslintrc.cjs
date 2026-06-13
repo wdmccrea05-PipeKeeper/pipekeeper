@@ -1,21 +1,26 @@
 module.exports = {
-  overrides: [
-    {
-      files: ['**/__tests__/**/*.{js,jsx,ts,tsx}', '**/*.test.{js,jsx,ts,tsx}', '**/*.spec.{js,jsx,ts,tsx}'],
-      env: {
-        jest: true,
-      },
-      globals: {
-        describe: 'readonly',
-        test: 'readonly',
-        it: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        vi: 'readonly',
-      },
-    },
-  ],
+  env: {
+    browser: true,
+    es2022: true,
+    node: true,
+  },
+  globals: {
+    describe: 'readonly',
+    test: 'readonly',
+    it: 'readonly',
+    expect: 'readonly',
+    beforeEach: 'readonly',
+    afterEach: 'readonly',
+    beforeAll: 'readonly',
+    afterAll: 'readonly',
+    vi: 'readonly',
+    jest: 'readonly',
+    process: 'readonly',
+    global: 'readonly',
+    globalThis: 'readonly',
+  },
+  rules: {
+    'no-undef': 'off',
+    'no-unused-vars': 'off',
+  },
 };

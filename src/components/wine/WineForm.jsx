@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import PhotoUploader from '@/components/PhotoUploader';
 
 const SIZES = ['375ml', '500ml', '750ml', '1L', '1.5L', '3L', 'Other'];
-const STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
+const STYLES = ['dessert', 'fortified', 'orange', 'red', 'rosé', 'sparkling', 'white', 'other'];
 
 function Field({ label, children }) {
   return (

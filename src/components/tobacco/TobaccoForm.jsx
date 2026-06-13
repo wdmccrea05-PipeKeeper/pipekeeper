@@ -29,7 +29,7 @@ import FlavorProfileField from '@/components/tobacco/FlavorProfileField';
 import { normalizeFlavorProfile } from '@/components/tobacco/flavorNotes';
 
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
-const CUTS = ["Ribbon", "Flake", "Broken Flake", "Ready Rubbed", "Plug", "Coin", "Cube Cut", "Crumble Cake", "Shag", "Rope", "Twist", "Other"];
+const CUTS = ["Broken Flake", "Coin", "Crumble Cake", "Cube Cut", "Flake", "Plug", "Ready Rubbed", "Ribbon", "Rope", "Shag", "Twist", "Other"];
 const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
 const ROOM_NOTES = ["Pleasant", "Neutral", "Strong", "Very Strong"];
 const PRODUCTION_STATUS = ["Current Production", "Discontinued", "Limited Edition", "Vintage"];
