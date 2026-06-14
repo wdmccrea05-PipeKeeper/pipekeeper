@@ -187,6 +187,19 @@ function classifyIntent(message) {
 
   if (/\b(pairing|pair with|pair together|combine|combination|explain why .+ work together)\b/i.test(t)) return 'EXPLAIN_PAIRING';
 
+  // PAIRING_SCORE_QUERY — questions about pairing scores, ratings, best/worst pairings
+  const pairingScorePatterns = [
+    /\b(pairing.*(score|rating|rated|rank)|score.*(pairing|pair)|rating.*(pairing|pair))\b/i,
+    /\b(best|worst|highest|lowest|top|weakest|strongest).*(pairing|pair|match|compatibility)\b/i,
+    /\b(pairing|pair).*(best|worst|highest|lowest|top|weakest|strongest)\b/i,
+    /\b(score|scored|rating|rated).*(under|below|above|higher|lower|greater|less than|at least|or (lower|higher))\b/i,
+    /\b(under|below|above|higher|lower).*(score|scored|rating|rated)\b/i,
+    /\b(show|list|find|what).*(pairing|pair).*(score|rated|rating|low|high)\b/i,
+    /\b(low|high|weak|poor|best|top).*(rated|scored).*(pairing|pair)\b/i,
+    /\b(compatibility|compatible|goes with|smoke with|pipe for|tobacco for)\b/i,
+  ];
+  if (pairingScorePatterns.some((p) => p.test(t))) return 'PAIRING_SCORE_QUERY';
+
   // DIRECT RECOMMENDATION — explicit ask for a suggestion/recommendation (must come before SESSION_RECOMMENDATION)
   const directRecPatterns = [
     /\b(what (is|would be|should i|do you recommend|would you recommend)|which (blend|tobacco|pipe|bottle)|recommend (a|an|some|the best)|good (blend|tobacco|pipe|bottle)|suggest (a|an)|what.*(good|smooth|mild|full|strong|light).*(blend|tobacco|smoke|pipe|bottle)|good.*to smoke|good.*with (coffee|tea|whiskey|beer|food|meal)|what.*go(es)? with|pair with coffee|pair with tea|what.*for (morning|evening|night|afternoon|after dinner|mid-morning|bedtime))\b/i,
@@ -505,6 +518,7 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
   const smokingLogs = context.smokingLogs || [];
   const tastingLogs = context.tastingLogs || [];
   const acquisitionItems = context.acquisitionItems || context.wantListItems || [];
+  const pairingMatrixPairings = Array.isArray(context.pairingMatrixPairings) ? context.pairingMatrixPairings : [];
 
   // ── Compute usage signals for richer context ─────────────────────────────
   const blendUsage = {};
@@ -576,6 +590,20 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
     return `- ${w.name}${w.producer ? ` by ${w.producer}` : ''}${w.vintage ? ` ${w.vintage}` : ''}${w.style ? ` [${w.style}]` : ''}${w.varietal ? ` ${w.varietal}` : ''}${w.region ? ` ${w.region}` : ''}${windowRange}${windowStatus ? ` status:${windowStatus}` : ''}${val ? ` est:$${val}` : ' UNVALUED'}`;
   });
 
+  // ── Pipe-tobacco compatibility score lines ────────────────────────────────
+  // pairingMatrixPairings is an array of pipe variant rows, each with a
+  // recommendations array of { tobacco_name, score } entries (score 0–10).
+  const pairingScoreLines = pairingMatrixPairings.slice(0, 60).flatMap((p) => {
+    const pipeName = p.pipe_name || p.name || 'Unknown Pipe';
+    const recs = Array.isArray(p.recommendations) ? p.recommendations : [];
+    if (recs.length === 0) return [];
+    const recParts = recs
+      .filter((r) => r?.tobacco_name && r?.score != null)
+      .map((r) => `${r.tobacco_name}(${Number(r.score).toFixed(1)})`);
+    if (recParts.length === 0) return [];
+    return [`- ${pipeName}: ${recParts.join(', ')}`];
+  });
+
   const collectionSummary = [
     blendLines.length > 0 ? `TOBACCO CELLAR (${blends.length} blends):\n${blendLines.join('\n')}` : 'TOBACCO CELLAR: empty',
     pipeLines.length > 0 ? `\nPIPE COLLECTION (${pipes.length} pipes):\n${pipeLines.join('\n')}` : '',
@@ -584,6 +612,9 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
     wantListLines.length > 0 ? `\nWANT LIST / ACQUISITION QUEUE:\n${wantListLines.join('\n')}` : '',
     smokingLogs.length > 0 ? `\nTotal smoking sessions logged: ${smokingLogs.length}` : '',
     tastingLogs.length > 0 ? `\nTotal whiskey tastings logged: ${tastingLogs.length}` : '',
+    pairingScoreLines.length > 0
+      ? `\nPIPE-TOBACCO COMPATIBILITY SCORES (0-10 scale, AI-computed — higher is better):\n${pairingScoreLines.join('\n')}`
+      : '\nPIPE-TOBACCO COMPATIBILITY SCORES: no pairing matrix generated yet',
   ].filter(Boolean).join('');
 
   const recentHistory = history.slice(-8).map((m) => `${m.role === 'user' ? 'YOU' : 'CURATOR'}: ${m.content.slice(0, 400)}`).join('\n');
@@ -623,7 +654,7 @@ SESSION PLANNING: Pick from owned items. Explain why this item fits tonight (rec
 VALUE/RARITY: Reference purchase_price, estimated_value, production_status (DISCONTINUED = valuable). Factor scarcity.
 GAP ANALYSIS: Compare what exists vs what's missing. Be specific about which families/styles are underrepresented.
 PURCHASE GUIDANCE: Give specific product names with price context. Factor what they already own.
-PAIRING: Explain the interaction — not just "goes well together." Why do these flavors complement or contrast?
+PAIRING SCORES: PipeKeeper computes compatibility scores (0–10) between pipes and tobacco blends. Use the PIPE-TOBACCO COMPATIBILITY SCORES section above to answer questions about specific pairing scores, best pairings, worst pairings, and score-based filters (e.g., "pairings scored 4 or lower"). If no scores exist yet, tell the user to generate their pairing matrix from the Insights tab.
 REDUNDANCY: Name specific items that overlap. Explain what makes them redundant.
 UNDERUSED: Look at sessions count and lastSmoked days. Items with 0 sessions or 60+ days = underused.
 WINE DIAGNOSTICS: When user asks about wines missing drinking window, valuation, or metadata, list the specific wines from WINE CELLAR above marked MISSING_WINDOW or UNVALUED. Never reference external wine products or producers not in the collection.

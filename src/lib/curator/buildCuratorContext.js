@@ -62,6 +62,11 @@ export async function buildCuratorContextWithLogging(
       tastingLogs: context.tastingLogs?.length || 0,
       acquisitionItems: context.acquisitionItems?.length || 0,
       hasWinePreferences: !!(context.preferences?.wine_preferences || context.winePreferences),
+      pairingMatrixRows: context.pairingMatrixPairings?.length || 0,
+      scoredPairingPairs: (context.pairingMatrixPairings || []).reduce(
+        (sum, p) => sum + (Array.isArray(p?.recommendations) ? p.recommendations.filter((r) => r?.score != null).length : 0),
+        0
+      ),
     },
     activeModules: stableModuleEnabled,
     timestamp: new Date().toISOString(),

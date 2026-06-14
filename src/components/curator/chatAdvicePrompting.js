@@ -59,7 +59,14 @@ export function buildCuratorActivitySummary({
   cigarSessions = [],
   smokingLogs = [],
   tastingLogs = [],
+  pairingMatrixPairings = [],
 }) {
+  const pairingRowCount = pairingMatrixPairings.length;
+  const scoredPairCount = pairingMatrixPairings.reduce(
+    (sum, p) => sum + (Array.isArray(p?.recommendations) ? p.recommendations.filter((r) => r?.score != null).length : 0),
+    0
+  );
+
   return `
 COLLECTION SUMMARY:
 - Pipes: ${pipes.length}
@@ -69,6 +76,7 @@ COLLECTION SUMMARY:
 - Smoking Logs: ${smokingLogs.length}
 - Tasting Logs: ${tastingLogs.length}
 - Cigar Sessions: ${cigarSessions.length}
+- Pipe-Tobacco Pairing Rows: ${pairingRowCount} (${scoredPairCount} scored pairs)
 
 INSTRUCTION:
 Reference the user's actual collection and logs whenever giving advice.
