@@ -593,7 +593,9 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
   // ── Pipe-tobacco compatibility score lines ────────────────────────────────
   // pairingMatrixPairings is an array of pipe variant rows, each with a
   // recommendations array of { tobacco_name, score } entries (score 0–10).
-  const pairingScoreLines = pairingMatrixPairings.slice(0, 60).flatMap((p) => {
+  // Limit to 60 rows to stay within LLM token budget (each row can have 10 recs).
+  const MAX_PAIRING_ROWS_IN_CONTEXT = 60;
+  const pairingScoreLines = pairingMatrixPairings.slice(0, MAX_PAIRING_ROWS_IN_CONTEXT).flatMap((p) => {
     const pipeName = p.pipe_name || p.name || 'Unknown Pipe';
     const recs = Array.isArray(p.recommendations) ? p.recommendations : [];
     if (recs.length === 0) return [];

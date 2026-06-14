@@ -261,8 +261,9 @@ export default function CuratorWorkspace({
     });
 
     // Extract the active pairing matrix record and flatten pairings array
-    const activePairingMatrix = Array.isArray(activePairingMatrixRows) ? activePairingMatrixRows[0] || null : null;
-    const pairingMatrixPairings = pipeActive ? (activePairingMatrix?.pairings || []) : [];
+    // safeFilter returns an array; we requested at most 1 row with is_active:true
+    const activePairingMatrixResult = Array.isArray(activePairingMatrixRows) ? activePairingMatrixRows[0] || null : null;
+    const pairingMatrixPairings = pipeActive ? (activePairingMatrixResult?.pairings || []) : [];
 
     if (process.env.NODE_ENV !== 'production') {
       // Count how many pipe-tobacco pairs have a computed score
