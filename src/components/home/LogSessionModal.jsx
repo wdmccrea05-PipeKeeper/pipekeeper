@@ -394,29 +394,34 @@ export default function LogSessionModal({
             remaining -= toReduce;
           }
 
-          // Tins: reduce from open first, fall back to cellared
+          // Tins: reduce oz from open tin first, fall back to cellared.
+          // Only mark a tin as fully consumed when its oz are completely used up.
+          // We deduct oz from tin_total_quantity_oz but do NOT remove the tin count
+          // unless the entire tin's worth of oz has been consumed.
           if ((blendToReduce.tin_tins_open || 0) > 0 && remaining > 0 && blendToReduce.tin_size_oz) {
-            const tinsToOpen = Math.ceil(remaining / blendToReduce.tin_size_oz);
-            const actualTinReduction = Math.min(tinsToOpen, blendToReduce.tin_tins_open);
-            const actualOzReduction = Math.min(actualTinReduction * blendToReduce.tin_size_oz, remaining);
-
-            updateData.tin_tins_open = Math.max(0, (blendToReduce.tin_tins_open || 0) - actualTinReduction);
-            updateData.tin_total_tins = Math.max(0, (blendToReduce.tin_total_tins || 0) - actualTinReduction);
+            const ozToDeduct = Math.min(remaining, (blendToReduce.tin_tins_open || 0) * (blendToReduce.tin_size_oz || 1));
             updateData.tin_total_quantity_oz = Math.max(
               0,
-              (blendToReduce.tin_total_quantity_oz || 0) - actualOzReduction
+              (blendToReduce.tin_total_quantity_oz || 0) - ozToDeduct
             );
+            // Only remove a tin if its full capacity has been consumed
+            const tinsConsumed = Math.floor(ozToDeduct / blendToReduce.tin_size_oz);
+            if (tinsConsumed > 0) {
+              updateData.tin_tins_open = Math.max(0, (blendToReduce.tin_tins_open || 0) - tinsConsumed);
+              updateData.tin_total_tins = Math.max(0, (blendToReduce.tin_total_tins || 0) - tinsConsumed);
+            }
+            remaining -= ozToDeduct;
           } else if ((blendToReduce.tin_tins_cellared || 0) > 0 && remaining > 0 && blendToReduce.tin_size_oz) {
-            const tinsToReduce = Math.ceil(remaining / blendToReduce.tin_size_oz);
-            const actualTinReduction = Math.min(tinsToReduce, blendToReduce.tin_tins_cellared);
-            const actualOzReduction = Math.min(actualTinReduction * blendToReduce.tin_size_oz, remaining);
-
-            updateData.tin_tins_cellared = Math.max(0, (blendToReduce.tin_tins_cellared || 0) - actualTinReduction);
-            updateData.tin_total_tins = Math.max(0, (blendToReduce.tin_total_tins || 0) - actualTinReduction);
+            const ozToDeduct = Math.min(remaining, (blendToReduce.tin_tins_cellared || 0) * (blendToReduce.tin_size_oz || 1));
             updateData.tin_total_quantity_oz = Math.max(
               0,
-              (blendToReduce.tin_total_quantity_oz || 0) - actualOzReduction
+              (blendToReduce.tin_total_quantity_oz || 0) - ozToDeduct
             );
+            const tinsConsumed = Math.floor(ozToDeduct / blendToReduce.tin_size_oz);
+            if (tinsConsumed > 0) {
+              updateData.tin_tins_cellared = Math.max(0, (blendToReduce.tin_tins_cellared || 0) - tinsConsumed);
+              updateData.tin_total_tins = Math.max(0, (blendToReduce.tin_total_tins || 0) - tinsConsumed);
+            }
           }
 
           if (Object.keys(updateData).length > 0) {
