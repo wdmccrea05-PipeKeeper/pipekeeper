@@ -17,6 +17,7 @@ function extractImages(record = {}) {
 }
 
 function toNumber(value) {
+  if (value == null || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
