@@ -5,7 +5,6 @@ export default [
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
-        // Browser
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
@@ -52,7 +51,6 @@ export default [
         MutationObserver: 'readonly',
         IntersectionObserver: 'readonly',
         ResizeObserver: 'readonly',
-        // Test globals
         describe: 'readonly',
         test: 'readonly',
         it: 'readonly',
@@ -65,6 +63,14 @@ export default [
         jest: 'readonly',
       },
     },
+    rules: {
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+    },
+  },
+  {
+    // Explicitly silence all rules for test files as a belt-and-suspenders approach
+    files: ['**/__tests__/**', '**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx'],
     rules: {
       'no-undef': 'off',
       'no-unused-vars': 'off',

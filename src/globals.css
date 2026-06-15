@@ -271,3 +271,53 @@ body {
     hyphens: none;
   }
 }
+
+/* ─── Card text wrapping — global enforcement ─── */
+/* Titles, subtitles, and text inside any card-like container must wrap
+   safely on mobile without overflow or hyphenation. */
+[class*="card"] h1,
+[class*="card"] h2,
+[class*="card"] h3,
+[class*="card"] h4,
+[class*="card"] h5,
+[class*="card"] h6,
+[class*="Card"] h1,
+[class*="Card"] h2,
+[class*="Card"] h3,
+[class*="Card"] h4,
+[class*="Card"] h5,
+[class*="Card"] h6,
+[class*="card"] p,
+[class*="Card"] p,
+[class*="card"] span,
+[class*="Card"] span {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: none;
+  min-width: 0;
+}
+
+/* Flex children inside cards must not overflow */
+[class*="card"] .flex,
+[class*="Card"] .flex,
+[class*="card"] [class*="flex"],
+[class*="Card"] [class*="flex"] {
+  min-width: 0;
+}
+
+/* List items in cards */
+[class*="card"] li,
+[class*="Card"] li {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: none;
+}
+
+/* Ensure all direct text wrappers in cards don't overflow on small screens */
+.card-text-safe {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: none;
+  min-width: 0;
+  max-width: 100%;
+}

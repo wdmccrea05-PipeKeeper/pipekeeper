@@ -265,7 +265,7 @@ export default function CuratorWorkspace({
     const activePairingMatrixResult = Array.isArray(activePairingMatrixRows) ? activePairingMatrixRows[0] || null : null;
     const pairingMatrixPairings = pipeActive ? (activePairingMatrixResult?.pairings || []) : [];
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.DEV) {
       // Count how many pipe-tobacco pairs have a computed score
       const scoredPairCount = pairingMatrixPairings.reduce(
         (sum, p) => sum + (p?.recommendations?.filter((r) => r?.score != null).length || 0),

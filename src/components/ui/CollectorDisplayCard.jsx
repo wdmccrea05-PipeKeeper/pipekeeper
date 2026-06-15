@@ -152,10 +152,10 @@ export default function CollectorDisplayCard({
       </div>
 
       {/* Information panel */}
-      <div className="p-5 space-y-3">
-        <div>
+      <div className="p-5 space-y-3 min-w-0">
+        <div className="min-w-0">
           <h3 
-            className="font-semibold text-lg leading-tight mb-1.5"
+            className="font-semibold text-lg leading-tight mb-1.5 break-words"
             style={{ 
               color: "#F5F1E7",
               fontFamily: "'Georgia', serif",
@@ -165,7 +165,7 @@ export default function CollectorDisplayCard({
             {title}
           </h3>
           {subtitle && (
-            <p className="text-sm" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
+            <p className="text-sm break-words" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
               {subtitle}
             </p>
           )}

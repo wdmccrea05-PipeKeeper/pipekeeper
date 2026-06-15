@@ -218,16 +218,16 @@ export default function CigarCard({
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#D4A574]/70">
+      <div className="p-4 space-y-3 min-w-0">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#D4A574]/70 break-words">
             {cigar?.brand || '—'}
           </p>
-          <h3 className="text-base font-bold text-[#F5F1E7] leading-tight mt-0.5 line-clamp-2">
+          <h3 className="text-base font-bold text-[#F5F1E7] leading-tight mt-0.5 break-words">
             {cigar?.name || t('cigars.untitled', 'Untitled Cigar')}
           </h3>
           {cigar?.vitola && (
-            <p className="text-xs text-[#E0D8C8]/65 mt-0.5">{cigar.vitola}</p>
+            <p className="text-xs text-[#E0D8C8]/65 mt-0.5 break-words">{cigar.vitola}</p>
           )}
         </div>
 
