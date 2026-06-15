@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { Calendar, HelpCircle, RefreshCw, CheckCircle2 } from 'lucide-react';
-import { buildSessionPlan } from '@/lib/curator/sessionPlanner.js';
 
 // ─── Module filter pills ───────────────────────────────────────────────────────
 
@@ -171,6 +170,7 @@ function EmptyState({ targetModule }) {
  */
 export default function CuratorPlanSession({
   collectionContext = {},
+  candidates: providedCandidates = null,
   activeModules = {},
   onAction,
   onRefresh,
@@ -200,10 +200,11 @@ export default function CuratorPlanSession({
 
   // Map UI filter → planner target
   // 'tobacco' → 'tobacco', 'pipe' → 'pipe', 'whiskey' → 'whiskey', 'any' → 'any'
-  const candidates = useMemo(
-    () => buildSessionPlan(collectionContext, activeModules, targetModule),
-    [collectionContext, activeModules, targetModule]
-  );
+  const candidates = useMemo(() => {
+    if (!Array.isArray(providedCandidates)) return [];
+    if (targetModule === 'any') return providedCandidates;
+    return providedCandidates.filter((candidate) => candidate?.moduleKey === targetModule);
+  }, [providedCandidates, targetModule]);
 
   const handleBuildSession = (candidate) => {
     const name = candidate.title || candidate.item?.name || '';

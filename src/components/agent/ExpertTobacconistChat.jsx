@@ -12,6 +12,7 @@ import {
   noDataResponses,
 } from '@/components/curator/curatorVoiceLayer';
 import { classifyDiagnosticIntent, DIAGNOSTIC_INTENT } from '@/lib/curator/curatorIntentClassifier.js';
+import { answerCuratorDeterministicQuery } from '@/lib/curator/curatorDeterministicChat.js';
 import { analyzeWineOptimizationIssues } from '@/lib/curator/wineOptimization.js';
 
 /**
@@ -1597,7 +1598,9 @@ export default function ExpertTobacconistChat({
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, isSending]);
 
   useEffect(() => {
@@ -1615,7 +1618,7 @@ export default function ExpertTobacconistChat({
    */
   function needsLLM(text, intent) {
     // Local rule engine handles these specific intents reliably
-    const localIntents = new Set(['USER_CORRECTION', 'FOLLOW_UP_CONSTRAINT', 'FOLLOW_UP_NEXT_CANDIDATE']);
+    const localIntents = new Set(['USER_CORRECTION', 'FOLLOW_UP_CONSTRAINT', 'FOLLOW_UP_NEXT_CANDIDATE', 'FOLLOW_UP']);
     if (localIntents.has(intent)) return false;
 
     // Everything else goes to LLM for premium-quality answers
@@ -1647,6 +1650,11 @@ export default function ExpertTobacconistChat({
       }
 
       const intent = classifyIntent(text);
+      const deterministic = answerCuratorDeterministicQuery(text, collectionContext, entityContext, activeModules);
+      if (deterministic?.handled) {
+        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: deterministic.reply }]);
+        return;
+      }
       const useLLM = needsLLM(text, intent);
 
       if (useLLM) {
@@ -1741,7 +1749,7 @@ export default function ExpertTobacconistChat({
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5" style={{ maxHeight: '55vh', minHeight: '220px' }}>
+      <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5 max-h-[calc(100dvh-14rem)]" style={{ maxHeight: 'min(480px, 50dvh)', minHeight: '220px' }}>
         {messages.length === 0 ? (
           <div>
             <p className="text-[14px] mb-4" style={{ color: '#6B6860' }}>Ask a question or pick a prompt to get started.</p>
@@ -1836,6 +1844,7 @@ export default function ExpertTobacconistChat({
           />
           <button
             type="button"
+            aria-label="Send message"
             disabled={!canSend}
             onClick={sendMessage}
             className="shrink-0 h-12 w-12 rounded-[12px] inline-flex items-center justify-center"

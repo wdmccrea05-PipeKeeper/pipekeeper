@@ -10,6 +10,7 @@
 import { generateRecommendations } from './recommendationEngine.js';
 import { generatePairingRecommendations } from './pairingEngine.js';
 import { generateGrowExpandRecommendations } from './growExpandEngine.js';
+import { buildSessionPlan } from './sessionPlanner.js';
 
 /**
  * RULE 4: Router with explicit failure logging
@@ -123,6 +124,24 @@ export function runCuratorEngines(curatorContext = {}) {
     console.error('ENGINE_FAILURE', { engine: 'growExpand', error: err.message });
     results._engineLog.push({
       engine: 'growExpand',
+      status: 'error',
+      error: err.message,
+    });
+  }
+
+  // ─── Plan Session ───────────────────────────────────────────
+  try {
+    const planSession = buildSessionPlan(curatorContext, activeModules, 'any') || [];
+    results.planSession = planSession;
+    results._engineLog.push({
+      engine: 'planSession',
+      status: planSession.length > 0 ? 'success' : 'no_recommendations',
+      count: planSession.length,
+    });
+  } catch (err) {
+    console.error('ENGINE_FAILURE', { engine: 'planSession', error: err.message });
+    results._engineLog.push({
+      engine: 'planSession',
       status: 'error',
       error: err.message,
     });
