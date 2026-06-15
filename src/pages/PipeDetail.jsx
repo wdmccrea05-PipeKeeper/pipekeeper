@@ -59,6 +59,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import EnrichButton from '@/components/shared/EnrichButton';
 import { safeUpdate } from '@/components/utils/safeUpdate';
 import PipePhotoGallery from '@/components/pipes/PipePhotoGallery';
+import BreakInSchedule from '@/components/pipes/BreakInSchedule';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
@@ -1089,6 +1090,9 @@ export default function PipeDetail() {
                 <TabsTrigger value="bowls" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Bowls
                 </TabsTrigger>
+                <TabsTrigger value="breakin" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
+                  Break-In
+                </TabsTrigger>
                 <TabsTrigger value="details" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
                   Details
                 </TabsTrigger>
@@ -1118,6 +1122,10 @@ export default function PipeDetail() {
 
             <TabsContent value="bowls" className="p-4 m-0">
               <InterchangeableBowls pipe={pipe} onUpdate={handlePipeUpdate} />
+            </TabsContent>
+
+            <TabsContent value="breakin" className="p-4 m-0">
+              <BreakInSchedule pipe={pipe} blends={blends} />
             </TabsContent>
 
             <TabsContent value="details" className="p-4 md:p-5 m-0">

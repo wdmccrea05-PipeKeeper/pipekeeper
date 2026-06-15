@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+/* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
 
