@@ -101,4 +101,3 @@ export function getCuratorAutoApplyDisposition(recommendation = {}, policy = CUR
     confidence: maxConfidence,
   };
 }
-

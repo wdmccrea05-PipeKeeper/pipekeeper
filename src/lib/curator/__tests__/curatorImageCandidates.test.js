@@ -33,4 +33,3 @@ describe('resolveCuratorImageCandidates', () => {
     expect(candidates[1].source).toBe('verified_asset');
   });
 });
-

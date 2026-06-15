@@ -115,4 +115,3 @@ describe('curatorOperationsEngine', () => {
     expect(workspace.operations.pairings).toHaveProperty('findings');
   });
 });
-

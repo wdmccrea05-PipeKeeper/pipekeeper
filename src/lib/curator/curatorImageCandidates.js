@@ -137,4 +137,3 @@ export function resolveCuratorImageCandidates({
 }
 
 export { IMAGE_SOURCE_PRIORITY };
-

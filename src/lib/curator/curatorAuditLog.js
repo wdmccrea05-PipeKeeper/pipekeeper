@@ -42,4 +42,3 @@ export async function logCuratorAuditEntry(entry = {}) {
     return { success: false, error };
   }
 }
-
