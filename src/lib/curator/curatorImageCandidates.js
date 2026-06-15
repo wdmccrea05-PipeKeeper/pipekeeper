@@ -133,6 +133,16 @@ export function resolveCuratorImageCandidates({
 
   appImageLibrary.forEach((entry) => {
     if (!entry?.imageUrl) return;
+    const {
+      imageUrl: _imageUrl,
+      confidence: _confidence,
+      matchReason: _matchReason,
+      matchedFields: _matchedFields,
+      warnings: _warnings,
+      requiresReview: _requiresReview,
+      source: _source,
+      ...identityMeta
+    } = entry || {};
     candidates.push(buildCandidate({
       imageUrl: entry.imageUrl,
       source: 'app_library',
@@ -140,12 +150,22 @@ export function resolveCuratorImageCandidates({
       matchReason: entry.matchReason || 'Matched from the internal app image library.',
       matchedFields: entry.matchedFields || matchedFields,
       warnings: entry.warnings || [],
-      ...entry,
+      ...identityMeta,
     }));
   });
 
   verifiedImageAssets.forEach((entry) => {
     if (!entry?.imageUrl) return;
+    const {
+      imageUrl: _imageUrl,
+      confidence: _confidence,
+      matchReason: _matchReason,
+      matchedFields: _matchedFields,
+      warnings: _warnings,
+      requiresReview: _requiresReview,
+      source: _source,
+      ...identityMeta
+    } = entry || {};
     candidates.push(buildCandidate({
       imageUrl: entry.imageUrl,
       source: 'verified_asset',
@@ -153,12 +173,22 @@ export function resolveCuratorImageCandidates({
       matchReason: entry.matchReason || 'Matched from a previously verified asset.',
       matchedFields: entry.matchedFields || matchedFields,
       warnings: entry.warnings || [],
-      ...entry,
+      ...identityMeta,
     }));
   });
 
   onlineCandidates.forEach((entry) => {
     const source = normalizeSource(entry?.source);
+    const {
+      imageUrl: _imageUrl,
+      confidence: _confidence,
+      matchReason: _matchReason,
+      matchedFields: _matchedFields,
+      warnings: _warnings,
+      requiresReview: _requiresReview,
+      source: _source,
+      ...identityMeta
+    } = entry || {};
     candidates.push(buildCandidate({
       imageUrl: entry?.imageUrl,
       source,
@@ -166,8 +196,8 @@ export function resolveCuratorImageCandidates({
       matchReason: entry?.matchReason || 'Online candidate requires review before applying.',
       matchedFields: entry?.matchedFields || matchedFields,
       warnings: entry?.warnings || ['Online images are suggestions until approved.'],
+      ...identityMeta,
       requiresReview: true,
-      ...entry,
     }));
   });
 
