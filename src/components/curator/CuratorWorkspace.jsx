@@ -224,6 +224,7 @@ export default function CuratorWorkspace({
       smokingLogs, tastingLogs,
       cigars, cigarSessions,
       inventoryUnits, acquisitionItems,
+      activePairingMatrixRows,
     ] = await Promise.all([
       // §1.2: if module disabled, return empty array — NO data leakage
       pipeActive    ? safeFilter(base44.entities.Pipe,           { created_by: user.email }, '-updated_date',  200, 'pipes')          : Promise.resolve([]),
@@ -236,6 +237,8 @@ export default function CuratorWorkspace({
       cigarActive   ? safeFilter(base44.entities.CigarSession,   { created_by: user.email }, '-date',           300, 'cigarSessions') : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null,        500, 'inventoryUnits') : Promise.resolve([]),
       safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 300, 'acquisitionItems'),
+      // Fetch active pairing matrix for Curator context (pipe-tobacco compatibility scores)
+      pipeActive    ? safeFilter(base44.entities.PairingMatrix,  { created_by: user.email, is_active: true }, '-created_date', 1, 'pairingMatrix') : Promise.resolve([]),
     ]);
 
     // §5.1 Normalize AcquisitionItem status: live records use status:'active' + category:'wishlist'
@@ -257,6 +260,25 @@ export default function CuratorWorkspace({
       return { ...item, status: canonicalStatus };
     });
 
+    // Extract the active pairing matrix record and flatten pairings array
+    // safeFilter returns an array; we requested at most 1 row with is_active:true
+    const activePairingMatrixResult = Array.isArray(activePairingMatrixRows) ? activePairingMatrixRows[0] || null : null;
+    const pairingMatrixPairings = pipeActive ? (activePairingMatrixResult?.pairings || []) : [];
+
+    if (process.env.NODE_ENV !== 'production') {
+      // Count how many pipe-tobacco pairs have a computed score
+      const scoredPairCount = pairingMatrixPairings.reduce(
+        (sum, p) => sum + (p?.recommendations?.filter((r) => r?.score != null).length || 0),
+        0
+      );
+      console.debug('[Curator Pairings]', {
+        userId: user.email,
+        pairingRowCount: pairingMatrixPairings.length,
+        scoredPairCount,
+        sampleFields: pairingMatrixPairings[0] ? Object.keys(pairingMatrixPairings[0]) : [],
+      });
+    }
+
     return {
       // §1.2 enforce zero-arrays for disabled modules
       pipes:          pipeActive    ? pipes    : [],
@@ -270,6 +292,8 @@ export default function CuratorWorkspace({
       inventoryUnits: whiskeyActive ? inventoryUnits : [],
       acquisitionItems: normalizedAcquisitions,
       wantListItems:    normalizedAcquisitions,
+      // Pipe-tobacco pairing compatibility scores from the active PairingMatrix record
+      pairingMatrixPairings,
       preferences: {},
       activeModules: stableModuleEnabled,
       cigarModuleActive: cigarActive,
