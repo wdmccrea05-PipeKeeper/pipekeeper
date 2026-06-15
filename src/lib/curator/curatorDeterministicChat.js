@@ -144,6 +144,11 @@ function parseScoreThreshold(message) {
 }
 
 function buildPairingScoreReply(message, context = {}, entityContext = {}) {
+  const lowerMessage = norm(message);
+  const isPairingQuery =
+    /\bpair|pairing|pairs|paired|compatibility|compatible|score|scored|rating|rated|best with|worst with|poorly with\b/i.test(message);
+  if (!isPairingQuery) return null;
+
   const rows = Array.isArray(context.pairingMatrixPairings) ? context.pairingMatrixPairings : [];
   if (!rows.length) {
     return {
@@ -161,7 +166,6 @@ function buildPairingScoreReply(message, context = {}, entityContext = {}) {
     };
   }
 
-  const lowerMessage = norm(message);
   const threshold = parseScoreThreshold(message);
   const namedRecord = getAllRecords(context).find((record) => lowerMessage.includes(norm(record.name)));
   const subjectName = namedRecord?.name || entityContext?.subject?.name || null;
@@ -176,26 +180,6 @@ function buildPairingScoreReply(message, context = {}, entityContext = {}) {
       reply: matches.length
         ? `${pluralize(matches.length, 'pairing')} scored ${threshold} or lower: ${formatList(matches.map((entry) => `${entry.pipeName} × ${entry.tobaccoName} (${entry.score})`))}.`
         : `I don’t see any pairings scored ${threshold} or lower.`,
-    };
-  }
-
-  if (/best|highest|top/.test(lowerMessage) && /pair/.test(lowerMessage)) {
-    const matches = [...scored].sort((a, b) => b.score - a.score);
-    return {
-      handled: true,
-      reply: matches.length
-        ? `Best pairing${matches.length === 1 ? '' : 's'}: ${formatList(matches.slice(0, 5).map((entry) => `${entry.pipeName} × ${entry.tobaccoName} (${entry.score})`), 5)}.`
-        : 'I do not see any scored pairings yet.',
-    };
-  }
-
-  if (/worst|lowest|poor|poorly|weakest/.test(lowerMessage) && /pair/.test(lowerMessage)) {
-    const matches = [...scored].sort((a, b) => a.score - b.score);
-    return {
-      handled: true,
-      reply: matches.length
-        ? `Worst pairing${matches.length === 1 ? '' : 's'}: ${formatList(matches.slice(0, 5).map((entry) => `${entry.pipeName} × ${entry.tobaccoName} (${entry.score})`), 5)}.`
-        : 'I do not see any scored pairings yet.',
     };
   }
 
@@ -221,6 +205,26 @@ function buildPairingScoreReply(message, context = {}, entityContext = {}) {
       reply: matches.length
         ? `${direction === 'poorly' ? 'Lowest-scoring' : 'Best'} tobaccos for ${subjectName}: ${formatList(matches.slice(0, 5).map((entry) => `${entry.tobaccoName} (${entry.score})`), 5)}.`
         : `I don’t see any scored pairings for ${subjectName}.`,
+    };
+  }
+
+  if (/best|highest|top/.test(lowerMessage) && /pair/.test(lowerMessage)) {
+    const matches = [...scored].sort((a, b) => b.score - a.score);
+    return {
+      handled: true,
+      reply: matches.length
+        ? `Best pairing${matches.length === 1 ? '' : 's'}: ${formatList(matches.slice(0, 5).map((entry) => `${entry.pipeName} × ${entry.tobaccoName} (${entry.score})`), 5)}.`
+        : 'I do not see any scored pairings yet.',
+    };
+  }
+
+  if (/worst|lowest|poor|poorly|weakest/.test(lowerMessage) && /pair/.test(lowerMessage)) {
+    const matches = [...scored].sort((a, b) => a.score - b.score);
+    return {
+      handled: true,
+      reply: matches.length
+        ? `Worst pairing${matches.length === 1 ? '' : 's'}: ${formatList(matches.slice(0, 5).map((entry) => `${entry.pipeName} × ${entry.tobaccoName} (${entry.score})`), 5)}.`
+        : 'I do not see any scored pairings yet.',
     };
   }
 
