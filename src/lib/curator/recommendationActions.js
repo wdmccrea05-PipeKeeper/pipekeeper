@@ -1,4 +1,5 @@
 import { base44 } from '@/api/base44Client';
+import { logCuratorAuditEntry } from '@/lib/curator/curatorAuditLog';
 
 const SAFE_BLEND_FIELDS = new Set([
   'blend_type', 'blend_family', 'strength', 'cut', 'flavor_notes',
@@ -19,6 +20,15 @@ const SAFE_PIPE_FIELDS = new Set([
   'specialization', 'shape', 'bowl_style', 'shank_shape', 'bend', 'sizeClass', 'notes', 'condition',
 ]);
 
+const CURATOR_IMAGE_FIELDS = new Set([
+  'photo',
+  'image',
+  'image_url',
+  'photo_url',
+  'primary_photo',
+  'photos',
+]);
+
 function filterToSafeFields(changes, allowedSet) {
   const next = {};
   for (const [key, value] of Object.entries(changes || {})) {
@@ -29,34 +39,88 @@ function filterToSafeFields(changes, allowedSet) {
   return next;
 }
 
-async function updateBlend(recordId, changes) {
-  // Apply safe fields; also allow any field explicitly in the payload if not destructive
-  const safe = filterToSafeFields(changes, SAFE_BLEND_FIELDS);
-  // Fallback: if caller-provided changes have keys not in safelist, still apply them directly
-  // (covers advisory recommendations that may have custom fields)
-  const merged = { ...changes, ...safe };
-  const final = Object.fromEntries(
-    Object.entries(merged).filter(([k, v]) => v !== undefined && v !== null && v !== '')
+export function sanitizeCuratorRecordChanges(changes, { allowedSet = null } = {}) {
+  const input = Object.fromEntries(
+    Object.entries(changes || {}).filter(([, value]) => value !== undefined && value !== null && value !== '')
   );
+  const withoutImages = Object.fromEntries(
+    Object.entries(input).filter(([key]) => !CURATOR_IMAGE_FIELDS.has(key))
+  );
+
+  if (allowedSet instanceof Set) {
+    const safe = filterToSafeFields(withoutImages, allowedSet);
+    return Object.keys(safe).length > 0 ? safe : withoutImages;
+  }
+
+  return withoutImages;
+}
+
+function getEntityHandle(recordType) {
+  switch ((recordType || '').toLowerCase()) {
+    case 'blend':
+    case 'tobacco':
+      return base44.entities.TobaccoBlend;
+    case 'bottle':
+    case 'whiskey':
+      return base44.entities.Bottle;
+    case 'pipe':
+      return base44.entities.Pipe;
+    default:
+      return null;
+  }
+}
+
+function normalizeAuditModule(recordType) {
+  switch ((recordType || '').toLowerCase()) {
+    case 'blend':
+    case 'tobacco':
+    case 'pipe':
+      return 'pipekeeper';
+    case 'bottle':
+    case 'whiskey':
+      return 'whiskeykeeper';
+    case 'cigar':
+      return 'cigarkeeper';
+    case 'wine':
+      return 'winekeeper';
+    default:
+      return 'curator';
+  }
+}
+
+function pickFields(source, fields = []) {
+  return fields.reduce((acc, field) => {
+    if (source && Object.prototype.hasOwnProperty.call(source, field)) {
+      acc[field] = source[field];
+    }
+    return acc;
+  }, {});
+}
+
+async function readRecord(recordType, recordId) {
+  try {
+    const entityHandle = getEntityHandle(recordType);
+    if (!entityHandle || typeof entityHandle.get !== 'function') return null;
+    return await entityHandle.get(recordId);
+  } catch {
+    return null;
+  }
+}
+
+async function updateBlend(recordId, changes) {
+  const final = sanitizeCuratorRecordChanges(changes, { allowedSet: SAFE_BLEND_FIELDS });
   if (!Object.keys(final).length) throw new Error('No blend fields to apply.');
   return base44.entities.TobaccoBlend.update(recordId, final);
 }
 
 async function updateBottle(recordId, changes) {
-  const safe = filterToSafeFields(changes, SAFE_BOTTLE_FIELDS);
-  // Fallback: if no safe fields matched, apply changes directly (covers fields not yet in allowlist)
-  const final = Object.keys(safe).length > 0 ? safe : Object.fromEntries(
-    Object.entries(changes || {}).filter(([, v]) => v !== undefined && v !== null && v !== '')
-  );
+  const final = sanitizeCuratorRecordChanges(changes, { allowedSet: SAFE_BOTTLE_FIELDS });
   if (!Object.keys(final).length) throw new Error('No bottle fields to apply.');
   return base44.entities.Bottle.update(recordId, final);
 }
 
 async function updatePipe(recordId, changes) {
-  const safe = filterToSafeFields(changes, SAFE_PIPE_FIELDS);
-  const final = Object.keys(safe).length > 0 ? safe : Object.fromEntries(
-    Object.entries(changes || {}).filter(([, v]) => v !== undefined && v !== null && v !== '')
-  );
+  const final = sanitizeCuratorRecordChanges(changes, { allowedSet: SAFE_PIPE_FIELDS });
   if (!Object.keys(final).length) throw new Error('No pipe fields to apply.');
   return base44.entities.Pipe.update(recordId, final);
 }
@@ -90,6 +154,35 @@ export async function applySingleItemFix(item) {
   }
   const updated = await updateRecord(item.recordType, item.recordId, item.proposedChange.payload);
   return { ok: true, appliedCount: 1, resolvedRecordIds: [item.recordId], updatedRecords: [updated] };
+}
+
+async function applyCuratorItemUpdate(item, payload, recommendation, action, opts = {}) {
+  const sanitizedPayload = sanitizeCuratorRecordChanges(payload);
+  if (!Object.keys(sanitizedPayload).length) {
+    throw new Error('Curator image updates require reviewed image candidates before they can be applied.');
+  }
+
+  const beforeState = await readRecord(item.recordType, item.recordId);
+  const updated = await updateRecord(item.recordType, item.recordId, sanitizedPayload);
+  const fieldsChanged = Object.keys(sanitizedPayload);
+
+  await logCuratorAuditEntry({
+    userId: opts.userEmail || null,
+    recommendationId: recommendation?.id || null,
+    module: normalizeAuditModule(item.recordType),
+    recordType: item.recordType,
+    recordId: item.recordId,
+    operationType: recommendation?.goal || action,
+    fieldsChanged,
+    previousValues: pickFields(beforeState, fieldsChanged),
+    newValues: pickFields(updated, fieldsChanged),
+    source: item?.proposedChange?.rationale || recommendation?.summary || 'curator',
+    confidence: item?.proposedChange?.confidence ?? recommendation?.confidence ?? null,
+    appliedAutomatically: action === 'apply_fix',
+    requiredUserApproval: action !== 'apply_fix',
+  });
+
+  return updated;
 }
 
 /**
@@ -168,7 +261,13 @@ export async function executeRecommendationAction(recommendation, action, opts =
 
       for (const item of toApply) {
         try {
-          const updated = await updateRecord(item.recordType, item.recordId, item.proposedChange.payload);
+          const updated = await applyCuratorItemUpdate(
+            item,
+            item.proposedChange.payload,
+            recommendation,
+            action,
+            opts
+          );
           resolvedRecordIds.push(item.recordId);
           updatedRecords.push(updated);
         } catch {
@@ -199,7 +298,13 @@ export async function executeRecommendationAction(recommendation, action, opts =
         const payload = item?.proposedChange?.payload;
         if (!payload || !Object.keys(payload).length) continue;
         try {
-          const updated = await updateRecord(item.recordType, item.recordId, payload);
+          const updated = await applyCuratorItemUpdate(
+            item,
+            payload,
+            recommendation,
+            action,
+            opts
+          );
           resolvedRecordIds.push(item.recordId);
           updatedRecords.push(updated);
         } catch {
@@ -242,7 +347,13 @@ export async function executeRecommendationAction(recommendation, action, opts =
 
       for (const item of toApply) {
         try {
-          const updated = await updateRecord(item.recordType, item.recordId, item.proposedChange.payload);
+          const updated = await applyCuratorItemUpdate(
+            item,
+            item.proposedChange.payload,
+            recommendation,
+            action,
+            opts
+          );
           resolvedRecordIds.push(item.recordId);
           updatedRecords.push(updated);
         } catch {

@@ -16,10 +16,8 @@ import CuratorSpecializationReview from '@/components/curator/CuratorSpecializat
 import ExpertTobacconistChat from '@/components/agent/ExpertTobacconistChat';
 
 import { toast } from 'sonner';
-import { generateRecommendations } from '@/lib/curator/recommendationEngine';
-import { generatePairingRecommendations } from '@/lib/curator/pairingEngine';
 import { executeRecommendationAction, buildViewItemsNavigation } from '@/lib/curator/recommendationActions';
-import { groupRecommendations } from '@/lib/curator/recommendationGrouping';
+import { buildCuratorDataSnapshot, runCuratorOperation, runCuratorWorkspaceOperations } from '@/lib/curator/curatorOperationsEngine';
 import { CATEGORY } from '@/lib/curator/recommendationSchema';
 
 const LOAD_TIMEOUT_MS = 10000;
@@ -162,6 +160,7 @@ export default function CuratorWorkspace({
 
   const mountedRef = useRef(true);
   const contextRef = useRef(null);
+  const snapshotRef = useRef(null);
   const pairingsRef = useRef([]);
   const rawSectionsRef = useRef([]);
 
@@ -318,19 +317,24 @@ export default function CuratorWorkspace({
       }
 
       try {
-        const context = await buildContext();
-        contextRef.current = context;
+        const snapshot = await buildCuratorDataSnapshot({
+          user,
+          buildContextFn: buildContext,
+          stableModuleEnabled,
+        });
+        const workspaceResults = await runCuratorWorkspaceOperations(snapshot);
+        const context = snapshot._context || {};
+        const groupedSections = workspaceResults.sections || [];
 
-        const flatRecommendations = generateRecommendations(context) || [];
-        const groupedSections = groupRecommendations(
-          flatRecommendations.filter((rec) => rec?.category !== CATEGORY.PAIRING)
-        );
+        snapshotRef.current = snapshot;
+        contextRef.current = context;
+        pairingsRef.current = workspaceResults.pairings || [];
 
         if (!mountedRef.current) return;
 
         rawSectionsRef.current = groupedSections;
         setRawSections(groupedSections);
-        publishCounts(groupedSections, pairingsRef.current);
+        publishCounts(groupedSections, workspaceResults.pairings || []);
       } catch (err) {
         console.error('[Curator] primary load failed:', err);
         if (!mountedRef.current) return;
@@ -344,7 +348,7 @@ export default function CuratorWorkspace({
         setIsRefreshing(false);
       }
     },
-    [buildContext, publishCounts, user?.email]
+    [buildContext, publishCounts, stableModuleEnabled, user, user?.email]
   );
 
   const loadPairings = useCallback(async ({ reshuffle = false } = {}) => {
@@ -362,19 +366,29 @@ export default function CuratorWorkspace({
 
       // When user clicks "New Pairings", shuffle input arrays so the engine
       // produces a different combination ordering each time.
+      const baseSnapshot = snapshotRef.current || await buildCuratorDataSnapshot({
+        user,
+        buildContextFn: buildContext,
+        stableModuleEnabled,
+      });
+      const baseContext = baseSnapshot._context || context;
       const pairingContext = reshuffle
         ? {
-            ...context,
-            pipes:       shuffleArray(context.pipes       || []),
-            blends:      shuffleArray(context.blends      || []),
-            bottles:     shuffleArray(context.bottles     || []),
-            wines:       shuffleArray(context.wines       || []),
-            smokingLogs: shuffleArray(context.smokingLogs || []),
-            tastingLogs: shuffleArray(context.tastingLogs || []),
+            ...baseContext,
+            pipes:       shuffleArray(baseContext.pipes       || []),
+            blends:      shuffleArray(baseContext.blends      || []),
+            bottles:     shuffleArray(baseContext.bottles     || []),
+            wines:       shuffleArray(baseContext.wines       || []),
+            smokingLogs: shuffleArray(baseContext.smokingLogs || []),
+            tastingLogs: shuffleArray(baseContext.tastingLogs || []),
           }
-        : context;
+        : baseContext;
 
-      const nextPairings = generatePairingRecommendations(pairingContext) || [];
+      const nextPairingsResult = await runCuratorOperation(
+        { operationType: 'pairings' },
+        { ...baseSnapshot, _context: pairingContext }
+      );
+      const nextPairings = nextPairingsResult.findings || [];
 
       if (!mountedRef.current) return;
 
@@ -389,7 +403,7 @@ export default function CuratorWorkspace({
     } finally {
       if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [buildContext, isSingleModuleMode, publishCounts, user?.email]);
+  }, [buildContext, isSingleModuleMode, publishCounts, stableModuleEnabled, user, user?.email]);
 
   useEffect(() => {
     mountedRef.current = true;
