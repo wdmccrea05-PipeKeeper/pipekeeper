@@ -40,7 +40,7 @@ describe('resolveCuratorImageCandidates', () => {
     });
 
     expect(candidates[0].requiresReview).toBe(true);
-    expect(candidates[0].confidence).toBe(1);
+    expect(candidates[0].confidence).toBeLessThanOrEqual(0.55);
   });
 
   it('rejects same-brand wrong-expression whiskey images when identity metadata is present', () => {
@@ -58,6 +58,43 @@ describe('resolveCuratorImageCandidates', () => {
           distillery: 'Distillery A',
           expression: 'Expression B',
           name: 'Bottle B',
+        },
+      ],
+    });
+
+    expect(candidates).toHaveLength(0);
+  });
+
+  it('marks internal candidates with incomplete identity as reference-only', () => {
+    const candidates = resolveCuratorImageCandidates({
+      record: {
+        recordType: 'wine',
+        name: 'Estate Reserve',
+        producer: 'Producer A',
+      },
+      appImageLibrary: [{ imageUrl: 'library.jpg', confidence: 0.99 }],
+    });
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].referenceOnly).toBe(true);
+    expect(candidates[0].confidence).toBeLessThanOrEqual(0.55);
+  });
+
+  it('rejects wrong-vintage wine image candidates unless vintage neutral', () => {
+    const candidates = resolveCuratorImageCandidates({
+      record: {
+        recordType: 'wine',
+        name: 'Estate Reserve',
+        producer: 'Producer A',
+        vintage: 2020,
+      },
+      verifiedImageAssets: [
+        {
+          imageUrl: 'wrong-vintage.jpg',
+          producer: 'Producer A',
+          wine_name: 'Estate Reserve',
+          vintage: 2021,
+          confidence: 0.95,
         },
       ],
     });

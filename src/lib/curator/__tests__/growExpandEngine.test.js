@@ -42,6 +42,17 @@ describe('generateGrowExpandRecommendations — edge cases', () => {
     });
     expect(Array.isArray(result)).toBe(true);
   });
+
+  it('uses PipeKeeper gating for tobacco/blends', () => {
+    const result = generateGrowExpandRecommendations({
+      pipes: [makePipe({ id: 'p1' }), makePipe({ id: 'p2' })],
+      blends: [makeBlend({ id: 'b1' }), makeBlend({ id: 'b2' }), makeBlend({ id: 'b3' })],
+      bottles: [],
+      activeModules: { pipekeeper: false },
+    });
+    const blendExpansion = result.find((rec) => rec.goal?.startsWith('blend_family_expansion'));
+    expect(blendExpansion).toBeUndefined();
+  });
 });
 
 // ─── Blend family expansion ───────────────────────────────────────────────────
@@ -58,6 +69,7 @@ describe('generateGrowExpandRecommendations — blend expansion', () => {
       blends,
       bottles: [],
       smokingLogs: [],
+      activeModules: { pipekeeper: true },
     });
     const expandRec = result.find((r) => r.goal?.startsWith('blend_family_expansion'));
     expect(expandRec).toBeDefined();
@@ -183,6 +195,7 @@ describe('generateGrowExpandRecommendations — pipe shape expansion', () => {
       pipes,
       blends,
       bottles: [],
+      activeModules: { pipekeeper: true },
     });
     const pipeRec = result.find((r) => r.goal === 'pipe_shape_expansion');
     expect(pipeRec).toBeDefined();
@@ -391,4 +404,3 @@ describe('generateGrowExpandRecommendations — wine expansion', () => {
     expect(result[0].moduleKey).toBe('wine');
   });
 });
-

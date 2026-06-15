@@ -138,6 +138,7 @@ function flattenPairingScores(pairingMatrixPairings = []) {
 
 function parseScoreThreshold(message) {
   const thresholdMatch = message.match(/\b(?:under|below|at most|or lower|<=?)\s*(\d+(?:\.\d+)?)\b/i)
+    || message.match(/\b(?:above|over|at least|or higher|>=?)\s*(\d+(?:\.\d+)?)\b/i)
     || message.match(/\b(\d+(?:\.\d+)?)\s*(?:or lower|or less)\b/i);
   if (!thresholdMatch) return null;
   return Number(thresholdMatch[1]);
@@ -159,7 +160,7 @@ function buildPairingScoreReply(message, context = {}, entityContext = {}) {
 
   const flattened = flattenPairingScores(rows);
   const scored = flattened.filter((entry) => entry.score != null);
-  if (!scored.length) {
+  if (!scored.length && !(/\bmissing|unrated|without\b/.test(lowerMessage) && /\bpair/.test(lowerMessage))) {
     return {
       handled: true,
       reply: 'You have saved pairings, but I don’t see ratings on them yet.',
@@ -172,14 +173,15 @@ function buildPairingScoreReply(message, context = {}, entityContext = {}) {
   const subjectType = namedRecord?._recordType || entityContext?.subject?.type || null;
 
   if (threshold != null) {
+    const wantsAbove = /\b(?:above|over|at least|or higher|>=?)\b/i.test(message);
     const matches = scored
-      .filter((entry) => entry.score <= threshold)
-      .sort((a, b) => a.score - b.score || norm(a.pipeName).localeCompare(norm(b.pipeName)));
+      .filter((entry) => wantsAbove ? entry.score >= threshold : entry.score <= threshold)
+      .sort((a, b) => wantsAbove ? (b.score - a.score || norm(a.pipeName).localeCompare(norm(b.pipeName))) : (a.score - b.score || norm(a.pipeName).localeCompare(norm(b.pipeName))));
     return {
       handled: true,
       reply: matches.length
-        ? `${pluralize(matches.length, 'pairing')} scored ${threshold} or lower: ${formatList(matches.map((entry) => `${entry.pipeName} × ${entry.tobaccoName} (${entry.score})`))}.`
-        : `I don’t see any pairings scored ${threshold} or lower.`,
+        ? `${pluralize(matches.length, 'pairing')} scored ${threshold} or ${wantsAbove ? 'higher' : 'lower'}: ${formatList(matches.map((entry) => `${entry.pipeName} × ${entry.tobaccoName} (${entry.score})`))}.`
+        : `I don’t see any pairings scored ${threshold} or ${wantsAbove ? 'higher' : 'lower'}.`,
     };
   }
 
@@ -228,16 +230,40 @@ function buildPairingScoreReply(message, context = {}, entityContext = {}) {
     };
   }
 
+  if (/\bmissing|unrated|without\b/.test(lowerMessage) && /\bpair/.test(lowerMessage)) {
+    const unrated = flattened.filter((entry) => entry.score == null);
+    return {
+      handled: true,
+      reply: unrated.length
+        ? `${pluralize(unrated.length, 'pairing')} are missing ratings: ${formatList(unrated.map((entry) => `${entry.pipeName} × ${entry.tobaccoName}`))}.`
+        : 'All current pairing rows have ratings.',
+    };
+  }
+
   return null;
 }
 
 function buildMissingFieldReply(message, context = {}) {
   const lowerMessage = norm(message);
   const fields = [
-    { module: 'wine', records: context.wines || [], field: 'vintage', label: 'wines', pattern: /\bwines?\b.*\bmissing\b.*\bvintage\b|\bmissing\b.*\bvintage\b/ },
-    { module: 'wine', records: context.wines || [], field: 'producer', label: 'wines', pattern: /\bwines?\b.*\bmissing\b.*\bproducer\b/ },
-    { module: 'wine', records: context.wines || [], field: 'region', label: 'wines', pattern: /\bwines?\b.*\bmissing\b.*\bregion\b/ },
-    { module: 'cigar', records: context.cigars || [], field: 'wrapper', label: 'cigars', pattern: /\bcigars?\b.*\bmissing\b.*\bwrapper\b/ },
+    { records: context.bottles || [], field: 'abv', label: 'whiskeys', pattern: /\bwhisk(?:e)?y|bottles?\b.*\bmissing\b.*\babv\b|\bmissing\b.*\babv\b/ },
+    { records: context.bottles || [], field: 'region', label: 'whiskeys', pattern: /\bwhisk(?:e)?y|bottles?\b.*\bmissing\b.*\bregion\b/ },
+    { records: context.bottles || [], field: 'country', label: 'whiskeys', pattern: /\bwhisk(?:e)?y|bottles?\b.*\bmissing\b.*\bcountry\b/ },
+    { records: context.wines || [], field: 'vintage', label: 'wines', pattern: /\bwines?\b.*\bmissing\b.*\bvintage\b|\bmissing\b.*\bvintage\b/ },
+    { records: context.wines || [], field: 'producer', label: 'wines', pattern: /\bwines?\b.*\bmissing\b.*\bproducer\b/ },
+    { records: context.wines || [], field: 'region', label: 'wines', pattern: /\bwines?\b.*\bmissing\b.*\bregion\b/ },
+    { records: context.wines || [], field: 'appellation', label: 'wines', pattern: /\bwines?\b.*\bmissing\b.*\bappellation\b/ },
+    { records: context.cigars || [], field: 'wrapper', label: 'cigars', pattern: /\bcigars?\b.*\bmissing\b.*\bwrapper\b/ },
+    { records: context.cigars || [], field: 'binder', label: 'cigars', pattern: /\bcigars?\b.*\bmissing\b.*\bbinder\b/ },
+    { records: context.cigars || [], field: 'filler', label: 'cigars', pattern: /\bcigars?\b.*\bmissing\b.*\bfiller\b/ },
+    { records: context.cigars || [], field: 'vitola', label: 'cigars', pattern: /\bcigars?\b.*\bmissing\b.*\bvitola\b/ },
+    { records: context.blends || [], field: 'blend_type', label: 'blends', pattern: /\b(?:tobacco|blend)s?\b.*\bmissing\b.*\bblend type\b|\bmissing\b.*\bblend type\b/ },
+    { records: context.blends || [], field: 'strength', label: 'blends', pattern: /\b(?:tobacco|blend)s?\b.*\bmissing\b.*\bstrength\b/ },
+    { records: context.blends || [], field: 'cut', label: 'blends', pattern: /\b(?:tobacco|blend)s?\b.*\bmissing\b.*\bcut\b/ },
+    { records: context.blends || [], field: 'tobacco_components', label: 'blends', pattern: /\b(?:tobacco|blend)s?\b.*\bmissing\b.*\bcomponents?\b/ },
+    { records: context.pipes || [], field: 'maker', label: 'pipes', pattern: /\bpipes?\b.*\bmissing\b.*\bmaker\b/ },
+    { records: context.pipes || [], field: 'shape', label: 'pipes', pattern: /\bpipes?\b.*\bmissing\b.*\bshape\b/ },
+    { records: context.pipes || [], field: 'dimensions', label: 'pipes', pattern: /\bpipes?\b.*\bmissing\b.*\bdimensions?\b/ },
   ];
 
   const match = fields.find((entry) => entry.pattern.test(lowerMessage));
@@ -253,7 +279,7 @@ function buildMissingFieldReply(message, context = {}) {
 }
 
 function buildImageGapReply(message, context = {}) {
-  if (!/\b(image|images|photo|photos)\b/i.test(message) || !/\bmissing|need|without\b/i.test(message)) return null;
+  if (!/\b(image|images|photo|photos)\b/i.test(message)) return null;
 
   const lowerMessage = norm(message);
   const buckets = [
@@ -269,6 +295,36 @@ function buildImageGapReply(message, context = {}) {
   const missing = targetBuckets.flatMap((bucket) =>
     bucket.records.filter((record) => extractImages(record).length === 0).map((record) => `${record.name}${selected.length ? '' : ` (${bucket.label})`}`)
   );
+
+  if (/\bplaceholder|generic\b/.test(lowerMessage)) {
+    const placeholders = targetBuckets.flatMap((bucket) =>
+      bucket.records
+        .filter((record) => extractImages(record).some((url) => /placeholder|default|generic/i.test(String(url || ''))))
+        .map((record) => `${record.name}${selected.length ? '' : ` (${bucket.label})`}`)
+    );
+    return {
+      handled: true,
+      reply: placeholders.length
+        ? `${pluralize(placeholders.length, 'record')} use placeholder/generic images: ${formatList(placeholders)}.`
+        : 'I do not see records using placeholder/generic images.',
+    };
+  }
+
+  if (/\breviewed image candidates?|approved image candidates?\b/.test(lowerMessage)) {
+    const reviewed = targetBuckets.flatMap((bucket) =>
+      bucket.records
+        .filter((record) => Array.isArray(record.image_candidates) && record.image_candidates.some((candidate) => candidate?.reviewed === true))
+        .map((record) => `${record.name}${selected.length ? '' : ` (${bucket.label})`}`)
+    );
+    return {
+      handled: true,
+      reply: reviewed.length
+        ? `${pluralize(reviewed.length, 'record')} have reviewed image candidates: ${formatList(reviewed)}.`
+        : 'I do not see reviewed image candidates yet.',
+    };
+  }
+
+  if (!/\bmissing|need|without\b/.test(lowerMessage)) return null;
 
   return {
     handled: true,
@@ -286,6 +342,22 @@ function buildInventoryReply(message, context = {}) {
     return {
       handled: true,
       reply: `You have ${pluralize(unopened.length, 'unopened bottle')}.`,
+    };
+  }
+
+  if (/which bottles are open|open bottles/.test(lowerMessage)) {
+    const open = (context.bottles || []).filter((record) => isBottleOpen(record, context.inventoryUnits || []));
+    return {
+      handled: true,
+      reply: open.length ? `Open bottles: ${formatList(open.map((record) => record.name))}.` : 'I do not see any open bottles.',
+    };
+  }
+
+  if (/which bottles are unopened|unopened bottles/.test(lowerMessage)) {
+    const unopened = (context.bottles || []).filter((record) => !isBottleOpen(record, context.inventoryUnits || []));
+    return {
+      handled: true,
+      reply: unopened.length ? `Unopened bottles: ${formatList(unopened.map((record) => record.name))}.` : 'I do not see any unopened bottles.',
     };
   }
 
@@ -316,6 +388,50 @@ function buildInventoryReply(message, context = {}) {
     };
   }
 
+  const thresholdMatch = lowerMessage.match(/\bunder\s+(\d+(?:\.\d+)?)\s*(sticks?|oz|ounces?|bottles?)\b/);
+  if (thresholdMatch) {
+    const threshold = Number(thresholdMatch[1]);
+    if (!Number.isFinite(threshold)) return null;
+
+    if (/cigars?/.test(lowerMessage)) {
+      const matches = (context.cigars || []).filter((record) => (getLowStockValue(record, 'cigar') ?? Infinity) < threshold);
+      return {
+        handled: true,
+        reply: matches.length
+          ? `Cigars under ${threshold} sticks: ${formatList(matches.map((record) => `${record.name} (${getLowStockValue(record, 'cigar')})`))}.`
+          : `I do not see cigars under ${threshold} sticks.`,
+      };
+    }
+    if (/wines?/.test(lowerMessage) && /\bquantity\s*0|zero\b/.test(lowerMessage)) {
+      const matches = (context.wines || []).filter((record) => (getLowStockValue(record, 'wine') ?? null) === 0);
+      return {
+        handled: true,
+        reply: matches.length
+          ? `Wines with quantity 0: ${formatList(matches.map((record) => record.name))}.`
+          : 'I do not see wines with quantity 0.',
+      };
+    }
+    if (/(tobacco|blend)/.test(lowerMessage)) {
+      const matches = (context.blends || []).filter((record) => (getLowStockValue(record, 'blend') ?? Infinity) < threshold);
+      return {
+        handled: true,
+        reply: matches.length
+          ? `Tobacco blends below ${threshold} oz: ${formatList(matches.map((record) => `${record.name} (${getLowStockValue(record, 'blend')})`))}.`
+          : `I do not see tobacco blends below ${threshold} oz.`,
+      };
+    }
+  }
+
+  if (/\bwines?\b.*\bquantity\b.*\b0|zero\b/.test(lowerMessage)) {
+    const matches = (context.wines || []).filter((record) => (getLowStockValue(record, 'wine') ?? null) === 0);
+    return {
+      handled: true,
+      reply: matches.length
+        ? `Wines with quantity 0: ${formatList(matches.map((record) => record.name))}.`
+        : 'I do not see wines with quantity 0.',
+    };
+  }
+
   if (/\bdo i have any\b|\bdo i own\b/.test(lowerMessage)) {
     const target = message.replace(/.*\b(?:do i have any|do i own)\b/i, '').replace(/\?+$/, '').trim();
     if (!target) return null;
@@ -332,40 +448,132 @@ function buildInventoryReply(message, context = {}) {
 }
 
 function buildUsageReply(message, context = {}) {
-  if (!/\bnot been used recently|haven.?t used recently|unused|not used recently\b/i.test(message)) return null;
-  if (!/\bpipes?\b/.test(message)) return null;
+  const lowerMessage = norm(message);
 
-  const usageIndex = buildUsageIndex(context.smokingLogs || [], ['pipe_id', 'pipeId'], ['date', 'created_date']);
-  const candidates = (context.pipes || [])
-    .map((pipe) => ({
-      name: pipe.name,
-      days: daysSince(usageIndex.get(pipe.id)),
+  if (/\buntasted\b.*\bbottles?\b|\bbottles?\b.*\buntasted\b/.test(lowerMessage)) {
+    const tastedBottleIds = new Set((context.tastingLogs || []).map((log) => log?.bottle_id || log?.bottleId).filter(Boolean));
+    const untasted = (context.bottles || []).filter((record) => !tastedBottleIds.has(record.id));
+    return { handled: true, reply: untasted.length ? `Untasted bottles: ${formatList(untasted.map((record) => record.name))}.` : 'All bottles have tasting history.' };
+  }
+
+  if (/\buntasted\b.*\bwines?\b|\bwines?\b.*\buntasted\b/.test(lowerMessage)) {
+    const tastedWineIds = new Set((context.wineTastingLogs || []).map((log) => log?.wine_id || log?.wineId).filter(Boolean));
+    const untasted = (context.wines || []).filter((record) => !tastedWineIds.has(record.id));
+    return { handled: true, reply: untasted.length ? `Untasted wines: ${formatList(untasted.map((record) => record.name))}.` : 'All wines have tasting history.' };
+  }
+
+  if (/\bcigars?\b.*\bno session history|no session history.*\bcigars?\b/.test(lowerMessage)) {
+    const cigarSessionIds = new Set((context.cigarSessions || []).map((log) => log?.cigar_id || log?.cigarId).filter(Boolean));
+    const matches = (context.cigars || []).filter((record) => !cigarSessionIds.has(record.id));
+    return { handled: true, reply: matches.length ? `Cigars without session history: ${formatList(matches.map((record) => record.name))}.` : 'All cigars have session history.' };
+  }
+
+  if (!/\bnot been used recently|haven.?t used recently|unused|not used recently\b/i.test(message)) return null;
+
+  const wantsBlends = /\bblends?|tobacco\b/i.test(message);
+  const idKeys = wantsBlends ? ['blend_id', 'blendId'] : ['pipe_id', 'pipeId'];
+  const records = wantsBlends ? (context.blends || []) : (context.pipes || []);
+  const usageIndex = buildUsageIndex(context.smokingLogs || [], idKeys, ['date', 'created_date']);
+  const candidates = records
+    .map((record) => ({
+      name: record.name,
+      days: daysSince(usageIndex.get(record.id)),
     }))
     .filter((entry) => entry.days == null || entry.days >= 30)
     .sort((a, b) => (b.days ?? Infinity) - (a.days ?? Infinity));
+  const label = wantsBlends ? 'Blends' : 'Pipes';
 
   return {
     handled: true,
     reply: candidates.length
-      ? `Pipes not used recently: ${formatList(candidates.map((entry) => entry.days == null ? `${entry.name} (never logged)` : `${entry.name} (${entry.days} days)`))}.`
-      : 'I do not see any pipes that have fallen out of recent use.',
+      ? `${label} not used recently: ${formatList(candidates.map((entry) => entry.days == null ? `${entry.name} (never logged)` : `${entry.name} (${entry.days} days)`))}.`
+      : `I do not see any ${label.toLowerCase()} that have fallen out of recent use.`,
   };
 }
 
 function buildValuationReply(message, context = {}) {
-  if (!/\bvalue|worth|valuation\b/i.test(message)) return null;
+  if (!/\bvalue|valuable|worth|valuation\b/i.test(message)) return null;
+
+  const pickValue = (record = {}) => (
+    toNumber(record.estimated_value)
+    ?? toNumber(record.collector_value)
+    ?? toNumber(record.average_market_value)
+    ?? toNumber(record.current_market_value)
+    ?? toNumber(record.retail_price)
+    ?? toNumber(record.purchase_price)
+    ?? null
+  );
 
   const sums = {
-    whiskey: (context.bottles || []).reduce((sum, bottle) => sum + (toNumber(bottle.estimated_value) ?? toNumber(bottle.collector_value) ?? toNumber(bottle.retail_price) ?? 0), 0),
-    cigar: (context.cigars || []).reduce((sum, cigar) => sum + (toNumber(cigar.estimated_value) ?? toNumber(cigar.purchase_price) ?? 0), 0),
-    wine: (context.wines || []).reduce((sum, wine) => sum + (toNumber(wine.estimated_value) ?? toNumber(wine.purchase_price) ?? 0), 0),
+    whiskey: (context.bottles || []).reduce((sum, bottle) => sum + (pickValue(bottle) ?? 0), 0),
+    cigar: (context.cigars || []).reduce((sum, cigar) => sum + (pickValue(cigar) ?? 0), 0),
+    wine: (context.wines || []).reduce((sum, wine) => sum + (pickValue(wine) ?? 0), 0),
   };
   const total = Object.values(sums).reduce((sum, value) => sum + value, 0);
+  const allRecords = [
+    ...(context.bottles || []).map((record) => ({ ...record, _module: 'whiskey' })),
+    ...(context.cigars || []).map((record) => ({ ...record, _module: 'cigar' })),
+    ...(context.wines || []).map((record) => ({ ...record, _module: 'wine' })),
+  ];
+  const valuedRecords = allRecords
+    .map((record) => ({ ...record, _value: pickValue(record) }))
+    .filter((record) => record._value != null);
 
   if (/\btotal\b|\bcollection\b/.test(message)) {
     return {
       handled: true,
       reply: `Current tracked value: ${total.toFixed(2)} total (${sums.whiskey.toFixed(2)} whiskey, ${sums.cigar.toFixed(2)} cigars, ${sums.wine.toFixed(2)} wine).`,
+    };
+  }
+
+  if (/\baverage\b/.test(message)) {
+    const avg = valuedRecords.length ? valuedRecords.reduce((sum, record) => sum + record._value, 0) / valuedRecords.length : 0;
+    return {
+      handled: true,
+      reply: `Average tracked value is ${avg.toFixed(2)} across ${pluralize(valuedRecords.length, 'valued record')}.`,
+    };
+  }
+
+  if (/\bmost valuable|highest value|top value\b/.test(message)) {
+    const ranked = [...valuedRecords].sort((a, b) => b._value - a._value).slice(0, 5);
+    return {
+      handled: true,
+      reply: ranked.length
+        ? `Most valuable records: ${formatList(ranked.map((record) => `${record.name} (${record._value.toFixed(2)})`), 5)}.`
+        : 'No records have valuation data yet.',
+    };
+  }
+
+  if (/\bleast valuable|lowest value\b/.test(message)) {
+    const ranked = [...valuedRecords].sort((a, b) => a._value - b._value).slice(0, 5);
+    return {
+      handled: true,
+      reply: ranked.length
+        ? `Least valuable records: ${formatList(ranked.map((record) => `${record.name} (${record._value.toFixed(2)})`), 5)}.`
+        : 'No records have valuation data yet.',
+    };
+  }
+
+  if (/\bno valuation|missing valuation|without valuation\b/.test(message)) {
+    const missing = allRecords.filter((record) => pickValue(record) == null);
+    return {
+      handled: true,
+      reply: missing.length
+        ? `${pluralize(missing.length, 'record')} missing valuation: ${formatList(missing.map((record) => record.name))}.`
+        : 'All records have valuation data.',
+    };
+  }
+
+  if (/\bstale valuation|outdated valuation\b/.test(message)) {
+    const stale = allRecords.filter((record) => {
+      const days = daysSince(record.valuation_updated_at || record.valuation_updated_date || record.updated_date);
+      return days != null && days >= 180;
+    });
+    return {
+      handled: true,
+      reply: stale.length
+        ? `Stale valuation records (180+ days): ${formatList(stale.map((record) => record.name))}.`
+        : 'I do not see stale valuation records right now.',
     };
   }
 

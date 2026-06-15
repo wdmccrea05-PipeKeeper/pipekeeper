@@ -1033,7 +1033,7 @@ export function generateGrowExpandRecommendations(context = {}) {
   } = context;
 
   const pipeActive    = activeModules.pipekeeper    !== false;
-  const tobaccoActive = activeModules.tobacco       !== false;
+  const tobaccoActive = activeModules.pipekeeper    === true;
   const whiskeyActive = activeModules.whiskeykeeper !== false;
   const cigarActive   = activeModules.cigarkeeper   !== false;
   const wineActive    = !!activeModules.winekeeper;

@@ -30,8 +30,8 @@ export async function buildCuratorContextWithLogging(
   
   // RULE 3: Verify module gating
   const gateCheck = {
-    pipekeeper: stableModuleEnabled.pipekeeper !== false,
-    tobacco: stableModuleEnabled.tobacco !== false,
+    pipekeeper: stableModuleEnabled.pipekeeper === true,
+    tobacco: stableModuleEnabled.pipekeeper === true,
     whiskeykeeper: stableModuleEnabled.whiskeykeeper !== false,
     winekeeper: stableModuleEnabled.winekeeper !== false,
   };
@@ -52,25 +52,27 @@ export async function buildCuratorContextWithLogging(
   }
 
   // RULE 9: Debug logging on context build
-  console.log('CURATOR_CONTEXT_BUILD', {
-    dataCounts: {
-      pipes: context.pipes?.length || 0,
-      blends: context.blends?.length || 0,
-      bottles: context.bottles?.length || 0,
-      wines: context.wines?.length || 0,
-      smokingLogs: context.smokingLogs?.length || 0,
-      tastingLogs: context.tastingLogs?.length || 0,
-      acquisitionItems: context.acquisitionItems?.length || 0,
-      hasWinePreferences: !!(context.preferences?.wine_preferences || context.winePreferences),
-      pairingMatrixRows: context.pairingMatrixPairings?.length || 0,
-      scoredPairingPairs: (context.pairingMatrixPairings || []).reduce(
-        (sum, p) => sum + (Array.isArray(p?.recommendations) ? p.recommendations.filter((r) => r?.score != null).length : 0),
-        0
-      ),
-    },
-    activeModules: stableModuleEnabled,
-    timestamp: new Date().toISOString(),
-  });
+  if (import.meta.env.DEV || stableModuleEnabled?.curatorDebug === true) {
+    console.debug('CURATOR_CONTEXT_BUILD', {
+      dataCounts: {
+        pipes: context.pipes?.length || 0,
+        blends: context.blends?.length || 0,
+        bottles: context.bottles?.length || 0,
+        wines: context.wines?.length || 0,
+        smokingLogs: context.smokingLogs?.length || 0,
+        tastingLogs: context.tastingLogs?.length || 0,
+        acquisitionItems: context.acquisitionItems?.length || 0,
+        hasWinePreferences: !!(context.preferences?.wine_preferences || context.winePreferences),
+        pairingMatrixRows: context.pairingMatrixPairings?.length || 0,
+        scoredPairingPairs: (context.pairingMatrixPairings || []).reduce(
+          (sum, p) => sum + (Array.isArray(p?.recommendations) ? p.recommendations.filter((r) => r?.score != null).length : 0),
+          0
+        ),
+      },
+      activeModules: stableModuleEnabled,
+      timestamp: new Date().toISOString(),
+    });
+  }
 
   return {
     ...context,

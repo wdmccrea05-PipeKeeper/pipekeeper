@@ -3,6 +3,7 @@ import { runCuratorEngines } from './engineRouter.js';
 import { groupRecommendations } from './recommendationGrouping.js';
 import { CURATOR_AUTO_APPLY_POLICY, getCuratorAutoApplyDisposition } from './autoApplyPolicy.js';
 import { resolveCuratorImageCandidates } from './curatorImageCandidates.js';
+import { executeRecommendationAction } from './recommendationActions.js';
 
 function extractImages(record = {}) {
   return [
@@ -15,11 +16,45 @@ function extractImages(record = {}) {
   ].filter(Boolean);
 }
 
-function sumValues(rows = [], keys = []) {
-  return rows.reduce(
-    (sum, row) => sum + keys.reduce((inner, key) => inner + Number(row?.[key] || 0), 0),
-    0
-  );
+function toNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function pickCanonicalValue(record = {}, fields = []) {
+  for (const field of fields) {
+    const value = toNumber(record?.[field]);
+    if (value != null) return value;
+  }
+  return 0;
+}
+
+function sumCanonicalValues(rows = [], fields = []) {
+  return rows.reduce((sum, row) => sum + pickCanonicalValue(row, fields), 0);
+}
+
+function normalizePipeSpecialization(pipe = {}) {
+  if (Array.isArray(pipe?.focus) && pipe.focus.length > 0) {
+    return pipe.focus.map((value) => String(value || '').trim()).filter(Boolean);
+  }
+  if (typeof pipe?.specialization === 'string' && pipe.specialization.trim()) {
+    return [pipe.specialization.trim()];
+  }
+  if (Array.isArray(pipe?.specialization) && pipe.specialization.length > 0) {
+    return pipe.specialization.map((value) => String(value || '').trim()).filter(Boolean);
+  }
+  return [];
+}
+
+function buildDefaultApplyRecommendation({ userEmail } = {}) {
+  return async (finding) => {
+    const result = await executeRecommendationAction(finding, 'apply_fix', { userEmail });
+    if (!result?.ok) {
+      const reason = result?.error || 'Curator apply_fix failed.';
+      throw new Error(reason);
+    }
+    return result;
+  };
 }
 
 function countMissingImageRecords(rows = []) {
@@ -83,7 +118,7 @@ export async function buildCuratorDataSnapshot({
       pairingMatrix: context.pairingMatrixPairings || [],
       pipeSpecializations: (context.pipes || []).map((pipe) => ({
         pipeId: pipe.id,
-        specialization: pipe.specialization || pipe.focus || null,
+        specialization: normalizePipeSpecialization(pipe),
       })),
       inventory: context.blends || [],
       images: [...pipeImages, ...blendImages],
@@ -146,9 +181,9 @@ export async function buildCuratorDataSnapshot({
         countMissingFields(context.blends || [], ['blend_type', 'strength']),
     },
     valuationSummaries: {
-      whiskey: sumValues(context.bottles || [], ['estimated_value', 'collector_value', 'retail_price']),
-      cigar: sumValues(context.cigars || [], ['estimated_value', 'purchase_price']),
-      wine: sumValues(context.wines || [], ['estimated_value', 'purchase_price']),
+      whiskey: sumCanonicalValues(context.bottles || [], ['estimated_value', 'collector_value', 'average_market_value', 'current_market_value', 'retail_price', 'purchase_price']),
+      cigar: sumCanonicalValues(context.cigars || [], ['estimated_value', 'collector_value', 'average_market_value', 'current_market_value', 'retail_price', 'purchase_price']),
+      wine: sumCanonicalValues(context.wines || [], ['estimated_value', 'collector_value', 'average_market_value', 'current_market_value', 'retail_price', 'purchase_price']),
     },
     _context: context,
     _verifiedImageAssets: verifiedImageAssets,
@@ -236,6 +271,7 @@ export async function runCuratorOperation(operationInput = {}, snapshot = {}) {
     autoApplyPolicy = CURATOR_AUTO_APPLY_POLICY,
     applyRecommendation = null,
     autoApplyRuntime = 'dry_run',
+    userEmail = null,
   } = operationInput;
 
   const routerResults = operationInput.routerResults || runCuratorEngines(snapshot._context || {});
@@ -262,10 +298,13 @@ export async function runCuratorOperation(operationInput = {}, snapshot = {}) {
   });
 
   const appliedChanges = [];
-  if (autoApplyRuntime === 'apply' && typeof applyRecommendation === 'function') {
+  const applyHandler = typeof applyRecommendation === 'function'
+    ? applyRecommendation
+    : buildDefaultApplyRecommendation({ userEmail });
+  if (autoApplyRuntime === 'apply' && typeof applyHandler === 'function') {
     for (const finding of autoApplicable) {
       // eslint-disable-next-line no-await-in-loop
-      const result = await applyRecommendation(finding);
+      const result = await applyHandler(finding);
       appliedChanges.push({
         recommendationId: finding.id,
         result,
