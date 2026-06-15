@@ -39,24 +39,24 @@ function hasIdentityMismatch(record = {}, candidate = {}, recordType = '') {
   switch (recordType) {
     case 'blend':
     case 'tobacco':
-      if ((record.manufacturer || candidate.manufacturer) && !exact(record.manufacturer || record.brand, candidate.manufacturer || candidate.brand)) return true;
-      if ((record.name || candidate.name) && !exact(record.name, candidate.name || candidate.blend_name)) return true;
+      if ((candidate.manufacturer || candidate.brand) && !exact(record.manufacturer || record.brand, candidate.manufacturer || candidate.brand)) return true;
+      if ((candidate.name || candidate.blend_name) && !exact(record.name, candidate.name || candidate.blend_name)) return true;
       return false;
     case 'cigar':
-      if ((record.brand || candidate.brand) && !exact(record.brand, candidate.brand)) return true;
-      if ((record.line || candidate.line) && !exact(record.line, candidate.line)) return true;
+      if (candidate.brand && !exact(record.brand, candidate.brand)) return true;
+      if (candidate.line && !exact(record.line, candidate.line)) return true;
       return false;
     case 'wine':
-      if ((record.producer || candidate.producer) && !exact(record.producer, candidate.producer)) return true;
-      if ((record.name || candidate.name) && !exact(record.name, candidate.name || candidate.wine_name)) return true;
+      if (candidate.producer && !exact(record.producer, candidate.producer)) return true;
+      if ((candidate.name || candidate.wine_name) && !exact(record.name, candidate.name || candidate.wine_name)) return true;
       return false;
     case 'bottle':
     case 'whiskey':
-      if ((record.distillery || record.brand || candidate.distillery || candidate.brand) && !exact(record.distillery || record.brand, candidate.distillery || candidate.brand)) return true;
-      if ((record.expression || record.name || candidate.expression || candidate.name) && !exact(record.expression || record.name, candidate.expression || candidate.name)) return true;
+      if ((candidate.distillery || candidate.brand) && !exact(record.distillery || record.brand, candidate.distillery || candidate.brand)) return true;
+      if ((candidate.expression || candidate.name) && !exact(record.expression || record.name, candidate.expression || candidate.name)) return true;
       return false;
     case 'pipe':
-      if ((record.maker || candidate.maker) && !exact(record.maker, candidate.maker)) return true;
+      if (candidate.maker && !exact(record.maker, candidate.maker)) return true;
       return false;
     default:
       return false;

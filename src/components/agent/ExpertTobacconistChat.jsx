@@ -1749,7 +1749,7 @@ export default function ExpertTobacconistChat({
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5" style={{ maxHeight: '55vh', minHeight: '220px' }}>
+      <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5 max-h-[calc(100dvh-14rem)]" style={{ maxHeight: 'min(480px, 50dvh)', minHeight: '220px' }}>
         {messages.length === 0 ? (
           <div>
             <p className="text-[14px] mb-4" style={{ color: '#6B6860' }}>Ask a question or pick a prompt to get started.</p>
