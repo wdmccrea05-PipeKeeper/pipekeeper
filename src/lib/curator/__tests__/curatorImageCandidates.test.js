@@ -32,4 +32,36 @@ describe('resolveCuratorImageCandidates', () => {
     expect(candidates[0].source).toBe('user_similar');
     expect(candidates[1].source).toBe('verified_asset');
   });
+
+  it('forces online candidates to remain review-first', () => {
+    const candidates = resolveCuratorImageCandidates({
+      record: { recordType: 'bottle', name: 'Bottle A', distillery: 'Distillery A', expression: 'Expression A' },
+      onlineCandidates: [{ imageUrl: 'online.jpg', confidence: 5, requiresReview: false }],
+    });
+
+    expect(candidates[0].requiresReview).toBe(true);
+    expect(candidates[0].confidence).toBe(1);
+  });
+
+  it('rejects same-brand wrong-expression whiskey images when identity metadata is present', () => {
+    const candidates = resolveCuratorImageCandidates({
+      record: {
+        recordType: 'bottle',
+        name: 'Bottle A',
+        distillery: 'Distillery A',
+        expression: 'Expression A',
+      },
+      similarRecords: [
+        {
+          id: 'bottle_2',
+          photo_url: 'wrong.jpg',
+          distillery: 'Distillery A',
+          expression: 'Expression B',
+          name: 'Bottle B',
+        },
+      ],
+    });
+
+    expect(candidates).toHaveLength(0);
+  });
 });

@@ -20,6 +20,18 @@ const SAFE_PIPE_FIELDS = new Set([
   'specialization', 'shape', 'bowl_style', 'shank_shape', 'bend', 'sizeClass', 'notes', 'condition',
 ]);
 
+const SAFE_CIGAR_FIELDS = new Set([
+  'brand', 'line', 'vitola', 'wrapper', 'binder', 'filler', 'strength', 'body',
+  'origin', 'country', 'purchase_price', 'estimated_value', 'quantity', 'singles_equivalent',
+  'favorite', 'is_favorite', 'preferred_use', 'strategy_state', 'strategy_reason', 'notes',
+]);
+
+const SAFE_WINE_FIELDS = new Set([
+  'producer', 'vintage', 'region', 'appellation', 'country', 'varietal', 'wine_type', 'style',
+  'purchase_price', 'estimated_value', 'quantity', 'drink_window_status', 'drinking_window_status',
+  'strategy_state', 'strategy_reason', 'notes',
+]);
+
 const CURATOR_IMAGE_FIELDS = new Set([
   'photo',
   'image',
@@ -65,6 +77,10 @@ function getEntityHandle(recordType) {
       return base44.entities.Bottle;
     case 'pipe':
       return base44.entities.Pipe;
+    case 'cigar':
+      return base44.entities.Cigar;
+    case 'wine':
+      return base44.entities.Wine;
     default:
       return null;
   }
@@ -125,6 +141,18 @@ async function updatePipe(recordId, changes) {
   return base44.entities.Pipe.update(recordId, final);
 }
 
+async function updateCigar(recordId, changes) {
+  const final = sanitizeCuratorRecordChanges(changes, { allowedSet: SAFE_CIGAR_FIELDS });
+  if (!Object.keys(final).length) throw new Error('No cigar fields to apply.');
+  return base44.entities.Cigar.update(recordId, final);
+}
+
+async function updateWine(recordId, changes) {
+  const final = sanitizeCuratorRecordChanges(changes, { allowedSet: SAFE_WINE_FIELDS });
+  if (!Object.keys(final).length) throw new Error('No wine fields to apply.');
+  return base44.entities.Wine.update(recordId, final);
+}
+
 async function updateRecord(recordType, recordId, changes) {
   switch ((recordType || '').toLowerCase()) {
     case 'blend':
@@ -135,6 +163,10 @@ async function updateRecord(recordType, recordId, changes) {
       return updateBottle(recordId, changes);
     case 'pipe':
       return updatePipe(recordId, changes);
+    case 'cigar':
+      return updateCigar(recordId, changes);
+    case 'wine':
+      return updateWine(recordId, changes);
     default:
       throw new Error(`Unsupported record type: ${recordType}`);
   }

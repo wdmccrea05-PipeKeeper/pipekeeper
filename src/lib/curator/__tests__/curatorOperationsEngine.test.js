@@ -42,6 +42,7 @@ describe('curatorOperationsEngine', () => {
         cigars: [{ id: 'cigar_1', name: 'Cigar A' }],
         smokingLogs: [{ id: 'log_1' }],
         tastingLogs: [{ id: 'tasting_1' }],
+        wineTastingLogs: [{ id: 'wine_tasting_1' }],
         cigarSessions: [{ id: 'session_1' }],
         inventoryUnits: [{ id: 'inventory_1' }],
         pairingMatrixPairings: [{ pipe_id: 'pipe_1', recommendations: [{ tobacco_name: 'Blend A', score: 4 }] }],
@@ -56,6 +57,8 @@ describe('curatorOperationsEngine', () => {
     expect(snapshot.whiskeykeeper.bottles).toHaveLength(1);
     expect(snapshot.cigarkeeper.cigars).toHaveLength(1);
     expect(snapshot.winekeeper.wines).toHaveLength(1);
+    expect(snapshot.winekeeper.tastingLogs).toHaveLength(1);
+    expect(snapshot.entitlements.cigarkeeper).toBe(null);
     expect(snapshot.userUploadedImages[0].imageUrl).toBe('pipe.jpg');
     expect(snapshot.diagnostics.counts.pairings).toBe(1);
   });
@@ -113,5 +116,6 @@ describe('curatorOperationsEngine', () => {
     expect(workspace).toHaveProperty('pairings');
     expect(workspace).toHaveProperty('operations.recordOptimization');
     expect(workspace.operations.pairings).toHaveProperty('findings');
+    expect(workspace.operations.planSession).toHaveProperty('findings');
   });
 });

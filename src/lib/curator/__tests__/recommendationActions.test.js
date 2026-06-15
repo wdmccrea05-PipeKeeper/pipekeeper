@@ -20,6 +20,14 @@ vi.mock('@/api/base44Client', () => ({
         update: vi.fn(async (id, payload) => ({ id, ...payload })),
         get: vi.fn(async (id) => ({ id, specialization: null })),
       },
+      Cigar: {
+        update: vi.fn(async (id, payload) => ({ id, ...payload })),
+        get: vi.fn(async (id) => ({ id, preferred_use: null })),
+      },
+      Wine: {
+        update: vi.fn(async (id, payload) => ({ id, ...payload })),
+        get: vi.fn(async (id) => ({ id, region: null })),
+      },
     },
   },
 }));
@@ -97,5 +105,68 @@ describe('recommendationActions', () => {
 
     expect(result.ok).toBe(false);
     expect(result.error).toBe('No record updates were applied.');
+  });
+
+  it('applies reviewed cigar changes through the canonical entity updater', async () => {
+    const result = await executeRecommendationAction(
+      {
+        id: 'rec_cigar',
+        goal: 'cigar_missing_metadata',
+        items: [
+          {
+            id: 'cigar_1',
+            recordId: 'cigar_1',
+            recordType: 'cigar',
+            proposedChange: {
+              confidence: 0.9,
+              payload: {
+                wrapper: 'Maduro',
+                notes: 'Updated cigar metadata',
+              },
+            },
+          },
+        ],
+      },
+      'approve_changes',
+      { userEmail: 'user@example.com' }
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.updatedRecords[0]).toMatchObject({
+      id: 'cigar_1',
+      wrapper: 'Maduro',
+    });
+  });
+
+  it('applies reviewed wine changes through the canonical entity updater', async () => {
+    const result = await executeRecommendationAction(
+      {
+        id: 'rec_wine',
+        goal: 'wine_missing_metadata',
+        items: [
+          {
+            id: 'wine_1',
+            recordId: 'wine_1',
+            recordType: 'wine',
+            proposedChange: {
+              confidence: 0.9,
+              payload: {
+                region: 'Burgundy',
+                vintage: 2019,
+              },
+            },
+          },
+        ],
+      },
+      'apply_fix',
+      { userEmail: 'user@example.com' }
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.updatedRecords[0]).toMatchObject({
+      id: 'wine_1',
+      region: 'Burgundy',
+      vintage: 2019,
+    });
   });
 });

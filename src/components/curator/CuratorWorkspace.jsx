@@ -169,6 +169,7 @@ export default function CuratorWorkspace({
   const [error, setError] = useState('');
   const [rawSections, setRawSections] = useState([]);
   const [pairings, setPairings] = useState([]);
+  const [planSessionCandidates, setPlanSessionCandidates] = useState([]);
   const [threadId, setThreadId] = useState(null);
   const [preFillMessage, setPreFillMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -205,7 +206,7 @@ export default function CuratorWorkspace({
   const buildContext = useCallback(async () => {
     if (!user?.email) {
       return {
-        pipes: [], blends: [], bottles: [], wines: [], smokingLogs: [], tastingLogs: [],
+        pipes: [], blends: [], bottles: [], wines: [], smokingLogs: [], tastingLogs: [], wineTastingLogs: [],
         cigars: [], cigarSessions: [], inventoryUnits: [], acquisitionItems: [], wantListItems: [],
         preferences: {}, activeModules: stableModuleEnabled, cigarModuleActive: false,
       };
@@ -221,6 +222,7 @@ export default function CuratorWorkspace({
     const [
       pipes, blends, bottles, wines,
       smokingLogs, tastingLogs,
+      wineTastingLogs,
       cigars, cigarSessions,
       inventoryUnits, acquisitionItems,
       activePairingMatrixRows,
@@ -232,6 +234,7 @@ export default function CuratorWorkspace({
       wineActive    ? safeFilter(base44.entities.Wine,           { created_by: user.email }, '-updated_date',  200, 'wines')          : Promise.resolve([]),
       pipeActive    ? safeFilter(base44.entities.SmokingLog,     { created_by: user.email }, '-date',           300, 'smokingLogs')    : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.TastingLog,     { created_by: user.email }, '-tasting_date',   200, 'tastingLogs')   : Promise.resolve([]),
+      wineActive    ? safeFilter(base44.entities.WineTasting,    { created_by: user.email }, '-date',           300, 'wineTastingLogs') : Promise.resolve([]),
       cigarActive   ? safeFilter(base44.entities.Cigar,          { created_by: user.email }, '-updated_date',   200, 'cigars')        : Promise.resolve([]),
       cigarActive   ? safeFilter(base44.entities.CigarSession,   { created_by: user.email }, '-date',           300, 'cigarSessions') : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null,        500, 'inventoryUnits') : Promise.resolve([]),
@@ -286,6 +289,7 @@ export default function CuratorWorkspace({
       wines:          wineActive    ? wines    : [],
       smokingLogs:    pipeActive    ? smokingLogs  : [],
       tastingLogs:    whiskeyActive ? tastingLogs  : [],
+      wineTastingLogs: wineActive   ? wineTastingLogs : [],
       cigars:         cigarActive   ? cigars : [],
       cigarSessions:  cigarActive   ? cigarSessions : [],
       inventoryUnits: whiskeyActive ? inventoryUnits : [],
@@ -293,7 +297,11 @@ export default function CuratorWorkspace({
       wantListItems:    normalizedAcquisitions,
       // Pipe-tobacco pairing compatibility scores from the active PairingMatrix record
       pairingMatrixPairings,
-      preferences: {},
+      preferences: {
+        measurement_system: user?.measurement_system || user?.preferred_measurement_system || null,
+        currency: user?.preferred_currency || user?.currency || null,
+        language: user?.preferred_language || user?.language || null,
+      },
       activeModules: stableModuleEnabled,
       cigarModuleActive: cigarActive,
     };
@@ -305,6 +313,7 @@ export default function CuratorWorkspace({
         setLoading(false);
         setRawSections([]);
         setPairings([]);
+        setPlanSessionCandidates([]);
         publishCounts([], []);
         return;
       }
@@ -323,6 +332,10 @@ export default function CuratorWorkspace({
           stableModuleEnabled,
         });
         const workspaceResults = await runCuratorWorkspaceOperations(snapshot);
+        const planSessionResult = await runCuratorOperation(
+          { operationType: 'plan_session', routerResults: workspaceResults.routerResults },
+          snapshot
+        );
         const context = snapshot._context || {};
         const groupedSections = workspaceResults.sections || [];
 
@@ -334,12 +347,14 @@ export default function CuratorWorkspace({
 
         rawSectionsRef.current = groupedSections;
         setRawSections(groupedSections);
+        setPlanSessionCandidates(planSessionResult.findings || []);
         publishCounts(groupedSections, workspaceResults.pairings || []);
       } catch (err) {
         console.error('[Curator] primary load failed:', err);
         if (!mountedRef.current) return;
         setRawSections([]);
         setPairings([]);
+        setPlanSessionCandidates([]);
         setError(err?.message || 'Curator could not load.');
         publishCounts([], []);
       } finally {
@@ -631,7 +646,7 @@ export default function CuratorWorkspace({
 
     case 'plan_session':
       return (
-        <>{modals}<CuratorPlanSession collectionContext={ctx} activeModules={moduleEnabled} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
+        <>{modals}<CuratorPlanSession collectionContext={ctx} candidates={planSessionCandidates} activeModules={moduleEnabled} onAction={handleAction} onRefresh={handleRefresh} isRefreshing={isRefreshing} /></>
       );
 
     case 'grow_expand':

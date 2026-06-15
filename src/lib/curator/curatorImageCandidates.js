@@ -8,6 +8,12 @@ const IMAGE_SOURCE_PRIORITY = {
 
 const IMAGE_FIELD_KEYS = ['photo', 'image', 'image_url', 'photo_url', 'primary_photo', 'photos'];
 
+function clampConfidence(value, fallback = 0.6) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.max(0, Math.min(1, numeric));
+}
+
 function normalizeList(value) {
   return Array.isArray(value) ? value.filter(Boolean) : value ? [value] : [];
 }
@@ -25,6 +31,38 @@ function normalizeSource(source = '') {
   return 'online';
 }
 
+function exact(a, b) {
+  return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+}
+
+function hasIdentityMismatch(record = {}, candidate = {}, recordType = '') {
+  switch (recordType) {
+    case 'blend':
+    case 'tobacco':
+      if ((record.manufacturer || candidate.manufacturer) && !exact(record.manufacturer || record.brand, candidate.manufacturer || candidate.brand)) return true;
+      if ((record.name || candidate.name) && !exact(record.name, candidate.name || candidate.blend_name)) return true;
+      return false;
+    case 'cigar':
+      if ((record.brand || candidate.brand) && !exact(record.brand, candidate.brand)) return true;
+      if ((record.line || candidate.line) && !exact(record.line, candidate.line)) return true;
+      return false;
+    case 'wine':
+      if ((record.producer || candidate.producer) && !exact(record.producer, candidate.producer)) return true;
+      if ((record.name || candidate.name) && !exact(record.name, candidate.name || candidate.wine_name)) return true;
+      return false;
+    case 'bottle':
+    case 'whiskey':
+      if ((record.distillery || record.brand || candidate.distillery || candidate.brand) && !exact(record.distillery || record.brand, candidate.distillery || candidate.brand)) return true;
+      if ((record.expression || record.name || candidate.expression || candidate.name) && !exact(record.expression || record.name, candidate.expression || candidate.name)) return true;
+      return false;
+    case 'pipe':
+      if ((record.maker || candidate.maker) && !exact(record.maker, candidate.maker)) return true;
+      return false;
+    default:
+      return false;
+  }
+}
+
 function buildCandidate({
   imageUrl,
   source,
@@ -33,6 +71,7 @@ function buildCandidate({
   matchedFields = [],
   warnings = [],
   requiresReview = true,
+  ...identity
 }) {
   return {
     imageUrl,
@@ -42,6 +81,7 @@ function buildCandidate({
     matchedFields,
     warnings,
     requiresReview,
+    ...identity,
   };
 }
 
@@ -86,6 +126,7 @@ export function resolveCuratorImageCandidates({
         matchReason: `Previously uploaded image found on a similar ${recordType || 'collection'} record.`,
         matchedFields,
         warnings: ['Verify that the product identity is exact before replacing the current image.'],
+        ...similar,
       }));
     });
   });
@@ -95,10 +136,11 @@ export function resolveCuratorImageCandidates({
     candidates.push(buildCandidate({
       imageUrl: entry.imageUrl,
       source: 'app_library',
-      confidence: Number(entry.confidence ?? 0.9),
+      confidence: clampConfidence(entry.confidence, 0.9),
       matchReason: entry.matchReason || 'Matched from the internal app image library.',
       matchedFields: entry.matchedFields || matchedFields,
       warnings: entry.warnings || [],
+      ...entry,
     }));
   });
 
@@ -107,10 +149,11 @@ export function resolveCuratorImageCandidates({
     candidates.push(buildCandidate({
       imageUrl: entry.imageUrl,
       source: 'verified_asset',
-      confidence: Number(entry.confidence ?? 0.86),
+      confidence: clampConfidence(entry.confidence, 0.86),
       matchReason: entry.matchReason || 'Matched from a previously verified asset.',
       matchedFields: entry.matchedFields || matchedFields,
       warnings: entry.warnings || [],
+      ...entry,
     }));
   });
 
@@ -119,16 +162,18 @@ export function resolveCuratorImageCandidates({
     candidates.push(buildCandidate({
       imageUrl: entry?.imageUrl,
       source,
-      confidence: Number(entry?.confidence ?? 0.6),
+      confidence: clampConfidence(entry?.confidence, 0.6),
       matchReason: entry?.matchReason || 'Online candidate requires review before applying.',
       matchedFields: entry?.matchedFields || matchedFields,
       warnings: entry?.warnings || ['Online images are suggestions until approved.'],
-      requiresReview: entry?.requiresReview ?? true,
+      requiresReview: true,
+      ...entry,
     }));
   });
 
   return candidates
     .filter((candidate) => candidate.imageUrl)
+    .filter((candidate) => !hasIdentityMismatch(record, candidate, recordType))
     .sort((a, b) => {
       const sourceDelta = (IMAGE_SOURCE_PRIORITY[a.source] || 99) - (IMAGE_SOURCE_PRIORITY[b.source] || 99);
       if (sourceDelta !== 0) return sourceDelta;

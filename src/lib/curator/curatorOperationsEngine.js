@@ -92,6 +92,7 @@ export async function buildCuratorDataSnapshot({
       bottles: context.bottles || [],
       inventoryUnits: context.inventoryUnits || [],
       tastingLogs: context.tastingLogs || [],
+      purchaseData: context.bottles || [],
       valuationData: (context.bottles || []).map((bottle) => ({
         recordId: bottle.id,
         estimated_value: bottle.estimated_value || bottle.collector_value || bottle.retail_price || 0,
@@ -102,6 +103,7 @@ export async function buildCuratorDataSnapshot({
       cigars: context.cigars || [],
       sessions: context.cigarSessions || [],
       inventory: context.cigars || [],
+      purchaseData: context.cigars || [],
       valuationData: (context.cigars || []).map((cigar) => ({
         recordId: cigar.id,
         estimated_value: cigar.estimated_value || cigar.purchase_price || 0,
@@ -112,6 +114,7 @@ export async function buildCuratorDataSnapshot({
       wines: context.wines || [],
       tastingLogs: context.wineTastingLogs || [],
       inventory: context.wines || [],
+      purchaseData: context.wines || [],
       valuationData: (context.wines || []).map((wine) => ({
         recordId: wine.id,
         estimated_value: wine.estimated_value || wine.purchase_price || 0,
@@ -119,6 +122,13 @@ export async function buildCuratorDataSnapshot({
       images: wineImages,
     },
     acquisitionItems: context.acquisitionItems || [],
+    entitlements: {
+      pipekeeper: user?.pipekeeper_paid ?? null,
+      whiskeykeeper: user?.whiskeykeeper_paid ?? null,
+      cigarkeeper: user?.cigarkeeper_paid ?? null,
+      winekeeper: user?.winekeeper_paid ?? null,
+      hasPro: user?.hasPro ?? user?.hasPaid ?? null,
+    },
     userPreferences: context.preferences || {},
     appImageLibrary,
     userUploadedImages: [...pipeImages, ...blendImages, ...bottleImages, ...cigarImages, ...wineImages],
@@ -289,12 +299,13 @@ export async function runCuratorWorkspaceOperations(snapshot = {}) {
     ...(routerResults.growExpand || []),
   ]);
 
-  const [recordOptimization, collectionOptimization, purchaseRestock, growExpand, pairings] = await Promise.all([
+  const [recordOptimization, collectionOptimization, purchaseRestock, growExpand, pairings, planSession] = await Promise.all([
     runCuratorOperation({ operationType: 'record_optimization', routerResults }, snapshot),
     runCuratorOperation({ operationType: 'collection_optimization', routerResults }, snapshot),
     runCuratorOperation({ operationType: 'purchase_restock', routerResults }, snapshot),
     runCuratorOperation({ operationType: 'grow_expand', routerResults }, snapshot),
     runCuratorOperation({ operationType: 'pairings', routerResults }, snapshot),
+    runCuratorOperation({ operationType: 'plan_session', routerResults }, snapshot),
   ]);
 
   return {
@@ -307,6 +318,7 @@ export async function runCuratorWorkspaceOperations(snapshot = {}) {
       purchaseRestock,
       growExpand,
       pairings,
+      planSession,
     },
   };
 }
