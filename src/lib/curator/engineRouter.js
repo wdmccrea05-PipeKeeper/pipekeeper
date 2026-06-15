@@ -28,60 +28,52 @@ export function runCuratorEngines(curatorContext = {}) {
     _engineLog: [],
   };
 
-  // ─── Record Optimization ───────────────────────────────────
+  let sharedRecommendations = [];
   try {
-    const recs = generateRecommendations(curatorContext);
-    const filtered = recs.filter((r) => r?.category === 'record_optimization');
+    sharedRecommendations = generateRecommendations(curatorContext) || [];
+  } catch (err) {
+    const error = err?.message || String(err);
+    ['recordOptimization', 'collectionOptimization', 'purchaseRestock'].forEach((engine) => {
+      console.error('ENGINE_FAILURE', { engine, error });
+      results._engineLog.push({
+        engine,
+        status: 'error',
+        error,
+      });
+    });
+    sharedRecommendations = [];
+  }
+
+  // ─── Record Optimization ───────────────────────────────────
+  if (!results._engineLog.some((entry) => entry.engine === 'recordOptimization' && entry.status === 'error')) {
+    const filtered = sharedRecommendations.filter((r) => r?.category === 'record_optimization');
     results.recordOptimization = filtered;
     results._engineLog.push({
       engine: 'recordOptimization',
       status: filtered.length > 0 ? 'success' : 'no_recommendations',
       count: filtered.length,
     });
-  } catch (err) {
-    console.error('ENGINE_FAILURE', { engine: 'recordOptimization', error: err.message });
-    results._engineLog.push({
-      engine: 'recordOptimization',
-      status: 'error',
-      error: err.message,
-    });
   }
 
   // ─── Collection Optimization ───────────────────────────────
-  try {
-    const recs = generateRecommendations(curatorContext);
-    const filtered = recs.filter((r) => r?.category === 'collection_optimization');
+  if (!results._engineLog.some((entry) => entry.engine === 'collectionOptimization' && entry.status === 'error')) {
+    const filtered = sharedRecommendations.filter((r) => r?.category === 'collection_optimization');
     results.collectionOptimization = filtered;
     results._engineLog.push({
       engine: 'collectionOptimization',
       status: filtered.length > 0 ? 'success' : 'no_recommendations',
       count: filtered.length,
     });
-  } catch (err) {
-    console.error('ENGINE_FAILURE', { engine: 'collectionOptimization', error: err.message });
-    results._engineLog.push({
-      engine: 'collectionOptimization',
-      status: 'error',
-      error: err.message,
-    });
   }
 
   // ─── Purchase & Restock ────────────────────────────────────
-  try {
-    const recs = generateRecommendations(curatorContext);
-    const filtered = recs.filter((r) => r?.category === 'purchase');
+  if (!results._engineLog.some((entry) => entry.engine === 'purchaseRestock' && entry.status === 'error')) {
+    const filtered = sharedRecommendations.filter((r) => r?.category === 'purchase');
     results.purchaseRestock = filtered;
     results._engineLog.push({
       engine: 'purchaseRestock',
       status: filtered.length > 0 ? 'success' : 'no_recommendations',
       count: filtered.length,
-    });
-  } catch (err) {
-    console.error('ENGINE_FAILURE', { engine: 'purchaseRestock', error: err.message });
-    results._engineLog.push({
-      engine: 'purchaseRestock',
-      status: 'error',
-      error: err.message,
     });
   }
 

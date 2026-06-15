@@ -79,4 +79,42 @@ describe('answerCuratorDeterministicQuery', () => {
     expect(result.handled).toBe(true);
     expect(result.reply).toBe('You have 1 unopened bottle.');
   });
+
+  it('answers open bottle listing deterministically', () => {
+    const result = answerCuratorDeterministicQuery('Which bottles are open?', {
+      bottles: [{ id: 'b1', name: 'Bottle A', is_open: true }, { id: 'b2', name: 'Bottle B', is_open: false }],
+      inventoryUnits: [],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('Open bottles: Bottle A');
+  });
+
+  it('answers cigars under threshold deterministically', () => {
+    const result = answerCuratorDeterministicQuery('Which cigars are under 5 sticks?', {
+      cigars: [{ id: 'c1', name: 'Cigar A', quantity: 4 }, { id: 'c2', name: 'Cigar B', quantity: 8 }],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('Cigar A (4)');
+    expect(result.reply).not.toContain('Cigar B');
+  });
+
+  it('handles valuation ranking deterministically', () => {
+    const result = answerCuratorDeterministicQuery('What are my most valuable records?', {
+      bottles: [{ id: 'b1', name: 'Bottle A', estimated_value: 120 }],
+      wines: [{ id: 'w1', name: 'Wine A', purchase_price: 30 }],
+      cigars: [{ id: 'c1', name: 'Cigar A', estimated_value: 40 }],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('Bottle A (120.00)');
+  });
+
+  it('handles missing pairing ratings deterministically', () => {
+    const result = answerCuratorDeterministicQuery('Show missing pairing matrix rows', {
+      pairingMatrixPairings: [
+        { pipe_name: 'Pipe A', recommendations: [{ tobacco_name: 'Blend A', score: null }] },
+      ],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('missing ratings');
+  });
 });

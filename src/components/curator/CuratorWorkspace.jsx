@@ -529,12 +529,33 @@ export default function CuratorWorkspace({
   );
 
   const handleRefresh = useCallback(async () => {
+    const taskSurfaces = new Set(['record_optimization', 'collection_optimization', 'purchase_restock']);
+    if (taskSurfaces.has(activeSurface)) {
+      const snapshot = await buildCuratorDataSnapshot({
+        user,
+        buildContextFn: buildContext,
+        stableModuleEnabled,
+      });
+      const workspaceResults = await runCuratorWorkspaceOperations(snapshot);
+      await runCuratorOperation(
+        {
+          operationType: activeSurface,
+          routerResults: workspaceResults.routerResults,
+          autoApplyRuntime: 'apply',
+          userEmail: user?.email,
+        },
+        snapshot
+      );
+      await loadPrimaryData({ silent: true });
+      return;
+    }
+
     if (activeSurface === 'pairings') {
       await loadPairings({ reshuffle: true });
       return;
     }
     await loadPrimaryData({ silent: true });
-  }, [activeSurface, loadPairings, loadPrimaryData]);
+  }, [activeSurface, buildContext, loadPairings, loadPrimaryData, stableModuleEnabled, user, user?.email]);
 
   if (loading) {
     return (

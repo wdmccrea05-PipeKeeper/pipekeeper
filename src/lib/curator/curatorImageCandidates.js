@@ -35,6 +35,61 @@ function exact(a, b) {
   return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
 }
 
+function hasValue(value) {
+  return value != null && String(value).trim() !== '';
+}
+
+function getIdentityRules(recordType = '') {
+  switch (recordType) {
+    case 'blend':
+    case 'tobacco':
+      return {
+        required: [['manufacturer', 'brand'], ['name', 'blend_name']],
+        optionalBoost: ['blend_type', 'strength', 'cut'],
+        mismatchChecks: [['manufacturer', 'brand'], ['name', 'blend_name']],
+      };
+    case 'cigar':
+      return {
+        required: [['brand'], ['line']],
+        optionalBoost: ['vitola', 'wrapper', 'binder', 'filler'],
+        mismatchChecks: [['brand'], ['line']],
+      };
+    case 'wine':
+      return {
+        required: [['producer'], ['name', 'wine_name']],
+        optionalBoost: ['vintage', 'region', 'appellation'],
+        mismatchChecks: [['producer'], ['name', 'wine_name']],
+      };
+    case 'bottle':
+    case 'whiskey':
+      return {
+        required: [['distillery', 'brand'], ['expression', 'name']],
+        optionalBoost: ['age', 'proof', 'finish', 'batch'],
+        mismatchChecks: [['distillery', 'brand'], ['expression', 'name']],
+      };
+    case 'pipe':
+      return {
+        required: [['maker'], ['model', 'shape', 'stamping', 'name']],
+        optionalBoost: ['shape', 'stamping'],
+        mismatchChecks: [['maker'], ['model', 'shape', 'stamping', 'name']],
+      };
+    default:
+      return { required: [], optionalBoost: [], mismatchChecks: [] };
+  }
+}
+
+function pickIdentityValue(source = {}, aliases = []) {
+  return aliases.map((key) => source?.[key]).find((value) => hasValue(value)) || null;
+}
+
+function hasGroupValues(source = {}, aliases = []) {
+  return hasValue(pickIdentityValue(source, aliases));
+}
+
+function isVintageNeutral(candidate = {}) {
+  return candidate?.vintageNeutral === true || candidate?.vintage_neutral === true || /vintage[-_\s]?neutral/i.test(String(candidate?.matchReason || ''));
+}
+
 function hasIdentityMismatch(record = {}, candidate = {}, recordType = '') {
   switch (recordType) {
     case 'blend':
@@ -49,6 +104,7 @@ function hasIdentityMismatch(record = {}, candidate = {}, recordType = '') {
     case 'wine':
       if (candidate.producer && !exact(record.producer, candidate.producer)) return true;
       if ((candidate.name || candidate.wine_name) && !exact(record.name, candidate.name || candidate.wine_name)) return true;
+      if (hasValue(record.vintage) && hasValue(candidate.vintage) && !exact(record.vintage, candidate.vintage) && !isVintageNeutral(candidate)) return true;
       return false;
     case 'bottle':
     case 'whiskey':
@@ -61,6 +117,60 @@ function hasIdentityMismatch(record = {}, candidate = {}, recordType = '') {
     default:
       return false;
   }
+}
+
+function validateIdentityCoverage(record = {}, candidate = {}, recordType = '', source = '') {
+  const rules = getIdentityRules(recordType);
+  const requiredGroups = rules.required || [];
+  const requiredMatches = requiredGroups.filter((aliases) => hasGroupValues(candidate, aliases));
+  const requiredCount = requiredMatches.length;
+  const optionalMatched = (rules.optionalBoost || []).filter((field) => hasValue(candidate?.[field]));
+  const isInternalSource = ['app_library', 'verified_asset', 'online'].includes(source);
+
+  const mismatch = hasIdentityMismatch(record, candidate, recordType);
+  if (mismatch) {
+    return {
+      valid: false,
+      referenceOnly: false,
+      confidenceCap: 0,
+      warnings: ['Candidate identity conflicts with this record and was excluded.'],
+    };
+  }
+
+  if (!isInternalSource) {
+    return {
+      valid: true,
+      referenceOnly: false,
+      confidenceCap: 1,
+      warnings: [],
+    };
+  }
+
+  if (requiredCount < requiredGroups.length) {
+    return {
+      valid: true,
+      referenceOnly: true,
+      confidenceCap: 0.55,
+      warnings: ['Identity metadata is incomplete; candidate is reference-only until exact identity is proven.'],
+    };
+  }
+
+  return {
+    valid: true,
+    referenceOnly: false,
+    confidenceCap: optionalMatched.length > 0 ? 1 : 0.89,
+    warnings: [],
+  };
+}
+
+export function validateCuratorImageCandidateForRecord({
+  record = {},
+  candidate = {},
+  recordType: explicitRecordType = '',
+} = {}) {
+  const recordType = String(explicitRecordType || record?.recordType || record?.type || '').toLowerCase();
+  const source = normalizeSource(candidate?.source);
+  return validateIdentityCoverage(record, candidate, recordType, source);
 }
 
 function buildCandidate({
@@ -81,6 +191,7 @@ function buildCandidate({
     matchedFields,
     warnings,
     requiresReview,
+    resolvedBy: 'resolveCuratorImageCandidates',
     ...identity,
   };
 }
@@ -203,7 +314,23 @@ export function resolveCuratorImageCandidates({
 
   return candidates
     .filter((candidate) => candidate.imageUrl)
-    .filter((candidate) => !hasIdentityMismatch(record, candidate, recordType))
+    .map((candidate) => {
+      const validation = validateIdentityCoverage(record, candidate, recordType, candidate.source);
+      if (!validation.valid) return null;
+
+      const warnings = [...(candidate.warnings || []), ...(validation.warnings || [])];
+      const confidence = Math.min(Number(candidate.confidence || 0), validation.confidenceCap ?? 1);
+      const referenceOnly = validation.referenceOnly === true;
+
+      return {
+        ...candidate,
+        confidence,
+        warnings,
+        requiresReview: candidate.requiresReview || referenceOnly,
+        referenceOnly,
+      };
+    })
+    .filter(Boolean)
     .sort((a, b) => {
       const sourceDelta = (IMAGE_SOURCE_PRIORITY[a.source] || 99) - (IMAGE_SOURCE_PRIORITY[b.source] || 99);
       if (sourceDelta !== 0) return sourceDelta;

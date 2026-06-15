@@ -61,6 +61,34 @@ describe('curatorOperationsEngine', () => {
     expect(snapshot.entitlements.cigarkeeper).toBe(null);
     expect(snapshot.userUploadedImages[0].imageUrl).toBe('pipe.jpg');
     expect(snapshot.diagnostics.counts.pairings).toBe(1);
+    expect(snapshot.pipekeeper.pipeSpecializations[0].specialization).toEqual(['Virginia']);
+  });
+
+  it('uses one canonical valuation field per record without double-counting', async () => {
+    const snapshot = await buildCuratorDataSnapshot({
+      user: { email: 'user@example.com' },
+      stableModuleEnabled: { pipekeeper: true, whiskeykeeper: true, winekeeper: true, cigarkeeper: true },
+      buildContextFn: vi.fn().mockResolvedValue({
+        pipes: [],
+        blends: [],
+        bottles: [{ id: 'b1', estimated_value: 100, collector_value: 120, retail_price: 80 }],
+        cigars: [{ id: 'c1', estimated_value: 20, purchase_price: 12 }],
+        wines: [{ id: 'w1', collector_value: 55, purchase_price: 30 }],
+        smokingLogs: [],
+        tastingLogs: [],
+        wineTastingLogs: [],
+        cigarSessions: [],
+        inventoryUnits: [],
+        pairingMatrixPairings: [],
+        acquisitionItems: [],
+        preferences: {},
+        activeModules: { pipekeeper: true, whiskeykeeper: true, winekeeper: true, cigarkeeper: true },
+      }),
+    });
+
+    expect(snapshot.valuationSummaries.whiskey).toBe(100);
+    expect(snapshot.valuationSummaries.cigar).toBe(20);
+    expect(snapshot.valuationSummaries.wine).toBe(55);
   });
 
   it('auto-applies task-based findings when apply mode is enabled', async () => {

@@ -688,14 +688,25 @@ function fallbackGapAnalysis(context = {}) {
 
 // PHASE 5: Context integrity validation
 function validateCuratorContext(context = {}) {
+  const normalizeArray = (value) => (Array.isArray(value) ? value : []);
   return {
+    ...context,
     activeModules: context.activeModules || {},
-    pipes: Array.isArray(context.pipes) ? context.pipes : [],
-    blends: Array.isArray(context.blends) ? context.blends : [],
-    bottles: Array.isArray(context.bottles) ? context.bottles : [],
-    smokingLogs: Array.isArray(context.smokingLogs) ? context.smokingLogs : [],
-    tastingLogs: Array.isArray(context.tastingLogs) ? context.tastingLogs : [],
-    acquisitionItems: Array.isArray(context.acquisitionItems) ? context.acquisitionItems : (Array.isArray(context.wantListItems) ? context.wantListItems : []),
+    pipes: normalizeArray(context.pipes),
+    blends: normalizeArray(context.blends),
+    bottles: normalizeArray(context.bottles),
+    wines: normalizeArray(context.wines),
+    cigars: normalizeArray(context.cigars),
+    smokingLogs: normalizeArray(context.smokingLogs),
+    tastingLogs: normalizeArray(context.tastingLogs),
+    cigarSessions: normalizeArray(context.cigarSessions),
+    wineTastingLogs: normalizeArray(context.wineTastingLogs),
+    inventoryUnits: normalizeArray(context.inventoryUnits),
+    pairingMatrixPairings: normalizeArray(context.pairingMatrixPairings),
+    acquisitionItems: normalizeArray(context.acquisitionItems).length
+      ? normalizeArray(context.acquisitionItems)
+      : normalizeArray(context.wantListItems),
+    userUploadedImages: normalizeArray(context.userUploadedImages),
   };
 }
 
@@ -842,7 +853,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
   const dataCounts = { pipes: validatedContext.pipes.length, blends: validatedContext.blends.length, bottles: validatedContext.bottles.length, smokingLogs: validatedContext.smokingLogs.length, tastingLogs: validatedContext.tastingLogs.length };
 
   const pipeActive    = activeModules.pipekeeper    !== false;
-  const tobaccoActive = activeModules.tobacco       !== false;
+  const tobaccoActive = activeModules.pipekeeper    === true;
   const whiskeyActive = activeModules.whiskeykeeper !== false;
 
   const pipes       = pipeActive    ? validatedContext.pipes : [];

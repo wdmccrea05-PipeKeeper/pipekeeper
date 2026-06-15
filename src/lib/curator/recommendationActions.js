@@ -1,5 +1,6 @@
 import { base44 } from '@/api/base44Client';
 import { logCuratorAuditEntry } from '@/lib/curator/curatorAuditLog';
+import { validateCuratorImageCandidateForRecord } from '@/lib/curator/curatorImageCandidates';
 
 const SAFE_BLEND_FIELDS = new Set([
   'blend_type', 'blend_family', 'strength', 'cut', 'flavor_notes',
@@ -60,11 +61,21 @@ export function sanitizeCuratorRecordChanges(changes, { allowedSet = null } = {}
   );
 
   if (allowedSet instanceof Set) {
-    const safe = filterToSafeFields(withoutImages, allowedSet);
-    return Object.keys(safe).length > 0 ? safe : withoutImages;
+    return filterToSafeFields(withoutImages, allowedSet);
   }
 
   return withoutImages;
+}
+
+function toStringArray(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item || '').trim()).filter(Boolean);
+  if (value == null) return [];
+  const next = String(value).trim();
+  return next ? [next] : [];
+}
+
+function normalizePipeSpecializationValue(spec) {
+  return toStringArray(spec);
 }
 
 function getEntityHandle(recordType) {
@@ -175,7 +186,37 @@ async function updateRecord(recordType, recordId, changes) {
 export async function applyPipeSpecialization(recordId, spec) {
   if (!recordId) throw new Error('Pipe recordId is required.');
   if (!spec) throw new Error('Specialization spec is required.');
-  return base44.entities.Pipe.update(recordId, { focus: [spec] });
+  const beforeState = await readRecord('pipe', recordId);
+  const normalizedFocus = normalizePipeSpecializationValue(spec);
+  if (!normalizedFocus.length) throw new Error('Specialization spec is required.');
+
+  const payload = {
+    focus: normalizedFocus,
+    specialization: normalizedFocus[0],
+  };
+  const updated = await base44.entities.Pipe.update(recordId, payload);
+
+  await logCuratorAuditEntry({
+    recommendationId: null,
+    module: 'pipekeeper',
+    recordType: 'pipe',
+    recordId,
+    operationType: 'specialization_update',
+    fieldsChanged: ['focus', 'specialization'],
+    previousValues: {
+      focus: beforeState?.focus ?? null,
+      specialization: beforeState?.specialization ?? null,
+    },
+    newValues: {
+      focus: updated?.focus ?? payload.focus,
+      specialization: updated?.specialization ?? payload.specialization,
+    },
+    source: 'curator_specialization_review',
+    appliedAutomatically: false,
+    requiredUserApproval: true,
+  });
+
+  return updated;
 }
 
 export async function applySingleItemFix(item) {
@@ -215,6 +256,121 @@ async function applyCuratorItemUpdate(item, payload, recommendation, action, opt
   });
 
   return updated;
+}
+
+async function applyReviewedCandidateIfPresent(item, opts = {}) {
+  const imageCandidate = item?.reviewedImageCandidate || item?.imageCandidate || item?.approvedImageCandidate || null;
+  if (!imageCandidate) return null;
+  return applyReviewedImageCandidate(item.recordType, item.recordId, imageCandidate, {
+    userEmail: opts.userEmail || null,
+    approved: true,
+    mode: opts.imageApplyMode || imageCandidate.mode || 'add',
+  });
+}
+
+function getCanonicalImageField(recordType = '') {
+  switch (String(recordType || '').toLowerCase()) {
+    case 'pipe':
+      return 'photo';
+    case 'blend':
+    case 'tobacco':
+    case 'bottle':
+    case 'whiskey':
+    case 'cigar':
+    case 'wine':
+      return 'image_url';
+    default:
+      return 'image_url';
+  }
+}
+
+function uniqueStrings(values = []) {
+  return [...new Set(values.filter(Boolean).map((value) => String(value).trim()).filter(Boolean))];
+}
+
+function extractRecordImages(record = {}) {
+  return uniqueStrings([
+    record?.photo,
+    record?.image,
+    record?.image_url,
+    record?.photo_url,
+    record?.primary_photo,
+    ...(Array.isArray(record?.photos) ? record.photos : []),
+  ]);
+}
+
+function buildImageApplyPayload(record = {}, recordType, imageUrl, mode = 'add') {
+  const canonicalField = getCanonicalImageField(recordType);
+  const existingImages = extractRecordImages(record);
+  const nextImages = uniqueStrings([...existingImages, imageUrl]);
+  const hasExisting = existingImages.length > 0;
+  const replace = mode === 'replace';
+
+  if (replace || !hasExisting) {
+    return { [canonicalField]: imageUrl };
+  }
+
+  const currentPhotos = Array.isArray(record?.photos) ? record.photos : [];
+  const photos = uniqueStrings([...currentPhotos, imageUrl]);
+  return { photos };
+}
+
+export async function applyReviewedImageCandidate(recordType, recordId, imageCandidate, opts = {}) {
+  const {
+    userEmail = null,
+    approved = false,
+    mode = 'add',
+  } = opts;
+
+  if (!approved) throw new Error('Reviewed image candidates require explicit approval.');
+  if (!recordId) throw new Error('recordId is required.');
+  if (!imageCandidate || typeof imageCandidate !== 'object') {
+    throw new Error('imageCandidate is required.');
+  }
+  if (imageCandidate.resolvedBy !== 'resolveCuratorImageCandidates') {
+    throw new Error('Image candidate must come from resolveCuratorImageCandidates().');
+  }
+
+  const beforeState = await readRecord(recordType, recordId);
+  if (!beforeState) throw new Error('Record not found.');
+
+  const validation = validateCuratorImageCandidateForRecord({
+    record: { ...beforeState, recordType },
+    candidate: imageCandidate,
+  });
+  if (!validation.valid || validation.referenceOnly) {
+    throw new Error('Image candidate failed identity validation.');
+  }
+
+  const payload = buildImageApplyPayload(beforeState, recordType, imageCandidate.imageUrl, mode);
+  const entityHandle = getEntityHandle(recordType);
+  if (!entityHandle || typeof entityHandle.update !== 'function') {
+    throw new Error(`Unsupported record type: ${recordType}`);
+  }
+  const updated = await entityHandle.update(recordId, payload);
+  const fieldsChanged = Object.keys(payload);
+
+  await logCuratorAuditEntry({
+    userId: userEmail,
+    recommendationId: null,
+    module: normalizeAuditModule(recordType),
+    recordType,
+    recordId,
+    operationType: 'apply_reviewed_image_candidate',
+    fieldsChanged,
+    previousValues: pickFields(beforeState, fieldsChanged),
+    newValues: pickFields(updated, fieldsChanged),
+    source: imageCandidate.source || 'curator_image_review',
+    confidence: imageCandidate.confidence ?? null,
+    appliedAutomatically: false,
+    requiredUserApproval: true,
+  });
+
+  return {
+    ok: true,
+    updated,
+    appliedField: fieldsChanged[0] || null,
+  };
 }
 
 /**
@@ -328,17 +484,25 @@ export async function executeRecommendationAction(recommendation, action, opts =
 
       for (const item of reviewedItems) {
         const payload = item?.proposedChange?.payload;
-        if (!payload || !Object.keys(payload).length) continue;
         try {
-          const updated = await applyCuratorItemUpdate(
-            item,
-            payload,
-            recommendation,
-            action,
-            opts
-          );
-          resolvedRecordIds.push(item.recordId);
-          updatedRecords.push(updated);
+          if (payload && Object.keys(payload).length > 0) {
+            const updated = await applyCuratorItemUpdate(
+              item,
+              payload,
+              recommendation,
+              action,
+              opts
+            );
+            resolvedRecordIds.push(item.recordId);
+            updatedRecords.push(updated);
+            continue;
+          }
+
+          const imageResult = await applyReviewedCandidateIfPresent(item, opts);
+          if (imageResult?.ok) {
+            resolvedRecordIds.push(item.recordId);
+            updatedRecords.push(imageResult.updated);
+          }
         } catch {
           failedIds.push(item.recordId);
         }
@@ -359,7 +523,7 @@ export async function executeRecommendationAction(recommendation, action, opts =
       // apply_suggestion: same as approve_changes — apply all items with payloads
       const reviewedItems = Array.isArray(opts.reviewedItems) ? opts.reviewedItems : items;
       const toApply = reviewedItems.filter(
-        (i) => i?.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0
+        (i) => (i?.proposedChange?.payload && Object.keys(i.proposedChange.payload).length > 0) || i?.reviewedImageCandidate || i?.imageCandidate || i?.approvedImageCandidate
       );
 
       if (!toApply.length) {
@@ -379,15 +543,24 @@ export async function executeRecommendationAction(recommendation, action, opts =
 
       for (const item of toApply) {
         try {
-          const updated = await applyCuratorItemUpdate(
-            item,
-            item.proposedChange.payload,
-            recommendation,
-            action,
-            opts
-          );
-          resolvedRecordIds.push(item.recordId);
-          updatedRecords.push(updated);
+          if (item?.proposedChange?.payload && Object.keys(item.proposedChange.payload).length > 0) {
+            const updated = await applyCuratorItemUpdate(
+              item,
+              item.proposedChange.payload,
+              recommendation,
+              action,
+              opts
+            );
+            resolvedRecordIds.push(item.recordId);
+            updatedRecords.push(updated);
+            continue;
+          }
+
+          const imageResult = await applyReviewedCandidateIfPresent(item, opts);
+          if (imageResult?.ok) {
+            resolvedRecordIds.push(item.recordId);
+            updatedRecords.push(imageResult.updated);
+          }
         } catch {
           failedIds.push(item.recordId);
         }

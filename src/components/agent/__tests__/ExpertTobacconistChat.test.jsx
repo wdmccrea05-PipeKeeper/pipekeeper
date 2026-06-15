@@ -37,4 +37,28 @@ describe('ExpertTobacconistChat deterministic routing', () => {
     });
     expect(base44.functions.invoke).not.toHaveBeenCalled();
   });
+
+  it('keeps multi-module context available for deterministic collection facts', async () => {
+    render(
+      <ExpertTobacconistChat
+        collectionContext={{
+          wines: [{ id: 'w1', name: 'Wine A', quantity: 0 }],
+          cigars: [{ id: 'c1', name: 'Cigar A', quantity: 2 }],
+          pairingMatrixPairings: [{ pipe_name: 'Pipe A', recommendations: [{ tobacco_name: 'Blend A', score: 5 }] }],
+          inventoryUnits: [{ id: 'u1', bottle_id: 'b1', status: 'opened' }],
+        }}
+        activeModules={{ winekeeper: true, cigarkeeper: true, pipekeeper: true, whiskeykeeper: true }}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Ask about your collection…'), {
+      target: { value: 'Which wines have quantity 0?' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Wines with quantity 0: Wine A.')).toBeTruthy();
+    });
+    expect(base44.functions.invoke).not.toHaveBeenCalled();
+  });
 });
