@@ -604,7 +604,7 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
           </p>
         )}
 
-        {(searchingQuickSearch || quickSearchMatches.length > 0 || quickSearchQuery) && (
+        {(searchingQuickSearch || quickSearchMatches.length > 0) && (
           <div className="rounded-xl p-3 mt-1" style={{ border: '1px solid rgba(86,122,160,0.3)', background: 'rgba(86,122,160,0.08)' }}>
             <div className="flex items-center gap-2 mb-2">
               <Search className="w-3.5 h-3.5" style={{ color: 'rgba(140,180,220,0.85)' }} />
@@ -612,11 +612,6 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
                 {t('addFlowIdentify.quickSearchTitle', 'Database matches from extracted terms')}
               </p>
             </div>
-            {quickSearchQuery && (
-              <p className="text-[11px] mb-2" style={{ color: 'rgba(180,210,235,0.8)' }}>
-                Query: {quickSearchQuery}
-              </p>
-            )}
             {searchingQuickSearch && (
               <div className="flex items-center gap-2 py-1" style={{ color: 'rgba(224,216,200,0.55)' }}>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
