@@ -62,7 +62,7 @@ export default function CellarDriftAlert({ blends, user }) {
         <div className="flex-1">
           <h3 className="font-semibold text-amber-900">{t("cellarDrift.title")}</h3>
           <p className="text-sm text-amber-800 mt-1">
-            {`${driftedBlends.length} ${t("cellarDrift.blendsHave", "blend(s) have cellared amounts that don't match your transaction logs")} (${formatNumber(totalDrift, 2)} oz ${t("cellarDrift.totalDiff", "total difference")}).`}
+            {`${driftedBlends.length} ${t("cellarDrift.blendsHave")} (${formatNumber(totalDrift, 2)} oz ${t("cellarDrift.totalDiff")}).`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -82,7 +82,7 @@ export default function CellarDriftAlert({ blends, user }) {
           <DialogHeader>
             <DialogTitle>{t("cellarDrift.reconciliationTitle")}</DialogTitle>
             <DialogDescription>
-              {t("cellarDrift.sourceOfTruth", "Source of truth: CellarLog transactions. This will update {count} computed cellared totals based on your transaction history. Your notes and other data remain unchanged.", { count: driftedBlends.length })}
+              {t("cellarDrift.sourceOfTruth", { count: driftedBlends.length })}
             </DialogDescription>
           </DialogHeader>
 

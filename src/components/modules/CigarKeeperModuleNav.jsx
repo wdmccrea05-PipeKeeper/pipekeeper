@@ -13,7 +13,7 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
 
   const items = [
     { page: 'Cigars', label: t('cigars.cigars'), Icon: Cigarette },
-    { page: 'SessionHistory', label: t('sessionHistory.title', 'Session History'), Icon: CalendarDays },
+    { page: 'SessionHistory', label: t('sessionHistory.title'), Icon: CalendarDays },
     { page: 'CigarInsights', label: t('nav.insights'), Icon: TrendingUp },
   ];
 

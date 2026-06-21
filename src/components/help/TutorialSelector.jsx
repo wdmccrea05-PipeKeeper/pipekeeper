@@ -147,7 +147,7 @@ export default function TutorialSelector({ user, subscription }) {
 
       {articles.length === 0 && (
         <p className="text-sm text-[#D7C9B2]/70 text-center py-4">
-          {t('help.noTutorialsAvailable', 'No tutorials available for your subscription')}
+          {t('help.noTutorialsAvailable')}
         </p>
       )}
     </div>

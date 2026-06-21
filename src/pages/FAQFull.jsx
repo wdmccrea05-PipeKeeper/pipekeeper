@@ -53,13 +53,13 @@ export default function FAQFull() {
             <Link to={createPageUrl("HowTo")}>
               <Button variant="outline" className="border-[rgba(140,105,65,0.35)] bg-[rgba(28,21,16,0.72)] text-[#F5F1E7] hover:bg-[rgba(163,92,92,0.12)]">
                 <BookOpen className="mr-2 h-4 w-4" />
-                {t("help.howTo", "How-To")}
+                {t("help.howTo")}
               </Button>
             </Link>
             <Link to={createPageUrl("TroubleshootingFull")}>
               <Button variant="outline" className="border-[rgba(140,105,65,0.35)] bg-[rgba(28,21,16,0.72)] text-[#F5F1E7] hover:bg-[rgba(163,92,92,0.12)]">
                 <Wrench className="mr-2 h-4 w-4" />
-                {t("help.troubleshooting", "Troubleshooting")}
+                {t("help.troubleshooting")}
               </Button>
             </Link>
             <Button 
@@ -68,7 +68,7 @@ export default function FAQFull() {
               variant="outline"
             >
               <Play className="mr-2 h-4 w-4" />
-              {t("help.launchTutorial", "Launch Tutorial")}
+              {t("help.launchTutorial")}
             </Button>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function FAQFull() {
               <li><strong>{t("subscription.pro")}:</strong> {t("faqExtended.proTierDesc", { date: "2026" })}</li>
             </ul>
             <p className="mt-3 text-sm text-[#D8C7A6]/75">
-              {t("faqExtended.legacySubscriberNote", { date: "2026", defaultValue: "Founding subscribers have grandfathered access to all Pro features." })}
+              {t("faqExtended.legacySubscriberNote", { date: "2026" })}
             </p>
           </Q>
         </Section>

@@ -223,7 +223,7 @@ export default function ImportPage() {
       if (nextAnalysis.totalRows === 0) toast.warning('No data rows detected.');
     } catch (error) {
       console.error('[Import] Parse failed:', error);
-      toast.error(t('import.csvParseFailed', 'CSV parse failed.'));
+      toast.error(t('import.csvParseFailed'));
     } finally {
       setBusy(false);
       event.target.value = '';
@@ -269,7 +269,7 @@ export default function ImportPage() {
               {t('supportFull.backToHome')}
             </Button>
           </a>
-          <UpgradePrompt featureName={t('import.bulkImport', 'Bulk Import')} description={t('import.upgradeDesc')} />
+          <UpgradePrompt featureName={t('import.bulkImport')} description={t('import.upgradeDesc')} />
         </div>
       </div>
     );
@@ -282,7 +282,7 @@ export default function ImportPage() {
           <a href={createPageUrl('Home')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('common.backToHome', 'Back to home')}
+              {t('common.backToHome')}
             </Button>
           </a>
             <Card className="border-[#e8d5b7]/30">
@@ -304,7 +304,7 @@ export default function ImportPage() {
         <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {t('common.backToHome', 'Back to home')}
+            {t('common.backToHome')}
           </Button>
         </a>
 
@@ -312,12 +312,11 @@ export default function ImportPage() {
           <CardHeader>
             <CardTitle className="text-3xl text-stone-100 flex items-center gap-3">
               <FileSpreadsheet className="w-8 h-8 text-[#8b3a3a]" />
-              {t('import.bulkImport', 'Bulk Import')}
+              {t('import.bulkImport')}
             </CardTitle>
             <CardDescription className="text-stone-300">
               {t(
-                'import.bulkImportDesc',
-                'Trusted collector migration flow: template download, upload, validation preview, safe import, and clear results.'
+                'import.bulkImportDesc'
               )}
             </CardDescription>
           </CardHeader>

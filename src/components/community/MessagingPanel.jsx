@@ -276,7 +276,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
         <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(120,90,65,0.25)' }}>
           <div className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5" style={{ color: 'rgba(180,140,75,0.9)' }} />
-            <span className="font-semibold text-[#F5F1E7]">{t("messaging.instantMessaging", "Messages")}</span>
+            <span className="font-semibold text-[#F5F1E7]">{t("messaging.instantMessaging")}</span>
           </div>
           <Button
             variant="outline"
@@ -284,7 +284,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
             onClick={() => setShowInbox(true)}
             className="relative border-[rgba(120,90,65,0.35)] text-[#E0D8C8] hover:bg-[rgba(255,255,255,0.06)]"
           >
-            {t("messaging.inbox", "Inbox")}
+            {t("messaging.inbox")}
             {inboxMessages.length > 0 && (
               <Badge className="absolute -top-2 -right-2 bg-rose-600 text-white text-xs px-1.5">
                 {inboxMessages.length}
@@ -337,7 +337,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                       </p>
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                         <p className="text-xs" style={{ color: online ? 'rgba(52,211,153,0.9)' : 'rgba(224,216,200,0.45)' }}>
-                          {online ? t("messaging.online", "Online") : t("messaging.offline", "Offline")}
+                          {online ? t("messaging.online") : t("messaging.offline")}
                         </p>
                         {modules.map(m => (
                           <span key={m.label} className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: m.bg, color: m.color }}>
@@ -382,7 +382,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                   {publicProfiles.find(p => p.user_email === selectedFriend)?.display_name || selectedFriend}
                 </p>
                 <p className="text-xs font-normal" style={{ color: isOnline(selectedFriend) ? 'rgba(52,211,153,0.9)' : 'rgba(224,216,200,0.45)' }}>
-                  {isOnline(selectedFriend) ? t("messaging.online", "Online") : t("messaging.offline", "Offline")}
+                  {isOnline(selectedFriend) ? t("messaging.online") : t("messaging.offline")}
                 </p>
               </div>
             </SheetTitle>
@@ -495,7 +495,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
           <div className="border-t p-4">
             <div className="flex gap-2">
               <Input
-                placeholder={t("messaging.typeMessage", "Type a message…")}
+                placeholder={t("messaging.typeMessage")}
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
@@ -515,7 +515,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
               </p>
             ) : !isOnline(selectedFriend) && (
               <p className="text-xs text-emerald-600 mt-2">
-                {t("messaging.offlineNote", "This user is offline. They'll see your message when they return.")}
+                {t("messaging.offlineNote")}
               </p>
             )}
           </div>
@@ -526,15 +526,15 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
       <Sheet open={showInbox} onOpenChange={setShowInbox}>
         <SheetContent className="w-full sm:max-w-lg" style={sheetSafeAreaStyle}>
           <SheetHeader>
-            <SheetTitle className="text-[#F5F1E7]">{t("messaging.messageInbox", "Message Inbox")}</SheetTitle>
-            <SheetDescription className="sr-only">{t("messaging.inboxDescription", "Your messages")}</SheetDescription>
+            <SheetTitle className="text-[#F5F1E7]">{t("messaging.messageInbox")}</SheetTitle>
+            <SheetDescription className="sr-only">{t("messaging.inboxDescription")}</SheetDescription>
           </SheetHeader>
           <ScrollArea className="h-full mt-6">
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold text-[#F5F1E7] mb-2">{t("messaging.unreadMessages", "Unread")} ({inboxMessages.length})</h3>
+                <h3 className="font-semibold text-[#F5F1E7] mb-2">{t("messaging.unreadMessages")} ({inboxMessages.length})</h3>
                 {inboxMessages.length === 0 ? (
-                  <p className="text-sm text-[#E0D8C8]/60 py-4">{t("messaging.noUnread", "No unread messages")}</p>
+                  <p className="text-sm text-[#E0D8C8]/60 py-4">{t("messaging.noUnread")}</p>
                 ) : (
                   <div className="space-y-2">
                     {inboxMessages.map((message) => {
@@ -566,7 +566,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                                 setSelectedFriend(message.sender_email);
                               }}
                             >
-                              {t("messaging.reply", "Reply")}
+                              {t("messaging.reply")}
                             </Button>
                           </div>
                         </div>
@@ -577,9 +577,9 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
               </div>
 
               <div>
-                <h3 className="font-semibold text-[#F5F1E7] mb-2">{t("messaging.savedMessages", "Saved")} ({savedMessages.length})</h3>
+                <h3 className="font-semibold text-[#F5F1E7] mb-2">{t("messaging.savedMessages")} ({savedMessages.length})</h3>
                 {savedMessages.length === 0 ? (
-                  <p className="text-sm text-[#E0D8C8]/60 py-4">{t("messaging.noSaved", "No saved messages")}</p>
+                  <p className="text-sm text-[#E0D8C8]/60 py-4">{t("messaging.noSaved")}</p>
                 ) : (
                   <div className="space-y-2">
                     {savedMessages.map((message) => {

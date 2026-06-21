@@ -376,7 +376,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       await onSave(payload);
     } catch (error) {
-      const reason = error?.message || t('errors.updateFailed') || 'Save failed';
+      const reason = error?.message || t('errors.updateFailed');
       setSubmitError(reason);
       if (import.meta?.env?.DEV || user?.role === 'admin') {
         console.error('[PipeForm] Save failed:', {
@@ -973,8 +973,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         </div>
         <div className="pt-4 border-t border-[#E0D8C8]/20">
           <FieldWithInfo
-            label={t("formsExtended.collectibleOnly", "Collectible Only")}
-            helpText={t("formsExtended.collectibleOnlyHelp", "Exclude this pipe from AI matching, rotation, and recommendation logic. It will still remain in your collection, valuation totals, exports, and insurance documentation.")}
+            label={t("formsExtended.collectibleOnly")}
+            helpText={t("formsExtended.collectibleOnlyHelp")}
           >
             <div className="flex items-center gap-3">
               <Switch
@@ -990,7 +990,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                   });
                 }}
               />
-              <span className="text-sm text-[#E0D8C8]/70">{formData.ai_excluded ? t("formsExtended.aiExcluded", "Excluded from AI") : t("formsExtended.aiIncluded", "Included in AI")}</span>
+              <span className="text-sm text-[#E0D8C8]/70">{formData.ai_excluded ? t("formsExtended.aiExcluded") : t("formsExtended.aiIncluded")}</span>
             </div>
           </FieldWithInfo>
         </div>

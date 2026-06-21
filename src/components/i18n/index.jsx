@@ -37,6 +37,7 @@ import nlUI from './locales/nl.ui.jsx';
 import plUI from './locales/pl.ui.jsx';
 import jaUI from './locales/ja.ui.jsx';
 import zhHansUI from './locales/zh-Hans.ui.jsx';
+import generatedAudit from './locales/generated.audit.jsx';
 
 const CRITICAL_FALLBACKS = {
   common: { back: 'Back', search: 'Search', share: 'Share', loading: 'Loading...', retry: 'Retry' },
@@ -165,7 +166,11 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
     ? deepMerge(withStoryWine, { collectionIntelligence: enCollectionIntelligence })
     : withStoryWine;
   const withCriticals = deepMerge(withIntel, CRITICAL_FALLBACKS);
-  return [lang, withCriticals];
+  // Generated audit defaults are merged at the LOWEST priority so any real
+  // (hand-authored) translation in this or the English pack always wins; these
+  // only fill genuine gaps so no key renders as a raw dotted path.
+  const withAudit = deepMerge(withCriticals, generatedAudit);
+  return [lang, withAudit];
 }));
 
 const I18nContext = createContext(null);

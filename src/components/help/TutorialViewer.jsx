@@ -16,7 +16,7 @@ export default function TutorialViewer({ moduleId, tutorialId, onBack }) {
   if (!tutorial) {
     return (
       <div className="text-center py-8">
-        <p className="text-[#D7C9B2]/70">{t('help.tutorialNotFound', 'Tutorial not found')}</p>
+        <p className="text-[#D7C9B2]/70">{t('help.tutorialNotFound')}</p>
         <Button onClick={onBack} variant="outline" className="mt-4">
           Go Back
         </Button>
@@ -31,7 +31,7 @@ export default function TutorialViewer({ moduleId, tutorialId, onBack }) {
         className="flex items-center gap-2 text-[#D7C9B2]/70 hover:text-[#F5F1E7] transition-colors mb-4"
       >
         <ChevronLeft className="w-4 h-4" />
-        {t('help.backToTutorials', 'Back to Tutorials')}
+        {t('help.backToTutorials')}
       </button>
 
       <div>

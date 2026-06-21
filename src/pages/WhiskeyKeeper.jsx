@@ -67,7 +67,7 @@ function WhiskeyKeeperInner() {
     { label: t('whiskey.collectionValue'), value: formatFromBase(Math.round(whiskeyMetrics.collection_value)) },
     { label: t('whiskey.bottleTypes'), value: whiskeyMetrics.bottle_types },
     { label: t('whiskey.inventory'), value: whiskeyMetrics.total_bottles },
-    { label: t('whiskey.avgAbv', 'Avg ABV'), value: whiskeyMetrics.avg_abv ? `${whiskeyMetrics.avg_abv.toFixed(1)}%` : '—' },
+    { label: t('whiskey.avgAbv'), value: whiskeyMetrics.avg_abv ? `${whiskeyMetrics.avg_abv.toFixed(1)}%` : '—' },
   ];
 
   const quickLaunchActions = [
@@ -80,8 +80,8 @@ function WhiskeyKeeperInner() {
 
   return (
     <ModulePageShell
-      title={t('whiskeykeeper.title', 'WhiskeyKeeper')}
-      subtitle={t('whiskeykeeper.description', 'Track, value, and explore your whiskey collection')}
+      title={t('whiskeykeeper.title')}
+      subtitle={t('whiskeykeeper.description')}
       icon={<WhiskeyKeeperIcon className="w-6 h-6" style={{ color: '#D47C7C' }} />}
       accentColor="#B66565"
       onBackToHub={() => navigate('/CollectionHub')}

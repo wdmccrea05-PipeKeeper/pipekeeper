@@ -120,21 +120,21 @@ function CigarsInner() {
   useCurrency();
 
   const TAB_LABELS = {
-    collection: t('cigars.tabCollection', 'Collection'),
-    humidors: t('cigars.tabHumidors', 'Humidors'),
-    wishlist: t('cigars.tabWishlist', 'Wishlist'),
-    shopping: t('cigars.tabShopping', 'Shopping List'),
-    restock: t('cigars.tabRestock', 'Restock'),
+    collection: t('cigars.tabCollection'),
+    humidors: t('cigars.tabHumidors'),
+    wishlist: t('cigars.tabWishlist'),
+    shopping: t('cigars.tabShopping'),
+    restock: t('cigars.tabRestock'),
   };
 
   const SORT_OPTIONS = [
-    { value: 'name', label: t('cigars.sortName', 'Name') },
-    { value: 'brand', label: t('cigars.sortBrand', 'Brand') },
-    { value: 'highest_rated', label: t('cigars.sortHighestRated', 'Highest Rated') },
-    { value: 'recently_smoked', label: t('cigars.sortRecentlySmoked', 'Recently Smoked') },
-    { value: 'created_date', label: t('cigars.sortAddedDate', 'Added Date') },
-    { value: 'estimated_value', label: t('cigars.sortValue', 'Value') },
-    { value: 'quantity', label: t('cigars.sortQuantity', 'Quantity') },
+    { value: 'name', label: t('cigars.sortName') },
+    { value: 'brand', label: t('cigars.sortBrand') },
+    { value: 'highest_rated', label: t('cigars.sortHighestRated') },
+    { value: 'recently_smoked', label: t('cigars.sortRecentlySmoked') },
+    { value: 'created_date', label: t('cigars.sortAddedDate') },
+    { value: 'estimated_value', label: t('cigars.sortValue') },
+    { value: 'quantity', label: t('cigars.sortQuantity') },
   ];
 
   const searchParams = new URLSearchParams(location.search);
@@ -444,10 +444,10 @@ function CigarsInner() {
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold" style={{ fontFamily: "'Georgia', serif" }}>
-            {t('cigars.collection', 'Cigar Collection')}
+            {t('cigars.collection')}
           </h1>
           <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.65)' }}>
-          {cigars.length} {t('cigars.inCollection', 'in your collection')}
+          {cigars.length} {t('cigars.inCollection')}
           </p>
         </div>
         <Button
@@ -458,7 +458,7 @@ function CigarsInner() {
           }}
         >
           <Plus className="w-4 h-4 mr-2" />
-          {t('cigars.addCigar', 'Add Cigar')}
+          {t('cigars.addCigar')}
         </Button>
       </div>
 
@@ -502,7 +502,7 @@ function CigarsInner() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('cigars.searchPlaceholder', 'Search by name, brand, vitola, wrapper…')}
+                placeholder={t('cigars.searchPlaceholder')}
                 className="bg-transparent outline-none text-sm w-full"
                 style={{ color: '#F5F1E7' }}
               />
@@ -538,7 +538,7 @@ function CigarsInner() {
               }}
             >
               <Filter className="w-4 h-4" />
-              {t('common.filter', 'Filter')}
+              {t('common.filter')}
             </button>
 
             <div
@@ -655,99 +655,99 @@ function CigarsInner() {
             >
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  {t('cigars.filterBody', 'Body')}
+                  {t('cigars.filterBody')}
                 </label>
                 <Select value={filterBody || 'all'} onValueChange={(v) => setFilterBody(v === 'all' ? '' : v)}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
-                    <SelectValue placeholder={t('cigars.filterAny', 'Any')} />
+                    <SelectValue placeholder={t('cigars.filterAny')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny')}</SelectItem>
                     {CIGAR_STRENGTH_VALUES.map((o) => <SelectItem key={o} value={o}>{formatCigarStrengthLabel(o)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  {t('cigars.filterStrength', 'Strength')}
+                  {t('cigars.filterStrength')}
                 </label>
                 <Select value={filterStrength || 'all'} onValueChange={(v) => setFilterStrength(v === 'all' ? '' : v)}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
-                    <SelectValue placeholder={t('cigars.filterAny', 'Any')} />
+                    <SelectValue placeholder={t('cigars.filterAny')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny')}</SelectItem>
                     {CIGAR_STRENGTH_VALUES.map((o) => <SelectItem key={o} value={o}>{formatCigarStrengthLabel(o)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  {t('cigars.filterOrigin', 'Origin')}
+                  {t('cigars.filterOrigin')}
                 </label>
                 <Select value={filterOrigin || 'all'} onValueChange={(v) => setFilterOrigin(v === 'all' ? '' : v)}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
-                    <SelectValue placeholder={t('cigars.filterAny', 'Any')} />
+                    <SelectValue placeholder={t('cigars.filterAny')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny')}</SelectItem>
                     {origins.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  {t('cigars.filterHumidor', 'Humidor')}
+                  {t('cigars.filterHumidor')}
                 </label>
                 <Select value={filterHumidor || 'all'} onValueChange={(v) => setFilterHumidor(v === 'all' ? '' : v)}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
-                    <SelectValue placeholder={t('cigars.filterAny', 'Any')} />
+                    <SelectValue placeholder={t('cigars.filterAny')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny')}</SelectItem>
                     {sortedHumidors.map((h) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  {t('cigars.filterFavorites', 'Favorites')}
+                  {t('cigars.filterFavorites')}
                 </label>
                 <Select value={filterFavoritesOnly ? 'favorites' : 'all'} onValueChange={(v) => setFilterFavoritesOnly(v === 'favorites')}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
-                    <SelectItem value="favorites">{t('cigars.favoritesOnly', 'Favorites only')}</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny')}</SelectItem>
+                    <SelectItem value="favorites">{t('cigars.favoritesOnly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  {t('cigars.filterStock', 'Stock')}
+                  {t('cigars.filterStock')}
                 </label>
                 <Select value={filterLowStockOnly ? 'low' : 'all'} onValueChange={(v) => setFilterLowStockOnly(v === 'low')}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
-                    <SelectItem value="low">{t('cigars.lowStockOnly', 'Low stock only')}</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny')}</SelectItem>
+                    <SelectItem value="low">{t('cigars.lowStockOnly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  {t('cigars.filterSessions', 'Sessions')}
+                  {t('cigars.filterSessions')}
                 </label>
                 <Select value={filterRecentlySmokedOnly ? 'smoked' : 'all'} onValueChange={(v) => setFilterRecentlySmokedOnly(v === 'smoked')}>
                   <SelectTrigger className="h-8 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,107,63,0.2)', color: '#F5F1E7' }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t('cigars.filterAny', 'Any')}</SelectItem>
-                    <SelectItem value="smoked">{t('cigars.recentlySmokedOnly', 'Recently smoked')}</SelectItem>
+                    <SelectItem value="all">{t('cigars.filterAny')}</SelectItem>
+                    <SelectItem value="smoked">{t('cigars.recentlySmokedOnly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -769,7 +769,7 @@ function CigarsInner() {
           {/* Results count */}
           {(search || filterBody || filterStrength || filterOrigin || filterHumidor || filterFavoritesOnly || filterLowStockOnly || filterRecentlySmokedOnly) && (
             <p className="text-sm" style={{ color: 'rgba(224,216,200,0.55)' }}>
-              {filteredCigars.length} {filteredCigars.length !== 1 ? t('cigars.results', 'results') : t('cigars.result', 'result')}
+              {filteredCigars.length} {filteredCigars.length !== 1 ? t('cigars.results') : t('cigars.result')}
             </p>
           )}
 
@@ -787,25 +787,25 @@ function CigarsInner() {
               <Cigarette className="w-10 h-10 mx-auto mb-4" style={{ color: '#8C6B3F' }} />
               <p className="text-2xl font-semibold" style={{ color: '#F5F1E7' }}>
                 {activeTab === 'wishlist'
-                  ? t('cigars.noWishlist', 'No wishlist cigars')
+                  ? t('cigars.noWishlist')
                   : activeTab === 'shopping'
-                  ? t('cigars.noShopping', 'No shopping list cigars')
+                  ? t('cigars.noShopping')
                   : activeTab === 'restock'
-                  ? t('cigars.noRestock', 'No restock alerts')
-                  : t('cigars.noCigars', 'No cigars yet')}
+                  ? t('cigars.noRestock')
+                  : t('cigars.noCigars')}
               </p>
               <p className="mt-2 text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
                 {activeTab === 'collection'
-                  ? t('cigars.addFirstCigar', 'Add your first cigar to start tracking your collection')
+                  ? t('cigars.addFirstCigar')
                   : activeTab === 'wishlist'
-                  ? t('cigars.markAsWishlist', 'Mark cigars as wishlist to see them here')
+                  ? t('cigars.markAsWishlist')
                   : activeTab === 'shopping'
-                  ? t('cigars.markAsShopping', 'Mark cigars as shopping list to see them here')
-                  : t('cigars.markAsRestock', 'Mark cigars for restock to see them here')}
+                  ? t('cigars.markAsShopping')
+                  : t('cigars.markAsRestock')}
               </p>
               {activeTab === 'collection' && (
                 <Button className="mt-5" onClick={openAdd}>
-                  {t('cigars.addFirstCigarBtn', 'Add your first cigar')}
+                  {t('cigars.addFirstCigarBtn')}
                 </Button>
               )}
             </div>
@@ -960,7 +960,7 @@ function CigarsInner() {
         >
           <DialogHeader>
             <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              {t('cigars.editCigar', 'Edit Cigar')}
+              {t('cigars.editCigar')}
             </DialogTitle>
           </DialogHeader>
           <CigarForm

@@ -58,8 +58,7 @@ export default function SelfDiagnosticPanel() {
           return {
             severity: 'info',
             message: t(
-              'help.cacheDetected',
-              'App cache detected. Hard refresh if features are missing.'
+              'help.cacheDetected'
             ),
             action: 'Hard Refresh (Ctrl+Shift+R)',
             actionType: 'keyboard',
@@ -82,8 +81,7 @@ export default function SelfDiagnosticPanel() {
             return {
               severity: 'info',
               message: t(
-                'help.staleInsights',
-                'Insights not updated in the last few hours'
+                'help.staleInsights'
               ),
               action: 'Refresh Insights',
               actionUrl: '/Insights',
@@ -123,8 +121,7 @@ export default function SelfDiagnosticPanel() {
           return {
             severity: 'warning',
             message: t(
-              'help.needsRegeneration',
-              'Collection changed since last pairing generation'
+              'help.needsRegeneration'
             ),
             action: 'Regenerate',
             actionUrl: '/PipeKeeper?tab=pairings',
@@ -166,7 +163,7 @@ export default function SelfDiagnosticPanel() {
     <div className="rounded-lg border border-[rgba(180,140,75,0.2)] bg-[rgba(180,140,75,0.05)] p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-semibold text-[#F5F1E7]">
-          {t('help.selfDiagnostic', 'System Diagnostic')}
+          {t('help.selfDiagnostic')}
         </h3>
         <Button
           onClick={runDiagnostics}
@@ -181,16 +178,15 @@ export default function SelfDiagnosticPanel() {
             <RefreshCw className="w-4 h-4" />
           )}
           {isScanning
-            ? t('help.scanning', 'Scanning...')
-            : t('help.runDiagnostic', 'Run Diagnostic')}
+            ? t('help.scanning')
+            : t('help.runDiagnostic')}
         </Button>
       </div>
 
       {!userEmail && (
         <p className="text-xs text-[#D7C9B2]/60">
           {t(
-            'help.diagnosticRequiresUser',
-            'Diagnostics require a loaded user session.'
+            'help.diagnosticRequiresUser'
           )}
         </p>
       )}
@@ -198,7 +194,7 @@ export default function SelfDiagnosticPanel() {
       {hasScanned && issues.length === 0 && !isScanning && userEmail && (
         <div className="flex items-center gap-2 text-sm text-[#10B981]">
           <CheckCircle2 className="w-4 h-4" />
-          {t('help.allSystemsNormal', 'All systems normal')}
+          {t('help.allSystemsNormal')}
         </div>
       )}
 
@@ -250,8 +246,7 @@ export default function SelfDiagnosticPanel() {
       {!hasScanned && !isScanning && userEmail && (
         <p className="text-xs text-[#D7C9B2]/60">
           {t(
-            'help.diagnosticDesc',
-            'Check for common issues like stale data, caching problems, and outdated AI insights'
+            'help.diagnosticDesc'
           )}
         </p>
       )}

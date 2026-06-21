@@ -172,19 +172,19 @@ function TastingRow({ tasting, onEdit }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-[#F5F1E7]">
-            {tasting.rating ? `⭐ ${safePrimitive(tasting.rating)}` : t('common.unratedTasting', 'Unrated tasting')}
+            {tasting.rating ? `⭐ ${safePrimitive(tasting.rating)}` : t('common.unratedTasting')}
           </p>
           <p className="text-xs text-[#D8C7A6]/70 mt-1">
             {formatDate(tasting.tasting_date)} •{" "}
             {safePrimitive(tasting.serving_method, "Neat")}
           </p>
           <p className="text-sm text-[#E0D8C8]/84 mt-3 break-words whitespace-pre-wrap">
-            {safePrimitive(tasting.notes, t('common.noNotes', 'No notes'))}
+            {safePrimitive(tasting.notes, t('common.noNotes'))}
           </p>
         </div>
 
         <Button variant="outline" size="sm" onClick={() => onEdit(tasting)}>
-          {t('common.edit', 'Edit')}
+          {t('common.edit')}
         </Button>
       </div>
     </div>
@@ -244,7 +244,7 @@ function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('whiskey.saveValueCheckpoint', 'Save Value Checkpoint')}</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('whiskey.saveValueCheckpoint')}</h3>
         <div className="space-y-3">
           {[
             { label: 'Snapshot Date', field: 'snapshot_date', type: 'date' },
@@ -291,9 +291,9 @@ function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, 
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(163,92,92,1),rgba(140,74,74,1))', color: '#F5F1E7' }}>
-            {saving ? t('common.saving', 'Saving…') : t('whiskey.saveValueCheckpoint', 'Save Value Checkpoint')}
+            {saving ? t('common.saving') : t('whiskey.saveValueCheckpoint')}
           </Button>
         </div>
       </div>
@@ -386,9 +386,9 @@ function AddPriceObservationModal({ bottle, userEmail, onClose, onSaved }) {
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} disabled={saving || !form.observed_price} style={{ background: 'linear-gradient(135deg,rgba(59,130,246,0.8),rgba(37,99,235,0.9))', color: '#F5F1E7' }}>
-            {saving ? t('common.saving', 'Saving…') : t('whiskey.saveObservation', 'Save Observation')}
+            {saving ? t('common.saving') : t('whiskey.saveObservation')}
           </Button>
         </div>
       </div>
@@ -780,7 +780,7 @@ function BottleDetailInner() {
               <InlinePhotoEditor
                 photos={bottle.photos?.length ? bottle.photos : (bottle.photo ? [bottle.photo] : [])}
                 maxPhotos={2}
-                label={t('common.photos', 'Photos')}
+                label={t('common.photos')}
                 entityType="bottle"
                 recordName={bottle.name || ''}
                 brand={bottle.distillery || ''}
@@ -851,25 +851,25 @@ function BottleDetailInner() {
                   />
                 ) : null}
                 {avgRating ? (
-                  <DetailStat label={t('whiskey.avgRating', 'Avg Rating')} value={`${avgRating} / 5`} icon={Star} />
+                  <DetailStat label={t('whiskey.avgRating')} value={`${avgRating} / 5`} icon={Star} />
                 ) : null}
                 {bottle.age ? (
-                  <DetailStat label={t('whiskey.age', 'Age')} value={`${safePrimitive(bottle.age)} years`} icon={CalendarDays} />
+                  <DetailStat label={t('whiskey.age')} value={`${safePrimitive(bottle.age)} years`} icon={CalendarDays} />
                 ) : null}
                 {bottle.abv ? (
-                  <DetailStat label={t('whiskey.abv', 'ABV')} value={`${safePrimitive(bottle.abv)}%`} icon={Sparkles} />
+                  <DetailStat label={t('whiskey.abv')} value={`${safePrimitive(bottle.abv)}%`} icon={Sparkles} />
                 ) : null}
                 {bottle.bottle_size ? (
-                  <DetailStat label={t('whiskey.bottleSize', 'Bottle Size')} value={safePrimitive(bottle.bottle_size)} icon={Package} />
+                  <DetailStat label={t('whiskey.bottleSize')} value={safePrimitive(bottle.bottle_size)} icon={Package} />
                 ) : null}
                 {bottle.bottle_count > 1 ? (
-                  <DetailStat label={t('whiskey.bottleCount', 'Bottle Count')} value={safePrimitive(bottle.bottle_count)} icon={Package} />
+                  <DetailStat label={t('whiskey.bottleCount')} value={safePrimitive(bottle.bottle_count)} icon={Package} />
                 ) : null}
                 {bottle.fill_level ? (
-                  <DetailStat label={t('whiskey.fillLevel', 'Fill Level')} value={safePrimitive(bottle.fill_level)} icon={Package} />
+                  <DetailStat label={t('whiskey.fillLevel')} value={safePrimitive(bottle.fill_level)} icon={Package} />
                 ) : null}
                 {totalValue > 0 && bottle.bottle_count > 1 ? (
-                  <DetailStat label={t('hub.totalValue', 'Total Value')} value={formatFromBase(totalValue)} icon={WhiskeyKeeperIcon} />
+                  <DetailStat label={t('hub.totalValue')} value={formatFromBase(totalValue)} icon={WhiskeyKeeperIcon} />
                 ) : null}
               </div>
 
@@ -1039,9 +1039,9 @@ function BottleDetailInner() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>{t('common.cancel', 'Cancel')}</AlertDialogCancel>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
               <AlertDialogAction onClick={handleDelete} disabled={deleting}>
-                {deleting ? t('common.deleting', 'Deleting...') : t('common.delete', 'Delete')}
+                {deleting ? t('common.deleting') : t('common.delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

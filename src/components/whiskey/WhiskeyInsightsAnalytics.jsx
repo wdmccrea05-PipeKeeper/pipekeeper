@@ -278,7 +278,7 @@ export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
           border: '1px solid rgba(180, 140, 75, 0.15)',
         }}>
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-            {t('whiskeykeeper.tastingTrends', 'Tasting Trends')}
+            {t('whiskeykeeper.tastingTrends')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={tastingTrends}>
@@ -299,7 +299,7 @@ export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
           border: '1px solid rgba(180, 140, 75, 0.15)',
         }}>
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-            {t('whiskeykeeper.purchaseTrends', 'Purchase Trends')}
+            {t('whiskeykeeper.purchaseTrends')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={purchaseTrends}>
@@ -320,7 +320,7 @@ export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
           border: '1px solid rgba(180, 140, 75, 0.15)',
         }}>
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-            {t('whiskeykeeper.collectionGrowth', 'Collection Growth')}
+            {t('whiskeykeeper.collectionGrowth')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={growthTrends}>
@@ -359,7 +359,7 @@ export function WhiskeyAnalyticsTab({ bottles }) {
         border: '1px solid rgba(180, 140, 75, 0.15)',
       }}>
         <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-          {t('whiskeykeeper.bottleTypeDistribution', 'Bottle Type Distribution')}
+          {t('whiskeykeeper.bottleTypeDistribution')}
         </h3>
         <ResponsiveContainer width="100%" height={360}>
           <PieChart>
@@ -380,7 +380,7 @@ export function WhiskeyAnalyticsTab({ bottles }) {
         border: '1px solid rgba(180, 140, 75, 0.15)',
       }}>
         <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-          {t('whiskeykeeper.countryDistribution', 'Country Distribution')}
+          {t('whiskeykeeper.countryDistribution')}
         </h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={countryDistribution}>
@@ -399,7 +399,7 @@ export function WhiskeyAnalyticsTab({ bottles }) {
         border: '1px solid rgba(180, 140, 75, 0.15)',
       }}>
         <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-          {t('whiskeykeeper.collectionValueBreakdown', 'Collection Value Breakdown')}
+          {t('whiskeykeeper.collectionValueBreakdown')}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.15)' }}>
@@ -424,7 +424,7 @@ export function WhiskeyAnalyticsTab({ bottles }) {
           border: '1px solid rgba(180, 140, 75, 0.15)',
         }}>
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#F5F1E7' }}>
-            {t('whiskeykeeper.ratingTrends', 'Average Rating by Country')}
+            {t('whiskeykeeper.ratingTrends')}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={ratingTrends}>

@@ -150,7 +150,7 @@ export default function ModulePageShell({
             size="sm"
             className="shrink-0 text-sm"
           >
-            {t('common.backToHub', 'Hub')}
+            {t('common.backToHub')}
           </Button>
         )}
       </div>

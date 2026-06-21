@@ -18,11 +18,14 @@ vi.mock("@/components/hooks/useCurrentUser", () => ({
   useCurrentUser: () => useCurrentUserMock(),
 }));
 
-vi.mock("@/components/i18n/safeTranslation", () => ({
-  useTranslation: () => ({
-    t: (_key, fallback) => fallback,
-  }),
-}));
+vi.mock("@/components/i18n/safeTranslation", async () => {
+  const actual = await vi.importActual("@/components/i18n/index.jsx");
+  return {
+    useTranslation: () => ({
+      t: (key, opts) => actual.translate(key, opts, "en"),
+    }),
+  };
+});
 
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");

@@ -40,7 +40,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
   const items = [
     { page: "Pipes", label: t("nav.pipes"), semanticIcon: "pipe" },
     { page: "Tobacco", label: t("nav.tobacco"), icon: Leaf },
-    { page: "SessionHistory", label: t("sessionHistory.title", "Session History"), icon: CalendarDays },
+    { page: "SessionHistory", label: t("sessionHistory.title"), icon: CalendarDays },
     { page: "Insights", label: t("nav.insights"), icon: TrendingUp },
   ];
 

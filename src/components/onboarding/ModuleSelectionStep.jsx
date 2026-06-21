@@ -84,10 +84,10 @@ export default function ModuleSelectionStep({
           className="text-2xl font-bold"
           style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}
         >
-          {t("onboarding.moduleSelectionTitle", "Choose Your Modules")}
+          {t("onboarding.moduleSelectionTitle")}
         </h2>
         <p className="text-sm mt-2" style={{ color: "#E0D8C8" }}>
-          {t("onboarding.moduleSelectionDesc", "CollectionKeeper is your main shell. Turn on the modules you want to use.")}
+          {t("onboarding.moduleSelectionDesc")}
         </p>
       </div>
 
@@ -135,7 +135,7 @@ export default function ModuleSelectionStep({
                     color: selected ? "#9BE3B5" : "#E0D8C8",
                   }}
                 >
-                  {selected ? t("common.selected", "Selected") : t("common.off", "Off")}
+                  {selected ? t("common.selected") : t("common.off")}
                 </div>
               </div>
             </button>
@@ -145,7 +145,7 @@ export default function ModuleSelectionStep({
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs" style={{ color: "#E0D8C8" }}>
-          {t("onboarding.moduleSelectionHint", "Select at least one accessible module to continue.")}
+          {t("onboarding.moduleSelectionHint")}
         </p>
 
         <button
@@ -158,7 +158,7 @@ export default function ModuleSelectionStep({
             color: "#F5F1E7",
           }}
         >
-          {t("common.continue", "Continue")}
+          {t("common.continue")}
         </button>
       </div>
     </div>

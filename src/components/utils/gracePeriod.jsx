@@ -117,13 +117,13 @@ export function getGraceStatus(subscription) {
  * @returns {string} - Status message
  */
 export function getSubscriptionStatusMessage(subscription, t) {
-  if (!subscription) return t("subscription.noSubscription", "No active subscription");
+  if (!subscription) return t("subscription.noSubscription");
   
   const status = String(subscription?.status || "").toLowerCase();
   
   // Active states
-  if (status === "active") return t("subscription.active", "Active");
-  if (status === "trialing" || status === "trial") return t("subscription.trial", "Trial Active");
+  if (status === "active") return t("subscription.active");
+  if (status === "trialing" || status === "trial") return t("subscription.trial");
   
   // Failed payment with grace
   const grace = getGraceStatus(subscription);
@@ -133,12 +133,12 @@ export function getSubscriptionStatusMessage(subscription, t) {
   
   // Grace expired
   if (grace.gracePeriodExpired) {
-    return t("subscription.suspended", "Paid access suspended");
+    return t("subscription.suspended");
   }
   
   // Canceled
   if (status === "canceled" || status === "cancelled") {
-    return t("subscription.canceled", "Canceled");
+    return t("subscription.canceled");
   }
   
   // Default

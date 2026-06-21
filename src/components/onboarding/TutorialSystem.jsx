@@ -44,37 +44,37 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
   const steps = [
     {
       id: "add-pipe",
-      title: t("tutorial.quickstart.steps.addPipe.title", "Quick Start: Add Your First Pipe"),
-      description: t("tutorial.quickstart.steps.addPipe.description", "Start cataloging your collection"),
-      content: t("tutorial.quickstart.steps.addPipe.content", "Add a pipe from your collection. Take a photo and fill in details like shape, maker, and material."),
-      tip: t("tutorial.quickstart.steps.addPipe.tip", "Even basic info helps. You can always add more details later."),
+      title: t("tutorial.quickstart.steps.addPipe.title"),
+      description: t("tutorial.quickstart.steps.addPipe.description"),
+      content: t("tutorial.quickstart.steps.addPipe.content"),
+      tip: t("tutorial.quickstart.steps.addPipe.tip"),
       action: () => {
         navigate(createPageUrl("Pipes?action=add"));
       },
-      actionLabel: t("common.next", "Next"),
+      actionLabel: t("common.next"),
     },
     {
       id: "add-tobacco",
-      title: t("tutorial.quickstart.steps.addTobacco.title", "Quick Start: Add Your First Blend"),
-      description: t("tutorial.quickstart.steps.addTobacco.description", "Build out your cellar"),
-      content: t("tutorial.quickstart.steps.addTobacco.content", "Add a tobacco blend. Include the type, strength, and how much you have on hand."),
-      tip: t("tutorial.quickstart.steps.addTobacco.tip", "Even one pipe and one blend unlocks matching recommendations."),
+      title: t("tutorial.quickstart.steps.addTobacco.title"),
+      description: t("tutorial.quickstart.steps.addTobacco.description"),
+      content: t("tutorial.quickstart.steps.addTobacco.content"),
+      tip: t("tutorial.quickstart.steps.addTobacco.tip"),
       action: () => {
         navigate(createPageUrl("Tobacco?action=add"));
       },
-      actionLabel: t("common.next", "Next"),
+      actionLabel: t("common.next"),
     },
     {
       id: "log-session",
-      title: t("tutorial.quickstart.steps.logSession.title", "Quick Start: Log Your First Session"),
-      description: t("tutorial.quickstart.steps.logSession.description", "Start tracking your smoking"),
-      content: t("tutorial.quickstart.steps.logSession.content", "Log a smoking session. When and what you smoked helps PipeKeeper learn your preferences."),
-      tip: t("tutorial.quickstart.steps.logSession.tip", "Find 'Log Session' on your Home page to get started."),
+      title: t("tutorial.quickstart.steps.logSession.title"),
+      description: t("tutorial.quickstart.steps.logSession.description"),
+      content: t("tutorial.quickstart.steps.logSession.content"),
+      tip: t("tutorial.quickstart.steps.logSession.tip"),
       action: () => {
         setIsVisible(false);
         onTutorialClose?.();
       },
-      actionLabel: t("common.done", "Done"),
+      actionLabel: t("common.done"),
     },
   ];
 
@@ -93,7 +93,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="text-xs uppercase tracking-wider text-[#D8C7A6]/70 mb-2">
-                {t("tutorial.quickstart.title", "Quick Start")} · {currentStep + 1} {t("common.of", "of")} {steps.length}
+                {t("tutorial.quickstart.title")} · {currentStep + 1} {t("common.of")} {steps.length}
               </div>
               <h2 className="text-2xl font-bold text-[#F5F1E7] mb-1">{step.title}</h2>
               <p className="text-sm text-[#D8C7A6]/80">{step.description}</p>
@@ -123,7 +123,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
               style={{ background: "linear-gradient(135deg, rgba(80,60,35,0.3), rgba(60,45,25,0.5))" }}
             >
               <p className="text-sm text-[#D8C7A6]/85">
-                <span className="font-semibold text-[#D8C7A6]">{t("common.tip", "Tip:")}</span> {step.tip}
+                <span className="font-semibold text-[#D8C7A6]">{t("common.tip")}</span> {step.tip}
               </p>
             </div>
           )}
@@ -158,7 +158,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
                 className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7] gap-1"
               >
                 <ChevronLeft className="w-4 h-4" />
-                {t("common.back", "Back")}
+                {t("common.back")}
               </Button>
             )}
             <Button

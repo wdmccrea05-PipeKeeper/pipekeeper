@@ -48,10 +48,10 @@ function WhiskeyAnalyticsInner() {
             hyphens: "none"
           }}
         >
-          {t('nav.analytics') || 'Analytics'}
+          {t('nav.analytics')}
         </h1>
         <p style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
-          {t('whiskeykeeper.analyticsDescription') || 'Deep dive into your collection metrics'}
+          {t('whiskeykeeper.analyticsDescription')}
         </p>
       </div>
 
@@ -66,7 +66,7 @@ function WhiskeyAnalyticsInner() {
             }}
           >
             <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.totalValue') || 'Total Value'}
+              {t('whiskeykeeper.totalValue')}
             </p>
             <p className="text-3xl font-bold" style={{ color: '#D4A574' }}>
               {formatFromBase(totalValue)}
@@ -81,7 +81,7 @@ function WhiskeyAnalyticsInner() {
             }}
           >
             <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.totalBottles') || 'Total Bottles'}
+              {t('whiskeykeeper.totalBottles')}
             </p>
             <p className="text-3xl font-bold" style={{ color: '#B48C4B' }}>
               {totalBottles}
@@ -96,7 +96,7 @@ function WhiskeyAnalyticsInner() {
             }}
           >
             <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.openBottles') || 'Open Bottles'}
+              {t('whiskeykeeper.openBottles')}
             </p>
             <p className="text-3xl font-bold" style={{ color: '#A35C5C' }}>
               {openBottles}
@@ -111,7 +111,7 @@ function WhiskeyAnalyticsInner() {
             }}
           >
             <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
-              {t('whiskeykeeper.avgRating') || 'Avg Rating'}
+              {t('whiskeykeeper.avgRating')}
             </p>
             <p className="text-3xl font-bold" style={{ color: '#D4AF37' }}>
               {avgRating > 0 ? avgRating.toFixed(1) : '—'}
@@ -131,10 +131,10 @@ function WhiskeyAnalyticsInner() {
         >
           <BarChart3 className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(180,140,75,0.5)' }} />
           <h2 style={{ color: '#F5F1E7' }} className="text-xl font-semibold mb-2">
-            {t('whiskeykeeper.noAnalytics') || 'No analytics yet'}
+            {t('whiskeykeeper.noAnalytics')}
           </h2>
           <p style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {t('whiskeykeeper.addBottlesForAnalytics') || 'Add bottles to see detailed analytics'}
+            {t('whiskeykeeper.addBottlesForAnalytics')}
           </p>
         </div>
       )}

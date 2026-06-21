@@ -98,7 +98,7 @@ export default function BottleCard({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
             <span className="text-sm text-[#E0D8C8]/48 font-medium">
-              {t('whiskey.noPhoto') || 'No photo'}
+              {t('whiskey.noPhoto')}
             </span>
           </div>
         )}
@@ -132,11 +132,11 @@ export default function BottleCard({
       <div className="p-5 space-y-5">
         <div className="min-w-0">
           <h3 className="text-xl font-bold text-[#F5F1E7] leading-tight break-words">
-            {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
+            {bottle?.name || (t('whiskey.untitledBottle'))}
           </h3>
           <p className="text-sm text-[#E0D8C8] break-words mt-1.5 leading-relaxed">
             {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') ||
-              (t('whiskey.noOriginInfo') || 'No origin details')}
+              (t('whiskey.noOriginInfo'))}
           </p>
         </div>
 
@@ -195,7 +195,7 @@ export default function BottleCard({
           <p className="text-sm text-[#E0D8C8]/76 break-words mt-2 leading-relaxed">
             {bottle?.notes
               ? bottle.notes.slice(0, 120) + (bottle.notes.length > 120 ? '…' : '')
-              : (t('whiskey.noNotesYet') || 'No notes yet')}
+              : (t('whiskey.noNotesYet'))}
           </p>
         </div>
 

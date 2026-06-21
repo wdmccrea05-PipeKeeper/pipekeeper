@@ -129,16 +129,16 @@ export default function PipesPage() {
       if (editingPipe) {
         await updateMutation.mutateAsync({ id: editingPipe.id, data });
         await invalidatePipeQueries(queryClient, user?.email);
-        toast.success(t('notifications.updated') || 'Pipe updated');
+        toast.success(t('notifications.updated'));
       } else {
         await createMutation.mutateAsync(data);
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pipes(user?.email) });
-        toast.success(t("notifications.created") || 'Pipe created');
+        toast.success(t("notifications.created"));
       }
       setShowForm(false);
       setEditingPipe(null);
     } catch (error) {
-      const fallback = editingPipe ? (t('pipesPage.failedToUpdatePipe') || 'Failed to update pipe') : (t('pipesPage.failedToAddPipe') || 'Failed to create pipe');
+      const fallback = editingPipe ? (t('pipesPage.failedToUpdatePipe')) : (t('pipesPage.failedToAddPipe'));
       const message = error?.message || fallback;
       console.error('[Pipes] save failed', {
         mode: editingPipe ? 'update' : 'create',

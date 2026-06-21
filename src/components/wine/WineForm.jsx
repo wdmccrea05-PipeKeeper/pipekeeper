@@ -75,20 +75,20 @@ export default function WineForm({ wine, onSaved, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
       <h2 className="text-xl font-bold" style={{ color: '#F5F1E7' }}>
-        {isEdit ? t('wine.editBottle', 'Edit Bottle') : t('wine.addBottle', 'Add Bottle')}
+        {isEdit ? t('wine.editBottle') : t('wine.addBottle')}
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label={t('wine.name', 'Wine Name') + ' *'}>
+        <Field label={t('wine.name') + ' *'}>
           <Input value={form.name} onChange={(e) => set('name', e.target.value)} required placeholder="e.g., Château Margaux" />
         </Field>
-        <Field label={t('wine.producer', 'Producer / Winery') + ' *'}>
+        <Field label={t('wine.producer') + ' *'}>
           <Input value={form.producer} onChange={(e) => set('producer', e.target.value)} required placeholder="e.g., Château Margaux" />
         </Field>
-        <Field label={t('wine.vintage', 'Vintage')}>
+        <Field label={t('wine.vintage')}>
           <Input type="number" value={form.vintage} onChange={(e) => set('vintage', e.target.value)} placeholder="e.g., 2018" min={1800} max={new Date().getFullYear()} />
         </Field>
-        <Field label={t('wine.style', 'Style')}>
+        <Field label={t('wine.style')}>
           <select
             value={form.style}
             onChange={(e) => set('style', e.target.value)}
@@ -98,19 +98,19 @@ export default function WineForm({ wine, onSaved, onCancel }) {
             {STYLES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
           </select>
         </Field>
-        <Field label={t('wine.region', 'Region')}>
+        <Field label={t('wine.region')}>
           <Input value={form.region} onChange={(e) => set('region', e.target.value)} placeholder="e.g., Bordeaux, Napa Valley" />
         </Field>
-        <Field label={t('wine.country', 'Country')}>
+        <Field label={t('wine.country')}>
           <Input value={form.country} onChange={(e) => set('country', e.target.value)} placeholder="e.g., France, USA" />
         </Field>
-        <Field label={t('wine.appellation', 'Appellation')}>
+        <Field label={t('wine.appellation')}>
           <Input value={form.appellation} onChange={(e) => set('appellation', e.target.value)} placeholder="e.g., Margaux AOC" />
         </Field>
-        <Field label={t('wine.varietal', 'Varietal')}>
+        <Field label={t('wine.varietal')}>
           <Input value={form.varietal} onChange={(e) => set('varietal', e.target.value)} placeholder="e.g., Cabernet Sauvignon" />
         </Field>
-        <Field label={t('wine.bottleSize', 'Bottle Size')}>
+        <Field label={t('wine.bottleSize')}>
           <select
             value={form.bottle_size}
             onChange={(e) => set('bottle_size', e.target.value)}
@@ -120,25 +120,25 @@ export default function WineForm({ wine, onSaved, onCancel }) {
             {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </Field>
-        <Field label={t('wine.quantity', 'Quantity')}>
+        <Field label={t('wine.quantity')}>
           <Input type="number" value={form.quantity} onChange={(e) => set('quantity', e.target.value)} min={0} />
         </Field>
-        <Field label={t('wine.purchasePrice', 'Purchase Price ($)')}>
+        <Field label={t('wine.purchasePrice')}>
           <Input type="number" step="0.01" value={form.purchase_price} onChange={(e) => set('purchase_price', e.target.value)} placeholder="0.00" />
         </Field>
-        <Field label={t('wine.estimatedValue', 'Estimated Value ($)')}>
+        <Field label={t('wine.estimatedValue')}>
           <Input type="number" step="0.01" value={form.estimated_value} onChange={(e) => set('estimated_value', e.target.value)} placeholder="0.00" />
         </Field>
-        <Field label={t('wine.drinkingWindowStart', 'Drink From')}>
+        <Field label={t('wine.drinkingWindowStart')}>
           <Input type="date" value={form.drinking_window_start} onChange={(e) => set('drinking_window_start', e.target.value)} />
         </Field>
-        <Field label={t('wine.drinkingWindowEnd', 'Drink By')}>
+        <Field label={t('wine.drinkingWindowEnd')}>
           <Input type="date" value={form.drinking_window_end} onChange={(e) => set('drinking_window_end', e.target.value)} />
         </Field>
-        <Field label={t('wine.cellarLocation', 'Cellar Location')}>
+        <Field label={t('wine.cellarLocation')}>
           <Input value={form.cellar_location} onChange={(e) => set('cellar_location', e.target.value)} placeholder="e.g., Rack A, Shelf 2" />
         </Field>
-        <Field label={t('wine.rating', 'Rating (1–5)')}>
+        <Field label={t('wine.rating')}>
           <Input type="number" value={form.rating} onChange={(e) => set('rating', Number(e.target.value))} min={0} max={5} step={0.5} />
         </Field>
       </div>
@@ -155,11 +155,11 @@ export default function WineForm({ wine, onSaved, onCancel }) {
             onChange={(e) => set('manual_valuation_enabled', e.target.checked)}
           />
           <span className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.9)' }}>
-            {t('wine.manualValuationOverride', 'Manual Valuation Override')}
+            {t('wine.manualValuationOverride')}
           </span>
         </label>
         {form.manual_valuation_enabled && (
-          <Field label={t('wine.manualEstimatedValue', 'Manual Estimated Value ($)')}>
+          <Field label={t('wine.manualEstimatedValue')}>
             <Input
               type="number"
               step="0.01"
@@ -173,7 +173,7 @@ export default function WineForm({ wine, onSaved, onCancel }) {
 
       {/* Photo upload */}
       <div>
-        <label className="ck-field-label">{t('wine.photos', 'Photos')}</label>
+        <label className="ck-field-label">{t('wine.photos')}</label>
         <PhotoUploader
           existingPhotos={form.photos}
           onPhotosSelected={(photos) => set('photos', photos)}
@@ -182,12 +182,12 @@ export default function WineForm({ wine, onSaved, onCancel }) {
         />
       </div>
 
-      <Field label={t('common.notes', 'Notes')}>
+      <Field label={t('common.notes')}>
         <textarea
           value={form.notes}
           onChange={(e) => set('notes', e.target.value)}
           rows={3}
-          placeholder={t('wine.notesPlaceholder', 'Tasting notes, pairing ideas, or collector notes…')}
+          placeholder={t('wine.notesPlaceholder')}
           className="flex w-full rounded-xl px-4 py-2.5 text-base resize-none"
           style={{ background: 'rgba(20,14,10,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
         />
@@ -195,12 +195,12 @@ export default function WineForm({ wine, onSaved, onCancel }) {
 
       <label className="flex items-center gap-3 cursor-pointer">
         <input type="checkbox" checked={form.is_favorite} onChange={(e) => set('is_favorite', e.target.checked)} />
-        <span className="text-sm" style={{ color: 'rgba(224,216,200,0.8)' }}>{t('wine.markFavorite', 'Mark as Favorite')}</span>
+        <span className="text-sm" style={{ color: 'rgba(224,216,200,0.8)' }}>{t('wine.markFavorite')}</span>
       </label>
 
       <div className="flex gap-3">
         <Button type="submit" disabled={saving} style={{ background: '#8B3A3A', color: '#F5F1E7' }}>
-          {saving ? t('common.saving') : isEdit ? t('wine.saveBottle', 'Save Bottle') : t('wine.addBottle', 'Add Bottle')}
+          {saving ? t('common.saving') : isEdit ? t('wine.saveBottle') : t('wine.addBottle')}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>{t('common.cancel')}</Button>
       </div>

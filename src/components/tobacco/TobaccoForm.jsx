@@ -501,7 +501,7 @@ Return complete and accurate information based on the blend name or description 
               <div className="w-full border-t border-[rgba(140,105,65,0.28)]" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[rgba(20,15,11,0.98)] px-2 text-[#D7C9B2]/70">{t("formsExtended.orEnterManually", "Or enter manually")}</span>
+              <span className="bg-[rgba(20,15,11,0.98)] px-2 text-[#D7C9B2]/70">{t("formsExtended.orEnterManually")}</span>
             </div>
           </div>
         </>
@@ -789,7 +789,7 @@ Return complete and accurate information based on the blend name or description 
             getNoteLabel={(note) => t(`flavorNotes.${note}`, note)}
             description={t("tobaccoExtended.flavorNotesDesc")}
             placeholder="Add custom flavor note…"
-            addLabel={t("common.add", "Add")}
+            addLabel={t("common.add")}
             selectedLabel="Selected notes"
           />
       </FormSection>
@@ -1125,15 +1125,15 @@ Return complete and accurate information based on the blend name or description 
           </div>
           <div className="pt-4 border-t border-[#E0D8C8]/20">
             <FieldWithInfo 
-              label={t("formsExtended.collectibleOnly", "Collectible Only")}
-              helpText={t("formsExtended.collectibleOnlyHelpTobacco", "Exclude this blend from AI matching, pairing, and usage recommendations. It will still remain in your cellar inventory, valuation totals, exports, and insurance documentation.")}
+              label={t("formsExtended.collectibleOnly")}
+              helpText={t("formsExtended.collectibleOnlyHelpTobacco")}
             >
               <div className="flex items-center gap-3">
                 <Switch
                   checked={formData.ai_excluded || false}
                   onCheckedChange={(v) => handleChange('ai_excluded', v)}
                 />
-                <span className="text-sm text-[#E0D8C8]/70">{formData.ai_excluded ? t("formsExtended.aiExcluded", "Excluded from AI") : t("formsExtended.aiIncluded", "Included in AI")}</span>
+                <span className="text-sm text-[#E0D8C8]/70">{formData.ai_excluded ? t("formsExtended.aiExcluded") : t("formsExtended.aiIncluded")}</span>
               </div>
             </FieldWithInfo>
           </div>

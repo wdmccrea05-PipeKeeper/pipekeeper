@@ -90,14 +90,14 @@ function AddItemValueSnapshotModal({ item, itemType, moduleKey, valuationSnapsho
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('whiskey.saveValueCheckpoint', 'Save Value Checkpoint')}</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('whiskey.saveValueCheckpoint')}</h3>
         <div className="space-y-3">
           {[
-            { label: t('valuation.snapshotDate', 'Snapshot Date'), field: 'snapshot_date', type: 'date' },
-            { label: t('valuation.currentValue', 'Current Value'), field: 'computed_current_value', type: 'number' },
-            { label: t('valuation.source', 'Source'), field: 'source', type: 'text' },
-            { label: t('valuation.rarityScore', 'Rarity Score (0–100)'), field: 'rarity_score', type: 'number' },
-            { label: t('common.notes', 'Notes'), field: 'notes', type: 'text' },
+            { label: t('valuation.snapshotDate'), field: 'snapshot_date', type: 'date' },
+            { label: t('valuation.currentValue'), field: 'computed_current_value', type: 'number' },
+            { label: t('valuation.source'), field: 'source', type: 'text' },
+            { label: t('valuation.rarityScore'), field: 'rarity_score', type: 'number' },
+            { label: t('common.notes'), field: 'notes', type: 'text' },
           ].map(({ label, field, type }) => (
             <div key={field}>
               <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
@@ -129,9 +129,9 @@ function AddItemValueSnapshotModal({ item, itemType, moduleKey, valuationSnapsho
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(163,92,92,1),rgba(140,74,74,1))', color: '#F5F1E7' }}>
-            {saving ? t('common.saving', 'Saving…') : t('whiskey.saveValueCheckpoint', 'Save Value Checkpoint')}
+            {saving ? t('common.saving') : t('whiskey.saveValueCheckpoint')}
           </Button>
         </div>
       </div>
@@ -218,9 +218,9 @@ function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onCl
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} disabled={saving || !form.observed_price} style={{ background: 'linear-gradient(135deg,rgba(59,130,246,0.8),rgba(37,99,235,0.9))', color: '#F5F1E7' }}>
-            {saving ? t('common.saving', 'Saving…') : t('whiskey.saveObservation', 'Save Observation')}
+            {saving ? t('common.saving') : t('whiskey.saveObservation')}
           </Button>
         </div>
       </div>
@@ -293,7 +293,7 @@ function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(251,191,36,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('valuation.editInputs', 'Pricing & Valuation Inputs')}</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('valuation.editInputs')}</h3>
         <p className="text-xs text-[#D8C7A6]/60">These fields feed directly into the shared valuation engine.</p>
 
         <p className="text-xs font-semibold text-[#D4A574] uppercase tracking-wider pt-1">Pricing</p>
@@ -428,9 +428,9 @@ function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
         </div>
 
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(251,191,36,0.8),rgba(217,160,32,0.9))', color: '#1a120d' }}>
-            {saving ? t('common.saving', 'Saving…') : t('common.save', 'Save Inputs')}
+            {saving ? t('common.saving') : t('common.save')}
           </Button>
         </div>
       </div>
@@ -629,12 +629,12 @@ export default function TobaccoDetail() {
     try {
       await scopedEntities.TobaccoBlend.update(blend.id, updates);
       setBlend((prev) => ({ ...prev, ...updates }));
-      toast.success(t('inventory.saved') || 'Inventory updated');
+      toast.success(t('inventory.saved'));
       // Invalidate curator collection so the Curator page reflects the update immediately
       queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
     } catch (e) {
       console.error('[TobaccoDetail] update failed', e);
-      toast.error(t('errors.updateFailed') || 'Failed to update inventory');
+      toast.error(t('errors.updateFailed'));
     } finally {
       setIsUpdatingInventory(false);
     }
@@ -938,19 +938,19 @@ export default function TobaccoDetail() {
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('tobacco.deleteConfirm', 'Delete this blend?')}</AlertDialogTitle>
+            <AlertDialogTitle>{t('tobacco.deleteConfirm')}</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete <strong>{blend?.name}</strong>. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>{t('common.cancel', 'Cancel')}</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
               style={{ background: 'rgba(180,60,60,0.9)', color: '#fff' }}
             >
-              {deleting ? t('common.deleting', 'Deleting…') : t('common.confirmDelete', 'Yes, delete')}
+              {deleting ? t('common.deleting') : t('common.confirmDelete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

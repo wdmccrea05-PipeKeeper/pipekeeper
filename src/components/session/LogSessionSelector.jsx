@@ -29,8 +29,8 @@ export default function LogSessionSelector({
   if (pipeEnabled) {
     options.push({
       key: "pipe",
-      label: t('session.pipeSession', 'Pipe Session'),
-      sublabel: t('session.pipeSessionDesc', 'Log a pipe and tobacco session'),
+      label: t('session.pipeSession'),
+      sublabel: t('session.pipeSessionDesc'),
       Icon: BookOpen,
       accent: "#E0B36D",
       background:
@@ -47,8 +47,8 @@ export default function LogSessionSelector({
   if (whiskeyEnabled) {
     options.push({
       key: "whiskey",
-      label: t('session.whiskeyTasting', 'Whiskey Tasting'),
-      sublabel: t('session.whiskeyTastingDesc', 'Log a tasting note or pour'),
+      label: t('session.whiskeyTasting'),
+      sublabel: t('session.whiskeyTastingDesc'),
       Icon: GlassWater,
       accent: "#E39A5A",
       background:
@@ -65,8 +65,8 @@ export default function LogSessionSelector({
   if (cigarEnabled) {
     options.push({
       key: "cigar",
-      label: t('session.cigarSession', 'Cigar Session'),
-      sublabel: t('session.cigarSessionDesc', 'Log a cigar smoke session'),
+      label: t('session.cigarSession'),
+      sublabel: t('session.cigarSessionDesc'),
       Icon: Cigarette,
       accent: "#C49A6C",
       background:
@@ -83,8 +83,8 @@ export default function LogSessionSelector({
   if (pipeEnabled && whiskeyEnabled) {
     options.push({
       key: "combined",
-      label: t('session.combinedSession', 'Pipe + Whiskey'),
-      sublabel: t('session.combinedSessionDesc', 'Log a combined session across both modules'),
+      label: t('session.combinedSession'),
+      sublabel: t('session.combinedSessionDesc'),
       Icon: Sparkles,
       accent: "#E39A9A",
       background:
@@ -101,8 +101,8 @@ export default function LogSessionSelector({
   if (wineEnabled) {
     options.push({
       key: "wine",
-      label: t('session.wineTasting', 'Wine Tasting'),
-      sublabel: t('session.wineTastingDesc', 'Log a wine tasting note'),
+      label: t('session.wineTasting'),
+      sublabel: t('session.wineTastingDesc'),
       Icon: GlassWater,
       accent: "#B87EC7",
       background:
@@ -119,8 +119,8 @@ export default function LogSessionSelector({
   if (whiskeyEnabled && cigarEnabled) {
     options.push({
       key: "whiskey_cigar",
-      label: t('session.whiskeyCigarSession', 'Whiskey + Cigar'),
-      sublabel: t('session.whiskeyCigarSessionDesc', 'Log a whiskey and cigar pairing session'),
+      label: t('session.whiskeyCigarSession'),
+      sublabel: t('session.whiskeyCigarSessionDesc'),
       Icon: Sparkles,
       accent: "#C49A6C",
       background:
@@ -152,10 +152,10 @@ export default function LogSessionSelector({
         <div className="px-5 py-4 flex items-center justify-between border-b border-[rgba(180,140,75,0.14)]">
           <div>
             <h3 className="font-bold text-[#F8F2E8] text-3xl sm:text-4xl leading-tight">
-              {t('session.logSession', 'Log Session')}
+              {t('session.logSession')}
             </h3>
             <p className="text-base mt-2 text-[#EADFCF]/85">
-              {t('session.chooseFlow', 'Choose the session flow you want to launch.')}
+              {t('session.chooseFlow')}
             </p>
           </div>
 

@@ -38,10 +38,10 @@ export default function BottleIdentifier({ onBottleIdentified }) {
         uploadedUrls.push(file_url);
       }
       setPhotoUrls(uploadedUrls);
-      toast.success(t("bottleIdentifier.photosUploaded", "Photos uploaded successfully"));
+      toast.success(t("bottleIdentifier.photosUploaded"));
     } catch (err) {
       console.error('Upload error:', err);
-      toast.error(t("bottleIdentifier.uploadFailed", "Failed to upload photos"));
+      toast.error(t("bottleIdentifier.uploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -49,7 +49,7 @@ export default function BottleIdentifier({ onBottleIdentified }) {
 
   const handleIdentify = async () => {
     if (!photoUrls.length) {
-      toast.error(t("bottleIdentifier.uploadPhotosFirst", "Upload photos first"));
+      toast.error(t("bottleIdentifier.uploadPhotosFirst"));
       return;
     }
 
@@ -115,10 +115,10 @@ Provide detailed, accurate information based on what you can see in the images.`
 
       setResult(bottleData);
       onBottleIdentified(bottleData);
-      toast.success(t("bottleIdentifier.identifySuccess", "Bottle identified successfully"));
+      toast.success(t("bottleIdentifier.identifySuccess"));
     } catch (err) {
       console.error('Identify error:', err);
-      toast.error(t("bottleIdentifier.identifyFailed", "Failed to identify bottle"));
+      toast.error(t("bottleIdentifier.identifyFailed"));
     } finally {
       setLoading(false);
     }
@@ -165,10 +165,10 @@ Provide detailed, accurate information based on what you can see in the images.`
 
           <div className="min-w-0">
             <div className="text-xl font-semibold">
-              {t("bottleIdentifier.aiBottleIdentification", "AI Bottle Identification")}
+              {t("bottleIdentifier.aiBottleIdentification")}
             </div>
             <div className="text-sm text-[#D7C9B2]/70">
-              {t("bottleIdentifier.uploadPhotosToIdentify", "Upload label photos to identify a bottle")}
+              {t("bottleIdentifier.uploadPhotosToIdentify")}
             </div>
           </div>
         </CardTitle>
@@ -220,14 +220,14 @@ Provide detailed, accurate information based on what you can see in the images.`
                   <>
                     <Loader2 className="w-7 h-7 text-[#D7C9B2]/80 animate-spin" />
                     <span className="font-medium text-[#F5F1E7]">
-                      {t("common.uploading", "Uploading...")}
+                      {t("common.uploading")}
                     </span>
                   </>
                 ) : (
                   <>
                     <Upload className="w-7 h-7 text-[#D7C9B2]/80" />
                     <span className="font-medium text-[#F5F1E7]">
-                      {t("bottleIdentifier.uploadPhotos", "Upload Label Photos")}
+                      {t("bottleIdentifier.uploadPhotos")}
                     </span>
                   </>
                 )}
@@ -246,14 +246,14 @@ Provide detailed, accurate information based on what you can see in the images.`
                   <>
                     <Loader2 className="w-7 h-7 text-[#D7C9B2]/80 animate-spin" />
                     <span className="font-medium text-[#F5F1E7]">
-                      {t("common.uploading", "Uploading...")}
+                      {t("common.uploading")}
                     </span>
                   </>
                 ) : (
                   <>
                     <Camera className="w-7 h-7 text-[#D7C9B2]/80" />
                     <span className="font-medium text-[#F5F1E7]">
-                      {t("common.takePhoto", "Take Photo")}
+                      {t("common.takePhoto")}
                     </span>
                   </>
                 )}
@@ -263,30 +263,30 @@ Provide detailed, accurate information based on what you can see in the images.`
 
             {photos.length > 0 && (
               <div className="text-sm text-[#D7C9B2]/80">
-                {photos.length} {t("bottleIdentifier.photosSelected", "photo(s) selected")}
+                {photos.length} {t("bottleIdentifier.photosSelected")}
               </div>
             )}
 
             <div className="space-y-4">
               <div className="text-sm font-semibold text-[#F5F1E7]">
-                {t("bottleIdentifier.optionalHints", "Optional Hints")}
+                {t("bottleIdentifier.optionalHints")}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Input
                   value={nameHint}
                   onChange={(e) => setNameHint(e.target.value)}
-                  placeholder={t("bottleIdentifier.nameLabel", "Name / Label")}
+                  placeholder={t("bottleIdentifier.nameLabel")}
                 />
                 <Input
                   value={distilleryHint}
                   onChange={(e) => setDistilleryHint(e.target.value)}
-                  placeholder={t("bottleIdentifier.distillery", "Distillery")}
+                  placeholder={t("bottleIdentifier.distillery")}
                 />
                 <Input
                   value={typeHint}
                   onChange={(e) => setTypeHint(e.target.value)}
-                  placeholder={t("bottleIdentifier.type", "Type")}
+                  placeholder={t("bottleIdentifier.type")}
                 />
               </div>
             </div>
@@ -297,7 +297,7 @@ Provide detailed, accurate information based on what you can see in the images.`
               className="w-full bg-gradient-to-r from-[#A35C5C] to-[#8C4B4B] hover:from-[#B26666] hover:to-[#995454] text-[#F8EBDD] border border-[rgba(255,255,255,0.06)]"
             >
               {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-              {t("bottleIdentifier.identifyBottle", "Identify Bottle")}
+              {t("bottleIdentifier.identifyBottle")}
             </Button>
           </>
         )}

@@ -72,7 +72,7 @@ function AppleFAQ() {
             </li>
           </ul>
           <p className="text-[#e8d5b7]/70">
-            {t("faqExtended.legacySubscriberNote", { date: proLaunchDateLabel, defaultValue: "Founding subscribers have grandfathered access to all Pro features." })}
+            {t("faqExtended.legacySubscriberNote", { date: proLaunchDateLabel })}
           </p>
         </CardContent>
       </Card>

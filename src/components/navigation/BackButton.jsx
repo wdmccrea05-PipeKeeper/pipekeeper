@@ -42,10 +42,10 @@ export default function BackButton({ currentPageName, className = '' }) {
       size="sm"
       onClick={handleBack}
       className={`text-[#E0D8C8] hover:bg-white/10 ${className}`}
-      aria-label={t('common.back', 'Back')}
+      aria-label={t('common.back')}
     >
       <ArrowLeft className="w-4 h-4 mr-1" />
-      <span>{t('common.back', 'Back')}</span>
+      <span>{t('common.back')}</span>
     </Button>
   );
 }

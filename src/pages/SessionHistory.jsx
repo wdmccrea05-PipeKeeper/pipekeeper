@@ -95,10 +95,10 @@ export default function SessionHistory() {
     <div className="space-y-5 p-6 md:p-8 text-[#F5F1E7]">
       <div>
         <h1 className="text-3xl font-bold" style={{ fontFamily: "'Georgia', serif" }}>
-          {t("sessionHistory.title", "Session History")}
+          {t("sessionHistory.title")}
         </h1>
         <p className="text-sm text-[#D8C7A6]/75 mt-1">
-          {t("sessionHistory.subtitle", "Browse past sessions by calendar day across modules.")}
+          {t("sessionHistory.subtitle")}
         </p>
       </div>
 
@@ -135,10 +135,10 @@ export default function SessionHistory() {
             {selectedDate}
           </h2>
           {isLoading ? (
-            <p className="text-[#D8C7A6]/75">{t("common.loading", "Loading...")}</p>
+            <p className="text-[#D8C7A6]/75">{t("common.loading")}</p>
           ) : selectedDayRows.length === 0 ? (
             <p className="text-[#D8C7A6]/75">
-              {t("sessionHistory.emptyDay", "No sessions logged for this day.")}
+              {t("sessionHistory.emptyDay")}
             </p>
           ) : (
             <div className="space-y-3">
@@ -204,13 +204,13 @@ export default function SessionHistory() {
             {selectedSession.notes ? (
               <div className="mt-4 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.15)] p-3">
                 <p className="text-xs uppercase tracking-widest text-[#B48C4B] mb-1">
-                  {t("sessionHistory.notes", "Notes")}
+                  {t("sessionHistory.notes")}
                 </p>
                 <p className="text-sm text-[#E0D8C8] whitespace-pre-wrap">{selectedSession.notes}</p>
               </div>
             ) : (
               <p className="mt-4 text-sm text-[#D8C7A6]/50 italic">
-                {t("sessionHistory.noNotes", "No notes recorded.")}
+                {t("sessionHistory.noNotes")}
               </p>
             )}
           </div>

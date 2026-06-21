@@ -58,8 +58,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   const MODULE_CONFIG = [
     {
       id: "pipekeeper",
-      label: t("hub.pipekeeper", "PipeKeeper"),
-      description: t("pipekeeper.description", "Pipe collection, tobacco, smoking logs, and pairings."),
+      label: t("hub.pipekeeper"),
+      description: t("pipekeeper.description"),
       icon: MODULE_ICONS.pipekeeper,
       launched: isModuleLaunched("pipekeeper", effectiveUser),
       internalModule: isModuleInternal("pipekeeper", effectiveUser),
@@ -69,8 +69,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     },
     {
       id: "whiskeykeeper",
-      label: t("hub.whiskeykeeper", "WhiskeyKeeper"),
-      description: t("whiskeykeeper.description", "Whiskey collection, tasting notes, and inventory."),
+      label: t("hub.whiskeykeeper"),
+      description: t("whiskeykeeper.description"),
       icon: MODULE_ICONS.whiskeykeeper,
       launched: isModuleLaunched("whiskeykeeper", effectiveUser),
       internalModule: isModuleInternal("whiskeykeeper", effectiveUser),
@@ -81,8 +81,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     },
     {
       id: "winekeeper",
-      label: t("hub.winekeeper", "WineKeeper"),
-      description: t("profile.winekeeperDescription", "Wine cellar management and bottle tracking."),
+      label: t("hub.winekeeper"),
+      description: t("profile.winekeeperDescription"),
       icon: MODULE_ICONS.winekeeper,
       launched: isModuleLaunched("winekeeper", effectiveUser),
       internalModule: isModuleInternal("winekeeper", effectiveUser),
@@ -99,8 +99,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     },
     {
       id: "cigarkeeper",
-      label: t("hub.cigarkeeper", "CigarKeeper"),
-      description: t("profile.cigarkeeperDescription", "Cigar collection curation and tasting."),
+      label: t("hub.cigarkeeper"),
+      description: t("profile.cigarkeeperDescription"),
       icon: MODULE_ICONS.cigarkeeper,
       launched: isModuleLaunched("cigarkeeper", effectiveUser),
       internalModule: isModuleInternal("cigarkeeper", effectiveUser),
@@ -132,7 +132,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
         queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
       ]);
 
-      toast.success(isPaid ? t("profile.switchedToPro", "Switched to Pro mode") : t("profile.switchedToFree", "Switched to Free mode"));
+      toast.success(isPaid ? t("profile.switchedToPro") : t("profile.switchedToFree"));
     } catch (e) {
       console.error("[ModuleVisibility] tier toggle error:", e);
       toast.error("Could not update module settings");
@@ -154,12 +154,12 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
       const moduleLabel = MODULE_CONFIG.find((m) => m.id === moduleId)?.label || moduleId;
       toast.success(
         enabled
-          ? `${moduleLabel} ${t("profile.enabledSuffix", "enabled")}`
-          : `${moduleLabel} ${t("profile.hiddenSuffix", "hidden")}`
+          ? `${moduleLabel} ${t("profile.enabledSuffix")}`
+          : `${moduleLabel} ${t("profile.hiddenSuffix")}`
       );
     } catch (e) {
       console.error("[ModuleVisibility] visibility toggle error:", e);
-      toast.error(e?.message || t("profile.moduleSaveError", "Could not save module preference."));
+      toast.error(e?.message || t("profile.moduleSaveError"));
     } finally {
       setSaving(null);
     }
@@ -174,13 +174,12 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
           <div className="flex items-center gap-2 mb-1">
             <Eye className="w-4 h-4 text-amber-600" />
             <span className="font-semibold text-stone-100 text-base">
-              {t("hub.activeModules", "Active Modules")}
+              {t("hub.activeModules")}
             </span>
           </div>
           <p className="text-xs text-stone-400 mb-3">
             {t(
-              "profile.moduleVisibilityDescription",
-              "Choose which collection modules appear in your navigation and Hub. Hiding a module never deletes your data — you can re-enable it at any time."
+              "profile.moduleVisibilityDescription"
             )}
           </p>
         </>
@@ -218,24 +217,24 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
 
                     {mod.internalModule && !mod.launched && canAccessInternalModuleForTesting(mod.id, effectiveUser) ? (
                       <Badge className="text-[10px] bg-purple-100 text-purple-700 border-0 px-1.5 py-0">
-                        {t("profile.internalPreview", "Internal Preview")}
+                        {t("profile.internalPreview")}
                       </Badge>
                     ) : mod.blocked ? (
                       <Badge className="text-[10px] bg-stone-200 text-stone-600 border-0 px-1.5 py-0">
-                        {t("modules.notAvailable", "Not Available")}
+                        {t("modules.notAvailable")}
                       </Badge>
                     ) : null}
 
                     {mod.alcoholRelated ? (
                       <Badge className="text-[10px] bg-amber-100 text-amber-700 border-0 px-1.5 py-0">
-                        {t("profile.alcoholBadge", "Alcohol")}
+                        {t("profile.alcoholBadge")}
                       </Badge>
                     ) : null}
                   </div>
 
                   <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">
                     {mod.blocked
-                      ? `${mod.description} (${t("modules.notAvailable", "Not Available")})`
+                      ? `${mod.description} (${t("modules.notAvailable")})`
                       : mod.description}
                   </p>
                 </div>
@@ -314,8 +313,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
       {!compact ? (
         <p className="text-xs text-stone-500 mt-2">
           {t(
-            "profile.moduleVisibilityNote",
-            "Hiding a module removes it from navigation, Hub, and recommendations. Your records remain stored and fully intact."
+            "profile.moduleVisibilityNote"
           )}
         </p>
       ) : null}

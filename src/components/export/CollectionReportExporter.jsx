@@ -542,7 +542,7 @@ export default function CollectionReportExporter({ user }) {
             </Button>
             <Button variant="outline" onClick={downloadPDFAsFile}>
               <Download className="w-4 h-4 mr-2" />
-              {t("reports.savePDF") || "Save as PDF"}
+              {t("reports.savePDF")}
             </Button>
             <Button onClick={downloadPDF}>
               <FileText className="w-4 h-4 mr-2" />

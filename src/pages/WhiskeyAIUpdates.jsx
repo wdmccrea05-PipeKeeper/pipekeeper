@@ -57,7 +57,7 @@ export default function WhiskeyAIUpdates() {
       !b.distillery || !b.region || !b.country || !b.age || !b.abv
     );
     if (toEnrich.length === 0) {
-      toast.info(t('whiskeyAI.allFieldsComplete') || 'All bottles already have complete data.');
+      toast.info(t('whiskeyAI.allFieldsComplete'));
       return;
     }
 
@@ -109,10 +109,10 @@ Return null for any field you cannot verify with confidence.`,
       if (updated > 0) {
         toast.success(t('whiskeyAI.enrichedCount', { count: updated }) || `Enriched ${updated} bottle records.`);
       } else {
-        toast.info(t('whiskeyAI.noEnrichment') || 'No new data found to add.');
+        toast.info(t('whiskeyAI.noEnrichment'));
       }
     } catch (err) {
-      toast.error(t('whiskeyAI.enrichFailed') || 'Enrichment failed. Please try again.');
+      toast.error(t('whiskeyAI.enrichFailed'));
       console.error(err);
     } finally {
       setEnrichBusy(false);
@@ -123,7 +123,7 @@ Return null for any field you cannot verify with confidence.`,
   const handleNormalizeTypes = async () => {
     const toUpdate = bottles.filter(b => !b.type || b.type === 'Other');
     if (toUpdate.length === 0) {
-      toast.info(t('whiskeyAI.typesAlreadyNormalized') || 'All bottle types are already classified.');
+      toast.info(t('whiskeyAI.typesAlreadyNormalized'));
       return;
     }
 
@@ -169,10 +169,10 @@ Only update bottles where the correct type is clearly different from "Other". Re
       if (updated > 0) {
         toast.success(t('whiskeyAI.normalizedCount', { count: updated }) || `Classified ${updated} bottle types.`);
       } else {
-        toast.info(t('whiskeyAI.noTypeChanges') || 'No type changes needed.');
+        toast.info(t('whiskeyAI.noTypeChanges'));
       }
     } catch (err) {
-      toast.error(t('whiskeyAI.normalizeFailed') || 'Classification failed.');
+      toast.error(t('whiskeyAI.normalizeFailed'));
       console.error(err);
     } finally {
       setNormalizeBusy(false);
@@ -183,7 +183,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
   const handleFillABV = async () => {
     const toUpdate = bottles.filter(b => !b.abv);
     if (toUpdate.length === 0) {
-      toast.info(t('whiskeyAI.abvComplete') || 'All bottles already have ABV data.');
+      toast.info(t('whiskeyAI.abvComplete'));
       return;
     }
 
@@ -210,10 +210,10 @@ Only update bottles where the correct type is clearly different from "Other". Re
       if (updated > 0) {
         toast.success(t('whiskeyAI.abvFilledCount', { count: updated }) || `Filled ABV for ${updated} bottles.`);
       } else {
-        toast.info(t('whiskeyAI.noAbvFound') || 'No ABV data found.');
+        toast.info(t('whiskeyAI.noAbvFound'));
       }
     } catch (err) {
-      toast.error(t('whiskeyAI.abvFailed') || 'ABV lookup failed.');
+      toast.error(t('whiskeyAI.abvFailed'));
     } finally {
       setAbvBusy(false);
     }
@@ -224,7 +224,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
     const sizes = ['50ml', '100ml', '200ml', '375ml', '500ml', '700ml', '750ml', '1L', '1.75L'];
     const toUpdate = bottles.filter(b => !b.bottle_size || b.bottle_size === 'Other');
     if (toUpdate.length === 0) {
-      toast.info(t('whiskeyAI.sizesComplete') || 'All bottle sizes are already set.');
+      toast.info(t('whiskeyAI.sizesComplete'));
       return;
     }
 
@@ -251,10 +251,10 @@ Only update bottles where the correct type is clearly different from "Other". Re
       if (updated > 0) {
         toast.success(t('whiskeyAI.sizesFilledCount', { count: updated }) || `Normalized sizes for ${updated} bottles.`);
       } else {
-        toast.info(t('whiskeyAI.noSizeChanges') || 'No size changes needed.');
+        toast.info(t('whiskeyAI.noSizeChanges'));
       }
     } catch (err) {
-      toast.error(t('whiskeyAI.sizeFailed') || 'Size normalization failed.');
+      toast.error(t('whiskeyAI.sizeFailed'));
     } finally {
       setClassifyBusy(false);
     }
@@ -266,10 +266,10 @@ Only update bottles where the correct type is clearly different from "Other". Re
     {
       key: 'enrich',
       icon: Globe,
-      title: t('whiskeyAI.enrichTitle') || 'Enrich Missing Fields',
-      description: t('whiskeyAI.enrichDesc') || 'Fill in missing distillery, region, country, age, and ABV using verified web data.',
+      title: t('whiskeyAI.enrichTitle'),
+      description: t('whiskeyAI.enrichDesc'),
       buttonLabel: enrichBusy
-        ? (t('common.loading') || 'Working...')
+        ? (t('common.loading'))
         : (t('whiskeyAI.enrichBtn') || `Enrich ${bottles.filter(b => !b.distillery || !b.region || !b.country || !b.age || !b.abv).length} Bottles`),
       busy: enrichBusy,
       action: handleEnrichMissingFields,
@@ -278,10 +278,10 @@ Only update bottles where the correct type is clearly different from "Other". Re
     {
       key: 'normalize',
       icon: Tags,
-      title: t('whiskeyAI.normalizeTitle') || 'Classify Whiskey Types',
-      description: t('whiskeyAI.normalizeDesc') || 'Standardize bottle types (Single Malt, Bourbon, Rye, etc.) for unclassified bottles.',
+      title: t('whiskeyAI.normalizeTitle'),
+      description: t('whiskeyAI.normalizeDesc'),
       buttonLabel: normalizeBusy
-        ? (t('common.loading') || 'Working...')
+        ? (t('common.loading'))
         : (t('whiskeyAI.normalizeBtn') || `Classify ${bottles.filter(b => !b.type || b.type === 'Other').length} Bottles`),
       busy: normalizeBusy,
       action: handleNormalizeTypes,
@@ -290,10 +290,10 @@ Only update bottles where the correct type is clearly different from "Other". Re
     {
       key: 'abv',
       icon: Beaker,
-      title: t('whiskeyAI.abvTitle') || 'Fill ABV Data',
-      description: t('whiskeyAI.abvDesc') || 'Look up and fill missing ABV (alcohol by volume) percentages from verified sources.',
+      title: t('whiskeyAI.abvTitle'),
+      description: t('whiskeyAI.abvDesc'),
       buttonLabel: abvBusy
-        ? (t('common.loading') || 'Working...')
+        ? (t('common.loading'))
         : (t('whiskeyAI.abvBtn') || `Fill ABV for ${bottles.filter(b => !b.abv).length} Bottles`),
       busy: abvBusy,
       action: handleFillABV,
@@ -302,10 +302,10 @@ Only update bottles where the correct type is clearly different from "Other". Re
     {
       key: 'sizes',
       icon: DollarSign,
-      title: t('whiskeyAI.sizesTitle') || 'Normalize Bottle Sizes',
-      description: t('whiskeyAI.sizesDesc') || 'Standardize bottle sizes to recognized formats (750ml, 1L, etc.).',
+      title: t('whiskeyAI.sizesTitle'),
+      description: t('whiskeyAI.sizesDesc'),
       buttonLabel: classifyBusy
-        ? (t('common.loading') || 'Working...')
+        ? (t('common.loading'))
         : (t('whiskeyAI.sizesBtn') || `Normalize ${bottles.filter(b => !b.bottle_size || b.bottle_size === 'Other').length} Bottles`),
       busy: classifyBusy,
       action: handleNormalizeBottleSizes,
@@ -336,15 +336,15 @@ Only update bottles where the correct type is clearly different from "Other". Re
               className="text-4xl font-bold tracking-tight"
               style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}
             >
-              {t('whiskeyAI.pageTitle') || 'AI Updates'}
+              {t('whiskeyAI.pageTitle')}
             </h1>
           </div>
           <p className="text-base pl-14" style={{ color: 'rgba(224, 216, 200, 0.75)' }}>
-            {t('whiskeyAI.pageSubtitle') || 'Bulk enrich, classify, and standardize your whiskey bottle records with AI assistance.'}
+            {t('whiskeyAI.pageSubtitle')}
           </p>
         </div>
         <Button onClick={() => navigate('/WhiskeyKeeper')} variant="outline" className="text-sm shrink-0">
-          {t('common.backToHub') || 'Back to Hub'}
+          {t('common.backToHub')}
         </Button>
       </div>
 
@@ -359,10 +359,10 @@ Only update bottles where the correct type is clearly different from "Other". Re
         <WhiskeyBottleIcon className="w-6 h-6 shrink-0" style={{ color: 'rgba(180, 140, 75, 0.9)' }} />
         <div>
           <p className="text-sm font-semibold" style={{ color: '#E0D8C8' }}>
-            {bottles.length} {t('whiskeyAI.bottlesInCollection') || 'bottles in your collection'}
+            {bottles.length} {t('whiskeyAI.bottlesInCollection')}
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224, 216, 200, 0.6)' }}>
-            {t('whiskeyAI.selectTaskBelow') || 'Select an AI task below to enrich your records.'}
+            {t('whiskeyAI.selectTaskBelow')}
           </p>
         </div>
       </div>
@@ -370,7 +370,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
       {/* Task Cards */}
       <div className="space-y-4">
         <h2 className="text-sm uppercase tracking-[0.12em] font-semibold" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
-          {t('whiskeyAI.availableTasks') || 'Available AI Tasks'}
+          {t('whiskeyAI.availableTasks')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {updateTasks.map((task) => (
@@ -407,7 +407,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
                   </p>
                   {task.count > 0 && (
                     <p className="text-xs mt-1" style={{ color: 'rgba(212, 165, 116, 0.8)' }}>
-                      {task.count} {t('whiskeyAI.bottlesNeedUpdate') || 'bottle(s) need update'}
+                      {task.count} {t('whiskeyAI.bottlesNeedUpdate')}
                     </p>
                   )}
                 </div>
@@ -421,7 +421,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
                 {task.busy ? (
                   <>
                     <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                    {t('common.loading') || 'Working...'}
+                    {t('common.loading')}
                   </>
                 ) : (
                   <>

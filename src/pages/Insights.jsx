@@ -1273,8 +1273,8 @@ export default function Insights() {
       />
 
       <InsightsHeader
-        title={t("pipekeeper.insightsTitle", "PipeKeeper Insights")}
-        subtitle={t("pipekeeper.insightsSubtitle", "Explore your pipe and tobacco collection data")}
+        title={t("pipekeeper.insightsTitle")}
+        subtitle={t("pipekeeper.insightsSubtitle")}
       />
 
       <InsightsTabBar tabs={TABS} activeTab={activeInsightsTab} onTabChange={setActiveInsightsTab} activeAccent={MODULE_ACCENTS.pipekeeper} />
@@ -1313,10 +1313,10 @@ export default function Insights() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl font-bold tracking-tight" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
-                    {t("insights.topHighlights", "Top Highlights")}
+                    {t("insights.topHighlights")}
                   </h2>
                   <p className="text-xs uppercase tracking-[0.12em] font-semibold mt-0.5" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
-                    {t("insights.topHighlightsSub", "Your collection's best moments")}
+                    {t("insights.topHighlightsSub")}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -1329,7 +1329,7 @@ export default function Insights() {
                     style={{ background: "linear-gradient(135deg, rgba(180,140,75,1) 0%, rgba(160,120,65,1) 100%)", color: "rgba(28,18,10,1)", border: "1px solid rgba(140,105,60,0.8)" }}
                   >
                     <Share2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">{t("insights.shareInsights", "Share Insights")}</span>
+                    <span className="hidden sm:inline">{t("insights.shareInsights")}</span>
                   </button>
                 </div>
               </div>
@@ -1453,7 +1453,7 @@ export default function Insights() {
         pipes.length === 0 && blends.length === 0
           ? <InsightsEmptyState message="Add pipes and blends to generate reports." icon={Leaf} />
           : <InsightPanel>
-              <InsightSectionHeading>{t('insights.reports', 'Export Reports')}</InsightSectionHeading>
+              <InsightSectionHeading>{t('insights.reports')}</InsightSectionHeading>
               <div className="space-y-4">
                 <SmokingLogReportExporter user={user} />
                 <AgingReportExporter user={user} />

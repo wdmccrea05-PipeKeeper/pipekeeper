@@ -59,10 +59,10 @@ export default function HelpCenter() {
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#F5F1E7] mb-2">
-            {t('help.center', 'Help Center')}
+            {t('help.center')}
           </h1>
           <p className="text-[#D7C9B2]/80 mb-6">
-            {t('help.centerDesc', 'Tutorials, documentation, and support for CollectionKeeper')}
+            {t('help.centerDesc')}
           </p>
 
           {/* Quick Search */}
@@ -76,19 +76,19 @@ export default function HelpCenter() {
           <TabsList className="grid w-full grid-cols-4 mb-8 bg-[rgba(20,15,10,0.5)] border border-[rgba(180,140,75,0.15)]">
             <TabsTrigger value="tutorials" className="gap-2">
               <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('help.tutorials', 'Tutorials')}</span>
+              <span className="hidden sm:inline">{t('help.tutorials')}</span>
             </TabsTrigger>
             <TabsTrigger value="search" className="gap-2">
               <Search className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('help.search', 'Search')}</span>
+              <span className="hidden sm:inline">{t('help.search')}</span>
             </TabsTrigger>
             <TabsTrigger value="ai" className="gap-2">
               <MessageSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('help.ai', 'AI Help')}</span>
+              <span className="hidden sm:inline">{t('help.ai')}</span>
             </TabsTrigger>
             <TabsTrigger value="diagnostic" className="gap-2">
               <AlertCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('help.diagnostic', 'Diagnostic')}</span>
+              <span className="hidden sm:inline">{t('help.diagnostic')}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -97,7 +97,7 @@ export default function HelpCenter() {
             <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
-                  {t('help.moduleAwareTutorials', 'Module-Specific Tutorials')}
+                  {t('help.moduleAwareTutorials')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -105,7 +105,7 @@ export default function HelpCenter() {
                   <TutorialSelector user={user} subscription={subscription} />
                 ) : (
                   <p className="text-[#D7C9B2]/70">
-                    {t('help.loginForTutorials', 'Sign in to access personalized tutorials')}
+                    {t('help.loginForTutorials')}
                   </p>
                 )}
               </CardContent>
@@ -114,32 +114,32 @@ export default function HelpCenter() {
             <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
-                  {t('help.quickLinks', 'Quick Links')}
+                  {t('help.quickLinks')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Link to={createPageUrl('HowTo')}>
                   <Button variant="outline" className="w-full justify-start">
                     <BookOpen className="w-4 h-4 mr-2" />
-                    {t('help.howToGuides', 'How-To Guides')}
+                    {t('help.howToGuides')}
                   </Button>
                 </Link>
                 <Link to={createPageUrl('FAQFull')}>
                   <Button variant="outline" className="w-full justify-start">
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    {t('help.faq', 'FAQ')}
+                    {t('help.faq')}
                   </Button>
                 </Link>
                 <Link to={createPageUrl('TroubleshootingFull')}>
                   <Button variant="outline" className="w-full justify-start">
                     <AlertCircle className="w-4 h-4 mr-2" />
-                    {t('help.troubleshooting', 'Troubleshooting')}
+                    {t('help.troubleshooting')}
                   </Button>
                 </Link>
                 <a href="/ReferralDashboard">
                   <Button variant="outline" className="w-full justify-start">
                     <Mail className="w-4 h-4 mr-2" />
-                    {t('help.referralProgram', 'Referral Program')}
+                    {t('help.referralProgram')}
                   </Button>
                 </a>
               </CardContent>
@@ -151,13 +151,13 @@ export default function HelpCenter() {
             <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
-                  {t('help.searchDocumentation', 'Search Documentation')}
+                  {t('help.searchDocumentation')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <DocumentationSearch fullPage />
                 <p className="text-xs text-[#D7C9B2]/50 mt-3">
-                  {t('help.searchTip', 'Search across tutorials, features, and how-to guides')}
+                  {t('help.searchTip')}
                 </p>
               </CardContent>
             </Card>
@@ -168,7 +168,7 @@ export default function HelpCenter() {
             <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
-                  {t('help.aiAssistant', 'AI Help Assistant')}
+                  {t('help.aiAssistant')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -182,14 +182,14 @@ export default function HelpCenter() {
             <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
-                  {t('help.systemDiagnostic', 'System Diagnostic')}
+                  {t('help.systemDiagnostic')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <SelfDiagnosticPanel />
                 <div className="mt-6 p-4 rounded-lg bg-[rgba(100,150,200,0.05)] border border-[rgba(100,150,200,0.2)]">
                   <p className="text-sm text-[#D7C9B2]/80">
-                    {t('help.diagnosticInfo', 'The diagnostic system checks for common issues like stale data, cached UI, outdated insights, and missing pairing regeneration. Run the diagnostic to identify and fix problems automatically.')}
+                    {t('help.diagnosticInfo')}
                   </p>
                 </div>
               </CardContent>

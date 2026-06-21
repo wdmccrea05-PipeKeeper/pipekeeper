@@ -90,7 +90,7 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
     if (enabled.winekeeper) {
       items.push({
         page: "WineKeeper",
-        label: t("nav.winekeeper", "WineKeeper"),
+        label: t("nav.winekeeper"),
         icon: Wine,
         path: "/WineKeeper",
       });

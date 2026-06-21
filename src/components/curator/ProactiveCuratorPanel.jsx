@@ -38,39 +38,18 @@ function generateWhatIfPrompt(insight, t) {
   const titleKey = insight?.titleKey || insight?.rawTitle || insight?.title || "";
 
   const promptMap = {
-    "keeper.pipes.balancedRotationTitle": t("curator.whatif.balancedRotation", {
-      defaultValue:
-        "What does my current rotation pattern say about the strengths and blind spots in my collection?",
-    }),
-    "keeper.pipes.overusedTitle": t("curator.whatif.overused", {
-      defaultValue: "What should I rotate in alongside my most-used pipe to give it more rest?",
-    }),
-    "keeper.pipes.foundationTitle": t("curator.whatif.foundation", {
-      defaultValue: "What kind of next pipe would best round out the foundation of my collection?",
-    }),
-    "keeper.pipes.shapeVarietyTitle": t("curator.whatif.shapeVariety", {
-      defaultValue: "What pipe shapes or formats would add the most variety to my collection?",
-    }),
-    "keeper.pipes.restingTitle": t("curator.whatif.rest", {
-      defaultValue: "What if I let my most-used pipe rest for a few days and rotate alternatives?",
-    }),
-    "keeper.tobacco.agingOpportunityTitle": t("curator.whatif.aging", {
-      defaultValue: "Which blends in my cellar are the best candidates to open now, and which should keep aging?",
-    }),
-    "keeper.tobacco.diversityTitle": t("curator.whatif.diversity", {
-      defaultValue: "What blend types should I add to improve my cellar diversity?",
-    }),
-    "keeper.tobacco.styleDiscoveryTitle": t("curator.whatif.styleDiscovery", {
-      defaultValue: "Which tobacco styles would expand my cellar in the most meaningful way?",
-    }),
-    "keeper.tobacco.stewardshipStorageTitle": t("curator.whatif.cellarStorage", {
-      defaultValue: "How can I organize and store my cellar better for aging and easy use?",
-    }),
+    "keeper.pipes.balancedRotationTitle": t("curator.whatif.balancedRotation"),
+    "keeper.pipes.overusedTitle": t("curator.whatif.overused"),
+    "keeper.pipes.foundationTitle": t("curator.whatif.foundation"),
+    "keeper.pipes.shapeVarietyTitle": t("curator.whatif.shapeVariety"),
+    "keeper.pipes.restingTitle": t("curator.whatif.rest"),
+    "keeper.tobacco.agingOpportunityTitle": t("curator.whatif.aging"),
+    "keeper.tobacco.diversityTitle": t("curator.whatif.diversity"),
+    "keeper.tobacco.styleDiscoveryTitle": t("curator.whatif.styleDiscovery"),
+    "keeper.tobacco.stewardshipStorageTitle": t("curator.whatif.cellarStorage"),
   };
 
-  return promptMap[titleKey] || t("curator.whatif.default", {
-    defaultValue: "Tell me more about this recommendation",
-  });
+  return promptMap[titleKey] || t("curator.whatif.default");
 }
 
 function buildRecommendationPrompt(displayTitle, displayInsight, whatIfPrompt) {

@@ -49,7 +49,7 @@ export default function AllUsersPermissionTest() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2 text-slate-900">
             <User className="w-5 h-5" />
-            {t('admin.allPaidUsersTestTitle', 'All Paid Users Test')}
+            {t('admin.allPaidUsersTestTitle')}
             {testing && <Loader2 className="w-4 h-4 animate-spin" />}
           </CardTitle>
           <div className="flex gap-2">
@@ -64,7 +64,7 @@ export default function AllUsersPermissionTest() {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-700">
-            {t('admin.testAllSubscriptionsDesc', 'Tests all active subscriptions to verify canonical resolver grants correct access')}
+            {t('admin.testAllSubscriptionsDesc')}
           </p>
           <Button 
             onClick={runTest} 
@@ -75,12 +75,12 @@ export default function AllUsersPermissionTest() {
             {testing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {t('admin.testing', 'Testing...')}
+                {t('admin.testing')}
               </>
             ) : (
               <>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                {t('admin.runTest', 'Run Test')}
+                {t('admin.runTest')}
               </>
             )}
           </Button>
@@ -153,12 +153,12 @@ export default function AllUsersPermissionTest() {
 
         {results.length > 0 && (
           <div className="bg-slate-800 text-white rounded-lg p-4 text-xs">
-            <p className="font-semibold mb-2">{t('admin.overallResults', 'Overall Results:')}</p>
-            <p>{t('admin.usersWithCorrectPermissions', '✅ {n} users with correct permissions', { n: summary.pass })}</p>
-            {summary.warning > 0 && <p>{t('admin.warningsFoundAdmin', '⚠️ {n} warnings (minor issues)', { n: summary.warning })}</p>}
-            {summary.fail > 0 && <p>{t('admin.usersFailedAdmin', '❌ {n} users FAILED (critical issue)', { n: summary.fail })}</p>}
+            <p className="font-semibold mb-2">{t('admin.overallResults')}</p>
+            <p>{t('admin.usersWithCorrectPermissions', { n: summary.pass })}</p>
+            {summary.warning > 0 && <p>{t('admin.warningsFoundAdmin', { n: summary.warning })}</p>}
+            {summary.fail > 0 && <p>{t('admin.usersFailedAdmin', { n: summary.fail })}</p>}
             {summary.fail === 0 && summary.warning === 0 && (
-              <p className="text-green-400 mt-2 font-semibold">{t('admin.allPaidUsersCorrectAccess', '🎉 All paid users have correct access!')}</p>
+              <p className="text-green-400 mt-2 font-semibold">{t('admin.allPaidUsersCorrectAccess')}</p>
             )}
           </div>
         )}

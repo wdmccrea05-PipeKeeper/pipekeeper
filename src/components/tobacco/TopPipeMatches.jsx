@@ -138,7 +138,7 @@ export default function TopPipeMatches({ blend, pipes }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4" style={{ color: "rgba(180,140,75,0.9)" }} />
-              <span className="text-sm font-bold" style={{ color: "#F5F1E7" }}>{t("topPipeMatches.findBestMatches", "Find Best Matches")}</span>
+              <span className="text-sm font-bold" style={{ color: "#F5F1E7" }}>{t("topPipeMatches.findBestMatches")}</span>
             </div>
             <Button
               size="sm"
@@ -154,7 +154,7 @@ export default function TopPipeMatches({ blend, pipes }) {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-1" />
-                  {t("topPipeMatches.findMatches", "Find Matches")}
+                  {t("topPipeMatches.findMatches")}
                 </>
               )}
             </Button>
@@ -164,7 +164,7 @@ export default function TopPipeMatches({ blend, pipes }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5" style={{ color: "rgba(180,140,75,0.9)" }} />
-                <span className="font-bold text-base" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>{t("topPipeMatches.topPipeMatches", "Top Pipe Matches")}</span>
+                <span className="font-bold text-base" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>{t("topPipeMatches.topPipeMatches")}</span>
               </div>
               <Button 
                 size="sm" 

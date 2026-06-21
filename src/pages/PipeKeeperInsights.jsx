@@ -131,8 +131,8 @@ export default function PipeKeeperInsights() {
     <InsightsPageShell>
       <PipeKeeperModuleNav currentPageName="PipeKeeperInsights" />
       <InsightsHeader
-        title={t('pipekeeper.insightsTitle', 'Pipe Collection Insights')}
-        subtitle={t('pipekeeper.insightsSubtitle', 'Analytics and trends from your pipe collection and smoking sessions')}
+        title={t('pipekeeper.insightsTitle')}
+        subtitle={t('pipekeeper.insightsSubtitle')}
       />
 
       <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />

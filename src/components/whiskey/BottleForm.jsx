@@ -117,14 +117,14 @@ export default function BottleForm({
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error reading file:', error);
-      toast.error(t('photos.readError', 'Could not read selected photo.'));
+      toast.error(t('photos.readError'));
     }
   };
 
   const handleOnlineImageSelected = (imageUrl) => {
     commitPhoto(imageUrl);
     setShowOnlineSearch(false);
-    toast.success(t('photos.selected', 'Photo selected.'));
+    toast.success(t('photos.selected'));
   };
 
   const handleCroppedImage = async (croppedDataUrl) => {
@@ -141,15 +141,15 @@ export default function BottleForm({
 
       if (!uploadedUrl) {
         console.error('Upload returned no URL:', result);
-        toast.error(t('photos.uploadFailed', 'Photo upload failed.'));
+        toast.error(t('photos.uploadFailed'));
         return;
       }
 
       commitPhoto(uploadedUrl);
-      toast.success(t('photos.uploaded', 'Photo uploaded.'));
+      toast.success(t('photos.uploaded'));
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error(t('photos.uploadFailed', 'Photo upload failed.'));
+      toast.error(t('photos.uploadFailed'));
     } finally {
       setCropperImage(null);
       setUploadingPhoto(false);
@@ -214,8 +214,8 @@ export default function BottleForm({
         >
           <h2 style={{ color: '#F5F1E7' }} className="text-xl font-bold">
             {bottle
-              ? t('whiskey.editBottle', 'Edit Bottle')
-              : t('whiskey.addBottle', 'Add Bottle')}
+              ? t('whiskey.editBottle')
+              : t('whiskey.addBottle')}
           </h2>
           <button
             type="button"
@@ -232,7 +232,7 @@ export default function BottleForm({
             {/* BOTTLE TYPE */}
             <div>
               <label className="text-sm text-[#D8C7A6] block mb-2">
-                {t('whiskey.bottleType', 'Bottle Type')} *
+                {t('whiskey.bottleType')} *
               </label>
               <Select
                 value={formData.bottle_type}
@@ -243,10 +243,10 @@ export default function BottleForm({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="whiskey">
-                    {t('whiskey.whiskeyBottle', 'Whiskey Bottle')}
+                    {t('whiskey.whiskeyBottle')}
                   </SelectItem>
                   <SelectItem value="wine">
-                    {t('whiskey.wineBottle', 'Wine Bottle')}
+                    {t('whiskey.wineBottle')}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -281,12 +281,12 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.name', 'Name')} *
+                    {t('whiskey.name')} *
                   </label>
                   <Input
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
-                    placeholder={t('whiskey.bottleNamePlaceholder', 'Bottle name')}
+                    placeholder={t('whiskey.bottleNamePlaceholder')}
                     required
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
@@ -295,16 +295,16 @@ export default function BottleForm({
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
                     {formData.bottle_type === 'wine'
-                      ? t('wine.winery', 'Winery')
-                      : t('whiskey.distillery', 'Distillery')}
+                      ? t('wine.winery')
+                      : t('whiskey.distillery')}
                   </label>
                   <Input
                     value={formData.distillery}
                     onChange={(e) => handleChange('distillery', e.target.value)}
                     placeholder={
                       formData.bottle_type === 'wine'
-                        ? t('wine.wineryPlaceholder', 'Winery name')
-                        : t('whiskey.distilleryPlaceholder', 'Distillery name')
+                        ? t('wine.wineryPlaceholder')
+                        : t('whiskey.distilleryPlaceholder')
                     }
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
@@ -314,24 +314,24 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.region', 'Region')}
+                    {t('whiskey.region')}
                   </label>
                   <Input
                     value={formData.region}
                     onChange={(e) => handleChange('region', e.target.value)}
-                    placeholder={t('whiskey.regionPlaceholder', 'e.g., Islay, Speyside')}
+                    placeholder={t('whiskey.regionPlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
 
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.country', 'Country')}
+                    {t('whiskey.country')}
                   </label>
                   <Input
                     value={formData.country}
                     onChange={(e) => handleChange('country', e.target.value)}
-                    placeholder={t('whiskey.countryPlaceholder', 'e.g., Scotland, USA')}
+                    placeholder={t('whiskey.countryPlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
@@ -340,7 +340,7 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.type', 'Whiskey Type')}
+                    {t('whiskey.type')}
                   </label>
                   <Select
                     value={formData.type}
@@ -372,27 +372,27 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.age', 'Age (Years)')}
+                    {t('whiskey.age')}
                   </label>
                   <Input
                     type="number"
                     value={formData.age || ''}
                     onChange={(e) => handleChange('age', e.target.value)}
-                    placeholder={t('whiskey.agePlaceholder', 'e.g., 12')}
+                    placeholder={t('whiskey.agePlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
 
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.abv', 'ABV (%)')}
+                    {t('whiskey.abv')}
                   </label>
                   <Input
                     type="number"
                     step="0.1"
                     value={formData.abv || ''}
                     onChange={(e) => handleChange('abv', e.target.value)}
-                    placeholder={t('whiskey.abvPlaceholder', 'e.g., 46.5')}
+                    placeholder={t('whiskey.abvPlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
@@ -401,7 +401,7 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.bottleSize', 'Bottle Size')}
+                    {t('whiskey.bottleSize')}
                   </label>
                   <Select
                     value={formData.bottle_size}
@@ -432,7 +432,7 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.acquisitionMethod', 'How Acquired')}
+                    {t('whiskey.acquisitionMethod')}
                   </label>
                   <Select
                     value={formData.purchase_type}
@@ -453,12 +453,12 @@ export default function BottleForm({
 
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.purchaseLocation', 'Where Acquired')}
+                    {t('whiskey.purchaseLocation')}
                   </label>
                   <Input
                     value={formData.purchase_location || ''}
                     onChange={(e) => handleChange('purchase_location', e.target.value)}
-                    placeholder={t('whiskey.purchaseLocationPlaceholder', 'e.g., Local liquor store, online')}
+                    placeholder={t('whiskey.purchaseLocationPlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
@@ -467,21 +467,21 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.amountPaid', 'Amount Paid')}
+                    {t('whiskey.amountPaid')}
                   </label>
                   <Input
                     type="number"
                     step="0.01"
                     value={formData.purchase_price || ''}
                     onChange={(e) => handleChange('purchase_price', e.target.value)}
-                    placeholder={t('whiskey.amountPaidPlaceholder', 'e.g., 49.99')}
+                    placeholder={t('whiskey.amountPaidPlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
 
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.purchaseDate', 'Date Purchased')}
+                    {t('whiskey.purchaseDate')}
                   </label>
                   <Input
                     type="date"
@@ -496,28 +496,28 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.collectorValue', 'Collector Value')}
+                    {t('whiskey.collectorValue')}
                   </label>
                   <Input
                     type="number"
                     step="0.01"
                     value={formData.collector_value || ''}
                     onChange={(e) => handleChange('collector_value', e.target.value)}
-                    placeholder={t('whiskey.collectorValuePlaceholder', 'Estimated value')}
+                    placeholder={t('whiskey.collectorValuePlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
 
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.retailPrice', 'Retail Price')}
+                    {t('whiskey.retailPrice')}
                   </label>
                   <Input
                     type="number"
                     step="0.01"
                     value={formData.retail_price || ''}
                     onChange={(e) => handleChange('retail_price', e.target.value)}
-                    placeholder={t('whiskey.retailPricePlaceholder', 'Current retail')}
+                    placeholder={t('whiskey.retailPricePlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
@@ -526,21 +526,21 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.aftermarketPrice', 'Secondary Market Price')}
+                    {t('whiskey.aftermarketPrice')}
                   </label>
                   <Input
                     type="number"
                     step="0.01"
                     value={formData.aftermarket_price || ''}
                     onChange={(e) => handleChange('aftermarket_price', e.target.value)}
-                    placeholder={t('whiskey.aftermarketPricePlaceholder', 'Auction / secondary market')}
+                    placeholder={t('whiskey.aftermarketPricePlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
 
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.valueConfidence', 'Confidence Level')}
+                    {t('whiskey.valueConfidence')}
                   </label>
                   <Select
                     value={formData.value_confidence || 'medium'}
@@ -564,14 +564,14 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.productionStatus', 'Production Status')}
+                    {t('whiskey.productionStatus')}
                   </label>
                   <Select
                     value={formData.production_status || '_none'}
                     onValueChange={(value) => handleChange('production_status', value === '_none' ? '' : value)}
                   >
                     <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
-                      <SelectValue placeholder={t('whiskey.productionStatusPlaceholder', 'e.g. Discontinued')} />
+                      <SelectValue placeholder={t('whiskey.productionStatusPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                     <SelectItem value="Active">Active / Ongoing</SelectItem>
@@ -587,12 +587,12 @@ export default function BottleForm({
 
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.edition', 'Edition / Release')}
+                    {t('whiskey.edition')}
                   </label>
                   <Input
                     value={formData.edition || ''}
                     onChange={(e) => handleChange('edition', e.target.value)}
-                    placeholder={t('whiskey.editionPlaceholder', 'e.g. Batch #4, 2020 Release')}
+                    placeholder={t('whiskey.editionPlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
@@ -601,14 +601,14 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.replacementDifficulty', 'Replacement Difficulty')}
+                    {t('whiskey.replacementDifficulty')}
                   </label>
                   <Select
                     value={formData.replacement_difficulty || '_auto'}
                     onValueChange={(value) => handleChange('replacement_difficulty', value === '_auto' ? '' : value)}
                   >
                     <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]">
-                      <SelectValue placeholder={t('whiskey.replacementDifficultyPlaceholder', 'Auto-computed if blank')} />
+                      <SelectValue placeholder={t('whiskey.replacementDifficultyPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                     <SelectItem value="_auto">Auto-Compute</SelectItem>
@@ -623,14 +623,14 @@ export default function BottleForm({
 
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.manualValueOverride', 'Manual Value Override')}
+                    {t('whiskey.manualValueOverride')}
                   </label>
                   <Input
                     type="number"
                     step="0.01"
                     value={formData.manual_value_override || ''}
                     onChange={(e) => handleChange('manual_value_override', e.target.value)}
-                    placeholder={t('whiskey.manualValueOverridePlaceholder', 'Override engine value')}
+                    placeholder={t('whiskey.manualValueOverridePlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                   <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
@@ -648,7 +648,7 @@ export default function BottleForm({
                     className="w-4 h-4"
                   />
                   <span className="text-sm text-[#D8C7A6]">
-                    {t('whiskey.discontinued', 'Discontinued')}
+                    {t('whiskey.discontinued')}
                   </span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -659,43 +659,43 @@ export default function BottleForm({
                     className="w-4 h-4"
                   />
                   <span className="text-sm text-[#D8C7A6]">
-                    {t('whiskey.allocated', 'Allocated / Lottery')}
+                    {t('whiskey.allocated')}
                   </span>
                 </label>
               </div>
 
               <div className="mt-4">
                 <label className="text-sm text-[#D8C7A6] block mb-2">
-                  {t('whiskey.availabilityNote', 'Availability Note')}
+                  {t('whiskey.availabilityNote')}
                 </label>
                 <Input
                   value={formData.availability_note || ''}
                   onChange={(e) => handleChange('availability_note', e.target.value)}
-                  placeholder={t('whiskey.availabilityNotePlaceholder', 'e.g. Distillery exclusive, regional allocation')}
+                  placeholder={t('whiskey.availabilityNotePlaceholder')}
                   className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                 />
               </div>
 
               <div className="mt-4">
                 <label className="text-sm text-[#D8C7A6] block mb-2">
-                  {t('whiskey.valuationNotes', 'Valuation Notes')}
+                  {t('whiskey.valuationNotes')}
                 </label>
                 <Textarea
                   value={formData.valuation_notes || ''}
                   onChange={(e) => handleChange('valuation_notes', e.target.value)}
-                  placeholder={t('whiskey.valuationNotesPlaceholder', 'Notes on value reasoning, sources, or context')}
+                  placeholder={t('whiskey.valuationNotesPlaceholder')}
                   className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] h-20"
                 />
               </div>
 
               <div className="mt-4">
                 <label className="text-sm text-[#D8C7A6] block mb-2">
-                  {t('whiskey.valueSourceNotes', 'Value Source Notes')}
+                  {t('whiskey.valueSourceNotes')}
                 </label>
                 <Input
                   value={formData.value_source_notes || ''}
                   onChange={(e) => handleChange('value_source_notes', e.target.value)}
-                  placeholder={t('whiskey.valueSourceNotesPlaceholder', 'e.g. Whisky Auctioneer Oct 2024')}
+                  placeholder={t('whiskey.valueSourceNotesPlaceholder')}
                   className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                 />
               </div>
@@ -706,7 +706,7 @@ export default function BottleForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
-                    {t('whiskey.rating', 'Personal Rating')}
+                    {t('whiskey.rating')}
                   </label>
                   <Input
                     type="number"
@@ -715,7 +715,7 @@ export default function BottleForm({
                     max="5"
                     value={formData.rating || ''}
                     onChange={(e) => handleChange('rating', e.target.value)}
-                    placeholder={t('whiskey.ratingPlaceholder', '1-5')}
+                    placeholder={t('whiskey.ratingPlaceholder')}
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                 </div>
@@ -729,7 +729,7 @@ export default function BottleForm({
                       className="w-4 h-4"
                     />
                     <span className="text-sm text-[#D8C7A6]">
-                      {t('whiskey.favorite', 'Favorite Bottle')}
+                      {t('whiskey.favorite')}
                     </span>
                   </label>
                 </div>
@@ -737,12 +737,12 @@ export default function BottleForm({
 
               <div className="mb-4">
                 <label className="text-sm text-[#D8C7A6] block mb-2">
-                  {t('whiskey.flavorNotes', 'Flavor Notes')}
+                  {t('whiskey.flavorNotes')}
                 </label>
                 <input
                   value={formData.flavor_notes || ''}
                   onChange={(e) => handleChange('flavor_notes', e.target.value)}
-                  placeholder={t('whiskey.flavorNotesPlaceholder', 'e.g. Vanilla, caramel, smoke, dried fruit, oak…')}
+                  placeholder={t('whiskey.flavorNotesPlaceholder')}
                   className="w-full rounded-xl px-4 py-3 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.2)] text-[#F5F1E7] outline-none"
                 />
                 <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
@@ -752,14 +752,13 @@ export default function BottleForm({
 
               <div>
                 <label className="text-sm text-[#D8C7A6] block mb-2">
-                  {t('whiskey.tastingNotes', 'Tasting Notes')}
+                  {t('whiskey.tastingNotes')}
                 </label>
                 <Textarea
                   value={formData.notes || ''}
                   onChange={(e) => handleChange('notes', e.target.value)}
                   placeholder={t(
-                    'whiskey.notesPlaceholder',
-                    'Describe the flavor profile, aromas, finish, or collector notes.'
+                    'whiskey.notesPlaceholder'
                   )}
                   className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] h-24"
                 />
@@ -770,14 +769,14 @@ export default function BottleForm({
             <FormSection title="Photos" defaultOpen={false}>
               <div>
                 <label className="text-sm text-[#D8C7A6] block mb-2">
-                  {t('whiskey.photo', 'Bottle Photo')}
+                  {t('whiskey.photo')}
                 </label>
 
                 {photoPreview ? (
                   <div className="relative w-full h-64 rounded-xl overflow-hidden border border-[rgba(180,140,75,0.2)] mb-3 bg-black/20">
                     <img
                       src={photoPreview}
-                      alt={t('whiskey.photoPreview', 'Bottle preview')}
+                      alt={t('whiskey.photoPreview')}
                       className="w-full h-full object-contain"
                     />
                     <button
@@ -801,7 +800,7 @@ export default function BottleForm({
 
                 {uploadingPhoto ? (
                   <p className="text-xs mt-2 text-[#D8C7A6]">
-                    {t('photos.processing', 'Processing photo...')}
+                    {t('photos.processing')}
                   </p>
                 ) : null}
               </div>
@@ -815,7 +814,7 @@ export default function BottleForm({
           style={{ borderColor: 'rgba(180,140,75,0.18)' }}
         >
           <Button type="button" variant="outline" onClick={onCancel}>
-            {t('common.cancel', 'Cancel')}
+            {t('common.cancel')}
           </Button>
           <Button
             type="submit"
@@ -825,7 +824,7 @@ export default function BottleForm({
               color: '#F5F1E7',
             }}
           >
-            {bottle ? t('common.save', 'Save') : t('common.create', 'Create')}
+            {bottle ? t('common.save') : t('common.create')}
           </Button>
         </div>
       </div>

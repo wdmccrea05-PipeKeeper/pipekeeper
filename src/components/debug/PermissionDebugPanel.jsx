@@ -44,20 +44,20 @@ export default function PermissionDebugPanel() {
         className="bg-purple-600 text-white hover:bg-purple-700 border-purple-500"
       >
         {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-        {t('debug.debugButton', 'Debug')}
+        {t('debug.debugButton')}
       </Button>
 
       {isOpen && (
         <Card className="absolute bottom-12 right-0 w-96 max-h-[600px] overflow-y-auto shadow-2xl bg-white">
           <CardHeader className="pb-3 bg-purple-50 border-b">
             <CardTitle className="text-sm flex items-center gap-2 text-slate-900">
-              🔍 {t('debug.permissionsDebugPanel', 'Permissions Debug Panel')}
+              🔍 {t('debug.permissionsDebugPanel')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-xs pt-4">
             {/* User Info */}
             <div>
-              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.userInfo', 'User Info')}</h4>
+              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.userInfo')}</h4>
               <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
                 <p className="text-slate-900"><strong>Email:</strong> {user?.email || 'N/A'}</p>
                 <p className="text-slate-900"><strong>ID:</strong> {user?.id || user?.auth_user_id || 'N/A'}</p>
@@ -68,7 +68,7 @@ export default function PermissionDebugPanel() {
 
             {/* Subscription Info */}
             <div>
-              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.subscriptionInfo', 'Subscription Info')}</h4>
+              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.subscriptionInfo')}</h4>
               <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
                 <p className="text-slate-900"><strong>Provider:</strong> {provider || subscription?.provider || 'None'}</p>
                 <p className="text-slate-900"><strong>Status:</strong> {subscription?.status || 'None'}</p>
@@ -80,7 +80,7 @@ export default function PermissionDebugPanel() {
 
             {/* Hook Flags */}
             <div>
-              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.hookFlags', 'useCurrentUser Flags')}</h4>
+              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.hookFlags')}</h4>
               <div className="space-y-2">
                 <StatusBadge label="hasPaid" value={hasPaid} />
                 <StatusBadge label="hasPremium" value={hasPremium} />
@@ -92,7 +92,7 @@ export default function PermissionDebugPanel() {
 
             {/* Utility Function Checks */}
             <div>
-              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.utilityFunctionChecks', 'Utility Function Checks')}</h4>
+              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.utilityFunctionChecks')}</h4>
               <div className="space-y-2">
                 <StatusBadge label="hasPaidAccess()" value={hasPaidAccess(user, subscription)} />
                 <StatusBadge label="hasProAccess()" value={hasProAccess(user, subscription)} />
@@ -102,7 +102,7 @@ export default function PermissionDebugPanel() {
 
             {/* Entitlements */}
             <div>
-              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.entitlements', 'Entitlements')}</h4>
+              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.entitlements')}</h4>
               <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
                 <p className="text-slate-900"><strong>Tier:</strong> {entitlements.tier}</p>
                 <p className="text-slate-900"><strong>Legacy:</strong> {entitlements.isLegacyPremium ? 'Yes' : 'No'}</p>
@@ -114,7 +114,7 @@ export default function PermissionDebugPanel() {
 
             {/* Feature Access */}
             <div>
-              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.featureAccess', 'Feature Access')}</h4>
+              <h4 className="font-semibold mb-2 text-slate-900">{t('debug.featureAccess')}</h4>
               <div className="space-y-2">
                 <StatusBadge label="UNLIMITED_COLLECTION" value={entitlements.canUse("UNLIMITED_COLLECTION")} />
                 <StatusBadge label="AI_IDENTIFY" value={entitlements.canUse("AI_IDENTIFY")} />
@@ -128,7 +128,7 @@ export default function PermissionDebugPanel() {
             {/* Limit Checks */}
             {pipeLimit && (
               <div>
-                <h4 className="font-semibold mb-2 text-slate-900">{t('debug.pipeCreationCheck', 'Pipe Creation Check')}</h4>
+                <h4 className="font-semibold mb-2 text-slate-900">{t('debug.pipeCreationCheck')}</h4>
                 <div className="space-y-1 font-mono bg-slate-50 p-2 rounded">
                   <StatusBadge label="Can Create" value={pipeLimit.canCreate} />
                   <p className="text-slate-900"><strong>Current:</strong> {pipeLimit.currentCount}</p>
@@ -140,7 +140,7 @@ export default function PermissionDebugPanel() {
 
             {tobaccoLimit && (
               <div>
-                <h4 className="font-semibold mb-2 text-slate-900">{t('debug.tobaccoCreationCheck', 'Tobacco Creation Check')}</h4>
+                <h4 className="font-semibold mb-2 text-slate-900">{t('debug.tobaccoCreationCheck')}</h4>
                 <div className="space-y-1 font-mono bg-slate-50 p-2 rounded">
                   <StatusBadge label="Can Create" value={tobaccoLimit.canCreate} />
                   <p className="text-slate-900"><strong>Current:</strong> {tobaccoLimit.currentCount}</p>
@@ -156,7 +156,7 @@ export default function PermissionDebugPanel() {
               size="sm"
               className="w-full"
             >
-              {t('debug.refreshLimitChecks', 'Refresh Limit Checks')}
+              {t('debug.refreshLimitChecks')}
             </Button>
           </CardContent>
         </Card>

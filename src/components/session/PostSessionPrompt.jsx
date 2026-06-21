@@ -97,10 +97,10 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
   const userEmail = user?.email || null;
 
   const CHOICES = [
-    { ...CHOICES_STYLES[0], label: t('session.addToWish', 'Add to Wish') },
-    { ...CHOICES_STYLES[1], label: t('session.addToShopping', 'Add to Shopping') },
-    { ...CHOICES_STYLES[2], label: t('session.notForMe', 'Not for Me') },
-    { ...CHOICES_STYLES[3], label: t('session.ignore', 'Ignore') },
+    { ...CHOICES_STYLES[0], label: t('session.addToWish') },
+    { ...CHOICES_STYLES[1], label: t('session.addToShopping') },
+    { ...CHOICES_STYLES[2], label: t('session.notForMe') },
+    { ...CHOICES_STYLES[3], label: t('session.ignore') },
   ];
 
   const [decisions, setDecisions] = useState({});
@@ -133,9 +133,9 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
         if (!choice || choice === "ignore") continue;
 
         const item = buildAcquisitionItem(ei.item_type, ei.itemData, choice, userEmail, {
-            unknownBlend: t('common.unknownBlend', 'Unknown Blend'),
-            unknownBottle: t('session.unknownBottle', 'Unknown Bottle'),
-            unknownPipe: t('session.unknownPipe', 'Unknown Pipe'),
+            unknownBlend: t('common.unknownBlend'),
+            unknownBottle: t('session.unknownBottle'),
+            unknownPipe: t('session.unknownPipe'),
           });
         await base44.entities.AcquisitionItem.create(item);
       }

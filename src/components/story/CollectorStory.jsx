@@ -350,7 +350,7 @@ function StorySlide({ card, current, total, slideRef }) {
           }}
         >
           <Share2 className="w-4 h-4" />
-          {t("common.share", "Share")}
+          {t("common.share")}
         </button>
       </div>
     </div>
@@ -383,7 +383,7 @@ export default function CollectorStory({ isOpen, onClose, storyCards = [] }) {
         await captureAndShare(slideRef.current, `pipekeeper-story-${index + 1}`);
       } catch (err) {
         if (err?.name !== "AbortError") {
-          toast.error(t("insights.shareError", "Failed to share card"));
+          toast.error(t("insights.shareError"));
         }
       }
     }
@@ -440,7 +440,7 @@ export default function CollectorStory({ isOpen, onClose, storyCards = [] }) {
             disabled={index === 0}
             className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30 hidden sm:flex"
             style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
-            aria-label={t("common.previous", "Previous")}
+            aria-label={t("common.previous")}
           >
             <ChevronLeft className="w-5 h-5 text-white" />
           </button>
@@ -453,7 +453,7 @@ export default function CollectorStory({ isOpen, onClose, storyCards = [] }) {
             disabled={index === storyCards.length - 1}
             className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30 hidden sm:flex"
             style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.15)" }}
-            aria-label={t("common.next", "Next")}
+            aria-label={t("common.next")}
           >
             <ChevronRight className="w-5 h-5 text-white" />
           </button>

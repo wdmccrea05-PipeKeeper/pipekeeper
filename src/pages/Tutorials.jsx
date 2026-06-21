@@ -35,7 +35,7 @@ export default function TutorialsPage() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-3xl font-bold" style={{ color: '#F5F1E7' }}>
-            {t('help.tutorials', 'Tutorials')}
+            {t('help.tutorials')}
           </h1>
         </div>
 
@@ -46,10 +46,10 @@ export default function TutorialsPage() {
             
             const firstTutorial = modDocs.tutorials[0];
             const moduleTitle = {
-              hub: t('nav.hub', 'Hub'),
-              pipekeeper: t('nav.pipekeeper', 'PipeKeeper'),
-              whiskeykeeper: t('nav.whiskeykeeper', 'WhiskeyKeeper'),
-              bundle: t('help.bundle', 'Bundle'),
+              hub: t('nav.hub'),
+              pipekeeper: t('nav.pipekeeper'),
+              whiskeykeeper: t('nav.whiskeykeeper'),
+              bundle: t('help.bundle'),
             }[module] || module;
             
             return (
@@ -79,7 +79,7 @@ export default function TutorialsPage() {
         {allModules.length === 0 && (
           <div className="rounded-2xl p-12 text-center" style={{ background: 'rgba(180,140,75,0.05)', border: '1px solid rgba(180,140,75,0.15)' }}>
             <HelpCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p style={{ color: 'rgba(224,216,200,0.5)' }}>{t('help.noTutorials', 'No tutorials available')}</p>
+            <p style={{ color: 'rgba(224,216,200,0.5)' }}>{t('help.noTutorials')}</p>
           </div>
         )}
       </div>
@@ -91,7 +91,7 @@ export default function TutorialsPage() {
       <div className="flex items-center gap-3 mb-8">
         <Button variant="outline" onClick={() => navigate(createPageUrl('Tutorials'))}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          {t('help.allTutorials', 'All Tutorials')}
+          {t('help.allTutorials')}
         </Button>
       </div>
 
@@ -107,7 +107,7 @@ export default function TutorialsPage() {
       {docs.tutorials.length > 1 && (
         <div className="space-y-2">
           <p style={{ color: 'rgba(180,140,75,0.7)' }} className="text-xs uppercase tracking-wider font-semibold">
-            {t('help.otherTutorials', 'Other tutorials')}
+            {t('help.otherTutorials')}
           </p>
           <div className="flex flex-wrap gap-2">
             {docs.tutorials.map((t) => (
@@ -143,7 +143,7 @@ export default function TutorialsPage() {
 
       <div className="pt-6 border-t" style={{ borderColor: 'rgba(180,140,75,0.15)' }}>
         <Button onClick={() => navigate(createPageUrl('HelpCenter'))} variant="outline">
-          {t('help.backToHelp', 'Back to Help Center')}
+          {t('help.backToHelp')}
         </Button>
       </div>
     </div>

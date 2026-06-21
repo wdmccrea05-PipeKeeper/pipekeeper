@@ -17,10 +17,10 @@ export default function WineKeeperModuleNav({ currentPageName }) {
   const [showAddModal, setShowAddModal] = useState(false);
 
   const tabs = [
-    { path: '/WineKeeper', label: t('winekeeper.overview', 'Overview'), icon: Wine },
-    { path: '/Wines', label: t('wine.collection', 'Wine Collection'), icon: Wine },
-    { path: '/SessionHistory?module=wine', label: t('sessionHistory.title', 'Tasting History'), icon: CalendarDays },
-    { path: '/WineInsights', label: t('nav.insights', 'Insights'), icon: BarChart3 },
+    { path: '/WineKeeper', label: t('winekeeper.overview'), icon: Wine },
+    { path: '/Wines', label: t('wine.collection'), icon: Wine },
+    { path: '/SessionHistory?module=wine', label: t('sessionHistory.title'), icon: CalendarDays },
+    { path: '/WineInsights', label: t('nav.insights'), icon: BarChart3 },
   ];
 
   return (
@@ -59,10 +59,10 @@ export default function WineKeeperModuleNav({ currentPageName }) {
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('wine.addBottle', 'Add Bottle')}
+          title={t('wine.addBottle')}
         >
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('wine.addBottle', 'Add Bottle')}</span>
+          <span className="hidden sm:inline">{t('wine.addBottle')}</span>
         </Button>
 
         <Button
@@ -70,10 +70,10 @@ export default function WineKeeperModuleNav({ currentPageName }) {
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('wine.logTasting', 'Log Tasting')}
+          title={t('wine.logTasting')}
         >
           <BookOpen className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('wine.logTasting', 'Log Tasting')}</span>
+          <span className="hidden sm:inline">{t('wine.logTasting')}</span>
         </Button>
 
         <Button
@@ -81,10 +81,10 @@ export default function WineKeeperModuleNav({ currentPageName }) {
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('import.bulkImport', 'Bulk Import')}
+          title={t('import.bulkImport')}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('import.bulkImport', 'Bulk Import')}</span>
+          <span className="hidden sm:inline">{t('import.bulkImport')}</span>
         </Button>
       </div>
     </div>

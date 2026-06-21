@@ -68,7 +68,7 @@ export default function ShareRecordModal({
       setShareRecord(updated || shareRecord);
     } catch (error) {
       console.error("Failed to update share config:", error);
-      toast.error(t("share.failedToUpdate", { defaultValue: "Failed to update sharing options" }));
+      toast.error(t("share.failedToUpdate"));
     } finally {
       setIsLoading(false);
     }
@@ -80,10 +80,10 @@ export default function ShareRecordModal({
       const share = await ensureShareRecord();
       const success = await copyShareUrlToClipboard(resolvedModuleType, share.share_token);
       if (!success) throw new Error("Clipboard failed");
-      toast.success(t("share.linkCopied", { defaultValue: "Link copied" }));
+      toast.success(t("share.linkCopied"));
     } catch (error) {
       console.error(error);
-      toast.error(t("share.failedToCopyLink", { defaultValue: "Failed to copy link" }));
+      toast.error(t("share.failedToCopyLink"));
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +97,7 @@ export default function ShareRecordModal({
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error(error);
-      toast.error(t("share.failedToOpenPreview", { defaultValue: "Failed to open preview" }));
+      toast.error(t("share.failedToOpenPreview"));
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +105,7 @@ export default function ShareRecordModal({
 
   const handleExportCard = async () => {
     if (!cardRef.current) {
-      toast.error(t("share.failedToExport", { defaultValue: "Failed to export share card" }));
+      toast.error(t("share.failedToExport"));
       return;
     }
     setIsLoading(true);
@@ -113,10 +113,10 @@ export default function ShareRecordModal({
       const fileName = `${resolvedModuleType || 'record'}-${record?.id || "record"}.png`;
       const ok = await exportShareCardAsImage(cardRef.current, fileName);
       if (!ok) throw new Error("Export failed");
-      toast.success(t("share.cardExported", { defaultValue: "Share card downloaded" }));
+      toast.success(t("share.cardExported"));
     } catch (error) {
       console.error(error);
-      toast.error(t("share.failedToExport", { defaultValue: "Failed to export share card" }));
+      toast.error(t("share.failedToExport"));
     } finally {
       setIsLoading(false);
     }
@@ -177,20 +177,20 @@ export default function ShareRecordModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2" style={{ color: "#FFFFFF" }}>
             <Share2 className="w-5 h-5" />
-            {t("share.shareRecord", { defaultValue: "Share Record" })}
+            {t("share.shareRecord")}
           </DialogTitle>
           <DialogDescription style={{ color: "rgba(224, 216, 200, 0.7)" }}>
-            {t("share.shareDescription", { defaultValue: "Choose what to include and how you want to share it." })}
+            {t("share.shareDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           <div className="flex gap-2">
             <Button variant={previewMode === "options" ? "default" : "outline"} size="sm" onClick={() => setPreviewMode("options")} className="flex-1">
-              {t("share.options", { defaultValue: "Options" })}
+              {t("share.options")}
             </Button>
             <Button variant={previewMode === "card" ? "default" : "outline"} size="sm" onClick={() => setPreviewMode("card")} className="flex-1">
-              {t("share.preview", { defaultValue: "Preview" })}
+              {t("share.preview")}
             </Button>
           </div>
 
@@ -205,23 +205,23 @@ export default function ShareRecordModal({
           ) : (
             <div className="space-y-4">
               <div className="space-y-3 bg-[rgba(40,30,20,0.4)] p-4 rounded-lg border border-[rgba(180,140,75,0.15)]">
-                <h3 style={{ color: "#E0D8C8", fontWeight: 600, fontSize: 14 }}>{t("share.privacy", { defaultValue: "Privacy" })}</h3>
+                <h3 style={{ color: "#E0D8C8", fontWeight: 600, fontSize: 14 }}>{t("share.privacy")}</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includePhotos", { defaultValue: "Include photos" })}</label>
+                    <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includePhotos")}</label>
                     <Switch checked={validatedConfig.include_photos} onCheckedChange={(checked) => handleUpdateConfig({ ...config, include_photos: checked })} disabled={isLoading} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includeNotes", { defaultValue: "Include notes" })}</label>
+                    <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includeNotes")}</label>
                     <Switch checked={validatedConfig.include_notes} onCheckedChange={(checked) => handleUpdateConfig({ ...config, include_notes: checked })} disabled={isLoading} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includeValue", { defaultValue: "Include value" })}</label>
+                    <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includeValue")}</label>
                     <Switch checked={validatedConfig.include_value} onCheckedChange={(checked) => handleUpdateConfig({ ...config, include_value: checked })} disabled={isLoading || userProfile?.privacy_hide_values} />
                   </div>
                   {resolvedModuleType === "tobacco" ? (
                     <div className="flex items-center justify-between">
-                      <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includeInventory", { defaultValue: "Include inventory" })}</label>
+                      <label style={{ color: "rgba(224, 216, 200, 0.8)", fontSize: 14 }}>{t("share.includeInventory")}</label>
                       <Switch checked={validatedConfig.include_inventory} onCheckedChange={(checked) => handleUpdateConfig({ ...config, include_inventory: checked })} disabled={isLoading || userProfile?.privacy_hide_inventory} />
                     </div>
                   ) : null}
@@ -231,21 +231,21 @@ export default function ShareRecordModal({
               <div className="space-y-2">
                 <Button onClick={handleCopyLink} disabled={isLoading} className="w-full justify-start bg-[rgba(180,140,75,0.2)] hover:bg-[rgba(180,140,75,0.3)] border border-[rgba(180,140,75,0.3)]" style={{ color: "#E0D8C8" }}>
                   <Copy className="w-4 h-4 mr-2" />
-                  {t("share.copyLink", { defaultValue: "Copy Public Link" })}
+                  {t("share.copyLink")}
                 </Button>
                 <Button onClick={handleOpenPreview} disabled={isLoading} className="w-full justify-start bg-[rgba(180,140,75,0.2)] hover:bg-[rgba(180,140,75,0.3)] border border-[rgba(180,140,75,0.3)]" style={{ color: "#E0D8C8" }}>
                   <Eye className="w-4 h-4 mr-2" />
-                  {t("share.openPreview", { defaultValue: "Open Public Preview" })}
+                  {t("share.openPreview")}
                 </Button>
                 <Button onClick={() => setPreviewMode("card")} disabled={isLoading} className="w-full justify-start bg-[rgba(180,140,75,0.2)] hover:bg-[rgba(180,140,75,0.3)] border border-[rgba(180,140,75,0.3)]" style={{ color: "#E0D8C8" }}>
                   <Download className="w-4 h-4 mr-2" />
-                  {t("share.downloadCard", { defaultValue: "Download Collector Card" })}
+                  {t("share.downloadCard")}
                 </Button>
               </div>
 
               {previewMode === "card" ? null : (
                 <div className="pt-2 text-xs text-[rgba(224,216,200,0.55)]">
-                  {t("share.previewTip", { defaultValue: "Use Preview to review the card before downloading it." })}
+                  {t("share.previewTip")}
                 </div>
               )}
             </div>
@@ -254,11 +254,11 @@ export default function ShareRecordModal({
           {previewMode === "card" ? (
             <div className="flex gap-2">
               <Button onClick={() => setPreviewMode("options")} variant="outline" className="flex-1">
-                {t("common.back", { defaultValue: "Back" })}
+                {t("common.back")}
               </Button>
               <Button onClick={handleExportCard} disabled={isLoading} className="flex-1">
                 <Download className="w-4 h-4 mr-2" />
-                {t("share.downloadCard", { defaultValue: "Download Collector Card" })}
+                {t("share.downloadCard")}
               </Button>
             </div>
           ) : null}

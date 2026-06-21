@@ -78,9 +78,9 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
           boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
         }}
       >
-        <h2 className="text-2xl font-bold mb-2 text-[#F5F1E7]">{t("onboarding.welcomeModuleTitle", "Welcome to CollectionKeeper")}</h2>
+        <h2 className="text-2xl font-bold mb-2 text-[#F5F1E7]">{t("onboarding.welcomeModuleTitle")}</h2>
         <p className="text-sm text-[#E0D8C8] mb-6">
-          {t("onboarding.moduleSelectionDesc", "Choose which collection modules you'd like to start with. You can enable or upgrade these anytime.")}
+          {t("onboarding.moduleSelectionDesc")}
         </p>
 
         <div className="space-y-3 mb-8">
@@ -110,7 +110,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                   PipeKeeper
                 </h3>
                 <p className="text-xs text-[#E0D8C8] mt-1">
-                  {t("onboarding.pipekeeperDesc", "Organize and track your pipe and tobacco collection. Free tier: 5 pipes, 10 blends.")}
+                  {t("onboarding.pipekeeperDesc")}
                 </p>
               </div>
               <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
@@ -145,7 +145,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                   WhiskeyKeeper
                 </h3>
                 <p className="text-xs text-[#E0D8C8] mt-1">
-                  {t("onboarding.whiskeykeeperDesc", "Track your whiskey collection with tasting notes and inventory. Free tier: 10 bottles.")}
+                  {t("onboarding.whiskeykeeperDesc")}
                 </p>
               </div>
               <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
@@ -180,7 +180,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                     CigarKeeper
                   </h3>
                   <p className="text-xs text-[#E0D8C8] mt-1">
-                    {t("onboarding.cigarkeeperDesc", "Track cigars, humidors, inventory, and sessions. Free tier: 10 cigars, 1 humidor. Upgrade anytime.")}
+                    {t("onboarding.cigarkeeperDesc")}
                   </p>
                 </div>
                 <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
@@ -216,7 +216,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                     WineKeeper
                   </h3>
                   <p className="text-xs text-[#E0D8C8] mt-1">
-                    {t("onboarding.winekeeperDesc", "Manage your wine cellar with bottle tracking and tasting notes. Free tier: 10 bottles.")}
+                    {t("onboarding.winekeeperDesc")}
                   </p>
                 </div>
                 <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">

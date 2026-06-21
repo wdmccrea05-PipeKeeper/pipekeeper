@@ -114,7 +114,7 @@ export default function CigarCard({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
             <Cigarette className="w-10 h-10" style={{ color: 'rgba(180,140,75,0.35)' }} />
-            <span className="text-xs text-[#E0D8C8]/40">{t('cigars.noPhoto', 'No photo')}</span>
+            <span className="text-xs text-[#E0D8C8]/40">{t('cigars.noPhoto')}</span>
           </div>
         )}
 
@@ -224,7 +224,7 @@ export default function CigarCard({
             {cigar?.brand || '—'}
           </p>
           <h3 className="text-base font-bold text-[#F5F1E7] leading-tight mt-0.5 break-words">
-            {cigar?.name || t('cigars.untitled', 'Untitled Cigar')}
+            {cigar?.name || t('cigars.untitled')}
           </h3>
           {cigar?.vitola && (
             <p className="text-xs text-[#E0D8C8]/65 mt-0.5 break-words">{cigar.vitola}</p>

@@ -41,7 +41,7 @@ function RecentTastingCard({ tasting, t }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
-            {tasting.wine_name || t('wine.unnamedWine', 'Unnamed Wine')}
+            {tasting.wine_name || t('wine.unnamedWine')}
           </p>
           <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>
             {formatDate(tasting.date)}
@@ -113,7 +113,7 @@ function WineKeeperInner() {
     if (mostVal) {
       cards.push({
         key: 'mostValuable',
-        title: t('wine.mostValuable', 'Most Valuable'),
+        title: t('wine.mostValuable'),
         value: getWineDisplayName(mostVal),
         subtitle: getWineProducer(mostVal)
           ? `${getWineProducer(mostVal)}${mostVal.vintage ? ` · ${mostVal.vintage}` : ''}`
@@ -136,9 +136,9 @@ function WineKeeperInner() {
       const dw = drinkingNow[0];
       cards.push({
         key: 'drinkingNow',
-        title: t('wine.drinkingNow', 'Drink Now'),
+        title: t('wine.drinkingNow'),
         value: getWineDisplayName(dw),
-        subtitle: [getWineProducer(dw), dw.vintage].filter(Boolean).join(' · ') || t('wine.drinkingNowSubtitle', 'at peak drinking window'),
+        subtitle: [getWineProducer(dw), dw.vintage].filter(Boolean).join(' · ') || t('wine.drinkingNowSubtitle'),
         accent: '#2E7D5C',
         photo: getWinePrimaryImage(dw),
         onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(dw.id)}`),
@@ -150,7 +150,7 @@ function WineKeeperInner() {
     if (rated.length > 0) {
       cards.push({
         key: 'topRated',
-        title: t('wine.topRated', 'Top Rated'),
+        title: t('wine.topRated'),
         value: getWineDisplayName(rated[0]),
         subtitle: `★ ${rated[0].rating}/5${getWineProducer(rated[0]) ? ` · ${getWineProducer(rated[0])}` : ''}`,
         accent: '#8B4B6B',
@@ -166,9 +166,9 @@ function WineKeeperInner() {
         const tb = selectTotalWineBottles(wines);
         cards.push({
           key: 'collectionValue',
-          title: t('wine.collectionValue', 'Collection Value'),
+          title: t('wine.collectionValue'),
           value: formatFromBase(cv),
-          subtitle: `${tb} ${tb === 1 ? t('wine.bottleSingular', 'bottle') : t('wine.bottlePlural', 'bottles')}`,
+          subtitle: `${tb} ${tb === 1 ? t('wine.bottleSingular') : t('wine.bottlePlural')}`,
           accent: '#4A7C5E',
           photo: null,
           onClick: () => navigate('/WineInsights'),
@@ -189,9 +189,9 @@ function WineKeeperInner() {
         const sample = wines.find((w) => getWineProducer(w) === producer);
         cards.push({
           key: 'topProducer',
-          title: t('wine.topProducer', 'Top Producer'),
+          title: t('wine.topProducer'),
           value: producer,
-          subtitle: `${count} ${count === 1 ? t('wine.bottleSingular', 'bottle') : t('wine.bottlePlural', 'bottles')}`,
+          subtitle: `${count} ${count === 1 ? t('wine.bottleSingular') : t('wine.bottlePlural')}`,
           accent: '#7B5EA7',
           photo: getWinePrimaryImage(sample),
           onClick: () => navigate('/Wines'),
@@ -205,7 +205,7 @@ function WineKeeperInner() {
       if (favorites.length > 0) {
         cards.push({
           key: 'favorite',
-          title: t('wine.favorites', 'Favorites'),
+          title: t('wine.favorites'),
           value: getWineDisplayName(favorites[0]),
           subtitle: getWineProducer(favorites[0]) || '',
           accent: '#8B3A3A',
@@ -222,7 +222,7 @@ function WineKeeperInner() {
         const recent = byDate[0];
         cards.push({
           key: 'recentlyAdded',
-          title: t('wine.recentlyAdded', 'Recently Added'),
+          title: t('wine.recentlyAdded'),
           value: getWineDisplayName(recent),
           subtitle: getWineProducer(recent) || (recent.vintage ? String(recent.vintage) : ''),
           accent: '#3A6B8B',
@@ -236,29 +236,29 @@ function WineKeeperInner() {
   }, [wines, formatFromBase, t, navigate]);
 
   const quickLaunchActions = [
-    { key: 'addWine', Icon: Plus, label: t('wine.addBottle', 'Add Bottle'), onClick: () => setShowAddModal(true) },
-    { key: 'collection', Icon: Wine, label: t('wine.collection', 'Wine Collection'), onClick: () => navigate('/Wines') },
-    { key: 'logTasting', Icon: BookOpen, label: t('wine.logTasting', 'Log Tasting'), onClick: () => navigate('/Wines?action=tasting') },
-    { key: 'insights', Icon: BarChart3, label: t('nav.insights', 'Insights'), onClick: () => navigate('/WineInsights') },
-    { key: 'shareStory', Icon: Share2, label: t('wine.shareStory', 'Share Story'), onClick: () => navigate('/Wines') },
-    { key: 'curator', iconImage: CURATOR_ICON, label: t('quickActions.collectionCurator', 'Collection Curator'), onClick: () => navigate('/Curator') },
+    { key: 'addWine', Icon: Plus, label: t('wine.addBottle'), onClick: () => setShowAddModal(true) },
+    { key: 'collection', Icon: Wine, label: t('wine.collection'), onClick: () => navigate('/Wines') },
+    { key: 'logTasting', Icon: BookOpen, label: t('wine.logTasting'), onClick: () => navigate('/Wines?action=tasting') },
+    { key: 'insights', Icon: BarChart3, label: t('nav.insights'), onClick: () => navigate('/WineInsights') },
+    { key: 'shareStory', Icon: Share2, label: t('wine.shareStory'), onClick: () => navigate('/Wines') },
+    { key: 'curator', iconImage: CURATOR_ICON, label: t('quickActions.collectionCurator'), onClick: () => navigate('/Curator') },
   ];
 
   const totalBottles = selectTotalWineBottles(wines);
   const collectionValue = selectWineCollectionValue(wines);
 
   const wineStats = [
-    { label: t('wine.bottleTypes', 'Bottle Types'), value: wines.length },
-    { label: t('wine.totalBottles', 'Total Bottles'), value: totalBottles },
-    { label: t('wine.collectionValue', 'Collection Value'), value: collectionValue > 0 ? formatFromBase(collectionValue) : '—' },
-    { label: t('wine.tastingsLogged', 'Tastings'), value: tastings.length },
+    { label: t('wine.bottleTypes'), value: wines.length },
+    { label: t('wine.totalBottles'), value: totalBottles },
+    { label: t('wine.collectionValue'), value: collectionValue > 0 ? formatFromBase(collectionValue) : '—' },
+    { label: t('wine.tastingsLogged'), value: tastings.length },
   ];
 
   return (
     <>
     <ModulePageShell
-      title={t('winekeeper.title', 'WineKeeper')}
-      subtitle={t('winekeeper.description', 'Curate, age, and value your wine collection')}
+      title={t('winekeeper.title')}
+      subtitle={t('winekeeper.description')}
       icon={<Wine className="w-6 h-6" style={{ color: '#C47070' }} />}
       accentColor="#8B3A3A"
       onBackToHub={() => navigate('/CollectionHub')}
@@ -273,14 +273,14 @@ function WineKeeperInner() {
         >
           <Wine className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(139,58,58,0.5)' }} />
           <h3 className="text-lg font-semibold mb-2" style={{ color: '#F5F1E7' }}>
-            {t('wine.noBottlesYet', 'No bottles yet')}
+            {t('wine.noBottlesYet')}
           </h3>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {t('wine.startTracking', 'Start tracking your wine collection')}
+            {t('wine.startTracking')}
           </p>
           <Button onClick={() => setShowAddModal(true)} style={{ background: '#8B3A3A', color: '#F5F1E7' }}>
             <Plus className="w-4 h-4 mr-2" />
-            {t('wine.addFirstBottle', 'Add Your First Bottle')}
+            {t('wine.addFirstBottle')}
           </Button>
         </div>
       }
@@ -291,7 +291,7 @@ function WineKeeperInner() {
 
       {/* Recent Tastings */}
       {recentTastings.length > 0 && (
-        <ModuleRecentActivitySection title={t('wine.recentTastings', 'Recent Tastings')}>
+        <ModuleRecentActivitySection title={t('wine.recentTastings')}>
           <div className="space-y-3">
             {recentTastings.map((tasting) => (
               <RecentTastingCard key={tasting.id} tasting={tasting} t={t} />

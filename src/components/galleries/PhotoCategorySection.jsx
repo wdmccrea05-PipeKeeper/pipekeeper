@@ -118,7 +118,7 @@ export default function PhotoCategorySection({
         </div>
       ) : (
         <div className="text-center py-6">
-          <p className="text-sm text-[#D8C7A6]/60">{t("mediaLimits.noPhotos", "No photos yet")}</p>
+          <p className="text-sm text-[#D8C7A6]/60">{t("mediaLimits.noPhotos")}</p>
         </div>
       )}
 
@@ -136,7 +136,7 @@ export default function PhotoCategorySection({
       {/* Limit Indicator */}
       {!canAddMore && (
         <p className="text-xs text-[#D4A574]/80 text-center">
-          {t("mediaLimits.maximumImagesReached", "Maximum images reached")}
+          {t("mediaLimits.maximumImagesReached")}
         </p>
       )}
     </div>

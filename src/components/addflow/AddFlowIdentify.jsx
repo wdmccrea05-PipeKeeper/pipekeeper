@@ -41,10 +41,10 @@ function ModeSelector({ onSelectUPC, onSelectPhoto, onManual, onBack, typeLabel 
         </button>
         <div className="min-w-0">
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            {t('addFlowIdentify.title', 'Scan or Identify')} {typeLabel}
+            {t('addFlowIdentify.title')} {typeLabel}
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-            {t('addFlowIdentify.subtitle', 'Use a barcode or photo to identify and prefill details')}
+            {t('addFlowIdentify.subtitle')}
           </p>
         </div>
       </div>
@@ -70,10 +70,10 @@ function ModeSelector({ onSelectUPC, onSelectPhoto, onManual, onBack, typeLabel 
             </div>
             <div className="min-w-0">
               <p className="font-semibold text-base mb-1" style={{ color: '#F5F1E7' }}>
-                {t('addFlowIdentify.scanUPC', 'Scan or Enter UPC')}
+                {t('addFlowIdentify.scanUPC')}
               </p>
               <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                {t('addFlowIdentify.upcDesc', 'Enter a barcode, or scan with camera where supported, to look up the item automatically')}
+                {t('addFlowIdentify.upcDesc')}
               </p>
             </div>
           </div>
@@ -97,10 +97,10 @@ function ModeSelector({ onSelectUPC, onSelectPhoto, onManual, onBack, typeLabel 
             </div>
             <div className="min-w-0">
               <p className="font-semibold text-base mb-1" style={{ color: '#F5F1E7' }}>
-                {t('addFlowIdentify.photoIdentify', 'Photo Identify')}
+                {t('addFlowIdentify.photoIdentify')}
               </p>
               <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                {t('addFlowIdentify.photoDesc', 'Upload or take a photo and let AI identify the item')}
+                {t('addFlowIdentify.photoDesc')}
               </p>
             </div>
           </div>
@@ -112,7 +112,7 @@ function ModeSelector({ onSelectUPC, onSelectPhoto, onManual, onBack, typeLabel 
           style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
         >
           <PenLine className="w-3.5 h-3.5" />
-          <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
+          <span className="text-sm">{t('addFlow.addManually')}</span>
         </button>
       </div>
       <div className="pb-2" />
@@ -138,7 +138,7 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       onResult(result);
     } catch (err) {
       console.error('UPC lookup error:', err);
-      toast.error(t('addFlowIdentify.upcError', 'UPC lookup failed. Please try again or add manually.'));
+      toast.error(t('addFlowIdentify.upcError'));
     } finally {
       setLoading(false);
     }
@@ -169,10 +169,10 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
           </button>
           <div className="min-w-0">
             <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              {t('addFlowIdentify.upcTitle', 'Enter UPC / Barcode')}
+              {t('addFlowIdentify.upcTitle')}
             </h2>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              {t('addFlowIdentify.upcSubtitle', 'Scan a barcode with your camera where supported, or type it manually')}
+              {t('addFlowIdentify.upcSubtitle')}
             </p>
           </div>
         </div>
@@ -195,13 +195,13 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
             <Camera className="w-5 h-5" />
             <span className="text-sm font-medium">
               {canUseLiveScanner
-                ? t('addFlowIdentify.scanBarcode', 'Scan Barcode with Camera')
-                : t('addFlowIdentify.scanUnavailable', 'Live Scan Unavailable in This Browser')}
+                ? t('addFlowIdentify.scanBarcode')
+                : t('addFlowIdentify.scanUnavailable')}
             </span>
           </button>
           {!canUseLiveScanner && (
             <p className="text-xs -mt-1" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              {t('addFlowIdentify.scanUnavailableHint', 'Use manual barcode entry on iPhone Safari and other unsupported browsers.')}
+              {t('addFlowIdentify.scanUnavailableHint')}
             </p>
           )}
 
@@ -216,7 +216,7 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
-              placeholder={t('addFlowIdentify.upcPlaceholder', 'e.g. 0 12345 67890 5')}
+              placeholder={t('addFlowIdentify.upcPlaceholder')}
               className="flex-1"
               inputMode="numeric"
               style={{
@@ -242,7 +242,7 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
           {loading && (
             <div className="flex items-center justify-center py-8 gap-2" style={{ color: 'rgba(224,216,200,0.4)' }}>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-sm">{t('addFlowIdentify.lookingUp', 'Looking up barcode…')}</span>
+              <span className="text-sm">{t('addFlowIdentify.lookingUp')}</span>
             </div>
           )}
 
@@ -252,7 +252,7 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
             style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
           >
             <PenLine className="w-3.5 h-3.5" />
-            <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
+            <span className="text-sm">{t('addFlow.addManually')}</span>
           </button>
         </div>
         <div className="pb-2" />
@@ -278,7 +278,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       setPhotoUrls((prev) => [...prev, ...urls]);
     } catch (err) {
       console.error('Upload error:', err);
-      toast.error(err?.userMessage || t('addFlowIdentify.uploadError', 'Failed to upload photos'));
+      toast.error(err?.userMessage || t('addFlowIdentify.uploadError'));
     } finally {
       setUploading(false);
       // reset so same file can be re-selected
@@ -298,7 +298,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       onResult(result);
     } catch (err) {
       console.error('Photo identify error:', err);
-      toast.error(err?.userMessage || t('addFlowIdentify.analyzeError', 'Photo identification failed. Please try again.'));
+      toast.error(err?.userMessage || t('addFlowIdentify.analyzeError'));
     } finally {
       setAnalyzing(false);
     }
@@ -316,10 +316,10 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
         </button>
         <div className="min-w-0">
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            {t('addFlowIdentify.photoTitle', 'Photo Identify')} {typeLabel}
+            {t('addFlowIdentify.photoTitle')} {typeLabel}
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-            {t('addFlowIdentify.photoSubtitle', 'Upload or take a photo — AI identifies and prefills details')}
+            {t('addFlowIdentify.photoSubtitle')}
           </p>
         </div>
       </div>
@@ -339,7 +339,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
           >
             {uploading ? <Loader2 className="w-7 h-7 animate-spin" /> : <Camera className="w-7 h-7" />}
             <span className="text-sm font-medium">
-              {uploading ? t('common.uploading', 'Uploading…') : t('common.takePhoto', 'Take Photo')}
+              {uploading ? t('common.uploading') : t('common.takePhoto')}
             </span>
             <input
               type="file"
@@ -360,7 +360,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
           >
             {uploading ? <Loader2 className="w-7 h-7 animate-spin" /> : <Upload className="w-7 h-7" />}
             <span className="text-sm font-medium">
-              {uploading ? t('common.uploading', 'Uploading…') : t('common.uploadPhoto', 'Upload Photo')}
+              {uploading ? t('common.uploading') : t('common.uploadPhoto')}
             </span>
             <input
               type="file"
@@ -412,7 +412,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
             {analyzing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {t('addFlowIdentify.analyzing', 'Analyzing…')}
+                {t('addFlowIdentify.analyzing')}
               </>
             ) : (
               <>
@@ -429,7 +429,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
           style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
         >
           <PenLine className="w-3.5 h-3.5" />
-          <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
+          <span className="text-sm">{t('addFlow.addManually')}</span>
         </button>
       </div>
       <div className="pb-2" />
@@ -522,10 +522,10 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
         </button>
         <div className="min-w-0">
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            {t('addFlowIdentify.resultsTitle', 'Select the Best Match')}
+            {t('addFlowIdentify.resultsTitle')}
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-            {candidates.length} {t('addFlowIdentify.candidatesFound', 'candidate(s) found')}
+            {candidates.length} {t('addFlowIdentify.candidatesFound')}
           </p>
         </div>
       </div>
@@ -600,7 +600,7 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
 
         {candidates.length === 0 && (
           <p className="text-sm text-center py-6" style={{ color: 'rgba(224,216,200,0.4)' }}>
-            {t('addFlowIdentify.noMatches', 'No matches found.')}
+            {t('addFlowIdentify.noMatches')}
           </p>
         )}
 
@@ -609,7 +609,7 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
             <div className="flex items-center gap-2 mb-2">
               <Search className="w-3.5 h-3.5" style={{ color: 'rgba(140,180,220,0.85)' }} />
               <p className="text-xs font-semibold" style={{ color: '#F5F1E7' }}>
-                {t('addFlowIdentify.quickSearchTitle', 'Database matches from extracted terms')}
+                {t('addFlowIdentify.quickSearchTitle')}
               </p>
             </div>
             {searchingQuickSearch && (
@@ -649,7 +649,7 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
           style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
         >
           <PenLine className="w-3.5 h-3.5" />
-          <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
+          <span className="text-sm">{t('addFlow.addManually')}</span>
         </button>
       </div>
       <div className="pb-2" />
@@ -737,8 +737,8 @@ export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual,
     return (
       <FeatureGate
         feature="AI_IDENTIFY"
-        featureName={t('addFlowIdentify.featureName', 'AI Identify')}
-        description={t('addFlowIdentify.featureDescription', 'Identify items by barcode or photo with AI')}
+        featureName={t('addFlowIdentify.featureName')}
+        description={t('addFlowIdentify.featureDescription')}
       >
         <ModeSelector
           typeLabel={typeLabel}

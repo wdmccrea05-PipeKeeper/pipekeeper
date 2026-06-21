@@ -508,7 +508,7 @@ export default function LogSessionModal({
         console.log("[LogSessionModal] external items:", externalItems.length);
       }
 
-      toast.success(t("smokingLog.logSession") + " " + t("common.saved", { defaultValue: "saved" }));
+      toast.success(t("smokingLog.logSession") + " " + t("common.saved"));
 
       if (externalItems.length > 0) {
         postPromptPendingRef.current = true;

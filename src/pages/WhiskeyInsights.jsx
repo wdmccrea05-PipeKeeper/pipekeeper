@@ -195,7 +195,7 @@ export default function WhiskeyInsightsPage() {
       <LockedModuleGuard moduleKey="whiskeykeeper">
         <div className="space-y-6">
           <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
-          <InsightsHeader title={t('whiskeykeeper.insightsTitle', 'WhiskeyKeeper Insights')} subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')} />
+          <InsightsHeader title={t('whiskeykeeper.insightsTitle')} subtitle={t('whiskeykeeper.insightsSubtitle')} />
           <InsightsEmptyState message="Add bottles to reveal trends, value, and opportunities." />
         </div>
       </LockedModuleGuard>
@@ -207,8 +207,8 @@ export default function WhiskeyInsightsPage() {
       <InsightsPageShell>
         <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
         <InsightsHeader
-          title={t('whiskeykeeper.insightsTitle', 'WhiskeyKeeper Insights')}
-          subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')}
+          title={t('whiskeykeeper.insightsTitle')}
+          subtitle={t('whiskeykeeper.insightsSubtitle')}
         />
 
         <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.whiskeykeeper} />
@@ -219,22 +219,22 @@ export default function WhiskeyInsightsPage() {
             <InsightsKpiGrid>
               <InsightStatCard icon={WhiskeyKeeperIcon} label="Bottle Types" value={bottleTypes} sub="Distinct labels" accent="#C87941" />
               <InsightStatCard icon={Trophy} label="Total Bottles" value={totalBottles} sub={inventoryUnits.length > 0 ? `${openBottles} open · ${sealedBottles} sealed` : undefined} accent="#C87941" />
-              <InsightStatCard icon={Zap} label={t('insights.openBottles', 'Open Bottles')} value={openBottles} accent="#EF4444" />
-              <InsightStatCard icon={Star} label={t('insights.totalTastings', 'Total Tastings')} value={totalTastings} sub={`${tastingsThisWeek} this week`} accent={CATEGORY_COLORS.tobacco} />
-              <InsightStatCard icon={TrendingUp} label={t('insights.collectionValue', 'Collection Value')} value={formatCurrency(Math.round(totalValue))} accent={CATEGORY_COLORS.value} />
-              <InsightStatCard icon={Award} label={t('insights.averageRating', 'Average Rating')} value={`${averageRating}/5`} accent="#8B5CF6" />
+              <InsightStatCard icon={Zap} label={t('insights.openBottles')} value={openBottles} accent="#EF4444" />
+              <InsightStatCard icon={Star} label={t('insights.totalTastings')} value={totalTastings} sub={`${tastingsThisWeek} this week`} accent={CATEGORY_COLORS.tobacco} />
+              <InsightStatCard icon={TrendingUp} label={t('insights.collectionValue')} value={formatCurrency(Math.round(totalValue))} accent={CATEGORY_COLORS.value} />
+              <InsightStatCard icon={Award} label={t('insights.averageRating')} value={`${averageRating}/5`} accent="#8B5CF6" />
             </InsightsKpiGrid>
 
             <InsightsHighlightGrid>
               {mostTastedBottle && (
-                <InsightsHighlightCard title={t('insights.mostTastedBottle', 'Most Tasted Bottle')} value={mostTastedBottle.name} subtitle={`${mostTastedBottle.count} tastings`} accent="#C87941" photo={mostTastedBottle.photo} />
+                <InsightsHighlightCard title={t('insights.mostTastedBottle')} value={mostTastedBottle.name} subtitle={`${mostTastedBottle.count} tastings`} accent="#C87941" photo={mostTastedBottle.photo} />
               )}
               {mostValuedBottle && (
-                <InsightsHighlightCard title={t('insights.mostValuedBottle', 'Most Valued Bottle')} value={mostValuedBottle.name} subtitle={formatCurrency(getBottleValue(mostValuedBottle))} accent="#C0392B" photo={mostValuedBottle.photo} />
+                <InsightsHighlightCard title={t('insights.mostValuedBottle')} value={mostValuedBottle.name} subtitle={formatCurrency(getBottleValue(mostValuedBottle))} accent="#C0392B" photo={mostValuedBottle.photo} />
               )}
               {oldestBottle && (
                 <InsightsHighlightCard
-                  title={t('insights.oldestBottle', 'Oldest Bottle')}
+                  title={t('insights.oldestBottle')}
                   value={oldestBottle.name}
                   subtitle={oldestBottle.purchase_date && !Number.isNaN(new Date(oldestBottle.purchase_date).getTime()) ? new Date(oldestBottle.purchase_date).getFullYear().toString() : 'Unknown'}
                   accent="#10B981"
@@ -254,7 +254,7 @@ export default function WhiskeyInsightsPage() {
               <InsightStatCard icon={Star} label="Per Week (avg)" value={tastingPerWeek} accent="#D4A574" />
             </InsightsKpiGrid>
             <InsightPanel>
-              <InsightSectionHeading>{t('insights.tastingActivity', 'Tasting Activity')}</InsightSectionHeading>
+              <InsightSectionHeading>{t('insights.tastingActivity')}</InsightSectionHeading>
               {tastingLogs.length > 0 ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {[...new Map(tastingLogs.map(l => [l.id, l])).values()].slice(0, 50).map(log => (
@@ -387,7 +387,7 @@ export default function WhiskeyInsightsPage() {
         {/* REPORTS */}
         {activeTab === 'reports' && (
           <InsightPanel>
-            <InsightSectionHeading>{t('insights.reports', 'Export Reports')}</InsightSectionHeading>
+            <InsightSectionHeading>{t('insights.reports')}</InsightSectionHeading>
             <div className="space-y-4">
               <div className="p-4 rounded-xl" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
                 <h4 className="font-semibold text-[#F5F1E7] mb-1">Collection Summary</h4>

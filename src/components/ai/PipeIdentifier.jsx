@@ -127,7 +127,7 @@ export default function PipeIdentifier() {
   const handleIdentify = async () => {
     if (!photos.length) {
       toast.error(
-        t("pipeIdentifier.uploadPhotosFirst", "Please upload at least one photo first")
+        t("pipeIdentifier.uploadPhotosFirst")
       );
       return;
     }
@@ -248,12 +248,11 @@ Rules:
           </div>
           <div className="min-w-0">
             <div className="text-xl font-semibold">
-              {t("pipeIdentifier.aiPipeIdentification", "AI Pipe Identification")}
+              {t("pipeIdentifier.aiPipeIdentification")}
             </div>
             <div className="text-sm text-[#D7C9B2]/70">
               {t(
-                "pipeIdentifier.uploadPhotosToIdentify",
-                "Upload photos to identify a pipe"
+                "pipeIdentifier.uploadPhotosToIdentify"
               )}
             </div>
           </div>
@@ -273,7 +272,7 @@ Rules:
           >
             <Upload className="w-7 h-7 text-[#D7C9B2]/80" />
             <span className="font-medium text-[#F5F1E7]">
-              {t("pipeIdentifier.uploadPhotos", "Upload Photos")}
+              {t("pipeIdentifier.uploadPhotos")}
             </span>
             <input
               type="file"
@@ -295,7 +294,7 @@ Rules:
           >
             <Camera className="w-7 h-7 text-[#D7C9B2]/80" />
             <span className="font-medium text-[#F5F1E7]">
-              {t("common.takePhoto", "Take Photo")}
+              {t("common.takePhoto")}
             </span>
             <input
               type="file"
@@ -329,28 +328,28 @@ Rules:
 
         <div className="space-y-4">
           <div className="text-sm font-semibold text-[#F5F1E7]">
-            {t("pipeIdentifier.optionalHints", "Optional Hints")}
+            {t("pipeIdentifier.optionalHints")}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               value={nameHint}
               onChange={(e) => setNameHint(e.target.value)}
-              placeholder={t("pipeIdentifier.nameDescription", "Name / Description")}
+              placeholder={t("pipeIdentifier.nameDescription")}
             />
             <Input
               value={makerHint}
               onChange={(e) => setMakerHint(e.target.value)}
-              placeholder={t("pipeIdentifier.brandMaker", "Brand / Maker")}
+              placeholder={t("pipeIdentifier.brandMaker")}
             />
             <Input
               value={shapeHint}
               onChange={(e) => setShapeHint(e.target.value)}
-              placeholder={t("pipeIdentifier.shape", "Shape")}
+              placeholder={t("pipeIdentifier.shape")}
             />
             <Input
               value={stampingHint}
               onChange={(e) => setStampingHint(e.target.value)}
-              placeholder={t("pipeIdentifier.stampings", "Stampings")}
+              placeholder={t("pipeIdentifier.stampings")}
             />
           </div>
         </div>
@@ -368,7 +367,7 @@ Rules:
           ) : (
             <>
               <Sparkles className="w-4 h-4 mr-2" />
-              {t("pipeIdentifier.identifyPipe", "Identify Pipe")}
+              {t("pipeIdentifier.identifyPipe")}
             </>
           )}
         </Button>

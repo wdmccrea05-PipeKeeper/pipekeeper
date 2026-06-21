@@ -52,10 +52,10 @@ export default function TroubleshootingFull() {
       <div className="max-w-[980px] mx-auto px-4 py-10">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#F5F1E7] mb-2">
-            {t("help.troubleshooting", "Troubleshooting")}
+            {t("help.troubleshooting")}
           </h1>
           <p className="text-[#D7C9B2]/80 mb-4">
-            {t("helpCenter.troubleshootingSubtitle", "Common issues and solutions")}
+            {t("helpCenter.troubleshootingSubtitle")}
           </p>
 
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
@@ -65,7 +65,7 @@ export default function TroubleshootingFull() {
                 className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)]"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
-                {t("help.howTo", "How-To Guides")}
+                {t("help.howTo")}
               </Button>
             </Link>
 
@@ -75,7 +75,7 @@ export default function TroubleshootingFull() {
                 className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)]"
               >
                 <CircleHelp className="w-4 h-4 mr-2" />
-                {t("help.faq", "FAQ")}
+                {t("help.faq")}
               </Button>
             </Link>
           </div>
@@ -89,74 +89,74 @@ export default function TroubleshootingFull() {
           </div>
         </div>
 
-        <Section icon={RefreshCw} title={t("helpCenter.troubleshootCaching", "Caching & Page Refresh")} accentClass="text-sky-300">
+        <Section icon={RefreshCw} title={t("helpCenter.troubleshootCaching")} accentClass="text-sky-300">
           <TroubleshootingItem
             id="changes-not-appearing"
-            title={t("helpCenter.changesNotAppearing", "Changes aren't appearing after I update something")}
+            title={t("helpCenter.changesNotAppearing")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
             <ul className="list-disc list-inside space-y-2">
-              <li>{t("helpCenter.refreshPage", "Refresh the page once after saving changes.")}</li>
-              <li>{t("helpCenter.waitSync", "Give the app a moment to sync your latest data.")}</li>
-              <li>{t("helpCenter.checkFilters", "Check whether a filter, sort, or search is hiding the updated item.")}</li>
+              <li>{t("helpCenter.refreshPage")}</li>
+              <li>{t("helpCenter.waitSync")}</li>
+              <li>{t("helpCenter.checkFilters")}</li>
             </ul>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="missing-new-features"
-            title={t("helpCenter.newFeaturesMissing", "New features or cards are missing")}
+            title={t("helpCenter.newFeaturesMissing")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>{t("helpCenter.newFeaturesMissingDesc", "Refresh the app, sign out and back in, and confirm you are on the latest build.")}</p>
+            <p>{t("helpCenter.newFeaturesMissingDesc")}</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="stale-data"
-            title={t("helpCenter.dataOutdated", "Data seems outdated or stale")}
+            title={t("helpCenter.dataOutdated")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>{t("helpCenter.dataOutdatedDesc", "Stale data is usually resolved by refreshing the page or revisiting the screen after a save completes.")}</p>
+            <p>{t("helpCenter.dataOutdatedDesc")}</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="old-version-after-update"
-            title={t("helpCenter.oldVersionAfterUpdate", "App is showing old version after an update")}
+            title={t("helpCenter.oldVersionAfterUpdate")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>{t("helpCenter.oldVersionAfterUpdateDesc", "Close and reopen the app or reload the website fully to pull the newest assets.")}</p>
+            <p>{t("helpCenter.oldVersionAfterUpdateDesc")}</p>
           </TroubleshootingItem>
         </Section>
 
-        <Section icon={Sparkles} title={t("helpCenter.aiFeatures", "AI Features")} accentClass="text-violet-300">
+        <Section icon={Sparkles} title={t("helpCenter.aiFeatures")} accentClass="text-violet-300">
           <TroubleshootingItem
             id="regenerate-pairings"
-            title={t("helpCenter.whyRegeneratePairings", "Why do I need to regenerate pairings?")}
+            title={t("helpCenter.whyRegeneratePairings")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>{t("helpCenter.whyRegeneratePairingsDesc", "Pairings can change when your collection changes, so regenerated results reflect your current pipes and blends.")}</p>
+            <p>{t("helpCenter.whyRegeneratePairingsDesc")}</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="ai-updates-out-of-date"
-            title={t("helpCenter.outOfDateAiUpdates", "What does 'out of date' mean on AI Updates?")}
+            title={t("helpCenter.outOfDateAiUpdates")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>{t("helpCenter.outOfDateAiUpdatesDesc", "It means your last AI-generated results were based on older collection data and may need refreshing.")}</p>
+            <p>{t("helpCenter.outOfDateAiUpdatesDesc")}</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="undo-ai-regeneration"
-            title={t("helpCenter.undoAiRegenerations", "Can I undo AI regenerations?")}
+            title={t("helpCenter.undoAiRegenerations")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>{t("helpCenter.undoAiRegenerationsDesc", "Most AI refreshes replace prior generated outputs, so review and save anything important before rerunning them.")}</p>
+            <p>{t("helpCenter.undoAiRegenerationsDesc")}</p>
           </TroubleshootingItem>
         </Section>
 

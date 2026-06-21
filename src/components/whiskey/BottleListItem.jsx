@@ -86,7 +86,7 @@ export default function BottleListItem({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-xs text-[#E0D8C8]/45">
-              {t('whiskey.noPhoto') || 'No photo'}
+              {t('whiskey.noPhoto')}
             </div>
           )}
         </div>
@@ -95,11 +95,11 @@ export default function BottleListItem({
           <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3">
             <div className="min-w-0">
               <h3 className="text-xl font-bold text-[#F5F1E7] break-words leading-tight">
-                {bottle?.name || (t('whiskey.untitledBottle') || 'Untitled Bottle')}
+                {bottle?.name || (t('whiskey.untitledBottle'))}
               </h3>
               <p className="text-sm text-[#E0D8C8] break-words mt-1">
                 {[bottle?.distillery, bottle?.region, bottle?.country].filter(Boolean).join(' • ') ||
-                  (t('whiskey.noOriginInfo') || 'No origin details')}
+                  (t('whiskey.noOriginInfo'))}
               </p>
             </div>
 
@@ -130,7 +130,7 @@ export default function BottleListItem({
           <p className="text-sm text-[#E0D8C8]/90 break-words leading-relaxed">
             {bottle?.notes
               ? bottle.notes.slice(0, 180) + (bottle.notes.length > 180 ? '…' : '')
-              : (t('whiskey.noNotesYet') || 'No notes yet')}
+              : (t('whiskey.noNotesYet'))}
           </p>
         </div>
 
@@ -163,7 +163,7 @@ export default function BottleListItem({
               className="flex-1"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
-              {t('common.open') || 'Open'}
+              {t('common.open')}
             </Button>
           )}
 
@@ -176,7 +176,7 @@ export default function BottleListItem({
               className="flex-1"
             >
               <Pencil className="w-4 h-4 mr-2" />
-              {t('common.edit') || 'Edit'}
+              {t('common.edit')}
             </Button>
           )}
 
@@ -189,7 +189,7 @@ export default function BottleListItem({
               className="flex-1 text-[#F0B4B4]"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              {t('common.delete') || 'Delete'}
+              {t('common.delete')}
             </Button>
           )}
         </div>

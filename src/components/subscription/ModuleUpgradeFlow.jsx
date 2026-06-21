@@ -109,7 +109,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
   if (!user || !currentState) {
     return (
       <div className="p-6 text-center text-[#E0D8C8]">
-        {t('common.loading') || 'Loading...'}
+        {t('common.loading')}
       </div>
     );
   }
@@ -272,7 +272,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
       }}
     >
       <p style={{ color: '#E0D8C8' }}>
-        {t('subscription.noModulesPurchased') || 'No modules purchased yet.'}
+        {t('subscription.noModulesPurchased')}
       </p>
     </div>
   );
@@ -392,7 +392,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
           />
           <div>
             <p className="font-semibold" style={{ color: '#E05D5D' }}>
-              {t('common.error') || 'Error'}
+              {t('common.error')}
             </p>
             <p
               className="text-sm"
@@ -417,7 +417,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
                 onClick={() => setSelectedOption(null)}
                 disabled={isProcessing}
               >
-                {t('common.cancel') || 'Cancel'}
+                {t('common.cancel')}
               </Button>
 
               <Button
@@ -436,7 +436,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
           style={{ background: 'rgba(42, 31, 24, 0.5)' }}
         >
           <p style={{ color: '#E0D8C8' }}>
-            {t('subscription.allModulesPurchased') || 'All modules already purchased.'}
+            {t('subscription.allModulesPurchased')}
           </p>
         </div>
       )}

@@ -144,7 +144,7 @@ export default function TobaccoPage() {
       invalidateBlendQueries(queryClient, user?.email);
       setShowForm(false);
       setEditingBlend(null);
-      toast.success(t('inventory.saved') || 'Blend updated');
+      toast.success(t('inventory.saved'));
     },
     onError: (error, variables) => {
       console.error('Failed to update tobacco blend', {
@@ -152,7 +152,7 @@ export default function TobaccoPage() {
         payload: variables?.data,
         blendId: variables?.id,
       });
-      toast.error(error?.message || t('tobaccoPage.failedToUpdateBlends') || 'Unable to update blend');
+      toast.error(error?.message || t('tobaccoPage.failedToUpdateBlends'));
     },
   });
 

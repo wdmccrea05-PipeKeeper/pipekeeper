@@ -253,7 +253,7 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
             {selectedBlend ? (
                <div className="mt-2 flex items-center justify-between">
                  <span className="text-sm text-[#E0D8C8] truncate font-medium">{selectedBlend.name}</span>
-                 <span className="text-sm text-white font-semibold">{selectedBlendScore ?? t("matching.noScore", {defaultValue: "—"})}</span>
+                 <span className="text-sm text-white font-semibold">{selectedBlendScore ?? t("matching.noScore")}</span>
                </div>
              ) : null}
           </div>

@@ -13,7 +13,7 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
   const items = [
     { page: "Whiskey", label: t("whiskey.bottles"), semanticIcon: "bottle" },
     { page: "Tastings", label: t("whiskey.tastings"), icon: BookOpen },
-    { page: "SessionHistory", label: t("sessionHistory.title", "Session History"), icon: CalendarDays },
+    { page: "SessionHistory", label: t("sessionHistory.title"), icon: CalendarDays },
     { page: "WhiskeyInsights", label: t("nav.insights"), icon: TrendingUp },
   ];
 

@@ -6,9 +6,23 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { translate } from '@/components/i18n/index.jsx';
 
 function readPage(fileName) {
   return fs.readFileSync(path.resolve(process.cwd(), 'src/pages', fileName), 'utf8');
+}
+
+// Resolve the user-facing InsightsHeader title regardless of whether the page
+// renders it from a literal or a t('key') call. This keeps the title tests
+// i18n-aware now that hardcoded English fallbacks have been removed.
+function resolveInsightsTitle(src) {
+  const headerIdx = src.indexOf('<InsightsHeader');
+  const scope = headerIdx >= 0 ? src.slice(headerIdx, headerIdx + 400) : src;
+  const tCall = scope.match(/title=\{\s*t\(\s*['"]([^'"]+)['"]/);
+  if (tCall) return translate(tCall[1], {}, 'en');
+  const literal = scope.match(/title=["']([^"']+)["']/);
+  if (literal) return literal[1];
+  return '';
 }
 
 const INSIGHTS_PAGES = [
@@ -148,18 +162,15 @@ describe('Insights standardization', () => {
 
   describe('module-specific page titles', () => {
     it('PipeKeeper Insights title uses "PipeKeeper Insights"', () => {
-      const src = readPage('Insights.jsx');
-      expect(src).toContain('PipeKeeper Insights');
+      expect(resolveInsightsTitle(readPage('Insights.jsx'))).toBe('PipeKeeper Insights');
     });
 
     it('WhiskeyKeeper Insights title uses "WhiskeyKeeper Insights"', () => {
-      const src = readPage('WhiskeyInsights.jsx');
-      expect(src).toContain('WhiskeyKeeper Insights');
+      expect(resolveInsightsTitle(readPage('WhiskeyInsights.jsx'))).toBe('WhiskeyKeeper Insights');
     });
 
     it('CigarKeeper Insights title uses "CigarKeeper Insights"', () => {
-      const src = readPage('CigarInsights.jsx');
-      expect(src).toContain('CigarKeeper Insights');
+      expect(resolveInsightsTitle(readPage('CigarInsights.jsx'))).toBe('CigarKeeper Insights');
     });
 
     it('WineKeeper Insights title uses "WineKeeper Insights"', () => {

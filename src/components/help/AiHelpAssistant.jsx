@@ -100,7 +100,7 @@ Instructions:
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: t('help.aiError', 'Sorry, I encountered an error. Please try again or browse the documentation directly.'),
+        content: t('help.aiError'),
       }]);
     } finally {
       setIsLoading(false);
@@ -114,7 +114,7 @@ Instructions:
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center gap-4 py-6">
             <p className="text-[#D7C9B2]/60 text-sm">
-              {t('help.askQuestion', 'Ask me anything about CollectionKeeper!')}
+              {t('help.askQuestion')}
             </p>
             <div className="flex flex-col gap-2 w-full max-w-xs">
               {STARTER_QUESTIONS.map(q => (
@@ -183,7 +183,7 @@ Instructions:
       >
         <input
           type="text"
-          placeholder={t('help.typeQuestion', 'Ask a question…')}
+          placeholder={t('help.typeQuestion')}
           value={input}
           onChange={e => setInput(e.target.value)}
           disabled={isLoading}

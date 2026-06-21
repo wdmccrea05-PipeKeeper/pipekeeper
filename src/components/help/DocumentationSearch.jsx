@@ -68,7 +68,7 @@ export default function DocumentationSearch({ fullPage = false }) {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D7C9B2]/50 pointer-events-none" />
         <input
           type="text"
-          placeholder={t('help.searchDocs', 'Search help articles, features, questions…')}
+          placeholder={t('help.searchDocs')}
           value={query}
           onChange={e => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
