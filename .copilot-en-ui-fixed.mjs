@@ -3915,7 +3915,7 @@ const enUI = {
     explanationCommon: "Widely available and easy to replace",
     explanationNoData: "No bottle data provided",
   },
-
+  },
 };
 
 export default enUI;

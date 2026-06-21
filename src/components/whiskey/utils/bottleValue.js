@@ -80,16 +80,16 @@ const DISCONTINUED_STATUSES = new Set(['discontinued', 'distillery closed', 'clo
 const LIMITED_STATUSES      = new Set(['limited', 'allocated', 'limited release']);
 
 const RARITY_LEVELS = [
-  { min: 7, level: 5, label: 'Extremely Rare', dots: '●●●●●', explanation: 'Discontinued and commands significant premium on the secondary market' },
-  { min: 5, level: 4, label: 'Rare',           dots: '●●●●○', explanation: 'Limited production and/or notable aftermarket demand' },
-  { min: 3, level: 3, label: 'Limited',        dots: '●●●○○', explanation: 'Limited availability or elevated collector interest' },
-  { min: 1, level: 2, label: 'Available',      dots: '●●○○○', explanation: 'Generally available through standard retail channels' },
-  { min: 0, level: 1, label: 'Common',         dots: '●○○○○', explanation: 'Widely available and easy to replace' },
+  { min: 7, level: 5, labelKey: 'rarity.extremelyRare', label: 'Extremely Rare', dots: '●●●●●', explanationKey: 'rarity.explanationExtremelyrare', explanation: 'Discontinued and commands significant premium on the secondary market' },
+  { min: 5, level: 4, labelKey: 'rarity.rare',          label: 'Rare',           dots: '●●●●○', explanationKey: 'rarity.explanationRare',           explanation: 'Limited production and/or notable aftermarket demand' },
+  { min: 3, level: 3, labelKey: 'rarity.limited',       label: 'Limited',        dots: '●●●○○', explanationKey: 'rarity.explanationLimited',         explanation: 'Limited availability or elevated collector interest' },
+  { min: 1, level: 2, labelKey: 'rarity.available',     label: 'Available',      dots: '●●○○○', explanationKey: 'rarity.explanationAvailable',       explanation: 'Generally available through standard retail channels' },
+  { min: 0, level: 1, labelKey: 'rarity.common',        label: 'Common',         dots: '●○○○○', explanationKey: 'rarity.explanationCommon',          explanation: 'Widely available and easy to replace' },
 ];
 
 export function getRarityLevel(bottle) {
   if (!bottle) {
-    return { level: 2, label: 'Available', dots: '●●○○○', explanation: 'No bottle data provided' };
+    return { level: 2, labelKey: 'rarity.available', label: 'Available', dots: '●●○○○', explanationKey: 'rarity.explanationNoData', explanation: 'No bottle data provided' };
   }
 
   const retailPrice    = toNumber(bottle.retail_price);
