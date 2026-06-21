@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrency } from "@/lib/currency/useCurrency";
 import {
+import { formatDate } from '@/components/utils/localeFormatters';
   computeBlendReplacementDifficulty,
   computeBlendStrategy,
   BLEND_DIFFICULTY_LABELS,
@@ -379,7 +380,7 @@ export default function TobaccoValuation({ blend, onUpdate, isUpdating }) {
 
                 {blend.ai_last_updated && hasProAccess ? (
                   <p className="text-xs text-[#e8d5b7]/40 pt-2 border-t border-[#e8d5b7]/10">
-                    {t("tobaccoValuation.lastUpdated")} {new Date(blend.ai_last_updated).toLocaleDateString()}
+                    {t("tobaccoValuation.lastUpdated")} {formatDate(new Date(blend.ai_last_updated), 'short')}
                   </p>
                 ) : null}
               </div>

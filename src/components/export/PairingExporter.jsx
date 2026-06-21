@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function PairingExporter({ pipes, blends }) {
   const { t } = useTranslation();
@@ -75,7 +76,7 @@ export default function PairingExporter({ pipes, blends }) {
       doc.text(t("pairingExporter.title"), pageWidth / 2, 20, { align: 'center' });
       
       doc.setFontSize(10);
-      doc.text(`${t("pairingExporter.generated")} ${new Date().toLocaleDateString()}`, pageWidth / 2, 28, { align: 'center' });
+      doc.text(`${t("pairingExporter.generated")} ${formatDate(new Date(), 'short')}`, pageWidth / 2, 28, { align: 'center' });
       
       let y = 40;
       

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
 import { InsightsHighlightCard } from '@/components/insights/InsightsShell';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 /**
  * WineStoryHighlights — visual hero cards for wine collection story.
@@ -74,7 +75,7 @@ export default function WineStoryHighlights({ wines = [], tastings = [], t = (k)
         key: 'recent-tasting',
         title: 'Recent Tasting',
         value: recentTasting.wine_name || 'Wine Tasting',
-        subtitle: recentTasting.rating ? `${Number(recentTasting.rating).toFixed(1)}/5 · ${new Date(recentTasting.date).toLocaleDateString()}` : new Date(recentTasting.date).toLocaleDateString(),
+        subtitle: recentTasting.rating ? `${Number(recentTasting.rating).toFixed(1)}/5 · ${formatDate(new Date(recentTasting.date), 'short')}` : formatDate(new Date(recentTasting.date), 'short'),
         photo: linkedWine ? getWinePrimaryImage(linkedWine) : null,
         accent: '#D47C7C',
       });

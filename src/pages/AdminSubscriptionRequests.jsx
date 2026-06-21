@@ -18,6 +18,7 @@ import { AlertCircle, CheckCircle2, Clock, Loader2, Search } from "lucide-react"
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatDate } from '@/components/utils/localeFormatters';
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-800",
@@ -274,7 +275,7 @@ export default function AdminSubscriptionRequests() {
                               <div>
                                 <p className="text-[#E0D8C8]/50 text-xs">{t("admin.created")}</p>
                                 <p className="text-[#E0D8C8]">
-                                  {new Date(req.created_date).toLocaleDateString()}
+                                  {formatDate(new Date(req.created_date), 'short')}
                                 </p>
                               </div>
                               {req.granted_at && (

@@ -13,6 +13,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import SubscriptionProviderCard from '@/components/admin/SubscriptionProviderCard';
 import StripeDiagnosticsCard from '@/components/admin/StripeDiagnosticsCard';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function AdminReports() {
   const navigate = useNavigate();
@@ -122,7 +123,7 @@ export default function AdminReports() {
               </span>
             </CardTitle>
             <p className="text-xs text-stone-400 mt-1">
-              {t('admin.reportedDate')} {new Date(report.created_date).toLocaleDateString()}
+              {t('admin.reportedDate')} {formatDate(new Date(report.created_date), 'short')}
             </p>
           </div>
         </div>

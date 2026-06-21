@@ -22,6 +22,7 @@ import {
   humidorNeedsAttention,
 } from '@/components/cigars/humidorMaintenanceUtils';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -29,7 +30,7 @@ function formatDate(value, locale) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString(locale || undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatDate(d, 'medium');
 }
 
 function RecentSessionCard({ session, t, locale }) {

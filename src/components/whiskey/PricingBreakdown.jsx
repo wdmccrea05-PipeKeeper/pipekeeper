@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Badge } from '@/components/ui/badge';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function PricingBreakdown({ bottle }) {
   const { t } = useTranslation();
@@ -71,7 +72,7 @@ export default function PricingBreakdown({ bottle }) {
                 {t('whiskey.actualPaid')}
               </p>
               <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.7)' }}>
-                {bottle.purchase_type ? getPurchaseTypeLabel(bottle.purchase_type) : '—'} {bottle.purchase_date ? `on ${new Date(bottle.purchase_date).toLocaleDateString()}` : ''}
+                {bottle.purchase_type ? getPurchaseTypeLabel(bottle.purchase_type) : '—'} {bottle.purchase_date ? `on ${formatDate(new Date(bottle.purchase_date), 'short')}` : ''}
               </p>
             </div>
             <p className="text-xl font-bold" style={{ color: '#D4A574' }}>
@@ -126,7 +127,7 @@ export default function PricingBreakdown({ bottle }) {
             )}
             {bottle.value_last_updated && (
               <p style={{ color: 'rgba(180,140,75,0.5)' }}>
-                {t('common.lastUpdated')}: {new Date(bottle.value_last_updated).toLocaleDateString()}
+                {t('common.lastUpdated')}: {formatDate(new Date(bottle.value_last_updated), 'short')}
               </p>
             )}
           </div>

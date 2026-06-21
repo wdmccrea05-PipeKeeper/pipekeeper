@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 // -- tiny helpers ---------------------------------------------------------------
 
@@ -17,7 +18,7 @@ function formatDate(v) {
   if (!v) return '--';
   const d = new Date(v);
   if (isNaN(d.getTime())) return '--';
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatDate(d, 'medium');
 }
 
 function CapitalizeFirst(str) {

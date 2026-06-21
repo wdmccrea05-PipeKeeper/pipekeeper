@@ -15,7 +15,7 @@
  *
  * @param {{
  *   actionType: string,
- *   executor:   () => Promise<object>,
+ *   executor:   () => a Promise<object>,
  *   normalizer: (raw: object, actionType: string) => object | null,
  * }} options
  *

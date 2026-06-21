@@ -7,6 +7,7 @@ import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 function TastingsInner() {
   const { t } = useTranslation();
@@ -147,7 +148,7 @@ function TastingsInner() {
                   <p className="text-xl font-semibold">{log.bottle_name}</p>
                   <p className="text-[#D8C7A6]/76 mt-1">
                     {log.tasting_date
-                      ? new Date(log.tasting_date).toLocaleDateString('en-US')
+                      ? formatDate(new Date(log.tasting_date), 'short')
                       : 'Unknown date'}
                   </p>
                 </button>

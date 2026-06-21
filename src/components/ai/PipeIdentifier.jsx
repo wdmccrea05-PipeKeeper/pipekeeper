@@ -190,7 +190,7 @@ Rules:
       toast.success(t("auto.components_ai_PipeIdentifier.pipe_identified_successfully_1idibu"));
     } catch (err) {
       console.error(err);
-      toast.error("Identification failed: " + (err.message || "Unknown error"));
+      toast.error(t("auto.components_ai_PipeIdentifier.identification_failed_toast") + (err.message || "Unknown error"));
     } finally {
       setLoading(false);
     }

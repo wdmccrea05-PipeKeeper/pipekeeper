@@ -291,7 +291,7 @@ export default function CigarInsights({ user, cigars = [], sessions = [], humido
 
   const lowStockFavorites = cigars
     .filter((c) => c.is_favorite && Number(c.singles_equivalent ?? c.quantity ?? 0) > 0)
-    .filter((c) => Number(c.singles_equivalent ?? c.quantity ?? 0) <= Number(c.restock_threshold || 3))
+    .filter((c) => (Number(c.singles_equivalent ?? c.quantity ?? 0) <= Number(c.restock_threshold || 3)))
     .sort((a, b) => Number(a.singles_equivalent ?? a.quantity ?? 0) - Number(b.singles_equivalent ?? b.quantity ?? 0))
     .slice(0, 5);
 

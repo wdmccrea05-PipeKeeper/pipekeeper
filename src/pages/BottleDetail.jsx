@@ -55,6 +55,7 @@ import { toast } from "sonner";
 import EnrichButton from "@/components/shared/EnrichButton";
 import { useCurrency } from "@/lib/currency/useCurrency";
 import { getItemPhoto } from '@/lib/images/getItemPhoto';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 function safePrimitive(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -122,7 +123,7 @@ function formatDate(value) {
   if (!value) return "—";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-US");
+  return formatDate(d, 'short');
 }
 
 function DetailStat({ label, value, icon: Icon, helperText = null }) {

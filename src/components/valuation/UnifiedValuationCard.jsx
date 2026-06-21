@@ -33,6 +33,7 @@ import { useValuation } from '@/lib/valuation/useValuation';
 import { computeGainLoss } from '@/lib/valuation/valuationEngine';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -40,7 +41,7 @@ function formatDate(v) {
   if (!v) return '--';
   const d = new Date(v);
   if (isNaN(d.getTime())) return '--';
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatDate(d, 'medium');
 }
 
 function capitalize(str) {

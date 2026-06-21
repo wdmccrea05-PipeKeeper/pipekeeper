@@ -22,6 +22,7 @@ import {
 } from './humidorMaintenanceUtils';
 import { getAvailableQuantity } from '@/platform/cigarInventory';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 const AID_TYPE_LABELS = {
   boveda: 'Boveda Pack',
@@ -80,7 +81,7 @@ function formatDate(val) {
   if (!val) return null;
   const d = new Date(val + 'T12:00:00');
   if (Number.isNaN(d.getTime())) return val;
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatDate(d, 'medium');
 }
 
 function selectValue(val) {

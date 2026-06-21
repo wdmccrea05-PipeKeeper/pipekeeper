@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { parseLocalCalendarDate } from '@/components/utils/schemaCompatibility';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function MaintenanceLog({ pipeId, pipeName }) {
   const { t } = useTranslation();
@@ -127,7 +128,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
                      <div className="flex items-center gap-2 mb-1">
                        <span className="font-medium" style={{ color: "#E0D8C8" }}>{maintenanceTypes[log.maintenance_type] || log.maintenance_type || 'Unknown'}</span>
                        <span className="text-xs" style={{ color: "rgba(180, 140, 75, 0.8)" }}>
-                         {log.date ? parseLocalCalendarDate(log.date).toLocaleDateString() : '—'}
+                         {log.date ? formatDate(parseLocalCalendarDate(log.date), 'short') : '—'}
                        </span>
                      </div>
                      {log.description && (

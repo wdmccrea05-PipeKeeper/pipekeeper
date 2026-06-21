@@ -38,7 +38,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { formatWeight } from "@/components/utils/localeFormatters";
+import { formatWeight, formatDate } from '@/components/utils/localeFormatters';
 
 const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
@@ -49,7 +49,7 @@ const formatLogDate = (dateStr) => {
     const ymd = dateStr.split('T')[0];
     const [year, month, day] = ymd.split('-').map(Number);
     if (!year || !month || !day) return '';
-    return new Date(year, month - 1, day).toLocaleDateString();
+    return formatDate(new Date(year, month - 1, day), 'short');
   } catch {
     return '';
   }

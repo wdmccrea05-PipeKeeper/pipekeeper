@@ -5,11 +5,11 @@ import { ChevronDown } from 'lucide-react';
  * FormSection — collapsible accordion-style section for manual entry forms.
  *
  * Usage:
- *   <FormSection title="Identity" defaultOpen>
+ *   <FormSection title={t('form.identity')} defaultOpen>
  *     ...fields...
  *   </FormSection>
  *
- *   <FormSection title="Construction" summary="Briar, 9mm filter">
+ *   <FormSection title={t('form.construction')} summary="Briar, 9mm filter">
  *     ...fields...
  *   </FormSection>
  *

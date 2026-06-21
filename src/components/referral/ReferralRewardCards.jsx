@@ -7,6 +7,7 @@ import { Gift, Star, CheckCircle, Clock, AlertCircle, Smartphone, CreditCard, Za
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 const STATUS_META = {
   pending:                  { label: 'Processing',           color: '#D4A574', icon: Clock },
@@ -197,15 +198,15 @@ function RewardCard({ reward, onRedeemed }) {
       {/* Expiry notice for iOS */}
       {reward.billing_provider === 'ios' && reward.expires_at && reward.status === 'awaiting_user_redemption' && (
         <p className="text-xs text-[#E0D8C8]/35">
-          {t("auto.components_referral_ReferralRewardCards.expires_1r22c1")} {new Date(reward.expires_at).toLocaleDateString()}
+          {t("auto.components_referral_ReferralRewardCards.expires_1r22c1")} {formatDate(new Date(reward.expires_at), 'short')}
         </p>
       )}
 
       {/* Applied/redeemed date */}
       {(reward.applied_at || reward.redeemed_at) && (
         <p className="text-xs text-[#E0D8C8]/35">
-          {reward.applied_at ? `Applied ${new Date(reward.applied_at).toLocaleDateString()}` : ''}
-          {reward.redeemed_at ? `Redeemed ${new Date(reward.redeemed_at).toLocaleDateString()}` : ''}
+          {reward.applied_at ? `Applied ${formatDate(new Date(reward.applied_at), 'short')}` : ''}
+          {reward.redeemed_at ? `Redeemed ${formatDate(new Date(reward.redeemed_at), 'short')}` : ''}
         </p>
       )}
     </div>

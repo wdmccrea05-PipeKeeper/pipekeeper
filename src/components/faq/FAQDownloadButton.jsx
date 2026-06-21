@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function FAQDownloadButton({ faqContent }) {
   const { t } = useTranslation();
@@ -16,7 +17,7 @@ export default function FAQDownloadButton({ faqContent }) {
       return `${sectionTitle}\n${'='.repeat(sectionTitle.length)}\n\n${questionsAndAnswers}`;
     }).join('\n\n');
 
-    const header = `PIPEKEEPER - HELP & FAQ\nGenerated on ${new Date().toLocaleDateString()}\n\n${'='.repeat(50)}\n\n`;
+    const header = `PIPEKEEPER - HELP & FAQ\nGenerated on ${formatDate(new Date(), 'short')}\n\n${'='.repeat(50)}\n\n`;
     const fullContent = header + formattedContent;
 
     const blob = new Blob([fullContent], { type: 'text/plain;charset=utf-8' });

@@ -17,6 +17,7 @@ import ReferralProgressBar from '@/components/referral/ReferralProgressBar';
 import ReferralRewardCards from '@/components/referral/ReferralRewardCards';
 import ReferralModuleSelector from '@/components/referral/ReferralModuleSelector';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 const cardStyle = {
   background: 'linear-gradient(145deg, rgba(44,30,22,0.98), rgba(27,20,16,0.98))',
@@ -200,7 +201,7 @@ export default function CommunityReferralTab() {
               {t("auto.components_referral_CommunityReferralTab.referral_earned_1csj9d")} {access.module} access active
             </p>
             <p className="text-xs text-emerald-300/60">
-              {t("auto.components_referral_CommunityReferralTab.expires_1r22c1")} {access.end_at ? new Date(access.end_at).toLocaleDateString() : '—'}
+              {t("auto.components_referral_CommunityReferralTab.expires_1r22c1")} {access.end_at ? formatDate(new Date(access.end_at), 'short') : '—'}
             </p>
           </div>
         </div>

@@ -6,6 +6,7 @@
  */
 
 import { base44 } from '@/api/base44Client';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 /**
  * Get recent cross-module activity for the current user
@@ -103,7 +104,7 @@ export function formatActivityDate(date, t = null) {
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
 
-  return date.toLocaleDateString();
+  return formatDate(date, 'short');
 }
 
 /**

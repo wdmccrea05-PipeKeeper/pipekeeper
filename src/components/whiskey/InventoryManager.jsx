@@ -12,6 +12,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { QUERY_KEYS } from '@/lib/queryKeys';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 const STATUS_CONFIG = {
   reserve: {
@@ -113,7 +114,7 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
               )}
               {unit.purchase_date && (
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                  {t("auto.components_whiskey_InventoryManager.purchased_120nfe")} {new Date(unit.purchase_date).toLocaleDateString()}
+                  {t("auto.components_whiskey_InventoryManager.purchased_120nfe")} {formatDate(new Date(unit.purchase_date), 'short')}
                 </p>
               )}
             </div>

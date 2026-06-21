@@ -54,6 +54,7 @@ import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation, translate } from "@/components/i18n/safeTranslation";
 import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
+import { formatDate } from '@/components/utils/localeFormatters';
 
 /**
  * Drop-in replacement notes:
@@ -1936,7 +1937,7 @@ ${englishUserText}
 
             {/* Footer */}
             <div className="text-center pt-2 text-xs text-stone-500">
-              {optimization?.generated_date && <p>{t("common.lastUpdated")}: {new Date(optimization.generated_date).toLocaleDateString()}</p>}
+              {optimization?.generated_date && <p>{t("common.lastUpdated")}: {formatDate(new Date(optimization.generated_date), 'short')}</p>}
             </div>
           </CardContent>
         )}

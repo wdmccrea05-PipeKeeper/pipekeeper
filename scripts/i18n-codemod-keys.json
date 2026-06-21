@@ -2559,5 +2559,10 @@
   "auto.components_identify_BarcodeScannerModal.retry_camera_jgotus": "Retry Camera",
   "auto.components_identify_BarcodeScannerModal.type_manually_instead_youfqq": "Type Manually Instead",
   "auto.components_identify_BarcodeScannerModal.hold_steady_with_good_lighting_scanning_1nzbes": "Hold steady with good lighting — scanning automatically",
-  "auto.components_UserNotRegisteredError.collectionkeeper_1ukoz8": "CollectionKeeper"
+  "auto.components_UserNotRegisteredError.collectionkeeper_1ukoz8": "CollectionKeeper",
+  "auto.components_ai_PipeIdentifier.identification_failed_toast": "Identification failed: ",
+  "auto.components_export_TobaccoExporter.export_failed_toast": "Export failed: ",
+  "auto.components_export_WhiskeyExporter.export_failed_toast": "Export failed: ",
+  "auto.components_export_WhiskeyInsuranceExporter.insurance_export_failed_toast": "Insurance export failed: ",
+  "auto.components_home_SmokingLogPanel.failed_to_save_session_toast": "Failed to save session: "
 }

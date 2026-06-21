@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function ValueLookup({ pipe, onUpdateValue }) {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ export default function ValueLookup({ pipe, onUpdateValue }) {
     setLoading(true);
     try {
       const condition = pipe.condition_tracking?.overall_condition || pipe.condition || 'Unknown';
-      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      const today = formatDate(new Date(), 'monthYear');
 
       // Collect stamping photos if available
       const stampingPhotos = (pipe.photos || []).filter(

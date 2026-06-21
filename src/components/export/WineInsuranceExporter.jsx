@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { getWineUnitValue, getWineTotalValue } from '@/lib/collection/wineSelectors';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate, formatDateTime } from '@/components/utils/localeFormatters';
 
 function escapeCsvCell(cell) {
   return `"${String(cell ?? '').replace(/"/g, '""')}"`;
@@ -13,7 +14,7 @@ function escapeCsvCell(cell) {
 
 function formatDate(value) {
   const d = value ? new Date(value) : null;
-  return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString() : '—';
+  return d && !Number.isNaN(d.getTime()) ? formatDate(d, 'short') : '—';
 }
 
 function exportDateStamp() {
@@ -126,7 +127,7 @@ export default function WineInsuranceExporter({ user, wines = [] }) {
       doc.setFontSize(20);
       doc.text('WineKeeper Insurance Report', pageWidth / 2, 18, { align: 'center' });
       doc.setFontSize(10);
-      doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, 26, { align: 'center' });
+      doc.text(`Generated: ${formatDateTime(new Date())}`, pageWidth / 2, 26, { align: 'center' });
       doc.text(`Owner: ${user?.full_name || user?.email || 'Collection Owner'}`, pageWidth / 2, 32, { align: 'center' });
 
       doc.setFontSize(12);

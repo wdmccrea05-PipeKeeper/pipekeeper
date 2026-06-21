@@ -7,6 +7,7 @@ import jsPDF from 'jspdf';
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from 'sonner';
 import { calculateCellaredOzFromLogs } from "@/components/utils/tobaccoQuantityHelpers";
+import { formatDate } from '@/components/utils/localeFormatters';
 
 // ─── PDF HELPERS ────────────────────────────────────────────────────────────
 
@@ -174,7 +175,7 @@ export default function TobaccoExporter() {
       const h = createPDFHelpers(doc);
       const { pageWidth, contentWidth, marginLeft, ensurePageSpace, writeLine, writeWrappedText, writeSectionHeader, writeLabelValue } = h;
 
-      const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      const dateStr = formatDate(new Date(), 'long');
 
       // Sort blends: manufacturer then name
       const sorted = [...blends].sort((a, b) => {
@@ -391,7 +392,7 @@ export default function TobaccoExporter() {
       doc.save(`tobacco-collection-${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
       console.error('TobaccoExporter PDF error:', error);
-      toast.error('Export failed: ' + error.message);
+      toast.error(t("auto.components_export_TobaccoExporter.export_failed_toast") + error.message);
     } finally {
       setLoading(false);
     }

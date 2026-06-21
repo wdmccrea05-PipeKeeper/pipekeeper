@@ -9,6 +9,7 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import EntitlementAudit from "@/components/admin/EntitlementAudit";
+import { formatDateTime } from '@/components/utils/localeFormatters';
 
 export default function AdminSubscriptionTools() {
   const { user, isLoading } = useCurrentUser();
@@ -313,7 +314,7 @@ export default function AdminSubscriptionTools() {
                   <p className="text-[#E0D8C8]/50">{t("admin.updatedAt")}</p>
                   <p className="text-[#E0D8C8] font-medium">
                     {updatedUser.subscriptionUpdatedAt
-                      ? new Date(updatedUser.subscriptionUpdatedAt).toLocaleString()
+                      ? formatDateTime(new Date(updatedUser.subscriptionUpdatedAt))
                       : "—"}
                   </p>
                 </div>

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { getBottleUnitValue, getBottleDisplayValueLabel } from '@/components/utils/whiskeyValueHelpers';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function WhiskeyExporter() {
   const { t } = useTranslation();
@@ -121,7 +122,7 @@ export default function WhiskeyExporter() {
       doc.text('Whiskey Collection Report', pageWidth / 2, 20, { align: 'center' });
 
       doc.setFontSize(10);
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 28, { align: 'center' });
+      doc.text(`Generated: ${formatDate(new Date(), 'short')}`, pageWidth / 2, 28, { align: 'center' });
       doc.text(`Owner: ${user?.full_name || user?.email || ''}`, pageWidth / 2, 34, { align: 'center' });
 
       // Summary stats
@@ -224,7 +225,7 @@ export default function WhiskeyExporter() {
 
           doc.setFont(undefined, 'bold');
           doc.setFontSize(10);
-          doc.text(`${log.bottle_name || 'Unnamed'} — ${log.tasting_date ? new Date(log.tasting_date).toLocaleDateString() : ''}`, 20, ty);
+          doc.text(`${log.bottle_name || 'Unnamed'} — ${log.tasting_date ? formatDate(new Date(log.tasting_date), 'short') : ''}`, 20, ty);
           doc.setFont(undefined, 'normal');
           doc.setFontSize(9);
           ty += 6;
@@ -242,7 +243,7 @@ export default function WhiskeyExporter() {
       doc.save(`whiskey-collection-${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
       console.error('WhiskeyExporter PDF error:', error);
-      toast.error('Export failed: ' + error.message);
+      toast.error(t("auto.components_export_WhiskeyExporter.export_failed_toast") + error.message);
     } finally {
       setLoading(false);
     }

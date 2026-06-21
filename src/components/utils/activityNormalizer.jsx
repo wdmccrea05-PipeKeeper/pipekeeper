@@ -1,3 +1,4 @@
+import { formatDate } from '@/components/utils/localeFormatters';
 /**
  * activityNormalizer — shared utility for normalizing SmokingLog and TastingLog
  * entries into a single canonical activity model used across dashboard surfaces.
@@ -22,7 +23,7 @@ function formatActivityDate(dateString) {
   if (!dateString) return "";
   const dt = new Date(dateString);
   if (Number.isNaN(dt.getTime())) return "";
-  return dt.toLocaleDateString();
+  return formatDate(dt, 'short');
 }
 
 function getTimeKey(dateString) {

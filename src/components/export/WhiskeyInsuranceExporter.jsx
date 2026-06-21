@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { getBottleUnitValue } from '@/lib/collection/whiskeySelectors';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 function escapeCsvCell(cell) {
   return `"${String(cell ?? '').replace(/"/g, '""')}"`;
@@ -119,7 +120,7 @@ export default function WhiskeyInsuranceExporter({ user, bottles = [], inventory
       doc.text('WhiskeyKeeper — Insurance Report', pw / 2, 20, { align: 'center' });
       doc.setFontSize(10);
       doc.setTextColor(100, 80, 60);
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, pw / 2, 28, { align: 'center' });
+      doc.text(`Generated: ${formatDate(new Date(), 'short')}`, pw / 2, 28, { align: 'center' });
       doc.text(`Owner: ${user?.full_name || user?.email || 'Collection Owner'}`, pw / 2, 34, { align: 'center' });
 
       doc.setFontSize(11);
@@ -179,7 +180,7 @@ export default function WhiskeyInsuranceExporter({ user, bottles = [], inventory
           `Value: ${fmtMoney(getBottleValue(bottle))}`,
           bottle.purchase_price ? `Purchase Price: ${fmtMoney(bottle.purchase_price)}` : null,
           bottle.purchase_date
-            ? `Purchased: ${new Date(bottle.purchase_date).toLocaleDateString()}`
+            ? `Purchased: ${formatDate(new Date(bottle.purchase_date), 'short')}`
             : null,
         ].filter(Boolean);
 
@@ -207,7 +208,7 @@ export default function WhiskeyInsuranceExporter({ user, bottles = [], inventory
 
       doc.save(`whiskey-insurance-report-${exportDateStamp()}.pdf`);
     } catch (err) {
-      toast.error('Insurance export failed: ' + (err?.message || 'Unknown error'));
+      toast.error(t("auto.components_export_WhiskeyInsuranceExporter.insurance_export_failed_toast") + (err?.message || 'Unknown error'));
     } finally {
       setLoadingPdf(false);
     }

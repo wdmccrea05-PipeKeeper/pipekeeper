@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDateTime } from '@/components/utils/localeFormatters';
 
 export default function UserReport() {
   const { t } = useTranslation();
@@ -210,7 +211,7 @@ function Header({ generatedAt, onRefresh, onExport }) {
       <div>
         <h1 className="text-2xl font-bold text-[#F5F1E7]">{t("auto.pages_UserReport.user_subscription_report_1ehhg7")}</h1>
         {generatedAt ? (
-          <p className="text-xs text-[#E0D8C8]/50 mt-1">{t("auto.pages_UserReport.generated_yyi5h0")} {new Date(generatedAt).toLocaleString()}</p>
+          <p className="text-xs text-[#E0D8C8]/50 mt-1">{t("auto.pages_UserReport.generated_yyi5h0")} {formatDateTime(new Date(generatedAt))}</p>
         ) : null}
       </div>
       <div className="flex gap-2">

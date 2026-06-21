@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Package, Plus, Trash2, Edit2, Archive, Package2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function TobaccoContainerManager({ blendId, blendName, user, showOnlyOpen = false }) {
   const { t } = useTranslation();
@@ -185,7 +186,7 @@ export default function TobaccoContainerManager({ blendId, blendName, user, show
                       {container.quantity_grams.toFixed(2)}{t("containerManager.g")} ({(container.quantity_grams / 28.35).toFixed(2)} {t("common.oz")})
                       {container.created_date && (
                         <span className="text-xs text-stone-400 ml-2">
-                          {t("containerManager.added")} {new Date(container.created_date).toLocaleDateString()}
+                          {t("containerManager.added")} {formatDate(new Date(container.created_date), 'short')}
                         </span>
                       )}
                     </p>

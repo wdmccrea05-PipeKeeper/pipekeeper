@@ -311,7 +311,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   const createLogMutation = useMutation({
     mutationFn: (data) => base44.entities.SmokingLog.create(data),
     onError: (err) => {
-      toast.error("Failed to save session: " + (err?.message || "Unknown error"));
+      toast.error(t("auto.components_home_SmokingLogPanel.failed_to_save_session_toast") + (err?.message || "Unknown error"));
     },
     onSuccess: async (createdLog, variables) => {
       // Decrement container if chosen

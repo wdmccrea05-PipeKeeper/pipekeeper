@@ -8,6 +8,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatDateTime } from '@/components/utils/localeFormatters';
 
 export default function SubscriptionEventsLog() {
   const { isAdmin } = useCurrentUser();
@@ -146,7 +147,7 @@ export default function SubscriptionEventsLog() {
                       <p className="text-red-400">{t("admin.errorLabel")} {event.error}</p>
                     )}
                     <p className="text-xs text-[#E0D8C8]/50">
-                      {new Date(event.created_date).toLocaleString()}
+                      {formatDateTime(new Date(event.created_date))}
                     </p>
                   </div>
                 </div>

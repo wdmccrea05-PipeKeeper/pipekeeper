@@ -1,5 +1,6 @@
 import { summarizeCigarReadiness, getCigarReadiness } from '@/platform/agingReadiness';
 import { calculateCigarValue } from '@/utils/cigarValuation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -375,7 +376,7 @@ function makeRollingMonths(today = new Date(), count = 12) {
   for (let i = count - 1; i >= 0; i -= 1) {
     const d = new Date(Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth() - i, 1));
     const key = formatMonthKey(d);
-    out.push({ key, label: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) });
+    out.push({ key, label: formatDate(d, 'monthShortYear2') });
   }
   return out;
 }

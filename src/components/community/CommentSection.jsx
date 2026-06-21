@@ -18,6 +18,7 @@ import {
 import { Textarea as ReportTextarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function CommentSection({ entityType, entityId, entityOwnerEmail }) {
   const { t } = useTranslation();
@@ -143,7 +144,7 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
                         {comment.commenter_name}
                       </p>
                       <p className="text-xs text-stone-500">
-                        {new Date(comment.created_date).toLocaleDateString()}
+                        {formatDate(new Date(comment.created_date), 'short')}
                       </p>
                     </div>
                     <div className="flex gap-1">

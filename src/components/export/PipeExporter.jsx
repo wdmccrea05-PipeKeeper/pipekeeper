@@ -9,6 +9,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from 'sonner';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 export default function PipeExporter() {
   const { t } = useTranslation();
@@ -103,7 +104,7 @@ export default function PipeExporter() {
       doc.text(t("pipeExporter.insuranceReportTitle"), pageWidth / 2, 20, { align: 'center' });
       
       doc.setFontSize(10);
-      doc.text(`${t("pipeExporter.generated")} ${new Date().toLocaleDateString()}`, pageWidth / 2, 28, { align: 'center' });
+      doc.text(`${t("pipeExporter.generated")} ${formatDate(new Date(), 'short')}`, pageWidth / 2, 28, { align: 'center' });
       doc.text(`${t("pipeExporter.owner")} ${user?.full_name || user?.email}`, pageWidth / 2, 34, { align: 'center' });
       
       // Summary

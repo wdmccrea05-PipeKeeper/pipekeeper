@@ -90,7 +90,7 @@ function formatDate(value) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(d);
+  return formatDateMedium(d, 'medium');
 }
 
 const READINESS_STYLE = {

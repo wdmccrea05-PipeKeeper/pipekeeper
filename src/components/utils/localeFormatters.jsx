@@ -46,6 +46,8 @@ export function formatDate(date, style = 'medium') {
     medium: { year: 'numeric', month: 'short', day: 'numeric' },
     long: { year: 'numeric', month: 'long', day: 'numeric' },
     full: { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' },
+    monthYear: { year: 'numeric', month: 'long' },
+    monthShortYear2: { month: 'short', year: '2-digit' },
   };
   
   return new Intl.DateTimeFormat(getLocale(), options[style] || options.medium).format(d);

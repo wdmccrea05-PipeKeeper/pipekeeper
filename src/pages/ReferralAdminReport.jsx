@@ -7,6 +7,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { AlertCircle, RefreshCw, AlertTriangle, TrendingUp, CreditCard, Smartphone, Gift, Activity, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDateTime, formatDate } from '@/components/utils/localeFormatters';
 
 function Tile({ label, value, warn }) {
   return (
@@ -64,7 +65,7 @@ export default function ReferralAdminReport() {
           <div>
             <h1 className="text-2xl font-bold text-[#F5F1E7]">{t("auto.pages_ReferralAdminReport.referral_program_admin_report_porbft")}</h1>
             {data?.generatedAt && (
-              <p className="text-xs text-[#E0D8C8]/40 mt-1">{t("auto.pages_ReferralAdminReport.generated_yyi5h0")} {new Date(data.generatedAt).toLocaleString()}</p>
+              <p className="text-xs text-[#E0D8C8]/40 mt-1">{t("auto.pages_ReferralAdminReport.generated_yyi5h0")} {formatDateTime(new Date(data.generatedAt))}</p>
             )}
           </div>
           <Button onClick={load} variant="outline" className="border-[#8b6239]/40 text-[#E0D8C8] gap-2">
@@ -123,7 +124,7 @@ export default function ReferralAdminReport() {
                 <Tile
                   label="Last Run"
                   value={data.expiryJobHealth?.lastRunAt
-                    ? new Date(data.expiryJobHealth.lastRunAt).toLocaleString()
+                    ? formatDateTime(new Date(data.expiryJobHealth.lastRunAt))
                     : 'Never'}
                   warn={!data.expiryJobHealth?.lastRunAt}
                 />
@@ -386,8 +387,8 @@ export default function ReferralAdminReport() {
                               'text-[#E0D8C8]/70'
                             }`}>{r.status}</span>
                           </td>
-                          <td className="px-3 py-2 text-[#E0D8C8]/60">{r.grantedAt ? new Date(r.grantedAt).toLocaleDateString() : '—'}</td>
-                          <td className="px-3 py-2 text-[#E0D8C8]/60">{r.appliedAt ? new Date(r.appliedAt).toLocaleDateString() : r.redeemedAt ? new Date(r.redeemedAt).toLocaleDateString() : '—'}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{r.grantedAt ? formatDate(new Date(r.grantedAt), 'short') : '—'}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{r.appliedAt ? formatDate(new Date(r.appliedAt), 'short') : r.redeemedAt ? formatDate(new Date(r.redeemedAt), 'short') : '—'}</td>
                           <td className="px-3 py-2 font-mono text-[#E0D8C8]/50 max-w-[100px] truncate" title={r.providerRef}>{r.providerRef || '—'}</td>
                           <td className="px-3 py-2 text-[#E0D8C8]/60">{r.attempts}</td>
                           <td className="px-3 py-2 text-red-400/80 max-w-[150px] truncate" title={r.failureReason}>{r.failureReason || '—'}</td>
@@ -430,9 +431,9 @@ export default function ReferralAdminReport() {
                               'text-[#E0D8C8]/60'
                             }`}>{a.status}</span>
                           </td>
-                          <td className="px-3 py-2 text-[#E0D8C8]/60">{a.grantedAt ? new Date(a.grantedAt).toLocaleDateString() : '—'}</td>
-                          <td className="px-3 py-2 text-[#E0D8C8]/60">{a.activatedAt ? new Date(a.activatedAt).toLocaleDateString() : '—'}</td>
-                          <td className="px-3 py-2 text-[#E0D8C8]/60">{a.endAt ? new Date(a.endAt).toLocaleDateString() : '—'}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{a.grantedAt ? formatDate(new Date(a.grantedAt), 'short') : '—'}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{a.activatedAt ? formatDate(new Date(a.activatedAt), 'short') : '—'}</td>
+                          <td className="px-3 py-2 text-[#E0D8C8]/60">{a.endAt ? formatDate(new Date(a.endAt), 'short') : '—'}</td>
                         </tr>
                       ))}
                     </tbody>

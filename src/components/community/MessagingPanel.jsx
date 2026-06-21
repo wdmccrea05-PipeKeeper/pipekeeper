@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Send, Trash2, Save, X, Circle, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatDateTime } from '@/components/utils/localeFormatters';
 
 function getModuleTags(profile) {
   if (!profile) return [];
@@ -443,7 +444,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                           )}
                           <div className="flex items-center gap-2 mt-1">
                             <p className={`text-xs ${isSent ? 'text-blue-100' : 'text-stone-500'}`}>
-                              {new Date(message.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {formatDateTime(new Date(message.created_date))}
                             </p>
                             {isSent && (
                                 <div className="flex gap-1">
@@ -554,7 +555,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                               </p>
                               <p className="text-sm text-[#E0D8C8] break-words mt-0.5">{message.content}</p>
                               <p className="text-xs text-[#E0D8C8]/50 mt-1">
-                                {new Date(message.created_date).toLocaleString()}
+                                {formatDateTime(new Date(message.created_date))}
                               </p>
                             </div>
                             <Button
@@ -599,7 +600,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                               </p>
                               <p className="text-sm text-[#E0D8C8] break-words mt-0.5">{message.content}</p>
                               <p className="text-xs text-[#E0D8C8]/50 mt-1">
-                                {new Date(message.created_date).toLocaleString()}
+                                {formatDateTime(new Date(message.created_date))}
                               </p>
                             </div>
                               <div className="flex gap-1">

@@ -19,6 +19,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate } from '@/components/utils/localeFormatters';
 
 const EVENT_TYPES = [
   { value: 'humidity_check', label: 'Humidity Check', Icon: Droplets },
@@ -101,7 +102,7 @@ function formatDate(val) {
   if (!val) return '—';
   const d = new Date(val + 'T12:00:00');
   if (Number.isNaN(d.getTime())) return val;
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatDate(d, 'medium');
 }
 
 function EventTypeIcon({ type, size = 14 }) {

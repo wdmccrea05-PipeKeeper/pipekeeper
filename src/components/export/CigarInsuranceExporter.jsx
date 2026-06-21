@@ -11,6 +11,7 @@ import {
   getCigarUnitValue,
 } from '@/components/cigars/cigarReports';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { formatDate, formatDateTime } from '@/components/utils/localeFormatters';
 
 function escapeCsvCell(cell) {
   return `"${String(cell ?? '').replace(/"/g, '""')}"`;
@@ -18,7 +19,7 @@ function escapeCsvCell(cell) {
 
 function formatDate(value) {
   const d = value ? new Date(value) : null;
-  return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString() : '—';
+  return d && !Number.isNaN(d.getTime()) ? formatDate(d, 'short') : '—';
 }
 
 function exportDateStamp() {
@@ -127,7 +128,7 @@ export default function CigarInsuranceExporter({ user, cigars = [], humidors = [
       doc.setFontSize(20);
       doc.text('CigarKeeper Insurance Report', pageWidth / 2, 18, { align: 'center' });
       doc.setFontSize(10);
-      doc.text(`Generated: ${generatedAt.toLocaleString()}`, pageWidth / 2, 26, { align: 'center' });
+      doc.text(`Generated: ${formatDateTime(generatedAt)}`, pageWidth / 2, 26, { align: 'center' });
       doc.text(`Owner: ${user?.full_name || user?.email || 'Collection Owner'}`, pageWidth / 2, 32, { align: 'center' });
 
       doc.setFontSize(12);

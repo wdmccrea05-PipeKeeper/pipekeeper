@@ -55,7 +55,7 @@ const WEAR_OPTIONS = [
 function snapToNearest(value, options) {
   if (!options || options.length === 0) return value;
   return options.reduce((prev, curr) =>
-    Math.abs(curr.value - value) < Math.abs(prev.value - value) ? curr : prev,
+    (Math.abs(curr.value - value) < Math.abs(prev.value - value) ? curr : prev),
     options[0]
   ).value;
 }

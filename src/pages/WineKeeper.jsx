@@ -15,6 +15,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 import {
+import { formatDate } from '@/components/utils/localeFormatters';
   getWinePrimaryImage,
   getWineTotalValue,
   getWineDisplayName,
@@ -29,7 +30,7 @@ function formatDate(value) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatDate(d, 'medium');
 }
 
 function RecentTastingCard({ tasting, t }) {
