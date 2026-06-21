@@ -2,6 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Wines from '@/pages/Wines';
+import { translate } from '@/components/i18n/safeTranslation';
 import { QUERY_KEYS } from '@/lib/queryKeys';
 
 const { navigateMock, invalidateQueriesMock, wineDeleteMock, sampleWines } = vi.hoisted(() => ({
@@ -68,7 +69,7 @@ vi.mock('@/components/i18n/safeTranslation', async () => {
       t: (key, fallback) => {
         if (typeof fallback === 'string') return fallback;
         if (typeof fallback === 'object' && typeof fallback?.defaultValue === 'string') return fallback.defaultValue;
-        return actual.translate(key, {}, 'en');
+        return actual.translate(key, typeof fallback === 'object' ? fallback : {}, 'en');
       },
     }),
   };
@@ -130,25 +131,25 @@ describe('Wines collection parity', () => {
   it('renders a grid/list toggle and persists list mode across refresh', async () => {
     const { unmount } = render(<Wines />);
 
-    const listToggle = screen.getByRole('button', { name: 'List view' });
+    const listToggle = screen.getByRole('button', { name: translate('common.listView', {}, 'en') });
     fireEvent.click(listToggle);
 
     expect(localStorage.getItem('wineViewMode')).toBe('list');
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: translate('common.delete', {}, 'en') })).toBeInTheDocument();
 
     unmount();
     render(<Wines />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'List view' })).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByRole('button', { name: translate('common.listView', {}, 'en') })).toHaveAttribute('aria-pressed', 'true');
     });
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: translate('common.delete', {}, 'en') })).toBeInTheDocument();
   });
 
   it('opens WineDetail from the reusable list item row', async () => {
     render(<Wines />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'List view' }));
+    fireEvent.click(screen.getByRole('button', { name: translate('common.listView', {}, 'en') }));
     fireEvent.click(screen.getByText('Test Wine'));
 
     await waitFor(() => {
@@ -160,8 +161,8 @@ describe('Wines collection parity', () => {
     const expectedWineKey = { queryKey: QUERY_KEYS.wines('test@example.com') };
 
     const deleteView = render(<Wines />);
-    fireEvent.click(screen.getByRole('button', { name: 'List view' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: translate('common.listView', {}, 'en') }));
+    fireEvent.click(screen.getByRole('button', { name: translate('common.delete', {}, 'en') }));
     await waitFor(() => {
       expect(wineDeleteMock).toHaveBeenCalledWith('wine-1');
       expect(invalidateQueriesMock).toHaveBeenCalledWith(expectedWineKey);
@@ -169,8 +170,8 @@ describe('Wines collection parity', () => {
     deleteView.unmount();
 
     const editView = render(<Wines />);
-    fireEvent.click(screen.getByRole('button', { name: 'List view' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.click(screen.getByRole('button', { name: translate('common.listView', {}, 'en') }));
+    fireEvent.click(screen.getByRole('button', { name: translate('common.edit', {}, 'en') }));
     fireEvent.click(screen.getByRole('button', { name: 'save-wine' }));
     await waitFor(() => {
       expect(invalidateQueriesMock).toHaveBeenCalledWith(expectedWineKey);

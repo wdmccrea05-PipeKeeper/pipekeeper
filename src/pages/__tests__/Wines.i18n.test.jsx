@@ -4,22 +4,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Wines from '@/pages/Wines';
 import { I18nProvider, translate } from '@/components/i18n/safeTranslation';
 
-const sampleWines = [
-  {
-    id: 'wine-1',
-    name: 'Test Wine',
-    producer: 'Test Producer',
-    vintage: 2018,
-    region: 'Napa',
-    appellation: 'Oak Knoll',
-    varietal: 'Cabernet Sauvignon',
-    style: 'red',
-    quantity: 2,
-    rating: 4,
-    estimated_value: 12500,
-    created_by: 'test@example.com',
-  },
-];
+const { sampleWines } = vi.hoisted(() => ({
+  sampleWines: [
+    {
+      id: 'wine-1',
+      name: 'Test Wine',
+      producer: 'Test Producer',
+      vintage: 2018,
+      region: 'Napa',
+      appellation: 'Oak Knoll',
+      varietal: 'Cabernet Sauvignon',
+      style: 'red',
+      quantity: 2,
+      rating: 4,
+      estimated_value: 12500,
+      created_by: 'test@example.com',
+    },
+  ],
+}));
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => vi.fn(),

@@ -1,12 +1,21 @@
 export const storyWineTranslations = {
   en: {
     common: {
+      all: 'All',
+      clearFilters: 'Clear filters',
+      filters: 'Filters',
+      tags: 'Tags',
+      viewMode: 'View mode',
       delete: 'Delete',
       edit: 'Edit',
       updated: 'Updated',
       similar: 'Similar',
     },
     hub: {
+      highestValueCigar: 'Cigar Crown Jewel',
+      topRatedCigar: 'Top Rated Cigar',
+      topRatedWine: 'Top Rated Wine',
+      topWine: 'Top Wine',
       wineTypes: 'Wine Types',
       storyOpeningValue: "Your Collector's Story",
       storySnapshotCombined: 'Collection Snapshot',
@@ -209,8 +218,12 @@ export const storyWineTranslations = {
     },
   },
   es: {
-    common: { delete: 'Eliminar', edit: 'Editar', updated: 'Actualizado', similar: 'Similares' },
+    common: { all: 'Todos', clearFilters: 'Borrar filtros', filters: 'Filtros', tags: 'Etiquetas', viewMode: 'Modo de vista', delete: 'Eliminar', edit: 'Editar', updated: 'Actualizado', similar: 'Similares' },
     hub: {
+      highestValueCigar: 'Joya del humidor',
+      topRatedCigar: 'Puro mejor valorado',
+      topRatedWine: 'Vino mejor valorado',
+      topWine: 'Vino destacado',
       wineTypes: 'Tipos de vino',
       storyOpeningValue: 'Tu historia de coleccionista',
       storySnapshotCombined: 'Resumen de la colección',
@@ -379,8 +392,12 @@ export const storyWineTranslations = {
     },
   },
   fr: {
-    common: { delete: 'Supprimer', edit: 'Modifier', updated: 'Mis à jour', similar: 'Similaires' },
+    common: { all: 'Tous', clearFilters: 'Effacer les filtres', filters: 'Filtres', tags: 'Tags', viewMode: 'Mode d’affichage', delete: 'Supprimer', edit: 'Modifier', updated: 'Mis à jour', similar: 'Similaires' },
     hub: {
+      highestValueCigar: 'Joyau du humidor',
+      topRatedCigar: 'Cigare le mieux noté',
+      topRatedWine: 'Vin le mieux noté',
+      topWine: 'Vin vedette',
       wineTypes: 'Types de vin',
       storyOpeningValue: 'Votre histoire de collectionneur',
       storySnapshotCombined: 'Aperçu de la collection',
@@ -549,8 +566,12 @@ export const storyWineTranslations = {
     },
   },
   de: {
-    common: { delete: 'Löschen', edit: 'Bearbeiten', updated: 'Aktualisiert', similar: 'Ähnlich' },
+    common: { all: 'Alle', clearFilters: 'Filter löschen', filters: 'Filter', tags: 'Tags', viewMode: 'Ansichtsmodus', delete: 'Löschen', edit: 'Bearbeiten', updated: 'Aktualisiert', similar: 'Ähnlich' },
     hub: {
+      highestValueCigar: 'Wertvollste Zigarre',
+      topRatedCigar: 'Bestbewertete Zigarre',
+      topRatedWine: 'Bestbewerteter Wein',
+      topWine: 'Spitzenwein',
       wineTypes: 'Weinarten',
       storyOpeningValue: 'Deine Sammlergeschichte',
       storySnapshotCombined: 'Sammlungsüberblick',
@@ -719,8 +740,12 @@ export const storyWineTranslations = {
     },
   },
   it: {
-    common: { delete: 'Elimina', edit: 'Modifica', updated: 'Aggiornato', similar: 'Simili' },
+    common: { all: 'Tutti', clearFilters: 'Cancella filtri', filters: 'Filtri', tags: 'Tag', viewMode: 'Modalità vista', delete: 'Elimina', edit: 'Modifica', updated: 'Aggiornato', similar: 'Simili' },
     hub: {
+      highestValueCigar: 'Sigaro più prezioso',
+      topRatedCigar: 'Sigaro con la valutazione più alta',
+      topRatedWine: 'Vino con la valutazione più alta',
+      topWine: 'Vino di punta',
       wineTypes: 'Tipi di vino',
       storyOpeningValue: 'La tua storia da collezionista',
       storySnapshotCombined: 'Panoramica collezione',
@@ -889,8 +914,12 @@ export const storyWineTranslations = {
     },
   },
   'pt-BR': {
-    common: { delete: 'Excluir', edit: 'Editar', updated: 'Atualizado', similar: 'Semelhantes' },
+    common: { all: 'Todos', clearFilters: 'Limpar filtros', filters: 'Filtros', tags: 'Tags', viewMode: 'Modo de visualização', delete: 'Excluir', edit: 'Editar', updated: 'Atualizado', similar: 'Semelhantes' },
     hub: {
+      highestValueCigar: 'Charuto mais valioso',
+      topRatedCigar: 'Charuto mais bem avaliado',
+      topRatedWine: 'Vinho mais bem avaliado',
+      topWine: 'Vinho destaque',
       wineTypes: 'Tipos de vinho',
       storyOpeningValue: 'A sua história de colecionador',
       storySnapshotCombined: 'Resumo da coleção',
@@ -1059,8 +1088,12 @@ export const storyWineTranslations = {
     },
   },
   nl: {
-    common: { delete: 'Verwijderen', edit: 'Bewerken', updated: 'Bijgewerkt', similar: 'Vergelijkbaar' },
+    common: { all: 'Alle', clearFilters: 'Filters wissen', filters: 'Filters', tags: 'Tags', viewMode: 'Weergavemodus', delete: 'Verwijderen', edit: 'Bewerken', updated: 'Bijgewerkt', similar: 'Vergelijkbaar' },
     hub: {
+      highestValueCigar: 'Meest waardevolle sigaar',
+      topRatedCigar: 'Best beoordeelde sigaar',
+      topRatedWine: 'Best beoordeelde wijn',
+      topWine: 'Topwijn',
       wineTypes: 'Wijnsoorten',
       storyOpeningValue: 'Jouw verzamelaarsverhaal',
       storySnapshotCombined: 'Collectieoverzicht',
@@ -1229,8 +1262,12 @@ export const storyWineTranslations = {
     },
   },
   pl: {
-    common: { delete: 'Usuń', edit: 'Edytuj', updated: 'Zaktualizowano', similar: 'Podobne' },
+    common: { all: 'Wszystkie', clearFilters: 'Wyczyść filtry', filters: 'Filtry', tags: 'Tagi', viewMode: 'Tryb widoku', delete: 'Usuń', edit: 'Edytuj', updated: 'Zaktualizowano', similar: 'Podobne' },
     hub: {
+      highestValueCigar: 'Najcenniejsze cygaro',
+      topRatedCigar: 'Najwyżej oceniane cygaro',
+      topRatedWine: 'Najwyżej oceniane wino',
+      topWine: 'Najlepsze wino',
       wineTypes: 'Typy win',
       storyOpeningValue: 'Twoja historia kolekcjonera',
       storySnapshotCombined: 'Migawka kolekcji',
@@ -1399,8 +1436,12 @@ export const storyWineTranslations = {
     },
   },
   ja: {
-    common: { delete: '削除', edit: '編集', updated: '更新日', similar: '似ているもの' },
+    common: { all: 'すべて', clearFilters: 'フィルターをクリア', filters: 'フィルター', tags: 'タグ', viewMode: '表示モード', delete: '削除', edit: '編集', updated: '更新日', similar: '似ているもの' },
     hub: {
+      highestValueCigar: '価値の高い葉巻',
+      topRatedCigar: '最高評価の葉巻',
+      topRatedWine: '最高評価のワイン',
+      topWine: 'トップワイン',
       wineTypes: 'ワインの種類',
       storyOpeningValue: 'あなたのコレクターストーリー',
       storySnapshotCombined: 'コレクションの概要',
@@ -1569,8 +1610,12 @@ export const storyWineTranslations = {
     },
   },
   'zh-Hans': {
-    common: { delete: '删除', edit: '编辑', updated: '更新于', similar: '相似项' },
+    common: { all: '全部', clearFilters: '清除筛选', filters: '筛选', tags: '标签', viewMode: '视图模式', delete: '删除', edit: '编辑', updated: '更新于', similar: '相似项' },
     hub: {
+      highestValueCigar: '最有价值的雪茄',
+      topRatedCigar: '评分最高的雪茄',
+      topRatedWine: '评分最高的葡萄酒',
+      topWine: '头牌葡萄酒',
       wineTypes: '葡萄酒类型',
       storyOpeningValue: '你的收藏故事',
       storySnapshotCombined: '收藏概览',

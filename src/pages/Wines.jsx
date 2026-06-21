@@ -143,13 +143,13 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
           {t('wine.logTasting')}
           </button>
           <EnrichButton itemType="wine" record={wine} onEnriched={onEnriched} />
-          <button onClick={() => onAddToWantList(wine)} className="p-1.5 rounded-lg hover:opacity-70" title={t('wine.addToWantList')} style={{ color: 'rgba(224,216,200,0.5)' }}>
+          <button onClick={() => onAddToWantList(wine)} className="p-1.5 rounded-lg hover:opacity-70" title={t('wine.addToWantList')} aria-label={t('wine.addToWantList')} style={{ color: 'rgba(224,216,200,0.5)' }}>
             <BookmarkPlus className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => onEdit(wine)} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: 'rgba(224,216,200,0.5)' }}>
+          <button onClick={() => onEdit(wine)} className="p-1.5 rounded-lg hover:opacity-70" aria-label={t('common.edit')} title={t('common.edit')} style={{ color: 'rgba(224,216,200,0.5)' }}>
             <Edit2 className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => onDelete(wine)} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: 'rgba(224,216,200,0.35)' }}>
+          <button onClick={() => onDelete(wine)} className="p-1.5 rounded-lg hover:opacity-70" aria-label={t('common.delete')} title={t('common.delete')} style={{ color: 'rgba(224,216,200,0.35)' }}>
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
