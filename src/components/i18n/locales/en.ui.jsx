@@ -4048,7 +4048,6 @@ const enUI = {
     topicPlaceholder: "Select a topic…",
     yourName: "Your Name *",
     namePlaceholder: "Full name",
-    yourEmail: "your email",
     yourEmail: "Your Email *",
     emailPlaceholder: "you@example.com",
     messageLabel: "Message *",

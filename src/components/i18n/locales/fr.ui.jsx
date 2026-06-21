@@ -356,6 +356,8 @@ const frUI = {
     value: "Valeur",
     name: "Nom",
     description: "Description",
+    gridView: "Vue en grille",
+    listView: "Vue en liste",
   },
   layout: {
     appTitle: "PipeKeeper",
@@ -1274,6 +1276,19 @@ const frUI = {
     addToWantList: "Ajouter à la liste d'envies",
     sortProducer: "Producteur",
     sortDrinkWindow: "Fenêtre de dégustation",
+    sortNameAsc: "Nom (A–Z)",
+    sortNameDesc: "Nom (Z–A)",
+    sortProducerAsc: "Producteur (A–Z)",
+    sortVintageNewest: "Millésime (plus récent)",
+    sortVintageOldest: "Millésime (plus ancien)",
+    sortHighestValue: "Valeur la plus haute",
+    sortLowestValue: "Valeur la plus basse",
+    sortHighestRating: "Meilleure note",
+    sortMostBottles: "Plus de bouteilles",
+    sortDrinkSoon: "À boire bientôt",
+    sortRecentlyAdded: "Ajouté récemment",
+    sortRecentlyUpdated: "Mis à jour récemment",
+    sortNeedsValuation: "Sans estimation",
   },
 
   footer: {

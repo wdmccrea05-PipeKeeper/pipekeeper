@@ -343,6 +343,8 @@ const zhHansUI = {
     value: "价值",
     name: "名称",
     description: "描述",
+    gridView: "网格视图",
+    listView: "列表视图",
   },
   aiUpdates: {
     pairingsRevertSuccess: "搭配已恢复到上一版本",
@@ -1195,6 +1197,19 @@ const zhHansUI = {
     addToWantList: "Add to Want List",
     sortProducer: "Producer",
     sortDrinkWindow: "Drink Window",
+    sortNameAsc: "名称 (A–Z)",
+    sortNameDesc: "名称 (Z–A)",
+    sortProducerAsc: "生产商 (A–Z)",
+    sortVintageNewest: "年份（最新）",
+    sortVintageOldest: "年份（最早）",
+    sortHighestValue: "价值最高",
+    sortLowestValue: "价值最低",
+    sortHighestRating: "评分最高",
+    sortMostBottles: "瓶数最多",
+    sortDrinkSoon: "即将适饮",
+    sortRecentlyAdded: "最近添加",
+    sortRecentlyUpdated: "最近更新",
+    sortNeedsValuation: "待评估",
   },
 
   footer: {
