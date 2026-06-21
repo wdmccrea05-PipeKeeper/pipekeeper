@@ -2,9 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import {
   getWineTotalValue, getWineUnitValue, getWineQuantity,
   getWineDrinkWindowStatus, getWineRarityScore, getWineRarityResult, getWinePrimaryImage,
@@ -32,7 +34,6 @@ import { toast } from 'sonner';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 const DRINK_WINDOW_COLORS = { drink_now: '#2E7D5C', too_young: '#6B8FC4', past_peak: '#A35C5C' };
-const DRINK_WINDOW_LABELS = { drink_now: 'Drink Now', too_young: 'Too Young', past_peak: 'Past Peak' };
 
 // ─── Tiny section card wrapper ──────────────────────────────────────────────
 function SectionCard({ title, children, defaultOpen = true }) {
@@ -78,6 +79,8 @@ function MetricCard({ icon: Icon, label, value, subtext, color }) {
 
 // ─── Valuation Panel ─────────────────────────────────────────────────────────
 function ValuationPanel({ wine, formatFromBase, onSaved }) {
+  const { t } = useTranslation();
+  const { formatDate } = useLocaleFormatting();
   const [editing, setEditing] = useState(false);
   const [manualEnabled, setManualEnabled] = useState(wine.manual_valuation_enabled || false);
   const [manualValue, setManualValue] = useState(wine.manual_estimated_value || '');
@@ -100,7 +103,7 @@ function ValuationPanel({ wine, formatFromBase, onSaved }) {
     setSaving(false);
     setEditing(false);
     onSaved(updates);
-    toast.success('Valuation saved');
+    toast.success(t('wine.valuationSaved'));
   };
 
   return (
@@ -108,41 +111,41 @@ function ValuationPanel({ wine, formatFromBase, onSaved }) {
       {isLowConf && hasWineValuation(wine) && (
         <div className="flex items-center gap-2 p-3 rounded-lg text-sm" style={{ background: 'rgba(180,120,40,0.12)', border: '1px solid rgba(180,120,40,0.25)', color: 'rgba(224,190,100,0.85)' }}>
           <AlertTriangle className="w-4 h-4 shrink-0" />
-          Low confidence estimate — consider running Enrich or setting a manual override.
+          {t('wine.lowConfidenceEstimate')}
         </div>
       )}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>Unit Value</p>
+          <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.unitValue')}</p>
           <p className="text-base font-bold" style={{ color: unitValue ? '#D4A574' : 'rgba(224,216,200,0.3)' }}>
             {unitValue ? formatFromBase(unitValue) : '—'}
           </p>
         </div>
         <div>
-          <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>Total Value ({qty}×)</p>
+          <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.totalValueWithQuantity', { count: qty })}</p>
           <p className="text-base font-bold" style={{ color: totalValue ? '#D4A574' : 'rgba(224,216,200,0.3)' }}>
             {totalValue ? formatFromBase(totalValue) : '—'}
           </p>
         </div>
         {wine.purchase_price > 0 && (
           <div>
-            <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>Purchase Price</p>
+            <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.purchasePrice')}</p>
             <p className="text-sm font-medium" style={{ color: '#F5F1E7' }}>{formatFromBase(wine.purchase_price)}</p>
           </div>
         )}
         {wine.market_replacement_cost_estimate > 0 && (
           <div>
-            <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>Replacement Est.</p>
+            <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.replacementEstimate')}</p>
             <p className="text-sm font-medium" style={{ color: '#F5F1E7' }}>{formatFromBase(wine.market_replacement_cost_estimate)}</p>
           </div>
         )}
       </div>
 
       <div className="flex flex-wrap gap-3 text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>
-        {source && <span>Source: <span style={{ color: 'rgba(224,216,200,0.75)' }}>{source}</span></span>}
-        {confidence && <span>Confidence: <span style={{ color: confidence === 'high' ? '#2E7D5C' : confidence === 'medium' ? '#D4A574' : '#C47070' }}>{confidence}</span></span>}
+        {source && <span>{t('wine.sourceLabel')}: <span style={{ color: 'rgba(224,216,200,0.75)' }}>{source}</span></span>}
+        {confidence && <span>{t('wine.confidenceLabel')}: <span style={{ color: confidence === 'high' ? '#2E7D5C' : confidence === 'medium' ? '#D4A574' : '#C47070' }}>{confidence}</span></span>}
         {(wine.valuation_updated_at || wine.market_valuation_updated_at) && (
-          <span>Updated: <span style={{ color: 'rgba(224,216,200,0.75)' }}>{new Date(wine.valuation_updated_at || wine.market_valuation_updated_at).toLocaleDateString()}</span></span>
+          <span>{t('common.updated')}: <span style={{ color: 'rgba(224,216,200,0.75)' }}>{formatDate(wine.valuation_updated_at || wine.market_valuation_updated_at)}</span></span>
         )}
       </div>
 
@@ -152,17 +155,17 @@ function ValuationPanel({ wine, formatFromBase, onSaved }) {
 
       {!editing ? (
         <button onClick={() => setEditing(true)} className="text-sm px-3 py-1.5 rounded-lg" style={{ background: 'rgba(180,140,75,0.1)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.25)' }}>
-          Manual Override
+          {t('wine.manualOverride')}
         </button>
       ) : (
         <div className="space-y-3 pt-2" style={{ borderTop: '1px solid rgba(180,140,75,0.12)' }}>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={manualEnabled} onChange={(e) => setManualEnabled(e.target.checked)} />
-            <span className="text-sm" style={{ color: 'rgba(224,216,200,0.85)' }}>Enable manual valuation override</span>
+            <span className="text-sm" style={{ color: 'rgba(224,216,200,0.85)' }}>{t('wine.enableManualValuationOverride')}</span>
           </label>
           {manualEnabled && (
             <div>
-              <label className="ck-field-label">Manual Unit Value ($)</label>
+              <label className="ck-field-label">{t('wine.manualUnitValue')}</label>
               <input
                 type="number"
                 step="0.01"
@@ -176,9 +179,9 @@ function ValuationPanel({ wine, formatFromBase, onSaved }) {
           )}
           <div className="flex gap-2">
             <Button size="sm" disabled={saving} onClick={handleSave} style={{ background: '#8B3A3A', color: '#F5F1E7' }}>
-              {saving ? 'Saving…' : 'Save'}
+              {saving ? t('common.saving') : t('common.save')}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setEditing(false)}>Cancel</Button>
+            <Button size="sm" variant="outline" onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
           </div>
         </div>
       )}
@@ -188,14 +191,15 @@ function ValuationPanel({ wine, formatFromBase, onSaved }) {
 
 // ─── Rarity Panel ────────────────────────────────────────────────────────────
 function RarityPanel({ wine, formatFromBase }) {
+  const { t } = useTranslation();
   const result = getWineRarityResult(wine);
 
   if (!result || result.score === null) {
     return (
       <div className="text-center py-6" style={{ color: 'rgba(224,216,200,0.4)' }}>
         <BarChart2 className="w-8 h-8 mx-auto mb-2 opacity-30" />
-        <p className="text-sm font-medium">Not enough data to score rarity yet.</p>
-        <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.3)' }}>Add vintage, producer, region, and valuation to generate a score.</p>
+        <p className="text-sm font-medium">{t('wine.rarityInsufficientTitle')}</p>
+        <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.3)' }}>{t('wine.rarityInsufficientBody')}</p>
       </div>
     );
   }
@@ -217,14 +221,14 @@ function RarityPanel({ wine, formatFromBase }) {
         </div>
         <div>
           <p className="text-base font-semibold" style={{ color }}>{label}</p>
-          <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>Collectibility score out of 100</p>
+          <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.collectibilityScoreOutOf100')}</p>
           {confidence && confidence !== 'insufficient' && (
             <span className="text-xs px-2 py-0.5 rounded-full mt-1 inline-block" style={{
               background: confidence === 'high' ? 'rgba(46,125,92,0.12)' : confidence === 'medium' ? 'rgba(180,140,75,0.12)' : 'rgba(139,58,58,0.12)',
               color: confidence === 'high' ? '#4EAD80' : confidence === 'medium' ? '#D4A574' : '#C47070',
               border: `1px solid ${confidence === 'high' ? 'rgba(46,125,92,0.25)' : confidence === 'medium' ? 'rgba(180,140,75,0.25)' : 'rgba(139,58,58,0.25)'}`,
             }}>
-              {confidence} confidence
+              {t('wine.confidenceWithLevel', { confidence })}
             </span>
           )}
         </div>
@@ -256,6 +260,8 @@ function RarityPanel({ wine, formatFromBase }) {
 
 // ─── Tasting Log ─────────────────────────────────────────────────────────────
 function TastingLog({ wineId, wineName, onOpenModal }) {
+  const { t } = useTranslation();
+  const { formatDate } = useLocaleFormatting();
   const { data: tastings = [] } = useQuery({
     queryKey: QUERY_KEYS.wineTastings(wineId),
     queryFn: () => base44.entities.WineTasting.filter({ wine_id: wineId }, '-date', 50),
@@ -265,20 +271,20 @@ function TastingLog({ wineId, wineName, onOpenModal }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>{tastings.length} tasting{tastings.length !== 1 ? 's' : ''} logged</span>
+        <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.tastingsLoggedCount', { count: tastings.length })}</span>
         <button onClick={onOpenModal} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'rgba(139,58,58,0.2)', color: '#C47070', border: '1px solid rgba(139,58,58,0.3)' }}>
-          + Log Tasting
+          + {t('wine.logTasting')}
         </button>
       </div>
       {tastings.length === 0 ? (
-        <p className="text-sm text-center py-6" style={{ color: 'rgba(224,216,200,0.35)' }}>No tastings logged yet.</p>
+        <p className="text-sm text-center py-6" style={{ color: 'rgba(224,216,200,0.35)' }}>{t('wine.noTastingsLoggedYet')}</p>
       ) : (
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {tastings.map((tasting) => (
             <div key={tasting.id} className="p-3 rounded-xl" style={{ background: 'rgba(180,140,75,0.05)', border: '1px solid rgba(180,140,75,0.1)' }}>
               <div className="flex items-center justify-between gap-2 mb-1">
                 <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>
-                  {tasting.date ? new Date(tasting.date).toLocaleDateString() : '—'}
+                  {tasting.date ? formatDate(tasting.date) : '—'}
                 </span>
                 {tasting.rating != null && (
                   <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: '#C47070' }}>
@@ -287,12 +293,12 @@ function TastingLog({ wineId, wineName, onOpenModal }) {
                 )}
               </div>
               {tasting.notes && <p className="text-sm" style={{ color: 'rgba(224,216,200,0.8)' }}>{tasting.notes}</p>}
-              {tasting.aroma_notes && <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.5)' }}>Aroma: {tasting.aroma_notes}</p>}
-              {tasting.food_pairing && <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>Pairing: {tasting.food_pairing}</p>}
+              {tasting.aroma_notes && <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.aromaLabel')}: {tasting.aroma_notes}</p>}
+              {tasting.food_pairing && <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.pairingLabel')}: {tasting.food_pairing}</p>}
               {tasting.occasion && <p className="text-xs mt-0.5 italic" style={{ color: 'rgba(224,216,200,0.4)' }}>{tasting.occasion}</p>}
               {tasting.would_buy_again === true && (
                 <span className="inline-flex items-center gap-1 text-xs mt-1" style={{ color: '#2E7D5C' }}>
-                  <CheckCircle className="w-3 h-3" /> Would buy again
+                  <CheckCircle className="w-3 h-3" /> {t('wine.wouldBuyAgainLabel')}
                 </span>
               )}
             </div>
@@ -305,13 +311,15 @@ function TastingLog({ wineId, wineName, onOpenModal }) {
 
 // ─── Enrichment Details ───────────────────────────────────────────────────────
 function EnrichmentDetails({ wine, onEnriched }) {
+  const { t } = useTranslation();
+  const { formatDate } = useLocaleFormatting();
   const enrichedFields = [
-    wine.varietal && 'Varietal',
-    wine.appellation && 'Appellation',
+    wine.varietal && t('wine.varietal'),
+    wine.appellation && t('wine.appellation'),
     wine.abv && 'ABV',
-    wine.market_estimated_unit_value && 'Market Value',
-    wine.valuation_source && 'Valuation Source',
-    (wine.drink_window_start || wine.drinking_window_start) && 'Drink Window',
+    wine.market_estimated_unit_value && t('wine.marketValueField'),
+    wine.valuation_source && t('wine.valuationSourceField'),
+    (wine.drink_window_start || wine.drinking_window_start) && t('wine.drinkWindowField'),
   ].filter(Boolean);
 
   const updatedAt = wine.market_valuation_updated_at || wine.valuation_updated_at;
@@ -329,15 +337,15 @@ function EnrichmentDetails({ wine, onEnriched }) {
           </div>
           {updatedAt && (
             <p className="text-xs" style={{ color: 'rgba(224,216,200,0.45)' }}>
-              <Clock className="w-3 h-3 inline mr-1" />Last enriched {new Date(updatedAt).toLocaleDateString()}
+              <Clock className="w-3 h-3 inline mr-1" />{t('wine.lastEnriched', { date: formatDate(updatedAt) })}
             </p>
           )}
           {wine.valuation_source && (
-            <p className="text-xs" style={{ color: 'rgba(224,216,200,0.45)' }}>Source: {wine.valuation_source}</p>
+            <p className="text-xs" style={{ color: 'rgba(224,216,200,0.45)' }}>{t('wine.sourceLabel')}: {wine.valuation_source}</p>
           )}
         </>
       ) : (
-        <p className="text-sm" style={{ color: 'rgba(224,216,200,0.4)' }}>No enrichment data yet. Run Enrich to fill missing fields.</p>
+        <p className="text-sm" style={{ color: 'rgba(224,216,200,0.4)' }}>{t('wine.noEnrichmentData')}</p>
       )}
       <EnrichButton itemType="wine" record={wine} onEnriched={onEnriched} />
     </div>
@@ -347,8 +355,10 @@ function EnrichmentDetails({ wine, onEnriched }) {
 // ─── Main WineDetail Page ─────────────────────────────────────────────────────
 export default function WineDetail() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
+  const { formatDate } = useLocaleFormatting();
   const queryClient = useQueryClient();
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -388,7 +398,7 @@ export default function WineDetail() {
   });
 
   const handleDelete = () => {
-    if (window.confirm(`Delete "${wine?.name}"? This cannot be undone.`)) deleteMutation.mutate();
+    if (window.confirm(t('wine.deleteConfirm', { name: wine?.name || '' }))) deleteMutation.mutate();
   };
 
   const invalidate = () => {
@@ -502,7 +512,7 @@ export default function WineDetail() {
       });
       setSimilarResult(result);
     } catch (error) {
-      setSimilarError(error?.message || 'Failed to find similar wines.');
+      setSimilarError(error?.message || t('wine.findSimilarFailed'));
     } finally {
       setSimilarLoading(false);
     }
@@ -514,7 +524,7 @@ export default function WineDetail() {
     return (
       <div className="space-y-6">
         <WineKeeperModuleNav currentPageName="Wines" />
-        <div className="text-center py-16" style={{ color: 'rgba(224,216,200,0.5)' }}>Loading…</div>
+        <div className="text-center py-16" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.loading')}</div>
       </div>
     );
   }
@@ -523,7 +533,7 @@ export default function WineDetail() {
     return (
       <div className="space-y-6">
         <WineKeeperModuleNav currentPageName="Wines" />
-        <div className="text-center py-16" style={{ color: 'rgba(224,216,200,0.5)' }}>Wine not found.</div>
+        <div className="text-center py-16" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.notFound')}</div>
       </div>
     );
   }
@@ -547,7 +557,7 @@ export default function WineDetail() {
   const rarityScore = getWineRarityScore(wine);
   const photo = getWinePrimaryImage(wine);
   const regionDisplay = getWineRegionDisplay(wine);
-  const dwLabel = dwStatus ? DRINK_WINDOW_LABELS[dwStatus] : null;
+  const dwLabel = dwStatus ? t(`wine.${dwStatus === 'drink_now' ? 'drinkNow' : dwStatus === 'too_young' ? 'tooYoung' : 'pastPeak'}`) : null;
   const dwColor = dwStatus ? DRINK_WINDOW_COLORS[dwStatus] : null;
 
   return (
@@ -562,7 +572,7 @@ export default function WineDetail() {
           style={{ color: 'rgba(224,216,200,0.65)' }}
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Collection
+          {t('wine.backToCollection')}
         </button>
         <div className="flex items-center gap-2 flex-wrap">
           <EnrichButton itemType="wine" record={wine} onEnriched={(updated) => {
@@ -571,23 +581,23 @@ export default function WineDetail() {
           }} />
           <Button size="sm" variant="outline" onClick={handleFindSimilar}>
             <Search className="w-4 h-4 mr-1" />
-            Similar
+            {t('common.similar')}
           </Button>
           <Button size="sm" variant="outline" onClick={() => setShowShareModal(true)}>
             <Share2 className="w-4 h-4 mr-1" />
-            Share
+            {t('common.share')}
           </Button>
           <Button size="sm" onClick={() => setLogTasting(true)} style={{ background: 'rgba(139,58,58,0.2)', color: '#C47070', border: '1px solid rgba(139,58,58,0.3)' }}>
             <BookOpen className="w-4 h-4 mr-1" />
-            Log Tasting
+            {t('wine.logTasting')}
           </Button>
           <Button size="sm" onClick={() => setWantListOpen(true)} variant="outline">
             <BookmarkPlus className="w-4 h-4 mr-1" />
-            Want List
+            {t('wine.wantList')}
           </Button>
           <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
             <Edit2 className="w-4 h-4 mr-1" />
-            Edit
+            {t('common.edit')}
           </Button>
           <Button size="sm" variant="ghost" onClick={handleDelete} style={{ color: '#A35C5C' }}>
             <Trash2 className="w-4 h-4" />
@@ -614,7 +624,7 @@ export default function WineDetail() {
               <InlinePhotoEditor
                 photos={wine.photos || []}
                 maxPhotos={6}
-                label="Photos"
+                label={t('wine.photos')}
                 entityType="wine"
                 recordName={wine.name || ''}
                 brand={wine.producer || ''}
@@ -645,7 +655,7 @@ export default function WineDetail() {
                 )}
                 {wine.is_favorite && (
                   <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(212,165,116,0.12)', color: '#D4A574', border: '1px solid rgba(212,165,116,0.25)' }}>
-                    ★ Favorite
+                    ★ {t('wine.favorites')}
                   </span>
                 )}
               </div>
@@ -665,19 +675,19 @@ export default function WineDetail() {
 
           {/* Snapshot metrics */}
           <div className="grid grid-cols-2 gap-3">
-            <MetricCard icon={Package} label="Qty" value={`${qty} btl${qty !== 1 ? 's' : ''}`} />
-            <MetricCard icon={TrendingUp} label="Value" value={totalValue ? formatFromBase(totalValue) : '—'} color="#D4A574" />
+            <MetricCard icon={Package} label={t('wine.quantityShort')} value={t('wine.quantityBottles', { count: qty })} />
+            <MetricCard icon={TrendingUp} label={t('wine.valueShort')} value={totalValue ? formatFromBase(totalValue) : '—'} color="#D4A574" />
             {rarityScore !== null && (
-              <MetricCard icon={BarChart2} label="Rarity" value={`${rarityScore}/100`} color={rarityScore >= 70 ? '#D4A574' : rarityScore >= 40 ? '#6B8FC4' : '#C47070'} />
+              <MetricCard icon={BarChart2} label={t('wine.rarityShort')} value={`${rarityScore}/100`} color={rarityScore >= 70 ? '#D4A574' : rarityScore >= 40 ? '#6B8FC4' : '#C47070'} />
             )}
             {dwStatus && (
-              <MetricCard icon={Clock} label="Window" value={dwLabel} color={dwColor} />
+              <MetricCard icon={Clock} label={t('wine.windowShort')} value={dwLabel} color={dwColor} />
             )}
             {regionDisplay && (
-              <MetricCard icon={MapPin} label="Region" value={regionDisplay} />
+              <MetricCard icon={MapPin} label={t('wine.region')} value={regionDisplay} />
             )}
             {wine.cellar_location && (
-              <MetricCard icon={Package} label="Storage" value={wine.cellar_location} />
+              <MetricCard icon={Package} label={t('wine.storageShort')} value={wine.cellar_location} />
             )}
           </div>
         </div>
@@ -685,28 +695,28 @@ export default function WineDetail() {
         {/* ── Right column: sections ── */}
         <div className="lg:col-span-2 space-y-4">
           {/* Details */}
-          <SectionCard title="Details">
-            <InfoRow label="Wine Name" value={wine.name} />
-            <InfoRow label="Producer" value={wine.producer} />
-            <InfoRow label="Vintage" value={wine.vintage} />
-            <InfoRow label="Style" value={wine.style ? wine.style.charAt(0).toUpperCase() + wine.style.slice(1) : null} />
-            <InfoRow label="Varietal" value={wine.varietal} />
+          <SectionCard title={t('wine.detailsSection')}>
+            <InfoRow label={t('wine.name')} value={wine.name} />
+            <InfoRow label={t('wine.producer')} value={wine.producer} />
+            <InfoRow label={t('wine.vintage')} value={wine.vintage} />
+            <InfoRow label={t('wine.style')} value={wine.style ? t(`wine.styles.${wine.style}`, wine.style) : null} />
+            <InfoRow label={t('wine.varietal')} value={wine.varietal} />
             {Array.isArray(wine.blend_components) && wine.blend_components.length > 0 && (
-              <InfoRow label="Blend" value={wine.blend_components.join(', ')} />
+              <InfoRow label={t('wine.blend')} value={wine.blend_components.join(', ')} />
             )}
-            <InfoRow label="Region" value={wine.region} />
-            <InfoRow label="Country" value={wine.country_of_origin || wine.country} />
-            <InfoRow label="Appellation" value={wine.appellation} />
-            <InfoRow label="Bottle Size" value={wine.bottle_size} />
+            <InfoRow label={t('wine.region')} value={wine.region} />
+            <InfoRow label={t('wine.country')} value={wine.country_of_origin || wine.country} />
+            <InfoRow label={t('wine.appellation')} value={wine.appellation} />
+            <InfoRow label={t('wine.bottleSize')} value={wine.bottle_size} />
             <InfoRow label="ABV" value={wine.abv ? `${wine.abv}%` : null} />
-            <InfoRow label="Quantity" value={qty > 0 ? `${qty} bottle${qty !== 1 ? 's' : ''}` : null} />
-            <InfoRow label="Purchase Price" value={wine.purchase_price ? formatFromBase(wine.purchase_price) : null} />
-            <InfoRow label="Cellar Location" value={wine.cellar_location} />
-            <InfoRow label="Drink From" value={wine.drink_window_start || wine.drinking_window_start} />
-            <InfoRow label="Drink By" value={wine.drink_window_end || wine.drinking_window_end} />
+            <InfoRow label={t('wine.quantity')} value={qty > 0 ? t('wine.quantityBottles', { count: qty }) : null} />
+            <InfoRow label={t('wine.purchasePrice')} value={wine.purchase_price ? formatFromBase(wine.purchase_price) : null} />
+            <InfoRow label={t('wine.cellarLocation')} value={wine.cellar_location} />
+            <InfoRow label={t('wine.drinkingWindowStart')} value={wine.drink_window_start || wine.drinking_window_start ? formatDate(wine.drink_window_start || wine.drinking_window_start) : null} />
+            <InfoRow label={t('wine.drinkingWindowEnd')} value={wine.drink_window_end || wine.drinking_window_end ? formatDate(wine.drink_window_end || wine.drinking_window_end) : null} />
             {wine.notes && (
               <div className="pt-3">
-                <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.45)' }}>Notes</p>
+                <p className="text-xs mb-1" style={{ color: 'rgba(224,216,200,0.45)' }}>{t('wine.notes')}</p>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.8)' }}>{wine.notes}</p>
               </div>
             )}
@@ -726,27 +736,27 @@ export default function WineDetail() {
               isRefreshing={isRefreshingValue}
             />
           ) : (
-            <SectionCard title="Valuation">
+            <SectionCard title={t('wine.valuationSection')}>
               <ValuationPanel wine={wine} formatFromBase={formatFromBase} onSaved={handleValuationSaved} />
             </SectionCard>
           )}
 
-          <SectionCard title="Manual Valuation Controls" defaultOpen={false}>
+          <SectionCard title={t('wine.manualValuationControls')} defaultOpen={false}>
             <ValuationPanel wine={wine} formatFromBase={formatFromBase} onSaved={handleValuationSaved} />
           </SectionCard>
 
           {/* Rarity */}
-          <SectionCard title="Rarity & Collectibility">
+          <SectionCard title={t('wine.rarityCollectibility')}>
             <RarityPanel wine={wine} formatFromBase={formatFromBase} />
           </SectionCard>
 
           {/* Tasting Log */}
-          <SectionCard title="Tasting Log">
+          <SectionCard title={t('wine.tastingLogSection')}>
             <TastingLog wineId={wineId} wineName={wine.name} onOpenModal={() => setLogTasting(true)} />
           </SectionCard>
 
           {/* Enrichment */}
-          <SectionCard title="Enrichment Details" defaultOpen={false}>
+          <SectionCard title={t('wine.enrichmentDetailsSection')} defaultOpen={false}>
             <EnrichmentDetails
               wine={wine}
               onEnriched={(updated) => {

@@ -31,6 +31,8 @@ import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 const ACCENT = '#8B3A3A';
 const WINE_GOLD = '#D4A574';
+const DEFAULT_WINE_INSIGHTS_TITLE = 'WineKeeper Insights';
+const getCountKey = (count, singularKey, pluralKey) => (count === 1 ? singularKey : pluralKey);
 
 export default function WineInsights() {
   const { t } = useTranslation();
@@ -64,11 +66,11 @@ export default function WineInsights() {
     staleTime: STALE_TIME.SESSION_HISTORY,
   });
 
-  const wineSessions = useMemo(() => (tastings || []).map(t => ({
-    id: `wine_${t.id}`, moduleType: 'wine', date: t.date,
-    itemLabel: t.wine_name || 'Wine tasting',
-    rating: t.rating ?? null, notes: t.notes || '',
-  })), [tastings]);
+  const wineSessions = useMemo(() => (tastings || []).map((tasting) => ({
+    id: `wine_${tasting.id}`, moduleType: 'wine', date: tasting.date,
+    itemLabel: tasting.wine_name || t('wine.wineTastings'),
+    rating: tasting.rating ?? null, notes: tasting.notes || '',
+  })), [t, tastings]);
 
   const { byDate: wineByDate, highlightedDates: wineHighlights } = useMemo(
     () => buildSessionCalendarData(wineSessions, 'wine'),
@@ -112,8 +114,8 @@ export default function WineInsights() {
     <InsightsPageShell>
       <WineKeeperModuleNav currentPageName="WineInsights" />
       <InsightsHeader
-        title={t('wine.insights', 'WineKeeper Insights')}
-        subtitle="Analyze your wine cellar — value, drinking windows, and tasting history"
+        title={t('wine.insights', { defaultValue: DEFAULT_WINE_INSIGHTS_TITLE })}
+        subtitle={t('wine.analyzeCellarSubtitle')}
       />
 
       <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.winekeeper} />
@@ -122,19 +124,19 @@ export default function WineInsights() {
       {activeTab === 'summary' && (
         <div className="space-y-6">
           <InsightsKpiGrid>
-            <InsightStatCard label={t('wine.totalBottles', 'Total Bottles')} value={stats.totalBottles} icon={Wine} accent={ACCENT} />
-            <InsightStatCard label={t('wine.totalInCellar', 'In Cellar')} value={stats.totalInCellar} icon={Wine} accent={ACCENT} />
-            <InsightStatCard label={t('wine.collectionValue', 'Est. Value')} value={formatFromBase(stats.totalValue)} icon={TrendingUp} accent="#2E7D5C" />
-            <InsightStatCard label={t('wine.avgRating', 'Avg Rating')} value={stats.avgRating} icon={Star} accent={WINE_GOLD} />
-            <InsightStatCard label="Tastings" value={stats.tastingCount} icon={BookOpen} accent="#8B5CF6" />
-            <InsightStatCard label="Drink Now" value={stats.drinkingNow} icon={CalendarIcon} accent="#2E7D5C" />
+            <InsightStatCard label={t('wine.totalBottles')} value={stats.totalBottles} icon={Wine} accent={ACCENT} />
+            <InsightStatCard label={t('wine.totalInCellar')} value={stats.totalInCellar} icon={Wine} accent={ACCENT} />
+            <InsightStatCard label={t('wine.collectionValue')} value={formatFromBase(stats.totalValue)} icon={TrendingUp} accent="#2E7D5C" />
+            <InsightStatCard label={t('wine.avgRating')} value={stats.avgRating} icon={Star} accent={WINE_GOLD} />
+            <InsightStatCard label={t('wine.tastingsMetric')} value={stats.tastingCount} icon={BookOpen} accent="#8B5CF6" />
+            <InsightStatCard label={t('wine.drinkNow')} value={stats.drinkingNow} icon={CalendarIcon} accent="#2E7D5C" />
           </InsightsKpiGrid>
 
           {wines.length > 0 && (
             <InsightsHighlightGrid>
               {stats.topByRating[0] && (
                 <InsightsHighlightCard
-                  title="Top Rated Wine"
+                  title={t('wine.topRated')}
                   value={stats.topByRating[0].name}
                   subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`}
                   accent={ACCENT}
@@ -143,7 +145,7 @@ export default function WineInsights() {
               )}
               {stats.topByValue[0] && getWineTotalValue(stats.topByValue[0]) > 0 && (
                 <InsightsHighlightCard
-                  title="Most Valued Wine"
+                  title={t('wine.mostValuedWine')}
                   value={stats.topByValue[0].name}
                   subtitle={formatFromBase(getWineTotalValue(stats.topByValue[0]))}
                   accent="#2E7D5C"
@@ -152,10 +154,10 @@ export default function WineInsights() {
               )}
               {stats.drinkingNowWines?.[0] && (() => {
                 const dw = stats.drinkingNowWines[0];
-                const sub = `${dw.producer || ''}${dw.vintage ? ` · ${dw.vintage}` : ''}`.trim() || 'Ready to open';
+                const sub = `${dw.producer || ''}${dw.vintage ? ` · ${dw.vintage}` : ''}`.trim() || t('wine.readyToOpen');
                 return (
                   <InsightsHighlightCard
-                    title="Drink Now"
+                    title={t('wine.drinkNow')}
                     value={dw.name}
                     subtitle={sub}
                     accent={WINE_GOLD}
@@ -167,7 +169,7 @@ export default function WineInsights() {
           )}
 
           {wines.length === 0 && (
-            <InsightsEmptyState message="Add wines to your cellar to see insights." icon={Wine} />
+            <InsightsEmptyState message={t('wine.addWinesForInsights')} icon={Wine} />
           )}
         </div>
       )}
@@ -176,14 +178,14 @@ export default function WineInsights() {
       {activeTab === 'value' && (
         <div className="space-y-4">
           <InsightsKpiGrid>
-            <InsightStatCard label="Collection Value" value={formatFromBase(stats.totalValue)} icon={TrendingUp} accent="#2E7D5C" />
-            <InsightStatCard label="Unvalued" value={stats.unvalued} icon={AlertCircle} accent={WINE_GOLD} />
-            <InsightStatCard label="Low Confidence" value={stats.lowConfidence} icon={AlertCircle} accent="#f87171" />
+            <InsightStatCard label={t('wine.collectionValue')} value={formatFromBase(stats.totalValue)} icon={TrendingUp} accent="#2E7D5C" />
+            <InsightStatCard label={t('wine.unvalued')} value={stats.unvalued} icon={AlertCircle} accent={WINE_GOLD} />
+            <InsightStatCard label={t('wine.lowConfidence')} value={stats.lowConfidence} icon={AlertCircle} accent="#f87171" />
           </InsightsKpiGrid>
 
           {stats.topByValue.length > 0 && (
             <InsightPanel>
-              <InsightSectionHeading accent={WINE_GOLD}>Top Valued Wines</InsightSectionHeading>
+              <InsightSectionHeading accent={WINE_GOLD}>{t('wine.topValuedWines')}</InsightSectionHeading>
               <div className="space-y-2">
                 {stats.topByValue.map(w => (
                   <div key={w.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.1)' }}>
@@ -200,28 +202,28 @@ export default function WineInsights() {
 
           {(stats.unvalued > 0 || stats.lowConfidence > 0) && (
             <InsightPanel>
-              <InsightSectionHeading accent={WINE_GOLD}>Valuation Coverage</InsightSectionHeading>
+              <InsightSectionHeading accent={WINE_GOLD}>{t('wine.valuationCoverage')}</InsightSectionHeading>
               <div className="space-y-2 text-sm">
                 {stats.unvalued > 0 && (
                   <div className="flex items-center justify-between">
-                    <span style={{ color: 'rgba(224,216,200,0.7)' }}>Not valued yet</span>
-                    <span className="font-semibold text-[#F5F1E7]">{stats.unvalued} bottle{stats.unvalued !== 1 ? 's' : ''}</span>
+                    <span style={{ color: 'rgba(224,216,200,0.7)' }}>{t('wine.notValuedYet')}</span>
+                    <span className="font-semibold text-[#F5F1E7]">{t(getCountKey(stats.unvalued, 'wine.bottlesCountLabel', 'wine.bottlesCountLabel_plural'), { count: stats.unvalued })}</span>
                   </div>
                 )}
                 {stats.lowConfidence > 0 && (
                   <div className="flex items-center justify-between">
-                    <span style={{ color: 'rgba(224,216,200,0.7)' }}>Low confidence estimate</span>
-                    <span className="font-semibold text-[#F5F1E7]">{stats.lowConfidence} bottle{stats.lowConfidence !== 1 ? 's' : ''}</span>
+                    <span style={{ color: 'rgba(224,216,200,0.7)' }}>{t('wine.lowConfidenceEstimateShort')}</span>
+                    <span className="font-semibold text-[#F5F1E7]">{t(getCountKey(stats.lowConfidence, 'wine.bottlesCountLabel', 'wine.bottlesCountLabel_plural'), { count: stats.lowConfidence })}</span>
                   </div>
                 )}
                 <p className="text-xs mt-2" style={{ color: 'rgba(224,216,200,0.5)' }}>
-                  Click Enrich on individual bottles to improve valuation accuracy.
+                  {t('wine.clickEnrichToImprove')}
                 </p>
               </div>
             </InsightPanel>
           )}
 
-          {wines.length === 0 && <InsightsEmptyState message="Add wines to see value insights." icon={Wine} />}
+          {wines.length === 0 && <InsightsEmptyState message={t('wine.addWinesForValueInsights')} icon={Wine} />}
         </div>
       )}
 
@@ -229,12 +231,12 @@ export default function WineInsights() {
       {activeTab === 'usage' && (
         <div className="space-y-4">
           <InsightsKpiGrid>
-            <InsightStatCard label="Total Tastings" value={stats.tastingCount} icon={BookOpen} accent="#8B5CF6" />
+            <InsightStatCard label={t('wine.totalTastings')} value={stats.tastingCount} icon={BookOpen} accent="#8B5CF6" />
           </InsightsKpiGrid>
 
           {tastings.length > 0 ? (
             <InsightPanel>
-              <InsightSectionHeading accent={WINE_GOLD}>Recent Tastings</InsightSectionHeading>
+              <InsightSectionHeading accent={WINE_GOLD}>{t('wine.recentTastings')}</InsightSectionHeading>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {tastings.slice(0, 50).map(t => (
                   <div key={t.id} className="p-3 rounded-lg" style={{ background: 'rgba(180,140,75,0.05)', border: '1px solid rgba(180,140,75,0.15)' }}>
@@ -248,7 +250,7 @@ export default function WineInsights() {
               </div>
             </InsightPanel>
           ) : (
-            <InsightsEmptyState message="Log tastings to see usage insights." icon={BookOpen} />
+            <InsightsEmptyState message={t('wine.logTastingsForUsage')} icon={BookOpen} />
           )}
         </div>
       )}
@@ -258,7 +260,7 @@ export default function WineInsights() {
         <div className="space-y-4">
           {Object.keys(stats.styleBreakdown).length > 0 && (
             <InsightPanel>
-              <InsightSectionHeading accent={WINE_GOLD}>{t('wine.byStyle', 'By Style')}</InsightSectionHeading>
+              <InsightSectionHeading accent={WINE_GOLD}>{t('wine.byStyle')}</InsightSectionHeading>
               <div className="space-y-2">
                 {Object.entries(stats.styleBreakdown).sort((a, b) => b[1] - a[1]).map(([style, count]) => (
                   <div key={style} className="flex items-center justify-between">
@@ -272,7 +274,7 @@ export default function WineInsights() {
 
           {Object.keys(stats.regionBreakdown).length > 0 && (
             <InsightPanel>
-              <InsightSectionHeading accent={WINE_GOLD}>{t('wine.byRegion', 'By Region')}</InsightSectionHeading>
+              <InsightSectionHeading accent={WINE_GOLD}>{t('wine.byRegion')}</InsightSectionHeading>
               <div className="space-y-2">
                 {Object.entries(stats.regionBreakdown).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([region, count]) => (
                   <div key={region} className="flex items-center justify-between">
@@ -286,7 +288,7 @@ export default function WineInsights() {
 
           {Object.keys(stats.varietalBreakdown).length > 0 && (
             <InsightPanel>
-              <InsightSectionHeading accent={WINE_GOLD}>By Varietal</InsightSectionHeading>
+              <InsightSectionHeading accent={WINE_GOLD}>{t('wine.byVarietal')}</InsightSectionHeading>
               <div className="space-y-2">
                 {Object.entries(stats.varietalBreakdown).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([v, count]) => (
                   <div key={v} className="flex items-center justify-between">
@@ -298,7 +300,7 @@ export default function WineInsights() {
             </InsightPanel>
           )}
 
-          {wines.length === 0 && <InsightsEmptyState message="Add wines to see collection statistics." icon={Wine} />}
+          {wines.length === 0 && <InsightsEmptyState message={t('wine.addWinesForStatistics')} icon={Wine} />}
         </div>
       )}
 
@@ -306,31 +308,31 @@ export default function WineInsights() {
       {activeTab === 'trends' && (
         <div className="space-y-4">
           {wines.length === 0 && tastings.length === 0 ? (
-            <InsightsEmptyState message="Add wines and log tastings to see trends." icon={Wine} />
+            <InsightsEmptyState message={t('wine.addWinesAndTastingsForTrends')} icon={Wine} />
           ) : (
             <>
               <InsightsKpiGrid>
-                <InsightStatCard icon={Wine} label="Total Tastings" value={stats.tastingCount} accent={ACCENT} />
-                <InsightStatCard icon={TrendingUp} label="Collection Value" value={formatFromBase(Math.round(stats.totalValue))} accent={ACCENT} />
-                <InsightStatCard icon={Star} label="Average Rating" value={stats.avgRating} accent={WINE_GOLD} />
-                <InsightStatCard icon={BookOpen} label="Bottles in Cellar" value={stats.totalInCellar} accent={ACCENT} />
+                <InsightStatCard icon={Wine} label={t('wine.totalTastings')} value={stats.tastingCount} accent={ACCENT} />
+                <InsightStatCard icon={TrendingUp} label={t('wine.collectionValue')} value={formatFromBase(Math.round(stats.totalValue))} accent={ACCENT} />
+                <InsightStatCard icon={Star} label={t('wine.avgRating')} value={stats.avgRating} accent={WINE_GOLD} />
+                <InsightStatCard icon={BookOpen} label={t('wine.bottlesInCellar')} value={stats.totalInCellar} accent={ACCENT} />
               </InsightsKpiGrid>
               <InsightPanel>
-                <InsightSectionHeading accent={WINE_GOLD}>Recent Tastings</InsightSectionHeading>
+                <InsightSectionHeading accent={WINE_GOLD}>{t('wine.recentTastings')}</InsightSectionHeading>
                 {tastings.length > 0 ? (
                   <div className="space-y-2 max-h-80 overflow-y-auto">
-                    {[...tastings].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 30).map(t => (
-                      <div key={t.id} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(139,58,58,0.07)', border: '1px solid rgba(139,58,58,0.15)' }}>
+                    {[...tastings].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 30).map((tasting) => (
+                      <div key={tasting.id} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(139,58,58,0.07)', border: '1px solid rgba(139,58,58,0.15)' }}>
                         <div>
-                          <p className="text-sm font-medium text-[#F5F1E7]">{t.wine_name || 'Wine tasting'}</p>
-                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{t.date ? formatDate(t.date) : t('insightsShared.unknownDate')}</p>
+                          <p className="text-sm font-medium text-[#F5F1E7]">{tasting.wine_name || t('wine.wineTastings')}</p>
+                          <p className="text-xs" style={{ color: 'rgba(216,199,166,0.65)' }}>{tasting.date ? formatDate(tasting.date) : t('insightsShared.unknownDate')}</p>
                         </div>
-                        {t.rating != null && <p className="text-sm font-semibold text-[#F5F1E7]">★ {t.rating}</p>}
+                        {tasting.rating != null && <p className="text-sm font-semibold text-[#F5F1E7]">★ {tasting.rating}</p>}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <InsightsEmptyState message="Log wine tastings to see activity trends." icon={Wine} />
+                  <InsightsEmptyState message={t('wine.logWineTastingsForTrends')} icon={Wine} />
                 )}
               </InsightPanel>
             </>
@@ -341,22 +343,22 @@ export default function WineInsights() {
       {/* REPORTS */}
       {activeTab === 'reports' && (
         <InsightPanel>
-          <InsightSectionHeading accent={WINE_GOLD}>Export Reports</InsightSectionHeading>
+          <InsightSectionHeading accent={WINE_GOLD}>{t('wine.exportReports')}</InsightSectionHeading>
           <div className="space-y-4">
             <div className="p-4 rounded-xl" style={{ background: 'rgba(46,125,92,0.08)', border: '1px solid rgba(46,125,92,0.22)' }}>
-              <h4 className="font-semibold text-[#F5F1E7] mb-1">Collection Export &amp; Insurance Report</h4>
+              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('wine.collectionExportInsuranceReport')}</h4>
               <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
-                Export your cellar as CSV or generate a PDF insurance report.
-                {wines.length > 0 && ` (${wines.length} wine${wines.length !== 1 ? 's' : ''})`}
+                {t('wine.exportCellarDescription')}
+                {wines.length > 0 && ` (${t(getCountKey(wines.length, 'wine.winesCountLabel', 'wine.winesCountLabel_plural'), { count: wines.length })})`}
               </p>
               <WineInsuranceExporter user={user} wines={wines} />
             </div>
 
             {wineImportDef && (
               <div className="p-4 rounded-xl" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.22)' }}>
-                <h4 className="font-semibold text-[#F5F1E7] mb-1">Import Template</h4>
+                <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('wine.importTemplate')}</h4>
                 <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
-                  Download the CSV import template to bulk-add wines.
+                  {t('wine.importTemplateDescription')}
                 </p>
                 <button
                   onClick={() => downloadImportTemplate(wineImportDef)}
@@ -364,7 +366,7 @@ export default function WineInsights() {
                   style={{ background: 'rgba(180,140,75,0.25)', color: '#F5F1E7', border: '1px solid rgba(180,140,75,0.35)' }}
                 >
                   <Download className="w-4 h-4" />
-                  Download Wines Template
+                  {t('wine.downloadWinesTemplate')}
                 </button>
               </div>
             )}
@@ -387,7 +389,7 @@ export default function WineInsights() {
           selectedDate={calSelectedDate}
           onSelectDate={setCalSelectedDate}
           dayRows={wineSelectedDayRows}
-          emptyLabel="No tastings logged for this day."
+          emptyLabel={t('wine.noTastingsForDay')}
         />
       )}
 
@@ -395,14 +397,14 @@ export default function WineInsights() {
       {activeTab === 'drinkingwindow' && (
         <div className="space-y-4">
           <InsightsKpiGrid>
-            <InsightStatCard label={t('wine.drinkNow', 'Drink Now')} value={stats.drinkingNow} icon={Wine} accent="#2E7D5C" />
-            <InsightStatCard label={t('wine.tooYoung', 'Too Young')} value={stats.tooYoung} icon={CalendarIcon} accent="#6B8FC4" />
-            <InsightStatCard label={t('wine.pastPeak', 'Past Peak')} value={stats.pastPeak} icon={AlertCircle} accent={ACCENT} />
+            <InsightStatCard label={t('wine.drinkNow')} value={stats.drinkingNow} icon={Wine} accent="#2E7D5C" />
+            <InsightStatCard label={t('wine.tooYoung')} value={stats.tooYoung} icon={CalendarIcon} accent="#6B8FC4" />
+            <InsightStatCard label={t('wine.pastPeak')} value={stats.pastPeak} icon={AlertCircle} accent={ACCENT} />
           </InsightsKpiGrid>
 
           {stats.drinkingNowWines && stats.drinkingNowWines.length > 0 && (
             <InsightPanel>
-              <InsightSectionHeading accent="#2E7D5C">Ready to Open Now</InsightSectionHeading>
+              <InsightSectionHeading accent="#2E7D5C">{t('wine.readyToOpenNow')}</InsightSectionHeading>
               <div className="space-y-2">
                 {stats.drinkingNowWines.slice(0, 10).map(w => (
                   <div key={w.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(46,125,92,0.2)' }}>
@@ -410,14 +412,14 @@ export default function WineInsights() {
                       <p className="text-sm font-medium text-[#F5F1E7] truncate">{w.name}</p>
                       <p className="text-xs mt-0.5" style={{ color: 'rgba(216,199,166,0.6)' }}>{[w.producer, w.vintage ? String(w.vintage) : null].filter(Boolean).join(' · ')}</p>
                     </div>
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(46,125,92,0.15)', color: '#2E7D5C', border: '1px solid rgba(46,125,92,0.3)' }}>Drink Now</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(46,125,92,0.15)', color: '#2E7D5C', border: '1px solid rgba(46,125,92,0.3)' }}>{t('wine.drinkNow')}</span>
                   </div>
                 ))}
               </div>
             </InsightPanel>
           )}
 
-          {wines.length === 0 && <InsightsEmptyState message="Add wines with drinking windows to see this view." icon={Wine} />}
+          {wines.length === 0 && <InsightsEmptyState message={t('wine.addWinesWithDrinkingWindows')} icon={Wine} />}
         </div>
       )}
     </InsightsPageShell>

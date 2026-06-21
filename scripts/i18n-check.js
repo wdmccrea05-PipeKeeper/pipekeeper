@@ -149,6 +149,16 @@ const RULES = [
     severity: 'warn',
   },
   {
+    name: 'confirm-hardcoded',
+    pattern: /\b(?:window\.)?confirm\(\s*["']([A-Z][^"']{3,})["']/g,
+    severity: 'warn',
+  },
+  {
+    name: 'set-error-literal',
+    pattern: /\bsetError\(\s*["']([A-Z][^"']{3,})["']\s*\)/g,
+    severity: 'warn',
+  },
+  {
     name: 'jsx-text-before-expr',
     // Catches text that appears before a JSX expression: > Some label: {value}
     // This catches partially-translated lines like "Processed: {count}" and

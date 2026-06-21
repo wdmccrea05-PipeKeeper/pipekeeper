@@ -23,34 +23,36 @@ import {
 } from '@/lib/collection/wineSelectors';
 
 const SORT_OPTIONS = [
-  { value: 'name_asc', label: 'Name A–Z' },
-  { value: 'name_desc', label: 'Name Z–A' },
-  { value: 'producer_asc', label: 'Producer A–Z' },
-  { value: 'vintage_desc', label: 'Vintage Newest' },
-  { value: 'vintage_asc', label: 'Vintage Oldest' },
-  { value: 'value_desc', label: 'Highest Value' },
-  { value: 'value_asc', label: 'Lowest Value' },
-  { value: 'rating_desc', label: 'Highest Rating' },
-  { value: 'quantity_desc', label: 'Most Bottles' },
-  { value: 'drink_now', label: 'Drink Now' },
-  { value: 'drink_window', label: 'Drink Soon' },
-  { value: 'region_asc', label: 'Region' },
-  { value: 'varietal_asc', label: 'Varietal' },
-  { value: 'style_asc', label: 'Style' },
-  { value: 'recently_added', label: 'Recently Added' },
-  { value: 'recently_updated', label: 'Recently Updated' },
-  { value: 'needs_valuation', label: 'Needs Valuation' },
+  { value: 'name_asc', labelKey: 'wine.sortNameAsc' },
+  { value: 'name_desc', labelKey: 'wine.sortNameDesc' },
+  { value: 'producer_asc', labelKey: 'wine.sortProducerAsc' },
+  { value: 'vintage_desc', labelKey: 'wine.sortVintageNewest' },
+  { value: 'vintage_asc', labelKey: 'wine.sortVintageOldest' },
+  { value: 'value_desc', labelKey: 'wine.sortHighestValue' },
+  { value: 'value_asc', labelKey: 'wine.sortLowestValue' },
+  { value: 'rating_desc', labelKey: 'wine.sortHighestRating' },
+  { value: 'quantity_desc', labelKey: 'wine.sortMostBottles' },
+  { value: 'drink_now', labelKey: 'wine.drinkNow' },
+  { value: 'drink_window', labelKey: 'wine.sortDrinkSoon' },
+  { value: 'region_asc', labelKey: 'wine.region' },
+  { value: 'varietal_asc', labelKey: 'wine.varietal' },
+  { value: 'style_asc', labelKey: 'wine.style' },
+  { value: 'recently_added', labelKey: 'wine.sortRecentlyAdded' },
+  { value: 'recently_updated', labelKey: 'wine.sortRecentlyUpdated' },
+  { value: 'needs_valuation', labelKey: 'wine.sortNeedsValuation' },
 ];
 
 const STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
-const DRINK_WINDOW_LABELS = { drink_now: 'Drink Now', too_young: 'Too Young', past_peak: 'Past Peak' };
 const DRINK_WINDOW_COLORS = { drink_now: '#2E7D5C', too_young: '#6B8FC4', past_peak: '#A35C5C' };
 
 function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWantList, formatFromBase, navigate }) {
+  const { t } = useTranslation();
   const dwStatus = getWineDrinkWindowStatus(wine);
   const totalValue = getWineTotalValue(wine);
   const confidence = getWineValuationConfidence(wine);
   const photo = getWinePrimaryImage(wine);
+  const dwLabel = dwStatus ? t(`wine.${dwStatus === 'drink_now' ? 'drinkNow' : dwStatus === 'too_young' ? 'tooYoung' : 'pastPeak'}`) : null;
+  const styleLabel = wine.style ? t(`wine.styles.${wine.style}`, wine.style) : null;
 
   return (
     <div
@@ -77,7 +79,7 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
         {wine.style && (
           <div className="absolute top-3 left-3">
             <span className="text-xs px-2 py-1 rounded-full capitalize font-medium" style={{ background: 'rgba(139,58,58,0.7)', color: '#F5E8E8', border: '1px solid rgba(139,58,58,0.5)' }}>
-              {wine.style}
+              {styleLabel}
             </span>
           </div>
         )}
@@ -92,7 +94,7 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
         <div className="min-w-0">
           <h3 className="text-xl font-bold text-[#F5F1E7] leading-tight break-words">{wine.name}</h3>
           <p className="text-sm text-[#E0D8C8] break-words mt-1.5 leading-relaxed">
-            {[wine.producer, wine.vintage ? String(wine.vintage) : null].filter(Boolean).join(' · ') || 'No details'}
+            {[wine.producer, wine.vintage ? String(wine.vintage) : null].filter(Boolean).join(' · ') || t('wine.noDetails')}
           </p>
           {(wine.region || wine.appellation || wine.varietal) && (
             <p className="text-xs mt-1 truncate" style={{ color: 'rgba(224,216,200,0.55)' }}>
@@ -104,11 +106,11 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
         <div className="flex items-center gap-1.5 flex-wrap">
           {dwStatus && (
             <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${DRINK_WINDOW_COLORS[dwStatus]}22`, color: DRINK_WINDOW_COLORS[dwStatus], border: `1px solid ${DRINK_WINDOW_COLORS[dwStatus]}44` }}>
-              {DRINK_WINDOW_LABELS[dwStatus]}
+              {dwLabel}
             </span>
           )}
           {getWineQuantity(wine) > 1 && (
-            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(224,216,200,0.65)' }}>×{getWineQuantity(wine)} btls</span>
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(224,216,200,0.65)' }}>×{getWineQuantity(wine)}</span>
           )}
           {wine.rating > 0 && (
             <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-0.5" style={{ background: 'rgba(196,112,112,0.12)', color: '#C47070', border: '1px solid rgba(196,112,112,0.25)' }}>
@@ -120,7 +122,7 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
         {/* Value panel — mirrors WhiskeyKeeper BottleCard style */}
         <div className="rounded-xl p-3.5" style={{ background: 'rgba(139,58,58,0.10)', border: '1px solid rgba(139,58,58,0.18)' }}>
           <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#D4A574' }}>
-            {totalValue > 0 ? (confidence === 'low' ? '~Estimated Value' : 'Collection Value') : 'Not Valued'}
+            {totalValue > 0 ? (confidence === 'low' ? t('wine.estimatedValueApprox') : t('wine.collectionValue')) : t('wine.notValued')}
           </div>
           <div className="text-xl font-bold mt-1" style={{ color: totalValue > 0 ? '#F5F1E7' : 'rgba(224,216,200,0.3)' }}>
             {totalValue > 0 ? formatFromBase(totalValue) : '—'}
@@ -138,16 +140,16 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
             className="flex-1 text-xs py-1.5 rounded-lg font-medium"
             style={{ background: 'rgba(139,58,58,0.2)', color: '#C47070', border: '1px solid rgba(139,58,58,0.3)' }}
           >
-            Log Tasting
+          {t('wine.logTasting')}
           </button>
           <EnrichButton itemType="wine" record={wine} onEnriched={onEnriched} />
-          <button onClick={() => onAddToWantList(wine)} className="p-1.5 rounded-lg hover:opacity-70" title="Add to Want List" style={{ color: 'rgba(224,216,200,0.5)' }}>
+          <button onClick={() => onAddToWantList(wine)} className="p-1.5 rounded-lg hover:opacity-70" title={t('wine.addToWantList')} aria-label={t('wine.addToWantList')} style={{ color: 'rgba(224,216,200,0.5)' }}>
             <BookmarkPlus className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => onEdit(wine)} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: 'rgba(224,216,200,0.5)' }}>
+          <button onClick={() => onEdit(wine)} className="p-1.5 rounded-lg hover:opacity-70" aria-label={t('common.edit')} title={t('common.edit')} style={{ color: 'rgba(224,216,200,0.5)' }}>
             <Edit2 className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => onDelete(wine)} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: 'rgba(224,216,200,0.35)' }}>
+          <button onClick={() => onDelete(wine)} className="p-1.5 rounded-lg hover:opacity-70" aria-label={t('common.delete')} title={t('common.delete')} style={{ color: 'rgba(224,216,200,0.35)' }}>
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -206,7 +208,7 @@ export default function Wines() {
   }, [wines, search, sortBy, filters]);
 
   const handleDelete = (wine) => {
-    if (window.confirm(`Delete "${wine.name}"?`)) deleteMutation.mutate(wine.id);
+    if (window.confirm(t('wine.deleteConfirm', { name: wine.name }))) deleteMutation.mutate(wine.id);
   };
 
   const setFilter = (key, val) => setFilters((prev) => val ? { ...prev, [key]: val } : Object.fromEntries(Object.entries(prev).filter(([k]) => k !== key)));
@@ -230,12 +232,12 @@ export default function Wines() {
 
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-bold" style={{ color: '#F5F1E7' }}>
-          Wine Collection
+          {t('wine.collection')}
           <span className="text-sm font-normal ml-2" style={{ color: 'rgba(224,216,200,0.5)' }}>({wines.length})</span>
         </h1>
         <Button onClick={() => setShowAddModal(true)} style={{ background: '#8B3A3A', color: '#F5F1E7' }} size="sm">
           <Plus className="w-4 h-4 mr-1" />
-          Add Bottle
+          {t('wine.addBottle')}
         </Button>
       </div>
 
@@ -246,7 +248,7 @@ export default function Wines() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name, producer, region, varietal…"
+            placeholder={t('wine.searchPlaceholder')}
             className="pl-9"
           />
         </div>
@@ -256,7 +258,7 @@ export default function Wines() {
           className="rounded-xl px-3 py-2 text-sm"
           style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
         >
-          {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{t(o.labelKey)}</option>)}
         </select>
         <button
           onClick={() => setShowFilters((v) => !v)}
@@ -264,17 +266,17 @@ export default function Wines() {
           style={{ background: Object.keys(filters).length > 0 ? 'rgba(139,58,58,0.25)' : 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
         >
           <Filter className="w-4 h-4" />
-          Filters {Object.keys(filters).length > 0 ? `(${Object.keys(filters).length})` : ''}
+          {t('common.filters')} {Object.keys(filters).length > 0 ? `(${Object.keys(filters).length})` : ''}
           <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </button>
-        <div className="flex border rounded-lg overflow-hidden" style={{ borderColor: 'rgba(180,140,75,0.25)' }} role="group" aria-label="View mode">
+        <div className="flex border rounded-lg overflow-hidden" style={{ borderColor: 'rgba(180,140,75,0.25)' }} role="group" aria-label={t('common.viewMode')}>
           <Button
             type="button"
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
             size="icon"
             onClick={() => handleViewModeChange('grid')}
             className={`rounded-none rounded-l-lg ${viewMode === 'grid' ? 'bg-[rgba(139,58,58,0.24)] text-[#F5F1E7]' : 'text-[#E0D8C8]/65 hover:bg-[rgba(255,255,255,0.05)]'}`}
-            aria-label="Grid view"
+            aria-label={t('common.gridView')}
             aria-pressed={viewMode === 'grid'}
           >
             <Grid3X3 className="w-4 h-4" />
@@ -285,7 +287,7 @@ export default function Wines() {
             size="icon"
             onClick={() => handleViewModeChange('list')}
             className={`rounded-none rounded-r-lg ${viewMode === 'list' ? 'bg-[rgba(139,58,58,0.24)] text-[#F5F1E7]' : 'text-[#E0D8C8]/65 hover:bg-[rgba(255,255,255,0.05)]'}`}
-            aria-label="List view"
+            aria-label={t('common.listView')}
             aria-pressed={viewMode === 'list'}
           >
             <List className="w-4 h-4" />
@@ -297,50 +299,50 @@ export default function Wines() {
       {showFilters && (
         <div className="rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" style={{ background: 'rgba(42,28,20,0.7)', border: '1px solid rgba(180,140,75,0.15)' }}>
           <div>
-            <label className="ck-field-label">Style</label>
+            <label className="ck-field-label">{t('wine.style')}</label>
             <select value={filters.style || ''} onChange={(e) => setFilter('style', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
-              <option value="">All</option>
-              {STYLES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+              <option value="">{t('common.all')}</option>
+              {STYLES.map((s) => <option key={s} value={s}>{t(`wine.styles.${s}`, s)}</option>)}
             </select>
           </div>
           <div>
-            <label className="ck-field-label">Drink Window</label>
+            <label className="ck-field-label">{t('wine.drinkingWindowSummary')}</label>
             <select value={filters.drink_window || ''} onChange={(e) => setFilter('drink_window', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
-              <option value="">All</option>
-              <option value="drink_now">Drink Now</option>
-              <option value="too_young">Too Young</option>
-              <option value="past_peak">Past Peak</option>
+              <option value="">{t('common.all')}</option>
+              <option value="drink_now">{t('wine.drinkNow')}</option>
+              <option value="too_young">{t('wine.tooYoung')}</option>
+              <option value="past_peak">{t('wine.pastPeak')}</option>
             </select>
           </div>
           <div>
-            <label className="ck-field-label">Valuation</label>
+            <label className="ck-field-label">{t('wine.valuationSection')}</label>
             <select value={filters.valued || ''} onChange={(e) => setFilter('valued', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
-              <option value="">All</option>
-              <option value="valued">Valued</option>
-              <option value="unvalued">Needs Valuation</option>
+              <option value="">{t('common.all')}</option>
+              <option value="valued">{t('wine.collectionValue')}</option>
+              <option value="unvalued">{t('wine.sortNeedsValuation')}</option>
             </select>
           </div>
           <div>
-            <label className="ck-field-label">Vintage From</label>
-            <Input type="number" value={filters.vintage_min || ''} onChange={(e) => setFilter('vintage_min', e.target.value)} placeholder="e.g. 2010" className="text-sm" />
+            <label className="ck-field-label">{t('wine.vintageFrom')}</label>
+            <Input type="number" value={filters.vintage_min || ''} onChange={(e) => setFilter('vintage_min', e.target.value)} placeholder={t('wine.vintageFromPlaceholder')} className="text-sm" />
           </div>
           <div>
-            <label className="ck-field-label">Vintage To</label>
-            <Input type="number" value={filters.vintage_max || ''} onChange={(e) => setFilter('vintage_max', e.target.value)} placeholder="e.g. 2023" className="text-sm" />
+            <label className="ck-field-label">{t('wine.vintageTo')}</label>
+            <Input type="number" value={filters.vintage_max || ''} onChange={(e) => setFilter('vintage_max', e.target.value)} placeholder={t('wine.vintageToPlaceholder')} className="text-sm" />
           </div>
           {Object.keys(filters).length > 0 && (
-            <button onClick={() => setFilters({})} className="text-xs underline mt-2" style={{ color: '#C47070' }}>Clear filters</button>
+            <button onClick={() => setFilters({})} className="text-xs underline mt-2" style={{ color: '#C47070' }}>{t('common.clearFilters')}</button>
           )}
         </div>
       )}
 
       {isLoading ? (
-        <div className="text-center py-12" style={{ color: 'rgba(224,216,200,0.5)' }}>Loading…</div>
+        <div className="text-center py-12" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('wine.loading')}</div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12">
           <Wine className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(139,58,58,0.4)' }} />
           <p style={{ color: 'rgba(224,216,200,0.6)' }}>
-            {search || Object.keys(filters).length > 0 ? 'No bottles match your filters.' : 'No bottles yet. Add your first wine!'}
+            {search || Object.keys(filters).length > 0 ? t('wine.noBottlesFound') : t('wine.addFirstBottle')}
           </p>
         </div>
       ) : viewMode === 'grid' ? (

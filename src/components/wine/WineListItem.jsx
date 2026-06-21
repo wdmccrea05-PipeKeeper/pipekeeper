@@ -1,13 +1,8 @@
 import React from 'react';
 import { BookmarkPlus, Edit2, List, Star, Trash2, Wine } from 'lucide-react';
 import EnrichButton from '@/components/shared/EnrichButton';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { getWineDrinkWindowStatus, getWinePrimaryImage, getWineQuantity, getWineTotalValue, getWineValuationConfidence } from '@/lib/collection/wineSelectors';
-
-const DRINK_WINDOW_LABELS = {
-  drink_now: 'Drink Now',
-  too_young: 'Too Young',
-  past_peak: 'Past Peak',
-};
 
 const DRINK_WINDOW_COLORS = {
   drink_now: '#2E7D5C',
@@ -49,11 +44,14 @@ export default function WineListItem({
   onAddToWantList,
   formatFromBase,
 }) {
+  const { t } = useTranslation();
   const photo = getWinePrimaryImage(wine);
   const quantity = getWineQuantity(wine);
   const totalValue = getWineTotalValue(wine);
   const confidence = getWineValuationConfidence(wine);
   const drinkWindowStatus = getWineDrinkWindowStatus(wine);
+  const drinkWindowLabel = drinkWindowStatus ? t(`wine.${drinkWindowStatus === 'drink_now' ? 'drinkNow' : drinkWindowStatus === 'too_young' ? 'tooYoung' : 'pastPeak'}`) : null;
+  const styleLabel = wine?.style ? t(`wine.styles.${wine.style}`, wine.style) : null;
 
   return (
     <div
@@ -74,7 +72,7 @@ export default function WineListItem({
           }}
         >
           {photo ? (
-            <img src={photo} alt={wine?.name || 'Wine'} className="w-full h-full object-contain" />
+            <img src={photo} alt={wine?.name || t('wine.untitledWine')} className="w-full h-full object-contain" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <Wine className="w-8 h-8" style={{ color: 'rgba(139,58,58,0.28)' }} />
@@ -86,28 +84,28 @@ export default function WineListItem({
           <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3">
             <div className="min-w-0">
               <h3 className="text-xl font-bold text-[#F5F1E7] break-words leading-tight">
-                {wine?.name || 'Untitled Wine'}
+                {wine?.name || t('wine.untitledWine')}
               </h3>
               <p className="text-sm text-[#E0D8C8] break-words mt-1">
                 {[wine?.producer, wine?.vintage ? String(wine.vintage) : null, wine?.appellation || wine?.region]
                   .filter(Boolean)
-                  .join(' • ') || 'No origin details'}
+                  .join(' • ') || t('wine.noOriginDetails')}
               </p>
               <p className="text-sm text-[#E0D8C8]/70 break-words mt-1">
-                {[wine?.varietal, wine?.style].filter(Boolean).join(' • ') || 'No varietal or style'}
+                {[wine?.varietal, styleLabel].filter(Boolean).join(' • ') || t('wine.noVarietalOrStyle')}
               </p>
             </div>
 
             <div className="text-left xl:text-right shrink-0">
               <div className="text-xs uppercase tracking-wide text-[#D4A574] font-semibold">
-                {totalValue > 0 ? (confidence === 'low' ? 'Estimated Value' : 'Collection Value') : 'Not Valued'}
+                {totalValue > 0 ? (confidence === 'low' ? t('wine.estimatedValueApprox') : t('wine.collectionValue')) : t('wine.notValued')}
               </div>
               <div className="text-2xl font-bold text-[#F5F1E7] mt-1">
                 {totalValue > 0 ? formatFromBase(totalValue) : '—'}
               </div>
               {quantity > 0 && (
                 <div className="text-sm text-[#D8C7A6] mt-1">
-                  {quantity} bottle{quantity === 1 ? '' : 's'}
+                  {t('wine.quantityBottles', { count: quantity })}
                 </div>
               )}
             </div>
@@ -123,10 +121,10 @@ export default function WineListItem({
                   color: DRINK_WINDOW_COLORS[drinkWindowStatus],
                 }}
               >
-                {DRINK_WINDOW_LABELS[drinkWindowStatus]}
+                {drinkWindowLabel}
               </span>
             )}
-            {wine?.style && <MiniBadge>{wine.style}</MiniBadge>}
+            {styleLabel && <MiniBadge>{styleLabel}</MiniBadge>}
             {wine?.varietal && <MiniBadge>{wine.varietal}</MiniBadge>}
             {wine?.rating > 0 && (
               <MiniBadge tone="accent">
@@ -139,7 +137,7 @@ export default function WineListItem({
           </div>
 
           <p className="text-sm text-[#E0D8C8]/88 break-words leading-relaxed">
-            {wine?.notes ? `${wine.notes.slice(0, 180)}${wine.notes.length > 180 ? '…' : ''}` : 'No notes yet'}
+            {wine?.notes ? `${wine.notes.slice(0, 180)}${wine.notes.length > 180 ? '…' : ''}` : t('whiskey.noNotesYet')}
           </p>
         </div>
 
@@ -155,7 +153,7 @@ export default function WineListItem({
             }}
           >
             <List className="w-4 h-4" />
-            Log
+            {t('wine.listLog')}
           </button>
           <EnrichButton itemType="wine" record={wine} onEnriched={onEnriched} />
           <button
@@ -169,7 +167,7 @@ export default function WineListItem({
             }}
           >
             <BookmarkPlus className="w-4 h-4" />
-            Want
+            {t('wine.wantShort')}
           </button>
           <button
             type="button"
@@ -182,7 +180,7 @@ export default function WineListItem({
             }}
           >
             <Edit2 className="w-4 h-4" />
-            Edit
+            {t('common.edit')}
           </button>
           <button
             type="button"
@@ -195,7 +193,7 @@ export default function WineListItem({
             }}
           >
             <Trash2 className="w-4 h-4" />
-            Delete
+            {t('common.delete')}
           </button>
         </div>
       </div>
