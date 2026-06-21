@@ -10,10 +10,11 @@ function read(relativePath) {
 describe('add flow parity', () => {
   it('shared add flow exposes the same four entry modes', () => {
     const choiceSrc = read('src/components/addflow/AddFlowChoice.jsx');
-    expect(choiceSrc).toContain('Quick Search');
-    expect(choiceSrc).toContain('Scan UPC / Barcode');
-    expect(choiceSrc).toContain('Photo Identify');
-    expect(choiceSrc).toContain('Add Manually');
+    // Labels are now translated via i18n keys — check for the translation key calls
+    expect(choiceSrc).toContain("addFlow.quickSearch");
+    expect(choiceSrc).toContain("addFlow.scanBarcode");
+    expect(choiceSrc).toContain("addFlow.photoIdentify");
+    expect(choiceSrc).toContain("addFlow.addManually");
   });
 
   it('wine and cigar wrappers delegate to AddFlowModal with the correct module type', () => {

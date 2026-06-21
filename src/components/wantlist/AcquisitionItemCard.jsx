@@ -18,17 +18,19 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useWantListActions } from "./useWantListActions";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function AcquisitionItemCard({
   item,
   onStatusChange,
   onArchive,
   onShare,
-  onPurchase,
+  onPurchase: _onPurchase,
 }) {
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState(item.notes || "");
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
   const { updateStatus, updatePriority, updateNotes, archiveItem } =
     useWantListActions();
@@ -37,10 +39,10 @@ export default function AcquisitionItemCard({
     try {
       setIsLoading(true);
       await updateStatus(item.id, newStatus);
-      toast.success('Status updated');
+      toast.success(t('wantList.toasts.statusUpdated'));
       onStatusChange?.(item.id, newStatus);
     } catch (err) {
-      toast.error('Failed to update status');
+      toast.error(t('wantList.toasts.failedToUpdateStatus'));
       console.error("Failed to update status:", err);
     } finally {
       setIsLoading(false);
@@ -51,10 +53,10 @@ export default function AcquisitionItemCard({
     try {
       setIsLoading(true);
       await updatePriority(item.id, newPriority);
-      toast.success('Priority updated');
+      toast.success(t('wantList.toasts.priorityUpdated'));
       onStatusChange?.(item.id);
     } catch (err) {
-      toast.error('Failed to update priority');
+      toast.error(t('wantList.toasts.failedToUpdatePriority'));
       console.error("Failed to update priority:", err);
     } finally {
       setIsLoading(false);
@@ -65,10 +67,10 @@ export default function AcquisitionItemCard({
     try {
       setIsLoading(true);
       await archiveItem(item.id);
-      toast.success('Item archived');
+      toast.success(t('wantList.toasts.itemArchived'));
       onArchive?.(item.id);
     } catch (err) {
-      toast.error('Failed to archive item');
+      toast.error(t('wantList.toasts.failedToArchiveItem'));
       console.error("Failed to archive item:", err);
     } finally {
       setIsLoading(false);
@@ -79,11 +81,11 @@ export default function AcquisitionItemCard({
     try {
       setIsLoading(true);
       await updateNotes(item.id, notes);
-      toast.success('Notes saved');
+      toast.success(t('wantList.toasts.notesSaved'));
       setShowNotes(false);
       onStatusChange?.(item.id);
     } catch (err) {
-      toast.error('Failed to save notes');
+      toast.error(t('wantList.toasts.failedToSaveNotes'));
       console.error("Failed to update notes:", err);
     } finally {
       setIsLoading(false);
@@ -93,13 +95,13 @@ export default function AcquisitionItemCard({
   const isMuted = item.status === "do_not_buy_again";
 
   const statusLabel = {
-    wishlist: "Wish List",
-    shopping_list: "Shopping List",
-    restock: "Restock",
-    tried_not_owned: "Tried (Not Owned)",
-    do_not_buy_again: "Not for Me",
-    archived: "Archived",
-  }[item.status] || "Unknown";
+    wishlist: t('wantList.categories.wishList'),
+    shopping_list: t('wantList.categories.shoppingList'),
+    restock: t('wantList.categories.restock'),
+    tried_not_owned: t('wantList.categories.triedNotOwned'),
+    do_not_buy_again: t('wantList.categories.notForMe'),
+    archived: t('wantList.status.archived'),
+  }[item.status] || t('wantList.labels.unknown');
 
   const priorityColor = {
     low: "text-blue-500",
@@ -122,7 +124,7 @@ export default function AcquisitionItemCard({
           <p className="text-xs text-[#E0D8C8]/60 mt-1 capitalize">{item.item_type}</p>
           {item.estimated_price && (
             <p className="text-xs text-[#E0D8C8]/50 mt-1">
-              Est: {formatFromBase(item.estimated_price)}
+              {t('wantList.labels.estimatedPrice')}: {formatFromBase(item.estimated_price)}
             </p>
           )}
         </div>
@@ -144,11 +146,11 @@ export default function AcquisitionItemCard({
             onChange={(e) => setNotes(e.target.value)}
             className="w-full text-sm p-2 border rounded bg-[rgba(255,255,255,0.05)] border-[#b48c4b]/30 text-[#E0D8C8] placeholder-[#E0D8C8]/40"
             rows={3}
-            placeholder="Add notes..."
+           placeholder={t('wantList.notes.addNotes')}
           />
           <div className="flex gap-2 mt-2">
            <Button size="sm" onClick={handleNotesUpdate} disabled={isLoading}>
-             {isLoading ? "Saving..." : "Save"}
+             {isLoading ? t('wantList.actions.saving') : t('wantList.actions.save')}
            </Button>
            <Button
              size="sm"
@@ -156,7 +158,7 @@ export default function AcquisitionItemCard({
              onClick={() => setShowNotes(false)}
              disabled={isLoading}
            >
-             Cancel
+             {t('wantList.actions.cancel')}
            </Button>
           </div>
         </div>
@@ -164,7 +166,7 @@ export default function AcquisitionItemCard({
 
       {!showNotes && item.notes && (
         <p className="text-xs text-[#E0D8C8]/60 mt-2 italic">
-          Notes: {item.notes}
+          {t('wantList.labels.notes')}: {item.notes}
         </p>
       )}
 
@@ -177,26 +179,26 @@ export default function AcquisitionItemCard({
                className="text-xs h-8"
                disabled={isLoading}
              >
-               Status
+               {t('wantList.actions.status')}
                <ChevronDown className="w-3 h-3 ml-1" />
              </Button>
            </DropdownMenuTrigger>
            <DropdownMenuContent className="bg-[rgba(22,17,13,0.96)] border-[#b48c4b]/30">
             <DropdownMenuItem onClick={() => handleStatusChange("wishlist")}>
-              Wish List
+              {t('wantList.categories.wishList')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleStatusChange("shopping_list")}>
-              Shopping List
+              {t('wantList.categories.shoppingList')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleStatusChange("tried_not_owned")}>
-              Tried (Not Owned)
+              {t('wantList.categories.triedNotOwned')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleStatusChange("restock")}>
-              Restock
+              {t('wantList.categories.restock')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => handleStatusChange("do_not_buy_again")}>
-              Not for Me
+              {t('wantList.categories.notForMe')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -209,19 +211,19 @@ export default function AcquisitionItemCard({
               className="text-xs h-8"
               disabled={isLoading}
             >
-              Priority
+              {t('wantList.actions.priority')}
               <ChevronDown className="w-3 h-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-[rgba(22,17,13,0.96)] border-[#b48c4b]/30">
             <DropdownMenuItem onClick={() => handlePriorityChange("low")}>
-              Low
+              {t('wantList.priority.low')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handlePriorityChange("medium")}>
-              Medium
+              {t('wantList.priority.medium')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handlePriorityChange("high")}>
-              High
+              {t('wantList.priority.high')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -234,7 +236,7 @@ export default function AcquisitionItemCard({
           disabled={isLoading}
         >
           <Edit2 className="w-3 h-3 mr-1" />
-          Notes
+          {t('wantList.labels.notes')}
         </Button>
 
         {item.status !== "archived" && (
@@ -246,10 +248,10 @@ export default function AcquisitionItemCard({
               try {
                 setIsLoading(true);
                 await archiveItem(item.id);
-                toast.success('Marked as purchased!');
+                toast.success(t('wantList.toasts.markedAsPurchased'));
                 onArchive?.(item.id);
               } catch (err) {
-                toast.error('Failed to mark as purchased');
+                toast.error(t('wantList.toasts.failedToMarkAsPurchased'));
                 console.error(err);
               } finally {
                 setIsLoading(false);
@@ -258,7 +260,7 @@ export default function AcquisitionItemCard({
             disabled={isLoading}
           >
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Purchased
+            {t('wantList.actions.purchased')}
           </Button>
           )}
 

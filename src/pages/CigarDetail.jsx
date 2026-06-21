@@ -51,9 +51,7 @@ import EnrichButton from '@/components/shared/EnrichButton';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import {
-  getCigarQuickActionLabels,
   getCigarQuickActionPatch,
-  getCigarQuickActionSuccessMessage,
 } from '@/platform/cigarQuickActions';
 import UnifiedValuationCard from '@/components/valuation/UnifiedValuationCard';
 import {
@@ -71,6 +69,7 @@ import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import { getItemPhoto } from '@/lib/images/getItemPhoto';
 import { QUERY_KEYS } from '@/lib/queryKeys';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function safePrimitive(value, fallback = '—') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -91,15 +90,7 @@ function formatDate(value) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function calcAgeMonths(startDate) {
-  if (!startDate) return null;
-  const start = new Date(startDate);
-  if (Number.isNaN(start.getTime())) return null;
-  const now = new Date();
-  return Math.floor((now - start) / (1000 * 60 * 60 * 24 * 30.44));
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(d);
 }
 
 const READINESS_STYLE = {
@@ -109,7 +100,6 @@ const READINESS_STYLE = {
   no_data:   { bg: 'rgba(255,255,255,0.04)', border: 'rgba(180,140,75,0.2)', color: 'rgba(224,216,200,0.55)' },
 };
 
-const CONFIDENCE_LABEL = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' };
 const CONFIDENCE_COLOR = { high: '#6FCF97', medium: '#D4A574', low: 'rgba(224,216,200,0.55)' };
 
 const HUMIDOR_HEALTH_STYLE = {
@@ -124,7 +114,77 @@ const RISK_FLAG_STYLE = {
   info:    { bg: 'rgba(180,140,75,0.08)', border: 'rgba(180,140,75,0.2)', color: 'rgba(224,216,200,0.65)' },
 };
 
+function getConfidenceLabel(t, confidence) {
+  if (confidence === 'high') return t('cigars.valuation.confidenceHigh');
+  if (confidence === 'medium') return t('cigars.valuation.confidenceMedium');
+  if (confidence === 'low') return t('cigars.valuation.confidenceLow');
+  return t('common.unknown');
+}
+
+function getConfidenceBadgeLabel(t, confidence) {
+  if (!confidence) return t('cigars.detail.unknownConfidence');
+  return t('cigars.detail.confidenceLevel', {
+    confidence: getConfidenceLabel(t, confidence),
+  });
+}
+
+function getTranslatedQuickActionLabels(t, cigar = {}) {
+  return {
+    smoked_one: t('cigars.detail.smokedOne'),
+    bought_more: t('cigars.detail.boughtMore'),
+    toggle_wishlist: cigar.wishlist
+      ? t('cigars.detail.removeFromWishlist')
+      : t('cigars.detail.addToWishlist'),
+    toggle_shopping: cigar.shopping_list
+      ? t('cigars.detail.removeFromShoppingList')
+      : t('cigars.detail.moveToShoppingList'),
+    toggle_restock: cigar.restock_flag
+      ? t('cigars.detail.clearRestock')
+      : t('cigars.detail.markRestock'),
+    toggle_not_for_me: cigar.not_for_me
+      ? t('cigars.detail.removeNotForMe')
+      : t('cigars.detail.notForMeAction'),
+    toggle_favorite: cigar.is_favorite
+      ? t('cigars.detail.unfavorite')
+      : t('cigars.detail.favorite'),
+  };
+}
+
+function getTranslatedQuickActionSuccessMessage(t, action, cigar = {}, patch = {}) {
+  if (action === 'smoked_one') return t('cigars.detail.loggedOneSmoked');
+  if (action === 'bought_more') return t('cigars.detail.inventoryIncreased');
+  if (action === 'toggle_wishlist') return patch.wishlist
+    ? t('cigars.detail.addedToWishlist')
+    : t('cigars.detail.removedFromWishlist');
+  if (action === 'toggle_shopping') return patch.shopping_list
+    ? t('cigars.detail.addedToShoppingList')
+    : t('cigars.detail.removedFromShoppingList');
+  if (action === 'toggle_restock') return patch.restock_flag
+    ? t('cigars.detail.markedForRestock')
+    : t('cigars.detail.restockCleared');
+  if (action === 'toggle_not_for_me') return patch.not_for_me
+    ? t('cigars.detail.markedNotForMe')
+    : t('cigars.detail.removedNotForMeFlag');
+  if (action === 'toggle_favorite') return patch.is_favorite
+    ? t('cigars.detail.addedToFavorites')
+    : t('cigars.detail.removedFromFavorites');
+  return cigar?.name
+    ? t('cigars.detail.updatedNamed', { name: cigar.name })
+    : t('cigars.detail.updated');
+}
+
+function getTranslatedRarityLabel(t, label) {
+  const key = {
+    Exceptional: 'exceptional',
+    Rare: 'rare',
+    Collectible: 'collectible',
+    Notable: 'notable',
+  }[label];
+  return key ? t(`cigars.detail.rarity.${key}`, label) : label;
+}
+
 function AgingTabContent({ cigar, humidor }) {
+  const { t } = useTranslation();
   const readiness = getCigarReadinessWithContext(cigar, humidor);
   const rstyle = READINESS_STYLE[readiness.state] || READINESS_STYLE.no_data;
   const hstyle = HUMIDOR_HEALTH_STYLE[readiness.humidorHealth.state] || HUMIDOR_HEALTH_STYLE.unmonitored;
@@ -147,7 +207,7 @@ function AgingTabContent({ cigar, humidor }) {
             className="text-xs px-2 py-0.5 rounded-full font-medium"
             style={{ background: 'rgba(255,255,255,0.06)', color: CONFIDENCE_COLOR[readiness.confidence] }}
           >
-            {CONFIDENCE_LABEL[readiness.confidence] || 'Unknown confidence'}
+            {getConfidenceBadgeLabel(t, readiness.confidence)}
           </span>
         </div>
         {readiness.detail && (
@@ -157,7 +217,9 @@ function AgingTabContent({ cigar, humidor }) {
         )}
         {readiness.monthsAged !== null && (
           <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.45)' }}>
-            {readiness.monthsAged} month{readiness.monthsAged !== 1 ? 's' : ''} in cellar
+            {readiness.monthsAged === 1
+              ? t('cigars.detail.monthInCellar', { count: readiness.monthsAged })
+              : t('cigars.detail.monthsInCellar', { count: readiness.monthsAged })}
           </p>
         )}
       </div>
@@ -201,9 +263,9 @@ function AgingTabContent({ cigar, humidor }) {
 
       {/* Raw aging data */}
       <div className="space-y-1 pt-1">
-        <InfoRow label="Aging Start" value={formatDate(cigar.aging_start_date)} />
-        <InfoRow label="Ready to Smoke" value={formatDate(cigar.ready_to_smoke_date)} />
-        <InfoRow label="Storage" value={cigar.storage_notes} />
+        <InfoRow label={t('cigars.detail.agingStart')} value={formatDate(cigar.aging_start_date)} />
+        <InfoRow label={t('cigars.detail.readyToSmoke')} value={formatDate(cigar.ready_to_smoke_date)} />
+        <InfoRow label={t('cigars.detail.storage')} value={cigar.storage_notes} />
       </div>
     </div>
   );
@@ -218,11 +280,13 @@ function EditableStatCard({
   placeholder,
   editable = true,
   onCardClick,
-  hint = 'tap to edit',
+  hint = null,
 }) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const inputRef = useRef(null);
+  const resolvedHint = hint ?? t('cigars.detail.tapToEdit');
 
   const start = () => {
     if (!editable) {
@@ -274,7 +338,7 @@ function EditableStatCard({
           ) : (
             <p className="text-lg font-semibold mt-1 break-words" style={{ color: '#F5F1E7' }}>
               {safePrimitive(value)}
-              {hint && <span className="ml-2 text-xs" style={{ color: 'rgba(140,107,63,0.5)' }}>{hint}</span>}
+              {resolvedHint && <span className="ml-2 text-xs" style={{ color: 'rgba(140,107,63,0.5)' }}>{resolvedHint}</span>}
             </p>
           )}
         </div>
@@ -315,12 +379,17 @@ function DetailStat({ label, value, icon: Icon }) {
   );
 }
 
-function EditableInfoRow({ label, value, onSave, type = 'text', options }) {
+function EditableInfoRow({ label, value, displayValue, onSave, type = 'text', options }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const inputRef = useRef(null);
 
-  const display = safePrimitive(value);
+  const display = safePrimitive(displayValue ?? value);
+  const normalizedOptions = options?.map((option) => (
+    typeof option === 'object'
+      ? option
+      : { value: option, label: option }
+  ));
 
   const start = () => {
     setDraft(value == null ? '' : String(value));
@@ -351,7 +420,9 @@ function EditableInfoRow({ label, value, onSave, type = 'text', options }) {
               style={{ color: '#F5F1E7', borderColor: 'rgba(140,107,63,0.4)', outline: 'none' }}
             >
               <option value="">—</option>
-              {options.map(o => <option key={o} value={o}>{o}</option>)}
+              {normalizedOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
             </select>
           ) : (
             <input
@@ -415,6 +486,7 @@ function InfoRow({ label, value }) {
 }
 
 function SessionRow({ session, onEdit, onDelete }) {
+  const { t } = useTranslation();
   const segmentNotes = [session.first_third_notes, session.second_third_notes, session.final_third_notes].filter(Boolean);
   return (
     <div
@@ -429,12 +501,12 @@ function SessionRow({ session, onEdit, onDelete }) {
           <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
             {session.overall_enjoyment > 0
               ? `⭐ ${session.overall_enjoyment}/5`
-              : 'Unrated session'}
+              : t('cigars.detail.unratedSession')}
           </p>
           <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>
             {formatDate(session.date)}
             {session.occasion ? ` · ${session.occasion}` : ''}
-            {session.duration_minutes ? ` · ${session.duration_minutes} min` : ''}
+            {session.duration_minutes ? ` · ${t('cigars.detail.minutesShort', { count: session.duration_minutes })}` : ''}
           </p>
           {session.notes && (
             <p className="text-sm mt-2 break-words" style={{ color: 'rgba(224,216,200,0.78)' }}>
@@ -448,13 +520,19 @@ function SessionRow({ session, onEdit, onDelete }) {
           )}
           {(session.burn_quality || session.draw_quality || session.ash_quality || session.touch_ups != null || session.relights != null) && (
             <p className="text-xs mt-1 break-words" style={{ color: 'rgba(224,216,200,0.55)' }}>
-              {[session.burn_quality ? `Burn: ${session.burn_quality}` : null, session.draw_quality ? `Draw: ${session.draw_quality}` : null, session.ash_quality ? `Ash: ${session.ash_quality}` : null, session.touch_ups != null ? `Touch-ups: ${session.touch_ups}` : null, session.relights != null ? `Relights: ${session.relights}` : null].filter(Boolean).join(' · ')}
+              {[
+                session.burn_quality ? `${t('cigars.detail.burn')}: ${session.burn_quality}` : null,
+                session.draw_quality ? `${t('cigars.detail.draw')}: ${session.draw_quality}` : null,
+                session.ash_quality ? `${t('cigars.detail.ash')}: ${session.ash_quality}` : null,
+                session.touch_ups != null ? `${t('cigars.detail.touchUps')}: ${session.touch_ups}` : null,
+                session.relights != null ? `${t('cigars.detail.relights')}: ${session.relights}` : null,
+              ].filter(Boolean).join(' · ')}
             </p>
           )}
         </div>
         <div className="flex flex-col gap-2 shrink-0">
-          <Button variant="ghost" size="sm" onClick={() => onEdit(session)} className="h-7 px-2 text-xs">Edit</Button>
-          <Button variant="ghost" size="sm" onClick={() => onDelete(session)} className="h-7 px-2 text-xs" style={{ color: '#E05555' }}>Delete</Button>
+          <Button variant="ghost" size="sm" onClick={() => onEdit(session)} className="h-7 px-2 text-xs">{t('common.edit')}</Button>
+          <Button variant="ghost" size="sm" onClick={() => onDelete(session)} className="h-7 px-2 text-xs" style={{ color: '#E05555' }}>{t('common.delete')}</Button>
         </div>
       </div>
     </div>
@@ -462,6 +540,7 @@ function SessionRow({ session, onEdit, onDelete }) {
 }
 
 function CigarDetailInner() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useCurrentUser();
@@ -480,7 +559,7 @@ function CigarDetailInner() {
     await base44.entities.Cigar.update(cigar.id, { [field]: value, created_by: cigar.created_by || user?.email });
     queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
-    toast.success('Updated');
+    toast.success(t('cigars.detail.updated'));
   };
 
   const { data: cigar, isLoading: cigarLoading } = useQuery({
@@ -605,7 +684,7 @@ function CigarDetailInner() {
       }
     })();
     return () => { mounted = false; };
-  }, [cigar?.id, user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [cigar?.id, user?.email]);
 
   const valuationSnapshot = useMemo(
     () => cigar ? buildValuationSnapshot(cigar, 'cigarkeeper', { valueHistory: valueSnapshots }) : null,
@@ -641,10 +720,10 @@ function CigarDetailInner() {
     try {
       await base44.entities.Cigar.delete(cigar.id);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
-      toast.success('Cigar deleted');
+      toast.success(t('cigars.detail.cigarDeleted'));
       navigate('/Cigars');
     } catch {
-      toast.error('Failed to delete cigar');
+      toast.error(t('cigars.detail.failedToDeleteCigar'));
     }
   };
 
@@ -654,34 +733,34 @@ function CigarDetailInner() {
       await base44.entities.Cigar.update(cigar.id, { is_favorite: !cigar.is_favorite, created_by: cigar.created_by || user?.email });
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
     } catch {
-      toast.error('Failed to update favorite');
+      toast.error(t('cigars.detail.failedToUpdateFavorite'));
     }
   };
 
   const handleQuickStateUpdate = async (patch, action = null) => {
     if (!patch) {
-      toast.error('Unable to apply action');
+      toast.error(t('cigars.detail.unableToApplyAction'));
       return;
     }
     try {
       await base44.entities.Cigar.update(cigar.id, { ...patch, created_by: cigar.created_by || user?.email });
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
-      toast.success(action ? getCigarQuickActionSuccessMessage(action, cigar, patch) : 'Updated');
+      toast.success(action ? getTranslatedQuickActionSuccessMessage(t, action, cigar, patch) : t('cigars.detail.updated'));
     } catch {
-      toast.error('Failed to update cigar');
+      toast.error(t('cigars.detail.failedToUpdateCigar'));
     }
   };
 
   const handleDeleteSession = async (session) => {
     if (!session?.id) return;
-    if (!window.confirm('Delete this session?')) return;
+    if (!window.confirm(t('cigars.detail.deleteSessionConfirm'))) return;
     try {
       await base44.entities.CigarSession.delete(session.id);
       queryClient.invalidateQueries({ queryKey: ['cigar-sessions', id, user?.email] });
-      toast.success('Session deleted');
+      toast.success(t('cigars.detail.sessionDeleted'));
     } catch {
-      toast.error('Failed to delete session');
+      toast.error(t('cigars.detail.failedToDeleteSession'));
     }
   };
 
@@ -690,9 +769,9 @@ function CigarDetailInner() {
       await base44.entities.Cigar.update(cigar.id, { ...patch, created_by: cigar.created_by || user?.email });
       queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cigars(user?.email) });
-      toast.success('Valuation updated');
+      toast.success(t('cigars.detail.valuationUpdated'));
     } catch {
-      toast.error('Failed to update valuation');
+      toast.error(t('cigars.detail.failedToUpdateValuation'));
     }
   };
 
@@ -714,25 +793,25 @@ function CigarDetailInner() {
       });
       setSimilarResult(result);
     } catch (error) {
-      setSimilarError(error?.message || 'Failed to find similar cigars.');
+      setSimilarError(error?.message || t('cigars.detail.failedToFindSimilar'));
     } finally {
       setSimilarLoading(false);
     }
   };
 
   const photo = getItemPhoto(cigar);
-  const actionLabels = getCigarQuickActionLabels(cigar);
+  const actionLabels = getTranslatedQuickActionLabels(t, cigar);
   const locationMeta = [
-    cigar?.humidor_tray ? `Tray ${cigar.humidor_tray}` : null,
-    cigar?.humidor_shelf ? `Shelf ${cigar.humidor_shelf}` : null,
-    cigar?.humidor_drawer ? `Drawer ${cigar.humidor_drawer}` : null,
-    cigar?.humidor_section ? `Section ${cigar.humidor_section}` : null,
+    cigar?.humidor_tray ? t('cigars.detail.locationTray', { value: cigar.humidor_tray }) : null,
+    cigar?.humidor_shelf ? t('cigars.detail.locationShelf', { value: cigar.humidor_shelf }) : null,
+    cigar?.humidor_drawer ? t('cigars.detail.locationDrawer', { value: cigar.humidor_drawer }) : null,
+    cigar?.humidor_section ? t('cigars.detail.locationSection', { value: cigar.humidor_section }) : null,
   ].filter(Boolean);
 
   if (!id) {
     return (
       <div className="p-8 text-center" style={{ color: 'rgba(224,216,200,0.6)' }}>
-        No cigar ID specified.
+        {t('cigars.detail.noCigarIdSpecified')}
       </div>
     );
   }
@@ -740,7 +819,7 @@ function CigarDetailInner() {
   if (cigarLoading) {
     return (
       <div className="p-8" style={{ color: 'rgba(224,216,200,0.6)' }}>
-        Loading…
+        {t('common.loading')}
       </div>
     );
   }
@@ -748,20 +827,20 @@ function CigarDetailInner() {
   if (!cigar) {
     return (
       <div className="p-8 text-center" style={{ color: 'rgba(224,216,200,0.6)' }}>
-        <p>Cigar not found.</p>
+        <p>{t('cigars.detail.cigarNotFound')}</p>
         <Button className="mt-4" onClick={() => navigate('/Cigars')}>
-          Back to Collection
+          {t('cigars.detail.backToCollection')}
         </Button>
       </div>
     );
   }
 
   const TABS = [
-    { key: 'overview', label: 'Overview' },
-    { key: 'inventory', label: 'Inventory' },
-    { key: 'sessions', label: `Sessions (${sessions.length})` },
-    { key: 'aging', label: 'Aging' },
-    { key: 'details', label: 'Details' },
+    { key: 'overview', label: t('cigars.detail.overview') },
+    { key: 'inventory', label: t('cigars.detail.inventory') },
+    { key: 'sessions', label: t('cigars.detail.sessionsTab', { count: sessions.length }) },
+    { key: 'aging', label: t('cigars.detail.aging') },
+    { key: 'details', label: t('cigars.detail.details') },
   ];
 
   return (
@@ -775,14 +854,16 @@ function CigarDetailInner() {
           style={{ color: 'rgba(224,216,200,0.75)' }}
         >
           <ArrowLeft className="w-4 h-4" />
-          Collection
+          {t('cigars.tabCollection')}
         </Button>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleToggleFavorite}
-            title={cigar.is_favorite ? 'Remove favorite' : 'Mark as favorite'}
+            title={cigar.is_favorite
+              ? t('cigars.detail.removeFavorite')
+              : t('cigars.detail.markAsFavorite')}
           >
             <Star
               className="w-5 h-5"
@@ -797,7 +878,7 @@ function CigarDetailInner() {
             className="gap-1.5"
           >
             <Search className="w-4 h-4" />
-            Similar
+            {t('cigars.detail.similar')}
           </Button>
           <Button
             variant="outline"
@@ -806,7 +887,7 @@ function CigarDetailInner() {
             className="gap-1.5"
           >
             <Share2 className="w-4 h-4" />
-            Share
+            {t('common.share')}
           </Button>
           <Button
             variant="outline"
@@ -818,23 +899,23 @@ function CigarDetailInner() {
             className="gap-1.5"
           >
             <Flame className="w-4 h-4" />
-            Log Session
+            {t('cigars.logSession')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'smoked_one'), 'smoked_one')}>
-            Smoked One
+            {actionLabels.smoked_one}
           </Button>
           <Button variant="outline" size="sm" onClick={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'bought_more'), 'bought_more')}>
-            Bought More
+            {actionLabels.bought_more}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">
                 <MoreVertical className="w-4 h-4" />
-                Actions
+                {t('cigars.detail.actions')}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('cigars.detail.quickActions')}</DropdownMenuLabel>
               <DropdownMenuItem onSelect={() => handleQuickStateUpdate(getCigarQuickActionPatch(cigar, 'toggle_wishlist'), 'toggle_wishlist')}>
                 {actionLabels.toggle_wishlist}
               </DropdownMenuItem>
@@ -865,7 +946,7 @@ function CigarDetailInner() {
             className="gap-1.5"
           >
             <Pencil className="w-4 h-4" />
-            Edit
+            {t('common.edit')}
           </Button>
           <Button
             variant="ghost"
@@ -891,7 +972,7 @@ function CigarDetailInner() {
             className="w-24 h-32 rounded-xl overflow-hidden shrink-0 flex items-center justify-center"
             style={{ background: 'rgba(58,40,28,0.6)', border: '1px solid rgba(140,107,63,0.2)' }}
           >
-            <img src={photo} alt={cigar.name || 'Cigar'} className="w-full h-full object-cover" onError={() => setImageFailed(true)} />
+            <img src={photo} alt={cigar.name || t('cigars.detail.cigarAlt')} className="w-full h-full object-cover" onError={() => setImageFailed(true)} />
           </div>
         )}
         {(!photo || imageFailed) && (
@@ -907,7 +988,7 @@ function CigarDetailInner() {
             {safePrimitive(cigar.brand)}
           </p>
           <h1 className="text-3xl font-bold" style={{ fontFamily: "'Georgia', serif" }}>
-            {safePrimitive(cigar.name, 'Unnamed Cigar')}
+            {safePrimitive(cigar.name, t('cigars.unnamedCigar'))}
           </h1>
           {cigar.line && (
             <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.65)' }}>
@@ -940,39 +1021,39 @@ function CigarDetailInner() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <EditableStatCard
-          label="Sticks"
+          label={t('cigars.detail.sticks')}
           value={cigar.singles_equivalent ?? cigar.quantity ?? '—'}
           icon={Package}
-          placeholder="# sticks"
+          placeholder={t('cigars.detail.sticksPlaceholder')}
           onSave={async (val) => {
             await base44.entities.Cigar.update(cigar.id, { singles_equivalent: val, quantity: val, created_by: cigar.created_by || user?.email });
             queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
-            toast.success('Sticks updated');
+            toast.success(t('cigars.detail.sticksUpdated'));
           }}
         />
         <EditableStatCard
-          label="Value (est.)"
+          label={t('cigars.detail.valueEstimated')}
           value={displayValue}
           icon={DollarSign}
           editable={false}
           onCardClick={() => setValuationModalOpen(true)}
-          hint="tap to manage"
+          hint={t('cigars.detail.tapToManage')}
         />
         <EditableStatCard
-          label="Rating"
+          label={t('cigars.detail.rating')}
           value={cigar.rating ?? '—'}
           icon={Star}
-          placeholder="1–5"
+          placeholder={t('cigars.detail.ratingPlaceholder')}
           onSave={async (val) => {
             const clamped = val != null ? Math.min(5, Math.max(0, val)) : null;
             await base44.entities.Cigar.update(cigar.id, { rating: clamped, created_by: cigar.created_by || user?.email });
             queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
-            toast.success('Rating updated');
+            toast.success(t('cigars.detail.ratingUpdated'));
           }}
         />
         <DetailStat
-          label="Humidor"
-          value={humidor?.name || (cigar.humidor_id ? 'Loading…' : 'Unassigned')}
+          label={t('cigars.filterHumidor')}
+          value={humidor?.name || (cigar.humidor_id ? t('common.loading') : t('cigars.detail.unassigned'))}
           icon={Flame}
         />
       </div>
@@ -996,6 +1077,7 @@ function CigarDetailInner() {
       {(() => {
         const rarity = getCigarRarityResult(cigar);
         if (!rarity) return null;
+        const rarityLabel = getTranslatedRarityLabel(t, rarity.label);
         const labelColor =
           rarity.label === 'Exceptional' ? '#E0B450' :
           rarity.label === 'Rare' ? '#D4A574' :
@@ -1006,11 +1088,13 @@ function CigarDetailInner() {
         return (
           <div className="rounded-2xl p-5" style={{ background: 'linear-gradient(145deg, rgba(40,28,18,0.95), rgba(27,19,13,0.98))', border: '1px solid rgba(140,107,63,0.25)' }}>
             <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-              <span className="text-xs uppercase tracking-[0.12em] font-semibold" style={{ color: 'rgba(224,216,200,0.55)' }}>Collectibility</span>
+              <span className="text-xs uppercase tracking-[0.12em] font-semibold" style={{ color: 'rgba(224,216,200,0.55)' }}>{t('cigars.detail.collectibility')}</span>
               <div className="flex items-center gap-2">
                 {rarity.score != null && (
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: confColor }}>
-                    {rarity.confidence === 'insufficient' ? 'Insufficient data' : `${rarity.confidence} confidence`}
+                    {rarity.confidence === 'insufficient'
+                      ? t('cigars.detail.insufficientData')
+                      : getConfidenceBadgeLabel(t, rarity.confidence)}
                   </span>
                 )}
               </div>
@@ -1021,8 +1105,8 @@ function CigarDetailInner() {
               <>
                 <div className="flex items-end gap-3 mb-3">
                   <span className="text-4xl font-bold tabular-nums" style={{ color: labelColor }}>{rarity.score}</span>
-                  <span className="text-lg font-semibold mb-0.5" style={{ color: labelColor }}>{rarity.label}</span>
-                  <span className="text-xs mb-1 ml-auto" style={{ color: 'rgba(224,216,200,0.4)' }}>out of 100</span>
+                  <span className="text-lg font-semibold mb-0.5" style={{ color: labelColor }}>{rarityLabel}</span>
+                  <span className="text-xs mb-1 ml-auto" style={{ color: 'rgba(224,216,200,0.4)' }}>{t('cigars.detail.outOf100')}</span>
                 </div>
                 {rarity.factors.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
@@ -1059,27 +1143,27 @@ function CigarDetailInner() {
       >
         {activeTab === 'overview' && (
           <div className="space-y-1">
-            <InfoRow label="Brand" value={cigar.brand} />
-            <InfoRow label="Line" value={cigar.line} />
-            <InfoRow label="Vitola" value={cigar.vitola} />
-            <InfoRow label="Wrapper" value={cigar.wrapper} />
-            <InfoRow label="Binder" value={cigar.binder} />
-            <InfoRow label="Filler" value={cigar.filler} />
-            <InfoRow label="Origin" value={cigar.country_of_origin} />
-            <InfoRow label="Factory" value={cigar.factory} />
-            <InfoRow label="Length" value={cigar.length_inches ? `${cigar.length_inches}"` : ''} />
-            <InfoRow label="Ring Gauge" value={cigar.ring_gauge} />
-            <InfoRow label="Body" value={formatCigarStrengthLabel(cigar.body)} />
-            <InfoRow label="Strength" value={formatCigarStrengthLabel(cigar.strength)} />
-            <InfoRow label="Flavor Notes" value={Array.isArray(cigar.flavor_notes) ? cigar.flavor_notes.join(', ') : cigar.flavor_notes} />
-            <InfoRow label="Production" value={cigar.production_status} />
-            <InfoRow label="Wishlist" value={cigar.wishlist ? 'Yes' : 'No'} />
-            <InfoRow label="Shopping List" value={cigar.shopping_list ? 'Yes' : 'No'} />
-            <InfoRow label="Restock" value={cigar.restock_flag ? 'Yes' : 'No'} />
-            <InfoRow label="Not for Me" value={cigar.not_for_me ? 'Yes' : 'No'} />
+            <InfoRow label={t('cigars.detail.brand')} value={cigar.brand} />
+            <InfoRow label={t('cigars.detail.line')} value={cigar.line} />
+            <InfoRow label={t('cigars.detail.vitola')} value={cigar.vitola} />
+            <InfoRow label={t('cigars.detail.wrapper')} value={cigar.wrapper} />
+            <InfoRow label={t('cigars.detail.binder')} value={cigar.binder} />
+            <InfoRow label={t('cigars.detail.filler')} value={cigar.filler} />
+            <InfoRow label={t('cigars.filterOrigin')} value={cigar.country_of_origin} />
+            <InfoRow label={t('cigars.detail.factory')} value={cigar.factory} />
+            <InfoRow label={t('cigars.detail.length')} value={cigar.length_inches ? `${cigar.length_inches}"` : ''} />
+            <InfoRow label={t('cigars.detail.ringGauge')} value={cigar.ring_gauge} />
+            <InfoRow label={t('cigars.filterBody')} value={formatCigarStrengthLabel(cigar.body)} />
+            <InfoRow label={t('cigars.detail.strength')} value={formatCigarStrengthLabel(cigar.strength)} />
+            <InfoRow label={t('cigars.detail.flavorNotes')} value={Array.isArray(cigar.flavor_notes) ? cigar.flavor_notes.join(', ') : cigar.flavor_notes} />
+            <InfoRow label={t('cigars.detail.production')} value={cigar.production_status} />
+            <InfoRow label={t('cigars.tabWishlist')} value={cigar.wishlist ? t('profilePreferences.yes') : t('profilePreferences.no')} />
+            <InfoRow label={t('cigars.detail.shoppingList')} value={cigar.shopping_list ? t('profilePreferences.yes') : t('profilePreferences.no')} />
+            <InfoRow label={t('cigars.tabRestock')} value={cigar.restock_flag ? t('profilePreferences.yes') : t('profilePreferences.no')} />
+            <InfoRow label={t('cigars.detail.notForMe')} value={cigar.not_for_me ? t('profilePreferences.yes') : t('profilePreferences.no')} />
             {cigar.personal_notes && (
               <div className="pt-3">
-                <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(224,216,200,0.5)' }}>Personal Notes</p>
+                <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('cigars.detail.personalNotes')}</p>
                 <p className="text-sm" style={{ color: '#E0D8C8' }}>{cigar.personal_notes}</p>
               </div>
             )}
@@ -1089,92 +1173,124 @@ function CigarDetailInner() {
         {activeTab === 'inventory' && (
           <div className="space-y-0">
             <EditableInfoRow
-              label="Quantity"
+              label={t('cigars.sortQuantity')}
               value={cigar.quantity}
               type="number"
               onSave={(v) => saveField('quantity', v)}
             />
             <EditableInfoRow
-              label="Unit Type"
+              label={t('cigars.detail.unitType')}
               value={cigar.unit_type}
-              options={['single', '5pack', 'pack', 'box', 'bundle', 'partial_pack', 'partial_box']}
+              displayValue={({
+                single: t('cigars.valuation.typeSingle'),
+                '5pack': t('cigars.detail.type5Pack'),
+                pack: t('cigars.valuation.typePack'),
+                box: t('cigars.valuation.typeBox'),
+                bundle: t('cigars.valuation.typeBundle'),
+                partial_pack: t('cigars.detail.partialPack'),
+                partial_box: t('cigars.detail.partialBox'),
+              })[cigar.unit_type] || cigar.unit_type}
+              options={[
+                { value: 'single', label: t('cigars.valuation.typeSingle') },
+                { value: '5pack', label: t('cigars.detail.type5Pack') },
+                { value: 'pack', label: t('cigars.valuation.typePack') },
+                { value: 'box', label: t('cigars.valuation.typeBox') },
+                { value: 'bundle', label: t('cigars.valuation.typeBundle') },
+                { value: 'partial_pack', label: t('cigars.detail.partialPack') },
+                { value: 'partial_box', label: t('cigars.detail.partialBox') },
+              ]}
               onSave={(v) => saveField('unit_type', v)}
             />
             <EditableInfoRow
-              label={['partial_box', 'partial_pack'].includes(cigar.unit_type) ? 'Remaining Sticks' : 'Total Sticks'}
+              label={['partial_box', 'partial_pack'].includes(cigar.unit_type)
+                ? t('cigars.detail.remainingSticks')
+                : t('cigars.totalSticks')}
               value={cigar.singles_equivalent}
               type="number"
               onSave={(v) => saveField('singles_equivalent', v)}
             />
             <EditableInfoRow
-              label="Cigars per Package"
+              label={t('cigars.detail.cigarsPerPackage')}
               value={cigar.cigars_per_package}
               type="number"
               onSave={(v) => saveField('cigars_per_package', v)}
             />
             <EditableInfoRow
-              label="Package Open"
-              value={cigar.package_open ? 'Yes' : 'No'}
-              options={['Yes', 'No']}
-              onSave={(v) => saveField('package_open', v === 'Yes')}
+              label={t('cigars.detail.packageOpen')}
+              value={cigar.package_open ? 'true' : 'false'}
+              displayValue={cigar.package_open ? t('profilePreferences.yes') : t('profilePreferences.no')}
+              options={[
+                { value: 'true', label: t('profilePreferences.yes') },
+                { value: 'false', label: t('profilePreferences.no') },
+              ]}
+              onSave={(v) => saveField('package_open', v === 'true')}
             />
             {inventoryMetrics && (
               <>
                 <InfoRow
-                  label="Last Smoked"
-                  value={inventoryMetrics.lastSmokedDate ? formatDate(inventoryMetrics.lastSmokedDate) : 'Not yet'}
+                  label={t('cigars.detail.lastSmoked')}
+                  value={inventoryMetrics.lastSmokedDate ? formatDate(inventoryMetrics.lastSmokedDate) : t('cigars.detail.notYet')}
                 />
-                <InfoRow label="Times Smoked" value={inventoryMetrics.totalSmoked || 0} />
+                <InfoRow label={t('cigars.detail.timesSmoked')} value={inventoryMetrics.totalSmoked || 0} />
                 {inventoryMetrics.consumptionRatePerMonth > 0 && (
                   <InfoRow
-                    label="Consumption Rate"
-                    value={`~${inventoryMetrics.consumptionRatePerMonth.toFixed(1)}/mo`}
+                    label={t('cigars.detail.consumptionRate')}
+                    value={t('cigars.detail.perMonthShort', { count: inventoryMetrics.consumptionRatePerMonth.toFixed(1) })}
                   />
                 )}
                 {inventoryMetrics.estimatedMonthsRemaining != null && (
                   <InfoRow
-                    label="Est. Months Remaining"
+                    label={t('cigars.detail.estimatedMonthsRemaining')}
                     value={
                       inventoryMetrics.estimatedMonthsRemaining === 0
-                        ? 'Depleted'
-                        : `~${inventoryMetrics.estimatedMonthsRemaining} month${inventoryMetrics.estimatedMonthsRemaining !== 1 ? 's' : ''}`
+                        ? t('cigars.detail.depleted')
+                        : inventoryMetrics.estimatedMonthsRemaining === 1
+                          ? t('cigars.detail.monthRemaining', {
+                              count: inventoryMetrics.estimatedMonthsRemaining,
+                            })
+                          : t('cigars.detail.monthsRemaining', {
+                              count: inventoryMetrics.estimatedMonthsRemaining,
+                            })
                     }
                   />
                 )}
               </>
             )}
             <EditableInfoRow
-              label="Purchase Source"
+              label={t('cigars.detail.purchaseSource')}
               value={cigar.purchase_source}
               onSave={(v) => saveField('purchase_source', v)}
             />
             <EditableInfoRow
-              label="Purchase Date"
+              label={t('cigars.detail.purchaseDate')}
               value={cigar.purchase_date || ''}
               type="date"
               onSave={(v) => saveField('purchase_date', v)}
             />
             <EditableInfoRow
-              label="Purchase Price"
+              label={t('cigars.valuation.purchasePrice')}
               value={cigar.purchase_price}
               type="number"
               onSave={(v) => saveField('purchase_price', v)}
             />
-            <InfoRow label="Estimated Value" value={displayValue} />
-            <InfoRow label="Valuation Confidence" value={valuationSnapshot?.confidence || '—'} />
-            <InfoRow label="Valuation Source" value={valuationSnapshot?.source || '—'} />
+            <InfoRow label={t('cigars.estimatedValue')} value={displayValue} />
+            <InfoRow
+              label={t('cigars.valuation.valuationConfidence')}
+              value={valuationSnapshot?.confidence ? getConfidenceLabel(t, valuationSnapshot.confidence) : '—'}
+            />
+            <InfoRow label={t('cigars.detail.valuationSource')} value={valuationSnapshot?.source || '—'} />
             <div className="py-2" style={{ borderBottom: '1px solid rgba(140,107,63,0.1)' }}>
               <Button size="sm" variant="ghost" onClick={() => setValuationModalOpen(true)}>
-                Edit valuation inputs
+                {t('cigars.detail.editValuationInputs')}
               </Button>
             </div>
             <EditableInfoRow
-              label="Storage Notes"
+              label={t('cigars.detail.storageNotes')}
               value={cigar.storage_notes}
               onSave={(v) => saveField('storage_notes', v)}
             />
             <div className="flex gap-3 py-2 items-center" style={{ borderBottom: '1px solid rgba(140,107,63,0.1)' }}>
-              <span className="text-xs uppercase tracking-wider w-36 shrink-0" style={{ color: 'rgba(224,216,200,0.5)' }}>Humidor</span>
+              <span className="text-xs uppercase tracking-wider w-36 shrink-0" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('cigars.filterHumidor')}</span>
               <select
                 value={cigar.humidor_id || ''}
                 onChange={async (e) => {
@@ -1189,7 +1305,7 @@ function CigarDetailInner() {
                   });
                   queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
                   queryClient.invalidateQueries({ queryKey: ['humidor-for-cigar'] });
-                  toast.success('Humidor updated');
+                  toast.success(t('cigars.detail.humidorUpdated'));
                 }}
                 className="flex-1 rounded-lg px-2 py-1.5 text-sm"
                 style={{
@@ -1199,16 +1315,16 @@ function CigarDetailInner() {
                   outline: 'none',
                 }}
               >
-                <option value="">Unassigned</option>
+                <option value="">{t('cigars.detail.unassigned')}</option>
                 {allHumidors.map(h => (
                   <option key={h.id} value={h.id}>{h.name}</option>
                 ))}
               </select>
             </div>
-            <EditableInfoRow label="Humidor Tray" value={cigar.humidor_tray} onSave={(v) => saveField('humidor_tray', v)} />
-            <EditableInfoRow label="Humidor Shelf" value={cigar.humidor_shelf} onSave={(v) => saveField('humidor_shelf', v)} />
-            <EditableInfoRow label="Humidor Drawer" value={cigar.humidor_drawer} onSave={(v) => saveField('humidor_drawer', v)} />
-            <EditableInfoRow label="Humidor Section" value={cigar.humidor_section} onSave={(v) => saveField('humidor_section', v)} />
+            <EditableInfoRow label={t('cigars.detail.humidorTray')} value={cigar.humidor_tray} onSave={(v) => saveField('humidor_tray', v)} />
+            <EditableInfoRow label={t('cigars.detail.humidorShelf')} value={cigar.humidor_shelf} onSave={(v) => saveField('humidor_shelf', v)} />
+            <EditableInfoRow label={t('cigars.detail.humidorDrawer')} value={cigar.humidor_drawer} onSave={(v) => saveField('humidor_drawer', v)} />
+            <EditableInfoRow label={t('cigars.detail.humidorSection')} value={cigar.humidor_section} onSave={(v) => saveField('humidor_section', v)} />
           </div>
         )}
 
@@ -1216,12 +1332,12 @@ function CigarDetailInner() {
           <div className="space-y-3">
             {sessions.length === 0 ? (
               <div className="text-center py-8">
-                <p style={{ color: 'rgba(224,216,200,0.5)' }}>No sessions logged yet</p>
+                <p style={{ color: 'rgba(224,216,200,0.5)' }}>{t('cigars.detail.noSessionsLoggedYet')}</p>
                 <Button
                   className="mt-4"
                   onClick={() => setSessionModalOpen(true)}
                 >
-                  Log a Session
+                  {t('cigars.detail.logASession')}
                 </Button>
               </div>
             ) : (
@@ -1246,11 +1362,11 @@ function CigarDetailInner() {
 
         {activeTab === 'details' && (
           <div className="space-y-1">
-            <InfoRow label="Barcode" value={cigar.barcode} />
-            <InfoRow label="UPC" value={cigar.upc} />
-            <InfoRow label="EAN" value={cigar.ean} />
-            <InfoRow label="Aliases" value={Array.isArray(cigar.aliases) ? cigar.aliases.join(', ') : cigar.aliases} />
-            <InfoRow label="Release Type" value={cigar.release_type} />
+            <InfoRow label={t('cigars.detail.barcode')} value={cigar.barcode} />
+            <InfoRow label={t('cigars.detail.upc')} value={cigar.upc} />
+            <InfoRow label={t('cigars.detail.ean')} value={cigar.ean} />
+            <InfoRow label={t('cigars.detail.aliases')} value={Array.isArray(cigar.aliases) ? cigar.aliases.join(', ') : cigar.aliases} />
+            <InfoRow label={t('cigars.detail.releaseType')} value={cigar.release_type} />
           </div>
         )}
       </div>
@@ -1265,18 +1381,20 @@ function CigarDetailInner() {
           }}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle style={{ color: '#F5F1E7' }}>Delete Cigar?</AlertDialogTitle>
+            <AlertDialogTitle style={{ color: '#F5F1E7' }}>{t('cigars.detail.deleteCigarTitle')}</AlertDialogTitle>
             <AlertDialogDescription style={{ color: 'rgba(224,216,200,0.65)' }}>
-              This will permanently delete <strong>{cigar.name}</strong> from your collection. This action cannot be undone.
+              {t('cigars.detail.deleteCigarDescription', {
+                name: cigar.name,
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               style={{ background: '#E05555', color: '#fff' }}
             >
-              Delete
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1350,6 +1468,7 @@ function CigarDetailInner() {
 // ── Save Checkpoint Modal ─────────────────────────────────────────────────────
 
 function CigarSnapshotModal({ cigar, valuationSnapshot, userEmail, onClose, onSaved }) {
+  const { t } = useTranslation();
   const today = new Date().toISOString().slice(0, 10);
   const [form, setForm] = useState({
     snapshot_date: today,
@@ -1386,7 +1505,7 @@ function CigarSnapshotModal({ cigar, valuationSnapshot, userEmail, onClose, onSa
         is_auto_generated: false,
       });
       onSaved();
-    } catch { toast.error('Failed to save checkpoint'); }
+    } catch { toast.error(t('cigars.detail.failedToSaveCheckpoint')); }
     finally { setSaving(false); }
   };
 
@@ -1394,15 +1513,15 @@ function CigarSnapshotModal({ cigar, valuationSnapshot, userEmail, onClose, onSa
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]"
         style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(180,140,75,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">Save Value Checkpoint</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('cigars.detail.saveValueCheckpoint')}</h3>
         <div className="space-y-3">
           {[
-            { label: 'Snapshot Date', field: 'snapshot_date', type: 'date' },
-            { label: 'Current Value (total)', field: 'computed_current_value', type: 'number' },
-            { label: 'Retail Value (total)', field: 'retail_value', type: 'number' },
-            { label: 'Market Value (total)', field: 'market_value', type: 'number' },
-            { label: 'Source', field: 'source', type: 'text' },
-            { label: 'Notes', field: 'notes', type: 'text' },
+            { label: t('cigars.detail.snapshotDate'), field: 'snapshot_date', type: 'date' },
+            { label: t('cigars.detail.currentValueTotal'), field: 'computed_current_value', type: 'number' },
+            { label: t('cigars.detail.retailValueTotal'), field: 'retail_value', type: 'number' },
+            { label: t('cigars.detail.marketValueTotal'), field: 'market_value', type: 'number' },
+            { label: t('cigars.detail.source'), field: 'source', type: 'text' },
+            { label: t('common.notes'), field: 'notes', type: 'text' },
           ].map(({ label, field, type }) => (
             <div key={field}>
               <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
@@ -1412,20 +1531,20 @@ function CigarSnapshotModal({ cigar, valuationSnapshot, userEmail, onClose, onSa
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Confidence</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('cigars.detail.confidence')}</label>
             <Select value={form.value_confidence} onValueChange={v => setForm(prev => ({ ...prev, value_confidence: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="high">{t('cigars.valuation.confidenceHigh')}</SelectItem>
+                <SelectItem value="medium">{t('cigars.valuation.confidenceMedium')}</SelectItem>
+                <SelectItem value="low">{t('cigars.valuation.confidenceLow')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save Checkpoint'}</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button onClick={handleSave} disabled={saving}>{saving ? t('common.saving') : t('cigars.detail.saveCheckpoint')}</Button>
         </div>
       </div>
     </div>
@@ -1435,6 +1554,7 @@ function CigarSnapshotModal({ cigar, valuationSnapshot, userEmail, onClose, onSa
 // ── Add Market Observation Modal ──────────────────────────────────────────────
 
 function CigarObservationModal({ cigar, userEmail, onClose, onSaved }) {
+  const { t } = useTranslation();
   const today = new Date().toISOString().slice(0, 10);
   const [form, setForm] = useState({
     observed_date: today,
@@ -1468,7 +1588,7 @@ function CigarObservationModal({ cigar, userEmail, onClose, onSaved }) {
         is_manual: true,
       });
       onSaved();
-    } catch { toast.error('Failed to save observation'); }
+    } catch { toast.error(t('cigars.detail.failedToSaveObservation')); }
     finally { setSaving(false); }
   };
 
@@ -1476,16 +1596,16 @@ function CigarObservationModal({ cigar, userEmail, onClose, onSaved }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]"
         style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(59,130,246,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Market Observation</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('cigars.detail.addMarketObservation')}</h3>
         <div className="space-y-3">
           {[
-            { label: 'Observed Date', field: 'observed_date', type: 'date' },
-            { label: 'Price *', field: 'observed_price', type: 'number' },
-            { label: 'Source Name', field: 'source_name', type: 'text' },
-            { label: 'Source URL', field: 'source_url', type: 'text' },
-            { label: 'Condition Note', field: 'condition_note', type: 'text' },
-            { label: 'Region', field: 'region', type: 'text' },
-            { label: 'Currency', field: 'currency', type: 'text' },
+            { label: t('cigars.detail.observedDate'), field: 'observed_date', type: 'date' },
+            { label: t('cigars.detail.priceRequired'), field: 'observed_price', type: 'number' },
+            { label: t('cigars.detail.sourceName'), field: 'source_name', type: 'text' },
+            { label: t('cigars.detail.sourceUrl'), field: 'source_url', type: 'text' },
+            { label: t('cigars.detail.conditionNote'), field: 'condition_note', type: 'text' },
+            { label: t('cigars.detail.region'), field: 'region', type: 'text' },
+            { label: t('cigars.detail.currency'), field: 'currency', type: 'text' },
           ].map(({ label, field, type }) => (
             <div key={field}>
               <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
@@ -1495,26 +1615,26 @@ function CigarObservationModal({ cigar, userEmail, onClose, onSaved }) {
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Price Type</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('cigars.detail.priceType')}</label>
             <Select value={form.price_type} onValueChange={v => setForm(prev => ({ ...prev, price_type: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="retail">Retail</SelectItem>
-                <SelectItem value="aftermarket">Aftermarket</SelectItem>
-                <SelectItem value="auction">Auction</SelectItem>
-                <SelectItem value="collector">Collector</SelectItem>
-                <SelectItem value="estimate">Estimate</SelectItem>
-                <SelectItem value="private_sale">Private Sale</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="retail">{t('cigars.detail.priceTypeRetail')}</SelectItem>
+                <SelectItem value="aftermarket">{t('cigars.detail.priceTypeAftermarket')}</SelectItem>
+                <SelectItem value="auction">{t('cigars.detail.priceTypeAuction')}</SelectItem>
+                <SelectItem value="collector">{t('cigars.detail.priceTypeCollector')}</SelectItem>
+                <SelectItem value="estimate">{t('cigars.detail.priceTypeEstimate')}</SelectItem>
+                <SelectItem value="private_sale">{t('cigars.detail.priceTypePrivateSale')}</SelectItem>
+                <SelectItem value="other">{t('cigars.detail.priceTypeOther')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} disabled={saving || !form.observed_price}
             style={{ background: 'linear-gradient(135deg,rgba(59,130,246,0.8),rgba(37,99,235,0.9))', color: '#F5F1E7' }}>
-            {saving ? 'Saving…' : 'Save Observation'}
+            {saving ? t('common.saving') : t('cigars.detail.saveObservation')}
           </Button>
         </div>
       </div>

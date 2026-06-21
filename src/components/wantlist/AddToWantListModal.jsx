@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { useWantListActions } from "./useWantListActions";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function AddToWantListModal({
   open,
@@ -25,6 +26,7 @@ export default function AddToWantListModal({
   const [category, setCategory] = useState("wishlist");
   const [priority, setPriority] = useState("medium");
   const [saving, setSaving] = useState(false);
+  const { t } = useTranslation();
   const { addToWantList, addToShoppingList, addTriedNotOwned, markNotForMe } =
     useWantListActions();
 
@@ -72,10 +74,10 @@ export default function AddToWantListModal({
       } else {
         await addToWantList(payload);
       }
-      toast.success("Added to your want list");
+      toast.success(t("wantList.toasts.addedToWantList"));
       onOpenChange(false);
-    } catch (err) {
-      toast.error("Failed to add item");
+    } catch {
+      toast.error(t("wantList.toasts.failedToAddItem"));
     } finally {
       setSaving(false);
     }
@@ -85,35 +87,35 @@ export default function AddToWantListModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add to Want List</DialogTitle>
+          <DialogTitle>{t("wantList.modal.addToWantList")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Category</label>
+            <label className="text-sm font-medium">{t("wantList.modal.category")}</label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="wishlist">Want List</SelectItem>
-                <SelectItem value="shopping_list">Shopping List</SelectItem>
-                <SelectItem value="tried_not_owned">Tried (Not Owned)</SelectItem>
-                <SelectItem value="do_not_buy_again">Not for Me</SelectItem>
+                <SelectItem value="wishlist">{t("wantList.categories.wishList")}</SelectItem>
+                <SelectItem value="shopping_list">{t("wantList.categories.shoppingList")}</SelectItem>
+                <SelectItem value="tried_not_owned">{t("wantList.categories.triedNotOwned")}</SelectItem>
+                <SelectItem value="do_not_buy_again">{t("wantList.categories.notForMe")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <label className="text-sm font-medium">Priority</label>
+            <label className="text-sm font-medium">{t("wantList.actions.priority")}</label>
             <Select value={priority} onValueChange={setPriority}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="low">{t("wantList.priority.low")}</SelectItem>
+                <SelectItem value="medium">{t("wantList.priority.medium")}</SelectItem>
+                <SelectItem value="high">{t("wantList.priority.high")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -124,7 +126,7 @@ export default function AddToWantListModal({
               disabled={saving}
               className="flex-1"
             >
-              {saving ? "Adding…" : "Add"}
+              {saving ? t("wantList.actions.adding") : t("wantList.actions.add")}
             </Button>
             <Button
               onClick={() => onOpenChange(false)}
@@ -132,7 +134,7 @@ export default function AddToWantListModal({
               variant="outline"
               className="flex-1"
             >
-              Cancel
+              {t("wantList.actions.cancel")}
             </Button>
           </div>
         </div>

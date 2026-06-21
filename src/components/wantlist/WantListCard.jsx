@@ -10,27 +10,29 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { base44 } from "@/api/base44Client";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function WantListCard({ item, onStatusChange, onArchive, onShare, onEdit }) {
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const categoryLabel = {
-    wishlist: "Wish",
-    shopping_list: "Shopping",
-    restock: "Shopping",
-    tried_not_owned: "Tried",
-    do_not_buy_again: "Not for Me",
+    wishlist: t("wantList.categories.wish"),
+    shopping_list: t("wantList.categories.shopping"),
+    restock: t("wantList.categories.shopping"),
+    tried_not_owned: t("wantList.categories.tried"),
+    do_not_buy_again: t("wantList.categories.notForMe"),
   }[item.category] || "—";
 
   const isRestock = item.category === "restock";
 
   const typeLabel = {
-    blend: "Tobacco Blend",
-    pipe: "Pipe",
-    tobacco_bulk: "Bulk Tobacco",
-    tobacco_tin: "Tinned Tobacco",
-    bottle: "Whiskey",
-    accessory: "Accessory",
+    blend: t("wantList.itemTypes.tobaccoBlend"),
+    pipe: t("wantList.itemTypes.pipe"),
+    tobacco_bulk: t("wantList.itemTypes.bulkTobacco"),
+    tobacco_tin: t("wantList.itemTypes.tinnedTobacco"),
+    bottle: t("wantList.itemTypes.bottle"),
+    accessory: t("wantList.itemTypes.accessory"),
   }[item.item_type] || item.item_type;
 
   const priorityColor = {
@@ -43,10 +45,10 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
     try {
       setIsLoading(true);
       await base44.entities.AcquisitionItem.update(item.id, { status: "archived" });
-      toast.success("Item archived");
+      toast.success(t("wantList.toasts.itemArchived"));
       onArchive?.(item.id);
     } catch {
-      toast.error("Failed to archive");
+      toast.error(t("wantList.toasts.failedToArchive"));
     } finally {
       setIsLoading(false);
     }
@@ -56,10 +58,10 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
     try {
       setIsLoading(true);
       await base44.entities.AcquisitionItem.update(item.id, { category: newCategory });
-      toast.success("Updated");
+      toast.success(t("wantList.toasts.updated"));
       onStatusChange?.(item.id, newCategory);
     } catch {
-      toast.error("Failed to update");
+      toast.error(t("wantList.toasts.failedToUpdate"));
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +88,7 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
           <span className="text-xs font-medium text-[#D4A574]">{categoryLabel}</span>
           {isRestock && (
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[rgba(180,140,75,0.15)] text-[#D4A574]/80 border border-[rgba(180,140,75,0.2)]">
-              Restock
+              {t("wantList.categories.restock")}
             </span>
           )}
           {item.priority && (
@@ -98,10 +100,10 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
       </div>
 
       {item.blend_name && (
-        <p className="text-xs text-[#E0D8C8]/65 mb-1"><strong>Blend:</strong> {item.blend_name}</p>
+        <p className="text-xs text-[#E0D8C8]/65 mb-1"><strong>{t("wantList.labels.blend")}:</strong> {item.blend_name}</p>
       )}
       {item.pipe_model && (
-        <p className="text-xs text-[#E0D8C8]/65 mb-1"><strong>Model:</strong> {item.pipe_model}</p>
+        <p className="text-xs text-[#E0D8C8]/65 mb-1"><strong>{t("wantList.labels.model")}:</strong> {item.pipe_model}</p>
       )}
       {item.notes && (
         <p className="text-xs text-[#E0D8C8]/55 italic mt-1">{item.notes}</p>
@@ -111,23 +113,23 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="sm" variant="outline" className="text-xs h-8" disabled={isLoading}>
-              Move
+              {t("wantList.actions.move")}
               <ChevronDown className="w-3 h-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-[rgba(22,17,13,0.96)] border-[#b48c4b]/30">
-            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("wishlist")}>Wish</DropdownMenuItem>
-            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("shopping_list")}>Shopping</DropdownMenuItem>
-            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("tried_not_owned")}>Tried</DropdownMenuItem>
+            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("wishlist")}>{t("wantList.categories.wish")}</DropdownMenuItem>
+            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("shopping_list")}>{t("wantList.categories.shopping")}</DropdownMenuItem>
+            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("tried_not_owned")}>{t("wantList.categories.tried")}</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("do_not_buy_again")}>Not for Me</DropdownMenuItem>
+            <DropdownMenuItem className="text-[#E0D8C8] hover:bg-white/10 focus:bg-white/10 focus:text-[#F5F1E7]" onClick={() => handleCategoryChange("do_not_buy_again")}>{t("wantList.categories.notForMe")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
         {onEdit && (
           <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => onEdit(item)} disabled={isLoading}>
             <Edit2 className="w-3 h-3 mr-1" />
-            Edit
+            {t("wantList.actions.edit")}
           </Button>
         )}
 
@@ -150,10 +152,10 @@ export default function WantListCard({ item, onStatusChange, onArchive, onShare,
             try {
               setIsLoading(true);
               await base44.entities.AcquisitionItem.delete(item.id);
-              toast.success("Deleted");
+              toast.success(t("wantList.toasts.deleted"));
               onArchive?.(item.id);
             } catch {
-              toast.error("Failed to delete");
+              toast.error(t("wantList.toasts.failedToDelete"));
             } finally {
               setIsLoading(false);
             }

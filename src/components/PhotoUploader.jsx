@@ -12,10 +12,10 @@ export default function PhotoUploader({
   onPhotosSelected,
   existingPhotos = [],
   maxPhotos = 10,
-  onSearchOnlineClick = null,
-  showSearchOption = false,
+  onSearchOnlineClick: _onSearchOnlineClick = null,
+  showSearchOption: _showSearchOption = false,
   recordType = null,
-  recordData = null,
+  recordData: _recordData = null,
   buttonClassName = '',
   previewClassName = '',
 }) {
@@ -60,7 +60,7 @@ export default function PhotoUploader({
       didSucceed = true;
     } catch (err) {
       console.error('[PhotoUploader] upload error:', err);
-      toast.error('Failed to upload photo');
+      toast.error(t('photoUploader.failedToUploadPhoto'));
     } finally {
       setUploading(false);
       if (didSucceed) {
@@ -94,8 +94,8 @@ export default function PhotoUploader({
           className={`flex-1 min-w-[100px] bg-stone-700 border-stone-600 text-white hover:bg-stone-800 ${buttonClassName}`}
         >
           {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-2" />}
-          <span className="hidden sm:inline">{t('photos.fromGallery') || 'From Gallery'}</span>
-          <span className="sm:hidden">{t('photos.gallery') || 'Gallery'}</span>
+          <span className="hidden sm:inline">{t('photoUploader.fromGallery')}</span>
+          <span className="sm:hidden">{t('photoUploader.gallery')}</span>
         </Button>
 
         <Button
@@ -107,8 +107,8 @@ export default function PhotoUploader({
           className={`flex-1 min-w-[100px] bg-stone-700 border-stone-600 text-white hover:bg-stone-800 ${buttonClassName}`}
         >
           <Camera className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">{t('aiIdentifier.takePhoto') || 'Take Photo'}</span>
-          <span className="sm:hidden">{t('photos.camera') || 'Camera'}</span>
+          <span className="hidden sm:inline">{t('photoUploader.takePhoto')}</span>
+          <span className="sm:hidden">{t('photoUploader.camera')}</span>
         </Button>
       </div>
 
@@ -148,7 +148,7 @@ export default function PhotoUploader({
 
       {!canAddMore && (
         <p className="text-xs text-[#E0D8C8]/70 mt-2">
-          {t('photos.maxReached') || 'Maximum photos reached'}
+          {t('photoUploader.maximumPhotosReached')}
         </p>
       )}
     </div>

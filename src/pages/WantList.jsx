@@ -16,15 +16,9 @@ import {
 import { rankSearchResults } from "@/utils/search/SmartSearchEngine";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 // ─── AI Search config (mirrored from AddFlowQuickSearch) ───────────────────
-const PLACEHOLDERS = {
-  blend: "e.g. Carter Hall, Orlik Golden Sliced…",
-  pipe: "e.g. Falcon Standard, Peterson 312…",
-  bottle: "e.g. Blanton's Single Barrel, Eagle Rare…",
-  cigar: "e.g. Padron 1964, Arturo Fuente Opus X…",
-};
-
 const SEARCH_PROMPTS = {
   blend: (q) => `Find exact tobacco blend matches for "${q}". Return up to 8 results as JSON with "items" array. Each item: name, manufacturer, blend_type, strength, cut, description, flavor_notes.`,
   pipe: (q) => `Find exact tobacco pipe matches for "${q}". Return up to 8 results as JSON with "items" array. Each item: name, maker, model, shape, bowl_material, description.`,
@@ -65,74 +59,61 @@ function subtitleFor(itemType, item) {
   return "";
 }
 
-const SORT_OPTIONS = {
-  recent: "Recently Added",
-  priority: "Priority",
-  name: "Name",
-  type: "Type",
-};
-
-const LIST_DESTINATIONS = [
-  { value: "wishlist", label: "Wish List" },
-  { value: "shopping_list", label: "Shopping" },
-  { value: "tried_not_owned", label: "Tried" },
-  { value: "do_not_buy_again", label: "Not for Me" },
-];
-
 const BASE_ITEM_TYPES = [
-  { value: "blend", label: "Blend", itemType: "blend", moduleKey: "pipekeeper" },
-  { value: "pipe", label: "Pipe", itemType: "pipe", moduleKey: "pipekeeper" },
-  { value: "bottle", label: "Whiskey", itemType: "bottle", moduleKey: "whiskeykeeper" },
-  { value: "cigar", label: "Cigar", itemType: "cigar", moduleKey: "cigarkeeper" },
-  { value: "wine", label: "Wine", itemType: "wine", moduleKey: "winekeeper" },
+  { value: "blend", itemType: "blend", moduleKey: "pipekeeper" },
+  { value: "pipe", itemType: "pipe", moduleKey: "pipekeeper" },
+  { value: "bottle", itemType: "bottle", moduleKey: "whiskeykeeper" },
+  { value: "cigar", itemType: "cigar", moduleKey: "cigarkeeper" },
+  { value: "wine", itemType: "wine", moduleKey: "winekeeper" },
 ];
 
 // ─── Manual add forms ───────────────────────────────────────────────────────
 function ManualForm({ itemType, onSubmit, onBack }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({});
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
 
   const fields =
     itemType === "pipe"
       ? [
-          { key: "maker", label: "Maker", required: true },
-          { key: "name", label: "Model / Name", required: true },
-          { key: "shape", label: "Shape (optional)" },
-          { key: "notes", label: "Notes (optional)", multiline: true },
+          { key: "maker", label: t("wantList.manualForm.fields.maker"), required: true },
+          { key: "name", label: t("wantList.manualForm.fields.modelName"), required: true },
+          { key: "shape", label: t("wantList.manualForm.fields.shapeOptional") },
+          { key: "notes", label: t("wantList.manualForm.fields.notesOptional"), multiline: true },
         ]
       : itemType === "blend"
       ? [
-          { key: "name", label: "Blend Name", required: true },
-          { key: "manufacturer", label: "Manufacturer", required: true },
-          { key: "blend_type", label: "Blend Type (optional)" },
-          { key: "notes", label: "Notes (optional)", multiline: true },
+          { key: "name", label: t("wantList.manualForm.fields.blendName"), required: true },
+          { key: "manufacturer", label: t("wantList.manualForm.fields.manufacturer"), required: true },
+          { key: "blend_type", label: t("wantList.manualForm.fields.blendTypeOptional") },
+          { key: "notes", label: t("wantList.manualForm.fields.notesOptional"), multiline: true },
         ]
       : itemType === "cigar"
       ? [
-          { key: "name", label: "Cigar Name", required: true },
-          { key: "brand", label: "Brand", required: true },
-          { key: "vitola", label: "Vitola / Size (optional)" },
-          { key: "wrapper", label: "Wrapper (optional)" },
-          { key: "notes", label: "Notes (optional)", multiline: true },
+          { key: "name", label: t("wantList.manualForm.fields.cigarName"), required: true },
+          { key: "brand", label: t("wantList.manualForm.fields.brand"), required: true },
+          { key: "vitola", label: t("wantList.manualForm.fields.vitolaSizeOptional") },
+          { key: "wrapper", label: t("wantList.manualForm.fields.wrapperOptional") },
+          { key: "notes", label: t("wantList.manualForm.fields.notesOptional"), multiline: true },
         ]
       : itemType === "wine"
       ? [
-          { key: "name", label: "Wine Name", required: true },
-          { key: "producer", label: "Producer / Winery", required: true },
-          { key: "vintage", label: "Vintage (optional)" },
-          { key: "varietal", label: "Varietal / Style (optional)" },
-          { key: "notes", label: "Notes (optional)", multiline: true },
+          { key: "name", label: t("wantList.manualForm.fields.wineName"), required: true },
+          { key: "producer", label: t("wantList.manualForm.fields.producerWinery"), required: true },
+          { key: "vintage", label: t("wantList.manualForm.fields.vintageOptional") },
+          { key: "varietal", label: t("wantList.manualForm.fields.varietalStyleOptional") },
+          { key: "notes", label: t("wantList.manualForm.fields.notesOptional"), multiline: true },
         ]
       : [
-          { key: "name", label: "Bottle Name / Expression", required: true },
-          { key: "distillery", label: "Distillery / Brand", required: true },
-          { key: "whiskey_type", label: "Type / Category (optional)" },
-          { key: "notes", label: "Notes (optional)", multiline: true },
+          { key: "name", label: t("wantList.manualForm.fields.bottleNameExpression"), required: true },
+          { key: "distillery", label: t("wantList.manualForm.fields.distilleryBrand"), required: true },
+          { key: "whiskey_type", label: t("wantList.manualForm.fields.typeCategoryOptional") },
+          { key: "notes", label: t("wantList.manualForm.fields.notesOptional"), multiline: true },
         ];
 
   const handleSubmit = () => {
     if (!form.name?.trim()) {
-      toast.error("Name is required");
+      toast.error(t("wantList.toasts.nameRequired"));
       return;
     }
     onSubmit(form);
@@ -144,7 +125,7 @@ function ManualForm({ itemType, onSubmit, onBack }) {
         <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-[#E0D8C8]/60">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <h3 className="font-semibold text-[#F5F1E7]">Add Manually</h3>
+        <h3 className="font-semibold text-[#F5F1E7]">{t("wantList.manualForm.addManually")}</h3>
       </div>
       {fields.map((f) =>
         f.multiline ? (
@@ -169,7 +150,7 @@ function ManualForm({ itemType, onSubmit, onBack }) {
         )
       )}
       <Button className="w-full mt-2" onClick={handleSubmit}>
-        Continue
+        {t("wantList.manualForm.continue")}
       </Button>
     </div>
   );
@@ -180,11 +161,31 @@ function AddItemFlow({ onDone, onBack }) {
   const { user } = useCurrentUser();
   const userEmail = user?.email || null;
   const access = useAccessSummary();
+  const { t } = useTranslation();
   const activeModules = access?.activeModules || [];
 
   const ITEM_TYPES = useMemo(() => {
-    return BASE_ITEM_TYPES.filter((t) => activeModules.includes(t.moduleKey));
-  }, [activeModules]);
+    return BASE_ITEM_TYPES
+      .filter((item) => activeModules.includes(item.moduleKey))
+      .map((item) => ({
+        ...item,
+        label: t(`wantList.itemTypes.${item.value}`),
+      }));
+  }, [activeModules, t]);
+
+  const placeholders = {
+    blend: t("wantList.search.placeholders.blend"),
+    pipe: t("wantList.search.placeholders.pipe"),
+    bottle: t("wantList.search.placeholders.bottle"),
+    cigar: t("wantList.search.placeholders.cigar"),
+  };
+
+  const listDestinations = [
+    { value: "wishlist", label: t("wantList.categories.wishList") },
+    { value: "shopping_list", label: t("wantList.categories.shopping") },
+    { value: "tried_not_owned", label: t("wantList.categories.tried") },
+    { value: "do_not_buy_again", label: t("wantList.categories.notForMe") },
+  ];
 
   const [step, setStep] = useState("type"); // type | search | manual | destination
   const [itemType, setItemType] = useState(null);
@@ -230,7 +231,7 @@ function AddItemFlow({ onDone, onBack }) {
 
   const handleSaveToList = async (category) => {
     if (!userEmail) {
-      toast.error("Unable to identify the current user");
+      toast.error(t("wantList.toasts.unableToIdentifyUser"));
       return;
     }
 
@@ -254,10 +255,10 @@ function AddItemFlow({ onDone, onBack }) {
       };
 
       await base44.entities.AcquisitionItem.create(payload);
-      toast.success("Added to your want list");
+      toast.success(t("wantList.toasts.addedToWantList"));
       onDone();
-    } catch (err) {
-      toast.error("Failed to save item");
+    } catch {
+      toast.error(t("wantList.toasts.failedToSaveItem"));
     } finally {
       setSaving(false);
     }
@@ -271,8 +272,8 @@ function AddItemFlow({ onDone, onBack }) {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h3 className="font-semibold text-[#F5F1E7]">What type of item?</h3>
-            <p className="text-xs text-[#E0D8C8]/50">Choose to begin searching</p>
+            <h3 className="font-semibold text-[#F5F1E7]">{t("wantList.addFlow.whatTypeOfItem")}</h3>
+            <p className="text-xs text-[#E0D8C8]/50">{t("wantList.addFlow.chooseToBeginSearching")}</p>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3">
@@ -309,8 +310,8 @@ function AddItemFlow({ onDone, onBack }) {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h3 className="font-semibold text-[#F5F1E7]">Search for a {typeLabel}</h3>
-            <p className="text-xs text-[#E0D8C8]/50">{PLACEHOLDERS[itemType]}</p>
+            <h3 className="font-semibold text-[#F5F1E7]">{t("wantList.search.searchForType", { type: typeLabel })}</h3>
+            <p className="text-xs text-[#E0D8C8]/50">{placeholders[itemType]}</p>
           </div>
         </div>
 
@@ -319,7 +320,7 @@ function AddItemFlow({ onDone, onBack }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder={PLACEHOLDERS[itemType]}
+            placeholder={placeholders[itemType]}
             className="flex-1"
           />
           <Button onClick={handleSearch} disabled={loading || !query.trim()}>
@@ -330,7 +331,7 @@ function AddItemFlow({ onDone, onBack }) {
         {loading && (
           <div className="flex items-center justify-center py-8 gap-2 text-[#E0D8C8]/40">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-sm">Searching…</span>
+            <span className="text-sm">{t("wantList.search.searching")}</span>
           </div>
         )}
 
@@ -353,7 +354,7 @@ function AddItemFlow({ onDone, onBack }) {
                     <p className="font-semibold text-sm text-[#F5F1E7]">{item.name}</p>
                     {item._isExact && i === 0 && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold bg-[rgba(180,140,75,0.18)] text-[#D4A574] border border-[rgba(180,140,75,0.3)]">
-                        Exact Match
+                        {t("wantList.search.exactMatch")}
                       </span>
                     )}
                   </div>
@@ -371,13 +372,13 @@ function AddItemFlow({ onDone, onBack }) {
         )}
 
         {!loading && searched && results.length === 0 && (
-          <p className="text-sm text-center py-4 text-[#E0D8C8]/50">No results for "{query}"</p>
+          <p className="text-sm text-center py-4 text-[#E0D8C8]/50">{t("wantList.search.noResultsFor", { query })}</p>
         )}
 
         {!loading && !searched && (
           <div className="text-center py-6 text-[#E0D8C8]/30">
             <SearchIcon className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">Enter a name above to search</p>
+            <p className="text-sm">{t("wantList.search.enterNameToSearch")}</p>
           </div>
         )}
 
@@ -387,7 +388,7 @@ function AddItemFlow({ onDone, onBack }) {
           style={{ border: "1px dashed rgba(180,140,75,0.25)" }}
         >
           <PenLine className="w-3.5 h-3.5" />
-          <span className="text-sm">Add Manually Instead</span>
+          <span className="text-sm">{t("wantList.search.addManuallyInstead")}</span>
         </button>
       </div>
     );
@@ -414,12 +415,12 @@ function AddItemFlow({ onDone, onBack }) {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h3 className="font-semibold text-[#F5F1E7]">Add to which list?</h3>
+            <h3 className="font-semibold text-[#F5F1E7]">{t("wantList.addFlow.addToWhichList")}</h3>
             <p className="text-xs text-[#E0D8C8]/50 truncate">{selectedItem?.name}</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {LIST_DESTINATIONS.map((dest) => (
+          {listDestinations.map((dest) => (
             <button
               key={dest.value}
               onClick={() => handleSaveToList(dest.value)}
@@ -451,12 +452,20 @@ function ViewList({ onBack }) {
   const { user } = useCurrentUser();
   const userEmail = user?.email || null;
   const access = useAccessSummary();
+  const { t } = useTranslation();
   const activeModules = useMemo(() => access?.activeModules || [], [access]);
 
   const [activeTab, setActiveTab] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
   const [searchText, setSearchText] = useState("");
   const [selectedItems, setSelectedItems] = useState(new Set());
+
+  const sortOptions = {
+    recent: t("wantList.sort.recent"),
+    priority: t("wantList.sort.priority"),
+    name: t("wantList.sort.name"),
+    type: t("wantList.sort.type"),
+  };
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["acquisitionItems", userEmail],
@@ -523,10 +532,10 @@ function ViewList({ onBack }) {
       .map((i) => `${i.name}${i.brand ? ` by ${i.brand}` : ""}`)
       .join("\n");
 
-    if (navigator.share) navigator.share({ title: "Want List", text });
+    if (navigator.share) navigator.share({ title: t("wantList.page.title"), text });
     else {
       navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard");
+      toast.success(t("wantList.toasts.copiedToClipboard"));
     }
   };
 
@@ -536,14 +545,14 @@ function ViewList({ onBack }) {
         <button onClick={onBack} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-[#E0D8C8]/60">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <h2 className="text-xl font-bold text-[#F5F1E7]">Your Want List</h2>
+        <h2 className="text-xl font-bold text-[#F5F1E7]">{t("wantList.viewList.yourWantList")}</h2>
       </div>
 
       <div className="flex gap-3 mb-4 flex-col sm:flex-row">
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-3 w-4 h-4 text-[#D4A574]/50" />
           <Input
-            placeholder="Search Your Current Want List"
+            placeholder={t("wantList.viewList.searchPlaceholder")}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="pl-10"
@@ -554,11 +563,11 @@ function ViewList({ onBack }) {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <Filter className="w-4 h-4 mr-2" />
-                {SORT_OPTIONS[sortBy]}
+                {sortOptions[sortBy]}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              {Object.entries(SORT_OPTIONS).map(([k, v]) => (
+              {Object.entries(sortOptions).map(([k, v]) => (
                 <DropdownMenuItem
                   key={k}
                   onClick={() => setSortBy(k)}
@@ -571,7 +580,7 @@ function ViewList({ onBack }) {
           </DropdownMenu>
           {selectedItems.size > 0 && (
             <Button variant="outline" size="sm" onClick={handleMultiShare}>
-              Share ({selectedItems.size})
+              {t("wantList.viewList.shareCount", { count: selectedItems.size })}
             </Button>
           )}
         </div>
@@ -579,20 +588,20 @@ function ViewList({ onBack }) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
         <TabsList className="w-full grid grid-cols-5">
-          <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-          <TabsTrigger value="wishlist" className="text-xs">Wish</TabsTrigger>
-          <TabsTrigger value="shopping" className="text-xs">Shopping</TabsTrigger>
-          <TabsTrigger value="tried" className="text-xs">Tried</TabsTrigger>
-          <TabsTrigger value="notforme" className="text-xs">Not for Me</TabsTrigger>
+          <TabsTrigger value="all" className="text-xs">{t("wantList.tabs.all")}</TabsTrigger>
+          <TabsTrigger value="wishlist" className="text-xs">{t("wantList.tabs.wish")}</TabsTrigger>
+          <TabsTrigger value="shopping" className="text-xs">{t("wantList.tabs.shopping")}</TabsTrigger>
+          <TabsTrigger value="tried" className="text-xs">{t("wantList.tabs.tried")}</TabsTrigger>
+          <TabsTrigger value="notforme" className="text-xs">{t("wantList.tabs.notForMe")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
           {!userEmail ? (
-            <div className="flex items-center justify-center py-12 text-[#E0D8C8]/50">Loading…</div>
+            <div className="flex items-center justify-center py-12 text-[#E0D8C8]/50">{t("wantList.page.loading")}</div>
           ) : isLoading ? (
-            <div className="flex items-center justify-center py-12 text-[#E0D8C8]/50">Loading…</div>
+            <div className="flex items-center justify-center py-12 text-[#E0D8C8]/50">{t("wantList.page.loading")}</div>
           ) : filteredItems.length === 0 ? (
-            <div className="text-center py-12 text-[#E0D8C8]/50">No items in this list</div>
+            <div className="text-center py-12 text-[#E0D8C8]/50">{t("wantList.viewList.emptyList")}</div>
           ) : (
             <div className="space-y-3">
               {filteredItems.map((item) => (
@@ -627,6 +636,7 @@ function ViewList({ onBack }) {
 export default function WantList() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useTranslation();
   const userEmail = user?.email || null;
   const [view, setView] = useState("entry"); // entry | list | add
 
@@ -641,8 +651,8 @@ export default function WantList() {
         {view === "entry" && (
           <div>
             <div className="mb-10">
-              <h1 className="text-3xl font-bold text-[#F5F1E7]">Want List</h1>
-              <p className="text-[#E0D8C8]/60 mt-1">Track items you want to try, buy, or restock</p>
+              <h1 className="text-3xl font-bold text-[#F5F1E7]">{t("wantList.page.title")}</h1>
+              <p className="text-[#E0D8C8]/60 mt-1">{t("wantList.page.subtitle")}</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -654,8 +664,8 @@ export default function WantList() {
                   <List className="w-5 h-5 text-[#D4A574]" />
                 </div>
                 <div>
-                  <div className="font-semibold text-[#F5F1E7]">View Current Want List</div>
-                  <div className="text-xs text-[#E0D8C8]/50 mt-1">Browse, search, and manage your saved items</div>
+                  <div className="font-semibold text-[#F5F1E7]">{t("wantList.page.viewCurrentWantList")}</div>
+                  <div className="text-xs text-[#E0D8C8]/50 mt-1">{t("wantList.page.browseSearchManage")}</div>
                 </div>
               </button>
 
@@ -667,8 +677,8 @@ export default function WantList() {
                   <Plus className="w-5 h-5 text-[#A35C5C]" />
                 </div>
                 <div>
-                  <div className="font-semibold text-[#F5F1E7]">Add Item to Want List</div>
-                  <div className="text-xs text-[#E0D8C8]/50 mt-1">Search or manually add a new item</div>
+                  <div className="font-semibold text-[#F5F1E7]">{t("wantList.page.addItemToWantList")}</div>
+                  <div className="text-xs text-[#E0D8C8]/50 mt-1">{t("wantList.page.searchOrManuallyAdd")}</div>
                 </div>
               </button>
             </div>

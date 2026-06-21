@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { getRarityLevel } from './utils/bottleValue';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const COLOR_MAP = {
   5: { dot: 'rgba(220,100,100,0.95)', label: 'rgba(220,100,100,0.9)',  bg: 'rgba(220,100,100,0.1)',  border: 'rgba(220,100,100,0.25)' },
@@ -23,6 +24,7 @@ const COLOR_MAP = {
  * @param {string}  [props.className]        - Additional class names
  */
 export default function RarityBadge({ bottle, showExplanation = false, className = '' }) {
+  const { t } = useTranslation();
   const rarity = getRarityLevel(bottle);
   const colors = COLOR_MAP[rarity.level] || COLOR_MAP[2];
 
@@ -40,12 +42,12 @@ export default function RarityBadge({ bottle, showExplanation = false, className
           {rarity.dots}
         </span>
         <span className="text-xs font-semibold" style={{ color: colors.label }}>
-          {rarity.label}
+          {t(rarity.labelKey, rarity.label)}
         </span>
       </div>
       {showExplanation && rarity.explanation && (
         <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>
-          {rarity.explanation}
+          {t(rarity.explanationKey, rarity.explanation)}
         </span>
       )}
     </div>

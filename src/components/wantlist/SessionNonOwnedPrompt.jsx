@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useWantListActions } from "./useWantListActions";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SessionNonOwnedPrompt({
   open,
@@ -17,6 +18,7 @@ export default function SessionNonOwnedPrompt({
 }) {
   const { addToWantList, addToShoppingList, markNotForMe } =
     useWantListActions();
+  const { t } = useTranslation();
 
   if (!userPreferences?.prompt_after_nonowned_session) {
     return null;
@@ -47,7 +49,7 @@ export default function SessionNonOwnedPrompt({
         source_type: "session",
         source_record_id: sessionItem.log_id,
       },
-      "Tried in session"
+      t("wantList.prompts.triedInSession")
     );
     onOpenChange(false);
   };
@@ -57,11 +59,10 @@ export default function SessionNonOwnedPrompt({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {sessionItem.name} — Add to Want List?
+            {t("wantList.prompts.addToWantListTitle", { name: sessionItem.name })}
           </DialogTitle>
           <DialogDescription>
-            You logged a session with an item you don't own. Would you like to
-            save it to your Want List?
+            {t("wantList.prompts.addToWantListDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -70,28 +71,28 @@ export default function SessionNonOwnedPrompt({
             onClick={handleAddToWantList}
             className="w-full"
           >
-            Add to Want List
+            {t("wantList.prompts.addToWantList")}
           </Button>
           <Button
             onClick={handleAddToShoppingList}
             variant="outline"
             className="w-full"
           >
-            Add to Shopping List
+            {t("wantList.prompts.addToShoppingList")}
           </Button>
           <Button
             onClick={handleMarkNotForMe}
             variant="ghost"
             className="w-full"
           >
-            Not for Me
+            {t("wantList.categories.notForMe")}
           </Button>
           <Button
             onClick={() => onOpenChange(false)}
             variant="ghost"
             className="w-full"
           >
-            Dismiss
+            {t("wantList.prompts.dismiss")}
           </Button>
         </div>
       </DialogContent>

@@ -10,10 +10,10 @@ export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onSc
       <div className="flex items-center justify-between px-6 pt-6 pb-5">
         <div>
           <h2 className="text-xl font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Add New {typeLabel}
+            {t('addFlow.addNewType', { type: typeLabel })}
           </h2>
           <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.58)' }}>
-            Choose how you'd like to add this item.
+            {t('addFlow.chooseHowToAdd')}
           </p>
         </div>
         <button
@@ -46,16 +46,16 @@ export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onSc
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <p className="font-semibold text-base" style={{ color: '#F5F1E7' }}>Quick Search</p>
+                <p className="font-semibold text-base" style={{ color: '#F5F1E7' }}>{t('addFlow.quickSearch')}</p>
                 <span
                   className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
                   style={{ background: 'rgba(180,140,75,0.2)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.32)' }}
                 >
-                  Recommended
+                  {t('addFlow.recommended')}
                 </span>
               </div>
               <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                Search our database and prefill details automatically.
+                {t('addFlow.quickSearchDescription')}
               </p>
             </div>
           </div>
@@ -79,9 +79,9 @@ export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onSc
                 <Barcode className="w-5 h-5" style={{ color: '#D4A574' }} />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-base mb-1" style={{ color: '#F5F1E7' }}>Scan UPC / Barcode</p>
+                <p className="font-semibold text-base mb-1" style={{ color: '#F5F1E7' }}>{t('addFlow.scanBarcode')}</p>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                  Enter or scan the barcode to look up the item instantly.
+                  {t('addFlow.scanBarcodeDescription')}
                 </p>
               </div>
             </div>
@@ -106,9 +106,9 @@ export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onSc
                 <Camera className="w-5 h-5" style={{ color: 'rgba(140,180,220,0.9)' }} />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-base mb-1" style={{ color: '#F5F1E7' }}>Photo Identify</p>
+                <p className="font-semibold text-base mb-1" style={{ color: '#F5F1E7' }}>{t('addFlow.photoIdentify')}</p>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.6)' }}>
-                  Take or upload a photo — AI identifies the item automatically.
+                  {t('addFlow.photoIdentifyDescription')}
                 </p>
               </div>
             </div>
@@ -132,9 +132,9 @@ export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onSc
               <PenLine className="w-5 h-5" style={{ color: 'rgba(220,160,160,0.8)' }} />
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-base" style={{ color: '#F5F1E7' }}>Add Manually</p>
+              <p className="font-semibold text-base" style={{ color: '#F5F1E7' }}>{t('addFlow.addManually')}</p>
               <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-                Fill in details yourself step-by-step.
+                {t('addFlow.addManuallyDescription')}
               </p>
             </div>
           </div>

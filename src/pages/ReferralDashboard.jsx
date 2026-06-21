@@ -15,8 +15,10 @@ import ReferralStats from '@/components/referral/ReferralStats';
 import ReferralProgressBar from '@/components/referral/ReferralProgressBar';
 import ReferralRewardCards from '@/components/referral/ReferralRewardCards';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function ReferralDashboard() {
+  const { t } = useTranslation();
   const { user, hasPaid, isLoading } = useCurrentUser();
   const [program, setProgram] = useState(null);
   const [rewards, setRewards] = useState([]);
@@ -37,7 +39,7 @@ export default function ReferralDashboard() {
       setProgram(programRes?.data?.program || null);
       setRewards(rewardsRes?.data?.rewards || []);
     } catch {
-      toast.error('Failed to load referral data');
+      toast.error(t('referral.failedToLoad'));
     } finally {
       setLoadingProgram(false);
     }
@@ -68,7 +70,7 @@ export default function ReferralDashboard() {
       const errors = (data?.results || []).filter(r => !r.ok);
 
       if (sent > 0) {
-        toast.success(`${sent} invite${sent !== 1 ? 's' : ''} sent!`);
+        toast.success(sent === 1 ? t('referral.inviteSentOne') : t('referral.invitesSent', { count: sent }));
         setEmailFields(['']);
         setPersonalMessage('');
         setShowInviteForm(false);
@@ -77,12 +79,12 @@ export default function ReferralDashboard() {
       }
 
       for (const err of errors) {
-        if (err.error === 'already_user') toast.info(`${err.email} is already a member`);
-        else if (err.error === 'self_referral') toast.error('You cannot refer yourself');
+        if (err.error === 'already_user') toast.info(t('referral.alreadyMember', { email: err.email }));
+        else if (err.error === 'self_referral') toast.error(t('referral.selfReferral'));
         else if (err.error !== 'invalid email') toast.warning(`${err.email}: ${err.error}`);
       }
     } catch (err) {
-      toast.error('Failed to send invites');
+      toast.error(t('referral.failedToSend'));
     } finally {
       setSending(false);
     }
@@ -109,17 +111,17 @@ export default function ReferralDashboard() {
         <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
           <Link to="/CollectionHub">
             <Button variant="ghost" className="text-[#E0D8C8]">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              <ArrowLeft className="w-4 h-4 mr-2" /> {t('referral.back')}
             </Button>
           </Link>
           <div className="p-10 text-center rounded-2xl" style={cardStyle}>
             <Lock className="w-12 h-12 mx-auto mb-4 text-[#E0D8C8]/30" />
-            <h2 className="text-xl font-bold text-[#F5F1E7] mb-2">Referrals are for subscribers</h2>
+            <h2 className="text-xl font-bold text-[#F5F1E7] mb-2">{t('referral.lockedTitle')}</h2>
             <p className="text-[#E0D8C8]/60 text-sm mb-6">
-              Subscribe to CollectionKeeper to get your personal referral link and start earning free months.
+              {t('referral.lockedDesc')}
             </p>
             <Link to="/Subscription">
-              <Button style={{ background: '#A35C5C', color: '#fff' }}>View Plans</Button>
+              <Button style={{ background: '#A35C5C', color: '#fff' }}>{t('referral.viewPlans')}</Button>
             </Link>
           </div>
         </div>
@@ -133,7 +135,7 @@ export default function ReferralDashboard() {
         <div className="flex items-center justify-between">
           <Link to="/CollectionHub">
             <Button variant="ghost" className="text-[#E0D8C8]">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              <ArrowLeft className="w-4 h-4 mr-2" /> {t('referral.back')}
             </Button>
           </Link>
         </div>
@@ -141,40 +143,40 @@ export default function ReferralDashboard() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-[#F5F1E7]" style={{ fontFamily: 'Georgia, serif' }}>
-            Refer a Friend
+            {t('referral.title')}
           </h1>
           <p className="text-[#E0D8C8]/70 text-base mt-2">
-            Earn free months when friends you invite become paid subscribers.
+            {t('referral.subtitle')}
           </p>
         </div>
 
         {/* How it works */}
         <div className="p-6 rounded-2xl" style={cardStyle}>
-          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest mb-5">How it works</h3>
+          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest mb-5">{t('referral.howItWorks')}</h3>
           <div className="grid grid-cols-3 gap-6 text-center">
             {[
-              { step: '1', text: 'Share your personal link' },
-              { step: '2', text: 'Friend signs up and subscribes' },
-              { step: '3', text: 'You earn 1 free module month ($2.99)' },
+              { step: '1', textKey: 'referral.step1' },
+              { step: '2', textKey: 'referral.step2' },
+              { step: '3', textKey: 'referral.step3' },
             ].map(item => (
               <div key={item.step} className="space-y-3">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto text-base font-bold"
                   style={{ background: 'rgba(212,165,116,0.18)', color: '#D4A574' }}>
                   {item.step}
                 </div>
-                <p className="text-base text-[#E0D8C8] leading-snug">{item.text}</p>
+                <p className="text-base text-[#E0D8C8] leading-snug">{t(item.textKey)}</p>
               </div>
             ))}
           </div>
           <div className="mt-6 pt-5 border-t border-white/10 space-y-2 text-center">
             <p className="text-sm text-[#E0D8C8]/70">
-              1 qualified referral = 1 free module month (up to $2.99)
+              {t('referral.rewardRule1')}
             </p>
             <p className="text-sm text-[#E0D8C8]/70">
-              12 qualified referrals = 1 free module year (up to $29.99)
+              {t('referral.rewardRule2')}
             </p>
             <p className="text-sm text-[#E0D8C8]/45 mt-1">
-              Reward value is fixed and does not vary by plan or bundle.
+              {t('referral.rewardNote')}
             </p>
           </div>
         </div>
@@ -184,7 +186,7 @@ export default function ReferralDashboard() {
 
         {/* Share panel */}
         <div className="p-6 rounded-2xl space-y-4" style={cardStyle}>
-          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest">Your Referral Link</h3>
+          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest">{t('referral.yourLink')}</h3>
           <ReferralSharePanel
             program={program}
             onInviteClick={() => setShowInviteForm(true)}
@@ -193,14 +195,14 @@ export default function ReferralDashboard() {
 
         {/* Progress toward milestones */}
         <div className="p-6 rounded-2xl space-y-4" style={cardStyle}>
-          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest">Your Progress</h3>
+          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest">{t('referral.yourProgress')}</h3>
           <ReferralProgressBar program={program} />
         </div>
 
         {/* Reward history */}
         {rewards.length > 0 && (
           <div className="p-6 rounded-2xl space-y-4" style={cardStyle}>
-            <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest">Your Rewards</h3>
+          <h3 className="text-xs font-semibold text-[#D4A574] uppercase tracking-widest">{t('referral.yourRewards')}</h3>
             <ReferralRewardCards rewards={rewards} onRefresh={loadData} />
           </div>
         )}
@@ -209,7 +211,7 @@ export default function ReferralDashboard() {
         {showInviteForm && (
           <div className="p-5 rounded-2xl space-y-4" style={{ ...cardStyle, borderColor: 'rgba(163,92,92,0.35)' }}>
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#F5F1E7]">Send Email Invites</h3>
+              <h3 className="text-sm font-semibold text-[#F5F1E7]">{t('referral.sendEmailInvites')}</h3>
               <button onClick={() => setShowInviteForm(false)} className="text-[#E0D8C8]/40 hover:text-[#E0D8C8]">
                 <X className="w-4 h-4" />
               </button>
@@ -227,7 +229,7 @@ export default function ReferralDashboard() {
                         next[idx] = e.target.value;
                         setEmailFields(next);
                       }}
-                      placeholder="friend@example.com"
+                      placeholder={t('referral.emailPlaceholder')}
                       className="bg-white/5 border-white/10 text-[#F5F1E7] placeholder:text-[#E0D8C8]/30"
                     />
                     {emailFields.length > 1 && (
@@ -240,14 +242,14 @@ export default function ReferralDashboard() {
                 ))}
                 <Button type="button" variant="ghost" size="sm" className="text-[#E0D8C8]/50 text-xs gap-1"
                   onClick={() => setEmailFields([...emailFields, ''])}>
-                  <UserPlus className="w-3.5 h-3.5" /> Add another
+                  <UserPlus className="w-3.5 h-3.5" /> {t('referral.addAnother')}
                 </Button>
               </div>
 
               <Textarea
                 value={personalMessage}
                 onChange={e => setPersonalMessage(e.target.value)}
-                placeholder="Add a personal note (optional)"
+                placeholder={t('referral.personalNotePlaceholder')}
                 className="min-h-[80px] bg-white/5 border-white/10 text-[#F5F1E7] placeholder:text-[#E0D8C8]/30"
               />
 
@@ -258,14 +260,14 @@ export default function ReferralDashboard() {
                 style={{ background: '#A35C5C', color: '#fff' }}
               >
                 <Mail className="w-4 h-4" />
-                {sending ? 'Sending…' : 'Send Invites with My Referral Link'}
+                {sending ? t('referral.sending') : t('referral.sendInvites')}
               </Button>
             </form>
           </div>
         )}
 
         <p className="text-sm text-[#E0D8C8]/40 text-center pb-4 leading-relaxed">
-          Rewards are granted after a referred friend completes a paid subscription. Self-referrals and duplicate accounts do not qualify.
+          {t('referral.rewardDisclaimer')}
         </p>
       </div>
     </div>
