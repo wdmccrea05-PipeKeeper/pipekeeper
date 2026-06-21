@@ -11,10 +11,21 @@ import {
   Bug, HelpCircle, RefreshCw, User, MessageSquare, Smartphone,
   Shield, BookOpen
 } from "lucide-react";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const SUPPORT_EMAIL = "admin@pipekeeperapp.com";
 
-const SUPPORT_TOPICS = [
+const SUPPORT_TOPIC_KEYS = [
+  'support.topicGeneral',
+  'support.topicAccount',
+  'support.topicBilling',
+  'support.topicBug',
+  'support.topicFeature',
+  'support.topicData',
+  'support.topicOther',
+];
+
+const SUPPORT_TOPIC_VALUES = [
   "General Question",
   "Account & Login",
   "Subscription & Billing",
@@ -24,48 +35,39 @@ const SUPPORT_TOPICS = [
   "Other",
 ];
 
-const FAQ_ITEMS = [
-  {
-    q: "How do I restore my subscription after reinstalling?",
-    a: "On the web app, go to Settings → Subscription and click 'Restore Purchases' or re-login with the same email. On iOS, open the app, go to Settings → Subscription, and tap 'Restore Purchases'. Your subscription is tied to your account and will restore automatically. If it doesn't, contact us with your Apple receipt or order number.",
-  },
-  {
-    q: "My data isn't syncing across devices — what should I do?",
-    a: "Make sure you are signed in to the same account on both devices. Refresh the page or pull down to refresh the main list. If the issue persists, try logging out and back in. If data is still missing after 5 minutes, contact support with your account email.",
-  },
-  {
-    q: "How do I cancel my subscription?",
-    a: "Web subscriptions can be cancelled through the Billing Portal — go to Settings → Subscription → Manage Billing. iOS subscriptions are managed through Apple: Settings → [your name] → Subscriptions, find CollectionKeeper / PipeKeeper, and tap Cancel. You'll retain access until the end of the billing period.",
-  },
-  {
-    q: "I was charged but my premium features aren't unlocked.",
-    a: "First, try 'Restore Purchases' in the app settings (or re-login on the web app). If that doesn't work within a few minutes, email us at admin@pipekeeperapp.com with your order number or Apple receipt and we'll resolve it manually.",
-  },
-  {
-    q: "How do I add a new pipe, blend, or bottle?",
-    a: "All items are added through the unified Add Flow wizard. Click 'Add' from any module page, or use the Quick Access button (lightning bolt icon in the top header) from any page. The wizard guides you through: choosing item type, searching an online library to auto-fill details, entering basic info, optional details, inventory, and photos.",
-  },
-  {
-    q: "How do I use Plan Session in the Curator?",
-    a: "Open the Curator from the top navigation. In the Expert Actions panel, click 'Plan Session'. The AI generates 3 curated session recommendations — each pairing a pipe with a tobacco blend (and a whiskey bottle if WhiskeyKeeper is active). Each card shows a confidence score and rationale. Click 'Try This' to use a session, 'Skip' to dismiss it, or 'Ask Curator' to discuss it.",
-  },
-  {
-    q: "Can I export or back up my collection data?",
-    a: "Yes — use the Export feature in PipeKeeper (Insights → Export) or WhiskeyKeeper. Your data is stored in your account and persists across devices and reinstalls as long as you sign in with the same credentials.",
-  },
-  {
-    q: "How do I delete my account?",
-    a: "To request account deletion and removal of all your data, email us at admin@pipekeeperapp.com with the subject 'Account Deletion Request'. We will process your request within 7 business days.",
-  },
+const FAQ_KEYS = [
+  { qKey: 'support.faq1q', aKey: 'support.faq1a' },
+  { qKey: 'support.faq2q', aKey: 'support.faq2a' },
+  { qKey: 'support.faq3q', aKey: 'support.faq3a' },
+  { qKey: 'support.faq4q', aKey: 'support.faq4a' },
+  { qKey: 'support.faq5q', aKey: 'support.faq5a' },
+  { qKey: 'support.faq6q', aKey: 'support.faq6a' },
+  { qKey: 'support.faq7q', aKey: 'support.faq7a' },
+  { qKey: 'support.faq8q', aKey: 'support.faq8a' },
 ];
 
-const TOPIC_CARDS = [
-  { icon: CreditCard, label: "Subscription & Billing", desc: "Charges, upgrades, restores, cancellations", color: "#d4a574" },
-  { icon: User, label: "Account & Login", desc: "Sign in issues, password reset, account access", color: "#6fcf97" },
-  { icon: RefreshCw, label: "Data & Sync", desc: "Missing data, sync problems, cross-device issues", color: "#56b4e0" },
-  { icon: Bug, label: "Report a Bug", desc: "Crashes, UI errors, unexpected behavior", color: "#a35c5c" },
-  { icon: Smartphone, label: "App Performance", desc: "Slow loading, freezing, display issues", color: "#b48c4b" },
-  { icon: HelpCircle, label: "General Help", desc: "How-to questions, feature guidance", color: "#9b8ecf" },
+const TOPIC_CARD_KEYS = [
+  { icon: CreditCard, labelKey: 'support.cardBillingLabel', descKey: 'support.cardBillingDesc', color: "#d4a574" },
+  { icon: User,       labelKey: 'support.cardAccountLabel', descKey: 'support.cardAccountDesc', color: "#6fcf97" },
+  { icon: RefreshCw,  labelKey: 'support.cardDataLabel',    descKey: 'support.cardDataDesc',    color: "#56b4e0" },
+  { icon: Bug,        labelKey: 'support.cardBugLabel',     descKey: 'support.cardBugDesc',     color: "#a35c5c" },
+  { icon: Smartphone, labelKey: 'support.cardPerfLabel',    descKey: 'support.cardPerfDesc',    color: "#b48c4b" },
+  { icon: HelpCircle, labelKey: 'support.cardHelpLabel',    descKey: 'support.cardHelpDesc',    color: "#9b8ecf" },
+];
+
+const INCLUDE_KEYS = [
+  'support.include1', 'support.include2', 'support.include3', 'support.include4',
+  'support.include5', 'support.include6', 'support.include7',
+];
+
+const TROUBLE_KEYS = [
+  { titleKey: 'support.troubleBlank',      descKey: 'support.troubleBlankDesc' },
+  { titleKey: 'support.troublePremium',    descKey: 'support.troublePremiumDesc' },
+  { titleKey: 'support.troubleSignIn',     descKey: 'support.troubleSignInDesc' },
+  { titleKey: 'support.troubleData',       descKey: 'support.troubleDataDesc' },
+  { titleKey: 'support.troubleAI',         descKey: 'support.troubleAIDesc' },
+  { titleKey: 'support.troubleConfidence', descKey: 'support.troubleConfidenceDesc' },
+  { titleKey: 'support.troubleWhiskey',    descKey: 'support.troubleWhiskeyDesc' },
 ];
 
 function FAQItem({ q, a }) {
