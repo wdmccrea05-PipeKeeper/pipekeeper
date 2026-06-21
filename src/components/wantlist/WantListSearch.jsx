@@ -7,10 +7,12 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 import { scopedEntities } from "@/components/api/scopedEntities";
 import { base44 } from "@/api/base44Client";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function WantListSearch({ onSelect, onManualAdd }) {
   const { user } = useCurrentUser();
   const access = useAccessSummary();
+  const { t } = useTranslation();
 
   const userEmail = user?.email || null;
   const activeModules = access?.activeModules || [];
@@ -63,7 +65,7 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
           name: p.name,
           brand: p.maker,
           type: "pipe",
-          display: `${p.name} by ${p.maker || "Unknown"}`,
+          display: t("wantList.search.byline", { name: p.name, brand: p.maker || t("wantList.labels.unknown") }),
           entity: p,
         }));
 
@@ -77,7 +79,7 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
           name: b.name,
           brand: b.manufacturer,
           type: "blend",
-          display: `${b.name} by ${b.manufacturer || "Unknown"}`,
+          display: t("wantList.search.byline", { name: b.name, brand: b.manufacturer || t("wantList.labels.unknown") }),
           entity: b,
         }));
 
@@ -92,7 +94,7 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
               name: b.name,
               brand: b.brand,
               type: "bottle",
-              display: `${b.name} by ${b.brand || "Unknown"}`,
+              display: t("wantList.search.byline", { name: b.name, brand: b.brand || t("wantList.labels.unknown") }),
               entity: b,
             }))
         : [];
@@ -106,7 +108,7 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
       setResults(combined);
     } catch (err) {
       console.error("Search error:", err);
-      toast.error("Search failed");
+      toast.error(t("wantList.toasts.searchFailed"));
     } finally {
       setSearching(false);
     }
@@ -124,7 +126,7 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
         <Input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search your collection records"
+          placeholder={t("wantList.search.searchCollectionRecords")}
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSearch(searchQuery);
           }}
@@ -135,7 +137,7 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
           disabled={searching || !userEmail}
         >
           <Search className="w-4 h-4 mr-2" />
-          Search
+          {t("wantList.actions.search")}
         </Button>
       </div>
 
@@ -148,12 +150,12 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
             onClick={() => setSelectedCategory(category)}
           >
             {category === "all"
-              ? "All"
+              ? t("wantList.tabs.all")
               : category === "pipe"
-              ? "Pipes"
+              ? t("wantList.search.pipes")
               : category === "blend"
-              ? "Tobacco"
-              : "Whiskey"}
+              ? t("wantList.search.tobacco")
+              : t("wantList.search.whiskey")}
           </Button>
         ))}
       </div>
@@ -177,7 +179,7 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
 
         {!searching && searchQuery.trim() && results.length === 0 && (
           <div className="rounded-xl border px-4 py-6 text-center text-[#D8C7A6]/75">
-            No matches found in your records.
+            {t("wantList.search.noMatchesFound")}
           </div>
         )}
       </div>
@@ -185,7 +187,7 @@ export default function WantListSearch({ onSelect, onManualAdd }) {
       <div>
         <Button type="button" variant="outline" onClick={onManualAdd}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Manually
+          {t("wantList.manualForm.addManually")}
         </Button>
       </div>
     </div>

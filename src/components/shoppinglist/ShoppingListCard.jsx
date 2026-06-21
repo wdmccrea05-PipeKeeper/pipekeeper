@@ -4,11 +4,7 @@ import { Trash2, Share2, Archive, Tag, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { useCurrency } from "@/lib/currency/useCurrency";
-
-const SHOPPING_TYPE_LABEL = {
-  restock: "Restock",
-  buy_new_item: "Buy New Item",
-};
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const SHOPPING_TYPE_COLOR = {
   restock: "text-blue-400",
@@ -18,14 +14,20 @@ const SHOPPING_TYPE_COLOR = {
 export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
   const [isLoading, setIsLoading] = useState(false);
   const { formatFromBase } = useCurrency();
+  const { t } = useTranslation();
+
+  const shoppingTypeLabel = {
+    restock: t("shoppingList.types.restock"),
+    buy_new_item: t("shoppingList.types.buyNewItem"),
+  };
 
   const typeLabel = {
-    blend: "Tobacco Blend",
-    pipe: "Pipe",
-    tobacco_bulk: "Bulk Tobacco",
-    tobacco_tin: "Tinned Tobacco",
-    bottle: "Whiskey Bottle",
-    accessory: "Accessory",
+    blend: t("shoppingList.itemTypes.tobaccoBlend"),
+    pipe: t("shoppingList.itemTypes.pipe"),
+    tobacco_bulk: t("shoppingList.itemTypes.bulkTobacco"),
+    tobacco_tin: t("shoppingList.itemTypes.tinnedTobacco"),
+    bottle: t("shoppingList.itemTypes.whiskeyBottle"),
+    accessory: t("shoppingList.itemTypes.accessory"),
   }[item.item_type] || item.item_type;
 
   const priorityColor = {
@@ -40,10 +42,10 @@ export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
       await base44.entities.ShoppingListItem.update(item.id, {
         status: "archived",
       });
-      toast.success("Item archived");
+      toast.success(t("shoppingList.toasts.itemArchived"));
       onArchive?.(item.id);
     } catch (err) {
-      toast.error("Failed to archive");
+      toast.error(t("shoppingList.toasts.failedToArchive"));
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -57,10 +59,10 @@ export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
         status: "acquired",
         acquired_date: new Date().toISOString().split("T")[0],
       });
-      toast.success("Marked as acquired");
+      toast.success(t("shoppingList.toasts.markedAsAcquired"));
       onStatusChange?.();
     } catch (err) {
-      toast.error("Failed to update");
+      toast.error(t("shoppingList.toasts.failedToUpdate"));
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -70,10 +72,10 @@ export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
   const handleShare = () => {
     const text = `${item.name}${item.brand ? ` by ${item.brand}` : ""} - ${typeLabel}`;
     if (navigator.share) {
-      navigator.share({ title: "Shopping List Item", text });
+      navigator.share({ title: t("shoppingList.labels.shoppingListItem"), text });
     } else {
       navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard");
+      toast.success(t("shoppingList.toasts.copiedToClipboard"));
     }
   };
 
@@ -84,7 +86,7 @@ export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-sm text-[#E0D8C8]">{item.name}</h3>
             <span className={`text-xs font-medium ${SHOPPING_TYPE_COLOR[item.shopping_type]}`}>
-              {SHOPPING_TYPE_LABEL[item.shopping_type]}
+              {shoppingTypeLabel[item.shopping_type]}
             </span>
           </div>
           {item.brand && (
@@ -102,25 +104,25 @@ export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
 
       {item.blend_name && (
         <p className="text-xs text-[#E0D8C8]/70 mb-2">
-          <strong>Blend:</strong> {item.blend_name}
+          <strong>{t("shoppingList.labels.blend")}:</strong> {item.blend_name}
         </p>
       )}
 
       {item.model_name && (
         <p className="text-xs text-[#E0D8C8]/70 mb-2">
-          <strong>Model:</strong> {item.model_name}
+          <strong>{t("shoppingList.labels.model")}:</strong> {item.model_name}
         </p>
       )}
 
       {item.desired_quantity && (
         <p className="text-xs text-[#E0D8C8]/70 mb-2">
-          <strong>Qty:</strong> {item.desired_quantity} {item.quantity_unit || "units"}
+          <strong>{t("shoppingList.labels.qty")}:</strong> {item.desired_quantity} {item.quantity_unit || t("shoppingList.labels.units")}
         </p>
       )}
 
       {(item.target_price) && (
         <p className="text-xs text-[#E0D8C8]/70 mb-2">
-          <strong>Target Price:</strong> {formatFromBase(item.target_price)}
+          <strong>{t("shoppingList.labels.targetPrice")}:</strong> {formatFromBase(item.target_price)}
         </p>
       )}
 
@@ -132,7 +134,7 @@ export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
 
       {item.source_url && (
         <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#D4A574] hover:underline mb-2">
-          View Product
+          {t("shoppingList.labels.viewProduct")}
         </a>
       )}
 
@@ -145,7 +147,7 @@ export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
           disabled={isLoading}
         >
           <CheckCircle2 className="w-3 h-3 mr-1" />
-          Acquired
+          {t("shoppingList.actions.acquired")}
         </Button>
 
         <Button
@@ -176,10 +178,10 @@ export default function ShoppingListCard({ item, onStatusChange, onArchive }) {
             try {
               setIsLoading(true);
               await base44.entities.ShoppingListItem.delete(item.id);
-              toast.success("Item deleted");
+              toast.success(t("shoppingList.toasts.itemDeleted"));
               onArchive?.(item.id);
             } catch (err) {
-              toast.error("Failed to delete");
+              toast.error(t("shoppingList.toasts.failedToDelete"));
               console.error(err);
             } finally {
               setIsLoading(false);

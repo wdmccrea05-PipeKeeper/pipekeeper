@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useWantListActions } from "./useWantListActions";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function RestockPrompt({
   open,
@@ -16,6 +17,7 @@ export default function RestockPrompt({
   userPreferences,
 }) {
   const { addRestock, addToShoppingList } = useWantListActions();
+  const { t } = useTranslation();
 
   if (!userPreferences?.prompt_when_low_inventory) {
     return null;
@@ -41,10 +43,10 @@ export default function RestockPrompt({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {item.name} — Low Inventory
+            {t("wantList.restockPrompt.title", { name: item.name })}
           </DialogTitle>
           <DialogDescription>
-            Your inventory of {item.name} is running low. Would you like to add it to your Want List?
+            {t("wantList.restockPrompt.description", { name: item.name })}
           </DialogDescription>
         </DialogHeader>
 
@@ -53,21 +55,21 @@ export default function RestockPrompt({
             onClick={handleRestock}
             className="w-full"
           >
-            Add to Restock List
+            {t("wantList.restockPrompt.addToRestockList")}
           </Button>
           <Button
             onClick={handleShoppingList}
             variant="outline"
             className="w-full"
           >
-            Add to Shopping List
+            {t("wantList.prompts.addToShoppingList")}
           </Button>
           <Button
             onClick={() => onOpenChange(false)}
             variant="ghost"
             className="w-full"
           >
-            Dismiss
+            {t("wantList.prompts.dismiss")}
           </Button>
         </div>
       </DialogContent>

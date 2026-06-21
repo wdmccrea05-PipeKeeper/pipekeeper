@@ -16,18 +16,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
-
-const SORT_OPTIONS = {
-  recent: "Recently Added",
-  priority: "Priority",
-  name: "Name",
-  type: "Type",
-  price: "Target Price",
-};
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function ShoppingList() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useTranslation();
   const userEmail = user?.email || null;
 
   const [activeTab, setActiveTab] = useState("all");
@@ -35,6 +29,14 @@ export default function ShoppingList() {
   const [searchText, setSearchText] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState(new Set());
+
+  const sortOptions = {
+    recent: t("shoppingList.sort.recent"),
+    priority: t("shoppingList.sort.priority"),
+    name: t("shoppingList.sort.name"),
+    type: t("shoppingList.sort.type"),
+    price: t("shoppingList.sort.price"),
+  };
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["shoppingListItems", userEmail],
@@ -123,7 +125,7 @@ export default function ShoppingList() {
 
   const handleMultiShare = () => {
     if (selectedItems.size === 0) {
-      toast.error("Select items to share");
+      toast.error(t("shoppingList.toasts.selectItemsToShare"));
       return;
     }
 
@@ -133,10 +135,10 @@ export default function ShoppingList() {
       .join("\n");
 
     if (navigator.share) {
-      navigator.share({ title: "Shopping List", text });
+      navigator.share({ title: t("shoppingList.page.title"), text });
     } else {
       navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard");
+      toast.success(t("shoppingList.toasts.copiedToClipboard"));
     }
   };
 
@@ -145,9 +147,9 @@ export default function ShoppingList() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[#F5F1E7]">Shopping List</h1>
+            <h1 className="text-3xl font-bold text-[#F5F1E7]">{t("shoppingList.page.title")}</h1>
             <p className="text-[#E0D8C8]/60 mt-1">
-              Track items to buy and restock
+              {t("shoppingList.page.subtitle")}
             </p>
           </div>
 
@@ -155,12 +157,12 @@ export default function ShoppingList() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                Add Item
+                {t("shoppingList.page.addItem")}
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-[rgba(22,17,13,0.96)] border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add to Shopping List</DialogTitle>
+                <DialogTitle>{t("shoppingList.page.addToShoppingList")}</DialogTitle>
               </DialogHeader>
               <ShoppingListSearch onAdded={handleAddSuccess} />
             </DialogContent>
@@ -172,7 +174,7 @@ export default function ShoppingList() {
             <div className="relative">
               <SearchIcon className="absolute left-3 top-3 w-4 h-4 text-[#D4A574]/50" />
               <Input
-                placeholder="Search items..."
+                placeholder={t("shoppingList.page.searchPlaceholder")}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 className="pl-10"
@@ -184,11 +186,11 @@ export default function ShoppingList() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <Filter className="w-4 h-4 mr-2" />
-                Sort: {SORT_OPTIONS[sortBy]}
+                {t("shoppingList.page.sortLabel", { option: sortOptions[sortBy] })}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              {Object.entries(SORT_OPTIONS).map(([key, label]) => (
+              {Object.entries(sortOptions).map(([key, label]) => (
                 <DropdownMenuItem
                   key={key}
                   onClick={() => setSortBy(key)}
@@ -202,30 +204,30 @@ export default function ShoppingList() {
 
           {selectedItems.size > 0 && (
             <Button variant="outline" size="sm" onClick={handleMultiShare}>
-              Share ({selectedItems.size})
+              {t("shoppingList.page.shareCount", { count: selectedItems.size })}
             </Button>
           )}
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="restock">Restock</TabsTrigger>
-            <TabsTrigger value="buy_new">Buy New Item</TabsTrigger>
+            <TabsTrigger value="all">{t("shoppingList.tabs.all")}</TabsTrigger>
+            <TabsTrigger value="restock">{t("shoppingList.tabs.restock")}</TabsTrigger>
+            <TabsTrigger value="buy_new">{t("shoppingList.tabs.buyNewItem")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
             {!userEmail ? (
               <div className="flex items-center justify-center py-12">
-                <div className="text-[#E0D8C8]/50">Loading...</div>
+                <div className="text-[#E0D8C8]/50">{t("shoppingList.page.loading")}</div>
               </div>
             ) : isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="text-[#E0D8C8]/50">Loading...</div>
+                <div className="text-[#E0D8C8]/50">{t("shoppingList.page.loading")}</div>
               </div>
             ) : filteredItems.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-[#E0D8C8]/50">No items in this category</p>
+                <p className="text-[#E0D8C8]/50">{t("shoppingList.page.emptyCategory")}</p>
               </div>
             ) : (
               <div className="space-y-3">

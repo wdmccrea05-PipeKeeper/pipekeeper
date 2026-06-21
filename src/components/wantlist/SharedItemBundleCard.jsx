@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWantListActions } from "./useWantListActions";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function SharedItemBundleCard({
   bundle,
@@ -12,6 +13,7 @@ export default function SharedItemBundleCard({
     bundle.items.map((_, i) => i)
   );
   const { addToWantList, addToShoppingList } = useWantListActions();
+  const { t } = useTranslation();
 
   const toggleItem = (index) => {
     setSelectedItems((prev) =>
@@ -58,7 +60,7 @@ export default function SharedItemBundleCard({
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">
-          {bundle.sender_user_id} shared items with you
+          {t("wantList.sharedBundle.sharedItemsWithYou", { sender: bundle.sender_user_id })}
         </CardTitle>
         {bundle.message && (
           <p className="text-sm text-gray-600 mt-2">{bundle.message}</p>
@@ -85,18 +87,18 @@ export default function SharedItemBundleCard({
 
         <div className="flex flex-col gap-2 pt-4 border-t">
           <Button onClick={handleAddAllToWantList} className="w-full">
-            Add All to Want List
+            {t("wantList.sharedBundle.addAllToWantList")}
           </Button>
           {selectedItems.length > 0 && selectedItems.length < bundle.items.length && (
             <Button onClick={handleAddSelectedToWantList} variant="outline" className="w-full">
-              Add Selected to Want List
+              {t("wantList.sharedBundle.addSelectedToWantList")}
             </Button>
           )}
           <Button onClick={handleAddAllToShoppingList} variant="outline" className="w-full">
-            Add All to Shopping List
+            {t("wantList.sharedBundle.addAllToShoppingList")}
           </Button>
           <Button onClick={() => onDismiss?.()} variant="ghost" className="w-full">
-            Dismiss
+            {t("wantList.prompts.dismiss")}
           </Button>
         </div>
       </CardContent>

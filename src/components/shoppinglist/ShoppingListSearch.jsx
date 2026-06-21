@@ -7,16 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const ALL_ITEM_TYPES = [
-  { value: "blend", label: "Tobacco", moduleKey: "pipekeeper" },
-  { value: "pipe", label: "Pipe", moduleKey: "pipekeeper" },
-  { value: "bottle", label: "Whiskey", moduleKey: "whiskeykeeper" },
+  { value: "blend", moduleKey: "pipekeeper" },
+  { value: "pipe", moduleKey: "pipekeeper" },
+  { value: "bottle", moduleKey: "whiskeykeeper" },
 ];
 
 const SHOPPING_TYPES = [
-  { value: "buy_new_item", label: "Buy New" },
-  { value: "restock", label: "Restock" },
+  { value: "buy_new_item" },
+  { value: "restock" },
 ];
 
 async function searchTobacco(query) {
@@ -110,6 +111,7 @@ async function searchBottle(query) {
 export default function ShoppingListSearch({ onAdded }) {
   const { user } = useCurrentUser();
   const access = useAccessSummary();
+  const { t } = useTranslation();
 
   const activeModules = access?.activeModules || [];
   const itemTypes = useMemo(() => {
@@ -123,6 +125,17 @@ export default function ShoppingListSearch({ onAdded }) {
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
   const [adding, setAdding] = useState(null);
+
+  const itemTypeLabels = {
+    blend: t("shoppingList.search.itemCategories.tobacco"),
+    pipe: t("shoppingList.search.itemCategories.pipe"),
+    bottle: t("shoppingList.search.itemCategories.whiskey"),
+  };
+
+  const shoppingTypeLabels = {
+    buy_new_item: t("shoppingList.search.shoppingTypes.buyNew"),
+    restock: t("shoppingList.search.shoppingTypes.restock"),
+  };
 
   const effectiveItemType = useMemo(() => {
     if (itemTypes.some((t) => t.value === itemType)) return itemType;
@@ -146,7 +159,7 @@ export default function ShoppingListSearch({ onAdded }) {
       setResults(items);
     } catch (err) {
       console.error(err);
-      toast.error("Search failed");
+      toast.error(t("shoppingList.toasts.searchFailed"));
     } finally {
       setSearching(false);
     }
@@ -182,11 +195,11 @@ export default function ShoppingListSearch({ onAdded }) {
         created_by: user?.email || undefined,
       });
 
-      toast.success(`"${name}" added to Shopping List`);
+      toast.success(t("shoppingList.toasts.itemAdded", { name }));
       onAdded?.();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to add item");
+      toast.error(t("shoppingList.toasts.failedToAddItem"));
     } finally {
       setAdding(null);
     }
@@ -196,7 +209,7 @@ export default function ShoppingListSearch({ onAdded }) {
     return (
       <div className="space-y-4">
         <div className="text-center py-8 text-[#E0D8C8]/50">
-          <p className="text-sm">No shopping categories are available for your current access.</p>
+          <p className="text-sm">{t("shoppingList.search.noCategoriesAvailable")}</p>
         </div>
       </div>
     );
@@ -206,7 +219,7 @@ export default function ShoppingListSearch({ onAdded }) {
     <div className="space-y-4">
       <div className="space-y-3">
         <div>
-          <p className="text-xs text-[#E0D8C8]/60 mb-2 font-medium uppercase tracking-wide">Item Category</p>
+          <p className="text-xs text-[#E0D8C8]/60 mb-2 font-medium uppercase tracking-wide">{t("shoppingList.search.itemCategory")}</p>
           <div className="flex gap-2">
             {itemTypes.map((t) => (
               <button
@@ -222,14 +235,14 @@ export default function ShoppingListSearch({ onAdded }) {
                     : "border-[rgba(180,140,75,0.25)] text-[#E0D8C8]/70 hover:bg-white/5"
                 }`}
               >
-                {t.label}
+                {itemTypeLabels[t.value]}
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <p className="text-xs text-[#E0D8C8]/60 mb-2 font-medium uppercase tracking-wide">Shopping Type</p>
+          <p className="text-xs text-[#E0D8C8]/60 mb-2 font-medium uppercase tracking-wide">{t("shoppingList.search.shoppingType")}</p>
           <div className="flex gap-2">
             {SHOPPING_TYPES.map((t) => (
               <button
@@ -241,7 +254,7 @@ export default function ShoppingListSearch({ onAdded }) {
                     : "border-[rgba(180,140,75,0.25)] text-[#E0D8C8]/70 hover:bg-white/5"
                 }`}
               >
-                {t.label}
+                {shoppingTypeLabels[t.value]}
               </button>
             ))}
           </div>
@@ -252,7 +265,9 @@ export default function ShoppingListSearch({ onAdded }) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 w-4 h-4 text-[#D4A574]/50" />
           <Input
-            placeholder={`Search for a ${itemTypes.find((t) => t.value === effectiveItemType)?.label.toLowerCase()}...`}
+            placeholder={t("shoppingList.search.searchPlaceholder", {
+              type: (itemTypeLabels[effectiveItemType] || "").toLowerCase(),
+            })}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -267,20 +282,20 @@ export default function ShoppingListSearch({ onAdded }) {
 
       {!searched && !searching && (
         <p className="text-xs text-center text-[#E0D8C8]/40 py-2">
-          Search using AI-powered web lookup
+          {t("shoppingList.search.aiLookupHint")}
         </p>
       )}
 
       {searching && (
         <div className="text-center py-8">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-[#D4A574]" />
-          <p className="text-sm text-[#E0D8C8]/60">Searching...</p>
+          <p className="text-sm text-[#E0D8C8]/60">{t("shoppingList.search.searching")}</p>
         </div>
       )}
 
       {!searching && searched && results.length === 0 && (
         <div className="text-center py-8 text-[#E0D8C8]/50">
-          <p className="text-sm">No results found. Try a different search.</p>
+          <p className="text-sm">{t("shoppingList.search.noResults")}</p>
         </div>
       )}
 
@@ -295,7 +310,7 @@ export default function ShoppingListSearch({ onAdded }) {
                 <div className="min-w-0">
                   <p className="font-medium text-[#F5F1E7] break-words">{item.name}</p>
                   <p className="text-sm text-[#E0D8C8]/70 mt-1 break-words">
-                    {item.manufacturer || item.maker || item.distillery || item.type || "Unknown"}
+                    {item.manufacturer || item.maker || item.distillery || item.type || t("shoppingList.labels.unknown")}
                   </p>
                   {item.description ? (
                     <p className="text-xs text-[#E0D8C8]/55 mt-2 line-clamp-3">{item.description}</p>
@@ -307,7 +322,7 @@ export default function ShoppingListSearch({ onAdded }) {
                   onClick={() => handleAdd(item)}
                   disabled={adding === item.name}
                 >
-                  {adding === item.name ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add"}
+                  {adding === item.name ? <Loader2 className="w-4 h-4 animate-spin" /> : t("shoppingList.actions.add")}
                 </Button>
               </div>
             </div>

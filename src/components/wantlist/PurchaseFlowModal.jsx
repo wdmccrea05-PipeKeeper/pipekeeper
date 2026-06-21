@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useWantListActions } from "./useWantListActions";
+import { useTranslation } from "@/components/i18n/safeTranslation";
 
 export default function PurchaseFlowModal({
   open,
@@ -15,7 +15,7 @@ export default function PurchaseFlowModal({
   acquisitionItem,
   onStartAddFlow,
 }) {
-  const { updateStatus } = useWantListActions();
+  const { t } = useTranslation();
 
   const handleLaunchAddFlow = () => {
     // Trigger the standard Add Item flow with prefilled data
@@ -45,11 +45,10 @@ export default function PurchaseFlowModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            Add {acquisitionItem.name} to Collection
+            {t("wantList.purchaseFlow.title", { name: acquisitionItem.name })}
           </DialogTitle>
           <DialogDescription>
-            You're about to add this item to your collection. Complete the
-            details including quantity, container type, and storage location.
+            {t("wantList.purchaseFlow.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -65,8 +64,7 @@ export default function PurchaseFlowModal({
           </div>
 
           <p className="text-sm text-gray-600">
-            After completing the details, this item will be moved to your
-            collection and archived from your Want List.
+            {t("wantList.purchaseFlow.afterDetails")}
           </p>
         </div>
 
@@ -75,14 +73,14 @@ export default function PurchaseFlowModal({
             onClick={handleLaunchAddFlow}
             className="flex-1"
           >
-            Continue to Add Item
+            {t("wantList.purchaseFlow.continueToAddItem")}
           </Button>
           <Button
             onClick={() => onOpenChange(false)}
             variant="outline"
             className="flex-1"
           >
-            Cancel
+            {t("wantList.actions.cancel")}
           </Button>
         </div>
       </DialogContent>
