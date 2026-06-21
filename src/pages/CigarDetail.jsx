@@ -90,15 +90,7 @@ function formatDate(value) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function calcAgeMonths(startDate) {
-  if (!startDate) return null;
-  const start = new Date(startDate);
-  if (Number.isNaN(start.getTime())) return null;
-  const now = new Date();
-  return Math.floor((now - start) / (1000 * 60 * 60 * 24 * 30.44));
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(d);
 }
 
 const READINESS_STYLE = {
@@ -133,7 +125,6 @@ function getConfidenceBadgeLabel(t, confidence) {
   if (!confidence) return t('cigars.detail.unknownConfidence');
   return t('cigars.detail.confidenceLevel', {
     confidence: getConfidenceLabel(t, confidence),
-    defaultValue: '{{confidence}} confidence',
   });
 }
 
@@ -178,7 +169,7 @@ function getTranslatedQuickActionSuccessMessage(t, action, cigar = {}, patch = {
     ? t('cigars.detail.addedToFavorites')
     : t('cigars.detail.removedFromFavorites');
   return cigar?.name
-    ? t('cigars.detail.updatedNamed', { name: cigar.name, defaultValue: 'Updated {{name}}' })
+    ? t('cigars.detail.updatedNamed', { name: cigar.name })
     : t('cigars.detail.updated');
 }
 
@@ -227,8 +218,8 @@ function AgingTabContent({ cigar, humidor }) {
         {readiness.monthsAged !== null && (
           <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {readiness.monthsAged === 1
-              ? t('cigars.detail.monthInCellar', { count: readiness.monthsAged, defaultValue: '{{count}} month in cellar' })
-              : t('cigars.detail.monthsInCellar', { count: readiness.monthsAged, defaultValue: '{{count}} months in cellar' })}
+              ? t('cigars.detail.monthInCellar', { count: readiness.monthsAged })
+              : t('cigars.detail.monthsInCellar', { count: readiness.monthsAged })}
           </p>
         )}
       </div>
@@ -515,7 +506,7 @@ function SessionRow({ session, onEdit, onDelete }) {
           <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>
             {formatDate(session.date)}
             {session.occasion ? ` · ${session.occasion}` : ''}
-            {session.duration_minutes ? ` · ${t('cigars.detail.minutesShort', { count: session.duration_minutes, defaultValue: '{{count}} min' })}` : ''}
+            {session.duration_minutes ? ` · ${t('cigars.detail.minutesShort', { count: session.duration_minutes })}` : ''}
           </p>
           {session.notes && (
             <p className="text-sm mt-2 break-words" style={{ color: 'rgba(224,216,200,0.78)' }}>
@@ -811,10 +802,10 @@ function CigarDetailInner() {
   const photo = getItemPhoto(cigar);
   const actionLabels = getTranslatedQuickActionLabels(t, cigar);
   const locationMeta = [
-    cigar?.humidor_tray ? t('cigars.detail.locationTray', { value: cigar.humidor_tray, defaultValue: 'Tray {{value}}' }) : null,
-    cigar?.humidor_shelf ? t('cigars.detail.locationShelf', { value: cigar.humidor_shelf, defaultValue: 'Shelf {{value}}' }) : null,
-    cigar?.humidor_drawer ? t('cigars.detail.locationDrawer', { value: cigar.humidor_drawer, defaultValue: 'Drawer {{value}}' }) : null,
-    cigar?.humidor_section ? t('cigars.detail.locationSection', { value: cigar.humidor_section, defaultValue: 'Section {{value}}' }) : null,
+    cigar?.humidor_tray ? t('cigars.detail.locationTray', { value: cigar.humidor_tray }) : null,
+    cigar?.humidor_shelf ? t('cigars.detail.locationShelf', { value: cigar.humidor_shelf }) : null,
+    cigar?.humidor_drawer ? t('cigars.detail.locationDrawer', { value: cigar.humidor_drawer }) : null,
+    cigar?.humidor_section ? t('cigars.detail.locationSection', { value: cigar.humidor_section }) : null,
   ].filter(Boolean);
 
   if (!id) {
@@ -847,7 +838,7 @@ function CigarDetailInner() {
   const TABS = [
     { key: 'overview', label: t('cigars.detail.overview') },
     { key: 'inventory', label: t('cigars.detail.inventory') },
-    { key: 'sessions', label: t('cigars.detail.sessionsTab', { count: sessions.length, defaultValue: 'Sessions ({{count}})' }) },
+    { key: 'sessions', label: t('cigars.detail.sessionsTab', { count: sessions.length }) },
     { key: 'aging', label: t('cigars.detail.aging') },
     { key: 'details', label: t('cigars.detail.details') },
   ];
@@ -1244,7 +1235,7 @@ function CigarDetailInner() {
                 {inventoryMetrics.consumptionRatePerMonth > 0 && (
                   <InfoRow
                     label={t('cigars.detail.consumptionRate')}
-                    value={t('cigars.detail.perMonthShort', { count: inventoryMetrics.consumptionRatePerMonth.toFixed(1), defaultValue: '~{{count}}/mo' })}
+                    value={t('cigars.detail.perMonthShort', { count: inventoryMetrics.consumptionRatePerMonth.toFixed(1) })}
                   />
                 )}
                 {inventoryMetrics.estimatedMonthsRemaining != null && (
@@ -1256,11 +1247,9 @@ function CigarDetailInner() {
                         : inventoryMetrics.estimatedMonthsRemaining === 1
                           ? t('cigars.detail.monthRemaining', {
                               count: inventoryMetrics.estimatedMonthsRemaining,
-                              defaultValue: '~{{count}} month',
                             })
                           : t('cigars.detail.monthsRemaining', {
                               count: inventoryMetrics.estimatedMonthsRemaining,
-                              defaultValue: '~{{count}} months',
                             })
                     }
                   />
@@ -1396,7 +1385,6 @@ function CigarDetailInner() {
             <AlertDialogDescription style={{ color: 'rgba(224,216,200,0.65)' }}>
               {t('cigars.detail.deleteCigarDescription', {
                 name: cigar.name,
-                defaultValue: 'This will permanently delete {{name}} from your collection. This action cannot be undone.',
               })}
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -12,6 +12,87 @@ It **reuses** the proper-noun allowlist and exclude patterns already defined in
 
 ---
 
+## Three layers of enforcement
+
+The project enforces translation hygiene at three levels so issues are caught
+as early as possible:
+
+| Layer | Tool | When it runs | Blocks? |
+|---|---|---|---|
+| **Editor** | ESLint `i18n-guard` rules | While you type | Warning in IDE |
+| **Pre-commit** | Git hook via `install-hooks.sh` | On every `git commit` | Yes — blocks if budget exceeded |
+| **CI** | `release:check` in `deploy.yml` | On every push / PR | Yes — blocks deployment |
+
+---
+
+## 1. Editor (ESLint)
+
+The custom `i18n-guard` plugin in `eslint.config.js` adds two rules:
+
+| Rule | What it catches |
+|---|---|
+| `i18n-guard/no-hardcoded-text` | JSX text nodes with raw English (≥ 5 chars, ≥ 2 words) |
+| `i18n-guard/no-hardcoded-attr-string` | `placeholder`, `aria-label`, `title`, `alt` with string literals |
+
+Both are set to **`"warn"`** so the build never fails due to pre-existing
+violations, but any new hardcoded string you write will show up as a yellow
+squiggle immediately in VS Code, WebStorm, or any ESLint-aware editor.
+
+**Translation locale files are excluded** from these rules — they intentionally
+contain raw English strings as values.
+
+---
+
+## 2. Pre-commit hook
+
+Install the hook once after cloning:
+
+```bash
+bash scripts/install-hooks.sh
+```
+
+It is also installed automatically when you run `npm install` (via the
+`prepare` lifecycle script).
+
+The hook runs `npm run i18n:check -- --max-findings=<budget>` before every
+commit. If your staged changes push the total finding count above the budget,
+the commit is blocked with a clear message:
+
+```
+❌  Commit blocked: new hardcoded strings detected.
+   Fix the flagged strings with t("namespace.key") before committing.
+   See docs/i18n-check.md for the full workflow.
+```
+
+Skip the hook only in genuine emergencies:
+
+```bash
+git commit --no-verify   # bypasses ALL hooks — use sparingly
+```
+
+---
+
+## 3. CI gate (`release:check`)
+
+The `deploy.yml` workflow runs `npm run release:check` which includes:
+
+```bash
+node scripts/i18n-check.js --max-findings=2567 && npm test
+```
+
+The budget (`--max-findings=2567`) represents the current number of findings.
+**This number must never increase.** When you fix strings, lower the budget to
+match the new count so future contributors cannot re-introduce the violations.
+
+To lower the budget after a cleanup:
+
+```bash
+npm run i18n:check        # note the "Findings" count in the output
+# Edit package.json → release:check → update --max-findings=<new count>
+```
+
+---
+
 ## Running the check
 
 ```bash
@@ -19,10 +100,72 @@ It **reuses** the proper-noun allowlist and exclude patterns already defined in
 npm run i18n:check
 
 # Fail mode — exits 1 when findings exist (use in CI enforcement)
-npm run i18n:check -- --fail-on-findings
+npm run i18n:check:strict
+
+# With budget gate
+npm run i18n:check -- --max-findings=2567
 ```
 
-Both `i18n:check` and `i18n:audit` are available as npm script aliases.
+---
+
+## Workflow for adding new UI text
+
+Every string visible to the user **must** go through the i18n system.
+Follow these steps whenever you add new UI text:
+
+### Step 1 — Add the key to `en.ui.jsx`
+
+Open `src/components/i18n/locales/en.ui.jsx` and add the English value to the
+appropriate namespace:
+
+```js
+// src/components/i18n/locales/en.ui.jsx
+myFeature: {
+  saveButton: "Save Changes",
+  emptyState: "No items yet — add one to get started.",
+  placeholder: "Search by name…",
+},
+```
+
+### Step 2 — Use `useTranslation` in the component
+
+```jsx
+import { useTranslation } from "@/components/i18n/safeTranslation";
+
+export default function MyFeature() {
+  const { t } = useTranslation();
+  return (
+    <>
+      <Input placeholder={t("myFeature.placeholder")} />
+      <Button>{t("myFeature.saveButton")}</Button>
+      <p>{t("myFeature.emptyState")}</p>
+    </>
+  );
+}
+```
+
+### Step 3 — The fallback system handles missing locale keys
+
+The i18n system falls back to `translations.en` for any key missing in the
+active locale. This means you **only need to add the key to `en.ui.jsx`** for
+the app to work. Non-English locales will show English until a translator adds
+the key to the relevant `<locale>.ui.jsx` file.
+
+### Step 4 — Add translations for non-English locales (batch or on-demand)
+
+When you have a batch of new keys, add them to each locale file:
+
+```
+src/components/i18n/locales/es.ui.jsx    Spanish
+src/components/i18n/locales/fr.ui.jsx    French
+src/components/i18n/locales/de.ui.jsx    German
+src/components/i18n/locales/it.ui.jsx    Italian
+src/components/i18n/locales/pt-BR.ui.jsx Portuguese (Brazil)
+src/components/i18n/locales/nl.ui.jsx    Dutch
+src/components/i18n/locales/pl.ui.jsx    Polish
+src/components/i18n/locales/ja.ui.jsx    Japanese
+src/components/i18n/locales/zh-Hans.ui.jsx  Simplified Chinese
+```
 
 ---
 
@@ -36,13 +179,12 @@ Both `i18n:check` and `i18n:audit` are available as npm script aliases.
 | | `src/pages/SubscriptionEventsLog*.jsx` |
 | | `src/pages/SubscriptionE2ETest*.jsx` |
 | | `*.test.jsx`, `*.spec.jsx` |
+| | `src/components/i18n/**` (locale files) |
 | | `node_modules/`, `functions/` |
 
 ---
 
 ## What is detected
-
-The script looks for five categories of hardcoded user-facing strings:
 
 | Rule | What it catches | Example |
 |---|---|---|
@@ -53,143 +195,30 @@ The script looks for five categories of hardcoded user-facing strings:
 | `jsx-alt-text` | Hardcoded `alt` attributes | `alt="Profile image"` |
 | `toast-hardcoded` | String literals passed to `toast.*()` | `toast.success("Saved!")` |
 
-Strings shorter than 4 characters, all-caps constants, URLs, and values
-already in the **proper-noun allowlist** in `auditConfig.json.jsx` are
-automatically ignored.
+Strings shorter than 4 characters, all-caps constants, URLs, and values in
+the **proper-noun allowlist** in `auditConfig.json.jsx` are automatically
+ignored.
 
 ---
 
-## Example output
+## Adding a proper noun or brand name exception
 
-```
-⚠️   i18n Regression Guard — Hardcoded String Report
-============================================================
-   Files scanned : 321
-   Findings      : 3 (0 errors, 3 warnings)
-
-📄  src/components/pipes/ImageCropper.jsx
-  ⚠️   line 610  [jsx-text-content]
-      "Cancel"
-  ⚠️   line 614  [jsx-text-content]
-      "Apply Crop"
-
-📄  src/components/community/ShareCard.jsx
-  ⚠️   line 29  [toast-hardcoded]
-      "Share card downloaded"
-
-────────────────────────────────────────────────────────────
-How to fix flagged strings:
-  1. Add a translation key to translations.js (all languages).
-  2. Import useTranslation in the component.
-  3. Replace the raw string with a t() call.
-  4. If a string is a proper noun, add it to auditConfig.json.jsx.
-────────────────────────────────────────────────────────────
-```
-
----
-
-## How to fix a flagged string
-
-### Step 1 — Add a key to `translations.js`
-
-Open `translations.js` (project root) and add the string to the relevant
-namespace for all supported languages:
-
-```js
-// translations.js  (simplified)
-export default {
-  en: {
-    common: {
-      cancel: "Cancel",
-      apply:  "Apply",
-    },
-  },
-  es: {
-    common: {
-      cancel: "Cancelar",
-      apply:  "Aplicar",
-    },
-  },
-  // … other languages …
-};
-```
-
-### Step 2 — Use `useTranslation` in the component
-
-```jsx
-import { useTranslation } from "@/components/i18n/safeTranslation";
-
-export default function MyComponent() {
-  const { t } = useTranslation();
-  // …
-}
-```
-
-### Step 3 — Replace the raw string
-
-```jsx
-// Before
-<Button>Cancel</Button>
-
-// After
-<Button>{t("common.cancel")}</Button>
-```
-
-For `placeholder`, `aria-label`, `title`, and `alt` attributes:
-
-```jsx
-// Before
-<Input placeholder="Enter name..." />
-
-// After
-<Input placeholder={t("forms.namePlaceholder")} />
-```
-
-For toast messages:
-
-```jsx
-// Before
-toast.success("Share card downloaded");
-
-// After
-toast.success(t("shareCard.downloaded"));
-```
-
-### Step 4 — If the string is a proper noun or brand name
-
-Add it to the `properNounAllowlist` array in
+If a string should legitimately appear untranslated (brand name, technical
+term), add it to the `properNounAllowlist` in
 `src/components/i18n/auditConfig.json.jsx`:
 
 ```json
 {
   "properNounAllowlist": [
     "PipeKeeper",
-    "Base44",
-    "YourBrandName"
+    "CollectionKeeper",
+    "MyNewBrand"
   ]
 }
 ```
 
----
-
-## Adding to CI
-
-To make the check run automatically on every pull request, add it to your
-CI workflow **after** the build step:
-
-```yaml
-# .github/workflows/ci.yml  (example)
-- name: i18n regression check
-  run: npm run i18n:check
-```
-
-When you are ready to enforce the rule and block merges on new findings,
-switch to:
-
-```yaml
-- name: i18n regression check (enforced)
-  run: npm run i18n:check -- --fail-on-findings
-```
+Keep this list intentional — it is not a dumping ground for strings that are
+hard to translate.
 
 ---
 
@@ -197,12 +226,11 @@ switch to:
 
 | Tool | Location | Purpose |
 |---|---|---|
+| `eslint-plugin-i18n-guard.js` | `scripts/` | ESLint plugin — editor-time warnings |
+| `install-hooks.sh` | `scripts/` | Installs the pre-commit hook |
+| `i18n-check.js` | `scripts/` | Static CLI regression guard (CI + pre-commit) |
 | `auditConfig.json.jsx` | `src/components/i18n/` | Shared allowlist & config |
 | `i18nAuditReports.jsx` | `src/components/utils/` | Runtime DOM audit (browser) |
 | `hardcoded_strings_user_facing.jsx` | `src/components/i18n/_audit/` | Manual audit output log |
-| **`scripts/i18n-check.js`** | `scripts/` | **Static CLI regression guard** |
 | `functions/i18nAudit.ts` | `functions/` | Server-side admin audit (Deno) |
 
-The CLI script is the only tool that can be run locally and in CI without
-a browser or server — making it the right fit for automated regression
-prevention.

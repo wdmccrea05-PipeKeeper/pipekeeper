@@ -94,6 +94,7 @@ function FAQItem({ q, a }) {
 }
 
 export default function SupportFull() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({ topic: "", name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -165,10 +166,10 @@ ${formData.message}
             CollectionKeeper · PipeKeeper
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight" style={{ fontFamily: "'Georgia', serif", color: "#F5F1E7" }}>
-            Support
+            {t('support.pageTitle')}
           </h1>
           <p className="text-base text-[#E0D8C8]/75 max-w-2xl mx-auto leading-relaxed">
-            We're here to help. Whether you have a question about your collection, a subscription issue, or found a bug — reach out and we'll get back to you promptly.
+            {t('support.pageSubtitle')}
           </p>
           {/* Always-visible email */}
           <a
@@ -183,17 +184,17 @@ ${formData.message}
 
         {/* Topic cards */}
         <div>
-          <h2 className="text-lg font-semibold mb-4" style={{ color: "#D4A574" }}>How can we help?</h2>
+          <h2 className="text-lg font-semibold mb-4" style={{ color: "#D4A574" }}>{t('support.howCanWeHelp')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {TOPIC_CARDS.map(({ icon: CardIcon, label, desc, color }) => (
+            {TOPIC_CARD_KEYS.map(({ icon: CardIcon, labelKey, descKey, color }) => (
               <div
-                key={label}
+                key={labelKey}
                 className="rounded-xl p-4 space-y-1"
                 style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(180,140,75,0.15)" }}
               >
                 <CardIcon className="w-5 h-5 mb-2" style={{ color }} />
-                <div className="text-sm font-semibold text-[#F5F1E7]">{label}</div>
-                <div className="text-xs text-[#E0D8C8]/65 leading-snug">{desc}</div>
+                <div className="text-sm font-semibold text-[#F5F1E7]">{t(labelKey)}</div>
+                <div className="text-xs text-[#E0D8C8]/65 leading-snug">{t(descKey)}</div>
               </div>
             ))}
             </div>
@@ -207,10 +208,10 @@ ${formData.message}
           <div className="px-6 py-5 border-b" style={{ borderColor: "rgba(180,140,75,0.15)" }}>
             <div className="flex items-center gap-3">
               <MessageSquare className="w-5 h-5 text-[#B48C4B]" />
-              <h2 className="text-xl font-semibold text-[#F5F1E7]">Contact Support</h2>
+              <h2 className="text-xl font-semibold text-[#F5F1E7]">{t('support.contactSupport')}</h2>
             </div>
             <p className="text-sm text-[#E0D8C8]/65 mt-1">
-              Fill out the form below and we'll respond within 1–2 business days. You can also email us directly at{" "}
+              {t('support.contactSupportDesc')}{" "}
               <a href={`mailto:${SUPPORT_EMAIL}`} className="underline text-[#D4A574]">{SUPPORT_EMAIL}</a>.
             </p>
           </div>
@@ -219,33 +220,29 @@ ${formData.message}
             {submitted ? (
               <div className="flex flex-col items-center text-center py-10 gap-4">
                 <CheckCircle className="w-14 h-14 text-green-400" />
-                <h3 className="text-xl font-semibold text-[#F5F1E7]">Message Sent!</h3>
+                <h3 className="text-xl font-semibold text-[#F5F1E7]">{t('support.messageSent')}</h3>
                 <p className="text-sm text-[#E0D8C8]/70 max-w-sm">
-                  Thanks for reaching out. We've received your message and will reply to <strong>{formData.email || "your email"}</strong> within 1–2 business days.
+                  {t('support.messageSentDesc')} <strong>{formData.email || t('support.yourEmail')}</strong> {t('support.messageSentDesc2')}
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setSubmitted(false)}
-                  className="mt-2"
-                >
-                  Send Another Message
+                <Button variant="outline" onClick={() => setSubmitted(false)} className="mt-2">
+                  {t('support.sendAnother')}
                 </Button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <Label className="text-[#E0D8C8] text-sm font-medium">Topic *</Label>
+                  <Label className="text-[#E0D8C8] text-sm font-medium">{t('support.topicLabel')}</Label>
                   <Select
                     value={formData.topic}
                     onValueChange={(v) => setFormData(p => ({ ...p, topic: v }))}
                     required
                   >
                     <SelectTrigger className="mt-1.5" style={{ background: "rgba(20,15,12,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}>
-                      <SelectValue placeholder="Select a topic…" />
+                      <SelectValue placeholder={t('support.topicPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {SUPPORT_TOPICS.map(t => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      {SUPPORT_TOPIC_KEYS.map((key, idx) => (
+                        <SelectItem key={key} value={SUPPORT_TOPIC_VALUES[idx]}>{t(key)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -253,23 +250,23 @@ ${formData.message}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-[#E0D8C8] text-sm font-medium">Your Name *</Label>
+                    <Label className="text-[#E0D8C8] text-sm font-medium">{t('support.yourName')}</Label>
                     <Input
                       value={formData.name}
                       onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
-                      placeholder="Full name"
+                      placeholder={t('support.namePlaceholder')}
                       required
                       className="mt-1.5"
                       style={{ background: "rgba(20,15,12,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}
                     />
                   </div>
                   <div>
-                    <Label className="text-[#E0D8C8] text-sm font-medium">Your Email *</Label>
+                    <Label className="text-[#E0D8C8] text-sm font-medium">{t('support.yourEmail')}</Label>
                     <Input
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
-                      placeholder="you@example.com"
+                      placeholder={t('support.emailPlaceholder')}
                       required
                       className="mt-1.5"
                       style={{ background: "rgba(20,15,12,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}
@@ -278,11 +275,11 @@ ${formData.message}
                 </div>
 
                 <div>
-                  <Label className="text-[#E0D8C8] text-sm font-medium">Message *</Label>
+                  <Label className="text-[#E0D8C8] text-sm font-medium">{t('support.messageLabel')}</Label>
                   <Textarea
                     value={formData.message}
                     onChange={(e) => setFormData(p => ({ ...p, message: e.target.value }))}
-                    placeholder="Describe your issue or question in as much detail as possible…"
+                    placeholder={t('support.messagePlaceholder')}
                     required
                     className="mt-1.5 min-h-[140px]"
                     style={{ background: "rgba(20,15,12,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}
@@ -302,7 +299,7 @@ ${formData.message}
                   style={{ background: "linear-gradient(135deg, #a35c5c, #8f4e4e)", color: "#fff" }}
                 >
                   <Mail className="w-4 h-4 mr-2" />
-                  {isSubmitting ? "Sending…" : "Send Message"}
+                  {isSubmitting ? t('support.sending') : t('support.sendMessage')}
                 </Button>
               </form>
             )}
@@ -316,22 +313,14 @@ ${formData.message}
         >
           <div className="flex items-center gap-2 mb-1">
             <BookOpen className="w-5 h-5 text-[#B48C4B]" />
-            <h2 className="text-lg font-semibold text-[#F5F1E7]">What to Include in Your Message</h2>
+            <h2 className="text-lg font-semibold text-[#F5F1E7]">{t('support.whatToInclude')}</h2>
           </div>
-          <p className="text-sm text-[#E0D8C8]/70">To help us resolve your issue quickly, please include:</p>
+          <p className="text-sm text-[#E0D8C8]/70">{t('support.whatToIncludeDesc')}</p>
           <ul className="space-y-2 text-sm text-[#E0D8C8]/80">
-            {[
-              "Your device model and iOS version (e.g., iPad Air, iOS 17.4)",
-              "The app version (found in Settings → About)",
-              "A clear description of what happened and what you expected",
-              "Steps to reproduce the issue, if it's a bug",
-              "Screenshots or screen recordings if available",
-              "Your Apple ID or account email if it's a billing issue",
-              "Your order number or Apple receipt if it's a subscription issue",
-            ].map((item, i) => (
-              <li key={i} className="flex items-start gap-2">
+            {INCLUDE_KEYS.map((key, i) => (
+              <li key={key} className="flex items-start gap-2">
                 <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center" style={{ background: "rgba(180,140,75,0.2)", color: "#D4A574" }}>{i + 1}</span>
-                {item}
+                {t(key)}
               </li>
             ))}
           </ul>
@@ -339,10 +328,10 @@ ${formData.message}
 
         {/* FAQ */}
         <div>
-          <h2 className="text-lg font-semibold mb-4" style={{ color: "#D4A574" }}>Common Questions</h2>
+          <h2 className="text-lg font-semibold mb-4" style={{ color: "#D4A574" }}>{t('support.commonQuestions')}</h2>
           <div className="space-y-2">
-            {FAQ_ITEMS.map((item) => (
-              <FAQItem key={item.q} q={item.q} a={item.a} />
+            {FAQ_KEYS.map(({ qKey, aKey }) => (
+              <FAQItem key={qKey} q={t(qKey)} a={t(aKey)} />
             ))}
           </div>
         </div>
@@ -354,25 +343,23 @@ ${formData.message}
         >
           <div className="flex items-center gap-2 mb-1">
             <RefreshCw className="w-5 h-5 text-[#B48C4B]" />
-            <h2 className="text-lg font-semibold text-[#F5F1E7]">Troubleshooting</h2>
+            <h2 className="text-lg font-semibold text-[#F5F1E7]">{t('support.troubleshooting')}</h2>
           </div>
           <div className="space-y-3 text-sm text-[#E0D8C8]/80">
-            <p><strong className="text-[#F5F1E7]">App won't load or shows a blank screen:</strong> Force-close the app completely and reopen it. If it persists, check your internet connection, then try deleting and reinstalling.</p>
-            <p><strong className="text-[#F5F1E7]">Premium features disappeared after update:</strong> Go to Settings → Subscription → Restore Purchases. Your entitlements will sync within 30 seconds.</p>
-            <p><strong className="text-[#F5F1E7]">Can't sign in:</strong> Make sure you're using the same login method (Apple Sign-In, Google, or email) that you originally used to create your account.</p>
-            <p><strong className="text-[#F5F1E7]">Data not appearing after adding it:</strong> Pull down to refresh the list. If data is still missing, log out and back in to force a full sync.</p>
-            <p><strong className="text-[#F5F1E7]">Pairing or AI features not working:</strong> These require an active internet connection and an active subscription. Check both, then try again. If Curator Expert Actions appear stuck, reload the page.</p>
-            <p><strong className="text-[#F5F1E7]">Plan Session shows 0% confidence:</strong> This has been resolved. If you still see it, reload the page to get fresh recommendations.</p>
-            <p><strong className="text-[#F5F1E7]">Plan Session including whiskey unexpectedly:</strong> Whiskey pairings only appear when WhiskeyKeeper is active and you have bottles in your collection. Toggle WhiskeyKeeper in your Profile settings.</p>
+            {TROUBLE_KEYS.map(({ titleKey, descKey }) => (
+              <p key={titleKey}>
+                <strong className="text-[#F5F1E7]">{t(titleKey)}</strong> {t(descKey)}
+              </p>
+            ))}
           </div>
         </div>
 
         {/* Footer links */}
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm pt-4 pb-6" style={{ color: "rgba(224,216,200,0.5)", borderTop: "1px solid rgba(180,140,75,0.12)" }}>
           <a href="/PrivacyPolicy" className="hover:text-[#D4A574] transition-colors flex items-center gap-1">
-            <Shield className="w-3.5 h-3.5" /> Privacy Policy
+            <Shield className="w-3.5 h-3.5" /> {t('support.privacyPolicy')}
           </a>
-          <a href="/TermsOfService" className="hover:text-[#D4A574] transition-colors">Terms of Service</a>
+          <a href="/TermsOfService" className="hover:text-[#D4A574] transition-colors">{t('support.termsOfService')}</a>
           <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-[#D4A574] transition-colors flex items-center gap-1">
             <Mail className="w-3.5 h-3.5" /> {SUPPORT_EMAIL}
           </a>
