@@ -34,8 +34,17 @@ function resolveLanguage(language?: string | null) {
   return SUPPORTED_LANGUAGES.has(normalized) ? normalized : 'en';
 }
 
+function escapeHtml(value: string | number) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function interpolate(template: string, vars: Record<string, string | number>) {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => String(vars[key] ?? ''));
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => escapeHtml(vars[key] ?? ''));
 }
 
 const STORY_TEXT = {

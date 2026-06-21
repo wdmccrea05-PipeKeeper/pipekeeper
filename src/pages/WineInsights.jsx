@@ -32,6 +32,7 @@ import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 const ACCENT = '#8B3A3A';
 const WINE_GOLD = '#D4A574';
 const DEFAULT_WINE_INSIGHTS_TITLE = 'WineKeeper Insights';
+const getCountKey = (count, singularKey, pluralKey) => (count === 1 ? singularKey : pluralKey);
 
 export default function WineInsights() {
   const { t } = useTranslation();
@@ -65,10 +66,10 @@ export default function WineInsights() {
     staleTime: STALE_TIME.SESSION_HISTORY,
   });
 
-  const wineSessions = useMemo(() => (tastings || []).map(t => ({
-    id: `wine_${t.id}`, moduleType: 'wine', date: t.date,
-    itemLabel: t.wine_name || t('wine.wineTastings'),
-    rating: t.rating ?? null, notes: t.notes || '',
+  const wineSessions = useMemo(() => (tastings || []).map((tasting) => ({
+    id: `wine_${tasting.id}`, moduleType: 'wine', date: tasting.date,
+    itemLabel: tasting.wine_name || t('wine.wineTastings'),
+    rating: tasting.rating ?? null, notes: tasting.notes || '',
   })), [t, tastings]);
 
   const { byDate: wineByDate, highlightedDates: wineHighlights } = useMemo(
@@ -206,13 +207,13 @@ export default function WineInsights() {
                 {stats.unvalued > 0 && (
                   <div className="flex items-center justify-between">
                     <span style={{ color: 'rgba(224,216,200,0.7)' }}>{t('wine.notValuedYet')}</span>
-                    <span className="font-semibold text-[#F5F1E7]">{t(stats.unvalued === 1 ? 'wine.bottlesCountLabel' : 'wine.bottlesCountLabel_plural', { count: stats.unvalued })}</span>
+                    <span className="font-semibold text-[#F5F1E7]">{t(getCountKey(stats.unvalued, 'wine.bottlesCountLabel', 'wine.bottlesCountLabel_plural'), { count: stats.unvalued })}</span>
                   </div>
                 )}
                 {stats.lowConfidence > 0 && (
                   <div className="flex items-center justify-between">
                     <span style={{ color: 'rgba(224,216,200,0.7)' }}>{t('wine.lowConfidenceEstimateShort')}</span>
-                    <span className="font-semibold text-[#F5F1E7]">{t(stats.lowConfidence === 1 ? 'wine.bottlesCountLabel' : 'wine.bottlesCountLabel_plural', { count: stats.lowConfidence })}</span>
+                    <span className="font-semibold text-[#F5F1E7]">{t(getCountKey(stats.lowConfidence, 'wine.bottlesCountLabel', 'wine.bottlesCountLabel_plural'), { count: stats.lowConfidence })}</span>
                   </div>
                 )}
                 <p className="text-xs mt-2" style={{ color: 'rgba(224,216,200,0.5)' }}>
@@ -348,7 +349,7 @@ export default function WineInsights() {
               <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('wine.collectionExportInsuranceReport')}</h4>
               <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
                 {t('wine.exportCellarDescription')}
-                {wines.length > 0 && ` (${t(wines.length === 1 ? 'wine.winesCountLabel' : 'wine.winesCountLabel_plural', { count: wines.length })})`}
+                {wines.length > 0 && ` (${t(getCountKey(wines.length, 'wine.winesCountLabel', 'wine.winesCountLabel_plural'), { count: wines.length })})`}
               </p>
               <WineInsuranceExporter user={user} wines={wines} />
             </div>
