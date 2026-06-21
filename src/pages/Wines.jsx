@@ -266,17 +266,17 @@ export default function Wines() {
           style={{ background: Object.keys(filters).length > 0 ? 'rgba(139,58,58,0.25)' : 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
         >
           <Filter className="w-4 h-4" />
-          {t('common.filters', 'Filters')} {Object.keys(filters).length > 0 ? `(${Object.keys(filters).length})` : ''}
+          {t('common.filters')} {Object.keys(filters).length > 0 ? `(${Object.keys(filters).length})` : ''}
           <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </button>
-        <div className="flex border rounded-lg overflow-hidden" style={{ borderColor: 'rgba(180,140,75,0.25)' }} role="group" aria-label={t('common.viewMode', 'View mode')}>
+        <div className="flex border rounded-lg overflow-hidden" style={{ borderColor: 'rgba(180,140,75,0.25)' }} role="group" aria-label={t('common.viewMode')}>
           <Button
             type="button"
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
             size="icon"
             onClick={() => handleViewModeChange('grid')}
             className={`rounded-none rounded-l-lg ${viewMode === 'grid' ? 'bg-[rgba(139,58,58,0.24)] text-[#F5F1E7]' : 'text-[#E0D8C8]/65 hover:bg-[rgba(255,255,255,0.05)]'}`}
-            aria-label={t('common.gridView', 'Grid view')}
+            aria-label={t('common.gridView')}
             aria-pressed={viewMode === 'grid'}
           >
             <Grid3X3 className="w-4 h-4" />
@@ -287,7 +287,7 @@ export default function Wines() {
             size="icon"
             onClick={() => handleViewModeChange('list')}
             className={`rounded-none rounded-r-lg ${viewMode === 'list' ? 'bg-[rgba(139,58,58,0.24)] text-[#F5F1E7]' : 'text-[#E0D8C8]/65 hover:bg-[rgba(255,255,255,0.05)]'}`}
-            aria-label={t('common.listView', 'List view')}
+            aria-label={t('common.listView')}
             aria-pressed={viewMode === 'list'}
           >
             <List className="w-4 h-4" />
@@ -301,14 +301,14 @@ export default function Wines() {
           <div>
             <label className="ck-field-label">{t('wine.style')}</label>
             <select value={filters.style || ''} onChange={(e) => setFilter('style', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
-              <option value="">{t('common.all', 'All')}</option>
+              <option value="">{t('common.all')}</option>
               {STYLES.map((s) => <option key={s} value={s}>{t(`wine.styles.${s}`, s)}</option>)}
             </select>
           </div>
           <div>
             <label className="ck-field-label">{t('wine.drinkingWindowSummary')}</label>
             <select value={filters.drink_window || ''} onChange={(e) => setFilter('drink_window', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
-              <option value="">{t('common.all', 'All')}</option>
+              <option value="">{t('common.all')}</option>
               <option value="drink_now">{t('wine.drinkNow')}</option>
               <option value="too_young">{t('wine.tooYoung')}</option>
               <option value="past_peak">{t('wine.pastPeak')}</option>
@@ -317,7 +317,7 @@ export default function Wines() {
           <div>
             <label className="ck-field-label">{t('wine.valuationSection')}</label>
             <select value={filters.valued || ''} onChange={(e) => setFilter('valued', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
-              <option value="">{t('common.all', 'All')}</option>
+              <option value="">{t('common.all')}</option>
               <option value="valued">{t('wine.collectionValue')}</option>
               <option value="unvalued">{t('wine.sortNeedsValuation')}</option>
             </select>
@@ -331,7 +331,7 @@ export default function Wines() {
             <Input type="number" value={filters.vintage_max || ''} onChange={(e) => setFilter('vintage_max', e.target.value)} placeholder={t('wine.vintageToPlaceholder')} className="text-sm" />
           </div>
           {Object.keys(filters).length > 0 && (
-            <button onClick={() => setFilters({})} className="text-xs underline mt-2" style={{ color: '#C47070' }}>{t('common.clearFilters', 'Clear filters')}</button>
+            <button onClick={() => setFilters({})} className="text-xs underline mt-2" style={{ color: '#C47070' }}>{t('common.clearFilters')}</button>
           )}
         </div>
       )}

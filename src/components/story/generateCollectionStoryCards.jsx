@@ -13,6 +13,7 @@
 
 import { Star, Leaf, TrendingUp, Award, Sparkles, BarChart3, Heart, Flame, Droplets, Wine } from 'lucide-react';
 import { formatCurrencyAmount } from '@/utils/currency';
+import { translate } from '@/components/i18n/safeTranslation';
 
 /**
  * @param {Object} story - enriched story object with .highlights, .metrics, .narrative
@@ -23,7 +24,7 @@ import { formatCurrencyAmount } from '@/utils/currency';
  */
 export function generateCollectionStoryCards(story, formatCurrency, enabledModules = [], t = null) {
   if (!story) return [];
-  const tr = (key, vars = {}) => (typeof t === 'function' ? t(key, vars) : key);
+  const tr = (key, vars = {}) => (typeof t === 'function' ? t(key, vars) : translate(key, vars, 'en'));
 
   const h = story.highlights || {};
   const m = story.metrics || {};

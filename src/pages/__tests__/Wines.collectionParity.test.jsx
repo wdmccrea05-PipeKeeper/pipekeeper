@@ -60,11 +60,19 @@ vi.mock('@/components/hooks/useCurrentUser', () => ({
   useCurrentUser: () => ({ user: { email: 'test@example.com' } }),
 }));
 
-vi.mock('@/components/i18n/safeTranslation', () => ({
-  useTranslation: () => ({
-    t: (key, fallback) => (typeof fallback === 'string' ? fallback : key),
-  }),
-}));
+vi.mock('@/components/i18n/safeTranslation', async () => {
+  const actual = await vi.importActual('@/components/i18n/safeTranslation');
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key, fallback) => {
+        if (typeof fallback === 'string') return fallback;
+        if (typeof fallback === 'object' && typeof fallback?.defaultValue === 'string') return fallback.defaultValue;
+        return actual.translate(key, {}, 'en');
+      },
+    }),
+  };
+});
 
 vi.mock('@/lib/currency/useCurrency', () => ({
   useCurrency: () => ({

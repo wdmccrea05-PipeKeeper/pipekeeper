@@ -31,6 +31,7 @@ import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 const ACCENT = '#8B3A3A';
 const WINE_GOLD = '#D4A574';
+const DEFAULT_WINE_INSIGHTS_TITLE = 'WineKeeper Insights';
 
 export default function WineInsights() {
   const { t } = useTranslation();
@@ -112,7 +113,7 @@ export default function WineInsights() {
     <InsightsPageShell>
       <WineKeeperModuleNav currentPageName="WineInsights" />
       <InsightsHeader
-        title={t('wine.insights')}
+        title={t('wine.insights', { defaultValue: DEFAULT_WINE_INSIGHTS_TITLE })}
         subtitle={t('wine.analyzeCellarSubtitle')}
       />
 
@@ -205,13 +206,13 @@ export default function WineInsights() {
                 {stats.unvalued > 0 && (
                   <div className="flex items-center justify-between">
                     <span style={{ color: 'rgba(224,216,200,0.7)' }}>{t('wine.notValuedYet')}</span>
-                    <span className="font-semibold text-[#F5F1E7]">{stats.unvalued} bottle{stats.unvalued !== 1 ? 's' : ''}</span>
+                    <span className="font-semibold text-[#F5F1E7]">{t(stats.unvalued === 1 ? 'wine.bottlesCountLabel' : 'wine.bottlesCountLabel_plural', { count: stats.unvalued })}</span>
                   </div>
                 )}
                 {stats.lowConfidence > 0 && (
                   <div className="flex items-center justify-between">
                     <span style={{ color: 'rgba(224,216,200,0.7)' }}>{t('wine.lowConfidenceEstimateShort')}</span>
-                    <span className="font-semibold text-[#F5F1E7]">{stats.lowConfidence} bottle{stats.lowConfidence !== 1 ? 's' : ''}</span>
+                    <span className="font-semibold text-[#F5F1E7]">{t(stats.lowConfidence === 1 ? 'wine.bottlesCountLabel' : 'wine.bottlesCountLabel_plural', { count: stats.lowConfidence })}</span>
                   </div>
                 )}
                 <p className="text-xs mt-2" style={{ color: 'rgba(224,216,200,0.5)' }}>
@@ -347,7 +348,7 @@ export default function WineInsights() {
               <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('wine.collectionExportInsuranceReport')}</h4>
               <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
                 {t('wine.exportCellarDescription')}
-                {wines.length > 0 && ` (${wines.length} wine${wines.length !== 1 ? 's' : ''})`}
+                {wines.length > 0 && ` (${t(wines.length === 1 ? 'wine.winesCountLabel' : 'wine.winesCountLabel_plural', { count: wines.length })})`}
               </p>
               <WineInsuranceExporter user={user} wines={wines} />
             </div>
@@ -387,7 +388,7 @@ export default function WineInsights() {
           selectedDate={calSelectedDate}
           onSelectDate={setCalSelectedDate}
           dayRows={wineSelectedDayRows}
-          emptyLabel="No tastings logged for this day."
+          emptyLabel={t('wine.noTastingsForDay')}
         />
       )}
 
@@ -402,7 +403,7 @@ export default function WineInsights() {
 
           {stats.drinkingNowWines && stats.drinkingNowWines.length > 0 && (
             <InsightPanel>
-              <InsightSectionHeading accent="#2E7D5C">Ready to Open Now</InsightSectionHeading>
+              <InsightSectionHeading accent="#2E7D5C">{t('wine.readyToOpenNow')}</InsightSectionHeading>
               <div className="space-y-2">
                 {stats.drinkingNowWines.slice(0, 10).map(w => (
                   <div key={w.id} className="flex items-center justify-between gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(46,125,92,0.2)' }}>
@@ -410,14 +411,14 @@ export default function WineInsights() {
                       <p className="text-sm font-medium text-[#F5F1E7] truncate">{w.name}</p>
                       <p className="text-xs mt-0.5" style={{ color: 'rgba(216,199,166,0.6)' }}>{[w.producer, w.vintage ? String(w.vintage) : null].filter(Boolean).join(' · ')}</p>
                     </div>
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(46,125,92,0.15)', color: '#2E7D5C', border: '1px solid rgba(46,125,92,0.3)' }}>Drink Now</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(46,125,92,0.15)', color: '#2E7D5C', border: '1px solid rgba(46,125,92,0.3)' }}>{t('wine.drinkNow')}</span>
                   </div>
                 ))}
               </div>
             </InsightPanel>
           )}
 
-          {wines.length === 0 && <InsightsEmptyState message="Add wines with drinking windows to see this view." icon={Wine} />}
+          {wines.length === 0 && <InsightsEmptyState message={t('wine.addWinesWithDrinkingWindows')} icon={Wine} />}
         </div>
       )}
     </InsightsPageShell>

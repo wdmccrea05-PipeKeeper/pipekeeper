@@ -216,7 +216,7 @@ export default function LogWineTastingModal({
     } else {
       // Embed out-of-collection wine metadata directly on tasting
       payload.producer = newWine.producer?.trim() || '';
-      payload.wine_name = newWine.name?.trim() || newWine.producer?.trim() || 'Unknown Wine';
+      payload.wine_name = newWine.name?.trim() || newWine.producer?.trim() || t('wine.unknownWine');
       if (newWine.vintage) payload.vintage = Number(newWine.vintage);
       payload.style = newWine.style || '';
       payload.varietal = newWine.varietal?.trim() || '';
@@ -234,7 +234,7 @@ export default function LogWineTastingModal({
         if (acquisitionIntent === 'add_to_collection') {
           // Create a Wine record and link the tasting to it
           const newBottle = await base44.entities.Wine.create({
-            name: newWine.name?.trim() || 'Unknown Wine',
+            name: newWine.name?.trim() || t('wine.unknownWine'),
             producer: newWine.producer?.trim() || '',
             vintage: newWine.vintage ? Number(newWine.vintage) : undefined,
             style: newWine.style || undefined,
@@ -249,7 +249,7 @@ export default function LogWineTastingModal({
           }
         } else if (acquisitionIntent === 'wishlist' || acquisitionIntent === 'shopping_list') {
           await base44.entities.AcquisitionItem.create({
-            name: newWine.name?.trim() || newWine.producer?.trim() || 'Unknown Wine',
+            name: newWine.name?.trim() || newWine.producer?.trim() || t('wine.unknownWine'),
             item_type: 'wine',
             category: acquisitionIntent === 'wishlist' ? 'wishlist' : 'shopping_list',
             brand: newWine.producer?.trim() || '',
@@ -573,7 +573,7 @@ export default function LogWineTastingModal({
 
           {/* Tags */}
           <div>
-            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">{t('common.tags', 'Tags')}</label>
+            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">{t('common.tags')}</label>
             <Input
               value={form.tags}
               onChange={(e) => set('tags', e.target.value)}
