@@ -331,6 +331,8 @@ const deUI = {
     value: "Wert",
     name: "Name",
     description: "Beschreibung",
+    gridView: "Rasteransicht",
+    listView: "Listenansicht",
   },
   layout: {
     appTitle: "PipeKeeper",
@@ -1101,6 +1103,19 @@ const deUI = {
     addToWantList: "Zur Wunschliste hinzufügen",
     sortProducer: "Erzeuger",
     sortDrinkWindow: "Trinkfenster",
+    sortNameAsc: "Name (A–Z)",
+    sortNameDesc: "Name (Z–A)",
+    sortProducerAsc: "Erzeuger (A–Z)",
+    sortVintageNewest: "Jahrgang (neueste)",
+    sortVintageOldest: "Jahrgang (älteste)",
+    sortHighestValue: "Höchster Wert",
+    sortLowestValue: "Niedrigster Wert",
+    sortHighestRating: "Höchste Bewertung",
+    sortMostBottles: "Meiste Flaschen",
+    sortDrinkSoon: "Bald trinken",
+    sortRecentlyAdded: "Zuletzt hinzugefügt",
+    sortRecentlyUpdated: "Zuletzt aktualisiert",
+    sortNeedsValuation: "Ohne Bewertung",
   },
 
   footer: {

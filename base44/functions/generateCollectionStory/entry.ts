@@ -712,7 +712,7 @@ Deno.serve(async (req) => {
       pipesList.reduce((s, p) => s + getPipeValue(p), 0) +
       blendsList.reduce((s, b) => s + getTobaccoValue(b), 0) +
       bottlesList.reduce((s, b) => s + getBottleValue(b), 0) +
-      cigarsList.reduce((s, c) => s + getCigarValue(c), 0) +
+      cigarsList.reduce((s, c) => s + getCigarValue(c) * getCigarSticks(c), 0) +
       wineCollectionValue;
 
     // Favorites
@@ -971,13 +971,17 @@ Deno.serve(async (req) => {
                 fullRecord = bottlesList.find(b => b.id === mostValuable.id);
               } else if (mostValuable.type === 'cigar') {
                 fullRecord = cigarsList.find(c => c.id === mostValuable.id);
+              } else if (mostValuable.type === 'wine') {
+                fullRecord = winesList.find(w => w.id === mostValuable.id);
               }
               return fullRecord ? {
                 id: mostValuable.id,
                 name: mostValuable.name,
                 recordType: mostValuable.type,
                 photos: fullRecord.photos || [],
-                photo: fullRecord.photo || fullRecord.logo,
+                photo: mostValuable.type === 'wine'
+                  ? getWinePrimaryImage(fullRecord)
+                  : (fullRecord.photo || fullRecord.logo),
                 logo: fullRecord.logo,
                 image: fullRecord.image,
                 image_url: fullRecord.image_url,

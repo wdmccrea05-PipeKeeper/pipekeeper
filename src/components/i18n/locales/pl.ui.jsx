@@ -366,6 +366,8 @@ const plUI = {
     value: "Wartość",
     name: "Nazwa",
     description: "Opis",
+    gridView: "Siatka",
+    listView: "Lista",
   },
   aiUpdates: {
     pairingsRevertSuccess: "Parowania przywrócone do poprzedniej wersji",
@@ -1633,6 +1635,19 @@ const plUI = {
     addToWantList: "Add to Want List",
     sortProducer: "Producer",
     sortDrinkWindow: "Drink Window",
+    sortNameAsc: "Nazwa (A–Z)",
+    sortNameDesc: "Nazwa (Z–A)",
+    sortProducerAsc: "Producent (A–Z)",
+    sortVintageNewest: "Rocznik (najnowszy)",
+    sortVintageOldest: "Rocznik (najstarszy)",
+    sortHighestValue: "Najwyższa wartość",
+    sortLowestValue: "Najniższa wartość",
+    sortHighestRating: "Najwyższa ocena",
+    sortMostBottles: "Najwięcej butelek",
+    sortDrinkSoon: "Do picia wkrótce",
+    sortRecentlyAdded: "Ostatnio dodane",
+    sortRecentlyUpdated: "Ostatnio zaktualizowane",
+    sortNeedsValuation: "Bez wyceny",
   },
 
   footer: {
