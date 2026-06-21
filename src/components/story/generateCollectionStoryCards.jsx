@@ -18,10 +18,12 @@ import { formatCurrencyAmount } from '@/utils/currency';
  * @param {Object} story - enriched story object with .highlights, .metrics, .narrative
  * @param {Function} [formatCurrency] - optional formatter, defaults to $x,xxx
  * @param {Array} [enabledModules] - optional list of enabled module keys (e.g. ['pipekeeper', 'whiskeykeeper'])
+ * @param {Function} [t] - optional translation helper
  * @returns {Array} card objects compatible with CollectionStoryViewer / StoryCard
  */
-export function generateCollectionStoryCards(story, formatCurrency, enabledModules = []) {
+export function generateCollectionStoryCards(story, formatCurrency, enabledModules = [], t = null) {
   if (!story) return [];
+  const tr = (key, vars = {}) => (typeof t === 'function' ? t(key, vars) : key);
 
   const h = story.highlights || {};
   const m = story.metrics || {};
@@ -38,20 +40,28 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
 
   // 1. Opening snapshot — module-aware
   const moduleNames = [hasPipe && 'pipes', hasWhiskey && 'whiskey', hasCigar && 'cigars', hasWine && 'wine'].filter(Boolean);
-  const openingLabel = isCombined ? 'Collection Snapshot' : hasPipe ? 'Pipe & Tobacco Snapshot' : hasCigar ? 'Cigar Snapshot' : hasWine ? 'Wine Snapshot' : 'Whiskey Snapshot';
-  const openingSubtitle = isCombined
-    ? `A curated collection across ${moduleNames.join(', ')}.`
+  const openingLabel = isCombined
+    ? tr('hub.storySnapshotCombined')
     : hasPipe
-      ? 'A curated pipe and tobacco collection.'
+      ? tr('hub.storySnapshotPipe')
       : hasCigar
-        ? 'A curated cigar collection.'
+        ? tr('hub.storySnapshotCigar')
         : hasWine
-          ? 'A curated wine collection.'
-          : 'A curated whiskey collection.';
+          ? tr('hub.storySnapshotWine')
+          : tr('hub.storySnapshotWhiskey');
+  const openingSubtitle = isCombined
+    ? tr('hub.storySubtitleCombined', { modules: moduleNames.join(', ') })
+    : hasPipe
+      ? tr('hub.storySubtitlePipe')
+      : hasCigar
+        ? tr('hub.storySubtitleCigar')
+        : hasWine
+          ? tr('hub.storySubtitleWine')
+          : tr('hub.storySubtitleWhiskey');
 
   cards.push({
     title: openingLabel,
-    value: "Your Collector's Story",
+    value: tr('hub.storyOpeningValue'),
     sub: story.narrative
       ? story.narrative.slice(0, 120) + (story.narrative.length > 120 ? '…' : '')
       : openingSubtitle,
@@ -68,13 +78,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.mostUsedPipe.name,
       value: h.mostUsedPipe.name,
-      sub: `Most used pipe${h.mostUsedPipe.bowls ? ` · ${h.mostUsedPipe.bowls} bowls` : ''}`,
+      sub: h.mostUsedPipe.bowls
+        ? tr('hub.storyMostUsedPipeSub', { count: h.mostUsedPipe.bowls })
+        : tr('hub.storyMostUsedPipeSubFallback'),
       accent: '#C87941',
       icon: Star,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'pipe',
-      label: 'Most Used Pipe',
+      label: tr('hub.mostUsedPipe'),
     });
   }
 
@@ -85,13 +97,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.favoriteBlend.name,
       value: h.favoriteBlend.name,
-      sub: `Favourite blend${h.favoriteBlend.bowls ? ` · ${h.favoriteBlend.bowls} bowls` : ''}`,
+      sub: h.favoriteBlend.bowls
+        ? tr('hub.storyTopBlendSub', { count: h.favoriteBlend.bowls })
+        : tr('hub.storyTopBlendSubFallback'),
       accent: '#4A9C6A',
       icon: Leaf,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'leaf',
-      label: 'Top Blend',
+      label: tr('hub.topBlend'),
     });
   }
 
@@ -102,13 +116,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.mostTastedBottle.name,
       value: h.mostTastedBottle.name,
-      sub: `Most tasted bottle${h.mostTastedBottle.tastings ? ` · ${h.mostTastedBottle.tastings} tastings` : ''}`,
+      sub: h.mostTastedBottle.tastings
+        ? tr('hub.storyMostTastedBottleSub', { count: h.mostTastedBottle.tastings })
+        : tr('hub.storyMostTastedBottleSubFallback'),
       accent: '#C4963A',
       icon: Droplets,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'pipe',
-      label: 'Most Tasted',
+      label: tr('hub.mostTasted'),
     });
   }
 
@@ -119,13 +135,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.mostSmokedCigar.name,
       value: h.mostSmokedCigar.name,
-      sub: `Most smoked cigar${h.mostSmokedCigar.sessions ? ` · ${h.mostSmokedCigar.sessions} sessions` : ''}`,
+      sub: h.mostSmokedCigar.sessions
+        ? tr('hub.storyMostSmokedCigarSub', { count: h.mostSmokedCigar.sessions })
+        : tr('hub.storyMostSmokedCigarSubFallback'),
       accent: '#C89752',
       icon: Flame,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'cigar',
-      label: 'Most Smoked Cigar',
+      label: tr('hub.mostSmokedCigar'),
     });
   }
 
@@ -136,13 +154,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.favoriteCigar.name,
       value: h.favoriteCigar.name,
-      sub: `Favourite cigar${h.favoriteCigar.rating ? ` · ${h.favoriteCigar.rating}★` : ''}`,
+      sub: h.favoriteCigar.rating
+        ? tr('hub.storyFavoriteCigarSub', { rating: h.favoriteCigar.rating })
+        : tr('hub.storyFavoriteCigarSubFallback'),
       accent: '#A0784A',
       icon: Star,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'cigar',
-      label: 'Favorite Cigar',
+      label: tr('hub.favoriteCigar'),
     });
   }
 
@@ -153,13 +173,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.topRatedCigar.name,
       value: h.topRatedCigar.name,
-      sub: `Top rated cigar${h.topRatedCigar.rating ? ` · ${h.topRatedCigar.rating}★` : ''}`,
+      sub: h.topRatedCigar.rating
+        ? tr('hub.storyTopRatedCigarSub', { rating: h.topRatedCigar.rating })
+        : tr('hub.storyTopRatedCigarSubFallback'),
       accent: '#8C6B3F',
       icon: Star,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'cigar',
-      label: 'Top Rated Cigar',
+      label: tr('hub.topRatedCigar'),
     });
   }
 
@@ -170,13 +192,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.highestValueCigar.name,
       value: h.highestValueCigar.name,
-      sub: h.highestValueCigar.value ? `Valued at ${fmt(h.highestValueCigar.value)}` : 'Highest value cigar',
+      sub: h.highestValueCigar.value
+        ? tr('hub.storyHighestValueCigarSub', { value: fmt(h.highestValueCigar.value) })
+        : tr('hub.storyHighestValueCigarSubFallback'),
       accent: '#A0784A',
       icon: Award,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'cigar',
-      label: 'Cigar Crown Jewel',
+      label: tr('hub.highestValueCigar'),
     });
   }
 
@@ -187,13 +211,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.mostValuableWine.name,
       value: h.mostValuableWine.name,
-      sub: h.mostValuableWine.value ? `Valued at ${fmt(h.mostValuableWine.value)}` : 'Top wine in your cellar',
+      sub: h.mostValuableWine.value
+        ? tr('hub.storyTopWineSub', { value: fmt(h.mostValuableWine.value) })
+        : tr('hub.storyTopWineSubFallback'),
       accent: '#8B4B6B',
       icon: Wine,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'wine',
-      label: 'Top Wine',
+      label: tr('hub.topWine'),
     });
   }
 
@@ -204,13 +230,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.topRatedWine.name,
       value: h.topRatedWine.name,
-      sub: h.topRatedWine.rating ? `${h.topRatedWine.rating}★ rated` : 'Top rated wine',
+      sub: h.topRatedWine.rating
+        ? tr('hub.storyTopRatedWineSub', { rating: h.topRatedWine.rating })
+        : tr('hub.storyTopRatedWineSubFallback'),
       accent: '#A0567A',
       icon: Star,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'wine',
-      label: 'Top Rated Wine',
+      label: tr('hub.topRatedWine'),
     });
   }
 
@@ -221,13 +249,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.readyToDrinkWine.name,
       value: h.readyToDrinkWine.name,
-      sub: `Drink Now${h.readyToDrinkWine.vintage ? ` · ${h.readyToDrinkWine.vintage}` : ''}`,
+      sub: h.readyToDrinkWine.vintage
+        ? tr('hub.storyReadyToDrinkSub', { vintage: h.readyToDrinkWine.vintage })
+        : tr('hub.storyReadyToDrinkSubFallback'),
       accent: '#2E7D5C',
       icon: Droplets,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: 'wine',
-      label: 'Ready to Drink',
+      label: tr('hub.readyToDrink'),
     });
   }
 
@@ -252,13 +282,15 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
     cards.push({
       title: h.mostValuableItem.name,
       value: h.mostValuableItem.name,
-      sub: h.mostValuableItem.value ? `Valued at ${fmt(h.mostValuableItem.value)}` : 'Crown jewel of your collection',
+      sub: h.mostValuableItem.value
+        ? tr('hub.storyCrownJewelSub', { value: fmt(h.mostValuableItem.value) })
+        : tr('hub.storyCrownJewelSubFallback'),
       accent: '#D4AF37',
       icon: Award,
       heroImage: photo,
       bgImage: photo,
       silhouetteType: rt === 'cigar' ? 'cigar' : 'pipe',
-      label: 'Crown Jewel',
+      label: tr('hub.crownJewel'),
     });
     }
     }
@@ -271,29 +303,37 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   const hasCounts = pipeCount + bottleCount + cigarCount + wineCount > 0;
   if (hasCounts) {
     const parts = [];
-    if (hasPipe && m.pipes) parts.push(`${m.pipes} pipe${m.pipes !== 1 ? 's' : ''}`);
-    if (hasPipe && m.blends) parts.push(`${m.blends} blend${m.blends !== 1 ? 's' : ''}`);
-    if (hasWhiskey && m.totalBottles) parts.push(`${m.totalBottles} bottle${m.totalBottles !== 1 ? 's' : ''}`);
+    if (hasPipe && m.pipes) parts.push(tr('hub.storyPipesCount', { count: m.pipes }));
+    if (hasPipe && m.blends) parts.push(tr('hub.storyBlendsCount', { count: m.blends }));
+    if (hasWhiskey && m.totalBottles) parts.push(tr('hub.storyBottlesCount', { count: m.totalBottles }));
     if (hasCigar && (m.cigarTypes || m.cigars)) {
       const ct = m.cigarTypes || m.cigars;
-      parts.push(`${ct} cigar type${ct !== 1 ? 's' : ''}`);
+      parts.push(tr('hub.storyCigarTypesCount', { count: ct }));
     }
     if (hasCigar && (m.totalCigarSticks || m.cigarSticks)) {
       const cs = m.totalCigarSticks || m.cigarSticks;
-      parts.push(`${cs} stick${cs !== 1 ? 's' : ''}`);
+      parts.push(tr('hub.storyCigarSticksCount', { count: cs }));
     }
     if (hasWine && (m.wineBottles || m.wines)) {
       const wb = m.wineBottles || m.wines;
-      parts.push(`${wb} wine bottle${wb !== 1 ? 's' : ''}`);
+      parts.push(tr('hub.storyWineBottlesCount', { count: wb }));
     }
     if (hasWine && m.wineTastings) {
-      parts.push(`${m.wineTastings} wine tasting${m.wineTastings !== 1 ? 's' : ''}`);
+      parts.push(tr('hub.storyWineTastingsCount', { count: m.wineTastings }));
     }
-    const countLabel = isCombined ? 'By the Numbers' : hasPipe ? 'Collection Count' : hasCigar ? 'Cigar Count' : hasWine ? 'Wine Collection' : 'Bottle Count';
+    const countLabel = isCombined
+      ? tr('hub.storyByTheNumbers')
+      : hasPipe
+        ? tr('hub.storyCollectionCount')
+        : hasCigar
+          ? tr('hub.storyCigarCount')
+          : hasWine
+            ? tr('hub.storyWineCollection')
+            : tr('hub.storyBottleCount');
     cards.push({
       title: countLabel,
-      value: parts[0] || 'Your Collection',
-      sub: parts.slice(1).join(' · ') || 'A growing collection',
+      value: parts[0] || tr('hub.storyYourCollection'),
+      sub: parts.slice(1).join(' · ') || tr('hub.storyGrowingCollection'),
       accent: '#22D3EE',
       icon: BarChart3,
       bgImage: null,
@@ -305,9 +345,9 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   const totalValue = Number(m.totalValue || 0);
   if (totalValue > 0) {
     cards.push({
-      title: 'Collection Value',
+      title: tr('hub.storyCollectionValueTitle'),
       value: fmt(totalValue),
-      sub: 'Estimated total collection value',
+      sub: tr('hub.storyCollectionValueSub'),
       accent: '#10B981',
       icon: TrendingUp,
       bgImage: null,
@@ -322,12 +362,20 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   const wineTastings = hasWine ? Number(m.wineTastings || 0) : 0;
   if (sessions + tastings + cigarSessions + wineTastings > 0) {
     const desc = [
-      sessions > 0 ? `${sessions} smoke${sessions !== 1 ? 's' : ''}` : null,
-      tastings > 0 ? `${tastings} tasting${tastings !== 1 ? 's' : ''}` : null,
-      cigarSessions > 0 ? `${cigarSessions} cigar session${cigarSessions !== 1 ? 's' : ''}` : null,
-      wineTastings > 0 ? `${wineTastings} wine tasting${wineTastings !== 1 ? 's' : ''}` : null,
+      sessions > 0 ? tr('hub.storySmokesCount', { count: sessions }) : null,
+      tastings > 0 ? tr('hub.storyTastingsCount', { count: tastings }) : null,
+      cigarSessions > 0 ? tr('hub.storyCigarSessionsCount', { count: cigarSessions }) : null,
+      wineTastings > 0 ? tr('hub.storyWineTastingsCount', { count: wineTastings }) : null,
     ].filter(Boolean).join(' · ');
-    const expLabel = isCombined ? 'Experiences Logged' : hasPipe ? 'Smoking Sessions' : hasCigar ? 'Cigar Sessions' : hasWine ? 'Wine Tastings' : 'Tastings Logged';
+    const expLabel = isCombined
+      ? tr('hub.storyExperiencesLogged')
+      : hasPipe
+        ? tr('hub.storySmokingSessions')
+        : hasCigar
+          ? tr('hub.storyCigarSessions')
+          : hasWine
+            ? tr('hub.storyWineTastingsTitle')
+            : tr('hub.storyTastingsLogged');
     cards.push({
       title: expLabel,
       value: sessions + tastings + cigarSessions + wineTastings,
@@ -343,7 +391,7 @@ export function generateCollectionStoryCards(story, formatCurrency, enabledModul
   cards.push({
     title: 'CollectionKeeper',
     value: 'CollectionKeeper',
-    sub: 'Track. Organize. Enjoy.',
+    sub: tr('hub.storyClosingSub'),
     accent: '#F59E0B',
     icon: Heart,
     bgImage: null,

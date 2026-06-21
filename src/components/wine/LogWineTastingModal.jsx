@@ -5,46 +5,48 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { sortByLabel } from '@/lib/sorting/alphabetical';
 
 const SERVING_OPTIONS = [
-  'Standard Glass',
-  'Decanted',
-  'Chilled',
-  'Cellar Temperature',
-  'Room Temperature',
-  'Blind Tasting',
-  'Restaurant Pour',
-  'Event Tasting',
-  'Other',
+  'standard_glass',
+  'decanted',
+  'chilled',
+  'cellar_temperature',
+  'room_temperature',
+  'blind_tasting',
+  'restaurant_pour',
+  'event_tasting',
+  'other',
 ];
 
 const CONTEXT_CHIPS = [
-  'Dinner',
-  'Restaurant / Bar',
-  "Friend's House",
-  'Tasting Event',
-  'Wine Club',
-  'Celebration',
-  'At Home',
-  'Other',
+  'dinner',
+  'restaurant_bar',
+  'friends_house',
+  'tasting_event',
+  'wine_club',
+  'celebration',
+  'at_home',
+  'other',
 ];
 
 const WINE_STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
 
 const ACQUISITION_OPTIONS = [
-  { value: 'just_log', label: 'Just Log Tasting' },
-  { value: 'add_to_collection', label: 'Add to Collection' },
-  { value: 'wishlist', label: 'Add to Wish List' },
-  { value: 'shopping_list', label: 'Add to Shopping List' },
-  { value: 'not_for_me', label: 'Not For Me' },
+  { value: 'just_log', labelKey: 'wine.acquisitionOptions.just_log' },
+  { value: 'add_to_collection', labelKey: 'wine.acquisitionOptions.add_to_collection' },
+  { value: 'wishlist', labelKey: 'wine.acquisitionOptions.wishlist' },
+  { value: 'shopping_list', labelKey: 'wine.acquisitionOptions.shopping_list' },
+  { value: 'not_for_me', labelKey: 'wine.acquisitionOptions.not_for_me' },
 ];
 
 function RatingSelector({ value, onChange }) {
+  const { t } = useTranslation();
   const values = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-[#E0D8C8]">Rating</p>
+      <p className="text-sm font-medium text-[#E0D8C8]">{t('wine.ratingLabel')}</p>
       <div className="flex flex-wrap gap-2">
         {values.map((rating) => (
           <button
@@ -103,6 +105,7 @@ export default function LogWineTastingModal({
   onSaved,
   defaultMode,
 }) {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
@@ -116,6 +119,14 @@ export default function LogWineTastingModal({
   const sortedWines = useMemo(
     () => sortByLabel(wines || [], (w) => w?.name || ''),
     [wines]
+  );
+  const servingOptions = useMemo(
+    () => SERVING_OPTIONS.map((opt) => ({ value: opt, label: t(`wine.servingMethods.${opt}`) })),
+    [t]
+  );
+  const contextOptions = useMemo(
+    () => CONTEXT_CHIPS.map((chip) => ({ value: chip, label: t(`wine.contexts.${chip}`) })),
+    [t]
   );
   const [selectedWineId, setSelectedWineId] = useState(wine?.id || '');
   const [selectedWineName, setSelectedWineName] = useState(wine?.name || '');
@@ -137,7 +148,7 @@ export default function LogWineTastingModal({
   // ── shared tasting fields ─────────────────────────────────────────────────
   const [form, setForm] = useState({
     date: today,
-    serving_method: 'Standard Glass',
+    serving_method: 'standard_glass',
     rating: '',
     notes: '',
     aroma_notes: '',
@@ -167,11 +178,11 @@ export default function LogWineTastingModal({
     setError('');
 
     if (mode === 'collection' && !selectedWineName) {
-      setError('Please select a wine from your collection.');
+      setError(t('wine.pleaseSelectCollectionWine'));
       return;
     }
     if (mode === 'new' && !newWine.name && !newWine.producer) {
-      setError('Please enter a wine name or producer.');
+      setError(t('wine.pleaseEnterWineNameOrProducer'));
       return;
     }
 
@@ -254,7 +265,7 @@ export default function LogWineTastingModal({
       onSaved?.(tasting);
       onClose?.();
     } catch (e) {
-      setError('Unable to save tasting. Please try again.');
+      setError(t('wine.saveTastingFailed'));
     } finally {
       setSaving(false);
     }
@@ -279,18 +290,18 @@ export default function LogWineTastingModal({
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-[rgba(163,92,92,0.16)]">
           <div>
-            <h2 className="text-xl font-bold text-[#F5F1E7]">Log Wine Tasting</h2>
+            <h2 className="text-xl font-bold text-[#F5F1E7]">{t('wine.logTasting')}</h2>
             <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>
               {mode === 'collection'
-                ? selectedWineName || 'Select a wine'
-                : newWine.name || newWine.producer || 'New Wine'}
+                ? selectedWineName || t('wine.collection')
+                : newWine.name || newWine.producer || t('wine.addBottle')}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-white/5"
-            aria-label="Close"
+            aria-label={t('storyViewer.close')}
           >
             <X className="w-5 h-5 text-[#E0D8C8]" />
           </button>
@@ -301,7 +312,7 @@ export default function LogWineTastingModal({
 
           {/* Source toggle */}
           <div className="space-y-3">
-            <label className="text-sm font-semibold text-[#E0D8C8] block">Bottle Source</label>
+            <label className="text-sm font-semibold text-[#E0D8C8] block">{t('wine.sourceLabel')}</label>
             <div className="flex rounded-xl overflow-hidden border border-[rgba(163,92,92,0.25)]">
               <button
                 type="button"
@@ -312,7 +323,7 @@ export default function LogWineTastingModal({
                     : 'bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]'
                 }`}
               >
-                From Collection
+                {t('wine.collection')}
               </button>
               <button
                 type="button"
@@ -323,7 +334,7 @@ export default function LogWineTastingModal({
                     : 'bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]'
                 }`}
               >
-                Something New
+                {t('wine.addBottle')}
               </button>
             </div>
 
@@ -339,7 +350,7 @@ export default function LogWineTastingModal({
                   }}
                   className="w-full rounded-xl px-3 py-2.5 bg-[rgba(20,15,12,0.6)] border border-[rgba(130,65,65,0.28)] text-[#F5F1E7] text-sm"
                 >
-                  <option value="" className="bg-[#1A120D]">Select a wine…</option>
+                  <option value="" className="bg-[#1A120D]">{t('wine.collection')}</option>
                   {sortedWines.map((w) => (
                     <option key={w.id} value={w.id} className="bg-[#1A120D]">
                       {w.name}{w.vintage ? ` (${w.vintage})` : ''}
@@ -350,7 +361,7 @@ export default function LogWineTastingModal({
                 <SelectedChip label={wine.name} onClear={() => { setSelectedWineId(''); setSelectedWineName(''); }} />
               ) : (
                 <p className="text-xs py-2" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                  No wines in your collection yet. Switch to "Something New" to log an out-of-collection pour.
+                  {t('wine.addWinesForInsights')}
                 </p>
               )
             )}
@@ -364,68 +375,68 @@ export default function LogWineTastingModal({
                     <Input
                       value={newWine.producer}
                       onChange={(e) => setNew('producer', e.target.value)}
-                      placeholder="e.g. Opus One"
+                      placeholder={t('wine.wineryPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Wine Name / Label</label>
+                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.name')}</label>
                     <Input
                       value={newWine.name}
                       onChange={(e) => setNew('name', e.target.value)}
-                      placeholder="e.g. Cabernet Sauvignon"
+                      placeholder={t('wine.name')}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Vintage</label>
+                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.vintage')}</label>
                     <Input
                       type="number"
                       value={newWine.vintage}
                       onChange={(e) => setNew('vintage', e.target.value)}
-                      placeholder="e.g. 2019"
+                      placeholder="2019"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Style</label>
+                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.style')}</label>
                     <select
                       value={newWine.style}
                       onChange={(e) => setNew('style', e.target.value)}
                       className="w-full rounded-lg px-3 py-2.5 bg-[rgba(20,15,12,0.6)] border border-[rgba(130,65,65,0.28)] text-[#F5F1E7] text-sm"
                     >
-                      <option value="" className="bg-[#1A120D]">Select style…</option>
+                      <option value="" className="bg-[#1A120D]">{t('wine.style')}</option>
                       {WINE_STYLES.map((s) => (
-                        <option key={s} value={s} className="bg-[#1A120D] capitalize">{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                        <option key={s} value={s} className="bg-[#1A120D]">{t(`wine.styles.${s}`, s)}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Varietal / Blend</label>
+                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.varietal')}</label>
                     <Input
                       value={newWine.varietal}
                       onChange={(e) => setNew('varietal', e.target.value)}
-                      placeholder="e.g. Pinot Noir"
+                      placeholder="Pinot Noir"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Region</label>
+                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.region')}</label>
                     <Input
                       value={newWine.region}
                       onChange={(e) => setNew('region', e.target.value)}
-                      placeholder="e.g. Burgundy"
+                      placeholder="Burgundy"
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Country</label>
+                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.country')}</label>
                     <Input
                       value={newWine.country}
                       onChange={(e) => setNew('country', e.target.value)}
-                      placeholder="e.g. France"
+                      placeholder="France"
                     />
                   </div>
                 </div>
 
                 {/* Acquisition intent */}
                 <div>
-                  <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-2">Would you like to…</label>
+                  <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-2">{t('wine.wantList')}</label>
                   <div className="flex flex-wrap gap-2">
                     {ACQUISITION_OPTIONS.map((opt) => (
                       <button
@@ -443,7 +454,7 @@ export default function LogWineTastingModal({
                             : '1px solid rgba(180,140,75,0.15)',
                         }}
                       >
-                        {opt.label}
+                        {t(opt.labelKey)}
                       </button>
                     ))}
                   </div>
@@ -455,18 +466,18 @@ export default function LogWineTastingModal({
           {/* Date + Serving */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">Tasting Date</label>
+              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">{t('wine.tastingDate')}</label>
               <Input type="date" value={form.date} onChange={(e) => set('date', e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">Serving Method</label>
+              <label className="text-sm font-medium text-[#E0D8C8] block mb-2">{t('wine.servingMethodLabel')}</label>
               <select
                 value={form.serving_method}
                 onChange={(e) => set('serving_method', e.target.value)}
                 className="w-full rounded-lg px-3 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.18)] text-[#F5F1E7]"
               >
-                {SERVING_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt} className="bg-[#1A120D]">{opt}</option>
+                {servingOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value} className="bg-[#1A120D]">{opt.label}</option>
                 ))}
               </select>
             </div>
@@ -477,11 +488,11 @@ export default function LogWineTastingModal({
 
           {/* Main tasting notes */}
           <div>
-            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">Tasting Notes</label>
+            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">{t('wine.tastingNotes')}</label>
             <Textarea
               value={form.notes}
               onChange={(e) => set('notes', e.target.value)}
-              placeholder="What stood out? Aroma, palate, finish, structure, pairing, etc."
+              placeholder={t('wine.tastingNotesPlaceholder')}
               className="min-h-[100px]"
             />
           </div>
@@ -489,27 +500,27 @@ export default function LogWineTastingModal({
           {/* Structured notes (collapsible feel — always visible but compact) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Aroma / Nose</label>
+              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.aromaNotes')}</label>
               <Input
                 value={form.aroma_notes}
                 onChange={(e) => set('aroma_notes', e.target.value)}
-                placeholder="Floral, earthy, fruity…"
+                placeholder={t('wine.aromaPlaceholder')}
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Palate</label>
+              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.palatNotes')}</label>
               <Input
                 value={form.palate_notes}
                 onChange={(e) => set('palate_notes', e.target.value)}
-                placeholder="Tannins, acidity, body…"
+                placeholder={t('wine.palateNotesPlaceholder')}
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Finish</label>
+              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.finishNotes')}</label>
               <Input
                 value={form.finish_notes}
                 onChange={(e) => set('finish_notes', e.target.value)}
-                placeholder="Long, short, smooth…"
+                placeholder={t('wine.finishNotesPlaceholder')}
               />
             </div>
           </div>
@@ -517,44 +528,44 @@ export default function LogWineTastingModal({
           {/* Pairing + Occasion */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Food Pairing</label>
+              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.foodPairing')}</label>
               <Input
                 value={form.food_pairing}
                 onChange={(e) => set('food_pairing', e.target.value)}
-                placeholder="e.g. lamb, aged cheese"
+                placeholder={t('wine.foodPairingPlaceholder')}
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Occasion</label>
+              <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t('wine.occasion')}</label>
               <Input
                 value={form.occasion}
                 onChange={(e) => set('occasion', e.target.value)}
-                placeholder="e.g. birthday dinner"
+                placeholder={t('wine.occasionPlaceholder')}
               />
             </div>
           </div>
 
           {/* Context chips */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#E0D8C8] block">Context</label>
+            <label className="text-sm font-medium text-[#E0D8C8] block">{t('wine.context')}</label>
             <div className="flex flex-wrap gap-2">
-              {CONTEXT_CHIPS.map((chip) => (
+              {contextOptions.map((chip) => (
                 <button
-                  key={chip}
+                  key={chip.value}
                   type="button"
-                  onClick={() => setContextChip(contextChip === chip ? '' : chip)}
+                  onClick={() => setContextChip(contextChip === chip.value ? '' : chip.value)}
                   className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
                   style={{
-                    background: contextChip === chip
+                    background: contextChip === chip.value
                       ? 'rgba(163,92,92,0.25)'
                       : 'rgba(255,255,255,0.05)',
-                    color: contextChip === chip ? '#F5F1E7' : 'rgba(224,216,200,0.6)',
-                    border: contextChip === chip
+                    color: contextChip === chip.value ? '#F5F1E7' : 'rgba(224,216,200,0.6)',
+                    border: contextChip === chip.value
                       ? '1px solid rgba(163,92,92,0.45)'
                       : '1px solid rgba(180,140,75,0.15)',
                   }}
                 >
-                  {chip}
+                  {chip.label}
                 </button>
               ))}
             </div>
@@ -562,11 +573,11 @@ export default function LogWineTastingModal({
 
           {/* Tags */}
           <div>
-            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">Tags</label>
+            <label className="text-sm font-medium text-[#E0D8C8] block mb-2">{t('common.tags', 'Tags')}</label>
             <Input
               value={form.tags}
               onChange={(e) => set('tags', e.target.value)}
-              placeholder="oak, earthy, mineral, special occasion"
+              placeholder={t('wine.tagsPlaceholder')}
             />
           </div>
 
@@ -578,7 +589,7 @@ export default function LogWineTastingModal({
               onChange={(e) => set('would_buy_again', e.target.checked)}
               className="rounded"
             />
-            <span className="text-sm" style={{ color: 'rgba(224,216,200,0.8)' }}>Would buy again</span>
+            <span className="text-sm" style={{ color: 'rgba(224,216,200,0.8)' }}>{t('wine.wouldBuyAgainLabel')}</span>
           </label>
 
           {error && (
@@ -591,7 +602,7 @@ export default function LogWineTastingModal({
         {/* ── Footer ─────────────────────────────────────────────────────── */}
         <div className="shrink-0 px-6 py-4 border-t border-[rgba(163,92,92,0.16)] flex gap-3">
           <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             type="button"
@@ -610,9 +621,9 @@ export default function LogWineTastingModal({
             {saving ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Saving…
+                {t('common.saving')}
               </span>
-            ) : 'Save Tasting'}
+            ) : t('wine.saveTasting')}
           </Button>
         </div>
       </div>

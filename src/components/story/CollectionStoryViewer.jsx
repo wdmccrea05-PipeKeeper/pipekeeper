@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import BrandLogo from '@/components/branding/BrandLogo';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function CollectionStorySlide({ card }) {
   const Icon = card.icon || Heart;
@@ -210,6 +211,7 @@ function CollectionStorySlide({ card }) {
 }
 
 export default function CollectionStoryViewer({ cards, onClose }) {
+  const { t } = useTranslation();
   const [idx, setIdx] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
 
@@ -251,7 +253,7 @@ export default function CollectionStoryViewer({ cards, onClose }) {
       <button
         onClick={onClose}
         className="absolute top-6 left-6 z-10 p-2 rounded-lg hover:bg-white/10 transition-all"
-        aria-label="Close story"
+        aria-label={t('storyViewer.close')}
       >
         <X className="w-6 h-6 text-white" />
       </button>
@@ -262,7 +264,7 @@ export default function CollectionStoryViewer({ cards, onClose }) {
         style={{ aspectRatio: '9/16', maxHeight: 'calc(100vh - 120px)' }}
         data-story-card
         role="region"
-        aria-label={`Story card ${idx + 1} of ${cards.length}`}
+        aria-label={t('storyViewer.cardPosition', { current: idx + 1, total: cards.length })}
       >
         <CollectionStorySlide card={current} />
       </div>
@@ -273,7 +275,7 @@ export default function CollectionStoryViewer({ cards, onClose }) {
           onClick={prev}
           disabled={idx === 0}
           className="p-2 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-          aria-label="Previous"
+          aria-label={t('storyViewer.previous')}
         >
           <ChevronLeft className="w-6 h-6 text-white" />
         </button>
@@ -284,7 +286,7 @@ export default function CollectionStoryViewer({ cards, onClose }) {
           onClick={next}
           disabled={idx === cards.length - 1}
           className="p-2 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-          aria-label="Next"
+          aria-label={t('storyViewer.next')}
         >
           <ChevronRight className="w-6 h-6 text-white" />
         </button>
@@ -299,7 +301,7 @@ export default function CollectionStoryViewer({ cards, onClose }) {
       </div>
 
       <p className="absolute bottom-20 text-white/30 text-xs hidden sm:block">
-        Use arrow keys or swipe to navigate · ESC to close
+        {t('storyViewer.hint')}
       </p>
     </div>
   );

@@ -200,9 +200,9 @@ function StoryCard({ title, label, item, navigate }) {
 
 export default function CollectionStoryCard() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, lang, locale } = useTranslation();
   const { isModuleEnabled, enabledModuleKeys } = useEnabledKeeperModules();
-  const { formatFromBase } = useCurrency();
+  const { formatFromBase, selectedCurrency } = useCurrency();
   const whiskeyVisible = !WHISKEYKEEPER_BLOCKED && isModuleEnabled('whiskeykeeper'); // gated
   const pipeVisible = isModuleEnabled('pipekeeper');
   const cigarVisible = isModuleEnabled('cigarkeeper');
@@ -220,6 +220,9 @@ export default function CollectionStoryCard() {
     try {
       const result = await base44.functions.invoke('generateCollectionStory', {
         enabledModules,
+        language: lang,
+        locale,
+        currency: selectedCurrency,
       });
 
       const raw = result?.data || null;
@@ -235,7 +238,7 @@ export default function CollectionStoryCard() {
 
   useEffect(() => {
     loadStory();
-  }, [enabledModules.join('|')]);
+  }, [enabledModules.join('|'), lang, locale, selectedCurrency]);
 
   if (loading) {
     return (
@@ -249,10 +252,7 @@ export default function CollectionStoryCard() {
 
   const h = story.highlights || {};
   const m = story.metrics || {};
-  const valueDisplay =
-    Number(m.totalValue || 0) >= 1000
-      ? `$${(Number(m.totalValue) / 1000).toFixed(1)}k`
-      : `$${Number(m.totalValue || 0).toFixed(0)}`;
+  const valueDisplay = formatFromBase(Number(m.totalValue || 0));
 
   return (
     <div
@@ -325,11 +325,11 @@ export default function CollectionStoryCard() {
         {wineVisible && (
           <>
             <div className="rounded-xl p-4 border border-[rgba(139,75,107,0.22)] bg-[rgba(139,75,107,0.10)]">
-              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">Wine Types</p>
+              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('hub.wineTypes')}</p>
               <p className="text-2xl font-bold mt-2 text-[#8B4B6B]">{m.wineBottleTypes || 0}</p>
             </div>
             <div className="rounded-xl p-4 border border-[rgba(139,75,107,0.22)] bg-[rgba(139,75,107,0.10)]">
-              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">In Cellar</p>
+              <p className="text-xs uppercase tracking-wider text-[#D8C7A6]/70">{t('wine.totalInCellar')}</p>
               <p className="text-2xl font-bold mt-2 text-[#8B4B6B]">{m.totalWineBottles || 0}</p>
             </div>
           </>
@@ -412,7 +412,7 @@ export default function CollectionStoryCard() {
 
         {wineVisible && h.mostValuableWine ? (
           <StoryCard
-            label="Most Valuable Wine"
+            label={t('hub.topWine')}
             title={h.mostValuableWine.name}
             item={h.mostValuableWine}
             navigate={navigate}
@@ -421,7 +421,7 @@ export default function CollectionStoryCard() {
 
         {wineVisible && h.topRatedWine ? (
           <StoryCard
-            label="Top Rated Wine"
+            label={t('hub.topRatedWine')}
             title={h.topRatedWine.name}
             item={h.topRatedWine}
             navigate={navigate}
@@ -430,7 +430,7 @@ export default function CollectionStoryCard() {
 
         {wineVisible && h.readyToDrinkWine ? (
           <StoryCard
-            label="Ready to Drink"
+            label={t('hub.readyToDrink')}
             title={h.readyToDrinkWine.name}
             item={h.readyToDrinkWine}
             navigate={navigate}
@@ -459,7 +459,7 @@ export default function CollectionStoryCard() {
 
       {showStoryViewer && story && (
         <CollectionStoryViewer
-          cards={generateCollectionStoryCards(story, formatFromBase, enabledModules)}
+          cards={generateCollectionStoryCards(story, formatFromBase, enabledModules, t)}
           onClose={() => setShowStoryViewer(false)}
         />
       )}

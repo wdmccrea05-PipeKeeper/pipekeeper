@@ -13,6 +13,7 @@ import ja from './locales/ja.jsx';
 import zhHans from './locales/zh-Hans.jsx';
 import { homeTranslations } from './homeContent.jsx';
 import { insightsTranslations } from './insightsContent.jsx';
+import { storyWineTranslations } from './storyWineTranslations.jsx';
 import enCollectionIntelligence from './locales/en.collectionIntelligence.jsx';
 import enDocs from './locales/en.docs.jsx';
 import esDocs from './locales/es.docs.jsx';
@@ -159,9 +160,10 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
   const withDocs = deepMerge(pack, docsLocales[lang] || {});
   const withHome = deepMerge(withDocs, homeTranslations[lang] || {});
   const withInsights = deepMerge(withHome, insightsTranslations[lang] || {});
+  const withStoryWine = deepMerge(withInsights, storyWineTranslations[lang] || {});
   const withIntel = lang === 'en'
-    ? deepMerge(withInsights, { collectionIntelligence: enCollectionIntelligence })
-    : withInsights;
+    ? deepMerge(withStoryWine, { collectionIntelligence: enCollectionIntelligence })
+    : withStoryWine;
   const withCriticals = deepMerge(withIntel, CRITICAL_FALLBACKS);
   return [lang, withCriticals];
 }));
