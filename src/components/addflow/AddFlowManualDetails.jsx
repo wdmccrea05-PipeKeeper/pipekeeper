@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const STRENGTHS = ['Mild', 'Mild-Medium', 'Medium', 'Medium-Full', 'Full'];
 const CUTS = ['Ribbon', 'Flake', 'Broken Flake', 'Ready Rubbed', 'Plug', 'Rope', 'Crumble Cake', 'Shag', 'Coin', 'Twist', 'Cube Cut'];
@@ -51,6 +52,7 @@ function StyledSelect({ value, onChange, options, placeholder, labelMap }) {
 }
 
 export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose, data }) {
+  const { t } = useTranslation();
   const [values, setValues] = useState({
     strength: data?.strength || '',
     cut: data?.cut || '',
@@ -95,9 +97,9 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
         </button>
         <div className="min-w-0 flex-1">
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Details
+            {t("auto.components_addflow_AddFlowManualDetails.details_th3nu3")}
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 2 of 4</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>{t("auto.components_addflow_AddFlowManualDetails.step_2_of_4_s6lr5o")}</p>
         </div>
         {onClose && (
           <button
@@ -116,10 +118,10 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
         {itemType === 'blend' && (
           <>
             <FieldRow label="Strength">
-              <StyledSelect value={values.strength} onChange={v => set('strength', v)} options={STRENGTHS} placeholder="Select strength…" />
+              <StyledSelect value={values.strength} onChange={v => set('strength', v)} options={STRENGTHS} placeholder={t("auto.components_addflow_AddFlowManualDetails.select_strength_1sdgj8")} />
             </FieldRow>
             <FieldRow label="Cut">
-              <StyledSelect value={values.cut} onChange={v => set('cut', v)} options={CUTS} placeholder="Select cut…" />
+              <StyledSelect value={values.cut} onChange={v => set('cut', v)} options={CUTS} placeholder={t("auto.components_addflow_AddFlowManualDetails.select_cut_1uut2r")} />
             </FieldRow>
             <FieldRow label="Flavor Notes">
               <Input
@@ -136,13 +138,13 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
         {itemType === 'pipe' && (
           <>
             <FieldRow label="Bowl Material">
-              <StyledSelect value={values.bowl_material} onChange={v => set('bowl_material', v)} options={MATERIALS} placeholder="Select material…" />
+              <StyledSelect value={values.bowl_material} onChange={v => set('bowl_material', v)} options={MATERIALS} placeholder={t("auto.components_addflow_AddFlowManualDetails.select_material_hbr5i2")} />
             </FieldRow>
             <FieldRow label="Finish">
-              <StyledSelect value={values.finish} onChange={v => set('finish', v)} options={FINISHES} placeholder="Select finish…" />
+              <StyledSelect value={values.finish} onChange={v => set('finish', v)} options={FINISHES} placeholder={t("auto.components_addflow_AddFlowManualDetails.select_finish_qpz164")} />
             </FieldRow>
             <FieldRow label="Condition">
-              <StyledSelect value={values.condition} onChange={v => set('condition', v)} options={CONDITIONS} placeholder="Select condition…" />
+              <StyledSelect value={values.condition} onChange={v => set('condition', v)} options={CONDITIONS} placeholder={t("auto.components_addflow_AddFlowManualDetails.select_condition_oipo6q")} />
             </FieldRow>
           </>
         )}
@@ -175,14 +177,14 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
         {itemType === 'cigar' && (
           <>
             <FieldRow label="Wrapper">
-              <StyledSelect value={values.wrapper} onChange={v => set('wrapper', v)} options={WRAPPERS} placeholder="Select wrapper…" />
+              <StyledSelect value={values.wrapper} onChange={v => set('wrapper', v)} options={WRAPPERS} placeholder={t("auto.components_addflow_AddFlowManualDetails.select_wrapper_1d84oc")} />
             </FieldRow>
             <FieldRow label="Body">
               <StyledSelect
                 value={values.body}
                 onChange={v => set('body', v)}
                 options={CIGAR_BODY}
-                placeholder="Select body…"
+                placeholder={t("auto.components_addflow_AddFlowManualDetails.select_body_495us9")}
                 labelMap={CIGAR_INTENSITY_LABELS}
               />
             </FieldRow>
@@ -191,7 +193,7 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
                 value={values.strength}
                 onChange={v => set('strength', v)}
                 options={CIGAR_BODY}
-                placeholder="Select strength…"
+                placeholder={t("auto.components_addflow_AddFlowManualDetails.select_strength_1sdgj8")}
                 labelMap={CIGAR_INTENSITY_LABELS}
               />
             </FieldRow>
@@ -247,7 +249,7 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
               />
             </FieldRow>
             <FieldRow label="Style">
-              <StyledSelect value={values.style} onChange={v => set('style', v)} options={WINE_STYLES} placeholder="Select style…" />
+              <StyledSelect value={values.style} onChange={v => set('style', v)} options={WINE_STYLES} placeholder={t("auto.components_addflow_AddFlowManualDetails.select_style_9g282k")} />
             </FieldRow>
             <FieldRow label="ABV %">
               <Input
@@ -267,7 +269,7 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
           <Textarea
             value={values.notes}
             onChange={e => set('notes', e.target.value)}
-            placeholder="Any personal notes…"
+            placeholder={t("auto.components_addflow_AddFlowManualDetails.any_personal_notes_10mt86")}
             rows={3}
             style={{ ...inputStyle, resize: 'none' }}
             className="placeholder:text-[rgba(224,216,200,0.3)]"
@@ -279,7 +281,7 @@ export default function AddFlowManualDetails({ itemType, onBack, onNext, onClose
           className="w-full mt-2"
           style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#fff', fontWeight: 600 }}
         >
-          Continue
+          {t("auto.components_addflow_AddFlowManualDetails.continue_1fqfxw")}
           <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>

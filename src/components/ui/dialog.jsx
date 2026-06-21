@@ -2,6 +2,7 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -30,6 +31,7 @@ const DialogContent = React.forwardRef(function DialogContent(
   { className, children, ...props },
   ref
 ) {
+  const { t } = useTranslation();
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -59,7 +61,7 @@ const DialogContent = React.forwardRef(function DialogContent(
           )}
         >
           <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{t("auto.components_ui_dialog.close_3lk8qj")}</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPortal>

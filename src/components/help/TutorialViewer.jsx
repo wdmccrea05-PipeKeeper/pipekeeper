@@ -18,7 +18,7 @@ export default function TutorialViewer({ moduleId, tutorialId, onBack }) {
       <div className="text-center py-8">
         <p className="text-[#D7C9B2]/70">{t('help.tutorialNotFound')}</p>
         <Button onClick={onBack} variant="outline" className="mt-4">
-          Go Back
+          {t("auto.components_help_TutorialViewer.go_back_rbqdv0")}
         </Button>
       </div>
     );

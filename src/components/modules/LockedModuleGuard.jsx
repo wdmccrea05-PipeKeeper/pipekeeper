@@ -65,7 +65,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
           <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.2)' }}>
             <Lock className="w-5 h-5" style={{ color: 'rgba(180,140,75,0.6)' }} />
           </div>
-          <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>CollectionKeeper</p>
+          <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>{t("auto.components_modules_LockedModuleGuard.collectionkeeper_1ukoz8")}</p>
           <h2 className="text-lg font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{t('modules.notAvailable')}</h2>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.55)' }}>
             {t('modules.notAvailableInRelease', { moduleName: label })}
@@ -98,7 +98,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
           <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.2)' }}>
             <Lock className="w-5 h-5" style={{ color: 'rgba(180,140,75,0.6)' }} />
           </div>
-          <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>CollectionKeeper</p>
+          <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>{t("auto.components_modules_LockedModuleGuard.collectionkeeper_1ukoz8")}</p>
           <h2 className="text-lg font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{t('hub.comingSoonLabel')}</h2>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.55)' }}>
             {t('modules.notYetAvailable', { moduleName: label })}

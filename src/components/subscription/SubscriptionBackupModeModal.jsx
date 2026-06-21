@@ -127,7 +127,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
           {/* Plans unavailable notice */}
           {!hasAnyPlan && (
             <div className="rounded-lg bg-[#A35C5C]/10 border border-[#A35C5C]/30 px-4 py-3 text-sm text-[#E0D8C8]/80">
-              Direct checkout is not available right now. Use the form below to request manual access review, or email{" "}
+              {t("auto.components_subscription_SubscriptionBackupModeModal.direct_checkout_is_not_available_right_18vhc2")}{" "}
               <a href={`mailto:${SUPPORT_EMAIL}`} className="underline text-[#D4A574]">
                 {SUPPORT_EMAIL}
               </a>
@@ -222,8 +222,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
               </Button>
 
               <p className="text-xs text-[#E0D8C8]/50 text-center">
-                Our team will review your request and activate access manually.
-                Contact{" "}
+                {t("auto.components_subscription_SubscriptionBackupModeModal.our_team_will_review_your_request_15dfzp")}{" "}
                 <a href={`mailto:${SUPPORT_EMAIL}`} className="underline text-[#D4A574]">
                   {SUPPORT_EMAIL}
                 </a>{" "}

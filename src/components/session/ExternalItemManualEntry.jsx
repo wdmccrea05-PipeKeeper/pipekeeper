@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const FIELD_CONFIG = {
   pipe: [
@@ -27,6 +28,7 @@ export default function ExternalItemManualEntry({
   onCancel,
   onSave,
 }) {
+  const { t } = useTranslation();
   const config = useMemo(() => FIELD_CONFIG[itemType] || [], [itemType]);
   const [values, setValues] = useState(() => {
     const seed = {};
@@ -70,7 +72,7 @@ export default function ExternalItemManualEntry({
         className="text-sm font-medium"
         style={{ color: "#F5F1E7" }}
       >
-        Add Manually
+        {t("auto.components_session_ExternalItemManualEntry.add_manually_jfedqp")}
       </p>
 
       {config.map((field) => (
@@ -94,18 +96,18 @@ export default function ExternalItemManualEntry({
           className="text-xs"
           style={{ color: "rgba(224,216,200,0.72)" }}
         >
-          Notes (optional)
+          {t("auto.components_session_ExternalItemManualEntry.notes_optional_vzjfl1")}
         </label>
         <Textarea
           value={values.notes || ""}
           onChange={(e) => setField("notes", e.target.value)}
-          placeholder="Add anything useful to remember this item later..."
+          placeholder={t("auto.components_session_ExternalItemManualEntry.add_anything_useful_to_remember_this_14rvyu")}
         />
       </div>
 
       <div className="flex gap-2 pt-1">
         <Button type="button" variant="outline" className="flex-1" onClick={onCancel}>
-          Cancel
+          {t("auto.components_session_ExternalItemManualEntry.cancel_1bin7k")}
         </Button>
         <Button
           type="button"
@@ -114,7 +116,7 @@ export default function ExternalItemManualEntry({
           disabled={!values.name?.trim()}
           style={{ background: "rgba(163,92,92,0.95)", color: "#fff" }}
         >
-          Use This Item
+          {t("auto.components_session_ExternalItemManualEntry.use_this_item_1f8fpr")}
         </Button>
       </div>
     </div>

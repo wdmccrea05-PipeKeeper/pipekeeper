@@ -262,82 +262,82 @@ export default function HowTo() {
           </Q>
         </Section>
 
-        <Section title="Managing Whiskey (WhiskeyKeeper)">
+        <Section title={t("auto.pages_HowTo.managing_whiskey_whiskeykeeper_57t2rg")}>
           <Q id="add-bottle" q="How do I add a whiskey bottle to my collection?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to <strong>WhiskeyKeeper</strong> from the nav or Collection Hub.</li>
-              <li>Tap <strong>Add Bottle</strong> or use the <strong>+</strong> button.</li>
-              <li>Search by name to auto-fill distillery, region, type, and age — or enter details manually.</li>
-              <li>Set purchase price, fill level, and any tasting notes.</li>
-              <li>Tap <strong>Save</strong> to add it to your collection.</li>
+              <li>{t("auto.pages_HowTo.go_to_3oedtq")} <strong>{t("auto.pages_HowTo.whiskeykeeper_1kgmc1")}</strong> from the nav or Collection Hub.</li>
+              <li>{t("auto.pages_HowTo.tap_376rsa")} <strong>{t("auto.pages_HowTo.add_bottle_jzfmew")}</strong> or use the <strong>+</strong> button.</li>
+              <li>{t("auto.pages_HowTo.search_by_name_to_auto_fill_2kyc80")}</li>
+              <li>{t("auto.pages_HowTo.set_purchase_price_fill_level_and_k4e0aq")}</li>
+              <li>{t("auto.pages_HowTo.tap_376rsa")} <strong>{t("auto.pages_HowTo.save_yk2ng4")}</strong> to add it to your collection.</li>
             </ol>
           </Q>
           <Q id="whiskey-inventory" q="How does inventory tracking work for whiskey?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Each bottle has an inventory unit — Full, High, Medium, Low, or Empty.</li>
-              <li>Open a bottle's detail page and update the <strong>Fill Level</strong> as you work through it.</li>
-              <li>You can also track multiple bottles of the same expression using the bottle count field.</li>
+              <li>{t("auto.pages_HowTo.each_bottle_has_an_inventory_unit_1al42q")}</li>
+              <li>{t("auto.pages_HowTo.open_a_bottle_s_detail_page_1jzioz")} <strong>{t("auto.pages_HowTo.fill_level_136bpk")}</strong> as you work through it.</li>
+              <li>{t("auto.pages_HowTo.you_can_also_track_multiple_bottles_2nphbt")}</li>
             </ol>
           </Q>
           <Q id="whiskey-tasting" q="How do I log a whiskey tasting?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Open the bottle's detail page and tap <strong>Log Tasting</strong>.</li>
-              <li>Record flavor notes, rating, and any pairing or occasion details.</li>
-              <li>Tasting history appears in the bottle's detail view and in WhiskeyKeeper Insights.</li>
+              <li>{t("auto.pages_HowTo.open_the_bottle_s_detail_page_qi4rac")} <strong>{t("auto.pages_HowTo.log_tasting_1njc2o")}</strong>.</li>
+              <li>{t("auto.pages_HowTo.record_flavor_notes_rating_and_any_f3zaal")}</li>
+              <li>{t("auto.pages_HowTo.tasting_history_appears_in_the_bottle_a7hm14")}</li>
             </ol>
           </Q>
           <Q id="whiskey-value" q="How does bottle valuation work?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Open any bottle's detail page and scroll to <strong>Value &amp; Strategy</strong>.</li>
-              <li>The system computes a current value using retail, aftermarket, and collector price signals.</li>
-              <li>Tap <strong>Save Checkpoint</strong> to record a timestamped value snapshot for tracking over time.</li>
-              <li>Add manual <strong>Price Observations</strong> from auctions or retailers to improve accuracy.</li>
+              <li>{t("auto.pages_HowTo.open_any_bottle_s_detail_page_11kplm")} <strong>{t("auto.pages_HowTo.value_and_strategy_1bnfwi")}</strong>.</li>
+              <li>{t("auto.pages_HowTo.the_system_computes_a_current_value_1w4jlj")}</li>
+              <li>{t("auto.pages_HowTo.tap_376rsa")} <strong>{t("auto.pages_HowTo.save_checkpoint_1tg0r4")}</strong> to record a timestamped value snapshot for tracking over time.</li>
+              <li>{t("auto.pages_HowTo.add_manual_1bjbvf")} <strong>{t("auto.pages_HowTo.price_observations_atuf2v")}</strong> from auctions or retailers to improve accuracy.</li>
             </ol>
           </Q>
         </Section>
 
-        <Section title="Managing Cigars (CigarKeeper)">
+        <Section title={t("auto.pages_HowTo.managing_cigars_cigarkeeper_5nletv")}>
           <Q id="add-cigar" q="How do I add a cigar to my collection?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to <strong>CigarKeeper</strong> from the nav or Collection Hub.</li>
-              <li>Tap <strong>Add Cigar</strong> or navigate to <strong>Cigars → +</strong>.</li>
-              <li>Enter the brand, line, vitola, wrapper, and other details.</li>
-              <li>Set your quantity and unit type (single, box, 5-pack, etc.).</li>
-              <li>Tap <strong>Save</strong> to add it to your humidor.</li>
+              <li>{t("auto.pages_HowTo.go_to_3oedtq")} <strong>{t("auto.pages_HowTo.cigarkeeper_1oz7i9")}</strong> from the nav or Collection Hub.</li>
+              <li>{t("auto.pages_HowTo.tap_376rsa")} <strong>{t("auto.pages_HowTo.add_cigar_djas50")}</strong> or navigate to <strong>{t("auto.pages_HowTo.cigars_o9oba3")}</strong>.</li>
+              <li>{t("auto.pages_HowTo.enter_the_brand_line_vitola_wrapper_9tnt6k")}</li>
+              <li>{t("auto.pages_HowTo.set_your_quantity_and_unit_type_1cm4k5")}</li>
+              <li>{t("auto.pages_HowTo.tap_376rsa")} <strong>{t("auto.pages_HowTo.save_yk2ng4")}</strong> to add it to your humidor.</li>
             </ol>
           </Q>
           <Q id="cigar-humidor" q="How do I set up and manage a humidor?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to <strong>Cigars → Humidors tab</strong>.</li>
-              <li>Tap <strong>Add Humidor</strong> and name it.</li>
-              <li>Set capacity, target humidity %, and maintenance interval.</li>
-              <li>Assign cigars to the humidor from each cigar's detail page.</li>
-              <li>Log maintenance events to reset alert timers.</li>
+              <li>{t("auto.pages_HowTo.go_to_3oedtq")} <strong>{t("auto.pages_HowTo.cigars_humidors_tab_1te4tg")}</strong>.</li>
+              <li>{t("auto.pages_HowTo.tap_376rsa")} <strong>{t("auto.pages_HowTo.add_humidor_a151ty")}</strong> and name it.</li>
+              <li>{t("auto.pages_HowTo.set_capacity_target_humidity_and_maintenance_1qvxc2")}</li>
+              <li>{t("auto.pages_HowTo.assign_cigars_to_the_humidor_from_15nm6t")}</li>
+              <li>{t("auto.pages_HowTo.log_maintenance_events_to_reset_alert_1lzly3")}</li>
             </ol>
           </Q>
           <Q id="cigar-session" q="How do I log a cigar smoking session?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Tap <strong>Log Session</strong> from CigarKeeper or the cigar's detail page.</li>
-              <li>Select the cigar, or enter a cigar you smoked outside your collection.</li>
-              <li>Fill in tasting notes, burn/draw quality, pairing, and enjoyment rating.</li>
-              <li>Tap <strong>Save</strong> to record the session.</li>
+              <li>{t("auto.pages_HowTo.tap_376rsa")} <strong>{t("auto.pages_HowTo.log_session_14rlw5")}</strong> from CigarKeeper or the cigar's detail page.</li>
+              <li>{t("auto.pages_HowTo.select_the_cigar_or_enter_a_1hnhnp")}</li>
+              <li>{t("auto.pages_HowTo.fill_in_tasting_notes_burn_draw_1ymp38")}</li>
+              <li>{t("auto.pages_HowTo.tap_376rsa")} <strong>{t("auto.pages_HowTo.save_yk2ng4")}</strong> to record the session.</li>
             </ol>
           </Q>
           <Q id="cigar-free-vs-pro" q="What's included in the free vs. pro CigarKeeper plan?">
-            <p><strong>Free tier</strong> — add up to 10 cigars, log sessions, manage 1 humidor, and track basic maintenance alerts.</p>
-            <p><strong>Pro tier</strong> — unlimited cigars and humidors, Curator AI recommendations, collection insights, advanced analytics, and export features.</p>
-            <p>You can start on the free tier immediately after signing up — no payment required.</p>
+            <p><strong>{t("auto.pages_HowTo.free_tier_lq2o6z")}</strong> {t("auto.pages_HowTo.add_up_to_10_cigars_log_ddard")}</p>
+            <p><strong>{t("auto.pages_HowTo.pro_tier_17lpkc")}</strong> {t("auto.pages_HowTo.unlimited_cigars_and_humidors_curator_ai_1gfq7y")}</p>
+            <p>{t("auto.pages_HowTo.you_can_start_on_the_free_16oacu")}</p>
           </Q>
         </Section>
 
         <Section title={t("howTo.subscriptions")}>
           <Q id="upgrade" q="How do I upgrade to Pro?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to the <strong>Subscription</strong> page (accessible from Profile or the upgrade prompts).</li>
-              <li>Choose what you want to unlock: <strong>PipeKeeper Pro</strong>, <strong>WhiskeyKeeper Pro</strong>, <strong>CigarKeeper Pro</strong>, the <strong>Founders Bundle</strong> (PipeKeeper + WhiskeyKeeper), or the <strong>3-Module Bundle</strong> (PipeKeeper + WhiskeyKeeper + CigarKeeper).</li>
-              <li>Select a monthly or annual plan (annual saves ~17%).</li>
-              <li>Complete payment via the secure checkout.</li>
-              <li>Your Pro features activate immediately.</li>
+              <li>{t("auto.pages_HowTo.go_to_the_skf7j3")} <strong>{t("auto.pages_HowTo.subscription_1byji4")}</strong> page (accessible from Profile or the upgrade prompts).</li>
+              <li>{t("auto.pages_HowTo.choose_what_you_want_to_unlock_9tjxju")} <strong>{t("auto.pages_HowTo.pipekeeper_pro_9ebjs0")}</strong>, <strong>{t("auto.pages_HowTo.whiskeykeeper_pro_ty96s6")}</strong>, <strong>{t("auto.pages_HowTo.cigarkeeper_pro_yhhmqg")}</strong>{t("auto.pages_HowTo.the_33p6sy")} <strong>{t("auto.pages_HowTo.founders_bundle_drx8xx")}</strong> {t("auto.pages_HowTo.pipekeeper_whiskeykeeper_or_the_zsdny1")} <strong>3-Module Bundle</strong> {t("auto.pages_HowTo.pipekeeper_whiskeykeeper_cigarkeeper_1st3jj")}</li>
+              <li>{t("auto.pages_HowTo.select_a_monthly_or_annual_plan_1cw0jr")}</li>
+              <li>{t("auto.pages_HowTo.complete_payment_via_the_secure_checkout_3ovv3c")}</li>
+              <li>{t("auto.pages_HowTo.your_pro_features_activate_immediately_5l16d3")}</li>
             </ol>
           </Q>
           <Q id="cancel" q={t("howTo.cancelQ")}>
@@ -349,12 +349,12 @@ export default function HowTo() {
           </Q>
           <Q id="tier-diff" q="What is the difference between Free and Pro?">
             <ol className="list-decimal list-inside space-y-2">
-              <li><strong>Free:</strong> PipeKeeper allows up to 5 pipes and 10 blends; WhiskeyKeeper allows up to 10 bottles; CigarKeeper allows up to 10 cigars. Basic features, no AI features.</li>
-              <li><strong>Pro:</strong> Unlimited items per module, AI pairings, collection optimization, AI identification, break-in schedules, valuation tools, Value &amp; Strategy section, export reports, and priority support.</li>
-              <li>Each module (PipeKeeper, WhiskeyKeeper, and CigarKeeper) can be subscribed to individually.</li>
-              <li>The <strong>Founders Bundle</strong> includes PipeKeeper and WhiskeyKeeper together at a discounted rate. CigarKeeper is not included in the Founders Bundle.</li>
+              <li><strong>{t("auto.pages_HowTo.free_3nsvi9")}</strong> {t("auto.pages_HowTo.pipekeeper_allows_up_to_5_pipes_8buhq")}</li>
+              <li><strong>{t("auto.pages_HowTo.pro_yk0qc0")}</strong> {t("auto.pages_HowTo.unlimited_items_per_module_ai_pairings_mhynva")}</li>
+              <li>{t("auto.pages_HowTo.each_module_pipekeeper_whiskeykeeper_and_cigarke_1ngdph")}</li>
+              <li>{t("auto.pages_HowTo.the_376rye")} <strong>{t("auto.pages_HowTo.founders_bundle_drx8xx")}</strong> includes PipeKeeper and WhiskeyKeeper together at a discounted rate. CigarKeeper is not included in the Founders Bundle.</li>
               <li>A <strong>3-Module Bundle</strong> covers PipeKeeper, WhiskeyKeeper, and CigarKeeper together at a further discount.</li>
-              <li>Founding members have grandfathered lifetime Pro access to PipeKeeper and WhiskeyKeeper.</li>
+              <li>{t("auto.pages_HowTo.founding_members_have_grandfathered_lifetime_pro_9llha5")}</li>
             </ol>
           </Q>
         </Section>

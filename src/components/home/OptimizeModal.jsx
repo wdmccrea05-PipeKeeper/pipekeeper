@@ -18,6 +18,7 @@ import {
   INSIGHT_SEVERITY,
   INSIGHT_CATEGORIES,
 } from '@/platform/proactiveInsights';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -120,6 +121,7 @@ function severityBg(severity) {
 // ─── InsightCard ─────────────────────────────────────────────────────────────
 
 function InsightCard({ card, onApplyFix, onReviewInCurator }) {
+  const { t } = useTranslation();
   const color = severityColor(card.severity);
   const bg = severityBg(card.severity);
 
@@ -183,7 +185,7 @@ function InsightCard({ card, onApplyFix, onReviewInCurator }) {
           className="text-[10px] font-semibold uppercase tracking-[0.12em]"
           style={{ color: 'rgba(180,140,75,0.65)' }}
         >
-          Recommendation
+          {t("auto.components_home_OptimizeModal.recommendation_19jht1")}
         </p>
         <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.88)' }}>
           {card.recommendation}
@@ -202,7 +204,7 @@ function InsightCard({ card, onApplyFix, onReviewInCurator }) {
             color: '#6aabc0',
           }}
         >
-          Apply Fix
+          {t("auto.components_home_OptimizeModal.apply_fix_157qd1")}
         </button>
         <button
           type="button"
@@ -214,7 +216,7 @@ function InsightCard({ card, onApplyFix, onReviewInCurator }) {
             color: '#D4956A',
           }}
         >
-          Review in Curator
+          {t("auto.components_home_OptimizeModal.review_in_curator_7tk1v2")}
         </button>
       </div>
     </div>
@@ -232,6 +234,7 @@ export default function OptimizeModal({
   bottles = [],
   smokeLogs = [],
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [activeMode, setActiveMode] = useState('all');
   const [activeModule, setActiveModule] = useState('pipe');
@@ -450,10 +453,10 @@ export default function OptimizeModal({
             className="text-2xl font-bold"
             style={{ fontFamily: "'Georgia', serif" }}
           >
-            Optimize Your Collection
+            {t("auto.components_home_OptimizeModal.optimize_your_collection_hx55xt")}
           </SheetTitle>
           <p className="text-sm mt-1" style={{ color: 'rgba(224,216,200,0.62)' }}>
-            Cross-module analysis powered by Curator intelligence.
+            {t("auto.components_home_OptimizeModal.cross_module_analysis_powered_by_curator_19lqfp")}
           </p>
         </SheetHeader>
 
@@ -506,7 +509,7 @@ export default function OptimizeModal({
                           border: '1px solid rgba(74,124,156,0.3)',
                         }}
                       >
-                        Primary
+                        {t("auto.components_home_OptimizeModal.primary_9ux2zt")}
                       </span>
                     )}
                   </div>
@@ -569,7 +572,7 @@ export default function OptimizeModal({
                 className="text-sm font-semibold"
                 style={{ color: '#F5F1E7' }}
               >
-                Your collection is well optimized — no immediate actions needed.
+                {t("auto.components_home_OptimizeModal.your_collection_is_well_optimized_no_1ubt2q")}
               </p>
             </div>
           ) : (

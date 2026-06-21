@@ -32,6 +32,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import { useValuation } from '@/lib/valuation/useValuation';
 import { computeGainLoss } from '@/lib/valuation/valuationEngine';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -95,6 +96,7 @@ const RECOMMENDATION_CONFIG = {
 };
 
 function RecommendationBlock({ holdRecommendation, rationale }) {
+  const { t } = useTranslation();
   const cfg = RECOMMENDATION_CONFIG[holdRecommendation] || RECOMMENDATION_CONFIG.either;
   const Icon = cfg.icon;
   return (
@@ -104,7 +106,7 @@ function RecommendationBlock({ holdRecommendation, rationale }) {
           <Icon className="w-4 h-4" style={{ color: cfg.iconColor }} />
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-[0.12em] text-[#D8C7A6]/60">Strategy</p>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-[#D8C7A6]/60">{t("auto.components_valuation_UnifiedValuationCard.strategy_22l3dk")}</p>
           <p className="text-sm font-bold" style={{ color: cfg.textColor }}>{cfg.label}</p>
         </div>
       </div>
@@ -144,12 +146,13 @@ function ReplacementDots({ level }) {
 }
 
 function SnapshotList({ snapshots, formatFn }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const shown = expanded ? snapshots : snapshots.slice(0, 3);
   if (!snapshots.length) return (
     <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.1)' }}>
-      <p className="text-xs text-[#D8C7A6]/50">No checkpoints yet</p>
-      <p className="text-xs text-[#D8C7A6]/40 mt-1">Save a checkpoint to start tracking value history</p>
+      <p className="text-xs text-[#D8C7A6]/50">{t("auto.components_valuation_UnifiedValuationCard.no_checkpoints_yet_1agy6r")}</p>
+      <p className="text-xs text-[#D8C7A6]/40 mt-1">{t("auto.components_valuation_UnifiedValuationCard.save_a_checkpoint_to_start_tracking_1p36ac")}</p>
     </div>
   );
   return (
@@ -174,12 +177,13 @@ function SnapshotList({ snapshots, formatFn }) {
 }
 
 function ObservationList({ observations, formatFn }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const shown = expanded ? observations : observations.slice(0, 3);
   if (!observations.length) return (
     <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(59,130,246,0.12)' }}>
-      <p className="text-xs text-[#D8C7A6]/50">No observations yet</p>
-      <p className="text-xs text-[#D8C7A6]/40 mt-1">Add observations to track real-world market prices</p>
+      <p className="text-xs text-[#D8C7A6]/50">{t("auto.components_valuation_UnifiedValuationCard.no_observations_yet_lhwdw3")}</p>
+      <p className="text-xs text-[#D8C7A6]/40 mt-1">{t("auto.components_valuation_UnifiedValuationCard.add_observations_to_track_real_world_d35n2g")}</p>
     </div>
   );
   return (
@@ -222,6 +226,7 @@ export default function UnifiedValuationCard({
   onRefreshNow,
   isRefreshing = false,
 }) {
+  const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
 
   // Valuation breakdown data (You Paid, Local Value, Global Benchmark, Gain/Loss)
@@ -261,7 +266,7 @@ export default function UnifiedValuationCard({
               style={{ background: 'rgba(180,140,75,0.12)', border: '1px solid rgba(180,140,75,0.22)' }}>
               <TrendingUp className="w-4 h-4 text-[#B48C4B]" />
             </div>
-            <p className="text-sm font-bold text-[#D4A574] uppercase tracking-[0.12em]">Value &amp; Appraisal</p>
+            <p className="text-sm font-bold text-[#D4A574] uppercase tracking-[0.12em]">{t("auto.components_valuation_UnifiedValuationCard.value_and_appraisal_1l51zt")}</p>
           </div>
 
           {/* Run Appraisal — prominent */}
@@ -280,8 +285,8 @@ export default function UnifiedValuationCard({
               size="sm"
             >
               {isRunningAppraisal
-                ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Running…</>
-                : <><Sparkles className="w-3.5 h-3.5 mr-1.5" />Run Appraisal</>
+                ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />{t("auto.components_valuation_UnifiedValuationCard.running_qkg9ho")}</>
+                : <><Sparkles className="w-3.5 h-3.5 mr-1.5" />{t("auto.components_valuation_UnifiedValuationCard.run_appraisal_1eovae")}</>
               }
             </Button>
           )}
@@ -292,31 +297,31 @@ export default function UnifiedValuationCard({
           <button type="button" onClick={onAddSnapshot}
             className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors min-h-[36px]"
             style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.28)' }}
-            title="Save today's value as a history checkpoint">
+            title={t("auto.components_valuation_UnifiedValuationCard.save_today_s_value_as_a_1g46ng")}>
             <PlusCircle className="w-3.5 h-3.5 shrink-0" />
-            <span>Save Checkpoint</span>
+            <span>{t("auto.components_valuation_UnifiedValuationCard.save_checkpoint_1tg0r4")}</span>
           </button>
           <button type="button" onClick={onAddObservation}
             className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors min-h-[36px]"
             style={{ background: 'rgba(59,130,246,0.12)', color: '#93C5FD', border: '1px solid rgba(59,130,246,0.25)' }}
-            title="Add a real-world market price observation">
+            title={t("auto.components_valuation_UnifiedValuationCard.add_a_real_world_market_price_42jirv")}>
             <Eye className="w-3.5 h-3.5 shrink-0" />
-            <span>Add Observation</span>
+            <span>{t("auto.components_valuation_UnifiedValuationCard.add_observation_1v7odn")}</span>
           </button>
           {onEditValuation && (
             <button type="button" onClick={onEditValuation}
               className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors min-h-[36px]"
               style={{ background: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.22)' }}
-              title="Edit pricing and valuation inputs">
+              title={t("auto.components_valuation_UnifiedValuationCard.edit_pricing_and_valuation_inputs_hmma5c")}>
               <DollarSign className="w-3.5 h-3.5 shrink-0" />
-              <span>Pricing</span>
+              <span>{t("auto.components_valuation_UnifiedValuationCard.pricing_9upkb5")}</span>
             </button>
           )}
           {onRefreshNow && (
             <button type="button" onClick={onRefreshNow} disabled={isRefreshing}
               className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 min-h-[36px]"
               style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.28)' }}
-              title="Recompute and save a new value snapshot now">
+              title={t("auto.components_valuation_UnifiedValuationCard.recompute_and_save_a_new_value_1kboiu")}>
               <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
               <span>{isRefreshing ? 'Refreshing…' : 'Refresh'}</span>
             </button>
@@ -332,7 +337,7 @@ export default function UnifiedValuationCard({
         {/* ── Current Value + Trend ─────────────────────────────────────── */}
         <div className="flex flex-wrap items-start gap-4">
           <div className="min-w-0 flex-1">
-            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-1">Current Value</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-1">{t("auto.components_valuation_UnifiedValuationCard.current_value_ugkd51")}</p>
             <p className="text-3xl font-bold text-[#F5F1E7] tabular-nums">
               {currentValue > 0 ? formatFromBase(currentValue) : '--'}
             </p>
@@ -341,12 +346,12 @@ export default function UnifiedValuationCard({
               <ConfidenceBadge level={confidence} />
             </div>
             {latestSavedSnap && (
-              <p className="text-xs text-[#D8C7A6]/45 mt-1">Last checkpoint: {formatDate(latestSavedSnap.snapshot_date)}</p>
+              <p className="text-xs text-[#D8C7A6]/45 mt-1">{t("auto.components_valuation_UnifiedValuationCard.last_checkpoint_1djz7w")} {formatDate(latestSavedSnap.snapshot_date)}</p>
             )}
           </div>
           <div className="shrink-0 rounded-xl px-4 py-3 text-center min-w-[110px]"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
-            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2">Trend</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2">{t("auto.components_valuation_UnifiedValuationCard.trend_3xoqn6")}</p>
             <TrendChip trend={valueTrend || valuationSnapshot.trend} />
           </div>
         </div>
@@ -355,11 +360,11 @@ export default function UnifiedValuationCard({
         {breakdown && (breakdown.costBasis?.value > 0 || breakdown.localMarketValue?.valueUSD > 0 || breakdown.globalBenchmark?.value > 0) && (
           <div className="rounded-xl p-4 space-y-1.5"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(120,90,65,0.25)' }}>
-            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5 font-semibold">Valuation Breakdown</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5 font-semibold">{t("auto.components_valuation_UnifiedValuationCard.valuation_breakdown_d6tmgl")}</p>
 
             {breakdown.costBasis?.value > 0 && (
               <div className="flex items-center justify-between gap-2 py-1 border-b border-[rgba(255,255,255,0.04)]">
-                <span className="text-xs text-[#D8C7A6]/65">You Paid</span>
+                <span className="text-xs text-[#D8C7A6]/65">{t("auto.components_valuation_UnifiedValuationCard.you_paid_549yf4")}</span>
                 <span className="text-sm font-semibold text-[#E0D8C8]/90">{formatValue(breakdown.costBasis.value)}</span>
               </div>
             )}
@@ -368,7 +373,7 @@ export default function UnifiedValuationCard({
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-[#D4A574]/60" />
                   <span className="text-xs text-[#D8C7A6]/65">
-                    Local Value{breakdown.localMarketValue.country ? ` (${breakdown.localMarketValue.country})` : ''}
+                    {t("auto.components_valuation_UnifiedValuationCard.local_value_1854yp")}{breakdown.localMarketValue.country ? ` (${breakdown.localMarketValue.country})` : ''}
                   </span>
                 </div>
                 <span className="text-sm font-semibold" style={{ color: '#D4A574' }}>{formatValue(breakdown.localMarketValue.valueUSD)}</span>
@@ -378,7 +383,7 @@ export default function UnifiedValuationCard({
               <div className="flex items-center justify-between gap-2 py-1 border-b border-[rgba(255,255,255,0.04)]">
                 <div className="flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5 text-[#D4A574]/60" />
-                  <span className="text-xs text-[#D8C7A6]/65">Global Benchmark</span>
+                  <span className="text-xs text-[#D8C7A6]/65">{t("auto.components_valuation_UnifiedValuationCard.global_benchmark_1a8kq2")}</span>
                 </div>
                 <span className="text-sm font-semibold text-[#E0D8C8]/90">{formatValue(breakdown.globalBenchmark.value)}</span>
               </div>
@@ -387,7 +392,7 @@ export default function UnifiedValuationCard({
               <div className="flex items-center justify-between gap-2 py-1">
                 <div className="flex items-center gap-1.5">
                   <TrendIcon className="w-3.5 h-3.5 shrink-0" style={{ color: trendColor }} />
-                  <span className="text-xs text-[#D8C7A6]/65">Gain / Loss</span>
+                  <span className="text-xs text-[#D8C7A6]/65">{t("auto.components_valuation_UnifiedValuationCard.gain_loss_1k9qpw")}</span>
                 </div>
                 <span className="text-sm font-semibold" style={{ color: trendColor }}>
                   {gainLoss.direction === 'up' ? '+' : ''}{gainLoss.pct.toFixed(1)}%
@@ -403,19 +408,19 @@ export default function UnifiedValuationCard({
 
         {/* ── Replacement Difficulty ───────────────────────────────────────── */}
         <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
-          <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2 font-semibold">Replacement Difficulty</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2 font-semibold">{t("auto.components_valuation_UnifiedValuationCard.replacement_difficulty_i84seg")}</p>
           <ReplacementDots level={replacementDifficulty} />
         </div>
 
         {/* ── Value History ─────────────────────────────────────────────────── */}
         <div>
-          <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">Value History</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">{t("auto.components_valuation_UnifiedValuationCard.value_history_1q69dj")}</p>
           <SnapshotList snapshots={valueSnapshots} formatFn={formatFromBase} />
         </div>
 
         {/* ── Market Observations ──────────────────────────────────────────── */}
         <div>
-          <p className="text-xs uppercase tracking-[0.12em] text-[#93C5FD]/60 mb-2.5">Market Observations</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-[#93C5FD]/60 mb-2.5">{t("auto.components_valuation_UnifiedValuationCard.market_observations_1n20gr")}</p>
           <ObservationList observations={priceObservations} formatFn={formatFromBase} />
         </div>
 
@@ -423,7 +428,7 @@ export default function UnifiedValuationCard({
         <div className="flex items-start gap-2 pt-1 border-t border-[rgba(120,90,65,0.18)]">
           <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: 'rgba(224,216,200,0.25)' }} />
           <p className="text-xs" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            Estimated values based on available reference signals. Not a guarantee of actual market price.
+            {t("auto.components_valuation_UnifiedValuationCard.estimated_values_based_on_available_reference_kq4cw2")}
           </p>
         </div>
       </div>

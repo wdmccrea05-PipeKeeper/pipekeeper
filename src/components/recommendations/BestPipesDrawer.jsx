@@ -2,6 +2,7 @@ import React from "react";
 import { X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PipeIcon from "@/components/icons/PipeIcon";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function BestPipesDrawer({
   isOpen,
@@ -12,6 +13,7 @@ export default function BestPipesDrawer({
   onRetry,
   anchorName,
 }) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -39,10 +41,10 @@ export default function BestPipesDrawer({
           <div>
             <div className="flex items-center gap-2">
               <PipeIcon className="w-4 h-4" color="#B48C4B" />
-              <span className="font-semibold text-[#F5F1E7]">Best Pipe Matches</span>
+              <span className="font-semibold text-[#F5F1E7]">{t("auto.components_recommendations_BestPipesDrawer.best_pipe_matches_15gi4w")}</span>
             </div>
             {anchorName && (
-              <p className="text-xs text-[#D8C7A6]/65 mt-0.5">For {anchorName}</p>
+              <p className="text-xs text-[#D8C7A6]/65 mt-0.5">{t("auto.components_recommendations_BestPipesDrawer.for_376gdo")} {anchorName}</p>
             )}
           </div>
           <button
@@ -62,7 +64,7 @@ export default function BestPipesDrawer({
                 className="w-9 h-9 rounded-full border-4 animate-spin"
                 style={{ borderColor: "rgba(180,140,75,0.2)", borderTopColor: "#B48C4B" }}
               />
-              <p className="text-sm text-[#D8C7A6]/70">Scoring your pipes…</p>
+              <p className="text-sm text-[#D8C7A6]/70">{t("auto.components_recommendations_BestPipesDrawer.scoring_your_pipes_7vxv5c")}</p>
             </div>
           )}
 
@@ -70,7 +72,7 @@ export default function BestPipesDrawer({
             <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
               <p className="text-[#E0D8C8]/70 text-sm max-w-sm">{error}</p>
               <Button variant="outline" size="sm" onClick={onRetry}>
-                <RefreshCw className="w-3 h-3 mr-2" /> Try Again
+                <RefreshCw className="w-3 h-3 mr-2" /> {t("auto.components_recommendations_BestPipesDrawer.try_again_4ztias")}
               </Button>
             </div>
           )}
@@ -79,7 +81,7 @@ export default function BestPipesDrawer({
             <div className="space-y-4">
               {results.length === 0 ? (
                 <p className="text-center text-[#D8C7A6]/60 text-sm py-10">
-                  No pipes in your collection to match against.
+                  {t("auto.components_recommendations_BestPipesDrawer.no_pipes_in_your_collection_to_q9hxi2")}
                 </p>
               ) : (
                 results.map((item, i) => (
@@ -168,7 +170,7 @@ export default function BestPipesDrawer({
               className="text-xs flex items-center gap-1 hover:opacity-80 transition-opacity"
               style={{ color: "#B48C4B" }}
             >
-              <RefreshCw className="w-3 h-3" /> Refresh
+              <RefreshCw className="w-3 h-3" /> {t("auto.components_recommendations_BestPipesDrawer.refresh_183tk5")}
             </button>
             <button
               type="button"
@@ -176,7 +178,7 @@ export default function BestPipesDrawer({
               className="text-xs hover:opacity-80 transition-opacity"
               style={{ color: "rgba(216,199,166,0.6)" }}
             >
-              Close
+              {t("auto.components_recommendations_BestPipesDrawer.close_3lk8qj")}
             </button>
           </div>
         )}

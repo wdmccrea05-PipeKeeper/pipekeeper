@@ -10,6 +10,7 @@ import {
   STORAGE_TYPES,
   getModuleConfig,
 } from './inventoryConfig';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function SectionLabel({ children }) {
   return (
@@ -55,6 +56,7 @@ export default function InventoryStep({
   onBack,
   saving = false,
 }) {
+  const { t } = useTranslation();
   const config = getModuleConfig(moduleType);
   const engine = useMemo(() => new InventoryEngine(moduleType), [moduleType]);
   const [formData, setFormData] = useState(engine.getDefaults(data));
@@ -109,7 +111,7 @@ export default function InventoryStep({
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             {stepLabel}
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 3 of 4</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>{t("auto.components_inventory_InventoryStep.step_3_of_4_stwk7x")}</p>
         </div>
       </div>
 
@@ -118,7 +120,7 @@ export default function InventoryStep({
       <div className="px-6 py-6 flex flex-col gap-5">
         {showBlendFields && (
           <div className="flex flex-col gap-2">
-            <SectionLabel>Container Type</SectionLabel>
+            <SectionLabel>{t("auto.components_inventory_InventoryStep.container_type_1c4a5t")}</SectionLabel>
             <ChoicePills
               options={config.containers}
               value={formData.containerType}
@@ -166,7 +168,7 @@ export default function InventoryStep({
         {showBottleFields && (
           <>
             <div className="flex flex-col gap-2">
-              <SectionLabel>Status</SectionLabel>
+              <SectionLabel>{t("auto.components_inventory_InventoryStep.status_1m8lgy")}</SectionLabel>
               <ChoicePills
                 options={config.statuses}
                 value={formData.status}
@@ -179,7 +181,7 @@ export default function InventoryStep({
             </div>
 
             <div className="flex flex-col gap-2">
-              <SectionLabel>Fill Level (Optional)</SectionLabel>
+              <SectionLabel>{t("auto.components_inventory_InventoryStep.fill_level_optional_xyjg57")}</SectionLabel>
               <Input
                 type="number"
                 min="0"
@@ -196,7 +198,7 @@ export default function InventoryStep({
 
         {showWineFields && (
           <div className="flex flex-col gap-2">
-            <SectionLabel>Status</SectionLabel>
+            <SectionLabel>{t("auto.components_inventory_InventoryStep.status_1m8lgy")}</SectionLabel>
             <ChoicePills
               options={config.statuses}
               value={formData.status}
@@ -211,7 +213,7 @@ export default function InventoryStep({
 
         {showBlendFields && (
           <div className="flex flex-col gap-2">
-            <SectionLabel>Status</SectionLabel>
+            <SectionLabel>{t("auto.components_inventory_InventoryStep.status_1m8lgy")}</SectionLabel>
             <ChoicePills
               options={config.statuses}
               value={formData.status}
@@ -226,7 +228,7 @@ export default function InventoryStep({
 
         {config.storageOptions?.length > 0 && (
           <div className="flex flex-col gap-2">
-            <SectionLabel>Storage</SectionLabel>
+            <SectionLabel>{t("auto.components_inventory_InventoryStep.storage_4bgx22")}</SectionLabel>
             <ChoicePills
               options={config.storageOptions}
               value={formData.storage}
@@ -246,7 +248,7 @@ export default function InventoryStep({
 
         {(formData.storage === STORAGE_TYPES.CELLAR || formData.storage === STORAGE_TYPES.BOTH) && !showPipeFields && (
           <div className="flex flex-col gap-2">
-            <SectionLabel>Cellar Date (Optional)</SectionLabel>
+            <SectionLabel>{t("auto.components_inventory_InventoryStep.cellar_date_optional_1h28yk")}</SectionLabel>
             <Input
               type="date"
               value={formData.cellarDate ?? ''}
@@ -258,7 +260,7 @@ export default function InventoryStep({
 
         {(showBottleFields || showWineFields || showCigarFields || showBlendFields) && (
           <div className="flex flex-col gap-2">
-            <SectionLabel>Purchase Price (Optional)</SectionLabel>
+            <SectionLabel>{t("auto.components_inventory_InventoryStep.purchase_price_optional_1v2rvt")}</SectionLabel>
             <Input
               type="number"
               min="0"
@@ -274,7 +276,7 @@ export default function InventoryStep({
         {showPipeFields && (
           <>
             <div className="flex flex-col gap-2">
-              <SectionLabel>Ownership Status</SectionLabel>
+              <SectionLabel>{t("auto.components_inventory_InventoryStep.ownership_status_5t9ieg")}</SectionLabel>
               <ChoicePills
                 options={config.storageOptions}
                 value={formData.ownershipStatus || formData.storage}
@@ -292,7 +294,7 @@ export default function InventoryStep({
             </div>
 
             <div className="flex flex-col gap-2">
-              <SectionLabel>Acquisition Price (Optional)</SectionLabel>
+              <SectionLabel>{t("auto.components_inventory_InventoryStep.acquisition_price_optional_152gti")}</SectionLabel>
               <Input
                 type="number"
                 min="0"
@@ -317,7 +319,7 @@ export default function InventoryStep({
           }}
         >
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-          Continue
+          {t("auto.components_inventory_InventoryStep.continue_1fqfxw")}
         </Button>
       </div>
       <div className="pb-4" />

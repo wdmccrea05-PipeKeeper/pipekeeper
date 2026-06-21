@@ -489,7 +489,7 @@ export default function CuratorWorkspace({
       if (result?.appliedCount > 0) {
         toast.success(`${result.appliedCount} record${result.appliedCount !== 1 ? 's' : ''} updated.`);
       } else if (actionKey === 'acknowledge' || actionKey === 'mark_reviewed') {
-        toast.success('Marked as reviewed.');
+        toast.success(t("auto.components_curator_CuratorWorkspace.marked_as_reviewed_7agm1i"));
       }
 
       const resolvedIds = result.resolvedRecordIds || [];

@@ -40,7 +40,7 @@ export default function TastingLogForm({ bottle, onSubmit, onCancel }) {
     >
       <div className="flex items-center justify-between">
         <h2 style={{ color: '#F5F1E7' }} className="text-2xl font-bold">
-          Log Tasting
+          {t("auto.components_whiskey_TastingLog.log_tasting_1njc2o")}
         </h2>
         <button onClick={onCancel} className="text-[#E0D8C8]/70 hover:text-[#E0D8C8]">
           <X className="w-5 h-5" />
@@ -55,7 +55,7 @@ export default function TastingLogForm({ bottle, onSubmit, onCancel }) {
             border: '1px solid rgba(180, 140, 75, 0.2)',
           }}
         >
-          <p className="text-sm text-[#D8C7A6]">Logging tasting for:</p>
+          <p className="text-sm text-[#D8C7A6]">{t("auto.components_whiskey_TastingLog.logging_tasting_for_1xkevb")}</p>
           <p style={{ color: '#F5F1E7' }} className="font-semibold">
             {bottle.name}
           </p>
@@ -65,7 +65,7 @@ export default function TastingLogForm({ bottle, onSubmit, onCancel }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Date */}
         <div>
-          <label className="text-sm text-[#D8C7A6] block mb-2">Tasting Date *</label>
+          <label className="text-sm text-[#D8C7A6] block mb-2">{t("auto.components_whiskey_TastingLog.tasting_date_1f4hpj")}</label>
           <Input
             type="date"
             value={formData.tasting_date}
@@ -77,7 +77,7 @@ export default function TastingLogForm({ bottle, onSubmit, onCancel }) {
 
         {/* Rating */}
         <div>
-          <label className="text-sm text-[#D8C7A6] block mb-2">Rating (1-5)</label>
+          <label className="text-sm text-[#D8C7A6] block mb-2">{t("auto.components_whiskey_TastingLog.rating_1_5_1w0652")}</label>
           <Input
             type="number"
             step="0.5"
@@ -92,7 +92,7 @@ export default function TastingLogForm({ bottle, onSubmit, onCancel }) {
 
         {/* Pairing */}
         <div>
-          <label className="text-sm text-[#D8C7A6] block mb-2">Pairing</label>
+          <label className="text-sm text-[#D8C7A6] block mb-2">{t("auto.components_whiskey_TastingLog.pairing_1xw1g5")}</label>
           <Input
             value={formData.pairing}
             onChange={(e) => handleChange('pairing', e.target.value)}
@@ -103,11 +103,11 @@ export default function TastingLogForm({ bottle, onSubmit, onCancel }) {
 
         {/* Notes */}
         <div>
-          <label className="text-sm text-[#D8C7A6] block mb-2">Notes</label>
+          <label className="text-sm text-[#D8C7A6] block mb-2">{t("auto.components_whiskey_TastingLog.notes_3te9gu")}</label>
           <Textarea
             value={formData.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
-            placeholder="Describe your tasting experience..."
+            placeholder={t("auto.components_whiskey_TastingLog.describe_your_tasting_experience_1qbbpl")}
             className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] h-32"
           />
         </div>
@@ -115,7 +115,7 @@ export default function TastingLogForm({ bottle, onSubmit, onCancel }) {
         {/* Actions */}
         <div className="flex gap-3 justify-end pt-4">
           <Button variant="outline" onClick={onCancel}>
-            Cancel
+            {t("auto.components_whiskey_TastingLog.cancel_1bin7k")}
           </Button>
           <Button
             type="submit"
@@ -124,7 +124,7 @@ export default function TastingLogForm({ bottle, onSubmit, onCancel }) {
               color: '#F5F1E7',
             }}
           >
-            Log Tasting
+            {t("auto.components_whiskey_TastingLog.log_tasting_1njc2o")}
           </Button>
         </div>
       </form>

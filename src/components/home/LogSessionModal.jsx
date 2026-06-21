@@ -245,7 +245,7 @@ export default function LogSessionModal({
       return;
     }
     if (pipeMode === "external" && !externalPipe) {
-      toast.error("Please select or add an external pipe.");
+      toast.error(t("auto.components_home_LogSessionModal.please_select_or_add_an_external_1nvqij"));
       return;
     }
     if (blendMode === "collection" && !blend) {
@@ -253,7 +253,7 @@ export default function LogSessionModal({
       return;
     }
     if (blendMode === "external" && !externalBlend) {
-      toast.error("Please select or add an external blend.");
+      toast.error(t("auto.components_home_LogSessionModal.please_select_or_add_an_external_1d8y8m"));
       return;
     }
 
@@ -531,7 +531,7 @@ export default function LogSessionModal({
       onClose?.();
     } catch (err) {
       console.error("[LogSessionModal] save failed:", err);
-      toast.error("Failed to log session");
+      toast.error(t("auto.components_home_LogSessionModal.failed_to_log_session_mcou4z"));
       setSaving(false);
     }
   };
@@ -559,19 +559,19 @@ export default function LogSessionModal({
       >
         <SheetContent className="overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>Log Pipe Session</SheetTitle>
+            <SheetTitle>{t("auto.components_home_LogSessionModal.log_pipe_session_67r2ah")}</SheetTitle>
           </SheetHeader>
 
           {isLoading ? (
             <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-16 gap-4">
               <div aria-hidden="true" className="w-8 h-8 border-2 border-[#A35C5C] border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-[#E0D8C8]/60">Loading your collection…</p>
+              <p className="text-sm text-[#E0D8C8]/60">{t("auto.components_home_LogSessionModal.loading_your_collection_9hxt7o")}</p>
             </div>
           ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-3">
               <div>
-                <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">Pipe Source</Label>
+                <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">{t("auto.components_home_LogSessionModal.pipe_source_1neva1")}</Label>
                 <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
                   <button
                     type="button"
@@ -587,7 +587,7 @@ export default function LogSessionModal({
                         : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
                     } ${saving ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
-                    From Collection
+                    {t("auto.components_home_LogSessionModal.from_collection_ffgfol")}
                   </button>
                   <button
                     type="button"
@@ -602,7 +602,7 @@ export default function LogSessionModal({
                         : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
                     } ${saving ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
-                    Other Pipe
+                    {t("auto.components_home_LogSessionModal.other_pipe_199rls")}
                   </button>
                 </div>
               </div>
@@ -675,7 +675,7 @@ export default function LogSessionModal({
                     onManualAdd={() => setShowPipeManual(true)}
                   />
                   <p className="text-xs text-amber-400/80 mt-1">
-                    Select a search result or add the item manually to continue.
+                    {t("auto.components_home_LogSessionModal.select_a_search_result_or_add_k1aoum")}
                   </p>
                 </>
               )}
@@ -709,7 +709,7 @@ export default function LogSessionModal({
 
             <div className="space-y-3">
               <div>
-                <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">Blend Source</Label>
+                <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">{t("auto.components_home_LogSessionModal.blend_source_14qqei")}</Label>
                 <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)]">
                   <button
                     type="button"
@@ -725,7 +725,7 @@ export default function LogSessionModal({
                         : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
                     } ${saving ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
-                    From Collection
+                    {t("auto.components_home_LogSessionModal.from_collection_ffgfol")}
                   </button>
                   <button
                     type="button"
@@ -740,7 +740,7 @@ export default function LogSessionModal({
                         : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
                     } ${saving ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
-                    Something New
+                    {t("auto.components_home_LogSessionModal.something_new_92ctod")}
                   </button>
                 </div>
               </div>
@@ -787,7 +787,7 @@ export default function LogSessionModal({
                     onManualAdd={() => setShowBlendManual(true)}
                   />
                   <p className="text-xs text-amber-400/80 mt-1">
-                    Select a search result or add the item manually to continue.
+                    {t("auto.components_home_LogSessionModal.select_a_search_result_or_add_k1aoum")}
                   </p>
                 </>
               )}

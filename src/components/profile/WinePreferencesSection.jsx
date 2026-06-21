@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const WINE_STYLES = ['Red', 'White', 'Rosé', 'Sparkling', 'Dessert', 'Fortified', 'Orange', 'Other'];
 
@@ -70,6 +71,7 @@ function MultiSelectGroup({ label, options, selected = [], onToggle }) {
 }
 
 export default function WinePreferencesSection({ preferences = {}, onChange }) {
+  const { t } = useTranslation();
   const prefs = {
     styles: [],
     varietals: [],
@@ -140,7 +142,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
       {/* Cellar Strategy */}
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'rgba(212,165,116,0.75)' }}>
-          Cellar / Storage Strategy
+          {t("auto.components_profile_WinePreferencesSection.cellar_storage_strategy_1wi3gq")}
         </p>
         <div className="flex flex-wrap gap-2">
           {CELLAR_STRATEGIES.map(({ value, label }) => {
@@ -167,11 +169,11 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
       {/* Budget */}
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'rgba(212,165,116,0.75)' }}>
-          Budget Preferences
+          {t("auto.components_profile_WinePreferencesSection.budget_preferences_1kenmy")}
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Everyday bottle min ($)</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_profile_WinePreferencesSection.everyday_bottle_min_1xr95x")}</label>
             <input
               type="number"
               min="0"
@@ -183,7 +185,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
             />
           </div>
           <div>
-            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Everyday bottle max ($)</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_profile_WinePreferencesSection.everyday_bottle_max_1srww2")}</label>
             <input
               type="number"
               min="0"
@@ -195,7 +197,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
             />
           </div>
           <div>
-            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Special bottle min ($)</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_profile_WinePreferencesSection.special_bottle_min_srr4rt")}</label>
             <input
               type="number"
               min="0"
@@ -207,7 +209,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
             />
           </div>
           <div>
-            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Special bottle max ($)</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_profile_WinePreferencesSection.special_bottle_max_nseuwb")}</label>
             <input
               type="number"
               min="0"
@@ -219,7 +221,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
             />
           </div>
           <div className="col-span-2">
-            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Max recommended bottle price ($)</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_profile_WinePreferencesSection.max_recommended_bottle_price_x68hcw")}</label>
             <input
               type="number"
               min="0"

@@ -14,6 +14,7 @@ import {
 import { classifyDiagnosticIntent, DIAGNOSTIC_INTENT } from '@/lib/curator/curatorIntentClassifier.js';
 import { answerCuratorDeterministicQuery } from '@/lib/curator/curatorDeterministicChat.js';
 import { analyzeWineOptimizationIssues } from '@/lib/curator/wineOptimization.js';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -1559,6 +1560,7 @@ export default function ExpertTobacconistChat({
   activeModules = {},
   initialEntityContext = null,
 }) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -1732,7 +1734,7 @@ export default function ExpertTobacconistChat({
       <div className="px-5 sm:px-7 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h3 className="text-[18px] sm:text-[20px] font-semibold" style={{ color: '#F5F5F7' }}>Curator Console</h3>
+            <h3 className="text-[18px] sm:text-[20px] font-semibold" style={{ color: '#F5F5F7' }}>{t("auto.components_agent_ExpertTobacconistChat.curator_console_5nts60")}</h3>
             <p className="text-[13px] sm:text-[14px] mt-0.5" style={{ color: '#6B6860' }}>
               {hasCollection ? 'Personalized intelligence from your collection' : 'Expert collector advisor — ask anything'}
             </p>
@@ -1744,7 +1746,7 @@ export default function ExpertTobacconistChat({
               className="text-[12px] px-3 py-1.5 rounded-lg"
               style={{ border: '1px solid rgba(255,255,255,0.08)', color: '#71717A' }}
             >
-              New chat
+              {t("auto.components_agent_ExpertTobacconistChat.new_chat_1u6tlz")}
             </button>
           )}
         </div>
@@ -1763,7 +1765,7 @@ export default function ExpertTobacconistChat({
       <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5 max-h-[calc(100dvh-14rem)]" style={{ maxHeight: 'min(480px, 50dvh)', minHeight: '220px' }}>
         {messages.length === 0 ? (
           <div>
-            <p className="text-[14px] mb-4" style={{ color: '#6B6860' }}>Ask a question or pick a prompt to get started.</p>
+            <p className="text-[14px] mb-4" style={{ color: '#6B6860' }}>{t("auto.components_agent_ExpertTobacconistChat.ask_a_question_or_pick_a_15fzve")}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {starterPrompts.map((prompt) => (
                 <button
@@ -1819,7 +1821,7 @@ export default function ExpertTobacconistChat({
             {isSending && (
               <div className="flex justify-start">
                 <div className="max-w-[85%]">
-                  <div className="text-[11px] uppercase tracking-[0.10em] mb-1.5" style={{ color: '#4A4840' }}>Curator</div>
+                  <div className="text-[11px] uppercase tracking-[0.10em] mb-1.5" style={{ color: '#4A4840' }}>{t("auto.components_agent_ExpertTobacconistChat.curator_iflcyt")}</div>
                   <div className="rounded-[14px] px-4 py-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <span className="inline-flex gap-1.5 items-center">
                       <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '0ms' }} />
@@ -1843,7 +1845,7 @@ export default function ExpertTobacconistChat({
             value={input}
             onChange={(e) => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; }}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && canSend) { e.preventDefault(); sendMessage(); } }}
-            placeholder="Ask about your collection…"
+            placeholder={t("auto.components_agent_ExpertTobacconistChat.ask_about_your_collection_1exvts")}
             rows={1}
             inputMode="text"
             enterKeyHint="send"
@@ -1855,7 +1857,7 @@ export default function ExpertTobacconistChat({
           />
           <button
             type="button"
-            aria-label="Send message"
+            aria-label={t("auto.components_agent_ExpertTobacconistChat.send_message_nl8xck")}
             disabled={!canSend}
             onClick={sendMessage}
             className="shrink-0 h-12 w-12 rounded-[12px] inline-flex items-center justify-center"
@@ -1864,7 +1866,7 @@ export default function ExpertTobacconistChat({
             <SendHorizontal className="w-4 h-4" />
           </button>
         </div>
-        <p className="text-[11px] mt-2 hidden sm:block" style={{ color: '#3A3830' }}>Enter to send · Shift+Enter for new line</p>
+        <p className="text-[11px] mt-2 hidden sm:block" style={{ color: '#3A3830' }}>{t("auto.components_agent_ExpertTobacconistChat.enter_to_send_shift_enter_for_1ouow8")}</p>
       </div>
     </div>
   );

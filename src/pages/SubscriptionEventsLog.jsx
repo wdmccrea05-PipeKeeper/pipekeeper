@@ -83,9 +83,9 @@ export default function SubscriptionEventsLog() {
                 className="w-full h-10 px-3 rounded-lg bg-[#1a2c42] border border-white/10 text-[#E0D8C8]"
               >
                 <option value="all">{t("admin.allSources")}</option>
-                <option value="stripe">Stripe</option>
-                <option value="cloudflare">Cloudflare</option>
-                <option value="app">App</option>
+                <option value="stripe">{t("auto.pages_SubscriptionEventsLog.stripe_1m8yaz")}</option>
+                <option value="cloudflare">{t("auto.pages_SubscriptionEventsLog.cloudflare_1wyv5l")}</option>
+                <option value="app">{t("auto.pages_SubscriptionEventsLog.app_376c7a")}</option>
                 <option value="admin">{t("layout.admin")}</option>
               </select>
             </div>

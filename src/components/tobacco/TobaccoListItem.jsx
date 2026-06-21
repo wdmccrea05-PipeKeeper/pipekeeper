@@ -150,7 +150,7 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite, onEd
                 style={{ background: 'rgba(212,165,116,0.1)', border: '1px solid rgba(212,165,116,0.2)', color: '#D4A574' }}
               >
                 <Pencil className="w-3 h-3" />
-                Edit
+                {t("auto.components_tobacco_TobaccoListItem.edit_yjrxfv")}
               </button>
             )}
           </div>

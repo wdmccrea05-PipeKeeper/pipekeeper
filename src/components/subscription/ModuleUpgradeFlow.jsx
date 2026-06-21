@@ -232,7 +232,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
 
       const opened = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
       if (!opened || opened?.closed) {
-        toast.error("Unable to open checkout here. Please try again from the Subscription page.");
+        toast.error(t("auto.components_subscription_ModuleUpgradeFlow.unable_to_open_checkout_here_please_jgcphz"));
         navigate(createPageUrl("Subscription"));
       }
     } catch (err) {
@@ -245,7 +245,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
   const currentModules = currentState.paidModules.length > 0 ? (
     <div className="mb-6">
       <h3 className="text-lg font-bold mb-3" style={{ color: '#F5F1E7' }}>
-        Your Current Modules
+        {t("auto.components_subscription_ModuleUpgradeFlow.your_current_modules_1oqih0")}
       </h3>
       <div className="flex flex-wrap gap-2">
         {currentState.paidModules.map((module) => (
@@ -313,7 +313,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
               }}
             >
               <Zap className="w-3 h-3" />
-              Recommended
+              {t("auto.components_subscription_ModuleUpgradeFlow.recommended_10nu47")}
             </span>
           )}
         </div>
@@ -337,7 +337,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
 
         {savings && savings.savingsPercentage > 0 && (
           <p className="text-xs" style={{ color: '#10B981' }}>
-            Save {savings.savingsPercentage}% vs individual modules
+            {t("auto.components_subscription_ModuleUpgradeFlow.save_yk2ng4")} {savings.savingsPercentage}{t("auto.components_subscription_ModuleUpgradeFlow.vs_individual_modules_6bln1x")}
           </p>
         )}
 

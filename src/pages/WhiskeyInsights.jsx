@@ -294,7 +294,7 @@ export default function WhiskeyInsightsPage() {
               <InsightPanel>
                 <div className="flex items-center gap-2 mb-3">
                   <ShieldCheck className="w-4 h-4 text-red-400" />
-                  <InsightSectionHeading>Top Bottles to Hold</InsightSectionHeading>
+                  <InsightSectionHeading>{t("auto.pages_WhiskeyInsights.top_bottles_to_hold_1jx67u")}</InsightSectionHeading>
                 </div>
                 <div className="space-y-2">
                   {topBottlesToHold.map((b, i) => (
@@ -305,7 +305,7 @@ export default function WhiskeyInsightsPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-[#F5F1E7]">{formatCurrency(getBottleValue(b))}</p>
-                        <p className="text-xs" style={{ color: 'rgba(216,199,166,0.6)' }}>Rarity {b._rarityScore}/100</p>
+                        <p className="text-xs" style={{ color: 'rgba(216,199,166,0.6)' }}>{t("auto.pages_WhiskeyInsights.rarity_1l88ju")} {b._rarityScore}/100</p>
                       </div>
                     </div>
                   ))}
@@ -317,7 +317,7 @@ export default function WhiskeyInsightsPage() {
               <InsightPanel>
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles className="w-4 h-4 text-emerald-400" />
-                  <InsightSectionHeading>Safe to Open</InsightSectionHeading>
+                  <InsightSectionHeading>{t("auto.pages_WhiskeyInsights.safe_to_open_1h9dfu")}</InsightSectionHeading>
                 </div>
                 <div className="space-y-2">
                   {bottlesSafeToOpen.map((b, i) => (
@@ -337,7 +337,7 @@ export default function WhiskeyInsightsPage() {
               <InsightPanel>
                 <div className="flex items-center gap-2 mb-3">
                   <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                  <InsightSectionHeading>Replacement Risk</InsightSectionHeading>
+                  <InsightSectionHeading>{t("auto.pages_WhiskeyInsights.replacement_risk_a8yz3i")}</InsightSectionHeading>
                 </div>
                 <div className="space-y-2">
                   {replacementRiskBottles.map((b, i) => (
@@ -390,26 +390,26 @@ export default function WhiskeyInsightsPage() {
             <InsightSectionHeading>{t('insights.reports')}</InsightSectionHeading>
             <div className="space-y-4">
               <div className="p-4 rounded-xl" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
-                <h4 className="font-semibold text-[#F5F1E7] mb-1">Collection Summary</h4>
+                <h4 className="font-semibold text-[#F5F1E7] mb-1">{t("auto.pages_WhiskeyInsights.collection_summary_1fxbtf")}</h4>
                 <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
                   {bottleTypes} bottle type{bottleTypes !== 1 ? 's' : ''}, {totalBottles} total bottle{totalBottles !== 1 ? 's' : ''}
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <button onClick={handleExportPDF} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'rgba(163,92,92,0.3)', color: '#F5F1E7', border: '1px solid rgba(163,92,92,0.4)' }}>
-                    <FileText className="w-4 h-4 inline mr-1" />Export PDF
+                    <FileText className="w-4 h-4 inline mr-1" />{t("auto.pages_WhiskeyInsights.export_pdf_1eliov")}
                   </button>
                   <button onClick={async () => {
                     const csv = [['Bottle Type (Name)', 'Whiskey Style', 'Country', 'Retail Price', 'Rating'].join(','), ...bottles.map(b => [`"${b.name || ''}"`, b.type || '', b.country || '', b.retail_price || 0, b.rating || ''].join(','))].join('\n');
                     const link = document.createElement('a'); link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); link.download = `collection-summary-${new Date().toISOString().slice(0, 10)}.csv`; link.click();
                   }} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'rgba(180,140,75,0.25)', color: '#F5F1E7' }}>
-                    <Download className="w-4 h-4 inline mr-1" />Export CSV
+                    <Download className="w-4 h-4 inline mr-1" />{t("auto.pages_WhiskeyInsights.export_csv_1eliec")}
                   </button>
                 </div>
               </div>
 
               <div className="p-4 rounded-xl" style={{ background: 'rgba(46,125,92,0.08)', border: '1px solid rgba(46,125,92,0.22)' }}>
-                <h4 className="font-semibold text-[#F5F1E7] mb-1">Insurance Report</h4>
-                <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>Export a detailed insurance report with photos, values, and descriptions</p>
+                <h4 className="font-semibold text-[#F5F1E7] mb-1">{t("auto.pages_WhiskeyInsights.insurance_report_1yr83q")}</h4>
+                <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>{t("auto.pages_WhiskeyInsights.export_a_detailed_insurance_report_with_wddn83")}</p>
                 <WhiskeyInsuranceExporter user={user} bottles={bottles} inventoryUnits={inventoryUnits} />
               </div>
             </div>

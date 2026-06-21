@@ -6,6 +6,7 @@ import React from 'react';
 import { AlertCircle, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BrandLogo from '@/components/branding/BrandLogo';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function PlatformErrorState({
   icon: Icon = AlertCircle,
@@ -17,6 +18,7 @@ export default function PlatformErrorState({
   secondaryLabel,
   fullScreen = true,
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className={`flex items-center justify-center p-6 ${fullScreen ? 'min-h-screen' : 'min-h-[60vh]'}`}
@@ -44,7 +46,7 @@ export default function PlatformErrorState({
         </div>
 
         <p className="text-xs uppercase tracking-[0.12em] font-bold mb-1" style={{ color: '#B48C4B' }}>
-          CollectionKeeper
+          {t("auto.components_ui_PlatformErrorState.collectionkeeper_1ukoz8")}
         </p>
 
         <h2

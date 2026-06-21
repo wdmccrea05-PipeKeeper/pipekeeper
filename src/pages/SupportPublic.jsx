@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp, Mail, CheckCircle, AlertCircle } from "lucide-react";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const FAQS = [
   {
@@ -50,6 +51,7 @@ function FAQItem({ q, a }) {
 }
 
 export default function SupportPublic() {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ topic: "General Help", name: "", email: "", message: "" });
   const [status, setStatus] = useState(null); // null | "sending" | "success" | "error"
 
@@ -73,7 +75,7 @@ export default function SupportPublic() {
     <div className="min-h-screen pb-16" style={{ backgroundColor: "#140f0c" }}>
       {/* Header bar */}
       <div className="border-b border-[rgba(180,140,75,0.15)] bg-[rgba(20,15,12,0.9)] px-4 py-4 flex items-center gap-3">
-        <span className="text-[#D4A574] font-bold text-lg tracking-tight">CollectionKeeper</span>
+        <span className="text-[#D4A574] font-bold text-lg tracking-tight">{t("auto.pages_SupportPublic.collectionkeeper_1ukoz8")}</span>
       </div>
 
       {/* ══ APPLE GUIDELINE 1.5 — CONTACT SUPPORT BLOCK (above the fold, no scroll) ══ */}
@@ -85,8 +87,8 @@ export default function SupportPublic() {
         className="px-4 py-6"
       >
         <div className="max-w-xl mx-auto">
-          <h1 className="text-2xl font-bold text-[#F5F1E7] mb-1">Contact Support</h1>
-          <p className="text-[#E0D8C8]/75 text-sm mb-5">Need help with CollectionKeeper? We're here to help.</p>
+          <h1 className="text-2xl font-bold text-[#F5F1E7] mb-1">{t("auto.pages_SupportPublic.contact_support_1iw7ql")}</h1>
+          <p className="text-[#E0D8C8]/75 text-sm mb-5">{t("auto.pages_SupportPublic.need_help_with_collectionkeeper_we_re_idzzc5")}</p>
 
           <a
             href="mailto:admin@pipekeeperapp.com?subject=CollectionKeeper Support"
@@ -94,7 +96,7 @@ export default function SupportPublic() {
             style={{ background: 'linear-gradient(135deg, #a35c5c, #8f4e4e)', fontSize: '1rem' }}
           >
             <Mail className="w-5 h-5" />
-            Email Support
+            {t("auto.pages_SupportPublic.email_support_158jvi")}
           </a>
 
           <p
@@ -104,7 +106,7 @@ export default function SupportPublic() {
             admin@pipekeeperapp.com
           </p>
           <p className="text-center text-[#E0D8C8]/55 text-sm">
-            We typically respond within 24–48 hours.
+            {t("auto.pages_SupportPublic.we_typically_respond_within_24_48_glx0dq")}
           </p>
         </div>
       </div>
@@ -113,51 +115,51 @@ export default function SupportPublic() {
 
         {/* ── SUPPORT FORM ── */}
         <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)] p-6 mb-8">
-          <h2 className="text-xl font-semibold text-[#F5F1E7] mb-5">Submit a Support Request</h2>
+          <h2 className="text-xl font-semibold text-[#F5F1E7] mb-5">{t("auto.pages_SupportPublic.submit_a_support_request_1p1ye1")}</h2>
 
           {status === "success" ? (
             <div className="flex flex-col items-center gap-3 py-6 text-center">
               <CheckCircle className="w-12 h-12 text-green-500" />
-              <p className="text-[#F5F1E7] font-semibold text-lg">Request Sent!</p>
-              <p className="text-[#E0D8C8]/70 text-sm">Your request has been sent. We'll get back to you shortly.</p>
+              <p className="text-[#F5F1E7] font-semibold text-lg">{t("auto.pages_SupportPublic.request_sent_bdd5m1")}</p>
+              <p className="text-[#E0D8C8]/70 text-sm">{t("auto.pages_SupportPublic.your_request_has_been_sent_we_sfole2")}</p>
               <button
                 onClick={() => setStatus(null)}
                 className="mt-2 text-[#D4A574] text-sm underline"
               >
-                Submit another request
+                {t("auto.pages_SupportPublic.submit_another_request_2jv7oz")}
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8]/80 mb-1.5">Topic</label>
+                <label className="block text-sm font-medium text-[#E0D8C8]/80 mb-1.5">{t("auto.pages_SupportPublic.topic_3xmokk")}</label>
                 <select
                   value={form.topic}
                   onChange={(e) => setForm({ ...form, topic: e.target.value })}
                   className="w-full h-10 px-3 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm focus:outline-none focus:ring-2 focus:ring-[#A35C5C]"
                 >
-                  <option>Billing</option>
-                  <option>Account</option>
-                  <option>Bug</option>
-                  <option>Data Sync</option>
-                  <option>General Help</option>
+                  <option>{t("auto.pages_SupportPublic.billing_1o86sh")}</option>
+                  <option>{t("auto.pages_SupportPublic.account_yt74s2")}</option>
+                  <option>{t("auto.pages_SupportPublic.bug_376d5v")}</option>
+                  <option>{t("auto.pages_SupportPublic.data_sync_ctma2k")}</option>
+                  <option>{t("auto.pages_SupportPublic.general_help_16oirf")}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8]/80 mb-1.5">Name <span className="text-red-400">*</span></label>
+                <label className="block text-sm font-medium text-[#E0D8C8]/80 mb-1.5">{t("auto.pages_SupportPublic.name_yjyskm")} <span className="text-red-400">*</span></label>
                 <input
                   required
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Your name"
+                  placeholder={t("auto.pages_SupportPublic.your_name_7ysc45")}
                   className="w-full h-10 px-3 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8]/80 mb-1.5">Email <span className="text-red-400">*</span></label>
+                <label className="block text-sm font-medium text-[#E0D8C8]/80 mb-1.5">{t("auto.pages_SupportPublic.email_3mzikt")} <span className="text-red-400">*</span></label>
                 <input
                   required
                   type="email"
@@ -169,13 +171,13 @@ export default function SupportPublic() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8]/80 mb-1.5">Message <span className="text-red-400">*</span></label>
+                <label className="block text-sm font-medium text-[#E0D8C8]/80 mb-1.5">{t("auto.pages_SupportPublic.message_8llioa")} <span className="text-red-400">*</span></label>
                 <textarea
                   required
                   rows={4}
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  placeholder="Describe your issue or question..."
+                  placeholder={t("auto.pages_SupportPublic.describe_your_issue_or_question_bpleu9")}
                   className="w-full px-3 py-2.5 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-2 focus:ring-[#A35C5C] resize-none"
                 />
               </div>
@@ -183,7 +185,7 @@ export default function SupportPublic() {
               {status === "error" && (
                 <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  Submission failed. Please email us directly at admin@pipekeeperapp.com
+                  {t("auto.pages_SupportPublic.submission_failed_please_email_us_directly_13pp4b")}
                 </div>
               )}
 
@@ -201,7 +203,7 @@ export default function SupportPublic() {
 
         {/* ── FAQ ── */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-[#F5F1E7] mb-4">Frequently Asked Questions</h2>
+          <h2 className="text-xl font-semibold text-[#F5F1E7] mb-4">{t("auto.pages_SupportPublic.frequently_asked_questions_1synnn")}</h2>
           <div className="space-y-2">
             {FAQS.map((faq, i) => (
               <FAQItem key={i} q={faq.q} a={faq.a} />
@@ -210,7 +212,7 @@ export default function SupportPublic() {
         </div>
 
         <p className="text-center text-[#E0D8C8]/30 text-xs pb-4">
-          © {new Date().getFullYear()} CollectionKeeper · <a href="mailto:admin@pipekeeperapp.com" className="underline">admin@pipekeeperapp.com</a>
+          © {new Date().getFullYear()} {t("auto.pages_SupportPublic.collectionkeeper_1cgq7i")} <a href="mailto:admin@pipekeeperapp.com" className="underline">admin@pipekeeperapp.com</a>
         </p>
       </div>
     </div>

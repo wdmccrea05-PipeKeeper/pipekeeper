@@ -13,6 +13,7 @@ import { parseLocalCalendarDate } from '@/components/utils/schemaCompatibility';
 
 // ─── Single-pipe rotation view (used in PipeDetail) ────────────────────────
 function SinglePipeRotation({ pipe }) {
+  const { t } = useTranslation();
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['smoking-logs-pipe', pipe.id],
     queryFn: () => base44.entities.SmokingLog.filter({ pipe_id: pipe.id }, '-date', 20),
@@ -58,10 +59,10 @@ function SinglePipeRotation({ pipe }) {
 
       {/* Recent sessions */}
       <div>
-        <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180,140,75,0.7)' }}>Recent Sessions</p>
-        {isLoading && <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>Loading…</p>}
+        <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180,140,75,0.7)' }}>{t("auto.components_pipes_RotationPlanner.recent_sessions_1xvw7x")}</p>
+        {isLoading && <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("auto.components_pipes_RotationPlanner.loading_1sqiar")}</p>}
         {!isLoading && recentLogs.length === 0 && (
-          <p className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>No sessions logged yet for this pipe.</p>
+          <p className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("auto.components_pipes_RotationPlanner.no_sessions_logged_yet_for_this_cwuf94")}</p>
         )}
         <div className="space-y-2">
           {recentLogs.map((log, i) => {
@@ -116,7 +117,7 @@ export default function RotationPlanner({ user, pipe }) {
       <div className="space-y-1">
         <div className="flex items-center gap-2 mb-3">
           <CalendarClock className="w-4 h-4" style={{ color: 'rgba(180,140,75,0.9)' }} />
-          <span className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>Rotation Status</span>
+          <span className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>{t("auto.components_pipes_RotationPlanner.rotation_status_18eld5")}</span>
         </div>
         <SinglePipeRotation pipe={pipe} />
       </div>

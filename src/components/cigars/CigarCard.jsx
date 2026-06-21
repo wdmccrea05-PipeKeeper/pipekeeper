@@ -177,13 +177,13 @@ export default function CigarCard({
                 border: '1px solid rgba(255,255,255,0.12)',
                 color: 'rgba(255,255,255,0.75)',
               }}
-              aria-label="Open cigar actions"
+              aria-label={t("auto.components_cigars_CigarCard.open_cigar_actions_1un91j")}
             >
               <MoreVertical className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("auto.components_cigars_CigarCard.quick_actions_1q0sjv")}</DropdownMenuLabel>
               <DropdownMenuItem onSelect={() => runCardAction('smoked_one')}>{actionLabels.smoked_one}</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => runCardAction('bought_more')}>{actionLabels.bought_more}</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => runCardAction('toggle_wishlist')}>{actionLabels.toggle_wishlist}</DropdownMenuItem>
@@ -192,12 +192,12 @@ export default function CigarCard({
               <DropdownMenuItem onSelect={() => runCardAction('toggle_not_for_me')}>{actionLabels.toggle_not_for_me}</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => runCardAction('toggle_favorite')}>{actionLabels.toggle_favorite}</DropdownMenuItem>
             {typeof onAssignHumidor === 'function' && (
-              <DropdownMenuItem onSelect={() => onAssignHumidor(cigar)}>Assign Humidor…</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onAssignHumidor(cigar)}>{t("auto.components_cigars_CigarCard.assign_humidor_s79oo")}</DropdownMenuItem>
             )}
             {Array.isArray(humidors) && humidors.length > 0 && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>Assign To</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("auto.components_cigars_CigarCard.assign_to_fkr8a5")}</DropdownMenuLabel>
                 <DropdownMenuItem onSelect={() => runCardAction('unassign_humidor')}>{actionLabels.unassign_humidor}</DropdownMenuItem>
                 {humidors.slice(0, 6).map((humidor) => (
                   <DropdownMenuItem key={humidor.id} onSelect={() => runCardAction({ type: 'assign_humidor', humidorId: humidor.id })}>
@@ -208,10 +208,10 @@ export default function CigarCard({
             )}
             {(typeof onEdit === 'function' || typeof onDelete === 'function') && <DropdownMenuSeparator />}
             {typeof onEdit === 'function' && (
-              <DropdownMenuItem onSelect={() => onEdit(cigar)}>Edit</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onEdit(cigar)}>{t("auto.components_cigars_CigarCard.edit_yjrxfv")}</DropdownMenuItem>
             )}
             {typeof onDelete === 'function' && (
-              <DropdownMenuItem onSelect={() => onDelete(cigar)} className="text-red-500 focus:text-red-500">Delete</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onDelete(cigar)} className="text-red-500 focus:text-red-500">{t("auto.components_cigars_CigarCard.delete_1c8q7h")}</DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -268,10 +268,10 @@ export default function CigarCard({
 
         {typeof onQuickAction === 'function' && (
           <div className="hidden sm:flex flex-wrap gap-1 pt-1 border-t border-[rgba(180,140,75,0.12)]">
-            <button type="button" onClick={(e) => fireQuickAction(e, 'smoked_one')} className="px-2 py-1 rounded text-[10px]" style={{ background: 'rgba(140,107,63,0.18)', color: '#E0D8C8' }}>Smoked 1</button>
-            <button type="button" onClick={(e) => fireQuickAction(e, 'bought_more')} className="px-2 py-1 rounded text-[10px]" style={{ background: 'rgba(76,175,130,0.18)', color: '#E0D8C8' }}>Bought +</button>
-            <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_wishlist')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.wishlist ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>Wishlist</button>
-            <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_shopping')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.shopping_list ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>Shopping</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'smoked_one')} className="px-2 py-1 rounded text-[10px]" style={{ background: 'rgba(140,107,63,0.18)', color: '#E0D8C8' }}>{t("auto.components_cigars_CigarCard.smoked_1_1rwewn")}</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'bought_more')} className="px-2 py-1 rounded text-[10px]" style={{ background: 'rgba(76,175,130,0.18)', color: '#E0D8C8' }}>{t("auto.components_cigars_CigarCard.bought_1phjvb")}</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_wishlist')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.wishlist ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>{t("auto.components_cigars_CigarCard.wishlist_u4bb5o")}</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_shopping')} className="px-2 py-1 rounded text-[10px]" style={{ background: cigar?.shopping_list ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>{t("auto.components_cigars_CigarCard.shopping_s8rhvx")}</button>
           </div>
         )}
       </div>

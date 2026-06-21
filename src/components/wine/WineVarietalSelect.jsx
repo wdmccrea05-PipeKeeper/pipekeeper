@@ -14,6 +14,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { X, ChevronDown, Plus } from 'lucide-react';
 import { VARIETAL_GROUPS, normalizeVarietalName } from '@/lib/wine/wineTaxonomy';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const DROPDOWN_STYLE = {
   background: 'rgba(20,14,10,0.97)',
@@ -44,6 +45,7 @@ export default function WineVarietalSelect({
   onChange,
   placeholder = 'Search or type a varietal…',
 }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [focusedIdx, setFocusedIdx] = useState(-1);
@@ -178,7 +180,7 @@ export default function WineVarietalSelect({
           style={{ color: '#F5F1E7' }}
           aria-autocomplete="list"
           aria-controls="varietal-listbox"
-          aria-label="Varietal search"
+          aria-label={t("auto.components_wine_WineVarietalSelect.varietal_search_jn4p77")}
           autoComplete="off"
         />
         <ChevronDown
@@ -208,13 +210,13 @@ export default function WineVarietalSelect({
               data-option
             >
               <Plus className="w-3.5 h-3.5" />
-              Add &ldquo;{query.trim()}&rdquo;
+              {t("auto.components_wine_WineVarietalSelect.add_3jz3oq")}{query.trim()}&rdquo;
             </button>
           )}
 
           {filteredGroups.length === 0 && !showAddCustom && (
             <div className="px-4 py-3 text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              No varietals found. Type to add a custom entry.
+              {t("auto.components_wine_WineVarietalSelect.no_varietals_found_type_to_add_85ugdd")}
             </div>
           )}
 

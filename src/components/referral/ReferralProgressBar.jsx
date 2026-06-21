@@ -4,11 +4,13 @@
  */
 import React from 'react';
 import { Gift, Star } from 'lucide-react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const REFERRALS_PER_FREE_MONTH = 1;
 const MONTHS_PER_FREE_YEAR = 12;
 
 export default function ReferralProgressBar({ program }) {
+  const { t } = useTranslation();
   if (!program) return null;
 
   const qualified = program.qualified_referrals || 0;
@@ -26,7 +28,7 @@ export default function ReferralProgressBar({ program }) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-base font-medium text-[#E0D8C8]">
             <Gift className="w-4 h-4 text-[#D4A574]" />
-            <span>Free month</span>
+            <span>{t("auto.components_referral_ReferralProgressBar.free_month_6gij9p")}</span>
           </div>
           <span className="text-sm text-[#E0D8C8]/60">
             {qualified % MONTHS_PER_FREE_YEAR}/{MONTHS_PER_FREE_YEAR} toward free year
@@ -53,7 +55,7 @@ export default function ReferralProgressBar({ program }) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-base font-medium text-[#E0D8C8]">
             <Star className="w-4 h-4 text-amber-400" />
-            <span>Free year</span>
+            <span>{t("auto.components_referral_ReferralProgressBar.free_year_lq6fdk")}</span>
           </div>
           <span className="text-sm text-[#E0D8C8]/60">
             {qualified % MONTHS_PER_FREE_YEAR}/{MONTHS_PER_FREE_YEAR} qualified referrals

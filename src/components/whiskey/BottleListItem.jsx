@@ -111,7 +111,7 @@ export default function BottleListItem({
                 {formatFromBase(unitValue)}
               </div>
               <div className="text-sm text-[#D8C7A6] mt-1">
-                Total: {formatFromBase(totalValue)}
+                {t("auto.components_whiskey_BottleListItem.total_1msrdc")} {formatFromBase(totalValue)}
               </div>
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function BottleListItem({
             {bottle?.bottle_type && <MiniBadge>{bottle.bottle_type}</MiniBadge>}
             {bottle?.bottle_size && <MiniBadge>{bottle.bottle_size}</MiniBadge>}
             {bottle?.age && <MiniBadge>{bottle.age}yr</MiniBadge>}
-            {bottle?.abv && <MiniBadge>{bottle.abv}% ABV</MiniBadge>}
+            {bottle?.abv && <MiniBadge>{bottle.abv}{t("auto.components_whiskey_BottleListItem.abv_2yq1j7")}</MiniBadge>}
             <MiniBadge>{totalCount} total</MiniBadge>
             {inventorySummary.open > 0 && <MiniBadge>{inventorySummary.open} open</MiniBadge>}
             {inventorySummary.sealed > 0 && <MiniBadge>{inventorySummary.sealed} sealed</MiniBadge>}

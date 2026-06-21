@@ -351,9 +351,9 @@ function CigarsInner() {
       invalidateCigars();
       setAssignDialogOpen(false);
       setAssignTargetCigar(null);
-      toast.success('Humidor assignment updated');
+      toast.success(t("auto.pages_Cigars.humidor_assignment_updated_1enwcf"));
     } catch {
-      toast.error('Failed to assign humidor');
+      toast.error(t("auto.pages_Cigars.failed_to_assign_humidor_24jg8a"));
     }
   };
 
@@ -368,7 +368,7 @@ function CigarsInner() {
       invalidateCigars();
       toast.success(getCigarQuickActionSuccessMessage(normalizedAction, cigar, patch));
     } catch {
-      toast.error('Failed to apply action');
+      toast.error(t("auto.pages_Cigars.failed_to_apply_action_agj7v5"));
     }
   };
 
@@ -425,9 +425,9 @@ function CigarsInner() {
       setSelectedCigarIds([]);
       setSelectMode(false);
       invalidateCigars();
-      toast.success('Bulk action applied');
+      toast.success(t("auto.pages_Cigars.bulk_action_applied_1alm8x"));
     } catch {
-      toast.error('Failed to apply bulk action');
+      toast.error(t("auto.pages_Cigars.failed_to_apply_bulk_action_19ym7z"));
     }
   };
 
@@ -574,7 +574,7 @@ function CigarsInner() {
                 border: '1px solid rgba(140,107,63,0.2)',
                 color: displayMode ? 'rgba(140, 107, 63, 1)' : 'rgba(224, 216, 200, 0.7)',
               }}
-              title="Collector Display Mode"
+              title={t("auto.pages_Cigars.collector_display_mode_1y8acv")}
             >
               <Package2 className="w-4 h-4" />
             </button>
@@ -612,19 +612,19 @@ function CigarsInner() {
               <span className="text-sm text-[#E0D8C8]/80 min-w-24 col-span-2 sm:col-span-1">
                 {selectedCount} selected
               </span>
-              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('wishlist')}>Wishlist</Button>
-              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('shopping')}>Shopping</Button>
-              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('restock')}>Restock</Button>
-              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('clear_flags')}>Clear Flags</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('wishlist')}>{t("auto.pages_Cigars.wishlist_u4bb5o")}</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('shopping')}>{t("auto.pages_Cigars.shopping_s8rhvx")}</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('restock')}>{t("auto.pages_Cigars.restock_18d1re")}</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('clear_flags')}>{t("auto.pages_Cigars.clear_flags_16ao6j")}</Button>
               <Select
                 value={bulkAssignHumidorId || 'unassigned'}
                 onValueChange={setBulkAssignHumidorId}
               >
                 <SelectTrigger className="w-full sm:w-44 h-8 text-xs col-span-2 sm:col-span-1">
-                  <SelectValue placeholder="Assign Humidor" />
+                  <SelectValue placeholder={t("auto.pages_Cigars.assign_humidor_s079lu")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="unassigned">Assign: Unassigned</SelectItem>
+                  <SelectItem value="unassigned">{t("auto.pages_Cigars.assign_unassigned_10w5ci")}</SelectItem>
                   {sortedHumidors.map((h) => (
                     <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                   ))}
@@ -636,10 +636,10 @@ function CigarsInner() {
                 disabled={!selectedCount}
                 onClick={() => handleBulkAction('assign_humidor', bulkAssignHumidorId === 'unassigned' ? null : bulkAssignHumidorId)}
               >
-                Assign
+                {t("auto.pages_Cigars.assign_1akv4a")}
               </Button>
               <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('delete')} style={{ color: '#E05555' }}>
-                Delete
+                {t("auto.pages_Cigars.delete_1c8q7h")}
               </Button>
             </div>
           )}
@@ -756,13 +756,13 @@ function CigarsInner() {
 
           {(search || filterBody || filterStrength || filterOrigin || filterHumidor || filterFavoritesOnly || filterLowStockOnly || filterRecentlySmokedOnly) && (
             <div className="flex flex-wrap gap-1.5">
-              {filterBody && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Body: {formatCigarStrengthLabel(filterBody)}</span>}
-              {filterStrength && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Strength: {formatCigarStrengthLabel(filterStrength)}</span>}
-              {filterOrigin && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Origin: {filterOrigin}</span>}
-              {filterHumidor && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Humidor: {(humidors.find((h) => h.id === filterHumidor)?.name) || 'Assigned'}</span>}
-              {filterFavoritesOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Favorites</span>}
-              {filterLowStockOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Low stock</span>}
-              {filterRecentlySmokedOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Recently smoked</span>}
+              {filterBody && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t("auto.pages_Cigars.body_3kwvql")} {formatCigarStrengthLabel(filterBody)}</span>}
+              {filterStrength && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t("auto.pages_Cigars.strength_1yucna")} {formatCigarStrengthLabel(filterStrength)}</span>}
+              {filterOrigin && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t("auto.pages_Cigars.origin_1nj023")} {filterOrigin}</span>}
+              {filterHumidor && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t("auto.pages_Cigars.humidor_9kge7r")} {(humidors.find((h) => h.id === filterHumidor)?.name) || 'Assigned'}</span>}
+              {filterFavoritesOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t("auto.pages_Cigars.favorites_1ntzc4")}</span>}
+              {filterLowStockOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t("auto.pages_Cigars.low_stock_59ac9n")}</span>}
+              {filterRecentlySmokedOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t("auto.pages_Cigars.recently_smoked_1tzupo")}</span>}
             </div>
           )}
 
@@ -851,9 +851,9 @@ function CigarsInner() {
                     try {
                       await base44.entities.Cigar.delete(target.id);
                       invalidateCigars();
-                      toast.success('Cigar deleted');
+                      toast.success(t("auto.pages_Cigars.cigar_deleted_1r7oti"));
                     } catch {
-                      toast.error('Failed to delete cigar');
+                      toast.error(t("auto.pages_Cigars.failed_to_delete_cigar_k4aobq"));
                     }
                   }}
                   onAssignHumidor={openAssignHumidorDialog}
@@ -882,9 +882,9 @@ function CigarsInner() {
                     try {
                       await base44.entities.Cigar.delete(target.id);
                       invalidateCigars();
-                      toast.success('Cigar deleted');
+                      toast.success(t("auto.pages_Cigars.cigar_deleted_1r7oti"));
                     } catch {
-                      toast.error('Failed to delete cigar');
+                      toast.error(t("auto.pages_Cigars.failed_to_delete_cigar_k4aobq"));
                     }
                   }}
                   onAssignHumidor={openAssignHumidorDialog}
@@ -915,7 +915,7 @@ function CigarsInner() {
         <DialogContent className="max-w-md" style={{ background: 'rgba(27,19,13,0.98)', border: '1px solid rgba(140,107,63,0.35)' }}>
           <DialogHeader>
             <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              Assign Humidor
+              {t("auto.pages_Cigars.assign_humidor_s079lu")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
@@ -924,18 +924,18 @@ function CigarsInner() {
             </p>
             <Select value={assignHumidorId || 'unassigned'} onValueChange={setAssignHumidorId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select humidor" />
+                <SelectValue placeholder={t("auto.pages_Cigars.select_humidor_65k0bh")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
+                <SelectItem value="unassigned">{t("auto.pages_Cigars.unassigned_1jgxmb")}</SelectItem>
                 {sortedHumidors.map((h) => (
                   <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="ghost" onClick={() => setAssignDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleAssignHumidor}>Save</Button>
+              <Button variant="ghost" onClick={() => setAssignDialogOpen(false)}>{t("auto.pages_Cigars.cancel_1bin7k")}</Button>
+              <Button onClick={handleAssignHumidor}>{t("auto.pages_Cigars.save_yk2ng4")}</Button>
             </div>
           </div>
         </DialogContent>

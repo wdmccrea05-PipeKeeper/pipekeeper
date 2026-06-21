@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useValuation } from '@/lib/valuation/useValuation';
 import { computeGainLoss } from '@/lib/valuation/valuationEngine';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ---------------------------------------------------------------------------
 // Confidence badge
@@ -120,6 +121,7 @@ function ValueRow({ icon: Icon, label, formattedValue, sub, highlight }) {
  * @param {boolean}  [compact] - Minimal single-line display
  */
 export default function ValuationBreakdown({ item, itemType, compact = false }) {
+  const { t } = useTranslation();
   const { valuation, formatValue } = useValuation(item, itemType);
   const [expanded, setExpanded] = useState(false);
 
@@ -168,7 +170,7 @@ export default function ValuationBreakdown({ item, itemType, compact = false }) 
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4" style={{ color: 'rgba(180,140,75,0.8)' }} />
           <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(180,140,75,0.8)' }}>
-            Valuation
+            {t("auto.components_valuation_ValuationBreakdown.valuation_bs4s54")}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -178,7 +180,7 @@ export default function ValuationBreakdown({ item, itemType, compact = false }) 
             className="text-xs flex items-center gap-1 transition-colors"
             style={{ color: 'rgba(224,216,200,0.45)' }}
           >
-            Details
+            {t("auto.components_valuation_ValuationBreakdown.details_th3nu3")}
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
         </div>
@@ -216,7 +218,7 @@ export default function ValuationBreakdown({ item, itemType, compact = false }) 
           <div className="flex items-center justify-between gap-2 py-1.5">
             <div className="flex items-center gap-2">
               <TrendIcon className="w-3.5 h-3.5 shrink-0" style={{ color: trendColor }} />
-              <span className="text-xs" style={{ color: 'rgba(224,216,200,0.65)' }}>Gain / Loss</span>
+              <span className="text-xs" style={{ color: 'rgba(224,216,200,0.65)' }}>{t("auto.components_valuation_ValuationBreakdown.gain_loss_1k9qpw")}</span>
             </div>
             <span className="text-sm font-semibold shrink-0" style={{ color: trendColor }}>
               {gainLoss.direction === 'up' ? '+' : ''}{gainLoss.pct.toFixed(1)}%
@@ -230,7 +232,7 @@ export default function ValuationBreakdown({ item, itemType, compact = false }) 
       {replacementDifficulty && (
         <div className="space-y-1.5 pt-1 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
           <div className="flex items-center justify-between">
-            <span className="text-xs" style={{ color: 'rgba(224,216,200,0.55)' }}>Replacement Difficulty</span>
+            <span className="text-xs" style={{ color: 'rgba(224,216,200,0.55)' }}>{t("auto.components_valuation_ValuationBreakdown.replacement_difficulty_i84seg")}</span>
             <span className="text-xs" style={{ color: 'rgba(224,216,200,0.35)' }}>{replacementDifficulty.score}/100</span>
           </div>
           <DifficultyBar
@@ -247,7 +249,7 @@ export default function ValuationBreakdown({ item, itemType, compact = false }) 
           <Zap className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: 'rgba(180,140,75,0.7)' }} />
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-xs" style={{ color: 'rgba(224,216,200,0.55)' }}>Strategy</span>
+              <span className="text-xs" style={{ color: 'rgba(224,216,200,0.55)' }}>{t("auto.components_valuation_ValuationBreakdown.strategy_22l3dk")}</span>
               <StrategyChip recommendation={strategy.recommendation} />
             </div>
             {expanded && strategy.reason && (
@@ -273,7 +275,7 @@ export default function ValuationBreakdown({ item, itemType, compact = false }) 
       <div className="flex items-start gap-2 pt-1 border-t" style={{ borderColor: 'rgba(120,90,65,0.18)' }}>
         <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: 'rgba(224,216,200,0.25)' }} />
         <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.35)' }}>
-          Estimated values based on available reference signals. Not a guarantee of actual market price.
+          {t("auto.components_valuation_ValuationBreakdown.estimated_values_based_on_available_reference_kq4cw2")}
         </p>
       </div>
     </div>

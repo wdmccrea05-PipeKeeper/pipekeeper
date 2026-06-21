@@ -153,7 +153,7 @@ export default function BottleCard({
               {formatFromBase(unitValue)}
             </div>
             <p className="text-xs mt-1 text-[#D8C7A6]/76">
-              Per bottle
+              {t("auto.components_whiskey_BottleCard.per_bottle_d57q1i")}
             </p>
           </div>
 
@@ -163,13 +163,13 @@ export default function BottleCard({
           >
             <div className="flex items-center gap-1.5 text-[#D4A574] text-[10px] sm:text-xs font-semibold uppercase tracking-wide">
               <Package className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-              <span className="truncate">Inventory</span>
+              <span className="truncate">{t("auto.components_whiskey_BottleCard.inventory_808our")}</span>
             </div>
             <div className="text-xl font-bold text-[#F5F1E7] mt-1">
               {totalCount}
             </div>
             <p className="text-xs mt-1 text-[#D8C7A6]/76">
-              Total bottles
+              {t("auto.components_whiskey_BottleCard.total_bottles_1ntkph")}
             </p>
           </div>
         </div>
@@ -187,7 +187,7 @@ export default function BottleCard({
           style={{ background: 'rgba(163,92,92,0.10)', border: '1px solid rgba(163,92,92,0.18)' }}
         >
           <div className="text-xs font-semibold uppercase tracking-wide text-[#D4A574]">
-            Total Position Value
+            {t("auto.components_whiskey_BottleCard.total_position_value_wy7cyj")}
           </div>
           <div className="text-xl font-bold text-[#F5F1E7] mt-1">
             {formatFromBase(totalValue)}
@@ -203,14 +203,14 @@ export default function BottleCard({
           {typeof onOpen === 'function' && (
             <Button type="button" variant="outline" size="sm" onClick={() => onOpen(bottle)}>
               <ExternalLink className="w-4 h-4 mr-2" />
-              Open
+              {t("auto.components_whiskey_BottleCard.open_yjzwpj")}
             </Button>
           )}
 
           {typeof onEdit === 'function' && (
             <Button type="button" variant="outline" size="sm" onClick={() => onEdit(bottle)}>
               <Pencil className="w-4 h-4 mr-2" />
-              Edit
+              {t("auto.components_whiskey_BottleCard.edit_yjrxfv")}
             </Button>
           )}
 
@@ -223,7 +223,7 @@ export default function BottleCard({
               className="text-[#F0B4B4]"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Delete
+              {t("auto.components_whiskey_BottleCard.delete_1c8q7h")}
             </Button>
           )}
         </div>

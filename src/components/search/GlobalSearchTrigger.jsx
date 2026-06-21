@@ -39,7 +39,7 @@ export default function GlobalSearchTrigger() {
       >
         <Search className="h-4 w-4" />
         <span className="truncate">{t('search.trigger')}</span>
-        <span className="ml-2 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">⌘ K</span>
+        <span className="ml-2 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">{t("auto.components_search_GlobalSearchTrigger.k_3cygko")}</span>
       </button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>

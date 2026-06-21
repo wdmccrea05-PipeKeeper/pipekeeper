@@ -1,6 +1,7 @@
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
 import { createPageUrl } from '@/components/utils/createPageUrl';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const TYPE_COLORS = {
   pipe: 'rgba(200,155,100,0.95)',
@@ -80,6 +81,7 @@ function getPairingItems(pairing) {
 }
 
 export default function CuratorPairingResults({ pairings = [] }) {
+  const { t } = useTranslation();
   if (!pairings.length) return null;
 
   return (
@@ -110,7 +112,7 @@ export default function CuratorPairingResults({ pairings = [] }) {
             )}
 
             {pairing.bestMomentForIt && (
-              <p className="text-xs mb-3" style={{ color: '#A1A1AA' }}><strong>When:</strong> {pairing.bestMomentForIt}</p>
+              <p className="text-xs mb-3" style={{ color: '#A1A1AA' }}><strong>{t("auto.components_curator_CuratorPairingResults.when_3zlai9")}</strong> {pairing.bestMomentForIt}</p>
             )}
           </div>
         );

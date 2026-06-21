@@ -235,7 +235,7 @@ function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, 
       onSaved();
     } catch (e) {
       console.error('[BottleDetail] failed to save snapshot', e);
-      toast.error('Failed to save value checkpoint. Please try again.');
+      toast.error(t("auto.pages_BottleDetail.failed_to_save_value_checkpoint_please_m8bhpy"));
     } finally {
       setSaving(false);
     }
@@ -267,25 +267,25 @@ function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, 
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Confidence</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_BottleDetail.confidence_1vbeba")}</label>
             <Select value={form.value_confidence} onValueChange={v => setForm(prev => ({ ...prev, value_confidence: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="high">{t("auto.pages_BottleDetail.high_yjucrp")}</SelectItem>
+                <SelectItem value="medium">{t("auto.pages_BottleDetail.medium_1i29el")}</SelectItem>
+                <SelectItem value="low">{t("auto.pages_BottleDetail.low_376lfb")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Replacement Difficulty</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_BottleDetail.replacement_difficulty_i84seg")}</label>
             <Select value={form.replacement_difficulty} onValueChange={v => setForm(prev => ({ ...prev, replacement_difficulty: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-                <SelectItem value="very_hard">Very Hard</SelectItem>
+                <SelectItem value="easy">{t("auto.pages_BottleDetail.easy_yjrv6f")}</SelectItem>
+                <SelectItem value="moderate">{t("auto.pages_BottleDetail.moderate_1p8371")}</SelectItem>
+                <SelectItem value="hard">{t("auto.pages_BottleDetail.hard_yju6bo")}</SelectItem>
+                <SelectItem value="very_hard">{t("auto.pages_BottleDetail.very_hard_1c9zw8")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -338,7 +338,7 @@ function AddPriceObservationModal({ bottle, userEmail, onClose, onSaved }) {
       onSaved();
     } catch (e) {
       console.error('[BottleDetail] failed to save observation', e);
-      toast.error('Failed to save price observation. Please try again.');
+      toast.error(t("auto.pages_BottleDetail.failed_to_save_price_observation_please_17oyvz"));
     } finally {
       setSaving(false);
     }
@@ -347,7 +347,7 @@ function AddPriceObservationModal({ bottle, userEmail, onClose, onSaved }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(59,130,246,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Market Observation</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t("auto.pages_BottleDetail.add_market_observation_1w30d5")}</h3>
         <div className="space-y-3">
           {[
             { label: 'Observed Date', field: 'observed_date', type: 'date' },
@@ -370,17 +370,17 @@ function AddPriceObservationModal({ bottle, userEmail, onClose, onSaved }) {
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Price Type</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_BottleDetail.price_type_1v7ft2")}</label>
             <Select value={form.price_type} onValueChange={v => setForm(prev => ({ ...prev, price_type: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="retail">Retail</SelectItem>
-                <SelectItem value="aftermarket">Aftermarket</SelectItem>
-                <SelectItem value="auction">Auction</SelectItem>
-                <SelectItem value="collector">Collector</SelectItem>
-                <SelectItem value="estimate">Estimate</SelectItem>
-                <SelectItem value="private_sale">Private Sale</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="retail">{t("auto.pages_BottleDetail.retail_1lb3kj")}</SelectItem>
+                <SelectItem value="aftermarket">{t("auto.pages_BottleDetail.aftermarket_1cn991")}</SelectItem>
+                <SelectItem value="auction">{t("auto.pages_BottleDetail.auction_1agp8h")}</SelectItem>
+                <SelectItem value="collector">{t("auto.pages_BottleDetail.collector_pjqx64")}</SelectItem>
+                <SelectItem value="estimate">{t("auto.pages_BottleDetail.estimate_1munng")}</SelectItem>
+                <SelectItem value="private_sale">{t("auto.pages_BottleDetail.private_sale_1eid6r")}</SelectItem>
+                <SelectItem value="other">{t("auto.pages_BottleDetail.other_3u793b")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -442,7 +442,7 @@ function BottleDetailInner() {
       navigate("/Whiskey");
     } catch (e) {
       console.error(e);
-      toast.error('Failed to delete bottle. Please try again.');
+      toast.error(t("auto.pages_BottleDetail.failed_to_delete_bottle_please_try_13k3hf"));
       setDeleting(false);
     }
   }
@@ -688,7 +688,7 @@ function BottleDetailInner() {
   if (loading || userLoading) {
     return (
       <div className="p-6 text-[#F5F1E7]">
-        <p>Loading…</p>
+        <p>{t("auto.pages_BottleDetail.loading_1sqiar")}</p>
       </div>
     );
   }
@@ -696,7 +696,7 @@ function BottleDetailInner() {
   if (!bottle) {
     return (
       <div className="p-6 text-[#F5F1E7]">
-        <p>Unable to load record.</p>
+        <p>{t("auto.pages_BottleDetail.unable_to_load_record_2v51v0")}</p>
       </div>
     );
   }
@@ -707,7 +707,7 @@ function BottleDetailInner() {
         <div className="flex items-center justify-between gap-3">
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {t("auto.pages_BottleDetail.back_yjpjkm")}
           </Button>
 
           <div className="flex flex-wrap gap-2 justify-end">
@@ -720,11 +720,11 @@ function BottleDetailInner() {
               }}
             >
               <Search className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Find Similar</span>
+              <span className="hidden sm:inline">{t("auto.pages_BottleDetail.find_similar_afe8ev")}</span>
             </Button>
             <Button variant="outline" onClick={() => setShowShareModal(true)}>
               <Share2 className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Share</span>
+              <span className="hidden sm:inline">{t("auto.pages_BottleDetail.share_3wrj14")}</span>
             </Button>
             <EnrichButton itemType="bottle" record={bottle} onEnriched={setBottle} />
             <Button
@@ -738,7 +738,7 @@ function BottleDetailInner() {
               }}
             >
               <Pencil className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Edit</span>
+              <span className="hidden sm:inline">{t("auto.pages_BottleDetail.edit_yjrxfv")}</span>
             </Button>
             <Button
               onClick={() => setShowDeleteConfirm(true)}
@@ -773,7 +773,7 @@ function BottleDetailInner() {
                 />
               ) : (
                 <div className="w-full h-[280px] rounded-2xl flex items-center justify-center bg-[rgba(255,255,255,0.03)] text-[#D8C7A6]/55 border border-[rgba(180,140,75,0.14)]">
-                  No photo
+                  {t("auto.pages_BottleDetail.no_photo_by1498")}
                 </div>
               )}
 
@@ -885,29 +885,29 @@ function BottleDetailInner() {
                   }}
                 >
                   <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-3">
-                    Acquisition
+                    {t("auto.pages_BottleDetail.acquisition_rn465q")}
                   </p>
                   {bottle.how_acquired ? (
                     <p className="text-sm text-[#E0D8C8]">
-                      <span className="text-[#D8C7A6]/60">How acquired: </span>
+                      <span className="text-[#D8C7A6]/60">{t("auto.pages_BottleDetail.how_acquired_3exot7")} </span>
                       {safePrimitive(bottle.how_acquired)}
                     </p>
                   ) : null}
                   {bottle.purchase_price ? (
                     <p className="text-sm text-[#E0D8C8]">
-                      <span className="text-[#D8C7A6]/60">Purchase price: </span>
+                      <span className="text-[#D8C7A6]/60">{t("auto.pages_BottleDetail.purchase_price_1rzm3r")} </span>
                       {formatFromBase(bottle.purchase_price)}
                     </p>
                   ) : null}
                   {bottle.purchase_location ? (
                     <p className="text-sm text-[#E0D8C8]">
-                      <span className="text-[#D8C7A6]/60">Location: </span>
+                      <span className="text-[#D8C7A6]/60">{t("auto.pages_BottleDetail.location_1acta7")} </span>
                       {safePrimitive(bottle.purchase_location)}
                     </p>
                   ) : null}
                   {bottle.purchase_date ? (
                     <p className="text-sm text-[#E0D8C8]">
-                      <span className="text-[#D8C7A6]/60">Date: </span>
+                      <span className="text-[#D8C7A6]/60">{t("auto.pages_BottleDetail.date_3m1al9")} </span>
                       {formatDate(bottle.purchase_date)}
                     </p>
                   ) : null}
@@ -923,7 +923,7 @@ function BottleDetailInner() {
                   }}
                 >
                   <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-2">
-                    Notes
+                    {t("auto.pages_BottleDetail.notes_3te9gu")}
                   </p>
                   <p className="text-sm text-[#E0D8C8]/90 whitespace-pre-wrap break-words leading-relaxed">
                     {safePrimitive(bottle.notes)}
@@ -958,19 +958,19 @@ function BottleDetailInner() {
                     color: "#1A120D",
                   }}
                 >
-                  Log Tasting
+                  {t("auto.pages_BottleDetail.log_tasting_1njc2o")}
                 </Button>
 
                 <Button variant="outline" onClick={() => setShowInventoryManager(true)}>
                   <Package className="w-4 h-4 mr-2" />
-                  Manage Inventory
+                  {t("auto.pages_BottleDetail.manage_inventory_1klt59")}
                 </Button>
               </div>
 
               {tastings.length > 0 ? (
                 <div className="space-y-3">
                   <h3 className="text-sm uppercase tracking-wider text-[#D4A574] font-semibold">
-                    Tasting Notes ({tastings.length})
+                    {t("auto.pages_BottleDetail.tasting_notes_1kf3ph")}{tastings.length})
                   </h3>
                   {tastings.map((tasting) => (
                     <TastingRow
@@ -1033,9 +1033,9 @@ function BottleDetailInner() {
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete bottle?</AlertDialogTitle>
+              <AlertDialogTitle>{t("auto.pages_BottleDetail.delete_bottle_ea9xdt")}</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone.
+                {t("auto.pages_BottleDetail.this_action_cannot_be_undone_to2y4c")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

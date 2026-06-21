@@ -59,10 +59,10 @@ export default function PermissionDebugPanel() {
             <div>
               <h4 className="font-semibold mb-2 text-slate-900">{t('debug.userInfo')}</h4>
               <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
-                <p className="text-slate-900"><strong>Email:</strong> {user?.email || 'N/A'}</p>
-                <p className="text-slate-900"><strong>ID:</strong> {user?.id || user?.auth_user_id || 'N/A'}</p>
-                <p className="text-slate-900"><strong>Role:</strong> {user?.role || 'user'}</p>
-                <p className="text-slate-900"><strong>Created:</strong> {user?.created_date || user?.created_at || 'Unknown'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.email_1d1fz5")}</strong> {user?.email || 'N/A'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.id_376hrg")}</strong> {user?.id || user?.auth_user_id || 'N/A'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.role_3w7qy9")}</strong> {user?.role || 'user'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.created_12l5ud")}</strong> {user?.created_date || user?.created_at || 'Unknown'}</p>
               </div>
             </div>
 
@@ -70,11 +70,11 @@ export default function PermissionDebugPanel() {
             <div>
               <h4 className="font-semibold mb-2 text-slate-900">{t('debug.subscriptionInfo')}</h4>
               <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
-                <p className="text-slate-900"><strong>Provider:</strong> {provider || subscription?.provider || 'None'}</p>
-                <p className="text-slate-900"><strong>Status:</strong> {subscription?.status || 'None'}</p>
-                <p className="text-slate-900"><strong>Tier:</strong> {subscription?.tier || 'None'}</p>
-                <p className="text-slate-900"><strong>Period End:</strong> {subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : 'N/A'}</p>
-                <p className="text-slate-900"><strong>Stripe Customer:</strong> {subscription?.stripe_customer_id || user?.stripe_customer_id || 'None'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.provider_2p0h9m")}</strong> {provider || subscription?.provider || 'None'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.status_41n2pv")}</strong> {subscription?.status || 'None'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.tier_3xht5f")}</strong> {subscription?.tier || 'None'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.period_end_ims0d5")}</strong> {subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : 'N/A'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.stripe_customer_ktzfm0")}</strong> {subscription?.stripe_customer_id || user?.stripe_customer_id || 'None'}</p>
               </div>
             </div>
 
@@ -104,11 +104,11 @@ export default function PermissionDebugPanel() {
             <div>
               <h4 className="font-semibold mb-2 text-slate-900">{t('debug.entitlements')}</h4>
               <div className="space-y-1 font-mono bg-slate-50 p-2 rounded text-slate-900">
-                <p className="text-slate-900"><strong>Tier:</strong> {entitlements.tier}</p>
-                <p className="text-slate-900"><strong>Legacy:</strong> {entitlements.isLegacyPremium ? 'Yes' : 'No'}</p>
-                <p className="text-slate-900"><strong>Pipes:</strong> {entitlements.limits.pipes === Infinity ? '∞' : entitlements.limits.pipes}</p>
-                <p className="text-slate-900"><strong>Tobacco:</strong> {entitlements.limits.tobaccos === Infinity ? '∞' : entitlements.limits.tobaccos}</p>
-                <p className="text-slate-900"><strong>Photos:</strong> {entitlements.limits.photosPerItem === Infinity ? '∞' : entitlements.limits.photosPerItem}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.tier_3xht5f")}</strong> {entitlements.tier}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.legacy_1m0y3t")}</strong> {entitlements.isLegacyPremium ? 'Yes' : 'No'}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.pipes_1k38nc")}</strong> {entitlements.limits.pipes === Infinity ? '∞' : entitlements.limits.pipes}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.tobacco_lhwjei")}</strong> {entitlements.limits.tobaccos === Infinity ? '∞' : entitlements.limits.tobaccos}</p>
+                <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.photos_3ib8l8")}</strong> {entitlements.limits.photosPerItem === Infinity ? '∞' : entitlements.limits.photosPerItem}</p>
               </div>
             </div>
 
@@ -131,8 +131,8 @@ export default function PermissionDebugPanel() {
                 <h4 className="font-semibold mb-2 text-slate-900">{t('debug.pipeCreationCheck')}</h4>
                 <div className="space-y-1 font-mono bg-slate-50 p-2 rounded">
                   <StatusBadge label="Can Create" value={pipeLimit.canCreate} />
-                  <p className="text-slate-900"><strong>Current:</strong> {pipeLimit.currentCount}</p>
-                  <p className="text-slate-900"><strong>Limit:</strong> {pipeLimit.limit === null ? '∞' : pipeLimit.limit}</p>
+                  <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.current_14dczh")}</strong> {pipeLimit.currentCount}</p>
+                  <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.limit_1hhz7a")}</strong> {pipeLimit.limit === null ? '∞' : pipeLimit.limit}</p>
                   {pipeLimit.reason && <p className="text-red-700 text-xs font-semibold">{pipeLimit.reason}</p>}
                 </div>
               </div>
@@ -143,8 +143,8 @@ export default function PermissionDebugPanel() {
                 <h4 className="font-semibold mb-2 text-slate-900">{t('debug.tobaccoCreationCheck')}</h4>
                 <div className="space-y-1 font-mono bg-slate-50 p-2 rounded">
                   <StatusBadge label="Can Create" value={tobaccoLimit.canCreate} />
-                  <p className="text-slate-900"><strong>Current:</strong> {tobaccoLimit.currentCount}</p>
-                  <p className="text-slate-900"><strong>Limit:</strong> {tobaccoLimit.limit === null ? '∞' : tobaccoLimit.limit}</p>
+                  <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.current_14dczh")}</strong> {tobaccoLimit.currentCount}</p>
+                  <p className="text-slate-900"><strong>{t("auto.components_debug_PermissionDebugPanel.limit_1hhz7a")}</strong> {tobaccoLimit.limit === null ? '∞' : tobaccoLimit.limit}</p>
                   {tobaccoLimit.reason && <p className="text-red-700 text-xs font-semibold">{tobaccoLimit.reason}</p>}
                 </div>
               </div>
@@ -166,18 +166,19 @@ export default function PermissionDebugPanel() {
 }
 
 function StatusBadge({ label, value }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between">
       <span className="text-slate-700">{label}:</span>
       {value ? (
         <Badge className="bg-green-100 text-green-800 border-green-300 gap-1">
           <CheckCircle2 className="w-3 h-3" />
-          Pass
+          {t("auto.components_debug_PermissionDebugPanel.pass_yk0c70")}
         </Badge>
       ) : (
         <Badge className="bg-red-100 text-red-800 border-red-300 gap-1">
           <XCircle className="w-3 h-3" />
-          Fail
+          {t("auto.components_debug_PermissionDebugPanel.fail_yjsmn5")}
         </Badge>
       )}
     </div>

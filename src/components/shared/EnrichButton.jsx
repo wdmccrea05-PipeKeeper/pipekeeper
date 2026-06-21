@@ -440,7 +440,7 @@ export default function EnrichButton({ itemType, record, onEnriched }) {
           }
           await Promise.resolve(onEnriched?.({ ...record, ...updates }));
         } else {
-          toast.info('Wine metadata is already complete. Try adding more details (producer, vintage, region) to improve valuation.');
+          toast.info(t("auto.components_shared_EnrichButton.wine_metadata_is_already_complete_try_10nz6g"));
         }
       }
     } catch (e) {

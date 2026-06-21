@@ -11,6 +11,7 @@
 import React, { useState } from 'react';
 import { X, Send, CheckCircle2 } from 'lucide-react';
 import { trackFeedbackSubmitted } from './reviewAnalytics';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // Feedback categories with user-facing labels
 const FEEDBACK_CATEGORIES = [
@@ -31,6 +32,7 @@ const FEEDBACK_CATEGORIES = [
  * @param {Function} [props.onStateUpdate] - async (id, data) => void
  */
 export default function FeedbackModal({ isOpen, onClose, reviewContext, onStateUpdate }) {
+  const { t } = useTranslation();
   const [category, setCategory] = useState('general');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -108,11 +110,10 @@ export default function FeedbackModal({ isOpen, onClose, reviewContext, onStateU
               </div>
               <div>
                 <h3 className="text-xl font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-                  Thank You
+                  {t("auto.components_review_FeedbackModal.thank_you_omc7q0")}
                 </h3>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.72)' }}>
-                  Your feedback helps us make CollectionKeeper better for every collector.
-                  We'll review your note and follow up if needed.
+                  {t("auto.components_review_FeedbackModal.your_feedback_helps_us_make_collectionkeeper_3howzz")}
                 </p>
               </div>
               <button
@@ -125,7 +126,7 @@ export default function FeedbackModal({ isOpen, onClose, reviewContext, onStateU
                   color: 'rgba(224,216,200,0.8)',
                 }}
               >
-                Done
+                {t("auto.components_review_FeedbackModal.done_yjrf2j")}
               </button>
             </div>
           ) : (
@@ -136,27 +137,27 @@ export default function FeedbackModal({ isOpen, onClose, reviewContext, onStateU
                   className="text-xl font-bold"
                   style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
                 >
-                  Send Feedback
+                  {t("auto.components_review_FeedbackModal.send_feedback_1ncyto")}
                 </h2>
                 <button
                   type="button"
                   onClick={handleClose}
                   className="p-1.5 rounded-xl hover:bg-white/10"
-                  aria-label="Close"
+                  aria-label={t("auto.components_review_FeedbackModal.close_3lk8qj")}
                 >
                   <X className="w-4 h-4" style={{ color: 'rgba(224,216,200,0.5)' }} />
                 </button>
               </div>
 
               <p className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>
-                Let us know what's on your mind. All feedback goes directly to the team.
+                {t("auto.components_review_FeedbackModal.let_us_know_what_s_on_1jc1kp")}
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Category selector */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.8)' }}>
-                    Category
+                    {t("auto.components_review_FeedbackModal.category_14fd8o")}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {FEEDBACK_CATEGORIES.map((cat) => (
@@ -184,12 +185,12 @@ export default function FeedbackModal({ isOpen, onClose, reviewContext, onStateU
                 {/* Notes */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.8)' }}>
-                    Details (optional)
+                    {t("auto.components_review_FeedbackModal.details_optional_1ibufe")}
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Tell us what happened or what you'd like to see improved..."
+                    placeholder={t("auto.components_review_FeedbackModal.tell_us_what_happened_or_what_1j17ah")}
                     rows={4}
                     className="w-full rounded-xl px-4 py-3 text-sm resize-none outline-none focus:ring-1"
                     style={{

@@ -375,7 +375,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
 
         {itemType === 'pipe' && (
           <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.62)' }}>
-            Best results: upload the pipe side profile, stem logo, and any stamping or nomenclature.
+            {t("auto.components_addflow_AddFlowIdentify.best_results_upload_the_pipe_side_qz75s5")}
           </p>
         )}
 
@@ -580,12 +580,12 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
                 )}
                 {Array.isArray(c?.details?.evidence_used) && c.details.evidence_used.length > 0 && (
                   <p className="text-[11px] mt-1.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                    Evidence: {c.details.evidence_used.slice(0, 2).join(' • ')}
+                    {t("auto.components_addflow_AddFlowIdentify.evidence_1hmm7c")} {c.details.evidence_used.slice(0, 2).join(' • ')}
                   </p>
                 )}
                 {Array.isArray(c?.details?.uncertain_fields) && c.details.uncertain_fields.length > 0 && (
                   <p className="text-[11px] mt-1.5" style={{ color: 'rgba(224,216,200,0.4)' }}>
-                    Uncertain: {c.details.uncertain_fields.join(', ')}
+                    {t("auto.components_addflow_AddFlowIdentify.uncertain_t6m47c")} {c.details.uncertain_fields.join(', ')}
                   </p>
                 )}
                 {c.description && (
@@ -615,12 +615,12 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
             {searchingQuickSearch && (
               <div className="flex items-center gap-2 py-1" style={{ color: 'rgba(224,216,200,0.55)' }}>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span className="text-xs">Searching…</span>
+                <span className="text-xs">{t("auto.components_addflow_AddFlowIdentify.searching_eqcuvz")}</span>
               </div>
             )}
             {!searchingQuickSearch && quickSearchMatches.length === 0 && quickSearchQuery && (
               <p className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>
-                No quick-search matches found.
+                {t("auto.components_addflow_AddFlowIdentify.no_quick_search_matches_found_eemnox")}
               </p>
             )}
             {!searchingQuickSearch && quickSearchMatches.length > 0 && (

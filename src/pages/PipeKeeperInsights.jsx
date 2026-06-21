@@ -150,7 +150,7 @@ export default function PipeKeeperInsights() {
             <InsightsHighlightGrid>
               {mostSmoked && (
                 <InsightsHighlightCard
-                  title="Most Smoked Pipe"
+                  title={t("auto.pages_PipeKeeperInsights.most_smoked_pipe_tka8yh")}
                   value={mostSmoked.pipe.name || mostSmoked.pipe.maker || 'Unnamed'}
                   subtitle={`${mostSmoked.count} bowl${mostSmoked.count !== 1 ? 's' : ''}`}
                   accent="#B48C4B"
@@ -159,7 +159,7 @@ export default function PipeKeeperInsights() {
               )}
               {mostValuedPipe && mostValuedPipe.purchase_price > 0 && (
                 <InsightsHighlightCard
-                  title="Most Valued Pipe"
+                  title={t("auto.pages_PipeKeeperInsights.most_valued_pipe_1aen5x")}
                   value={mostValuedPipe.name || mostValuedPipe.maker || 'Unnamed'}
                   subtitle={formatFromBase(Number(mostValuedPipe.purchase_price))}
                   accent="#C0392B"
@@ -168,7 +168,7 @@ export default function PipeKeeperInsights() {
               )}
               {favBlend && (
                 <InsightsHighlightCard
-                  title="Favourite Blend"
+                  title={t("auto.pages_PipeKeeperInsights.favourite_blend_1ije04")}
                   value={favBlend.name || 'Unnamed'}
                   subtitle={favBlend.manufacturer || favBlend.blend_type || ''}
                   accent="#8B5CF6"
@@ -228,7 +228,7 @@ export default function PipeKeeperInsights() {
                 <InsightStatCard label="Collection Value" value={totalPipeValue > 0 ? formatFromBase(totalPipeValue) : '—'} icon={TrendingUp} accent="#D4A574" />
               </InsightsKpiGrid>
               <InsightPanel>
-                <InsightSectionHeading>Recent Sessions</InsightSectionHeading>
+                <InsightSectionHeading>{t("auto.pages_PipeKeeperInsights.recent_sessions_1xvw7x")}</InsightSectionHeading>
                 {smokingLogs.length > 0 ? (
                   <div className="space-y-2 max-h-80 overflow-y-auto">
                     {[...smokingLogs].slice(0, 30).map(s => (
@@ -255,7 +255,7 @@ export default function PipeKeeperInsights() {
           <InsightsEmptyState message="Add pipes and blends to generate reports." icon={FileText} />
         ) : (
           <InsightPanel>
-            <InsightSectionHeading>Export Reports</InsightSectionHeading>
+            <InsightSectionHeading>{t("auto.pages_PipeKeeperInsights.export_reports_dd3c8m")}</InsightSectionHeading>
             <div className="space-y-4">
               <SmokingLogReportExporter user={user} />
               <AgingReportExporter user={user} />

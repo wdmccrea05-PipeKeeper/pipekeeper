@@ -5,12 +5,14 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useNavigate } from '@/components/utils/navigation';
 import { createPageUrl } from '@/components/utils/createPageUrl';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 /**
  * Founders Bundle Offer - visible only to eligible users
  * PipeKeeper + WhiskeyKeeper for $49.99/year ($4.16/month)
  */
 export default function FoundersBundleOffer({ onSuccess }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [eligible, setEligible] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -43,13 +45,13 @@ export default function FoundersBundleOffer({ onSuccess }) {
       if (result?.data?.url) {
         const opened = window.open(result.data.url, "_blank", "noopener,noreferrer");
         if (!opened || opened?.closed) {
-          toast.error("Unable to open checkout here. Please try again from the Subscription page.");
+          toast.error(t("auto.components_subscription_FoundersBundleOffer.unable_to_open_checkout_here_please_jgcphz"));
           navigate(createPageUrl("Subscription"));
         }
       }
     } catch (e) {
       console.error('Checkout error:', e);
-      toast.error('Failed to start checkout. Please try again.');
+      toast.error(t("auto.components_subscription_FoundersBundleOffer.failed_to_start_checkout_please_try_1s83g2"));
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export default function FoundersBundleOffer({ onSuccess }) {
       }}>
         <div className="flex items-center justify-center gap-2">
           <Loader className="w-4 h-4 animate-spin" style={{ color: 'rgba(180,140,75,0.6)' }} />
-          <span style={{ color: 'rgba(224,216,200,0.5)' }}>Checking offer eligibility...</span>
+          <span style={{ color: 'rgba(224,216,200,0.5)' }}>{t("auto.components_subscription_FoundersBundleOffer.checking_offer_eligibility_1182oj")}</span>
         </div>
       </div>
     );
@@ -90,10 +92,10 @@ export default function FoundersBundleOffer({ onSuccess }) {
       <div className="space-y-4 max-w-2xl">
         <div>
           <h3 className="text-xl font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: 'Georgia, serif' }}>
-            Founders Bundle Exclusive
+            {t("auto.components_subscription_FoundersBundleOffer.founders_bundle_exclusive_10wkfe")}
           </h3>
           <p className="text-sm" style={{ color: 'rgba(224,216,200,0.8)' }}>
-            As an early PipeKeeper supporter, unlock the complete collector's suite at a special founding member price.
+            {t("auto.components_subscription_FoundersBundleOffer.as_an_early_pipekeeper_supporter_unlock_kphlfu")}
           </p>
         </div>
 
@@ -102,15 +104,15 @@ export default function FoundersBundleOffer({ onSuccess }) {
           <div className="flex gap-2">
             <div style={{ color: '#D4AF37' }}>✓</div>
             <div className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>
-              <div style={{ color: '#F5F1E7' }} className="font-semibold">PipeKeeper</div>
-              <div style={{ color: 'rgba(180,140,75,0.6)' }}>Full pipe collection</div>
+              <div style={{ color: '#F5F1E7' }} className="font-semibold">{t("auto.components_subscription_FoundersBundleOffer.pipekeeper_1dclxa")}</div>
+              <div style={{ color: 'rgba(180,140,75,0.6)' }}>{t("auto.components_subscription_FoundersBundleOffer.full_pipe_collection_1mw187")}</div>
             </div>
           </div>
           <div className="flex gap-2">
             <div style={{ color: '#D4AF37' }}>✓</div>
             <div className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>
-              <div style={{ color: '#F5F1E7' }} className="font-semibold">WhiskeyKeeper</div>
-              <div style={{ color: 'rgba(180,140,75,0.6)' }}>Bottle inventory & AI valuation</div>
+              <div style={{ color: '#F5F1E7' }} className="font-semibold">{t("auto.components_subscription_FoundersBundleOffer.whiskeykeeper_1kgmc1")}</div>
+              <div style={{ color: 'rgba(180,140,75,0.6)' }}>{t("auto.components_subscription_FoundersBundleOffer.bottle_inventory_and_ai_valuation_119jpi")}</div>
             </div>
           </div>
         </div>
@@ -118,7 +120,7 @@ export default function FoundersBundleOffer({ onSuccess }) {
         {/* Pricing */}
         <div className="bg-black/20 rounded-lg p-4 space-y-2">
           <div className="text-sm" style={{ color: 'rgba(180,140,75,0.6)' }}>
-            Limited-time founding member pricing
+            {t("auto.components_subscription_FoundersBundleOffer.limited_time_founding_member_pricing_1uwbjc")}
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold" style={{ color: '#D4AF37' }}>
@@ -127,7 +129,7 @@ export default function FoundersBundleOffer({ onSuccess }) {
             <span style={{ color: 'rgba(224,216,200,0.5)' }}>per year</span>
           </div>
           <div className="text-xs" style={{ color: 'rgba(180,140,75,0.6)' }}>
-            Save $30/year vs. buying modules separately
+            {t("auto.components_subscription_FoundersBundleOffer.save_30_year_vs_buying_modules_12nep6")}
           </div>
         </div>
 
@@ -146,19 +148,19 @@ export default function FoundersBundleOffer({ onSuccess }) {
             {loading ? (
               <>
                 <Loader className="w-4 h-4 mr-2 animate-spin" />
-                Processing...
+                {t("auto.components_subscription_FoundersBundleOffer.processing_5393ik")}
               </>
             ) : (
               <>
                 <Crown className="w-4 h-4 mr-2" />
-                Claim Founders Bundle
+                {t("auto.components_subscription_FoundersBundleOffer.claim_founders_bundle_1pjjqj")}
               </>
             )}
           </Button>
         </div>
 
         <div className="text-xs text-center" style={{ color: 'rgba(180,140,75,0.5)' }}>
-          Offer limited to founding members. Secure your spot today.
+          {t("auto.components_subscription_FoundersBundleOffer.offer_limited_to_founding_members_secure_j0qr4w")}
         </div>
       </div>
     </div>

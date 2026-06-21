@@ -135,7 +135,7 @@ Provide detailed, accurate information based on what you can see in the images.`
         notes: `Distillery: ${result.distillery}\nType: ${result.type}\nAge: ${result.age || 'Unknown'}\nABV: ${result.abv || 'Unknown'}`,
         estimated_price: result.purchase_price,
       });
-      toast.success('Added to Want List!');
+      toast.success(t("auto.components_whiskey_BottleIdentifier.added_to_want_list_13jl3g"));
       setResult(null);
       setPhotos([]);
       setPhotoUrls([]);
@@ -143,7 +143,7 @@ Provide detailed, accurate information based on what you can see in the images.`
       setDistilleryHint('');
       setTypeHint('');
     } catch (err) {
-      toast.error('Failed to add to Want List');
+      toast.error(t("auto.components_whiskey_BottleIdentifier.failed_to_add_to_want_list_8icqrz"));
       console.error(err);
     }
   };
@@ -186,21 +186,21 @@ Provide detailed, accurate information based on what you can see in the images.`
           >
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#F0C58A]" />
-              <span className="text-sm font-semibold text-[#D4A574]">Bottle Identified</span>
+              <span className="text-sm font-semibold text-[#D4A574]">{t("auto.components_whiskey_BottleIdentifier.bottle_identified_1veyev")}</span>
             </div>
             <div className="text-sm text-[#E0D8C8] space-y-2">
-              <p><strong>Name:</strong> {result.name}</p>
-              <p><strong>Distillery:</strong> {result.distillery}</p>
-              <p><strong>Type:</strong> {result.type}</p>
-              {result.age && <p><strong>Age:</strong> {result.age} years</p>}
-              {result.abv && <p><strong>ABV:</strong> {result.abv}%</p>}
+              <p><strong>{t("auto.components_whiskey_BottleIdentifier.name_3t3bc0")}</strong> {result.name}</p>
+              <p><strong>{t("auto.components_whiskey_BottleIdentifier.distillery_1wyg3v")}</strong> {result.distillery}</p>
+              <p><strong>{t("auto.components_whiskey_BottleIdentifier.type_3xudq9")}</strong> {result.type}</p>
+              {result.age && <p><strong>{t("auto.components_whiskey_BottleIdentifier.age_yjowwc")}</strong> {result.age} years</p>}
+              {result.abv && <p><strong>{t("auto.components_whiskey_BottleIdentifier.abv_yjo1fc")}</strong> {result.abv}%</p>}
             </div>
             <Button
               onClick={handleAddToWantList}
               className="w-full bg-gradient-to-r from-[#7E4A3A] to-[#5F342A] hover:from-[#8C5242] hover:to-[#6B3C30] text-[#F8EBDD]"
             >
               <Heart className="w-4 h-4 mr-2" />
-              Add to Want List
+              {t("auto.components_whiskey_BottleIdentifier.add_to_want_list_vu06cn")}
             </Button>
           </div>
         )}

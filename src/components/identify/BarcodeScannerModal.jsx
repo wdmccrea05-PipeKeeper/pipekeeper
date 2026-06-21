@@ -12,6 +12,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { X, Loader2, Barcode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const SCAN_INTERVAL_MS = 300; // scan a frame every 300ms
 
@@ -38,6 +39,7 @@ export function canAttemptLiveBarcodeScan() {
 }
 
 export default function BarcodeScannerModal({ open, onDetected, onClose }) {
+  const { t } = useTranslation();
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const detectorRef = useRef(null);
@@ -239,7 +241,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
         <button
           onClick={handleClose}
           className="w-8 h-8 flex items-center justify-center rounded-full"
-          aria-label="Close scanner"
+          aria-label={t("auto.components_identify_BarcodeScannerModal.close_scanner_yqyhc5")}
           style={{ background: 'rgba(255,255,255,0.12)', color: '#F5F1E7' }}
         >
           <X className="w-4 h-4" />
@@ -291,13 +293,13 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
         <div className="mx-6 text-center">
           <Barcode className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(212,165,116,0.5)' }} />
           <p className="text-base font-semibold mb-2" style={{ color: '#F5F1E7' }}>
-            Live scanning not available
+            {t("auto.components_identify_BarcodeScannerModal.live_scanning_not_available_1y2ru0")}
           </p>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.6)' }}>
             {unsupportedMsg || "Your browser doesn't support live barcode scanning. Please type the barcode number manually."}
           </p>
           <Button onClick={handleClose} variant="outline" className="w-full">
-            Continue to Manual Entry
+            {t("auto.components_identify_BarcodeScannerModal.continue_to_manual_entry_w9n5ml")}
           </Button>
         </div>
       )}
@@ -305,7 +307,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
       {/* Camera error message */}
       {status === 'error' && (
         <div className="mx-6 text-center">
-          <p className="text-base font-semibold mb-2" style={{ color: '#F5F1E7' }}>Camera unavailable</p>
+          <p className="text-base font-semibold mb-2" style={{ color: '#F5F1E7' }}>{t("auto.components_identify_BarcodeScannerModal.camera_unavailable_s9atf6")}</p>
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.6)' }}>{errorMsg}</p>
           <div className="flex flex-col gap-2">
             <Button
@@ -316,10 +318,10 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
               }}
               className="w-full"
             >
-              Retry Camera
+              {t("auto.components_identify_BarcodeScannerModal.retry_camera_jgotus")}
             </Button>
             <Button onClick={handleClose} variant="outline" className="w-full">
-              Type Manually Instead
+              {t("auto.components_identify_BarcodeScannerModal.type_manually_instead_youfqq")}
             </Button>
           </div>
         </div>
@@ -328,7 +330,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
       {/* Status hint */}
       {status === 'scanning' && (
         <p className="mt-4 text-sm text-center" style={{ color: 'rgba(224,216,200,0.5)' }}>
-          Hold steady with good lighting — scanning automatically
+          {t("auto.components_identify_BarcodeScannerModal.hold_steady_with_good_lighting_scanning_1nzbes")}
         </p>
       )}
     </div>

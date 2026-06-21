@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { getWineUnitValue, getWineTotalValue } from '@/lib/collection/wineSelectors';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function escapeCsvCell(cell) {
   return `"${String(cell ?? '').replace(/"/g, '""')}"`;
@@ -45,6 +46,7 @@ function loadImageAsBase64(url) {
 }
 
 export default function WineInsuranceExporter({ user, wines = [] }) {
+  const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
   const [loadingPdf, setLoadingPdf] = useState(false);
 
@@ -227,7 +229,7 @@ export default function WineInsuranceExporter({ user, wines = [] }) {
     <div className="flex flex-wrap gap-2">
       <Button variant="outline" size="sm" onClick={exportInventoryCsv} disabled={wines.length === 0}>
         <FileSpreadsheet className="w-4 h-4 mr-2" />
-        Inventory CSV
+        {t("auto.components_export_WineInsuranceExporter.inventory_csv_1eqzko")}
       </Button>
       <Button variant="outline" size="sm" onClick={exportInsurancePdf} disabled={loadingPdf || wines.length === 0}>
         <Shield className="w-4 h-4 mr-2" />

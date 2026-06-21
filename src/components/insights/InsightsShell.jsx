@@ -15,6 +15,7 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/lib/theme/tokens';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export { InsightHighlightCard };
 
@@ -177,10 +178,11 @@ export function InsightsChartTooltip({ active, payload, label, valueFormatter })
 // ── Highlights Grid (3-col card row) ─────────────────────────────────────────
 
 export function InsightsHighlightGrid({ children }) {
+  const { t } = useTranslation();
   return (
     <div>
       <h2 className="text-lg font-bold mb-3" style={{ color: TEXT_PRIMARY }}>
-        Collection Highlights
+        {t("auto.components_insights_InsightsShell.collection_highlights_y1by2k")}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {children}
@@ -198,6 +200,7 @@ export { InsightHighlightCard as InsightsHighlightCard };
 // ── Empty State ───────────────────────────────────────────────────────────────
 
 export function InsightsEmptyState({ message = 'No data yet. Add items to see insights.', icon: Icon }) {
+  const { t } = useTranslation();
   return (
     <div
       className="rounded-2xl p-12 text-center"
@@ -208,7 +211,7 @@ export function InsightsEmptyState({ message = 'No data yet. Add items to see in
     >
     {Icon && <Icon className="w-12 h-12 mx-auto mb-4 opacity-25" style={{ color: MODULE_GOLD }} />}
     <p className="text-lg font-semibold mb-2" style={{ color: TEXT_PRIMARY }}>
-        No Insights Yet
+        {t("auto.components_insights_InsightsShell.no_insights_yet_gj94hp")}
       </p>
     <p style={{ color: TEXT_SECONDARY, fontSize: '0.9375rem' }}>
         {message}
@@ -238,6 +241,7 @@ export function InsightsSkeletonGrid({ count = 4 }) {
 // ── Session Calendar Panel ────────────────────────────────────────────────────
 
 export function InsightsSessionPanel({ calendar, selectedDate, onSelectDate, dayRows, emptyLabel }) {
+  const { t } = useTranslation();
   // calendar is the <Calendar> JSX — passed as prop so parent controls modifiers
   return (
     <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
@@ -266,7 +270,7 @@ export function InsightsSessionPanel({ calendar, selectedDate, onSelectDate, day
               >
                 <p className="text-sm font-semibold" style={{ color: TEXT_PRIMARY }}>{row.itemLabel}</p>
                 {row.rating != null && (
-                  <p className="text-xs mt-1" style={{ color: TEXT_SECONDARY }}>Rating: {row.rating}</p>
+                  <p className="text-xs mt-1" style={{ color: TEXT_SECONDARY }}>{t("auto.components_insights_InsightsShell.rating_15sbgf")} {row.rating}</p>
                 )}
                 {row.notes ? (
                   <p className="text-sm mt-2 whitespace-pre-wrap" style={{ color: TEXT_PRIMARY }}>

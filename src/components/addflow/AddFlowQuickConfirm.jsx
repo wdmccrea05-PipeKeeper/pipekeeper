@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { barcodesMatch } from '@/platform/productNormalization';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const ENTITIES = { blend: 'TobaccoBlend', pipe: 'Pipe', bottle: 'Bottle', cigar: 'Cigar', wine: 'Wine' };
 
@@ -180,6 +181,7 @@ function getSubtitle(itemType, result) {
 }
 
 export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBack, onSearchAgain, onManual, onCreated }) {
+  const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
   const [duplicates, setDuplicates] = useState(null); // null = not checked yet
   const [checkingDups, setCheckingDups] = useState(false);
@@ -255,7 +257,7 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
           <ArrowLeft className="w-4 h-4" />
         </button>
         <h2 className="text-lg font-bold min-w-0" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-          Confirm {typeLabel}
+          {t("auto.components_addflow_AddFlowQuickConfirm.confirm_eh2ftf")} {typeLabel}
         </h2>
       </div>
 
@@ -293,7 +295,7 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
           )}
           {itemType === 'pipe' && result?._identifyConfidence === 'low' && (
             <p className="text-xs mt-3" style={{ color: 'rgba(224,216,200,0.65)' }}>
-              Low-confidence AI fields are shown as suggestions. Review details before saving.
+              {t("auto.components_addflow_AddFlowQuickConfirm.low_confidence_ai_fields_are_shown_1r1s2c")}
             </p>
           )}
         </div>
@@ -311,7 +313,7 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
               <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#D4A574' }} />
               <div className="min-w-0">
                 <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
-                  Possible duplicate detected
+                  {t("auto.components_addflow_AddFlowQuickConfirm.possible_duplicate_detected_eehftv")}
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.6)' }}>
                   {duplicates.length === 1
@@ -339,7 +341,7 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
                 style={{ borderColor: 'rgba(180,140,75,0.25)', color: 'rgba(224,216,200,0.7)', background: 'transparent' }}
               >
                 {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
-                Add Anyway
+                {t("auto.components_addflow_AddFlowQuickConfirm.add_anyway_jbjb6v")}
               </Button>
             </div>
           </div>
@@ -367,7 +369,7 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
             style={{ borderColor: 'rgba(180,140,75,0.25)', color: 'rgba(224,216,200,0.7)', background: 'transparent' }}
           >
             <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-            Try Again
+            {t("auto.components_addflow_AddFlowQuickConfirm.try_again_4ztias")}
           </Button>
           <Button
             variant="outline"
@@ -377,7 +379,7 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
             style={{ borderColor: 'rgba(180,140,75,0.25)', color: 'rgba(224,216,200,0.7)', background: 'transparent' }}
           >
             <PenLine className="w-3.5 h-3.5 mr-1.5" />
-            Edit Details
+            {t("auto.components_addflow_AddFlowQuickConfirm.edit_details_iqptd")}
           </Button>
         </div>
       </div>

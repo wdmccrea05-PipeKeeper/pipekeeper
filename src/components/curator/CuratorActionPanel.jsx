@@ -1,5 +1,6 @@
 import React from "react";
 import CuratorActionResultCard from "./CuratorActionResultCard";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function CuratorActionPanel({
   actionRun,
@@ -10,13 +11,14 @@ export default function CuratorActionPanel({
   onAskCurator,
   onDismiss,
 }) {
+  const { t } = useTranslation();
   if (!actionRun) return null;
 
   if (actionRun.status === "running") {
     return (
       <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4 mb-4">
         <div className="text-sm text-amber-50/80">
-          Curator is reviewing your collection...
+          {t("auto.components_curator_CuratorActionPanel.curator_is_reviewing_your_collection_qszauu")}
         </div>
       </div>
     );
@@ -26,7 +28,7 @@ export default function CuratorActionPanel({
     return (
       <div className="rounded-xl border border-red-500/20 bg-black/20 p-4 mb-4">
         <div className="font-medium text-red-300">
-          Curator could not complete this action
+          {t("auto.components_curator_CuratorActionPanel.curator_could_not_complete_this_action_ptwlvg")}
         </div>
         <div className="mt-1 text-sm text-amber-50/70">
           {actionRun.error || "Please try again."}
@@ -37,7 +39,7 @@ export default function CuratorActionPanel({
             onClick={onRetry}
             className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-black"
           >
-            Try Again
+            {t("auto.components_curator_CuratorActionPanel.try_again_4ztias")}
           </button>
           {onDismiss ? (
             <button
@@ -45,7 +47,7 @@ export default function CuratorActionPanel({
               onClick={onDismiss}
               className="rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-100"
             >
-              Dismiss
+              {t("auto.components_curator_CuratorActionPanel.dismiss_w1upy9")}
             </button>
           ) : null}
         </div>
@@ -57,7 +59,7 @@ export default function CuratorActionPanel({
     return (
       <div className="rounded-xl border border-amber-500/20 bg-black/20 p-4 mb-4">
         <div className="font-medium text-amber-100">
-          No actionable recommendations right now
+          {t("auto.components_curator_CuratorActionPanel.no_actionable_recommendations_right_now_jigyxa")}
         </div>
         <div className="mt-1 text-sm text-amber-50/70">
           {actionRun.summary}
@@ -68,7 +70,7 @@ export default function CuratorActionPanel({
             onClick={onDismiss}
             className="mt-3 rounded-lg border border-amber-500/30 px-3 py-2 text-sm text-amber-100"
           >
-            Dismiss
+            {t("auto.components_curator_CuratorActionPanel.dismiss_w1upy9")}
           </button>
         ) : null}
       </div>
@@ -89,7 +91,7 @@ export default function CuratorActionPanel({
             onClick={onDismiss}
             className="rounded-lg border border-amber-500/30 px-3 py-1.5 text-xs text-amber-100"
           >
-            Close
+            {t("auto.components_curator_CuratorActionPanel.close_3lk8qj")}
           </button>
         ) : null}
       </div>

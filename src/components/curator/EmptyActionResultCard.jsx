@@ -1,12 +1,14 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, MessageCircle } from "lucide-react";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function EmptyActionResultCard({
   summary,
   onAskCurator,
   onDismiss,
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className="rounded-xl border p-4"
@@ -25,7 +27,7 @@ export default function EmptyActionResultCard({
             className="font-semibold text-base"
             style={{ color: "#F5F1E7" }}
           >
-            No actionable recommendations right now
+            {t("auto.components_curator_EmptyActionResultCard.no_actionable_recommendations_right_now_jigyxa")}
           </h4>
           <p
             className="text-sm mt-1"
@@ -45,7 +47,7 @@ export default function EmptyActionResultCard({
             className="gap-1"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            Ask Curator a Question
+            {t("auto.components_curator_EmptyActionResultCard.ask_curator_a_question_1emalr")}
           </Button>
         )}
 
@@ -55,7 +57,7 @@ export default function EmptyActionResultCard({
             variant="outline"
             onClick={onDismiss}
           >
-            Dismiss
+            {t("auto.components_curator_EmptyActionResultCard.dismiss_w1upy9")}
           </Button>
         )}
       </div>

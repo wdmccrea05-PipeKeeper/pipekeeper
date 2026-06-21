@@ -12,6 +12,7 @@ import {
 import OnboardingFlow from "./OnboardingFlow";
 import WhiskeyKeeperOnboarding from "./WhiskeyKeeperOnboarding";
 import CigarKeeperOnboarding from "./CigarKeeperOnboarding";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function shouldAutoLaunchOnboarding() {
   try {
@@ -30,6 +31,7 @@ function clearAutoLaunchOnboarding() {
 // ── Multi-module starter — let user pick which onboarding to run first ────────
 
 function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSelectCigar, onSkip }) {
+  const { t } = useTranslation();
   const BG          = "#140f0c";
   const CARD_BG     = "rgba(255,255,255,0.035)";
   const CARD_BORDER = "1px solid rgba(180,140,75,0.18)";
@@ -48,10 +50,10 @@ function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSelectCigar, onSk
       >
         <div className="px-6 py-6 space-y-5">
           <div>
-            <p className="text-xs uppercase tracking-widest font-semibold mb-1" style={{ color: TEXT_DIMMER }}>Welcome</p>
-            <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>What are you starting with?</h2>
+            <p className="text-xs uppercase tracking-widest font-semibold mb-1" style={{ color: TEXT_DIMMER }}>{t("auto.components_onboarding_OnboardingRouter.welcome_8y1u6p")}</p>
+            <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_OnboardingRouter.what_are_you_starting_with_uwywgl")}</h2>
             <p className="text-sm mt-1.5" style={{ color: TEXT_DIM }}>
-              Pick one — you can set up the other anytime.
+              {t("auto.components_onboarding_OnboardingRouter.pick_one_you_can_set_up_1i2i0a")}
             </p>
           </div>
 
@@ -63,8 +65,8 @@ function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSelectCigar, onSk
               style={{ background: CARD_BG, border: CARD_BORDER }}
             >
               <div>
-                <p className="text-sm font-bold" style={{ color: TEXT_MAIN }}>PipeKeeper</p>
-                <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>Pipes, tobacco, sessions, pairings</p>
+                <p className="text-sm font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_OnboardingRouter.pipekeeper_1dclxa")}</p>
+                <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_OnboardingRouter.pipes_tobacco_sessions_pairings_141vuj")}</p>
               </div>
               <span className="text-lg" aria-hidden="true">🪴</span>
             </button>
@@ -75,8 +77,8 @@ function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSelectCigar, onSk
               style={{ background: CARD_BG, border: CARD_BORDER }}
             >
               <div>
-                <p className="text-sm font-bold" style={{ color: TEXT_MAIN }}>WhiskeyKeeper</p>
-                <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>Bottles, value, strategy, growth</p>
+                <p className="text-sm font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_OnboardingRouter.whiskeykeeper_1kgmc1")}</p>
+                <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_OnboardingRouter.bottles_value_strategy_growth_1gr82d")}</p>
               </div>
               <span className="text-lg" aria-hidden="true">🥃</span>
             </button>
@@ -88,8 +90,8 @@ function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSelectCigar, onSk
                 style={{ background: CARD_BG, border: CARD_BORDER }}
               >
                 <div>
-                  <p className="text-sm font-bold" style={{ color: TEXT_MAIN }}>CigarKeeper</p>
-                  <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>Cigars, humidors, sessions, insights</p>
+                  <p className="text-sm font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_OnboardingRouter.cigarkeeper_1oz7i9")}</p>
+                  <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_OnboardingRouter.cigars_humidors_sessions_insights_1ocafz")}</p>
                 </div>
                 <span className="text-lg" aria-hidden="true">🚬</span>
               </button>
@@ -102,7 +104,7 @@ function MultiModuleStarter({ onSelectPipe, onSelectWhiskey, onSelectCigar, onSk
             className="w-full text-center text-xs py-2 transition-all"
             style={{ color: TEXT_DIMMER }}
           >
-            Skip onboarding and explore the app
+            {t("auto.components_onboarding_OnboardingRouter.skip_onboarding_and_explore_the_app_7jzg5v")}
           </button>
         </div>
       </div>

@@ -13,6 +13,7 @@ import { computeSessionDecrement, getAvailableQuantity } from '@/platform/cigarI
 import { CIGAR_STRENGTH_VALUES, formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import { sortByLabel } from '@/lib/sorting/alphabetical';
 import { QUERY_KEYS } from '@/lib/queryKeys';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const TODAY = new Date().toISOString().split('T')[0];
 
@@ -164,6 +165,7 @@ function SourceToggle({ value, onChange }) {
 }
 
 function CigarPicker({ cigars, selectedId, onSelect }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   const cigarList = Array.isArray(cigars) ? cigars : [];
@@ -185,7 +187,7 @@ function CigarPicker({ cigars, selectedId, onSelect }) {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search your cigars…"
+          placeholder={t("auto.components_cigars_CigarSessionModal.search_your_cigars_1akczv")}
           className="pl-9"
           style={{
             background: 'rgba(255,255,255,0.05)',
@@ -197,7 +199,7 @@ function CigarPicker({ cigars, selectedId, onSelect }) {
       </div>
       <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
         {sorted.length === 0 ? (
-          <p className="text-xs text-[#E0D8C8]/40 text-center py-4">No cigars found</p>
+          <p className="text-xs text-[#E0D8C8]/40 text-center py-4">{t("auto.components_cigars_CigarSessionModal.no_cigars_found_wqpvp3")}</p>
         ) : (
           sorted.map((c) => {
             const isSelected = c.id === selectedId;
@@ -254,6 +256,7 @@ function CheckToggle({ label, checked, onChange }) {
 }
 
 export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSessionSaved, editSession }) {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
   const isEditMode = !!editSession;
@@ -333,7 +336,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
     try {
       const isExternal = cigarMode === 'external';
       if (!isExternal && !selectedCigar?.id) {
-        toast.error('Select a cigar from your collection');
+        toast.error(t("auto.components_cigars_CigarSessionModal.select_a_cigar_from_your_collection_bsmt8b"));
         setSaving(false);
         return;
       }
@@ -356,7 +359,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
       if (isEditMode && editSession?.id) {
         // Update existing session
         await base44.entities.CigarSession.update(editSession.id, payload);
-        toast.success('Session updated!');
+        toast.success(t("auto.components_cigars_CigarSessionModal.session_updated_czingx"));
       } else {
         // Create new session
         payload.created_by = user?.email;
@@ -397,7 +400,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
           }
         }
 
-        toast.success('Session logged!');
+        toast.success(t("auto.components_cigars_CigarSessionModal.session_logged_7rco64"));
       }
 
       if (typeof onSessionSaved === 'function') onSessionSaved();
@@ -431,18 +434,18 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
           {/* Date & Duration */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <FieldLabel>Date</FieldLabel>
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.date_yjr3gj")}</FieldLabel>
               <StyledInput type="date" value={form.date} onChange={set('date')} />
             </div>
             <div>
-              <FieldLabel>Duration (min)</FieldLabel>
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.duration_min_1m9nz5")}</FieldLabel>
               <StyledInput type="number" value={form.duration_minutes} onChange={set('duration_minutes')} placeholder="60" />
             </div>
           </div>
 
           {/* Cigar selection */}
           <div>
-            <FieldLabel>Cigar</FieldLabel>
+            <FieldLabel>{t("auto.components_cigars_CigarSessionModal.cigar_3lhqdn")}</FieldLabel>
             <SourceToggle value={cigarMode} onChange={setCigarMode} />
             {cigarMode === 'collection' ? (
               <CigarPicker
@@ -453,15 +456,15 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <FieldLabel>Brand</FieldLabel>
-                  <StyledInput value={form.external_cigar_brand} onChange={set('external_cigar_brand')} placeholder="Brand" />
+                  <FieldLabel>{t("auto.components_cigars_CigarSessionModal.brand_3kz45o")}</FieldLabel>
+                  <StyledInput value={form.external_cigar_brand} onChange={set('external_cigar_brand')} placeholder={t("auto.components_cigars_CigarSessionModal.brand_3kz45o")} />
                 </div>
                 <div>
-                  <FieldLabel>Name</FieldLabel>
-                  <StyledInput value={form.external_cigar_name} onChange={set('external_cigar_name')} placeholder="Name" />
+                  <FieldLabel>{t("auto.components_cigars_CigarSessionModal.name_yjyskm")}</FieldLabel>
+                  <StyledInput value={form.external_cigar_name} onChange={set('external_cigar_name')} placeholder={t("auto.components_cigars_CigarSessionModal.name_yjyskm")} />
                 </div>
                 <div>
-                  <FieldLabel>Vitola</FieldLabel>
+                  <FieldLabel>{t("auto.components_cigars_CigarSessionModal.vitola_1nz4sv")}</FieldLabel>
                   <StyledInput value={form.external_cigar_vitola} onChange={set('external_cigar_vitola')} placeholder="e.g. Robusto" />
                 </div>
               </div>
@@ -470,47 +473,47 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
 
           {/* Pairing */}
           <div>
-            <FieldLabel>Pairing</FieldLabel>
+            <FieldLabel>{t("auto.components_cigars_CigarSessionModal.pairing_1xw1g5")}</FieldLabel>
             <StyledInput value={form.pairing} onChange={set('pairing')} placeholder="e.g. Bourbon, Coffee, Port…" />
           </div>
 
           {/* Smoke notes */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <FieldLabel>Construction Notes</FieldLabel>
-              <StyledTextarea value={form.construction_notes} onChange={set('construction_notes')} placeholder="Cap, foot, overall construction…" />
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.construction_notes_11cx61")}</FieldLabel>
+              <StyledTextarea value={form.construction_notes} onChange={set('construction_notes')} placeholder={t("auto.components_cigars_CigarSessionModal.cap_foot_overall_construction_1uzvs3")} />
             </div>
             <div>
-              <FieldLabel>Burn Notes</FieldLabel>
-              <StyledTextarea value={form.burn_notes} onChange={set('burn_notes')} placeholder="Even, wavy, tunneling…" />
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.burn_notes_68y7k5")}</FieldLabel>
+              <StyledTextarea value={form.burn_notes} onChange={set('burn_notes')} placeholder={t("auto.components_cigars_CigarSessionModal.even_wavy_tunneling_wbhbvw")} />
             </div>
             <div>
-              <FieldLabel>Draw Notes</FieldLabel>
-              <StyledTextarea value={form.draw_notes} onChange={set('draw_notes')} placeholder="Open, tight, perfect…" />
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.draw_notes_1ith59")}</FieldLabel>
+              <StyledTextarea value={form.draw_notes} onChange={set('draw_notes')} placeholder={t("auto.components_cigars_CigarSessionModal.open_tight_perfect_9udn7i")} />
             </div>
             <div>
-              <FieldLabel>Flavor Progression</FieldLabel>
-              <StyledTextarea value={form.flavor_progression} onChange={set('flavor_progression')} placeholder="First third → second → final…" />
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.flavor_progression_1gdzfl")}</FieldLabel>
+              <StyledTextarea value={form.flavor_progression} onChange={set('flavor_progression')} placeholder={t("auto.components_cigars_CigarSessionModal.first_third_second_final_1vgaab")} />
             </div>
             <div>
-              <FieldLabel>First Third</FieldLabel>
-              <StyledTextarea value={form.first_third_notes} onChange={set('first_third_notes')} placeholder="Opening notes…" />
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.first_third_ha5sco")}</FieldLabel>
+              <StyledTextarea value={form.first_third_notes} onChange={set('first_third_notes')} placeholder={t("auto.components_cigars_CigarSessionModal.opening_notes_6wu9us")} />
             </div>
             <div>
-              <FieldLabel>Second Third</FieldLabel>
-              <StyledTextarea value={form.second_third_notes} onChange={set('second_third_notes')} placeholder="Midpoint notes…" />
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.second_third_1l5qxd")}</FieldLabel>
+              <StyledTextarea value={form.second_third_notes} onChange={set('second_third_notes')} placeholder={t("auto.components_cigars_CigarSessionModal.midpoint_notes_1c3s66")} />
             </div>
             <div>
-              <FieldLabel>Final Third</FieldLabel>
-              <StyledTextarea value={form.final_third_notes} onChange={set('final_third_notes')} placeholder="Final third notes…" />
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.final_third_strdnu")}</FieldLabel>
+              <StyledTextarea value={form.final_third_notes} onChange={set('final_third_notes')} placeholder={t("auto.components_cigars_CigarSessionModal.final_third_notes_14blgg")} />
             </div>
           </div>
 
           {/* Strength impression */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-            <FieldLabel>Strength Impression</FieldLabel>
-              <StyledSelect value={form.strength_impression} onValueChange={set('strength_impression')} placeholder="Select impression">
+            <FieldLabel>{t("auto.components_cigars_CigarSessionModal.strength_impression_zf8hod")}</FieldLabel>
+              <StyledSelect value={form.strength_impression} onValueChange={set('strength_impression')} placeholder={t("auto.components_cigars_CigarSessionModal.select_impression_12z2bf")}>
                 {CIGAR_STRENGTH_VALUES.map((v) => (
                   <SelectItem key={v} value={v} style={selectItemStyle}>
                     {formatCigarStrengthLabel(v)}
@@ -519,34 +522,34 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
               </StyledSelect>
             </div>
             <div>
-              <FieldLabel>Actual Duration (min)</FieldLabel>
-              <StyledInput type="number" value={form.duration_actual_minutes} onChange={set('duration_actual_minutes')} placeholder="Actual time smoked" />
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.actual_duration_min_1mov32")}</FieldLabel>
+              <StyledInput type="number" value={form.duration_actual_minutes} onChange={set('duration_actual_minutes')} placeholder={t("auto.components_cigars_CigarSessionModal.actual_time_smoked_tnql81")} />
             </div>
             <div>
-              <FieldLabel>Burn Quality</FieldLabel>
-              <StyledSelect value={form.burn_quality} onValueChange={set('burn_quality')} placeholder="Select quality">
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.burn_quality_1hdagp")}</FieldLabel>
+              <StyledSelect value={form.burn_quality} onValueChange={set('burn_quality')} placeholder={t("auto.components_cigars_CigarSessionModal.select_quality_1k332p")}>
                 {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{v}</SelectItem>)}
               </StyledSelect>
             </div>
             <div>
-              <FieldLabel>Draw Quality</FieldLabel>
-              <StyledSelect value={form.draw_quality} onValueChange={set('draw_quality')} placeholder="Select quality">
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.draw_quality_s96wv0")}</FieldLabel>
+              <StyledSelect value={form.draw_quality} onValueChange={set('draw_quality')} placeholder={t("auto.components_cigars_CigarSessionModal.select_quality_1k332p")}>
                 {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{v}</SelectItem>)}
               </StyledSelect>
             </div>
             <div>
-              <FieldLabel>Ash Quality</FieldLabel>
-              <StyledSelect value={form.ash_quality} onValueChange={set('ash_quality')} placeholder="Select quality">
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.ash_quality_1s052y")}</FieldLabel>
+              <StyledSelect value={form.ash_quality} onValueChange={set('ash_quality')} placeholder={t("auto.components_cigars_CigarSessionModal.select_quality_1k332p")}>
                 {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{v}</SelectItem>)}
               </StyledSelect>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <FieldLabel>Touch-ups</FieldLabel>
+                <FieldLabel>{t("auto.components_cigars_CigarSessionModal.touch_ups_1f4cff")}</FieldLabel>
                 <StyledInput type="number" value={form.touch_ups} onChange={set('touch_ups')} placeholder="0" />
               </div>
               <div>
-                <FieldLabel>Relights</FieldLabel>
+                <FieldLabel>{t("auto.components_cigars_CigarSessionModal.relights_12lbqh")}</FieldLabel>
                 <StyledInput type="number" value={form.relights} onChange={set('relights')} placeholder="0" />
               </div>
             </div>
@@ -554,7 +557,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
 
           {/* Overall enjoyment */}
           <div>
-            <FieldLabel>Overall Enjoyment</FieldLabel>
+            <FieldLabel>{t("auto.components_cigars_CigarSessionModal.overall_enjoyment_12amwb")}</FieldLabel>
             <StarRating
               value={form.overall_enjoyment}
               onChange={(val) => setForm((f) => ({ ...f, overall_enjoyment: val }))}
@@ -563,8 +566,8 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
 
           {/* Would buy again */}
           <div>
-            <FieldLabel>Would Buy Again?</FieldLabel>
-            <StyledSelect value={form.would_buy_again} onValueChange={set('would_buy_again')} placeholder="Select…">
+            <FieldLabel>{t("auto.components_cigars_CigarSessionModal.would_buy_again_gnpikf")}</FieldLabel>
+            <StyledSelect value={form.would_buy_again} onValueChange={set('would_buy_again')} placeholder={t("auto.components_cigars_CigarSessionModal.select_1tkotp")}>
               {['yes', 'maybe', 'no'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.charAt(0).toUpperCase() + v.slice(1)}
@@ -576,19 +579,19 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
           {/* Occasion & Location */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <FieldLabel>Occasion</FieldLabel>
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.occasion_6c1buc")}</FieldLabel>
               <StyledInput value={form.occasion} onChange={set('occasion')} placeholder="e.g. Celebration, Evening…" />
             </div>
             <div>
-              <FieldLabel>Location</FieldLabel>
+              <FieldLabel>{t("auto.components_cigars_CigarSessionModal.location_1tz7ug")}</FieldLabel>
               <StyledInput value={form.location} onChange={set('location')} placeholder="e.g. Back porch, Lounge…" />
             </div>
           </div>
 
           {/* Notes */}
           <div>
-            <FieldLabel>Session Notes</FieldLabel>
-            <StyledTextarea value={form.notes} onChange={set('notes')} placeholder="Overall impressions…" rows={3} />
+            <FieldLabel>{t("auto.components_cigars_CigarSessionModal.session_notes_1l2tuh")}</FieldLabel>
+            <StyledTextarea value={form.notes} onChange={set('notes')} placeholder={t("auto.components_cigars_CigarSessionModal.overall_impressions_kl6wf0")} rows={3} />
           </div>
 
           {/* Flags */}
@@ -632,10 +635,10 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
             >
               <div className="min-w-0">
                 <p className="text-sm font-medium" style={{ color: '#F5F1E7' }}>
-                  Deduct from inventory
+                  {t("auto.components_cigars_CigarSessionModal.deduct_from_inventory_j1emw0")}
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  Removes 1 stick from "{selectedCigar.name}" · {getAvailableQuantity(selectedCigar)} remaining
+                  {t("auto.components_cigars_CigarSessionModal.removes_1_stick_from_1t4ifc")}{selectedCigar.name}" · {getAvailableQuantity(selectedCigar)} remaining
                 </p>
               </div>
               <CheckToggle
@@ -654,7 +657,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
               onClick={onClose}
               style={{ color: 'rgba(224,216,200,0.6)' }}
             >
-              Cancel
+              {t("auto.components_cigars_CigarSessionModal.cancel_1bin7k")}
             </Button>
             <Button
               type="submit"

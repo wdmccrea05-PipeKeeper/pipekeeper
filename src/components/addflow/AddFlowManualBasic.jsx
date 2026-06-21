@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const BLEND_TYPES = ['Virginia', 'Virginia/Perique', 'Virginia/Burley', 'English', 'Balkan', 'Aromatic', 'Burley', 'Burley-based', 'Latakia Blend', 'Oriental/Turkish', 'American', 'Cavendish', 'Kentucky', 'Dark Fired Kentucky', 'Perique', 'Lakeland', 'Codger Blend', 'Other'];
 const SHAPES = ['Billiard', 'Apple', 'Bent Billiard', 'Dublin', 'Bulldog', 'Rhodesian', 'Canadian', 'Lovat', 'Poker', 'Freehand', 'Churchwarden', 'Calabash', 'Volcano', 'Horn', 'Other', 'Unknown'];
@@ -47,6 +48,7 @@ const inputStyle = {
 };
 
 export default function AddFlowManualBasic({ itemType, typeLabel, onBack, onNext, onClose, data }) {
+  const { t } = useTranslation();
   const fields = FIELDS[itemType] || FIELDS.blend;  const [values, setValues] = useState(() => {
     const init = {};
     fields.forEach(f => { init[f.key] = data?.[f.key] || ''; });
@@ -79,9 +81,9 @@ export default function AddFlowManualBasic({ itemType, typeLabel, onBack, onNext
         </button>
         <div className="min-w-0 flex-1">
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Basic Info
+            {t("auto.components_addflow_AddFlowManualBasic.basic_info_b7m5v")}
           </h2>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>Step 1 of 4</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>{t("auto.components_addflow_AddFlowManualBasic.step_1_of_4_rjay3f")}</p>
         </div>
         {onClose && (
           <button
@@ -131,7 +133,7 @@ export default function AddFlowManualBasic({ itemType, typeLabel, onBack, onNext
           className="w-full mt-2"
           style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#fff', fontWeight: 600 }}
         >
-          Continue
+          {t("auto.components_addflow_AddFlowManualBasic.continue_1fqfxw")}
           <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>

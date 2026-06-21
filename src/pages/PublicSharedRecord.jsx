@@ -98,7 +98,7 @@ export default function PublicSharedRecord() {
       <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-[#E0D8C8]"><ChevronLeft className="w-5 h-5" /></Button>
-          <img src={LOGO} alt="PipeKeeper" className="h-6 object-contain" />
+          <img src={LOGO} alt={t("auto.pages_PublicSharedRecord.pipekeeper_1dclxa")} className="h-6 object-contain" />
         </div>
       </div>
     </nav>

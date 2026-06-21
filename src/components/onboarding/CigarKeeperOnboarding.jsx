@@ -22,6 +22,7 @@ import {
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { markCigarOnboardingComplete } from './onboardingState';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
@@ -114,6 +115,7 @@ function FeaturePreviewCard({ icon: Icon, title, description, accent = GOLD }) {
 // ── Step components ───────────────────────────────────────────────────────────
 
 function StepWelcome() {
+  const { t } = useTranslation();
   return (
     <div className="text-center space-y-6">
       <div
@@ -124,32 +126,32 @@ function StepWelcome() {
       </div>
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight" style={{ color: TEXT_MAIN }}>
-          Welcome to CigarKeeper
+          {t("auto.components_onboarding_CigarKeeperOnboarding.welcome_to_cigarkeeper_5ukr5i")}
         </h1>
         <p className="text-lg" style={{ color: TEXT_DIM }}>
-          Track, manage, and enjoy your cigar collection
+          {t("auto.components_onboarding_CigarKeeperOnboarding.track_manage_and_enjoy_your_cigar_19l7nb")}
         </p>
       </div>
       <div className="grid grid-cols-2 gap-3 text-left mt-4">
         <div className="rounded-xl p-4" style={{ background: CARD_BG, border: CARD_BORDER }}>
           <Cigarette className="w-5 h-5 mb-2" style={{ color: GOLD }} />
-          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>Your Collection</p>
-          <p className="text-xs" style={{ color: TEXT_DIM }}>Track every cigar across brands, vitolas, and wrappers</p>
+          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_CigarKeeperOnboarding.your_collection_wi20u8")}</p>
+          <p className="text-xs" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_CigarKeeperOnboarding.track_every_cigar_across_brands_vitolas_1sohjr")}</p>
         </div>
         <div className="rounded-xl p-4" style={{ background: CARD_BG, border: CARD_BORDER }}>
           <Droplets className="w-5 h-5 mb-2" style={{ color: GOLD }} />
-          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>Humidor Management</p>
-          <p className="text-xs" style={{ color: TEXT_DIM }}>Monitor humidity, maintenance alerts, and storage</p>
+          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_CigarKeeperOnboarding.humidor_management_19zb2b")}</p>
+          <p className="text-xs" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_CigarKeeperOnboarding.monitor_humidity_maintenance_alerts_and_storage_182r1e")}</p>
         </div>
         <div className="rounded-xl p-4" style={{ background: CARD_BG, border: CARD_BORDER }}>
           <BookOpen className="w-5 h-5 mb-2" style={{ color: GOLD }} />
-          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>Smoking Sessions</p>
-          <p className="text-xs" style={{ color: TEXT_DIM }}>Log sessions, ratings, pairings, and tasting notes</p>
+          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_CigarKeeperOnboarding.smoking_sessions_1dziy9")}</p>
+          <p className="text-xs" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_CigarKeeperOnboarding.log_sessions_ratings_pairings_and_tasting_o37jnx")}</p>
         </div>
         <div className="rounded-xl p-4" style={{ background: CARD_BG, border: CARD_BORDER }}>
           <BarChart3 className="w-5 h-5 mb-2" style={{ color: GOLD }} />
-          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>Insights</p>
-          <p className="text-xs" style={{ color: TEXT_DIM }}>Understand your collection, preferences, and habits</p>
+          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_CigarKeeperOnboarding.insights_izlta")}</p>
+          <p className="text-xs" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_CigarKeeperOnboarding.understand_your_collection_preferences_and_habit_1ovk83")}</p>
         </div>
       </div>
     </div>
@@ -157,11 +159,12 @@ function StepWelcome() {
 }
 
 function StepStartCollection({ onAddFirst, onSkip }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>Start Your Humidor</h2>
-        <p style={{ color: TEXT_DIM }}>How would you like to begin?</p>
+        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_CigarKeeperOnboarding.start_your_humidor_3lurju")}</h2>
+        <p style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_CigarKeeperOnboarding.how_would_you_like_to_begin_17kjq1")}</p>
       </div>
       <div className="space-y-3">
         <button
@@ -171,8 +174,8 @@ function StepStartCollection({ onAddFirst, onSkip }) {
           style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.35)', color: TEXT_MAIN }}
         >
           <div>
-            <p className="text-sm font-bold">Add your first cigar</p>
-            <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>Start with one cigar — add more anytime</p>
+            <p className="text-sm font-bold">{t("auto.components_onboarding_CigarKeeperOnboarding.add_your_first_cigar_2eg7pn")}</p>
+            <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_CigarKeeperOnboarding.start_with_one_cigar_add_more_di8kce")}</p>
           </div>
           <ArrowRight className="w-4 h-4 shrink-0 ml-2" style={{ color: GOLD_MUTED }} />
         </button>
@@ -183,8 +186,8 @@ function StepStartCollection({ onAddFirst, onSkip }) {
           style={{ background: CARD_BG, border: CARD_BORDER }}
         >
           <div>
-            <p className="text-sm font-medium" style={{ color: TEXT_MAIN }}>Explore the app first</p>
-            <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>Browse around, add cigars when you're ready</p>
+            <p className="text-sm font-medium" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_CigarKeeperOnboarding.explore_the_app_first_9oy80e")}</p>
+            <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_CigarKeeperOnboarding.browse_around_add_cigars_when_you_slhzk")}</p>
           </div>
           <ArrowRight className="w-4 h-4 shrink-0 ml-2" style={{ color: TEXT_DIMMER }} />
         </button>
@@ -194,6 +197,7 @@ function StepStartCollection({ onAddFirst, onSkip }) {
 }
 
 function StepPreferences({ prefs, onChange }) {
+  const { t } = useTranslation();
   const toggle = (key, value) => {
     const current = prefs[key] || [];
     const next = current.includes(value)
@@ -207,12 +211,12 @@ function StepPreferences({ prefs, onChange }) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-1">
-        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>Your Preferences</h2>
-        <p className="text-sm" style={{ color: TEXT_DIM }}>Helps personalize recommendations. All optional — skip anytime.</p>
+        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_CigarKeeperOnboarding.your_preferences_ner7s6")}</h2>
+        <p className="text-sm" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_CigarKeeperOnboarding.helps_personalize_recommendations_all_optional_s_15xcq9")}</p>
       </div>
 
       <div className="space-y-1">
-        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>Body Preference</p>
+        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>{t("auto.components_onboarding_CigarKeeperOnboarding.body_preference_brqqdu")}</p>
         <div className="space-y-2 pt-1">
           {BODY_LEVELS.map((b) => (
             <ExperienceCard
@@ -226,7 +230,7 @@ function StepPreferences({ prefs, onChange }) {
       </div>
 
       <div className="space-y-1">
-        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>Flavor Notes You Enjoy</p>
+        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>{t("auto.components_onboarding_CigarKeeperOnboarding.flavor_notes_you_enjoy_vn197e")}</p>
         <div className="flex flex-wrap gap-2 pt-1">
           {FLAVOR_NOTES.map((f) => (
             <ToggleChip
@@ -241,7 +245,7 @@ function StepPreferences({ prefs, onChange }) {
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>Experience Level</p>
+        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>{t("auto.components_onboarding_CigarKeeperOnboarding.experience_level_1yxppf")}</p>
         <div className="space-y-2">
           {EXPERIENCE_LEVELS.map((lvl) => (
             <ExperienceCard
@@ -258,32 +262,33 @@ function StepPreferences({ prefs, onChange }) {
 }
 
 function StepFeaturePreview() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-5">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>What You'll Have</h2>
-        <p style={{ color: TEXT_DIM }}>Your humidor gets smarter with every cigar you add.</p>
+        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_CigarKeeperOnboarding.what_you_ll_have_14lmec")}</h2>
+        <p style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_CigarKeeperOnboarding.your_humidor_gets_smarter_with_every_17rw7a")}</p>
       </div>
 
       <FeaturePreviewCard
         icon={Cigarette}
-        title="Full Collection Tracking"
+        title={t("auto.components_onboarding_CigarKeeperOnboarding.full_collection_tracking_pe3913")}
         description="Vitola, wrapper, binder, filler, strength, aging date — everything in one place. Free tier includes up to 10 cigars."
       />
       <FeaturePreviewCard
         icon={Droplets}
-        title="Humidor Maintenance"
+        title={t("auto.components_onboarding_CigarKeeperOnboarding.humidor_maintenance_1ykrtw")}
         description="Get alerts when humidity checks or aid replacements are due. Never lose a cigar to neglect again."
       />
       <FeaturePreviewCard
         icon={BookOpen}
-        title="Session Logs"
+        title={t("auto.components_onboarding_CigarKeeperOnboarding.session_logs_iy4p9a")}
         description="Record every smoke with tasting notes, burn quality, draw, pairings, and enjoyment ratings."
         accent="#93C5FD"
       />
       <FeaturePreviewCard
         icon={Sparkles}
-        title="Curator & Insights (Pro)"
+        title={t("auto.components_onboarding_CigarKeeperOnboarding.curator_and_insights_pro_augtna")}
         description="Upgrade to Pro for AI-powered recommendations, collection insights, and growth suggestions."
         accent="#a78bfa"
       />
@@ -294,6 +299,7 @@ function StepFeaturePreview() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function CigarKeeperOnboarding({ onComplete, onSkip }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [prefs, setPrefs] = useState({
     preferred_body: [],
@@ -408,7 +414,7 @@ export default function CigarKeeperOnboarding({ onComplete, onSkip }) {
                 className="text-xs flex items-center gap-1 px-2.5 py-1 rounded-full transition-all"
                 style={{ color: TEXT_DIMMER, background: 'rgba(255,255,255,0.04)' }}
               >
-                Skip all <X className="w-3 h-3" />
+                {t("auto.components_onboarding_CigarKeeperOnboarding.skip_all_hcupmd")} <X className="w-3 h-3" />
               </button>
             </div>
             <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>
@@ -452,7 +458,7 @@ export default function CigarKeeperOnboarding({ onComplete, onSkip }) {
                 style={{ color: TEXT_DIM, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back
+                {t("auto.components_onboarding_CigarKeeperOnboarding.back_yjpjkm")}
               </button>
 
               {current.skipLabel && (
@@ -475,12 +481,12 @@ export default function CigarKeeperOnboarding({ onComplete, onSkip }) {
               >
                 {isLast ? (
                   <>
-                    Enter CigarKeeper
+                    {t("auto.components_onboarding_CigarKeeperOnboarding.enter_cigarkeeper_41t5s5")}
                     <Check className="w-4 h-4" />
                   </>
                 ) : (
                   <>
-                    Continue
+                    {t("auto.components_onboarding_CigarKeeperOnboarding.continue_1fqfxw")}
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}

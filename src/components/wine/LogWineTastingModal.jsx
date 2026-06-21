@@ -371,7 +371,7 @@ export default function LogWineTastingModal({
               <div className="space-y-3 rounded-xl p-4" style={{ background: 'rgba(163,92,92,0.06)', border: '1px solid rgba(163,92,92,0.14)' }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">Producer / Winery</label>
+                    <label className="text-xs font-semibold text-[#E0D8C8]/70 block mb-1">{t("auto.components_wine_LogWineTastingModal.producer_winery_1g9wqi")}</label>
                     <Input
                       value={newWine.producer}
                       onChange={(e) => setNew('producer', e.target.value)}
@@ -413,7 +413,7 @@ export default function LogWineTastingModal({
                     <Input
                       value={newWine.varietal}
                       onChange={(e) => setNew('varietal', e.target.value)}
-                      placeholder="Pinot Noir"
+                      placeholder={t("auto.components_wine_LogWineTastingModal.pinot_noir_exqf53")}
                     />
                   </div>
                   <div>
@@ -421,7 +421,7 @@ export default function LogWineTastingModal({
                     <Input
                       value={newWine.region}
                       onChange={(e) => setNew('region', e.target.value)}
-                      placeholder="Burgundy"
+                      placeholder={t("auto.components_wine_LogWineTastingModal.burgundy_19n53s")}
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -429,7 +429,7 @@ export default function LogWineTastingModal({
                     <Input
                       value={newWine.country}
                       onChange={(e) => setNew('country', e.target.value)}
-                      placeholder="France"
+                      placeholder={t("auto.components_wine_LogWineTastingModal.france_1ds9zi")}
                     />
                   </div>
                 </div>

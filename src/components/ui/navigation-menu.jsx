@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Sparkles, Users, User, HelpCircle, Shield, ClipboardList, Wrench, FileText } from "lucide-react";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function isModuleEnabled(user, key) {
   return user?.activeModules?.[key] === true;
@@ -11,6 +12,7 @@ export default function TopNavigation({
   languageSelector = null,
   quickAccess = null,
 }) {
+  const { t } = useTranslation();
   const location = useLocation();
 
   const pipeEnabled =
@@ -62,14 +64,14 @@ export default function TopNavigation({
         <div className="flex items-center gap-3 min-w-0">
           <img
             src="/logos/collectionkeeper.png"
-            alt="CollectionKeeper"
+            alt={t("auto.components_ui_navigationmenu.collectionkeeper_1ukoz8")}
             className="h-11 w-auto shrink-0"
             onError={(e) => {
               e.currentTarget.style.display = "none";
             }}
           />
           <div className="text-[#F5F1E7] text-[2rem] leading-none font-semibold font-serif">
-            CollectionKeeper
+            {t("auto.components_ui_navigationmenu.collectionkeeper_1ukoz8")}
           </div>
         </div>
 

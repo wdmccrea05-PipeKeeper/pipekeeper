@@ -102,7 +102,7 @@ function TastingsInner() {
               }}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
-              Log Tasting
+              {t("auto.pages_Tastings.log_tasting_1njc2o")}
             </Button>
           </div>
 
@@ -115,15 +115,15 @@ function TastingsInner() {
               }}
             >
               <BookOpen className="w-10 h-10 mx-auto text-[#B48C4B] mb-4" />
-              <p className="text-2xl font-semibold">No Tastings Yet</p>
+              <p className="text-2xl font-semibold">{t("auto.pages_Tastings.no_tastings_yet_7559tt")}</p>
               <p className="text-[#D8C7A6]/76 mt-2">
-                Log your first pour to unlock tasting insights.
+                {t("auto.pages_Tastings.log_your_first_pour_to_unlock_1k2qbt")}
               </p>
               <Button
                 className="mt-5"
                 onClick={() => openCreateModal()}
               >
-                Log Tasting
+                {t("auto.pages_Tastings.log_tasting_1njc2o")}
               </Button>
             </div>
           ) : (

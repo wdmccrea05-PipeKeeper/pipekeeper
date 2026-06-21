@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { aggregateCollection } from '@/components/keeper-core/aggregation/collectionAggregation';
 import BrandLogo from '@/components/branding/BrandLogo';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function Divider() {
   return (
@@ -40,6 +41,7 @@ function StatPill({ label, value, color }) {
 }
 
 function CardShell({ children, cardRef }) {
+  const { t } = useTranslation();
   return (
     <div
       ref={cardRef}
@@ -61,7 +63,7 @@ function CardShell({ children, cardRef }) {
       <div className="px-6 py-3 flex items-center justify-center gap-2">
         <BrandLogo compact showWordmark={false} imageClassName="w-4 h-4" />
         <span className="text-xs" style={{ color: 'rgba(224,216,200,0.3)', letterSpacing: '0.08em' }}>
-          CollectionKeeper
+          {t("auto.pages_CollectionInsightsShare.collectionkeeper_1ukoz8")}
         </span>
       </div>
     </div>
@@ -70,6 +72,7 @@ function CardShell({ children, cardRef }) {
 
 // Card 1 — Cover
 function CoverCard({ summary, userProfile, cardRef }) {
+  const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
   const pipes = summary?.pipes?.count ?? 0;
   const blends = summary?.tobacco?.count ?? 0;
@@ -89,7 +92,7 @@ function CoverCard({ summary, userProfile, cardRef }) {
             {userProfile?.display_name ? `${userProfile.display_name}'s Collection` : 'My Collection'}
           </h2>
           <p className="text-xs uppercase tracking-widest mt-2" style={{ color: 'rgba(180,140,75,0.55)' }}>
-            A Collector's Snapshot
+            {t("auto.pages_CollectionInsightsShare.a_collector_s_snapshot_q9fwgn")}
           </p>
         </div>
         <Divider />
@@ -113,6 +116,7 @@ function CoverCard({ summary, userProfile, cardRef }) {
 
 // Card 2 — PipeKeeper highlights
 function PipeCard({ summary, cardRef }) {
+  const { t } = useTranslation();
   const pipes = summary?.pipes?.count ?? 0;
   const blends = summary?.tobacco?.count ?? 0;
   const sessions = summary?.total?.sessions ?? 0;
@@ -127,10 +131,10 @@ function PipeCard({ summary, cardRef }) {
       <div className="px-7 py-7 space-y-5">
         <div className="text-center">
           <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: 'rgba(180,140,75,0.6)' }}>
-            PipeKeeper
+            {t("auto.pages_CollectionInsightsShare.pipekeeper_1dclxa")}
           </p>
           <h3 className="text-lg font-bold mt-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Pipe Collection
+            {t("auto.pages_CollectionInsightsShare.pipe_collection_ks80cf")}
           </h3>
         </div>
         <Divider />
@@ -145,20 +149,20 @@ function PipeCard({ summary, cardRef }) {
             style={{ background: 'rgba(90,124,90,0.12)', border: '1px solid rgba(90,124,90,0.22)' }}
           >
             <span className="text-lg font-bold" style={{ color: '#7AAA68' }}>{cellarOz} oz</span>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>Cellared Tobacco</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("auto.pages_CollectionInsightsShare.cellared_tobacco_1dlirl")}</p>
           </div>
         )}
         <Divider />
         <div className="space-y-3">
           {topPipe && (
             <div className="flex items-start justify-between gap-3">
-              <span className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.55)' }}>Top Pipe</span>
+              <span className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.55)' }}>{t("auto.pages_CollectionInsightsShare.top_pipe_t9t5gm")}</span>
               <span className="text-sm font-semibold text-right" style={{ color: '#F5F1E7', maxWidth: '60%', wordBreak: 'break-word' }}>{topPipe.name}</span>
             </div>
           )}
           {topBlend && (
             <div className="flex items-start justify-between gap-3">
-              <span className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.55)' }}>Top Blend</span>
+              <span className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.55)' }}>{t("auto.pages_CollectionInsightsShare.top_blend_16bfhx")}</span>
               <span className="text-sm font-semibold text-right" style={{ color: '#F5F1E7', maxWidth: '60%', wordBreak: 'break-word' }}>{topBlend.name}</span>
             </div>
           )}
@@ -170,6 +174,7 @@ function PipeCard({ summary, cardRef }) {
 
 // Card 3 — WhiskeyKeeper highlights
 function WhiskeyCard({ summary, cardRef }) {
+  const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
   const bottles = summary?.whiskey?.count ?? 0;
   const tastings = summary?.total?.tastings ?? 0;
@@ -183,10 +188,10 @@ function WhiskeyCard({ summary, cardRef }) {
       <div className="px-7 py-7 space-y-5">
         <div className="text-center">
           <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: 'rgba(180,140,75,0.6)' }}>
-            WhiskeyKeeper
+            {t("auto.pages_CollectionInsightsShare.whiskeykeeper_1kgmc1")}
           </p>
           <h3 className="text-lg font-bold mt-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Whiskey Collection
+            {t("auto.pages_CollectionInsightsShare.whiskey_collection_1ns1lp")}
           </h3>
         </div>
         <Divider />
@@ -206,13 +211,13 @@ function WhiskeyCard({ summary, cardRef }) {
         <div className="space-y-3">
           {topBottle && (
             <div className="flex items-start justify-between gap-3">
-              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>Crown Jewel</span>
+              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>{t("auto.pages_CollectionInsightsShare.crown_jewel_oanmcl")}</span>
               <span className="text-sm font-semibold text-right" style={{ color: '#F5F1E7', maxWidth: '60%', wordBreak: 'break-word' }}>{topBottle.name}</span>
             </div>
           )}
           {avgRating && (
             <div className="flex items-center justify-between gap-3">
-              <span className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.55)' }}>Avg Rating</span>
+              <span className="text-xs uppercase tracking-widest" style={{ color: 'rgba(180,140,75,0.55)' }}>{t("auto.pages_CollectionInsightsShare.avg_rating_r5obxk")}</span>
               <span className="text-sm font-semibold" style={{ color: '#F59E0B' }}>{'⭐'.repeat(Math.round(Number(avgRating)))} {avgRating}/5</span>
             </div>
           )}
@@ -224,6 +229,7 @@ function WhiskeyCard({ summary, cardRef }) {
 
 // Card 4 — CigarKeeper highlights
 function CigarCard({ summary, cardRef }) {
+  const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
   const cigarTypes = summary?.cigar?.count ?? summary?.cigar?.cigarTypes ?? 0;
   const sticks = summary?.cigar?.totalSticks ?? 0;
@@ -238,10 +244,10 @@ function CigarCard({ summary, cardRef }) {
       <div className="px-7 py-7 space-y-5">
         <div className="text-center">
           <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: 'rgba(180,140,75,0.6)' }}>
-            CigarKeeper
+            {t("auto.pages_CollectionInsightsShare.cigarkeeper_1oz7i9")}
           </p>
           <h3 className="text-lg font-bold mt-1" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Cigar Collection
+            {t("auto.pages_CollectionInsightsShare.cigar_collection_1vck46")}
           </h3>
         </div>
         <Divider />
@@ -261,19 +267,19 @@ function CigarCard({ summary, cardRef }) {
         <div className="space-y-3">
           {mostSmoked && (
             <div className="flex items-start justify-between gap-3">
-              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>Most Smoked</span>
+              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>{t("auto.pages_CollectionInsightsShare.most_smoked_14wuc5")}</span>
               <span className="text-sm font-semibold text-right" style={{ color: '#F5F1E7', maxWidth: '60%', wordBreak: 'break-word' }}>{mostSmoked.name}</span>
             </div>
           )}
           {topRated && (
             <div className="flex items-start justify-between gap-3">
-              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>Top Rated</span>
+              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>{t("auto.pages_CollectionInsightsShare.top_rated_16mi2a")}</span>
               <span className="text-sm font-semibold text-right" style={{ color: '#F5F1E7', maxWidth: '60%', wordBreak: 'break-word' }}>{topRated.name}</span>
             </div>
           )}
           {crownJewel && (
             <div className="flex items-start justify-between gap-3">
-              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>Crown Jewel</span>
+              <span className="text-xs uppercase tracking-widest flex-shrink-0" style={{ color: 'rgba(180,140,75,0.55)' }}>{t("auto.pages_CollectionInsightsShare.crown_jewel_oanmcl")}</span>
               <span className="text-sm font-semibold text-right" style={{ color: '#F5F1E7', maxWidth: '60%', wordBreak: 'break-word' }}>{crownJewel.name}</span>
             </div>
           )}
@@ -291,6 +297,7 @@ const STORY_CARDS = [
 ];
 
 export default function CollectionInsightsSharePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
@@ -327,7 +334,7 @@ export default function CollectionInsightsSharePage() {
   });
 
   const handleDownload = async () => {
-    if (!cardRef.current) return toast.error('Card not ready');
+    if (!cardRef.current) return toast.error(t("auto.pages_CollectionInsightsShare.card_not_ready_1fggon"));
     try {
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#1a1210',
@@ -339,10 +346,10 @@ export default function CollectionInsightsSharePage() {
       link.href = canvas.toDataURL('image/png');
       link.download = `collectionkeeper-${visibleCards[currentCard]?.id || 'card'}-${Date.now()}.png`;
       link.click();
-      toast.success('Image downloaded');
+      toast.success(t("auto.pages_CollectionInsightsShare.image_downloaded_7z1k2x"));
     } catch (err) {
       console.error(err);
-      toast.error('Failed to download image');
+      toast.error(t("auto.pages_CollectionInsightsShare.failed_to_download_image_s5rpu0"));
     }
   };
 
@@ -356,9 +363,9 @@ export default function CollectionInsightsSharePage() {
     const text = `My CollectionKeeper collection:\n${pipes} pipes, ${blends} blends, ${bottles} bottles, ${cigars} cigar types (${sticks} sticks).\nTotal collection value: ${formatFromBase(value)}.`;
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('Summary copied');
+      toast.success(t("auto.pages_CollectionInsightsShare.summary_copied_1jxmi9"));
     } catch {
-      toast.error('Failed to copy');
+      toast.error(t("auto.pages_CollectionInsightsShare.failed_to_copy_dsg960"));
     }
   };
 
@@ -369,7 +376,7 @@ export default function CollectionInsightsSharePage() {
       {/* Back */}
       <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
         <ArrowLeft className="w-4 h-4 mr-2" />
-        Back
+        {t("auto.pages_CollectionInsightsShare.back_yjpjkm")}
       </Button>
 
       {/* Title */}
@@ -378,10 +385,10 @@ export default function CollectionInsightsSharePage() {
           className="text-2xl font-bold"
           style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
         >
-          Share Your Collection Story
+          {t("auto.pages_CollectionInsightsShare.share_your_collection_story_d3sx04")}
         </h1>
         <p className="text-sm" style={{ color: 'rgba(224,216,200,0.55)' }}>
-          Swipe through cards, then download or copy to share.
+          {t("auto.pages_CollectionInsightsShare.swipe_through_cards_then_download_or_1xrsjs")}
         </p>
       </div>
 
@@ -408,7 +415,7 @@ export default function CollectionInsightsSharePage() {
       {/* Active card */}
       {!summary ? (
         <div className="text-center py-12" style={{ color: 'rgba(224,216,200,0.5)' }}>
-          Loading your collection…
+          {t("auto.pages_CollectionInsightsShare.loading_your_collection_9hxt7o")}
         </div>
       ) : (
         <>
@@ -448,11 +455,11 @@ export default function CollectionInsightsSharePage() {
       <div className="flex flex-wrap gap-3 justify-center">
         <Button variant="outline" size="sm" onClick={handleCopyText}>
           <Copy className="w-4 h-4 mr-2" />
-          Copy Text
+          {t("auto.pages_CollectionInsightsShare.copy_text_1b045m")}
         </Button>
         <Button size="sm" onClick={handleDownload}>
           <Download className="w-4 h-4 mr-2" />
-          Download Card
+          {t("auto.pages_CollectionInsightsShare.download_card_9et4bb")}
         </Button>
       </div>
     </div>

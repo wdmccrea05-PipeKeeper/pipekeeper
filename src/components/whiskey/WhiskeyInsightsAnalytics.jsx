@@ -335,7 +335,7 @@ export function WhiskeyTrendsTab({ bottles, tastingLogs }) {
       )}
 
       {!tastingTrends.some(m => m.tastings > 0) && !purchaseTrends.some(m => m.purchases > 0) && (
-        <p style={{ color: 'rgba(224,216,200,0.6)' }}>No trend data available yet. Add purchase dates and log tastings to see trends.</p>
+        <p style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_whiskey_WhiskeyInsightsAnalytics.no_trend_data_available_yet_add_o1cw7j")}</p>
       )}
     </div>
   );
@@ -403,15 +403,15 @@ export function WhiskeyAnalyticsTab({ bottles }) {
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-lg" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.15)' }}>
-            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Retail Value</p>
+            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("auto.components_whiskey_WhiskeyInsightsAnalytics.retail_value_lj9d2b")}</p>
             <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatFromBase(Math.round(collectionValue.retail))}</p>
           </div>
           <div className="p-4 rounded-lg" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}>
-            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Aftermarket Value</p>
+            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("auto.components_whiskey_WhiskeyInsightsAnalytics.aftermarket_value_161iiq")}</p>
             <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatFromBase(Math.round(collectionValue.aftermarket))}</p>
           </div>
           <div className="p-4 rounded-lg" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}>
-            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>Collector Value</p>
+            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("auto.components_whiskey_WhiskeyInsightsAnalytics.collector_value_axq9vt")}</p>
             <p className="text-2xl font-bold" style={{ color: '#F5F1E7' }}>{formatFromBase(Math.round(collectionValue.collector))}</p>
           </div>
         </div>

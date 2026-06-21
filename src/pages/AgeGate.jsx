@@ -14,7 +14,7 @@ export default function AgeGate({ onConfirm }) {
         <CardHeader className="text-center">
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6838e48a7_IMG_4833.jpeg"
-            alt="CollectionKeeper"
+            alt={t("auto.pages_AgeGate.collectionkeeper_1ukoz8")}
             className="mx-auto mb-1 w-20 h-20 object-contain"
           />
           <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/10">

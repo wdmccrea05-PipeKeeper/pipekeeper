@@ -1,12 +1,14 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, MessageCircle } from "lucide-react";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function CuratorActionErrorCard({
   error,
   onRetry,
   onAskCurator,
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className="rounded-xl border p-4"
@@ -25,7 +27,7 @@ export default function CuratorActionErrorCard({
             className="font-semibold text-base"
             style={{ color: "#F5F1E7" }}
           >
-            Curator could not complete this action
+            {t("auto.components_curator_CuratorActionErrorCard.curator_could_not_complete_this_action_ptwlvg")}
           </h4>
           <p
             className="text-sm mt-1"
@@ -47,7 +49,7 @@ export default function CuratorActionErrorCard({
             }}
             className="hover:opacity-90"
           >
-            Try Again
+            {t("auto.components_curator_CuratorActionErrorCard.try_again_4ztias")}
           </Button>
         )}
 
@@ -59,7 +61,7 @@ export default function CuratorActionErrorCard({
             className="gap-1"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            Ask Curator Instead
+            {t("auto.components_curator_CuratorActionErrorCard.ask_curator_instead_h5jtos")}
           </Button>
         )}
       </div>

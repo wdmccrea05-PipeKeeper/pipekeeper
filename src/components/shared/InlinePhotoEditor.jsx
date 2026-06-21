@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import { Input } from '@/components/ui/input';
 import { findInternalImageMatches } from '@/lib/images/imageLibraryMatcher';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ── Source label chip styles ──────────────────────────────────────────────────
 
@@ -22,6 +23,7 @@ const SOURCE_LABEL_STYLES = {
  * pick a better or replacement image from the internal library.
  */
 function InternalLibrarySection({ entityType, recordName, brand, maker, shape, onSelect }) {
+  const { t } = useTranslation();
   const [open, setOpen]       = useState(false);
   const [loading, setLoading] = useState(false);
   const [matches, setMatches] = useState([]);
@@ -60,7 +62,7 @@ function InternalLibrarySection({ entityType, recordName, brand, maker, shape, o
         <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.18)', background: 'rgba(20,13,8,0.9)' }}>
           {matches.length === 0 ? (
             <p className="text-[11px] p-3" style={{ color: 'rgba(224,216,200,0.4)' }}>
-              No library matches found yet.
+              {t("auto.components_shared_InlinePhotoEditor.no_library_matches_found_yet_1cx00v")}
             </p>
           ) : (
             <div className="flex flex-col gap-0 divide-y" style={{ '--tw-divide-opacity': 0.08 }}>
@@ -90,7 +92,7 @@ function InternalLibrarySection({ entityType, recordName, brand, maker, shape, o
                         {m.sourceLabel}
                       </span>
                     </div>
-                    <span className="text-[10px] flex-shrink-0" style={{ color: 'rgba(46,125,92,0.8)' }}>Use</span>
+                    <span className="text-[10px] flex-shrink-0" style={{ color: 'rgba(46,125,92,0.8)' }}>{t("auto.components_shared_InlinePhotoEditor.use_376t2q")}</span>
                   </button>
                 );
               })}
@@ -103,6 +105,7 @@ function InternalLibrarySection({ entityType, recordName, brand, maker, shape, o
 }
 
 function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState(initialQuery);
   const [logos, setLogos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -132,7 +135,7 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
   return (
     <div className="mt-2 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.25)', background: 'rgba(20,13,8,0.97)' }}>
       <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: '1px solid rgba(180,140,75,0.12)' }}>
-        <p className="text-xs font-semibold" style={{ color: '#F5F1E7' }}>Browse Logo Library</p>
+        <p className="text-xs font-semibold" style={{ color: '#F5F1E7' }}>{t("auto.components_shared_InlinePhotoEditor.browse_logo_library_1bv0bb")}</p>
         <button onClick={onClose} className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10">
           <X className="w-3 h-3" style={{ color: 'rgba(224,216,200,0.6)' }} />
         </button>
@@ -142,7 +145,7 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
-          placeholder="Search brand…"
+          placeholder={t("auto.components_shared_InlinePhotoEditor.search_brand_qtjt54")}
           autoFocus
           className="flex-1 text-xs h-8"
           style={{ background: 'rgba(20,13,8,0.7)', border: '1px solid rgba(180,140,75,0.3)', color: '#F5F1E7' }}
@@ -157,7 +160,7 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
         </button>
       </div>
       {searched && logos.length === 0 && (
-        <p className="text-center text-[10px] py-3" style={{ color: 'rgba(224,216,200,0.4)' }}>No logos found</p>
+        <p className="text-center text-[10px] py-3" style={{ color: 'rgba(224,216,200,0.4)' }}>{t("auto.components_shared_InlinePhotoEditor.no_logos_found_1ovn9c")}</p>
       )}
       {logos.length > 0 && (
         <div className="grid grid-cols-4 gap-1.5 p-2 max-h-44 overflow-y-auto">
@@ -200,6 +203,7 @@ export default function InlinePhotoEditor({
   maker          = '',     // for pipe
   shape          = '',     // for pipe
 }) {
+  const { t } = useTranslation();
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
 
@@ -254,7 +258,7 @@ export default function InlinePhotoEditor({
       }
     } catch (err) {
       console.error('[InlinePhotoEditor] upload failed', err);
-      setError('Upload failed. Please try again.');
+      setError(t("auto.components_shared_InlinePhotoEditor.upload_failed_please_try_again_1wbny7"));
     } finally {
       setUploading(false);
       setCropIndex(null);
@@ -299,7 +303,7 @@ export default function InlinePhotoEditor({
                 type="button"
                 onClick={() => editPhoto(idx)}
                 className="p-1.5 rounded-lg bg-white/20 hover:bg-white/35 active:scale-90 transition-all"
-                aria-label="Edit photo"
+                aria-label={t("auto.components_shared_InlinePhotoEditor.edit_photo_1sgkki")}
               >
                 <Pencil className="w-3.5 h-3.5 text-white" />
               </button>
@@ -307,7 +311,7 @@ export default function InlinePhotoEditor({
                 type="button"
                 onClick={() => removePhoto(idx)}
                 className="p-1.5 rounded-lg bg-white/20 hover:bg-red-500/70 active:scale-90 transition-all"
-                aria-label="Remove photo"
+                aria-label={t("auto.components_shared_InlinePhotoEditor.remove_photo_wvhzq5")}
               >
                 <X className="w-3.5 h-3.5 text-white" />
               </button>
@@ -326,15 +330,15 @@ export default function InlinePhotoEditor({
               border: '1px dashed rgba(180,140,75,0.35)',
               color: 'rgba(180,140,75,0.75)',
             }}
-            aria-label="Take photo with camera"
-            title="Camera"
+            aria-label={t("auto.components_shared_InlinePhotoEditor.take_photo_with_camera_1p4nyu")}
+            title={t("auto.components_shared_InlinePhotoEditor.camera_1bimhu")}
           >
             {uploading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
                 <Camera className="w-5 h-5" />
-                <span className="text-[9px] font-medium">Camera</span>
+                <span className="text-[9px] font-medium">{t("auto.components_shared_InlinePhotoEditor.camera_1bimhu")}</span>
               </>
             )}
           </button>
@@ -351,15 +355,15 @@ export default function InlinePhotoEditor({
               border: '1px dashed rgba(180,140,75,0.35)',
               color: 'rgba(180,140,75,0.75)',
             }}
-            aria-label="Choose from gallery"
-            title="Gallery"
+            aria-label={t("auto.components_shared_InlinePhotoEditor.choose_from_gallery_y8pbsa")}
+            title={t("auto.components_shared_InlinePhotoEditor.gallery_js3c45")}
           >
             {uploading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
                 <ImagePlus className="w-5 h-5" />
-                <span className="text-[9px] font-medium">Gallery</span>
+                <span className="text-[9px] font-medium">{t("auto.components_shared_InlinePhotoEditor.gallery_js3c45")}</span>
               </>
             )}
           </button>
@@ -376,11 +380,11 @@ export default function InlinePhotoEditor({
               border: '1px dashed rgba(180,140,75,0.35)',
               color: 'rgba(180,140,75,0.75)',
             }}
-            aria-label="Browse logo library"
-            title="Logo Library"
+            aria-label={t("auto.components_shared_InlinePhotoEditor.browse_logo_library_tgrbst")}
+            title={t("auto.components_shared_InlinePhotoEditor.logo_library_eok26j")}
           >
             <BookImage className="w-5 h-5" />
-            <span className="text-[9px] font-medium">Library</span>
+            <span className="text-[9px] font-medium">{t("auto.components_shared_InlinePhotoEditor.library_1oizac")}</span>
           </button>
         )}
       </div>

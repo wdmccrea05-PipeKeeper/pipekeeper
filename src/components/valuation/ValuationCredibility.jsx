@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, TrendingUp, AlertCircle } from 'lucide-react';
 import { formatDate } from '@/components/utils/localeFormatters';
 import { buildValuationSnapshot, PIPE_PREMIUM_MAKERS } from '@/components/valuation/valueEngine';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 /**
  * ValuationCredibility - Transparent valuation display with reference signals,
@@ -159,6 +160,7 @@ export function computeBottleValuation(bottle) {
 }
 
 export default function ValuationCredibility({ valuation, compact = false }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const { formatFromBase } = useCurrency();
 
@@ -195,7 +197,7 @@ export default function ValuationCredibility({ valuation, compact = false }) {
         <div className="flex items-center gap-3">
           <TrendingUp className="w-4 h-4" style={{ color: 'rgba(180, 140, 75, 0.8)' }} />
           <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(180, 140, 75, 0.8)' }}>
-            Estimated Value
+            {t("auto.components_valuation_ValuationCredibility.estimated_value_1w5s3x")}
           </span>
         </div>
         <button
@@ -203,7 +205,7 @@ export default function ValuationCredibility({ valuation, compact = false }) {
           className="text-xs flex items-center gap-1 transition-colors"
           style={{ color: 'rgba(224, 216, 200, 0.5)' }}
         >
-          Reference signals
+          {t("auto.components_valuation_ValuationCredibility.reference_signals_nne4bp")}
           {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
       </div>
@@ -224,7 +226,7 @@ export default function ValuationCredibility({ valuation, compact = false }) {
       {/* Expanded signals */}
       {expanded && (
         <div className="space-y-2 pt-1">
-          <p className="text-xs" style={{ color: 'rgba(224, 216, 200, 0.6)' }}>Reference signals:</p>
+          <p className="text-xs" style={{ color: 'rgba(224, 216, 200, 0.6)' }}>{t("auto.components_valuation_ValuationCredibility.reference_signals_1y4tf0")}</p>
           <ul className="space-y-1">
             {valuation.signals.map((sig, i) => (
               <li key={i} className="flex items-center gap-2">
@@ -235,7 +237,7 @@ export default function ValuationCredibility({ valuation, compact = false }) {
           </ul>
           {valuation.lastUpdated && (
             <p className="text-xs" style={{ color: 'rgba(224, 216, 200, 0.4)' }}>
-              Last updated: {formatDate(valuation.lastUpdated, 'medium')}
+              {t("auto.components_valuation_ValuationCredibility.last_updated_um5u7u")} {formatDate(valuation.lastUpdated, 'medium')}
             </p>
           )}
         </div>
@@ -245,7 +247,7 @@ export default function ValuationCredibility({ valuation, compact = false }) {
       <div className="flex items-start gap-2 pt-1 border-t" style={{ borderColor: 'rgba(120, 90, 65, 0.2)' }}>
         <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: 'rgba(224, 216, 200, 0.3)' }} />
         <p className="text-xs leading-relaxed" style={{ color: 'rgba(224, 216, 200, 0.4)' }}>
-          Estimated market range based on available reference signals. Not a guarantee of actual sale price.
+          {t("auto.components_valuation_ValuationCredibility.estimated_market_range_based_on_available_1jvohg")}
         </p>
       </div>
     </div>

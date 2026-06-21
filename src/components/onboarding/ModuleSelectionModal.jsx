@@ -40,7 +40,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
 
   const handleContinue = async () => {
     if (!hasAnySelected) {
-      toast.error('Please select at least one module.');
+      toast.error(t("auto.components_onboarding_ModuleSelectionModal.please_select_at_least_one_module_18pg8w"));
       return;
     }
 
@@ -52,14 +52,14 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
         sessionStorage.setItem('pk_auto_launch_onboarding', 'true');
       } catch {}
 
-      toast.success('Modules configured successfully.');
+      toast.success(t("auto.components_onboarding_ModuleSelectionModal.modules_configured_successfully_1kvjwb"));
       onComplete?.({
         ...selected,
         userHasAnyPaid,
       });
     } catch (error) {
       console.error('[ModuleSelection] Error:', error);
-      toast.error('Failed to save module preferences');
+      toast.error(t("auto.components_onboarding_ModuleSelectionModal.failed_to_save_module_preferences_1bn2db"));
     } finally {
       setSaving(false);
     }
@@ -104,17 +104,17 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                 <h3 className="font-semibold text-[#F5F1E7] flex items-center gap-2">
                   <img
                     src={MODULE_ICONS.pipekeeper}
-                    alt="PipeKeeper"
+                    alt={t("auto.components_onboarding_ModuleSelectionModal.pipekeeper_1dclxa")}
                     className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
                   />
-                  PipeKeeper
+                  {t("auto.components_onboarding_ModuleSelectionModal.pipekeeper_1dclxa")}
                 </h3>
                 <p className="text-xs text-[#E0D8C8] mt-1">
                   {t("onboarding.pipekeeperDesc")}
                 </p>
               </div>
               <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
-                Free
+                {t("auto.components_onboarding_ModuleSelectionModal.free_yjt0tj")}
               </Badge>
             </div>
           </button>
@@ -139,17 +139,17 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                 <h3 className="font-semibold text-[#F5F1E7] flex items-center gap-2">
                   <img
                     src={MODULE_ICONS.whiskeykeeper}
-                    alt="WhiskeyKeeper"
+                    alt={t("auto.components_onboarding_ModuleSelectionModal.whiskeykeeper_1kgmc1")}
                     className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
                   />
-                  WhiskeyKeeper
+                  {t("auto.components_onboarding_ModuleSelectionModal.whiskeykeeper_1kgmc1")}
                 </h3>
                 <p className="text-xs text-[#E0D8C8] mt-1">
                   {t("onboarding.whiskeykeeperDesc")}
                 </p>
               </div>
               <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
-                Free
+                {t("auto.components_onboarding_ModuleSelectionModal.free_yjt0tj")}
               </Badge>
             </div>
           </button>
@@ -174,17 +174,17 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                   <h3 className="font-semibold text-[#F5F1E7] flex items-center gap-2">
                     <img
                       src={MODULE_ICONS.cigarkeeper}
-                      alt="CigarKeeper"
+                      alt={t("auto.components_onboarding_ModuleSelectionModal.cigarkeeper_1oz7i9")}
                       className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
                     />
-                    CigarKeeper
+                    {t("auto.components_onboarding_ModuleSelectionModal.cigarkeeper_1oz7i9")}
                   </h3>
                   <p className="text-xs text-[#E0D8C8] mt-1">
                     {t("onboarding.cigarkeeperDesc")}
                   </p>
                 </div>
                 <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
-                  Free
+                  {t("auto.components_onboarding_ModuleSelectionModal.free_yjt0tj")}
                 </Badge>
               </div>
             </button>
@@ -210,17 +210,17 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                   <h3 className="font-semibold text-[#F5F1E7] flex items-center gap-2">
                     <img
                       src={MODULE_ICONS.winekeeper}
-                      alt="WineKeeper"
+                      alt={t("auto.components_onboarding_ModuleSelectionModal.winekeeper_1w5l9t")}
                       className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
                     />
-                    WineKeeper
+                    {t("auto.components_onboarding_ModuleSelectionModal.winekeeper_1w5l9t")}
                   </h3>
                   <p className="text-xs text-[#E0D8C8] mt-1">
                     {t("onboarding.winekeeperDesc")}
                   </p>
                 </div>
                 <Badge className="flex-shrink-0 bg-green-900/30 text-green-300 border-0 text-xs">
-                  Free
+                  {t("auto.components_onboarding_ModuleSelectionModal.free_yjt0tj")}
                 </Badge>
               </div>
             </button>

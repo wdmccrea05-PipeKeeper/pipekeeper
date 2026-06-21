@@ -54,20 +54,21 @@ function formatRowNotes(row) {
 }
 
 function ImportPreview({ analysis }) {
+  const { t } = useTranslation();
   if (!analysis) return null;
 
   return (
     <Card className="border-[#e8d5b7]/30">
       <CardHeader>
-        <CardTitle className="text-lg text-stone-100">Import Preview</CardTitle>
+        <CardTitle className="text-lg text-stone-100">{t("auto.pages_Import.import_preview_fg9pvm")}</CardTitle>
         <CardDescription className="text-stone-300">
-          Review rows before import. Errors are blocked; warnings can still be imported.
+          {t("auto.pages_Import.review_rows_before_import_errors_are_1uudhf")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {analysis.blockingHeaderErrors.length > 0 && (
           <div className="rounded-lg border border-red-600/60 bg-red-900/20 p-3 text-sm text-red-100">
-            <p className="font-semibold mb-1">Blocking file errors</p>
+            <p className="font-semibold mb-1">{t("auto.pages_Import.blocking_file_errors_fpb3gr")}</p>
             <ul className="list-disc list-inside space-y-1">
               {analysis.blockingHeaderErrors.map((error) => <li key={error}>{error}</li>)}
             </ul>
@@ -76,7 +77,7 @@ function ImportPreview({ analysis }) {
 
         {analysis.unknownColumns.length > 0 && (
           <div className="rounded-lg border border-yellow-600/60 bg-yellow-900/20 p-3 text-sm text-yellow-100">
-            Unsupported columns found: {analysis.unknownColumns.join(', ')}
+            {t("auto.pages_Import.unsupported_columns_found_1cfjdw")} {analysis.unknownColumns.join(', ')}
           </div>
         )}
 
@@ -91,10 +92,10 @@ function ImportPreview({ analysis }) {
           <table className="w-full min-w-[640px] text-sm text-left">
             <thead className="bg-stone-900 sticky top-0">
               <tr>
-                <th className="p-2 text-stone-200">Row</th>
-                <th className="p-2 text-stone-200">Item</th>
-                <th className="p-2 text-stone-200">Status</th>
-                <th className="p-2 text-stone-200">Notes</th>
+                <th className="p-2 text-stone-200">{t("auto.pages_Import.row_376qgt")}</th>
+                <th className="p-2 text-stone-200">{t("auto.pages_Import.item_yjvdp0")}</th>
+                <th className="p-2 text-stone-200">{t("auto.pages_Import.status_1m8lgy")}</th>
+                <th className="p-2 text-stone-200">{t("auto.pages_Import.notes_3te9gu")}</th>
               </tr>
             </thead>
             <tbody>
@@ -123,7 +124,7 @@ function ImportPreview({ analysis }) {
         </div>
         {analysis.rows.length > 50 && (
           <p className="text-xs text-stone-400">
-            Showing first 50 rows of {analysis.rows.length}. Remaining rows will still follow the same validation rules during import.
+            {t("auto.pages_Import.showing_first_50_rows_of_lwlqfl")} {analysis.rows.length}{t("auto.pages_Import.remaining_rows_will_still_follow_the_1egk54")}
           </p>
         )}
       </CardContent>
@@ -220,7 +221,7 @@ export default function ImportPage() {
         userEmail: user.email,
       });
       setAnalysis(nextAnalysis);
-      if (nextAnalysis.totalRows === 0) toast.warning('No data rows detected.');
+      if (nextAnalysis.totalRows === 0) toast.warning(t("auto.pages_Import.no_data_rows_detected_kw8387"));
     } catch (error) {
       console.error('[Import] Parse failed:', error);
       toast.error(t('import.csvParseFailed'));
@@ -233,11 +234,11 @@ export default function ImportPage() {
   const handleExecuteImport = async () => {
     if (!analysis || !definition) return;
     if (hasBlockingErrors) {
-      toast.error('Fix file errors before importing.');
+      toast.error(t("auto.pages_Import.fix_file_errors_before_importing_1gfon7"));
       return;
     }
     if (!importableRows.length) {
-      toast.warning('No importable rows found.');
+      toast.warning(t("auto.pages_Import.no_importable_rows_found_17ofkx"));
       return;
     }
 
@@ -253,7 +254,7 @@ export default function ImportPage() {
       toast.success(`Imported ${result.imported} row(s).`);
     } catch (error) {
       console.error('[Import] Execute failed:', error);
-      toast.error('Import failed. Please try again.');
+      toast.error(t("auto.pages_Import.import_failed_please_try_again_75w84a"));
     } finally {
       setBusy(false);
     }
@@ -287,9 +288,9 @@ export default function ImportPage() {
           </a>
             <Card className="border-[#e8d5b7]/30">
               <CardHeader>
-                <CardTitle className="text-xl text-stone-100">No modules available</CardTitle>
+                <CardTitle className="text-xl text-stone-100">{t("auto.pages_Import.no_modules_available_qrasqk")}</CardTitle>
                 <CardDescription className="text-stone-300">
-                  Bulk import requires at least one active public module (PipeKeeper or WhiskeyKeeper). Enable a module from your collection settings to get started.
+                  {t("auto.pages_Import.bulk_import_requires_at_least_one_1fh1yi")}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -323,7 +324,7 @@ export default function ImportPage() {
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-3 gap-3">
               <div className="md:col-span-2">
-                <label className="text-sm text-stone-300 mb-2 block">Import type</label>
+                <label className="text-sm text-stone-300 mb-2 block">{t("auto.pages_Import.import_type_tnjw8y")}</label>
                 <Select
                   value={resolvedImportType ?? ''}
                   onValueChange={(value) => {
@@ -347,24 +348,24 @@ export default function ImportPage() {
               <div className="flex items-end">
                 <Button className="w-full" variant="outline" disabled={!definition} onClick={() => definition && downloadImportTemplate(definition)}>
                   <Download className="w-4 h-4 mr-2" />
-                  Download Template
+                  {t("auto.pages_Import.download_template_tzyrfd")}
                 </Button>
               </div>
             </div>
 
             <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-              <p className="font-semibold mb-1">How this import works</p>
+              <p className="font-semibold mb-1">{t("auto.pages_Import.how_this_import_works_ffrbmk")}</p>
               <ul className="list-disc list-inside space-y-1">
-                <li>Use the template and keep one record per row.</li>
-                <li>Required fields: {definition?.requiredColumns.join(', ')}.</li>
-                <li>Optional fields help enrich records and improve matching.</li>
-                <li>Warnings can import; errors are blocked until corrected.</li>
+                <li>{t("auto.pages_Import.use_the_template_and_keep_one_762yl1")}</li>
+                <li>{t("auto.pages_Import.required_fields_hqb7av")} {definition?.requiredColumns.join(', ')}.</li>
+                <li>{t("auto.pages_Import.optional_fields_help_enrich_records_and_pojw3o")}</li>
+                <li>{t("auto.pages_Import.warnings_can_import_errors_are_blocked_1fvkrh")}</li>
               </ul>
             </div>
 
             <div className="border-2 border-dashed border-stone-500/60 rounded-lg p-6 text-center space-y-3">
               <Upload className="w-10 h-10 text-stone-400 mx-auto" />
-              <p className="text-stone-300">Upload your completed CSV file</p>
+              <p className="text-stone-300">{t("auto.pages_Import.upload_your_completed_csv_file_1u576f")}</p>
               <Input type="file" accept=".csv" onChange={handleFileUpload} disabled={busy} className="max-w-sm mx-auto" />
             </div>
           </CardContent>
@@ -375,22 +376,22 @@ export default function ImportPage() {
         {analysis && (
           <Card className="border-[#e8d5b7]/30">
             <CardHeader>
-              <CardTitle className="text-xl text-stone-100">Confirm Import</CardTitle>
+              <CardTitle className="text-xl text-stone-100">{t("auto.pages_Import.confirm_import_15ei2u")}</CardTitle>
               <CardDescription className="text-stone-300">
-                Explicit confirmation is required before records are created.
+                {t("auto.pages_Import.explicit_confirmation_is_required_before_records_13io8o")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm text-stone-300 mb-2 block">Duplicate handling</label>
+                  <label className="text-sm text-stone-300 mb-2 block">{t("auto.pages_Import.duplicate_handling_ib892d")}</label>
                   <Select value={duplicateMode} onValueChange={setDuplicateMode}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="create_only">Create new only (default safe mode)</SelectItem>
-                      <SelectItem value="skip_duplicates">Create + skip detected duplicates</SelectItem>
+                      <SelectItem value="create_only">{t("auto.pages_Import.create_new_only_default_safe_mode_ahunq7")}</SelectItem>
+                      <SelectItem value="skip_duplicates">{t("auto.pages_Import.create_skip_detected_duplicates_1or15h")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -414,9 +415,9 @@ export default function ImportPage() {
                       <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
                     )}
                     <div>
-                      <p className="font-semibold text-stone-100">Import Results</p>
+                      <p className="font-semibold text-stone-100">{t("auto.pages_Import.import_results_1e11o8")}</p>
                       <p className="text-sm text-stone-300">
-                        Processed: {importResult.processed} • Imported: {importResult.imported} • Skipped: {importResult.skipped} • Failed: {importResult.failed}
+                        {t("auto.pages_Import.processed_zzghl3")} {importResult.processed} {t("auto.pages_Import.imported_ialxd1")} {importResult.imported} {t("auto.pages_Import.skipped_roxn2p")} {importResult.skipped} {t("auto.pages_Import.failed_x43pdy")} {importResult.failed}
                       </p>
                     </div>
                   </div>

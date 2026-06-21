@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Search, Check, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function buildBottleQuery(recordData = {}) {
   const parts = [
@@ -139,6 +140,7 @@ function normalizeResults(raw) {
 }
 
 function ResultCard({ result, selected, onSelect }) {
+  const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
@@ -165,7 +167,7 @@ function ResultCard({ result, selected, onSelect }) {
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-[#D8C7A6]/60">
             <ImageIcon className="w-8 h-8" />
-            <span className="text-xs">Preview unavailable</span>
+            <span className="text-xs">{t("auto.components_search_OnlineImageSearch.preview_unavailable_kwubez")}</span>
           </div>
         )}
       </div>
@@ -192,6 +194,7 @@ export default function OnlineImageSearch({
   onImageSelected,
   onClose,
 }) {
+  const { t } = useTranslation();
   const initialQuery = useMemo(() => buildQueryForType(recordType, recordData), [recordType, recordData]);
 
   const [query, setQuery] = useState(initialQuery);
@@ -240,12 +243,12 @@ export default function OnlineImageSearch({
       setResults(normalized);
 
       if (!normalized.length) {
-        setError('No image results found for that search.');
+        setError(t("auto.components_search_OnlineImageSearch.no_image_results_found_for_that_455nm7"));
       }
     } catch (err) {
       console.error('[OnlineImageSearch] search failed:', err);
       setResults([]);
-      setError('Search failed. Please try a different query.');
+      setError(t("auto.components_search_OnlineImageSearch.search_failed_please_try_a_different_1eawqo"));
     } finally {
       setLoading(false);
     }
@@ -303,7 +306,7 @@ export default function OnlineImageSearch({
 
           <div className="flex gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t("auto.components_search_OnlineImageSearch.cancel_1bin7k")}
             </Button>
             <Button
               type="button"
@@ -316,7 +319,7 @@ export default function OnlineImageSearch({
                 color: '#F5F1E7',
               }}
             >
-              Use Selected
+              {t("auto.components_search_OnlineImageSearch.use_selected_19tswg")}
             </Button>
           </div>
         </div>
@@ -327,7 +330,7 @@ export default function OnlineImageSearch({
           <div className="h-full min-h-[240px] flex items-center justify-center text-[#D8C7A6]/70">
             <div className="flex items-center gap-3">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Searching...</span>
+              <span>{t("auto.components_search_OnlineImageSearch.searching_1p7b13")}</span>
             </div>
           </div>
         ) : error ? (

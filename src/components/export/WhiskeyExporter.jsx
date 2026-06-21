@@ -8,8 +8,10 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { toast } from 'sonner';
 import { getBottleUnitValue, getBottleDisplayValueLabel } from '@/components/utils/whiskeyValueHelpers';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function WhiskeyExporter() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
@@ -255,7 +257,7 @@ export default function WhiskeyExporter() {
         disabled={bottles.length === 0}
       >
         <FileSpreadsheet className="w-4 h-4 mr-2" />
-        Export Bottles CSV
+        {t("auto.components_export_WhiskeyExporter.export_bottles_csv_r86ids")}
       </Button>
       <Button
         variant="outline"
@@ -264,7 +266,7 @@ export default function WhiskeyExporter() {
         disabled={tastingLogs.length === 0}
       >
         <FileSpreadsheet className="w-4 h-4 mr-2" />
-        Export Tasting Notes
+        {t("auto.components_export_WhiskeyExporter.export_tasting_notes_alk6cq")}
       </Button>
       <Button
         variant="outline"

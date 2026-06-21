@@ -253,7 +253,7 @@ export default function BottleForm({
             </div>
 
             {/* QUICK ADD FROM CATALOG */}
-            <FormSection title="Quick Add from Catalog" defaultOpen={true}>
+            <FormSection title={t("auto.components_whiskey_BottleForm.quick_add_from_catalog_tfy53u")} defaultOpen={true}>
               <BottleCatalogSearch
                 onSelect={(entry) => {
                   setFormData((prev) => ({
@@ -274,7 +274,7 @@ export default function BottleForm({
 
             {/* IDENTITY SECTION */}
             <FormSection
-              title="Identity"
+              title={t("auto.components_whiskey_BottleForm.identity_1q3z8u")}
               defaultOpen={true}
               summary={[formData.name, formData.distillery].filter(Boolean).join(' · ')}
             >
@@ -350,17 +350,17 @@ export default function BottleForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Blended Grain">Blended Grain</SelectItem>
-                      <SelectItem value="Blended Malt">Blended Malt</SelectItem>
-                      <SelectItem value="Blended Whiskey">Blended Whiskey</SelectItem>
-                      <SelectItem value="Bourbon">Bourbon</SelectItem>
-                      <SelectItem value="Irish Whiskey">Irish Whiskey</SelectItem>
-                      <SelectItem value="Rye">Rye</SelectItem>
-                      <SelectItem value="Scotch Whisky">Scotch Whisky</SelectItem>
-                      <SelectItem value="Single Grain">Single Grain</SelectItem>
-                      <SelectItem value="Single Malt">Single Malt</SelectItem>
-                      <SelectItem value="Tennessee Whiskey">Tennessee Whiskey</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="Blended Grain">{t("auto.components_whiskey_BottleForm.blended_grain_1y2b1i")}</SelectItem>
+                      <SelectItem value="Blended Malt">{t("auto.components_whiskey_BottleForm.blended_malt_w9dx9d")}</SelectItem>
+                      <SelectItem value="Blended Whiskey">{t("auto.components_whiskey_BottleForm.blended_whiskey_1rvyqi")}</SelectItem>
+                      <SelectItem value="Bourbon">{t("auto.components_whiskey_BottleForm.bourbon_1saguy")}</SelectItem>
+                      <SelectItem value="Irish Whiskey">{t("auto.components_whiskey_BottleForm.irish_whiskey_pw6ibs")}</SelectItem>
+                      <SelectItem value="Rye">{t("auto.components_whiskey_BottleForm.rye_376qph")}</SelectItem>
+                      <SelectItem value="Scotch Whisky">{t("auto.components_whiskey_BottleForm.scotch_whisky_ff1aeg")}</SelectItem>
+                      <SelectItem value="Single Grain">{t("auto.components_whiskey_BottleForm.single_grain_1q1c7p")}</SelectItem>
+                      <SelectItem value="Single Malt">{t("auto.components_whiskey_BottleForm.single_malt_neodkl")}</SelectItem>
+                      <SelectItem value="Tennessee Whiskey">{t("auto.components_whiskey_BottleForm.tennessee_whiskey_10z1e0")}</SelectItem>
+                      <SelectItem value="Other">{t("auto.components_whiskey_BottleForm.other_3u793b")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -368,7 +368,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* DISTILLERY & DETAILS SECTION */}
-            <FormSection title="Distillery & Details" defaultOpen={false}>
+            <FormSection title={t("auto.components_whiskey_BottleForm.distillery_and_details_1bmu5n")} defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -420,7 +420,7 @@ export default function BottleForm({
                       <SelectItem value="750ml">750ml</SelectItem>
                       <SelectItem value="1L">1L</SelectItem>
                       <SelectItem value="1.75L">1.75L</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="Other">{t("auto.components_whiskey_BottleForm.other_3u793b")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -428,7 +428,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* INVENTORY & PURCHASE SECTION */}
-            <FormSection title="Inventory & Purchase" defaultOpen={false}>
+            <FormSection title={t("auto.components_whiskey_BottleForm.inventory_and_purchase_1o9dlr")} defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -442,11 +442,11 @@ export default function BottleForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="aftermarket">Aftermarket / Secondary</SelectItem>
-                      <SelectItem value="gift">Gift</SelectItem>
-                      <SelectItem value="trade">Trade / Swap</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="retail">{t("auto.components_whiskey_BottleForm.retail_1lb3kj")}</SelectItem>
+                      <SelectItem value="aftermarket">{t("auto.components_whiskey_BottleForm.aftermarket_secondary_1c8ijb")}</SelectItem>
+                      <SelectItem value="gift">{t("auto.components_whiskey_BottleForm.gift_yjtl0v")}</SelectItem>
+                      <SelectItem value="trade">{t("auto.components_whiskey_BottleForm.trade_swap_74xkkf")}</SelectItem>
+                      <SelectItem value="other">{t("auto.components_whiskey_BottleForm.other_3u793b")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -550,9 +550,9 @@ export default function BottleForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="high">{t("auto.components_whiskey_BottleForm.high_yjucrp")}</SelectItem>
+                      <SelectItem value="medium">{t("auto.components_whiskey_BottleForm.medium_1i29el")}</SelectItem>
+                      <SelectItem value="low">{t("auto.components_whiskey_BottleForm.low_376lfb")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -560,7 +560,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* NOTES & TAGS SECTION */}
-            <FormSection title="Notes & Tags" defaultOpen={false}>
+            <FormSection title={t("auto.components_whiskey_BottleForm.notes_and_tags_1xv94o")} defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -574,13 +574,13 @@ export default function BottleForm({
                       <SelectValue placeholder={t('whiskey.productionStatusPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value="Active">Active / Ongoing</SelectItem>
-                    <SelectItem value="Allocated">Allocated</SelectItem>
-                    <SelectItem value="Discontinued">Discontinued</SelectItem>
-                    <SelectItem value="Limited Edition">Limited Edition</SelectItem>
-                    <SelectItem value="Single Cask">Single Cask</SelectItem>
-                    <SelectItem value="Vintage">Vintage</SelectItem>
-                    <SelectItem value="_none">Unknown</SelectItem>
+                    <SelectItem value="Active">{t("auto.components_whiskey_BottleForm.active_ongoing_1j2kvh")}</SelectItem>
+                    <SelectItem value="Allocated">{t("auto.components_whiskey_BottleForm.allocated_1e9tua")}</SelectItem>
+                    <SelectItem value="Discontinued">{t("auto.components_whiskey_BottleForm.discontinued_10hh6x")}</SelectItem>
+                    <SelectItem value="Limited Edition">{t("auto.components_whiskey_BottleForm.limited_edition_1ykxz8")}</SelectItem>
+                    <SelectItem value="Single Cask">{t("auto.components_whiskey_BottleForm.single_cask_negog9")}</SelectItem>
+                    <SelectItem value="Vintage">{t("auto.components_whiskey_BottleForm.vintage_1p982y")}</SelectItem>
+                    <SelectItem value="_none">{t("auto.components_whiskey_BottleForm.unknown_172kxt")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -611,12 +611,12 @@ export default function BottleForm({
                       <SelectValue placeholder={t('whiskey.replacementDifficultyPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value="_auto">Auto-Compute</SelectItem>
-                    <SelectItem value="very_easy">Very Easy to Replace</SelectItem>
-                    <SelectItem value="easy">Easy to Replace</SelectItem>
-                    <SelectItem value="moderate">Moderately Difficult</SelectItem>
-                    <SelectItem value="hard">Hard to Replace</SelectItem>
-                    <SelectItem value="very_hard">Very Hard / Rare</SelectItem>
+                    <SelectItem value="_auto">{t("auto.components_whiskey_BottleForm.auto_compute_1jmks5")}</SelectItem>
+                    <SelectItem value="very_easy">{t("auto.components_whiskey_BottleForm.very_easy_to_replace_pwuubg")}</SelectItem>
+                    <SelectItem value="easy">{t("auto.components_whiskey_BottleForm.easy_to_replace_1z0c5s")}</SelectItem>
+                    <SelectItem value="moderate">{t("auto.components_whiskey_BottleForm.moderately_difficult_1l9ars")}</SelectItem>
+                    <SelectItem value="hard">{t("auto.components_whiskey_BottleForm.hard_to_replace_15qjtp")}</SelectItem>
+                    <SelectItem value="very_hard">{t("auto.components_whiskey_BottleForm.very_hard_rare_12dtjc")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -634,7 +634,7 @@ export default function BottleForm({
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                   <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
-                    Takes precedence over all computed values when set.
+                    {t("auto.components_whiskey_BottleForm.takes_precedence_over_all_computed_values_xcuyf1")}
                   </p>
                 </div>
               </div>
@@ -702,7 +702,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* TASTING PROFILE SECTION */}
-            <FormSection title="Tasting Profile" defaultOpen={false}>
+            <FormSection title={t("auto.components_whiskey_BottleForm.tasting_profile_ty6uts")} defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -746,7 +746,7 @@ export default function BottleForm({
                   className="w-full rounded-xl px-4 py-3 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.2)] text-[#F5F1E7] outline-none"
                 />
                 <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
-                  Comma-separated tasting descriptors used for AI recommendations.
+                  {t("auto.components_whiskey_BottleForm.comma_separated_tasting_descriptors_used_for_tnmel8")}
                 </p>
               </div>
 
@@ -766,7 +766,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* PHOTOS SECTION */}
-            <FormSection title="Photos" defaultOpen={false}>
+            <FormSection title={t("auto.components_whiskey_BottleForm.photos_1k2it3")} defaultOpen={false}>
               <div>
                 <label className="text-sm text-[#D8C7A6] block mb-2">
                   {t('whiskey.photo')}

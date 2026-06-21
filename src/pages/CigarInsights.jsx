@@ -350,7 +350,7 @@ function CigarInsightsInner() {
     <InsightsPageShell>
       <CigarKeeperModuleNav currentPageName="CigarInsights" />
       <InsightsHeader
-        title="CigarKeeper Insights"
+        title={t("auto.pages_CigarInsights.cigarkeeper_insights_1u1nwc")}
         subtitle="Analytics and trends from your cigar collection and sessions"
       />
 
@@ -371,7 +371,7 @@ function CigarInsightsInner() {
               <InsightsHighlightGrid>
                 {topValueCigar && (
                   <InsightsHighlightCard
-                    title="Highest Value"
+                    title={t("auto.pages_CigarInsights.highest_value_t5zwsu")}
                     value={[topValueCigar.cigar.brand, topValueCigar.cigar.name].filter(Boolean).join(' ')}
                     subtitle={formatFromBase(topValueCigar.valuation.estimatedTotalValue || 0)}
                     accent="#D4A574"
@@ -380,7 +380,7 @@ function CigarInsightsInner() {
                 )}
                 {favCigar && (
                   <InsightsHighlightCard
-                    title="Favorite Cigar"
+                    title={t("auto.pages_CigarInsights.favorite_cigar_1qik5n")}
                     value={[favCigar.brand, favCigar.name].filter(Boolean).join(' ')}
                     subtitle={favCigar.wrapper ? `Wrapper: ${favCigar.wrapper}` : undefined}
                     accent="#f87171"
@@ -389,7 +389,7 @@ function CigarInsightsInner() {
                 )}
                 {lowStockFav && (
                   <InsightsHighlightCard
-                    title="Low Stock Favorite"
+                    title={t("auto.pages_CigarInsights.low_stock_favorite_1skoiy")}
                     value={[lowStockFav.brand, lowStockFav.name].filter(Boolean).join(' ')}
                     subtitle={`${Number(lowStockFav.singles_equivalent ?? lowStockFav.quantity ?? 0)} cigars left`}
                     accent="#E0B450"
@@ -398,7 +398,7 @@ function CigarInsightsInner() {
                 )}
                 {mostSmokedCigar && (
                   <InsightsHighlightCard
-                    title="Most Smoked"
+                    title={t("auto.pages_CigarInsights.most_smoked_14wuc5")}
                     value={[mostSmokedCigar.brand, mostSmokedCigar.name].filter(Boolean).join(' ')}
                     subtitle={`${sessionCountByCigarId[mostSmokedCigar.id] || 0} sessions logged`}
                     accent="#B48C4B"
@@ -407,7 +407,7 @@ function CigarInsightsInner() {
                 )}
                 {readinessSummary.readyNow > 0 && (
                   <InsightsHighlightCard
-                    title="Ready to Smoke"
+                    title={t("auto.pages_CigarInsights.ready_to_smoke_eaocbg")}
                     value={`${readinessSummary.readyNow} cigar${readinessSummary.readyNow !== 1 ? 's' : ''}`}
                     subtitle="In your drinking window"
                     accent="#6FCF97"
@@ -447,7 +447,7 @@ function CigarInsightsInner() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   {highestValueCigars.length > 0 && (
                     <InsightPanel>
-                      <InsightSectionHeading>Highest Value Cigars</InsightSectionHeading>
+                      <InsightSectionHeading>{t("auto.pages_CigarInsights.highest_value_cigars_qziknb")}</InsightSectionHeading>
                       <div className="space-y-2">
                         {highestValueCigars.map(({ cigar, valuation }) => (
                           <div key={cigar.id} className="flex justify-between gap-3 text-sm">
@@ -460,7 +460,7 @@ function CigarInsightsInner() {
                   )}
                   {highValueLowStock.length > 0 && (
                     <InsightPanel>
-                      <InsightSectionHeading>High Value / Low Stock</InsightSectionHeading>
+                      <InsightSectionHeading>{t("auto.pages_CigarInsights.high_value_low_stock_11k07b")}</InsightSectionHeading>
                       <div className="space-y-2">
                         {highValueLowStock.map(({ cigar, valuation }) => (
                           <div key={cigar.id} className="flex justify-between gap-3 text-sm">
@@ -477,14 +477,14 @@ function CigarInsightsInner() {
               )}
 
               <InsightPanel>
-                <InsightSectionHeading>Valuation Attention</InsightSectionHeading>
+                <InsightSectionHeading>{t("auto.pages_CigarInsights.valuation_attention_8to5u6")}</InsightSectionHeading>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
-                    <div className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>Needs valuation</div>
+                    <div className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>{t("auto.pages_CigarInsights.needs_valuation_p5rljb")}</div>
                     <div className="text-lg font-semibold text-[#F5F1E7]">{missingValuationCount}</div>
                   </div>
                   <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
-                    <div className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>Stale valuations</div>
+                    <div className="text-xs uppercase tracking-wide" style={{ color: 'rgba(224,216,200,0.55)' }}>{t("auto.pages_CigarInsights.stale_valuations_qfs4qs")}</div>
                     <div className="text-lg font-semibold text-[#F5F1E7]">{staleValuationCount}</div>
                   </div>
                 </div>
@@ -506,22 +506,22 @@ function CigarInsightsInner() {
 
           {/* Acquisition states */}
           <InsightPanel>
-            <InsightSectionHeading>Acquisition States</InsightSectionHeading>
+            <InsightSectionHeading>{t("auto.pages_CigarInsights.acquisition_states_cvahgi")}</InsightSectionHeading>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(180,140,75,0.14)', border: '1px solid rgba(180,140,75,0.3)' }}>
-                <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Wishlist</p>
+                <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">{t("auto.pages_CigarInsights.wishlist_u4bb5o")}</p>
                 <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.wishlist}</p>
               </div>
               <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(76,120,180,0.14)', border: '1px solid rgba(76,120,180,0.3)' }}>
-                <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Shopping List</p>
+                <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">{t("auto.pages_CigarInsights.shopping_list_11hxet")}</p>
                 <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.shopping}</p>
               </div>
               <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(224,160,80,0.14)', border: '1px solid rgba(224,160,80,0.3)' }}>
-                <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Restock</p>
+                <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">{t("auto.pages_CigarInsights.restock_18d1re")}</p>
                 <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.restock}</p>
               </div>
               <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(224,100,80,0.14)', border: '1px solid rgba(224,100,80,0.3)' }}>
-                <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">Not for Me</p>
+                <p className="text-xs uppercase tracking-wide text-[#E0D8C8]/70">{t("auto.pages_CigarInsights.not_for_me_15m6xs")}</p>
                 <p className="text-lg font-semibold text-[#F5F1E7]">{acquisitionCounts.notForMe}</p>
               </div>
             </div>
@@ -530,7 +530,7 @@ function CigarInsightsInner() {
           {/* Tonight recommendations */}
           {tonightCandidates.length > 0 && (
             <InsightPanel>
-              <InsightSectionHeading>What should I smoke tonight?</InsightSectionHeading>
+              <InsightSectionHeading>{t("auto.pages_CigarInsights.what_should_i_smoke_tonight_lddzws")}</InsightSectionHeading>
               <div className="space-y-2">
                 {tonightCandidates.map(({ cigar, reasons }) => (
                   <div key={cigar.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
@@ -545,7 +545,7 @@ function CigarInsightsInner() {
           {/* Collection insights */}
           {collectionInsights.length > 0 && (
             <InsightPanel>
-              <InsightSectionHeading>Collection Insights</InsightSectionHeading>
+              <InsightSectionHeading>{t("auto.pages_CigarInsights.collection_insights_1ny5xa")}</InsightSectionHeading>
               <div className="space-y-2">
                 {collectionInsights.map(insight => <InsightRow key={`${insight.cigarId}-${insight.type}`} insight={insight} />)}
               </div>
@@ -557,7 +557,7 @@ function CigarInsightsInner() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {lowStockFavorites.length > 0 && (
                 <InsightPanel>
-                  <InsightSectionHeading>Low Stock Favorites</InsightSectionHeading>
+                  <InsightSectionHeading>{t("auto.pages_CigarInsights.low_stock_favorites_13qha")}</InsightSectionHeading>
                   <div className="space-y-2">
                     {lowStockFavorites.map(c => (
                       <div key={c.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
@@ -572,12 +572,12 @@ function CigarInsightsInner() {
               )}
               {buyAgainCandidates.length > 0 && (
                 <InsightPanel>
-                  <InsightSectionHeading>Buy Again Candidates</InsightSectionHeading>
+                  <InsightSectionHeading>{t("auto.pages_CigarInsights.buy_again_candidates_iy4omd")}</InsightSectionHeading>
                   <div className="space-y-2">
                     {buyAgainCandidates.map(({ cigar, avg, qty }) => (
                       <div key={cigar.id} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.1)' }}>
                         <p className="text-sm font-semibold text-[#F5F1E7]">{[cigar.brand, cigar.name].filter(Boolean).join(' ')}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.58)' }}>Session avg {avg.toFixed(1)}/5 · {qty} left</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.58)' }}>{t("auto.pages_CigarInsights.session_avg_1mov87")} {avg.toFixed(1)}/5 · {qty} left</p>
                       </div>
                     ))}
                   </div>
@@ -589,7 +589,7 @@ function CigarInsightsInner() {
           {/* Recent sessions */}
           {recentSessionsSorted.length > 0 && (
             <InsightPanel>
-              <InsightSectionHeading>Recent Sessions</InsightSectionHeading>
+              <InsightSectionHeading>{t("auto.pages_CigarInsights.recent_sessions_1xvw7x")}</InsightSectionHeading>
               <div className="space-y-2">
                 {recentSessionsSorted.map(s => (
                   <div key={s.id} className="flex items-center gap-3 px-3 py-2 rounded-xl"
@@ -629,19 +629,19 @@ function CigarInsightsInner() {
               {/* Aging status */}
               {(readinessSummary.readyNow > 0 || readinessSummary.aging > 0 || readinessSummary.pastPeak > 0) && (
                 <InsightPanel>
-                  <InsightSectionHeading>Aging Status</InsightSectionHeading>
+                  <InsightSectionHeading>{t("auto.pages_CigarInsights.aging_status_17dhi6")}</InsightSectionHeading>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(76,175,130,0.1)', border: '1px solid rgba(76,175,130,0.3)' }}>
                       <div className="text-2xl font-bold text-[#F5F1E7]">{readinessSummary.readyNow}</div>
-                      <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(76,175,130,0.85)' }}>Ready Now</div>
+                      <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(76,175,130,0.85)' }}>{t("auto.pages_CigarInsights.ready_now_158umi")}</div>
                     </div>
                     <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(212,165,116,0.1)', border: '1px solid rgba(212,165,116,0.3)' }}>
                       <div className="text-2xl font-bold text-[#F5F1E7]">{readySoonCount}</div>
-                      <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(212,165,116,0.85)' }}>Ready Soon</div>
+                      <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(212,165,116,0.85)' }}>{t("auto.pages_CigarInsights.ready_soon_bj1fnd")}</div>
                     </div>
                     <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(224,100,80,0.1)', border: '1px solid rgba(224,100,80,0.25)' }}>
                       <div className="text-2xl font-bold text-[#F5F1E7]">{readinessSummary.aging + readinessSummary.pastPeak}</div>
-                      <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(224,100,80,0.8)' }}>Still Resting / Risk</div>
+                      <div className="text-xs mt-1 font-semibold uppercase tracking-wide" style={{ color: 'rgba(224,100,80,0.8)' }}>{t("auto.pages_CigarInsights.still_resting_risk_1c8pau")}</div>
                     </div>
                   </div>
                 </InsightPanel>
@@ -649,15 +649,15 @@ function CigarInsightsInner() {
 
               {/* Charts grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <MiniChart data={brandData}       title="Top Brands"                  horizontal />
-                <MiniChart data={brandRatingData} title="Top Brands by Avg Rating"    horizontal />
-                <MiniPie   data={wrapperData}     title="Wrapper Breakdown" />
-                <MiniPie   data={favWrapperData}  title="Favorite Wrappers" />
-                <MiniChart data={lineData}        title="Top Lines"                   horizontal />
-                <MiniChart data={vitolaData}      title="Top Vitolas" />
-                <MiniPie   data={originData}      title="Country of Origin" />
-                <MiniChart data={bodyData}        title="Body Distribution" />
-                <MiniChart data={mostSmokedData}  title="Most Smoked Cigars"          horizontal />
+                <MiniChart data={brandData}       title={t("auto.pages_CigarInsights.top_brands_1b07th")}                  horizontal />
+                <MiniChart data={brandRatingData} title={t("auto.pages_CigarInsights.top_brands_by_avg_rating_1vb15w")}    horizontal />
+                <MiniPie   data={wrapperData}     title={t("auto.pages_CigarInsights.wrapper_breakdown_3qovdv")} />
+                <MiniPie   data={favWrapperData}  title={t("auto.pages_CigarInsights.favorite_wrappers_1d2a2f")} />
+                <MiniChart data={lineData}        title={t("auto.pages_CigarInsights.top_lines_16ifkp")}                   horizontal />
+                <MiniChart data={vitolaData}      title={t("auto.pages_CigarInsights.top_vitolas_1j2zzy")} />
+                <MiniPie   data={originData}      title={t("auto.pages_CigarInsights.country_of_origin_167u5j")} />
+                <MiniChart data={bodyData}        title={t("auto.pages_CigarInsights.body_distribution_nppr0z")} />
+                <MiniChart data={mostSmokedData}  title={t("auto.pages_CigarInsights.most_smoked_cigars_96wo84")}          horizontal />
               </div>
             </>
           )}
@@ -679,7 +679,7 @@ function CigarInsightsInner() {
               </InsightsKpiGrid>
 
               <InsightPanel>
-                <InsightSectionHeading>Session Activity</InsightSectionHeading>
+                <InsightSectionHeading>{t("auto.pages_CigarInsights.session_activity_uoxgd2")}</InsightSectionHeading>
                 {sessions.length > 0 ? (
                   <div className="space-y-2 max-h-80 overflow-y-auto">
                     {[...sessions].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 30).map(s => (
@@ -698,7 +698,7 @@ function CigarInsightsInner() {
                     ))}
                   </div>
                 ) : (
-                  <p style={{ color: 'rgba(224,216,200,0.55)', fontSize: '0.9375rem' }}>More session history is needed to show trends.</p>
+                  <p style={{ color: 'rgba(224,216,200,0.55)', fontSize: '0.9375rem' }}>{t("auto.pages_CigarInsights.more_session_history_is_needed_to_u1nkkx")}</p>
                 )}
               </InsightPanel>
             </>
@@ -713,9 +713,9 @@ function CigarInsightsInner() {
             <InsightsEmptyState message="Add cigars to generate reports." icon={Cigarette} />
           ) : (
             <InsightPanel>
-              <InsightSectionHeading>Insurance &amp; Export Reports</InsightSectionHeading>
+              <InsightSectionHeading>{t("auto.pages_CigarInsights.insurance_and_export_reports_1d8vtk")}</InsightSectionHeading>
               <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                Generate insurer-ready exports with values, quantities, storage locations, and a generated date.
+                {t("auto.pages_CigarInsights.generate_insurer_ready_exports_with_values_16y65c")}
               </p>
               <CigarInsuranceExporter user={user} cigars={cigars} humidors={humidors} />
             </InsightPanel>

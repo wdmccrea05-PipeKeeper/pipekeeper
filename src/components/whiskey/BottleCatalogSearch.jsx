@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const WHISKEY_CATALOG = [
   { name: "Lagavulin 16 Year Old", distillery: "Lagavulin", region: "Islay", country: "Scotland", type: "Single Malt Scotch", abv: 43, age: 16, retail_price: 90 },
@@ -40,6 +41,7 @@ function matchCatalog(query) {
 }
 
 export default function BottleCatalogSearch({ onSelect, onManualAdd }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [focused, setFocused] = useState(false);
@@ -73,7 +75,7 @@ export default function BottleCatalogSearch({ onSelect, onManualAdd }) {
           onChange={handleSearch}
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => setFocused(false), 150)}
-          placeholder="Search whiskey catalog (e.g. Lagavulin 16)…"
+          placeholder={t("auto.components_whiskey_BottleCatalogSearch.search_whiskey_catalog_e_g_lagavulin_s3x7xf")}
           className="pl-9 pr-9 bg-[#0f0f0f] border-[rgba(212,175,55,0.2)] text-[#F5F1E7] placeholder:text-[#F5F1E7]/30"
         />
         {query && (
@@ -122,7 +124,7 @@ export default function BottleCatalogSearch({ onSelect, onManualAdd }) {
               onMouseDown={onManualAdd}
               className="text-xs text-[#D4AF37]/70 hover:text-[#D4AF37]"
             >
-              Can't find it? Add manually →
+              {t("auto.components_whiskey_BottleCatalogSearch.can_t_find_it_add_manually_1s3g7z")}
             </button>
           </div>
         </div>
@@ -136,13 +138,13 @@ export default function BottleCatalogSearch({ onSelect, onManualAdd }) {
             border: "1px solid rgba(212,175,55,0.15)",
           }}
         >
-          <p className="text-sm text-[#F5F1E7]/50 mb-2">No catalog match found.</p>
+          <p className="text-sm text-[#F5F1E7]/50 mb-2">{t("auto.components_whiskey_BottleCatalogSearch.no_catalog_match_found_3ytl5g")}</p>
           <button
             type="button"
             onMouseDown={onManualAdd}
             className="text-xs text-[#D4AF37]/70 hover:text-[#D4AF37]"
           >
-            Add manually →
+            {t("auto.components_whiskey_BottleCatalogSearch.add_manually_pi8jdv")}
           </button>
         </div>
       )}

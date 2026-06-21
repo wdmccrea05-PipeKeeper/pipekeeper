@@ -12,6 +12,7 @@ import {
   DIFFICULTY_LABELS,
 } from '@/components/valuation/valueEngine';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function getBottleCount(bottle) {
   const n = Number(bottle?.bottle_count || bottle?.total_bottles || 1);
@@ -60,6 +61,7 @@ function BottleRow({ bottle, value, badge, badgeColor, formatFromBase }) {
 }
 
 export default function WhiskeyValueIntelligence({ bottles = [] }) {
+  const { t } = useTranslation();
   // Subscribe to currency context so the component re-renders when the user changes currency
   const { formatFromBase } = useCurrency();
   const enriched = useMemo(() => {
@@ -124,8 +126,8 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
           <TrendingUp className="w-4 h-4 text-[#B48C4B]" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-[#F5F1E7]">Value Intelligence</h2>
-          <p className="text-xs text-[#D8C7A6]/60">Strategic insights from your collection</p>
+          <h2 className="text-lg font-bold text-[#F5F1E7]">{t("auto.components_whiskey_WhiskeyValueIntelligence.value_intelligence_hpi7f9")}</h2>
+          <p className="text-xs text-[#D8C7A6]/60">{t("auto.components_whiskey_WhiskeyValueIntelligence.strategic_insights_from_your_collection_qsntib")}</p>
         </div>
       </div>
 
@@ -146,7 +148,7 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Top to Hold */}
-        <ValueCard title="Top Bottles to Hold" icon={ShieldCheck} iconColor="#fca5a5" borderColor="rgba(239,68,68,0.2)" emptyMessage="No high-priority hold candidates identified">
+        <ValueCard title={t("auto.components_whiskey_WhiskeyValueIntelligence.top_bottles_to_hold_1jx67u")} icon={ShieldCheck} iconColor="#fca5a5" borderColor="rgba(239,68,68,0.2)" emptyMessage="No high-priority hold candidates identified">
           {topHold.length > 0 ? topHold.map(b => (
             <BottleRow
               key={b.id}
@@ -157,12 +159,12 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
               formatFromBase={formatFromBase}
             />
           )) : (
-            <p className="text-xs text-[#D8C7A6]/50 text-center py-4">No strong hold candidates in your collection</p>
+            <p className="text-xs text-[#D8C7A6]/50 text-center py-4">{t("auto.components_whiskey_WhiskeyValueIntelligence.no_strong_hold_candidates_in_your_1rxmkq")}</p>
           )}
         </ValueCard>
 
         {/* Safe to Open */}
-        <ValueCard title="Safe to Open" icon={Unlock} iconColor="#6ee7b7" borderColor="rgba(16,185,129,0.2)" emptyMessage="No low-risk bottles identified">
+        <ValueCard title={t("auto.components_whiskey_WhiskeyValueIntelligence.safe_to_open_1h9dfu")} icon={Unlock} iconColor="#6ee7b7" borderColor="rgba(16,185,129,0.2)" emptyMessage="No low-risk bottles identified">
           {safeOpen.length > 0 ? safeOpen.map(b => (
             <BottleRow
               key={b.id}
@@ -173,12 +175,12 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
               formatFromBase={formatFromBase}
             />
           )) : (
-            <p className="text-xs text-[#D8C7A6]/50 text-center py-4">All bottles have moderate to high hold signals</p>
+            <p className="text-xs text-[#D8C7A6]/50 text-center py-4">{t("auto.components_whiskey_WhiskeyValueIntelligence.all_bottles_have_moderate_to_high_2it18r")}</p>
           )}
         </ValueCard>
 
         {/* Replacement Risk */}
-        <ValueCard title="Replacement Risk" icon={AlertTriangle} iconColor="#fbbf24" borderColor="rgba(251,191,36,0.2)" emptyMessage="No high-risk bottles">
+        <ValueCard title={t("auto.components_whiskey_WhiskeyValueIntelligence.replacement_risk_a8yz3i")} icon={AlertTriangle} iconColor="#fbbf24" borderColor="rgba(251,191,36,0.2)" emptyMessage="No high-risk bottles">
           {highRisk.length > 0 ? highRisk.map(b => (
             <BottleRow
               key={b.id}
@@ -189,22 +191,22 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
               formatFromBase={formatFromBase}
             />
           )) : (
-            <p className="text-xs text-[#D8C7A6]/50 text-center py-4">No bottles with high replacement risk</p>
+            <p className="text-xs text-[#D8C7A6]/50 text-center py-4">{t("auto.components_whiskey_WhiskeyValueIntelligence.no_bottles_with_high_replacement_risk_ae86qs")}</p>
           )}
         </ValueCard>
 
         {/* Value Concentration */}
-        <ValueCard title="Value Concentration" icon={BarChart2} iconColor="#93C5FD" borderColor="rgba(59,130,246,0.2)">
+        <ValueCard title={t("auto.components_whiskey_WhiskeyValueIntelligence.value_concentration_x9b1kp")} icon={BarChart2} iconColor="#93C5FD" borderColor="rgba(59,130,246,0.2)">
           <div className="space-y-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-[#D8C7A6]/60">Top 3 bottles hold</span>
-              <span className="text-sm font-bold" style={{ color: concentrationPct >= 70 ? '#f87171' : '#fbbf24' }}>{concentrationPct}% of value</span>
+              <span className="text-xs text-[#D8C7A6]/60">{t("auto.components_whiskey_WhiskeyValueIntelligence.top_3_bottles_hold_1t7m54")}</span>
+              <span className="text-sm font-bold" style={{ color: concentrationPct >= 70 ? '#f87171' : '#fbbf24' }}>{concentrationPct}{t("auto.components_whiskey_WhiskeyValueIntelligence.of_value_1k3tp0")}</span>
             </div>
             <div className="h-2.5 rounded-full bg-white/5 overflow-hidden">
               <div className="h-full rounded-full transition-all" style={{ width: `${concentrationPct}%`, background: concentrationPct >= 70 ? '#f87171' : concentrationPct >= 40 ? '#fbbf24' : '#4ade80' }} />
             </div>
             {concentrationPct >= 70 && (
-              <p className="text-xs text-[#fbbf24]/80 mt-2">High concentration — consider diversifying your collection</p>
+              <p className="text-xs text-[#fbbf24]/80 mt-2">{t("auto.components_whiskey_WhiskeyValueIntelligence.high_concentration_consider_diversifying_your_co_3prhyt")}</p>
             )}
             <div className="mt-3 space-y-1">
               {valueByBottle.slice(0, 3).map((b, i) => (
@@ -221,17 +223,17 @@ export default function WhiskeyValueIntelligence({ bottles = [] }) {
 
       {/* Sealed vs Open Exposure */}
       {(sealedValue > 0 || openValue > 0) && (
-        <ValueCard title="Sealed vs Open Exposure" icon={Archive} iconColor="#D4A574" borderColor="rgba(180,140,75,0.2)">
+        <ValueCard title={t("auto.components_whiskey_WhiskeyValueIntelligence.sealed_vs_open_exposure_nriweh")} icon={Archive} iconColor="#D4A574" borderColor="rgba(180,140,75,0.2)">
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
-              <p className="text-xs uppercase tracking-[0.1em] text-[#4ade80]/70 mb-1">Sealed</p>
+              <p className="text-xs uppercase tracking-[0.1em] text-[#4ade80]/70 mb-1">{t("auto.components_whiskey_WhiskeyValueIntelligence.sealed_1lxzzw")}</p>
               <p className="text-2xl font-bold text-[#4ade80] tabular-nums">{formatFromBase(sealedValue)}</p>
               <p className="text-xs text-[#D8C7A6]/50 mt-1">
                 {totalValue > 0 ? `${Math.round((sealedValue / totalValue) * 100)}% of collection value` : '—'}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-xs uppercase tracking-[0.1em] text-[#93C5FD]/70 mb-1">Open</p>
+              <p className="text-xs uppercase tracking-[0.1em] text-[#93C5FD]/70 mb-1">{t("auto.components_whiskey_WhiskeyValueIntelligence.open_yjzwpj")}</p>
               <p className="text-2xl font-bold text-[#93C5FD] tabular-nums">{formatFromBase(openValue)}</p>
               <p className="text-xs text-[#D8C7A6]/50 mt-1">
                 {totalValue > 0 ? `${Math.round((openValue / totalValue) * 100)}% of collection value` : '—'}

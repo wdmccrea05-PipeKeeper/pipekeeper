@@ -53,10 +53,10 @@ export default function AllUsersPermissionTest() {
             {testing && <Loader2 className="w-4 h-4 animate-spin" />}
           </CardTitle>
           <div className="flex gap-2">
-            <Badge className="bg-green-100 text-green-800 border-green-300">{summary.pass} Pass</Badge>
-            <Badge className="bg-red-100 text-red-800 border-red-300">{summary.fail} Fail</Badge>
+            <Badge className="bg-green-100 text-green-800 border-green-300">{summary.pass} {t("auto.components_debug_AllUsersPermissionTest.pass_yk0c70")}</Badge>
+            <Badge className="bg-red-100 text-red-800 border-red-300">{summary.fail} {t("auto.components_debug_AllUsersPermissionTest.fail_yjsmn5")}</Badge>
             {summary.warning > 0 && (
-              <Badge className="bg-amber-100 text-amber-800 border-amber-300">{summary.warning} Warning</Badge>
+              <Badge className="bg-amber-100 text-amber-800 border-amber-300">{summary.warning} {t("auto.components_debug_AllUsersPermissionTest.warning_6hbgbf")}</Badge>
             )}
           </div>
         </div>
@@ -127,13 +127,13 @@ export default function AllUsersPermissionTest() {
 
                 <div className="grid grid-cols-2 gap-2 mt-2 text-xs font-mono bg-white/50 p-2 rounded">
                   <div className={result.tierMatch ? 'text-green-700' : 'text-red-700'}>
-                    Tier: {result.tier} {result.tierMatch ? '✓' : '✗'}
+                    {t("auto.components_debug_AllUsersPermissionTest.tier_3xht5f")} {result.tier} {result.tierMatch ? '✓' : '✗'}
                   </div>
                   <div className={result.paidMatch ? 'text-green-700' : 'text-red-700'}>
-                    Paid: {String(result.hasPaid)} {result.paidMatch ? '✓' : '✗'}
+                    {t("auto.components_debug_AllUsersPermissionTest.paid_3ui22l")} {String(result.hasPaid)} {result.paidMatch ? '✓' : '✗'}
                   </div>
                   <div className={result.proMatch ? 'text-green-700' : 'text-red-700'}>
-                    Pro: {String(result.hasPro)} {result.proMatch ? '✓' : '✗'}
+                    {t("auto.components_debug_AllUsersPermissionTest.pro_yk0qc0")} {String(result.hasPro)} {result.proMatch ? '✓' : '✗'}
                   </div>
                 </div>
 

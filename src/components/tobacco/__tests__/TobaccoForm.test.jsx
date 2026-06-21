@@ -34,24 +34,14 @@ vi.mock('@/components/utils/moduleEntitlements', () => ({ hasModuleProAccess: ()
 vi.mock('@/components/hooks/useRecentValues', () => ({ useRecentValues: () => ({ data: [] }) }));
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
-vi.mock('@/components/i18n/safeTranslation', () => ({
-  useTranslation: () => ({
-    t: (key, fallback) => {
-      const labels = {
-        'tobaccoExtended.flavorNotesDesc': 'Select or enter flavor notes you detect in this blend',
-        'tobaccoExtended.updateBlend': 'Update Blend',
-        'common.cancel': 'Cancel',
-        'common.add': 'Add',
-      };
-
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-
-      return labels[key] || key;
-    },
-  }),
-}));
+vi.mock('@/components/i18n/safeTranslation', async () => {
+  const actual = await vi.importActual('@/components/i18n/index.jsx');
+  return {
+    useTranslation: () => ({
+      t: (key, opts) => actual.translate(key, opts, 'en'),
+    }),
+  };
+});
 
 vi.mock('@/components/pipes/ImageCropper', () => ({ default: () => null }));
 vi.mock('@/components/forms/FieldWithInfo', () => ({ default: ({ children }) => <div>{children}</div> }));

@@ -187,7 +187,7 @@ Rules:
 
       setResult(identification);
       setShowMoreDetails(false);
-      toast.success("Pipe identified successfully!");
+      toast.success(t("auto.components_ai_PipeIdentifier.pipe_identified_successfully_1idibu"));
     } catch (err) {
       console.error(err);
       toast.error("Identification failed: " + (err.message || "Unknown error"));
@@ -199,7 +199,7 @@ Rules:
   const handleAddToWantList = async () => {
     if (!parsedResult) return;
     if (!userEmail) {
-      toast.error("Unable to identify the current user");
+      toast.error(t("auto.components_ai_PipeIdentifier.unable_to_identify_the_current_user_1ivtij"));
       return;
     }
 
@@ -223,10 +223,10 @@ Rules:
         notes: JSON.stringify(parsedResult, null, 2),
       });
 
-      toast.success("Added to Want List!");
+      toast.success(t("auto.components_ai_PipeIdentifier.added_to_want_list_13jl3g"));
       resetState();
     } catch (err) {
-      toast.error("Failed to add to Want List");
+      toast.error(t("auto.components_ai_PipeIdentifier.failed_to_add_to_want_list_8icqrz"));
       console.error(err);
     }
   };
@@ -362,7 +362,7 @@ Rules:
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Uploading & Identifying...
+              {t("auto.components_ai_PipeIdentifier.uploading_and_identifying_duys0i")}
             </>
           ) : (
             <>
@@ -383,7 +383,7 @@ Rules:
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#F0C58A]" />
               <span className="text-sm font-semibold text-[#D4A574]">
-                AI Identification Result
+                {t("auto.components_ai_PipeIdentifier.ai_identification_result_1swdox")}
               </span>
             </div>
 
@@ -410,9 +410,9 @@ Rules:
                 className="w-full flex items-center justify-between px-4 py-3 text-left"
               >
                 <div>
-                  <div className="text-sm font-medium text-[#F5F1E7]">More Details</div>
+                  <div className="text-sm font-medium text-[#F5F1E7]">{t("auto.components_ai_PipeIdentifier.more_details_15hrhn")}</div>
                   <div className="text-xs text-[#D7C9B2]/58">
-                    Confidence, era, origin, condition, stampings, and notes
+                    {t("auto.components_ai_PipeIdentifier.confidence_era_origin_condition_stampings_and_1phii8")}
                   </div>
                 </div>
                 {showMoreDetails ? (
@@ -449,7 +449,7 @@ Rules:
                           }}
                         >
                           <div className="text-[11px] uppercase tracking-[0.14em] text-[#D7C9B2]/58 mb-1">
-                            Visible Stampings
+                            {t("auto.components_ai_PipeIdentifier.visible_stampings_18e8ij")}
                           </div>
                           <div className="text-sm text-[#E0D8C8] whitespace-pre-wrap">
                             {parsedResult.visible_stampings}
@@ -466,7 +466,7 @@ Rules:
                           }}
                         >
                           <div className="text-[11px] uppercase tracking-[0.14em] text-[#D7C9B2]/58 mb-1">
-                            Notable Features
+                            {t("auto.components_ai_PipeIdentifier.notable_features_fykomh")}
                           </div>
                           <div className="text-sm text-[#E0D8C8] whitespace-pre-wrap">
                             {parsedResult.notable_features}
@@ -483,7 +483,7 @@ Rules:
                           }}
                         >
                           <div className="text-[11px] uppercase tracking-[0.14em] text-[#D7C9B2]/58 mb-1">
-                            Notes
+                            {t("auto.components_ai_PipeIdentifier.notes_3te9gu")}
                           </div>
                           <div className="text-sm text-[#E0D8C8] whitespace-pre-wrap">
                             {parsedResult.notes}
@@ -502,7 +502,7 @@ Rules:
               className="w-full bg-gradient-to-r from-[#7E4A3A] to-[#5F342A] hover:from-[#8C5242] hover:to-[#6B3C30] text-[#F8EBDD]"
             >
               <Heart className="w-4 h-4 mr-2" />
-              Add to Want List
+              {t("auto.components_ai_PipeIdentifier.add_to_want_list_vu06cn")}
             </Button>
           </div>
         )}

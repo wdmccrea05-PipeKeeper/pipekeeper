@@ -5,6 +5,7 @@ import { rankSearchResults } from "@/utils/search/SmartSearchEngine";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 import { scopedEntities } from "@/components/api/scopedEntities";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const SCHEMA_BY_TYPE = {
   blend: {
@@ -180,6 +181,7 @@ function dedupeResults(itemType, items) {
 }
 
 export default function ExternalItemSearch({ itemType = "blend", onSelect, initialQuery = "" }) {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const access = useAccessSummary();
   const userEmail = user?.email || null;
@@ -305,7 +307,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
     <div className="space-y-3">
       {!itemTypeAllowed && itemType === "bottle" ? (
        <div className="rounded-xl border border-[rgba(180,140,75,0.18)] bg-[rgba(255,255,255,0.03)] px-3 py-3 text-sm text-[#E0D8C8]/70">
-         Whiskey search is not available in this release.
+         {t("auto.components_session_ExternalItemSearch.whiskey_search_is_not_available_in_1bshsn")}
        </div>
       ) : null}
 
@@ -336,7 +338,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
       {results !== null && itemTypeAllowed && (
         <div className="space-y-1.5">
           {results.length === 0 ? (
-            <p className="text-xs text-[#E0D8C8]/50 text-center py-2">No matches found.</p>
+            <p className="text-xs text-[#E0D8C8]/50 text-center py-2">{t("auto.components_session_ExternalItemSearch.no_matches_found_k2oj9t")}</p>
           ) : (
             results.map((item, i) => (
               <button
@@ -358,7 +360,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
                   </div>
                   {item._isExact ? (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[rgba(46,125,92,0.25)] text-[#9BE3B5] shrink-0">
-                      Exact
+                      {t("auto.components_session_ExternalItemSearch.exact_3n7zga")}
                     </span>
                   ) : null}
                 </div>
@@ -375,7 +377,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
         disabled={!itemTypeAllowed}
       >
         <Plus className="w-3.5 h-3.5" />
-        Add manually
+        {t("auto.components_session_ExternalItemSearch.add_manually_1l85hk")}
         {showManual ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
       </button>
 
@@ -399,13 +401,13 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
             className="w-full h-8 rounded-lg text-sm font-medium text-white disabled:opacity-40 mt-1"
             style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
           >
-            Use This
+            {t("auto.components_session_ExternalItemSearch.use_this_v2wf9m")}
           </button>
         </div>
       )}
 
       <p className="text-xs text-[#E0D8C8]/45">
-        Select a result or add the item manually to continue.
+        {t("auto.components_session_ExternalItemSearch.select_a_result_or_add_the_1w4r6l")}
       </p>
     </div>
   );

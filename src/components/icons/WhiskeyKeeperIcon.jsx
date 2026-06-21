@@ -5,8 +5,10 @@
  * Do NOT use Wine or GlassWater for WhiskeyKeeper identity.
  */
 import React from 'react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function WhiskeyKeeperIcon({ className = '', color = 'currentColor', size, style = {} }) {
+  const { t } = useTranslation();
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -20,7 +22,7 @@ export default function WhiskeyKeeperIcon({ className = '', color = 'currentColo
       strokeLinejoin="round"
       className={className}
       style={style}
-      aria-label="WhiskeyKeeper"
+      aria-label={t("auto.components_icons_WhiskeyKeeperIcon.whiskeykeeper_1kgmc1")}
     >
       {/* Whiskey bottle */}
       <path d="M8 2h3v3c0 .5.3 1 .7 1.3L13 7.5V19a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7.5l1.3-1.2c.4-.3.7-.8.7-1.3V2z" />

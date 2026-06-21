@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const SESSIONS_KEY = "pk_sessions";
 
@@ -16,13 +17,14 @@ function removeSession(id) {
 }
 
 export default function SavedSessionsPanel() {
+  const { t } = useTranslation();
   const [key, setKey] = useState(0);
   const sessions = useMemo(() => getSessions(), [key]);
 
   if (!sessions.length) {
     return (
       <div className="rounded-lg border border-amber-500/20 bg-black/20 p-3">
-        <p className="text-sm text-amber-100">No saved sessions.</p>
+        <p className="text-sm text-amber-100">{t("auto.components_curator_SavedSessionsPanel.no_saved_sessions_16v92i")}</p>
       </div>
     );
   }
@@ -37,15 +39,15 @@ export default function SavedSessionsPanel() {
           <div key={item.id} className="rounded-lg border border-amber-500/15 bg-amber-500/5 p-3">
             <p className="text-sm font-medium text-amber-100 mb-1">{item.title || "Session"}</p>
             <div className="space-y-0.5">
-              {pipeName && <p className="text-xs text-amber-500/70">Pipe: {pipeName}</p>}
-              {blendName && <p className="text-xs text-amber-500/70">Blend: {blendName}</p>}
-              {bottleName && <p className="text-xs text-amber-500/70">Pour: {bottleName}</p>}
+              {pipeName && <p className="text-xs text-amber-500/70">{t("auto.components_curator_SavedSessionsPanel.pipe_3uodt9")} {pipeName}</p>}
+              {blendName && <p className="text-xs text-amber-500/70">{t("auto.components_curator_SavedSessionsPanel.blend_1b2xbt")} {blendName}</p>}
+              {bottleName && <p className="text-xs text-amber-500/70">{t("auto.components_curator_SavedSessionsPanel.pour_3ut4px")} {bottleName}</p>}
             </div>
             <button
               onClick={() => { removeSession(item.id); setKey(k => k + 1); }}
               className="mt-2 text-xs text-amber-100 border border-amber-500/30 rounded px-2 py-1"
             >
-              Remove
+              {t("auto.components_curator_SavedSessionsPanel.remove_1layij")}
             </button>
           </div>
         );

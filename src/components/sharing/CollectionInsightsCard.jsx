@@ -5,6 +5,7 @@ import { Download, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import BrandLogo from '@/components/branding/BrandLogo';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const TONE = {
   pipes: '#A35C5C',
@@ -75,6 +76,7 @@ function HighlightRow({ label, value }) {
 }
 
 const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hub' }, ref) => {
+  const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
   if (!summary) return null;
 
@@ -231,7 +233,7 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
           className="px-8 py-4 text-center text-xs"
           style={{ color: 'rgba(224,216,200,0.28)', letterSpacing: '0.08em' }}
         >
-          Tracked with CollectionKeeper
+          {t("auto.components_sharing_CollectionInsightsCard.tracked_with_collectionkeeper_11mu95")}
         </div>
       </div>
     </div>
@@ -241,13 +243,14 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
 CollectionInsightsCard.displayName = 'CollectionInsightsCard';
 
 export function CollectionInsightsShareModal({ isOpen, onClose, summary, userProfile, variant = 'hub' }) {
+  const { t } = useTranslation();
   const cardRef = React.useRef(null);
   const { formatFromBase } = useCurrency();
 
   if (!isOpen) return null;
 
   const handleDownloadImage = async () => {
-    if (!cardRef.current) return toast.error('Failed to generate image');
+    if (!cardRef.current) return toast.error(t("auto.components_sharing_CollectionInsightsCard.failed_to_generate_image_9ztf4r"));
     try {
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#1a1210',
@@ -259,10 +262,10 @@ export function CollectionInsightsShareModal({ isOpen, onClose, summary, userPro
       link.href = canvas.toDataURL('image/png');
       link.download = `collectionkeeper-${variant}-${Date.now()}.png`;
       link.click();
-      toast.success('Image downloaded');
+      toast.success(t("auto.components_sharing_CollectionInsightsCard.image_downloaded_7z1k2x"));
     } catch (error) {
       console.error(error);
-      toast.error('Failed to download image');
+      toast.error(t("auto.components_sharing_CollectionInsightsCard.failed_to_download_image_s5rpu0"));
     }
   };
 
@@ -282,9 +285,9 @@ export function CollectionInsightsShareModal({ isOpen, onClose, summary, userPro
 
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('Summary copied');
+      toast.success(t("auto.components_sharing_CollectionInsightsCard.summary_copied_1jxmi9"));
     } catch {
-      toast.error('Failed to copy summary');
+      toast.error(t("auto.components_sharing_CollectionInsightsCard.failed_to_copy_summary_1u2r00"));
     }
   };
 
@@ -302,15 +305,15 @@ export function CollectionInsightsShareModal({ isOpen, onClose, summary, userPro
 
         <div className="flex flex-wrap gap-3 justify-end pt-2">
           <Button variant="outline" size="sm" onClick={onClose}>
-            Close
+            {t("auto.components_sharing_CollectionInsightsCard.close_3lk8qj")}
           </Button>
           <Button variant="outline" size="sm" onClick={handleCopyText}>
             <Copy className="w-4 h-4 mr-2" />
-            Copy Text
+            {t("auto.components_sharing_CollectionInsightsCard.copy_text_1b045m")}
           </Button>
           <Button size="sm" onClick={handleDownloadImage}>
             <Download className="w-4 h-4 mr-2" />
-            Download Image
+            {t("auto.components_sharing_CollectionInsightsCard.download_image_qkq3gg")}
           </Button>
         </div>
       </div>

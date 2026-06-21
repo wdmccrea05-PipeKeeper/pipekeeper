@@ -954,7 +954,7 @@ export default function CollectionHub() {
               <div className="rounded-[22px] border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.85)] p-5">
                 <p className="text-sm font-semibold text-[#F5F1E7] mb-3">{calSelectedDate}</p>
                 {calSelectedDayRows.length === 0 ? (
-                  <p style={{ color: 'rgba(224,216,200,0.5)' }} className="text-sm">No sessions logged for this day.</p>
+                  <p style={{ color: 'rgba(224,216,200,0.5)' }} className="text-sm">{t("auto.pages_CollectionHub.no_sessions_logged_for_this_day_fa6lhy")}</p>
                 ) : (
                   <div className="space-y-3">
                     {calSelectedDayRows.map((row) => {
@@ -986,7 +986,7 @@ export default function CollectionHub() {
                               </span>
                               {row.rating != null && <span className="text-xs" style={{ color: 'rgba(224,216,200,0.5)' }}>★ {row.rating}</span>}
                             </div>
-                            <span className="text-xs" style={{ color: moduleColor }}>Edit →</span>
+                            <span className="text-xs" style={{ color: moduleColor }}>{t("auto.pages_CollectionHub.edit_1cv9rb")}</span>
                           </div>
                           <p className="text-sm font-semibold text-[#F5F1E7] mt-1">{row.itemLabel}</p>
                           {row.notes ? <p className="text-xs text-[#E0D8C8]/60 mt-1 line-clamp-2">{row.notes}</p> : null}

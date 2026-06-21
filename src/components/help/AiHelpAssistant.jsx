@@ -154,7 +154,7 @@ Instructions:
                   </ReactMarkdown>
                   {msg.relatedArticles?.length > 0 && (
                     <div className="mt-3 pt-2 border-t border-[rgba(180,140,75,0.1)]">
-                      <p className="text-[10px] text-[#D7C9B2]/40 uppercase tracking-wider mb-1.5">Related articles</p>
+                      <p className="text-[10px] text-[#D7C9B2]/40 uppercase tracking-wider mb-1.5">{t("auto.components_help_AiHelpAssistant.related_articles_1wbobh")}</p>
                       <RelatedArticleChips articleIds={msg.relatedArticles} />
                     </div>
                   )}

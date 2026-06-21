@@ -465,8 +465,8 @@ Return JSON:
             <Sparkles className="w-5 h-5 text-[#A35C5C]" />
           </div>
           <div>
-            <p className="font-semibold text-[#E0D8C8] text-lg">AI Pipe Identification</p>
-            <p className="text-sm text-[#E0D8C8]/70">Upload photos to identify a pipe</p>
+            <p className="font-semibold text-[#E0D8C8] text-lg">{t("auto.components_ai_QuickPipeIdentifier.ai_pipe_identification_ezavvr")}</p>
+            <p className="text-sm text-[#E0D8C8]/70">{t("auto.components_ai_QuickPipeIdentifier.upload_photos_to_identify_a_pipe_66y0l1")}</p>
           </div>
         </div>
 

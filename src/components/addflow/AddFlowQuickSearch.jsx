@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ChevronRight, Globe, Loader2, PenLine, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { searchForRecord } from '@/lib/search/unifiedSearchService';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const PLACEHOLDERS = {
   blend: 'e.g. Carter Hall, Orlik Golden Sliced, Mac Baren HH…',
@@ -67,6 +68,7 @@ const DEBOUNCE_MS = 400;
 const MIN_CHARS = 2;
 
 export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSelect, onManual }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -137,7 +139,7 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
         </button>
         <div className="min-w-0">
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Quick Add {typeLabel}
+            {t("auto.components_addflow_AddFlowQuickSearch.quick_add_k6yhor")} {typeLabel}
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
             {itemType === 'blend'
@@ -212,7 +214,7 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
                         className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
                         style={{ background: 'rgba(180,140,75,0.18)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.3)' }}
                       >
-                        Exact Match
+                        {t("auto.components_addflow_AddFlowQuickSearch.exact_match_wd8tfr")}
                       </span>
                     )}
                     {item.confidenceLabel && <ConfidenceChip label={item.confidenceLabel} />}
@@ -251,10 +253,10 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
         {!loading && searched && results.length === 0 && (
           <div className="text-center py-8">
             <p className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              No trusted matches found for "{query}"
+              {t("auto.components_addflow_AddFlowQuickSearch.no_trusted_matches_found_for_1vtjbx")}{query}"
             </p>
             <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.3)' }}>
-              Add manually or try a different search.
+              {t("auto.components_addflow_AddFlowQuickSearch.add_manually_or_try_a_different_1csyjt")}
             </p>
           </div>
         )}
@@ -262,7 +264,7 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
         {!loading && !searched && query.length < MIN_CHARS && (
           <div className="text-center py-8" style={{ color: 'rgba(224,216,200,0.3)' }}>
             <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">Type to search</p>
+            <p className="text-sm">{t("auto.components_addflow_AddFlowQuickSearch.type_to_search_wwhfr4")}</p>
           </div>
         )}
 
@@ -272,7 +274,7 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
           style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
         >
           <PenLine className="w-3.5 h-3.5" />
-          <span className="text-sm">Add Manually Instead</span>
+          <span className="text-sm">{t("auto.components_addflow_AddFlowQuickSearch.add_manually_instead_kl1hw9")}</span>
         </button>
       </div>
 

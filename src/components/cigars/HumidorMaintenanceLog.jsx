@@ -18,6 +18,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const EVENT_TYPES = [
   { value: 'humidity_check', label: 'Humidity Check', Icon: Droplets },
@@ -144,6 +145,7 @@ const ReadingTooltip = ({ active, payload, label }) => {
 };
 
 export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryLogged, openComposerNonce }) {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
@@ -212,21 +214,21 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
       queryClient.invalidateQueries({ queryKey: ['humidor-maintenance-logs', humidorId] });
       queryClient.invalidateQueries({ queryKey: ['humidors', user?.email] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.humidors(user?.email) });
-      toast.success('Maintenance entry logged');
+      toast.success(t("auto.components_cigars_HumidorMaintenanceLog.maintenance_entry_logged_1ojcd7"));
       setShowDialog(false);
       setForm({ ...EMPTY_FORM });
       if (typeof onEntryLogged === 'function') onEntryLogged();
     },
-    onError: () => toast.error('Failed to log maintenance entry'),
+    onError: () => toast.error(t("auto.components_cigars_HumidorMaintenanceLog.failed_to_log_maintenance_entry_1l4ikh")),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.HumidorMaintenanceLog.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['humidor-maintenance-logs', humidorId] });
-      toast.success('Entry removed');
+      toast.success(t("auto.components_cigars_HumidorMaintenanceLog.entry_removed_1s2i69"));
     },
-    onError: () => toast.error('Failed to remove entry'),
+    onError: () => toast.error(t("auto.components_cigars_HumidorMaintenanceLog.failed_to_remove_entry_qgtnwt")),
   });
 
   const handleSubmit = (e) => {
@@ -276,7 +278,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
           style={{ background: 'rgba(180,140,75,0.18)', border: '1px solid rgba(180,140,75,0.35)', color: '#D4A574' }}
         >
           <PackagePlus className="w-3.5 h-3.5" />
-          Replaced Boveda
+          {t("auto.components_cigars_HumidorMaintenanceLog.replaced_boveda_hh2fhy")}
         </button>
         <button
           type="button"
@@ -285,7 +287,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
           style={{ background: 'rgba(110,150,210,0.16)', border: '1px solid rgba(110,150,210,0.35)', color: '#9FC4EE' }}
         >
           <RefreshCcw className="w-3.5 h-3.5" />
-          Recharged Beads
+          {t("auto.components_cigars_HumidorMaintenanceLog.recharged_beads_19tj24")}
         </button>
         <button
           type="button"
@@ -294,7 +296,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
           style={{ background: 'rgba(112,183,131,0.15)', border: '1px solid rgba(112,183,131,0.35)', color: '#83D49E' }}
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          Rotated Cigars
+          {t("auto.components_cigars_HumidorMaintenanceLog.rotated_cigars_z2jdox")}
         </button>
         <button
           type="button"
@@ -303,7 +305,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
           style={{ background: 'rgba(68,120,200,0.18)', border: '1px solid rgba(68,120,200,0.35)', color: '#8BB4E8' }}
         >
           <Droplets className="w-3.5 h-3.5" />
-          Inspected Humidor
+          {t("auto.components_cigars_HumidorMaintenanceLog.inspected_humidor_1sfuaj")}
         </button>
         <button
           type="button"
@@ -312,7 +314,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
           style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', color: 'rgba(224,216,200,0.8)' }}
         >
           <Sparkles className="w-3.5 h-3.5" />
-          Cleaned Humidor
+          {t("auto.components_cigars_HumidorMaintenanceLog.cleaned_humidor_1psp7z")}
         </button>
         <button
           type="button"
@@ -321,7 +323,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(224,216,200,0.7)' }}
         >
           <Plus className="w-3.5 h-3.5" />
-          Other Note
+          {t("auto.components_cigars_HumidorMaintenanceLog.other_note_199q7h")}
         </button>
       </div>
 
@@ -331,7 +333,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
           style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.12)' }}
         >
           <p className="text-xs uppercase tracking-wider font-semibold mb-2" style={{ color: 'rgba(224,216,200,0.55)' }}>
-            Recent Conditions
+            {t("auto.components_cigars_HumidorMaintenanceLog.recent_conditions_1uj078")}
           </p>
           <div className="h-36">
             <ResponsiveContainer width="100%" height="100%">
@@ -350,9 +352,9 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
 
       {/* Log entries */}
       {isLoading ? (
-        <p className="text-xs text-[#E0D8C8]/40 py-2">Loading history…</p>
+        <p className="text-xs text-[#E0D8C8]/40 py-2">{t("auto.components_cigars_HumidorMaintenanceLog.loading_history_1m52s6")}</p>
       ) : logs.length === 0 ? (
-        <p className="text-xs text-[#E0D8C8]/40 py-2">No maintenance history yet.</p>
+        <p className="text-xs text-[#E0D8C8]/40 py-2">{t("auto.components_cigars_HumidorMaintenanceLog.no_maintenance_history_yet_1xh2nh")}</p>
       ) : (
         <div className="space-y-2">
           {displayLogs.map((log) => (
@@ -370,13 +372,13 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
                   {log.humidity_reading != null && (
                     <span className="flex items-center gap-1">
                       <Droplets className="w-3 h-3" />
-                      {log.humidity_reading}% RH
+                      {log.humidity_reading}{t("auto.components_cigars_HumidorMaintenanceLog.rh_yj1ock")}
                     </span>
                   )}
                   {log.temperature_reading != null && (
                     <span className="flex items-center gap-1">
                       <Thermometer className="w-3 h-3" />
-                      {log.temperature_reading}°F
+                      {log.temperature_reading}{t("auto.components_cigars_HumidorMaintenanceLog.f_3hq2j")}
                     </span>
                   )}
                   {log.aid_brand && <span>{log.aid_brand}{log.aid_specification ? ` ${log.aid_specification}` : ''}</span>}
@@ -390,7 +392,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
                 onClick={() => deleteMutation.mutate(log.id)}
                 className="p-1 rounded hover:bg-[rgba(224,85,85,0.15)] transition-colors flex-shrink-0"
                 style={{ color: 'rgba(224,85,85,0.5)' }}
-                aria-label="Remove entry"
+                aria-label={t("auto.components_cigars_HumidorMaintenanceLog.remove_entry_wnv4kl")}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -421,13 +423,13 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
         >
           <DialogHeader>
             <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              Log Maintenance — {humidorName}
+              {t("auto.components_cigars_HumidorMaintenanceLog.log_maintenance_l5i5r2")} {humidorName}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4 mt-2">
             <div>
-              <label style={labelStyle}>Event Type *</label>
+              <label style={labelStyle}>{t("auto.components_cigars_HumidorMaintenanceLog.event_type_9k5nwz")}</label>
               <Select value={form.event_type} onValueChange={set('event_type')}>
                 <SelectTrigger style={{ ...inputStyle, color: '#F5F1E7' }}>
                   <SelectValue />
@@ -443,13 +445,13 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
             </div>
 
             <div>
-              <label style={labelStyle}>Date *</label>
+              <label style={labelStyle}>{t("auto.components_cigars_HumidorMaintenanceLog.date_1c62mv")}</label>
               <Input type="date" value={form.date} onChange={set('date')} required style={inputStyle} />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label style={labelStyle}>Humidity Reading (%)</label>
+                <label style={labelStyle}>{t("auto.components_cigars_HumidorMaintenanceLog.humidity_reading_4881wi")}</label>
                 <Input
                   type="number"
                   step="0.1"
@@ -462,7 +464,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
                 />
               </div>
               <div>
-                <label style={labelStyle}>Temperature (°F)</label>
+                <label style={labelStyle}>{t("auto.components_cigars_HumidorMaintenanceLog.temperature_f_mm5q56")}</label>
                 <Input
                   type="number"
                   step="0.1"
@@ -477,16 +479,16 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
             {isAidEvent(form.event_type) && (
               <div className="space-y-3 rounded-lg p-3" style={{ background: 'rgba(180,140,75,0.06)', border: '1px solid rgba(180,140,75,0.18)' }}>
                 <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.7)' }}>
-                  Aid Details
+                  {t("auto.components_cigars_HumidorMaintenanceLog.aid_details_1q1jnn")}
                 </p>
                 <div>
-                   <label style={labelStyle}>Aid Type</label>
+                   <label style={labelStyle}>{t("auto.components_cigars_HumidorMaintenanceLog.aid_type_1wgvvs")}</label>
                    <Select value={form.aid_type || 'none'} onValueChange={(v) => setForm((f) => ({ ...f, aid_type: v === 'none' ? '' : v }))}>
                      <SelectTrigger style={{ ...inputStyle, color: form.aid_type ? '#F5F1E7' : 'rgba(224,216,200,0.4)' }}>
-                       <SelectValue placeholder="Select type" />
+                       <SelectValue placeholder={t("auto.components_cigars_HumidorMaintenanceLog.select_type_1uv635")} />
                      </SelectTrigger>
                      <SelectContent style={{ background: 'rgba(40,28,18,0.98)', border: '1px solid rgba(180,140,75,0.3)' }}>
-                       <SelectItem value="none" style={{ color: 'rgba(224,216,200,0.5)' }}>— None specified —</SelectItem>
+                       <SelectItem value="none" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("auto.components_cigars_HumidorMaintenanceLog.none_specified_2dvgjt")}</SelectItem>
                       {AID_TYPES.map((a) => (
                         <SelectItem key={a.value} value={a.value} style={{ color: '#F5F1E7' }}>{a.label}</SelectItem>
                       ))}
@@ -495,11 +497,11 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label style={labelStyle}>Brand</label>
+                    <label style={labelStyle}>{t("auto.components_cigars_HumidorMaintenanceLog.brand_3kz45o")}</label>
                     <Input value={form.aid_brand} onChange={set('aid_brand')} placeholder="e.g. Boveda" style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Specification</label>
+                    <label style={labelStyle}>{t("auto.components_cigars_HumidorMaintenanceLog.specification_bwbjwm")}</label>
                     <Input value={form.aid_specification} onChange={set('aid_specification')} placeholder="e.g. 69%, 60g" style={inputStyle} />
                   </div>
                 </div>
@@ -507,11 +509,11 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
             )}
 
             <div>
-              <label style={labelStyle}>Notes</label>
+              <label style={labelStyle}>{t("auto.components_cigars_HumidorMaintenanceLog.notes_3te9gu")}</label>
               <Textarea
                 value={form.notes}
                 onChange={set('notes')}
-                placeholder="Optional notes…"
+                placeholder={t("auto.components_cigars_HumidorMaintenanceLog.optional_notes_1xb7pj")}
                 rows={2}
                 className="resize-none"
                 style={inputStyle}
@@ -526,7 +528,7 @@ export default function HumidorMaintenanceLog({ humidorId, humidorName, onEntryL
                 onClick={() => setShowDialog(false)}
                 style={{ color: 'rgba(224,216,200,0.6)' }}
               >
-                Cancel
+                {t("auto.components_cigars_HumidorMaintenanceLog.cancel_1bin7k")}
               </Button>
               <Button
                 type="submit"

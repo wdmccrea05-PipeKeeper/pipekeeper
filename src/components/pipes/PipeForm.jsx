@@ -212,27 +212,27 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
           const newPhotos = [...(formData.stamping_photos || [])];
           newPhotos[editingPhotoIndex] = result.file_url;
           handleChange('stamping_photos', newPhotos);
-          toast.success('Stamping photo updated');
+          toast.success(t("auto.components_pipes_PipeForm.stamping_photo_updated_ahtuu1"));
         } else {
           const newPhotos = [...(formData.photos || [])];
           newPhotos[editingPhotoIndex] = result.file_url;
           handleChange('photos', newPhotos);
-          toast.success('Pipe photo updated');
+          toast.success(t("auto.components_pipes_PipeForm.pipe_photo_updated_1e76k8"));
         }
         setEditingPhotoIndex(null);
       } else {
         // Adding new photo
         if (isStamping) {
           handleChange('stamping_photos', [...(formData.stamping_photos || []), result.file_url]);
-          toast.success('Stamping photo added - click Save to persist');
+          toast.success(t("auto.components_pipes_PipeForm.stamping_photo_added_click_save_to_mz5vv7"));
         } else {
           handleChange('photos', [...(formData.photos || []), result.file_url]);
-          toast.success('Pipe photo added - click Save to persist');
+          toast.success(t("auto.components_pipes_PipeForm.pipe_photo_added_click_save_to_1um4e3"));
         }
       }
     } catch (err) {
       console.error('Upload error:', err);
-      toast.error('Photo upload failed. Please try again.');
+      toast.error(t("auto.components_pipes_PipeForm.photo_upload_failed_please_try_again_ild5ym"));
     } finally {
       setCropperImage(null);
       setCropperType(null);
@@ -337,7 +337,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       // F.1 — Empty dirty payload guard: nothing actually changed
       if (originalPipe && Object.keys(payload).length === 0) {
-        toast.info('No changes to save.');
+        toast.info(t("auto.components_pipes_PipeForm.no_changes_to_save_1fjxue"));
         setIsSubmitting(false);
         return;
       }
@@ -527,7 +527,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       {/* ===== SECTION: Pipe Identity ===== */}
       <FormSection
-        title="Identity"
+        title={t("auto.components_pipes_PipeForm.identity_1q3z8u")}
         summary={[formData.name, formData.maker].filter(Boolean).join(' · ') || undefined}
         defaultOpen={true}
       >
@@ -622,7 +622,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       {/* ===== SECTION: Geometry & Dimensions ===== */}
       <FormSection
-        title="Geometry & Measurements"
+        title={t("auto.components_pipes_PipeForm.geometry_and_measurements_r5ogy8")}
         defaultOpen={false}
       >
         <p className="text-sm text-[#E0D8C8]/70">{t("pipesExtended.pipeGeometryDesc")}</p>
@@ -698,7 +698,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       {/* ===== SECTION: Materials & Finish ===== */}
       <FormSection
-        title="Construction & Finish"
+        title={t("auto.components_pipes_PipeForm.construction_and_finish_6avedz")}
         summary={[formData.shape, formData.bowl_material].filter(Boolean).join(', ') || undefined}
         defaultOpen={false}
       >
@@ -920,7 +920,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       {/* ===== SECTION: Value & Notes ===== */}
       <FormSection
-        title="Value & Notes"
+        title={t("auto.components_pipes_PipeForm.value_and_notes_1xcj1h")}
         defaultOpen={false}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -998,7 +998,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
 
       {/* ===== SECTION: Interchangeable Bowls ===== */}
       <FormSection
-        title="Interchangeable Bowls"
+        title={t("auto.components_pipes_PipeForm.interchangeable_bowls_4mkjrc")}
         defaultOpen={false}
       >
         <p className="text-sm text-[#E0D8C8]/70">{t("formsExtended.interchangeableBowlsDesc")}</p>
@@ -1028,8 +1028,8 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* Actions */}
       {legacyEnumWarnings.length > 0 && (
         <div className="rounded-xl p-3 text-xs" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.25)', color: 'rgba(224,216,200,0.75)' }}>
-          <p className="font-semibold mb-1" style={{ color: '#D4A574' }}>Legacy field notice</p>
-          <p className="mb-1">This pipe has legacy values that are no longer in the current list. They will be preserved unless you change them:</p>
+          <p className="font-semibold mb-1" style={{ color: '#D4A574' }}>{t("auto.components_pipes_PipeForm.legacy_field_notice_lelhls")}</p>
+          <p className="mb-1">{t("auto.components_pipes_PipeForm.this_pipe_has_legacy_values_that_11m9oi")}</p>
           <ul className="list-disc list-inside space-y-0.5">
             {legacyEnumWarnings.map(({ field, value }) => (
               <li key={field}><span className="font-medium">{field}</span>: {value}</li>

@@ -629,7 +629,7 @@ function HighlightCard({
           className="text-[9px] uppercase tracking-[0.18em] font-bold select-none whitespace-nowrap"
           style={{ color: "rgba(180,140,75,0.6)" }}
         >
-          PipeKeeper
+          {t("auto.pages_Insights.pipekeeper_1dclxa")}
         </span>
         {onShare && (
           <button
@@ -864,7 +864,7 @@ function StoryCardModal({
             className="text-[10px] uppercase tracking-[0.22em] font-bold whitespace-nowrap"
             style={{ color: "rgba(180,140,75,0.7)" }}
           >
-            PipeKeeper
+            {t("auto.pages_Insights.pipekeeper_1dclxa")}
           </div>
           <div
             className="text-[9px] uppercase tracking-[0.14em] font-semibold px-2 py-0.5 rounded-full"

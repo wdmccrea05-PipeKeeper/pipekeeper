@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { TrendingUp, Users, Target, RefreshCw, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function CuratorAnalyticsDashboard() {
+  const { t } = useTranslation();
   const { isAdmin } = useCurrentUser();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
@@ -16,7 +18,7 @@ export default function CuratorAnalyticsDashboard() {
   if (!isAdmin) {
     return (
       <div className="p-8 text-center">
-        <p className="text-stone-400">Admin access required</p>
+        <p className="text-stone-400">{t("auto.pages_CuratorAnalyticsDashboard.admin_access_required_1yiv4j")}</p>
       </div>
     );
   }
@@ -42,8 +44,8 @@ export default function CuratorAnalyticsDashboard() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#E0D8C8]">Curator Analytics</h1>
-          <p className="text-sm text-[#E0D8C8]/70">Recommendation performance and user engagement</p>
+          <h1 className="text-3xl font-bold text-[#E0D8C8]">{t("auto.pages_CuratorAnalyticsDashboard.curator_analytics_3534d")}</h1>
+          <p className="text-sm text-[#E0D8C8]/70">{t("auto.pages_CuratorAnalyticsDashboard.recommendation_performance_and_user_engagement_922o49")}</p>
         </div>
         <div className="flex gap-2">
           <select
@@ -51,14 +53,14 @@ export default function CuratorAnalyticsDashboard() {
             onChange={(e) => setPeriodDays(Number(e.target.value))}
             className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-[#E0D8C8]"
           >
-            <option value={7}>Last 7 days</option>
-            <option value={14}>Last 14 days</option>
-            <option value={30}>Last 30 days</option>
-            <option value={90}>Last 90 days</option>
+            <option value={7}>{t("auto.pages_CuratorAnalyticsDashboard.last_7_days_13lolf")}</option>
+            <option value={14}>{t("auto.pages_CuratorAnalyticsDashboard.last_14_days_1hucdk")}</option>
+            <option value={30}>{t("auto.pages_CuratorAnalyticsDashboard.last_30_days_mxudgt")}</option>
+            <option value={90}>{t("auto.pages_CuratorAnalyticsDashboard.last_90_days_9123w3")}</option>
           </select>
           <Button onClick={loadAnalytics} disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-            Load Analytics
+            {t("auto.pages_CuratorAnalyticsDashboard.load_analytics_y35v2l")}
           </Button>
         </div>
       </div>
@@ -71,7 +73,7 @@ export default function CuratorAnalyticsDashboard() {
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Users className="w-4 h-4" />
-                  Active Users
+                  {t("auto.pages_CuratorAnalyticsDashboard.active_users_12la5z")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -83,7 +85,7 @@ export default function CuratorAnalyticsDashboard() {
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Target className="w-4 h-4" />
-                  Curator Sessions
+                  {t("auto.pages_CuratorAnalyticsDashboard.curator_sessions_uwjhjw")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -95,7 +97,7 @@ export default function CuratorAnalyticsDashboard() {
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
                   <TrendingUp className="w-4 h-4" />
-                  Explore Rate
+                  {t("auto.pages_CuratorAnalyticsDashboard.explore_rate_17iinu")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -107,7 +109,7 @@ export default function CuratorAnalyticsDashboard() {
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
                   <TrendingUp className="w-4 h-4" />
-                  Conversion Rate
+                  {t("auto.pages_CuratorAnalyticsDashboard.conversion_rate_1fg48h")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -119,7 +121,7 @@ export default function CuratorAnalyticsDashboard() {
           {/* Recommendation Performance */}
           <Card>
             <CardHeader>
-              <CardTitle>Recommendation Performance</CardTitle>
+              <CardTitle>{t("auto.pages_CuratorAnalyticsDashboard.recommendation_performance_1k6x5v")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -138,11 +140,11 @@ export default function CuratorAnalyticsDashboard() {
                     </div>
                     <div className="flex gap-6 text-sm">
                       <div className="text-center">
-                        <p className="text-xs text-[#E0D8C8]/60">Shown</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("auto.pages_CuratorAnalyticsDashboard.shown_3wruxg")}</p>
                         <p className="font-bold text-[#E0D8C8]">{rec.impressions}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-[#E0D8C8]/60">Explored</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("auto.pages_CuratorAnalyticsDashboard.explored_l1xp48")}</p>
                         <p className="font-bold text-emerald-400">{rec.explores}</p>
                       </div>
                       <div className="text-center">
@@ -150,7 +152,7 @@ export default function CuratorAnalyticsDashboard() {
                         <p className="font-bold text-blue-400">{rec.explore_rate}%</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-[#E0D8C8]/60">Conv</p>
+                        <p className="text-xs text-[#E0D8C8]/60">{t("auto.pages_CuratorAnalyticsDashboard.conv_yjqncr")}</p>
                         <p className="font-bold text-amber-400">{rec.conversion_rate}%</p>
                       </div>
                     </div>
@@ -167,7 +169,7 @@ export default function CuratorAnalyticsDashboard() {
           {/* User Segments */}
           <Card>
             <CardHeader>
-              <CardTitle>User Segments</CardTitle>
+              <CardTitle>{t("auto.pages_CuratorAnalyticsDashboard.user_segments_1cjmj5")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -186,7 +188,7 @@ export default function CuratorAnalyticsDashboard() {
           {/* Tier Distribution */}
           <Card>
             <CardHeader>
-              <CardTitle>Subscription Tier Distribution</CardTitle>
+              <CardTitle>{t("auto.pages_CuratorAnalyticsDashboard.subscription_tier_distribution_j2yk72")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4">
@@ -203,7 +205,7 @@ export default function CuratorAnalyticsDashboard() {
           {/* Top Engaged Users */}
           <Card>
             <CardHeader>
-              <CardTitle>Top Engaged Users (Last {periodDays} days)</CardTitle>
+              <CardTitle>{t("auto.pages_CuratorAnalyticsDashboard.top_engaged_users_last_1701n0")} {periodDays} days)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -225,7 +227,7 @@ export default function CuratorAnalyticsDashboard() {
 
       {!data && !loading && (
         <div className="text-center py-12">
-          <p className="text-[#E0D8C8]/60 mb-4">Click "Load Analytics" to view Curator performance data</p>
+          <p className="text-[#E0D8C8]/60 mb-4">{t("auto.pages_CuratorAnalyticsDashboard.click_load_analytics_to_view_curator_19izs0")}</p>
         </div>
       )}
     </div>

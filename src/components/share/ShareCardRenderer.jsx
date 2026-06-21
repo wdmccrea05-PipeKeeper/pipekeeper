@@ -21,7 +21,7 @@ export const PipeShareCard = React.forwardRef(({ pipe }, ref) => {
   return (
     <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
-        <img src={LOGO} alt="PipeKeeper" className="h-6 object-contain" />
+        <img src={LOGO} alt={t("auto.components_share_ShareCardRenderer.pipekeeper_1dclxa")} className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard")}</span>
       </div>
       {photo ? <div className="mb-6 -mx-8 -mt-2 -mb-4 relative h-64 overflow-hidden rounded-t-lg"><img src={photo} alt={pipe?.name} className="w-full h-full object-cover" /></div> : null}
@@ -53,7 +53,7 @@ export const WhiskeyShareCard = React.forwardRef(({ bottle }, ref) => {
   return (
     <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
-        <img src={LOGO} alt="CollectionKeeper" className="h-6 object-contain" />
+        <img src={LOGO} alt={t("auto.components_share_ShareCardRenderer.collectionkeeper_1ukoz8")} className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard")}</span>
       </div>
       {photo ? <div className="mb-6 -mx-8 -mt-2 -mb-4 relative h-64 overflow-hidden rounded-t-lg bg-black/10"><img src={photo} alt={bottle?.name} className="w-full h-full object-contain p-4" /></div> : null}
@@ -85,7 +85,7 @@ export const WineShareCard = React.forwardRef(({ wine }, ref) => {
   return (
     <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
-        <img src={LOGO} alt="CollectionKeeper" className="h-6 object-contain" />
+        <img src={LOGO} alt={t("auto.components_share_ShareCardRenderer.collectionkeeper_1ukoz8")} className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard")}</span>
       </div>
       {photo ? <div className="mb-6 -mx-8 -mt-2 -mb-4 relative h-64 overflow-hidden rounded-t-lg bg-black/10"><img src={photo} alt={wine?.name} className="w-full h-full object-contain p-4" /></div> : null}
@@ -117,7 +117,7 @@ export const CigarShareCard = React.forwardRef(({ cigar }, ref) => {
   return (
     <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
-        <img src={LOGO} alt="CollectionKeeper" className="h-6 object-contain" />
+        <img src={LOGO} alt={t("auto.components_share_ShareCardRenderer.collectionkeeper_1ukoz8")} className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard")}</span>
       </div>
       {photo ? <div className="mb-6 -mx-8 -mt-2 -mb-4 relative h-64 overflow-hidden rounded-t-lg bg-black/10"><img src={photo} alt={cigar?.name} className="w-full h-full object-contain p-4" /></div> : null}
@@ -147,7 +147,7 @@ export const TobaccoShareCard = React.forwardRef(({ tobacco }, ref) => {
   return (
     <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
-        <img src={LOGO} alt="PipeKeeper" className="h-6 object-contain" />
+        <img src={LOGO} alt={t("auto.components_share_ShareCardRenderer.pipekeeper_1dclxa")} className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard")}</span>
       </div>
       {photo ? <div className="mb-6 -mx-8 -mt-2 -mb-4 relative h-64 overflow-hidden rounded-t-lg bg-black/10"><img src={photo} alt={tobacco?.name} className="w-full h-full object-contain p-4" /></div> : null}

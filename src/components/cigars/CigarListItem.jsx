@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function CigarListItem({
   cigar,
@@ -27,6 +28,7 @@ export default function CigarListItem({
   isSelected = false,
   onToggleSelect,
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [imageFailed, setImageFailed] = React.useState(false);
   const { formatFromBase } = useCurrency();
@@ -111,7 +113,7 @@ export default function CigarListItem({
         </div>
         {valuation?.estimatedTotalValue > 0 && (
           <div className="mt-1 text-xs text-[#D4A574]/80">
-            Value {formatFromBase(valuation.estimatedTotalValue)}
+            {t("auto.components_cigars_CigarListItem.value_3yqnfm")} {formatFromBase(valuation.estimatedTotalValue)}
           </div>
         )}
       </div>
@@ -169,7 +171,7 @@ export default function CigarListItem({
         {typeof onQuickAction === 'function' && (
           <div className="hidden xl:flex items-center gap-1">
             <button type="button" onClick={(e) => fireQuickAction(e, 'smoked_one')} className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: 'rgba(140,107,63,0.18)', color: '#E0D8C8' }}>-1</button>
-            <button type="button" onClick={(e) => fireQuickAction(e, 'bought_more')} className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: 'rgba(76,175,130,0.18)', color: '#E0D8C8' }}>+buy</button>
+            <button type="button" onClick={(e) => fireQuickAction(e, 'bought_more')} className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: 'rgba(76,175,130,0.18)', color: '#E0D8C8' }}>{t("auto.components_cigars_CigarListItem.buy_yj7v40")}</button>
             <button type="button" onClick={(e) => fireQuickAction(e, 'toggle_shopping')} className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: cigar?.shopping_list ? 'rgba(180,140,75,0.3)' : 'rgba(255,255,255,0.08)', color: '#E0D8C8' }}>shop</button>
           </div>
         )}
@@ -184,13 +186,13 @@ export default function CigarListItem({
               }}
               className="p-1.5 rounded-lg transition-all hover:bg-[rgba(255,255,255,0.08)]"
               style={{ color: 'rgba(224,216,200,0.65)' }}
-              aria-label="Open cigar actions"
+              aria-label={t("auto.components_cigars_CigarListItem.open_cigar_actions_1un91j")}
             >
               <MoreVertical className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("auto.components_cigars_CigarListItem.quick_actions_1q0sjv")}</DropdownMenuLabel>
             <DropdownMenuItem onSelect={() => runAction('smoked_one')}>{actionLabels.smoked_one}</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => runAction('bought_more')}>{actionLabels.bought_more}</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => runAction('toggle_wishlist')}>{actionLabels.toggle_wishlist}</DropdownMenuItem>
@@ -199,12 +201,12 @@ export default function CigarListItem({
             <DropdownMenuItem onSelect={() => runAction('toggle_not_for_me')}>{actionLabels.toggle_not_for_me}</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => runAction('toggle_favorite')}>{actionLabels.toggle_favorite}</DropdownMenuItem>
             {typeof onAssignHumidor === 'function' && (
-              <DropdownMenuItem onSelect={() => onAssignHumidor(cigar)}>Assign Humidor…</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onAssignHumidor(cigar)}>{t("auto.components_cigars_CigarListItem.assign_humidor_s79oo")}</DropdownMenuItem>
             )}
             {Array.isArray(humidors) && humidors.length > 0 && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>Assign To</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("auto.components_cigars_CigarListItem.assign_to_fkr8a5")}</DropdownMenuLabel>
                 <DropdownMenuItem onSelect={() => runAction('unassign_humidor')}>{actionLabels.unassign_humidor}</DropdownMenuItem>
                 {humidors.slice(0, 6).map((humidor) => (
                   <DropdownMenuItem key={humidor.id} onSelect={() => runAction({ type: 'assign_humidor', humidorId: humidor.id })}>
@@ -215,10 +217,10 @@ export default function CigarListItem({
             )}
             {(typeof onEdit === 'function' || typeof onDelete === 'function') && <DropdownMenuSeparator />}
             {typeof onEdit === 'function' && (
-              <DropdownMenuItem onSelect={() => onEdit(cigar)}>Edit</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onEdit(cigar)}>{t("auto.components_cigars_CigarListItem.edit_yjrxfv")}</DropdownMenuItem>
             )}
             {typeof onDelete === 'function' && (
-              <DropdownMenuItem onSelect={() => onDelete(cigar)} className="text-red-500 focus:text-red-500">Delete</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onDelete(cigar)} className="text-red-500 focus:text-red-500">{t("auto.components_cigars_CigarListItem.delete_1c8q7h")}</DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>

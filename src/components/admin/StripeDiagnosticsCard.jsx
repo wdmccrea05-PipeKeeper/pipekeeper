@@ -165,7 +165,7 @@ export default function StripeDiagnosticsCard() {
       <CardContent className="space-y-4">
         {/* Deployment Banner */}
         <div className="bg-blue-50 border-2 border-blue-300 p-4 rounded-lg">
-          <div className="font-bold text-blue-900 mb-2">🔄 After Updating STRIPE_SECRET_KEY:</div>
+          <div className="font-bold text-blue-900 mb-2">{t("auto.components_admin_StripeDiagnosticsCard.after_updating_stripe_secret_key_119mls")}</div>
           <div className="text-sm text-blue-800 space-y-1">
             <div>1. Click "Full Status Check" below to verify current state</div>
             <div>{t("admin.fixRefreshStep")}</div>
@@ -254,14 +254,14 @@ export default function StripeDiagnosticsCard() {
 
                 {deployStatus.deployment?.recommendation && (
                   <div className="p-3 bg-white border border-gray-300 rounded text-sm">
-                    <div className="font-bold mb-1">💡 Recommendation:</div>
+                    <div className="font-bold mb-1">{t("auto.components_admin_StripeDiagnosticsCard.recommendation_wpsxma")}</div>
                     <div>{deployStatus.deployment.recommendation}</div>
                   </div>
                 )}
 
                 {deployStatus.instructions && (
                   <div className="p-3 bg-yellow-50 border border-yellow-300 rounded text-xs space-y-1">
-                    <div className="font-bold">🔧 Fix Steps:</div>
+                    <div className="font-bold">{t("auto.components_admin_StripeDiagnosticsCard.fix_steps_1jryw5")}</div>
                     {Object.entries(deployStatus.instructions).map(([key, value]) => (
                       <div key={key} className="ml-2">• {value}</div>
                     ))}
@@ -277,7 +277,7 @@ export default function StripeDiagnosticsCard() {
             <Activity className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-2">
-                <div className="font-bold text-lg">🔑 Runtime Stripe Key (LIVE)</div>
+                <div className="font-bold text-lg">{t("auto.components_admin_StripeDiagnosticsCard.runtime_stripe_key_live_1z0zv0")}</div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-gray-600">{t("admin.prefixLabel")}</span>{" "}
@@ -317,24 +317,24 @@ export default function StripeDiagnosticsCard() {
                 )}
                 {(!runtimeKey.ok || runtimeKey.prefix !== "sk" || !runtimeKey.present || runtimeKey.looksExpired) && (
                   <div className="text-sm font-bold text-red-900 mt-3 bg-red-50 border-2 border-red-400 p-3 rounded">
-                    <div className="mb-2">❌ BLOCKING ISSUE DETECTED:</div>
-                    {!runtimeKey.present && <div>• STRIPE_SECRET_KEY is MISSING in {runtimeKey.environment || "runtime"} environment</div>}
+                    <div className="mb-2">{t("auto.components_admin_StripeDiagnosticsCard.blocking_issue_detected_ibqh33")}</div>
+                    {!runtimeKey.present && <div>{t("auto.components_admin_StripeDiagnosticsCard.stripe_secret_key_is_missing_in_44snnc")} {runtimeKey.environment || "runtime"} environment</div>}
                     {runtimeKey.present && runtimeKey.prefix !== "sk" && (
-                      <div>• Invalid key type: Expected <code className="bg-red-200 px-1 font-mono">sk_</code>, got: <code className="bg-red-200 px-1 font-mono">{runtimeKey.prefix}</code></div>
+                      <div>{t("auto.components_admin_StripeDiagnosticsCard.invalid_key_type_expected_bi8oit")} <code className="bg-red-200 px-1 font-mono">sk_</code>{t("auto.components_admin_StripeDiagnosticsCard.got_vcpcdx")} <code className="bg-red-200 px-1 font-mono">{runtimeKey.prefix}</code></div>
                     )}
                     {runtimeKey.looksExpired && (
-                      <div>• Key appears EXPIRED or REVOKED (contains "expired"/"revoked" in value)</div>
+                      <div>{t("auto.components_admin_StripeDiagnosticsCard.key_appears_expired_or_revoked_contains_7qcx0a")}</div>
                     )}
                     <div className="mt-3 text-xs bg-yellow-50 border border-yellow-300 p-2 rounded space-y-2">
-                      <div className="font-bold">🔧 IMMEDIATE FIX ({runtimeKey.environment === "live" ? "LIVE" : "PREVIEW"} RUNTIME):</div>
+                      <div className="font-bold">{t("auto.components_admin_StripeDiagnosticsCard.immediate_fix_1vky15")}{runtimeKey.environment === "live" ? "LIVE" : "PREVIEW"} {t("auto.components_admin_StripeDiagnosticsCard.runtime_1uyqnn")}</div>
                       <div className="space-y-1 ml-2">
-                        <div>Step 1: Verify Dashboard → Settings → Secrets shows new <code className="bg-gray-200 px-1">sk_live_…</code> key</div>
+                        <div>{t("auto.components_admin_StripeDiagnosticsCard.step_1_verify_dashboard_settings_secrets_1twgp5")} <code className="bg-gray-200 px-1">sk_live_…</code> key</div>
                         <div>{t("admin.fixRefreshStep")}</div>
                         <div>{t("admin.fixCheckStep")}</div>
-                        <div className="text-red-700 font-bold mt-1">⚠️ If still failing after Force Refresh:</div>
-                        <div className="ml-2">→ Base44 backend functions need manual redeploy</div>
-                        <div className="ml-2">→ Go to Base44 Dashboard → Code → Functions</div>
-                        <div className="ml-2">→ Trigger "Redeploy All Functions" or publish a code change</div>
+                        <div className="text-red-700 font-bold mt-1">{t("auto.components_admin_StripeDiagnosticsCard.if_still_failing_after_force_refresh_1guak6")}</div>
+                        <div className="ml-2">{t("auto.components_admin_StripeDiagnosticsCard.base44_backend_functions_need_manual_redeploy_11u68e")}</div>
+                        <div className="ml-2">{t("auto.components_admin_StripeDiagnosticsCard.go_to_base44_dashboard_code_functions_fc7zn")}</div>
+                        <div className="ml-2">{t("auto.components_admin_StripeDiagnosticsCard.trigger_redeploy_all_functions_or_publish_1rbbku")}</div>
                       </div>
                     </div>
                   </div>
@@ -342,12 +342,12 @@ export default function StripeDiagnosticsCard() {
                 
                 {runtimeKey.ok && runtimeKey.present && runtimeKey.prefix === "sk" && !runtimeKey.looksExpired && (
                   <div className="text-sm font-bold text-green-900 mt-3 bg-green-50 border-2 border-green-400 p-3 rounded">
-                    ✅ Runtime key validated - {runtimeKey.environment === "live" ? "LIVE" : "PREVIEW"} environment OK
+                    {t("auto.components_admin_StripeDiagnosticsCard.runtime_key_validated_gkq3v6")} {runtimeKey.environment === "live" ? "LIVE" : "PREVIEW"} environment OK
                   </div>
                 )}
                 {runtimeKey.ok && runtimeKey.prefix === "sk" && runtimeKey.present && (
                   <div className="text-sm font-semibold text-green-900 mt-2 bg-green-50 border border-green-400 p-2 rounded">
-                    ✅ Runtime key is valid and properly loaded
+                    {t("auto.components_admin_StripeDiagnosticsCard.runtime_key_is_valid_and_properly_1ak53y")}
                   </div>
                 )}
               </div>

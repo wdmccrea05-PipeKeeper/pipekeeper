@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Gift, Star, CheckCircle, Clock, AlertCircle, Smartphone, CreditCard, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const STATUS_META = {
   pending:                  { label: 'Processing',           color: '#D4A574', icon: Clock },
@@ -71,29 +72,31 @@ function rewardBody(reward) {
 }
 
 function ProviderBadge({ provider }) {
+  const { t } = useTranslation();
   if (provider === 'stripe') {
     return (
       <span className="flex items-center gap-1 text-xs text-[#E0D8C8]/50">
-        <CreditCard className="w-3 h-3" /> Stripe
+        <CreditCard className="w-3 h-3" /> {t("auto.components_referral_ReferralRewardCards.stripe_1m8yaz")}
       </span>
     );
   }
   if (provider === 'ios') {
     return (
       <span className="flex items-center gap-1 text-xs text-[#E0D8C8]/50">
-        <Smartphone className="w-3 h-3" /> App Store
+        <Smartphone className="w-3 h-3" /> {t("auto.components_referral_ReferralRewardCards.app_store_1qd0tt")}
       </span>
     );
   }
   // Free user referral-earned access
   return (
     <span className="flex items-center gap-1 text-xs text-emerald-400/70">
-      <Zap className="w-3 h-3" /> Earned Access
+      <Zap className="w-3 h-3" /> {t("auto.components_referral_ReferralRewardCards.earned_access_1xitgt")}
     </span>
   );
 }
 
 function RewardCard({ reward, onRedeemed }) {
+  const { t } = useTranslation();
   const [redeeming, setRedeeming] = useState(false);
   const meta = STATUS_META[reward.status] || STATUS_META.pending;
   const StatusIcon = meta.icon;
@@ -117,7 +120,7 @@ function RewardCard({ reward, onRedeemed }) {
           rewardId: reward.id,
           offerIdentifier,   // pass resolved identifier to native layer
         });
-        toast.info('Opening App Store redemption…');
+        toast.info(t("auto.components_referral_ReferralRewardCards.opening_app_store_redemption_u5s1s0"));
         // UI will refresh when native layer calls back via redeemIosReferralReward
       } else {
         // Web preview fallback — cannot complete a real StoreKit redemption.
@@ -129,7 +132,7 @@ function RewardCard({ reward, onRedeemed }) {
         );
       }
     } catch (err) {
-      toast.error('Redemption failed. Please try again.');
+      toast.error(t("auto.components_referral_ReferralRewardCards.redemption_failed_please_try_again_9m26vq"));
     } finally {
       setRedeeming(false);
     }
@@ -194,7 +197,7 @@ function RewardCard({ reward, onRedeemed }) {
       {/* Expiry notice for iOS */}
       {reward.billing_provider === 'ios' && reward.expires_at && reward.status === 'awaiting_user_redemption' && (
         <p className="text-xs text-[#E0D8C8]/35">
-          Expires {new Date(reward.expires_at).toLocaleDateString()}
+          {t("auto.components_referral_ReferralRewardCards.expires_1r22c1")} {new Date(reward.expires_at).toLocaleDateString()}
         </p>
       )}
 
@@ -210,10 +213,11 @@ function RewardCard({ reward, onRedeemed }) {
 }
 
 export default function ReferralRewardCards({ rewards, earnedAccess = [], onRefresh }) {
+  const { t } = useTranslation();
   if (!rewards || rewards.length === 0) {
     return (
       <p className="text-xs text-[#E0D8C8]/40 text-center py-4">
-        No rewards yet. Qualify a referral to earn free time.
+        {t("auto.components_referral_ReferralRewardCards.no_rewards_yet_qualify_a_referral_387ckx")}
       </p>
     );
   }

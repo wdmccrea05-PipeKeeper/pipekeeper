@@ -11,6 +11,7 @@ import { uploadUserPhoto } from '@/lib/images/imageUploadService';
 import { linkImageToRecord } from '@/lib/images/imageRecordLinkService';
 import { upsertLibraryImageEntry } from '@/lib/images/imageLibraryService';
 import { normalizeBottleKey, normalizeBlendKey, normalizePipeKey } from '@/lib/images/imageNormalization';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const ENTITIES = {
   blend: 'TobaccoBlend',
@@ -248,6 +249,7 @@ function SuggestionThumb({ result }) {
  * Community Match, Reference Image) before the external pipeline runs.
  */
 function InternalLibraryMatches({ itemType, data, onSelectImage }) {
+  const { t } = useTranslation();
   const [loading, setLoading]     = useState(false);
   const [fetched, setFetched]     = useState(false);
   const [matches, setMatches]     = useState([]);
@@ -280,7 +282,7 @@ function InternalLibraryMatches({ itemType, data, onSelectImage }) {
     return (
       <div className="flex items-center gap-2 py-1" style={{ color: 'rgba(224,216,200,0.4)' }}>
         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-        <span className="text-xs">Searching library…</span>
+        <span className="text-xs">{t("auto.components_addflow_AddFlowManualImages.searching_library_1fv5ip")}</span>
       </div>
     );
   }
@@ -290,7 +292,7 @@ function InternalLibraryMatches({ itemType, data, onSelectImage }) {
   if (matches.length === 0) {
     return (
       <p className="text-xs" style={{ color: 'rgba(224,216,200,0.35)' }}>
-        No library matches found yet. Upload your own photo or save and add one later.
+        {t("auto.components_addflow_AddFlowManualImages.no_library_matches_found_yet_upload_1hszm2")}
       </p>
     );
   }
@@ -298,7 +300,7 @@ function InternalLibraryMatches({ itemType, data, onSelectImage }) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs font-semibold" style={{ color: 'rgba(212,165,116,0.85)' }}>
-        Library Matches
+        {t("auto.components_addflow_AddFlowManualImages.library_matches_12x80m")}
       </p>
       {matches.map((m) => {
         const chipStyle = CONFIDENCE_CHIP_STYLES[m.confidenceLabel] || CONFIDENCE_CHIP_STYLES['Reference'];
@@ -371,7 +373,7 @@ function InternalLibraryMatches({ itemType, data, onSelectImage }) {
               }}
             >
               <Check className="w-3 h-3 mr-1" />
-              Use This
+              {t("auto.components_addflow_AddFlowManualImages.use_this_v2wf9m")}
             </Button>
           </div>
         );
@@ -409,6 +411,7 @@ function LibraryThumb({ imageUrl, title }) {
  * Only fetches when `active` is true (i.e. the user has explicitly opened the panel).
  */
 function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, active }) {
+  const { t } = useTranslation();
   const [loading, setLoading]   = useState(false);
   const [fetched, setFetched]   = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -480,7 +483,7 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, 
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>
-            Reference Matches from the Web
+            {t("auto.components_addflow_AddFlowManualImages.reference_matches_from_the_web_1ig157")}
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
             {suggestions.length > 0
@@ -497,7 +500,7 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, 
             className="text-xs px-2.5 py-1 rounded-full hover:bg-white/10 transition-colors"
             style={{ color: 'rgba(180,140,75,0.8)', border: '1px solid rgba(180,140,75,0.2)' }}
           >
-            Search Again
+            {t("auto.components_addflow_AddFlowManualImages.search_again_d2ni4b")}
           </button>
         )}
       </div>
@@ -512,7 +515,7 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, 
       {!loading && fetched && suggestions.length === 0 && (
         <div className="flex flex-col gap-2 py-2">
           <p className="text-xs" style={{ color: 'rgba(224,216,200,0.35)' }}>
-            No trusted matches found.
+            {t("auto.components_addflow_AddFlowManualImages.no_trusted_matches_found_8bueos")}
           </p>
           <div className="flex flex-wrap gap-2 mt-1">
             <button
@@ -521,7 +524,7 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, 
               className="text-xs px-3 py-1.5 rounded-full transition-colors hover:bg-white/10"
               style={{ color: 'rgba(180,140,75,0.8)', border: '1px solid rgba(180,140,75,0.2)' }}
             >
-              Search Again
+              {t("auto.components_addflow_AddFlowManualImages.search_again_d2ni4b")}
             </button>
             <button
               type="button"
@@ -529,7 +532,7 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, 
               className="text-xs px-3 py-1.5 rounded-full transition-colors hover:bg-white/10"
               style={{ color: 'rgba(224,216,200,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}
             >
-              Upload your own photo
+              {t("auto.components_addflow_AddFlowManualImages.upload_your_own_photo_1cbwmt")}
             </button>
           </div>
         </div>
@@ -609,7 +612,7 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, 
 
                   {!isImageReady && (
                     <p className="text-[10px] mt-0.5" style={{ color: 'rgba(224,216,200,0.3)' }}>
-                      No verified image preview available
+                      {t("auto.components_addflow_AddFlowManualImages.no_verified_image_preview_available_21zx12")}
                     </p>
                   )}
 
@@ -708,6 +711,7 @@ function ImageSuggestions({ itemType, data, onSelectImage, onRequestFileUpload, 
 }
 
 function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState(initialQuery);
   const [logos, setLogos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -741,7 +745,7 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
       style={{ border: '1px solid rgba(180,140,75,0.25)', background: 'rgba(20,13,8,0.95)' }}
     >
       <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(180,140,75,0.12)' }}>
-        <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>Browse Logo Library</p>
+        <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>{t("auto.components_addflow_AddFlowManualImages.browse_logo_library_1bv0bb")}</p>
         <button type="button" onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10">
           <X className="w-3.5 h-3.5" style={{ color: 'rgba(224,216,200,0.6)' }} />
         </button>
@@ -752,7 +756,7 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          placeholder="Search brand name…"
+          placeholder={t("auto.components_addflow_AddFlowManualImages.search_brand_name_q74p5")}
           className="flex-1 text-sm"
           style={{
             background: 'rgba(20,13,8,0.7)',
@@ -846,6 +850,7 @@ async function createCellarLogsForBlend(blendId, data, blendName) {
 }
 
 export default function AddFlowManualImages({ itemType, typeLabel, data, onBack, onCreated }) {
+  const { t } = useTranslation();
   const [imageUrl, setImageUrl] = useState(
     itemType === 'blend' ? data.logo || '' : (itemType === 'pipe' || itemType === 'cigar' || itemType === 'wine') ? data.photos?.[0] || '' : data.photo || ''
   );
@@ -887,7 +892,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         toast.error(result.error || 'Image upload failed');
       }
     } catch {
-      toast.error('Image upload failed');
+      toast.error(t("auto.components_addflow_AddFlowManualImages.image_upload_failed_6plnte"));
     } finally {
       setUploading(false);
     }
@@ -1042,10 +1047,10 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         </button>
         <div className="min-w-0">
           <h2 className="text-lg font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Add Photo
+            {t("auto.components_addflow_AddFlowManualImages.add_photo_dsgnfc")}
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
-            Step 4 of 4 — Optional
+            {t("auto.components_addflow_AddFlowManualImages.step_4_of_4_optional_4115fc")}
           </p>
         </div>
       </div>
@@ -1054,7 +1059,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
       <div className="px-6 py-6 flex flex-col gap-5">
         <p className="text-sm" style={{ color: 'rgba(224,216,200,0.55)' }}>
-          Add a photo now, or skip and add one later from the record.
+          {t("auto.components_addflow_AddFlowManualImages.add_a_photo_now_or_skip_15ymbx")}
         </p>
 
         {imageUrl ? (
@@ -1062,7 +1067,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             className="relative rounded-2xl overflow-hidden"
             style={{ border: '1px solid rgba(180,140,75,0.25)', height: 240, background: 'rgba(0,0,0,0.2)' }}
           >
-            <img src={imageUrl} alt="Preview" className="w-full h-full object-contain" />
+            <img src={imageUrl} alt={t("auto.components_addflow_AddFlowManualImages.preview_9saip3")} className="w-full h-full object-contain" />
             <button
               onClick={() => { setImageUrl(''); setImageMeta(null); }}
               className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
@@ -1091,7 +1096,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             {uploading ? (
               <div className="flex flex-col items-center gap-2">
                 <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-sm">Uploading...</span>
+                <span className="text-sm">{t("auto.components_addflow_AddFlowManualImages.uploading_1g68in")}</span>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
@@ -1115,7 +1120,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
               className="w-4 h-4 rounded"
             />
             <label htmlFor="pipe-reference-toggle" className="text-xs cursor-pointer" style={{ color: 'rgba(167,139,250,0.85)' }}>
-              Save as Reference Image — reusable for this pipe model
+              {t("auto.components_addflow_AddFlowManualImages.save_as_reference_image_reusable_for_rhh5lr")}
             </label>
           </div>
         )}
@@ -1131,7 +1136,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
             }}
           >
             <BookImage className="w-4 h-4 mr-2" />
-            Browse Logo Library
+            {t("auto.components_addflow_AddFlowManualImages.browse_logo_library_1bv0bb")}
           </Button>
         )}
 
@@ -1208,7 +1213,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
           }}
         >
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-          Save {typeLabel}
+          {t("auto.components_addflow_AddFlowManualImages.save_yk2ng4")} {typeLabel}
         </Button>
       </div>
     </div>

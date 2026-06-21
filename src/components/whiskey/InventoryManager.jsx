@@ -11,6 +11,7 @@ import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { QUERY_KEYS } from '@/lib/queryKeys';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const STATUS_CONFIG = {
   reserve: {
@@ -50,6 +51,7 @@ const FILL_MULTIPLIER = {
 };
 
 function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [status, setStatus] = useState(unit.status || 'drinking');
   const [fillLevel, setFillLevel] = useState(unit.fill_level || 'Full');
@@ -83,9 +85,9 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="reserve">Reserve</SelectItem>
-                  <SelectItem value="drinking">Drinking Stock</SelectItem>
-                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="reserve">{t("auto.components_whiskey_InventoryManager.reserve_18cqag")}</SelectItem>
+                  <SelectItem value="drinking">{t("auto.components_whiskey_InventoryManager.drinking_stock_1jnzr0")}</SelectItem>
+                  <SelectItem value="open">{t("auto.components_whiskey_InventoryManager.open_yjzwpj")}</SelectItem>
                 </SelectContent>
               </Select>
               {status === 'open' && (
@@ -99,8 +101,8 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
                 </Select>
               )}
               <div className="flex gap-2">
-                <Button size="sm" className="h-7 text-xs" onClick={handleSave}>Save</Button>
-                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setEditing(false)}>Cancel</Button>
+                <Button size="sm" className="h-7 text-xs" onClick={handleSave}>{t("auto.components_whiskey_InventoryManager.save_yk2ng4")}</Button>
+                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setEditing(false)}>{t("auto.components_whiskey_InventoryManager.cancel_1bin7k")}</Button>
               </div>
             </div>
           ) : (
@@ -111,7 +113,7 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
               )}
               {unit.purchase_date && (
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                  Purchased {new Date(unit.purchase_date).toLocaleDateString()}
+                  {t("auto.components_whiskey_InventoryManager.purchased_120nfe")} {new Date(unit.purchase_date).toLocaleDateString()}
                 </p>
               )}
             </div>
@@ -123,7 +125,7 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
           <span className="text-xs font-semibold" style={{ color: 'rgba(212,175,55,0.8)' }}>{formatFromBase(unitValue)}</span>
         )}
         {!editing && (
-          <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setEditing(true)}>Edit</Button>
+          <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setEditing(true)}>{t("auto.components_whiskey_InventoryManager.edit_yjrxfv")}</Button>
         )}
         <button
           onClick={() => onDelete(unit.id)}
@@ -137,6 +139,7 @@ function UnitRow({ unit, marketValue, onDelete, onUpdate }) {
 }
 
 export default function InventoryManager({ bottle, onClose }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
   const { formatFromBase } = useCurrency();
@@ -183,7 +186,7 @@ export default function InventoryManager({ bottle, onClose }) {
       toast.success(qty === 1 ? 'Bottle unit added' : `${qty} bottle units added`);
     } catch (e) {
       console.error('[InventoryManager] failed to add units', e);
-      toast.error('Failed to add bottle unit. Please try again.');
+      toast.error(t("auto.components_whiskey_InventoryManager.failed_to_add_bottle_unit_please_1wjdbp"));
     } finally {
       setAdding(false);
     }
@@ -193,10 +196,10 @@ export default function InventoryManager({ bottle, onClose }) {
     try {
       await base44.entities.WhiskeyInventoryUnit.delete(unitId);
       invalidate();
-      toast.success('Bottle unit removed');
+      toast.success(t("auto.components_whiskey_InventoryManager.bottle_unit_removed_bjto69"));
     } catch (e) {
       console.error('[InventoryManager] failed to delete unit', e);
-      toast.error('Failed to remove bottle unit. Please try again.');
+      toast.error(t("auto.components_whiskey_InventoryManager.failed_to_remove_bottle_unit_please_1jczj9"));
     }
   };
 
@@ -204,10 +207,10 @@ export default function InventoryManager({ bottle, onClose }) {
     try {
       await base44.entities.WhiskeyInventoryUnit.update(unitId, data);
       invalidate();
-      toast.success('Updated');
+      toast.success(t("auto.components_whiskey_InventoryManager.updated_187ypr"));
     } catch (e) {
       console.error('[InventoryManager] failed to update unit', e);
-      toast.error('Failed to update bottle unit. Please try again.');
+      toast.error(t("auto.components_whiskey_InventoryManager.failed_to_update_bottle_unit_please_1bm4qm"));
     }
   };
 
@@ -236,7 +239,7 @@ export default function InventoryManager({ bottle, onClose }) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-bold" style={{ color: '#F5F1E7' }}>Inventory</h3>
+          <h3 className="text-lg font-bold" style={{ color: '#F5F1E7' }}>{t("auto.components_whiskey_InventoryManager.inventory_808our")}</h3>
           <p className="text-sm mt-0.5" style={{ color: 'rgba(224,216,200,0.6)' }}>{bottle.name}</p>
         </div>
         {onClose && (
@@ -269,7 +272,7 @@ export default function InventoryManager({ bottle, onClose }) {
           className="rounded-lg px-4 py-3 flex items-center justify-between"
           style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}
         >
-          <span className="text-sm" style={{ color: 'rgba(212,175,55,0.8)' }}>Inventory Value</span>
+          <span className="text-sm" style={{ color: 'rgba(212,175,55,0.8)' }}>{t("auto.components_whiskey_InventoryManager.inventory_value_4q8j74")}</span>
           <span className="text-lg font-bold" style={{ color: '#D4AF37' }}>{formatFromBase(Math.round(totalValue))}</span>
         </div>
       )}
@@ -277,11 +280,11 @@ export default function InventoryManager({ bottle, onClose }) {
       {/* Units list */}
       <div className="space-y-2">
         {isLoading && (
-          <p className="text-sm text-center py-4" style={{ color: 'rgba(224,216,200,0.4)' }}>Loading...</p>
+          <p className="text-sm text-center py-4" style={{ color: 'rgba(224,216,200,0.4)' }}>{t("auto.components_whiskey_InventoryManager.loading_z2ifzh")}</p>
         )}
         {!isLoading && units.length === 0 && (
           <p className="text-sm text-center py-4" style={{ color: 'rgba(224,216,200,0.4)' }}>
-            No bottle units yet. Add your first below.
+            {t("auto.components_whiskey_InventoryManager.no_bottle_units_yet_add_your_12lw9w")}
           </p>
         )}
         {units.map(unit => (
@@ -300,10 +303,10 @@ export default function InventoryManager({ bottle, onClose }) {
         className="rounded-lg p-4 space-y-3"
         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(120,90,65,0.2)' }}
       >
-        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.7)' }}>Add Bottle Unit</p>
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.7)' }}>{t("auto.components_whiskey_InventoryManager.add_bottle_unit_1dqaw6")}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Quantity</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_whiskey_InventoryManager.quantity_nmzd9g")}</label>
             <Input
               type="number"
               min="1"
@@ -315,21 +318,21 @@ export default function InventoryManager({ bottle, onClose }) {
             />
           </div>
           <div>
-            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Status</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_whiskey_InventoryManager.status_1m8lgy")}</label>
             <Select value={addStatus} onValueChange={setAddStatus}>
               <SelectTrigger className="text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="reserve">Reserve (Collection)</SelectItem>
-                <SelectItem value="drinking">Drinking Stock (Unopened)</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="reserve">{t("auto.components_whiskey_InventoryManager.reserve_collection_8qax4u")}</SelectItem>
+                <SelectItem value="drinking">{t("auto.components_whiskey_InventoryManager.drinking_stock_unopened_xmnqvi")}</SelectItem>
+                <SelectItem value="open">{t("auto.components_whiskey_InventoryManager.open_yjzwpj")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           {addStatus === 'open' && (
             <div>
-              <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Fill Level</label>
+              <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_whiskey_InventoryManager.fill_level_136bpk")}</label>
               <Select value={addFill} onValueChange={setAddFill}>
                 <SelectTrigger className="text-sm">
                   <SelectValue />
@@ -341,7 +344,7 @@ export default function InventoryManager({ bottle, onClose }) {
             </div>
           )}
           <div>
-            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Purchase Price ($)</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_whiskey_InventoryManager.purchase_price_1nb1ld")}</label>
             <Input
               type="number"
               placeholder="optional"
@@ -351,7 +354,7 @@ export default function InventoryManager({ bottle, onClose }) {
             />
           </div>
           <div>
-            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>Purchase Date</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_whiskey_InventoryManager.purchase_date_1s5dgs")}</label>
             <Input
               type="date"
               value={addDate}

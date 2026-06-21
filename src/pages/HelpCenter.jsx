@@ -33,9 +33,9 @@ export default function HelpCenter() {
               <Mail className="w-5 h-5" style={{ color: "#d4857a" }} />
             </div>
             <div>
-              <div className="text-base font-semibold text-[#F5F1E7]">Contact Support</div>
+              <div className="text-base font-semibold text-[#F5F1E7]">{t("auto.pages_HelpCenter.contact_support_1iw7ql")}</div>
               <div className="text-sm text-[#D7C9B2]/75 mt-0.5">
-                Questions, bugs, billing issues, or account help —{" "}
+                {t("auto.pages_HelpCenter.questions_bugs_billing_issues_or_account_1dl7bi")}{" "}
                 <a
                   href="mailto:admin@pipekeeperapp.com"
                   className="underline font-medium hover:opacity-80 transition-opacity"
@@ -52,7 +52,7 @@ export default function HelpCenter() {
             style={{ background: "rgba(163,92,92,0.85)", color: "#fff", border: "1px solid rgba(163,92,92,0.5)" }}
           >
             <ExternalLink className="w-4 h-4" />
-            Support Page
+            {t("auto.pages_HelpCenter.support_page_1cju66")}
           </a>
         </div>
 

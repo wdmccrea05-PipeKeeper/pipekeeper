@@ -340,7 +340,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name?.trim()) {
-      toast.error('Cigar name is required');
+      toast.error(t("auto.components_cigars_CigarForm.cigar_name_is_required_15jhx3"));
       return;
     }
     setSaving(true);
@@ -354,18 +354,18 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           ...payload,
           created_by: cigar.created_by || user?.email,
         });
-        toast.success('Cigar updated');
+        toast.success(t("auto.components_cigars_CigarForm.cigar_updated_72ztzm"));
       } else {
         result = await base44.entities.Cigar.create({
           ...payload,
           created_by: user?.email,
         });
-        toast.success('Cigar added to collection');
+        toast.success(t("auto.components_cigars_CigarForm.cigar_added_to_collection_1dcg8l"));
       }
       if (typeof onSubmit === 'function') onSubmit(result || payload);
     } catch (err) {
       console.error('[CigarForm] save error:', err);
-      toast.error('Failed to save cigar');
+      toast.error(t("auto.components_cigars_CigarForm.failed_to_save_cigar_z0egle"));
     } finally {
       setSaving(false);
     }
@@ -385,7 +385,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {/* Section 1: Identity — open by default */}
-      <FormSection title="Identity" summary={identitySummary} defaultOpen>
+      <FormSection title={t("auto.components_cigars_CigarForm.identity_1q3z8u")} summary={identitySummary} defaultOpen>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Name *">
             <StyledInput value={form.name} onChange={set('name')} placeholder="e.g. Serie V" />
@@ -403,7 +403,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       </FormSection>
 
       {/* Section 2: Construction */}
-      <FormSection title="Construction" summary={constructionSummary}>
+      <FormSection title={t("auto.components_cigars_CigarForm.construction_xoosxc")} summary={constructionSummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Wrapper">
             <StyledInput value={form.wrapper} onChange={set('wrapper')} placeholder="e.g. Maduro" />
@@ -432,10 +432,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       </FormSection>
 
       {/* Section 3: Profile */}
-      <FormSection title="Profile" summary={profileSummary}>
+      <FormSection title={t("auto.components_cigars_CigarForm.profile_9z0dti")} summary={profileSummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Body">
-            <StyledSelect value={form.body} onValueChange={set('body')} placeholder="Select body">
+            <StyledSelect value={form.body} onValueChange={set('body')} placeholder={t("auto.components_cigars_CigarForm.select_body_1uurzb")}>
               {['mild', 'mild_medium', 'medium', 'medium_full', 'full'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace('_', '-').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -444,7 +444,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             </StyledSelect>
           </FormField>
           <FormField label="Strength">
-            <StyledSelect value={form.strength} onValueChange={set('strength')} placeholder="Select strength">
+            <StyledSelect value={form.strength} onValueChange={set('strength')} placeholder={t("auto.components_cigars_CigarForm.select_strength_1hlxzn")}>
               {['mild', 'mild_medium', 'medium', 'medium_full', 'full'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace('_', '-').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -453,7 +453,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             </StyledSelect>
           </FormField>
           <FormField label="Production Status">
-            <StyledSelect value={form.production_status} onValueChange={set('production_status')} placeholder="Select status">
+            <StyledSelect value={form.production_status} onValueChange={set('production_status')} placeholder={t("auto.components_cigars_CigarForm.select_status_9fjrft")}>
               {['discontinued', 'limited', 'regular_production', 'seasonal', 'unknown'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -462,7 +462,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             </StyledSelect>
           </FormField>
           <FormField label="Release Type">
-            <StyledSelect value={form.release_type} onValueChange={set('release_type')} placeholder="Select release type">
+            <StyledSelect value={form.release_type} onValueChange={set('release_type')} placeholder={t("auto.components_cigars_CigarForm.select_release_type_ih1ag8")}>
               {['annual_release', 'collaboration', 'limited_edition', 'regular', 'special_release'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -475,12 +475,12 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           label="Flavor Notes"
           values={form.flavor_notes}
           onChange={(val) => setForm((f) => ({ ...f, flavor_notes: val }))}
-          placeholder="Add a note (press Enter)"
+          placeholder={t("auto.components_cigars_CigarForm.add_a_note_press_enter_pmlio1")}
         />
       </FormSection>
 
       {/* Section 4: Acquisition */}
-      <FormSection title="Acquisition">
+      <FormSection title={t("auto.components_cigars_CigarForm.acquisition_rn465q")}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Purchase Source">
             <StyledInput value={form.purchase_source} onChange={set('purchase_source')} placeholder="e.g. Famous Smoke Shop" />
@@ -492,7 +492,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             <StyledInput type="number" value={form.purchase_price} onChange={set('purchase_price')} placeholder="0.00" />
           </FormField>
           <FormField label="Purchase Price Type">
-            <StyledSelect value={form.purchase_price_type} onValueChange={set('purchase_price_type')} placeholder="Select type">
+            <StyledSelect value={form.purchase_price_type} onValueChange={set('purchase_price_type')} placeholder={t("auto.components_cigars_CigarForm.select_type_1uv635")}>
               {['single', 'pack', 'box', 'bundle', 'total_paid'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -503,7 +503,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
         </div>
       </FormSection>
 
-      <FormSection title="Valuation" summary={valuationSummary}>
+      <FormSection title={t("auto.components_cigars_CigarForm.valuation_bs4s54")} summary={valuationSummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Estimated Unit Value ($)">
             <StyledInput
@@ -526,10 +526,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             <StyledInput type="date" value={form.valuation_updated_at} onChange={set('valuation_updated_at')} />
           </FormField>
           <FormField label="Valuation Source">
-            <StyledInput value={form.valuation_source} onChange={set('valuation_source')} placeholder="Receipt, retailer, manual estimate…" />
+            <StyledInput value={form.valuation_source} onChange={set('valuation_source')} placeholder={t("auto.components_cigars_CigarForm.receipt_retailer_manual_estimate_2e5tz5")} />
           </FormField>
           <FormField label="Valuation Confidence">
-            <StyledSelect value={form.valuation_confidence} onValueChange={set('valuation_confidence')} placeholder="Select confidence">
+            <StyledSelect value={form.valuation_confidence} onValueChange={set('valuation_confidence')} placeholder={t("auto.components_cigars_CigarForm.select_confidence_1ux4z0")}>
               {['high', 'medium', 'low'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -549,15 +549,15 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           </FormField>
         </div>
         <FormField label="Valuation Notes">
-          <StyledTextarea value={form.valuation_notes} onChange={set('valuation_notes')} placeholder="Notes about how this valuation was determined…" rows={3} />
+          <StyledTextarea value={form.valuation_notes} onChange={set('valuation_notes')} placeholder={t("auto.components_cigars_CigarForm.notes_about_how_this_valuation_was_1h9t7r")} rows={3} />
         </FormField>
       </FormSection>
 
       {/* Section 5: Inventory */}
-      <FormSection title="Inventory" summary={inventorySummary}>
+      <FormSection title={t("auto.components_cigars_CigarForm.inventory_808our")} summary={inventorySummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Unit Type">
-            <StyledSelect value={form.unit_type} onValueChange={handleUnitTypeChange} placeholder="Select unit">
+            <StyledSelect value={form.unit_type} onValueChange={handleUnitTypeChange} placeholder={t("auto.components_cigars_CigarForm.select_unit_1uv6lg")}>
               {['single', '5pack', 'pack', 'box', 'bundle', 'partial_pack', 'partial_box'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -588,8 +588,8 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
               <CheckToggle label="Package open" checked={form.package_open} onChange={(v) => setForm((f) => ({ ...f, package_open: v }))} />
             </FormField>
             <FormField label="Humidor">
-            <StyledSelect value={form.humidor_id || 'none'} onValueChange={handleHumidorChange} placeholder="Select humidor">
-              <SelectItem value="none" style={selectItemStyle}>None</SelectItem>
+            <StyledSelect value={form.humidor_id || 'none'} onValueChange={handleHumidorChange} placeholder={t("auto.components_cigars_CigarForm.select_humidor_65k0bh")}>
+              <SelectItem value="none" style={selectItemStyle}>{t("auto.components_cigars_CigarForm.none_yjz4d1")}</SelectItem>
               {[...humidors].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((h) => (
                 <SelectItem key={h.id} value={h.id} style={selectItemStyle}>
                   {h.name}
@@ -617,17 +617,17 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           </FormField>
         </div>
         <FormField label="Storage Notes">
-          <StyledTextarea value={form.storage_notes} onChange={set('storage_notes')} placeholder="Storage conditions, shelf placement…" rows={2} />
+          <StyledTextarea value={form.storage_notes} onChange={set('storage_notes')} placeholder={t("auto.components_cigars_CigarForm.storage_conditions_shelf_placement_1a9lix")} rows={2} />
         </FormField>
       </FormSection>
 
       {/* Section 6: Notes & Tags */}
-      <FormSection title="Notes & Tags">
+      <FormSection title={t("auto.components_cigars_CigarForm.notes_and_tags_1xv94o")}>
         <FormField label="Personal Notes">
-          <StyledTextarea value={form.personal_notes} onChange={set('personal_notes')} placeholder="Tasting impressions, context…" rows={4} />
+          <StyledTextarea value={form.personal_notes} onChange={set('personal_notes')} placeholder={t("auto.components_cigars_CigarForm.tasting_impressions_context_1nb4os")} rows={4} />
         </FormField>
         <div>
-          <FieldLabel>Rating</FieldLabel>
+          <FieldLabel>{t("auto.components_cigars_CigarForm.rating_1l8a35")}</FieldLabel>
           <StarRating value={form.rating} onChange={(val) => setForm((f) => ({ ...f, rating: val }))} />
         </div>
         <div className="flex flex-wrap gap-4 pt-1">
@@ -640,10 +640,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       </FormSection>
 
       {/* Section 7: Identifiers */}
-      <FormSection title="Identifiers">
+      <FormSection title={t("auto.components_cigars_CigarForm.identifiers_1pmoog")}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <FormField label="Barcode">
-            <StyledInput value={form.barcode} onChange={set('barcode')} placeholder="Barcode" />
+            <StyledInput value={form.barcode} onChange={set('barcode')} placeholder={t("auto.components_cigars_CigarForm.barcode_1j5u1l")} />
           </FormField>
           <FormField label="UPC">
             <StyledInput value={form.upc} onChange={set('upc')} placeholder="UPC" />
@@ -657,13 +657,13 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             value={aliasInput}
             onChange={(e) => setAliasInput(e.target.value)}
             onBlur={handleAliasBlur}
-            placeholder="Alternate names, SKUs…"
+            placeholder={t("auto.components_cigars_CigarForm.alternate_names_skus_1oh766")}
           />
         </FormField>
       </FormSection>
 
       {/* Section 8: Photos */}
-      <FormSection title="Photos">
+      <FormSection title={t("auto.components_cigars_CigarForm.photos_1k2it3")}>
         <PhotoUploader
           existingPhotos={form.photos}
           onPhotosSelected={handlePhotos}
@@ -677,7 +677,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       <div className="ck-action-footer">
         {typeof onCancel === 'function' && (
           <Button type="button" variant="ghost" onClick={onCancel} style={{ color: 'rgba(224,216,200,0.7)' }}>
-            Cancel
+            {t("auto.components_cigars_CigarForm.cancel_1bin7k")}
           </Button>
         )}
         <Button

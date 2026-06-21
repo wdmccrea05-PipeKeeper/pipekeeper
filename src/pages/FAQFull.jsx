@@ -196,81 +196,81 @@ export default function FAQFull() {
           </Q>
         </Section>
 
-        <Section title="CigarKeeper">
+        <Section title={t("auto.pages_FAQFull.cigarkeeper_1oz7i9")}>
           <Q id="cigarkeeper-what" q="What is CigarKeeper?">
-            <p>CigarKeeper is a dedicated module for tracking your cigar collection, managing humidors, logging smoking sessions, and getting AI-powered insights and recommendations. It works alongside PipeKeeper and WhiskeyKeeper as part of the CollectionKeeper suite.</p>
+            <p>{t("auto.pages_FAQFull.cigarkeeper_is_a_dedicated_module_for_1y3rqm")}</p>
           </Q>
           <Q id="cigarkeeper-free-vs-pro" q="What's included in the free vs. pro CigarKeeper plan?">
             <div className="space-y-3">
               <div className="rounded-xl border border-[rgba(140,105,65,0.25)] bg-[rgba(28,21,16,0.72)] p-4">
-                <h4 className="mb-2 font-semibold text-[#F5F1E7]">Free Tier</h4>
+                <h4 className="mb-2 font-semibold text-[#F5F1E7]">{t("auto.pages_FAQFull.free_tier_lpe0uz")}</h4>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li>Up to 10 cigars in your collection</li>
+                  <li>{t("auto.pages_FAQFull.up_to_10_cigars_in_your_1lh8th")}</li>
                   <li>1 humidor with maintenance alerts</li>
-                  <li>Session logging (unlimited)</li>
-                  <li>Basic collection view and search</li>
+                  <li>{t("auto.pages_FAQFull.session_logging_unlimited_1rsa98")}</li>
+                  <li>{t("auto.pages_FAQFull.basic_collection_view_and_search_ph0syf")}</li>
                 </ul>
               </div>
               <div className="rounded-xl border border-[rgba(180,140,75,0.32)] bg-[rgba(58,40,22,0.72)] p-4">
-                <h4 className="mb-2 font-semibold text-[#F5F1E7]">Pro Tier</h4>
+                <h4 className="mb-2 font-semibold text-[#F5F1E7]">{t("auto.pages_FAQFull.pro_tier_17l0x0")}</h4>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li>Unlimited cigars and humidors</li>
-                  <li>Curator AI recommendations</li>
-                  <li>Collection insights and analytics</li>
-                  <li>Aging readiness and value tracking</li>
-                  <li>Advanced session analytics</li>
-                  <li>Export reports</li>
+                  <li>{t("auto.pages_FAQFull.unlimited_cigars_and_humidors_1kwq0z")}</li>
+                  <li>{t("auto.pages_FAQFull.curator_ai_recommendations_hpfviv")}</li>
+                  <li>{t("auto.pages_FAQFull.collection_insights_and_analytics_1jssnm")}</li>
+                  <li>{t("auto.pages_FAQFull.aging_readiness_and_value_tracking_ptx8ks")}</li>
+                  <li>{t("auto.pages_FAQFull.advanced_session_analytics_1tmo1r")}</li>
+                  <li>{t("auto.pages_FAQFull.export_reports_1lk3cg")}</li>
                 </ul>
               </div>
-              <p className="text-sm text-[#D8C7A6]/75">You can start using CigarKeeper on the free tier immediately — no payment required.</p>
+              <p className="text-sm text-[#D8C7A6]/75">{t("auto.pages_FAQFull.you_can_start_using_cigarkeeper_on_te9jtc")}</p>
             </div>
           </Q>
           <Q id="cigarkeeper-humidor" q="How do humidor maintenance alerts work?">
-            <p>When you set up a humidor you can specify how often humidity should be checked and when humidity aids should be replaced. CigarKeeper tracks these intervals and shows alerts on the CigarKeeper home page when a check or replacement is overdue or coming up within 3 days. Log a maintenance event to reset the timer.</p>
+            <p>{t("auto.pages_FAQFull.when_you_set_up_a_humidor_v9pev0")}</p>
           </Q>
           <Q id="cigarkeeper-sessions" q="Can I log sessions for cigars not in my collection?">
-            <p>Yes. When logging a session, toggle <strong>Smoked outside my collection</strong> to record a cigar you tried elsewhere. You can capture the brand, line, vitola, tasting notes, and ratings — and optionally add it to your wishlist afterward.</p>
+            <p>{t("auto.pages_FAQFull.yes_when_logging_a_session_toggle_r3t24w")} <strong>{t("auto.pages_FAQFull.smoked_outside_my_collection_1jgp9f")}</strong> to record a cigar you tried elsewhere. You can capture the brand, line, vitola, tasting notes, and ratings — and optionally add it to your wishlist afterward.</p>
           </Q>
           <Q id="cigarkeeper-onboarding" q="How do I get started with CigarKeeper?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Enable CigarKeeper from your Profile → Module Settings, or select it during initial onboarding.</li>
-              <li>The CigarKeeper onboarding wizard will walk you through adding your first cigar and setting preferences.</li>
-              <li>Add a humidor to organize your collection and enable maintenance tracking.</li>
-              <li>Start logging smoking sessions to build your history.</li>
+              <li>{t("auto.pages_FAQFull.enable_cigarkeeper_from_your_profile_module_4oh5ax")}</li>
+              <li>{t("auto.pages_FAQFull.the_cigarkeeper_onboarding_wizard_will_walk_h2n5zq")}</li>
+              <li>{t("auto.pages_FAQFull.add_a_humidor_to_organize_your_54b6si")}</li>
+              <li>{t("auto.pages_FAQFull.start_logging_smoking_sessions_to_build_7t79e3")}</li>
             </ol>
           </Q>
         </Section>
 
-        <Section title="Curator Chat">
+        <Section title={t("auto.pages_FAQFull.curator_chat_118pm1")}>
           <Q id="curator-chat-overview" q="What can I ask the Curator?">
-            <p>The Curator is an AI advisor that understands your entire collection — pipes, blends, bottles, and session history. You can ask it:</p>
+            <p>{t("auto.pages_FAQFull.the_curator_is_an_ai_advisor_1towfq")}</p>
             <ul className="list-disc list-inside space-y-1 mt-2">
-              <li>"Which pipe should I reassign?" — identifies pipes whose real usage diverges from their focus.</li>
-              <li>"What is my most redundant pipe?" — finds crowded shape lanes with low usage.</li>
-              <li>"What should I smoke tonight?" — generates a curated pipe + blend pairing.</li>
-              <li>"What's the biggest gap in my collection?" — identifies missing blend families or styles.</li>
-              <li>"Explain this pairing" — rationale for why a pipe and blend work together.</li>
+              <li>{t("auto.pages_FAQFull.which_pipe_should_i_reassign_identifies_1um75k")}</li>
+              <li>{t("auto.pages_FAQFull.what_is_my_most_redundant_pipe_1qzda2")}</li>
+              <li>{t("auto.pages_FAQFull.what_should_i_smoke_tonight_generates_3l2ldt")}</li>
+              <li>{t("auto.pages_FAQFull.what_s_the_biggest_gap_in_1iwuqe")}</li>
+              <li>{t("auto.pages_FAQFull.explain_this_pairing_rationale_for_why_1lbqh9")}</li>
             </ul>
           </Q>
           <Q id="curator-follow-ups" q="How do I follow up in Curator conversations?">
-            <p className="mb-2">After the Curator gives a recommendation, you can ask natural follow-ups:</p>
+            <p className="mb-2">{t("auto.pages_FAQFull.after_the_curator_gives_a_recommendation_1ustch")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li><strong>Next best option:</strong> Ask "what comes next?", "and then?", or "next candidate" to explore ranked alternatives without losing the original context.</li>
-              <li><strong>Apply a constraint:</strong> Say "I want to keep it non-aromatic" or "I prefer English blends only". The Curator will re-evaluate whether the recommendation still holds given your constraint.</li>
-              <li><strong>Correct something:</strong> If the Curator misunderstood your collection, say "actually, I use it for..." The Curator will flag the discrepancy and adjust future recommendations.</li>
+              <li><strong>{t("auto.pages_FAQFull.next_best_option_hkpvmt")}</strong> {t("auto.pages_FAQFull.ask_what_comes_next_and_then_1fkq1b")}</li>
+              <li><strong>{t("auto.pages_FAQFull.apply_a_constraint_1rowfo")}</strong> {t("auto.pages_FAQFull.say_i_want_to_keep_it_2l3pmw")}</li>
+              <li><strong>{t("auto.pages_FAQFull.correct_something_1kli5d")}</strong> {t("auto.pages_FAQFull.if_the_curator_misunderstood_your_collection_1eaf49")}</li>
             </ul>
           </Q>
           <Q id="curator-confidence" q="What do confidence levels mean in Curator recommendations?">
-            <p className="mb-2">Confidence reflects the strength of the underlying evidence:</p>
+            <p className="mb-2">{t("auto.pages_FAQFull.confidence_reflects_the_strength_of_the_u6d0y7")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li><strong>Strong:</strong> 6+ sessions with 70%+ consistent signal. The recommendation is well-supported by usage data.</li>
-              <li><strong>Moderate:</strong> 3-5 sessions with a lean in one direction. The pattern is visible but still building.</li>
-              <li><strong>Weak:</strong> Early signal with limited data. More usage history would sharpen the picture.</li>
+              <li><strong>{t("auto.pages_FAQFull.strong_4dj5y4")}</strong> 6+ sessions with 70%+ consistent signal. The recommendation is well-supported by usage data.</li>
+              <li><strong>{t("auto.pages_FAQFull.moderate_vjrwpc")}</strong> 3-5 sessions with a lean in one direction. The pattern is visible but still building.</li>
+              <li><strong>{t("auto.pages_FAQFull.weak_3zivvr")}</strong> {t("auto.pages_FAQFull.early_signal_with_limited_data_more_g602nh")}</li>
             </ul>
-            <p className="mt-2">Higher confidence recommendations are safer to act on. Lower confidence suggestions are exploratory.</p>
+            <p className="mt-2">{t("auto.pages_FAQFull.higher_confidence_recommendations_are_safer_to_14khj0")}</p>
           </Q>
           <Q id="curator-constraints" q="What happens when I apply a constraint?">
-            <p>When you mention a constraint like "I want to keep it non-aromatic", the Curator re-evaluates the previous recommendation. If the constraint contradicts the signal (e.g., the pipe is pulling toward Aromatic but you want non-aromatic), the Curator will exclude it and suggest the next best candidate instead. If the constraint aligns with the signal, the Curator confirms that the recommendation still holds. Constraints stay active throughout the conversation so you can explore alternatives while keeping your preferences in mind.</p>
+            <p>{t("auto.pages_FAQFull.when_you_mention_a_constraint_like_f0zcws")}</p>
           </Q>
         </Section>
 
@@ -295,59 +295,59 @@ export default function FAQFull() {
           </Q>
         </Section>
 
-        <Section title="Value &amp; Strategy">
+        <Section title={t("auto.pages_FAQFull.value_and_strategy_1bnfwi")}>
           <Q id="value-strategy-what" q="What is the Value &amp; Strategy section?">
-            <p className="mb-2">Every item detail page (bottles, pipes, and tobacco blends) includes a <strong>Value &amp; Strategy</strong> section that shows computed valuation data and a strategic recommendation tailored to that item type.</p>
-            <p>It displays: Current Value with a confidence badge (High / Medium / Low), a Value Trend indicator, a Rarity Score from 0–100, a Replacement Difficulty rating, and a Strategy Recommendation (e.g. Hold, Safe to Open, Cellar for Aging, Preserve &amp; Insure) with a bullet-point rationale explaining why.</p>
+            <p className="mb-2">{t("auto.pages_FAQFull.every_item_detail_page_bottles_pipes_seco2c")} <strong>{t("auto.pages_FAQFull.value_and_strategy_1bnfwi")}</strong> section that shows computed valuation data and a strategic recommendation tailored to that item type.</p>
+            <p>{t("auto.pages_FAQFull.it_displays_current_value_with_a_1y1kyx")}</p>
           </Q>
           <Q id="value-strategy-checkpoint" q="How do I save a value checkpoint?">
-            <p>From any item’s detail page, open the Value &amp; Strategy section and click <strong>Save Checkpoint</strong>. This records the item’s current computed value as a timestamped history entry. Value History shows all past checkpoints so you can track how your item’s value changes over time.</p>
+            <p>{t("auto.pages_FAQFull.from_any_item_s_detail_page_eosh1r")} <strong>{t("auto.pages_FAQFull.save_checkpoint_1tg0r4")}</strong>{t("auto.pages_FAQFull.this_records_the_item_s_current_iqzvp6")}</p>
           </Q>
           <Q id="value-strategy-observation" q="How do I add a market price observation?">
-            <p>Click <strong>Add Observation</strong> in the Value &amp; Strategy section. You can record a real-world price you found (e.g. an auction result, a retailer listing, a secondary market price), along with the source name, URL, and price type (retail, auction, secondary market, etc.). Observations provide evidence for valuation and are stored separately from computed checkpoints.</p>
+            <p>{t("auto.pages_FAQFull.click_3lk3aj")} <strong>{t("auto.pages_FAQFull.add_observation_1v7odn")}</strong> in the Value &amp; Strategy section. You can record a real-world price you found (e.g. an auction result, a retailer listing, a secondary market price), along with the source name, URL, and price type (retail, auction, secondary market, etc.). Observations provide evidence for valuation and are stored separately from computed checkpoints.</p>
           </Q>
           <Q id="value-strategy-rarity" q="How is the Rarity Score calculated?">
-            <p>The Rarity Score (0–100) is computed automatically from the item’s data. For whiskey bottles it considers age statement, production status (Discontinued, Allocated, Limited Edition), producer status (closed/silent distillery), ABV, export exclusivity, and whether the bottle is a unicorn or single cask release. For pipes it considers production type (one-off, limited artisan batch, standard artisan, or factory), maker status (deceased/retired/inactive), material, provenance, and age. For tobacco blends it considers discontinuation, manufacturer status, limited batches, regional exclusivity, and cellar age.</p>
-            <p className="mt-2">A score of 0–25 is Common, 25–50 is Moderate, and above 50 is Rare. Scores above 70 are highlighted in red as high-rarity items.</p>
+            <p>{t("auto.pages_FAQFull.the_rarity_score_0_100_is_14jba9")}</p>
+            <p className="mt-2">{t("auto.pages_FAQFull.a_score_of_0_25_is_1ih7e9")}</p>
           </Q>
           <Q id="value-strategy-badges" q="What do the status badges mean?">
             <ul className="list-disc list-inside space-y-1">
-              <li><strong>Discontinued</strong> — production has ended; supply is finite.</li>
-              <li><strong>Allocated</strong> — supply is restricted or rationed by the producer.</li>
-              <li><strong>Seasonal</strong> — only available at certain times of year.</li>
-              <li><strong>One of a Kind</strong> — unique pipe; irreplaceable.</li>
-              <li><strong>Maker Deceased</strong> — the artisan is no longer alive; no new supply possible.</li>
-              <li><strong>Maker Retired</strong> — the maker no longer produces; existing pieces are the final supply.</li>
-              <li><strong>Exclusive</strong> — market or retailer exclusive release.</li>
+              <li><strong>{t("auto.pages_FAQFull.discontinued_10hh6x")}</strong> {t("auto.pages_FAQFull.production_has_ended_supply_is_finite_dmstt9")}</li>
+              <li><strong>{t("auto.pages_FAQFull.allocated_1e9tua")}</strong> {t("auto.pages_FAQFull.supply_is_restricted_or_rationed_by_1jgilm")}</li>
+              <li><strong>{t("auto.pages_FAQFull.seasonal_q71x4r")}</strong> {t("auto.pages_FAQFull.only_available_at_certain_times_of_1k7as2")}</li>
+              <li><strong>{t("auto.pages_FAQFull.one_of_a_kind_gcqqub")}</strong> {t("auto.pages_FAQFull.unique_pipe_irreplaceable_wdh2pe")}</li>
+              <li><strong>{t("auto.pages_FAQFull.maker_deceased_v0k7sz")}</strong> {t("auto.pages_FAQFull.the_artisan_is_no_longer_alive_okn97f")}</li>
+              <li><strong>{t("auto.pages_FAQFull.maker_retired_e0otic")}</strong> {t("auto.pages_FAQFull.the_maker_no_longer_produces_existing_1px70u")}</li>
+              <li><strong>{t("auto.pages_FAQFull.exclusive_1q2st6")}</strong> {t("auto.pages_FAQFull.market_or_retailer_exclusive_release_gwq8vx")}</li>
             </ul>
-            <p className="mt-2">Badges appear automatically when the corresponding field is set on the item record.</p>
+            <p className="mt-2">{t("auto.pages_FAQFull.badges_appear_automatically_when_the_correspondi_nz6503")}</p>
           </Q>
         </Section>
 
-        <Section title="Pipe Reassignment & Collection Analysis">
+        <Section title={t("auto.pages_FAQFull.pipe_reassignment_and_collection_analysis_5apszd")}>
           <Q id="pipe-reassignment-what" q="What is pipe reassignment?">
-            <p className="mb-2">Pipe reassignment is when the Curator detects that a pipe's real-world usage pattern diverges from its recorded specialization. For example:</p>
+            <p className="mb-2">{t("auto.pages_FAQFull.pipe_reassignment_is_when_the_curator_1w20m8")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>A pipe labeled "English-Only" but 70% of its sessions are Virginia blends.</li>
-              <li>A pipe with no focus but consistently pulls toward a single blend family.</li>
+              <li>{t("auto.pages_FAQFull.a_pipe_labeled_english_only_but_vol96s")}</li>
+              <li>{t("auto.pages_FAQFull.a_pipe_with_no_focus_but_shc2w0")}</li>
             </ul>
-            <p className="mt-2">The Curator ranks reassignment candidates by confidence (strong = 6+ sessions with consistent lean; moderate = 3-5 sessions; weak = early signal). You can ask "Which pipe should I reassign?" to see the top candidate.</p>
+            <p className="mt-2">{t("auto.pages_FAQFull.the_curator_ranks_reassignment_candidates_by_1gru9h")}</p>
           </Q>
           <Q id="pipe-reassignment-action" q="What should I do with a reassignment recommendation?">
-            <p className="mb-2">You have three options:</p>
+            <p className="mb-2">{t("auto.pages_FAQFull.you_have_three_options_1td7y0")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li><strong>Accept it:</strong> Update the pipe's focus field to the recommended blend family. This improves future pairing accuracy.</li>
-              <li><strong>Apply a constraint:</strong> If you want to keep the pipe in its current family, say "I want to leave it non-aromatic" (or whatever the constraint is). The Curator will re-evaluate — if the constraint contradicts the usage signal, it will exclude this pipe and show the next candidate instead.</li>
-              <li><strong>Skip it:</strong> Ignore the recommendation. Ask for the next candidate or explore a different topic.</li>
+              <li><strong>{t("auto.pages_FAQFull.accept_it_51tnnw")}</strong> {t("auto.pages_FAQFull.update_the_pipe_s_focus_field_13xpl0")}</li>
+              <li><strong>{t("auto.pages_FAQFull.apply_a_constraint_1rowfo")}</strong> {t("auto.pages_FAQFull.if_you_want_to_keep_the_pi8b5e")}</li>
+              <li><strong>{t("auto.pages_FAQFull.skip_it_hcuwib")}</strong> {t("auto.pages_FAQFull.ignore_the_recommendation_ask_for_the_44fj1x")}</li>
             </ul>
           </Q>
           <Q id="collection-redundancy" q="How do I know if a pipe is redundant?">
-            <p className="mb-2">A pipe is redundant when it occupies a crowded shape lane with low usage. For example:</p>
+            <p className="mb-2">{t("auto.pages_FAQFull.a_pipe_is_redundant_when_it_1fs405")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>You have 3 Billard pipes but one has only 2 logged sessions.</li>
-              <li>The low-usage pipe doesn't have a distinct specialization to justify its place.</li>
+              <li>{t("auto.pages_FAQFull.you_have_3_billard_pipes_but_hi93u0")}</li>
+              <li>{t("auto.pages_FAQFull.the_low_usage_pipe_doesn_t_8p9v6e")}</li>
             </ul>
-            <p className="mt-2">Ask the Curator "What's my most redundant pipe?" to identify candidates. You can keep it if it earns a specialization, or consider consolidating the shape lane.</p>
+            <p className="mt-2">{t("auto.pages_FAQFull.ask_the_curator_what_s_my_ijqv13")}</p>
           </Q>
         </Section>
 

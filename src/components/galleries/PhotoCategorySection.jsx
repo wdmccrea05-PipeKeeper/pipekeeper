@@ -90,7 +90,7 @@ export default function PhotoCategorySection({
               onClick={() => onRemovePhoto(currentIndex)}
               className="absolute top-2 right-2 p-1 rounded-full bg-red-600/80 hover:bg-red-700 text-white opacity-0 group-hover:opacity-100 transition-opacity"
               type="button"
-              title="Remove photo"
+              title={t("auto.components_galleries_PhotoCategorySection.remove_photo_wvhzq5")}
             >
               <X className="w-3 h-3" />
             </button>

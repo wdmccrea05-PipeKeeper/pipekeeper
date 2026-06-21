@@ -217,25 +217,25 @@ function AddItemValueSnapshotModal({ item, itemType, moduleKey, valuationSnapsho
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Confidence</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.confidence_1vbeba")}</label>
             <Select value={form.value_confidence} onValueChange={v => setForm(prev => ({ ...prev, value_confidence: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="high">{t("auto.pages_PipeDetail.high_yjucrp")}</SelectItem>
+                <SelectItem value="medium">{t("auto.pages_PipeDetail.medium_1i29el")}</SelectItem>
+                <SelectItem value="low">{t("auto.pages_PipeDetail.low_376lfb")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Replacement Difficulty</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.replacement_difficulty_i84seg")}</label>
             <Select value={form.replacement_difficulty} onValueChange={v => setForm(prev => ({ ...prev, replacement_difficulty: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-                <SelectItem value="very_hard">Very Hard</SelectItem>
+                <SelectItem value="easy">{t("auto.pages_PipeDetail.easy_yjrv6f")}</SelectItem>
+                <SelectItem value="moderate">{t("auto.pages_PipeDetail.moderate_1p8371")}</SelectItem>
+                <SelectItem value="hard">{t("auto.pages_PipeDetail.hard_yju6bo")}</SelectItem>
+                <SelectItem value="very_hard">{t("auto.pages_PipeDetail.very_hard_1c9zw8")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -297,7 +297,7 @@ function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onCl
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(59,130,246,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Market Observation</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t("auto.pages_PipeDetail.add_market_observation_1w30d5")}</h3>
         <div className="space-y-3">
           {[
             { label: 'Observed Date', field: 'observed_date', type: 'date' },
@@ -319,17 +319,17 @@ function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onCl
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Price Type</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.price_type_1v7ft2")}</label>
             <Select value={form.price_type} onValueChange={v => setForm(prev => ({ ...prev, price_type: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="retail">Retail</SelectItem>
-                <SelectItem value="aftermarket">Aftermarket</SelectItem>
-                <SelectItem value="auction">Auction</SelectItem>
-                <SelectItem value="collector">Collector</SelectItem>
-                <SelectItem value="estimate">Estimate</SelectItem>
-                <SelectItem value="private_sale">Private Sale</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="retail">{t("auto.pages_PipeDetail.retail_1lb3kj")}</SelectItem>
+                <SelectItem value="aftermarket">{t("auto.pages_PipeDetail.aftermarket_1cn991")}</SelectItem>
+                <SelectItem value="auction">{t("auto.pages_PipeDetail.auction_1agp8h")}</SelectItem>
+                <SelectItem value="collector">{t("auto.pages_PipeDetail.collector_pjqx64")}</SelectItem>
+                <SelectItem value="estimate">{t("auto.pages_PipeDetail.estimate_1munng")}</SelectItem>
+                <SelectItem value="private_sale">{t("auto.pages_PipeDetail.private_sale_1eid6r")}</SelectItem>
+                <SelectItem value="other">{t("auto.pages_PipeDetail.other_3u793b")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -388,84 +388,84 @@ function EditPipeValuationModal({ pipe, onClose, onSaved }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(251,191,36,0.25)' }}>
         <h3 className="text-lg font-bold text-[#F5F1E7]">{t('valuation.editInputs')}</h3>
-        <p className="text-xs text-[#D8C7A6]/60">These fields feed directly into the shared valuation engine.</p>
+        <p className="text-xs text-[#D8C7A6]/60">{t("auto.pages_PipeDetail.these_fields_feed_directly_into_the_s5uu9e")}</p>
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Estimated Value ($)</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.estimated_value_v9voqf")}</label>
             <Input type="number" value={form.estimated_value} onChange={e => setForm(p => ({ ...p, estimated_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" />
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Maker Status</label>
-            <Select value={form.maker_status || '__none__'} onValueChange={v => setForm(p => ({ ...p, maker_status: v === '__none__' ? '' : v }))}>              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.maker_status_1pmgg1")}</label>
+            <Select value={form.maker_status || '__none__'} onValueChange={v => setForm(p => ({ ...p, maker_status: v === '__none__' ? '' : v }))}>              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t("auto.pages_PipeDetail.select_1tkotp")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">— Not set —</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="limited_production">Limited Production</SelectItem>
-                <SelectItem value="retired">Retired / No Longer Producing</SelectItem>
-                <SelectItem value="inactive">Inactive / Company Closed</SelectItem>
-                <SelectItem value="deceased">Deceased</SelectItem>
+                <SelectItem value="__none__">{t("auto.pages_PipeDetail.not_set_14d5wt")}</SelectItem>
+                <SelectItem value="active">{t("auto.pages_PipeDetail.active_1a9l7e")}</SelectItem>
+                <SelectItem value="limited_production">{t("auto.pages_PipeDetail.limited_production_a93d90")}</SelectItem>
+                <SelectItem value="retired">{t("auto.pages_PipeDetail.retired_no_longer_producing_yd1mwi")}</SelectItem>
+                <SelectItem value="inactive">{t("auto.pages_PipeDetail.inactive_company_closed_zjbwhk")}</SelectItem>
+                <SelectItem value="deceased">{t("auto.pages_PipeDetail.deceased_12cg2u")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Production Type</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.production_type_9cw6vi")}</label>
             <Select value={form.production_type || '__none__'} onValueChange={v => setForm(p => ({ ...p, production_type: v === '__none__' ? '' : v }))}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t("auto.pages_PipeDetail.select_1tkotp")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">— Not set —</SelectItem>
-                <SelectItem value="factory">Factory Production</SelectItem>
-                <SelectItem value="standard_artisan">Standard Artisan</SelectItem>
-                <SelectItem value="limited_artisan_batch">Limited Artisan Batch</SelectItem>
-                <SelectItem value="one_off">One-off / Commissioned</SelectItem>
+                <SelectItem value="__none__">{t("auto.pages_PipeDetail.not_set_14d5wt")}</SelectItem>
+                <SelectItem value="factory">{t("auto.pages_PipeDetail.factory_production_smcr8k")}</SelectItem>
+                <SelectItem value="standard_artisan">{t("auto.pages_PipeDetail.standard_artisan_ogx9rc")}</SelectItem>
+                <SelectItem value="limited_artisan_batch">{t("auto.pages_PipeDetail.limited_artisan_batch_1utr1c")}</SelectItem>
+                <SelectItem value="one_off">{t("auto.pages_PipeDetail.one_off_commissioned_yk6d7s")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Artisan Tier</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.artisan_tier_5tgp9n")}</label>
             <Select value={form.artisan_tier || '__none__'} onValueChange={v => setForm(p => ({ ...p, artisan_tier: v === '__none__' ? '' : v }))}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t("auto.pages_PipeDetail.select_1tkotp")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">— Not set —</SelectItem>
-                <SelectItem value="factory">Factory / Mass Production</SelectItem>
-                <SelectItem value="emerging">Emerging Artisan</SelectItem>
-                <SelectItem value="established">Established Artisan</SelectItem>
-                <SelectItem value="master">Master Carver</SelectItem>
-                <SelectItem value="prestige">Prestige / Collector Tier</SelectItem>
+                <SelectItem value="__none__">{t("auto.pages_PipeDetail.not_set_14d5wt")}</SelectItem>
+                <SelectItem value="factory">{t("auto.pages_PipeDetail.factory_mass_production_8hsjlz")}</SelectItem>
+                <SelectItem value="emerging">{t("auto.pages_PipeDetail.emerging_artisan_txev5x")}</SelectItem>
+                <SelectItem value="established">{t("auto.pages_PipeDetail.established_artisan_wm5u7z")}</SelectItem>
+                <SelectItem value="master">{t("auto.pages_PipeDetail.master_carver_wz6t0")}</SelectItem>
+                <SelectItem value="prestige">{t("auto.pages_PipeDetail.prestige_collector_tier_1dvk0y")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm text-[#E0D8C8] cursor-pointer">
               <input type="checkbox" checked={form.one_of_a_kind} onChange={e => setForm(p => ({ ...p, one_of_a_kind: e.target.checked }))} className="rounded" />
-              <span>One of a Kind / Commissioned</span>
+              <span>{t("auto.pages_PipeDetail.one_of_a_kind_commissioned_pnljek")}</span>
             </label>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm text-[#E0D8C8] cursor-pointer">
               <input type="checkbox" checked={form.is_limited_run} onChange={e => setForm(p => ({ ...p, is_limited_run: e.target.checked }))} className="rounded" />
-              <span>Limited Run / Special Edition</span>
+              <span>{t("auto.pages_PipeDetail.limited_run_special_edition_1dj664")}</span>
             </label>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Provenance / Certification Notes</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.provenance_certification_notes_1cqdlu")}</label>
             <Input type="text" value={form.provenance_notes} onChange={e => setForm(p => ({ ...p, provenance_notes: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. original box, dated receipt…" />
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Replacement Difficulty Override</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.replacement_difficulty_override_1quqgk")}</label>
             <Select value={form.replacement_difficulty_override || '__none__'} onValueChange={v => setForm(p => ({ ...p, replacement_difficulty_override: v === '__none__' ? '' : v }))}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Engine auto-computes" /></SelectTrigger>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t("auto.pages_PipeDetail.engine_auto_computes_18ucrp")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">— Auto (engine) —</SelectItem>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-                <SelectItem value="very_hard">Very Hard</SelectItem>
+                <SelectItem value="__none__">{t("auto.pages_PipeDetail.auto_engine_bi126l")}</SelectItem>
+                <SelectItem value="easy">{t("auto.pages_PipeDetail.easy_yjrv6f")}</SelectItem>
+                <SelectItem value="moderate">{t("auto.pages_PipeDetail.moderate_1p8371")}</SelectItem>
+                <SelectItem value="hard">{t("auto.pages_PipeDetail.hard_yju6bo")}</SelectItem>
+                <SelectItem value="very_hard">{t("auto.pages_PipeDetail.very_hard_1c9zw8")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Rarity Score Override (0–100, blank = auto)</label>
-            <Input type="number" min="0" max="100" value={form.rarity_score_override} onChange={e => setForm(p => ({ ...p, rarity_score_override: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="Leave blank for auto" />
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_PipeDetail.rarity_score_override_0_100_blank_9gpnd7")}</label>
+            <Input type="number" min="0" max="100" value={form.rarity_score_override} onChange={e => setForm(p => ({ ...p, rarity_score_override: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder={t("auto.pages_PipeDetail.leave_blank_for_auto_1xylmr")} />
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
@@ -634,10 +634,10 @@ export default function PipeDetail() {
     setDeleting(true);
     try {
       await base44.entities.Pipe.delete(pipe.id);
-      toast.success('Pipe deleted');
+      toast.success(t("auto.pages_PipeDetail.pipe_deleted_182uwa"));
       navigate('/Pipes');
     } catch (e) {
-      toast.error('Failed to delete pipe');
+      toast.error(t("auto.pages_PipeDetail.failed_to_delete_pipe_fon7bi"));
       setDeleting(false);
     }
   };
@@ -731,7 +731,7 @@ export default function PipeDetail() {
   if (loading) {
     return (
       <div className="p-6 text-[#F5F1E7]">
-        <p>Loading pipe…</p>
+        <p>{t("auto.pages_PipeDetail.loading_pipe_1sv4hi")}</p>
       </div>
     );
   }
@@ -739,7 +739,7 @@ export default function PipeDetail() {
   if (!pipe || !normalized) {
     return (
       <div className="p-6 text-[#F5F1E7]">
-        <p>Unable to load record.</p>
+        <p>{t("auto.pages_PipeDetail.unable_to_load_record_2v51v0")}</p>
       </div>
     );
   }
@@ -769,7 +769,7 @@ export default function PipeDetail() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          {t("auto.pages_PipeDetail.back_yjpjkm")}
         </Button>
 
         <div className="flex flex-wrap gap-2">
@@ -783,7 +783,7 @@ export default function PipeDetail() {
             }}
           >
             <Search className="w-4 h-4 mr-2" />
-            Find Similar
+            {t("auto.pages_PipeDetail.find_similar_afe8ev")}
           </Button>
 
           <Button
@@ -796,7 +796,7 @@ export default function PipeDetail() {
             }}
           >
             <Share2 className="w-4 h-4 mr-2" />
-            Share
+            {t("auto.pages_PipeDetail.share_3wrj14")}
           </Button>
 
           <EnrichButton itemType="pipe" record={pipe} onEnriched={setPipe} />
@@ -810,7 +810,7 @@ export default function PipeDetail() {
             }}
           >
             <Pencil className="w-4 h-4 mr-2" />
-            Edit
+            {t("auto.pages_PipeDetail.edit_yjrxfv")}
           </Button>
 
           <Button
@@ -835,8 +835,8 @@ export default function PipeDetail() {
         }}
       >
         <div className="px-6 py-5 border-b border-[rgba(180,140,75,0.15)]">
-          <p className="text-2xl font-semibold text-[#F5F1E7]">Pipe Snapshot</p>
-          <p className="text-sm text-[#D8C7A6]/70 mt-1">Quick overview of the pipe record</p>
+          <p className="text-2xl font-semibold text-[#F5F1E7]">{t("auto.pages_PipeDetail.pipe_snapshot_sbq09v")}</p>
+          <p className="text-sm text-[#D8C7A6]/70 mt-1">{t("auto.pages_PipeDetail.quick_overview_of_the_pipe_record_c85igs")}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
@@ -847,7 +847,7 @@ export default function PipeDetail() {
                 onClick={() => handlePhotoClick(0)}
                 className="max-h-[440px] w-full rounded-xl overflow-hidden hover:opacity-90 transition-opacity group relative"
                 style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.45))' }}
-                title="Click to view full gallery"
+                title={t("auto.pages_PipeDetail.click_to_view_full_gallery_1om0ig")}
               >
                 <img
                   src={mainPhoto}
@@ -877,7 +877,7 @@ export default function PipeDetail() {
             {allPhotos.length > 1 && (
               <div className="w-full space-y-2">
                 <p className="text-xs uppercase tracking-[0.12em] font-semibold text-[#D8C7A6]/60">
-                  Photo Set ({allPhotos.length})
+                  {t("auto.pages_PipeDetail.photo_set_yvlfhf")}{allPhotos.length})
                 </p>
                 <div className="grid grid-cols-4 gap-2">
                   {allPhotos.map((photo, idx) => (
@@ -985,42 +985,42 @@ export default function PipeDetail() {
             >
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Size</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_PipeDetail.size_yk2u9s")}</p>
                   <p className="text-2xl font-semibold mt-2">{normalized.sizeClass || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Length</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_PipeDetail.length_1hf694")}</p>
                   <p className="text-2xl font-semibold mt-2">
                     {normalized.lengthValue != null ? (formatLength(Number(normalized.lengthValue)) || `${normalized.lengthValue} mm`) : '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Weight</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_PipeDetail.weight_1ojd9v")}</p>
                   <p className="text-2xl font-semibold mt-2">
                     {normalized.weightValue != null ? (formatWeight(Number(normalized.weightValue)) || `${normalized.weightValue} g`) : '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Condition</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_PipeDetail.condition_1r6c97")}</p>
                   <p className="text-2xl font-semibold mt-2">{conditionSummary}</p>
                 </div>
               </div>
               {(normalized.bowlHeightValue != null || normalized.bowlWidthValue != null || normalized.bowlDiameterValue != null || normalized.bowlDepthValue != null) && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-[rgba(180,140,75,0.12)]">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Bowl Height</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_PipeDetail.bowl_height_csn6uq")}</p>
                     <p className="text-xl font-semibold mt-2">{normalized.bowlHeightValue != null ? (formatLength(Number(normalized.bowlHeightValue)) || `${normalized.bowlHeightValue} mm`) : '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Bowl Width</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_PipeDetail.bowl_width_qihp6h")}</p>
                     <p className="text-xl font-semibold mt-2">{normalized.bowlWidthValue != null ? (formatLength(Number(normalized.bowlWidthValue)) || `${normalized.bowlWidthValue} mm`) : '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Bowl Diameter</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_PipeDetail.bowl_diameter_17ojik")}</p>
                     <p className="text-xl font-semibold mt-2">{normalized.bowlDiameterValue != null ? (formatLength(Number(normalized.bowlDiameterValue)) || `${normalized.bowlDiameterValue} mm`) : '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Bowl Depth</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_PipeDetail.bowl_depth_q4zy5q")}</p>
                     <p className="text-xl font-semibold mt-2">{normalized.bowlDepthValue != null ? (formatLength(Number(normalized.bowlDepthValue)) || `${normalized.bowlDepthValue} mm`) : '—'}</p>
                   </div>
                 </div>
@@ -1035,7 +1035,7 @@ export default function PipeDetail() {
                   border: '1px solid rgba(180,140,75,0.14)',
                 }}
               >
-                <p className="text-sm font-semibold mb-2">Notes</p>
+                <p className="text-sm font-semibold mb-2">{t("auto.pages_PipeDetail.notes_3te9gu")}</p>
                 <p className="text-[#E0D8C8]/80 whitespace-pre-wrap">{pipe.notes}</p>
               </div>
             )}
@@ -1057,9 +1057,9 @@ export default function PipeDetail() {
           className="w-full flex items-center justify-between px-5 py-4 border-b border-[rgba(180,140,75,0.15)] text-left"
         >
           <div>
-            <p className="text-lg font-semibold text-[#F5F1E7]">Pipe Functions & Details</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{t("auto.pages_PipeDetail.pipe_functions_and_details_bq9tdk")}</p>
             <p className="text-sm text-[#D8C7A6]/70 mt-1">
-              Condition, rotation, specialization, maintenance, and full record details
+              {t("auto.pages_PipeDetail.condition_rotation_specialization_maintenance_an_17sxsa")}
             </p>
           </div>
           <div className="flex items-center gap-2 text-[#D4A574]">
@@ -1076,25 +1076,25 @@ export default function PipeDetail() {
             <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2">
               <TabsList className="bg-transparent gap-0.5">
                 <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  Condition
+                  {t("auto.pages_PipeDetail.condition_1r6c97")}
                 </TabsTrigger>
                 <TabsTrigger value="rotation" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  Rotation
+                  {t("auto.pages_PipeDetail.rotation_18434d")}
                 </TabsTrigger>
                 <TabsTrigger value="specialization" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  Specialization
+                  {t("auto.pages_PipeDetail.specialization_3efo3o")}
                 </TabsTrigger>
                 <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  Maintenance
+                  {t("auto.pages_PipeDetail.maintenance_1d02mv")}
                 </TabsTrigger>
                 <TabsTrigger value="bowls" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  Bowls
+                  {t("auto.pages_PipeDetail.bowls_3kxbf0")}
                 </TabsTrigger>
                 <TabsTrigger value="breakin" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  Break-In
+                  {t("auto.pages_PipeDetail.break_in_1824zs")}
                 </TabsTrigger>
                 <TabsTrigger value="details" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  Details
+                  {t("auto.pages_PipeDetail.details_th3nu3")}
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -1130,7 +1130,7 @@ export default function PipeDetail() {
 
             <TabsContent value="details" className="p-4 md:p-5 m-0">
               <div className="space-y-4">
-                <SectionCard title="Pipe Geometry" icon={Info}>
+                <SectionCard title={t("auto.pages_PipeDetail.pipe_geometry_1gw1sl")} icon={Info}>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     <MetaRow label="Shape" value={showText(normalized.shape)} />
                     <MetaRow label="Bowl Style" value={showText(normalized.bowlStyle)} />
@@ -1141,7 +1141,7 @@ export default function PipeDetail() {
                   </div>
                 </SectionCard>
 
-                <SectionCard title="Physical Characteristics" icon={Info}>
+                <SectionCard title={t("auto.pages_PipeDetail.physical_characteristics_1ls8hz")} icon={Info}>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     <MetaRow label="Bowl Material" value={showText(normalized.bowlMaterial)} />
                     <MetaRow label="Stem Material" value={showText(normalized.stemMaterial)} />
@@ -1152,7 +1152,7 @@ export default function PipeDetail() {
                   </div>
                 </SectionCard>
 
-                <SectionCard title="Measurements" icon={Ruler}>
+                <SectionCard title={t("auto.pages_PipeDetail.measurements_1hdgye")} icon={Ruler}>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     <MetaRow label="Length" value={normalized.lengthValue != null ? (formatLength(Number(normalized.lengthValue)) || `${normalized.lengthValue} mm`) : '—'} />
                     <MetaRow label="Weight" value={normalized.weightValue != null ? (formatWeight(Number(normalized.weightValue)) || `${normalized.weightValue} g`) : '—'} />
@@ -1163,7 +1163,7 @@ export default function PipeDetail() {
                   </div>
                 </SectionCard>
 
-                <SectionCard title="Stamping" icon={Info}>
+                <SectionCard title={t("auto.pages_PipeDetail.stamping_1qbzgn")} icon={Info}>
                   {pipe.stamping ? (
                     <div
                       className="rounded-xl p-4 mb-4"
@@ -1173,7 +1173,7 @@ export default function PipeDetail() {
                       }}
                     >
                       <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">
-                        Stamping Text
+                        {t("auto.pages_PipeDetail.stamping_text_y8da4t")}
                       </p>
                       <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">{pipe.stamping}</p>
                     </div>
@@ -1188,7 +1188,7 @@ export default function PipeDetail() {
                   />
                 </SectionCard>
 
-                <SectionCard title="Value & Notes" icon={CircleDollarSign}>
+                <SectionCard title={t("auto.pages_PipeDetail.value_and_notes_1xcj1h")} icon={CircleDollarSign}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                     <MetaRow label="Purchase Price" value={money(normalized.purchasePrice)} />
                     <MetaRow label="Estimated Value" value={money(normalized.estimatedValue)} />
@@ -1207,7 +1207,7 @@ export default function PipeDetail() {
                       }}
                     >
                       <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">
-                        Usage Characteristics
+                        {t("auto.pages_PipeDetail.usage_characteristics_kunmfq")}
                       </p>
                       <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">
                         {showText(normalized.smokingCharacteristics)}
@@ -1222,7 +1222,7 @@ export default function PipeDetail() {
                       }}
                     >
                       <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">
-                        Notes
+                        {t("auto.pages_PipeDetail.notes_3te9gu")}
                       </p>
                       <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">
                         {showText(normalized.notes)}
@@ -1262,7 +1262,7 @@ export default function PipeDetail() {
                   onClick={() => setSessionsOpen((v) => !v)}
                 >
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-[#F5F1E7]">Sessions</p>
+                    <p className="text-sm font-semibold text-[#F5F1E7]">{t("auto.pages_PipeDetail.sessions_11ubv2")}</p>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-[rgba(180,140,75,0.18)] text-[#D4A574] font-medium">
                       {smokingLogs.length}
                     </span>
@@ -1292,7 +1292,7 @@ export default function PipeDetail() {
                           {selectedKey}
                         </p>
                         {dayLogs.length === 0 ? (
-                          <p className="text-sm text-[#E0D8C8]/50">No sessions on this day.</p>
+                          <p className="text-sm text-[#E0D8C8]/50">{t("auto.pages_PipeDetail.no_sessions_on_this_day_12q13o")}</p>
                         ) : (
                           dayLogs.map((log, i) => (
                             <div
@@ -1338,13 +1338,13 @@ export default function PipeDetail() {
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this pipe?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.pages_PipeDetail.delete_this_pipe_webvfh")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <strong>{pipe?.name}</strong>. This action cannot be undone.
+              {t("auto.pages_PipeDetail.this_will_permanently_delete_1e3ibn")} <strong>{pipe?.name}</strong>{t("auto.pages_PipeDetail.this_action_cannot_be_undone_15oama")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{t("auto.pages_PipeDetail.cancel_1bin7k")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
@@ -1375,7 +1375,7 @@ export default function PipeDetail() {
           valuationSnapshot={pipeStrategy}
           userEmail={user?.email}
           onClose={() => setShowSnapshotModal(false)}
-          onSaved={() => { setShowSnapshotModal(false); reloadSnapshots(); toast.success('Value checkpoint saved'); }}
+          onSaved={() => { setShowSnapshotModal(false); reloadSnapshots(); toast.success(t("auto.pages_PipeDetail.value_checkpoint_saved_1wnagr")); }}
         />
       )}
 
@@ -1386,7 +1386,7 @@ export default function PipeDetail() {
           moduleKey="pipekeeper"
           userEmail={user?.email}
           onClose={() => setShowObservationModal(false)}
-          onSaved={() => { setShowObservationModal(false); reloadObservations(); toast.success('Observation saved'); }}
+          onSaved={() => { setShowObservationModal(false); reloadObservations(); toast.success(t("auto.pages_PipeDetail.observation_saved_4xbdpg")); }}
         />
       )}
 
@@ -1397,7 +1397,7 @@ export default function PipeDetail() {
           onSaved={(updates) => {
             setPipe(prev => ({ ...prev, ...updates }));
             setShowEditValuationModal(false);
-            toast.success('Valuation inputs updated');
+            toast.success(t("auto.pages_PipeDetail.valuation_inputs_updated_mda542"));
             // Reload snapshots so Value History reflects the new inputs
             reloadSnapshots();
           }}

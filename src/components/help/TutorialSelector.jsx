@@ -43,13 +43,14 @@ const TUTORIAL_IDS_ORDERED = [
 ];
 
 function ArticleDetail({ article, onBack }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <button
         onClick={onBack}
         className="flex items-center gap-1 text-sm text-[#D4A574] hover:text-[#F5F1E7] transition-colors"
       >
-        ← Back to tutorials
+        {t("auto.components_help_TutorialSelector.back_to_tutorials_7gnei8")}
       </button>
       <div className="p-5 rounded-xl border border-[rgba(180,140,75,0.18)] bg-[rgba(25,17,12,0.7)]">
         <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full border ${MODULE_COLOR[article.module] || ''}`}>
@@ -61,7 +62,7 @@ function ArticleDetail({ article, onBack }) {
 
         {article.relatedArticles?.length > 0 && (
           <div className="mt-5 pt-4 border-t border-[rgba(180,140,75,0.1)]">
-            <p className="text-xs text-[#D7C9B2]/50 uppercase tracking-wider mb-2">Related articles</p>
+            <p className="text-xs text-[#D7C9B2]/50 uppercase tracking-wider mb-2">{t("auto.components_help_TutorialSelector.related_articles_1wbobh")}</p>
             <div className="flex flex-col gap-1.5">
               {article.relatedArticles.map(id => {
                 const rel = getArticleById(id);

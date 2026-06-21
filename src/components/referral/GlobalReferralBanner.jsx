@@ -4,6 +4,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Button } from '@/components/ui/button';
 import { X, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const BANNER_DISMISSAL_KEY = 'pk_referral_banner_dismissed';
 const BANNER_DISMISSAL_FOREVER_GLOBAL_KEY = 'pk_referral_banner_dismissed_forever_global';
@@ -16,6 +17,7 @@ function getUserForeverDismissalKey(userEmail) {
 }
 
 export default function GlobalReferralBanner() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isLoading } = useCurrentUser();
   const [isDismissed, setIsDismissed] = useState(false);
@@ -167,7 +169,7 @@ export default function GlobalReferralBanner() {
             <button
               onClick={handleDismiss}
               className="text-[#E0D8C8]/50 hover:text-[#E0D8C8] p-1 rounded transition-colors"
-              aria-label="Dismiss"
+              aria-label={t("auto.components_referral_GlobalReferralBanner.dismiss_w1upy9")}
             >
               <X className="w-4 h-4" />
             </button>

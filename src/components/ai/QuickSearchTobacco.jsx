@@ -201,7 +201,7 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
                           <div className="flex flex-wrap gap-1.5 mt-3">
                                      {blend._isExact && (
                                        <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(46,125,92,0.25)', color: 'rgba(100,220,160,1)', border: '1px solid rgba(46,125,92,0.5)', fontWeight: '600' }}>
-                                         ✓ Exact Match
+                                         {t("auto.components_ai_QuickSearchTobacco.exact_match_vy612y")}
                                        </Badge>
                                      )}
                                      {blend.blend_type && (

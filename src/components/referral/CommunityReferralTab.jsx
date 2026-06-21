@@ -16,6 +16,7 @@ import ReferralStats from '@/components/referral/ReferralStats';
 import ReferralProgressBar from '@/components/referral/ReferralProgressBar';
 import ReferralRewardCards from '@/components/referral/ReferralRewardCards';
 import ReferralModuleSelector from '@/components/referral/ReferralModuleSelector';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const cardStyle = {
   background: 'linear-gradient(145deg, rgba(44,30,22,0.98), rgba(27,20,16,0.98))',
@@ -24,6 +25,7 @@ const cardStyle = {
 };
 
 export default function CommunityReferralTab() {
+  const { t } = useTranslation();
   const { user, hasPaid, isLoading } = useCurrentUser();
   const [program, setProgram] = useState(null);
   const [rewards, setRewards] = useState([]);
@@ -47,7 +49,7 @@ export default function CommunityReferralTab() {
       setRewards(rewardsRes?.data?.rewards || []);
       setEarnedAccess(rewardsRes?.data?.earnedAccess || []);
     } catch {
-      toast.error('Failed to load referral data');
+      toast.error(t("auto.components_referral_CommunityReferralTab.failed_to_load_referral_data_15lngm"));
     } finally {
       setLoadingProgram(false);
     }
@@ -97,7 +99,7 @@ export default function CommunityReferralTab() {
       // Show per-email errors
       for (const err of errors) {
         if (err.error === 'already_user') toast.info(`${err.email} is already a CollectionKeeper member`);
-        else if (err.error === 'self_referral') toast.error('You cannot refer yourself');
+        else if (err.error === 'self_referral') toast.error(t("auto.components_referral_CommunityReferralTab.you_cannot_refer_yourself_5p9ab6"));
         else if (err.error === 'recipient_cooldown') toast.warning(err.message || `${err.email} was already invited recently`);
         else if (err.error === 'daily_limit' || err.error === 'daily_limit_partial' || err.error === 'monthly_limit') toast.error(data?.error || 'Invite limit reached');
         else toast.warning(`${err.email}: ${err.error}`);
@@ -105,11 +107,11 @@ export default function CommunityReferralTab() {
 
       // Only show generic fallback if there were no results at all (truly silent failure)
       if (sent === 0 && results.length === 0) {
-        toast.error('No invites were sent. Please check the email addresses and try again.');
+        toast.error(t("auto.components_referral_CommunityReferralTab.no_invites_were_sent_please_check_648twe"));
       }
     } catch (err) {
       console.error('[sendReferralInvite] error:', err);
-      toast.error('Failed to send invites. Please try again.');
+      toast.error(t("auto.components_referral_CommunityReferralTab.failed_to_send_invites_please_try_1bgyis"));
     } finally {
       setSending(false);
     }
@@ -132,16 +134,16 @@ export default function CommunityReferralTab() {
       {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-[#F5F1E7]" style={{ fontFamily: 'Georgia, serif' }}>
-          Invite Friends. Earn Pro Time.
+          {t("auto.components_referral_CommunityReferralTab.invite_friends_earn_pro_time_qdmpfl")}
         </h2>
         <p className="text-[#E0D8C8]/60 text-sm mt-1">
-          Share CollectionKeeper with friends. When someone joins through your invite and becomes a paid subscriber, you earn free subscription time.
+          {t("auto.components_referral_CommunityReferralTab.share_collectionkeeper_with_friends_when_someone_z5rira")}
         </p>
       </div>
 
       {/* How it works */}
       <div className="p-5 rounded-2xl" style={cardStyle}>
-        <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide mb-3">How it works</h3>
+        <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide mb-3">{t("auto.components_referral_CommunityReferralTab.how_it_works_yizg5i")}</h3>
         <div className="grid grid-cols-3 gap-4 text-center">
           {[
             { step: '1', text: 'Share your personal link' },
@@ -175,11 +177,11 @@ export default function CommunityReferralTab() {
           <div className="flex items-center gap-2">
             <Gift className="w-5 h-5 text-[#D4A574]" />
             <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">
-              You have {pendingAccess.length} unclaimed reward{pendingAccess.length > 1 ? 's' : ''}
+              {t("auto.components_referral_CommunityReferralTab.you_have_54sg92")} {pendingAccess.length} unclaimed reward{pendingAccess.length > 1 ? 's' : ''}
             </h3>
           </div>
           <p className="text-xs text-[#E0D8C8]/60">
-            You earned Pro time. Choose which module to unlock with your reward.
+            {t("auto.components_referral_CommunityReferralTab.you_earned_pro_time_choose_which_1yyoht")}
           </p>
           <ReferralModuleSelector
             accessRecord={pendingAccess[0]}
@@ -195,10 +197,10 @@ export default function CommunityReferralTab() {
           <Clock className="w-5 h-5 text-emerald-400 shrink-0" />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-emerald-300">
-              Referral-earned {access.module} access active
+              {t("auto.components_referral_CommunityReferralTab.referral_earned_1csj9d")} {access.module} access active
             </p>
             <p className="text-xs text-emerald-300/60">
-              Expires {access.end_at ? new Date(access.end_at).toLocaleDateString() : '—'}
+              {t("auto.components_referral_CommunityReferralTab.expires_1r22c1")} {access.end_at ? new Date(access.end_at).toLocaleDateString() : '—'}
             </p>
           </div>
         </div>
@@ -209,20 +211,20 @@ export default function CommunityReferralTab() {
 
       {/* Share panel */}
       <div className="p-5 rounded-2xl space-y-4" style={cardStyle}>
-        <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">Your Referral Link</h3>
+        <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">{t("auto.components_referral_CommunityReferralTab.your_referral_link_fnj81h")}</h3>
         <ReferralSharePanel program={program} onInviteClick={() => setShowInviteForm(true)} />
       </div>
 
       {/* Progress */}
       <div className="p-5 rounded-2xl space-y-4" style={cardStyle}>
-        <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">Your Progress</h3>
+        <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">{t("auto.components_referral_CommunityReferralTab.your_progress_1e4bwk")}</h3>
         <ReferralProgressBar program={program} />
       </div>
 
       {/* Reward history */}
       {rewards.length > 0 && (
         <div className="p-5 rounded-2xl space-y-4" style={cardStyle}>
-          <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">Your Rewards</h3>
+          <h3 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide">{t("auto.components_referral_CommunityReferralTab.your_rewards_3os7l8")}</h3>
           <ReferralRewardCards rewards={rewards} earnedAccess={earnedAccess} onRefresh={loadData} />
         </div>
       )}
@@ -232,7 +234,7 @@ export default function CommunityReferralTab() {
         <div className="p-5 rounded-2xl space-y-4" style={{ ...cardStyle, borderColor: 'rgba(163,92,92,0.35)' }}>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-[#F5F1E7]">Send Email Invites</h3>
+              <h3 className="text-sm font-semibold text-[#F5F1E7]">{t("auto.components_referral_CommunityReferralTab.send_email_invites_1902pl")}</h3>
               <p className="text-xs mt-0.5" style={{ color: remainingToday <= 3 ? '#f59e0b' : 'rgba(224,216,200,0.45)' }}>
                 {remainingToday} invite{remainingToday !== 1 ? 's' : ''} remaining today
               </p>
@@ -266,13 +268,13 @@ export default function CommunityReferralTab() {
               ))}
               <Button type="button" variant="ghost" size="sm" className="text-[#E0D8C8]/50 text-xs gap-1"
                 onClick={() => setEmailFields([...emailFields, ''])}>
-                <UserPlus className="w-3.5 h-3.5" /> Add another
+                <UserPlus className="w-3.5 h-3.5" /> {t("auto.components_referral_CommunityReferralTab.add_another_16akfd")}
               </Button>
             </div>
             <Textarea
               value={personalMessage}
               onChange={e => setPersonalMessage(e.target.value)}
-              placeholder="Add a personal note (optional)"
+              placeholder={t("auto.components_referral_CommunityReferralTab.add_a_personal_note_optional_1wfo0g")}
               className="min-h-[80px] bg-white/5 border-white/10 text-[#F5F1E7] placeholder:text-[#E0D8C8]/30"
             />
             <Button
@@ -289,7 +291,7 @@ export default function CommunityReferralTab() {
       )}
 
       <p className="text-xs text-[#E0D8C8]/30 text-center pb-4">
-        Rewards are granted after a referred friend completes a paid subscription. Self-referrals and duplicate accounts do not qualify.
+        {t("auto.components_referral_CommunityReferralTab.rewards_are_granted_after_a_referred_u41q0a")}
       </p>
     </div>
   );

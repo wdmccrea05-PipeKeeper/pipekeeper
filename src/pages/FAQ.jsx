@@ -13,7 +13,7 @@ function AppleFAQ() {
       <div className="mb-2">
         <h1 className="text-3xl font-bold text-[#e8d5b7]">FAQ</h1>
         <p className="text-sm text-[#e8d5b7]/70 mt-2">
-          Definitions, general information, and disclaimers
+          {t("auto.pages_FAQ.definitions_general_information_and_disclaimers_1bnu5o")}
         </p>
       </div>
 

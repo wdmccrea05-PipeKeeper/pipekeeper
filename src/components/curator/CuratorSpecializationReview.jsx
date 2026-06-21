@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { applyPipeSpecialization } from '@/lib/curator/recommendationActions.js';
 import CuratorRecommendationGroup from './CuratorRecommendationGroup';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ─── Confidence styles ────────────────────────────────────────────────────────
 
@@ -68,6 +69,7 @@ function buildWhyBullets(pipe) {
 // ─── Single pipe review panel ─────────────────────────────────────────────────
 
 function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejected, onAskCurator }) {
+  const { t } = useTranslation();
   const [applying, setApplying]     = useState(false);
   const [status, setStatus]         = useState(null); // null | 'accepted' | 'rejected'
   const [customSpec, setCustomSpec] = useState('');
@@ -125,7 +127,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
       >
         <X className="w-4 h-4 shrink-0" style={{ color: 'rgba(224,216,200,0.35)' }} />
         <span className="text-sm" style={{ color: 'rgba(224,216,200,0.45)' }}>
-          {pipe.recordName} — skipped
+          {pipe.recordName} {t("auto.components_curator_CuratorSpecializationReview.skipped_1f0jsa")}
         </span>
       </div>
     );
@@ -159,7 +161,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
                 <span className="text-[11px]" style={{ color: 'rgba(224,216,200,0.45)' }}>
                   {pipe.currentSpec
                     ? <><strong style={{ color: 'rgba(224,216,200,0.65)' }}>{pipe.currentSpec}</strong></>
-                    : <span style={{ color: 'rgba(224,216,200,0.3)' }}>None</span>}
+                    : <span style={{ color: 'rgba(224,216,200,0.3)' }}>{t("auto.components_curator_CuratorSpecializationReview.none_yjz4d1")}</span>}
                 </span>
                 <span style={{ color: 'rgba(140,105,65,0.4)' }}>→</span>
                 <span className="text-[11px] font-semibold" style={{ color: 'rgba(200,155,100,0.9)' }}>
@@ -190,7 +192,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
           <div className="space-y-3 pt-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(224,216,200,0.3)' }}>
-                Issue
+                {t("auto.components_curator_CuratorSpecializationReview.issue_3py8mm")}
               </p>
               <p className="text-xs leading-relaxed" style={{ color: 'rgba(224,216,200,0.7)' }}>
                 {issueStatement}
@@ -198,7 +200,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'rgba(224,216,200,0.3)' }}>
-                Suggested
+                {t("auto.components_curator_CuratorSpecializationReview.suggested_18n0g4")}
               </p>
               <p className="text-xs font-semibold" style={{ color: 'rgba(200,155,100,0.9)' }}>
                 {pipe.suggestedSpec ? `${pipe.suggestedSpec} specialist` : '—'}
@@ -206,7 +208,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'rgba(224,216,200,0.3)' }}>
-                Evidence
+                {t("auto.components_curator_CuratorSpecializationReview.evidence_18o9ob")}
               </p>
               <ul className="space-y-1">
                 {whyBullets.map((bullet, i) => (
@@ -227,7 +229,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
             {pipe.allTypes?.length > 0 && (
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'rgba(224,216,200,0.3)' }}>
-                  Top Blend Families
+                  {t("auto.components_curator_CuratorSpecializationReview.top_blend_families_fy9l5z")}
                 </p>
                 <div className="space-y-1.5">
                   {pipe.allTypes.slice(0, 4).map(({ type, count }) => {
@@ -265,7 +267,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
             {pipe.topBlends?.length > 0 && (
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'rgba(224,216,200,0.3)' }}>
-                  Related Blends
+                  {t("auto.components_curator_CuratorSpecializationReview.related_blends_1or2tn")}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {pipe.topBlends.map((blend) => (
@@ -295,7 +297,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
             type="text"
             value={customSpec}
             onChange={(e) => setCustomSpec(e.target.value)}
-            placeholder="Enter custom specialization…"
+            placeholder={t("auto.components_curator_CuratorSpecializationReview.enter_custom_specialization_qqaumb")}
             className="flex-1 text-xs rounded-lg px-3 py-1.5 outline-none"
             style={{ background: 'rgba(255,255,255,0.05)', color: '#F5F1E7', border: '1px solid rgba(140,105,65,0.25)' }}
           />
@@ -305,7 +307,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
             className="text-xs px-2 py-1 rounded"
             style={{ color: 'rgba(224,216,200,0.4)' }}
           >
-            Cancel
+            {t("auto.components_curator_CuratorSpecializationReview.cancel_1bin7k")}
           </button>
         </div>
       )}
@@ -330,7 +332,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
           style={{ background: 'rgba(74,124,92,0.25)', color: 'rgba(80,180,130,1)', border: '1px solid rgba(74,124,92,0.4)' }}
         >
           {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-          Accept
+          {t("auto.components_curator_CuratorSpecializationReview.accept_1a980i")}
           {pipe.suggestedSpec && !showCustom && (
             <span className="opacity-60 ml-0.5 font-normal">— {pipe.suggestedSpec}</span>
           )}
@@ -342,7 +344,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
           style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.2)' }}
         >
           <X className="w-3 h-3" />
-          Reject
+          {t("auto.components_curator_CuratorSpecializationReview.reject_1lavyg")}
         </button>
         <button
           type="button"
@@ -369,7 +371,7 @@ function PipeReviewPanel({ pipe, isSelected, onToggleSelect, onAccepted, onRejec
             style={{ background: 'rgba(74,124,156,0.1)', color: 'rgba(120,170,220,0.8)', border: '1px solid rgba(74,124,156,0.2)' }}
           >
             <HelpCircle className="w-3 h-3" />
-            Ask Curator
+            {t("auto.components_curator_CuratorSpecializationReview.ask_curator_4c37lw")}
           </button>
         )}
       </div>
@@ -491,6 +493,7 @@ export default function CuratorSpecializationReview({
   onAskCurator,
   onOpenGrowExpand,
 }) {
+  const { t } = useTranslation();
   // ─── Collection optimization sections (BALANCE + UTILIZATION) ────────────────
   const hasCollectionSections = collectionSections.some((s) => s.recommendations?.length > 0);
   // Extract pipe items with actual evidence
@@ -572,9 +575,9 @@ export default function CuratorSpecializationReview({
     return (
       <div className="space-y-4">
         <div>
-          <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>Collection Optimization</h2>
+          <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>{t("auto.components_curator_CuratorSpecializationReview.collection_optimization_14oe5s")}</h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-            Rotation, balance, and pipe specialization suggestions
+            {t("auto.components_curator_CuratorSpecializationReview.rotation_balance_and_pipe_specialization_suggest_q6fyry")}
           </p>
         </div>
 
@@ -586,10 +589,10 @@ export default function CuratorSpecializationReview({
         <div className="py-8 text-center space-y-3">
           <CheckCircle2 className="w-10 h-10 mx-auto" style={{ color: 'rgba(74,124,92,0.35)' }} />
           <p className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>
-            No specialization candidates with session evidence
+            {t("auto.components_curator_CuratorSpecializationReview.no_specialization_candidates_with_session_eviden_1ms0tb")}
           </p>
           <p className="text-xs max-w-xs mx-auto" style={{ color: 'rgba(224,216,200,0.4)' }}>
-            Log sessions with your pipes to build usage history. The Curator will suggest specializations once enough data exists.
+            {t("auto.components_curator_CuratorSpecializationReview.log_sessions_with_your_pipes_to_1o7pah")}
           </p>
         </div>
         {noDataItems.length > 0 && (
@@ -598,7 +601,7 @@ export default function CuratorSpecializationReview({
             style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(140,105,65,0.1)' }}
           >
             <p className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(224,216,200,0.4)' }}>
-              Pipes needing session data ({noDataItems.length})
+              {t("auto.components_curator_CuratorSpecializationReview.pipes_needing_session_data_1kcx8p")}{noDataItems.length})
             </p>
             <div className="flex flex-wrap gap-1.5">
               {noDataItems.map((p) => (
@@ -621,7 +624,7 @@ export default function CuratorSpecializationReview({
               className="text-xs px-4 py-2 rounded-lg"
               style={{ background: 'rgba(140,105,65,0.12)', color: 'rgba(224,216,200,0.65)', border: '1px solid rgba(140,105,65,0.22)' }}
             >
-              Back to Board
+              {t("auto.components_curator_CuratorSpecializationReview.back_to_board_41s01")}
             </button>
           </div>
         )}
@@ -636,10 +639,10 @@ export default function CuratorSpecializationReview({
       {/* Title */}
       <div>
         <h2 className="text-base font-bold" style={{ color: '#F5F1E7' }}>
-          Collection Optimization
+          {t("auto.components_curator_CuratorSpecializationReview.collection_optimization_14oe5s")}
         </h2>
         <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>
-          Rotation, balance, and pipe specialization — all in one place
+          {t("auto.components_curator_CuratorSpecializationReview.rotation_balance_and_pipe_specialization_all_cdq9vi")}
         </p>
       </div>
 
@@ -654,7 +657,7 @@ export default function CuratorSpecializationReview({
           className="text-[11px] font-bold uppercase tracking-widest shrink-0"
           style={{ color: 'rgba(224,216,200,0.45)' }}
         >
-          Pipe Specialization
+          {t("auto.components_curator_CuratorSpecializationReview.pipe_specialization_166280")}
         </span>
         <div className="flex-1 h-px" style={{ background: 'rgba(140,105,65,0.15)' }} />
         <span
@@ -710,7 +713,7 @@ export default function CuratorSpecializationReview({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search pipes…"
+            placeholder={t("auto.components_curator_CuratorSpecializationReview.search_pipes_zppp7m")}
             className="flex-1 text-xs bg-transparent outline-none min-w-0"
             style={{ color: '#F5F1E7' }}
           />
@@ -728,10 +731,10 @@ export default function CuratorSpecializationReview({
           className="text-xs rounded-lg px-3 py-1.5 outline-none"
           style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(224,216,200,0.7)', border: '1px solid rgba(140,105,65,0.15)' }}
         >
-          <option value="all">All confidence</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
+          <option value="all">{t("auto.components_curator_CuratorSpecializationReview.all_confidence_a2ppkc")}</option>
+          <option value="high">{t("auto.components_curator_CuratorSpecializationReview.high_yjucrp")}</option>
+          <option value="medium">{t("auto.components_curator_CuratorSpecializationReview.medium_1i29el")}</option>
+          <option value="low">{t("auto.components_curator_CuratorSpecializationReview.low_376lfb")}</option>
         </select>
 
         {/* Blend family filter — only shown when multiple families exist */}
@@ -761,7 +764,7 @@ export default function CuratorSpecializationReview({
               style={{ background: 'rgba(74,124,92,0.2)', color: 'rgba(80,180,130,1)', border: '1px solid rgba(74,124,92,0.35)' }}
             >
               <Check className="w-3 h-3" />
-              Accept Selected
+              {t("auto.components_curator_CuratorSpecializationReview.accept_selected_1dffuz")}
             </button>
             <button
               type="button"
@@ -770,7 +773,7 @@ export default function CuratorSpecializationReview({
               style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.6)', border: '1px solid rgba(140,105,65,0.2)' }}
             >
               <X className="w-3 h-3" />
-              Reject Selected
+              {t("auto.components_curator_CuratorSpecializationReview.reject_selected_sdnld7")}
             </button>
           </div>
         )}
@@ -779,7 +782,7 @@ export default function CuratorSpecializationReview({
       {/* No filter match */}
       {filteredItems.length === 0 && (
         <p className="text-sm text-center py-8" style={{ color: 'rgba(224,216,200,0.4)' }}>
-          No pipes match the current filters.
+          {t("auto.components_curator_CuratorSpecializationReview.no_pipes_match_the_current_filters_2310bf")}
         </p>
       )}
 
@@ -805,7 +808,7 @@ export default function CuratorSpecializationReview({
           style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(140,105,65,0.1)' }}
         >
           <p className="text-[11px] font-semibold mb-1.5" style={{ color: 'rgba(224,216,200,0.4)' }}>
-            Pipes needing session data ({noDataItems.length}) — log sessions to generate suggestions
+            {t("auto.components_curator_CuratorSpecializationReview.pipes_needing_session_data_1kcx8p")}{noDataItems.length}{t("auto.components_curator_CuratorSpecializationReview.log_sessions_to_generate_suggestions_aelv0k")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {noDataItems.map((p) => (
@@ -830,7 +833,7 @@ export default function CuratorSpecializationReview({
             className="text-xs px-4 py-2 rounded-lg"
             style={{ background: 'rgba(140,105,65,0.12)', color: 'rgba(224,216,200,0.65)', border: '1px solid rgba(140,105,65,0.22)' }}
           >
-            Done
+            {t("auto.components_curator_CuratorSpecializationReview.done_yjrf2j")}
           </button>
         </div>
       )}

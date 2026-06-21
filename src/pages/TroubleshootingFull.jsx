@@ -160,69 +160,69 @@ export default function TroubleshootingFull() {
           </TroubleshootingItem>
         </Section>
 
-        <Section icon={Sparkles} title="Value &amp; Strategy" accentClass="text-amber-300">
+        <Section icon={Sparkles} title={t("auto.pages_TroubleshootingFull.value_and_strategy_1bnfwi")} accentClass="text-amber-300">
           <TroubleshootingItem
             id="rarity-score-unexpected"
-            title="My rarity score seems too high or too low"
+            title={t("auto.pages_TroubleshootingFull.my_rarity_score_seems_too_high_19oypq")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p className="mb-2">The rarity score is computed from the fields stored on the item record. If the score looks wrong, check these fields on the item’s edit form:</p>
+            <p className="mb-2">{t("auto.pages_TroubleshootingFull.the_rarity_score_is_computed_from_za6fi1")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>Production Status (Discontinued, Limited Edition, Allocated, etc.)</li>
-              <li>Maker Status (Deceased, Retired, Inactive) for pipes</li>
-              <li>Production Type (One-Off, Limited Artisan Batch) for pipes</li>
-              <li>Age Statement for whiskey bottles</li>
-              <li>Cellar age for tobacco blends</li>
+              <li>{t("auto.pages_TroubleshootingFull.production_status_discontinued_limited_edition_a_lxm2lx")}</li>
+              <li>{t("auto.pages_TroubleshootingFull.maker_status_deceased_retired_inactive_for_1a2kou")}</li>
+              <li>{t("auto.pages_TroubleshootingFull.production_type_one_off_limited_artisan_1opw5t")}</li>
+              <li>{t("auto.pages_TroubleshootingFull.age_statement_for_whiskey_bottles_17jzg3")}</li>
+              <li>{t("auto.pages_TroubleshootingFull.cellar_age_for_tobacco_blends_1nzpcv")}</li>
             </ul>
-            <p className="mt-2">Once the field is corrected and saved, return to the detail page — the rarity score updates immediately.</p>
+            <p className="mt-2">{t("auto.pages_TroubleshootingFull.once_the_field_is_corrected_and_t723tc")}</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="value-not-showing"
-            title="The Value & Strategy section shows ‘—’ for Current Value"
+            title={t("auto.pages_TroubleshootingFull.the_value_and_strategy_section_shows_ale54h")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>No value is shown when none of the value fields have been set on the item. To fix this, open the item’s edit form and enter at least one value: Purchase Price, Estimated Value, Retail Price, or Aftermarket/Collector Value. The section will then display the most relevant value with a confidence badge. You can also save a manual checkpoint via the Value &amp; Strategy section’s <strong>Save Checkpoint</strong> button.</p>
+            <p>{t("auto.pages_TroubleshootingFull.no_value_is_shown_when_none_igrg35")} <strong>{t("auto.pages_TroubleshootingFull.save_checkpoint_1tg0r4")}</strong> button.</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="strategy-recommendation-unexpected"
-            title="The strategy recommendation doesn't seem right for my item"
+            title={t("auto.pages_TroubleshootingFull.the_strategy_recommendation_doesn_t_seem_kl54sm")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>The recommendation (e.g. Hold, Cellar, Preserve) is computed automatically from the rarity score, replacement difficulty, and item data. If the recommendation seems wrong, review the item’s production status, maker status (for pipes), and pricing fields — inaccurate inputs produce inaccurate recommendations. You can override specific fields like <strong>Replacement Difficulty</strong> directly on the item record if the computed value doesn’t match reality.</p>
+            <p>{t("auto.pages_TroubleshootingFull.the_recommendation_e_g_hold_cellar_1l71ks")} <strong>{t("auto.pages_TroubleshootingFull.replacement_difficulty_i84seg")}</strong> directly on the item record if the computed value doesn’t match reality.</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="value-history-empty"
-            title="My Value History is empty"
+            title={t("auto.pages_TroubleshootingFull.my_value_history_is_empty_1dvzby")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>Value history records are created only when you manually click <strong>Save Checkpoint</strong> in the Value &amp; Strategy section, or when a Refresh is triggered (which also saves a checkpoint). They are not created automatically on item creation. Click <strong>Save Checkpoint</strong> on any item to start building its history.</p>
+            <p>{t("auto.pages_TroubleshootingFull.value_history_records_are_created_only_12kpi0")} <strong>{t("auto.pages_TroubleshootingFull.save_checkpoint_1tg0r4")}</strong> in the Value &amp; Strategy section, or when a Refresh is triggered (which also saves a checkpoint). They are not created automatically on item creation. Click <strong>{t("auto.pages_TroubleshootingFull.save_checkpoint_1tg0r4")}</strong> on any item to start building its history.</p>
           </TroubleshootingItem>
         </Section>
 
-        <Section icon={RefreshCw} title="Collector's Snapshot" accentClass="text-sky-300">
+        <Section icon={RefreshCw} title={t("auto.pages_TroubleshootingFull.collector_s_snapshot_wqtl92")} accentClass="text-sky-300">
           <TroubleshootingItem
             id="snapshot-only-shows-one-module"
-            title="My Snapshot only shows pipes (or only shows whiskey)"
+            title={t("auto.pages_TroubleshootingFull.my_snapshot_only_shows_pipes_or_kayboe")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>The Collector’s Snapshot is module-aware — it only shows cards for your <strong>enabled</strong> modules. If WhiskeyKeeper or PipeKeeper is disabled in your Profile settings, those cards will not appear. Go to <strong>Profile &gt; Module Settings</strong> to enable the modules you want included.</p>
+            <p>{t("auto.pages_TroubleshootingFull.the_collector_s_snapshot_is_module_1vsxdo")} <strong>enabled</strong> modules. If WhiskeyKeeper or PipeKeeper is disabled in your Profile settings, those cards will not appear. Go to <strong>{t("auto.pages_TroubleshootingFull.profile_module_settings_1njyeq")}</strong> to enable the modules you want included.</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="snapshot-not-updating"
-            title="My Snapshot looks outdated or doesn’t reflect recent additions"
+            title={t("auto.pages_TroubleshootingFull.my_snapshot_looks_outdated_or_doesn_1x7mpu")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>Click the <strong>Regenerate</strong> button on the Collection Story card on the Hub to rebuild the snapshot from your current data. The snapshot is also regenerated automatically when significant collection changes are detected, but manual regeneration ensures it reflects your latest items immediately.</p>
+            <p>{t("auto.pages_TroubleshootingFull.click_the_176uws")} <strong>{t("auto.pages_TroubleshootingFull.regenerate_1taw84")}</strong> button on the Collection Story card on the Hub to rebuild the snapshot from your current data. The snapshot is also regenerated automatically when significant collection changes are detected, but manual regeneration ensures it reflects your latest items immediately.</p>
           </TroubleshootingItem>
         </Section>
       </div>

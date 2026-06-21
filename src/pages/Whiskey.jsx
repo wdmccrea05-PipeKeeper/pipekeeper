@@ -68,7 +68,7 @@ function BottleGridCard({ bottle, onOpen }) {
             className="w-full h-full object-contain"
           />
         ) : (
-          <div className="text-[#D8C7A6]/45 text-sm">No photo</div>
+          <div className="text-[#D8C7A6]/45 text-sm">{t("auto.pages_Whiskey.no_photo_by1498")}</div>
         )}
       </div>
 
@@ -120,7 +120,7 @@ function BottleListRow({ bottle, onOpen }) {
             className="w-full h-full object-contain"
           />
         ) : (
-          <div className="text-[#D8C7A6]/45 text-xs">No photo</div>
+          <div className="text-[#D8C7A6]/45 text-xs">{t("auto.pages_Whiskey.no_photo_by1498")}</div>
         )}
       </div>
 
@@ -248,7 +248,7 @@ function WhiskeyInner() {
             className="text-4xl font-bold"
             style={{ fontFamily: "'Georgia', serif" }}
           >
-            Whiskey Collection
+            {t("auto.pages_Whiskey.whiskey_collection_1ns1lp")}
           </h1>
           <p className="text-[#D8C7A6]/76 mt-2">
             {filteredBottles.length} bottle{filteredBottles.length === 1 ? "" : "s"}
@@ -286,11 +286,11 @@ function WhiskeyInner() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent style={{ background: "rgba(25,17,11,0.98)", border: "1px solid rgba(180,140,75,0.35)" }}>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="distillery">Distillery</SelectItem>
-                <SelectItem value="type">Type</SelectItem>
-                <SelectItem value="value">Value</SelectItem>
-                <SelectItem value="date">Newest First</SelectItem>
+                <SelectItem value="name">{t("auto.pages_Whiskey.name_yjyskm")}</SelectItem>
+                <SelectItem value="distillery">{t("auto.pages_Whiskey.distillery_48pp9m")}</SelectItem>
+                <SelectItem value="type">{t("auto.pages_Whiskey.type_yk3z6v")}</SelectItem>
+                <SelectItem value="value">{t("auto.pages_Whiskey.value_3yqnfm")}</SelectItem>
+                <SelectItem value="date">{t("auto.pages_Whiskey.newest_first_2jgvhf")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -338,13 +338,13 @@ function WhiskeyInner() {
             }}
           >
             <PlusCircle className="w-4 h-4 mr-2" />
-            Add Whiskey
+            {t("auto.pages_Whiskey.add_whiskey_11ss4q")}
           </Button>
         </div>
       </div>
 
       {loading || userLoading ? (
-        <div className="text-[#D8C7A6]/72">Loading…</div>
+        <div className="text-[#D8C7A6]/72">{t("auto.pages_Whiskey.loading_1sqiar")}</div>
       ) : filteredBottles.length === 0 ? (
         <div
           className="rounded-2xl p-10 text-center"
@@ -354,12 +354,12 @@ function WhiskeyInner() {
           }}
         >
           <Sparkles className="w-10 h-10 mx-auto text-[#B48C4B] mb-4" />
-          <p className="text-2xl font-semibold">No Bottles Yet</p>
+          <p className="text-2xl font-semibold">{t("auto.pages_Whiskey.no_bottles_yet_2ek3n5")}</p>
           <p className="text-[#D8C7A6]/76 mt-2">
-            Add your first bottle to start building your whiskey vault.
+            {t("auto.pages_Whiskey.add_your_first_bottle_to_start_imk4u3")}
           </p>
           <Button className="mt-5" onClick={() => setShowAddModal(true)}>
-            Add Whiskey
+            {t("auto.pages_Whiskey.add_whiskey_11ss4q")}
           </Button>
         </div>
       ) : viewMode === "grid" ? (

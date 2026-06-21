@@ -14,6 +14,7 @@ import { selectCellarValue } from '@/lib/collection/tobaccoSelectors';
 import { TrendingUp, Award, Flame, ShieldAlert, Leaf, RotateCw } from 'lucide-react';
 import PipeShapeIcon from '@/components/pipes/PipeShapeIcon';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ── Analytics helpers ──────────────────────────────────────────────────────
 
@@ -141,6 +142,7 @@ function ItemRow({ name, sub, badge, value, rarity, recommendation, recommendati
 // ── Main component ─────────────────────────────────────────────────────────
 
 export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp }) {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const [activeSubTab, setActiveSubTab] = React.useState('pipes');
   // Subscribe to currency context so the component re-renders when the user changes currency
@@ -219,7 +221,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
         <div className="space-y-5">
           {mostValuablePipes.length > 0 && (
             <div className="rounded-2xl p-5" style={CARD_STYLE}>
-              <SectionHeader icon={TrendingUp} title="Most Valuable Pipes" />
+              <SectionHeader icon={TrendingUp} title={t("auto.components_pipes_PipeValuationTab.most_valuable_pipes_16gppm")} />
               <div className="space-y-2">
                 {mostValuablePipes.map(p => (
                   <ItemRow key={p.id} name={p.name} sub={[p.maker, p.bowl_material].filter(Boolean).join(' · ')} value={p._value} rarity={computeRarityScore(p, 'pipekeeper')} formatFromBase={formatFromBase} />
@@ -229,7 +231,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
           )}
           {rarestPipes.length > 0 && (
             <div className="rounded-2xl p-5" style={CARD_STYLE}>
-              <SectionHeader icon={Award} title="Rarest Pipes" color="#f59e0b" />
+              <SectionHeader icon={Award} title={t("auto.components_pipes_PipeValuationTab.rarest_pipes_19i9k3")} color="#f59e0b" />
               <div className="space-y-2">
                 {rarestPipes.map(p => {
                   const rec = computeOpenVsHoldDecision(p, 'pipekeeper').holdRecommendation;
@@ -242,8 +244,8 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
           )}
           {underutilizedPipes.length > 0 && (
             <div className="rounded-2xl p-5" style={CARD_STYLE}>
-              <SectionHeader icon={RotateCw} title="Rotate or Preserve — High-Value Pipes" color="#a78bfa" />
-              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>These pipes have notable value. Consider whether to rotate them into regular use or preserve them.</p>
+              <SectionHeader icon={RotateCw} title={t("auto.components_pipes_PipeValuationTab.rotate_or_preserve_high_value_pipes_qo4ckg")} color="#a78bfa" />
+              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>{t("auto.components_pipes_PipeValuationTab.these_pipes_have_notable_value_consider_12b56h")}</p>
               <div className="space-y-2">
                 {underutilizedPipes.map(p => (
                   <ItemRow key={p.id} name={p.name} sub={[p.maker, p.condition].filter(Boolean).join(' · ')} value={p._value} recommendation={p._rec} recommendationLabel={PIPE_RECOMMENDATION_LABELS[p._rec] || p._rec} recommendationColor="#a78bfa" formatFromBase={formatFromBase} />
@@ -254,7 +256,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
           {pipes.length === 0 && (
             <div className="rounded-2xl p-8 text-center" style={CARD_STYLE}>
               <PipeShapeIcon shape="Billiard" className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(180,140,75,0.3)' }} />
-              <p style={{ color: 'rgba(224,216,200,0.5)' }}>No pipes found. Add pipes to see insights.</p>
+              <p style={{ color: 'rgba(224,216,200,0.5)' }}>{t("auto.components_pipes_PipeValuationTab.no_pipes_found_add_pipes_to_1k52ii")}</p>
             </div>
           )}
         </div>
@@ -265,7 +267,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
         <div className="space-y-5">
           {mostValuableTobaccos.length > 0 && (
             <div className="rounded-2xl p-5" style={CARD_STYLE}>
-              <SectionHeader icon={TrendingUp} title="Highest Cellar Value" />
+              <SectionHeader icon={TrendingUp} title={t("auto.components_pipes_PipeValuationTab.highest_cellar_value_qqwyn5")} />
               <div className="space-y-2">
                 {mostValuableTobaccos.map(b => (
                   <ItemRow key={b.id} name={b.name} sub={[b.manufacturer, b.blend_type].filter(Boolean).join(' · ')} value={b._value} rarity={computeRarityScore(b, 'pipekeeper')} formatFromBase={formatFromBase} />
@@ -275,8 +277,8 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
           )}
           {discontinuedBlends.length > 0 && (
             <div className="rounded-2xl p-5" style={CARD_STYLE}>
-              <SectionHeader icon={ShieldAlert} title="Discontinued Blends" color="#f87171" />
-              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>These blends are no longer in production. Value and scarcity may increase over time.</p>
+              <SectionHeader icon={ShieldAlert} title={t("auto.components_pipes_PipeValuationTab.discontinued_blends_xbqaee")} color="#f87171" />
+              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>{t("auto.components_pipes_PipeValuationTab.these_blends_are_no_longer_in_1063yk")}</p>
               <div className="space-y-2">
                 {discontinuedBlends.map(b => {
                   const rec = computeOpenVsHoldDecision(b, 'pipekeeper').holdRecommendation;
@@ -289,7 +291,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
           )}
           {rarestTobaccos.length > 0 && (
             <div className="rounded-2xl p-5" style={CARD_STYLE}>
-              <SectionHeader icon={Award} title="Rarest Blends" color="#f59e0b" />
+              <SectionHeader icon={Award} title={t("auto.components_pipes_PipeValuationTab.rarest_blends_132y3y")} color="#f59e0b" />
               <div className="space-y-2">
                 {rarestTobaccos.map(b => {
                   const rec = computeOpenVsHoldDecision(b, 'pipekeeper').holdRecommendation;
@@ -302,8 +304,8 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
           )}
           {cellarCandidates.length > 0 && (
             <div className="rounded-2xl p-5" style={CARD_STYLE}>
-              <SectionHeader icon={Leaf} title="Optimal Cellar Candidates" color="#34d399" />
-              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>These blends are recommended for aging to enhance flavor and value.</p>
+              <SectionHeader icon={Leaf} title={t("auto.components_pipes_PipeValuationTab.optimal_cellar_candidates_1mps82")} color="#34d399" />
+              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>{t("auto.components_pipes_PipeValuationTab.these_blends_are_recommended_for_aging_vchowr")}</p>
               <div className="space-y-2">
                 {cellarCandidates.map(b => (
                   <ItemRow key={b.id} name={b.name} sub={[b.manufacturer, b.aging_potential ? `Aging: ${b.aging_potential}` : null].filter(Boolean).join(' · ')} recommendation="cellar" recommendationLabel="Cellar for Aging" recommendationColor="#34d399" />
@@ -313,8 +315,8 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
           )}
           {smokeNowCandidates.length > 0 && (
             <div className="rounded-2xl p-5" style={CARD_STYLE}>
-              <SectionHeader icon={Flame} title="Smoke Now — Widely Available" color="#fb923c" />
-              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>These blends are easy to replenish — enjoy freely without concern.</p>
+              <SectionHeader icon={Flame} title={t("auto.components_pipes_PipeValuationTab.smoke_now_widely_available_oqqsbf")} color="#fb923c" />
+              <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.55)' }}>{t("auto.components_pipes_PipeValuationTab.these_blends_are_easy_to_replenish_c4ujnb")}</p>
               <div className="space-y-2">
                 {smokeNowCandidates.map(b => (
                   <ItemRow key={b.id} name={b.name} sub={[b.manufacturer, b.blend_type].filter(Boolean).join(' · ')} recommendation="smoke_now" recommendationLabel="Smoke Now" recommendationColor="#fb923c" />
@@ -325,7 +327,7 @@ export default function PipeValuationTab({ pipes: pipesProp, blends: blendsProp 
           {blends.length === 0 && (
             <div className="rounded-2xl p-8 text-center" style={CARD_STYLE}>
               <Leaf className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(90,124,90,0.3)' }} />
-              <p style={{ color: 'rgba(224,216,200,0.5)' }}>No tobacco blends found. Add blends to see insights.</p>
+              <p style={{ color: 'rgba(224,216,200,0.5)' }}>{t("auto.components_pipes_PipeValuationTab.no_tobacco_blends_found_add_blends_18vqfj")}</p>
             </div>
           )}
         </div>

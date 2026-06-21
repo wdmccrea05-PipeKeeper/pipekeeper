@@ -163,7 +163,7 @@ export default function LogSessionSelector({
             type="button"
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-white/8 text-[#EADFCF]/80"
-            aria-label="Close"
+            aria-label={t("auto.components_session_LogSessionSelector.close_3lk8qj")}
           >
             <X className="w-5 h-5" />
           </button>

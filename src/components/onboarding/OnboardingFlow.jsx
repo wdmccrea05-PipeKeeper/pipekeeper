@@ -85,7 +85,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
         <div className="space-y-4 text-center">
            <img 
              src={PIPE_ICON}
-             alt="PipeKeeper"
+             alt={t("auto.components_onboarding_OnboardingFlow.pipekeeper_1dclxa")}
              className="w-24 h-24 mx-auto object-contain bg-[#2a1f18] rounded-lg p-2"
            />
           <p className="text-[#E0D8C8]/70 text-lg">

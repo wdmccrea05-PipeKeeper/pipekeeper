@@ -4,8 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import CigarForm from '@/components/cigars/CigarForm';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function CigarFormPageInner() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useCurrentUser();
@@ -73,7 +75,7 @@ function CigarFormPageInner() {
             border: '1px solid rgba(140,107,63,0.22)',
           }}
         >
-          <p style={{ color: 'rgba(224,216,200,0.65)' }}>Loading…</p>
+          <p style={{ color: 'rgba(224,216,200,0.65)' }}>{t("auto.pages_CigarFormPage.loading_1sqiar")}</p>
         </div>
       </div>
     );

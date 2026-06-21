@@ -253,7 +253,7 @@ function StorySlide({ card, current, total, slideRef }) {
           className="text-[10px] uppercase tracking-[0.22em] font-bold whitespace-nowrap"
           style={{ color: "rgba(180,140,75,0.72)" }}
         >
-          PipeKeeper
+          {t("auto.components_story_CollectorStory.pipekeeper_1dclxa")}
         </div>
 
         <div

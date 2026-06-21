@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { buildReferralLink } from '@/lib/config/referralConfig';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const MODULE_OPTIONS = [
   { key: null, label: 'General' },
@@ -18,6 +19,7 @@ const MODULE_OPTIONS = [
 ];
 
 export default function ReferralSharePanel({ program, onInviteClick }) {
+  const { t } = useTranslation();
   const [selectedModule, setSelectedModule] = useState(null);
   const [copied, setCopied] = useState(false);
 
@@ -37,7 +39,7 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
   const copyLink = async () => {
     await navigator.clipboard.writeText(shareLink);
     setCopied(true);
-    toast.success('Referral link copied!');
+    toast.success(t("auto.components_referral_ReferralSharePanel.referral_link_copied_t16or"));
     setTimeout(() => setCopied(false), 2000);
     trackShare('copy'); // increments links_copied on program
   };
@@ -63,7 +65,7 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
     <div className="space-y-4">
       {/* Module selector */}
       <div>
-        <p className="text-xs text-[#E0D8C8]/60 mb-2 uppercase tracking-wide">Invite for a specific module</p>
+        <p className="text-xs text-[#E0D8C8]/60 mb-2 uppercase tracking-wide">{t("auto.components_referral_ReferralSharePanel.invite_for_a_specific_module_15ps8y")}</p>
         <div className="flex flex-wrap gap-2">
           {MODULE_OPTIONS.map(opt => (
             <button
@@ -100,7 +102,7 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
           style={{ background: '#A35C5C', color: '#fff' }}
         >
           <Mail className="w-4 h-4" />
-          Send Email Invite
+          {t("auto.components_referral_ReferralSharePanel.send_email_invite_s0pll2")}
         </Button>
         <Button
           onClick={nativeShare}
@@ -108,12 +110,12 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
           className="gap-2 text-sm border-white/10 text-[#E0D8C8] hover:bg-white/10"
         >
           <Share2 className="w-4 h-4" />
-          Share
+          {t("auto.components_referral_ReferralSharePanel.share_3wrj14")}
         </Button>
       </div>
 
       <p className="text-xs text-[#E0D8C8]/40 text-center">
-        Your code: <span className="font-mono text-[#D4A574]">{program?.referral_code}</span>
+        {t("auto.components_referral_ReferralSharePanel.your_code_1dl5wv")} <span className="font-mono text-[#D4A574]">{program?.referral_code}</span>
       </p>
     </div>
   );

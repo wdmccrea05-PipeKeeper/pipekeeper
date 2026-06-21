@@ -181,7 +181,7 @@ export default function WhiskeyKeeperModule({
       {bottleLimit.atLimit && !hasWhiskeyPro && (
         <FreeTierUpgradePrompt
           moduleId="whiskeykeeper"
-          title="Bottle Collection Limit Reached"
+          title={t("auto.components_modules_WhiskeyKeeperModule.bottle_collection_limit_reached_86ra92")}
           description={`You've reached the ${bottleLimit.limit} bottle limit on your free tier. Upgrade to WhiskeyKeeper Pro for unlimited storage.`}
         />
       )}

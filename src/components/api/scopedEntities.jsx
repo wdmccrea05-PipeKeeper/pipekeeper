@@ -14,6 +14,7 @@
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { safeUpdate } from '@/components/utils/safeUpdate';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const RUNTIME_GUARD_ENABLED = true;
 const MAX_ITEMS_PER_PAGE = 1000;
@@ -22,6 +23,7 @@ const MAX_ITEMS_PER_PAGE = 1000;
  * Runtime assertion: logs error if unscoped query detected
  */
 function assertScoped(entityName, operation, hasScope) {
+  const { t } = useTranslation();
   if (!hasScope && RUNTIME_GUARD_ENABLED) {
     const error = `[GUARDRAIL] Unscoped ${entityName}.${operation}() detected! This is forbidden.`;
     console.error(error);
@@ -29,7 +31,7 @@ function assertScoped(entityName, operation, hasScope) {
     if (import.meta.env?.DEV) {
       throw new Error(error);
     } else {
-      toast.error('Data fetch error. Please try again.');
+      toast.error(t("auto.components_api_scopedEntities.data_fetch_error_please_try_again_rrtzgo"));
       return true; // Signal to return empty
     }
   }

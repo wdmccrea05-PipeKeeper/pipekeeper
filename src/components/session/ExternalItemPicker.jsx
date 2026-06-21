@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, Barcode, Camera, Loader2, ArrowLeft } from "lucide-react";
 import ExternalItemSearch from "@/components/session/ExternalItemSearch";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const UPC_SCHEMA = {
   blend: {
@@ -82,6 +83,7 @@ const PHOTO_SCHEMA = {
  *   manualFields: optional ReactNode rendered below the tabs for manual text entry
  */
 export default function ExternalItemPicker({ itemType, selectedItem, onSelect, manualFields }) {
+  const { t } = useTranslation();
   const hasUPC = itemType === "blend" || itemType === "bottle" || itemType === "cigar";
   const [tab, setTab] = useState("search");
 
@@ -163,14 +165,14 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
         <div className="rounded-xl border border-[rgba(180,140,75,0.22)] bg-[rgba(180,140,75,0.06)] px-4 py-3">
           <div className="flex items-center justify-between mb-1">
             <p className="text-xs font-semibold text-[#D4A574] uppercase tracking-wider">
-              Selected Item
+              {t("auto.components_session_ExternalItemPicker.selected_item_1f6j45")}
             </p>
             <button
               type="button"
               onClick={() => onSelect(null)}
               className="flex items-center gap-1 text-xs text-[#D4A574]/70 hover:text-[#D4A574] transition-colors"
             >
-              <ArrowLeft className="w-3 h-3" /> Change
+              <ArrowLeft className="w-3 h-3" /> {t("auto.components_session_ExternalItemPicker.change_1bnbdt")}
             </button>
           </div>
           <p className="text-sm font-semibold text-[#F5F1E7]">
@@ -197,7 +199,7 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
               : "bg-[rgba(255,255,255,0.04)] text-[#E0D8C8]/60 border border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.08)]"
           }`}
         >
-          <Search className="w-3.5 h-3.5" /> Search
+          <Search className="w-3.5 h-3.5" /> {t("auto.components_session_ExternalItemPicker.search_1ly04v")}
         </button>
         {hasUPC && (
           <button
@@ -221,7 +223,7 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
               : "bg-[rgba(255,255,255,0.04)] text-[#E0D8C8]/60 border border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.08)]"
           }`}
         >
-          <Camera className="w-3.5 h-3.5" /> Photo
+          <Camera className="w-3.5 h-3.5" /> {t("auto.components_session_ExternalItemPicker.photo_3unlnz")}
         </button>
       </div>
 
@@ -237,7 +239,7 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
       {tab === "upc" && hasUPC && (
         <div className="space-y-3">
           <p className="text-xs text-[#D8C7A6]/60">
-            Enter or paste a UPC/EAN barcode to identify the{" "}
+            {t("auto.components_session_ExternalItemPicker.enter_or_paste_a_upc_ean_4p23dp")}{" "}
             {itemType === "blend" ? "tobacco blend" : "whiskey bottle"}.
           </p>
           <div className="flex gap-2">
@@ -260,7 +262,7 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  <Barcode className="w-4 h-4" /> Look Up
+                  <Barcode className="w-4 h-4" /> {t("auto.components_session_ExternalItemPicker.look_up_1snrn2")}
                 </>
               )}
             </button>
@@ -271,7 +273,7 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
             onClick={() => setTab("search")}
             className="text-xs text-[#D4A574]/70 hover:text-[#D4A574] transition-colors"
           >
-            → Try searching by name instead
+            {t("auto.components_session_ExternalItemPicker.try_searching_by_name_instead_2fk60e")}
           </button>
         </div>
       )}
@@ -280,7 +282,7 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
       {tab === "photo" && (
         <div className="space-y-3">
           <p className="text-xs text-[#D8C7A6]/60">
-            Upload a photo of the{" "}
+            {t("auto.components_session_ExternalItemPicker.upload_a_photo_of_the_1po7pu")}{" "}
             {itemType === "blend"
               ? "tin or pouch label"
               : itemType === "bottle"
@@ -292,13 +294,13 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
             {photoLoading ? (
               <>
                 <Loader2 className="w-6 h-6 text-[#D4A574] animate-spin" />
-                <span className="text-xs text-[#E0D8C8]/60">Identifying…</span>
+                <span className="text-xs text-[#E0D8C8]/60">{t("auto.components_session_ExternalItemPicker.identifying_198uqn")}</span>
               </>
             ) : (
               <>
                 <Camera className="w-6 h-6 text-[#D4A574]/60" />
-                <span className="text-sm text-[#E0D8C8]/70">Tap to upload photo</span>
-                <span className="text-xs text-[#E0D8C8]/40">JPG, PNG, HEIC</span>
+                <span className="text-sm text-[#E0D8C8]/70">{t("auto.components_session_ExternalItemPicker.tap_to_upload_photo_1apqos")}</span>
+                <span className="text-xs text-[#E0D8C8]/40">{t("auto.components_session_ExternalItemPicker.jpg_png_heic_93tbwc")}</span>
               </>
             )}
             <input
@@ -316,7 +318,7 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
             onClick={() => setTab("search")}
             className="text-xs text-[#D4A574]/70 hover:text-[#D4A574] transition-colors"
           >
-            → Try searching by name instead
+            {t("auto.components_session_ExternalItemPicker.try_searching_by_name_instead_2fk60e")}
           </button>
         </div>
       )}
@@ -324,7 +326,7 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
       {/* Manual entry fallback — always shown below tabs when no item selected */}
       {manualFields ? (
         <div className="mt-2">
-          <p className="text-xs text-[#D8C7A6]/55 mb-2">Or add manually:</p>
+          <p className="text-xs text-[#D8C7A6]/55 mb-2">{t("auto.components_session_ExternalItemPicker.or_add_manually_1e91z4")}</p>
           {manualFields}
         </div>
       ) : null}

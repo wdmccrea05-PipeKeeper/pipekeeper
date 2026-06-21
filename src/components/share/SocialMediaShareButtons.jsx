@@ -1,6 +1,7 @@
 import React from "react";
 import { shareToSocialMedia } from "./socialMediaShare";
 import { toast } from "sonner";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function SocialMediaShareButtons({ 
   url, 
@@ -9,6 +10,7 @@ export default function SocialMediaShareButtons({
   image = "",
   onShare
 }) {
+  const { t } = useTranslation();
   const platforms = [
     {
       id: "facebook",
@@ -36,7 +38,7 @@ export default function SocialMediaShareButtons({
       onShare?.(platform);
       
       if (platform === "instagram") {
-        toast.success("Link copied! Open Instagram to share");
+        toast.success(t("auto.components_share_SocialMediaShareButtons.link_copied_open_instagram_to_share_b95sdy"));
       } else {
         toast.success(`Sharing on ${platform}`);
       }

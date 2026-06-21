@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { TrendingUp, Plus, CheckCircle2, Loader2, HelpCircle, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { generateGrowExpandRecommendations } from '@/lib/curator/growExpandEngine.js';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const MODULE_COLORS = {
   tobacco: { bg: 'rgba(74,124,92,0.12)', text: 'rgba(100,180,130,0.9)', border: 'rgba(74,124,92,0.25)', label: 'Tobacco' },
@@ -78,6 +79,7 @@ function fallbackSuggestions(context = {}) {
 }
 
 function GrowCard({ suggestion, userEmail, onAskCurator }) {
+  const { t } = useTranslation();
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const [error, setError] = useState(null);
@@ -125,8 +127,8 @@ function GrowCard({ suggestion, userEmail, onAskCurator }) {
       {suggestion.whyFit ? <p style={{ color: '#A1A1AA', fontSize: '15px', lineHeight: 1.6, margin: '0 0 16px 0' }}>{suggestion.whyFit}</p> : null}
       {error && <p className="text-xs rounded px-2 py-1 mb-3" style={{ background: 'rgba(139,58,58,0.15)', color: 'rgba(220,140,140,1)' }}>{error}</p>}
       <div className="flex items-center gap-2 flex-wrap">
-        {added ? <span className="inline-flex items-center gap-2" style={{ color: '#22C55E', fontSize: '16px', fontWeight: 600 }}><CheckCircle2 className="w-5 h-5" />Added to Want List</span> : <button type="button" onClick={handleAdd} disabled={adding || !userEmail} className="inline-flex items-center gap-2 font-semibold transition-all disabled:opacity-50" style={{ background: '#C6A15B', color: '#0B0B0C', height: '40px', padding: '0 16px', borderRadius: '12px', fontSize: '14px', border: 'none' }}>{adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}{adding ? 'Adding…' : 'Add to Want List'}</button>}
-        {onAskCurator && <button type="button" onClick={() => onAskCurator(suggestion.sourceRecommendation || suggestion)} className="inline-flex items-center gap-1.5 transition-all" style={{ color: '#A1A1AA', background: 'transparent', border: 'none', fontSize: '14px', height: '40px', padding: '0 8px' }}><HelpCircle className="w-4 h-4" />Ask Curator</button>}
+        {added ? <span className="inline-flex items-center gap-2" style={{ color: '#22C55E', fontSize: '16px', fontWeight: 600 }}><CheckCircle2 className="w-5 h-5" />{t("auto.components_curator_CuratorGrowAndExpand.added_to_want_list_e42gts")}</span> : <button type="button" onClick={handleAdd} disabled={adding || !userEmail} className="inline-flex items-center gap-2 font-semibold transition-all disabled:opacity-50" style={{ background: '#C6A15B', color: '#0B0B0C', height: '40px', padding: '0 16px', borderRadius: '12px', fontSize: '14px', border: 'none' }}>{adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}{adding ? 'Adding…' : 'Add to Want List'}</button>}
+        {onAskCurator && <button type="button" onClick={() => onAskCurator(suggestion.sourceRecommendation || suggestion)} className="inline-flex items-center gap-1.5 transition-all" style={{ color: '#A1A1AA', background: 'transparent', border: 'none', fontSize: '14px', height: '40px', padding: '0 8px' }}><HelpCircle className="w-4 h-4" />{t("auto.components_curator_CuratorGrowAndExpand.ask_curator_4c37lw")}</button>}
       </div>
     </div>
   );
@@ -149,6 +151,7 @@ function GrowSection({ label, suggestions, userEmail, onAskCurator }) {
 }
 
 export default function CuratorGrowAndExpand({ sections = [], collectionContext = {}, userEmail, onAskCurator, onRefresh, isRefreshing = false, activeModules = {} }) {
+  const { t } = useTranslation();
   const suggestions = useMemo(() => {
     const fromSections = normalizeSectionSuggestions(sections);
     return fromSections.length ? fromSections : fallbackSuggestions(collectionContext);
@@ -165,15 +168,15 @@ export default function CuratorGrowAndExpand({ sections = [], collectionContext 
   }), [suggestions, wineActive]);
 
   if (!suggestions.length) {
-    return <div className="py-16 text-center"><TrendingUp className="w-10 h-10 mx-auto mb-3" style={{ color: 'rgba(140,105,65,0.3)' }} /><p className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>No growth suggestions yet</p></div>;
+    return <div className="py-16 text-center"><TrendingUp className="w-10 h-10 mx-auto mb-3" style={{ color: 'rgba(140,105,65,0.3)' }} /><p className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_curator_CuratorGrowAndExpand.no_growth_suggestions_yet_13fk75")}</p></div>;
   }
 
   return (
     <div className="space-y-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>Grow &amp; Expand</h2>
-          <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>Discover what's missing and move strong candidates directly onto your Want List.</p>
+          <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>{t("auto.components_curator_CuratorGrowAndExpand.grow_and_expand_1osn16")}</h2>
+          <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>{t("auto.components_curator_CuratorGrowAndExpand.discover_what_s_missing_and_move_1hzsdi")}</p>
         </div>
         {onRefresh && (
           <button

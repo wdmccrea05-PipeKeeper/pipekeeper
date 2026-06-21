@@ -24,6 +24,7 @@ import {
   trackNativeReviewRequested,
   trackAppStoreReviewURLOpened,
 } from './reviewAnalytics';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 /**
  * @param {Object} props
@@ -40,6 +41,7 @@ export default function ReviewPromptModal({
   reviewContext,
   onStateUpdate,
 }) {
+  const { t } = useTranslation();
   const analyticsCtx = reviewContext?.analyticsCtx || {};
   const reviewStateId = reviewContext?.reviewStateId;
 
@@ -147,7 +149,7 @@ export default function ReviewPromptModal({
                   className="text-xl font-bold leading-tight"
                   style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
                 >
-                  Enjoying CollectionKeeper?
+                  {t("auto.components_review_ReviewPromptModal.enjoying_collectionkeeper_1yra1a")}
                 </h2>
               </div>
             </div>
@@ -155,7 +157,7 @@ export default function ReviewPromptModal({
               type="button"
               onClick={handleDismiss}
               className="p-1.5 rounded-xl transition-all hover:bg-white/10"
-              aria-label="Dismiss"
+              aria-label={t("auto.components_review_ReviewPromptModal.dismiss_w1upy9")}
             >
               <X className="w-4 h-4" style={{ color: 'rgba(224,216,200,0.5)' }} />
             </button>
@@ -163,9 +165,7 @@ export default function ReviewPromptModal({
 
           {/* Body */}
           <p className="text-[15px] leading-relaxed" style={{ color: 'rgba(224,216,200,0.82)' }}>
-            If CollectionKeeper has made your collection easier to track, organize, or enjoy,
-            would you take a moment to rate it on the App Store? Your feedback helps us improve
-            the app for fellow collectors.
+            {t("auto.components_review_ReviewPromptModal.if_collectionkeeper_has_made_your_collection_8fy631")}
           </p>
 
           {/* Star decoration */}
@@ -193,7 +193,7 @@ export default function ReviewPromptModal({
                 boxShadow: '0 4px 16px rgba(163,92,92,0.28)',
               }}
             >
-              ⭐ Yes, I'll rate it
+              {t("auto.components_review_ReviewPromptModal.yes_i_ll_rate_it_66uapv")}
             </button>
 
             <button
@@ -207,7 +207,7 @@ export default function ReviewPromptModal({
               }}
             >
               <MessageSquare className="w-4 h-4" />
-              Send Feedback
+              {t("auto.components_review_ReviewPromptModal.send_feedback_1ncyto")}
             </button>
 
             <button
@@ -216,7 +216,7 @@ export default function ReviewPromptModal({
               className="w-full py-2.5 rounded-2xl text-sm transition-all hover:bg-white/5"
               style={{ color: 'rgba(224,216,200,0.42)' }}
             >
-              Not Now
+              {t("auto.components_review_ReviewPromptModal.not_now_10efa5")}
             </button>
           </div>
         </div>

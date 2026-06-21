@@ -135,7 +135,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
       toast.success(isPaid ? t("profile.switchedToPro") : t("profile.switchedToFree"));
     } catch (e) {
       console.error("[ModuleVisibility] tier toggle error:", e);
-      toast.error("Could not update module settings");
+      toast.error(t("auto.components_profile_ModuleVisibilitySettings.could_not_update_module_settings_uti2sn"));
     } finally {
       setSaving(null);
     }
@@ -255,7 +255,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                           disabled={isSavingThis}
                           className="text-xs"
                         >
-                          Pro
+                          {t("auto.components_profile_ModuleVisibilitySettings.pro_376ouu")}
                         </Button>
                         <Button
                           size="sm"
@@ -264,7 +264,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                           disabled={isSavingThis}
                           className="text-xs"
                         >
-                          Free
+                          {t("auto.components_profile_ModuleVisibilitySettings.free_yjt0tj")}
                         </Button>
                       </div>
                       <Switch
@@ -274,7 +274,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                       />
                     </>
                   ) : !canToggle ? (
-                    <Lock className="w-3.5 h-3.5 text-stone-500" title="Unavailable" />
+                    <Lock className="w-3.5 h-3.5 text-stone-500" title={t("auto.components_profile_ModuleVisibilitySettings.unavailable_93vm89")} />
                   ) : null}
                 </div>
               </div>
@@ -292,7 +292,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                     disabled={isSavingThis}
                     className="flex-1 min-h-[44px] text-sm"
                   >
-                    Pro
+                    {t("auto.components_profile_ModuleVisibilitySettings.pro_376ouu")}
                   </Button>
                   <Button
                     size="sm"
@@ -301,7 +301,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                     disabled={isSavingThis}
                     className="flex-1 min-h-[44px] text-sm"
                   >
-                    Free
+                    {t("auto.components_profile_ModuleVisibilitySettings.free_yjt0tj")}
                   </Button>
                 </div>
               )}

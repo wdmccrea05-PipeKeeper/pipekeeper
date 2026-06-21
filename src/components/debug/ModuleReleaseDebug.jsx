@@ -11,6 +11,7 @@ import {
   shouldShowModuleInNav,
   isInternalModuleTester,
 } from '@/components/utils/moduleReleaseState';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const STATE_COLORS = {
   launched:  { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.4)', text: '#10B981' },
@@ -19,6 +20,7 @@ const STATE_COLORS = {
 };
 
 export default function ModuleReleaseDebug({ user }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const modules = Object.keys(MODULE_RELEASE_STATES);
   const isInternal = isInternalModuleTester(user);
@@ -30,7 +32,7 @@ export default function ModuleReleaseDebug({ user }) {
         className="fixed bottom-20 left-4 z-[99999] text-xs px-2 py-1 rounded opacity-40 hover:opacity-80 transition-opacity"
         style={{ background: 'rgba(0,0,0,0.6)', color: '#E0D8C8', border: '1px solid rgba(255,255,255,0.1)' }}
       >
-        🔬 Modules
+        {t("auto.components_debug_ModuleReleaseDebug.modules_iomiuf")}
       </button>
     );
   }
@@ -41,13 +43,13 @@ export default function ModuleReleaseDebug({ user }) {
       style={{ background: 'rgba(10,6,4,0.97)', border: '1px solid rgba(180,140,75,0.3)', color: '#E0D8C8' }}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="font-bold text-[#D4A574]">Module Release States</span>
+        <span className="font-bold text-[#D4A574]">{t("auto.components_debug_ModuleReleaseDebug.module_release_states_ri2qkg")}</span>
         <button onClick={() => setOpen(false)} className="opacity-50 hover:opacity-100 text-sm">✕</button>
       </div>
 
       <div className="space-y-1 text-[10px] opacity-60 mb-2">
-        <div>User: {user?.email || 'unknown'}</div>
-        <div>Role: {user?.role || 'user'} | Internal: {isInternal ? '✅' : '❌'}</div>
+        <div>{t("auto.components_debug_ModuleReleaseDebug.user_3yexi6")} {user?.email || 'unknown'}</div>
+        <div>{t("auto.components_debug_ModuleReleaseDebug.role_3w7qy9")} {user?.role || 'user'} {t("auto.components_debug_ModuleReleaseDebug.internal_15tace")} {isInternal ? '✅' : '❌'}</div>
       </div>
 
       {modules.map((key) => {

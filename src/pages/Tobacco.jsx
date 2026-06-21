@@ -446,7 +446,7 @@ export default function TobaccoPage() {
                   localStorage.setItem('tobaccoDisplayMode', newMode ? 'collector' : 'standard');
                 }}
                 className={displayMode ? 'border-amber-600/60 bg-amber-600/20' : ''}
-                title="Collector Display Mode"
+                title={t("auto.pages_Tobacco.collector_display_mode_1y8acv")}
               >
                 <Package2 className="w-4 h-4" style={{ color: displayMode ? "rgba(180, 140, 75, 1)" : "rgba(224, 216, 200, 0.7)" }} />
               </Button>

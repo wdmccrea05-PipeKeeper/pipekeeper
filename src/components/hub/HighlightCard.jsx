@@ -1,5 +1,6 @@
 import React from 'react';
 import { Share2 } from 'lucide-react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const ICON_COLORS = {
   pipe: { bg: '#C87941', icon: '🔥' },
@@ -17,6 +18,7 @@ export default function HighlightCard({
   module = 'PIPEKEEPER',
   onShare
 }) {
+  const { t } = useTranslation();
   const colors = ICON_COLORS[icon] || ICON_COLORS.pipe;
   
   return (
@@ -118,7 +120,7 @@ export default function HighlightCard({
           }}
           className="absolute top-4 right-4 p-2 rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity z-30"
           style={{ background: 'rgba(0,0,0,0.5)' }}
-          title="Share"
+          title={t("auto.components_hub_HighlightCard.share_3wrj14")}
         >
           <Share2 className="w-4 h-4" style={{ color: '#D4A574' }} />
         </button>

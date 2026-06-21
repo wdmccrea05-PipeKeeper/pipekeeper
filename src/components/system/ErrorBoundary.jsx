@@ -2,6 +2,7 @@ import React from "react";
 import { translate } from "@/components/i18n/safeTranslation";
 import BrandLogo from "@/components/branding/BrandLogo";
 import { AlertCircle } from "lucide-react";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -19,6 +20,7 @@ export default class ErrorBoundary extends React.Component {
   }
 
   render() {
+  const { t } = useTranslation();
     if (!this.state.hasError) return this.props.children;
 
     const lang = (() => {
@@ -72,7 +74,7 @@ export default class ErrorBoundary extends React.Component {
             className="text-xs uppercase tracking-[0.14em] font-bold mb-2"
             style={{ color: "#B48C4B" }}
           >
-            CollectionKeeper
+            {t("auto.components_system_ErrorBoundary.collectionkeeper_1ukoz8")}
           </p>
 
           <h2

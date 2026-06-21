@@ -171,7 +171,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("bowls.removeBowlConfirm")}</AlertDialogTitle>
-          <AlertDialogDescription>This bowl will be removed from the pipe.</AlertDialogDescription>
+          <AlertDialogDescription>{t("auto.components_pipes_InterchangeableBowls.this_bowl_will_be_removed_from_ygv4c3")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>

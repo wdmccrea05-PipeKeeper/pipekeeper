@@ -1,6 +1,7 @@
 import React from "react";
 import { X, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const GROUP_LABELS = {
   closest_match: "Closest Match",
@@ -27,6 +28,7 @@ const LOADING_COPY = {
 };
 
 function SimilarItemCard({ item }) {
+  const { t } = useTranslation();
   return (
     <div
       className="rounded-xl p-4 space-y-3"
@@ -42,7 +44,7 @@ function SimilarItemCard({ item }) {
             <div className="text-xs text-[#B48C4B] mt-0.5 uppercase tracking-wider">{item.category}</div>
           )}
           {item.anchorRef && (
-            <div className="text-xs mt-0.5" style={{ color: "rgba(212,165,116,0.6)" }}>Similar to: {item.anchorRef}</div>
+            <div className="text-xs mt-0.5" style={{ color: "rgba(212,165,116,0.6)" }}>{t("auto.components_recommendations_SimilarItemsDrawer.similar_to_1e5ks3")} {item.anchorRef}</div>
           )}
         </div>
         {item.group && GROUP_LABELS[item.group] && (
@@ -101,6 +103,7 @@ export default function SimilarItemsDrawer({
   recordType = "blend",
   anchorName,
 }) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const typeLabel = TYPE_LABELS[recordType] || "Items";
@@ -131,10 +134,10 @@ export default function SimilarItemsDrawer({
           <div>
             <div className="flex items-center gap-2">
               <Search className="w-4 h-4 text-[#B48C4B]" />
-              <span className="font-semibold text-[#F5F1E7]">Similar {typeLabel} to Try</span>
+              <span className="font-semibold text-[#F5F1E7]">{t("auto.components_recommendations_SimilarItemsDrawer.similar_1w6okr")} {typeLabel} to Try</span>
             </div>
             {anchorName && (
-              <p className="text-xs text-[#D8C7A6]/65 mt-0.5">Based on {anchorName}</p>
+              <p className="text-xs text-[#D8C7A6]/65 mt-0.5">{t("auto.components_recommendations_SimilarItemsDrawer.based_on_1995oo")} {anchorName}</p>
             )}
           </div>
           <button
@@ -163,11 +166,11 @@ export default function SimilarItemsDrawer({
           {error && !loading && (
             <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
               <p className="text-[#E0D8C8]/70 text-sm max-w-sm">
-                We couldn't generate similar recommendations right now. Please try again.
+                {t("auto.components_recommendations_SimilarItemsDrawer.we_couldn_t_generate_similar_recommendations_13g8x0")}
               </p>
               <Button variant="outline" size="sm" onClick={onRetry}>
                 <RefreshCw className="w-3 h-3 mr-2" />
-                Try Again
+                {t("auto.components_recommendations_SimilarItemsDrawer.try_again_4ztias")}
               </Button>
             </div>
           )}
@@ -184,15 +187,15 @@ export default function SimilarItemsDrawer({
                 ))
               ) : (
                 <div className="text-center py-10 text-[#D8C7A6]/65 text-sm leading-relaxed">
-                  We couldn't find enough strong non-owned matches from this item.
+                  {t("auto.components_recommendations_SimilarItemsDrawer.we_couldn_t_find_enough_strong_lxgp54")}
                   <br />
-                  Try a broader search in Curator for more options.
+                  {t("auto.components_recommendations_SimilarItemsDrawer.try_a_broader_search_in_curator_8r50v9")}
                 </div>
               )}
 
               {result.insufficientResults && result.items?.length > 0 && (
                 <p className="text-xs text-[#D8C7A6]/50 text-center pt-1">
-                  Fewer than 3 strong matches found. Try Curator for a broader search.
+                  {t("auto.components_recommendations_SimilarItemsDrawer.fewer_than_3_strong_matches_found_nc0502")}
                 </p>
               )}
             </div>
@@ -211,14 +214,14 @@ export default function SimilarItemsDrawer({
               style={{ color: "#B48C4B" }}
             >
               <RefreshCw className="w-3 h-3" />
-              Refresh
+              {t("auto.components_recommendations_SimilarItemsDrawer.refresh_183tk5")}
             </button>
             <button
               onClick={onClose}
               className="text-xs hover:opacity-80 transition-opacity"
               style={{ color: "rgba(216,199,166,0.6)" }}
             >
-              Close
+              {t("auto.components_recommendations_SimilarItemsDrawer.close_3lk8qj")}
             </button>
           </div>
         )}

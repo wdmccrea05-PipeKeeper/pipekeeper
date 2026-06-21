@@ -15,11 +15,14 @@ vi.mock("@/components/utils/moduleReleaseState", () => ({
     canAccessInternalModuleForTestingMock(...args),
 }));
 
-vi.mock("@/components/i18n/safeTranslation", () => ({
-  useTranslation: () => ({
-    t: (_key, fallback) => fallback,
-  }),
-}));
+vi.mock("@/components/i18n/safeTranslation", async () => {
+  const actual = await vi.importActual("@/components/i18n/index.jsx");
+  return {
+    useTranslation: () => ({
+      t: (key, opts) => actual.translate(key, opts, "en"),
+    }),
+  };
+});
 
 vi.mock("@/components/branding/moduleAssets", () => ({
   MODULE_ICONS: {

@@ -93,7 +93,7 @@ export default function DocumentationSearch({ fullPage = false }) {
           {/* No query — show top questions */}
           {!query && (
             <div className="p-3">
-              <p className="text-[10px] uppercase tracking-widest text-[#D7C9B2]/40 px-1 mb-2">Popular questions</p>
+              <p className="text-[10px] uppercase tracking-widest text-[#D7C9B2]/40 px-1 mb-2">{t("auto.components_help_DocumentationSearch.popular_questions_1uedxg")}</p>
               {TOP_QUESTIONS.map(tq => (
                 <button
                   key={tq.query}
@@ -136,7 +136,7 @@ export default function DocumentationSearch({ fullPage = false }) {
           {/* Near-miss suggestions when no results */}
           {query.length >= 2 && results.length === 0 && suggestions.length > 0 && (
             <div className="p-3">
-              <p className="text-[10px] uppercase tracking-widest text-[#D7C9B2]/40 px-1 mb-2">You might also want</p>
+              <p className="text-[10px] uppercase tracking-widest text-[#D7C9B2]/40 px-1 mb-2">{t("auto.components_help_DocumentationSearch.you_might_also_want_12xbbg")}</p>
               {suggestions.map(article => (
                 <button
                   key={article.id}
@@ -157,8 +157,8 @@ export default function DocumentationSearch({ fullPage = false }) {
           {/* True no results */}
           {query.length >= 2 && results.length === 0 && suggestions.length === 0 && (
             <div className="p-5 text-center">
-              <p className="text-sm text-[#D7C9B2]/60 mb-3">No exact match found for <em className="text-[#F5F1E7]/80">"{query}"</em></p>
-              <p className="text-xs text-[#D7C9B2]/40 mb-3">Try one of these:</p>
+              <p className="text-sm text-[#D7C9B2]/60 mb-3">{t("auto.components_help_DocumentationSearch.no_exact_match_found_for_1xs9zv")} <em className="text-[#F5F1E7]/80">"{query}"</em></p>
+              <p className="text-xs text-[#D7C9B2]/40 mb-3">{t("auto.components_help_DocumentationSearch.try_one_of_these_15r5yy")}</p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {TOP_QUESTIONS.slice(0, 3).map(tq => (
                   <button

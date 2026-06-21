@@ -4,6 +4,7 @@ import {
   getModuleAsset,
   getAssetImageStyle,
 } from "@/components/branding/moduleAssets";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function BrandLogo({
   className,
@@ -11,6 +12,7 @@ export default function BrandLogo({
   showWordmark = true,
   compact = false,
 }) {
+  const { t } = useTranslation();
   const [failed, setFailed] = useState(false);
 
   const asset = getModuleAsset("collectionkeeper");
@@ -33,15 +35,15 @@ export default function BrandLogo({
         fontWeight: 700,
         letterSpacing: "-0.01em",
       }}
-      aria-label="CollectionKeeper"
-      title="CollectionKeeper"
+      aria-label={t("auto.components_branding_BrandLogo.collectionkeeper_1ukoz8")}
+      title={t("auto.components_branding_BrandLogo.collectionkeeper_1ukoz8")}
     >
       CK
     </div>
   ) : (
     <img
       src={asset.src}
-      alt="CollectionKeeper"
+      alt={t("auto.components_branding_BrandLogo.collectionkeeper_1ukoz8")}
       className={cn(
         "object-contain flex-shrink-0 select-none bg-transparent",
         sizeClass,
@@ -71,7 +73,7 @@ export default function BrandLogo({
           fontFamily: "'Georgia', serif",
         }}
       >
-        CollectionKeeper
+        {t("auto.components_branding_BrandLogo.collectionkeeper_1ukoz8")}
       </span>
     </div>
   );

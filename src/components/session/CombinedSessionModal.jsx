@@ -37,6 +37,7 @@ function SelectItem({ item, selected, onClick, accent = "#D4A574" }) {
 }
 
 function SourceToggle({ value, onChange }) {
+  const { t } = useTranslation();
   return (
     <div className="flex rounded-xl overflow-hidden border border-[rgba(180,140,75,0.25)] mb-3">
       <button
@@ -48,7 +49,7 @@ function SourceToggle({ value, onChange }) {
             : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
         }`}
       >
-        From Collection
+        {t("auto.components_session_CombinedSessionModal.from_collection_ffgfol")}
       </button>
       <button
         type="button"
@@ -59,7 +60,7 @@ function SourceToggle({ value, onChange }) {
             : "bg-transparent text-[#E0D8C8]/60 hover:bg-[rgba(255,255,255,0.05)]"
         }`}
       >
-        Out of Collection
+        {t("auto.components_session_CombinedSessionModal.out_of_collection_8ar0e")}
       </button>
     </div>
   );
@@ -345,7 +346,7 @@ export default function CombinedSessionModal({
     if (saving || saveLockRef.current) return;
 
     if (!user?.email) {
-      toast.error("You must be signed in to log a session.");
+      toast.error(t("auto.components_session_CombinedSessionModal.you_must_be_signed_in_to_1ha4gc"));
       return;
     }
 
@@ -365,7 +366,7 @@ export default function CombinedSessionModal({
         : Boolean(selectedBottle);
 
     if (!hasPipeChoice && !hasBlendChoice && !hasBottleChoice) {
-      toast.error("Choose at least one item before logging.");
+      toast.error(t("auto.components_session_CombinedSessionModal.choose_at_least_one_item_before_11fb8y"));
       return;
     }
 
@@ -513,18 +514,18 @@ export default function CombinedSessionModal({
         // the modal inside its onSaved handler.
         setPostPromptItems(externalItems);
         toast.success(
-          "Session logged. Choose what to do with the out-of-collection items."
+          t("auto.components_session_CombinedSessionModal.session_logged_choose_what_to_do_thg7n8")
         );
         await Promise.resolve(onSaved?.({ sessionGroupId }));
         // Do NOT call onClose here — PostSessionPrompt's onDone will call it.
       } else {
         await Promise.resolve(onSaved?.({ sessionGroupId }));
-        toast.success("Combined session logged.");
+        toast.success(t("auto.components_session_CombinedSessionModal.combined_session_logged_19j9tr"));
         onClose?.();
       }
     } catch (error) {
       console.error("[CombinedSessionModal] failed to save", error);
-      toast.error("Failed to log combined session. Please try again.");
+      toast.error(t("auto.components_session_CombinedSessionModal.failed_to_log_combined_session_please_74ylt5"));
       saveLockRef.current = false;
     } finally {
       setSaving(false);
@@ -547,10 +548,10 @@ export default function CombinedSessionModal({
         <div className="px-5 py-4 flex items-center justify-between border-b border-[rgba(180,140,75,0.14)] shrink-0">
           <div>
             <h3 className="font-bold text-[#F5F1E7] text-lg">
-              Pipe + Whiskey Session
+              {t("auto.components_session_CombinedSessionModal.pipe_whiskey_session_qfvvt2")}
             </h3>
             <p className="text-xs mt-0.5 text-[#E0D8C8]/60">
-              Step {step + 1} of {steps.length}
+              {t("auto.components_session_CombinedSessionModal.step_yk32zl")} {step + 1} of {steps.length}
               {currentStep !== "confirm"
                 ? ` — ${
                     currentStep === "pipe"
@@ -579,7 +580,7 @@ export default function CombinedSessionModal({
           {currentStep === "pipe" ? (
             <>
               <p className="text-xs text-[#D8C7A6]/55">
-                Choose a pipe from your collection or log something out of collection.
+                {t("auto.components_session_CombinedSessionModal.choose_a_pipe_from_your_collection_1ubiet")}
               </p>
 
               <SourceToggle value={pipeMode} onChange={setPipeMode} />
@@ -637,7 +638,7 @@ export default function CombinedSessionModal({
                         onChange={(value) =>
                           setExternalPipe((prev) => ({ ...prev, maker: value }))
                         }
-                        placeholder="Boswell"
+                        placeholder={t("auto.components_session_CombinedSessionModal.boswell_1s95xx")}
                       />
                       <TextField
                         label={t('session.pipeModel')}
@@ -645,7 +646,7 @@ export default function CombinedSessionModal({
                         onChange={(value) =>
                           setExternalPipe((prev) => ({ ...prev, model: value }))
                         }
-                        placeholder="Jumbo"
+                        placeholder={t("auto.components_session_CombinedSessionModal.jumbo_3qp1mq")}
                       />
                       <TextField
                         label={t('common.shape')}
@@ -653,7 +654,7 @@ export default function CombinedSessionModal({
                         onChange={(value) =>
                           setExternalPipe((prev) => ({ ...prev, shape: value }))
                         }
-                        placeholder="Billiard"
+                        placeholder={t("auto.components_session_CombinedSessionModal.billiard_1xo6cj")}
                       />
                     </div>
                   }
@@ -665,7 +666,7 @@ export default function CombinedSessionModal({
           {currentStep === "blend" ? (
             <>
               <p className="text-xs text-[#D8C7A6]/55">
-                Choose a blend from your collection or log something out of collection.
+                {t("auto.components_session_CombinedSessionModal.choose_a_blend_from_your_collection_c6mndf")}
               </p>
 
               <SourceToggle value={blendMode} onChange={setBlendMode} />
@@ -726,7 +727,7 @@ export default function CombinedSessionModal({
                         onChange={(value) =>
                           setExternalBlend((prev) => ({ ...prev, name: value }))
                         }
-                        placeholder="Cowboy Coffee"
+                        placeholder={t("auto.components_session_CombinedSessionModal.cowboy_coffee_sn40xs")}
                       />
                       <TextField
                         label={t('common.manufacturer')}
@@ -737,7 +738,7 @@ export default function CombinedSessionModal({
                             manufacturer: value,
                           }))
                         }
-                        placeholder="Cornell & Diehl"
+                        placeholder={t("auto.components_session_CombinedSessionModal.cornell_and_diehl_9havk0")}
                       />
                       <TextField
                         label={t('session.blendType')}
@@ -748,7 +749,7 @@ export default function CombinedSessionModal({
                             blend_type: value,
                           }))
                         }
-                        placeholder="Aromatic"
+                        placeholder={t("auto.components_session_CombinedSessionModal.aromatic_1k8nh1")}
                       />
                     </div>
                   }
@@ -760,7 +761,7 @@ export default function CombinedSessionModal({
           {currentStep === "bottle" ? (
             <>
               <p className="text-xs text-[#D8C7A6]/55">
-                Choose a whiskey from your collection or log something out of collection.
+                {t("auto.components_session_CombinedSessionModal.choose_a_whiskey_from_your_collection_sp1yk2")}
               </p>
 
               <SourceToggle value={bottleMode} onChange={setBottleMode} />
@@ -818,7 +819,7 @@ export default function CombinedSessionModal({
                         onChange={(value) =>
                           setExternalBottle((prev) => ({ ...prev, name: value }))
                         }
-                        placeholder="Smoke Wagon Bourbon"
+                        placeholder={t("auto.components_session_CombinedSessionModal.smoke_wagon_bourbon_1teuje")}
                       />
                       <TextField
                         label={t('whiskey.distillery')}
@@ -829,7 +830,7 @@ export default function CombinedSessionModal({
                             distillery: value,
                           }))
                         }
-                        placeholder="Smoke Wagon"
+                        placeholder={t("auto.components_session_CombinedSessionModal.smoke_wagon_1mbeur")}
                       />
                       <TextField
                         label={t('common.type')}
@@ -837,7 +838,7 @@ export default function CombinedSessionModal({
                         onChange={(value) =>
                           setExternalBottle((prev) => ({ ...prev, type: value }))
                         }
-                        placeholder="Bourbon"
+                        placeholder={t("auto.components_session_CombinedSessionModal.bourbon_1saguy")}
                       />
                     </div>
                   }
@@ -849,19 +850,19 @@ export default function CombinedSessionModal({
           {currentStep === "confirm" ? (
             <div className="space-y-4">
               <p className="text-sm text-[#D8C7A6]/70">
-                Review and log this session. Any out-of-collection items will be offered for Wish List / Shopping / Not for Me right after save.
+                {t("auto.components_session_CombinedSessionModal.review_and_log_this_session_any_1m2f4w")}
               </p>
 
               {getPipeDisplay() || getBlendDisplay() ? (
                 <div className="rounded-xl p-4 border border-[rgba(212,165,116,0.22)] bg-[rgba(212,165,116,0.06)]">
                   <p className="text-xs font-semibold text-[#D4A574] uppercase tracking-wider mb-2">
-                    Pipe Session
+                    {t("auto.components_session_CombinedSessionModal.pipe_session_10a8qr")}
                   </p>
                   {getPipeDisplay() ? (
-                    <p className="text-sm text-[#F5F1E7]">Pipe: {getPipeDisplay()}</p>
+                    <p className="text-sm text-[#F5F1E7]">{t("auto.components_session_CombinedSessionModal.pipe_3uodt9")} {getPipeDisplay()}</p>
                   ) : null}
                   {getBlendDisplay() ? (
-                    <p className="text-sm text-[#F5F1E7] mt-1">Blend: {getBlendDisplay()}</p>
+                    <p className="text-sm text-[#F5F1E7] mt-1">{t("auto.components_session_CombinedSessionModal.blend_1b2xbt")} {getBlendDisplay()}</p>
                   ) : null}
                 </div>
               ) : null}
@@ -869,22 +870,22 @@ export default function CombinedSessionModal({
               {getBottleDisplay() ? (
                 <div className="rounded-xl p-4 border border-[rgba(182,101,101,0.22)] bg-[rgba(182,101,101,0.06)]">
                   <p className="text-xs font-semibold text-[#D47C7C] uppercase tracking-wider mb-2">
-                    Whiskey Tasting
+                    {t("auto.components_session_CombinedSessionModal.whiskey_tasting_1l13d4")}
                   </p>
-                  <p className="text-sm text-[#F5F1E7]">Pour: {getBottleDisplay()}</p>
+                  <p className="text-sm text-[#F5F1E7]">{t("auto.components_session_CombinedSessionModal.pour_3ut4px")} {getBottleDisplay()}</p>
                 </div>
               ) : null}
 
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">
-                    Session Notes
+                    {t("auto.components_session_CombinedSessionModal.session_notes_1l2tuh")}
                   </label>
                   <textarea
                     value={sessionNotes}
                     onChange={(e) => setSessionNotes(e.target.value)}
                     rows={4}
-                    placeholder="Optional notes about the smoke, pour, pairing, or overall experience"
+                    placeholder={t("auto.components_session_CombinedSessionModal.optional_notes_about_the_smoke_pour_9bs5j5")}
                     className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none"
                   />
                 </div>
@@ -892,14 +893,14 @@ export default function CombinedSessionModal({
                 {getBottleDisplay() ? (
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-[#D8C7A6]/60 mb-2">
-                      Whiskey Rating
+                      {t("auto.components_session_CombinedSessionModal.whiskey_rating_91ky7i")}
                     </label>
                     <select
                       value={tastingRating}
                       onChange={(e) => setTastingRating(e.target.value)}
                       className="w-full rounded-xl px-3 py-2 text-sm bg-[rgba(255,255,255,0.04)] border border-[rgba(180,140,75,0.16)] text-[#F5F1E7] outline-none"
                     >
-                      <option value="">No rating</option>
+                      <option value="">{t("auto.components_session_CombinedSessionModal.no_rating_1477wp")}</option>
                       <option value="1">1</option>
                       <option value="2">2</option>
                       <option value="3">3</option>
@@ -921,7 +922,7 @@ export default function CombinedSessionModal({
               disabled={saving}
               className="px-4 py-2 rounded-xl text-sm font-medium text-[#E0D8C8]/75 border border-[rgba(180,140,75,0.22)] hover:bg-white/5 disabled:opacity-50"
             >
-              Back
+              {t("auto.components_session_CombinedSessionModal.back_yjpjkm")}
             </button>
           ) : null}
 
@@ -937,7 +938,7 @@ export default function CombinedSessionModal({
                 color: "#D4A574",
               }}
             >
-              Next <ChevronRight className="w-4 h-4" />
+              {t("auto.components_session_CombinedSessionModal.next_yjyw84")} <ChevronRight className="w-4 h-4" />
             </button>
           ) : null}
 

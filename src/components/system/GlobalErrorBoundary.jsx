@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, RotateCcw, RefreshCw } from "lucide-react";
 import BrandLogo from "@/components/branding/BrandLogo";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 class GlobalErrorBoundary extends React.Component {
   constructor(props) {
@@ -45,6 +46,7 @@ class GlobalErrorBoundary extends React.Component {
   }
 
   render() {
+  const { t } = useTranslation();
     if (this.state.hasError) {
       const isI18nError =
         this.state.error?.message?.includes("useTranslation") ||
@@ -88,19 +90,18 @@ class GlobalErrorBoundary extends React.Component {
               className="text-xs uppercase tracking-[0.14em] font-bold mb-2"
               style={{ color: "#B48C4B" }}
             >
-              CollectionKeeper
+              {t("auto.components_system_GlobalErrorBoundary.collectionkeeper_1ukoz8")}
             </p>
 
             <h1
               className="text-3xl font-bold mb-3"
               style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}
             >
-              Something went wrong
+              {t("auto.components_system_GlobalErrorBoundary.something_went_wrong_1rkfwe")}
             </h1>
 
             <p className="text-sm mb-5" style={{ color: "rgba(224,216,200,0.72)" }}>
-              An unexpected error occurred. Please try again. If it keeps happening,
-              reload the page.
+              {t("auto.components_system_GlobalErrorBoundary.an_unexpected_error_occurred_please_try_nn0yh8")}
             </p>
 
             {isI18nError ? (
@@ -112,11 +113,11 @@ class GlobalErrorBoundary extends React.Component {
                 }}
               >
                 <p className="text-xs text-[#D8C7A6] leading-relaxed">
-                  Translation error detected.
+                  {t("auto.components_system_GlobalErrorBoundary.translation_error_detected_158ter")}
                   <br />
-                  Language: {this.state.diagnostics?.language || "unknown"}
+                  {t("auto.components_system_GlobalErrorBoundary.language_6qfocj")} {this.state.diagnostics?.language || "unknown"}
                   <br />
-                  Route: {this.state.diagnostics?.route || "unknown"}
+                  {t("auto.components_system_GlobalErrorBoundary.route_1li6yq")} {this.state.diagnostics?.route || "unknown"}
                 </p>
               </div>
             ) : null}
@@ -124,7 +125,7 @@ class GlobalErrorBoundary extends React.Component {
             {import.meta?.env?.DEV ? (
               <details className="w-full mt-2 text-left mb-5">
                 <summary className="text-xs text-[#E0D8C8]/55 cursor-pointer hover:text-[#E0D8C8]/75">
-                  Error Details
+                  {t("auto.components_system_GlobalErrorBoundary.error_details_13xzx8")}
                 </summary>
                 <pre
                   className="mt-2 text-xs p-3 rounded overflow-auto max-h-36"
@@ -158,7 +159,7 @@ class GlobalErrorBoundary extends React.Component {
                 }}
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Try Again
+                {t("auto.components_system_GlobalErrorBoundary.try_again_4ztias")}
               </Button>
 
               <Button
@@ -176,7 +177,7 @@ class GlobalErrorBoundary extends React.Component {
                 }}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Reload Page
+                {t("auto.components_system_GlobalErrorBoundary.reload_page_1s1teg")}
               </Button>
             </div>
           </div>

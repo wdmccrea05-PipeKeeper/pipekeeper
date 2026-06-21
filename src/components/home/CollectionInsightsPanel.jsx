@@ -176,7 +176,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
                 </TabsTrigger>
                 <TabsTrigger value="valuation" className="flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-xs min-w-0 data-[state=active]:bg-amber-600/20 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent" style={{ color: "rgba(224,216,200,0.6)" }}>
                   <DollarSign className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate w-full text-center leading-tight">Valuation</span>
+                  <span className="truncate w-full text-center leading-tight">{t("auto.components_home_CollectionInsightsPanel.valuation_bs4s54")}</span>
                 </TabsTrigger>
               </>
             )}

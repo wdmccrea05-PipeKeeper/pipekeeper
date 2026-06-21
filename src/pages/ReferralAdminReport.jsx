@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { AlertCircle, RefreshCw, AlertTriangle, TrendingUp, CreditCard, Smartphone, Gift, Activity, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 function Tile({ label, value, warn }) {
   return (
@@ -17,6 +18,7 @@ function Tile({ label, value, warn }) {
 }
 
 export default function ReferralAdminReport() {
+  const { t } = useTranslation();
   const { user, isLoading } = useCurrentUser();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +43,7 @@ export default function ReferralAdminReport() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#140f0c' }}>
         <div className="flex items-center gap-2 text-red-400">
-          <AlertCircle className="w-5 h-5" /> Admin access required
+          <AlertCircle className="w-5 h-5" /> {t("auto.pages_ReferralAdminReport.admin_access_required_1yiv4j")}
         </div>
       </div>
     );
@@ -60,13 +62,13 @@ export default function ReferralAdminReport() {
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-[#F5F1E7]">Referral Program — Admin Report</h1>
+            <h1 className="text-2xl font-bold text-[#F5F1E7]">{t("auto.pages_ReferralAdminReport.referral_program_admin_report_porbft")}</h1>
             {data?.generatedAt && (
-              <p className="text-xs text-[#E0D8C8]/40 mt-1">Generated {new Date(data.generatedAt).toLocaleString()}</p>
+              <p className="text-xs text-[#E0D8C8]/40 mt-1">{t("auto.pages_ReferralAdminReport.generated_yyi5h0")} {new Date(data.generatedAt).toLocaleString()}</p>
             )}
           </div>
           <Button onClick={load} variant="outline" className="border-[#8b6239]/40 text-[#E0D8C8] gap-2">
-            <RefreshCw className="w-4 h-4" /> Refresh
+            <RefreshCw className="w-4 h-4" /> {t("auto.pages_ReferralAdminReport.refresh_183tk5")}
           </Button>
         </div>
 
@@ -79,7 +81,7 @@ export default function ReferralAdminReport() {
             {/* ── Abuse Protection Metrics ── */}
             <section className="space-y-3">
               <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1 flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4" /> Abuse Protection Metrics
+                <ShieldAlert className="w-4 h-4" /> {t("auto.pages_ReferralAdminReport.abuse_protection_metrics_xs8drn")}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Tile label="Total Invites Sent" value={data.shareActions?.invites_sent ?? data.funnel?.invites_sent ?? 0} />
@@ -108,13 +110,13 @@ export default function ReferralAdminReport() {
               <div className="flex items-center gap-2">
                 <Activity className={`w-4 h-4 ${data.expiryJobHealth?.isStale ? 'text-red-400' : 'text-emerald-400'}`} />
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-[#F5F1E7]">
-                  Expiry Job Health
+                  {t("auto.pages_ReferralAdminReport.expiry_job_health_5vqywn")}
                 </h2>
                 {data.expiryJobHealth?.isStale && (
-                  <span className="ml-2 text-xs font-bold text-red-400 uppercase">⚠ Stale / Never run</span>
+                  <span className="ml-2 text-xs font-bold text-red-400 uppercase">{t("auto.pages_ReferralAdminReport.stale_never_run_y5t7z6")}</span>
                 )}
                 {!data.expiryJobHealth?.isStale && (
-                  <span className="ml-2 text-xs font-medium text-emerald-400">✓ Running</span>
+                  <span className="ml-2 text-xs font-medium text-emerald-400">{t("auto.pages_ReferralAdminReport.running_1ncfhj")}</span>
                 )}
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
@@ -134,7 +136,7 @@ export default function ReferralAdminReport() {
                   value={data.expiryJobHealth?.lastSyncedCount ?? '—'}
                 />
                 <div className={`rounded-xl border p-4 ${data.expiryJobHealth?.isStale ? 'border-red-700/40 bg-red-900/10' : 'border-[#8b6239]/25 bg-[#1f1712]/70'}`}>
-                  <p className="text-xs uppercase tracking-wider text-[#E0D8C8]/50">Scheduler</p>
+                  <p className="text-xs uppercase tracking-wider text-[#E0D8C8]/50">{t("auto.pages_ReferralAdminReport.scheduler_l84n7o")}</p>
                   <p className="text-xs text-[#E0D8C8]/70 mt-1 leading-snug">
                     {data.expiryJobHealth?.schedulerNote || 'See .github/workflows/expire-referral-access.yml'}
                   </p>
@@ -144,7 +146,7 @@ export default function ReferralAdminReport() {
 
             {/* Share actions summary */}
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Referrer Share Actions</h2>
+              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">{t("auto.pages_ReferralAdminReport.referrer_share_actions_sqmw9y")}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   ['Invites Sent', data.shareActions?.invites_sent ?? data.funnel.invites_sent ?? 0],
@@ -159,7 +161,7 @@ export default function ReferralAdminReport() {
 
             {/* Conversion funnel */}
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Conversion Funnel</h2>
+              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">{t("auto.pages_ReferralAdminReport.conversion_funnel_1atru0")}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
                 {[
                   ['Signed Up', data.funnel.signed_up],
@@ -179,7 +181,7 @@ export default function ReferralAdminReport() {
 
             {/* Rewards */}
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Rewards Issued</h2>
+              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">{t("auto.pages_ReferralAdminReport.rewards_issued_r2fydm")}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Tile label="Credits Granted" value={data.rewards.totalCreditsGranted} />
                 <Tile label="Total Months Granted" value={data.rewards.totalMonthsGranted} />
@@ -192,9 +194,9 @@ export default function ReferralAdminReport() {
             {data.manualReviewQueue?.length > 0 && (
               <section className="space-y-3">
                 <h2 className="text-sm font-semibold text-amber-400 uppercase tracking-wide border-b border-amber-800/30 pb-1 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" /> Manual Review Queue ({data.manualReviewQueue.length})
+                  <AlertTriangle className="w-4 h-4" /> {t("auto.pages_ReferralAdminReport.manual_review_queue_s1xz6q")}{data.manualReviewQueue.length})
                 </h2>
-                <p className="text-xs text-[#E0D8C8]/50">These referrals have a fraud score of 40–79. They have not been auto-rejected and require admin review before reward fulfillment.</p>
+                <p className="text-xs text-[#E0D8C8]/50">{t("auto.pages_ReferralAdminReport.these_referrals_have_a_fraud_score_zryjgp")}</p>
                 <div className="rounded-xl border border-amber-800/30 overflow-auto">
                   <table className="w-full text-xs">
                     <thead className="bg-[#2a1f18]">
@@ -224,9 +226,9 @@ export default function ReferralAdminReport() {
             {data.fraudFlags.length > 0 && (
               <section className="space-y-3">
                 <h2 className="text-sm font-semibold text-yellow-400 uppercase tracking-wide border-b border-yellow-800/30 pb-1 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" /> Fraud Flagged ({data.fraudFlags.length})
+                  <AlertTriangle className="w-4 h-4" /> {t("auto.pages_ReferralAdminReport.fraud_flagged_npc4g9")}{data.fraudFlags.length})
                 </h2>
-                <p className="text-xs text-[#E0D8C8]/50">Note: iOS referrals are never penalized for null subscription amount — this is expected since iOS client sync does not provide transaction amounts.</p>
+                <p className="text-xs text-[#E0D8C8]/50">{t("auto.pages_ReferralAdminReport.note_ios_referrals_are_never_penalized_4beoew")}</p>
                 <div className="rounded-xl border border-yellow-800/30 overflow-auto">
                   <table className="w-full text-xs">
                     <thead className="bg-[#2a1f18]">
@@ -244,7 +246,7 @@ export default function ReferralAdminReport() {
                           <td className="px-3 py-2 text-yellow-300 font-bold">{f.fraudScore}</td>
                           <td className="px-3 py-2 text-[#E0D8C8]/60 max-w-[200px] truncate">{f.fraudReason}</td>
                           <td className="px-3 py-2 text-[#E0D8C8]/80">{f.status}</td>
-                          <td className="px-3 py-2">{f.manualReview ? <span className="text-yellow-400">⚠ Yes</span> : '—'}</td>
+                          <td className="px-3 py-2">{f.manualReview ? <span className="text-yellow-400">{t("auto.pages_ReferralAdminReport.yes_1i3z7c")}</span> : '—'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -256,7 +258,7 @@ export default function ReferralAdminReport() {
             {/* Top referrers */}
             <section className="space-y-3">
               <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" /> Top Referrers
+                <TrendingUp className="w-4 h-4" /> {t("auto.pages_ReferralAdminReport.top_referrers_1d44ah")}
               </h2>
               <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
                 <table className="w-full text-sm">
@@ -285,16 +287,16 @@ export default function ReferralAdminReport() {
             {/* Reward ledger by provider */}
             <section className="space-y-3">
               <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1 flex items-center gap-2">
-                <Gift className="w-4 h-4" /> Reward Ledger by Provider
+                <Gift className="w-4 h-4" /> {t("auto.pages_ReferralAdminReport.reward_ledger_by_provider_15rhx1")}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Referral Earned (free users — non-revenue) */}
                 {data.rewards.referralEarned && (
                   <div className="rounded-xl border border-emerald-800/30 p-4 space-y-2">
                     <div className="flex items-center gap-2 text-sm font-semibold text-[#F5F1E7] mb-1">
-                      <Gift className="w-4 h-4 text-emerald-400" /> Referral-Earned Access
+                      <Gift className="w-4 h-4 text-emerald-400" /> {t("auto.pages_ReferralAdminReport.referral_earned_access_1zq67a")}
                     </div>
-                    <p className="text-xs text-emerald-300/60 mb-2">Free users — NOT revenue</p>
+                    <p className="text-xs text-emerald-300/60 mb-2">{t("auto.pages_ReferralAdminReport.free_users_not_revenue_1l2m1x")}</p>
                     <div className="grid grid-cols-2 gap-2">
                       {[
                         ['Total', data.rewards.referralEarned.total],
@@ -307,7 +309,7 @@ export default function ReferralAdminReport() {
                     </div>
                     {Object.keys(data.rewards.referralEarned.byModule || {}).length > 0 && (
                       <div className="mt-2 space-y-1">
-                        <p className="text-xs text-[#E0D8C8]/40 uppercase tracking-wide">By Module</p>
+                        <p className="text-xs text-[#E0D8C8]/40 uppercase tracking-wide">{t("auto.pages_ReferralAdminReport.by_module_2ppye")}</p>
                         {Object.entries(data.rewards.referralEarned.byModule).map(([mod, count]) => (
                           <div key={mod} className="flex justify-between text-xs">
                             <span className="text-[#E0D8C8]/70 capitalize">{mod}</span>
@@ -321,7 +323,7 @@ export default function ReferralAdminReport() {
                 {/* Stripe */}
                 <div className="rounded-xl border border-[#8b6239]/25 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-semibold text-[#F5F1E7] mb-2">
-                    <CreditCard className="w-4 h-4 text-[#D4A574]" /> Stripe Rewards
+                    <CreditCard className="w-4 h-4 text-[#D4A574]" /> {t("auto.pages_ReferralAdminReport.stripe_rewards_15wec2")}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -337,7 +339,7 @@ export default function ReferralAdminReport() {
                 {/* iOS */}
                 <div className="rounded-xl border border-[#8b6239]/25 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-semibold text-[#F5F1E7] mb-2">
-                    <Smartphone className="w-4 h-4 text-[#D4A574]" /> App Store (iOS) Rewards
+                    <Smartphone className="w-4 h-4 text-[#D4A574]" /> {t("auto.pages_ReferralAdminReport.app_store_ios_rewards_5cupif")}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -356,7 +358,7 @@ export default function ReferralAdminReport() {
             {/* Reward audit trail */}
             {data.rewardAudit?.length > 0 && (
               <section className="space-y-3">
-                <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Reward Audit Trail</h2>
+                <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">{t("auto.pages_ReferralAdminReport.reward_audit_trail_1tzj67")}</h2>
                 <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
                   <table className="w-full text-xs">
                     <thead className="bg-[#2a1f18]">
@@ -401,9 +403,9 @@ export default function ReferralAdminReport() {
             {data.earnedAccessAudit?.length > 0 && (
               <section className="space-y-3">
                 <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide border-b border-emerald-800/30 pb-1 flex items-center gap-2">
-                  <Gift className="w-4 h-4" /> Referral-Earned Access Records ({data.earnedAccessAudit.length})
+                  <Gift className="w-4 h-4" /> {t("auto.pages_ReferralAdminReport.referral_earned_access_records_5kkb1c")}{data.earnedAccessAudit.length})
                 </h2>
-                <p className="text-xs text-[#E0D8C8]/40">These are non-revenue access grants. Never counted as paid subscription revenue.</p>
+                <p className="text-xs text-[#E0D8C8]/40">{t("auto.pages_ReferralAdminReport.these_are_non_revenue_access_grants_1itt2w")}</p>
                 <div className="rounded-xl border border-emerald-800/25 overflow-auto">
                   <table className="w-full text-xs">
                     <thead className="bg-[#1a2a1f]">
@@ -441,7 +443,7 @@ export default function ReferralAdminReport() {
 
             {/* Per-user program summary */}
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">All Referral Programs</h2>
+              <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">{t("auto.pages_ReferralAdminReport.all_referral_programs_1mubdk")}</h2>
               <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-[#2a1f18]">

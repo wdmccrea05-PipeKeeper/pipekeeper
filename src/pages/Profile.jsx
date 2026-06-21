@@ -467,7 +467,7 @@ export default function ProfilePage() {
       navigate(createPageUrl("Home"), { replace: true });
     } catch (err) {
       console.error("[Profile] delete failed:", err);
-      toast.error("Could not delete profile. Please try again.");
+      toast.error(t("auto.pages_Profile.could_not_delete_profile_please_try_1uvybe"));
     } finally {
       setDeletingProfile(false);
       setShowDeleteConfirm(false);
@@ -552,7 +552,7 @@ export default function ProfilePage() {
                   className="border-red-800/40 text-red-400 hover:bg-red-900/20 hover:border-red-700"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Profile
+                  {t("auto.pages_Profile.delete_profile_1lup7g")}
                 </Button>
               </div>
               </div>
@@ -567,7 +567,7 @@ export default function ProfilePage() {
                 <User className="w-6 h-6" style={{ color: '#D4A574' }} />
               </div>
               <div className="flex-1">
-                <CardTitle className="text-2xl" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>Collection Profile</CardTitle>
+                <CardTitle className="text-2xl" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>{t("auto.pages_Profile.collection_profile_1kz35l")}</CardTitle>
                 <CardDescription style={{ color: 'rgba(224,216,200,0.6)' }}>
                   {t("profile.personalizeAIRecommendations")}
                 </CardDescription>
@@ -584,7 +584,7 @@ export default function ProfilePage() {
                   className="border-red-800/40 text-red-400 hover:bg-red-900/20 hover:border-red-700"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Profile
+                  {t("auto.pages_Profile.delete_profile_1lup7g")}
                 </Button>
               </div>
               </div>
@@ -676,7 +676,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Location */}
-            <FormSection title="Location">
+            <FormSection title={t("auto.pages_Profile.location_1tz7ug")}>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm" style={{ color: 'rgba(224,216,200,0.65)' }}>{t("profileExtended.showOnProfile")}</span>
                 <Switch
@@ -710,7 +710,7 @@ export default function ProfilePage() {
             </FormSection>
 
             {/* Privacy */}
-            <FormSection title="Privacy & Visibility">
+            <FormSection title={t("auto.pages_Profile.privacy_and_visibility_1uh3tt")}>
 
               {/* ── Personal view ─────────────────────────────────────────── */}
               <div className="pb-3 mb-1 border-b" style={{ borderColor: 'rgba(224,216,200,0.1)' }}>
@@ -1133,12 +1133,12 @@ export default function ProfilePage() {
                   <AlertTriangle className="w-6 h-6 text-red-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold" style={{ color: '#F5F1E7' }}>Delete Profile</h2>
-                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>This action cannot be undone</p>
+                  <h2 className="text-xl font-semibold" style={{ color: '#F5F1E7' }}>{t("auto.pages_Profile.delete_profile_1lup7g")}</h2>
+                  <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.pages_Profile.this_action_cannot_be_undone_15sn5f")}</p>
                 </div>
               </div>
               <p style={{ color: 'rgba(224,216,200,0.8)' }}>
-                Are you sure you want to permanently delete your profile? Your preferences and settings will be removed. Your collection data (pipes, tobacco, whiskey, cigars) will remain in the system but will no longer be linked to a profile.
+                {t("auto.pages_Profile.are_you_sure_you_want_to_1l5opy")}
               </p>
               <div className="flex gap-3 justify-end">
                 <Button
@@ -1146,7 +1146,7 @@ export default function ProfilePage() {
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={deletingProfile}
                 >
-                  Cancel
+                  {t("auto.pages_Profile.cancel_1bin7k")}
                 </Button>
                 <Button
                   onClick={handleDeleteProfile}

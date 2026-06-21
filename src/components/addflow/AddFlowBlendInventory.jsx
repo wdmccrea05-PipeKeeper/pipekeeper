@@ -3,6 +3,7 @@ import { ArrowLeft, ChevronRight, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const CONTAINER_TYPES = [
   { value: 'tin', label: 'Tin' },
@@ -110,6 +111,7 @@ function buildInventoryFields(containerType, values) {
 }
 
 export default function AddFlowBlendInventory({ onBack, onNext, stepLabel = 'Step 3 of 4', data = {} }) {
+  const { t } = useTranslation();
   const [container, setContainer] = useState('tin');
   const [values, setValues] = useState({
     tin_count: '1',
@@ -146,7 +148,7 @@ export default function AddFlowBlendInventory({ onBack, onNext, stepLabel = 'Ste
         <div className="min-w-0">
           <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
             <Package className="w-4 h-4 text-[#D4A574]" />
-            Inventory
+            {t("auto.components_addflow_AddFlowBlendInventory.inventory_808our")}
           </h2>
           <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.45)' }}>{stepLabel}</p>
         </div>
@@ -277,7 +279,7 @@ export default function AddFlowBlendInventory({ onBack, onNext, stepLabel = 'Ste
           className="w-full mt-2"
           style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))', color: '#fff', fontWeight: 600 }}
         >
-          Continue
+          {t("auto.components_addflow_AddFlowBlendInventory.continue_1fqfxw")}
           <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>

@@ -159,7 +159,10 @@ describe('UnifiedValuationCard source contract', () => {
   it('renders Pricing label in button', async () => {
     const src = await import('../components/valuation/UnifiedValuationCard.jsx?raw').catch(() => null);
     if (!src) return;
-    expect(src.default).toContain('>Pricing<');
+    const { translate } = await import('../components/i18n/index.jsx');
+    const keyMatch = src.default.match(/t\("(auto\.components_valuation_UnifiedValuationCard\.pricing_[^"]+)"\)/);
+    expect(keyMatch).not.toBeNull();
+    expect(translate(keyMatch[1], undefined, 'en')).toBe('Pricing');
   });
 
   it('does not reference showSettings state', async () => {

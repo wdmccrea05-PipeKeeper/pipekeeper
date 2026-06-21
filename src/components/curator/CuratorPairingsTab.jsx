@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import CuratorPairingResults from '@/components/curator/CuratorPairingResults';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const PAIRING_MODES = [
   {
@@ -100,6 +101,7 @@ export default function CuratorPairingsTab({
   activeModules = {},
   collectionStats = {},
 }) {
+  const { t } = useTranslation();
   const grouped = useMemo(() => groupPairings(pairings), [pairings]);
 
   const availableModes = useMemo(
@@ -127,15 +129,15 @@ export default function CuratorPairingsTab({
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-[20px] font-semibold mb-2" style={{ color: '#F5F5F7' }}>Pairings</h2>
+          <h2 className="text-[20px] font-semibold mb-2" style={{ color: '#F5F5F7' }}>{t("auto.components_curator_CuratorPairingsTab.pairings_xdq25e")}</h2>
           <p className="text-[16px]" style={{ color: '#A1A1AA' }}>
-            Pairings appear when you have matching liquid + smoking session inventory.
+            {t("auto.components_curator_CuratorPairingsTab.pairings_appear_when_you_have_matching_kfv6hw")}
           </p>
         </div>
         <div className="py-14 text-center rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <div className="text-[18px] mb-2" style={{ color: '#A1A1AA' }}>No pairing modes are currently available.</div>
+          <div className="text-[18px] mb-2" style={{ color: '#A1A1AA' }}>{t("auto.components_curator_CuratorPairingsTab.no_pairing_modes_are_currently_available_1ik3n8")}</div>
           <div className="text-[14px]" style={{ color: '#6F6F78' }}>
-            Add inventory in the required modules to unlock session-based pairings.
+            {t("auto.components_curator_CuratorPairingsTab.add_inventory_in_the_required_modules_1kk237")}
           </div>
         </div>
       </div>
@@ -146,9 +148,9 @@ export default function CuratorPairingsTab({
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-[20px] font-semibold mb-2" style={{ color: '#F5F5F7' }}>Pairings</h2>
+          <h2 className="text-[20px] font-semibold mb-2" style={{ color: '#F5F5F7' }}>{t("auto.components_curator_CuratorPairingsTab.pairings_xdq25e")}</h2>
           <p className="text-[16px]" style={{ color: '#A1A1AA' }}>
-            Choose your session family: liquid + cigar or liquid + pipe session.
+            {t("auto.components_curator_CuratorPairingsTab.choose_your_session_family_liquid_cigar_1hu5cp")}
           </p>
         </div>
 
@@ -164,7 +166,7 @@ export default function CuratorPairingsTab({
           }}
         >
           <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          New Pairings
+          {t("auto.components_curator_CuratorPairingsTab.new_pairings_lhhwuk")}
         </button>
       </div>
 
@@ -181,7 +183,7 @@ export default function CuratorPairingsTab({
 
       {isRefreshing ? (
         <div className="py-16 text-center">
-          <div className="text-[18px]" style={{ color: '#A1A1AA' }}>Loading pairings…</div>
+          <div className="text-[18px]" style={{ color: '#A1A1AA' }}>{t("auto.components_curator_CuratorPairingsTab.loading_pairings_h69jfq")}</div>
         </div>
       ) : activePairings.length > 0 ? (
         <CuratorPairingResults pairings={activePairings} onAction={onAction} />
@@ -189,7 +191,7 @@ export default function CuratorPairingsTab({
         <div className="py-20 text-center">
           <div className="text-[18px] mb-2" style={{ color: '#A1A1AA' }}>{activeModeMeta?.empty || 'No pairings available yet.'}</div>
           <div className="text-[15px]" style={{ color: '#6F6F78' }}>
-            Add more eligible inventory to strengthen this pairing family.
+            {t("auto.components_curator_CuratorPairingsTab.add_more_eligible_inventory_to_strengthen_wqvp9f")}
           </div>
         </div>
       )}

@@ -121,7 +121,7 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
   const handleConfirm = async () => {
     if (saving) return;
     if (!userEmail) {
-      toast.error("Unable to identify the current user");
+      toast.error(t("auto.components_session_PostSessionPrompt.unable_to_identify_the_current_user_1ivtij"));
       return;
     }
 
@@ -140,11 +140,11 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
         await base44.entities.AcquisitionItem.create(item);
       }
 
-      toast.success("Want list updated");
+      toast.success(t("auto.components_session_PostSessionPrompt.want_list_updated_198pih"));
       onDone?.();
     } catch (e) {
       console.error("[PostSessionPrompt] failed:", e);
-      toast.error("Failed to update want list");
+      toast.error(t("auto.components_session_PostSessionPrompt.failed_to_update_want_list_ggd31i"));
       setSaving(false);
     }
   };
@@ -179,9 +179,9 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
         onTouchStart={(e) => e.stopPropagation()}
       >
         <div className="px-5 py-4 border-b border-[rgba(180,140,75,0.14)]">
-          <h3 className="font-bold text-[#F5F1E7] text-lg">What do you want to do with these?</h3>
+          <h3 className="font-bold text-[#F5F1E7] text-lg">{t("auto.components_session_PostSessionPrompt.what_do_you_want_to_do_gc5b8t")}</h3>
           <p className="text-xs text-[#E0D8C8]/55 mt-1">
-            You tried {externalItems.length === 1 ? "something" : "a few things"} not in your collection.
+            {t("auto.components_session_PostSessionPrompt.you_tried_rkolne")} {externalItems.length === 1 ? "something" : "a few things"} not in your collection.
           </p>
         </div>
 
@@ -228,7 +228,7 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
             }}
             className="flex-1 h-9 rounded-lg text-sm text-[#E0D8C8]/50 border border-white/10"
           >
-            Skip
+            {t("auto.components_session_PostSessionPrompt.skip_yk2vj0")}
           </button>
           <button
             type="button"

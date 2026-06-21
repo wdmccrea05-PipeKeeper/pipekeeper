@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { STYLE_GROUPS, getStyleDisplay } from '@/lib/wine/wineTaxonomy';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const SELECT_STYLE = {
   background: 'rgba(20,14,10,0.70)',
@@ -24,6 +25,7 @@ const CUSTOM_VALUE = '__custom__';
  * @param {string}   [props.placeholder] — placeholder for custom entry input
  */
 export default function WineStyleSelect({ value, onChange, placeholder = 'Enter custom style…' }) {
+  const { t } = useTranslation();
   // Determine whether the current value is a custom (unlisted) entry
   const knownStyles = STYLE_GROUPS.flatMap((g) => g.options.map((o) => o.toLowerCase()));
   const isCustom = value && !knownStyles.includes(value.toLowerCase().trim());
@@ -74,9 +76,9 @@ export default function WineStyleSelect({ value, onChange, placeholder = 'Enter 
         onChange={handleSelectChange}
         className="flex h-11 w-full rounded-xl px-4 text-base"
         style={SELECT_STYLE}
-        aria-label="Wine style"
+        aria-label={t("auto.components_wine_WineStyleSelect.wine_style_14lw6o")}
       >
-        <option value="">— Select style —</option>
+        <option value="">{t("auto.components_wine_WineStyleSelect.select_style_6af4m6")}</option>
         {STYLE_GROUPS.map((group) => (
           <optgroup key={group.group} label={group.group}>
             {group.options.map((opt) => (
@@ -86,7 +88,7 @@ export default function WineStyleSelect({ value, onChange, placeholder = 'Enter 
             ))}
           </optgroup>
         ))}
-        <option value={CUSTOM_VALUE}>Custom…</option>
+        <option value={CUSTOM_VALUE}>{t("auto.components_wine_WineStyleSelect.custom_igpgw6")}</option>
       </select>
 
       {showCustom && (
@@ -94,7 +96,7 @@ export default function WineStyleSelect({ value, onChange, placeholder = 'Enter 
           value={customValue}
           onChange={handleCustomChange}
           placeholder={placeholder}
-          aria-label="Custom style entry"
+          aria-label={t("auto.components_wine_WineStyleSelect.custom_style_entry_25pakj")}
           style={{ color: '#F5F1E7' }}
         />
       )}

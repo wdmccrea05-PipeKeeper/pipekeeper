@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Calendar, HelpCircle, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ─── Module filter pills ───────────────────────────────────────────────────────
 
@@ -32,6 +33,7 @@ function ModulePill({ moduleKey, active, onClick }) {
 // ─── Session candidate card ────────────────────────────────────────────────────
 
 function SessionCard({ candidate, onBuildSession, onAskCurator }) {
+  const { t } = useTranslation();
   const mc = MODULE_COLORS[candidate.moduleKey] || MODULE_COLORS.tobacco;
 
   return (
@@ -128,7 +130,7 @@ function SessionCard({ candidate, onBuildSession, onAskCurator }) {
           style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7', fontSize: '14px' }}
         >
           <HelpCircle className="w-4 h-4" />
-          Ask Curator
+          {t("auto.components_curator_CuratorPlanSession.ask_curator_4c37lw")}
         </button>
       </div>
     </div>
@@ -138,15 +140,16 @@ function SessionCard({ candidate, onBuildSession, onAskCurator }) {
 // ─── Empty state ───────────────────────────────────────────────────────────────
 
 function EmptyState({ targetModule }) {
+  const { t } = useTranslation();
   return (
     <div className="py-16 text-center space-y-3">
       <CheckCircle2 className="w-10 h-10 mx-auto" style={{ color: 'rgba(74,124,92,0.35)' }} />
       <p className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>
-        No session candidates found
+        {t("auto.components_curator_CuratorPlanSession.no_session_candidates_found_1lzkxz")}
         {targetModule && targetModule !== 'any' ? ` for ${MODULE_COLORS[targetModule]?.label || targetModule}` : ''}
       </p>
       <p className="text-xs max-w-xs mx-auto" style={{ color: 'rgba(224,216,200,0.35)' }}>
-        Add more records or log sessions to help Curator make better recommendations.
+        {t("auto.components_curator_CuratorPlanSession.add_more_records_or_log_sessions_1hfuax")}
       </p>
     </div>
   );
@@ -176,6 +179,7 @@ export default function CuratorPlanSession({
   onRefresh,
   isRefreshing = false,
 }) {
+  const { t } = useTranslation();
   const pipeActive    = !!activeModules.pipekeeper;
   const whiskeyActive = !!activeModules.whiskeykeeper;
   const cigarActive   = !!activeModules.cigarkeeper;
@@ -232,10 +236,10 @@ export default function CuratorPlanSession({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>
-            Plan Session
+            {t("auto.components_curator_CuratorPlanSession.plan_session_1u7g4t")}
           </h2>
           <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>
-            What should you enjoy right now? Based on recency, usage, readiness, and collection balance.
+            {t("auto.components_curator_CuratorPlanSession.what_should_you_enjoy_right_now_4fsbxm")}
           </p>
         </div>
         <button
@@ -246,7 +250,7 @@ export default function CuratorPlanSession({
           style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#D8D0C2', opacity: isRefreshing ? 0.6 : 1 }}
         >
           <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
+          {t("auto.components_curator_CuratorPlanSession.refresh_183tk5")}
         </button>
       </div>
 
@@ -263,7 +267,7 @@ export default function CuratorPlanSession({
               border: targetModule === 'any' ? '1px solid rgba(198,161,91,0.35)' : '1px solid rgba(255,255,255,0.10)',
             }}
           >
-            Any
+            {t("auto.components_curator_CuratorPlanSession.any_376c5p")}
           </button>
           {availableModules.map((mod) => (
             <ModulePill
@@ -279,7 +283,7 @@ export default function CuratorPlanSession({
       {/* Candidates */}
       {isRefreshing ? (
         <div className="py-16 text-center">
-          <div className="text-[18px]" style={{ color: '#A1A1AA' }}>Loading session candidates…</div>
+          <div className="text-[18px]" style={{ color: '#A1A1AA' }}>{t("auto.components_curator_CuratorPlanSession.loading_session_candidates_1k7p71")}</div>
         </div>
       ) : candidates.length > 0 ? (
         <div className="space-y-4">

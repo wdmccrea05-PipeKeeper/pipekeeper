@@ -196,7 +196,7 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
                           <div className="flex flex-wrap gap-1.5 mt-3">
                             {pipe._isExact && (
                               <Badge variant="secondary" className="text-xs" style={{ background: 'rgba(180, 140, 75, 0.25)', color: 'rgba(212,165,116,1)', border: '1px solid rgba(180,140,75,0.45)', fontWeight: '600' }}>
-                              ✓ Exact Match
+                              {t("auto.components_ai_QuickSearchPipe.exact_match_vy612y")}
                               </Badge>
                             )}
                             {pipe.typical_shapes?.slice(0, 3).map((shape, i) => (

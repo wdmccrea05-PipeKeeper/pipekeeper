@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import OnlineImageSearch from '@/components/search/OnlineImageSearch';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function OnlineImageSearchModal({
   isOpen,
@@ -10,6 +11,7 @@ export default function OnlineImageSearchModal({
   recordData = {},
   title,
 }) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const resolvedTitle = title || (
@@ -41,7 +43,7 @@ export default function OnlineImageSearchModal({
           <div>
             <h3 className="text-lg font-semibold text-[#F5F1E7]">{resolvedTitle}</h3>
             <p className="text-xs mt-1 text-[#D8C7A6]/70">
-              Search and select a photo to use for this record.
+              {t("auto.components_search_OnlineImageSearchModal.search_and_select_a_photo_to_sdvs39")}
             </p>
           </div>
 
@@ -49,7 +51,7 @@ export default function OnlineImageSearchModal({
             type="button"
             onClick={onClose}
             className="text-[#E0D8C8]/70 hover:text-[#E0D8C8] transition-colors"
-            aria-label="Close"
+            aria-label={t("auto.components_search_OnlineImageSearchModal.close_3lk8qj")}
           >
             <X className="w-5 h-5" />
           </button>

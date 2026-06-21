@@ -11,6 +11,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { ACTION_TYPE, PRIORITY_STYLES, MODULE_KEY, CATEGORY } from '@/lib/curator/recommendationSchema.js';
 import CuratorItemPreviewList from './CuratorItemPreviewList';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ─── Badge definitions ────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ function singleItemPath(item) {
 // ─── Inline Review Panel ──────────────────────────────────────────────────────
 
 function InlineReviewPanel({ rec, onApply, onCancel }) {
+  const { t } = useTranslation();
   const [applying, setApplying] = useState(false);
   const allItems = rec.items || [];
   const itemsWithPayloads = allItems.filter(hasNonEmptyPayload);
@@ -120,7 +122,7 @@ function InlineReviewPanel({ rec, onApply, onCancel }) {
       <div
         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px', marginTop: '12px' }}
       >
-        <p style={{ color: '#A1A1AA', fontSize: '14px' }}>No proposed changes to review for these items.</p>
+        <p style={{ color: '#A1A1AA', fontSize: '14px' }}>{t("auto.components_curator_CuratorRecommendationGroup.no_proposed_changes_to_review_for_yxrsq4")}</p>
         <div className="flex gap-2 mt-3">
           <TertiaryBtn onClick={onCancel} icon={X} label="Cancel" />
         </div>
@@ -132,14 +134,14 @@ function InlineReviewPanel({ rec, onApply, onCancel }) {
     <div
       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px', marginTop: '12px' }}
     >
-      <p style={{ color: '#F5F5F7', fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>Proposed Changes</p>
+      <p style={{ color: '#F5F5F7', fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>{t("auto.components_curator_CuratorRecommendationGroup.proposed_changes_148d6y")}</p>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead>
             <tr>
-              <th style={{ color: '#C6A15B', textAlign: 'left', padding: '4px 8px 8px 0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Field</th>
-              <th style={{ color: '#C6A15B', textAlign: 'left', padding: '4px 8px 8px 8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Current</th>
-              <th style={{ color: '#C6A15B', textAlign: 'left', padding: '4px 0 8px 8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Proposed</th>
+              <th style={{ color: '#C6A15B', textAlign: 'left', padding: '4px 8px 8px 0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t("auto.components_curator_CuratorRecommendationGroup.field_3nly5l")}</th>
+              <th style={{ color: '#C6A15B', textAlign: 'left', padding: '4px 8px 8px 8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t("auto.components_curator_CuratorRecommendationGroup.current_ify3qg")}</th>
+              <th style={{ color: '#C6A15B', textAlign: 'left', padding: '4px 0 8px 8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t("auto.components_curator_CuratorRecommendationGroup.proposed_1963f3")}</th>
             </tr>
           </thead>
           <tbody>
@@ -173,6 +175,7 @@ function InlineReviewPanel({ rec, onApply, onCancel }) {
 // ─── Action rows by type / category ──────────────────────────────────────────
 
 function RecordOptimizationActions({ rec, onAction }) {
+  const { t } = useTranslation();
   const [applying, setApplying] = useState(false);
   const [expanded, setExpanded] = useState(false);
   // Map of itemId -> { age: number } for looked-up results
@@ -212,6 +215,7 @@ function RecordOptimizationActions({ rec, onAction }) {
 
   // Per-item row: name + action based on confidence (Apply Fix / Review Fix / Open Record / Auto-lookup age)
   const ItemRow = ({ item }) => {
+  const { t } = useTranslation();
     const [itemApplying, setItemApplying] = useState(false);
     const [done, setDone] = useState(false);
     const [searching, setSearching] = useState(false);
@@ -308,11 +312,11 @@ Important: Many whiskies DO have age statements — e.g. Talisker Skye is NAS bu
             </div>
             {item.issueType === 'reclassification' ? (
               <div className="text-xs" style={{ color: '#71717A' }}>
-                Currently: <span style={{ color: '#A1A1AA' }}>{item.currentClassification || '—'}</span>
+                {t("auto.components_curator_CuratorRecommendationGroup.currently_1v28pe")} <span style={{ color: '#A1A1AA' }}>{item.currentClassification || '—'}</span>
               </div>
             ) : item.missingFields?.length > 0 || missingAge ? (
               <div className="text-xs flex flex-col gap-1" style={{ color: '#71717A' }}>
-                <span>Missing: age</span>
+                <span>{t("auto.components_curator_CuratorRecommendationGroup.missing_age_1o29tf")}</span>
                 {ageLabel && !done && (
                   <div className="flex flex-col gap-0.5">
                     <span className="px-2 py-0.5 rounded text-xs font-semibold inline-flex items-center gap-1" style={{ background: 'rgba(198,161,91,0.15)', color: '#C6A15B', border: '1px solid rgba(198,161,91,0.3)', width: 'fit-content' }}>
@@ -341,7 +345,7 @@ Important: Many whiskies DO have age statements — e.g. Talisker Skye is NAS bu
               <DoneIndicator label="Fixed" />
             ) : searching ? (
               <span className="px-3 h-8 inline-flex items-center gap-1.5 text-xs" style={{ color: '#71717A' }}>
-                <Loader2 className="w-3 h-3 animate-spin" /> Looking up…
+                <Loader2 className="w-3 h-3 animate-spin" /> {t("auto.components_curator_CuratorRecommendationGroup.looking_up_8regmb")}
               </span>
             ) : searchResult ? (
               <button
@@ -373,7 +377,7 @@ Important: Many whiskies DO have age statements — e.g. Talisker Skye is NAS bu
                 style={{ background: 'rgba(180,100,50,0.2)', color: 'rgba(220,140,90,1)', border: '1px solid rgba(180,100,50,0.35)' }}
               >
                 <Eye className="w-3 h-3" />
-                Review Fix
+                {t("auto.components_curator_CuratorRecommendationGroup.review_fix_1r1o4u")}
               </button>
             ) : path && !searching && !searchError ? (
               <a
@@ -381,7 +385,7 @@ Important: Many whiskies DO have age statements — e.g. Talisker Skye is NAS bu
                 className="px-3 h-8 rounded-lg text-xs font-semibold inline-flex items-center"
                 style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7', textDecoration: 'none' }}
               >
-                Open Record
+                {t("auto.components_curator_CuratorRecommendationGroup.open_record_1erdnf")}
               </a>
             ) : null}
           </div>
@@ -456,7 +460,7 @@ Important: Many whiskies DO have age statements — e.g. Talisker Skye is NAS bu
                       className="px-3 h-7 rounded-lg text-xs font-semibold inline-flex items-center"
                       style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#A1A1AA', textDecoration: 'none' }}
                     >
-                      Open
+                      {t("auto.components_curator_CuratorRecommendationGroup.open_yjzwpj")}
                     </a>
                   )}
                 </div>
@@ -489,7 +493,7 @@ Important: Many whiskies DO have age statements — e.g. Talisker Skye is NAS bu
               className="inline-flex items-center gap-2 px-5 h-12 rounded-xl font-medium"
               style={{ background: '#C6A15B', color: '#0B0B0C' }}
             >
-              Apply Changes
+              {t("auto.components_curator_CuratorRecommendationGroup.apply_changes_1hs64b")}
             </button>
             <button
               type="button"
@@ -497,7 +501,7 @@ Important: Many whiskies DO have age statements — e.g. Talisker Skye is NAS bu
               className="inline-flex items-center gap-2 px-5 h-12 rounded-xl font-medium"
               style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7' }}
             >
-              Cancel
+              {t("auto.components_curator_CuratorRecommendationGroup.cancel_1bin7k")}
             </button>
           </div>
         </div>

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 /**
  * Full-screen photo gallery carousel for pipes
  * Supports keyboard navigation (arrows, ESC), swipe on mobile, and next/previous buttons
  */
 export default function PipePhotoGallery({ photos = [], isOpen = false, onClose, initialIndex = 0 }) {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
   // Filter out empty/invalid URLs — must be computed before hooks that depend on it
@@ -79,7 +81,7 @@ export default function PipePhotoGallery({ photos = [], isOpen = false, onClose,
           variant="ghost"
           size="icon"
           className="text-white/70 hover:text-white hover:bg-white/10"
-          aria-label="Close Gallery"
+          aria-label={t("auto.components_pipes_PipePhotoGallery.close_gallery_han957")}
         >
           <X className="w-5 h-5" />
         </Button>
@@ -93,7 +95,7 @@ export default function PipePhotoGallery({ photos = [], isOpen = false, onClose,
             variant="ghost"
             size="icon"
             className="text-white/70 hover:text-white hover:bg-white/10"
-            aria-label="Previous photo"
+            aria-label={t("auto.components_pipes_PipePhotoGallery.previous_photo_1gh20u")}
           >
             <ChevronLeft className="w-6 h-6" />
           </Button>
@@ -109,7 +111,7 @@ export default function PipePhotoGallery({ photos = [], isOpen = false, onClose,
             variant="ghost"
             size="icon"
             className="text-white/70 hover:text-white hover:bg-white/10"
-            aria-label="Next photo"
+            aria-label={t("auto.components_pipes_PipePhotoGallery.next_photo_opc46m")}
           >
             <ChevronRight className="w-6 h-6" />
           </Button>
@@ -119,7 +121,7 @@ export default function PipePhotoGallery({ photos = [], isOpen = false, onClose,
       {/* Keyboard hint */}
       {totalPhotos > 1 && (
         <div className="absolute bottom-16 text-center text-[10px] text-white/40">
-          <p>← → keys or swipe to navigate</p>
+          <p>{t("auto.components_pipes_PipePhotoGallery.keys_or_swipe_to_navigate_1tiywz")}</p>
         </div>
       )}
     </div>

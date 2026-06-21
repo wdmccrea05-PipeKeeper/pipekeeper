@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const CONFIG = {
   find_similar_blends: {
@@ -49,6 +50,7 @@ export default function FindSimilarPicker({
   onConfirm,
   onCancel,
 }) {
+  const { t } = useTranslation();
   const config = CONFIG[actionType] || null;
 
   // DEFAULT: Pick mode (single-selection)
@@ -132,7 +134,7 @@ export default function FindSimilarPicker({
                   : "bg-white/10 text-amber-100 hover:bg-white/15"
               }`}
             >
-              Pick One
+              {t("auto.components_curator_FindSimilarPicker.pick_one_1m4fcr")}
             </button>
             <button
               onClick={() => { setMode("top3"); setSelected(null); }}
@@ -142,7 +144,7 @@ export default function FindSimilarPicker({
                   : "bg-white/10 text-amber-100 hover:bg-white/15"
               }`}
             >
-              Top 3 ({topItems.length})
+              {t("auto.components_curator_FindSimilarPicker.top_3_mesnkj")}{topItems.length})
             </button>
           </div>
         </div>
@@ -155,7 +157,7 @@ export default function FindSimilarPicker({
             style={{ background: "rgba(20,14,10,0.6)", border: "1px solid rgba(140,105,65,0.3)", color: "#E0D8C8" }}
           >
             <option value="" disabled>
-              Select an item
+              {t("auto.components_curator_FindSimilarPicker.select_an_item_1rp36q")}
             </option>
             {data.map((item) => (
               <option key={item.id} value={item.id}>
@@ -193,14 +195,14 @@ export default function FindSimilarPicker({
               background: "linear-gradient(135deg, rgba(139,58,58,0.95), rgba(109,46,46,1))",
             }}
           >
-            Find Similar
+            {t("auto.components_curator_FindSimilarPicker.find_similar_afe8ev")}
           </Button>
           <Button
             onClick={onCancel}
             variant="outline"
             className="flex-1"
           >
-            Cancel
+            {t("auto.components_curator_FindSimilarPicker.cancel_1bin7k")}
           </Button>
         </div>
       </div>

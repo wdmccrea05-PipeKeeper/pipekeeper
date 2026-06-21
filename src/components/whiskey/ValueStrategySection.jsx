@@ -9,6 +9,7 @@ import {
   PlusCircle, Eye, ChevronDown, ChevronUp, Lock, Zap, AlertTriangle, RefreshCw, Settings,
 } from 'lucide-react';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // -- tiny helpers ---------------------------------------------------------------
 
@@ -180,6 +181,7 @@ const RECOMMENDATION_CONFIG = {
 };
 
 function RecommendationBlock({ holdRecommendation, rationale, moduleKey, itemType }) {
+  const { t } = useTranslation();
   const cfg = RECOMMENDATION_CONFIG[holdRecommendation] || RECOMMENDATION_CONFIG.either;
   const Icon = cfg.icon;
   return (
@@ -189,7 +191,7 @@ function RecommendationBlock({ holdRecommendation, rationale, moduleKey, itemTyp
           <Icon className="w-4 h-4" style={{ color: cfg.iconColor }} />
         </div>
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60">Strategy</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60">{t("auto.components_whiskey_ValueStrategySection.strategy_22l3dk")}</p>
           <p className="text-base font-bold leading-tight break-words" style={{ color: cfg.textColor }}>
             {cfg.label}
           </p>
@@ -254,13 +256,14 @@ function ReplacementDifficultyDots({ level }) {
 }
 
 function SnapshotHistoryList({ snapshots, formatFn }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const displayed = expanded ? snapshots : snapshots.slice(0, 3);
   if (snapshots.length === 0) {
     return (
       <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.1)' }}>
-        <p className="text-xs text-[#D8C7A6]/50">No checkpoints yet</p>
-        <p className="text-xs text-[#D8C7A6]/40 mt-1">Save a checkpoint to start tracking value history</p>
+        <p className="text-xs text-[#D8C7A6]/50">{t("auto.components_whiskey_ValueStrategySection.no_checkpoints_yet_1agy6r")}</p>
+        <p className="text-xs text-[#D8C7A6]/40 mt-1">{t("auto.components_whiskey_ValueStrategySection.save_a_checkpoint_to_start_tracking_1p36ac")}</p>
       </div>
     );
   }
@@ -289,13 +292,14 @@ function SnapshotHistoryList({ snapshots, formatFn }) {
 }
 
 function ObservationList({ observations, formatFn }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const displayed = expanded ? observations : observations.slice(0, 3);
   if (observations.length === 0) {
     return (
       <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(59,130,246,0.12)' }}>
-        <p className="text-xs text-[#D8C7A6]/50">No observations yet</p>
-        <p className="text-xs text-[#D8C7A6]/40 mt-1">Add observations to track real-world market prices</p>
+        <p className="text-xs text-[#D8C7A6]/50">{t("auto.components_whiskey_ValueStrategySection.no_observations_yet_lhwdw3")}</p>
+        <p className="text-xs text-[#D8C7A6]/40 mt-1">{t("auto.components_whiskey_ValueStrategySection.add_observations_to_track_real_world_d35n2g")}</p>
       </div>
     );
   }
@@ -359,6 +363,7 @@ export default function ValueStrategySection({
   onRefreshNow,
   isRefreshing = false,
 }) {
+  const { t } = useTranslation();
   const [showSettings, setShowSettings] = useState(false);
   const { formatFromBase } = useCurrency();
 
@@ -396,28 +401,28 @@ export default function ValueStrategySection({
     <>
       {showSettings && (
         <div className="rounded-2xl p-4 mb-4 space-y-3" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.18)' }}>
-          <p className="text-xs uppercase tracking-[0.12em] text-[#c4b5fd]/70 font-semibold">Auto-Refresh Settings</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-[#c4b5fd]/70 font-semibold">{t("auto.components_whiskey_ValueStrategySection.auto_refresh_settings_ei1d63")}</p>
           <div className="space-y-2.5">
             <label className="flex items-center gap-2 text-sm text-[#E0D8C8]">
               <input type="checkbox" defaultChecked className="rounded" />
-              <span>Auto-Refresh Value</span>
+              <span>{t("auto.components_whiskey_ValueStrategySection.auto_refresh_value_23jn07")}</span>
             </label>
             <div className="text-xs text-[#D8C7A6]/55 space-y-1.5 ml-6">
               <label className="flex items-center gap-2">
                 <input type="radio" name="refresh-cadence" value="weekly" defaultChecked />
-                <span>Weekly</span>
+                <span>{t("auto.components_whiskey_ValueStrategySection.weekly_1ojaae")}</span>
               </label>
               <label className="flex items-center gap-2">
                 <input type="radio" name="refresh-cadence" value="monthly" />
-                <span>Monthly</span>
+                <span>{t("auto.components_whiskey_ValueStrategySection.monthly_ez3fqo")}</span>
               </label>
             </div>
             <label className="flex items-center gap-2 text-sm text-[#E0D8C8] mt-2">
               <input type="checkbox" defaultChecked className="rounded" />
-              <span>Auto-generate Value History</span>
+              <span>{t("auto.components_whiskey_ValueStrategySection.auto_generate_value_history_1lavip")}</span>
             </label>
           </div>
-          <p className="text-xs text-[#D8C7A6]/45 italic">Settings persist in your profile.</p>
+          <p className="text-xs text-[#D8C7A6]/45 italic">{t("auto.components_whiskey_ValueStrategySection.settings_persist_in_your_profile_dldjb9")}</p>
         </div>
       )}
       <div className="rounded-2xl overflow-hidden min-w-0" style={{ background: 'linear-gradient(145deg, rgba(34,24,16,0.97), rgba(22,15,10,1))', border: '1px solid rgba(180,140,75,0.22)' }}>
@@ -427,7 +432,7 @@ export default function ValueStrategySection({
             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(180,140,75,0.12)', border: '1px solid rgba(180,140,75,0.22)' }}>
               <TrendingUp className="w-4 h-4 text-[#B48C4B]" />
             </div>
-            <p className="text-sm font-bold text-[#D4A574] uppercase tracking-[0.12em]">Value &amp; Strategy</p>
+            <p className="text-sm font-bold text-[#D4A574] uppercase tracking-[0.12em]">{t("auto.components_whiskey_ValueStrategySection.value_and_strategy_1bnfwi")}</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 auto-rows-max">
             <button
@@ -435,20 +440,20 @@ export default function ValueStrategySection({
               onClick={onAddSnapshot}
               className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors min-h-[36px] whitespace-nowrap"
               style={{ background: 'rgba(180,140,75,0.15)', color: '#D4A574', border: '1px solid rgba(180,140,75,0.28)' }}
-              title="Save today's value as a history checkpoint"
+              title={t("auto.components_whiskey_ValueStrategySection.save_today_s_value_as_a_1g46ng")}
             >
               <PlusCircle className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden xs:inline">Save Checkpoint</span>
+              <span className="hidden xs:inline">{t("auto.components_whiskey_ValueStrategySection.save_checkpoint_1tg0r4")}</span>
             </button>
             <button
               type="button"
               onClick={onAddObservation}
               className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors min-h-[36px] whitespace-nowrap"
               style={{ background: 'rgba(59,130,246,0.12)', color: '#93C5FD', border: '1px solid rgba(59,130,246,0.25)' }}
-              title="Add a real-world market price observation"
+              title={t("auto.components_whiskey_ValueStrategySection.add_a_real_world_market_price_42jirv")}
             >
               <Eye className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden xs:inline">Add Observation</span>
+              <span className="hidden xs:inline">{t("auto.components_whiskey_ValueStrategySection.add_observation_1v7odn")}</span>
             </button>
             {onEditValuation && (
               <button
@@ -456,10 +461,10 @@ export default function ValueStrategySection({
                 onClick={onEditValuation}
                 className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors min-h-[36px] whitespace-nowrap"
                 style={{ background: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.22)' }}
-                title="Edit valuation inputs"
+                title={t("auto.components_whiskey_ValueStrategySection.edit_valuation_inputs_1jab0w")}
               >
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden xs:inline">Edit Inputs</span>
+                <span className="hidden xs:inline">{t("auto.components_whiskey_ValueStrategySection.edit_inputs_166519")}</span>
               </button>
             )}
             {onRefreshNow && (
@@ -469,7 +474,7 @@ export default function ValueStrategySection({
                 disabled={isRefreshing}
                 className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 min-h-[36px] whitespace-nowrap"
                 style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.28)' }}
-                title="Recompute and save a new value snapshot now"
+                title={t("auto.components_whiskey_ValueStrategySection.recompute_and_save_a_new_value_1kboiu")}
               >
                 <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span className="hidden xs:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
@@ -480,7 +485,7 @@ export default function ValueStrategySection({
               className="flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg font-medium transition-colors min-h-[36px]"
               style={{ background: 'rgba(180,140,75,0.08)', color: 'rgba(212,165,116,0.65)', border: '1px solid rgba(180,140,75,0.18)' }}
               onClick={() => setShowSettings(!showSettings)}
-              title="Valuation settings"
+              title={t("auto.components_whiskey_ValueStrategySection.valuation_settings_1x8lnz")}
             >
               <Settings className="w-3.5 h-3.5 shrink-0" />
             </button>
@@ -491,7 +496,7 @@ export default function ValueStrategySection({
           {/* A -- Current Value + Badges */}
           <div className="flex flex-wrap items-start gap-4 min-w-0">
             <div className="min-w-0 flex-1">
-              <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-1">Current Value</p>
+              <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-1">{t("auto.components_whiskey_ValueStrategySection.current_value_ugkd51")}</p>
               <p className="text-3xl font-bold text-[#F5F1E7] break-words tabular-nums">
                 {currentValue > 0 ? formatFromBase(currentValue) : '--'}
               </p>
@@ -500,13 +505,13 @@ export default function ValueStrategySection({
                 <ConfidenceBadge level={confidence} />
               </div>
               {latestSnapshot && (
-                <p className="text-xs text-[#D8C7A6]/45 mt-1">Last checkpoint: {formatDate(latestSnapshot.snapshot_date)}</p>
+                <p className="text-xs text-[#D8C7A6]/45 mt-1">{t("auto.components_whiskey_ValueStrategySection.last_checkpoint_1djz7w")} {formatDate(latestSnapshot.snapshot_date)}</p>
               )}
             </div>
 
             {/* B -- Trend */}
             <div className="shrink-0 rounded-xl px-4 py-3 text-center min-w-[110px]" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
-              <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2">Trend</p>
+              <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2">{t("auto.components_whiskey_ValueStrategySection.trend_3xoqn6")}</p>
               <TrendChip trend={valueTrend || valuationSnapshot.trend} />
             </div>
           </div>
@@ -516,37 +521,37 @@ export default function ValueStrategySection({
             <div className="flex flex-wrap gap-2">
               {isDiscontinued && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.28)', color: '#fca5a5' }}>
-                  <Lock className="w-3 h-3" /> Discontinued
+                  <Lock className="w-3 h-3" /> {t("auto.components_whiskey_ValueStrategySection.discontinued_10hh6x")}
                 </span>
               )}
               {isAllocated && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a' }}>
-                  <AlertTriangle className="w-3 h-3" /> Allocated
+                  <AlertTriangle className="w-3 h-3" /> {t("auto.components_whiskey_ValueStrategySection.allocated_1e9tua")}
                 </span>
               )}
               {isExclusive && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.28)', color: '#c4b5fd' }}>
-                  <Zap className="w-3 h-3" /> Exclusive
+                  <Zap className="w-3 h-3" /> {t("auto.components_whiskey_ValueStrategySection.exclusive_1q2st6")}
                 </span>
               )}
               {isOneOfAKind && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.28)', color: '#6ee7b7' }}>
-                  <ShieldCheck className="w-3 h-3" /> One of a Kind
+                  <ShieldCheck className="w-3 h-3" /> {t("auto.components_whiskey_ValueStrategySection.one_of_a_kind_gcqqub")}
                 </span>
               )}
               {isMakerDeceased && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.28)', color: '#fca5a5' }}>
-                  <Lock className="w-3 h-3" /> Maker Deceased
+                  <Lock className="w-3 h-3" /> {t("auto.components_whiskey_ValueStrategySection.maker_deceased_v0k7sz")}
                 </span>
               )}
               {isMakerRetired && !isMakerDeceased && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a' }}>
-                  <AlertTriangle className="w-3 h-3" /> Maker Retired
+                  <AlertTriangle className="w-3 h-3" /> {t("auto.components_whiskey_ValueStrategySection.maker_retired_e0otic")}
                 </span>
               )}
               {isSeasonal && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.28)', color: '#D4A574' }}>
-                  <Zap className="w-3 h-3" /> Seasonal
+                  <Zap className="w-3 h-3" /> {t("auto.components_whiskey_ValueStrategySection.seasonal_q71x4r")}
                 </span>
               )}
             </div>
@@ -557,19 +562,19 @@ export default function ValueStrategySection({
 
           {/* D -- Replacement Difficulty */}
           <div className="rounded-xl p-4 min-w-0" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
-            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2 font-semibold">Replacement Difficulty</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2 font-semibold">{t("auto.components_whiskey_ValueStrategySection.replacement_difficulty_i84seg")}</p>
             <ReplacementDifficultyDots level={replacementDifficulty} />
           </div>
 
           {/* E -- Value History */}
           <div>
-            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">Value History</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-[#D8C7A6]/60 mb-2.5">{t("auto.components_whiskey_ValueStrategySection.value_history_1q69dj")}</p>
             <SnapshotHistoryList snapshots={valueSnapshots} formatFn={formatFromBase} />
           </div>
 
           {/* F -- Market Observations */}
           <div>
-            <p className="text-xs uppercase tracking-[0.12em] text-[#93C5FD]/60 mb-2.5">Market Observations</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-[#93C5FD]/60 mb-2.5">{t("auto.components_whiskey_ValueStrategySection.market_observations_1n20gr")}</p>
             <ObservationList observations={priceObservations} formatFn={formatFromBase} />
           </div>
         </div>

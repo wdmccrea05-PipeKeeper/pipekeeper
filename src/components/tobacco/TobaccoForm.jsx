@@ -551,7 +551,7 @@ Return complete and accurate information based on the blend name or description 
       )}
 
       {/* Photo & Logo */}
-      <FormSection title="Photos & Logo" defaultOpen={false}>
+      <FormSection title={t("auto.components_tobacco_TobaccoForm.photos_and_logo_rl1d95")} defaultOpen={false}>
           {formData.logo && !uploading && !uploadingLogo && (
             <p className="text-xs text-[#D7C9B2]/70">
               {t("tobaccoExtended.logoAutoPopulated")}
@@ -656,7 +656,7 @@ Return complete and accurate information based on the blend name or description 
 
       {/* Identity */}
       <FormSection
-        title="Identity"
+        title={t("auto.components_tobacco_TobaccoForm.identity_1q3z8u")}
         defaultOpen={true}
         summary={[blend?.name, blend?.manufacturer].filter(Boolean).join(' · ') || undefined}
       >
@@ -745,7 +745,7 @@ Return complete and accurate information based on the blend name or description 
 
       {/* Tobacco Components */}
       <FormSection
-        title="Components"
+        title={t("auto.components_tobacco_TobaccoForm.components_6c2y5n")}
         defaultOpen={false}
         summary={formData.tobacco_components?.length ? formData.tobacco_components.slice(0, 3).join(', ') : undefined}
       >
@@ -778,7 +778,7 @@ Return complete and accurate information based on the blend name or description 
 
       {/* Flavor Notes */}
       <FormSection
-        title="Flavor Profile"
+        title={t("auto.components_tobacco_TobaccoForm.flavor_profile_2m2li8")}
         defaultOpen={false}
         summary={flavorSummary || undefined}
       >
@@ -788,14 +788,14 @@ Return complete and accurate information based on the blend name or description 
             commonNotes={COMMON_FLAVOR_NOTES}
             getNoteLabel={(note) => t(`flavorNotes.${note}`, note)}
             description={t("tobaccoExtended.flavorNotesDesc")}
-            placeholder="Add custom flavor note…"
+            placeholder={t("auto.components_tobacco_TobaccoForm.add_custom_flavor_note_1ck4rk")}
             addLabel={t("common.add")}
             selectedLabel="Selected notes"
           />
       </FormSection>
 
       {/* Inventory & Status */}
-      <FormSection title="Inventory & Purchase" defaultOpen={false}>
+      <FormSection title={t("auto.components_tobacco_TobaccoForm.inventory_and_purchase_1o9dlr")} defaultOpen={false}>
           <p className="text-sm text-[#D7C9B2]/70">{t("tobaccoExtended.inventoryStatusDesc")}</p>
           <div className="space-y-6">
           <Tabs defaultValue="tins" className="w-full">
@@ -1105,7 +1105,7 @@ Return complete and accurate information based on the blend name or description 
       </FormSection>
 
       {/* Notes */}
-      <FormSection title="Notes & Tags" defaultOpen={false}>
+      <FormSection title={t("auto.components_tobacco_TobaccoForm.notes_and_tags_1xv94o")} defaultOpen={false}>
           <div className="space-y-4">
           <div className="space-y-2">
             <Textarea

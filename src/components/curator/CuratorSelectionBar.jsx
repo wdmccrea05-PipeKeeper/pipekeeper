@@ -8,6 +8,7 @@
 import React from 'react';
 import { RotateCcw } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/curator/recommendationSchema.js';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 /**
  * @param {object}     props
@@ -24,6 +25,7 @@ export default function CuratorSelectionBar({
   onReset,
   runLabel = 'Results',
 }) {
+  const { t } = useTranslation();
   const totalRecs  = sections.reduce((s, g) => s + g.recommendations.length, 0);
   const totalItems = sections.reduce(
     (s, g) => s + g.recommendations.reduce((r, rec) => r + (rec.items?.length || 0), 0),
@@ -63,7 +65,7 @@ export default function CuratorSelectionBar({
           style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(224,216,200,0.5)', border: '1px solid rgba(140,105,65,0.15)' }}
         >
           <RotateCcw className="w-3 h-3" />
-          New Run
+          {t("auto.components_curator_CuratorSelectionBar.new_run_tzjk84")}
         </button>
       </div>
 

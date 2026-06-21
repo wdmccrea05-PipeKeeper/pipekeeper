@@ -138,7 +138,7 @@ export default function AdminSubscriptionTools() {
         <h1 className="text-4xl font-bold text-[#E0D8C8] mb-8">{t("admin.subscriptionAdminTools")}</h1>
         <div className="mb-4">
           <a href="/ReferralAdminReport" className="inline-flex items-center gap-2 text-sm text-[#D4A574] hover:underline">
-            → View Referral Program Admin Report
+            {t("auto.pages_AdminSubscriptionTools.view_referral_program_admin_report_vvvwf6")}
           </a>
         </div>
 
@@ -170,9 +170,9 @@ export default function AdminSubscriptionTools() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="stripe">Stripe</SelectItem>
+                    <SelectItem value="stripe">{t("auto.pages_AdminSubscriptionTools.stripe_1m8yaz")}</SelectItem>
                     <SelectItem value="apple">iOS</SelectItem>
-                    <SelectItem value="manual">Manual</SelectItem>
+                    <SelectItem value="manual">{t("auto.pages_AdminSubscriptionTools.manual_1hznp7")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

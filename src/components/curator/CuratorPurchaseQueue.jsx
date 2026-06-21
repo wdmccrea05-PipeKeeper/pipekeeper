@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ShoppingCart, CheckCircle2, ChevronDown, ChevronUp, RefreshCw, Package } from 'lucide-react';
 import CuratorItemPreviewList from './CuratorItemPreviewList';
 import { PRIORITY_STYLES } from '@/lib/curator/recommendationSchema.js';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const RESTOCK_GOALS = new Set([
   'low_stock_favorites',
@@ -48,6 +49,7 @@ function PriorityBadge({ priority }) {
 }
 
 function PurchaseRecommendationCard({ recommendation, onAction, groupId }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const items = recommendation?.items || [];
 
@@ -132,7 +134,7 @@ function PurchaseRecommendationCard({ recommendation, onAction, groupId }) {
           style={{ border: '1px solid rgba(255,255,255,0.12)', color: '#F5F5F7' }}
         >
           <Package className="w-4 h-4" />
-          Ask Curator
+          {t("auto.components_curator_CuratorPurchaseQueue.ask_curator_4c37lw")}
         </button>
       </div>
     </div>
@@ -168,18 +170,20 @@ function QueueSection({ group, onAction }) {
 }
 
 function EmptyState() {
+  const { t } = useTranslation();
   return (
     <div className="py-16 text-center space-y-3">
       <CheckCircle2 className="w-10 h-10 mx-auto" style={{ color: 'rgba(74,124,92,0.35)' }} />
-      <p className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>No purchase or restock actions needed</p>
+      <p className="text-sm font-semibold" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("auto.components_curator_CuratorPurchaseQueue.no_purchase_or_restock_actions_needed_1dyycp")}</p>
       <p className="text-xs max-w-xs mx-auto" style={{ color: 'rgba(224,216,200,0.35)' }}>
-        All tracked items appear to be adequately stocked.
+        {t("auto.components_curator_CuratorPurchaseQueue.all_tracked_items_appear_to_be_1wjl8i")}
       </p>
     </div>
   );
 }
 
 export default function CuratorPurchaseQueue({ sections = [], onAction, onRefresh, isRefreshing = false }) {
+  const { t } = useTranslation();
   const queueGroups = useMemo(() => buildQueueGroups(sections), [sections]);
 
   const counts = useMemo(() => {
@@ -197,9 +201,9 @@ export default function CuratorPurchaseQueue({ sections = [], onAction, onRefres
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>Purchase &amp; Restock</h2>
+          <h2 style={{ color: '#F5F5F7', fontSize: '20px', fontWeight: 600, margin: 0 }}>{t("auto.components_curator_CuratorPurchaseQueue.purchase_and_restock_azjwwx")}</h2>
           <p style={{ color: '#A1A1AA', fontSize: '16px', lineHeight: 1.6, marginTop: '4px' }}>
-            Actionable queue — add candidates directly to your shopping list
+            {t("auto.components_curator_CuratorPurchaseQueue.actionable_queue_add_candidates_directly_to_lhii4f")}
           </p>
         </div>
 
@@ -211,7 +215,7 @@ export default function CuratorPurchaseQueue({ sections = [], onAction, onRefres
           style={{ border: '1px solid rgba(255,255,255,0.10)', color: '#D8D0C2', opacity: isRefreshing ? 0.6 : 1 }}
         >
           <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
+          {t("auto.components_curator_CuratorPurchaseQueue.refresh_183tk5")}
         </button>
       </div>
 

@@ -83,6 +83,7 @@ const DIFFICULTY_COLORS = {
 const DIFFICULTY_LEVELS_ORDER = ['very_easy', 'easy', 'moderate', 'hard', 'very_hard'];
 
 function ReplacementDifficultyPanel({ blend }) {
+  const { t } = useTranslation();
   const difficulty = computeBlendReplacementDifficulty(blend);
   const strategy   = computeBlendStrategy(blend);
   const label      = BLEND_DIFFICULTY_LABELS[difficulty] || difficulty;
@@ -99,7 +100,7 @@ function ReplacementDifficultyPanel({ blend }) {
       <CardHeader>
         <CardTitle className="text-[#e8d5b7] flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-amber-400" />
-          Replacement Difficulty
+          {t("auto.components_tobacco_TobaccoValuation.replacement_difficulty_i84seg")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -125,7 +126,7 @@ function ReplacementDifficultyPanel({ blend }) {
           className="rounded-xl p-4 space-y-2"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,105,65,0.18)' }}
         >
-          <p className="text-xs uppercase tracking-widest text-[#e8d5b7]/50 font-semibold">Strategy</p>
+          <p className="text-xs uppercase tracking-widest text-[#e8d5b7]/50 font-semibold">{t("auto.components_tobacco_TobaccoValuation.strategy_22l3dk")}</p>
           <p className="text-base font-bold" style={{ color: '#e8d5b7' }}>{strategy.label}</p>
           <p className="text-xs text-[#e8d5b7]/60">{strategy.reason}</p>
           <p className="text-sm text-[#e8d5b7]/80">{strategy.guidance}</p>

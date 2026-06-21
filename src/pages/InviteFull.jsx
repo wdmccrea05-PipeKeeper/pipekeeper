@@ -14,8 +14,10 @@ import { ArrowLeft, Mail, UserPlus, CheckCircle, X, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from 'react-router-dom';
 import { REFERRAL_BASE_URL } from '@/lib/config/referralConfig';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 export default function InviteFull() {
+  const { t } = useTranslation();
   const { user, hasPaid, isLoading } = useCurrentUser();
   const [emailFields, setEmailFields] = useState(['']);
   const [personalMessage, setPersonalMessage] = useState('');
@@ -70,7 +72,7 @@ export default function InviteFull() {
 
         for (const err of errors) {
           if (err.error === 'already_user') toast.info(`${err.email} is already a member`);
-          else if (err.error === 'self_referral') toast.error('You cannot refer yourself');
+          else if (err.error === 'self_referral') toast.error(t("auto.pages_InviteFull.you_cannot_refer_yourself_5p9ab6"));
         }
 
         if (sent > 0) {
@@ -78,7 +80,7 @@ export default function InviteFull() {
           setEmailFields(['']);
           setPersonalMessage('');
         } else if (errors.length > 0) {
-          toast.error('No invites were sent. Please check email addresses.');
+          toast.error(t("auto.pages_InviteFull.no_invites_were_sent_please_check_1yzzje"));
         }
       } else {
         // Fallback: generic invite (non-subscriber)
@@ -108,7 +110,7 @@ If you didn't expect this invitation, you can safely ignore this email.`;
         setPersonalMessage('');
       }
     } catch (error) {
-      toast.error('Failed to send invites. Please try again.');
+      toast.error(t("auto.pages_InviteFull.failed_to_send_invites_please_try_1bgyis"));
     } finally {
       setIsSubmitting(false);
     }
@@ -120,7 +122,7 @@ If you didn't expect this invitation, you can safely ignore this email.`;
         <Link to="/">
           <Button variant="ghost" className="mb-6 text-[#E0D8C8]">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {t("auto.pages_InviteFull.back_to_home_cx6if6")}
           </Button>
         </Link>
         {children}
@@ -136,24 +138,24 @@ If you didn't expect this invitation, you can safely ignore this email.`;
       }}>
         <CheckCircle className="w-14 h-14 mx-auto mb-4" style={{ color: '#2e7d5c' }} />
         <h2 className="text-2xl font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-          Invites Sent!
+          {t("auto.pages_InviteFull.invites_sent_7ty4hu")}
         </h2>
         <p className="mb-2" style={{ color: 'rgba(224,216,200,0.75)' }}>
-          Your friends will receive a personalized invitation with your referral link.
+          {t("auto.pages_InviteFull.your_friends_will_receive_a_personalized_1mld3s")}
         </p>
         {hasPaid && (
           <p className="text-sm mb-6" style={{ color: 'rgba(212,165,116,0.75)' }}>
-            You'll earn 1 free month when each friend becomes a paid subscriber.
+            {t("auto.pages_InviteFull.you_ll_earn_1_free_month_1w9bmu")}
           </p>
         )}
         <div className="flex gap-3 justify-center">
           <Button onClick={() => setSubmitted(false)} style={{ background: '#A35C5C', color: '#fff' }}>
-            Invite More
+            {t("auto.pages_InviteFull.invite_more_6fgfl3")}
           </Button>
           {hasPaid && (
             <Link to="/ReferralDashboard">
               <Button variant="outline" className="border-[#D4A574]/30 text-[#D4A574] gap-1">
-                <Gift className="w-4 h-4" /> View Rewards
+                <Gift className="w-4 h-4" /> {t("auto.pages_InviteFull.view_rewards_qnax14")}
               </Button>
             </Link>
           )}
@@ -172,14 +174,14 @@ If you didn't expect this invitation, you can safely ignore this email.`;
         <div className="flex items-center gap-3 mb-1">
           <UserPlus className="w-7 h-7" style={{ color: '#D4A574' }} />
           <h1 className="text-2xl font-bold" style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            Invite Friends to CollectionKeeper
+            {t("auto.pages_InviteFull.invite_friends_to_collectionkeeper_17dlar")}
           </h1>
         </div>
         <p style={{ color: 'rgba(224,216,200,0.7)' }}>
-          Share CollectionKeeper with fellow collectors.{' '}
+          {t("auto.pages_InviteFull.share_collectionkeeper_with_fellow_collectors_1a9h71")}{' '}
           {hasPaid && program && (
             <span style={{ color: '#D4A574' }}>
-              Earn 1 free month for every friend who subscribes.
+              {t("auto.pages_InviteFull.earn_1_free_month_for_every_5spokf")}
             </span>
           )}
         </p>
@@ -191,11 +193,11 @@ If you didn't expect this invitation, you can safely ignore this email.`;
           style={{ borderBottomColor: 'rgba(180,140,75,0.1)', background: 'rgba(212,165,116,0.06)' }}>
           <div className="flex items-center gap-2 text-sm" style={{ color: '#D4A574' }}>
             <Gift className="w-4 h-4" />
-            <span>Your referral code: <span className="font-mono font-bold">{program.referral_code}</span></span>
+            <span>{t("auto.pages_InviteFull.your_referral_code_1coavw")} <span className="font-mono font-bold">{program.referral_code}</span></span>
           </div>
           <Link to="/ReferralDashboard">
             <Button size="sm" variant="ghost" className="text-[#D4A574] text-xs gap-1 hover:bg-[#D4A574]/10">
-              View Dashboard →
+              {t("auto.pages_InviteFull.view_dashboard_1x3168")}
             </Button>
           </Link>
         </div>
@@ -206,7 +208,7 @@ If you didn't expect this invitation, you can safely ignore this email.`;
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label className="font-medium mb-2 block" style={{ color: '#E0D8C8' }}>
-              Email addresses *
+              {t("auto.pages_InviteFull.email_addresses_kjemd1")}
             </Label>
             <div className="space-y-3">
               {emailFields.map((email, index) => (
@@ -242,19 +244,19 @@ If you didn't expect this invitation, you can safely ignore this email.`;
               style={{ borderColor: 'rgba(180,140,75,0.25)', color: '#E0D8C8' }}
             >
               <UserPlus className="w-4 h-4 mr-2" />
-              Add another
+              {t("auto.pages_InviteFull.add_another_16akfd")}
             </Button>
           </div>
 
           <div>
             <Label htmlFor="message" className="font-medium" style={{ color: '#E0D8C8' }}>
-              Personal message (optional)
+              {t("auto.pages_InviteFull.personal_message_optional_112ill")}
             </Label>
             <Textarea
               id="message"
               value={personalMessage}
               onChange={(e) => setPersonalMessage(e.target.value)}
-              placeholder="Add a personal note to your invitation…"
+              placeholder={t("auto.pages_InviteFull.add_a_personal_note_to_your_10dxpx")}
               className="mt-2 min-h-[120px] bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7] placeholder:text-[#E0D8C8]/40"
             />
           </div>

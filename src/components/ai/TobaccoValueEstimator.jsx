@@ -84,7 +84,7 @@ export default function TobaccoValueEstimator({ blends, onComplete }) {
           {t("tobaccoEstimator.cardTitle")}
           {showLocked && (
             <Badge className="bg-amber-100 text-amber-800 border-amber-300 font-semibold ml-auto">
-              Pro
+              {t("auto.components_ai_TobaccoValueEstimator.pro_376ouu")}
             </Badge>
           )}
         </CardTitle>

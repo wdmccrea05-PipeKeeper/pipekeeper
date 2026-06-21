@@ -23,6 +23,7 @@ import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { markWhiskeyOnboardingComplete } from './onboardingState';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 // ── Design tokens consistent with the app's dark identity ────────────────────
 
@@ -119,6 +120,7 @@ function FeaturePreviewCard({ icon: Icon, title, description, accent = GOLD }) {
 // ── Step definitions ──────────────────────────────────────────────────────────
 
 function StepWelcome() {
+  const { t } = useTranslation();
   return (
     <div className="text-center space-y-6">
       <div className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center" style={{ background: ACCENT_BG, border: ACCENT_BDR }}>
@@ -126,32 +128,32 @@ function StepWelcome() {
       </div>
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight" style={{ color: TEXT_MAIN }}>
-          Welcome to WhiskeyKeeper
+          {t("auto.components_onboarding_WhiskeyKeeperOnboarding.welcome_to_whiskeykeeper_16gi6w")}
         </h1>
         <p className="text-lg" style={{ color: TEXT_DIM }}>
-          Track, understand, and grow your whiskey collection
+          {t("auto.components_onboarding_WhiskeyKeeperOnboarding.track_understand_and_grow_your_whiskey_o09cvv")}
         </p>
       </div>
       <div className="grid grid-cols-2 gap-3 text-left mt-4">
         <div className="rounded-xl p-4" style={{ background: CARD_BG, border: CARD_BORDER }}>
           <BarChart3 className="w-5 h-5 mb-2" style={{ color: GOLD }} />
-          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>Collection Value</p>
-          <p className="text-xs" style={{ color: TEXT_DIM }}>Track what you own and what it's worth</p>
+          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.collection_value_12g3tq")}</p>
+          <p className="text-xs" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.track_what_you_own_and_what_10wbeu")}</p>
         </div>
         <div className="rounded-xl p-4" style={{ background: CARD_BG, border: CARD_BORDER }}>
           <ShieldCheck className="w-5 h-5 mb-2" style={{ color: GOLD }} />
-          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>Open vs. Hold</p>
-          <p className="text-xs" style={{ color: TEXT_DIM }}>Know which bottles to open and which to protect</p>
+          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.open_vs_hold_b2w9lh")}</p>
+          <p className="text-xs" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.know_which_bottles_to_open_and_hc0es3")}</p>
         </div>
         <div className="rounded-xl p-4" style={{ background: CARD_BG, border: CARD_BORDER }}>
           <Glasses className="w-5 h-5 mb-2" style={{ color: GOLD }} />
-          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>Pairings</p>
-          <p className="text-xs" style={{ color: TEXT_DIM }}>Expert session combinations based on flavor logic</p>
+          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.pairings_xdq25e")}</p>
+          <p className="text-xs" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.expert_session_combinations_based_on_flavor_1sqq2t")}</p>
         </div>
         <div className="rounded-xl p-4" style={{ background: CARD_BG, border: CARD_BORDER }}>
           <Sparkles className="w-5 h-5 mb-2" style={{ color: GOLD }} />
-          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>Growth</p>
-          <p className="text-xs" style={{ color: TEXT_DIM }}>Specific bottles that fit your taste and fill real gaps</p>
+          <p className="text-sm font-semibold mb-1" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.growth_1efvss")}</p>
+          <p className="text-xs" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.specific_bottles_that_fit_your_taste_1k4urb")}</p>
         </div>
       </div>
     </div>
@@ -159,11 +161,12 @@ function StepWelcome() {
 }
 
 function StepStartCollection({ onAddFirst, onSkip }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>Start Your Collection</h2>
-        <p style={{ color: TEXT_DIM }}>How would you like to begin?</p>
+        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.start_your_collection_8fvl7y")}</h2>
+        <p style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.how_would_you_like_to_begin_17kjq1")}</p>
       </div>
       <div className="space-y-3">
         <button
@@ -173,8 +176,8 @@ function StepStartCollection({ onAddFirst, onSkip }) {
           style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.35)', color: TEXT_MAIN }}
         >
           <div>
-            <p className="text-sm font-bold">Add your first bottle</p>
-            <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>Start with one bottle — add more anytime</p>
+            <p className="text-sm font-bold">{t("auto.components_onboarding_WhiskeyKeeperOnboarding.add_your_first_bottle_7oz67j")}</p>
+            <p className="text-xs mt-0.5" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.start_with_one_bottle_add_more_1vgnfo")}</p>
           </div>
           <ArrowRight className="w-4 h-4 shrink-0 ml-2" style={{ color: GOLD_MUTED }} />
         </button>
@@ -185,8 +188,8 @@ function StepStartCollection({ onAddFirst, onSkip }) {
           style={{ background: CARD_BG, border: CARD_BORDER, color: TEXT_DIM }}
         >
           <div>
-            <p className="text-sm font-medium" style={{ color: TEXT_MAIN }}>Skip for now</p>
-            <p className="text-xs mt-0.5">Browse the app first, add bottles when ready</p>
+            <p className="text-sm font-medium" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.skip_for_now_1mk6r7")}</p>
+            <p className="text-xs mt-0.5">{t("auto.components_onboarding_WhiskeyKeeperOnboarding.browse_the_app_first_add_bottles_1xl93s")}</p>
           </div>
           <ArrowRight className="w-4 h-4 shrink-0 ml-2" style={{ color: TEXT_DIMMER }} />
         </button>
@@ -196,6 +199,7 @@ function StepStartCollection({ onAddFirst, onSkip }) {
 }
 
 function StepPreferences({ prefs, onChange }) {
+  const { t } = useTranslation();
   const toggle = (key, value) => {
     const current = prefs[key] || [];
     const next = current.includes(value)
@@ -209,12 +213,12 @@ function StepPreferences({ prefs, onChange }) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-1">
-        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>Your Preferences</h2>
-        <p className="text-sm" style={{ color: TEXT_DIM }}>Helps the Curator personalize recommendations. All optional.</p>
+        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.your_preferences_ner7s6")}</h2>
+        <p className="text-sm" style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.helps_the_curator_personalize_recommendations_al_1ldfh7")}</p>
       </div>
 
       <div className="space-y-1">
-        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>Whiskey Styles</p>
+        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.whiskey_styles_a2emel")}</p>
         <div className="flex flex-wrap gap-2 pt-1">
           {WHISKEY_STYLES.map((s) => (
             <ToggleChip
@@ -229,7 +233,7 @@ function StepPreferences({ prefs, onChange }) {
       </div>
 
       <div className="space-y-1">
-        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>Flavor Preferences</p>
+        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.flavor_preferences_xdqlwh")}</p>
         <div className="flex flex-wrap gap-2 pt-1">
           {FLAVOR_PREFS.map((f) => (
             <ToggleChip
@@ -244,7 +248,7 @@ function StepPreferences({ prefs, onChange }) {
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>Experience Level</p>
+        <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.experience_level_1yxppf")}</p>
         <div className="space-y-2">
           {EXPERIENCE_LEVELS.map((lvl) => (
             <ExperienceCard
@@ -261,32 +265,33 @@ function StepPreferences({ prefs, onChange }) {
 }
 
 function StepValuePreview() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-5">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>What You'll Have</h2>
-        <p style={{ color: TEXT_DIM }}>Your collection gets more useful with every bottle you add.</p>
+        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.what_you_ll_have_14lmec")}</h2>
+        <p style={{ color: TEXT_DIM }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.your_collection_gets_more_useful_with_19qme0")}</p>
       </div>
 
       <FeaturePreviewCard
         icon={BarChart3}
-        title="Collection Intelligence"
+        title={t("auto.components_onboarding_WhiskeyKeeperOnboarding.collection_intelligence_rnbmis")}
         description="See your collection's total value, replacement risk, and strategy status at a glance — no manual tracking."
       />
       <FeaturePreviewCard
         icon={ShieldCheck}
-        title="Safe to Open / Hold"
+        title={t("auto.components_onboarding_WhiskeyKeeperOnboarding.safe_to_open_hold_ncmui7")}
         description="For every bottle, the app tells you whether it's safe to open or worth holding — and exactly why."
       />
       <FeaturePreviewCard
         icon={Glasses}
-        title="Expert Pairings"
+        title={t("auto.components_onboarding_WhiskeyKeeperOnboarding.expert_pairings_d4s9ve")}
         description="Complement and contrast pairings built from flavor logic, not guesswork. Every pairing explains itself."
         accent="#93C5FD"
       />
       <FeaturePreviewCard
         icon={Sparkles}
-        title="Grow & Expand"
+        title={t("auto.components_onboarding_WhiskeyKeeperOnboarding.grow_and_expand_1osn16")}
         description="Specific bottle recommendations that fill real gaps in your collection and match your proven preferences."
         accent="#a78bfa"
       />
@@ -295,26 +300,25 @@ function StepValuePreview() {
 }
 
 function StepCuratorIntro() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6 text-center">
       <div className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center" style={{ background: ACCENT_BG, border: ACCENT_BDR }}>
         <Sparkles className="w-10 h-10" style={{ color: GOLD }} />
       </div>
       <div className="space-y-3">
-        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>Meet the Curator</h2>
+        <h2 className="text-2xl font-bold" style={{ color: TEXT_MAIN }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.meet_the_curator_6yolw1")}</h2>
         <p className="text-base leading-relaxed max-w-md mx-auto" style={{ color: TEXT_DIM }}>
-          Your collection gets smarter as you use it.
-          The Curator helps you decide what to open, what to keep, and what to explore next.
+          {t("auto.components_onboarding_WhiskeyKeeperOnboarding.your_collection_gets_smarter_as_you_xd9kdh")}
         </p>
         <p className="text-sm leading-relaxed max-w-md mx-auto" style={{ color: TEXT_DIMMER }}>
-          It reasons like a seasoned collector — not a generic assistant.
-          The more you use the app, the more precise it gets.
+          {t("auto.components_onboarding_WhiskeyKeeperOnboarding.it_reasons_like_a_seasoned_collector_13kgs3")}
         </p>
       </div>
       <div className="rounded-xl p-4 text-left" style={{ background: CARD_BG, border: CARD_BORDER }}>
-        <p className="text-xs uppercase tracking-widest mb-2 font-semibold" style={{ color: TEXT_DIMMER }}>Example insight</p>
+        <p className="text-xs uppercase tracking-widest mb-2 font-semibold" style={{ color: TEXT_DIMMER }}>{t("auto.components_onboarding_WhiskeyKeeperOnboarding.example_insight_vnd0xz")}</p>
         <p className="text-sm leading-relaxed" style={{ color: TEXT_MAIN }}>
-          "This bottle remains widely available and price-stable. Opening it carries little collector downside — it makes more sense to enjoy it than to hold it."
+          {t("auto.components_onboarding_WhiskeyKeeperOnboarding.this_bottle_remains_widely_available_and_mdduo5")}
         </p>
       </div>
     </div>
@@ -324,6 +328,7 @@ function StepCuratorIntro() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function WhiskeyKeeperOnboarding({ onComplete, onSkip }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [prefs, setPrefs] = useState({
     preferred_whiskey_types: [],
@@ -448,7 +453,7 @@ export default function WhiskeyKeeperOnboarding({ onComplete, onSkip }) {
                 className="text-xs flex items-center gap-1 px-2.5 py-1 rounded-full transition-all"
                 style={{ color: TEXT_DIMMER, background: 'rgba(255,255,255,0.04)' }}
               >
-                Skip all <X className="w-3 h-3" />
+                {t("auto.components_onboarding_WhiskeyKeeperOnboarding.skip_all_hcupmd")} <X className="w-3 h-3" />
               </button>
             </div>
             <p className="text-xs uppercase tracking-widest font-semibold" style={{ color: TEXT_DIMMER }}>
@@ -496,7 +501,7 @@ export default function WhiskeyKeeperOnboarding({ onComplete, onSkip }) {
                 style={{ color: TEXT_DIM, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back
+                {t("auto.components_onboarding_WhiskeyKeeperOnboarding.back_yjpjkm")}
               </button>
 
               {current.skipLabel && (
@@ -519,12 +524,12 @@ export default function WhiskeyKeeperOnboarding({ onComplete, onSkip }) {
               >
                 {isLast ? (
                   <>
-                    Enter WhiskeyKeeper
+                    {t("auto.components_onboarding_WhiskeyKeeperOnboarding.enter_whiskeykeeper_13u72b")}
                     <Check className="w-4 h-4" />
                   </>
                 ) : (
                   <>
-                    Continue
+                    {t("auto.components_onboarding_WhiskeyKeeperOnboarding.continue_1fqfxw")}
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}

@@ -8,6 +8,7 @@ import {
   initiateCheckout,
   handlePostPurchase,
 } from './subscriptionHandler';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 /**
  * Hook for paywall logic and plan selection
@@ -27,6 +28,7 @@ export function usePaywall() {
    */
   const selectPlan = useCallback(
     async (selectedPlan, billingPeriod = selectedBillingPeriod, options = {}) => {
+  const { t } = useTranslation();
       try {
         setIsLoading(true);
         setError(null);
@@ -58,7 +60,7 @@ export function usePaywall() {
         setError(message);
 
         if (message === 'popup_blocked_or_redirect_disallowed') {
-          toast.error('Unable to open checkout here. Please try again from the Subscription page.');
+          toast.error(t("auto.components_subscription_usePaywall.unable_to_open_checkout_here_please_jgcphz"));
           navigate(createPageUrl('Subscription'));
         } else {
           // Show user-facing toast error
@@ -86,6 +88,7 @@ export function usePaywall() {
    */
   const completePayment = useCallback(
     async (targetUrl = '/CollectionHub') => {
+  const { t } = useTranslation();
       try {
         setIsLoading(true);
         setError(null);
@@ -94,7 +97,7 @@ export function usePaywall() {
         await handlePostPurchase();
 
         // Success
-        toast.success('Subscription activated!');
+        toast.success(t("auto.components_subscription_usePaywall.subscription_activated_1vp07c"));
         navigate(targetUrl);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to activate subscription';

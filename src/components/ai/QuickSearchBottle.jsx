@@ -243,7 +243,7 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
                       )}
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {bottle._isExact && (
-                          <Badge className="text-xs bg-emerald-900/60 text-emerald-200 border-emerald-700/50" style={{ fontWeight: '600' }}>✓ Exact Match</Badge>
+                          <Badge className="text-xs bg-emerald-900/60 text-emerald-200 border-emerald-700/50" style={{ fontWeight: '600' }}>{t("auto.components_ai_QuickSearchBottle.exact_match_vy612y")}</Badge>
                         )}
                         {bottle.type && <Badge className="text-xs bg-amber-900/50 text-amber-200 border-amber-700/40">{bottle.type}</Badge>}
                         {bottle.region && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.region}</Badge>}
@@ -262,9 +262,9 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
                       className="w-full"
                     >
                       {addingId === bottle.name ? (
-                        <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> Adding...</>
+                        <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> {t("auto.components_ai_QuickSearchBottle.adding_1pmhso")}</>
                       ) : (
-                        <><Plus className="w-3.5 h-3.5 mr-1" /> Add to Collection</>
+                        <><Plus className="w-3.5 h-3.5 mr-1" /> {t("auto.components_ai_QuickSearchBottle.add_to_collection_g6ofml")}</>
                       )}
                     </Button>
                   </div>

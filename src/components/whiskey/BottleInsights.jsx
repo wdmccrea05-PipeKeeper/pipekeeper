@@ -124,7 +124,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
               fontFamily: "'Georgia', serif",
             }}
           >
-            Whiskey Insights
+            {t("auto.components_whiskey_BottleInsights.whiskey_insights_hqtv5e")}
           </h2>
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
           <div className="flex items-center gap-2 mb-2">
             <Gauge className="w-4 h-4" style={{ color: '#B48C4B' }} />
             <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(224,216,200,0.6)' }}>
-              Avg Age
+              {t("auto.components_whiskey_BottleInsights.avg_age_1b502q")}
             </p>
           </div>
           <p style={{ color: '#F5F1E7' }} className="text-2xl font-bold">
@@ -168,7 +168,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
             <div className="flex items-center gap-2 mb-2">
               <Trophy className="w-4 h-4" style={{ color: '#C87941' }} />
               <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(224,216,200,0.8)' }}>
-                Top Distillery
+                {t("auto.components_whiskey_BottleInsights.top_distillery_1nr2gv")}
               </p>
             </div>
             <p style={{ color: '#F5F1E7' }} className="text-lg font-semibold break-words">
@@ -189,14 +189,14 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
           <div className="flex items-center gap-2 mb-2">
             <Trophy className="w-4 h-4" style={{ color: '#D4AF37' }} />
             <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(224,216,200,0.8)' }}>
-              Highest Rated
+              {t("auto.components_whiskey_BottleInsights.highest_rated_t36ev5")}
             </p>
           </div>
           <p style={{ color: '#F5F1E7' }} className="text-lg font-semibold break-words">
             {insights.highestRated.name}
           </p>
           <p style={{ color: 'rgba(200,160,100,0.95)' }} className="text-sm mt-1">
-            Rating: {insights.highestRated.rating?.toFixed(1)} / 5
+            {t("auto.components_whiskey_BottleInsights.rating_15sbgf")} {insights.highestRated.rating?.toFixed(1)} / 5
           </p>
         </div>
       )}
@@ -205,7 +205,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
       {insights.regionBreakdown.length > 0 && (
         <div className="space-y-2">
           <h3 style={{ color: 'rgba(180,140,75,0.9)' }} className="text-xs uppercase tracking-wider font-semibold">
-            Top Regions
+            {t("auto.components_whiskey_BottleInsights.top_regions_11tza3")}
           </h3>
           <div className="space-y-2">
             {insights.regionBreakdown.map(({ region, count }) => (
@@ -227,7 +227,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
       {insights.typeBreakdown.length > 0 && (
         <div className="space-y-2">
           <h3 style={{ color: 'rgba(180,140,75,0.9)' }} className="text-xs uppercase tracking-wider font-semibold">
-            Top Types
+            {t("auto.components_whiskey_BottleInsights.top_types_16ofaj")}
           </h3>
           <div className="space-y-2">
             {insights.typeBreakdown.map(({ type, count }) => (

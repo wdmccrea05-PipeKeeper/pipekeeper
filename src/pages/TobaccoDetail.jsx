@@ -105,25 +105,25 @@ function AddItemValueSnapshotModal({ item, itemType, moduleKey, valuationSnapsho
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Confidence</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.confidence_1vbeba")}</label>
             <Select value={form.value_confidence} onValueChange={v => setForm(p => ({ ...p, value_confidence: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="high">{t("auto.pages_TobaccoDetail.high_yjucrp")}</SelectItem>
+                <SelectItem value="medium">{t("auto.pages_TobaccoDetail.medium_1i29el")}</SelectItem>
+                <SelectItem value="low">{t("auto.pages_TobaccoDetail.low_376lfb")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Replacement Difficulty</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.replacement_difficulty_i84seg")}</label>
             <Select value={form.replacement_difficulty} onValueChange={v => setForm(p => ({ ...p, replacement_difficulty: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-                <SelectItem value="very_hard">Very Hard</SelectItem>
+                <SelectItem value="easy">{t("auto.pages_TobaccoDetail.easy_yjrv6f")}</SelectItem>
+                <SelectItem value="moderate">{t("auto.pages_TobaccoDetail.moderate_1p8371")}</SelectItem>
+                <SelectItem value="hard">{t("auto.pages_TobaccoDetail.hard_yju6bo")}</SelectItem>
+                <SelectItem value="very_hard">{t("auto.pages_TobaccoDetail.very_hard_1c9zw8")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -185,7 +185,7 @@ function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onCl
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(59,130,246,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Market Observation</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t("auto.pages_TobaccoDetail.add_market_observation_1w30d5")}</h3>
         <div className="space-y-3">
           {[
             { label: 'Observed Date', field: 'observed_date', type: 'date' },
@@ -202,17 +202,17 @@ function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onCl
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Price Type</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.price_type_1v7ft2")}</label>
             <Select value={form.price_type} onValueChange={v => setForm(p => ({ ...p, price_type: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="retail">Retail</SelectItem>
-                <SelectItem value="aftermarket">Aftermarket</SelectItem>
-                <SelectItem value="auction">Auction</SelectItem>
-                <SelectItem value="collector">Collector</SelectItem>
-                <SelectItem value="estimate">Estimate</SelectItem>
-                <SelectItem value="private_sale">Private Sale</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="retail">{t("auto.pages_TobaccoDetail.retail_1lb3kj")}</SelectItem>
+                <SelectItem value="aftermarket">{t("auto.pages_TobaccoDetail.aftermarket_1cn991")}</SelectItem>
+                <SelectItem value="auction">{t("auto.pages_TobaccoDetail.auction_1agp8h")}</SelectItem>
+                <SelectItem value="collector">{t("auto.pages_TobaccoDetail.collector_pjqx64")}</SelectItem>
+                <SelectItem value="estimate">{t("auto.pages_TobaccoDetail.estimate_1munng")}</SelectItem>
+                <SelectItem value="private_sale">{t("auto.pages_TobaccoDetail.private_sale_1eid6r")}</SelectItem>
+                <SelectItem value="other">{t("auto.pages_TobaccoDetail.other_3u793b")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -294,136 +294,136 @@ function EditTobaccoValuationModal({ blend, onClose, onSaved }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(251,191,36,0.25)' }}>
         <h3 className="text-lg font-bold text-[#F5F1E7]">{t('valuation.editInputs')}</h3>
-        <p className="text-xs text-[#D8C7A6]/60">These fields feed directly into the shared valuation engine.</p>
+        <p className="text-xs text-[#D8C7A6]/60">{t("auto.pages_TobaccoDetail.these_fields_feed_directly_into_the_s5uu9e")}</p>
 
-        <p className="text-xs font-semibold text-[#D4A574] uppercase tracking-wider pt-1">Pricing</p>
+        <p className="text-xs font-semibold text-[#D4A574] uppercase tracking-wider pt-1">{t("auto.pages_TobaccoDetail.pricing_9upkb5")}</p>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Purchase Price ($) — per unit</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.purchase_price_per_unit_1neieh")}</label>
               <Input type="number" value={form.purchase_price} onChange={e => setForm(p => ({ ...p, purchase_price: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. 15.00" />
             </div>
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Purchase Type</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.purchase_type_1s5qci")}</label>
               <Select value={form.purchase_price_type || 'none'} onValueChange={v => setForm(p => ({ ...p, purchase_price_type: v === 'none' ? '' : v }))}>
-                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t("auto.pages_TobaccoDetail.select_1tkotp")} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">— Not set —</SelectItem>
-                  <SelectItem value="tin">Per Tin</SelectItem>
-                  <SelectItem value="oz">Per Oz</SelectItem>
-                  <SelectItem value="pouch">Per Pouch</SelectItem>
-                  <SelectItem value="lot">Lot / Bundle</SelectItem>
+                  <SelectItem value="none">{t("auto.pages_TobaccoDetail.not_set_14d5wt")}</SelectItem>
+                  <SelectItem value="tin">{t("auto.pages_TobaccoDetail.per_tin_1kpqfr")}</SelectItem>
+                  <SelectItem value="oz">{t("auto.pages_TobaccoDetail.per_oz_1k0evp")}</SelectItem>
+                  <SelectItem value="pouch">{t("auto.pages_TobaccoDetail.per_pouch_at2lmz")}</SelectItem>
+                  <SelectItem value="lot">{t("auto.pages_TobaccoDetail.lot_bundle_1fohom")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Cost Basis ($) — total paid</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.cost_basis_total_paid_138zwz")}</label>
               <Input type="number" value={form.cost_basis} onChange={e => setForm(p => ({ ...p, cost_basis: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. 45.00" />
             </div>
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Price per Oz ($/oz)</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.price_per_oz_oz_1g61fs")}</label>
               <Input type="number" value={form.price_per_oz} onChange={e => setForm(p => ({ ...p, price_per_oz: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. 1.25" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Market Unit Value ($/oz)</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.market_unit_value_oz_1e8e1b")}</label>
               <Input type="number" value={form.market_estimated_unit_value} onChange={e => setForm(p => ({ ...p, market_estimated_unit_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="current $/oz" />
             </div>
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Market Total Value ($)</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.market_total_value_7sjz3z")}</label>
               <Input type="number" value={form.market_estimated_total_value} onChange={e => setForm(p => ({ ...p, market_estimated_total_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="total lot value" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">AI Estimated Value ($/oz)</label>
-              <Input type="number" value={form.ai_estimated_value} onChange={e => setForm(p => ({ ...p, ai_estimated_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="AI per-oz estimate" />
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.ai_estimated_value_oz_ul5qx")}</label>
+              <Input type="number" value={form.ai_estimated_value} onChange={e => setForm(p => ({ ...p, ai_estimated_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder={t("auto.pages_TobaccoDetail.ai_per_oz_estimate_c937s8")} />
             </div>
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Manual Market Value ($) — override</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.manual_market_value_override_15x5fn")}</label>
               <Input type="number" value={form.manual_market_value} onChange={e => setForm(p => ({ ...p, manual_market_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="manual override" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Valuation Source</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.valuation_source_3m80mh")}</label>
               <Input type="text" value={form.valuation_source} onChange={e => setForm(p => ({ ...p, valuation_source: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. Smokingpipes.com" />
             </div>
             <div>
-              <label className="text-xs text-[#D8C7A6] block mb-1">Valuation Confidence</label>
+              <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.valuation_confidence_14g6fp")}</label>
               <Select value={form.valuation_confidence || 'none'} onValueChange={v => setForm(p => ({ ...p, valuation_confidence: v === 'none' ? '' : v }))}>
-                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t("auto.pages_TobaccoDetail.select_1tkotp")} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">— Not set —</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="none">{t("auto.pages_TobaccoDetail.not_set_14d5wt")}</SelectItem>
+                  <SelectItem value="high">{t("auto.pages_TobaccoDetail.high_yjucrp")}</SelectItem>
+                  <SelectItem value="medium">{t("auto.pages_TobaccoDetail.medium_1i29el")}</SelectItem>
+                  <SelectItem value="low">{t("auto.pages_TobaccoDetail.low_376lfb")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Valuation Notes</label>
-            <Input type="text" value={form.valuation_notes} onChange={e => setForm(p => ({ ...p, valuation_notes: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="Any notes about the valuation…" />
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.valuation_notes_1fo4sm")}</label>
+            <Input type="text" value={form.valuation_notes} onChange={e => setForm(p => ({ ...p, valuation_notes: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder={t("auto.pages_TobaccoDetail.any_notes_about_the_valuation_1id1gi")} />
           </div>
         </div>
 
-        <p className="text-xs font-semibold text-[#D4A574] uppercase tracking-wider pt-2">Rarity &amp; Production</p>
+        <p className="text-xs font-semibold text-[#D4A574] uppercase tracking-wider pt-2">{t("auto.pages_TobaccoDetail.rarity_and_production_3o7stp")}</p>
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Production Status</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.production_status_wvj3rk")}</label>
             <Select value={form.production_status || 'none'} onValueChange={v => setForm(p => ({ ...p, production_status: v === 'none' ? '' : v }))}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t("auto.pages_TobaccoDetail.select_1tkotp")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">— Not set —</SelectItem>
-                <SelectItem value="In Production">In Production</SelectItem>
-                <SelectItem value="Discontinued">Discontinued</SelectItem>
-                <SelectItem value="Limited Release">Limited Release</SelectItem>
-                <SelectItem value="Seasonal">Seasonal</SelectItem>
+                <SelectItem value="none">{t("auto.pages_TobaccoDetail.not_set_14d5wt")}</SelectItem>
+                <SelectItem value="In Production">{t("auto.pages_TobaccoDetail.in_production_zmt4cj")}</SelectItem>
+                <SelectItem value="Discontinued">{t("auto.pages_TobaccoDetail.discontinued_10hh6x")}</SelectItem>
+                <SelectItem value="Limited Release">{t("auto.pages_TobaccoDetail.limited_release_1stdet")}</SelectItem>
+                <SelectItem value="Seasonal">{t("auto.pages_TobaccoDetail.seasonal_q71x4r")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Manufacturer Status</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.manufacturer_status_1ysuv0")}</label>
             <Select value={form.manufacturer_status || 'none'} onValueChange={v => setForm(p => ({ ...p, manufacturer_status: v === 'none' ? '' : v }))}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t("auto.pages_TobaccoDetail.select_1tkotp")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">— Not set —</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="limited_production">Limited Production</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="defunct">Defunct / Closed</SelectItem>
+                <SelectItem value="none">{t("auto.pages_TobaccoDetail.not_set_14d5wt")}</SelectItem>
+                <SelectItem value="active">{t("auto.pages_TobaccoDetail.active_1a9l7e")}</SelectItem>
+                <SelectItem value="limited_production">{t("auto.pages_TobaccoDetail.limited_production_a93d90")}</SelectItem>
+                <SelectItem value="inactive">{t("auto.pages_TobaccoDetail.inactive_1nsqnn")}</SelectItem>
+                <SelectItem value="defunct">{t("auto.pages_TobaccoDetail.defunct_closed_1tli4d")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm text-[#E0D8C8] cursor-pointer">
               <input type="checkbox" checked={form.is_seasonal} onChange={e => setForm(p => ({ ...p, is_seasonal: e.target.checked }))} className="rounded" />
-              <span>Seasonal Release</span>
+              <span>{t("auto.pages_TobaccoDetail.seasonal_release_147ou7")}</span>
             </label>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm text-[#E0D8C8] cursor-pointer">
               <input type="checkbox" checked={form.regional_exclusive} onChange={e => setForm(p => ({ ...p, regional_exclusive: e.target.checked }))} className="rounded" />
-              <span>Regional Exclusivity</span>
+              <span>{t("auto.pages_TobaccoDetail.regional_exclusivity_bip0fz")}</span>
             </label>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm text-[#E0D8C8] cursor-pointer">
               <input type="checkbox" checked={form.is_limited} onChange={e => setForm(p => ({ ...p, is_limited: e.target.checked }))} className="rounded" />
-              <span>Limited Release / Small Batch</span>
+              <span>{t("auto.pages_TobaccoDetail.limited_release_small_batch_1gdg50")}</span>
             </label>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Rarity Notes</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.rarity_notes_1qz5uy")}</label>
             <Input type="text" value={form.rarity_notes} onChange={e => setForm(p => ({ ...p, rarity_notes: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. only available in UK…" />
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Rarity Score Override (0–100, blank = auto)</label>
-            <Input type="number" min="0" max="100" value={form.rarity_score_override} onChange={e => setForm(p => ({ ...p, rarity_score_override: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="Leave blank for auto" />
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t("auto.pages_TobaccoDetail.rarity_score_override_0_100_blank_9gpnd7")}</label>
+            <Input type="number" min="0" max="100" value={form.rarity_score_override} onChange={e => setForm(p => ({ ...p, rarity_score_override: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder={t("auto.pages_TobaccoDetail.leave_blank_for_auto_1xylmr")} />
           </div>
         </div>
 
@@ -613,11 +613,11 @@ export default function TobaccoDetail() {
     setDeleting(true);
     try {
       await scopedEntities.TobaccoBlend.delete(blend.id);
-      toast.success('Blend deleted');
+      toast.success(t("auto.pages_TobaccoDetail.blend_deleted_1v8ehb"));
       navigate('/Tobacco');
     } catch (e) {
       console.error('[TobaccoDetail] delete failed', e);
-      toast.error('Failed to delete blend');
+      toast.error(t("auto.pages_TobaccoDetail.failed_to_delete_blend_k3nj39"));
       setDeleting(false);
     }
   };
@@ -709,7 +709,7 @@ export default function TobaccoDetail() {
   if (loading) {
     return (
       <div className="p-6 text-[#F5F1E7]">
-        <p>Loading blend…</p>
+        <p>{t("auto.pages_TobaccoDetail.loading_blend_l9j7y")}</p>
       </div>
     );
   }
@@ -717,7 +717,7 @@ export default function TobaccoDetail() {
   if (!blend) {
     return (
       <div className="p-6 text-[#F5F1E7]">
-        <p>Unable to load record.</p>
+        <p>{t("auto.pages_TobaccoDetail.unable_to_load_record_2v51v0")}</p>
       </div>
     );
   }
@@ -734,7 +734,7 @@ export default function TobaccoDetail() {
       <div className="flex items-center justify-between gap-3">
         <Button variant="outline" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          {t("auto.pages_TobaccoDetail.back_yjpjkm")}
         </Button>
 
         <div className="flex gap-2 flex-wrap items-center">
@@ -744,7 +744,7 @@ export default function TobaccoDetail() {
             style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}
           >
             <PipeIcon className="w-4 h-4 mr-2" color="#D4A574" />
-            Best Pipes
+            {t("auto.pages_TobaccoDetail.best_pipes_120dxa")}
           </Button>
 
           <Button
@@ -753,12 +753,12 @@ export default function TobaccoDetail() {
             style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}
           >
             <Search className="w-4 h-4 mr-2" />
-            Find Similar
+            {t("auto.pages_TobaccoDetail.find_similar_afe8ev")}
           </Button>
 
           <Button variant="outline" size="sm" onClick={() => setShowShareModal(true)}>
             <Share2 className="w-4 h-4 mr-2" />
-            Share
+            {t("auto.pages_TobaccoDetail.share_3wrj14")}
           </Button>
 
           <EnrichButton itemType="blend" record={blend} onEnriched={setBlend} />
@@ -769,7 +769,7 @@ export default function TobaccoDetail() {
             style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}
           >
             <Pencil className="w-4 h-4 mr-2" />
-            Edit
+            {t("auto.pages_TobaccoDetail.edit_yjrxfv")}
           </Button>
 
           <Button
@@ -803,7 +803,7 @@ export default function TobaccoDetail() {
             ) : (
               <div className="w-full h-[280px] rounded-2xl flex flex-col items-center justify-center bg-[rgba(255,255,255,0.03)] text-[#D8C7A6]/55 border border-[rgba(180,140,75,0.14)]">
                 <Leaf className="w-16 h-16" style={{ color: 'rgba(90,124,90,0.25)' }} />
-                <p className="text-xs uppercase tracking-wider mt-2">No Photo</p>
+                <p className="text-xs uppercase tracking-wider mt-2">{t("auto.pages_TobaccoDetail.no_photo_bbfq98")}</p>
               </div>
             )}
 
@@ -853,21 +853,21 @@ export default function TobaccoDetail() {
             >
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Total (oz)</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_TobaccoDetail.total_oz_ibkgkj")}</p>
                   <p className="text-2xl font-semibold mt-2">{formatWeight(totalOz)}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Owned</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_TobaccoDetail.owned_3u9pb6")}</p>
                   <p className="text-2xl font-semibold mt-2">{getOwnershipLabel(blend)}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Status</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_TobaccoDetail.status_1m8lgy")}</p>
                   <p className="text-2xl font-semibold mt-2">
                     {blend.production_status ? blend.production_status.split(' ')[0] : '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">Aging</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t("auto.pages_TobaccoDetail.aging_3k1esr")}</p>
                   <p className="text-2xl font-semibold mt-2">
                     {blend.aging_potential ? blend.aging_potential.split(' ')[0] : '—'}
                   </p>
@@ -880,7 +880,7 @@ export default function TobaccoDetail() {
                 className="rounded-2xl p-5"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}
               >
-                <p className="text-sm font-semibold mb-3">Flavor Notes</p>
+                <p className="text-sm font-semibold mb-3">{t("auto.pages_TobaccoDetail.flavor_notes_hrnhp4")}</p>
                 <div className="flex flex-wrap gap-2">
                   {flavorProfile.map((note, idx) => (
                     <span
@@ -899,7 +899,7 @@ export default function TobaccoDetail() {
                 className="rounded-2xl p-5"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}
               >
-                <p className="text-sm font-semibold mb-2">Notes</p>
+                <p className="text-sm font-semibold mb-2">{t("auto.pages_TobaccoDetail.notes_3te9gu")}</p>
                 <p className="text-[#E0D8C8]/80 whitespace-pre-wrap">{blend.notes}</p>
               </div>
             )}
@@ -940,7 +940,7 @@ export default function TobaccoDetail() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t('tobacco.deleteConfirm')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <strong>{blend?.name}</strong>. This action cannot be undone.
+              {t("auto.pages_TobaccoDetail.this_will_permanently_delete_1e3ibn")} <strong>{blend?.name}</strong>{t("auto.pages_TobaccoDetail.this_action_cannot_be_undone_15oama")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -985,7 +985,7 @@ export default function TobaccoDetail() {
           valuationSnapshot={tobaccoStrategy}
           userEmail={userEmail}
           onClose={() => setShowSnapshotModal(false)}
-          onSaved={() => { setShowSnapshotModal(false); reloadSnapshots(); toast.success('Value checkpoint saved'); }}
+          onSaved={() => { setShowSnapshotModal(false); reloadSnapshots(); toast.success(t("auto.pages_TobaccoDetail.value_checkpoint_saved_1wnagr")); }}
         />
       )}
 
@@ -996,7 +996,7 @@ export default function TobaccoDetail() {
           moduleKey="pipekeeper"
           userEmail={userEmail}
           onClose={() => setShowObservationModal(false)}
-          onSaved={() => { setShowObservationModal(false); reloadObservations(); toast.success('Observation saved'); }}
+          onSaved={() => { setShowObservationModal(false); reloadObservations(); toast.success(t("auto.pages_TobaccoDetail.observation_saved_4xbdpg")); }}
         />
       )}
 
@@ -1008,7 +1008,7 @@ export default function TobaccoDetail() {
             const merged = { ...blend, ...updates };
             setBlend(merged);
             setShowEditValuationModal(false);
-            toast.success('Valuation inputs updated');
+            toast.success(t("auto.pages_TobaccoDetail.valuation_inputs_updated_mda542"));
             // Reload snapshots so Value History reflects the new inputs
             reloadSnapshots();
             queryClient.invalidateQueries({ queryKey: ['curatorCollection'] });
