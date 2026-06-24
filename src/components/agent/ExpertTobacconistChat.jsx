@@ -186,6 +186,10 @@ function classifyIntent(message) {
   const comparisonPattern = /\b(compare|redundant|overlap|where does it sit|how does it fit)\b/i;
   if (followUpPattern.test(t) || comparisonPattern.test(t)) return 'FOLLOW_UP';
 
+  // Collection impact / replacement queries — always go to LLM
+  if (/\b(replacing|replace|swap|switching|removing|adding|substitut)\b/i.test(t) &&
+      /\b(effect|impact|change|affect|difference|collection|cellar|profile|gap|coverage)\b/i.test(t)) return 'COLLECTION_IMPACT';
+
   if (/\b(pairing|pair with|pair together|combine|combination|explain why .+ work together)\b/i.test(t)) return 'EXPLAIN_PAIRING';
 
   // PAIRING_SCORE_QUERY — questions about pairing scores, ratings, best/worst pairings
@@ -1106,7 +1110,8 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     }
     const subjectEntity = entityContext.subject;
     if (!subjectEntity) {
-      return { reply: 'Could you name the specific item you are asking about? I do not have a clear subject from the last exchange.', updatedEntityContext: entityContext };
+      // Signal to caller to escalate to LLM rather than returning dead-end
+      return null;
     }
     const subject = subjectEntity;
     const topicIntent = entityContext.topicIntent;
@@ -1680,8 +1685,22 @@ export default function ExpertTobacconistChat({
    */
   function needsLLM(text, intent) {
     // Local rule engine handles these specific intents reliably
-    const localIntents = new Set(['USER_CORRECTION', 'FOLLOW_UP_CONSTRAINT', 'FOLLOW_UP_NEXT_CANDIDATE', 'FOLLOW_UP']);
+    // COLLECTION_IMPACT always goes to LLM — it has named blends and needs domain reasoning
+  if (intent === 'COLLECTION_IMPACT') return true;
+
+  const localIntents = new Set(['USER_CORRECTION', 'FOLLOW_UP_CONSTRAINT', 'FOLLOW_UP_NEXT_CANDIDATE', 'FOLLOW_UP']);
     if (localIntents.has(intent)) return false;
+
+    // FOLLOW_UP with a substantive query body (replacement/impact/comparison) must go to LLM.
+    // The FOLLOW_UP classifier fires on "it/this/that" but replacement queries like
+    // "I am replacing X with Y, what effect does it have" should NOT be handled locally.
+    if (intent === 'FOLLOW_UP') {
+      const replacementOrImpact = /replacing|replace|swap|switching|removing|adding|substitut|effect|impact|change|affect|difference/i.test(text);
+      if (replacementOrImpact) return true;
+    }
+
+    // UNKNOWN intent with collection-analysis keywords → send to LLM (not local fallback)
+    if (intent === 'UNKNOWN') return true;
 
     // Everything else goes to LLM for premium-quality answers
     // This covers: similarity, purchase, value, inventory, session, gap, pairing, redundancy, ranking, lineup, etc.
@@ -1747,6 +1766,18 @@ export default function ExpertTobacconistChat({
       // Rule-based engine for collection-specific queries
       const targetEntity = classifyTargetEntity(text);
       const result = answerQuestion(text, collectionContext, { ...entityContext, analysisContext }, isSingleModuleMode, activeModules, continueAnalysis);
+
+      // null result means the local engine couldn't handle it — escalate to LLM
+      if (!result) {
+        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, entityContext);
+        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
+        const llmReply = typeof response?.data === 'string'
+          ? response.data
+          : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
+        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: llmReply.trim() || 'I was not able to generate a response. Please try rephrasing.' }]);
+        return;
+      }
+
       const { reply, updatedEntityContext, newAnalysisContext } = result || {};
 
       // Answer validation guard — if the reply doesn't match the requested entity, escalate to LLM
