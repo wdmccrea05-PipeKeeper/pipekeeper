@@ -1727,7 +1727,7 @@ export default function ExpertTobacconistChat({
   const hasCollection = (collectionContext?.blends?.length || 0) + (collectionContext?.bottles?.length || 0) + (collectionContext?.pipes?.length || 0) > 0;
 
   return (
-    <div className="rounded-[18px] overflow-hidden flex flex-col" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)' }}>
+    <div className="rounded-[18px] overflow-hidden flex flex-col" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)', minHeight: 0 }}>
       {/* Header */}
       <div className="px-5 sm:px-7 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -1760,7 +1760,7 @@ export default function ExpertTobacconistChat({
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5 max-h-[calc(100dvh-14rem)]" style={{ maxHeight: 'min(480px, 50dvh)', minHeight: '220px' }}>
+      <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5" style={{ minHeight: '200px', maxHeight: 'clamp(260px, 55vh, 520px)' }}>
         {messages.length === 0 ? (
           <div>
             <p className="text-[14px] mb-4" style={{ color: '#6B6860' }}>Ask a question or pick a prompt to get started.</p>
