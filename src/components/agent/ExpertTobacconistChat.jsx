@@ -512,6 +512,29 @@ function buildWineDiagnosticResponse(diagnosticIntent, wines = []) {
  * Build a rich LLM prompt with full collection context.
  * This is the master intelligence layer — handles ALL query types with expert domain knowledge.
  */
+// ── Fuzzy blend/record name matcher ────────────────────────────────────────
+function fuzzyMatchRecord(name, records = []) {
+  if (!name) return null;
+  const target = String(name).trim().toLowerCase();
+  // 1. Exact match
+  const exact = records.find((r) => r.name?.toLowerCase() === target);
+  if (exact) return exact;
+  // 2. Contains match (target contains record name or vice versa)
+  const contains = records.find((r) => {
+    const n = r.name?.toLowerCase() || '';
+    return n && (target.includes(n) || n.includes(target));
+  });
+  if (contains) return contains;
+  // 3. Word overlap — ≥50% of target words appear in record name
+  const targetWords = target.split(/\s+/).filter((w) => w.length > 2);
+  const wordMatch = records.find((r) => {
+    const nameWords = (r.name?.toLowerCase() || '').split(/\s+/);
+    const hits = targetWords.filter((w) => nameWords.some((nw) => nw.includes(w) || w.includes(nw)));
+    return hits.length >= Math.ceil(targetWords.length * 0.5);
+  });
+  return wordMatch || null;
+}
+
 function buildLLMPrompt(userMessage, context = {}, history = [], entityContext = {}) {
   const pipes = context.pipes || [];
   const blends = context.blends || [];
@@ -519,6 +542,28 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
   const smokingLogs = context.smokingLogs || [];
   const tastingLogs = context.tastingLogs || [];
   const acquisitionItems = context.acquisitionItems || context.wantListItems || [];
+
+  // ── Collection availability signal ─────────────────────────────────────────
+  const hasCollectionData = blends.length > 0 || pipes.length > 0 || bottles.length > 0 || (context.wines || []).length > 0 || (context.cigars || []).length > 0;
+  const collectionDataNote = hasCollectionData
+    ? `COLLECTION DATA STATUS: LOADED — ${blends.length} blends, ${pipes.length} pipes, ${bottles.length} bottles, ${(context.wines||[]).length} wines, ${(context.cigars||[]).length} cigars in context.`
+    : `COLLECTION DATA STATUS: EMPTY — the user's collection is empty or has not been loaded. DO NOT make collection-wide statements. State clearly: "I couldn't access your collection data."`;
+
+  // ── Resolve named items from message against collection ─────────────────────
+  // Detect replacement/swap queries and pre-resolve blend names so LLM gets ground truth
+  const replacementPattern = /replacing|replace|swap|switching|trade|removing|adding|substitut/i;
+  let resolvedItemNote = '';
+  if (replacementPattern.test(userMessage) && blends.length > 0) {
+    // Extract quoted or title-case multi-word names from the message
+    const candidates = userMessage.match(/[A-Z][a-zA-Z']+(?:\s+[A-Za-z']+){0,4}/g) || [];
+    const resolved = candidates.map((c) => {
+      const match = fuzzyMatchRecord(c, blends);
+      return match ? `"${c}" → OWNED: ${match.name} (${match.blend_type || 'unknown type'})` : `"${c}" → NOT IN COLLECTION`;
+    }).filter(Boolean);
+    if (resolved.length > 0) {
+      resolvedItemNote = `\n═══ BLEND RESOLUTION (fuzzy-matched from user message) ═══\n${resolved.join('\n')}\nUse this to verify ownership claims in your answer.\n`;
+    }
+  }
   const pairingMatrixPairings = Array.isArray(context.pairingMatrixPairings) ? context.pairingMatrixPairings : [];
 
   // ── Compute usage signals for richer context ─────────────────────────────
@@ -608,7 +653,7 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
   });
 
   const collectionSummary = [
-    blendLines.length > 0 ? `TOBACCO CELLAR (${blends.length} blends):\n${blendLines.join('\n')}` : 'TOBACCO CELLAR: empty',
+    blendLines.length > 0 ? `TOBACCO CELLAR (${blends.length} blends):\n${blendLines.join('\n')}` : (blends.length === 0 ? 'TOBACCO CELLAR: 0 blends' : 'TOBACCO CELLAR: data unavailable'),
     pipeLines.length > 0 ? `\nPIPE COLLECTION (${pipes.length} pipes):\n${pipeLines.join('\n')}` : '',
     bottleLines.length > 0 ? `\nWHISKEY SHELF (${bottles.length} bottles):\n${bottleLines.join('\n')}` : '',
     wineLines.length > 0 ? `\nWINE CELLAR (${wines.length} wines):\n${wineLines.join('\n')}` : '',
@@ -631,6 +676,12 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
     : '';
 
   return `You are Curator — a world-class collector intelligence assistant specializing in pipe tobacco, whiskey, cigars, fine wines, and collectibles. You combine the knowledge of an expert tobacconist, master sommelier, and seasoned collector advisor.
+
+═══ COLLECTION DATA STATUS ═══
+${collectionDataNote}
+${resolvedItemNote}
+GUARDRAIL: If COLLECTION DATA STATUS is EMPTY, you MUST begin your reply with: "I couldn't access your collection data, so the following analysis is based only on the blends mentioned."
+GUARDRAIL: Never state "you've gone fully X", "you've consolidated around X", or any other collection-wide conclusion unless COLLECTION DATA STATUS is LOADED and you have verified it against the data above.
 
 ═══ CRITICAL: DIAGNOSTIC ROUTING ═══
 When the user references a collection issue label, report title, dashboard card, or phrase like "records without X" / "wines missing Y", treat it as a request to ANALYZE THE USER'S ACTUAL COLLECTION DATA — NOT as a product name.
@@ -1798,20 +1849,64 @@ export default function ExpertTobacconistChat({
                       : { background: 'rgba(255,255,255,0.03)', color: '#E8E4DC', border: '1px solid rgba(255,255,255,0.06)' }
                     }
                   >
-                    {/* Render response with basic markdown-like formatting */}
-                    {m.content.split('\n').map((line, i) => {
-                      if (/^#{1,3}\s/.test(line)) {
-                        return <div key={i} className="font-semibold text-[15px] sm:text-[16px] mt-3 mb-1" style={{ color: '#F5F5F7' }}>{line.replace(/^#{1,3}\s/, '')}</div>;
+                    {/* Render response with markdown formatting including tables */}
+                    {(() => {
+                      const lines = m.content.split('\n');
+                      const output = [];
+                      let i = 0;
+                      while (i < lines.length) {
+                        const line = lines[i];
+                        // Table detection: line with pipes and next line is separator (---|---)
+                        if (/^\|.+\|/.test(line) && i + 1 < lines.length && /^\|[-:| ]+\|/.test(lines[i + 1])) {
+                          const tableLines = [];
+                          while (i < lines.length && /^\|/.test(lines[i])) {
+                            tableLines.push(lines[i]);
+                            i++;
+                          }
+                          const [headerRow, , ...bodyRows] = tableLines;
+                          const headers = headerRow.split('|').map(s => s.trim()).filter(Boolean);
+                          output.push(
+                            <div key={`table-${i}`} className="overflow-x-auto my-3 rounded-lg" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                              <table className="w-full text-[13px]">
+                                <thead>
+                                  <tr style={{ background: 'rgba(198,161,91,0.12)' }}>
+                                    {headers.map((h, hi) => (
+                                      <th key={hi} className="px-3 py-2 text-left font-semibold" style={{ color: '#C6A15B', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>{h}</th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {bodyRows.map((row, ri) => {
+                                    const cells = row.split('|').map(s => s.trim()).filter(Boolean);
+                                    return (
+                                      <tr key={ri} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                        {cells.map((cell, ci) => (
+                                          <td key={ci} className="px-3 py-2" style={{ color: '#E8E4DC' }}>{cell}</td>
+                                        ))}
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          );
+                          continue;
+                        }
+                        if (/^#{1,3}\s/.test(line)) {
+                          output.push(<div key={i} className="font-semibold text-[15px] sm:text-[16px] mt-3 mb-1" style={{ color: '#F5F5F7' }}>{line.replace(/^#{1,3}\s/, '')}</div>);
+                        } else if (/^\d+\.\s/.test(line)) {
+                          output.push(<div key={i} className="ml-1 my-1" style={{ color: '#E8E4DC' }}>{line}</div>);
+                        } else if (/^[-•]\s/.test(line)) {
+                          output.push(<div key={i} className="ml-2 my-0.5" style={{ color: '#C8C0B0' }}>{line}</div>);
+                        } else if (line.trim() === '') {
+                          output.push(<div key={i} className="h-2" />);
+                        } else {
+                          output.push(<div key={i}>{line}</div>);
+                        }
+                        i++;
                       }
-                      if (/^\d+\.\s/.test(line)) {
-                        return <div key={i} className="ml-1 my-1" style={{ color: '#E8E4DC' }}>{line}</div>;
-                      }
-                      if (/^[-•]\s/.test(line)) {
-                        return <div key={i} className="ml-2 my-0.5" style={{ color: '#C8C0B0' }}>{line}</div>;
-                      }
-                      if (line.trim() === '') return <div key={i} className="h-2" />;
-                      return <div key={i}>{line}</div>;
-                    })}
+                      return output;
+                    })()}
                   </div>
                 </div>
               </div>
