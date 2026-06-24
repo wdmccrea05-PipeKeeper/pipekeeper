@@ -1772,8 +1772,8 @@ function analyzeWineCollection(context) {
  * @returns {import('./recommendationSchema.js').Recommendation[]}
  */
 export function generateRecommendations(context = {}) {
-  const whiskeyActive = context.activeModules?.whiskeykeeper !== false;
-  const wineActive    = context.activeModules?.winekeeper    !== false;
+  const whiskeyActive = context.activeModules?.whiskeykeeper === true;
+  const wineActive    = context.activeModules?.winekeeper    === true;
 
   const allRecommendations = [
     ...analyzeMetadata(context),

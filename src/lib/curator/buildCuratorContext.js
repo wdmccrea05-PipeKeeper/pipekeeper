@@ -33,8 +33,8 @@ export async function buildCuratorContextWithLogging(
   const gateCheck = {
     pipekeeper: stableModuleEnabled.pipekeeper === true,
     tobacco: stableModuleEnabled.pipekeeper === true,
-    whiskeykeeper: stableModuleEnabled.whiskeykeeper !== false,
-    winekeeper: stableModuleEnabled.winekeeper !== false,
+    whiskeykeeper: stableModuleEnabled.whiskeykeeper === true,
+    winekeeper: stableModuleEnabled.winekeeper === true,
   };
 
   const pipesGated = !gateCheck.pipekeeper && (context.pipes?.length || 0) > 0;

@@ -313,7 +313,7 @@ export default function CuratorWorkspace({
 
   const loadPrimaryData = useCallback(
     async ({ silent = false } = {}) => {
-      if (!user?.email) {
+      if (!userEmail) {
         setLoading(false);
         setRawSections([]);
         setPairings([]);
@@ -331,7 +331,7 @@ export default function CuratorWorkspace({
 
       try {
         const snapshot = await buildCuratorDataSnapshot({
-          user,
+          user: { email: userEmail },
           buildContextFn: buildContext,
           stableModuleEnabled,
         });
@@ -367,12 +367,12 @@ export default function CuratorWorkspace({
         setIsRefreshing(false);
       }
     },
-    [buildContext, publishCounts, stableModuleEnabled, user?.email]
+    [buildContext, publishCounts, stableModuleEnabled, userEmail]
   );
 
   const loadPairings = useCallback(async ({ reshuffle = false } = {}) => {
     // §9.2 + pairings rule: skip entirely in single-module mode
-    if (isSingleModuleMode || !user?.email) {
+    if (isSingleModuleMode || !userEmail) {
       setPairings([]);
       return;
     }
@@ -386,7 +386,7 @@ export default function CuratorWorkspace({
       // When user clicks "New Pairings", shuffle input arrays so the engine
       // produces a different combination ordering each time.
       const baseSnapshot = snapshotRef.current || await buildCuratorDataSnapshot({
-        user,
+        user: { email: userEmail },
         buildContextFn: buildContext,
         stableModuleEnabled,
       });
@@ -422,7 +422,7 @@ export default function CuratorWorkspace({
     } finally {
       if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [buildContext, isSingleModuleMode, publishCounts, stableModuleEnabled, user?.email]);
+  }, [buildContext, isSingleModuleMode, publishCounts, stableModuleEnabled, userEmail]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -480,7 +480,7 @@ export default function CuratorWorkspace({
 
       const result = await executeRecommendationAction(payload, actionKey, {
         ...opts,
-        userEmail: user?.email,
+        userEmail,
       });
 
       if (!result?.ok) {
@@ -529,14 +529,14 @@ export default function CuratorWorkspace({
 
       return result;
     },
-    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, publishCounts, user?.email]
+    [activeSurface, loadPairings, loadPrimaryData, onSurfaceChange, publishCounts, userEmail]
   );
 
   const handleRefresh = useCallback(async () => {
     const taskSurfaces = new Set(['record_optimization', 'collection_optimization', 'purchase_restock']);
     if (taskSurfaces.has(activeSurface)) {
       const snapshot = await buildCuratorDataSnapshot({
-        user,
+        user: { email: userEmail },
         buildContextFn: buildContext,
         stableModuleEnabled,
       });
@@ -546,7 +546,7 @@ export default function CuratorWorkspace({
           operationType: activeSurface,
           routerResults: workspaceResults.routerResults,
           autoApplyRuntime: 'apply',
-          userEmail: user?.email,
+          userEmail,
         },
         snapshot
       );
@@ -559,7 +559,7 @@ export default function CuratorWorkspace({
       return;
     }
     await loadPrimaryData({ silent: true });
-  }, [activeSurface, buildContext, loadPairings, loadPrimaryData, stableModuleEnabled, user?.email]);
+  }, [activeSurface, buildContext, loadPairings, loadPrimaryData, stableModuleEnabled, userEmail]);
 
   if (loading) {
     return (
@@ -676,7 +676,7 @@ export default function CuratorWorkspace({
 
     case 'grow_expand':
       return (
-        <>{modals}<CuratorGrowAndExpand sections={buckets.grow_expand} collectionContext={ctx} userEmail={user?.email} onAskCurator={(item) => handleAction('ask_curator', item)} /></>
+        <>{modals}<CuratorGrowAndExpand sections={buckets.grow_expand} collectionContext={ctx} userEmail={userEmail} onAskCurator={(item) => handleAction('ask_curator', item)} /></>
       );
 
     case 'chat':
