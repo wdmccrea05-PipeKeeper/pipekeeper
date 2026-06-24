@@ -71,6 +71,7 @@ export function groupRecommendations(recommendations = []) {
     .map((cat) => ({
       category:        cat,
       label:           CATEGORY_LABELS[cat] || cat,
+      title:           CATEGORY_LABELS[cat] || cat,
       recommendations: byCategory[cat],
     }));
 }

@@ -248,6 +248,18 @@ export default function CuratorResultsBoard(props) {
         />
       </div>
 
+      {filteredSections.length === 0 && (
+        <div className="py-16 text-center space-y-3">
+          <div className="text-[36px]">✓</div>
+          <p className="text-[18px] font-semibold" style={{ color: '#F5F5F7' }}>
+            {t('curator.emptyState.title', 'All clear')}
+          </p>
+          <p className="text-[15px] max-w-sm mx-auto" style={{ color: '#7F7F8A' }}>
+            {t('curator.emptyState.subtitle', 'No recommendations for this category right now. Add more records or log sessions to get insights.')}
+          </p>
+        </div>
+      )}
+
       <div className="space-y-8">
         {filteredSections.map((section, sectionIdx) => {
           const recs = section?.recommendations || [];
@@ -256,7 +268,7 @@ export default function CuratorResultsBoard(props) {
           const sectionKey = section.id || section.category || section.title || String(sectionIdx);
           return (
             <section key={sectionKey}>
-              <SectionHeader title={section.title || t('curator.recommendations')} count={sectionCount} />
+              <SectionHeader title={section.label || section.title || t('curator.recommendations')} count={sectionCount} />
               <div className="space-y-4">
                 {recs.map((recommendation) => (
                   <CuratorRecommendationGroup

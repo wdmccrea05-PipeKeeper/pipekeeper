@@ -69,8 +69,23 @@ export default [
     },
   },
   {
-    // Explicitly silence all rules for test files as a belt-and-suspenders approach
     files: ['**/__tests__/**', '**/*.test.js', '**/*.test.jsx', '**/*.test.ts', '**/*.test.tsx'],
+    languageOptions: {
+      globals: {
+        describe: 'readonly',
+        test: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        vi: 'readonly',
+        jest: 'readonly',
+        global: 'readonly',
+        globalThis: 'readonly',
+      },
+    },
     rules: {
       'no-undef': 'off',
       'no-unused-vars': 'off',
