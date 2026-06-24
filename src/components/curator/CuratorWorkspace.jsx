@@ -203,8 +203,16 @@ export default function CuratorWorkspace({
     [onCountsChange]
   );
 
+  const userEmail = user?.email;
+  const userPrefs = useMemo(() => ({
+    measurement_system: user?.measurement_system || user?.preferred_measurement_system || null,
+    currency: user?.preferred_currency || user?.currency || null,
+    language: user?.preferred_language || user?.language || null,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [userEmail]);
+
   const buildContext = useCallback(async () => {
-    if (!user?.email) {
+    if (!userEmail) {
       return {
         pipes: [], blends: [], bottles: [], wines: [], smokingLogs: [], tastingLogs: [], wineTastingLogs: [],
         cigars: [], cigarSessions: [], inventoryUnits: [], acquisitionItems: [], wantListItems: [],
@@ -228,19 +236,19 @@ export default function CuratorWorkspace({
       activePairingMatrixRows,
     ] = await Promise.all([
       // §1.2: if module disabled, return empty array — NO data leakage
-      pipeActive    ? safeFilter(base44.entities.Pipe,           { created_by: user.email }, '-updated_date',  200, 'pipes')          : Promise.resolve([]),
-      pipeActive    ? safeFilter(base44.entities.TobaccoBlend,   { created_by: user.email }, '-updated_date',  200, 'blends')         : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.Bottle,         { created_by: user.email }, '-updated_date',  200, 'bottles')        : Promise.resolve([]),
-      wineActive    ? safeFilter(base44.entities.Wine,           { created_by: user.email }, '-updated_date',  200, 'wines')          : Promise.resolve([]),
-      pipeActive    ? safeFilter(base44.entities.SmokingLog,     { created_by: user.email }, '-date',           300, 'smokingLogs')    : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.TastingLog,     { created_by: user.email }, '-tasting_date',   200, 'tastingLogs')   : Promise.resolve([]),
-      wineActive    ? safeFilter(base44.entities.WineTasting,    { created_by: user.email }, '-date',           300, 'wineTastingLogs') : Promise.resolve([]),
-      cigarActive   ? safeFilter(base44.entities.Cigar,          { created_by: user.email }, '-updated_date',   200, 'cigars')        : Promise.resolve([]),
-      cigarActive   ? safeFilter(base44.entities.CigarSession,   { created_by: user.email }, '-date',           300, 'cigarSessions') : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, null,        500, 'inventoryUnits') : Promise.resolve([]),
-      safeFilter(base44.entities.AcquisitionItem, { created_by: user.email }, '-created_date', 300, 'acquisitionItems'),
+      pipeActive    ? safeFilter(base44.entities.Pipe,           { created_by: userEmail }, '-updated_date',  200, 'pipes')          : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.TobaccoBlend,   { created_by: userEmail }, '-updated_date',  200, 'blends')         : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.Bottle,         { created_by: userEmail }, '-updated_date',  200, 'bottles')        : Promise.resolve([]),
+      wineActive    ? safeFilter(base44.entities.Wine,           { created_by: userEmail }, '-updated_date',  200, 'wines')          : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.SmokingLog,     { created_by: userEmail }, '-date',           300, 'smokingLogs')    : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.TastingLog,     { created_by: userEmail }, '-tasting_date',   200, 'tastingLogs')   : Promise.resolve([]),
+      wineActive    ? safeFilter(base44.entities.WineTasting,    { created_by: userEmail }, '-date',           300, 'wineTastingLogs') : Promise.resolve([]),
+      cigarActive   ? safeFilter(base44.entities.Cigar,          { created_by: userEmail }, '-updated_date',   200, 'cigars')        : Promise.resolve([]),
+      cigarActive   ? safeFilter(base44.entities.CigarSession,   { created_by: userEmail }, '-date',           300, 'cigarSessions') : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: userEmail }, null,        500, 'inventoryUnits') : Promise.resolve([]),
+      safeFilter(base44.entities.AcquisitionItem, { created_by: userEmail }, '-created_date', 300, 'acquisitionItems'),
       // Fetch active pairing matrix for Curator context (pipe-tobacco compatibility scores)
-      pipeActive    ? safeFilter(base44.entities.PairingMatrix,  { created_by: user.email, is_active: true }, '-created_date', 1, 'pairingMatrix') : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.PairingMatrix,  { created_by: userEmail, is_active: true }, '-created_date', 1, 'pairingMatrix') : Promise.resolve([]),
     ]);
 
     // §5.1 Normalize AcquisitionItem status: live records use status:'active' + category:'wishlist'
@@ -274,7 +282,7 @@ export default function CuratorWorkspace({
         0
       );
       console.debug('[Curator Pairings]', {
-        userId: user.email,
+        userId: userEmail,
         pairingRowCount: pairingMatrixPairings.length,
         scoredPairCount,
         sampleFields: pairingMatrixPairings[0] ? Object.keys(pairingMatrixPairings[0]) : [],
@@ -297,15 +305,11 @@ export default function CuratorWorkspace({
       wantListItems:    normalizedAcquisitions,
       // Pipe-tobacco pairing compatibility scores from the active PairingMatrix record
       pairingMatrixPairings,
-      preferences: {
-        measurement_system: user?.measurement_system || user?.preferred_measurement_system || null,
-        currency: user?.preferred_currency || user?.currency || null,
-        language: user?.preferred_language || user?.language || null,
-      },
+      preferences: userPrefs,
       activeModules: stableModuleEnabled,
       cigarModuleActive: cigarActive,
     };
-  }, [user?.email, stableModuleEnabled]);
+  }, [userEmail, userPrefs, stableModuleEnabled]);
 
   const loadPrimaryData = useCallback(
     async ({ silent = false } = {}) => {
@@ -363,7 +367,7 @@ export default function CuratorWorkspace({
         setIsRefreshing(false);
       }
     },
-    [buildContext, publishCounts, stableModuleEnabled, user, user?.email]
+    [buildContext, publishCounts, stableModuleEnabled, user?.email]
   );
 
   const loadPairings = useCallback(async ({ reshuffle = false } = {}) => {
@@ -418,7 +422,7 @@ export default function CuratorWorkspace({
     } finally {
       if (mountedRef.current) setPairingsLoading(false);
     }
-  }, [buildContext, isSingleModuleMode, publishCounts, stableModuleEnabled, user, user?.email]);
+  }, [buildContext, isSingleModuleMode, publishCounts, stableModuleEnabled, user?.email]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -555,7 +559,7 @@ export default function CuratorWorkspace({
       return;
     }
     await loadPrimaryData({ silent: true });
-  }, [activeSurface, buildContext, loadPairings, loadPrimaryData, stableModuleEnabled, user, user?.email]);
+  }, [activeSurface, buildContext, loadPairings, loadPrimaryData, stableModuleEnabled, user?.email]);
 
   if (loading) {
     return (
