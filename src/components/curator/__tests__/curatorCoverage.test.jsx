@@ -12,6 +12,7 @@
  * 8. Anti-repetition / novelty weighting
  */
 
+import { describe, test, expect, beforeEach } from 'vitest';
 import { buildCoverageAudit, validateCompressionCoverage, reconcileCoverageTotals } from '../curatorCoverageAudit';
 import { buildSafeCollectionContext, selectContextMode } from '../collectionContextBudget';
 import {

@@ -9,6 +9,7 @@
  *   - isOnTrial flag propagation
  */
 
+import { describe, test, expect } from 'vitest';
 import { buildEntitlements, PRO_LAUNCH_CUTOFF_ISO } from '../entitlements';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────

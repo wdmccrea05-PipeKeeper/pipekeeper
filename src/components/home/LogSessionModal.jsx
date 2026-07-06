@@ -563,12 +563,12 @@ export default function LogSessionModal({
           </SheetHeader>
 
           {isLoading ? (
-            <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-16 gap-4">
+            <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-16 gap-4 px-7 pb-[calc(env(safe-area-inset-bottom)+2.5rem)]">
               <div aria-hidden="true" className="w-8 h-8 border-2 border-[#A35C5C] border-t-transparent rounded-full animate-spin" />
               <p className="text-sm text-[#E0D8C8]/60">Loading your collection…</p>
             </div>
           ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 px-7 pb-[calc(env(safe-area-inset-bottom)+2.5rem)]">
             <div className="space-y-3">
               <div>
                 <Label className="text-[#E0D8C8] text-sm font-semibold block mb-2">Pipe Source</Label>

@@ -43,17 +43,17 @@ vi.mock('@/components/pipes/ImageCropper', () => ({
 }));
 
 describe('PhotoUploader', () => {
-  const originalFetch = global.fetch;
+  const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    global.fetch = vi.fn().mockResolvedValue({
+    globalThis.fetch = vi.fn().mockResolvedValue({
       blob: async () => new Blob(['photo'], { type: 'image/jpeg' }),
     });
   });
 
   afterEach(() => {
-    global.fetch = originalFetch;
+    globalThis.fetch = originalFetch;
   });
 
   it('keeps cropper open when upload fails so selected image is preserved', async () => {
