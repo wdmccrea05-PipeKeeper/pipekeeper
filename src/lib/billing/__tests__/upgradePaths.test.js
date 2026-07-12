@@ -26,6 +26,8 @@ function makeState(overrides = {}) {
   };
 }
 
+import { describe, test, expect } from 'vitest';
+
 describe('getAvailableUpgradeOptions — launch commerce alignment', () => {
   test('PipeKeeper-only user is offered 3-module bundle upgrade', () => {
     const state = makeState({

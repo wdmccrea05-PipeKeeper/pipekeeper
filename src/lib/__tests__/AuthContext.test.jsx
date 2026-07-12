@@ -11,6 +11,7 @@
  * All network calls are fully mocked — no real HTTP requests.
  */
 
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../../lib/AuthContext';
 

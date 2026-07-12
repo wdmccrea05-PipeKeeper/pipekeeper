@@ -1,15 +1,130 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import {
-  calculateRunRate,
-  inDateRange,
-  isReportingActiveStatus,
-  normalizeMetricInterval,
-  parseMetricDate,
-  periodRange,
-  rollingRange,
-  roundMoney,
-  summarizeRevenueRowsInRange,
-} from '../_shared/reportingMetrics.ts';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+
+// ─── Inlined reporting metrics (files deploy independently) ──────────────────
+type MetricInterval = 'month' | 'year';
+type PeriodKind = 'week' | 'month' | 'quarter' | 'year';
+
+const REPORTING_ACTIVE_STATUSES = new Set(['active', 'trialing', 'trial', 'past_due', 'paid']);
+
+function normalizeMetricStatus(value: unknown): string {
+  return String(value ?? '').trim().toLowerCase();
+}
+function isReportingActiveStatus(value: unknown): boolean {
+  return REPORTING_ACTIVE_STATUSES.has(normalizeMetricStatus(value));
+}
+function roundMoney(value: number): number {
+  return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+}
+function parseMetricDate(value: unknown): Date | null {
+  if (!value) return null;
+  const date = new Date(String(value));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+function normalizeMetricInterval(value: unknown): MetricInterval | null {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  if (['month', 'monthly', 'mo'].includes(normalized)) return 'month';
+  if (['year', 'yearly', 'annual', 'yr'].includes(normalized)) return 'year';
+  return null;
+}
+function toMonthlyRunRate(amount: number, interval: MetricInterval | null): number {
+  if (!Number.isFinite(amount)) return 0;
+  if (interval === 'year') return amount / 12;
+  return amount;
+}
+function calculateRunRate<T>(
+  rows: T[],
+  selectors: { getAmount: (row: T) => number; getInterval: (row: T) => MetricInterval | null },
+) {
+  const mrr = roundMoney(rows.reduce((sum, row) => sum + toMonthlyRunRate(selectors.getAmount(row), selectors.getInterval(row)), 0));
+  return { mrr, arr: roundMoney(mrr * 12) };
+}
+function periodRange(kind: PeriodKind, now: Date) {
+  const start = new Date(now);
+  const end = new Date(now);
+  if (kind === 'week') {
+    const dow = start.getUTCDay();
+    const fromMonday = dow === 0 ? 6 : dow - 1;
+    start.setUTCDate(start.getUTCDate() - fromMonday);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setTime(start.getTime());
+    end.setUTCDate(end.getUTCDate() + 7);
+  } else if (kind === 'month') {
+    start.setUTCDate(1);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCMonth(start.getUTCMonth() + 1, 1);
+    end.setUTCHours(0, 0, 0, 0);
+  } else if (kind === 'quarter') {
+    const quarter = Math.floor(start.getUTCMonth() / 3);
+    start.setUTCMonth(quarter * 3, 1);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCMonth(quarter * 3 + 3, 1);
+    end.setUTCHours(0, 0, 0, 0);
+  } else {
+    start.setUTCMonth(0, 1);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCFullYear(start.getUTCFullYear() + 1, 0, 1);
+    end.setUTCHours(0, 0, 0, 0);
+  }
+  return { start, end };
+}
+function inDateRange(date: Date | null, range: { start: Date; end: Date }) {
+  if (!date) return false;
+  return date >= range.start && date < range.end;
+}
+function rollingRange(now: Date, days: number) {
+  const start = new Date(now);
+  const end = new Date(now);
+  end.setUTCDate(end.getUTCDate() + days);
+  return { start, end };
+}
+function summarizeRevenueRows<T>(
+  rows: T[],
+  selectors: {
+    getUserKey: (row: T) => string | null | undefined;
+    getAmount: (row: T) => number;
+    getInterval: (row: T) => MetricInterval | null;
+  },
+) {
+  const customers = new Set<string>();
+  let revenue = 0;
+  let monthly = 0;
+  let annual = 0;
+  for (const row of rows) {
+    const userKey = selectors.getUserKey(row);
+    if (userKey) customers.add(String(userKey));
+    const amount = selectors.getAmount(row);
+    if (Number.isFinite(amount)) revenue += amount;
+    const interval = selectors.getInterval(row);
+    if (interval === 'month') monthly += 1;
+    if (interval === 'year') annual += 1;
+  }
+  return {
+    customers: customers.size,
+    customerCount: customers.size,
+    subscriptions: rows.length,
+    subscriptionCount: rows.length,
+    count: rows.length,
+    monthly,
+    annual,
+    revenue: roundMoney(revenue),
+    totalAmount: roundMoney(revenue),
+  };
+}
+function summarizeRevenueRowsInRange<T>(
+  rows: T[],
+  range: { start: Date; end: Date },
+  selectors: {
+    getUserKey: (row: T) => string | null | undefined;
+    getAmount: (row: T) => number;
+    getInterval: (row: T) => MetricInterval | null;
+    getDate: (row: T) => Date | null;
+  },
+) {
+  return summarizeRevenueRows(
+    rows.filter((row) => inDateRange(selectors.getDate(row), range)),
+    selectors,
+  );
+}
 
 const PAGE_SIZE = 100;
 const ENTITLEMENT_ACTIVE_STATUSES = new Set(['active', 'granted', 'enabled', 'paid', 'pro']);
@@ -208,16 +323,21 @@ function deriveModulesFromUser(user) {
 // ─── Subscription financial extraction ────────────────────────────────────────
 
 function extractFinancials(subRow) {
+  // ActiveContract stores amount as amount_cents (integer cents); convert to dollars.
+  // Subscription stores amount in dollars. Check both.
   const amount = parseMoney(
     subRow.amount, subRow.renewal_amount, subRow.price,
     subRow.billed_amount, subRow.current_amount,
-    subRow.metadata?.amount, subRow.metadata?.renewal_amount
+    subRow.metadata?.amount, subRow.metadata?.renewal_amount,
+    // ActiveContract canonical field — integer cents
+    subRow.amount_cents != null && subRow.amount_cents > 0 ? subRow.amount_cents / 100 : null,
   );
   const interval = resolveInterval(subRow);
   const renewalDate = parseMetricDate(subRow.current_period_end) ||
     parseMetricDate(subRow.renewal_date) ||
     parseMetricDate(subRow.next_billing_date) ||
     parseMetricDate(subRow.trial_end_date) ||
+    parseMetricDate(subRow.period_end) ||
     parseMetricDate(subRow.metadata?.renewal_date) || null;
   return { amount, interval, renewalDate };
 }

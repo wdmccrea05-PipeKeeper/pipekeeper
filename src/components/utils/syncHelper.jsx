@@ -1,4 +1,5 @@
 // Utility to manually trigger subscription sync for debugging/support
+import React from "react";
 import { base44 } from "@/api/base44Client";
 
 export async function triggerSubscriptionSync() {
