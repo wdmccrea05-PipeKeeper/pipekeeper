@@ -2,6 +2,7 @@
  * Unit tests for canonical pairing scorer
  */
 
+import { describe, test, expect } from 'vitest';
 import { scorePipeBlend, isAromaticBlend, getAromaticIntensity, buildPairingsForPipes } from '../pairingScoreCanonical';
 
 // Test fixtures

@@ -6,6 +6,7 @@
  * - User-facing labels are Free / Pro only
  */
 
+import { describe, test, expect } from 'vitest';
 import {
   getEntitlementTier,
   hasPaidAccess,

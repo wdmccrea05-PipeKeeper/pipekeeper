@@ -369,7 +369,7 @@ export default function LogSessionModal({
         }
       }
 
-      if (autoReduceInventory && tobaccoUsed > 0 && hasPipekeeperPro && blendMode === "collection") {
+      if (autoReduceInventory && tobaccoUsed > 0 && hasPipekeeperPro && blendMode === "collection" && !savePayload.container_id) {
         const blendToReduce = (blends || []).find((b) => b.id === savePayload.blend_id);
         if (blendToReduce) {
           let remaining = Number(tobaccoUsed);
