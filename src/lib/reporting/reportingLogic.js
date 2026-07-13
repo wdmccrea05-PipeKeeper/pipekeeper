@@ -61,6 +61,7 @@ export function resolveDateRange(dateRange, startDate, endDate, now) {
     '7d': { start: addDays(today, -7), end: endOfDay(now) },
     '30d': { start: addDays(today, -30), end: endOfDay(now) },
     '90d': { start: addDays(today, -90), end: endOfDay(now) },
+    '365d': { start: addDays(today, -365), end: endOfDay(now) },
     mtd: { start: startOfMonth(now), end: endOfDay(now) },
     qtd: { start: startOfQuarter(now), end: endOfDay(now) },
     ytd: { start: startOfYear(now), end: endOfDay(now) },
@@ -129,11 +130,11 @@ const CANCEL_EVENT_PATTERNS = ['subscription.deleted', 'canceled', 'cancel'];
 const EXPIRE_EVENT_PATTERNS = ['expired', 'expiration'];
 
 export function isPaymentEvent(e) {
-  if (e && e.amount_cents && Number(e.amount_cents) > 0) return true;
   const t = norm(e?.event_type);
+  // Exclude refund/failed/void events from payment-success BEFORE the amount check
+  if (t && (t.includes('refund') || t.includes('failed') || t.includes('void'))) return false;
+  if (e && e.amount_cents && Number(e.amount_cents) > 0) return true;
   if (!t) return false;
-  // Exclude refund/failed events from payment-success
-  if (t.includes('refund') || t.includes('failed') || t.includes('void')) return false;
   return PAYMENT_EVENT_PATTERNS.some((p) => t.includes(p));
 }
 
@@ -324,8 +325,33 @@ export function computeMetrics(userRecords, contracts, users, range, now) {
   const canceledSubscriptions = contracts.filter((c) => c.canceled_at && inDateRange(c.canceled_at, range)).length;
   const expiredSubscriptions = contracts.filter((c) => c.expired_at && inDateRange(c.expired_at, range)).length;
 
-  const freeToPaidConversionRate = activeFreeUsers > 0 ? roundMoney((newFirstTimePaidUsers / activeFreeUsers) * 100) : 0;
-  const registrationToPaidConversionRate = newRegisteredUsers > 0 ? roundMoney((newFirstTimePaidUsers / newRegisteredUsers) * 100) : 0;
+  // ─── Cohort-based conversion (fix: never mix historical numerator with current-state denominator) ──
+  const ATTRIBUTION_WINDOW_DAYS = 30;
+  const realUsersForCohort = userRecords.filter((r) => !r.is_synthetic);
+  const usersRegisteredInRange = realUsersForCohort.filter((r) => inDateRange(r.created_at, range));
+  const convertedRegistrants = usersRegisteredInRange.filter((r) =>
+    r.first_paid_at && r.created_at &&
+    r.first_paid_at >= r.created_at &&
+    r.first_paid_at <= addDays(r.created_at, ATTRIBUTION_WINDOW_DAYS)
+  );
+  const registrationCohortConversion = usersRegisteredInRange.length >= 5
+    ? roundMoney((convertedRegistrants.length / usersRegisteredInRange.length) * 100)
+    : null;
+  const eligibleFreeAtStart = realUsersForCohort.filter((r) =>
+    r.created_at && r.created_at < range.start &&
+    (!r.first_paid_at || r.first_paid_at >= range.start)
+  );
+  const convertedFromFree = eligibleFreeAtStart.filter((r) =>
+    r.first_paid_at && inDateRange(r.first_paid_at, range)
+  );
+  const existingFreeUserConversion = eligibleFreeAtStart.length >= 5
+    ? roundMoney((convertedFromFree.length / eligibleFreeAtStart.length) * 100)
+    : null;
+  const paidAcquisitionRate = totalRegisteredUsers > 0
+    ? roundMoney((newFirstTimePaidUsers / totalRegisteredUsers) * 100)
+    : null;
+  const freeToPaidConversionRate = existingFreeUserConversion;
+  const registrationToPaidConversionRate = registrationCohortConversion;
 
   // Provider breakdown
   const providerBreakdown = { stripe: { paying: 0, entitled: 0 }, apple: { paying: 0, entitled: 0 }, google: { paying: 0, entitled: 0 }, manual: { paying: 0, entitled: 0 }, unknown: { paying: 0, entitled: 0 } };
@@ -363,7 +389,18 @@ export function computeMetrics(userRecords, contracts, users, range, now) {
   return {
     userActivity: { totalRegisteredUsers, newRegisteredUsers, dau, wau, mau, active90d, activeFreeUsers, activePayingUsers },
     subscriptionStatus: { currentEntitledUsers, currentPayingUsers, currentTrials, currentPastDue, cancelingButEntitled, expiredUsers },
-    acquisition: { newFirstTimePaidUsers, reactivatedPaidUsers, newPaidSubscriptions, canceledSubscriptions, expiredSubscriptions, freeToPaidConversionRate, registrationToPaidConversionRate },
+    acquisition: {
+      newFirstTimePaidUsers, reactivatedPaidUsers, newPaidSubscriptions, canceledSubscriptions, expiredSubscriptions,
+      registrationCohortConversion,
+      registrationCohortNumerator: convertedRegistrants.length,
+      registrationCohortDenominator: usersRegisteredInRange.length,
+      existingFreeUserConversion,
+      existingFreeNumerator: convertedFromFree.length,
+      existingFreeDenominator: eligibleFreeAtStart.length,
+      paidAcquisitionRate,
+      attributionWindowDays: ATTRIBUTION_WINDOW_DAYS,
+      freeToPaidConversionRate, registrationToPaidConversionRate,
+    },
     providerBreakdown,
     productBreakdown,
     dataQuality,

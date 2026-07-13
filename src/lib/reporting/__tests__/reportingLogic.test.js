@@ -352,3 +352,109 @@ describe('Event classification', () => {
     expect(isPaymentEvent({ event_type: 'charge.refunded', amount_cents: 999 })).toBe(false);
   });
 });
+
+describe('Cohort-based conversion formulas', () => {
+  test('1. Registration cohort conversion cannot exceed 100%', () => {
+    const users = Array.from({ length: 6 }, (_, i) => mkUser({ id: `u${i}`, email: `u${i}@e.com`, created_date: '2026-07-01' }));
+    const records = Array.from({ length: 6 }, (_, i) => mkUserRecord({
+      user_id: `u${i}`, email: `u${i}@e.com`, created_at: parseMetricDate('2026-07-01'),
+      first_paid_at: i < 3 ? parseMetricDate('2026-07-10') : null,
+      is_currently_paying: i < 3, is_currently_entitled: i < 3, active_30d: true,
+    }));
+    const contracts = records.filter((r) => r.first_paid_at).map((r) => mkContract({ userId: r.user_id, first_paid_at: r.first_paid_at }));
+    const range = resolveDateRange('30d', null, null, NOW);
+    const metrics = computeMetrics(records, contracts, users, range, NOW, 0);
+    expect(metrics.acquisition.registrationCohortConversion).toBe(50);
+    expect(metrics.acquisition.registrationCohortConversion).toBeLessThanOrEqual(100);
+  });
+
+  test('2. Numerator users must belong to the denominator cohort', () => {
+    const users = [
+      ...Array.from({ length: 5 }, (_, i) => mkUser({ id: `r${i}`, email: `r${i}@e.com`, created_date: '2026-07-05' })),
+      mkUser({ id: 'old', email: 'old@e.com', created_date: '2025-01-01' }),
+    ];
+    const records = [
+      ...Array.from({ length: 5 }, (_, i) => mkUserRecord({ user_id: `r${i}`, email: `r${i}@e.com`, created_at: parseMetricDate('2026-07-05'), first_paid_at: i < 2 ? parseMetricDate('2026-07-10') : null, is_currently_paying: i < 2, is_currently_entitled: i < 2, active_30d: true })),
+      mkUserRecord({ user_id: 'old', email: 'old@e.com', created_at: parseMetricDate('2025-01-01'), first_paid_at: parseMetricDate('2026-07-11'), is_currently_paying: true, is_currently_entitled: true, active_30d: true }),
+    ];
+    const contracts = records.filter((r) => r.first_paid_at).map((r) => mkContract({ userId: r.user_id, first_paid_at: r.first_paid_at }));
+    const range = resolveDateRange('30d', null, null, NOW);
+    const metrics = computeMetrics(records, contracts, users, range, NOW, 0);
+    expect(metrics.acquisition.registrationCohortDenominator).toBe(5);
+    expect(metrics.acquisition.registrationCohortNumerator).toBe(2);
+    expect(metrics.acquisition.registrationCohortConversion).toBe(40);
+  });
+
+  test('3+4. A user with multiple subscriptions is counted once as a conversion', () => {
+    const users = [mkUser({ id: 'u0', email: 'u0@e.com', created_date: '2026-07-01' })];
+    const records = [mkUserRecord({ user_id: 'u0', email: 'u0@e.com', created_at: parseMetricDate('2026-07-01'), first_paid_at: parseMetricDate('2026-07-10'), current_products: ['pipekeeper', 'whiskeykeeper'], active_30d: true })];
+    const contracts = [mkContract({ userId: 'u0', first_paid_at: parseMetricDate('2026-07-10'), product: 'pipekeeper' }), mkContract({ userId: 'u0', first_paid_at: parseMetricDate('2026-07-10'), product: 'whiskeykeeper' })];
+    const range = resolveDateRange('30d', null, null, NOW);
+    const metrics = computeMetrics(records, contracts, users, range, NOW, 0);
+    expect(metrics.acquisition.newFirstTimePaidUsers).toBe(1);
+    expect(metrics.acquisition.newPaidSubscriptions).toBe(2);
+    expect(metrics.acquisition.registrationCohortNumerator).toBe(1);
+  });
+
+  test('5. A renewal does not create a conversion (registered before cohort)', () => {
+    const users = [mkUser({ id: 'u0', email: 'u0@e.com', created_date: '2025-01-01' })];
+    const records = [mkUserRecord({ user_id: 'u0', email: 'u0@e.com', created_at: parseMetricDate('2025-01-01'), first_paid_at: parseMetricDate('2025-01-15'), active_30d: true })];
+    const contracts = [mkContract({ userId: 'u0', first_paid_at: parseMetricDate('2025-01-15'), current_period_start: parseMetricDate('2026-07-01') })];
+    const range = resolveDateRange('30d', null, null, NOW);
+    const metrics = computeMetrics(records, contracts, users, range, NOW, 0);
+    expect(metrics.acquisition.registrationCohortDenominator).toBe(0);
+    expect(metrics.acquisition.registrationCohortConversion).toBe(null);
+    expect(metrics.acquisition.newFirstTimePaidUsers).toBe(0);
+  });
+
+  test('6. A reactivation is not a first-time conversion', () => {
+    const users = [mkUser({ id: 'u0', email: 'u0@e.com', created_date: '2025-06-01' })];
+    const records = [mkUserRecord({ user_id: 'u0', email: 'u0@e.com', created_at: parseMetricDate('2025-06-01'), first_paid_at: parseMetricDate('2025-06-10'), reactivated_at: parseMetricDate('2026-07-10'), is_currently_paying: true, active_30d: true })];
+    const range = resolveDateRange('30d', null, null, NOW);
+    const metrics = computeMetrics(records, [], users, range, NOW, 0);
+    expect(metrics.acquisition.newFirstTimePaidUsers).toBe(0);
+    expect(metrics.acquisition.reactivatedPaidUsers).toBe(1);
+    expect(metrics.acquisition.registrationCohortDenominator).toBe(0);
+  });
+
+  test('10. Empty denominator returns null (insufficient data), not zero or infinity', () => {
+    const users = [mkUser({ id: 'u0', email: 'u0@e.com', created_date: '2026-07-10' })];
+    const records = [mkUserRecord({ user_id: 'u0', email: 'u0@e.com', created_at: parseMetricDate('2026-07-10'), first_paid_at: parseMetricDate('2026-07-12'), active_30d: true })];
+    const range = resolveDateRange('30d', null, null, NOW);
+    const metrics = computeMetrics(records, [], users, range, NOW, 0);
+    expect(metrics.acquisition.registrationCohortConversion).toBe(null);
+    expect(metrics.acquisition.existingFreeUserConversion).toBe(null);
+  });
+
+  test('12. Late-period registration follows the attribution-window rule', () => {
+    const users = Array.from({ length: 5 }, (_, i) => mkUser({ id: `u${i}`, email: `u${i}@e.com`, created_date: '2026-07-12' }));
+    const records = Array.from({ length: 5 }, (_, i) => mkUserRecord({ user_id: `u${i}`, email: `u${i}@e.com`, created_at: parseMetricDate('2026-07-12'), first_paid_at: i < 4 ? parseMetricDate('2026-07-13') : null, active_30d: true }));
+    const contracts = records.filter((r) => r.first_paid_at).map((r) => mkContract({ userId: r.user_id, first_paid_at: r.first_paid_at }));
+    const range = resolveDateRange('30d', null, null, NOW);
+    const metrics = computeMetrics(records, contracts, users, range, NOW, 0);
+    expect(metrics.acquisition.registrationCohortNumerator).toBe(4);
+    expect(metrics.acquisition.registrationCohortDenominator).toBe(5);
+    expect(metrics.acquisition.registrationCohortConversion).toBe(80);
+  });
+
+  test('11. Existing free-user conversion uses period-start cohort, not current free count', () => {
+    const users = Array.from({ length: 5 }, (_, i) => mkUser({ id: `f${i}`, email: `f${i}@e.com`, created_date: '2026-01-01' }));
+    const records = Array.from({ length: 5 }, (_, i) => mkUserRecord({ user_id: `f${i}`, email: `f${i}@e.com`, created_at: parseMetricDate('2026-01-01'), first_paid_at: i < 2 ? parseMetricDate('2026-06-20') : null, active_30d: true }));
+    const contracts = records.filter((r) => r.first_paid_at).map((r) => mkContract({ userId: r.user_id, first_paid_at: r.first_paid_at }));
+    const range = resolveDateRange('90d', null, null, NOW);
+    const metrics = computeMetrics(records, contracts, users, range, NOW, 0);
+    expect(metrics.acquisition.existingFreeDenominator).toBe(5);
+    expect(metrics.acquisition.existingFreeNumerator).toBe(2);
+    expect(metrics.acquisition.existingFreeUserConversion).toBe(40);
+  });
+
+  test('8. Synthetic identities are excluded from all cohort denominators', () => {
+    const reals = Array.from({ length: 5 }, (_, i) => mkUserRecord({ user_id: `u${i}`, email: `u${i}@e.com`, created_at: parseMetricDate('2026-07-01'), first_paid_at: i < 3 ? parseMetricDate('2026-07-10') : null, active_30d: true }));
+    const synthetic = mkUserRecord({ user_id: 'email:x@e.com', email: 'x@e.com', created_at: parseMetricDate('2026-07-01'), first_paid_at: parseMetricDate('2026-07-10'), is_synthetic: true });
+    const usersList = Array.from({ length: 5 }, (_, i) => mkUser({ id: `u${i}`, email: `u${i}@e.com`, created_date: '2026-07-01' }));
+    const range = resolveDateRange('30d', null, null, NOW);
+    const metrics = computeMetrics([...reals, synthetic], [], usersList, range, NOW, 0);
+    expect(metrics.acquisition.registrationCohortDenominator).toBe(5);
+    expect(metrics.dataQuality.syntheticIdentities).toBe(1);
+  });
+});

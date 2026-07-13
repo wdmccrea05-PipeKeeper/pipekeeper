@@ -50,6 +50,7 @@ function resolveDateRange(dateRange, startDate, endDate, now) {
     '7d': { start: addDays(today, -7), end: endOfDay(now) },
     '30d': { start: addDays(today, -30), end: endOfDay(now) },
     '90d': { start: addDays(today, -90), end: endOfDay(now) },
+    '365d': { start: addDays(today, -365), end: endOfDay(now) },
     mtd: { start: startOfMonth(now), end: endOfDay(now) },
     qtd: { start: startOfQuarter(now), end: endOfDay(now) },
     ytd: { start: startOfYear(now), end: endOfDay(now) },
@@ -755,8 +756,40 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
   const canceledSubscriptions = contracts.filter((c) => c.canceled_at && inDateRange(c.canceled_at, range)).length;
   const expiredSubscriptions = contracts.filter((c) => c.expired_at && inDateRange(c.expired_at, range)).length;
 
-  const freeToPaidConversionRate = activeFreeUsers > 0 ? roundMoney((newFirstTimePaidUsers / activeFreeUsers) * 100) : 0;
-  const registrationToPaidConversionRate = newRegisteredUsers > 0 ? roundMoney((newFirstTimePaidUsers / newRegisteredUsers) * 100) : 0;
+  // ─── Cohort-based conversion (fix: never mix historical numerator with current-state denominator) ──
+  const ATTRIBUTION_WINDOW_DAYS = 30;
+
+  // Registration cohort: of users who registered during the period, what % first-paid within the attribution window
+  const usersRegisteredInRange = realUsers.filter((r) => inDateRange(r.created_at, range));
+  const convertedRegistrants = usersRegisteredInRange.filter((r) =>
+    r.first_paid_at && r.created_at &&
+    r.first_paid_at >= r.created_at &&
+    r.first_paid_at <= addDays(r.created_at, ATTRIBUTION_WINDOW_DAYS)
+  );
+  const registrationCohortConversion = usersRegisteredInRange.length >= 5
+    ? roundMoney((convertedRegistrants.length / usersRegisteredInRange.length) * 100)
+    : null;
+
+  // Existing free-user conversion: users who existed and had NOT yet paid at period start, who first-paid during the period
+  const eligibleFreeAtStart = realUsers.filter((r) =>
+    r.created_at && r.created_at < range.start &&
+    (!r.first_paid_at || r.first_paid_at >= range.start)
+  );
+  const convertedFromFree = eligibleFreeAtStart.filter((r) =>
+    r.first_paid_at && inDateRange(r.first_paid_at, range)
+  );
+  const existingFreeUserConversion = eligibleFreeAtStart.length >= 5
+    ? roundMoney((convertedFromFree.length / eligibleFreeAtStart.length) * 100)
+    : null;
+
+  // Paid acquisition rate (broad, explicitly NOT a conversion rate): new first-time paid / all registered
+  const paidAcquisitionRate = totalRegisteredUsers > 0
+    ? roundMoney((newFirstTimePaidUsers / totalRegisteredUsers) * 100)
+    : null;
+
+  // Legacy aliases (deprecated — kept for UI backward compat) now backed by proper cohorts
+  const freeToPaidConversionRate = existingFreeUserConversion;
+  const registrationToPaidConversionRate = registrationCohortConversion;
 
   // Provider breakdown (paying + entitled)
   const providerBreakdown = {};
@@ -801,7 +834,18 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
   return {
     userActivity: { totalRegisteredUsers, newRegisteredUsers, dau, wau, mau, active90d, activeFreeUsers, activePayingUsers },
     subscriptionStatus: { currentEntitledUsers, currentPayingUsers, currentTrials, currentPastDue, cancelingButEntitled, expiredUsers },
-    acquisition: { newFirstTimePaidUsers, reactivatedPaidUsers, newPaidSubscriptions, canceledSubscriptions, expiredSubscriptions, freeToPaidConversionRate, registrationToPaidConversionRate },
+    acquisition: {
+      newFirstTimePaidUsers, reactivatedPaidUsers, newPaidSubscriptions, canceledSubscriptions, expiredSubscriptions,
+      registrationCohortConversion,
+      registrationCohortNumerator: convertedRegistrants.length,
+      registrationCohortDenominator: usersRegisteredInRange.length,
+      existingFreeUserConversion,
+      existingFreeNumerator: convertedFromFree.length,
+      existingFreeDenominator: eligibleFreeAtStart.length,
+      paidAcquisitionRate,
+      attributionWindowDays: ATTRIBUTION_WINDOW_DAYS,
+      freeToPaidConversionRate, registrationToPaidConversionRate,
+    },
     providerBreakdown,
     productBreakdown,
     dataQuality,
@@ -965,6 +1009,103 @@ Deno.serve(async (req) => {
       .map((c) => ({ record: c.canonical_subscription_id, user_email: c.email, issues: c.reconciliation_issues, reason: c.reconciliation_issues.join(', ') }))
       .slice(0, 50);
 
+    // ─── Reconciliation detail tables (admin-only) ────────────────────────────
+    const realRecords = userRecords.filter((r) => !r.is_synthetic);
+
+    // (6) The 5 new first-time paid users — full evidence
+    const newFirstTimePaidUsersDetail = realRecords
+      .filter((r) => r.first_paid_at && inDateRange(r.first_paid_at, range))
+      .map((r) => {
+        const userContracts = contracts.filter((c) => c.userId === r.user_id);
+        const firstContract = userContracts.find((c) => c.first_paid_at && c.first_paid_at.getTime() === r.first_paid_at.getTime()) || userContracts[0];
+        return {
+          user_id: r.user_id,
+          email: r.email,
+          registration_date: r.created_at?.toISOString() || null,
+          first_paid_at: r.first_paid_at?.toISOString() || null,
+          provider: firstContract?.provider || r.current_provider || '-',
+          product: (r.current_products || []).join(', ') || (firstContract?.product || '-'),
+          provider_subscription_id: firstContract?.provider_subscription_id || '-',
+          original_transaction_id: firstContract?.original_transaction_id || '-',
+          first_payment_event: r.first_paid_source || '-',
+          amount: firstContract?.amount ?? null,
+          billing_interval: firstContract?.billing_interval || '-',
+          first_paid_evidence_source: r.first_paid_source || '-',
+          evidence_confidence: firstContract?.first_paid_confidence || 'none',
+          current_subscription_status: firstContract?.normalized_status || '-',
+          current_entitlement_status: r.is_currently_entitled ? 'entitled' : 'none',
+          later_canceled: !!firstContract?.canceled_at || userContracts.some((c) => c.normalized_status === 'canceled' || c.normalized_status === 'expired'),
+          reason_old_report_excluded: 'canonical_started_at was derived from ActiveContract.started_at/current_period_start, which do not exist on that entity — first_paid_at resolved to null and the user was silently excluded',
+          reason_new_report_includes: `first_paid_at derived from ${r.first_paid_source || 'best-available source'} per the evidence hierarchy (SubscriptionEvent → Subscription.started_at → period_start_inferred)`,
+        };
+      })
+      .sort((a, b) => (a.first_paid_at || '').localeCompare(b.first_paid_at || ''));
+
+    // (9) The 10 new subscriptions — why 5 users produced 10 subscriptions
+    const newPaidSubscriptionsDetail = contracts
+      .filter((c) => c.first_paid_at && inDateRange(c.first_paid_at, range))
+      .map((c) => {
+        const userContracts = contracts.filter((x) => x.userId === c.userId).filter((x) => x.first_paid_at).sort((a, b) => a.first_paid_at - b.first_paid_at);
+        const isFirstForUser = userContracts[0]?.canonical_subscription_id === c.canonical_subscription_id;
+        return {
+          canonical_subscription_id: c.canonical_subscription_id,
+          user_id: c.userId,
+          email: c.email,
+          provider: c.provider,
+          product: c.product,
+          first_paid_at: c.first_paid_at?.toISOString() || null,
+          payment_confirmation: c.first_paid_confidence === 'confirmed' ? 'confirmed' : 'inferred',
+          is_users_first_paid_subscription: isFirstForUser,
+          is_additional_module: userContracts.length > 1 && !isFirstForUser,
+          is_migrated_or_duplicate: c.reconciliation_issues.includes('subscription_fallback') && userContracts.length > 1 && !isFirstForUser,
+          deduplication_key: dedupeKey(c),
+          inclusion_reason: c.first_paid_confidence === 'confirmed'
+            ? 'Confirmed first payment within selected range'
+            : 'Inferred first-paid date within selected range (ActiveContract.period_start fallback — labeled inferred)',
+        };
+      })
+      .sort((a, b) => (a.first_paid_at || '').localeCompare(b.first_paid_at || ''));
+
+    // (10) The 3 reactivations
+    const reactivatedPaidUsersDetail = realRecords
+      .filter((r) => r.reactivated_at && inDateRange(r.reactivated_at, range))
+      .map((r) => {
+        const userContracts = contracts.filter((c) => c.userId === r.user_id).filter((c) => c.first_paid_at).sort((a, b) => a.first_paid_at - b.first_paid_at);
+        const first = userContracts[0];
+        const priorEnd = userContracts.length >= 2 ? (userContracts[0].current_period_end || userContracts[0].expired_at) : null;
+        const reactivationContract = userContracts.find((c) => c.first_paid_at && c.first_paid_at.getTime() === r.reactivated_at.getTime());
+        return {
+          user_id: r.user_id,
+          email: r.email,
+          original_first_paid_at: first?.first_paid_at?.toISOString() || r.first_paid_at?.toISOString() || null,
+          prior_expiration_or_cancellation: priorEnd?.toISOString() || null,
+          unpaid_lapse_days: (priorEnd && r.reactivated_at) ? Math.round((r.reactivated_at - priorEnd) / 86400000) : null,
+          reactivation_at: r.reactivated_at?.toISOString() || null,
+          reactivation_payment_event: reactivationContract?.first_paid_source || '-',
+          provider: reactivationContract?.provider || r.current_provider || '-',
+          product: reactivationContract?.product || '-',
+          classification_reason: 'New payment after the prior billing period ended (lapse beyond grace) — classified as reactivation, not renewal. Minimum lapse required = payment start strictly after prior period_end.',
+        };
+      });
+
+    // (12) First-paid evidence hierarchy summary
+    const firstPaidEvidenceSummary = {
+      confirmed: contracts.filter((c) => c.first_paid_confidence === 'confirmed').length,
+      inferred: contracts.filter((c) => c.first_paid_confidence === 'inferred').length,
+      missing: contracts.filter((c) => !c.first_paid_at).length,
+    };
+
+    // (8) Entitlement reconciliation — explains entitled vs paying difference
+    const entitlementReconciliation = {
+      paying: realRecords.filter((r) => r.is_currently_paying).length,
+      trial: realRecords.filter((r) => r.is_trial && !r.is_currently_paying).length,
+      referral_access: realRecords.filter((r) => r.is_referral_access && !r.is_currently_paying).length,
+      manual_access: realRecords.filter((r) => r.is_manual_access && !r.is_currently_paying).length,
+      promotional_access: realRecords.filter((r) => r.is_promotional_access && !r.is_currently_paying).length,
+      canceling_but_entitled: realRecords.filter((r) => r.has_canceling_but_entitled && !r.is_currently_paying).length,
+      note: 'Current entitled = paying OR trial OR referral-earned OR manual OR promotional OR canceling-but-within-period. Past-due is NOT entitled unless within grace. The difference between entitled and paying is explained by the non-paying categories above.',
+    };
+
     return Response.json({
       meta: {
         generatedAt: now.toISOString(),
@@ -995,6 +1136,11 @@ Deno.serve(async (req) => {
       auditSubscriptions,
       payingUsersList,
       excludedRecords,
+      newFirstTimePaidUsersDetail,
+      newPaidSubscriptionsDetail,
+      reactivatedPaidUsersDetail,
+      firstPaidEvidenceSummary,
+      entitlementReconciliation,
       dedupeDiagnostics: dedupeDiag,
     });
 
