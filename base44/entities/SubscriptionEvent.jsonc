@@ -1,11 +1,11 @@
 {
   "name": "SubscriptionEvent",
   "type": "object",
-  "description": "Raw immutable event log \u2014 one row per inbound event from Stripe, Apple, Google, or manual admin action. Never mutated after insert.",
+  "description": "Canonical immutable subscription event ledger \u2014 one normalized row per meaningful billing or entitlement event from Stripe, Apple, Google, or manual admin action. Never mutated after insert. This is the verified source of truth for payment history and first-paid-date resolution.",
   "properties": {
     "event_id": {
       "type": "string",
-      "description": "Provider-native event ID (e.g. Stripe evt_xxx, Apple notificationUUID). Unique per provider."
+      "description": "Provider-native event ID (e.g. Stripe evt_xxx, Apple notificationUUID). Unique per provider. Used for idempotency."
     },
     "provider": {
       "type": "string",
@@ -20,27 +20,119 @@
     },
     "event_type": {
       "type": "string",
-      "description": "Provider event type string (e.g. customer.subscription.updated, SUBSCRIBED, RENEWAL)"
+      "description": "Raw provider event type string (e.g. customer.subscription.updated, invoice.paid, SUBSCRIBED, RENEWAL)"
     },
-    "provider_subscription_id": {
+    "normalized_event_type": {
       "type": "string",
-      "description": "Provider's subscription/transaction ID"
-    },
-    "provider_customer_id": {
-      "type": "string",
-      "description": "Provider's customer ID"
+      "enum": [
+        "initial_purchase",
+        "renewal",
+        "reactivation",
+        "upgrade",
+        "downgrade",
+        "product_change",
+        "provider_migration",
+        "additional_product",
+        "cancellation",
+        "expiration",
+        "refund_full",
+        "refund_partial",
+        "chargeback_open",
+        "chargeback_won",
+        "chargeback_lost",
+        "dispute_open",
+        "dispute_closed",
+        "trial_start",
+        "trial_end",
+        "payment_failed",
+        "payment_retry",
+        "grace_period",
+        "manual_adjustment",
+        "sync",
+        "other"
+      ],
+      "description": "Canonical normalized event type used by reporting"
     },
     "user_id": {
       "type": "string",
-      "description": "Internal platform user ID (set during ingestion if resolvable)"
+      "description": "Internal platform user ID (resolved at ingestion if possible)"
     },
     "user_email": {
       "type": "string",
-      "description": "User email at time of event"
+      "description": "Normalized lowercase user email at time of event"
+    },
+    "normalized_email": {
+      "type": "string",
+      "description": "Alias for user_email \u2014 canonical lowercase email for reconciliation"
+    },
+    "provider_customer_id": {
+      "type": "string",
+      "description": "Provider's customer ID (Stripe cus_xxx, Apple appAccountToken, Google account ID)"
+    },
+    "provider_subscription_id": {
+      "type": "string",
+      "description": "Provider's subscription ID (Stripe sub_xxx, Apple originalTransactionId, Google purchaseToken-derived)"
+    },
+    "provider_transaction_id": {
+      "type": "string",
+      "description": "Provider's transaction/charge/invoice ID (Stripe ch_xxx / in_xxx / pi_xxx, Apple transactionId, Google orderId)"
+    },
+    "original_transaction_id": {
+      "type": "string",
+      "description": "Apple originalTransactionId or Google original purchase token \u2014 identifies the subscription lifecycle"
+    },
+    "provider_event_id": {
+      "type": "string",
+      "description": "Provider-native event ID for deduplication (Stripe evt_xxx, Apple notificationUUID, Google notification token)"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Provider product/price ID (Stripe price_xxx, Apple productID, Google productId)"
+    },
+    "module": {
+      "type": "string",
+      "enum": [
+        "pipekeeper",
+        "whiskeykeeper",
+        "cigarkeeper",
+        "winekeeper",
+        "bundle",
+        "unknown"
+      ],
+      "description": "Resolved module this event relates to"
     },
     "raw_status": {
       "type": "string",
       "description": "Raw status string from provider payload"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "failed",
+        "pending",
+        "refunded",
+        "partially_refunded",
+        "disputed",
+        "no_payment",
+        "unknown"
+      ],
+      "description": "Canonical payment status"
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "trialing",
+        "past_due",
+        "canceled",
+        "expired",
+        "incomplete",
+        "paused",
+        "grace_period",
+        "unknown"
+      ],
+      "description": "Canonical subscription status at time of event"
     },
     "amount_cents": {
       "type": "number",
@@ -51,15 +143,7 @@
       "default": "usd",
       "description": "ISO 4217 currency code"
     },
-    "price_id": {
-      "type": "string",
-      "description": "Provider price/product ID (e.g. Stripe price_xxx)"
-    },
-    "product_id": {
-      "type": "string",
-      "description": "Provider product ID"
-    },
-    "interval": {
+    "billing_interval": {
       "type": "string",
       "enum": [
         "month",
@@ -68,34 +152,183 @@
       ],
       "description": "Billing interval from provider"
     },
+    "transaction_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the transaction/payment occurred (UTC ISO). Primary financial timestamp."
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event takes effect for entitlement (may differ from transaction_at for refunds/cancellations)"
+    },
     "period_start": {
       "type": "string",
       "format": "date-time",
-      "description": "Current billing period start"
+      "description": "Billing period start"
     },
     "period_end": {
       "type": "string",
       "format": "date-time",
-      "description": "Current billing period end"
+      "description": "Billing period end"
+    },
+    "canceled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When cancellation was initiated (UTC)"
+    },
+    "expired_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When access expired (UTC)"
+    },
+    "refunded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When refund was issued (UTC)"
+    },
+    "refund_amount_cents": {
+      "type": "number",
+      "description": "Amount refunded in cents (for partial refunds)"
+    },
+    "dispute_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "open",
+        "won",
+        "lost",
+        "expired",
+        "warning_closed",
+        "unknown"
+      ],
+      "description": "Dispute/chargeback status"
+    },
+    "is_successful_payment": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this event represents a successful payment that should count toward revenue"
+    },
+    "is_initial_purchase": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this is the first purchase for this subscription lifecycle"
+    },
+    "is_renewal": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this is a recurring renewal payment"
+    },
+    "is_reactivation": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this is a new payment after a documented lapse in paid access"
+    },
+    "is_refund": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this event is any kind of refund (full or partial)"
+    },
+    "is_partial_refund": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this is a partial refund"
+    },
+    "is_full_refund": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this is a full refund"
+    },
+    "is_chargeback": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this event is a chargeback/dispute"
+    },
+    "is_trial": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this event is a trial start/end (no successful payment)"
+    },
+    "is_manual_adjustment": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this is a manual/administrative billing adjustment"
+    },
+    "source_system": {
+      "type": "string",
+      "enum": [
+        "webhook",
+        "backfill",
+        "manual",
+        "migration",
+        "sync",
+        "unknown"
+      ],
+      "description": "How this event entered the ledger"
+    },
+    "source_confidence": {
+      "type": "string",
+      "enum": [
+        "confirmed_provider_transaction",
+        "confirmed_successful_payment",
+        "strong_subscription_evidence",
+        "inferred_contract_period",
+        "weak_created_date_fallback",
+        "unresolved"
+      ],
+      "description": "Confidence tier for this event's evidence"
+    },
+    "raw_event_reference": {
+      "type": "string",
+      "description": "Reference to raw event (Stripe event id, Apple JWS token hash, or truncated raw payload). Never stores card data."
     },
     "raw_payload": {
       "type": "string",
-      "description": "JSON-serialized raw provider payload (truncated to 8KB if needed)"
+      "description": "JSON-serialized raw provider payload (truncated to 8KB). Never contains raw card information."
     },
     "ingested_at": {
       "type": "string",
       "format": "date-time",
-      "description": "ISO timestamp when this event was ingested into the platform"
+      "description": "ISO timestamp when this event was ingested into the ledger"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this event was folded into derived state (contracts/entitlements). Null if not yet processed."
     },
     "processed": {
       "type": "boolean",
       "default": false,
       "description": "Whether this event has been folded into active_contracts"
+    },
+    "reconciliation_status": {
+      "type": "string",
+      "enum": [
+        "matched",
+        "unmatched_provider_no_user",
+        "unmatched_payment_no_subscription",
+        "unmatched_subscription_no_payment",
+        "unmatched_contract_no_subscription",
+        "duplicate_rejected",
+        "orphaned_entitlement",
+        "inferred_first_paid",
+        "confirmed_first_paid",
+        "pending_review",
+        "resolved",
+        "unknown"
+      ],
+      "description": "Reconciliation classification for this event"
+    },
+    "reconciliation_notes": {
+      "type": "string",
+      "description": "Human-readable reconciliation notes or audit trail"
     }
   },
   "required": [
     "provider",
     "event_type",
-    "ingested_at"
+    "normalized_event_type",
+    "ingested_at",
+    "source_system"
   ]
 }

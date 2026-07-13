@@ -1,0 +1,116 @@
+{
+  "name": "ProviderSyncHealth",
+  "type": "object",
+  "description": "One row per payment provider. Tracks webhook/sync freshness, failure counts, and backfill status for provider sync monitoring.",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple",
+        "google",
+        "manual"
+      ],
+      "description": "Payment provider"
+    },
+    "last_successful_webhook_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp of the most recent successfully processed webhook/notification"
+    },
+    "last_failed_webhook_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp of the most recent failed webhook attempt"
+    },
+    "failed_webhook_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Cumulative count of failed webhook deliveries since last reset"
+    },
+    "signature_verification_failures": {
+      "type": "number",
+      "default": 0,
+      "description": "Cumulative signature verification failures"
+    },
+    "unprocessed_event_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of SubscriptionEvent rows with processed=false for this provider"
+    },
+    "duplicate_event_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Cumulative duplicate events rejected during ingestion"
+    },
+    "provider_api_failures": {
+      "type": "number",
+      "default": 0,
+      "description": "Cumulative provider API call failures during backfill/sync"
+    },
+    "backfill_status": {
+      "type": "string",
+      "enum": [
+        "never_run",
+        "running",
+        "complete",
+        "partial",
+        "failed",
+        "not_configured"
+      ],
+      "default": "never_run",
+      "description": "Status of the most recent historical backfill"
+    },
+    "backfill_started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the most recent backfill started"
+    },
+    "backfill_completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the most recent backfill completed"
+    },
+    "backfill_events_imported": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of events imported in the most recent backfill"
+    },
+    "backfill_range_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Earliest historical date imported"
+    },
+    "backfill_range_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Latest historical date imported"
+    },
+    "reconciliation_status": {
+      "type": "string",
+      "enum": [
+        "never_run",
+        "running",
+        "complete",
+        "partial",
+        "failed"
+      ],
+      "default": "never_run",
+      "description": "Status of the most recent reconciliation run"
+    },
+    "last_reconciliation_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the most recent reconciliation completed"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this health record was last updated"
+    }
+  },
+  "required": [
+    "provider",
+    "updated_at"
+  ]
+}

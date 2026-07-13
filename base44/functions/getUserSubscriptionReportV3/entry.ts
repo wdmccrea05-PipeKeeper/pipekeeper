@@ -157,7 +157,7 @@ const REFUND_SLUGS = ['refund', 'refunded', 'chargeback', 'dispute', 'disputed',
 const FAILED_SLUGS = ['payment failed', 'invoice payment failed', 'charge failed', 'card declined', 'declined', 'payment canceled', 'canceled payment', 'void', 'voided'];
 const PENDING_SLUGS = ['pending', 'incomplete', 'authorization only', 'authorized only', 'checkout expired', 'payment pending'];
 const TRIAL_SLUGS = ['trial', 'trialing'];
-const PAYMENT_SUCCESS_SLUGS = ['invoice payment succeeded', 'charge succeeded', 'checkout session completed', 'initial buy', 'repurchase', 'product purchase', 'renewed', 'renewal'];
+const PAYMENT_SUCCESS_SLUGS = ['invoice paid', 'invoice payment succeeded', 'charge succeeded', 'checkout session completed', 'checkout.session.completed', 'initial purchase', 'initial buy', 'initial_purchase', 'repurchase', 'product purchase', 'renewed', 'renewal'];
 const LIFECYCLE_SLUGS = ['customer subscription created', 'customer subscription updated', 'subscribed'];
 const PAYMENT_EVENT_PATTERNS = PAYMENT_SUCCESS_SLUGS.concat(LIFECYCLE_SLUGS);
 const CANCEL_EVENT_PATTERNS = ['subscription.deleted', 'canceled', 'cancel'];
@@ -214,15 +214,15 @@ function isExpireEvent(e) {
 //   inferred_contract_period    — ActiveContract.period_start (may be initial/renewal/migration/backfill)
 //   weak_fallback               — record created_date (last resort)
 //   unresolved                  — no first-paid date
-const FIRST_PAID_DATE_FIELDS = ['period_start', 'ingested_at', 'created_date'];
+const FIRST_PAID_DATE_FIELDS = ['transaction_at', 'effective_at', 'period_start', 'ingested_at', 'created_date'];
 function firstPaidEventDateField(e) {
   for (const f of FIRST_PAID_DATE_FIELDS) if (parseMetricDate(e[f])) return f;
-  return 'period_start';
+  return 'transaction_at';
 }
 function resolveFirstPaidAt(eventsForUser, sub, acRow) {
   const paymentEvents = (eventsForUser || [])
     .filter((e) => isPaymentEvent(e))
-    .map((e) => ({ date: parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at) || parseMetricDate(e.created_date), field: firstPaidEventDateField(e), e }))
+    .map((e) => ({ date: parseMetricDate(e.transaction_at) || parseMetricDate(e.effective_at) || parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at) || parseMetricDate(e.created_date), field: firstPaidEventDateField(e), e }))
     .filter((x) => x.date)
     .sort((a, b) => a.date - b.date);
   if (paymentEvents.length > 0) {
