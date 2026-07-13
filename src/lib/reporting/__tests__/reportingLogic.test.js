@@ -324,17 +324,101 @@ describe('Metric computation', () => {
   });
 });
 
-describe('Date range resolution', () => {
-  test('prior_month resolves correctly', () => {
+// America/Indianapolis is UTC-4 (EDT) in July. Local midnight July 13 = 04:00 UTC.
+describe('Date range resolution (timezone-aware, America/Indianapolis)', () => {
+  test('prior_month resolves to local June boundaries', () => {
     const range = resolveDateRange('prior_month', null, null, NOW);
-    expect(range.start.getUTCMonth()).toBe(5); // June
-    expect(range.end.getUTCMonth()).toBe(5);
+    expect(range.start.toISOString()).toBe('2026-06-01T04:00:00.000Z'); // June 1 00:00 EDT
+    expect(range.end.toISOString()).toBe('2026-07-01T03:59:59.999Z');   // June 30 23:59 EDT
   });
 
-  test('custom range uses provided dates', () => {
+  test('custom range uses provided dates as local-day boundaries', () => {
     const range = resolveDateRange('custom', '2026-06-01', '2026-06-30', NOW);
-    expect(range.start.getUTCMonth()).toBe(5);
-    expect(range.end.getUTCMonth()).toBe(5);
+    expect(range.start.toISOString()).toBe('2026-06-01T04:00:00.000Z');
+    expect(range.end.toISOString()).toBe('2026-07-01T03:59:59.999Z');
+  });
+
+  test('30d range uses local-day start and inclusive local end', () => {
+    const range = resolveDateRange('30d', null, null, NOW);
+    expect(range.start.toISOString()).toBe('2026-06-13T04:00:00.000Z'); // 30 days before July 13 local
+    expect(range.end.toISOString()).toBe('2026-07-14T03:59:59.999Z');     // July 13 23:59 EDT
+  });
+
+  test('UTC instant in the prior local calendar day does not roll over to the next day', () => {
+    // 2026-07-13T01:00:00Z = 2026-07-12 21:00 EDT → local "today" is July 12, not July 13.
+    const rolloverNow = new Date('2026-07-13T01:00:00.000Z');
+    const range = resolveDateRange('30d', null, null, rolloverNow);
+    // Today local = July 12 → end of day = July 13 03:59:59 UTC (NOT July 13 23:59 UTC).
+    expect(range.end.toISOString()).toBe('2026-07-13T03:59:59.999Z');
+    // 30d start = June 12 local = 2026-06-12T04:00:00Z.
+    expect(range.start.toISOString()).toBe('2026-06-12T04:00:00.000Z');
+    // The range must not extend into July 13 local (UTC rollover avoided).
+    expect(range.end.getTime()).toBeLessThan(new Date('2026-07-13T04:00:00.000Z').getTime());
+  });
+
+  test('mtd and ytd use local month/year starts', () => {
+    const mtd = resolveDateRange('mtd', null, null, NOW);
+    expect(mtd.start.toISOString()).toBe('2026-07-01T04:00:00.000Z'); // July 1 00:00 EDT
+    const ytd = resolveDateRange('ytd', null, null, NOW);
+    expect(ytd.start.toISOString()).toBe('2026-01-01T05:00:00.000Z'); // Jan 1 00:00 EST (UTC-5)
+  });
+
+  test('UTC rollover at year boundary keeps the prior local year', () => {
+    // 2026-01-01T01:00:00Z = 2025-12-31 20:00 EST → local "today" is Dec 31 2025.
+    const nye = new Date('2026-01-01T01:00:00.000Z');
+    const ytd = resolveDateRange('ytd', null, null, nye);
+    expect(ytd.start.toISOString()).toBe('2025-01-01T05:00:00.000Z'); // 2025 local year start
+  });
+});
+
+describe('First-paid confidence categories', () => {
+  test('payment event → confirmed_payment_event', () => {
+    const r = resolveFirstPaidAt([{ event_type: 'invoice.payment_succeeded', period_start: '2026-07-01', amount_cents: 999 }], null, null);
+    expect(r.confidenceCategory).toBe('confirmed_payment_event');
+    expect(r.sourceEntity).toBe('SubscriptionEvent');
+    expect(r.date.toISOString()).toBe('2026-07-01T00:00:00.000Z');
+  });
+
+  test('Subscription.first_paid_at → strong_subscription_evidence', () => {
+    const r = resolveFirstPaidAt([], { first_paid_at: '2026-06-15' }, null);
+    expect(r.confidenceCategory).toBe('strong_subscription_evidence');
+    expect(r.sourceEntity).toBe('Subscription');
+    expect(r.sourceField).toBe('first_paid_at');
+  });
+
+  test('Subscription.started_at → strong_subscription_evidence', () => {
+    const r = resolveFirstPaidAt([], { started_at: '2026-06-15' }, null);
+    expect(r.confidenceCategory).toBe('strong_subscription_evidence');
+    expect(r.sourceField).toBe('started_at');
+  });
+
+  test('ActiveContract.period_start → inferred_contract_period with ambiguity note', () => {
+    const r = resolveFirstPaidAt([], null, { period_start: '2026-06-15' });
+    expect(r.confidenceCategory).toBe('inferred_contract_period');
+    expect(r.sourceEntity).toBe('ActiveContract');
+    expect(r.sourceField).toBe('period_start');
+    expect(r.possibleAmbiguity).toContain('initial period, renewal, migration, or backfill');
+  });
+
+  test('created_date → weak_fallback', () => {
+    const r = resolveFirstPaidAt([], { created_date: '2026-06-15' }, null);
+    expect(r.confidenceCategory).toBe('weak_fallback');
+    expect(r.sourceField).toBe('created_date');
+  });
+
+  test('no sources → unresolved', () => {
+    const r = resolveFirstPaidAt([], null, null);
+    expect(r.confidenceCategory).toBe('unresolved');
+    expect(r.date).toBeNull();
+  });
+
+  test('payment event is preferred over weaker sources', () => {
+    const r = resolveFirstPaidAt(
+      [{ event_type: 'invoice.payment_succeeded', period_start: '2026-07-01', amount_cents: 999 }],
+      { started_at: '2026-06-01', first_paid_at: '2026-06-10' },
+      { period_start: '2026-05-01' }
+    );
+    expect(r.confidenceCategory).toBe('confirmed_payment_event');
   });
 });
 

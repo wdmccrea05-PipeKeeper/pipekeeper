@@ -35,7 +35,59 @@ function toMonthlyRunRate(amount, interval) {
   return interval === 'year' ? amount / 12 : amount;
 }
 
-// ─── Date range ────────────────────────────────────────────────────────────────
+// ─── Date range (timezone-aware) ───────────────────────────────────────────────
+// "Today" and all trailing/period ranges are computed in the configured reporting
+// timezone (America/Indianapolis), so a UTC instant in the early hours does not roll
+// the report over to the next local calendar day. Range bounds are UTC instants that
+// correspond to local-day boundaries.
+const REPORTING_TIMEZONE = 'America/Indianapolis';
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function tzParts(date, tz) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  });
+  const parts = fmt.formatToParts(date);
+  const get = (t) => parts.find((p) => p.type === t)?.value || '0';
+  return { year: +get('year'), month: +get('month'), day: +get('day'), hour: +get('hour') % 24, minute: +get('minute'), second: +get('second') };
+}
+function tzOffsetMinutes(date, tz) {
+  const p = tzParts(date, tz);
+  const asUtcMs = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+  return Math.round((asUtcMs - date.getTime()) / 60000);
+}
+function startOfDayLocal(date, tz) {
+  const p = tzParts(date, tz);
+  const noonUtc = new Date(Date.UTC(p.year, p.month - 1, p.day, 12, 0, 0));
+  const off = tzOffsetMinutes(noonUtc, tz);
+  return new Date(Date.UTC(p.year, p.month - 1, p.day, 0, 0, 0) - off * 60000);
+}
+function endOfDayLocal(date, tz) { return new Date(startOfDayLocal(date, tz).getTime() + MS_PER_DAY - 1); }
+function startOfMonthLocal(date, tz) { const p = tzParts(date, tz); return startOfDayLocal(new Date(Date.UTC(p.year, p.month - 1, 1, 12, 0, 0)), tz); }
+function startOfQuarterLocal(date, tz) { const p = tzParts(date, tz); const q = Math.floor((p.month - 1) / 3); return startOfDayLocal(new Date(Date.UTC(p.year, q * 3, 1, 12, 0, 0)), tz); }
+function startOfYearLocal(date, tz) { const p = tzParts(date, tz); return startOfDayLocal(new Date(Date.UTC(p.year, 0, 1, 12, 0, 0)), tz); }
+function trailingDayStart(now, days, tz) { return startOfDayLocal(new Date(now.getTime() - days * MS_PER_DAY), tz); }
+function parseLocalDateBoundary(value, tz, end) {
+  if (!value) return null;
+  const d = String(value);
+  const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) {
+    const y = +m[1], mo = +m[2], day = +m[3];
+    const noonUtc = new Date(Date.UTC(y, mo - 1, day, 12, 0, 0));
+    const off = tzOffsetMinutes(noonUtc, tz);
+    const base = Date.UTC(y, mo - 1, day, 0, 0, 0) - off * 60000;
+    return end ? new Date(base + MS_PER_DAY - 1) : new Date(base);
+  }
+  const parsed = parseMetricDate(d);
+  if (!parsed) return null;
+  return end ? endOfDayLocal(parsed, tz) : startOfDayLocal(parsed, tz);
+}
+function formatLocalDateTime(date, tz) {
+  return new Intl.DateTimeFormat('en-US', { timeZone: tz, year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true }).format(date);
+}
+
+// Legacy UTC helpers (kept for instant arithmetic).
 function startOfDay(d) { const x = new Date(d); x.setUTCHours(0, 0, 0, 0); return x; }
 function endOfDay(d) { const x = new Date(d); x.setUTCHours(23, 59, 59, 999); return x; }
 function startOfMonth(d) { return startOfDay(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1))); }
@@ -43,31 +95,32 @@ function startOfQuarter(d) { const q = Math.floor(d.getUTCMonth() / 3); return s
 function startOfYear(d) { return startOfDay(new Date(Date.UTC(d.getUTCFullYear(), 0, 1))); }
 function addDays(d, days) { const x = new Date(d); x.setUTCDate(x.getUTCDate() + days); return x; }
 
-function resolveDateRange(dateRange, startDate, endDate, now) {
-  const today = startOfDay(now);
+function resolveDateRange(dateRange, startDate, endDate, now, timezone) {
+  const tz = timezone || REPORTING_TIMEZONE;
+  const todayEnd = endOfDayLocal(now, tz);
   const ranges = {
-    today: { start: today, end: endOfDay(now) },
-    '7d': { start: addDays(today, -7), end: endOfDay(now) },
-    '30d': { start: addDays(today, -30), end: endOfDay(now) },
-    '90d': { start: addDays(today, -90), end: endOfDay(now) },
-    '365d': { start: addDays(today, -365), end: endOfDay(now) },
-    mtd: { start: startOfMonth(now), end: endOfDay(now) },
-    qtd: { start: startOfQuarter(now), end: endOfDay(now) },
-    ytd: { start: startOfYear(now), end: endOfDay(now) },
+    today: { start: startOfDayLocal(now, tz), end: todayEnd },
+    '7d': { start: trailingDayStart(now, 7, tz), end: todayEnd },
+    '30d': { start: trailingDayStart(now, 30, tz), end: todayEnd },
+    '90d': { start: trailingDayStart(now, 90, tz), end: todayEnd },
+    '365d': { start: trailingDayStart(now, 365, tz), end: todayEnd },
+    mtd: { start: startOfMonthLocal(now, tz), end: todayEnd },
+    qtd: { start: startOfQuarterLocal(now, tz), end: todayEnd },
+    ytd: { start: startOfYearLocal(now, tz), end: todayEnd },
   };
   if (dateRange === 'prior_month') {
-    const firstOfThisMonth = startOfMonth(now);
-    const endOfPriorMonth = addDays(firstOfThisMonth, -1);
-    return { start: startOfMonth(endOfPriorMonth), end: endOfDay(endOfPriorMonth) };
+    const firstOfThis = startOfMonthLocal(now, tz);
+    const endOfPrior = new Date(firstOfThis.getTime() - 1);
+    return { start: startOfMonthLocal(endOfPrior, tz), end: endOfDayLocal(endOfPrior, tz) };
   }
   if (dateRange === 'prior_quarter') {
-    const firstOfThisQuarter = startOfQuarter(now);
-    const endOfPriorQuarter = addDays(firstOfThisQuarter, -1);
-    return { start: startOfQuarter(endOfPriorQuarter), end: endOfDay(endOfPriorQuarter) };
+    const firstOfThis = startOfQuarterLocal(now, tz);
+    const endOfPrior = new Date(firstOfThis.getTime() - 1);
+    return { start: startOfQuarterLocal(endOfPrior, tz), end: endOfDayLocal(endOfPrior, tz) };
   }
   if (dateRange === 'custom') {
-    const s = startDate ? startOfDay(parseMetricDate(startDate)) : null;
-    const e = endDate ? endOfDay(parseMetricDate(endDate)) : null;
+    const s = parseLocalDateBoundary(startDate, tz, false);
+    const e = parseLocalDateBoundary(endDate, tz, true);
     if (s && e) return { start: s, end: e };
   }
   return ranges[dateRange] || ranges['30d'];
@@ -154,24 +207,51 @@ function isExpireEvent(e) {
 }
 
 // ─── First paid date resolution ────────────────────────────────────────────────
+// Confidence categories (canonical):
+//   confirmed_payment_event     — verified successful payment/invoice/purchase/transaction event
+//   strong_subscription_evidence — Subscription.first_paid_at / initial_transaction_at / started_at /
+//                                  subscriptionStartedAt (subscription start, NOT a verified transaction)
+//   inferred_contract_period    — ActiveContract.period_start (may be initial/renewal/migration/backfill)
+//   weak_fallback               — record created_date (last resort)
+//   unresolved                  — no first-paid date
+const FIRST_PAID_DATE_FIELDS = ['period_start', 'ingested_at', 'created_date'];
+function firstPaidEventDateField(e) {
+  for (const f of FIRST_PAID_DATE_FIELDS) if (parseMetricDate(e[f])) return f;
+  return 'period_start';
+}
 function resolveFirstPaidAt(eventsForUser, sub, acRow) {
   const paymentEvents = (eventsForUser || [])
     .filter((e) => isPaymentEvent(e))
-    .map((e) => ({ date: parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at) || parseMetricDate(e.created_date), e }))
+    .map((e) => ({ date: parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at) || parseMetricDate(e.created_date), field: firstPaidEventDateField(e), e }))
     .filter((x) => x.date)
     .sort((a, b) => a.date - b.date);
   if (paymentEvents.length > 0) {
-    return { date: paymentEvents[0].date, source: 'subscription_event', confidence: 'confirmed' };
+    return { date: paymentEvents[0].date, source: 'subscription_event', confidence: 'confirmed',
+      confidenceCategory: 'confirmed_payment_event', sourceEntity: 'SubscriptionEvent',
+      sourceField: paymentEvents[0].field, possibleAmbiguity: null };
   }
-  const subStarted = parseMetricDate(sub?.started_at || sub?.subscriptionStartedAt);
-  if (subStarted) return { date: subStarted, source: 'subscription_started_at', confidence: 'confirmed' };
+  const firstPaidField = sub?.first_paid_at ? 'first_paid_at' : (sub?.initial_transaction_at ? 'initial_transaction_at' : null);
   const firstPaid = parseMetricDate(sub?.first_paid_at || sub?.initial_transaction_at);
-  if (firstPaid) return { date: firstPaid, source: 'subscription_first_paid_at', confidence: 'confirmed' };
+  if (firstPaid) return { date: firstPaid, source: 'subscription_first_paid_at', confidence: 'confirmed',
+    confidenceCategory: 'strong_subscription_evidence', sourceEntity: 'Subscription',
+    sourceField: firstPaidField, possibleAmbiguity: null };
+  const startedField = sub?.started_at ? 'started_at' : (sub?.subscriptionStartedAt ? 'subscriptionStartedAt' : null);
+  const subStarted = parseMetricDate(sub?.started_at || sub?.subscriptionStartedAt);
+  if (subStarted) return { date: subStarted, source: 'subscription_started_at', confidence: 'confirmed',
+    confidenceCategory: 'strong_subscription_evidence', sourceEntity: 'Subscription',
+    sourceField: startedField, possibleAmbiguity: 'Subscription start date — reflects activation, not an independently verified payment transaction' };
+  const periodField = acRow?.period_start ? 'period_start' : (acRow?.current_period_start ? 'current_period_start' : 'period_start');
   const acPeriodStart = parseMetricDate(acRow?.period_start || acRow?.current_period_start);
-  if (acPeriodStart) return { date: acPeriodStart, source: 'period_start_inferred', confidence: 'inferred' };
+  if (acPeriodStart) return { date: acPeriodStart, source: 'period_start_inferred', confidence: 'inferred',
+    confidenceCategory: 'inferred_contract_period', sourceEntity: 'ActiveContract',
+    sourceField: periodField, possibleAmbiguity: 'Inferred — may represent initial period, renewal, migration, or backfill' };
+  const createdFromSub = !!(sub?.created_date || sub?.created_at);
   const created = parseMetricDate(sub?.created_date || sub?.created_at || acRow?.created_date || acRow?.created_at || acRow?.normalized_at);
-  if (created) return { date: created, source: 'created_date_inferred', confidence: 'inferred' };
-  return { date: null, source: 'none', confidence: 'none' };
+  if (created) return { date: created, source: 'created_date_inferred', confidence: 'inferred',
+    confidenceCategory: 'weak_fallback', sourceEntity: createdFromSub ? 'Subscription' : 'ActiveContract',
+    sourceField: 'created_date', possibleAmbiguity: 'Weak fallback — record creation date, not a payment date' };
+  return { date: null, source: 'none', confidence: 'none',
+    confidenceCategory: 'unresolved', sourceEntity: null, sourceField: null, possibleAmbiguity: null };
 }
 
 function resolveLatestPaymentAt(eventsForUser) {
@@ -497,6 +577,10 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
       first_paid_at: firstPaid.date,
       first_paid_source: firstPaid.source,
       first_paid_confidence: firstPaid.confidence,
+      first_paid_confidence_category: firstPaid.confidenceCategory,
+      first_paid_source_entity: firstPaid.sourceEntity,
+      first_paid_source_field: firstPaid.sourceField,
+      first_paid_possible_ambiguity: firstPaid.possibleAmbiguity,
       latest_payment_at: latestPayment,
       subscription_created_at: parseMetricDate(matchedSub?.created_date || matchedSub?.created_at || ac.normalized_at),
       current_period_start: fin.periodStart,
@@ -562,6 +646,10 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
       first_paid_at: firstPaid.date,
       first_paid_source: firstPaid.source,
       first_paid_confidence: firstPaid.confidence,
+      first_paid_confidence_category: firstPaid.confidenceCategory,
+      first_paid_source_entity: firstPaid.sourceEntity,
+      first_paid_source_field: firstPaid.sourceField,
+      first_paid_possible_ambiguity: firstPaid.possibleAmbiguity,
       latest_payment_at: latestPayment,
       subscription_created_at: parseMetricDate(sub.created_date || sub.created_at),
       current_period_start: fin.periodStart,
@@ -632,7 +720,12 @@ function buildCanonicalUsers(users, contracts, activityIndex, eventIndex, entitl
     // First paid across all contracts
     const firstPaidCandidates = userContracts.map((c) => c.first_paid_at).filter(Boolean);
     const first_paid_at = firstPaidCandidates.length > 0 ? firstPaidCandidates.sort((a, b) => a - b)[0] : null;
-    const first_paid_source = userContracts.find((c) => c.first_paid_at && c.first_paid_at.getTime() === first_paid_at?.getTime())?.first_paid_source || null;
+    const firstPaidContract = userContracts.find((c) => c.first_paid_at && c.first_paid_at.getTime() === first_paid_at?.getTime());
+    const first_paid_source = firstPaidContract?.first_paid_source || null;
+    const first_paid_confidence_category = firstPaidContract?.first_paid_confidence_category || 'unresolved';
+    const first_paid_source_entity = firstPaidContract?.first_paid_source_entity || null;
+    const first_paid_source_field = firstPaidContract?.first_paid_source_field || null;
+    const first_paid_possible_ambiguity = firstPaidContract?.first_paid_possible_ambiguity || null;
 
     const latestPayments = userContracts.map((c) => c.latest_payment_at).filter(Boolean);
     const latest_payment_at = latestPayments.length > 0 ? latestPayments.sort((a, b) => b - a)[0] : null;
@@ -665,11 +758,12 @@ function buildCanonicalUsers(users, contracts, activityIndex, eventIndex, entitl
       }
     }
 
-    // Activity flags (trailing windows)
-    const active_1d = activity && activity.lastActivityAt >= addDays(startOfDay(now), -1);
-    const active_7d = activity && activity.lastActivityAt >= addDays(startOfDay(now), -7);
-    const active_30d = activity && activity.lastActivityAt >= addDays(startOfDay(now), -30);
-    const active_90d = activity && activity.lastActivityAt >= addDays(startOfDay(now), -90);
+    // Activity flags (trailing windows, local-day aware)
+    const _todayStartLocal = startOfDayLocal(now, REPORTING_TIMEZONE);
+    const active_1d = activity && activity.lastActivityAt >= new Date(_todayStartLocal.getTime() - 1 * MS_PER_DAY);
+    const active_7d = activity && activity.lastActivityAt >= trailingDayStart(now, 7, REPORTING_TIMEZONE);
+    const active_30d = activity && activity.lastActivityAt >= trailingDayStart(now, 30, REPORTING_TIMEZONE);
+    const active_90d = activity && activity.lastActivityAt >= trailingDayStart(now, 90, REPORTING_TIMEZONE);
 
     const current_provider = payingContracts[0]?.provider || (is_currently_entitled ? (entitlementByUserId.get(userId)?.primary_provider || 'unknown') : null);
     const current_products = uniq(userContracts.filter((c) => c.is_currently_entitled).map((c) => c.product));
@@ -697,6 +791,10 @@ function buildCanonicalUsers(users, contracts, activityIndex, eventIndex, entitl
       has_ever_paid,
       first_paid_at,
       first_paid_source,
+      first_paid_confidence_category,
+      first_paid_source_entity,
+      first_paid_source_field,
+      first_paid_possible_ambiguity,
       latest_payment_at,
       reactivated_at,
       current_provider,
@@ -706,6 +804,7 @@ function buildCanonicalUsers(users, contracts, activityIndex, eventIndex, entitl
       is_manual_access: false, // would come from a manual grant entity if exists
       is_referral_access: !!referralByUserId.get(userId),
       is_promotional_access: false,
+      is_entitlement_only_access: is_currently_entitled && entitledContracts.length === 0 && !referralByUserId.get(userId),
       has_canceling_but_entitled,
       has_expired,
       has_conflicting_status,
@@ -900,18 +999,34 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
 }
 
 // ─── Revenue / run-rate ──────────────────────────────────────────────────────────
-function periodRange(kind, now) {
+function periodRange(kind, now, tz) {
+  const _tz = tz || REPORTING_TIMEZONE;
   if (kind === 'week') {
-    const start = startOfDay(now);
-    const dow = start.getUTCDay();
-    const fromMonday = dow === 0 ? 6 : dow - 1;
-    start.setUTCDate(start.getUTCDate() - fromMonday);
-    const end = addDays(start, 7);
-    return { start, end };
+    const start = startOfDayLocal(now, _tz);
+    const parts = tzParts(start, _tz);
+    const dow = parts.day; // not used; recompute weekday from instant
+    const jsDay = new Date(start.getTime() + 12 * 3600000).getUTCDay();
+    const fromMonday = jsDay === 0 ? 6 : jsDay - 1;
+    const weekStart = new Date(start.getTime() - fromMonday * MS_PER_DAY);
+    return { start: weekStart, end: new Date(weekStart.getTime() + 7 * MS_PER_DAY - 1) };
   }
-  if (kind === 'month') return { start: startOfMonth(now), end: addDays(startOfMonth(addDays(startOfMonth(now), 32)), -1) };
-  if (kind === 'quarter') { const s = startOfQuarter(now); return { start: s, end: addDays(startOfQuarter(addDays(s, 95)), -1) }; }
-  return { start: startOfYear(now), end: addDays(startOfYear(new Date(now.getUTCFullYear() + 1, 0, 1)), -1) };
+  if (kind === 'month') {
+    const s = startOfMonthLocal(now, _tz);
+    const p = tzParts(new Date(s.getTime() + 15 * MS_PER_DAY), _tz);
+    const nextMonthStart = startOfDayLocal(new Date(Date.UTC(p.year, p.month, 15, 12, 0, 0)), _tz);
+    return { start: s, end: new Date(nextMonthStart.getTime() - 1) };
+  }
+  if (kind === 'quarter') {
+    const s = startOfQuarterLocal(now, _tz);
+    const p = tzParts(new Date(s.getTime() + 45 * MS_PER_DAY), _tz);
+    const q = Math.floor((p.month - 1) / 3);
+    const nextQStart = startOfDayLocal(new Date(Date.UTC(p.year, q * 3 + 3, 1, 12, 0, 0)), _tz);
+    return { start: s, end: new Date(nextQStart.getTime() - 1) };
+  }
+  const s = startOfYearLocal(now, _tz);
+  const p = tzParts(new Date(s.getTime() + 180 * MS_PER_DAY), _tz);
+  const nextYearStart = startOfDayLocal(new Date(Date.UTC(p.year + 1, 0, 1, 12, 0, 0)), _tz);
+  return { start: s, end: new Date(nextYearStart.getTime() - 1) };
 }
 
 // ─── Main handler ──────────────────────────────────────────────────────────────────
@@ -924,8 +1039,9 @@ Deno.serve(async (req) => {
     let body = {};
     try { body = await req.json(); } catch {}
     const { dateRange, startDate, endDate } = body;
+    const reportingTimezone = REPORTING_TIMEZONE;
     const now = new Date();
-    const range = resolveDateRange(dateRange, startDate, endDate, now);
+    const range = resolveDateRange(dateRange, startDate, endDate, now, reportingTimezone);
 
     const [rawUsers, rawDailyMetrics, rawSubEvents, rawSubscriptions, rawActiveContracts, rawEntitlements, rawReferralAccess] = await Promise.all([
       fetchAllSafe(base44.asServiceRole.entities.User),
@@ -971,7 +1087,7 @@ Deno.serve(async (req) => {
     // Renewals
     const renewals = {};
     for (const kind of ['week', 'month', 'quarter', 'year']) {
-      const r = periodRange(kind, now);
+      const r = periodRange(kind, now, reportingTimezone);
       const rows = payingContracts.filter((c) => c.current_period_end && inDateRange(c.current_period_end, r));
       renewals[kind] = {
         customers: uniq(rows.map((c) => c.userId)).length,
@@ -992,6 +1108,10 @@ Deno.serve(async (req) => {
       products: (r.current_products || []).join(', ') || '-',
       first_paid_at: r.first_paid_at?.toISOString() || null,
       first_paid_source: r.first_paid_source || '-',
+      first_paid_confidence_category: r.first_paid_confidence_category || 'unresolved',
+      first_paid_source_entity: r.first_paid_source_entity || null,
+      first_paid_source_field: r.first_paid_source_field || null,
+      first_paid_possible_ambiguity: r.first_paid_possible_ambiguity || null,
       latest_payment: r.latest_payment_at?.toISOString() || null,
       current_period_end: contracts.find((c) => c.userId === r.user_id && c.is_currently_paying)?.current_period_end?.toISOString() || null,
       canceled_at: contracts.find((c) => c.userId === r.user_id)?.canceled_at?.toISOString() || null,
@@ -1020,6 +1140,10 @@ Deno.serve(async (req) => {
       first_paid_at: c.first_paid_at?.toISOString() || null,
       first_paid_source: c.first_paid_source,
       first_paid_confidence: c.first_paid_confidence,
+      first_paid_confidence_category: c.first_paid_confidence_category || 'unresolved',
+      first_paid_source_entity: c.first_paid_source_entity || null,
+      first_paid_source_field: c.first_paid_source_field || null,
+      first_paid_possible_ambiguity: c.first_paid_possible_ambiguity || null,
       latest_payment_at: c.latest_payment_at?.toISOString() || null,
       current_period_start: c.current_period_start?.toISOString() || null,
       current_period_end: c.current_period_end?.toISOString() || null,
@@ -1060,7 +1184,7 @@ Deno.serve(async (req) => {
     // ─── Reconciliation detail tables (admin-only) ────────────────────────────
     const realRecords = userRecords.filter((r) => !r.is_synthetic);
 
-    // (6) The 5 new first-time paid users — full evidence
+    // (6) The new first-time paid users — full evidence with confidence categories
     const newFirstTimePaidUsersDetail = realRecords
       .filter((r) => r.first_paid_at && inDateRange(r.first_paid_at, range))
       .map((r) => {
@@ -1070,31 +1194,41 @@ Deno.serve(async (req) => {
           user_id: r.user_id,
           email: r.email,
           registration_date: r.created_at?.toISOString() || null,
-          first_paid_at: r.first_paid_at?.toISOString() || null,
+          reported_first_paid_date: r.first_paid_at?.toISOString() || null,
+          source_field: r.first_paid_source_field || (r.first_paid_source || '-'),
+          source_entity: r.first_paid_source_entity || null,
+          source_key: r.first_paid_source || '-',
           provider: firstContract?.provider || r.current_provider || '-',
           product: (r.current_products || []).join(', ') || (firstContract?.product || '-'),
+          current_status: firstContract?.normalized_status || '-',
+          current_entitlement: r.is_currently_entitled ? 'entitled' : 'none',
+          confidence_category: r.first_paid_confidence_category || 'unresolved',
+          possible_ambiguity: r.first_paid_possible_ambiguity || null,
           provider_subscription_id: firstContract?.provider_subscription_id || '-',
-          original_transaction_id: firstContract?.original_transaction_id || '-',
-          first_payment_event: r.first_paid_source || '-',
           amount: firstContract?.amount ?? null,
           billing_interval: firstContract?.billing_interval || '-',
-          first_paid_evidence_source: r.first_paid_source || '-',
-          evidence_confidence: firstContract?.first_paid_confidence || 'none',
-          current_subscription_status: firstContract?.normalized_status || '-',
-          current_entitlement_status: r.is_currently_entitled ? 'entitled' : 'none',
           later_canceled: !!firstContract?.canceled_at || userContracts.some((c) => c.normalized_status === 'canceled' || c.normalized_status === 'expired'),
-          reason_old_report_excluded: 'canonical_started_at was derived from ActiveContract.started_at/current_period_start, which do not exist on that entity — first_paid_at resolved to null and the user was silently excluded',
-          reason_new_report_includes: `first_paid_at derived from ${r.first_paid_source || 'best-available source'} per the evidence hierarchy (SubscriptionEvent → Subscription.started_at → period_start_inferred)`,
+          is_confirmed_payment_event: r.first_paid_confidence_category === 'confirmed_payment_event',
+          reason: r.first_paid_confidence_category === 'confirmed_payment_event'
+            ? 'Confirmed by a verified successful payment event within the selected range'
+            : r.first_paid_confidence_category === 'strong_subscription_evidence'
+              ? 'Inferred from subscription start/first-paid date — strong evidence, not an independently verified payment transaction'
+              : r.first_paid_confidence_category === 'inferred_contract_period'
+                ? 'Inferred from ActiveContract.period_start — may represent initial period, renewal, migration, or backfill'
+                : r.first_paid_confidence_category === 'weak_fallback'
+                  ? 'Inferred from record creation date (weak fallback)'
+                  : 'No first-paid date resolved',
         };
       })
-      .sort((a, b) => (a.first_paid_at || '').localeCompare(b.first_paid_at || ''));
+      .sort((a, b) => (a.reported_first_paid_date || '').localeCompare(b.reported_first_paid_date || ''));
 
-    // (9) The 10 new subscriptions — why 5 users produced 10 subscriptions
+    // (9) The new paid subscriptions — why N users produced M subscriptions
     const newPaidSubscriptionsDetail = contracts
       .filter((c) => c.first_paid_at && inDateRange(c.first_paid_at, range))
       .map((c) => {
         const userContracts = contracts.filter((x) => x.userId === c.userId).filter((x) => x.first_paid_at).sort((a, b) => a.first_paid_at - b.first_paid_at);
         const isFirstForUser = userContracts[0]?.canonical_subscription_id === c.canonical_subscription_id;
+        const cat = c.first_paid_confidence_category || 'unresolved';
         return {
           canonical_subscription_id: c.canonical_subscription_id,
           user_id: c.userId,
@@ -1102,14 +1236,21 @@ Deno.serve(async (req) => {
           provider: c.provider,
           product: c.product,
           first_paid_at: c.first_paid_at?.toISOString() || null,
-          payment_confirmation: c.first_paid_confidence === 'confirmed' ? 'confirmed' : 'inferred',
+          confidence_category: cat,
+          payment_confirmation: cat === 'confirmed_payment_event' ? 'confirmed' : 'inferred',
           is_users_first_paid_subscription: isFirstForUser,
           is_additional_module: userContracts.length > 1 && !isFirstForUser,
           is_migrated_or_duplicate: c.reconciliation_issues.includes('subscription_fallback') && userContracts.length > 1 && !isFirstForUser,
           deduplication_key: dedupeKey(c),
-          inclusion_reason: c.first_paid_confidence === 'confirmed'
-            ? 'Confirmed first payment within selected range'
-            : 'Inferred first-paid date within selected range (ActiveContract.period_start fallback — labeled inferred)',
+          inclusion_reason: cat === 'confirmed_payment_event'
+            ? 'Confirmed first payment from a verified payment event within the selected range'
+            : cat === 'strong_subscription_evidence'
+              ? 'Inferred from subscription start/first-paid date (strong evidence, no verified payment event)'
+              : cat === 'inferred_contract_period'
+                ? 'Inferred from ActiveContract.period_start (may be initial/renewal/migration/backfill)'
+                : cat === 'weak_fallback'
+                  ? 'Inferred from record creation date (weak fallback)'
+                  : 'No first-paid date resolved',
         };
       })
       .sort((a, b) => (a.first_paid_at || '').localeCompare(b.first_paid_at || ''));
@@ -1136,28 +1277,44 @@ Deno.serve(async (req) => {
         };
       });
 
-    // (12) First-paid evidence hierarchy summary
+    // (12) First-paid evidence hierarchy summary — per canonical confidence category
+    const newFirstTimePaidInRange = realRecords.filter((r) => r.first_paid_at && inDateRange(r.first_paid_at, range));
     const firstPaidEvidenceSummary = {
-      confirmed: contracts.filter((c) => c.first_paid_confidence === 'confirmed').length,
-      inferred: contracts.filter((c) => c.first_paid_confidence === 'inferred').length,
+      confirmed_payment_event: newFirstTimePaidInRange.filter((r) => r.first_paid_confidence_category === 'confirmed_payment_event').length,
+      strong_subscription_evidence: newFirstTimePaidInRange.filter((r) => r.first_paid_confidence_category === 'strong_subscription_evidence').length,
+      inferred_contract_period: newFirstTimePaidInRange.filter((r) => r.first_paid_confidence_category === 'inferred_contract_period').length,
+      weak_fallback: newFirstTimePaidInRange.filter((r) => r.first_paid_confidence_category === 'weak_fallback').length,
+      unresolved: newFirstTimePaidInRange.filter((r) => r.first_paid_confidence_category === 'unresolved' || !r.first_paid_confidence_category).length,
+      // legacy fields (kept for backward compatibility)
+      confirmed: newFirstTimePaidInRange.filter((r) => r.first_paid_confidence === 'confirmed').length,
+      inferred: newFirstTimePaidInRange.filter((r) => r.first_paid_confidence === 'inferred').length,
       missing: contracts.filter((c) => !c.first_paid_at).length,
     };
+    firstPaidEvidenceSummary.totalInferred = firstPaidEvidenceSummary.strong_subscription_evidence + firstPaidEvidenceSummary.inferred_contract_period + firstPaidEvidenceSummary.weak_fallback;
 
     // (8) Entitlement reconciliation — explains entitled vs paying difference
+    const entitledNotPaying = realRecords.filter((r) => r.is_currently_entitled && !r.is_currently_paying);
     const entitlementReconciliation = {
       paying: realRecords.filter((r) => r.is_currently_paying).length,
-      trial: realRecords.filter((r) => r.is_trial && !r.is_currently_paying).length,
-      referral_access: realRecords.filter((r) => r.is_referral_access && !r.is_currently_paying).length,
-      manual_access: realRecords.filter((r) => r.is_manual_access && !r.is_currently_paying).length,
-      promotional_access: realRecords.filter((r) => r.is_promotional_access && !r.is_currently_paying).length,
-      canceling_but_entitled: realRecords.filter((r) => r.has_canceling_but_entitled && !r.is_currently_paying).length,
-      note: 'Current entitled = paying OR trial OR referral-earned OR manual OR promotional OR canceling-but-within-period. Past-due is NOT entitled unless within grace. The difference between entitled and paying is explained by the non-paying categories above.',
+      trial: entitledNotPaying.filter((r) => r.is_trial).length,
+      referral_access: entitledNotPaying.filter((r) => r.is_referral_access).length,
+      manual_access: entitledNotPaying.filter((r) => r.is_manual_access).length,
+      promotional_access: entitledNotPaying.filter((r) => r.is_promotional_access).length,
+      canceling_but_entitled: entitledNotPaying.filter((r) => r.has_canceling_but_entitled).length,
+      entitlement_without_contract: entitledNotPaying.filter((r) => !r.is_trial && !r.is_referral_access && !r.is_manual_access && !r.is_promotional_access && !r.has_canceling_but_entitled).length,
+      totalEntitled: realRecords.filter((r) => r.is_currently_entitled).length,
+      totalPaying: realRecords.filter((r) => r.is_currently_paying).length,
+      difference: realRecords.filter((r) => r.is_currently_entitled).length - realRecords.filter((r) => r.is_currently_paying).length,
+      note: 'entitlement_without_contract = UserEntitlement.has_access=true with no backing paying/entitled contract (orphaned or stale entitlement). Past-due is NOT entitled unless within grace. The difference between entitled and paying is explained by the non-paying categories above.',
     };
 
     return Response.json({
       meta: {
         generatedAt: now.toISOString(),
         reportVersion: 'v9-canonical',
+        reportingTimezone,
+        generatedLocalDateTime: formatLocalDateTime(now, reportingTimezone),
+        endDateInclusionRule: 'End date is inclusive (local end-of-day, 23:59:59.999 in the reporting timezone).',
         dateRange: { start: range.start.toISOString(), end: range.end.toISOString(), preset: dateRange || '30d' },
         rawCounts: {
           users: rawUsers.length,

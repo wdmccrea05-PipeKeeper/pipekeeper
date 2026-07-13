@@ -21,67 +21,117 @@ export function normalizeMetricInterval(value) {
   return null;
 }
 
-// ─── Date range resolution ───────────────────────────────────────────────────
+// ─── Timezone-aware date range resolution ──────────────────────────────────────
+// "Today" and all trailing/period ranges are computed in the configured reporting
+// timezone (America/Indianapolis), so a UTC instant in the early hours does not
+// roll the report over to the next local calendar day. Range bounds are returned
+// as UTC instants that correspond to local-day boundaries.
 
-export function startOfDay(d) {
-  const x = new Date(d);
-  x.setUTCHours(0, 0, 0, 0);
-  return x;
+export const REPORTING_TIMEZONE = 'America/Indianapolis';
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function tzParts(date, tz) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  });
+  const parts = fmt.formatToParts(date);
+  const get = (t) => parts.find((p) => p.type === t)?.value || '0';
+  return { year: +get('year'), month: +get('month'), day: +get('day'), hour: +get('hour') % 24, minute: +get('minute'), second: +get('second') };
 }
 
-export function endOfDay(d) {
-  const x = new Date(d);
-  x.setUTCHours(23, 59, 59, 999);
-  return x;
+function tzOffsetMinutes(date, tz) {
+  const p = tzParts(date, tz);
+  const asUtcMs = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+  return Math.round((asUtcMs - date.getTime()) / 60000);
 }
 
-export function startOfMonth(d) {
-  return startOfDay(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)));
+export function startOfDayLocal(date, tz) {
+  const p = tzParts(date, tz);
+  const noonUtc = new Date(Date.UTC(p.year, p.month - 1, p.day, 12, 0, 0));
+  const off = tzOffsetMinutes(noonUtc, tz);
+  return new Date(Date.UTC(p.year, p.month - 1, p.day, 0, 0, 0) - off * 60000);
 }
 
-export function startOfQuarter(d) {
-  const q = Math.floor(d.getUTCMonth() / 3);
-  return startOfDay(new Date(Date.UTC(d.getUTCFullYear(), q * 3, 1)));
+export function endOfDayLocal(date, tz) {
+  return new Date(startOfDayLocal(date, tz).getTime() + MS_PER_DAY - 1);
 }
 
-export function startOfYear(d) {
-  return startOfDay(new Date(Date.UTC(d.getUTCFullYear(), 0, 1)));
+export function startOfMonthLocal(date, tz) {
+  const p = tzParts(date, tz);
+  return startOfDayLocal(new Date(Date.UTC(p.year, p.month - 1, 1, 12, 0, 0)), tz);
 }
 
-export function addDays(d, days) {
-  const x = new Date(d);
-  x.setUTCDate(x.getUTCDate() + days);
-  return x;
+export function startOfQuarterLocal(date, tz) {
+  const p = tzParts(date, tz);
+  const q = Math.floor((p.month - 1) / 3);
+  return startOfDayLocal(new Date(Date.UTC(p.year, q * 3, 1, 12, 0, 0)), tz);
 }
 
-export function resolveDateRange(dateRange, startDate, endDate, now) {
-  const today = startOfDay(now);
+export function startOfYearLocal(date, tz) {
+  const p = tzParts(date, tz);
+  return startOfDayLocal(new Date(Date.UTC(p.year, 0, 1, 12, 0, 0)), tz);
+}
+
+export function trailingDayStart(now, days, tz) {
+  return startOfDayLocal(new Date(now.getTime() - days * MS_PER_DAY), tz);
+}
+
+// Parse a custom date input as a local-calendar-date boundary.
+// Date-only strings ("YYYY-MM-DD") are interpreted as a local calendar date
+// (not UTC midnight, which would shift the day in a non-UTC timezone).
+export function parseLocalDateBoundary(value, tz, end) {
+  if (!value) return null;
+  const d = String(value);
+  const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) {
+    const y = +m[1], mo = +m[2], day = +m[3];
+    const noonUtc = new Date(Date.UTC(y, mo - 1, day, 12, 0, 0));
+    const off = tzOffsetMinutes(noonUtc, tz);
+    const base = Date.UTC(y, mo - 1, day, 0, 0, 0) - off * 60000;
+    return end ? new Date(base + MS_PER_DAY - 1) : new Date(base);
+  }
+  const parsed = parseMetricDate(d);
+  if (!parsed) return null;
+  return end ? endOfDayLocal(parsed, tz) : startOfDayLocal(parsed, tz);
+}
+
+// Legacy UTC helpers (kept for attribution-window arithmetic on instants).
+export function startOfDay(d) { const x = new Date(d); x.setUTCHours(0, 0, 0, 0); return x; }
+export function endOfDay(d) { const x = new Date(d); x.setUTCHours(23, 59, 59, 999); return x; }
+export function startOfMonth(d) { return startOfDay(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1))); }
+export function startOfQuarter(d) { const q = Math.floor(d.getUTCMonth() / 3); return startOfDay(new Date(Date.UTC(d.getUTCFullYear(), q * 3, 1))); }
+export function startOfYear(d) { return startOfDay(new Date(Date.UTC(d.getUTCFullYear(), 0, 1))); }
+export function addDays(d, days) { const x = new Date(d); x.setUTCDate(x.getUTCDate() + days); return x; }
+
+export function resolveDateRange(dateRange, startDate, endDate, now, timezone) {
+  const tz = timezone || REPORTING_TIMEZONE;
+  const todayEnd = endOfDayLocal(now, tz);
   const ranges = {
-    today: { start: today, end: endOfDay(now) },
-    '7d': { start: addDays(today, -7), end: endOfDay(now) },
-    '30d': { start: addDays(today, -30), end: endOfDay(now) },
-    '90d': { start: addDays(today, -90), end: endOfDay(now) },
-    '365d': { start: addDays(today, -365), end: endOfDay(now) },
-    mtd: { start: startOfMonth(now), end: endOfDay(now) },
-    qtd: { start: startOfQuarter(now), end: endOfDay(now) },
-    ytd: { start: startOfYear(now), end: endOfDay(now) },
+    today: { start: startOfDayLocal(now, tz), end: todayEnd },
+    '7d': { start: trailingDayStart(now, 7, tz), end: todayEnd },
+    '30d': { start: trailingDayStart(now, 30, tz), end: todayEnd },
+    '90d': { start: trailingDayStart(now, 90, tz), end: todayEnd },
+    '365d': { start: trailingDayStart(now, 365, tz), end: todayEnd },
+    mtd: { start: startOfMonthLocal(now, tz), end: todayEnd },
+    qtd: { start: startOfQuarterLocal(now, tz), end: todayEnd },
+    ytd: { start: startOfYearLocal(now, tz), end: todayEnd },
   };
 
   if (dateRange === 'prior_month') {
-    const firstOfThisMonth = startOfMonth(now);
-    const endOfPriorMonth = addDays(firstOfThisMonth, -1);
-    const startOfPriorMonth = startOfMonth(endOfPriorMonth);
-    return { start: startOfPriorMonth, end: endOfDay(endOfPriorMonth) };
+    const firstOfThis = startOfMonthLocal(now, tz);
+    const endOfPrior = new Date(firstOfThis.getTime() - 1);
+    return { start: startOfMonthLocal(endOfPrior, tz), end: endOfDayLocal(endOfPrior, tz) };
   }
   if (dateRange === 'prior_quarter') {
-    const firstOfThisQuarter = startOfQuarter(now);
-    const endOfPriorQuarter = addDays(firstOfThisQuarter, -1);
-    const startOfPriorQuarter = startOfQuarter(endOfPriorQuarter);
-    return { start: startOfPriorQuarter, end: endOfDay(endOfPriorQuarter) };
+    const firstOfThis = startOfQuarterLocal(now, tz);
+    const endOfPrior = new Date(firstOfThis.getTime() - 1);
+    return { start: startOfQuarterLocal(endOfPrior, tz), end: endOfDayLocal(endOfPrior, tz) };
   }
   if (dateRange === 'custom') {
-    const s = startDate ? startOfDay(parseMetricDate(startDate) || today) : null;
-    const e = endDate ? endOfDay(parseMetricDate(endDate) || now) : null;
+    const s = parseLocalDateBoundary(startDate, tz, false);
+    const e = parseLocalDateBoundary(endDate, tz, true);
     if (s && e) return { start: s, end: e };
   }
   return ranges[dateRange] || ranges['30d'];
@@ -180,29 +230,61 @@ export function isExpireEvent(e) {
 
 // ─── First paid date resolution ───────────────────────────────────────────────
 
+// Confidence categories (canonical):
+//   confirmed_payment_event   — first-paid date backed by a verified successful
+//                                payment / invoice / purchase / transaction event.
+//   strong_subscription_evidence — Subscription.first_paid_at / initial_transaction_at
+//                                / started_at / subscriptionStartedAt. Indicates a
+//                                subscription start but is NOT a verified transaction.
+//   inferred_contract_period  — ActiveContract.period_start. May represent an
+//                                initial period, renewal, migration, or backfill.
+//   weak_fallback             — record created_date (last resort).
+//   unresolved                — no first-paid date could be derived.
+const FIRST_PAID_DATE_FIELDS = ['period_start', 'ingested_at', 'created_date'];
+
+function firstPaidEventDateField(e) {
+  for (const f of FIRST_PAID_DATE_FIELDS) if (parseMetricDate(e[f])) return f;
+  return 'period_start';
+}
+
 export function resolveFirstPaidAt(eventsForUser, sub, acRow) {
-  // 1. Earliest payment event (confirmed)
+  // 1. Earliest verified payment event → confirmed_payment_event
   const paymentEvents = (eventsForUser || [])
     .filter((e) => isPaymentEvent(e))
-    .map((e) => ({ date: parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at) || parseMetricDate(e.created_date), e }))
+    .map((e) => ({ date: parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at) || parseMetricDate(e.created_date), field: firstPaidEventDateField(e), e }))
     .filter((x) => x.date)
     .sort((a, b) => a.date - b.date);
   if (paymentEvents.length > 0) {
-    return { date: paymentEvents[0].date, source: 'subscription_event', confidence: 'confirmed' };
+    return { date: paymentEvents[0].date, source: 'subscription_event', confidence: 'confirmed',
+      confidenceCategory: 'confirmed_payment_event', sourceEntity: 'SubscriptionEvent',
+      sourceField: paymentEvents[0].field, possibleAmbiguity: null };
   }
-  // 2. Subscription started_at / subscriptionStartedAt (confirmed)
-  const subStarted = parseMetricDate(sub?.started_at || sub?.subscriptionStartedAt);
-  if (subStarted) return { date: subStarted, source: 'subscription_started_at', confidence: 'confirmed' };
-  // 3. Subscription first_paid_at / initial_transaction_at (confirmed)
+  // 2. Subscription first_paid_at / initial_transaction_at → strong subscription evidence
+  const firstPaidField = sub?.first_paid_at ? 'first_paid_at' : (sub?.initial_transaction_at ? 'initial_transaction_at' : null);
   const firstPaid = parseMetricDate(sub?.first_paid_at || sub?.initial_transaction_at);
-  if (firstPaid) return { date: firstPaid, source: 'subscription_first_paid_at', confidence: 'confirmed' };
-  // 4. ActiveContract period_start (inferred — recurring, not first paid)
+  if (firstPaid) return { date: firstPaid, source: 'subscription_first_paid_at', confidence: 'confirmed',
+    confidenceCategory: 'strong_subscription_evidence', sourceEntity: 'Subscription',
+    sourceField: firstPaidField, possibleAmbiguity: null };
+  // 3. Subscription started_at / subscriptionStartedAt → strong subscription evidence
+  const startedField = sub?.started_at ? 'started_at' : (sub?.subscriptionStartedAt ? 'subscriptionStartedAt' : null);
+  const subStarted = parseMetricDate(sub?.started_at || sub?.subscriptionStartedAt);
+  if (subStarted) return { date: subStarted, source: 'subscription_started_at', confidence: 'confirmed',
+    confidenceCategory: 'strong_subscription_evidence', sourceEntity: 'Subscription',
+    sourceField: startedField, possibleAmbiguity: 'Subscription start date — reflects activation, not an independently verified payment transaction' };
+  // 4. ActiveContract period_start → inferred contract period (NOT proof of first payment)
+  const periodField = acRow?.period_start ? 'period_start' : (acRow?.current_period_start ? 'current_period_start' : 'period_start');
   const acPeriodStart = parseMetricDate(acRow?.period_start || acRow?.current_period_start);
-  if (acPeriodStart) return { date: acPeriodStart, source: 'period_start_inferred', confidence: 'inferred' };
-  // 5. Created date (inferred — last resort)
+  if (acPeriodStart) return { date: acPeriodStart, source: 'period_start_inferred', confidence: 'inferred',
+    confidenceCategory: 'inferred_contract_period', sourceEntity: 'ActiveContract',
+    sourceField: periodField, possibleAmbiguity: 'Inferred — may represent initial period, renewal, migration, or backfill' };
+  // 5. Record created_date → weak fallback
+  const createdFromSub = !!(sub?.created_date || sub?.created_at);
   const created = parseMetricDate(sub?.created_date || sub?.created_at || acRow?.created_date || acRow?.created_at || acRow?.normalized_at);
-  if (created) return { date: created, source: 'created_date_inferred', confidence: 'inferred' };
-  return { date: null, source: 'none', confidence: 'none' };
+  if (created) return { date: created, source: 'created_date_inferred', confidence: 'inferred',
+    confidenceCategory: 'weak_fallback', sourceEntity: createdFromSub ? 'Subscription' : 'ActiveContract',
+    sourceField: 'created_date', possibleAmbiguity: 'Weak fallback — record creation date, not a payment date' };
+  return { date: null, source: 'none', confidence: 'none',
+    confidenceCategory: 'unresolved', sourceEntity: null, sourceField: null, possibleAmbiguity: null };
 }
 
 export function resolveLatestPaymentAt(eventsForUser) {
@@ -320,9 +402,10 @@ export function buildActivityIndex(dailyMetrics, usersByEmail) {
   return index;
 }
 
-export function isActiveInWindow(activityEntry, now, days) {
+export function isActiveInWindow(activityEntry, now, days, timezone) {
   if (!activityEntry) return false;
-  const cutoff = addDays(startOfDay(now), -days + 1);
+  const tz = timezone || REPORTING_TIMEZONE;
+  const cutoff = trailingDayStart(now, days - 1, tz);
   return activityEntry.lastActivityAt >= cutoff;
 }
 

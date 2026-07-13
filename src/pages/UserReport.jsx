@@ -92,6 +92,8 @@ export default function UserReport() {
         rangeEnd={data.dateRange?.end}
       />
 
+      <TimezoneBanner meta={data.meta} dateRange={data.dateRange} />
+
       {/* 1. User Activity */}
       <Section title="1. User Activity">
         <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">
@@ -119,12 +121,14 @@ export default function UserReport() {
           <Card title="Canceling but Entitled" value={ss.cancelingButEntitled ?? 0} />
           <Card title="Expired" value={ss.expiredUsers ?? 0} />
         </div>
+        <EntitlementReconciliation rec={data.entitlementReconciliation} />
       </Section>
 
       {/* 3. Acquisition */}
       <Section title="3. Acquisition (within selected period)">
         <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">
-          New first-time paid users are derived from historical payment events (SubscriptionEvent), not current contract state. They remain counted even if later canceled.
+          New first-time paid users are derived from subscription and contract records (not current-state counts) and remain counted even if later canceled.
+          Only users whose first-paid date is backed by a <span className="text-[#D4A574]">verified successful payment event</span> are labeled <em>confirmed</em>.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card title="New First-Time Paid Users" value={acq.newFirstTimePaidUsers ?? 0} highlight />
@@ -132,8 +136,28 @@ export default function UserReport() {
           <Card title="New Paid Subscriptions" value={acq.newPaidSubscriptions ?? 0} />
           <Card title="Canceled Subscriptions" value={acq.canceledSubscriptions ?? 0} />
           <Card title="Expired Subscriptions" value={acq.expiredSubscriptions ?? 0} />
-          <Card title="Free→Paid Conv. Rate" value={`${acq.freeToPaidConversionRate ?? 0}%`} />
-          <Card title="Reg→Paid Conv. Rate" value={`${acq.registrationToPaidConversionRate ?? 0}%`} />
+          <Card title="Free→Paid Conv. Rate" value={acq.existingFreeUserConversion == null ? '—' : `${acq.existingFreeUserConversion}%`} />
+          <Card title="Reg→Paid Conv. Rate" value={acq.registrationCohortConversion == null ? '—' : `${acq.registrationCohortConversion}%`} />
+        </div>
+
+        <ConfidenceLine evidence={data.firstPaidEvidenceSummary} count={acq.newFirstTimePaidUsers ?? 0} />
+
+        <div className="mt-3 rounded-xl border border-[#8b6239]/25 bg-[#1f1712]/70 p-4 space-y-2 text-sm">
+          <p className="font-semibold text-[#D4A574]">Conversion explanations</p>
+          <p className="text-xs text-[#E0D8C8]/70">
+            <span className="text-[#E0D8C8]">Registration cohort conversion:</span> Users who registered during the selected period and paid within the {acq.attributionWindowDays ?? 30}-day attribution window. Current value: <span className="text-[#F5F1E7]">{acq.registrationCohortNumerator ?? 0} of {acq.registrationCohortDenominator ?? 0}</span>{acq.registrationCohortConversion == null ? ' (insufficient cohort data)' : ''}.
+          </p>
+          <p className="text-xs text-[#E0D8C8]/70">
+            <span className="text-[#E0D8C8]">Existing free-user conversion:</span> Users who already had an account before the selected period and made their first payment during the period. Current value: <span className="text-[#F5F1E7]">{acq.existingFreeNumerator ?? 0} of {acq.existingFreeDenominator ?? 0}</span>{acq.existingFreeUserConversion == null ? ' (insufficient cohort data)' : ''}.
+          </p>
+          {acq.existingFreeDenominator === 0 && dateRange === '365d' && (
+            <p className="text-xs text-yellow-300/80">
+              The 365-day existing-free cohort denominator is 0 because the platform's earliest user account postdates the 365-day range start. All user creation dates are preserved (no account predates the range), so this is genuine — not a data-retention gap.
+            </p>
+          )}
+          <p className="text-xs text-[#E0D8C8]/70">
+            {acq.existingFreeNumerator ?? 0} existing user(s) converted while {acq.registrationCohortNumerator ?? 0} newly registered user(s) converted within the attribution window.
+          </p>
         </div>
       </Section>
 
@@ -185,6 +209,11 @@ export default function UserReport() {
         {data.excludedRecords?.length > 0 && (
           <ExcludedRecordsTable records={data.excludedRecords} />
         )}
+      </Section>
+
+      {/* 7b. First-time paid users — evidence & confidence categories */}
+      <Section title={`7b. First-Time Paid Users — Evidence (${(data.newFirstTimePaidUsersDetail || []).length})`}>
+        <FirstTimePaidEvidenceTable rows={data.newFirstTimePaidUsersDetail || []} />
       </Section>
 
       {/* 8. Audit & Reconciliation */}
@@ -279,6 +308,128 @@ function ExcludedRecordsTable({ records }) {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function TimezoneBanner({ meta, dateRange }) {
+  if (!meta) return null;
+  return (
+    <div className="rounded-xl border border-[#8b6239]/25 bg-[#1f1712]/70 p-4 text-xs text-[#E0D8C8]/70 space-y-1">
+      <div className="flex flex-wrap gap-x-6 gap-y-1">
+        <span><span className="text-[#E0D8C8]/50">Reporting timezone:</span> <span className="text-[#F5F1E7]">{meta.reportingTimezone || 'America/Indianapolis'}</span></span>
+        <span><span className="text-[#E0D8C8]/50">Generated local date and time:</span> <span className="text-[#F5F1E7]">{meta.generatedLocalDateTime || (meta.generatedAt ? new Date(meta.generatedAt).toLocaleString() : '-')}</span></span>
+      </div>
+      <div className="flex flex-wrap gap-x-6 gap-y-1">
+        <span><span className="text-[#E0D8C8]/50">Range start:</span> <span className="text-[#F5F1E7]">{dateRange?.start ? new Date(dateRange.start).toLocaleString() : '-'}</span></span>
+        <span><span className="text-[#E0D8C8]/50">Range end:</span> <span className="text-[#F5F1E7]">{dateRange?.end ? new Date(dateRange.end).toLocaleString() : '-'}</span></span>
+      </div>
+      <p><span className="text-[#E0D8C8]/50">End-date inclusion rule:</span> <span className="text-[#F5F1E7]">{meta.endDateInclusionRule || 'End date is inclusive (local end-of-day).'}</span></p>
+    </div>
+  );
+}
+
+function ConfidenceLine({ evidence, count }) {
+  if (!evidence) return null;
+  const confirmed = evidence.confirmed_payment_event ?? 0;
+  const strong = evidence.strong_subscription_evidence ?? 0;
+  const inferredPeriod = evidence.inferred_contract_period ?? 0;
+  const weak = evidence.weak_fallback ?? 0;
+  const inferred = (evidence.totalInferred != null ? evidence.totalInferred : (strong + inferredPeriod + weak));
+  return (
+    <div className="mt-3 rounded-xl border border-[#D4A574]/30 bg-[#1f1712]/70 p-4 space-y-1 text-sm">
+      <p className="text-[#F5F1E7]">
+        Inferred first-time paid users in this period: <span className="text-[#D4A574] font-semibold">{count}</span>
+        <span className="text-[#E0D8C8]/50"> · Confirmed by successful payment events: </span>
+        <span className="text-[#F5F1E7] font-semibold">{confirmed}</span>
+      </p>
+      <p className="text-xs text-[#E0D8C8]/60">
+        Evidence breakdown — confirmed payment event: {confirmed} · strong subscription evidence: {strong} · inferred contract period: {inferredPeriod} · weak fallback: {weak} · unresolved: {evidence.unresolved ?? 0}
+      </p>
+      {confirmed === 0 && count > 0 && (
+        <p className="text-xs text-yellow-300/80">
+          No SubscriptionEvent payment history exists, so these {count} user(s) are inferred from subscription and contract records — not independently confirmed from payment transactions.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function EntitlementReconciliation({ rec }) {
+  if (!rec) return null;
+  const rows = [
+    { label: 'Paying', value: rec.paying },
+    { label: 'Trial', value: rec.trial },
+    { label: 'Referral access', value: rec.referral_access },
+    { label: 'Manual access', value: rec.manual_access },
+    { label: 'Promotional access', value: rec.promotional_access },
+    { label: 'Canceling but entitled', value: rec.canceling_but_entitled },
+    { label: 'Entitlement without contract', value: rec.entitlement_without_contract },
+  ];
+  return (
+    <div className="mt-3 rounded-xl border border-[#8b6239]/25 bg-[#1f1712]/70 p-4 text-sm space-y-2">
+      <p className="font-semibold text-[#D4A574]">Entitlement vs paying reconciliation</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {rows.map((r) => (
+          <div key={r.label} className="rounded-lg border border-[#8b6239]/20 px-3 py-2">
+            <p className="text-xs text-[#E0D8C8]/60">{r.label}</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{r.value ?? 0}</p>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-[#E0D8C8]/60">
+        Entitled: <span className="text-[#F5F1E7]">{rec.totalEntitled ?? 0}</span> · Paying: <span className="text-[#F5F1E7]">{rec.totalPaying ?? 0}</span> · Difference: <span className="text-[#D4A574]">{rec.difference ?? 0}</span>
+      </p>
+      {rec.difference > 0 && rec.entitlement_without_contract > 0 && (
+        <p className="text-xs text-yellow-300/80">
+          The difference is explained by {rec.entitlement_without_contract} user(s) with a UserEntitlement.has_access grant but no backing paying/entitled contract (orphaned or stale entitlement).
+        </p>
+      )}
+      <p className="text-xs text-[#E0D8C8]/50">{rec.note}</p>
+    </div>
+  );
+}
+
+const CONFIDENCE_CATEGORY_LABELS = {
+  confirmed_payment_event: 'Confirmed payment event',
+  strong_subscription_evidence: 'Strong subscription evidence',
+  inferred_contract_period: 'Inferred contract period',
+  weak_fallback: 'Weak fallback',
+  unresolved: 'Unresolved',
+};
+
+function FirstTimePaidEvidenceTable({ rows }) {
+  if (!rows || rows.length === 0) {
+    return <p className="text-xs text-[#E0D8C8]/50">No first-time paid users in the selected period.</p>;
+  }
+  const cols = ['User ID', 'Email', 'Registration date', 'Reported first-paid', 'Source field', 'Source entity', 'Provider', 'Product', 'Current status', 'Current entitlement', 'Confidence category', 'Possible ambiguity'];
+  return (
+    <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
+      <table className="w-full text-xs">
+        <thead className="bg-[#2a1f18]">
+          <tr>
+            {cols.map((c) => <th key={c} className="text-left px-2 py-2 text-[#E0D8C8]/70 whitespace-nowrap">{c}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} className="border-t border-[#8b6239]/15 align-top">
+              <td className="px-2 py-1.5 font-mono max-w-[140px] truncate" title={r.user_id}>{r.user_id}</td>
+              <td className="px-2 py-1.5 font-mono max-w-[160px] truncate" title={r.email}>{r.email || '-'}</td>
+              <td className="px-2 py-1.5 whitespace-nowrap">{r.registration_date ? new Date(r.registration_date).toLocaleDateString() : '-'}</td>
+              <td className="px-2 py-1.5 whitespace-nowrap">{r.reported_first_paid_date ? new Date(r.reported_first_paid_date).toLocaleDateString() : '-'}</td>
+              <td className="px-2 py-1.5">{r.source_field || '-'}</td>
+              <td className="px-2 py-1.5">{r.source_entity || '-'}</td>
+              <td className="px-2 py-1.5">{r.provider || '-'}</td>
+              <td className="px-2 py-1.5">{r.product || '-'}</td>
+              <td className="px-2 py-1.5">{r.current_status || '-'}</td>
+              <td className="px-2 py-1.5">{r.current_entitlement || '-'}</td>
+              <td className="px-2 py-1.5">{CONFIDENCE_CATEGORY_LABELS[r.confidence_category] || r.confidence_category || '-'}</td>
+              <td className="px-2 py-1.5 text-[#E0D8C8]/60 max-w-[260px]">{r.possible_ambiguity || '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
