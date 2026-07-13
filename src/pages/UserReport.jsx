@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import UserReportDateRange from '@/components/reports/UserReportDateRange';
 import UserReportAuditTable from '@/components/reports/UserReportAuditTable';
+import SubscriptionReconciliationSummary from '@/components/reports/SubscriptionReconciliationSummary';
 
 const DATE_RANGE_OPTIONS = [
   { value: 'today', label: 'Today' },
@@ -49,6 +50,10 @@ export default function UserReport() {
 
   const auditRows = useMemo(() => data?.auditUsers || [], [data]);
   const subRows = useMemo(() => data?.auditSubscriptions || [], [data]);
+  const canonicalSubs = useMemo(() => data?.canonicalCurrentPaidSubscriptionsDetail || [], [data]);
+  const subHistory = useMemo(() => data?.subscriptionHistoryDetail || [], [data]);
+  const reconTotals = useMemo(() => data?.subscriptionReconciliationTotals || null, [data]);
+  const multiSubUsers = useMemo(() => data?.multiSubscriptionUsers || [], [data]);
 
   if (loading) return <div className="p-8 text-[#E0D8C8]">Loading user report…</div>;
 
@@ -230,11 +235,17 @@ export default function UserReport() {
       </Section>
 
       {/* 8. Audit & Reconciliation */}
-      <Section title={`8. Audit & Reconciliation — Users (${auditRows.length})`}>
-        <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">
-          One row per canonical user. Synthetic identities (unmatched contracts) are included for tracking but are NOT counted as registered users.
+      <Section title="8. Subscription Reconciliation & Audit">
+        <SubscriptionReconciliationSummary totals={reconTotals} multiSubUsers={multiSubUsers} />
+        <p className="text-xs text-[#E0D8C8]/40 mt-3 mb-2">
+          Three views below — canonical paid subscriptions (one row per active lifecycle), paying users (one row per canonical user), and full subscription history (all rows including expired/fallback).
         </p>
-        <UserReportAuditTable users={auditRows} subscriptions={subRows} />
+        <UserReportAuditTable
+          users={auditRows}
+          subscriptions={subRows}
+          canonicalSubscriptions={canonicalSubs}
+          subscriptionHistory={subHistory}
+        />
       </Section>
     </div>
   );
