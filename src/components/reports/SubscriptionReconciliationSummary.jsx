@@ -30,6 +30,32 @@ export default function SubscriptionReconciliationSummary({ totals, multiSubUser
           <ReconCard label="Unknown Product Rows" value={t.unknown_product_rows} warn={t.unknown_product_rows > 0} />
           <ReconCard label="Unmatched Identity Rows" value={t.unmatched_identity_rows} warn={t.unmatched_identity_rows > 0} />
         </div>
+
+        {t.metric_provisional && (
+          <div className="rounded-lg border border-amber-700/30 bg-amber-900/10 p-3 text-xs text-amber-300/80">
+            ⚠ {t.provisional_reason}
+          </div>
+        )}
+
+        {/* Status-evidence hierarchy counts */}
+        <div className="pt-2 border-t border-[#8b6239]/15">
+          <p className="text-xs font-semibold text-[#D4A574]/80 mb-2">Status-Evidence Hierarchy (preliminary — without live Stripe)</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <ReconCard label="Provider-Verified Current Paid" value={t.provider_verified_current_paid} highlight />
+            <ReconCard label="Verified Canceling (Paid Through)" value={t.provider_verified_canceling_but_paid_through} />
+            <ReconCard label="Locally Current Unverified" value={t.locally_current_unverified} warn />
+            <ReconCard label="Locally Expired Unverified" value={t.locally_expired_unverified} />
+            <ReconCard label="Conflicting State" value={t.conflicting_provider_and_local_state} warn={t.conflicting_provider_and_local_state > 0} />
+            <ReconCard label="Apple Current (Unverified)" value={t.apple_locally_current_unverified} warn />
+            <ReconCard label="Apple Expired (Unverified)" value={t.apple_locally_expired_unverified} />
+            <ReconCard label="Test/Internal Excluded" value={t.test_account_rows} />
+          </div>
+          {t.conflicting_state_user_count > 0 && (
+            <p className="text-xs text-amber-400/70 mt-2">
+              ⚠ {t.conflicting_state_user_count} user(s) have stale local period_end but recent payment evidence — may still be paying. Run provider verification to confirm.
+            </p>
+          )}
+        </div>
       </div>
 
       {multiSubUsers && multiSubUsers.length > 0 && (

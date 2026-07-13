@@ -153,6 +153,57 @@ function classifyStatus(rawStatus, periodEnd, now) {
   return 'unknown';
 }
 
+// ─── Provider-verified status (status-evidence hierarchy) ──────────────────────
+// Assigns a preliminary provider-verified status based on available evidence WITHOUT
+// live Stripe API calls (which are handled by the separate verifyPayingUserCount
+// function). Uses latest payment event as supporting evidence.
+//
+// Hierarchy:
+// 1. verified_current_paid — local period current AND recent successful payment
+// 2. verified_canceling_but_paid_through — canceled but within paid period + recent payment
+// 3. verified_expired — explicit expired/canceled status
+// 4. locally_current_unverified — local period current but no recent payment evidence
+// 5. locally_expired_unverified — local period expired, no payment evidence either way
+// 6. conflicting_provider_and_local_state — has recent payment but local period expired
+// 7. unresolved — no evidence
+function classifyProviderVerifiedStatus(normalizedStatus, periodEnd, latestPaymentAt, provider, now) {
+  const hasCurrentPeriod = !!(periodEnd && periodEnd >= now);
+  const hasRecentPayment = !!(latestPaymentAt && (now.getTime() - latestPaymentAt.getTime()) <= 45 * MS_PER_DAY);
+  const isApple = norm(provider) === 'apple';
+
+  if (isApple) {
+    // Apple is not yet ledger-backed — always label as unverified
+    return hasCurrentPeriod ? 'apple_locally_current_unverified' : 'apple_locally_expired_unverified';
+  }
+
+  if (normalizedStatus === 'active_paid' && hasRecentPayment) {
+    return 'verified_current_paid';
+  }
+  if (normalizedStatus === 'canceling_but_entitled' && hasRecentPayment) {
+    return 'verified_canceling_but_paid_through';
+  }
+  if (normalizedStatus === 'active_paid' && !hasRecentPayment && hasCurrentPeriod) {
+    return 'locally_current_unverified';
+  }
+  if (normalizedStatus === 'expired' && hasRecentPayment) {
+    // Local period expired but has a recent payment — may still be paying
+    return 'conflicting_provider_and_local_state';
+  }
+  if (normalizedStatus === 'expired' && !hasRecentPayment) {
+    return 'locally_expired_unverified';
+  }
+  if (normalizedStatus === 'canceled') {
+    return 'verified_canceled';
+  }
+  if (normalizedStatus === 'past_due') {
+    return 'verified_past_due';
+  }
+  if (normalizedStatus === 'trial') {
+    return 'locally_current_unverified';
+  }
+  return 'unresolved';
+}
+
 // ─── Event classification ───────────────────────────────────────────────────────
 // Canonical payment-event classifier. A positive amount is supporting evidence,
 // never the definition of a successful payment. Refunds, failures, disputes,
@@ -573,6 +624,7 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
     // only genuinely stale contract rows (period already ended, never refreshed) are expired.
     const normalizedStatus = classifyStatus(ac.status, periodEnd, now);
 
+    const providerVerifiedStatus = classifyProviderVerifiedStatus(normalizedStatus, periodEnd, latestPayment, provider, now);
     contracts.push({
       canonical_subscription_id: psubId || String(ac.id),
       userId: identity.userId,
@@ -589,6 +641,7 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
       modules,
       raw_status: norm(ac.status || 'unknown'),
       normalized_status: normalizedStatus,
+      provider_verified_status: providerVerifiedStatus,
       is_currently_entitled: ['active_paid', 'canceling_but_entitled', 'trial'].includes(normalizedStatus),
       is_currently_paying: ['active_paid', 'canceling_but_entitled'].includes(normalizedStatus),
       has_successful_payment: !!(firstPaid.date || (ac.amount_cents && Number(ac.amount_cents) > 0)),
@@ -656,6 +709,7 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
     const canceledAt = resolveCanceledAt(allEvents, sub);
     const expiredAt = resolveExpiredAt(allEvents, sub, periodEnd);
     const normalizedStatusF = classifyStatus(sub.status, periodEnd, now);
+    const providerVerifiedStatusF = classifyProviderVerifiedStatus(normalizedStatusF, periodEnd, latestPayment, provider, now);
 
     contracts.push({
       canonical_subscription_id: sSubId || String(sub.id),
@@ -673,6 +727,7 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
       modules,
       raw_status: norm(sub.status || 'unknown'),
       normalized_status: normalizedStatusF,
+      provider_verified_status: providerVerifiedStatusF,
       is_currently_entitled: ['active_paid', 'canceling_but_entitled', 'trial'].includes(normalizedStatusF),
       is_currently_paying: ['active_paid', 'canceling_but_entitled'].includes(normalizedStatusF),
       has_successful_payment: !!(firstPaid.date || (sub.amount && sub.amount > 0)),
@@ -1013,7 +1068,12 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
 
   return {
     userActivity: { totalRegisteredUsers, newRegisteredUsers, dau, wau, mau, active90d, activeFreeUsers, activePayingUsers },
-    subscriptionStatus: { currentEntitledUsers, currentPayingUsers, currentTrials, currentPastDue, cancelingButEntitled, expiredUsers },
+    subscriptionStatus: {
+      currentEntitledUsers, currentPayingUsers, currentTrials, currentPastDue, cancelingButEntitled, expiredUsers,
+      metric_provisional: true,
+      provisional_reason: 'Current paying user count is based on local contract period_end only and has NOT been verified against live provider state. A stale local period_end can incorrectly expire a user whose Stripe subscription renewed but whose local contract was not updated. Run verifyPayingUserCount for provider-verified totals.',
+      provisional_label: 'Current paying users — provisional',
+    },
     acquisition: {
       newFirstTimePaidUsers, confirmedFirstTimePaidUsers, inferredFirstTimePaidUsers, reactivatedPaidUsers, newPaidSubscriptions, canceledSubscriptions, expiredSubscriptions,
       grossFirstTimePaidUsers, refundedFirstTimePaidUsers, netRetainedFirstTimePaidUsers,
@@ -1826,6 +1886,29 @@ Deno.serve(async (req) => {
     const unmatchedIdentityRows = contracts.filter((c) => !c.matched_to_user).length;
     const testAccountRows = canonicalCurrentPaidSubscriptionsDetail.filter((d) => d.account_classification !== 'production_customer').length;
 
+    // ─── Provider-verified status counts (status-evidence hierarchy) ────────────
+    const providerVerifiedCounts = {};
+    for (const c of contracts) {
+      const vs = c.provider_verified_status || 'unresolved';
+      providerVerifiedCounts[vs] = (providerVerifiedCounts[vs] || 0) + 1;
+    }
+    // Users with stale local period but recent payment — may still be paying
+    const conflictingStateUsers = contracts.filter((c) => c.provider_verified_status === 'conflicting_provider_and_local_state');
+    const appleUnverifiedCurrent = contracts.filter((c) => c.provider_verified_status === 'apple_locally_current_unverified').length;
+    const appleUnverifiedExpired = contracts.filter((c) => c.provider_verified_status === 'apple_locally_expired_unverified').length;
+
+    // ─── Explicit 39-vs-40 discrepancy explanation ──────────────────────────────
+    // 53 canonical current paid subscriptions → 40 unique user IDs → 39 current paying users
+    // The 1-user difference is explained by synthetic/unmatched or test/internal identities.
+    const allPayingContractsForDiscrepancy = contracts.filter((c) => c.is_currently_paying);
+    const discrepancyAllUserIdentities = uniq(allPayingContractsForDiscrepancy.map((c) => c.userId));
+    const discrepancyRegisteredIdentities = discrepancyAllUserIdentities.filter((id) => !id.startsWith('email:') && !id.startsWith('row:'));
+    const discrepancySyntheticIdentities = discrepancyAllUserIdentities.filter((id) => id.startsWith('email:') || id.startsWith('row:'));
+    const discrepancyTestAccounts = discrepancyRegisteredIdentities.filter((id) => {
+      const c = allPayingContractsForDiscrepancy.find((rc) => rc.userId === id);
+      return classifyAccount(c?.email, c?.provider_subscription_id) !== 'production_customer';
+    });
+
     const subscriptionReconciliationTotals = {
       raw_subscription_rows: rawSubscriptionRows,
       raw_rows_marked_paying: rawRowsMarkedPaying,
@@ -1840,7 +1923,25 @@ Deno.serve(async (req) => {
       unknown_product_rows: unknownProductRows,
       unmatched_identity_rows: unmatchedIdentityRows,
       test_account_rows: testAccountRows,
-      relationship_summary: `${rawSubscriptionRows} raw subscription rows → ${duplicatesMerged} duplicate rows consolidated → ${contracts.length} canonical contract rows → ${canonicalPayingSubscriptions.length} current paid subscriptions across ${canonicalPayingUsers.length} unique paying users`,
+      // Status-evidence hierarchy
+      provider_verified_current_paid: providerVerifiedCounts.verified_current_paid || 0,
+      provider_verified_canceling_but_paid_through: providerVerifiedCounts.verified_canceling_but_paid_through || 0,
+      locally_current_unverified: providerVerifiedCounts.locally_current_unverified || 0,
+      locally_expired_unverified: providerVerifiedCounts.locally_expired_unverified || 0,
+      conflicting_provider_and_local_state: providerVerifiedCounts.conflicting_provider_and_local_state || 0,
+      conflicting_state_user_count: uniq(conflictingStateUsers.map((c) => c.userId)).length,
+      conflicting_state_emails: conflictingStateUsers.map((c) => c.email).filter(Boolean).slice(0, 50),
+      apple_locally_current_unverified: appleUnverifiedCurrent,
+      apple_locally_expired_unverified: appleUnverifiedExpired,
+      relationship_summary: `${rawSubscriptionRows} raw subscription rows → ${duplicatesMerged} duplicate rows consolidated → ${contracts.length} canonical contract rows → ${canonicalPayingSubscriptions.length} current paid subscriptions across ${canonicalPayingUsers.length} unique paying users (PROVISIONAL — run verifyPayingUserCount for provider-verified totals)`,
+      metric_provisional: true,
+      provisional_reason: 'Local period_end alone does not prove a subscription expired. Run verifyPayingUserCount to reconcile against live Stripe.',
+      // Explicit 39-vs-40 discrepancy explanation
+      discrepancy_all_user_identities: discrepancyAllUserIdentities.length,
+      discrepancy_registered_identities: discrepancyRegisteredIdentities.length,
+      discrepancy_synthetic_identities: discrepancySyntheticIdentities.length,
+      discrepancy_test_internal_accounts: discrepancyTestAccounts.length,
+      discrepancy_explanation: `${canonicalPayingSubscriptions.length} current paid subscriptions → ${discrepancyAllUserIdentities.length} unique user identities → ${discrepancyRegisteredIdentities.length} registered users → ${discrepancyRegisteredIdentities.length - discrepancyTestAccounts.length} production paying users (${discrepancySyntheticIdentities.length} synthetic/unmatched excluded; ${discrepancyTestAccounts.length} test/internal excluded)`,
     };
 
     return Response.json({

@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import UserReportDateRange from '@/components/reports/UserReportDateRange';
 import UserReportAuditTable from '@/components/reports/UserReportAuditTable';
 import SubscriptionReconciliationSummary from '@/components/reports/SubscriptionReconciliationSummary';
+import ProviderVerificationPanel from '@/components/reports/ProviderVerificationPanel';
 
 const DATE_RANGE_OPTIONS = [
   { value: 'today', label: 'Today' },
@@ -120,13 +121,28 @@ export default function UserReport() {
       <Section title="2. Subscription Status (current)">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card title="Current Entitled Users" value={ss.currentEntitledUsers ?? 0} highlight />
-          <Card title="Current Paying Users" value={ss.currentPayingUsers ?? 0} highlight />
+          <Card
+            title={ss.provisional_label || "Current Paying Users"}
+            value={ss.currentPayingUsers ?? 0}
+            highlight
+            sub={ss.metric_provisional ? '⚠ Provisional — not provider-verified' : undefined}
+          />
           <Card title="Current Trials" value={ss.currentTrials ?? 0} />
           <Card title="Current Past-Due" value={ss.currentPastDue ?? 0} warn={(ss.currentPastDue ?? 0) > 0} />
           <Card title="Canceling but Entitled" value={ss.cancelingButEntitled ?? 0} />
           <Card title="Expired" value={ss.expiredUsers ?? 0} />
         </div>
+        {ss.metric_provisional && (
+          <div className="mt-3 rounded-lg border border-amber-700/30 bg-amber-900/10 p-3 text-xs text-amber-300/80 leading-relaxed">
+            ⚠ {ss.provisional_reason}
+          </div>
+        )}
         <EntitlementReconciliation rec={data.entitlementReconciliation} />
+      </Section>
+
+      {/* 2b. Provider Verification */}
+      <Section title="2b. Provider Verification (Live Stripe Reconciliation)">
+        <ProviderVerificationPanel />
       </Section>
 
       {/* 3. Acquisition */}
