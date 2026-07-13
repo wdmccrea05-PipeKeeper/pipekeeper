@@ -140,9 +140,13 @@ const EXPIRED_STATUSES = new Set(['expired']);
 
 function classifyStatus(rawStatus, periodEnd, now) {
   const s = norm(rawStatus);
-  const withinPeriod = periodEnd && parseMetricDate(periodEnd) && parseMetricDate(periodEnd) >= now;
-  if (ACTIVE_PAID_STATUSES.has(s)) return 'active_paid';
-  if (TRIAL_STATUSES.has(s)) return 'trial';
+  const pe = periodEnd ? parseMetricDate(periodEnd) : null;
+  const withinPeriod = !!(pe && pe >= now);
+  // An "active"/"paid" row whose billing period has already ended is NOT current —
+  // it's a stale contract row (the provider canceled/expired it but the row was never
+  // updated). Only treat it as active_paid if the period is still in effect.
+  if (ACTIVE_PAID_STATUSES.has(s)) return withinPeriod ? 'active_paid' : 'expired';
+  if (TRIAL_STATUSES.has(s)) return withinPeriod ? 'trial' : 'expired';
   if (PAST_DUE_STATUSES.has(s)) return 'past_due';
   if (CANCELED_STATUSES.has(s)) return withinPeriod ? 'canceling_but_entitled' : 'canceled';
   if (EXPIRED_STATUSES.has(s)) return 'expired';
@@ -421,13 +425,23 @@ function deduplicateContracts(contracts) {
   const map = new Map();
   let duplicatesMerged = 0;
   const diagnostics = [];
+  // Score: prefer currently-paying, then latest period_end (renewal supersedes stale),
+  // then data completeness (amount, interval, first_paid, product).
+  const score = (r) => {
+    const pe = r.current_period_end ? parseMetricDate(r.current_period_end)?.getTime() || 0 : 0;
+    return (r.is_currently_paying ? 1000000 : 0)
+      + (pe || 0)
+      + (r.amount ? 400 : 0)
+      + (r.billing_interval ? 300 : 0)
+      + (r.first_paid_at ? 200 : 0)
+      + (r.product && r.product !== 'unknown' ? 100 : 0);
+  };
   for (const c of contracts) {
     const key = dedupeKey(c);
     const existing = map.get(key);
     if (!existing) { map.set(key, c); continue; }
     duplicatesMerged += 1;
-    diagnostics.push({ key, kept: existing.canonical_subscription_id, dropped: c.canonical_subscription_id });
-    const score = (r) => (r.amount ? 4 : 0) + (r.billing_interval ? 3 : 0) + (r.first_paid_at ? 2 : 0) + (r.product ? 1 : 0);
+    diagnostics.push({ key, kept: c.canonical_subscription_id, dropped: existing.canonical_subscription_id });
     if (score(c) > score(existing)) map.set(key, c);
   }
   return { deduped: [...map.values()], duplicatesMerged, diagnostics };
@@ -513,7 +527,7 @@ function buildEventIndex(subEvents, usersByEmail, usersById) {
 }
 
 // ─── Build canonical subscription records ─────────────────────────────────────────
-function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, usersById, eventIndex) {
+function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, usersById, eventIndex, now) {
   const contracts = [];
   const usedSubIds = new Set();
 
@@ -554,7 +568,10 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
     const canceledAt = resolveCanceledAt(allEvents, ac);
     const expiredAt = resolveExpiredAt(allEvents, ac, fin.periodEnd);
     const periodEnd = fin.periodEnd || parseMetricDate(ac.period_end);
-    const normalizedStatus = classifyStatus(ac.status, periodEnd, new Date());
+    // classifyStatus now treats active/paid rows with a past period_end as expired.
+    // Annual subscriptions have period_end ~1 year in the future and remain active_paid;
+    // only genuinely stale contract rows (period already ended, never refreshed) are expired.
+    const normalizedStatus = classifyStatus(ac.status, periodEnd, now);
 
     contracts.push({
       canonical_subscription_id: psubId || String(ac.id),
@@ -562,6 +579,8 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
       email: identity.email,
       matched_to_user: identity.matched,
       has_user_id: !!(ac.user_id || ac.userId),
+      has_recent_successful_payment: !!(latestPayment && (now.getTime() - latestPayment.getTime()) <= 45 * MS_PER_DAY),
+      stale_period_end: !!(periodEnd && periodEnd < now),
       provider,
       provider_customer_id: ac.provider_customer_id || matchedSub?.stripe_customer_id || null,
       provider_subscription_id: psubId || null,
@@ -604,12 +623,24 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
   }
 
   // Fallback: Subscription rows not already covered by ActiveContract
+  // Build an index of ActiveContract coverage by email+provider+product so that
+  // Subscription fallback rows representing the same lifecycle (even with a
+  // different/missing subId) are suppressed rather than double-counted.
+  const acCoverageKeys = new Set();
+  for (const ac of activeContracts) {
+    const fam = resolveProductFamily(ac);
+    acCoverageKeys.add(`${norm(ac.user_email)}|${norm(ac.provider || 'unknown')}|${norm(fam)}`);
+  }
   for (const sub of subscriptions) {
     const sSubId = norm(sub.provider_subscription_id || sub.stripe_subscription_id || sub.original_transaction_id);
     const provider = norm(sub.provider || 'stripe');
     if (sSubId && usedSubIds.has(`${provider}|${sSubId}`)) continue;
 
     const identity = resolveUserIdentity(sub, usersByEmail, usersById);
+    // Suppress this fallback if an ActiveContract already covers the same
+    // email+provider+product lifecycle (duplicate lifecycle, not a new subscription).
+    const subFam = resolveProductFamily(sub);
+    if (identity.email && acCoverageKeys.has(`${identity.email}|${provider}|${norm(subFam)}`)) continue;
     const family = resolveProductFamily(sub);
     const modules = resolveModulesRaw(sub, family);
     const fin = extractFinancials(sub);
@@ -624,6 +655,7 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
     const latestPayment = resolveLatestPaymentAt(allEvents);
     const canceledAt = resolveCanceledAt(allEvents, sub);
     const expiredAt = resolveExpiredAt(allEvents, sub, periodEnd);
+    const normalizedStatusF = classifyStatus(sub.status, periodEnd, now);
 
     contracts.push({
       canonical_subscription_id: sSubId || String(sub.id),
@@ -631,6 +663,8 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
       email: identity.email,
       matched_to_user: identity.matched,
       has_user_id: !!(sub.user_id || sub.userId),
+      has_recent_successful_payment: !!(latestPayment && (now.getTime() - latestPayment.getTime()) <= 45 * MS_PER_DAY),
+      stale_period_end: !!(periodEnd && periodEnd < now),
       provider,
       provider_customer_id: sub.stripe_customer_id || null,
       provider_subscription_id: sSubId || null,
@@ -638,9 +672,9 @@ function buildCanonicalContracts(activeContracts, subscriptions, usersByEmail, u
       product: family || 'unknown',
       modules,
       raw_status: norm(sub.status || 'unknown'),
-      normalized_status: normalizedStatus,
-      is_currently_entitled: ['active_paid', 'canceling_but_entitled', 'trial'].includes(normalizedStatus),
-      is_currently_paying: ['active_paid', 'canceling_but_entitled'].includes(normalizedStatus),
+      normalized_status: normalizedStatusF,
+      is_currently_entitled: ['active_paid', 'canceling_but_entitled', 'trial'].includes(normalizedStatusF),
+      is_currently_paying: ['active_paid', 'canceling_but_entitled'].includes(normalizedStatusF),
       has_successful_payment: !!(firstPaid.date || (sub.amount && sub.amount > 0)),
       has_ever_paid: !!(firstPaid.date || allEvents.some((e) => isPaymentEvent(e))),
       first_paid_at: firstPaid.date,
@@ -1136,7 +1170,7 @@ Deno.serve(async (req) => {
     const eventIndex = buildEventIndex(rawSubEvents, usersByEmail, usersById);
 
     // Build canonical contracts
-    const allContracts = buildCanonicalContracts(rawActiveContracts, rawSubscriptions, usersByEmail, usersById, eventIndex);
+    const allContracts = buildCanonicalContracts(rawActiveContracts, rawSubscriptions, usersByEmail, usersById, eventIndex, now);
     const { deduped: contracts, duplicatesMerged, diagnostics: dedupeDiag } = deduplicateContracts(allContracts);
 
     // Build canonical user records
@@ -1674,6 +1708,141 @@ Deno.serve(async (req) => {
       refund_conflicts: stripeRefundConflicts,
     };
 
+    // ─── Canonical subscription reconciliation ─────────────────────────────────
+    // Separates raw records from canonical subscription lifecycles so the audit
+    // table can answer "how many genuinely active subscriptions exist?" without
+    // conflating invoices, renewals, fallback rows, and expired periods.
+    const allPayingContracts = contracts.filter((c) => c.is_currently_paying);
+    const canonicalPayingUsers = uniq(allPayingContracts.map((c) => c.userId).filter((id) => !id.startsWith('email:') && !id.startsWith('row:')));
+    const canonicalPayingSubscriptions = uniq(allPayingContracts.map((c) => c.canonical_subscription_id));
+    const canonicalPayingProducts = uniq(allPayingContracts.filter((c) => c.product && c.product !== 'unknown').map((c) => `${c.userId}|${c.product}`));
+
+    // Account classification — test / admin / internal accounts kept in audit
+    // history but excluded from business KPIs.
+    const TEST_EMAIL_PATTERNS = ['pipekeepertest', 'admin@pipekeeperapp', 'test_', '@example.com', '@test.'];
+    function classifyAccount(email, subId) {
+      const e = norm(email), sid = norm(subId);
+      if (sid.startsWith('test_') || sid.startsWith('test ') || /test_sub|test_\d+/.test(sid)) return 'test_account';
+      if (e.startsWith('admin@') || e.includes('admin@pipekeeperapp')) return 'administrator_account';
+      if (TEST_EMAIL_PATTERNS.some((p) => e.includes(p)) || e.includes('pipekeepertest')) return 'test_account';
+      return 'production_customer';
+    }
+
+    // Canonical current paid subscriptions — one row per deduplicated lifecycle
+    const canonicalCurrentPaidSubscriptionsDetail = allPayingContracts
+      .map((c) => {
+        const userContracts = contracts.filter((x) => x.userId === c.userId);
+        const lifecycleContracts = userContracts.filter((x) => norm(x.provider_subscription_id) === norm(c.provider_subscription_id));
+        return {
+          canonical_subscription_id: c.canonical_subscription_id,
+          canonical_user_id: c.userId,
+          email: c.email,
+          provider: c.provider,
+          normalized_product: c.product,
+          current_status: c.normalized_status,
+          first_paid_at: c.first_paid_at?.toISOString() || null,
+          latest_successful_payment_at: c.latest_payment_at?.toISOString() || null,
+          current_period_start: c.current_period_start?.toISOString() || null,
+          current_period_end: c.current_period_end?.toISOString() || null,
+          amount: c.amount,
+          interval: c.billing_interval,
+          source_records_count: lifecycleContracts.length,
+          source_entities: lifecycleContracts.length > 1 ? ['ActiveContract', 'Subscription'] : (c.reconciliation_issues.includes('subscription_fallback') ? ['Subscription'] : ['ActiveContract']),
+          confidence: c.source_confidence,
+          issues: c.reconciliation_issues,
+          account_classification: classifyAccount(c.email, c.provider_subscription_id),
+        };
+      })
+      .sort((a, b) => (a.email || '').localeCompare(b.email || ''));
+
+    // Users with more than one canonical active subscription — explain why each is valid
+    const payingByUserGroup = new Map();
+    for (const c of allPayingContracts) {
+      if (!payingByUserGroup.has(c.userId)) payingByUserGroup.set(c.userId, []);
+      payingByUserGroup.get(c.userId).push(c);
+    }
+    const multiSubscriptionUsers = [...payingByUserGroup.entries()]
+      .filter(([id, rows]) => rows.length > 1 && !id.startsWith('email:') && !id.startsWith('row:'))
+      .map(([userId, rows]) => {
+        const distinctProducts = uniq(rows.map((r) => r.product).filter((p) => p && p !== 'unknown'));
+        const distinctProviders = uniq(rows.map((r) => r.provider));
+        const distinctSubIds = uniq(rows.map((r) => r.provider_subscription_id).filter(Boolean));
+        let reason = 'multiple_distinct_subscription_ids';
+        if (distinctProviders.length > 1) reason = 'cross_provider_multiple_subscriptions';
+        else if (distinctProducts.length > 1) reason = 'multiple_active_products';
+        else if (distinctSubIds.length === rows.length) reason = 'multiple_subscription_lifecycles_same_product';
+        return {
+          user_id: userId,
+          email: rows[0].email,
+          active_subscription_count: rows.length,
+          distinct_subscription_ids: distinctSubIds.length,
+          products: distinctProducts,
+          providers: distinctProviders,
+          validity_reason: reason,
+          subscriptions: rows.map((r) => ({
+            canonical_subscription_id: r.canonical_subscription_id,
+            provider: r.provider,
+            product: r.product,
+            period_end: r.current_period_end?.toISOString() || null,
+            amount: r.amount,
+          })),
+        };
+      })
+      .sort((a, b) => b.active_subscription_count - a.active_subscription_count);
+
+    // Subscription history — all raw records (invoices, renewals, fallback, expired)
+    const subscriptionHistoryDetail = contracts.map((c) => ({
+      canonical_subscription_id: c.canonical_subscription_id,
+      user_id: c.userId,
+      email: c.email,
+      provider: c.provider,
+      product: c.product,
+      normalized_status: c.normalized_status,
+      is_currently_paying: c.is_currently_paying,
+      is_historical: !c.is_currently_paying,
+      is_fallback: c.reconciliation_issues.includes('subscription_fallback'),
+      is_expired_period: c.normalized_status === 'expired',
+      first_paid_at: c.first_paid_at?.toISOString() || null,
+      current_period_end: c.current_period_end?.toISOString() || null,
+      amount: c.amount,
+      billing_interval: c.billing_interval,
+      source_confidence: c.source_confidence,
+      matched_to_user: c.matched_to_user,
+      reconciliation_issues: c.reconciliation_issues.join(', ') || 'none',
+      account_classification: classifyAccount(c.email, c.provider_subscription_id),
+    }));
+
+    // ─── Expanded reconciliation totals (dashboard) ────────────────────────────
+    const rawSubscriptionRows = allContracts.length;
+    const rawRowsMarkedPaying = allContracts.filter((c) => ['active_paid', 'canceling_but_entitled'].includes(classifyStatus(c.raw_status, c.current_period_end, now))).length;
+    const historicalRowsExcludedFromCurrent = contracts.filter((c) => !c.is_currently_paying).length;
+    const expiredRowsPreviouslyMarkedActive = contracts.filter((c) => c.normalized_status === 'expired').length;
+    const fallbackRowsMerged = allContracts.filter((c) => c.reconciliation_issues.includes('subscription_fallback')).length;
+    const crossProviderOverlaps = [...payingByUserGroup.entries()].filter(([id, rows]) => {
+      if (id.startsWith('email:') || id.startsWith('row:')) return false;
+      return uniq(rows.map((r) => r.provider)).length > 1;
+    }).length;
+    const unknownProductRows = contracts.filter((c) => !c.product || c.product === 'unknown').length;
+    const unmatchedIdentityRows = contracts.filter((c) => !c.matched_to_user).length;
+    const testAccountRows = canonicalCurrentPaidSubscriptionsDetail.filter((d) => d.account_classification !== 'production_customer').length;
+
+    const subscriptionReconciliationTotals = {
+      raw_subscription_rows: rawSubscriptionRows,
+      raw_rows_marked_paying: rawRowsMarkedPaying,
+      unique_paying_users: canonicalPayingUsers.length,
+      canonical_current_paid_subscriptions: canonicalPayingSubscriptions.length,
+      canonical_current_paid_products: canonicalPayingProducts.length,
+      duplicate_rows_merged: duplicatesMerged,
+      historical_rows_excluded_from_current: historicalRowsExcludedFromCurrent,
+      fallback_rows_merged: fallbackRowsMerged,
+      cross_provider_overlaps: crossProviderOverlaps,
+      expired_rows_previously_marked_active: expiredRowsPreviouslyMarkedActive,
+      unknown_product_rows: unknownProductRows,
+      unmatched_identity_rows: unmatchedIdentityRows,
+      test_account_rows: testAccountRows,
+      relationship_summary: `${rawSubscriptionRows} raw subscription rows → ${duplicatesMerged} duplicate rows consolidated → ${contracts.length} canonical contract rows → ${canonicalPayingSubscriptions.length} current paid subscriptions across ${canonicalPayingUsers.length} unique paying users`,
+    };
+
     return Response.json({
       meta: {
         generatedAt: now.toISOString(),
@@ -1717,6 +1886,10 @@ Deno.serve(async (req) => {
       historyCompleteness,
       providerCoverage,
       reconciliationTotals,
+      subscriptionReconciliationTotals,
+      canonicalCurrentPaidSubscriptionsDetail,
+      multiSubscriptionUsers,
+      subscriptionHistoryDetail,
       stripePayingUserVerification,
       unmatchedPaymentsDetail: (unmatchedPaidTransactionEvents || []).slice(0, 100).map((e) => ({
         event_id: e.event_id || e.provider_event_id || null,
