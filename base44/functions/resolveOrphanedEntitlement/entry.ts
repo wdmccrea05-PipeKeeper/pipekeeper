@@ -5,7 +5,7 @@
  *
  * Params: {
  *   entitlementId: string,
- *   resolution: 'link_to_contract' | 'manual' | 'referral' | 'promotional' | 'expired' | 'revoked' | 'follow_up',
+ *   resolution: 'link_to_contract' | 'manual' | 'legacy_migration' | 'referral' | 'promotional' | 'expired' | 'revoked' | 'follow_up',
  *   auditNote: string,            // required
  *   linkContractId?: string,     // for link_to_contract
  *   sourceRewardId?: string,      // for referral
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
       if (!contract) return Response.json({ error: 'contract not found' }, { status: 404 });
       updates.active_contract_ids = [...new Set([...(ent.active_contract_ids || []), linkContractId])];
       updates.has_access = true;
-    } else if (resolution === 'manual') {
+    } else if (resolution === 'manual' || resolution === 'legacy_migration') {
       updates.has_access = true;
     } else if (resolution === 'referral') {
       updates.has_access = true;

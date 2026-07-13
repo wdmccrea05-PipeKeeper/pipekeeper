@@ -46,6 +46,7 @@ import CigarInsights from "@/pages/CigarInsights";
 import SessionHistory from "@/pages/SessionHistory";
 import ReferralDashboard from "@/pages/ReferralDashboard";
 import ReferralAdminReport from "@/pages/ReferralAdminReport";
+import ReconciliationDashboard from "@/pages/ReconciliationDashboard";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import ModuleSelectionModal from "@/components/onboarding/ModuleSelectionModal";
@@ -437,6 +438,15 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="ReferralAdminReport">
             <ReferralAdminReport />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/ReconciliationDashboard"
+        element={
+          <LayoutWrapper currentPageName="ReconciliationDashboard">
+            <ReconciliationDashboard />
           </LayoutWrapper>
         }
       />

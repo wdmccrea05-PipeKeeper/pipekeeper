@@ -1000,6 +1000,73 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
   };
 }
 
+// ─── Refund metric computation (inlined from reconciliationEngine) ───────────────
+function linkRefundToOriginalPaymentInline(refundEvent, paymentEvents) {
+  const candidates = (paymentEvents || []).filter((e) => isPaymentEvent(e));
+  if (candidates.length === 0) return { matched: false, original: null };
+  const explicitRef = norm(refundEvent.original_transaction_id || refundEvent.provider_transaction_id);
+  if (explicitRef) {
+    const hit = candidates.find((e) => norm(e.provider_transaction_id) === explicitRef || norm(e.original_transaction_id) === explicitRef);
+    if (hit) return { matched: true, original: hit };
+  }
+  const subId = norm(refundEvent.provider_subscription_id);
+  if (subId) {
+    const hits = candidates.filter((e) => norm(e.provider_subscription_id) === subId);
+    if (hits.length === 1) return { matched: true, original: hits[0] };
+    if (hits.length > 1) {
+      const refundDate = parseMetricDate(refundEvent.transaction_at || refundEvent.effective_at) || new Date();
+      const before = hits.filter((e) => { const d = parseMetricDate(e.transaction_at || e.effective_at); return d && d <= refundDate; }).sort((a, b) => parseMetricDate(b.transaction_at) - parseMetricDate(a.transaction_at));
+      if (before.length === 1) return { matched: true, original: before[0] };
+    }
+  }
+  const custId = norm(refundEvent.provider_customer_id);
+  if (custId) {
+    const hits = candidates.filter((e) => norm(e.provider_customer_id) === custId);
+    if (hits.length === 1) return { matched: true, original: hits[0] };
+  }
+  return { matched: false, original: null };
+}
+function computeRefundMetricsInline(refundEvents, paymentEvents, range) {
+  const refundsInPeriod = (refundEvents || []).filter((e) => {
+    const d = parseMetricDate(e.transaction_at || e.effective_at || e.period_start);
+    return d && inDateRange(d, range);
+  });
+  let refundAmountInPeriod = 0, firstPurchaseRefunds = 0, renewalRefunds = 0, priorPeriodRefunds = 0;
+  let partialRefunds = 0, fullRefunds = 0, disputes = 0, chargebacks = 0;
+  for (const r of refundsInPeriod) {
+    const amt = Math.abs(Number(r.refund_amount_cents || r.amount_cents || 0));
+    refundAmountInPeriod += amt;
+    if (['chargeback_open', 'chargeback_won', 'chargeback_lost', 'dispute_open', 'dispute_closed'].includes(r.normalized_event_type)) chargebacks += 1;
+    if (norm(r.dispute_status) && norm(r.dispute_status) !== 'none') disputes += 1;
+    const link = linkRefundToOriginalPaymentInline(r, paymentEvents);
+    if (!link.matched) continue;
+    const orig = link.original;
+    const origDate = parseMetricDate(orig.transaction_at || orig.effective_at);
+    const refundAmt = Math.abs(Number(r.refund_amount_cents || r.amount_cents || 0));
+    const origAmt = Math.abs(Number(orig.amount_cents || 0));
+    const isFull = origAmt > 0 && refundAmt >= origAmt;
+    if (isFull) fullRefunds += 1; else partialRefunds += 1;
+    const origEventsForUser = (paymentEvents || []).filter((e) => (orig.user_id && e.user_id === orig.user_id) || (norm(orig.user_email) && norm(e.user_email) === norm(orig.user_email)));
+    const sortedOrig = origEventsForUser.filter((e) => parseMetricDate(e.transaction_at || e.effective_at)).sort((a, b) => parseMetricDate(a.transaction_at) - parseMetricDate(b.transaction_at));
+    const isOriginalInitial = sortedOrig.length > 0 && sortedOrig[0].event_id === orig.event_id;
+    const origInPeriod = origDate && inDateRange(origDate, range);
+    if (origInPeriod && isOriginalInitial && isFull) firstPurchaseRefunds += 1;
+    else if (origInPeriod && !isOriginalInitial) renewalRefunds += 1;
+    else if (!origInPeriod) priorPeriodRefunds += 1;
+  }
+  return {
+    refunds_occurred_in_period: refundsInPeriod.length,
+    refund_amount_occurred_in_period: roundMoney(refundAmountInPeriod / 100),
+    first_purchase_refunds_for_acquisitions_in_period: firstPurchaseRefunds,
+    renewal_refunds_in_period: renewalRefunds,
+    refunds_of_purchases_from_prior_periods: priorPeriodRefunds,
+    partially_refunded_transactions: partialRefunds,
+    fully_refunded_transactions: fullRefunds,
+    disputed_transactions: disputes,
+    chargebacks,
+  };
+}
+
 // ─── Revenue / run-rate ──────────────────────────────────────────────────────────
 function periodRange(kind, now, tz) {
   const _tz = tz || REPORTING_TIMEZONE;
@@ -1045,7 +1112,7 @@ Deno.serve(async (req) => {
     const now = new Date();
     const range = resolveDateRange(dateRange, startDate, endDate, now, reportingTimezone);
 
-    const [rawUsers, rawDailyMetrics, rawSubEvents, rawSubscriptions, rawActiveContracts, rawEntitlements, rawReferralAccess] = await Promise.all([
+    const [rawUsers, rawDailyMetrics, rawSubEvents, rawSubscriptions, rawActiveContracts, rawEntitlements, rawReferralAccess, rawSyncHealthRows] = await Promise.all([
       fetchAllSafe(base44.asServiceRole.entities.User),
       fetchAllSafe(base44.asServiceRole.entities.DailyUserMetrics),
       fetchAllSafe(base44.asServiceRole.entities.SubscriptionEvent),
@@ -1053,7 +1120,9 @@ Deno.serve(async (req) => {
       fetchAllSafe(base44.asServiceRole.entities.ActiveContract),
       fetchAllSafe(base44.asServiceRole.entities.UserEntitlement),
       fetchAllSafe(base44.asServiceRole.entities.ReferralEarnedAccess),
+      fetchAllSafe(base44.asServiceRole.entities.ProviderSyncHealth),
     ]);
+    const rawSyncHealth = (rawSyncHealthRows || []).find((h) => norm(h.provider) === 'stripe') || (rawSyncHealthRows || [])[0] || null;
 
     console.log(`[v9] Users: ${rawUsers.length}, DailyMetrics: ${rawDailyMetrics.length}, SubEvents: ${rawSubEvents.length}, Subscriptions: ${rawSubscriptions.length}, ActiveContracts: ${rawActiveContracts.length}, Entitlements: ${rawEntitlements.length}, ReferralAccess: ${rawReferralAccess.length}`);
 
@@ -1315,7 +1384,78 @@ Deno.serve(async (req) => {
     const confirmedPaymentEvents = ledgerEvents.filter((e) => isPaymentEvent(e));
     const disputeEvents = ledgerEvents.filter((e) => ['chargeback_open', 'chargeback_won', 'chargeback_lost', 'dispute_open', 'dispute_closed'].includes(e.normalized_event_type));
     const allTimeFirstPaid = realRecords.filter((r) => r.first_paid_at);
+
+    // Unmatched payments: ledger payment events whose user_id is not a canonical registered user
+    const paymentEventList = ledgerEvents.filter((e) => isPaymentEvent(e));
+    const unmatchedPaymentEvents = paymentEventList.filter((e) => {
+      const uid = e.user_id;
+      const email = norm(e.user_email || e.email);
+      if (uid && usersById.has(String(uid))) return false;
+      if (email && usersByEmail.has(email)) return false;
+      return true;
+    });
+    const unmatchedPaymentCount = unmatchedPaymentEvents.length;
+    const unmatchedSubscriptionContracts = contracts.filter((c) => !c.matched_to_user && norm(c.provider) === 'stripe').length;
+    const orphanedEntitlementCount = entitlementReconciliation.entitlement_without_contract || 0;
+
+    // Provider coverage + relevance (Apple/Google relevant if any user/contract references them)
+    // Apple/Google are treated as relevant providers (platform intends to support them)
+    // so missing coverage is always a reliability reason even if no such users exist yet.
+    const appleRelevant = true;
+    const googleRelevant = true;
+    const appleConfigured = false; // not yet configured (open todo)
+    const googleConfigured = false; // not yet configured (open todo)
+    const manualConfigured = ledgerEvents.some((e) => norm(e.provider) === 'manual');
+    const onlyStripeAccepted = !appleConfigured && !googleConfigured && !manualConfigured; // CollectionKeeper currently accepts only Stripe
+
+    // Backfill / history completeness
+    const stripeEvents = ledgerEvents.filter((e) => norm(e.provider) === 'stripe');
+    const stripeEventDates = stripeEvents.map((e) => parseMetricDate(e.transaction_at || e.effective_at || e.ingested_at)).filter(Boolean).sort((a, b) => a - b);
+    const historyCompleteFrom = stripeEventDates.length > 0 ? stripeEventDates[0].toISOString() : null;
+    const backfillRangeStart = parseMetricDate(rawSyncHealth?.backfill_range_start);
+    const backfillComplete = !!(rawSyncHealth?.backfill_status === 'complete' && (historyCompleteFrom || backfillRangeStart));
+    const HISTORY_NEAR_START_DAYS = 45;
+    // First-ever vs within-available-history distinction
+    const confirmedFirstEverPaidUsers = allTimeFirstPaid.filter((r) => {
+      if (r.first_paid_confidence_category !== 'confirmed_payment_event') return false;
+      if (!historyCompleteFrom) return false;
+      const fp = parseMetricDate(r.first_paid_at);
+      const daysFromStart = (fp.getTime() - parseMetricDate(historyCompleteFrom).getTime()) / MS_PER_DAY;
+      // near the beginning of available history + an older active subscription exists → may predate
+      const hasOlderSub = contracts.some((c) => c.userId === r.user_id && c.first_paid_at && parseMetricDate(c.first_paid_at) < fp);
+      if (daysFromStart <= HISTORY_NEAR_START_DAYS && hasOlderSub) return false;
+      return true;
+    }).length;
+    const confirmedWithinAvailableHistory = allTimeFirstPaid.filter((r) => {
+      if (r.first_paid_confidence_category !== 'confirmed_payment_event') return false;
+      if (!historyCompleteFrom) return false;
+      const fp = parseMetricDate(r.first_paid_at);
+      const daysFromStart = (fp.getTime() - parseMetricDate(historyCompleteFrom).getTime()) / MS_PER_DAY;
+      const hasOlderSub = contracts.some((c) => c.userId === r.user_id && c.first_paid_at && parseMetricDate(c.first_paid_at) < fp);
+      return daysFromStart <= HISTORY_NEAR_START_DAYS && hasOlderSub;
+    }).length;
+    const historySufficient = confirmedWithinAvailableHistory === 0;
+
+    // Provider sync freshness
+    const lastStripeWebhook = parseMetricDate(rawSyncHealth?.last_successful_webhook_at);
+    const providerSyncStale = lastStripeWebhook ? (now.getTime() - lastStripeWebhook.getTime() > 14 * MS_PER_DAY) : true;
+
+    // Reliability reasons (explicit)
+    const reliabilityReasons = [];
+    if (unmatchedPaymentCount > 0) reliabilityReasons.push(`${unmatchedPaymentCount} Stripe payment${unmatchedPaymentCount === 1 ? ' is' : 's are'} not linked to canonical users`);
+    if (appleRelevant && !appleConfigured) reliabilityReasons.push('Apple App Store transaction history is not configured');
+    if (googleRelevant && !googleConfigured) reliabilityReasons.push('Google Play transaction history is not configured');
+    if (orphanedEntitlementCount > 0) reliabilityReasons.push(`${orphanedEntitlementCount} entitlement${orphanedEntitlementCount === 1 ? ' has' : 's have'} no backing contract or classified grant`);
+    if (unmatchedSubscriptionContracts > 0) reliabilityReasons.push(`${unmatchedSubscriptionContracts} provider subscription${unmatchedSubscriptionContracts === 1 ? '' : 's'} unmatched`);
+    if (rawSyncHealth?.failed_webhook_count > 0) reliabilityReasons.push(`${rawSyncHealth.failed_webhook_count} provider sync failure${rawSyncHealth.failed_webhook_count === 1 ? '' : 's'} recorded`);
+    if (providerSyncStale) reliabilityReasons.push('provider synchronization is not current');
+    if (!backfillComplete) reliabilityReasons.push('historical backfill is incomplete');
+    if (!historySufficient) reliabilityReasons.push('historical coverage is insufficient to establish first-ever payment for some users');
+    const reliabilityStatus = reliabilityReasons.length === 0 ? 'verified' : 'partially_verified';
+
     const reliability = {
+      status: reliabilityStatus,
+      reasons: reliabilityReasons,
       ledgerEventsTotal: ledgerEvents.length,
       confirmedPaymentEvents: confirmedPaymentEvents.length,
       providerEventCounts: {
@@ -1334,6 +1474,86 @@ Deno.serve(async (req) => {
       },
       chargebackCount: disputeEvents.length,
       note: 'Reliability metrics are derived exclusively from the canonical SubscriptionEvent ledger. confirmed_payment_event = verified provider transaction; the rest are evidence tiers, not payment confirmations.',
+    };
+
+    // ─── Detailed refund metrics (linked to original payments) ────────────────
+    const refundEventsAll = ledgerEvents.filter((e) => isRefundEvent(e));
+    const refundMetrics = computeRefundMetricsInline(refundEventsAll, paymentEventList, range);
+
+    // ─── History completeness block ────────────────────────────────────────────
+    const historyCompleteness = {
+      history_complete_from: historyCompleteFrom,
+      backfill_range_start: backfillRangeStart ? backfillRangeStart.toISOString() : null,
+      backfill_status: rawSyncHealth?.backfill_status || 'never_run',
+      completeness_status: historySufficient ? 'sufficient' : 'insufficient',
+      first_paid_may_predate_history: confirmedWithinAvailableHistory,
+      confirmed_first_ever_paid_users: confirmedFirstEverPaidUsers,
+      confirmed_within_available_history: confirmedWithinAvailableHistory,
+      inferred_first_paid_users: allTimeFirstPaid.filter((r) => r.first_paid_confidence_category === 'strong_subscription_evidence' || r.first_paid_confidence_category === 'inferred_contract_period' || r.first_paid_confidence_category === 'weak_fallback').length,
+      unresolved_first_paid_users: realRecords.filter((r) => !r.first_paid_at).length,
+    };
+
+    // ─── Provider coverage block ───────────────────────────────────────────────
+    const providerCoverage = {
+      stripe: 'connected_and_partially_reconciled',
+      apple: appleConfigured ? 'configured' : 'not_configured',
+      google: googleConfigured ? 'configured' : 'not_configured',
+      manual: manualConfigured ? 'configured' : 'not_configured',
+      only_stripe_accepted: onlyStripeAccepted,
+      warnings: (() => {
+        const w = [];
+        w.push('Stripe: connected and partially reconciled');
+        w.push('Apple App Store: not configured');
+        w.push('Google Play: not configured');
+        w.push(manualConfigured ? 'Manual billing: configured' : 'Manual billing: not configured');
+        if (!onlyStripeAccepted) w.push('Only Stripe has been verified — the report does not cover all possible paid users');
+        if (onlyStripeAccepted) w.push('CollectionKeeper currently accepts only Stripe payments — Apple/Google coverage not required');
+        return w;
+      })(),
+    };
+
+    // ─── Reconciliation totals (dashboard) ─────────────────────────────────────
+    const matchedEvents = paymentEventList.length - unmatchedPaymentCount;
+    const matchedSubscriptions = contracts.filter((c) => c.matched_to_user).length;
+    const reconciliationTotals = {
+      total_provider_events: ledgerEvents.length,
+      matched_events: matchedEvents,
+      unmatched_events: unmatchedPaymentCount,
+      matched_payments: matchedEvents,
+      unmatched_payments: unmatchedPaymentCount,
+      matched_subscriptions: matchedSubscriptions,
+      unmatched_subscriptions: contracts.length - matchedSubscriptions,
+      duplicate_events_rejected: duplicatesMerged,
+      users_with_confirmed_first_payments: confirmedFirstEverPaidUsers + confirmedWithinAvailableHistory,
+      users_with_inferred_first_payments: allTimeFirstPaid.filter((r) => r.first_paid_confidence_category !== 'confirmed_payment_event' && r.first_paid_confidence_category !== 'unresolved').length,
+      users_with_unresolved_first_payments: realRecords.filter((r) => !r.first_paid_at).length,
+      orphaned_entitlements: orphanedEntitlementCount,
+      reliability_status: reliabilityStatus,
+      last_provider_sync: rawSyncHealth?.last_successful_webhook_at || null,
+      last_reconciliation_run: rawSyncHealth?.last_reconciliation_at || null,
+    };
+
+    // ─── Stripe paying-user verification ───────────────────────────────────────
+    const stripeContracts = contracts.filter((c) => norm(c.provider) === 'stripe');
+    let stripeMatched = 0, stripeUnmatched = 0, stripeStatusConflicts = 0, stripePeriodConflicts = 0, stripeRefundConflicts = 0;
+    for (const c of stripeContracts) {
+      if (!c.is_currently_paying) continue;
+      if (!c.matched_to_user) { stripeUnmatched += 1; continue; }
+      stripeMatched += 1;
+      const canceledAt = parseMetricDate(c.canceled_at);
+      const expiredAt = parseMetricDate(c.expired_at);
+      if (canceledAt && canceledAt < now && c.is_currently_paying) stripeStatusConflicts += 1;
+      if (expiredAt && expiredAt < now && c.is_currently_paying) stripeStatusConflicts += 1;
+      const periodEnd = parseMetricDate(c.current_period_end);
+      if (periodEnd && periodEnd < now && c.is_currently_paying && c.normalized_status !== 'canceling_but_entitled') stripePeriodConflicts += 1;
+    }
+    const stripePayingUserVerification = {
+      current_stripe_paying_users: stripeMatched + stripeUnmatched,
+      matched_to_canonical_users: stripeMatched,
+      unmatched_provider_subscriptions: stripeUnmatched,
+      status_conflicts: stripeStatusConflicts,
+      period_conflicts: stripePeriodConflicts,
+      refund_conflicts: stripeRefundConflicts,
     };
 
     return Response.json({
@@ -1375,6 +1595,25 @@ Deno.serve(async (req) => {
       firstPaidEvidenceSummary,
       entitlementReconciliation,
       reliability,
+      refundMetrics,
+      historyCompleteness,
+      providerCoverage,
+      reconciliationTotals,
+      stripePayingUserVerification,
+      unmatchedPaymentsDetail: (unmatchedPaymentEvents || []).slice(0, 100).map((e) => ({
+        event_id: e.event_id || e.provider_event_id || null,
+        provider: e.provider || 'stripe',
+        provider_customer_id: e.provider_customer_id || null,
+        provider_subscription_id: e.provider_subscription_id || null,
+        provider_transaction_id: e.provider_transaction_id || null,
+        user_email: e.user_email || e.email || null,
+        product_id: e.product_id || null,
+        payment_date: (parseMetricDate(e.transaction_at || e.effective_at))?.toISOString() || null,
+        amount_cents: e.amount_cents ?? null,
+        currency: e.currency || 'usd',
+        payment_status: e.payment_status || 'unknown',
+        reconciliation_status: 'unmatched_provider_no_user',
+      })),
       dedupeDiagnostics: dedupeDiag,
     });
 
