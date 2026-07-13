@@ -257,7 +257,7 @@ function resolveFirstPaidAt(eventsForUser, sub, acRow) {
 function resolveLatestPaymentAt(eventsForUser) {
   const dates = (eventsForUser || [])
     .filter((e) => isPaymentEvent(e))
-    .map((e) => parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at))
+    .map((e) => parseMetricDate(e.transaction_at) || parseMetricDate(e.effective_at) || parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at))
     .filter(Boolean)
     .sort((a, b) => b - a);
   return dates.length > 0 ? dates[0] : null;
@@ -882,6 +882,8 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
 
   // Historical acquisition metrics (within selected date range)
   const newFirstTimePaidUsers = realUsers.filter((r) => r.first_paid_at && inDateRange(r.first_paid_at, range)).length;
+  const confirmedFirstTimePaidUsers = realUsers.filter((r) => r.first_paid_at && inDateRange(r.first_paid_at, range) && r.first_paid_confidence_category === 'confirmed_payment_event').length;
+  const inferredFirstTimePaidUsers = newFirstTimePaidUsers - confirmedFirstTimePaidUsers;
   const reactivatedPaidUsers = realUsers.filter((r) => r.reactivated_at && inDateRange(r.reactivated_at, range)).length;
   const newPaidSubscriptions = contracts.filter((c) => c.first_paid_at && inDateRange(c.first_paid_at, range)).length;
   const canceledSubscriptions = contracts.filter((c) => c.canceled_at && inDateRange(c.canceled_at, range)).length;
@@ -890,7 +892,7 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
   // Refund accounting — refunds never count as successful payments. Tracked separately
   // so the report can distinguish gross acquisition from net retained acquisition.
   const refundedEventsInRange = (refundEvents || []).filter((e) =>
-    inDateRange(parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at) || parseMetricDate(e.created_date), range)
+    inDateRange(parseMetricDate(e.transaction_at) || parseMetricDate(e.effective_at) || parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at) || parseMetricDate(e.created_date), range)
   );
   const refundedUserKeys = new Set(refundedEventsInRange.map((e) => e.user_id || e.user_email).filter(Boolean));
   const refundedFirstTimePaidUsers = refundedUserKeys.size || refundedEventsInRange.length;
@@ -979,7 +981,7 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
     userActivity: { totalRegisteredUsers, newRegisteredUsers, dau, wau, mau, active90d, activeFreeUsers, activePayingUsers },
     subscriptionStatus: { currentEntitledUsers, currentPayingUsers, currentTrials, currentPastDue, cancelingButEntitled, expiredUsers },
     acquisition: {
-      newFirstTimePaidUsers, reactivatedPaidUsers, newPaidSubscriptions, canceledSubscriptions, expiredSubscriptions,
+      newFirstTimePaidUsers, confirmedFirstTimePaidUsers, inferredFirstTimePaidUsers, reactivatedPaidUsers, newPaidSubscriptions, canceledSubscriptions, expiredSubscriptions,
       grossFirstTimePaidUsers, refundedFirstTimePaidUsers, netRetainedFirstTimePaidUsers,
       grossPaidSubscriptions, refundedSubscriptions, netPaidSubscriptions,
       registrationCohortConversion,
@@ -1308,6 +1310,32 @@ Deno.serve(async (req) => {
       note: 'entitlement_without_contract = UserEntitlement.has_access=true with no backing paying/entitled contract (orphaned or stale entitlement). Past-due is NOT entitled unless within grace. The difference between entitled and paying is explained by the non-paying categories above.',
     };
 
+    // ─── Reliability block (ledger-backed provider sync health) ───────────────
+    const ledgerEvents = rawSubEvents || [];
+    const confirmedPaymentEvents = ledgerEvents.filter((e) => isPaymentEvent(e));
+    const disputeEvents = ledgerEvents.filter((e) => ['chargeback_open', 'chargeback_won', 'chargeback_lost', 'dispute_open', 'dispute_closed'].includes(e.normalized_event_type));
+    const allTimeFirstPaid = realRecords.filter((r) => r.first_paid_at);
+    const reliability = {
+      ledgerEventsTotal: ledgerEvents.length,
+      confirmedPaymentEvents: confirmedPaymentEvents.length,
+      providerEventCounts: {
+        stripe: ledgerEvents.filter((e) => norm(e.provider) === 'stripe').length,
+        apple: ledgerEvents.filter((e) => norm(e.provider) === 'apple').length,
+        google: ledgerEvents.filter((e) => norm(e.provider) === 'google').length,
+        manual: ledgerEvents.filter((e) => norm(e.provider) === 'manual').length,
+        unknown: ledgerEvents.filter((e) => norm(e.provider) === 'unknown').length,
+      },
+      firstPaidConfidence: {
+        confirmed_payment_event: allTimeFirstPaid.filter((r) => r.first_paid_confidence_category === 'confirmed_payment_event').length,
+        strong_subscription_evidence: allTimeFirstPaid.filter((r) => r.first_paid_confidence_category === 'strong_subscription_evidence').length,
+        inferred_contract_period: allTimeFirstPaid.filter((r) => r.first_paid_confidence_category === 'inferred_contract_period').length,
+        weak_fallback: allTimeFirstPaid.filter((r) => r.first_paid_confidence_category === 'weak_fallback').length,
+        unresolved: realRecords.filter((r) => !r.first_paid_at).length,
+      },
+      chargebackCount: disputeEvents.length,
+      note: 'Reliability metrics are derived exclusively from the canonical SubscriptionEvent ledger. confirmed_payment_event = verified provider transaction; the rest are evidence tiers, not payment confirmations.',
+    };
+
     return Response.json({
       meta: {
         generatedAt: now.toISOString(),
@@ -1346,6 +1374,7 @@ Deno.serve(async (req) => {
       reactivatedPaidUsersDetail,
       firstPaidEvidenceSummary,
       entitlementReconciliation,
+      reliability,
       dedupeDiagnostics: dedupeDiag,
     });
 

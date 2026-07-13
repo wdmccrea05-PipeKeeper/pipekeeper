@@ -132,12 +132,20 @@ export default function UserReport() {
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card title="New First-Time Paid Users" value={acq.newFirstTimePaidUsers ?? 0} highlight />
+          <Card title="Confirmed (verified payment)" value={acq.confirmedFirstTimePaidUsers ?? 0} />
+          <Card title="Inferred (not verified)" value={acq.inferredFirstTimePaidUsers ?? 0} warn={(acq.inferredFirstTimePaidUsers ?? 0) > 0} />
           <Card title="Reactivated Paid Users" value={acq.reactivatedPaidUsers ?? 0} />
           <Card title="New Paid Subscriptions" value={acq.newPaidSubscriptions ?? 0} />
           <Card title="Canceled Subscriptions" value={acq.canceledSubscriptions ?? 0} />
           <Card title="Expired Subscriptions" value={acq.expiredSubscriptions ?? 0} />
           <Card title="Free→Paid Conv. Rate" value={acq.existingFreeUserConversion == null ? '—' : `${acq.existingFreeUserConversion}%`} />
           <Card title="Reg→Paid Conv. Rate" value={acq.registrationCohortConversion == null ? '—' : `${acq.registrationCohortConversion}%`} />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+          <Card title="Gross First-Time Paid" value={acq.grossFirstTimePaidUsers ?? 0} />
+          <Card title="Refunded (in period)" value={acq.refundedFirstTimePaidUsers ?? 0} warn={(acq.refundedFirstTimePaidUsers ?? 0) > 0} />
+          <Card title="Net Retained First-Time Paid" value={acq.netRetainedFirstTimePaidUsers ?? 0} highlight />
+          <Card title="Net Paid Subscriptions" value={acq.netPaidSubscriptions ?? 0} />
         </div>
 
         <ConfidenceLine evidence={data.firstPaidEvidenceSummary} count={acq.newFirstTimePaidUsers ?? 0} />
@@ -214,6 +222,11 @@ export default function UserReport() {
       {/* 7b. First-time paid users — evidence & confidence categories */}
       <Section title={`7b. First-Time Paid Users — Evidence (${(data.newFirstTimePaidUsersDetail || []).length})`}>
         <FirstTimePaidEvidenceTable rows={data.newFirstTimePaidUsersDetail || []} />
+      </Section>
+
+      {/* 7c. Provider Sync Reliability (ledger-backed) */}
+      <Section title="7c. Provider Sync Reliability (canonical ledger)">
+        <ReliabilityBlock reliability={data.reliability} />
       </Section>
 
       {/* 8. Audit & Reconciliation */}
@@ -430,6 +443,52 @@ function FirstTimePaidEvidenceTable({ rows }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function ReliabilityBlock({ reliability }) {
+  if (!reliability) return null;
+  const fpc = reliability.firstPaidConfidence || {};
+  const pec = reliability.providerEventCounts || {};
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card title="Ledger Events Total" value={reliability.ledgerEventsTotal ?? 0} />
+        <Card title="Confirmed Payment Events" value={reliability.confirmedPaymentEvents ?? 0} highlight />
+        <Card title="Chargebacks / Disputes" value={reliability.chargebackCount ?? 0} warn={(reliability.chargebackCount ?? 0) > 0} />
+        <Card title="Stripe Events" value={pec.stripe ?? 0} />
+        <Card title="Apple Events" value={pec.apple ?? 0} />
+        <Card title="Google Events" value={pec.google ?? 0} />
+        <Card title="Manual Events" value={pec.manual ?? 0} />
+        <Card title="Unknown-Source Events" value={pec.unknown ?? 0} warn={(pec.unknown ?? 0) > 0} />
+      </div>
+      <div className="rounded-xl border border-[#8b6239]/25 bg-[#1f1712]/70 p-4 text-sm space-y-2">
+        <p className="font-semibold text-[#D4A574]">First-paid confidence (all-time)</p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          <div className="rounded-lg border border-emerald-700/30 px-3 py-2">
+            <p className="text-xs text-[#E0D8C8]/60">Confirmed payment</p>
+            <p className="text-lg font-semibold text-emerald-300">{fpc.confirmed_payment_event ?? 0}</p>
+          </div>
+          <div className="rounded-lg border border-[#8b6239]/20 px-3 py-2">
+            <p className="text-xs text-[#E0D8C8]/60">Strong sub evidence</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{fpc.strong_subscription_evidence ?? 0}</p>
+          </div>
+          <div className="rounded-lg border border-yellow-700/30 px-3 py-2">
+            <p className="text-xs text-[#E0D8C8]/60">Inferred contract</p>
+            <p className="text-lg font-semibold text-yellow-300">{fpc.inferred_contract_period ?? 0}</p>
+          </div>
+          <div className="rounded-lg border border-yellow-700/30 px-3 py-2">
+            <p className="text-xs text-[#E0D8C8]/60">Weak fallback</p>
+            <p className="text-lg font-semibold text-yellow-300">{fpc.weak_fallback ?? 0}</p>
+          </div>
+          <div className="rounded-lg border border-red-800/30 px-3 py-2">
+            <p className="text-xs text-[#E0D8C8]/60">Unresolved</p>
+            <p className="text-lg font-semibold text-red-300">{fpc.unresolved ?? 0}</p>
+          </div>
+        </div>
+        <p className="text-xs text-[#E0D8C8]/50">{reliability.note}</p>
+      </div>
     </div>
   );
 }
