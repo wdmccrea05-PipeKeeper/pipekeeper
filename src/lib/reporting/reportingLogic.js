@@ -120,22 +120,52 @@ export function isEntitledStatus(canonicalStatus) {
 }
 
 // ─── Event classification ─────────────────────────────────────────────────────
-
-const PAYMENT_EVENT_PATTERNS = [
-  'invoice.payment_succeeded', 'charge.succeeded', 'checkout.session.completed',
-  'customer.subscription.created', 'customer.subscription.updated',
-  'subscribed', 'renewed', 'renewal', 'initial_buy', 'repurchase', 'product_purchase',
-];
+// Canonical payment-event classifier. A positive amount is supporting evidence,
+// never the definition of a successful payment. Refunds, failures, disputes,
+// pending/incomplete, and trial events are rejected before any success check.
+const REFUND_SLUGS = ['refund', 'refunded', 'chargeback', 'dispute', 'disputed', 'reversal', 'reversed'];
+const FAILED_SLUGS = ['payment failed', 'invoice payment failed', 'charge failed', 'card declined', 'declined', 'payment canceled', 'canceled payment', 'void', 'voided'];
+const PENDING_SLUGS = ['pending', 'incomplete', 'authorization only', 'authorized only', 'checkout expired', 'payment pending'];
+const TRIAL_SLUGS = ['trial', 'trialing'];
+const PAYMENT_SUCCESS_SLUGS = ['invoice payment succeeded', 'charge succeeded', 'checkout session completed', 'initial buy', 'repurchase', 'product purchase', 'renewed', 'renewal'];
+const LIFECYCLE_SLUGS = ['customer subscription created', 'customer subscription updated', 'subscribed'];
+const PAYMENT_EVENT_PATTERNS = PAYMENT_SUCCESS_SLUGS.concat(LIFECYCLE_SLUGS);
 const CANCEL_EVENT_PATTERNS = ['subscription.deleted', 'canceled', 'cancel'];
 const EXPIRE_EVENT_PATTERNS = ['expired', 'expiration'];
 
+function eventSlug(t) { return norm(t).replace(/[._-]+/g, ' '); }
+
+export function classifyPaymentEvent(event) {
+  const type = eventSlug(event?.event_type);
+  const status = eventSlug(event?.raw_status || event?.status);
+  const amount = Number(event?.amount_cents || 0);
+  if (REFUND_SLUGS.some((s) => type.includes(s) || status.includes(s))) {
+    return { isSuccessfulPayment: false, isRefund: true, reason: 'refund_event' };
+  }
+  if (FAILED_SLUGS.some((s) => type.includes(s) || status.includes(s))) {
+    return { isSuccessfulPayment: false, isRefund: false, reason: 'failed_payment_event' };
+  }
+  if (PENDING_SLUGS.some((s) => type.includes(s) || status.includes(s))) {
+    return { isSuccessfulPayment: false, isRefund: false, reason: 'pending_payment_event' };
+  }
+  if (TRIAL_SLUGS.some((s) => status.includes(s))) {
+    return { isSuccessfulPayment: false, isRefund: false, reason: 'trial_event' };
+  }
+  if (PAYMENT_SUCCESS_SLUGS.some((s) => type.includes(s))) {
+    return { isSuccessfulPayment: true, isRefund: false, reason: 'confirmed_success' };
+  }
+  if (LIFECYCLE_SLUGS.some((s) => type.includes(s)) && amount > 0) {
+    return { isSuccessfulPayment: true, isRefund: false, reason: 'confirmed_success' };
+  }
+  return { isSuccessfulPayment: false, isRefund: false, reason: 'unrecognized_event' };
+}
+
 export function isPaymentEvent(e) {
-  const t = norm(e?.event_type);
-  // Exclude refund/failed/void events from payment-success BEFORE the amount check
-  if (t && (t.includes('refund') || t.includes('failed') || t.includes('void'))) return false;
-  if (e && e.amount_cents && Number(e.amount_cents) > 0) return true;
-  if (!t) return false;
-  return PAYMENT_EVENT_PATTERNS.some((p) => t.includes(p));
+  return classifyPaymentEvent(e).isSuccessfulPayment;
+}
+
+export function isRefundEvent(e) {
+  return classifyPaymentEvent(e).isRefund;
 }
 
 export function isCancelEvent(e) {

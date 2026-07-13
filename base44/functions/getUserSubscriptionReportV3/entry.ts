@@ -97,20 +97,52 @@ function classifyStatus(rawStatus, periodEnd, now) {
 }
 
 // ─── Event classification ───────────────────────────────────────────────────────
-const PAYMENT_EVENT_PATTERNS = [
-  'invoice.payment_succeeded', 'charge.succeeded', 'checkout.session.completed',
-  'customer.subscription.created', 'customer.subscription.updated',
-  'subscribed', 'renewed', 'renewal', 'initial_buy', 'repurchase', 'product_purchase',
-];
+// Canonical payment-event classifier. A positive amount is supporting evidence,
+// never the definition of a successful payment. Refunds, failures, disputes,
+// pending/incomplete, and trial events are rejected before any success check.
+const REFUND_SLUGS = ['refund', 'refunded', 'chargeback', 'dispute', 'disputed', 'reversal', 'reversed'];
+const FAILED_SLUGS = ['payment failed', 'invoice payment failed', 'charge failed', 'card declined', 'declined', 'payment canceled', 'canceled payment', 'void', 'voided'];
+const PENDING_SLUGS = ['pending', 'incomplete', 'authorization only', 'authorized only', 'checkout expired', 'payment pending'];
+const TRIAL_SLUGS = ['trial', 'trialing'];
+const PAYMENT_SUCCESS_SLUGS = ['invoice payment succeeded', 'charge succeeded', 'checkout session completed', 'initial buy', 'repurchase', 'product purchase', 'renewed', 'renewal'];
+const LIFECYCLE_SLUGS = ['customer subscription created', 'customer subscription updated', 'subscribed'];
+const PAYMENT_EVENT_PATTERNS = PAYMENT_SUCCESS_SLUGS.concat(LIFECYCLE_SLUGS);
 const CANCEL_EVENT_PATTERNS = ['subscription.deleted', 'canceled', 'cancel'];
 const EXPIRE_EVENT_PATTERNS = ['expired', 'expiration'];
 
+function eventSlug(t) { return norm(t).replace(/[._-]+/g, ' '); }
+
+function classifyPaymentEvent(event) {
+  const type = eventSlug(event?.event_type);
+  const status = eventSlug(event?.raw_status || event?.status);
+  const amount = Number(event?.amount_cents || 0);
+  if (REFUND_SLUGS.some((s) => type.includes(s) || status.includes(s))) {
+    return { isSuccessfulPayment: false, isRefund: true, reason: 'refund_event' };
+  }
+  if (FAILED_SLUGS.some((s) => type.includes(s) || status.includes(s))) {
+    return { isSuccessfulPayment: false, isRefund: false, reason: 'failed_payment_event' };
+  }
+  if (PENDING_SLUGS.some((s) => type.includes(s) || status.includes(s))) {
+    return { isSuccessfulPayment: false, isRefund: false, reason: 'pending_payment_event' };
+  }
+  if (TRIAL_SLUGS.some((s) => status.includes(s))) {
+    return { isSuccessfulPayment: false, isRefund: false, reason: 'trial_event' };
+  }
+  if (PAYMENT_SUCCESS_SLUGS.some((s) => type.includes(s))) {
+    return { isSuccessfulPayment: true, isRefund: false, reason: 'confirmed_success' };
+  }
+  if (LIFECYCLE_SLUGS.some((s) => type.includes(s)) && amount > 0) {
+    return { isSuccessfulPayment: true, isRefund: false, reason: 'confirmed_success' };
+  }
+  return { isSuccessfulPayment: false, isRefund: false, reason: 'unrecognized_event' };
+}
+
 function isPaymentEvent(e) {
-  if (e && e.amount_cents && Number(e.amount_cents) > 0) return true;
-  const t = norm(e?.event_type);
-  if (!t) return false;
-  if (t.includes('refund') || t.includes('failed') || t.includes('void')) return false;
-  return PAYMENT_EVENT_PATTERNS.some((p) => t.includes(p));
+  return classifyPaymentEvent(e).isSuccessfulPayment;
+}
+
+function isRefundEvent(e) {
+  return classifyPaymentEvent(e).isRefund;
 }
 function isCancelEvent(e) {
   const t = norm(e?.event_type);
@@ -730,7 +762,7 @@ function buildCanonicalUsers(users, contracts, activityIndex, eventIndex, entitl
 }
 
 // ─── Metric computation ─────────────────────────────────────────────────────────────
-function computeMetrics(userRecords, contracts, users, range, now, duplicatesMerged) {
+function computeMetrics(userRecords, contracts, users, range, now, duplicatesMerged, refundEvents) {
   const realUsers = userRecords.filter((r) => !r.is_synthetic);
   const totalRegisteredUsers = realUsers.length;
   const newRegisteredUsers = realUsers.filter((r) => inDateRange(r.created_at, range)).length;
@@ -755,6 +787,19 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
   const newPaidSubscriptions = contracts.filter((c) => c.first_paid_at && inDateRange(c.first_paid_at, range)).length;
   const canceledSubscriptions = contracts.filter((c) => c.canceled_at && inDateRange(c.canceled_at, range)).length;
   const expiredSubscriptions = contracts.filter((c) => c.expired_at && inDateRange(c.expired_at, range)).length;
+
+  // Refund accounting — refunds never count as successful payments. Tracked separately
+  // so the report can distinguish gross acquisition from net retained acquisition.
+  const refundedEventsInRange = (refundEvents || []).filter((e) =>
+    inDateRange(parseMetricDate(e.period_start) || parseMetricDate(e.ingested_at) || parseMetricDate(e.created_date), range)
+  );
+  const refundedUserKeys = new Set(refundedEventsInRange.map((e) => e.user_id || e.user_email).filter(Boolean));
+  const refundedFirstTimePaidUsers = refundedUserKeys.size || refundedEventsInRange.length;
+  const refundedSubscriptions = refundedEventsInRange.length;
+  const grossFirstTimePaidUsers = newFirstTimePaidUsers;
+  const netRetainedFirstTimePaidUsers = Math.max(0, grossFirstTimePaidUsers - refundedFirstTimePaidUsers);
+  const grossPaidSubscriptions = newPaidSubscriptions;
+  const netPaidSubscriptions = Math.max(0, grossPaidSubscriptions - refundedSubscriptions);
 
   // ─── Cohort-based conversion (fix: never mix historical numerator with current-state denominator) ──
   const ATTRIBUTION_WINDOW_DAYS = 30;
@@ -836,6 +881,8 @@ function computeMetrics(userRecords, contracts, users, range, now, duplicatesMer
     subscriptionStatus: { currentEntitledUsers, currentPayingUsers, currentTrials, currentPastDue, cancelingButEntitled, expiredUsers },
     acquisition: {
       newFirstTimePaidUsers, reactivatedPaidUsers, newPaidSubscriptions, canceledSubscriptions, expiredSubscriptions,
+      grossFirstTimePaidUsers, refundedFirstTimePaidUsers, netRetainedFirstTimePaidUsers,
+      grossPaidSubscriptions, refundedSubscriptions, netPaidSubscriptions,
       registrationCohortConversion,
       registrationCohortNumerator: convertedRegistrants.length,
       registrationCohortDenominator: usersRegisteredInRange.length,
@@ -909,7 +956,8 @@ Deno.serve(async (req) => {
     const userRecords = buildCanonicalUsers(users, contracts, activityIndex, eventIndex, rawEntitlements, rawReferralAccess, usersByEmail, usersById, now);
 
     // Compute metrics
-    const metrics = computeMetrics(userRecords, contracts, users, range, now, duplicatesMerged);
+    const refundedEvents = rawSubEvents.filter((e) => isRefundEvent(e));
+    const metrics = computeMetrics(userRecords, contracts, users, range, now, duplicatesMerged, refundedEvents);
 
     // Revenue (from currently-paying contracts with amount+interval)
     const payingContracts = contracts.filter((c) => c.is_currently_paying && c.amount && c.billing_interval);
