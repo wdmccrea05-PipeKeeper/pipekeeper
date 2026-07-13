@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import OrphanedEntitlementCard from '@/components/reconciliation/OrphanedEntitlementCard';
 
 export default function ReconciliationDashboard() {
   const [report, setReport] = useState(null);
   const [unmatched, setUnmatched] = useState(null);
+  const [orphanedEntitlements, setOrphanedEntitlements] = useState([]);
   const [loadingReport, setLoadingReport] = useState(true);
   const [loadingUnmatched, setLoadingUnmatched] = useState(true);
   const [error, setError] = useState('');
@@ -11,6 +13,16 @@ export default function ReconciliationDashboard() {
   const [resolveResult, setResolveResult] = useState(null);
   const [manualUserId, setManualUserId] = useState({});
   const [resolveNotes, setResolveNotes] = useState({});
+
+  const loadOrphanedEntitlements = async () => {
+    try {
+      const r = await base44.entities.UserEntitlement.filter({ has_access: true, contract_count: 0 }, '-created_date', 50);
+      const rows = (r && Array.isArray(r)) ? r : (r?.data ?? []);
+      setOrphanedEntitlements(Array.isArray(rows) ? rows : []);
+    } catch {
+      setOrphanedEntitlements([]);
+    }
+  };
 
   const loadReport = async () => {
     setLoadingReport(true);
@@ -27,7 +39,12 @@ export default function ReconciliationDashboard() {
     } catch (e) { setError(e?.message || 'Failed to load unmatched payments'); } finally { setLoadingUnmatched(false); }
   };
 
-  useEffect(() => { loadReport(); loadUnmatched(); }, []);
+  useEffect(() => { loadReport(); loadUnmatched(); loadOrphanedEntitlements(); }, []);
+
+  const handleOrphanResolved = () => {
+    loadReport();
+    loadOrphanedEntitlements();
+  };
 
   const handleResolve = async (eventId, targetUserId, matchType, confidence) => {
     setResolving(eventId);
@@ -217,6 +234,31 @@ export default function ReconciliationDashboard() {
           )}
         </Section>
       )}
+
+      {/* Orphaned entitlements — classification workflow */}
+      <Section title={`Orphaned Entitlements (${orphanedEntitlements.length})`}>
+        <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">
+          Entitlements with access but no supporting ActiveContract. These are <span className="text-[#D4A574]">not</span> payment
+          mismatches — an administrator must classify each as a valid manual grant, promotional grant, referral grant,
+          legacy migration, linked subscription, stale and revoked, or unresolved. All actions are audited with
+          administrator identity, timestamp, prior state, revised state, and a required audit note.
+        </p>
+        {orphanedEntitlements.length === 0 ? (
+          <div className="rounded-xl border border-emerald-700/40 bg-emerald-900/10 p-4 text-emerald-300 text-sm">
+            ✓ No orphaned entitlements. All entitled users have supporting contracts.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {orphanedEntitlements.map((e) => (
+              <OrphanedEntitlementCard
+                key={e.id}
+                entitlement={e}
+                onResolved={handleOrphanResolved}
+              />
+            ))}
+          </div>
+        )}
+      </Section>
 
       {/* Unmatched payments — reconciliation workflow */}
       <Section title={`Unmatched Paid Transactions (${unmatchedList.length})`}>

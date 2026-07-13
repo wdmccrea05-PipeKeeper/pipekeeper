@@ -487,8 +487,45 @@ function ReliabilityBlock({ reliability }) {
             <p className="text-lg font-semibold text-red-300">{fpc.unresolved ?? 0}</p>
           </div>
         </div>
+        {reliability.status && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-sm font-semibold ${
+              reliability.status === 'verified' ? 'text-emerald-300'
+              : reliability.status === 'unreliable' ? 'text-red-300'
+              : reliability.status === 'inference_based' ? 'text-blue-300'
+              : 'text-yellow-300'
+            }`}>
+              {reliability.status === 'verified' ? '✓ Verified'
+              : reliability.status === 'unreliable' ? '✗ Unreliable'
+              : reliability.status === 'inference_based' ? '◈ Inference-based'
+              : '⚠ Partially Verified'}
+            </span>
+            {reliability.reasons?.length > 0 && (
+              <span className="text-xs text-[#E0D8C8]/60">
+                {reliability.reasons.map((r) => `• ${r}`).join('  ')}
+              </span>
+            )}
+          </div>
+        )}
+        <ProviderCoverageNote coverage={reliability.providerCoverage} />
         <p className="text-xs text-[#E0D8C8]/50">{reliability.note}</p>
       </div>
+    </div>
+  );
+}
+
+function ProviderCoverageNote({ coverage }) {
+  if (!coverage) return null;
+  const apple = coverage.apple;
+  const google = coverage.google;
+  const stripe = coverage.stripe;
+  return (
+    <div className="flex flex-col gap-1 text-xs text-[#E0D8C8]/60 border-t border-[#8b6239]/15 pt-2">
+      <span>Stripe: <span className={stripe === 'connected' ? 'text-emerald-300' : 'text-yellow-300'}>{stripe || '—'}</span></span>
+      <span>Apple App Store: {apple === 'not_configured'
+        ? <span className="text-yellow-300">Relevant — transaction verification not configured</span>
+        : <span className={apple === 'not_applicable' ? 'text-[#E0D8C8]/50' : 'text-emerald-300'}>{apple || '—'}</span>}</span>
+      <span>Google Play: <span className={google === 'not_applicable' ? 'text-[#E0D8C8]/50' : 'text-yellow-300'}>{google || '—'}</span></span>
     </div>
   );
 }
