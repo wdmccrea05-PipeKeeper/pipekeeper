@@ -76,14 +76,31 @@ export default function ReconciliationDashboard() {
       {/* Reliability status */}
       {report && (
         <Section title="Reliability Status">
-          <div className={`rounded-xl border p-4 ${reliability.status === 'verified' ? 'border-emerald-700/40 bg-emerald-900/10' : 'border-yellow-700/40 bg-yellow-900/10'}`}>
-            <p className={`text-lg font-semibold ${reliability.status === 'verified' ? 'text-emerald-300' : 'text-yellow-300'}`}>
-              {reliability.status === 'verified' ? '✓ Verified' : '⚠ Partially Verified'}
+          <div className={`rounded-xl border p-4 ${
+            reliability.status === 'verified' ? 'border-emerald-700/40 bg-emerald-900/10'
+            : reliability.status === 'unreliable' ? 'border-red-700/40 bg-red-900/10'
+            : reliability.status === 'inference_based' ? 'border-blue-700/40 bg-blue-900/10'
+            : 'border-yellow-700/40 bg-yellow-900/10'
+          }`}>
+            <p className={`text-lg font-semibold ${
+              reliability.status === 'verified' ? 'text-emerald-300'
+              : reliability.status === 'unreliable' ? 'text-red-300'
+              : reliability.status === 'inference_based' ? 'text-blue-300'
+              : 'text-yellow-300'
+            }`}>
+              {reliability.status === 'verified' ? '✓ Verified'
+              : reliability.status === 'unreliable' ? '✗ Unreliable'
+              : reliability.status === 'inference_based' ? '◈ Inference-based'
+              : '⚠ Partially Verified'}
             </p>
+            <p className="text-xs text-[#E0D8C8]/50 mt-1">Status is determined from material issues, not raw exception counts. Zero-dollar promotional events never lower reliability. Provider warnings appear only for providers relevant to CollectionKeeper.</p>
             {reliability.reasons?.length > 0 && (
               <ul className="mt-2 space-y-1 text-sm">
                 {reliability.reasons.map((r, i) => <li key={i} className="text-[#E0D8C8]/80">• {r}</li>)}
               </ul>
+            )}
+            {(totals.orphaned_entitlements ?? 0) > 0 && (
+              <p className="mt-2 text-sm text-yellow-300">⚠ {totals.orphaned_entitlements} entitlement{(totals.orphaned_entitlements ?? 0) === 1 ? ' remains' : 's remain'} unclassified — an administrator must classify it as a valid manual grant, promotional grant, referral grant, legacy migration, linked subscription, or stale and revoked. It is not a payment mismatch.</p>
             )}
           </div>
         </Section>
@@ -107,20 +124,21 @@ export default function ReconciliationDashboard() {
             <Card title="Last Provider Sync" value={totals.last_provider_sync ? new Date(totals.last_provider_sync).toLocaleString() : '—'} />
           </div>
           <div className="flex justify-end mt-3">
-            <button onClick={() => exportCsv(report)} className="px-3 py-2 rounded border border-[#8b6239]/40 text-[#E0D8C8] hover:bg-[#8b6239]/20 text-sm">Export Totals CSV</button>
+            <button onClick={() => exportCsvBackend()} className="px-3 py-2 rounded border border-[#8b6239]/40 text-[#E0D8C8] hover:bg-[#8b6239]/20 text-sm">Export CSV (admin-enforced)</button>
           </div>
         </Section>
       )}
 
       {/* Provider coverage */}
       {report && (
-        <Section title="Provider Coverage">
+        <Section title="Provider Coverage (contextual)">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Card title="Stripe" value={coverage.stripe || '—'} />
-            <Card title="Apple App Store" value={coverage.apple || 'not_configured'} warn={coverage.apple === 'not_configured'} />
-            <Card title="Google Play" value={coverage.google || 'not_configured'} warn={coverage.google === 'not_configured'} />
+            <Card title="Stripe" value={coverage.stripe || '—'} warn={coverage.stripe === 'not_configured'} />
+            <Card title="Apple App Store" value={coverage.apple || '—'} warn={coverage.apple === 'not_configured'} />
+            <Card title="Google Play" value={coverage.google || '—'} warn={coverage.google === 'not_configured'} />
             <Card title="Manual Billing" value={coverage.manual || '—'} />
           </div>
+          <p className="text-xs text-[#E0D8C8]/40 mt-2">Providers not part of CollectionKeeper's flow are marked <span className="text-[#D4A574]">not_applicable</span> and do not lower reliability.</p>
           {coverage.warnings?.length > 0 && (
             <ul className="mt-3 space-y-1 text-sm text-[#E0D8C8]/70">
               {coverage.warnings.map((w, i) => <li key={i}>• {w}</li>)}
@@ -175,14 +193,39 @@ export default function ReconciliationDashboard() {
         </Section>
       )}
 
+      {/* Zero-dollar events — visible as lifecycle, excluded from payment totals */}
+      {report && report.reliability && (
+        <Section title="Zero-Dollar / Promotional Events (excluded from payment totals)">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card title="Zero-Dollar Events (total)" value={report.reliability.zeroDollarEventsCount ?? 0} />
+            <Card title="Unmatched Zero-Dollar" value={report.reliability.unmatchedZeroDollarEvents ?? 0} />
+            <Card title="Unmatched Paid Transactions" value={report.reliability.unmatchedPaidTransactions ?? 0} warn={(report.reliability.unmatchedPaidTransactions ?? 0) > 0} />
+            <Card title="Unmatched Lifecycle Events" value={report.reliability.unmatchedLifecycleEvents ?? 0} />
+          </div>
+          {report.unmatchedZeroDollarEventsDetail?.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs text-[#E0D8C8]/50">These are trial/promotional invoices — not paid transactions. They remain visible for lifecycle reconciliation but never count toward payment totals or reliability.</p>
+              {report.unmatchedZeroDollarEventsDetail.slice(0, 10).map((e) => (
+                <div key={e.event_id} className="rounded-lg border border-[#8b6239]/15 bg-[#1f1712]/50 p-2 text-xs">
+                  <span className="font-mono text-[#E0D8C8]/80">{e.event_id}</span>
+                  <span className="text-[#D4A574] ml-2">{e.zero_dollar_classification?.replace(/_/g, ' ')}</span>
+                  {e.is_trial && <span className="text-[#E0D8C8]/50 ml-2">trial</span>}
+                  {e.user_email && <span className="text-[#E0D8C8]/50 ml-2">· {e.user_email}</span>}
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+      )}
+
       {/* Unmatched payments — reconciliation workflow */}
-      <Section title={`Unmatched Payments (${unmatchedList.length})`}>
+      <Section title={`Unmatched Paid Transactions (${unmatchedList.length})`}>
         <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">
-          Each payment shows confidence-scored match suggestions. Deterministic matches can be auto-linked; ambiguous matches require administrator approval. Reconciliation recalculates metrics and shows before/after effects.
+          Only genuine paid transactions (amount &gt; 0) appear here. Zero-dollar promotional/trial invoices are excluded from payment totals. Each payment shows confidence-scored match suggestions; reconciliation recalculates metrics and shows before/after effects.
         </p>
         {loadingUnmatched && <p className="text-[#E0D8C8]/60">Loading unmatched payments…</p>}
         {!loadingUnmatched && unmatchedList.length === 0 && (
-          <div className="rounded-xl border border-emerald-700/40 bg-emerald-900/10 p-4 text-emerald-300 text-sm">✓ No unmatched provider payments.</div>
+          <div className="rounded-xl border border-emerald-700/40 bg-emerald-900/10 p-4 text-emerald-300 text-sm">✓ No unmatched paid Stripe transactions. Zero-dollar promotional events are classified separately.</div>
         )}
         {unmatchedList.length > 0 && (
           <div className="space-y-3">
@@ -330,4 +373,25 @@ function exportCsv(report) {
   const a = document.createElement('a');
   a.href = url; a.download = 'reconciliation-totals.csv'; a.click();
   URL.revokeObjectURL(url);
+}
+
+// Backend-enforced CSV export: admin authorization, no secrets, no raw payloads,
+// labeled confirmed vs inferred, uses the same filtered totals as the dashboard.
+async function exportCsvBackend() {
+  try {
+    const r = await base44.functions.invoke('exportReconciliationCsv', {});
+    // r is an Axios response; data may be a string (CSV) or JSON error
+    const data = r?.data ?? r;
+    if (typeof data === 'string') {
+      const blob = new Blob([data], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'reconciliation-export.csv'; a.click();
+      URL.revokeObjectURL(url);
+    } else if (data?.error) {
+      alert(`Export failed: ${data.error}`);
+    }
+  } catch (e) {
+    alert(`Export failed: ${e?.message || 'Unauthorized'}`);
+  }
 }

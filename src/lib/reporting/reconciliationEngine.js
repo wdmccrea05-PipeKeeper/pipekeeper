@@ -382,15 +382,21 @@ export function computeReconciliationTotals(opts) {
     totalProviderEvents,
     matchedEvents,
     unmatchedEvents,
+    unmatchedPaidTransactions,
+    unmatchedZeroDollarEvents,
+    unmatchedLifecycleEvents,
     matchedPayments,
     unmatchedPayments,
     matchedSubscriptions,
     unmatchedSubscriptions,
     duplicateEventsRejected,
     usersWithConfirmedFirstPayments,
+    usersWithConfirmedFirstEverPayments,
+    usersWithConfirmedWithinAvailableHistory,
     usersWithInferredFirstPayments,
     usersWithUnresolvedFirstPayments,
     orphanedEntitlements,
+    unclassifiedEntitlements,
     reliabilityStatus,
     lastProviderSync,
     lastReconciliationRun,
@@ -399,15 +405,21 @@ export function computeReconciliationTotals(opts) {
     total_provider_events: totalProviderEvents,
     matched_events: matchedEvents,
     unmatched_events: unmatchedEvents,
+    unmatched_paid_transactions: unmatchedPaidTransactions,
+    unmatched_zero_dollar_events: unmatchedZeroDollarEvents,
+    unmatched_lifecycle_events: unmatchedLifecycleEvents,
     matched_payments: matchedPayments,
     unmatched_payments: unmatchedPayments,
     matched_subscriptions: matchedSubscriptions,
     unmatched_subscriptions: unmatchedSubscriptions,
     duplicate_events_rejected: duplicateEventsRejected,
     users_with_confirmed_first_payments: usersWithConfirmedFirstPayments,
+    users_with_confirmed_first_ever_payments: usersWithConfirmedFirstEverPayments,
+    users_with_confirmed_within_available_history: usersWithConfirmedWithinAvailableHistory,
     users_with_inferred_first_payments: usersWithInferredFirstPayments,
     users_with_unresolved_first_payments: usersWithUnresolvedFirstPayments,
     orphaned_entitlements: orphanedEntitlements,
+    unclassified_entitlements: unclassifiedEntitlements,
     reliability_status: reliabilityStatus,
     last_provider_sync: lastProviderSync,
     last_reconciliation_run: lastReconciliationRun,
@@ -478,5 +490,247 @@ export function verifyStripePayingUsers(opts) {
     status_conflicts: statusConflicts,
     period_conflicts: periodConflicts,
     refund_conflicts: refundConflicts,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FINAL HARDENING PASS — zero-dollar classification, contextual provider coverage,
+// first-payment confidence terminology, historical completeness v2, reliability v2.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Zero-dollar / promotional event classification ──────────────────────────────
+// A zero-dollar invoice is never a paid transaction. Classify it so it can be
+// excluded from paid-payment totals while remaining visible as a lifecycle event.
+export function classifyZeroDollarEvent(event) {
+  if (!event) return null;
+  const amount = Number(event?.amount_cents || 0);
+  if (amount !== 0) return null; // only classify zero-dollar events
+  // Must look like a payment/lifecycle event to be classified here
+  const type = eventSlug(event?.event_type);
+  const status = eventSlug(event?.raw_status || event?.status);
+  // Refunds/failed/pending at $0 are not "promotional" — leave them to the normal classifier
+  if (REFUND_SLUGS.some((s) => type.includes(s) || status.includes(s))) return null;
+  if (FAILED_SLUGS.some((s) => type.includes(s) || status.includes(s))) return null;
+  if (PENDING_SLUGS.some((s) => type.includes(s) || status.includes(s))) return null;
+  // Free trial invoice: trial flag set, or trial in status
+  if (event?.is_trial || TRIAL_SLUGS.some((s) => status.includes(s))) return 'free_trial_invoice';
+  // Promotional entitlement: $0 invoice that is not a trial (coupon, comp, migration)
+  if (PAYMENT_SUCCESS_SLUGS.some((s) => type.includes(s))) return 'zero_dollar_promotion';
+  // Lifecycle event at $0 (subscription created/updated)
+  if (LIFECYCLE_SLUGS.some((s) => type.includes(s))) return 'non_payment_invoice';
+  // Fallback
+  return 'promotional_entitlement';
+}
+
+// Is this event a genuine paid transaction (amount > 0 AND a successful payment)?
+export function isPaidTransaction(event) {
+  if (!isPaymentEvent(event)) return false;
+  return Number(event?.amount_cents || 0) > 0;
+}
+
+// Is this event a zero-dollar promotional/trial event (not a paid transaction)?
+export function isZeroDollarEvent(event) {
+  return classifyZeroDollarEvent(event) !== null;
+}
+
+// Categorize an unmatched event into paid / zero-dollar / lifecycle buckets.
+export function categorizeUnmatchedEvent(event) {
+  if (isPaidTransaction(event)) return 'paid_transaction';
+  if (isZeroDollarEvent(event)) return 'zero_dollar_event';
+  if (LIFECYCLE_SLUGS.some((s) => eventSlug(event?.event_type).includes(s))) return 'lifecycle_event';
+  return 'other';
+}
+
+// ─── Provider relevance detection ────────────────────────────────────────────────
+// Determine whether a provider is actually part of CollectionKeeper's payment flow
+// from real evidence (records, code, configuration). A provider that is not used
+// is "not_applicable" and must never produce a reliability warning.
+export function determineProviderRelevance(evidence) {
+  const e = evidence || {};
+  const has = (arr) => Array.isArray(arr) && arr.length > 0;
+  const isProvided = (v) => v !== undefined && v !== null;
+  const result = {};
+  for (const p of ['stripe', 'apple', 'google', 'manual']) {
+    const signals = [
+      has(e[`${p}Events`]),
+      has(e[`${p}Subscriptions`]),
+      has(e[`${p}Contracts`]),
+      !!e[`${p}Configured`],
+      !!e[`${p}CodePresent`],
+      has(e[`${p}ProductIds`]),
+    ];
+    const anyTrue = signals.some(Boolean);
+    // "Checked" = any evidence key was explicitly provided (even as empty array/false)
+    const anyChecked = [
+      e[`${p}Events`], e[`${p}Subscriptions`], e[`${p}Contracts`],
+      e[`${p}Configured`], e[`${p}CodePresent`], e[`${p}ProductIds`],
+    ].some(isProvided);
+    if (anyTrue) result[p] = 'relevant';
+    else if (anyChecked) result[p] = 'not_applicable';
+    else result[p] = 'unknown';
+  }
+  return result;
+}
+
+// ─── Contextual provider coverage (v2) ────────────────────────────────────────────
+// Statuses: connected | connected_with_warnings | not_configured | not_applicable | unknown
+// Only not_configured or unknown for a RELEVANT provider reduces reliability.
+export function computeProviderCoverageV2(opts) {
+  const {
+    stripeConnected, stripeReconciled,
+    appleRelevance,     // 'relevant' | 'not_applicable' | 'unknown'
+    googleRelevance,
+    manualRelevance,
+    appleConfigured, googleConfigured, manualConfigured,
+  } = opts;
+  const coverage = {};
+  coverage.stripe = !stripeConnected ? 'not_configured'
+    : (stripeReconciled ? 'connected' : 'connected_with_warnings');
+  for (const [p, rel, cfg] of [
+    ['apple', appleRelevance, appleConfigured],
+    ['google', googleRelevance, googleConfigured],
+    ['manual', manualRelevance, manualConfigured],
+  ]) {
+    if (rel === 'not_applicable') coverage[p] = 'not_applicable';
+    else if (rel === 'unknown') coverage[p] = 'unknown';
+    else if (cfg) coverage[p] = 'connected';
+    else coverage[p] = 'not_configured';
+  }
+  const warnings = [];
+  if (!stripeConnected) warnings.push('Stripe is not connected');
+  if (stripeConnected && !stripeReconciled) warnings.push('Stripe is connected but not fully reconciled');
+  for (const [p, rel, cfg, label] of [
+    ['apple', appleRelevance, appleConfigured, 'Apple App Store'],
+    ['google', googleRelevance, googleConfigured, 'Google Play'],
+    ['manual', manualRelevance, manualConfigured, 'Manual billing'],
+  ]) {
+    if (rel === 'relevant' && !cfg) warnings.push(`${label} is relevant to CollectionKeeper but not configured`);
+    if (rel === 'unknown') warnings.push(`${label} relevance could not be determined`);
+  }
+  return { coverage, warnings };
+}
+
+// ─── Reliability status (v2) — material issues, 4 statuses, contextual ──────────
+// verified | partially_verified | inference_based | unreliable
+export function computeReliabilityStatusV2(opts) {
+  const {
+    unmatchedPaidTransactions,   // only genuine paid transactions (excludes $0)
+    unmatchedSubscriptionCount,
+    duplicateEventCount,
+    orphanedEntitlementCount,
+    unclassifiedEntitlementCount,
+    providerCoverage,            // { stripe, apple, google, manual } from computeProviderCoverageV2
+    providerRelevance,           // { stripe, apple, google, manual } from determineProviderRelevance
+    providerSyncFailures,
+    backfillComplete,
+    fullLifecycleCoverage,
+    statusConflictCount,
+    providerSyncStale,
+    inferredFirstPaidRatio,      // 0-1: fraction of first-paid records that are inferred
+  } = opts;
+
+  const reasons = [];
+  // Only unmatched PAID transactions are material — $0 events are never a payment exception
+  if (unmatchedPaidTransactions > 0) reasons.push(`${unmatchedPaidTransactions} paid Stripe transaction${unmatchedPaidTransactions === 1 ? ' is' : 's are'} not linked to canonical users`);
+  // Provider warnings: only for RELEVANT providers that are not_configured/unknown
+  for (const [p, label] of [['apple', 'Apple App Store'], ['google', 'Google Play'], ['manual', 'Manual billing']]) {
+    const rel = providerRelevance?.[p];
+    const cov = providerCoverage?.[p];
+    if ((rel === 'relevant' || rel === 'unknown') && (cov === 'not_configured' || cov === 'unknown')) {
+      reasons.push(`${label} is ${cov === 'unknown' ? 'relevance undetermined' : 'not configured'} — relevant provider coverage is incomplete`);
+    }
+  }
+  // Unclassified entitlement is an entitlement exception, not a payment exception
+  if (unclassifiedEntitlementCount > 0) reasons.push(`${unclassifiedEntitlementCount} entitlement${unclassifiedEntitlementCount === 1 ? ' remains' : 's remain'} unclassified`);
+  else if (orphanedEntitlementCount > 0) reasons.push(`${orphanedEntitlementCount} entitlement${orphanedEntitlementCount === 1 ? ' has' : 's have'} no backing contract or classified grant`);
+  if (duplicateEventCount > 0) reasons.push(`${duplicateEventCount} duplicate provider event${duplicateEventCount === 1 ? '' : 's'} remain unresolved`);
+  if (unmatchedSubscriptionCount > 0) reasons.push(`${unmatchedSubscriptionCount} provider subscription${unmatchedSubscriptionCount === 1 ? '' : 's'} unmatched`);
+  if (providerSyncFailures > 0) reasons.push(`${providerSyncFailures} provider sync failure${providerSyncFailures === 1 ? '' : 's'} recorded`);
+  if (providerSyncStale) reasons.push('provider synchronization is not current');
+  if (!backfillComplete) reasons.push('historical backfill is incomplete');
+  if (!fullLifecycleCoverage) reasons.push('historical coverage does not span the full customer lifecycle — some first-payments may predate available history');
+
+  // Determine status from material issues
+  const hasMaterialPaymentIssues = unmatchedPaidTransactions > 0 || statusConflictCount > 0;
+  const hasRelevantProviderGap = reasons.some((r) => r.includes('relevant provider coverage is incomplete'));
+  const hasHistoryGap = !fullLifecycleCoverage;
+  const hasUnclassified = unclassifiedEntitlementCount > 0;
+  const inferredHeavy = inferredFirstPaidRatio != null && inferredFirstPaidRatio >= 0.5;
+
+  let status;
+  if (hasMaterialPaymentIssues && unmatchedPaidTransactions > 5) status = 'unreliable';
+  else if (reasons.length === 0) status = 'verified';
+  else if (inferredHeavy && !hasMaterialPaymentIssues && !hasRelevantProviderGap) status = 'inference_based';
+  else status = 'partially_verified';
+
+  return { status, reasons };
+}
+
+// ─── First-payment confidence terminology (v2) ───────────────────────────────────
+// confirmed_first_ever_payment            — full lifecycle coverage, true initial purchase
+// confirmed_first_payment_within_available_history — confirmed payment but earlier history may exist
+// confirmed_current_subscription_payment  — confirmed payment that is a renewal/current, not first
+// inferred_first_payment                  — no verified payment event (subscription/contract date)
+// unresolved                               — no first-paid date
+export function classifyFirstPaymentConfidence(opts) {
+  const {
+    hasConfirmedPaymentEvent,    // boolean: verified successful payment event exists
+    firstPaymentDate,            // Date or null
+    historyAvailableFrom,        // Date or null
+    fullLifecycleCoverage,       // boolean: history covers the user's entire lifecycle
+    accountCreatedDate,          // Date or null (user.created_date)
+    hasPriorPayments,            // boolean: any payment event before firstPaymentDate
+    isWithinHistoryFromStart,    // boolean: first payment near the start of available history
+  } = opts;
+  if (!hasConfirmedPaymentEvent) {
+    if (firstPaymentDate) return 'inferred_first_payment';
+    return 'unresolved';
+  }
+  // Confirmed payment event exists
+  if (hasPriorPayments) return 'confirmed_current_subscription_payment';
+  if (!historyAvailableFrom) return 'confirmed_first_payment_within_available_history';
+  // If full lifecycle is covered (account created after history start), it's a true first-ever
+  if (fullLifecycleCoverage && accountCreatedDate && accountCreatedDate >= historyAvailableFrom) {
+    return 'confirmed_first_ever_payment';
+  }
+  // If the first payment is near the history start, earlier history may exist
+  if (isWithinHistoryFromStart) return 'confirmed_first_payment_within_available_history';
+  return 'confirmed_first_ever_payment';
+}
+
+// ─── Historical completeness (v2) ─────────────────────────────────────────────────
+export function assessHistoryCompletenessV2(opts) {
+  const {
+    provider,
+    eventDates,              // array of Date for this provider's events
+    backfillRangeStart,
+    backfillRangeEnd,
+    backfillCompletedAt,
+    backfillStatus,
+    accountDates,            // array of Date (user.created_date) for users with this provider
+  } = opts;
+  const sorted = (eventDates || []).filter(Boolean).sort((a, b) => a - b);
+  const historyAvailableFrom = sorted.length > 0 ? sorted[0] : null;
+  const historyAvailableThrough = sorted.length > 0 ? sorted[sorted.length - 1] : null;
+  const sortedAccounts = (accountDates || []).filter(Boolean).sort((a, b) => a - b);
+  const earliestKnownAccountDate = sortedAccounts.length > 0 ? sortedAccounts[0] : null;
+  // Full lifecycle coverage: no account predates the history start
+  const usersPredatingHistory = (accountDates || []).filter((d) => d && historyAvailableFrom && d < historyAvailableFrom);
+  const fullCustomerLifecycleCoverage = historyAvailableFrom == null
+    ? false
+    : usersPredatingHistory.length === 0;
+  const confidenceLimitations = [];
+  if (!fullCustomerLifecycleCoverage) confidenceLimitations.push('first-ever payment cannot be confirmed for users whose accounts predate available history');
+  if (backfillStatus && backfillStatus !== 'complete') confidenceLimitations.push(`backfill status is ${backfillStatus}`);
+  if (historyAvailableFrom == null) confidenceLimitations.push('no provider events imported');
+  return {
+    provider: provider || 'stripe',
+    history_available_from: historyAvailableFrom ? historyAvailableFrom.toISOString() : null,
+    history_available_through: historyAvailableThrough ? historyAvailableThrough.toISOString() : null,
+    backfill_completed_at: backfillCompletedAt || null,
+    full_customer_lifecycle_coverage: fullCustomerLifecycleCoverage,
+    earliest_known_account_date: earliestKnownAccountDate ? earliestKnownAccountDate.toISOString() : null,
+    users_predating_history: usersPredatingHistory.length,
+    confidence_limitations: confidenceLimitations,
   };
 }

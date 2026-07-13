@@ -13,6 +13,9 @@ const REFUND_SLUGS = ['refund', 'refunded', 'chargeback', 'dispute', 'disputed',
 const PAYMENT_SUCCESS_SLUGS = ['invoice paid', 'invoice payment succeeded', 'charge succeeded', 'checkout session completed', 'checkout.session.completed', 'initial purchase', 'initial buy', 'initial_purchase', 'repurchase', 'product purchase', 'renewed', 'renewal'];
 const LIFECYCLE_SLUGS = ['customer subscription created', 'customer subscription updated', 'subscribed'];
 function eventSlug(t) { return norm(t).replace(/[._-]+/g, ' '); }
+const FAILED_SLUGS = ['payment failed','invoice payment failed','charge failed','card declined','declined','payment canceled','canceled payment','void','voided'];
+const PENDING_SLUGS = ['pending','incomplete','authorization only','authorized only','checkout expired','payment pending'];
+const TRIAL_SLUGS = ['trial','trialing'];
 function isPaymentEvent(e) {
   const type = eventSlug(e?.event_type);
   const status = eventSlug(e?.raw_status || e?.status);
@@ -20,6 +23,24 @@ function isPaymentEvent(e) {
   if (PAYMENT_SUCCESS_SLUGS.some((s) => type.includes(s))) return true;
   if (LIFECYCLE_SLUGS.some((s) => type.includes(s)) && Number(e?.amount_cents || 0) > 0) return true;
   return false;
+}
+// A paid transaction requires amount > 0 — $0 invoices are promotional/trial, not payments.
+function isPaidTransaction(e) {
+  if (!isPaymentEvent(e)) return false;
+  return Number(e?.amount_cents || 0) > 0;
+}
+function classifyZeroDollar(e) {
+  if (!e) return null;
+  const amount = Number(e.amount_cents || 0);
+  if (amount !== 0) return null;
+  const type = eventSlug(e.event_type), status = eventSlug(e.raw_status || e.status);
+  if (REFUND_SLUGS.some((s) => type.includes(s) || status.includes(s))) return null;
+  if (FAILED_SLUGS.some((s) => type.includes(s) || status.includes(s))) return null;
+  if (PENDING_SLUGS.some((s) => type.includes(s) || status.includes(s))) return null;
+  if (e.is_trial || TRIAL_SLUGS.some((s) => status.includes(s))) return 'free_trial_invoice';
+  if (PAYMENT_SUCCESS_SLUGS.some((s) => type.includes(s))) return 'zero_dollar_promotion';
+  if (LIFECYCLE_SLUGS.some((s) => type.includes(s))) return 'non_payment_invoice';
+  return 'promotional_entitlement';
 }
 
 function matchUnmatchedPayment(payment, ctx) {
@@ -91,16 +112,28 @@ Deno.serve(async (req) => {
     }
     const ctx = { usersById, usersByEmail, usersByCustomerId, usersBySubscriptionId };
 
-    const paymentEvents = rawSubEvents.filter((e) => isPaymentEvent(e));
-    const unmatched = paymentEvents.filter((e) => {
+    // Only genuine paid transactions (amount > 0) count as unmatched payments.
+    // Zero-dollar promotional/trial invoices are returned separately and excluded from payment totals.
+    const paidTransactionEvents = rawSubEvents.filter((e) => isPaidTransaction(e));
+    const zeroDollarEvents = rawSubEvents.filter((e) => classifyZeroDollar(e) !== null);
+    const lifecycleOnlyEvents = rawSubEvents.filter((e) => {
+      const t = eventSlug(e?.event_type);
+      return LIFECYCLE_SLUGS.some((s) => t.includes(s)) && !PAYMENT_SUCCESS_SLUGS.some((s) => t.includes(s));
+    });
+
+    const isUnmatched = (e) => {
       const uid = e.user_id;
       const email = norm(e.user_email || e.email);
       if (uid && usersById.has(String(uid))) return false;
       if (email && usersByEmail.has(email)) return false;
       return true;
-    });
+    };
 
-    const suggestions = unmatched.map((e) => {
+    const unmatchedPaid = paidTransactionEvents.filter(isUnmatched);
+    const unmatchedZero = zeroDollarEvents.filter(isUnmatched);
+    const unmatchedLifecycle = lifecycleOnlyEvents.filter(isUnmatched);
+
+    const suggestions = unmatchedPaid.map((e) => {
       const match = matchUnmatchedPayment(e, ctx);
       let rawPayload = null;
       try { rawPayload = e.raw_payload ? JSON.parse(e.raw_payload) : null; } catch {}
@@ -132,6 +165,23 @@ Deno.serve(async (req) => {
       };
     });
 
+    const zeroDollarDetail = unmatchedZero.map((e) => {
+      let rawPayload = null;
+      try { rawPayload = e.raw_payload ? JSON.parse(e.raw_payload) : null; } catch {}
+      return {
+        event_id: e.event_id || e.provider_event_id || null,
+        provider: e.provider || 'stripe',
+        stripe_customer_id: e.provider_customer_id || rawPayload?.customer || null,
+        stripe_subscription_id: e.provider_subscription_id || rawPayload?.subscription || null,
+        customer_email: rawPayload?.customer_email || rawPayload?.receipt_email || e.user_email || null,
+        event_type: e.event_type || null,
+        zero_dollar_classification: classifyZeroDollar(e),
+        payment_date: parseDate(e.transaction_at || e.effective_at)?.toISOString() || null,
+        is_trial: !!e.is_trial,
+        reconciliation_status: 'non_payment_event',
+      };
+    });
+
     const autoLinkable = suggestions.filter((s) => s.deterministic).length;
     const adminApproval = suggestions.filter((s) => s.reconciliation_status === 'admin_approval_required').length;
     const noCandidate = suggestions.filter((s) => s.reconciliation_status === 'no_candidate').length;
@@ -139,8 +189,12 @@ Deno.serve(async (req) => {
     return Response.json({
       meta: { generatedAt: new Date().toISOString(), totalUnmatched: suggestions.length },
       unmatchedPayments: suggestions,
+      unmatchedZeroDollarEvents: zeroDollarDetail,
       summary: {
-        totalUnmatched: suggestions.length,
+        unmatched_paid_transactions: suggestions.length,
+        unmatched_zero_dollar_events: zeroDollarDetail.length,
+        unmatched_lifecycle_events: unmatchedLifecycle.length,
+        totalUnmatched: suggestions.length, // legacy alias = paid transactions only
         autoLinkable,
         adminApprovalRequired: adminApproval,
         noCandidate,

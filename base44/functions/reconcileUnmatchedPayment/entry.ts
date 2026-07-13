@@ -66,17 +66,22 @@ Deno.serve(async (req) => {
     let body = {};
     try { body = await req.json(); } catch {}
     const { event_id, provider_event_id, target_user_id, confidence, match_type, notes, action } = body;
+    const actionType = action || 'link_payment';
     if (!event_id && !provider_event_id) return Response.json({ error: 'event_id or provider_event_id is required' }, { status: 400 });
-    if (!target_user_id) return Response.json({ error: 'target_user_id is required' }, { status: 400 });
+    if (actionType === 'link_payment' && !target_user_id) return Response.json({ error: 'target_user_id is required for link_payment' }, { status: 400 });
+    if (!notes || !String(notes).trim()) return Response.json({ error: 'Audit notes are required for all reconciliation actions' }, { status: 400 });
 
-    // Verify the target user is a real canonical user
-    const users = await fetchAllSafe(base44.asServiceRole.entities.User);
-    const regUsers = users.filter((u) => !u.is_disabled && !u.merged_into_user_id);
-    const usersById = new Map(regUsers.map((u) => [String(u.id), u]));
-    const targetUser = usersById.get(String(target_user_id));
-    if (!targetUser) return Response.json({ error: 'target_user_id does not resolve to a canonical registered user' }, { status: 400 });
+    // Verify the target user is a real canonical user (for link_payment)
+    let targetUser = null;
+    if (actionType === 'link_payment') {
+      const users = await fetchAllSafe(base44.asServiceRole.entities.User);
+      const regUsers = users.filter((u) => !u.is_disabled && !u.merged_into_user_id);
+      const usersById = new Map(regUsers.map((u) => [String(u.id), u]));
+      targetUser = usersById.get(String(target_user_id));
+      if (!targetUser) return Response.json({ error: 'target_user_id does not resolve to a canonical registered user' }, { status: 400 });
+    }
 
-    // Find the SubscriptionEvent
+    // Find the SubscriptionEvent — never mutate raw_payload or raw_event_reference
     const subEvents = await fetchAllSafe(base44.asServiceRole.entities.SubscriptionEvent);
     const target = subEvents.find((e) => e.event_id === event_id || e.provider_event_id === provider_event_id || e.id === event_id);
     if (!target) return Response.json({ error: 'SubscriptionEvent not found' }, { status: 404 });
@@ -92,24 +97,39 @@ Deno.serve(async (req) => {
       processed: !!target.processed,
     };
 
-    // Apply the link — update the event's user_id and email
-    const updated = await base44.asServiceRole.entities.SubscriptionEvent.update(target.id, {
-      user_id: String(target_user_id),
-      user_email: norm(targetUser.email),
-      normalized_email: norm(targetUser.email),
-      reconciliation_status: 'matched',
-      reconciliation_notes: `Reconciled by admin ${me.email} via ${match_type || 'manual'} (confidence ${confidence ?? 'n/a'}). ${notes || ''}`.trim(),
-      processed: false, // re-process into derived state
-    });
+    // Apply the action — link or unlink. raw_payload and raw_event_reference are NEVER modified.
+    let finalMatch;
+    if (actionType === 'unlink_payment') {
+      // Reversal: clear the user association, mark unmatched again
+      await base44.asServiceRole.entities.SubscriptionEvent.update(target.id, {
+        user_id: null,
+        user_email: null,
+        normalized_email: null,
+        reconciliation_status: 'unmatched_provider_no_user',
+        reconciliation_notes: `Unlinked/reversed by admin ${me.email}. Reason: ${notes}`.trim(),
+        processed: false,
+      });
+      finalMatch = { status: 'unmatched', user_id: null, email: null };
+    } else {
+      // link_payment — update the event's user_id and email
+      await base44.asServiceRole.entities.SubscriptionEvent.update(target.id, {
+        user_id: String(target_user_id),
+        user_email: norm(targetUser.email),
+        normalized_email: norm(targetUser.email),
+        reconciliation_status: 'matched',
+        reconciliation_notes: `Reconciled by admin ${me.email} via ${match_type || 'manual'} (confidence ${confidence ?? 'n/a'}). ${notes || ''}`.trim(),
+        processed: false, // re-process into derived state
+      });
+      finalMatch = { user_id: String(target_user_id), email: norm(targetUser.email) };
+    }
 
     // Audit entry (persisted as a manual SubscriptionEvent for the audit trail)
     const auditEntry = await base44.asServiceRole.entities.SubscriptionEvent.create({
       provider: target.provider || 'manual',
       event_type: 'manual_reconciliation',
       normalized_event_type: 'manual_adjustment',
-      user_id: String(target_user_id),
-      user_email: norm(targetUser.email),
-      normalized_email: norm(targetUser.email),
+      user_id: actionType === 'unlink_payment' ? null : String(target_user_id),
+      user_email: actionType === 'unlink_payment' ? null : norm(targetUser.email),
       provider_subscription_id: target.provider_subscription_id || null,
       provider_transaction_id: target.provider_transaction_id || null,
       source_system: 'manual',
@@ -119,14 +139,18 @@ Deno.serve(async (req) => {
       raw_event_reference: `reconciliation:${target.event_id || target.id}`,
       reconciliation_status: 'resolved',
       reconciliation_notes: JSON.stringify({
-        action: action || 'link_payment',
+        action: actionType,
+        administrator_id: String(me.id),
+        administrator_email: me.email,
+        event_or_entitlement_id: target.event_id || target.id,
         old_state: oldState,
-        proposed_match: { user_id: String(target_user_id), match_type: match_type || 'manual', confidence: confidence ?? null },
-        final_match: { user_id: String(target_user_id), email: norm(targetUser.email) },
+        proposed_match: actionType === 'unlink_payment' ? null : { user_id: String(target_user_id), match_type: match_type || 'manual', confidence: confidence ?? null },
+        final_match: finalMatch,
+        match_method: match_type || (actionType === 'unlink_payment' ? 'manual_reversal' : 'manual'),
         confidence: confidence ?? null,
-        administrator: me.email,
-        timestamp: new Date().toISOString(),
         notes: notes || '',
+        timestamp: new Date().toISOString(),
+        reversal_reference: actionType === 'unlink_payment' ? `reversal_of:${target.event_id || target.id}` : null,
       }),
       ingested_at: new Date().toISOString(),
     });
@@ -136,18 +160,20 @@ Deno.serve(async (req) => {
 
     return Response.json({
       status: 'ok',
-      action: action || 'link_payment',
+      action: actionType,
       event_id: target.event_id || target.id,
-      target_user_id: String(target_user_id),
-      target_email: norm(targetUser.email),
+      target_user_id: actionType === 'unlink_payment' ? null : String(target_user_id),
+      target_email: actionType === 'unlink_payment' ? null : norm(targetUser.email),
       audit_event_id: auditEntry?.id || null,
       old_state: oldState,
-      final_match: { user_id: String(target_user_id), email: norm(targetUser.email) },
+      final_match: finalMatch,
       confidence: confidence ?? null,
-      match_type: match_type || 'manual',
+      match_type: match_type || (actionType === 'unlink_payment' ? 'manual_reversal' : 'manual'),
       administrator: me.email,
+      administrator_id: String(me.id),
       timestamp: new Date().toISOString(),
       notes: notes || '',
+      raw_payload_preserved: true, // raw provider event was not mutated
       metric_effects: {
         before: before,
         after: after,
