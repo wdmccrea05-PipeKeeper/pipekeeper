@@ -60,8 +60,8 @@ describe('Provider verification — status-evidence hierarchy', () => {
     expect(result.verified_status).toBe('verified_current_paid');
   });
 
-  // 4. Stripe cancel-at-period-end still inside paid period
-  it('4. Stripe cancel-at-period-end within paid period → verified_canceling_but_paid_through', () => {
+  // 4. Stripe cancel-at-period-end still inside paid period → still verified_current_paid (counts as paying)
+  it('4. Stripe cancel-at-period-end within paid period → verified_current_paid (still paying)', () => {
     const local = makeLocal({ normalized_status: 'canceling_but_entitled', current_period_end: FUTURE });
     const stripe = makeStripe({ status: 'active', cancel_at_period_end: true, current_period_end: FUTURE });
     const result = classifyWithProviderEvidence(local, stripe, RECENT_PAYMENT, NOW);

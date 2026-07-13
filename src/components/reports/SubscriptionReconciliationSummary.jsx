@@ -37,6 +37,23 @@ export default function SubscriptionReconciliationSummary({ totals, multiSubUser
           </div>
         )}
 
+        {/* Explicit 39-vs-40 discrepancy explanation */}
+        {t.discrepancy_explanation && (
+          <div className="rounded-lg border border-[#8b6239]/20 bg-[#1a1310]/60 p-3 text-xs text-[#E0D8C8]/70 space-y-1">
+            <p className="font-semibold text-[#D4A574]">39-vs-40 Discrepancy Explanation (local-only)</p>
+            <p>{t.discrepancy_explanation}</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[#E0D8C8]/50 mt-1">
+              <span>All identities: {t.discrepancy_all_user_identities ?? '—'}</span>
+              <span>Registered: {t.discrepancy_registered_identities ?? '—'}</span>
+              <span>Synthetic/unmatched: {t.discrepancy_synthetic_identities ?? '—'}</span>
+              <span>Test/internal: {t.discrepancy_test_internal_accounts ?? '—'}</span>
+            </div>
+            <p className="text-amber-400/60 text-xs mt-1">
+              Run provider verification (section 2b) to reconcile these against live Stripe.
+            </p>
+          </div>
+        )}
+
         {/* Status-evidence hierarchy counts */}
         <div className="pt-2 border-t border-[#8b6239]/15">
           <p className="text-xs font-semibold text-[#D4A574]/80 mb-2">Status-Evidence Hierarchy (preliminary — without live Stripe)</p>
