@@ -27,7 +27,7 @@
 
 const isDev = typeof import.meta !== 'undefined'
   ? import.meta.env?.DEV === true
-  : (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
+  : false;
 
 // In-memory registry of the latest metric snapshot per source
 const _snapshots = {};
