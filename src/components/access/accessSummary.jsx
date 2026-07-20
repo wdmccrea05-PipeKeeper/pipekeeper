@@ -13,6 +13,7 @@
 
 import {
   getEffectiveModuleReleaseState,
+  isInternalModuleTester,
 } from '@/components/utils/moduleReleaseState';
 import { getEntitlementTier } from '@/components/utils/premiumAccess';
 
@@ -144,6 +145,28 @@ export function buildAccessSummary(user, subscription) {
   let billingPeriod = null;
   let activeModules = [];
   let planKey = null;
+
+  // ─── ADMIN OVERRIDE ───────────────────────────────────────────────────────
+  // Administrators and owners receive unrestricted access to every active module.
+  // This must not depend on a subscription row, paid_modules_csv, or any other
+  // payment record — the role itself is authoritative.
+  // Uses isInternalModuleTester (the same shared check used in useModuleVisibility)
+  // so admin detection stays consistent across the frontend.
+  if (isInternalModuleTester(user)) {
+    activeModules = filterModulesByReleaseState(
+      ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+      user
+    );
+    return {
+      tier: 'pro',
+      status: status || 'active',
+      billingPeriod: null,
+      provider,
+      activeModules,
+      planKey: 'admin_override',
+      isFoundingMember: user?.isFoundingMember === true,
+    };
+  }
 
   if (tier === 'pro' && subscription) {
     const mapped = mapSubscriptionToModules(subscription);

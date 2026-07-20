@@ -58,13 +58,16 @@ describe("useModuleVisibility", () => {
     expect(result.current.moduleStates.cigarkeeper.enabled).toBe(false);
   });
 
-  it("does not force internal/admin testers to keep CigarKeeper visible", () => {
+  it("admin testers always see accessible modules as enabled, overriding saved preferences", () => {
+    // Previously this tested that admins could hide modules via preferences.
+    // The corrected behavior: an admin's role overrides preference-based hiding.
+    // An admin should never be blocked from a module by their own saved preferences.
     const user = { role: "admin" };
     const profile = {
       module_preferences_set: true,
       pipekeeper_enabled: true,
       whiskeykeeper_enabled: true,
-      cigarkeeper_enabled: false,
+      cigarkeeper_enabled: false, // saved preference = hidden, but admin override wins
       winekeeper_enabled: false,
     };
 
@@ -74,7 +77,8 @@ describe("useModuleVisibility", () => {
 
     expect(result.current.moduleStates.cigarkeeper.accessible).toBe(true);
     expect(result.current.moduleStates.cigarkeeper.canToggle).toBe(true);
-    expect(result.current.moduleStates.cigarkeeper.enabled).toBe(false);
+    // Admin override: preferences do not hide modules for admin/owner/internal-tester users
+    expect(result.current.moduleStates.cigarkeeper.enabled).toBe(true);
   });
 
   it("treats launched CigarKeeper as toggleable when module preferences are set", () => {

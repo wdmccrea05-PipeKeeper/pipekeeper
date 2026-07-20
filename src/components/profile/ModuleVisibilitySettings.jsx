@@ -112,10 +112,16 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
 
   async function handleSetTierAndEnable(moduleId, isPaid) {
     const hasEntitlement = !!paidFlagByModule[moduleId];
+    // Admins always have implicit entitlement via their role — their paid flags
+    // may be unset (e.g. no subscription row) but must not trigger a subscription
+    // redirect.  isInternalModuleTester covers role===admin|owner|superadmin and
+    // is_admin===true, matching the same check used by every access resolver.
+    const isAdminUser = isInternalModuleTester(effectiveUser);
 
     // Pro button without entitlement → route to Subscription/Upgrade.
     // Active Modules must never mutate paid entitlement flags.
-    if (isPaid && !hasEntitlement) {
+    // Exception: admin users always have entitlement — skip the subscription redirect.
+    if (isPaid && !hasEntitlement && !isAdminUser) {
       navigate("/Subscription");
       return;
     }
