@@ -165,6 +165,30 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'User entity not found' }, { status: 404 });
     }
 
+    // ── ADMIN BYPASS ──────────────────────────────────────────────────────────
+    // Administrators and owners must never have their entitlements cleared or
+    // downgraded by this reconciliation pass.  Their role is the authoritative
+    // grant — no subscription row is needed or expected.
+    //
+    // NOTE: Both `user.role` (entity record) and `me.role` (auth identity) are
+    // checked here because the entity record can lag behind the auth token on
+    // first login.  The frontend equivalent (isInternalModuleTester) only has
+    // the entity, so the `me` fallback is a backend-only concern.
+    const userRole = String(user.role || me.role || '').toLowerCase();
+    const isAdminUser = userRole === 'admin' || userRole === 'owner' || user.is_admin === true || me.is_admin === true;
+    if (isAdminUser) {
+      return Response.json({
+        success: true,
+        entitlementTier: 'pro',
+        paidModules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+        hasPaidAccess: true,
+        hasBundleAccess: true,
+        subscriptionCount: 0,
+        syncState: 'admin_bypass',
+        reason: 'admin/owner role: all modules granted, no subscription write performed',
+      });
+    }
+
     // Load active subscriptions
     const subs = await base44.asServiceRole.entities.Subscription.filter({ user_email: email });
     const activeSubs = (Array.isArray(subs) ? subs : []).filter((sub: any) =>

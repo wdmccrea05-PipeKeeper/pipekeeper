@@ -62,6 +62,11 @@ function buildAccessibleModules(profile, activeModules, user) {
 function buildVisibility({ profile, user, activeModules }) {
   const accessible = buildAccessibleModules(profile, activeModules, user);
   const prefsSet = profile?.module_preferences_set === true;
+  // Admins and internal testers always see every accessible module regardless of
+  // saved preferences.  This prevents a scenario where an admin who completed the
+  // onboarding flow with only 'pipekeeper' selected ends up with the other three
+  // modules hidden behind a "module is hidden" screen.
+  const isAdmin = isInternalModuleTester(user);
 
   const prefMap = {
     pipekeeper: normalizeBoolean(profile?.pipekeeper_enabled),
@@ -75,6 +80,13 @@ function buildVisibility({ profile, user, activeModules }) {
   for (const key of MODULE_KEYS) {
     if (!accessible.has(key)) {
       visibility[key] = false;
+      continue;
+    }
+
+    // Admin/internal-tester override: all accessible modules are always visible,
+    // regardless of whether or how preferences were saved.
+    if (isAdmin) {
+      visibility[key] = true;
       continue;
     }
 
