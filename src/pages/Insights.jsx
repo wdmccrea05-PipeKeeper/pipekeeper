@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -1028,7 +1029,7 @@ export default function Insights() {
   const { data: pipes = [] } = useQuery({
     queryKey: QUERY_KEYS.pipes(user?.email),
     queryFn: async () => {
-      const result = await base44.entities.Pipe.filter({ created_by: user?.email });
+      const result = await fetchAllEntities(base44.entities.Pipe, { created_by: user?.email }, '-updated_date');
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
@@ -1038,9 +1039,9 @@ export default function Insights() {
   const { data: blends = [] } = useQuery({
     queryKey: QUERY_KEYS.blends(user?.email),
     queryFn: async () => {
-      const result = await base44.entities.TobaccoBlend.filter({
+      const result = await fetchAllEntities(base44.entities.TobaccoBlend, {
         created_by: user?.email,
-      });
+      }, '-updated_date');
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
@@ -1049,7 +1050,7 @@ export default function Insights() {
 
   const { data: cellarLogs = [] } = useQuery({
     queryKey: QUERY_KEYS.cellarLogs(user?.email),
-    queryFn: () => base44.entities.CellarLog.filter({ created_by: user?.email }),
+    queryFn: () => fetchAllEntities(base44.entities.CellarLog, { created_by: user?.email }, '-updated_date'),
     enabled: !!user?.email,
     staleTime: STALE_TIME.INSIGHTS,
   });
@@ -1057,7 +1058,7 @@ export default function Insights() {
   const { data: smokingLogs = [] } = useQuery({
     queryKey: QUERY_KEYS.smokingLogs(user?.email),
     queryFn: () =>
-      base44.entities.SmokingLog.filter({ created_by: user?.email }, "-date", 1000),
+      fetchAllEntities(base44.entities.SmokingLog, { created_by: user?.email }, "-date"),
     enabled: !!user?.email,
     staleTime: STALE_TIME.SESSION_HISTORY,
   });

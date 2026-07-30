@@ -4,6 +4,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Wine, TrendingUp, Star, AlertCircle, Download, BookOpen, Calendar as CalendarIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 import WineKeeperModuleNav from '@/components/modules/WineKeeperModuleNav';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { useLocaleFormatting } from '@/components/utils/localeFormatters';
@@ -54,14 +55,14 @@ export default function WineInsights() {
 
   const { data: wines = [] } = useQuery({
     queryKey: QUERY_KEYS.wines(user?.email),
-    queryFn: async () => base44.entities.Wine.filter({ created_by: user?.email }, '-created_date').catch(() => []),
+    queryFn: async () => fetchAllEntities(base44.entities.Wine, { created_by: user?.email }, '-created_date').catch(() => []),
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,
   });
 
   const { data: tastings = [] } = useQuery({
     queryKey: QUERY_KEYS.wineTastingsSummary(user?.email),
-    queryFn: async () => base44.entities.WineTasting.filter({ created_by: user?.email }, '-date', 500).catch(() => []),
+    queryFn: async () => fetchAllEntities(base44.entities.WineTasting, { created_by: user?.email }, '-date').catch(() => []),
     enabled: !!user?.email,
     staleTime: STALE_TIME.SESSION_HISTORY,
   });
