@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 import PipeKeeperModuleNav from '@/components/modules/PipeKeeperModuleNav';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
@@ -48,7 +49,7 @@ export default function PipeKeeperInsights() {
     queryKey: ['pipes-insights', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 1000).catch(() => []);
+      return fetchAllEntities(base44.entities.Pipe, { created_by: user.email }, '-updated_date').catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: 30_000,
@@ -58,7 +59,7 @@ export default function PipeKeeperInsights() {
     queryKey: ['blends-insights', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 1000).catch(() => []);
+      return fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date').catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: 30_000,
@@ -68,7 +69,7 @@ export default function PipeKeeperInsights() {
     queryKey: ['smoking-logs-insights', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 1000).catch(() => []);
+      return fetchAllEntities(base44.entities.SmokingLog, { created_by: user.email }, '-date').catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: 30_000,

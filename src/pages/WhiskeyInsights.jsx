@@ -4,6 +4,7 @@ import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 import { WhiskeyAnalyticsTab, WhiskeyTrendsTab, getTopBottlesToHold, getBottlesSafeToOpen, getReplacementRiskBottles, getValueConcentration } from '@/components/whiskey/WhiskeyInsightsAnalytics';
@@ -57,7 +58,7 @@ export default function WhiskeyInsightsPage() {
     queryKey: QUERY_KEYS.bottles(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 1000).catch(() => []);
+      return fetchAllEntities(base44.entities.Bottle, { created_by: user.email }, '-updated_date').catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,
@@ -67,7 +68,7 @@ export default function WhiskeyInsightsPage() {
     queryKey: ['tasting-logs', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 1000).catch(() => []);
+      return fetchAllEntities(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date').catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.SESSION_HISTORY,
@@ -77,7 +78,7 @@ export default function WhiskeyInsightsPage() {
     queryKey: QUERY_KEYS.whiskeyInventory(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }).catch(() => []);
+      return fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, '-updated_date').catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,

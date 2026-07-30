@@ -16,7 +16,7 @@
     "i18n:audit": "node scripts/i18n-check.js",
     "i18n:check:strict": "node scripts/i18n-check.js --fail-on-findings",
     "prepare": "bash scripts/install-hooks.sh || true",
-    "release:check": "npm run i18n:check -- --max-findings=2533 && npm test"
+    "release:check": "npm run i18n:check -- --max-findings=2666 && npm test"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.40",

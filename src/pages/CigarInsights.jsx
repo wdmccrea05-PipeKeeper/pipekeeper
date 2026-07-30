@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
@@ -170,7 +171,7 @@ function CigarInsightsInner() {
     queryKey: QUERY_KEYS.cigars(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return base44.entities.Cigar.filter({ created_by: user?.email }, '-created_date').catch(() => []);
+      return fetchAllEntities(base44.entities.Cigar, { created_by: user?.email }, '-created_date').catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,
@@ -180,7 +181,7 @@ function CigarInsightsInner() {
     queryKey: QUERY_KEYS.cigarSessions(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return base44.entities.CigarSession.filter({ created_by: user?.email }, '-date').catch(() => []);
+      return fetchAllEntities(base44.entities.CigarSession, { created_by: user?.email }, '-date').catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.SESSION_HISTORY,
@@ -190,7 +191,7 @@ function CigarInsightsInner() {
     queryKey: QUERY_KEYS.humidors(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return base44.entities.HumidorLocation.filter({ created_by: user?.email }).catch(() => []);
+      return fetchAllEntities(base44.entities.HumidorLocation, { created_by: user?.email }, '-updated_date').catch(() => []);
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,
