@@ -54,6 +54,7 @@ import { getPipeVariantKey } from "@/components/utils/pipeVariants";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation, translate } from "@/components/i18n/safeTranslation";
 import { translateToEnglish, translateFromEnglish, getCurrentLocale } from "@/components/utils/aiTranslation";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 /**
  * Drop-in replacement notes:
@@ -212,7 +213,7 @@ function CollectionOptimizerInner({
     queryKey: ["smoking-logs", user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return await base44.entities.SmokingLog.filter({ created_by: user.email });
+      return await fetchAllEntities(base44.entities.SmokingLog, { created_by: user.email }, '-date', 5000, 200, 'CollectionOptimizer:SmokingLog');
     },
     enabled: !!user?.email,
   });

@@ -168,4 +168,33 @@ describe('fetchAllEntities', () => {
     const skips = entity.filter.mock.calls.map(c => c[3] ?? 0);
     expect(skips).toEqual([0, 10, 20]); // full(10), full(10), partial(5) → stop
   });
+
+  // ── label / diagnostic logging ─────────────────────────────────────────────
+
+  it('emits console.info start and done logs when label is provided', async () => {
+    const spy = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const entity = makeEntity(3, 5000);
+    await fetchAllEntities(entity, { created_by: 'u@test.com' }, '-date', 5000, 200, 'TestComponent:SmokingLog');
+    expect(spy).toHaveBeenCalledTimes(2);
+    const [startCall, doneCall] = spy.mock.calls;
+    expect(startCall[0]).toBe('[PK:fetch:start]');
+    expect(startCall[1]).toMatchObject({ label: 'TestComponent:SmokingLog', helper: 'fetchAllEntities' });
+    expect(doneCall[0]).toBe('[PK:fetch:done]');
+    expect(doneCall[1]).toMatchObject({
+      label: 'TestComponent:SmokingLog',
+      helper: 'fetchAllEntities',
+      recordsReturned: 3,
+      pageCount: 1,
+      finalSessionCount: 3,
+    });
+    spy.mockRestore();
+  });
+
+  it('does not emit any console.info when label is omitted', async () => {
+    const spy = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const entity = makeEntity(3, 5000);
+    await fetchAllEntities(entity, {});
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
 });

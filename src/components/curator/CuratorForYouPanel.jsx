@@ -19,6 +19,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { generateProactiveInsights } from "@/components/platform/proactiveInsights";
 import { createPageUrl } from "@/components/utils/createPageUrl";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 import {
   Brain,
   RotateCcw,
@@ -241,9 +242,14 @@ export default function CuratorForYouPanel({ pipes = [], blends = [], onAskCurat
   const { data: smokingLogs = [] } = useQuery({
     queryKey: ["smokingLogs", user?.email],
     queryFn: async () => {
-      const result = await base44.entities.SmokingLog.filter({
-        created_by: user?.email,
-      });
+      const result = await fetchAllEntities(
+        base44.entities.SmokingLog,
+        { created_by: user?.email },
+        '-date',
+        5000,
+        200,
+        'CuratorForYouPanel:SmokingLog',
+      );
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,

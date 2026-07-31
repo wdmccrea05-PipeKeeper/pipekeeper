@@ -23,6 +23,7 @@ import FreeTierUpgradePrompt from '@/components/subscription/FreeTierUpgradeProm
 import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 import { getItemPhoto } from '@/lib/images/getItemPhoto';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
 
@@ -46,7 +47,7 @@ export default function PipeKeeperModule() {
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
     queryKey: QUERY_KEYS.pipeSummary(user?.email),
     queryFn: async () => {
-      const result = await base44.entities.Pipe.filter({ created_by: user?.email });
+      const result = await fetchAllEntities(base44.entities.Pipe, { created_by: user?.email }, '-updated_date', 5000, 200, 'PipeKeeperModule:Pipe');
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
@@ -56,7 +57,7 @@ export default function PipeKeeperModule() {
   const { data: blends = [], isLoading: blendsLoading } = useQuery({
     queryKey: QUERY_KEYS.blendSummary(user?.email),
     queryFn: async () => {
-      const result = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+      const result = await fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user?.email }, '-updated_date', 5000, 200, 'PipeKeeperModule:TobaccoBlend');
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
@@ -74,7 +75,7 @@ export default function PipeKeeperModule() {
 
   const { data: smokingLogs = [] } = useQuery({
     queryKey: QUERY_KEYS.smokingLogsSummary(user?.email),
-    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date'),
+    queryFn: () => fetchAllEntities(base44.entities.SmokingLog, { created_by: user?.email }, '-date', 5000, 200, 'PipeKeeperModule:SmokingLog'),
     enabled: !!user?.email,
     staleTime: STALE_TIME.SESSION_HISTORY,
   });

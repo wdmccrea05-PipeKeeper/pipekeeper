@@ -28,6 +28,7 @@ import {
   selectTotalWineBottles,
   selectWineCount,
 } from '@/lib/collection/wineSelectors';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 
 
 
@@ -71,17 +72,17 @@ export async function aggregateCollection(userEmail) {
     const fetchWine = shouldFetchModuleData('winekeeper', userContext);
 
     const [pipes, tobaccos, bottles, smokingLogs, tastingLogs, inventoryUnits, cigars, cigarSessions, humidors, wines, wineTastings] = await Promise.all([
-      fetchPipe ? base44.entities.Pipe.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
-      fetchPipe ? base44.entities.TobaccoBlend.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
-      fetchWhiskey ? base44.entities.Bottle.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
-      fetchPipe ? base44.entities.SmokingLog.filter({ created_by: userEmail }, '-date', 1000).catch(() => []) : Promise.resolve([]),
-      fetchWhiskey ? base44.entities.TastingLog.filter({ created_by: userEmail }, '-tasting_date', 1000).catch(() => []) : Promise.resolve([]),
-      fetchWhiskey ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
-      fetchCigar ? base44.entities.Cigar.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
-      fetchCigar ? base44.entities.CigarSession.filter({ created_by: userEmail }, '-date', 1000).catch(() => []) : Promise.resolve([]),
-      fetchCigar ? base44.entities.HumidorLocation.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
-      fetchWine ? base44.entities.Wine.filter({ created_by: userEmail }).catch(() => []) : Promise.resolve([]),
-      fetchWine ? base44.entities.WineTasting.filter({ created_by: userEmail }, '-date', 200).catch(() => []) : Promise.resolve([]),
+      fetchPipe ? fetchAllEntities(base44.entities.Pipe, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Pipe').catch(() => []) : Promise.resolve([]),
+      fetchPipe ? fetchAllEntities(base44.entities.TobaccoBlend, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:TobaccoBlend').catch(() => []) : Promise.resolve([]),
+      fetchWhiskey ? fetchAllEntities(base44.entities.Bottle, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Bottle').catch(() => []) : Promise.resolve([]),
+      fetchPipe ? fetchAllEntities(base44.entities.SmokingLog, { created_by: userEmail }, '-date', 5000, 200, 'collectionAggregation:SmokingLog').catch(() => []) : Promise.resolve([]),
+      fetchWhiskey ? fetchAllEntities(base44.entities.TastingLog, { created_by: userEmail }, '-tasting_date', 5000, 200, 'collectionAggregation:TastingLog').catch(() => []) : Promise.resolve([]),
+      fetchWhiskey ? fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:WhiskeyInventoryUnit').catch(() => []) : Promise.resolve([]),
+      fetchCigar ? fetchAllEntities(base44.entities.Cigar, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Cigar').catch(() => []) : Promise.resolve([]),
+      fetchCigar ? fetchAllEntities(base44.entities.CigarSession, { created_by: userEmail }, '-date', 5000, 200, 'collectionAggregation:CigarSession').catch(() => []) : Promise.resolve([]),
+      fetchCigar ? fetchAllEntities(base44.entities.HumidorLocation, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:HumidorLocation').catch(() => []) : Promise.resolve([]),
+      fetchWine ? fetchAllEntities(base44.entities.Wine, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Wine').catch(() => []) : Promise.resolve([]),
+      fetchWine ? fetchAllEntities(base44.entities.WineTasting, { created_by: userEmail }, '-date', 5000, 200, 'collectionAggregation:WineTasting').catch(() => []) : Promise.resolve([]),
     ]);
 
     const pipesList = Array.isArray(pipes) ? pipes : [];

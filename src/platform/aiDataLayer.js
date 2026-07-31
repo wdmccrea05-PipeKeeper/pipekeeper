@@ -9,6 +9,7 @@
 
 import { base44 } from '@/api/base44Client';
 import { MODULE_REGISTRY } from './moduleRegistry';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 
 
 function getRegistryList() {
@@ -278,13 +279,16 @@ export async function getItem(itemId, moduleId) {
  */
 export async function getRecentEvents(userEmail, limit = 20) {
   try {
-    const events = await base44.entities.SmokingLog.filter({
-      created_by: userEmail,
-    });
+    const events = await fetchAllEntities(
+      base44.entities.SmokingLog,
+      { created_by: userEmail },
+      '-date',
+      5000,
+      200,
+      'aiDataLayer:getRecentEvents:SmokingLog',
+    );
     
-    return (events || [])
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, limit);
+    return (events || []).slice(0, limit);
   } catch (err) {
     console.error('Get recent events failed:', err);
     return [];
