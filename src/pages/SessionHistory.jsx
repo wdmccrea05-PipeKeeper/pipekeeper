@@ -10,6 +10,7 @@ import { toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { buildSessionCalendarData } from "@/lib/sessionHistory/calendarData";
 import { sortByLabel } from "@/lib/sorting/alphabetical";
 import { X, Star } from "lucide-react";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 const BASE_MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar"];
 
@@ -70,11 +71,11 @@ export default function SessionHistory() {
     enabled: !!user?.email,
     queryFn: async () => {
       const [smokingLogs, tastingLogs, cigarSessions, wineTastings] = await Promise.all([
-        base44.entities.SmokingLog.filter({ created_by: user.email }, "-date", 1000).catch(() => []),
-        base44.entities.TastingLog.filter({ created_by: user.email }, "-tasting_date", 1000).catch(() => []),
-        base44.entities.CigarSession.filter({ created_by: user.email }, "-date", 1000).catch(() => []),
+        fetchAllEntities(base44.entities.SmokingLog, { created_by: user.email }, "-date", 5000, 200, 'SessionHistory:SmokingLog').catch(() => []),
+        fetchAllEntities(base44.entities.TastingLog, { created_by: user.email }, "-tasting_date", 5000, 200, 'SessionHistory:TastingLog').catch(() => []),
+        fetchAllEntities(base44.entities.CigarSession, { created_by: user.email }, "-date", 5000, 200, 'SessionHistory:CigarSession').catch(() => []),
         wineEnabled
-          ? base44.entities.WineTasting.filter({ created_by: user.email }, "-date", 1000).catch(() => [])
+          ? fetchAllEntities(base44.entities.WineTasting, { created_by: user.email }, "-date", 5000, 200, 'SessionHistory:WineTasting').catch(() => [])
           : Promise.resolve([]),
       ]);
       return { smokingLogs, tastingLogs, cigarSessions, wineTastings };

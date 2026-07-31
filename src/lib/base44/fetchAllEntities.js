@@ -16,6 +16,8 @@
  *    the data, even if the cursor would theoretically advance further.
  *  - Enforces a hard safety cap (`maxPages`) to prevent runaway loops caused
  *    by a repeated cursor or an API bug returning the same page indefinitely.
+ *  - When a `label` is provided, emits `console.info` diagnostics at start
+ *    and completion to help trace platform-specific fetch behaviour.
  *
  * @param {Object}  entity             Base44 entity object (e.g. base44.entities.Pipe)
  * @param {Object}  filterObj          Filter criteria forwarded to entity.filter()
@@ -25,6 +27,9 @@
  *                                     values up to 5 000 per request.
  * @param {number}  [maxPages=200]     Hard upper bound on the number of pages fetched.
  *                                     200 × 5 000 = 1 000 000 records before the cap.
+ * @param {string}  [label]            Optional caller label (e.g. component name +
+ *                                     entity) used in diagnostic console.info logs.
+ *                                     Omit in production-silent code paths.
  * @returns {Promise<Array>}           All matching records, deduplicated by id.
  */
 export async function fetchAllEntities(
@@ -33,7 +38,19 @@ export async function fetchAllEntities(
   sortOrder = '-updated_date',
   pageSize = 5000,
   maxPages = 200,
+  label = undefined,
 ) {
+  if (label) {
+    console.info('[PK:fetch:start]', {
+      label,
+      helper: 'fetchAllEntities',
+      platform: typeof navigator !== 'undefined' ? navigator.platform : 'server',
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
+      sortOrder,
+      pageSize,
+    });
+  }
+
   const seen = new Set();
   const results = [];
   let skip = 0;
@@ -70,6 +87,16 @@ export async function fetchAllEntities(
     if (page.length < pageSize) break;
 
     skip += pageSize;
+  }
+
+  if (label) {
+    console.info('[PK:fetch:done]', {
+      label,
+      helper: 'fetchAllEntities',
+      recordsReturned: results.length,
+      pageCount: pagesRead,
+      finalSessionCount: results.length,
+    });
   }
 
   return results;

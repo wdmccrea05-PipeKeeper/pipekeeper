@@ -28,6 +28,7 @@ import { format, differenceInHours } from "date-fns";
 import SmokingLogEditor from "@/components/home/SmokingLogEditor";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { invalidatePipeQueries, invalidateBlendQueries } from "@/components/utils/cacheInvalidation";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useEntitlements } from "@/components/hooks/useEntitlements";
@@ -100,7 +101,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
 
   const { data: logs = [] } = useQuery({
     queryKey: ['smoking-logs', user?.email],
-    queryFn: () => base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date'),
+    queryFn: () => fetchAllEntities(base44.entities.SmokingLog, { created_by: user?.email }, '-date', 5000, 200, 'SmokingLogPanel:SmokingLog'),
     enabled: !!user?.email,
   });
 
