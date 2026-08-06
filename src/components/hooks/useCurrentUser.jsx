@@ -12,6 +12,8 @@ import { useEffect } from "react";
 import { useQuery as useQueryRQ, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/AuthContext";
 import { getCanonicalUserProfile } from "@/utils/getCanonicalUserProfile";
+import { isIOSWebView, requestNativeSubscriptionStatus, registerNativeSubscriptionListener } from "@/components/utils/nativeIAPBridge";
+import { syncAppleSubscriptionStatus } from "@/components/utils/appleSubscriptionSync";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 const unique = (arr) => [...new Set(arr)];
@@ -281,6 +283,35 @@ export function useCurrentUser() {
 
     return () => { cancelled = true; };
   }, [userLoading, user?.email, refetchUser, refetchSubscription]);
+
+  // Apple IAP sync on mount — ensures iOS purchases are ingested on every app launch,
+  // not just when the user navigates to the Subscription page. Without this, a user who
+  // purchases via the App Store and lands on the home page never triggers the native
+  // subscription status request, leaving their entitlement unsynced.
+  useEffect(() => {
+    if (userLoading || !user?.email) return;
+    if (!isIOSWebView()) return;
+
+    let cancelled = false;
+
+    requestNativeSubscriptionStatus();
+    const cleanupListener = registerNativeSubscriptionListener((payload) => {
+      if (cancelled) return;
+      syncAppleSubscriptionStatus(payload, {
+        queryClient,
+        refetch: () => Promise.all([refetchUser(), refetchSubscription()]),
+      }).catch((err) => {
+        if (import.meta?.env?.DEV) {
+          console.warn("[useCurrentUser] Apple subscription sync failed (non-fatal):", err?.message || err);
+        }
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      cleanupListener();
+    };
+  }, [userLoading, user?.email, queryClient, refetchUser, refetchSubscription]);
 
   // Authoritative provider: user.subscription_provider, then subscription.provider.
   const provider = resolveProviderFromUser(user) || resolveSubscriptionProvider(subscription);

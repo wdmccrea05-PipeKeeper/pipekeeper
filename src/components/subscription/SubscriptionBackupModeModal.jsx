@@ -52,7 +52,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
         requested_tier: "pro",
         requested_term: selectedTerm,
         checkout_url_used: null,
-        status: "manual_review_requested",
+        status: "new",
         user_message: userMessage.trim() || null,
         payment_reference: paymentReference.trim() || null,
       });
