@@ -195,6 +195,80 @@ export function modulesFromPlanKey(planKey: string): string[] {
   return [];
 }
 
+// ─── Apple product ID resolution ─────────────────────────────────────────────
+
+/**
+ * Resolve an Apple App Store product ID to a canonical planKey + modules.
+ *
+ * Bundles are checked FIRST because bundle IDs may contain single-module
+ * keywords (e.g. a 3-module product ID might contain "whiskey").
+ *
+ * Mirrors resolveAppleProductAccess in syncAppleSubscriptionForMe — keep both
+ * in sync when editing.
+ */
+export function resolveAppleProductId(productId: string): {
+  planKey: string;
+  modules: string[];
+  productKind: string;
+  billingInterval: IntervalKind;
+} | null {
+  const product = String(productId || '').trim().toLowerCase();
+  if (!product) return null;
+  const isAnnual = product.includes('annual') || product.includes('year');
+
+  // 4-module / all-modules bundle
+  if (product.includes('all_module') || product.includes('allmodule') ||
+      product.includes('four_module') || product.includes('fourmodule') ||
+      product.includes('4_module') || product.includes('4module') ||
+      (product.includes('bundle') && product.includes('wine'))) {
+    return {
+      planKey: isAnnual ? 'four_module_bundle_annual' : 'four_module_bundle_monthly',
+      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+      productKind: 'bundle_4',
+      billingInterval: isAnnual ? 'annual' : 'monthly',
+    };
+  }
+
+  // 3-module bundle
+  if (product.includes('three_module') || product.includes('threemodule') ||
+      product.includes('3_module') || product.includes('3module') ||
+      (product.includes('bundle') && !product.includes('wine') && !product.includes('founders'))) {
+    return {
+      planKey: isAnnual ? 'three_module_bundle_annual' : 'three_module_bundle_monthly',
+      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+      productKind: 'bundle_3',
+      billingInterval: isAnnual ? 'annual' : 'monthly',
+    };
+  }
+
+  // Founders bundle (2 modules: PK + WK)
+  if (product.includes('founders')) {
+    return {
+      planKey: isAnnual ? 'founders_bundle_annual' : 'founders_bundle_monthly',
+      modules: ['pipekeeper', 'whiskeykeeper'],
+      productKind: 'founders',
+      billingInterval: isAnnual ? 'annual' : 'monthly',
+    };
+  }
+
+  // Single modules
+  if (product.includes('whiskey')) {
+    return { planKey: isAnnual ? 'whiskeykeeper_pro_annual' : 'whiskeykeeper_pro_monthly', modules: ['whiskeykeeper'], productKind: 'single', billingInterval: isAnnual ? 'annual' : 'monthly' };
+  }
+  if (product.includes('cigar')) {
+    return { planKey: isAnnual ? 'cigarkeeper_pro_annual' : 'cigarkeeper_pro_monthly', modules: ['cigarkeeper'], productKind: 'single', billingInterval: isAnnual ? 'annual' : 'monthly' };
+  }
+  if (product.includes('wine')) {
+    return { planKey: isAnnual ? 'winekeeper_pro_annual' : 'winekeeper_pro_monthly', modules: ['winekeeper'], productKind: 'single', billingInterval: isAnnual ? 'annual' : 'monthly' };
+  }
+  if (product.includes('pipe') || product.includes('pipekeeper')) {
+    return { planKey: isAnnual ? 'pipekeeper_pro_annual' : 'pipekeeper_pro_monthly', modules: ['pipekeeper'], productKind: 'single', billingInterval: isAnnual ? 'annual' : 'monthly' };
+  }
+
+  // Unrecognized — return null so callers can mark as unknown/needs_review
+  return null;
+}
+
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
 
 function norm(v: unknown): string { return String(v ?? '').trim().toLowerCase(); }
@@ -306,8 +380,17 @@ export function normalizeSub(
       modules = amountInference.modules;
       productLabel = amountInference.label;
     } else {
-      modules = ['unknown'];
-      productLabel = 'Unknown';
+      // Apple product ID fallback — resolve from raw product_id when planKey/csv/amount all miss
+      const productId = norm(raw.product_id || '');
+      const provider = norm(raw.provider || '');
+      const appleResolved = provider === 'apple' && productId ? resolveAppleProductId(productId) : null;
+      if (appleResolved) {
+        modules = appleResolved.modules;
+        productLabel = appleResolved.productKind === 'single' ? buildProductLabel(modules, modules[0]) : 'Bundle';
+      } else {
+        modules = ['unknown'];
+        productLabel = 'Unknown';
+      }
     }
   }
 

@@ -74,9 +74,17 @@ export const nativeDebugPing = (label = "ping") => {
  *   active: boolean,
  *   tier?: "pro" (legacy "premium" normalizes to "pro"),
  *   expiresAt?: ISO date string,
- *   productId?: string,
- *   originalTransactionId?: string (REQUIRED for proper account linking)
+ *   productId?: string,                          // CURRENT active product ID
+ *   originalTransactionId?: string,              // REQUIRED for proper account linking
+ *   pendingProductId?: string,                   // Apple autoRenewalPreference — the product the sub will renew into
+ *   pendingUpgradeEffectiveDate?: ISO date string // Apple renewal date — when the pending product takes effect
  * }
+ *
+ * Deferred upgrade handling:
+ *   When a user schedules an upgrade (e.g. 3 Modules → All Modules effective Aug 16),
+ *   Apple's StoreKit 2 exposes autoRenewalPreference (pendingProductId) and the
+ *   renewal date (pendingUpgradeEffectiveDate). The backend grants the CURRENT
+ *   product's modules until the effective date, then switches automatically.
  */
 export const registerNativeSubscriptionListener = (onStatus) => {
   if (typeof onStatus !== "function") return () => {};

@@ -95,6 +95,43 @@
         "year"
       ],
       "description": "Billing interval - monthly or yearly"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Raw provider product ID (Apple productID or Stripe price ID). Stored for audit and re-resolution."
+    },
+    "plan_key": {
+      "type": "string",
+      "description": "Canonical plan key from PLAN_CATALOG (e.g. pipekeeper_pro_monthly, three_module_bundle_monthly)"
+    },
+    "modules_csv": {
+      "type": "string",
+      "description": "Comma-separated list of modules granted by this subscription"
+    },
+    "module_count": {
+      "type": "number",
+      "description": "Number of modules in this subscription"
+    },
+    "product_kind": {
+      "type": "string",
+      "description": "Product kind: single, founders, bundle_3, bundle_4"
+    },
+    "checkout_type": {
+      "type": "string",
+      "description": "Checkout type: single_module, bundle_2, bundle_3, bundle_4"
+    },
+    "primary_module": {
+      "type": "string",
+      "description": "Primary module for this subscription"
+    },
+    "pending_upgrade_product_id": {
+      "type": "string",
+      "description": "Apple deferred upgrade: the product ID the subscription will renew into (autoRenewalPreference). Null when no pending upgrade."
+    },
+    "pending_upgrade_effective_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Apple deferred upgrade: the renewal date when the pending product takes effect. Null when no pending upgrade."
     }
   },
   "required": []

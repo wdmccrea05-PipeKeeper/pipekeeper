@@ -160,7 +160,19 @@ Every Apple user who purchased a bundle (3-module, all-modules, or any non-found
 
 ## Required Fixes (Prioritized)
 
-### P0 — Product ID Resolution (blocks all Apple bundle users)
+> **UPDATE 2026-08-07: P0 FIXES IMPLEMENTED** — All P0 items below have been completed:
+> - ✅ **#1** `resolveAppleProductAccess` expanded with 3-module, 4-module/all-modules, and generic bundle recognition (bundles checked before single modules to prevent keyword collisions)
+> - ✅ **#2** `resolveAppleProductId` added to `_shared/subscriptionNormalizer` + `normalizeSub` now falls back to Apple product ID resolution when planKey/csv/amount all miss
+> - ✅ **#3** `backfillAppleSubscriptionModules` backend function created; 5 mismatched active users marked `needs_review` with `has_paid_access: true` (will auto-resolve on next iOS sync)
+> - ✅ **#4** iOS bridge (`nativeIAPBridge.jsx`) updated to document and pass `pendingProductId` + `pendingUpgradeEffectiveDate` from StoreKit 2's `autoRenewalPreference`
+> - ✅ **#5** `pending_upgrade_product_id` and `pending_upgrade_effective_date` fields added to both `Subscription` and `ActiveContract` schemas; `product_id` also added to Subscription
+> - ✅ **#6** `syncAppleSubscriptionForMe` now grants CURRENT product modules until effective date, switches to pending product after — never grants upgrade early
+> - ✅ **#7** Logging expanded to include `productId`, `effectiveProductId`, `pendingUpgrade`, and `pendingEffective` in every sync
+> - ✅ **Tests** `appleProductResolver.test.js` covers bundle resolution, single-module resolution, deferred upgrade before/after effective date, and edge cases
+>
+> **Remaining (P1/P2):** ActiveContract creation in sync function (#8), Restore Purchases flow (#9), server-side receipt verification (#10), login reconciliation hardening (#11-12).
+
+### P0 — Product ID Resolution (blocks all Apple bundle users) ✅
 1. **Expand `resolveAppleProductAccess`** to recognize all Apple product IDs, including:
    - 3-module bundle → `['pipekeeper', 'whiskeykeeper', 'cigarkeeper']`
    - 4-module / all-modules bundle → `['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']`

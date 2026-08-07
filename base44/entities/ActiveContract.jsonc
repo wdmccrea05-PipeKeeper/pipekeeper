@@ -143,6 +143,15 @@
       ],
       "description": "How period_end was determined"
     },
+    "pending_upgrade_product_id": {
+      "type": "string",
+      "description": "Apple deferred upgrade: the product ID the subscription will renew into (autoRenewalPreference). Null when no pending upgrade."
+    },
+    "pending_upgrade_effective_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Apple deferred upgrade: the renewal date when the pending product takes effect. Null when no pending upgrade."
+    },
     "quality": {
       "type": "string",
       "enum": [

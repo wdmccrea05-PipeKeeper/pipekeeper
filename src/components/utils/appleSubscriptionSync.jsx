@@ -18,6 +18,10 @@ export function normalizeNativeAppleStatus(payload = {}) {
   const verificationProof = payload.verificationProof || null;
   const expiresAt = payload.expiresAt ? String(payload.expiresAt) : null;
   const active = !!payload.active;
+  const pendingProductId = safeString(payload.pendingProductId) || null;
+  const pendingUpgradeEffectiveDate = payload.pendingUpgradeEffectiveDate
+    ? String(payload.pendingUpgradeEffectiveDate)
+    : null;
 
   return {
     active,
@@ -26,6 +30,8 @@ export function normalizeNativeAppleStatus(payload = {}) {
     expiresAt,
     originalTransactionId,
     verificationProof,
+    pendingProductId,
+    pendingUpgradeEffectiveDate,
   };
 }
 

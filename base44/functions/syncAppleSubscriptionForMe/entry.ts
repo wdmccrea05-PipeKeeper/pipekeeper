@@ -15,6 +15,35 @@ function resolveAppleProductAccess(productId: string) {
   const product = String(productId || '').trim().toLowerCase();
   const isAnnual = product.includes('annual') || product.includes('year');
 
+  // ── Bundles (check FIRST — bundle IDs may contain single-module keywords) ──
+  // 4-module / all-modules bundle
+  if (product.includes('all_module') || product.includes('allmodule') ||
+      product.includes('four_module') || product.includes('fourmodule') ||
+      product.includes('4_module') || product.includes('4module') ||
+      (product.includes('bundle') && product.includes('wine'))) {
+    return {
+      planKey: isAnnual ? 'four_module_bundle_annual' : 'four_module_bundle_monthly',
+      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+      productKind: 'bundle_4',
+      checkoutType: 'bundle_4',
+      billingInterval: isAnnual ? 'year' : 'month',
+    };
+  }
+
+  // 3-module bundle
+  if (product.includes('three_module') || product.includes('threemodule') ||
+      product.includes('3_module') || product.includes('3module') ||
+      (product.includes('bundle') && !product.includes('wine') && !product.includes('founders'))) {
+    return {
+      planKey: isAnnual ? 'three_module_bundle_annual' : 'three_module_bundle_monthly',
+      modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+      productKind: 'bundle_3',
+      checkoutType: 'bundle_3',
+      billingInterval: isAnnual ? 'year' : 'month',
+    };
+  }
+
+  // Founders bundle (2 modules: PK + WK)
   if (product.includes('founders')) {
     return {
       planKey: isAnnual ? 'founders_bundle_annual' : 'founders_bundle_monthly',
@@ -25,6 +54,7 @@ function resolveAppleProductAccess(productId: string) {
     };
   }
 
+  // ── Single modules ──
   if (product.includes('whiskey')) {
     return {
       planKey: isAnnual ? 'whiskeykeeper_pro_annual' : 'whiskeykeeper_pro_monthly',
@@ -55,6 +85,7 @@ function resolveAppleProductAccess(productId: string) {
     };
   }
 
+  // Default: pipekeeper (the original/primary single-module product)
   return {
     planKey: isAnnual ? 'pipekeeper_pro_annual' : 'pipekeeper_pro_monthly',
     modules: ['pipekeeper'],
@@ -88,6 +119,8 @@ Deno.serve(async (req) => {
     const active = !!body.active;
     const expiresAt = body.expiresAt || null;
     const productId = body.productId || '';
+    const pendingProductId = body.pendingProductId || '';
+    const pendingUpgradeEffectiveDate = body.pendingUpgradeEffectiveDate || null;
     const originalTransactionId = body.originalTransactionId || '';
     const verificationProof = body.verificationProof || null; // Server-side verification data
     
@@ -114,7 +147,23 @@ Deno.serve(async (req) => {
       tier = 'pro';
     }
 
-    const productAccess = resolveAppleProductAccess(productId);
+    // ── Deferred upgrade handling ──────────────────────────────────────────
+    // Apple's StoreKit 2 exposes autoRenewalPreference (the pending product ID)
+    // and the renewal date (when the upgrade takes effect). We must grant the
+    // CURRENT product's modules until the effective date, then switch to the
+    // pending product after renewal. Never grant the upgrade early.
+    const now = new Date();
+    const pendingEffective = pendingUpgradeEffectiveDate ? new Date(pendingUpgradeEffectiveDate) : null;
+    const upgradeHasTakenEffect = pendingProductId && pendingEffective && pendingEffective <= now;
+    const effectiveProductId = upgradeHasTakenEffect ? pendingProductId : productId;
+
+    if (pendingProductId && pendingEffective && pendingEffective > now) {
+      console.log(`[syncAppleSubscriptionForMe] Deferred upgrade pending for user ${userId}: current=${productId} → pending=${pendingProductId} effective=${pendingUpgradeEffectiveDate}. Granting current product modules.`);
+    } else if (upgradeHasTakenEffect) {
+      console.log(`[syncAppleSubscriptionForMe] Deferred upgrade took effect for user ${userId}: now active=${pendingProductId} (was ${productId})`);
+    }
+
+    const productAccess = resolveAppleProductAccess(effectiveProductId);
     const activeModules = uniqueModules(productAccess.modules);
     const modulesCsv = activeModules.join(',');
     
@@ -171,6 +220,9 @@ Deno.serve(async (req) => {
       status,
       tier,
       // Keep both keys for compatibility with legacy readers that still check camelCase.
+      product_id: productId || null,
+      pending_upgrade_product_id: pendingProductId || null,
+      pending_upgrade_effective_date: pendingUpgradeEffectiveDate || null,
       plan_key: productAccess.planKey,
       planKey: productAccess.planKey,
       modules_csv: modulesCsv,
@@ -352,7 +404,7 @@ Deno.serve(async (req) => {
     }
 
     // Log successful sync for monitoring
-    console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${emailLower} userId=${userId} tier=${tier} status=${status} active=${active} verified=${isVerified} allModules=${grantedModulesCsv}`);
+    console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${emailLower} userId=${userId} tier=${tier} status=${status} active=${active} verified=${isVerified} productId=${productId} effectiveProductId=${effectiveProductId} allModules=${grantedModulesCsv} pendingUpgrade=${pendingProductId || 'none'} pendingEffective=${pendingUpgradeEffectiveDate || 'none'}`);
 
     return Response.json({
       ok: true,
