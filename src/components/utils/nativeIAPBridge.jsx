@@ -69,16 +69,38 @@ export const nativeDebugPing = (label = "ping") => {
 
 /**
  * Register listener for Apple subscription status updates.
- * iOS wrapper should dispatch full payload:
+ * iOS wrapper should dispatch full payload via a CustomEvent named
+ * "pipekeeper_subscription_status" on window, with the payload in e.detail:
  * {
  *   active: boolean,
  *   tier?: "pro" (legacy "premium" normalizes to "pro"),
  *   expiresAt?: ISO date string,
- *   productId?: string,                          // CURRENT active product ID
- *   originalTransactionId?: string,              // REQUIRED for proper account linking
+ *   productId?: string,                          // CURRENT active product ID (Transaction.productID)
+ *   originalTransactionId?: string,              // REQUIRED for verified sync — see StoreKit 2 mapping below
  *   pendingProductId?: string,                   // Apple autoRenewalPreference — the product the sub will renew into
  *   pendingUpgradeEffectiveDate?: ISO date string // Apple renewal date — when the pending product takes effect
  * }
+ *
+ * ── StoreKit 2 field mapping (NATIVE iOS TEAM — READ THIS) ──
+ * The native iOS code must read these StoreKit 2 (Swift) Transaction properties
+ * and serialize them into the payload using the key names shown:
+ *
+ *   StoreKit 2 (Swift)              →  Payload key
+ *   ────────────────────────────────┼──────────────────────────────
+ *   Transaction.originalID          →  originalTransactionId       ← CRITICAL: use originalID, NOT id
+ *   Transaction.productID           →  productId
+ *   Transaction.expirationDate      →  expiresAt (ISO 8601 string)
+ *   Transaction.jsonRepresentation  →  verificationProof (JWS token for server-side verification)
+ *
+ * COMMON NATIVE BUG: Reading Transaction.id instead of Transaction.originalID.
+ *   - Transaction.id changes on every renewal (current transaction's ID)
+ *   - Transaction.originalID is stable across the entire subscription lifecycle
+ *   - For the FIRST purchase, originalID == id, so the bug is invisible initially
+ *   - For renewals, using id breaks subscription lifecycle tracking and account linking
+ *
+ * If the native wrapper cannot read originalID (e.g. StoreKit 1 fallback), it
+ * should send whatever transaction identifier is available as "transactionId".
+ * The sync layer will use it as a last-resort fallback (marked unverified).
  *
  * Deferred upgrade handling:
  *   When a user schedules an upgrade (e.g. 3 Modules → All Modules effective Aug 16),
