@@ -124,15 +124,17 @@ Deno.serve(async (req) => {
     const originalTransactionId = body.originalTransactionId || '';
     const verificationProof = body.verificationProof || null; // Server-side verification data
     
-    // Require originalTransactionId when claiming active subscription to prevent
-    // unauthenticated access grants
+    // When originalTransactionId is missing, proceed as UNVERIFIED rather than
+    // rejecting entirely. The subscription will use apple_unverified_${userId} as
+    // its provider_subscription_id (see below) and be marked isVerified=false.
+    // This ensures users whose iOS wrapper doesn't send the transaction ID still
+    // get their modules resolved from the product ID. The security risk is minimal:
+    // the subscription is always linked to the current authenticated user, and
+    // modules are resolved from the client-sent productId (same trust level with
+    // or without the transaction ID). Admins can review unverified subscriptions
+    // via the provider_subscription_id prefix.
     if (active && !originalTransactionId) {
-      console.warn(`[syncAppleSubscriptionForMe] Rejecting unverified active claim from user ${userId}: no originalTransactionId provided`);
-      return Response.json({
-        ok: false,
-        error: 'UNVERIFIED_CLAIM',
-        message: 'An originalTransactionId is required to activate a subscription.'
-      }, { status: 400 });
+      console.warn(`[syncAppleSubscriptionForMe] Proceeding with UNVERIFIED active claim from user ${userId}: no originalTransactionId provided. Subscription will be marked unverified.`);
     }
     
     // Determine if this is verified (requires server-side proof from App Store)

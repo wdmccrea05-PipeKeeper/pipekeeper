@@ -41,9 +41,11 @@ export async function syncAppleSubscriptionStatus(payload = {}, options = {}) {
     options.invoke ||
     ((body) => base44.functions.invoke("syncAppleSubscriptionForMe", body));
 
-  if (normalized.active && !normalized.originalTransactionId) {
-    return { ok: false, skipped: true, reason: "missing_original_transaction_id" };
-  }
+  // Previously skipped the sync entirely when originalTransactionId was missing.
+  // This caused users whose iOS wrapper didn't send the transaction ID to never
+  // get a backend Subscription record — they'd see local StoreKit access but the
+  // backend showed "free". Now we always call the backend; it handles unverified
+  // claims by using apple_unverified_${userId} as the provider_subscription_id.
 
   const response = await invoke(normalized);
   const data = response?.data || response || {};
