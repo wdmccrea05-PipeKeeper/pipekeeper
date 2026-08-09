@@ -8,6 +8,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { expandPipesToVariants, getVariantFromPipe } from "@/components/utils/pipeVariants";
 import { toast } from "sonner";
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
+import { getCurrentPairingMatrix } from "@/components/utils/pairingPolicy";
 import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import InfoTooltip from "@/components/ui/InfoTooltip";
