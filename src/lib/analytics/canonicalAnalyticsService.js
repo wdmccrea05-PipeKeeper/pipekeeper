@@ -1,5 +1,5 @@
 import { base44 } from '@/api/base44Client';
-import { CANONICAL_METRIC_DICTIONARY, CANONICAL_REPORTING_TIMEZONE } from './canonicalMetricDictionary';
+import { CANONICAL_METRIC_DICTIONARY, CANONICAL_METRIC_DICTIONARY_VERSION, CANONICAL_REPORTING_TIMEZONE } from './canonicalMetricDictionary';
 import { buildLifecycleEnvelope } from './lifecycleModel';
 import { FORMAL_AUDIT_OUTPUTS } from './formalAuditOutputs';
 import { runReportingParityChecks, findIntegrityFindings } from './integrityChecks';
@@ -14,7 +14,7 @@ export async function getCanonicalUserLifecycleReport(payload = {}) {
   return {
     ...report,
     canonicalEnvelope: buildLifecycleEnvelope({ range: report?.dateRange, report }),
-    canonicalDictionaryVersion: 'v1-lifecycle-canonical',
+    canonicalDictionaryVersion: CANONICAL_METRIC_DICTIONARY_VERSION,
     canonicalTimezone: report?.meta?.reportingTimezone || CANONICAL_REPORTING_TIMEZONE,
     metricKeys: Object.keys(CANONICAL_METRIC_DICTIONARY),
   };

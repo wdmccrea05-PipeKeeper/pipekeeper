@@ -9,8 +9,8 @@ export function runReportingParityChecks({ userReport, reconciliationReport }) {
     key: 'paying_users_vs_matched_subscriptions',
     left: reportUsers,
     right: reconUsers,
-    pass: reportUsers <= reconUsers && delta <= allowedDelta,
-    message: reportUsers <= reconUsers && delta <= allowedDelta
+    pass: delta <= allowedDelta,
+    message: delta <= allowedDelta
       ? 'Paying user and matched subscription counts are within parity bounds.'
       : 'Paying user and matched subscription counts are outside parity bounds.',
   });

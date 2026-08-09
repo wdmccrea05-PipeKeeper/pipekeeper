@@ -1,4 +1,5 @@
 export const CANONICAL_REPORTING_TIMEZONE = 'America/Indianapolis';
+export const CANONICAL_METRIC_DICTIONARY_VERSION = 'v1-metric-dictionary';
 
 export const LIFECYCLE_PHASES = [
   'identity',
