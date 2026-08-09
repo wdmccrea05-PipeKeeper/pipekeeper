@@ -346,14 +346,14 @@ describe('Personalization neutrality and variant ranking', () => {
     const result = scorePipeBlendDiagnostic(testPipes[0], testBlends[2], {});
     expect(result.hasPersonalizationEvidence).toBe(false);
     expect(result.personalFit).toBe(null);
-    expect(result.finalScore).toBe(result.technicalScore);
+    expect(result.finalScore).toBe(result.tieredScore);
   });
 
   test('meaningful profile can alter final score', () => {
     const profile = { preferred_blend_types: ['Aromatic'], strength_preference: 'Medium' };
     const result = scorePipeBlendDiagnostic(testPipes[0], testBlends[2], profile);
     expect(result.hasPersonalizationEvidence).toBe(true);
-    expect(result.finalScore).not.toBe(result.technicalScore);
+    expect(result.finalScore).not.toBe(result.tieredScore);
   });
 
   test('variant ranking collapses duplicate parent pipes while keeping the winning bowl', () => {

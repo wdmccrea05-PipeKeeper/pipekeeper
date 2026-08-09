@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-09T16:13:52.787Z",
+  "capturedAt": "2026-08-09T17:10:38.395Z",
   "scorerVersion": "1.0.0-canonical",
   "taxonomyVersion": "1.0.0",
   "normalizationVersion": "1.0.0",
@@ -15,8 +15,8 @@
   "scores": {
     "Heavy Aromatic": {
       "Aromatic Dedicated": {
-        "finalScore": 7.7,
-        "technicalScore": 7.7,
+        "finalScore": 9.1,
+        "technicalScore": 8.1,
         "confidence": 0.9,
         "components": {
           "dedication": 8,
@@ -29,8 +29,8 @@
         }
       },
       "English Dedicated": {
-        "finalScore": 5.6,
-        "technicalScore": 5.6,
+        "finalScore": 3.1,
+        "technicalScore": 5.1,
         "confidence": 0.9,
         "components": {
           "dedication": 1,
@@ -43,8 +43,8 @@
         }
       },
       "Virginia Dedicated": {
-        "finalScore": 5.9,
-        "technicalScore": 5.9,
+        "finalScore": 3.5,
+        "technicalScore": 5.6,
         "confidence": 0.9,
         "components": {
           "dedication": 2,
@@ -57,8 +57,8 @@
         }
       },
       "General Purpose Pipe": {
-        "finalScore": 7,
-        "technicalScore": 7,
+        "finalScore": 7.2,
+        "technicalScore": 7.2,
         "confidence": 0.9,
         "components": {
           "dedication": 6,
@@ -73,8 +73,8 @@
     },
     "Light Aromatic": {
       "Aromatic Dedicated": {
-        "finalScore": 7.7,
-        "technicalScore": 7.7,
+        "finalScore": 9.1,
+        "technicalScore": 8.1,
         "confidence": 0.9,
         "components": {
           "dedication": 8,
@@ -87,8 +87,8 @@
         }
       },
       "English Dedicated": {
-        "finalScore": 5.6,
-        "technicalScore": 5.6,
+        "finalScore": 3.1,
+        "technicalScore": 5.1,
         "confidence": 0.9,
         "components": {
           "dedication": 1,
@@ -101,8 +101,8 @@
         }
       },
       "Virginia Dedicated": {
-        "finalScore": 5.9,
-        "technicalScore": 5.9,
+        "finalScore": 3.5,
+        "technicalScore": 5.6,
         "confidence": 0.9,
         "components": {
           "dedication": 2,
@@ -115,8 +115,8 @@
         }
       },
       "General Purpose Pipe": {
-        "finalScore": 7,
-        "technicalScore": 7,
+        "finalScore": 7.2,
+        "technicalScore": 7.2,
         "confidence": 0.9,
         "components": {
           "dedication": 6,
@@ -131,8 +131,8 @@
     },
     "Straight Virginia": {
       "Aromatic Dedicated": {
-        "finalScore": 5.9,
-        "technicalScore": 5.9,
+        "finalScore": 4.6,
+        "technicalScore": 5.6,
         "confidence": 0.9,
         "components": {
           "dedication": 3,
@@ -145,7 +145,7 @@
         }
       },
       "English Dedicated": {
-        "finalScore": 6.5,
+        "finalScore": 4.9,
         "technicalScore": 6.5,
         "confidence": 0.9,
         "components": {
@@ -159,8 +159,8 @@
         }
       },
       "Virginia Dedicated": {
-        "finalScore": 7.4,
-        "technicalScore": 7.4,
+        "finalScore": 8.2,
+        "technicalScore": 7.7,
         "confidence": 0.9,
         "components": {
           "dedication": 8,
@@ -173,8 +173,8 @@
         }
       },
       "General Purpose Pipe": {
-        "finalScore": 6.8,
-        "technicalScore": 6.8,
+        "finalScore": 6.9,
+        "technicalScore": 6.9,
         "confidence": 0.9,
         "components": {
           "dedication": 6,
@@ -189,8 +189,8 @@
     },
     "Virginia Flake": {
       "Aromatic Dedicated": {
-        "finalScore": 5.9,
-        "technicalScore": 5.9,
+        "finalScore": 4.6,
+        "technicalScore": 5.6,
         "confidence": 0.9,
         "components": {
           "dedication": 3,
@@ -203,7 +203,7 @@
         }
       },
       "English Dedicated": {
-        "finalScore": 6.5,
+        "finalScore": 4.9,
         "technicalScore": 6.5,
         "confidence": 0.9,
         "components": {
@@ -217,8 +217,8 @@
         }
       },
       "Virginia Dedicated": {
-        "finalScore": 7.4,
-        "technicalScore": 7.4,
+        "finalScore": 8.2,
+        "technicalScore": 7.7,
         "confidence": 0.9,
         "components": {
           "dedication": 8,
@@ -231,8 +231,8 @@
         }
       },
       "General Purpose Pipe": {
-        "finalScore": 6.8,
-        "technicalScore": 6.8,
+        "finalScore": 6.9,
+        "technicalScore": 6.9,
         "confidence": 0.9,
         "components": {
           "dedication": 6,
@@ -247,8 +247,8 @@
     },
     "True VaPer": {
       "Aromatic Dedicated": {
-        "finalScore": 6.1,
-        "technicalScore": 6.1,
+        "finalScore": 4.9,
+        "technicalScore": 5.9,
         "confidence": 0.9,
         "components": {
           "dedication": 3,
@@ -261,8 +261,8 @@
         }
       },
       "English Dedicated": {
-        "finalScore": 6.7,
-        "technicalScore": 6.7,
+        "finalScore": 4.9,
+        "technicalScore": 6.8,
         "confidence": 0.9,
         "components": {
           "dedication": 5,
@@ -275,8 +275,8 @@
         }
       },
       "Virginia Dedicated": {
-        "finalScore": 7.9,
-        "technicalScore": 7.9,
+        "finalScore": 9.4,
+        "technicalScore": 8.4,
         "confidence": 0.9,
         "components": {
           "dedication": 9,
@@ -289,8 +289,8 @@
         }
       },
       "General Purpose Pipe": {
-        "finalScore": 7,
-        "technicalScore": 7,
+        "finalScore": 7.2,
+        "technicalScore": 7.2,
         "confidence": 0.9,
         "components": {
           "dedication": 6,
@@ -305,8 +305,8 @@
     },
     "English": {
       "Aromatic Dedicated": {
-        "finalScore": 5.4,
-        "technicalScore": 5.4,
+        "finalScore": 2.9,
+        "technicalScore": 4.9,
         "confidence": 0.9,
         "components": {
           "dedication": 1,
@@ -319,8 +319,8 @@
         }
       },
       "English Dedicated": {
-        "finalScore": 7.5,
-        "technicalScore": 7.5,
+        "finalScore": 8.8,
+        "technicalScore": 7.8,
         "confidence": 0.9,
         "components": {
           "dedication": 8,
@@ -333,8 +333,8 @@
         }
       },
       "Virginia Dedicated": {
-        "finalScore": 5.9,
-        "technicalScore": 5.9,
+        "finalScore": 4.6,
+        "technicalScore": 5.6,
         "confidence": 0.9,
         "components": {
           "dedication": 3,
@@ -347,8 +347,8 @@
         }
       },
       "General Purpose Pipe": {
-        "finalScore": 6.9,
-        "technicalScore": 6.9,
+        "finalScore": 7,
+        "technicalScore": 7,
         "confidence": 0.9,
         "components": {
           "dedication": 6,
@@ -386,8 +386,8 @@
     "Straight Virginia": [
       "cert-pipe-virginia",
       "cert-pipe-general",
-      "cert-pipe-english",
       "cert-pipe-no-dims",
+      "cert-pipe-english",
       "cert-pipe-meerschaum",
       "cert-pipe-aromatic",
       "cert-pipe-ghosted",
@@ -396,8 +396,8 @@
     "Virginia Flake": [
       "cert-pipe-virginia",
       "cert-pipe-general",
-      "cert-pipe-english",
       "cert-pipe-no-dims",
+      "cert-pipe-english",
       "cert-pipe-meerschaum",
       "cert-pipe-aromatic",
       "cert-pipe-ghosted",

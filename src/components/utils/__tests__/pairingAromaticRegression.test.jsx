@@ -106,14 +106,17 @@ describe('Autumn Evening ranking', () => {
     expect(english.why).toMatch(/carryover|ghost/i);
   });
 
-  test('Autumn Evening: physically unsuitable pipe does not beat better geometry', () => {
+  test('Autumn Evening: aromatic-dedicated pipe outscores general despite smaller chamber (Phase 9)', () => {
     const small = scorePipeBlendDiagnostic(aromaticDedicatedSmall, autumnEvening, null);
     const general = scorePipeBlendDiagnostic(generalPurposePipe, autumnEvening, null);
 
-    // Same dedication advantage, but the tiny chamber loses on physics
+    // Aromatic-dedicated pipe earns a higher specialization tier (PREFERRED/EXACT_SPECIALIZATION)
+    // than a general purpose pipe (GENERAL). Per Phase 9, tier constraints prevent secondary
+    // variables (geometry) from overriding specialization. The dedicated pipe scores higher overall.
     expect(small.components.dedication.score)
       .toBeGreaterThan(general.components.dedication.score);
-    expect(small.score).toBeLessThan(general.score);
+    expect(small.score).toBeGreaterThan(general.score);
+    // Geometry disadvantage is still reflected in the component sub-scores
     expect(small.components.aromaticCompatibility.score)
       .toBeLessThan(general.components.aromaticCompatibility.score);
   });

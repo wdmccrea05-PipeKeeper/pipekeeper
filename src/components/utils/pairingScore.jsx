@@ -6,6 +6,9 @@ export {
   normalizeFocus,
   getAromaticIntensity,
   inferBlendCategory,
+  COMPATIBILITY_TIERS,
+  SPECIALIZATION_MATRIX,
+  computeCompatibilityTier,
 } from "@/components/utils/pairingScoreCanonical";
 
 export {

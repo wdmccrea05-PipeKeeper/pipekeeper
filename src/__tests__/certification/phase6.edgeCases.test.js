@@ -21,13 +21,13 @@ const blends = CERTIFICATION_BLENDS;
 const pipes = CERTIFICATION_PIPES.filter((p) => !p.bowl_variants);
 
 describe('Phase 6 — Edge Cases', () => {
-  describe('Empty user profile: technicalScore === finalScore', () => {
+  describe('Empty user profile: finalScore === tieredScore (tier-adjusted, no personalization)', () => {
     for (const blend of blends.slice(0, 4)) {
       for (const pipe of pipes.slice(0, 3)) {
         test(`${blend._archetype} × ${pipe._archetype}`, () => {
           const result = scorePipeBlendDiagnostic(pipe, blend, USER_PROFILES.empty);
           expect(result.hasPersonalizationEvidence).toBe(false);
-          expect(result.finalScore).toBe(result.technicalScore);
+          expect(result.finalScore).toBe(result.tieredScore);
         });
       }
     }
