@@ -6,6 +6,7 @@
 
 import { base44 } from '@/api/base44Client';
 import { MODULE_REGISTRY } from './moduleRegistry';
+import { buildCanonicalCollectionAggregate } from './reporting.js';
 
 /**
  * Export collection to CSV
@@ -29,7 +30,8 @@ export async function exportToCSV(userEmail, options = {}) {
         created_by: userEmail,
       });
       
-      for (const item of (items || [])) {
+      const canonicalAggregate = buildCanonicalCollectionAggregate(items || []);
+      for (const item of canonicalAggregate.reportableItems) {
         rows.push([
           module.name,
           item.name || '',
@@ -80,10 +82,12 @@ export async function exportToJSON(userEmail, options = {}) {
         created_by: userEmail,
       });
       
+      const canonicalAggregate = buildCanonicalCollectionAggregate(items || []);
       exportData.modules[module.id] = {
         name: module.name,
-        count: items?.length || 0,
-        items: items || [],
+        count: canonicalAggregate.totalCount,
+        totalValue: canonicalAggregate.totalValue,
+        items: canonicalAggregate.reportableItems,
       };
     }
     
@@ -123,8 +127,9 @@ export async function generateCollectionReport(userEmail, options = {}) {
         created_by: userEmail,
       });
       
-      const moduleValue = (items || []).reduce((sum, i) => sum + (i.estimated_value || 0), 0);
-      const moduleCount = items?.length || 0;
+      const canonicalAggregate = buildCanonicalCollectionAggregate(items || []);
+      const moduleValue = canonicalAggregate.totalValue;
+      const moduleCount = canonicalAggregate.totalCount;
       
       totalValue += moduleValue;
       totalItems += moduleCount;
@@ -134,7 +139,7 @@ export async function generateCollectionReport(userEmail, options = {}) {
         count: moduleCount,
         totalValue: moduleValue,
         averageValue: moduleCount > 0 ? moduleValue / moduleCount : 0,
-        topItems: (items || [])
+        topItems: canonicalAggregate.reportableItems
           .sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0))
           .slice(0, 5)
           .map(i => ({

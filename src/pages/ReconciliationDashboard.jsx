@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import OrphanedEntitlementCard from '@/components/reconciliation/OrphanedEntitlementCard';
+import { getCanonicalReconciliationReport } from '@/lib/analytics/canonicalAnalyticsService';
 
 export default function ReconciliationDashboard() {
   const [report, setReport] = useState(null);
@@ -24,25 +25,25 @@ export default function ReconciliationDashboard() {
     }
   };
 
-  const loadReport = async () => {
+  const loadCanonical = async () => {
     setLoadingReport(true);
-    try {
-      const r = await base44.functions.invoke('getUserSubscriptionReportV3', { dateRange: '90d' });
-      setReport(r?.data ?? r);
-    } catch (e) { setError(e?.message || 'Failed to load report'); } finally { setLoadingReport(false); }
-  };
-  const loadUnmatched = async () => {
     setLoadingUnmatched(true);
     try {
-      const r = await base44.functions.invoke('getUnmatchedPayments', {});
-      setUnmatched(r?.data ?? r);
-    } catch (e) { setError(e?.message || 'Failed to load unmatched payments'); } finally { setLoadingUnmatched(false); }
+      const r = await getCanonicalReconciliationReport({ dateRange: '90d' });
+      setReport(r?.report ?? null);
+      setUnmatched(r?.unmatched ?? null);
+    } catch (e) {
+      setError(e?.message || 'Failed to load reconciliation analytics');
+    } finally {
+      setLoadingReport(false);
+      setLoadingUnmatched(false);
+    }
   };
 
-  useEffect(() => { loadReport(); loadUnmatched(); loadOrphanedEntitlements(); }, []);
+  useEffect(() => { loadCanonical(); loadOrphanedEntitlements(); }, []);
 
   const handleOrphanResolved = () => {
-    loadReport();
+    loadCanonical();
     loadOrphanedEntitlements();
   };
 
@@ -60,8 +61,7 @@ export default function ReconciliationDashboard() {
       });
       setResolveResult({ eventId, ...(r?.data ?? r) });
       // reload both
-      loadReport();
-      loadUnmatched();
+      loadCanonical();
     } catch (e) {
       setResolveResult({ eventId, error: e?.message || 'Reconciliation failed' });
     } finally { setResolving(null); }
@@ -82,7 +82,7 @@ export default function ReconciliationDashboard() {
           <h1 className="text-2xl font-bold text-[#F5F1E7]">Reconciliation Dashboard</h1>
           <p className="text-xs text-[#E0D8C8]/50 mt-1">Administrator-only · canonical ledger reconciliation</p>
         </div>
-        <button onClick={() => { loadReport(); loadUnmatched(); }} className="px-3 py-2 rounded border border-[#8b6239]/40 text-[#E0D8C8] hover:bg-[#8b6239]/20 text-sm">
+        <button onClick={() => { loadCanonical(); }} className="px-3 py-2 rounded border border-[#8b6239]/40 text-[#E0D8C8] hover:bg-[#8b6239]/20 text-sm">
           Refresh
         </button>
       </div>
