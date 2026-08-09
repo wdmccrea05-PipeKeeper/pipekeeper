@@ -394,27 +394,23 @@ export function searchWines(wines, query) {
 // ---------------------------------------------------------------------------
 
 export function selectWineCount(wines) {
-  return Array.isArray(wines) ? wines.length : 0;
+  return selectActiveWines(wines).length;
 }
 
 export function selectTotalWineBottles(wines) {
-  if (!Array.isArray(wines)) return 0;
-  return wines.reduce((s, w) => s + getWineQuantity(w), 0);
+  return selectActiveWines(wines).reduce((s, w) => s + getWineQuantity(w), 0);
 }
 
 export function selectWineCollectionValue(wines) {
-  if (!Array.isArray(wines)) return 0;
-  return wines.reduce((s, w) => s + getWineTotalValue(w), 0);
+  return selectActiveWines(wines).reduce((s, w) => s + getWineTotalValue(w), 0);
 }
 
 export function selectUnvaluedWineCount(wines) {
-  if (!Array.isArray(wines)) return 0;
-  return wines.filter((w) => !hasWineValuation(w)).length;
+  return selectActiveWines(wines).filter((w) => !hasWineValuation(w)).length;
 }
 
 export function selectWineReadyToDrinkCount(wines) {
-  if (!Array.isArray(wines)) return 0;
-  return wines.filter((w) => getWineDrinkWindowStatus(w) === 'drink_now').length;
+  return selectActiveWines(wines).filter((w) => getWineDrinkWindowStatus(w) === 'drink_now').length;
 }
 
 // ---------------------------------------------------------------------------
@@ -469,7 +465,7 @@ export function buildWineTastingIndex(tastings) {
  * }}
  */
 export function selectWineMetrics(wines = [], tastings = []) {
-  const wineList = Array.isArray(wines) ? wines : [];
+  const wineList = selectActiveWines(wines);
 
   const rated = wineList.filter((w) => w?.rating != null && Number(w.rating) > 0);
   const average_rating =
@@ -487,3 +483,4 @@ export function selectWineMetrics(wines = [], tastings = []) {
     average_rating,
   };
 }
+import { selectActiveWines } from './activeFilters.js';

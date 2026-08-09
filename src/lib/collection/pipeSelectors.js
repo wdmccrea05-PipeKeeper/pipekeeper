@@ -52,7 +52,7 @@ export function getPipeUnitValue(pipe) {
  * @returns {number}
  */
 export function selectPipeCount(pipes) {
-  return Array.isArray(pipes) ? pipes.length : 0;
+  return selectActivePipes(pipes).length;
 }
 
 /**
@@ -88,9 +88,10 @@ export function buildSessionsByPipeIndex(smokingLogs) {
  * @returns {object|null}
  */
 export function selectMostSmokedPipe(pipes, smokingLogs) {
-  if (!Array.isArray(pipes) || pipes.length === 0) return null;
+  const activePipes = selectActivePipes(pipes);
+  if (activePipes.length === 0) return null;
   const idx = buildSessionsByPipeIndex(smokingLogs);
-  const withCount = pipes
+  const withCount = activePipes
     .map((p) => ({ ...p, _sessions: idx[p.id] || 0 }))
     .filter((p) => p._sessions > 0);
   if (withCount.length === 0) return null;
@@ -106,8 +107,7 @@ export function selectMostSmokedPipe(pipes, smokingLogs) {
  * @returns {number}
  */
 export function selectSpecializedPipesCount(pipes) {
-  if (!Array.isArray(pipes)) return 0;
-  return pipes.filter(
+  return selectActivePipes(pipes).filter(
     (p) => p?.specialization && String(p.specialization).trim().length > 0
   ).length;
 }
@@ -119,8 +119,7 @@ export function selectSpecializedPipesCount(pipes) {
  * @returns {number}
  */
 export function selectPipeCollectionValue(pipes) {
-  if (!Array.isArray(pipes)) return 0;
-  return pipes.reduce((sum, p) => sum + getPipeUnitValue(p), 0);
+  return selectActivePipes(pipes).reduce((sum, p) => sum + getPipeUnitValue(p), 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -174,3 +173,4 @@ export function selectPipeMetrics(pipes, smokingLogs) {
     collection_value: selectPipeCollectionValue(pipes),
   };
 }
+import { selectActivePipes } from './activeFilters.js';

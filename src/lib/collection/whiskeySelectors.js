@@ -63,8 +63,7 @@ export function getBottleUnitValue(bottle) {
  * @returns {Record<string, number>}
  */
 export function buildWhiskeyInventoryIndex(inventoryUnits) {
-  if (!Array.isArray(inventoryUnits)) return {};
-  return inventoryUnits.reduce((acc, unit) => {
+  return selectActiveInventoryUnits(inventoryUnits).reduce((acc, unit) => {
     if (!unit?.bottle_id) return acc;
     acc[unit.bottle_id] = (acc[unit.bottle_id] || 0) + 1;
     return acc;
@@ -83,7 +82,7 @@ export function buildWhiskeyInventoryIndex(inventoryUnits) {
  * @returns {number}
  */
 export function selectBottleTypes(bottles) {
-  return Array.isArray(bottles) ? bottles.length : 0;
+  return selectActiveBottles(bottles).length;
 }
 
 /**
@@ -98,9 +97,9 @@ export function selectBottleTypes(bottles) {
  * @returns {number}
  */
 export function selectTotalBottles(bottles, inventoryUnits) {
-  const units = Array.isArray(inventoryUnits) ? inventoryUnits : [];
+  const units = selectActiveInventoryUnits(inventoryUnits);
   if (units.length > 0) return units.length;
-  return (Array.isArray(bottles) ? bottles : []).reduce(
+  return selectActiveBottles(bottles).reduce(
     (sum, b) => sum + (n(b.bottle_count) || 1),
     0
   );
@@ -114,8 +113,9 @@ export function selectTotalBottles(bottles, inventoryUnits) {
  * @returns {number}
  */
 export function selectOpenBottles(inventoryUnits) {
-  if (!Array.isArray(inventoryUnits) || inventoryUnits.length === 0) return 0;
-  return inventoryUnits.filter((u) => u?.status === 'open').length;
+  const units = selectActiveInventoryUnits(inventoryUnits);
+  if (units.length === 0) return 0;
+  return units.filter((u) => u?.status === 'open').length;
 }
 
 /**
@@ -130,8 +130,9 @@ export function selectOpenBottles(inventoryUnits) {
  * @returns {number}
  */
 export function selectSealedBottles(inventoryUnits) {
-  if (!Array.isArray(inventoryUnits) || inventoryUnits.length === 0) return 0;
-  return inventoryUnits.filter(
+  const units = selectActiveInventoryUnits(inventoryUnits);
+  if (units.length === 0) return 0;
+  return units.filter(
     (u) => u?.status === 'reserve' || u?.status === 'drinking'
   ).length;
 }
@@ -147,8 +148,8 @@ export function selectSealedBottles(inventoryUnits) {
  * @returns {number}
  */
 export function selectCollectionValue(bottles, inventoryUnits) {
-  const bottleList = Array.isArray(bottles) ? bottles : [];
-  const units = Array.isArray(inventoryUnits) ? inventoryUnits : [];
+  const bottleList = selectActiveBottles(bottles);
+  const units = selectActiveInventoryUnits(inventoryUnits);
   const hasUnits = units.length > 0;
   const idx = buildWhiskeyInventoryIndex(units);
 
@@ -182,7 +183,8 @@ export function selectTotalTastings(tastingLogs) {
  * @returns {number}
  */
 export function selectOpenBottleValue(bottles, inventoryUnits) {
-  const units = Array.isArray(inventoryUnits) ? inventoryUnits : [];
+  const bottleList = selectActiveBottles(bottles);
+  const units = selectActiveInventoryUnits(inventoryUnits);
   if (units.length === 0) return 0;
   const openIds = new Set(
     units.filter((u) => u?.status === 'open').map((u) => u.bottle_id).filter(Boolean)
@@ -193,7 +195,7 @@ export function selectOpenBottleValue(bottles, inventoryUnits) {
       acc[u.bottle_id] = (acc[u.bottle_id] || 0) + 1;
       return acc;
     }, {});
-  return (Array.isArray(bottles) ? bottles : [])
+  return bottleList
     .filter((b) => openIds.has(b?.id))
     .reduce((sum, b) => sum + getBottleUnitValue(b) * (openIdx[b.id] || 1), 0);
 }
@@ -206,7 +208,8 @@ export function selectOpenBottleValue(bottles, inventoryUnits) {
  * @returns {number}
  */
 export function selectSealedBottleValue(bottles, inventoryUnits) {
-  const units = Array.isArray(inventoryUnits) ? inventoryUnits : [];
+  const bottleList = selectActiveBottles(bottles);
+  const units = selectActiveInventoryUnits(inventoryUnits);
   if (units.length === 0) return 0;
   const sealedStatuses = new Set(['reserve', 'drinking']);
   const sealedIds = new Set(
@@ -218,7 +221,7 @@ export function selectSealedBottleValue(bottles, inventoryUnits) {
       acc[u.bottle_id] = (acc[u.bottle_id] || 0) + 1;
       return acc;
     }, {});
-  return (Array.isArray(bottles) ? bottles : [])
+  return bottleList
     .filter((b) => sealedIds.has(b?.id))
     .reduce((sum, b) => sum + getBottleUnitValue(b) * (sealedIdx[b.id] || 1), 0);
 }
@@ -252,3 +255,4 @@ export function selectWhiskeyMetrics(bottles, inventoryUnits, tastingLogs) {
     total_tastings: selectTotalTastings(tastingLogs),
   };
 }
+import { selectActiveBottles, selectActiveInventoryUnits } from './activeFilters.js';

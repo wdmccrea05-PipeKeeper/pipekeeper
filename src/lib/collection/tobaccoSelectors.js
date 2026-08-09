@@ -123,7 +123,7 @@ export function isBlendOpen(blend) {
  * @returns {number}
  */
 export function selectBlendTypes(blends) {
-  return Array.isArray(blends) ? blends.length : 0;
+  return selectActiveBlends(blends).length;
 }
 
 /**
@@ -133,8 +133,7 @@ export function selectBlendTypes(blends) {
  * @returns {number}
  */
 export function selectTotalQuantityOz(blends) {
-  if (!Array.isArray(blends)) return 0;
-  return blends.reduce((sum, b) => sum + getBlendTotalOz(b), 0);
+  return selectActiveBlends(blends).reduce((sum, b) => sum + getBlendTotalOz(b), 0);
 }
 
 /**
@@ -144,8 +143,7 @@ export function selectTotalQuantityOz(blends) {
  * @returns {number}
  */
 export function selectOpenBlends(blends) {
-  if (!Array.isArray(blends)) return 0;
-  return blends.filter(isBlendOpen).length;
+  return selectActiveBlends(blends).filter(isBlendOpen).length;
 }
 
 /**
@@ -155,8 +153,7 @@ export function selectOpenBlends(blends) {
  * @returns {number}
  */
 export function selectCellarValue(blends) {
-  if (!Array.isArray(blends)) return 0;
-  return blends.reduce((sum, b) => sum + getBlendValue(b), 0);
+  return selectActiveBlends(blends).reduce((sum, b) => sum + getBlendValue(b), 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -344,3 +341,4 @@ export function computeBlendStrategy(blend) {
     guidance:  'Smoke freely. Restock when you run low.',
   };
 }
+import { selectActiveBlends } from './activeFilters.js';

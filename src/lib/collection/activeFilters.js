@@ -19,23 +19,20 @@
 // Shared helper
 // ---------------------------------------------------------------------------
 
-/**
- * Return true when the record should be counted in analytics.
- * Checks the most common soft-delete / archive field names used across modules.
- *
- * @param {object} record
- * @returns {boolean}
- */
-function isActive(record) {
+function isBaseActive(record) {
   if (!record) return false;
   if (record.archived === true)  return false;
   if (record.deleted === true)   return false;
   if (record.inactive === true)  return false;
-  if (record.retired === true)   return false;
   if (record.hidden === true)    return false;
   if (record.is_archived === true) return false;
   if (record.is_deleted === true)  return false;
   return true;
+}
+
+function filterActive(records, predicate = () => true) {
+  if (!Array.isArray(records)) return [];
+  return records.filter((record) => isBaseActive(record) && predicate(record));
 }
 
 // ---------------------------------------------------------------------------
@@ -49,8 +46,7 @@ function isActive(record) {
  * @returns {object[]}
  */
 export function selectActivePipes(pipes) {
-  if (!Array.isArray(pipes)) return [];
-  return pipes.filter(isActive);
+  return filterActive(pipes, (pipe) => pipe?.retired !== true);
 }
 
 /**
@@ -62,8 +58,7 @@ export function selectActivePipes(pipes) {
  * @returns {object[]}
  */
 export function selectActiveBlends(blends) {
-  if (!Array.isArray(blends)) return [];
-  return blends.filter(isActive);
+  return filterActive(blends, (blend) => blend?.retired !== true);
 }
 
 /**
@@ -73,8 +68,7 @@ export function selectActiveBlends(blends) {
  * @returns {object[]}
  */
 export function selectActiveBottles(bottles) {
-  if (!Array.isArray(bottles)) return [];
-  return bottles.filter(isActive);
+  return filterActive(bottles, (bottle) => bottle?.retired !== true);
 }
 
 /**
@@ -84,8 +78,7 @@ export function selectActiveBottles(bottles) {
  * @returns {object[]}
  */
 export function selectActiveWines(wines) {
-  if (!Array.isArray(wines)) return [];
-  return wines.filter(isActive);
+  return filterActive(wines, (wine) => wine?.retired !== true);
 }
 
 /**
@@ -95,8 +88,7 @@ export function selectActiveWines(wines) {
  * @returns {object[]}
  */
 export function selectActiveCigars(cigars) {
-  if (!Array.isArray(cigars)) return [];
-  return cigars.filter(isActive);
+  return filterActive(cigars, (cigar) => cigar?.retired !== true);
 }
 
 /**
@@ -106,12 +98,11 @@ export function selectActiveCigars(cigars) {
  * @returns {object[]}
  */
 export function selectActiveInventoryUnits(inventoryUnits) {
-  if (!Array.isArray(inventoryUnits)) return [];
-  return inventoryUnits.filter(isActive);
+  return filterActive(inventoryUnits, (unit) => unit?.retired !== true);
 }
 
 /**
  * Canonical predicate exposed for consumers that need to filter inline.
  * Prefer the typed selectors above in most cases.
  */
-export { isActive as isActiveRecord };
+export { isBaseActive as isActiveRecord };
