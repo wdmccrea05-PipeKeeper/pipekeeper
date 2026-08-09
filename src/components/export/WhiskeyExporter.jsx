@@ -227,7 +227,7 @@ export default function WhiskeyExporter() {
         ty += 10;
 
         doc.setFontSize(9);
-        for (const [idx, log] of tastingLogs.slice(0, 20).entries()) {
+        for (const log of tastingLogs.slice(0, 20)) {
           if (ty > pageHeight - 30) {
             doc.addPage();
             ty = 20;

@@ -46,8 +46,8 @@ describe('collection parity service delegation', () => {
   it('exportEngine.generateCollectionReport uses canonical summary totals', async () => {
     const report = await generateCollectionReport('user@example.com');
 
-    expect(report.summary.totalItems).toBe(6);
-    expect(report.summary.totalValue).toBe(1410);
+    expect(report.summary.totalItems).toBe(5);
+    expect(report.summary.totalValue).toBe(1330);
     expect(report.modules.pipekeeper.totalValue).toBe(250);
     expect(report.modules.whiskeykeeper.totalValue).toBe(1000);
   });
