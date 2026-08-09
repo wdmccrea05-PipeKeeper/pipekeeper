@@ -54,6 +54,10 @@ export const COMPATIBILITY_TIERS = Object.freeze({
   GENERAL:              { shift: 0,   floor: null, ceiling: 10.0 },
   CONFLICTING:          { shift: -1.0, floor: null, ceiling: 4.9 },
   STRONGLY_CONFLICTING: { shift: -2.0, floor: null, ceiling: 3.5 },
+  // Strong recorded user experience can override the specialization prior,
+  // relaxing the tier ceiling so a non-matching family can eventually score
+  // well if the user repeatedly records excellent sessions with that pair.
+  EXPERIENCE_OVERRIDE:  { shift: 0,   floor: null, ceiling: 9.5 },
 });
 
 /**
@@ -489,7 +493,7 @@ function normalizeCut(blend) {
   return c;
 }
 
-function inferBlendFamily(blend, aromaticInfo, components) {
+export function inferBlendFamily(blend, aromaticInfo, components) {
   const bt = blendTypeOf(blend);
   const family = lower(blend?.blend_family);
   const comps = components.join(' ');
@@ -501,10 +505,20 @@ function inferBlendFamily(blend, aromaticInfo, components) {
   const hasBurley = /burley/.test(comps) || bt.includes('burley') || family.includes('burley');
   const hasDarkFired = /dark fired|dark-fired|kentucky/.test(comps) || bt.includes('dark fired') || family.includes('dark fired') || bt === 'kentucky';
 
+  // Lakeland floral casing has extreme ghosting risk — always takes precedence.
   if (bt === 'lakeland' || family.includes('lakeland') || /lakeland/.test(all)) return 'lakeland';
-  if (aromaticInfo.isAromatic === true) return 'aromatic';
+
+  // English/Balkan structural evidence (Latakia presence) takes precedence over
+  // the is_aromatic flag. Latakia ghosting is the dominant pipe-dedication factor:
+  // an English blend with aromatic topping still ghosts like an English blend.
+  // This prevents incorrectly-set is_aromatic:true on English blends from
+  // overriding their structural family.
   if (bt.includes('balkan') || family.includes('balkan')) return 'balkan';
   if (bt.includes('english') || family.includes('english') || hasLatakia || hasOriental) return 'english';
+
+  // Aromatic override only when no stronger structural family (Latakia) is present.
+  if (aromaticInfo.isAromatic === true) return 'aromatic';
+
   if (bt.includes('virginia/perique') || bt.includes('va/per') || family.includes('vaper') || family.includes('virginia/perique')) return 'vaper';
   if (hasVirginia && hasPerique) return 'vaper';
   if (hasDarkFired) return 'darkFired';
@@ -572,6 +586,7 @@ export function normalizeTobaccoForPairing(blend) {
 
   return {
     name: String(b.tobacco_name ?? b.name ?? ""),
+    tobaccoId: String(b.tobacco_id ?? b.id ?? ""),
     blendType: bt || null,
     blendFamily: family,
     isAromatic: aromaticInfo.isAromatic,
@@ -866,7 +881,11 @@ export function normalizePipeForPairing(pipe) {
     dedicationStrength = "general";
   } else if (categories.length === 1) {
     dedicationType = categories[0] === "nonAromatic" ? "generalPurpose" : categories[0];
-    dedicationStrength = nf.explicitLanguage ? "explicit" : "inferred";
+    // A single family focus is an explicit declaration of specialization.
+    // "Focus: Aromatic" means this pipe is dedicated to aromatics — not just
+    // inferred from context. Only nonAromatic remains inferred since it
+    // describes what the pipe avoids rather than what it's dedicated to.
+    dedicationStrength = "explicit";
     if (categories[0] === "nonAromatic") dedicationStrength = "inferred";
   } else if (categories.length > 1) {
     // Mixed but coherent families collapse to the dominant non-aromatic bucket
@@ -942,6 +961,9 @@ export function normalizePipeForPairing(pipe) {
     dedicationStrength,
     exactBlendFocus: nf.exactBlendFocus,
     focusCategories: categories,
+    isHeavyAromaticFocus: nf.wantsHeavyAromatics,
+    isLightAromaticFocus: nf.wantsLightAromatics,
+    aromaticOnly: nf.aromaticOnly,
     chamberDiameterMm,
     chamberDepthMm,
     chamberVolume,
@@ -989,6 +1011,10 @@ function scoreDedication(pipeN, tobN) {
 
   if (ded === "aromatic") {
     if (fam === "aromatic") {
+      // Heavy-aromatic-focused pipe gets a perfect score for heavy aromatic blends
+      if (pipeN.isHeavyAromaticFocus && tobN.aromaticIntensity === "heavy") {
+        return { score: 10, reason: "Heavy-aromatic-focused pipe is a perfect match for this heavy aromatic blend." };
+      }
       return {
         score: strongScore,
         reason: strength === "explicit"
@@ -1090,6 +1116,35 @@ export function computeCompatibilityTier(pipeN, tobN) {
   const row = SPECIALIZATION_MATRIX[dedType] || SPECIALIZATION_MATRIX.unknown;
   const tierName = row[fam] || row.other || 'GENERAL';
   return { name: tierName, ...COMPATIBILITY_TIERS[tierName] };
+}
+
+/**
+ * Check whether the user has strong recorded experience with this exact
+ * pipe+blend pair that can override the specialization prior.
+ *
+ * Returns an override tier (relaxing the ceiling) when the evidence is strong
+ * enough, or null when the specialization prior should stand.
+ *
+ * Threshold: 3+ sessions with avg rating >= 4 (out of 5).
+ * This is NOT a hard filter — it only relaxes the ceiling so that a
+ * genuinely well-experienced pair can score above the specialization cap.
+ */
+function getExperienceOverride(pipeN, tobN, userProfile) {
+  if (!userProfile?.experienceEvidence) return null;
+
+  const pipeId = String(pipeN.pipeId ?? '');
+  const blendId = String(tobN.blendId ?? tobN.tobaccoId ?? '');
+  if (!pipeId || !blendId) return null;
+
+  const key = `${pipeId}__${blendId}`;
+  const evidence = userProfile.experienceEvidence[key];
+  if (!evidence) return null;
+
+  if (evidence.sessionCount >= 3 && evidence.avgRating >= 4) {
+    return { name: 'EXPERIENCE_OVERRIDE', ...COMPATIBILITY_TIERS.EXPERIENCE_OVERRIDE };
+  }
+
+  return null;
 }
 
 function applyTierConstraint(score, tier) {
@@ -1597,7 +1652,14 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
   // Compatibility tier: gates the final score so secondary variables cannot
   // overwhelm explicit specialization or user-defined blend dedication.
   const tier = computeCompatibilityTier(pipeN, tobN);
-  const tieredScore = applyTierConstraint(technicalScore, tier);
+
+  // Strong recorded user experience can override the specialization prior,
+  // relaxing the tier ceiling so a non-matching family can eventually score
+  // well if the user repeatedly records excellent sessions with that pair.
+  const experienceOverride = getExperienceOverride(pipeN, tobN, userProfile);
+  const effectiveTier = experienceOverride || tier;
+
+  const tieredScore = applyTierConstraint(technicalScore, effectiveTier);
 
   const personal = scorePersonalFit(pipeN, tobN, userProfile, blend);
   const personalFit = personal.score == null ? null : round1(personal.score);
@@ -1605,7 +1667,7 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
   const preTierFinal = personal.hasPersonalizationEvidence
     ? round1(clamp(technicalScore * 0.8 + personalFit * 0.2, 0, 10))
     : technicalScore;
-  const finalScore = applyTierConstraint(preTierFinal, tier);
+  const finalScore = applyTierConstraint(preTierFinal, effectiveTier);
 
   // Confidence: how complete the underlying records are
   const confidence = round1(clamp((tobN.confidence * 0.5 + pipeN.confidence * 0.5), 0, 1));
@@ -1623,13 +1685,15 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
     missingFields: [...new Set([...(pipeN.confidenceDetails?.missingFields || []), ...(tobN.confidenceDetails?.missingFields || [])])],
   };
 
-  const whyList = buildWhy(components, personal, pipeN, tobN, confidenceDetails, tier);
+  const whyList = buildWhy(components, personal, pipeN, tobN, confidenceDetails, effectiveTier);
 
   return {
     score: finalScore,
     finalScore,
     tieredScore,
-    tier,
+    tier: effectiveTier,
+    baseTier: tier,
+    experienceOverride: !!experienceOverride,
     technicalScore,
     rawTechnicalScore,
     personalFit,
@@ -1662,6 +1726,8 @@ function buildTierReason(tier, pipeN, tobN) {
       return `This blend family conflicts with the pipe's specialization — ghosting risk.`;
     case 'STRONGLY_CONFLICTING':
       return `This blend family strongly conflicts with the pipe's specialization — not recommended.`;
+    case 'EXPERIENCE_OVERRIDE':
+      return `Your repeated excellent sessions with this pipe+blend override the pipe's declared specialization.`;
     default:
       return null;
   }
