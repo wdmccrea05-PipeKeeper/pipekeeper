@@ -134,9 +134,6 @@ export async function generateCollectionReport(userEmail, options = {}) {
     
     for (const module of modulesToInclude) {
       const moduleId = getModuleId(module);
-      const items = await base44.entities[module.entityName].filter({
-        created_by: userEmail,
-      });
       const stats = moduleStats[moduleId] || {};
       const moduleValue = Number(stats?.value || 0);
       const moduleCount = Number(stats?.count || 0);
@@ -149,14 +146,7 @@ export async function generateCollectionReport(userEmail, options = {}) {
         count: moduleCount,
         totalValue: moduleValue,
         averageValue: moduleCount > 0 ? moduleValue / moduleCount : 0,
-        topItems: (items || [])
-          .sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0))
-          .slice(0, 5)
-          .map(i => ({
-            name: i.name,
-            value: i.estimated_value,
-            rating: i.rating,
-          })),
+        topItems: [],
       };
     }
     

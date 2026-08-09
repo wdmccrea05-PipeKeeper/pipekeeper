@@ -19,6 +19,8 @@
  *   manual_value_override → collector_value → aftermarket_price → retail_price → purchase_price → 0
  */
 
+import { selectActiveBottles, selectActiveInventoryUnits } from './activeFilters.js';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -255,4 +257,3 @@ export function selectWhiskeyMetrics(bottles, inventoryUnits, tastingLogs) {
     total_tastings: selectTotalTastings(tastingLogs),
   };
 }
-import { selectActiveBottles, selectActiveInventoryUnits } from './activeFilters.js';

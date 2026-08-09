@@ -11,6 +11,8 @@
  *  cellar_value      — total value of owned tobacco inventory
  */
 
+import { selectActiveBlends } from './activeFilters.js';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -341,4 +343,3 @@ export function computeBlendStrategy(blend) {
     guidance:  'Smoke freely. Restock when you run low.',
   };
 }
-import { selectActiveBlends } from './activeFilters.js';

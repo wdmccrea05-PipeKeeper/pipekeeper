@@ -12,6 +12,8 @@
  *  collection_value        — total value across all pipe records
  */
 
+import { selectActivePipes } from './activeFilters.js';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -173,4 +175,3 @@ export function selectPipeMetrics(pipes, smokingLogs) {
     collection_value: selectPipeCollectionValue(pipes),
   };
 }
-import { selectActivePipes } from './activeFilters.js';

@@ -13,6 +13,8 @@
  *   7. 0
  */
 
+import { selectActiveWines } from './activeFilters.js';
+
 function n(v) {
   const x = Number(v);
   return Number.isFinite(x) && x > 0 ? x : 0;
@@ -483,4 +485,3 @@ export function selectWineMetrics(wines = [], tastings = []) {
     average_rating,
   };
 }
-import { selectActiveWines } from './activeFilters.js';
