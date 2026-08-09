@@ -4,6 +4,8 @@ export const CANONICAL_REPORTING_TIMEZONE = 'America/Indianapolis';
 
 export const CANONICAL_METRIC_DICTIONARY_VERSION = 'v1-lifecycle-canonical';
 
+// Backend mirror: keep this lightweight dictionary in the Deno shared layer.
+// Frontend richer descriptors live in src/lib/analytics/canonicalMetricDictionary.js.
 export const CANONICAL_METRIC_DICTIONARY = {
   total_registered_users: {
     sourceEntities: ['User'],

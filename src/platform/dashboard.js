@@ -29,6 +29,16 @@ import { buildCanonicalCollectionAggregate } from './reporting.js';
  * }}
  */
 export function aggregateCollectionStats(items) {
+  if (!Array.isArray(items)) {
+    return {
+      totalItemCount: 0,
+      favoriteCount: 0,
+      aiEligibleCount: 0,
+      aiExcludedCount: 0,
+      totalCollectionValue: 0,
+    };
+  }
+
   const aggregate = buildCanonicalCollectionAggregate(items);
 
   return {

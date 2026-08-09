@@ -42,7 +42,8 @@ export async function getCanonicalCuratorAnalytics(periodDays) {
 
 export async function getCanonicalExecutiveKpis(dateRange = '30d') {
   const userReport = await getCanonicalUserLifecycleReport({ dateRange });
-  const reconciliationReport = await invokeCanonical('getUserSubscriptionReportV3', { dateRange: '90d' });
+  const reconciliation = await getCanonicalReconciliationReport({ dateRange });
+  const reconciliationReport = reconciliation?.report || {};
   const parity = runReportingParityChecks({ userReport, reconciliationReport });
   const integrityFindings = findIntegrityFindings({ userReport });
 
@@ -57,7 +58,9 @@ export async function getCanonicalExecutiveKpis(dateRange = '30d') {
       mrr: userReport?.revenue?.mrr || 0,
       arr: userReport?.revenue?.arr || 0,
       reactivatedPaidUsers: userReport?.acquisition?.reactivatedPaidUsers || 0,
-      unmatchedPayments: reconciliationReport?.reconciliationTotals?.unmatched_payments || 0,
+      unmatchedPayments: reconciliationReport?.reconciliationTotals?.unmatched_payments
+        || reconciliation?.unmatched?.unmatchedPayments?.length
+        || 0,
     },
     parity,
     integrityFindings,
