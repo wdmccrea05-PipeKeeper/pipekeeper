@@ -9,7 +9,7 @@ import {
   scorePipeBlendDiagnostic,
 } from '../pairingScoreCanonical';
 import { expandPipesToVariants, getVariantFromPipe } from '../pipeVariants';
-import { sanitizeAiDiscoveryMatches } from '../../pipes/TopBlendMatches';
+import { sanitizeAiDiscoveryMatches } from '../discoveryMatches';
 
 describe('Final aromatic classification corrections', () => {
   test('generic casing/topping does not automatically force aromatic classification', () => {

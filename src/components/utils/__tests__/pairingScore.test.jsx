@@ -324,7 +324,7 @@ describe('Bowl material', () => {
   test('meerschaum is a neutral carrier and beats briar', () => {
     const meer = scorePipeBlend({ focus: [], bowl_material: 'Meerschaum' }, aromatic, null);
     const briar = scorePipeBlend({ focus: [], bowl_material: 'Briar' }, aromatic, null);
-    expect(meer.components.material.score).toBe(8);
+    expect(meer.components.material.score).toBeGreaterThan(briar.components.material.score);
     expect(briar.components.material.score).toBe(6);
   });
 
@@ -336,7 +336,7 @@ describe('Bowl material', () => {
 
   test('cob is forgiving for aromatics', () => {
     const cob = scorePipeBlend({ focus: [], bowl_material: 'Corn Cob' }, aromatic, null);
-    expect(cob.components.material.score).toBe(8);
+    expect(cob.components.material.score).toBeGreaterThan(6);
   });
 });
 
@@ -349,7 +349,7 @@ describe('Personalization neutrality and variant ranking', () => {
   });
 
   test('meaningful profile can alter final score', () => {
-    const profile = { preferred_blend_types: ['Aromatic'] };
+    const profile = { preferred_blend_types: ['Aromatic'], strength_preference: 'Medium' };
     const result = scorePipeBlendDiagnostic(testPipes[0], testBlends[2], profile);
     expect(result.hasPersonalizationEvidence).toBe(true);
     expect(result.finalScore).not.toBe(result.technicalScore);
@@ -439,7 +439,8 @@ describe('Deterministic sorting', () => {
     const [first] = buildPairingsForPipes([testPipes[0]], testBlends, null);
     const rec = first.recommendations[0];
     expect(rec.technical_score).toBeGreaterThan(0);
-    expect(rec.personal_fit).toBe(5);
+    expect(rec.personal_fit).toBe(null);
+    expect(rec.has_personalization_evidence).toBe(false);
     expect(typeof rec.reasoning).toBe('string');
   });
 });

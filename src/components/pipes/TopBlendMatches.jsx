@@ -10,6 +10,7 @@ import {
   scorePipeBlend,
   normalizePipeForPairing,
 } from "@/components/utils/pairingScoreCanonical";
+import { sanitizeAiDiscoveryMatches } from "@/components/utils/discoveryMatches";
 
 // Simple string similarity heuristic used to de-duplicate AI suggestions
 const stringSimilarity = (str1, str2) => {
@@ -53,17 +54,6 @@ export function buildPipeProfileContext(pipe) {
     lines.push(`Named blend focus: ${p.exactBlendFocus.join(', ')}`);
   }
   return lines.join('\n');
-}
-
-export function sanitizeAiDiscoveryMatches(rawMatches) {
-  return (rawMatches || []).map((match) => ({
-    manufacturer: match?.manufacturer || '',
-    blend_name: match?.blend_name || '',
-    reasoning: match?.reasoning || '',
-    estimatedSuitability: match?.estimated_suitability || 'promising',
-    confidence: match?.metadata_confidence || 'insufficient metadata',
-    canonicalScore: null,
-  }));
 }
 
 export default function TopBlendMatches({ pipe, blends, userProfile }) {
