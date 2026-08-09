@@ -22,6 +22,7 @@ import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import SubscriptionSuccessFlow from "@/pages/SubscriptionSuccessFlow";
 import CollectionHub from "@/pages/CollectionHub";
 import PipeKeeper from "@/pages/PipeKeeper";
+import PipeClub from "@/pages/PipeClub";
 import WhiskeyKeeper from "@/pages/WhiskeyKeeper";
 import WhiskeyAIUpdates from "@/pages/WhiskeyAIUpdates";
 import BottleDetail from "@/pages/BottleDetail";
@@ -222,6 +223,15 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="CollectionHub">
             <CollectionHub />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/PipeClub"
+        element={
+          <LayoutWrapper currentPageName="PipeClub">
+            <PipeClub />
           </LayoutWrapper>
         }
       />
