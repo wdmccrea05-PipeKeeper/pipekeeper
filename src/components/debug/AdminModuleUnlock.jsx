@@ -17,7 +17,7 @@ import {
 } from '@/components/utils/moduleReleaseState';
 
 // Modules that admin/internal testers may toggle via this control.
-// WineKeeper is intentionally absent — it remains blocked by default.
+// WineKeeper is fully launched app-wide, so it is not included here.
 const INTERNAL_MODULES = ['whiskeykeeper', 'cigarkeeper'];
 
 const MODULE_LABELS = {

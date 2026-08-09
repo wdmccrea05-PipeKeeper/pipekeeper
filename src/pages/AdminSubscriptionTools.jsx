@@ -31,7 +31,7 @@ export default function AdminSubscriptionTools() {
     pipekeeper: "PipeKeeper (Public)",
     whiskeykeeper: "WhiskeyKeeper (Public)",
     cigarkeeper: "CigarKeeper (Public)",
-    winekeeper: "WineKeeper (Blocked / Not Launched)",
+    winekeeper: "WineKeeper (Public)",
   };
 
   // Check admin access
