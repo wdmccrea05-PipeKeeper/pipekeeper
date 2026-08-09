@@ -20,6 +20,7 @@ import { CERTIFICATION_PIPES } from './fixtures/pipeDataset';
 import { USER_PROFILES } from './fixtures/userProfiles';
 import { SCORER_VERSION, TAXONOMY_VERSION, NORMALIZATION_VERSION } from './helpers/reportBuilder';
 
+// eslint-disable-next-line no-undef
 const REPO_ROOT = process.cwd();
 const BASELINE_PATH = path.join(REPO_ROOT, 'docs/certification/baseline.json');
 const REGRESSION_SNAPSHOT_PATH = path.join(REPO_ROOT, 'docs/certification/regression-snapshot.json');

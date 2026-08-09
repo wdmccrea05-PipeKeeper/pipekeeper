@@ -22,6 +22,7 @@ import { CERTIFICATION_BLENDS } from './fixtures/tobaccoDataset';
 import { CERTIFICATION_PIPES } from './fixtures/pipeDataset';
 import { SCORER_VERSION, TAXONOMY_VERSION, NORMALIZATION_VERSION } from './helpers/reportBuilder';
 
+// eslint-disable-next-line no-undef
 const REPO_ROOT = process.cwd();
 const BASELINE_PATH = path.join(REPO_ROOT, 'docs/certification/baseline.json');
 

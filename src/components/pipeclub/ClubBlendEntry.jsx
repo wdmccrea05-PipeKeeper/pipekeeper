@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
+import BlendQuickLookup from "./BlendQuickLookup";
 
 const STRENGTH_OPTIONS = ["mild", "mild-medium", "medium", "medium-full", "full"];
 const AROMATIC_INTENSITY_OPTIONS = ["light", "medium", "heavy"];
@@ -41,6 +42,24 @@ export default function ClubBlendEntry({ initialData = {}, onChange }) {
     const next = { ...form, ...patch };
     setForm(next);
     onChange?.(next);
+  };
+
+  const handleQuickLookupSelect = (blend) => {
+    const patch = {
+      name: blend.name || form.name,
+      manufacturer: blend.manufacturer || form.manufacturer,
+      blend_type: blend.blend_type || form.blend_type,
+      blend_family: blend.blend_family || form.blend_family,
+      is_aromatic: blend.is_aromatic ?? form.is_aromatic,
+      aromatic_intensity: blend.aromatic_intensity || form.aromatic_intensity,
+      tobacco_components: blend.tobacco_components || form.tobacco_components,
+      cut: blend.cut || form.cut,
+      strength: blend.strength || form.strength,
+      casing: blend.casing || form.casing,
+      topping: blend.topping || form.topping,
+    };
+    update(patch);
+    setEnriched(true);
   };
 
   const handleEnrich = async () => {
@@ -98,6 +117,9 @@ Be conservative — use null rather than guessing.`;
 
   return (
     <div className="space-y-3">
+      {/* Quick Lookup — search all known blends to pre-fill */}
+      <BlendQuickLookup onSelect={handleQuickLookupSelect} />
+
       {/* Required quick-entry */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">

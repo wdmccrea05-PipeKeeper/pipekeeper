@@ -30,6 +30,7 @@ import { CERTIFICATION_PIPES, CERTIFICATION_PIPES_BY_ARCHETYPE } from './fixture
 import { USER_PROFILES } from './fixtures/userProfiles';
 import { buildCertificationReport, SCORER_VERSION, TAXONOMY_VERSION, NORMALIZATION_VERSION } from './helpers/reportBuilder';
 
+// eslint-disable-next-line no-undef
 const REPO_ROOT = process.cwd();
 const REPORT_PATH = path.join(REPO_ROOT, 'docs/certification/PairingEngineCertificationReport.md');
 const BASELINE_PATH = path.join(REPO_ROOT, 'docs/certification/baseline.json');
