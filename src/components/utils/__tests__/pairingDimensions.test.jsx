@@ -487,4 +487,25 @@ describe('pairing cache fingerprinting', () => {
     expect(SCORER_VERSION).toBeTruthy();
     expect(fp([p1], [b1])).toEqual(expect.any(String));
   });
+
+  // Deliberate deviation from the "remove strength" instruction: nicotine
+  // strength does not affect the TECHNICAL score, but it does feed personalFit
+  // (matched against profile.strength_preference), which is 20% of the final
+  // score. Dropping it from the fingerprint would leave a stale cached score
+  // after a strength edit — the exact class of bug this rewrite fixes.
+  test('strength stays in the fingerprint because it moves the final score', () => {
+    const profile = { id: 'u1', strength_preference: 'Full' };
+    const pipeRec = { id: 'p', name: 'P', focus: ['Virginia'], bowl_diameter_mm: 18, bowl_depth_mm: 42 };
+    const blendBase = { id: 'b', name: 'B', blend_type: 'Virginia', cut: 'Flake', is_aromatic: false };
+
+    const mild = scorePipeBlend(pipeRec, { ...blendBase, strength: 'Mild' }, profile);
+    const full = scorePipeBlend(pipeRec, { ...blendBase, strength: 'Full' }, profile);
+
+    // Technical score is strength-independent...
+    expect(mild.technicalScore).toBe(full.technicalScore);
+    // ...but the score the user sees is not, so the cache must invalidate.
+    expect(mild.score).not.toBe(full.score);
+    expect(fp([pipeRec], [{ ...blendBase, strength: 'Mild' }], profile))
+      .not.toBe(fp([pipeRec], [{ ...blendBase, strength: 'Full' }], profile));
+  });
 });

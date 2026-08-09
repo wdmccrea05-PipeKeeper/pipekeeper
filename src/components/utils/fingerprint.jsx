@@ -108,6 +108,13 @@ export function fingerprintBlend(b) {
     casing: normText(b?.casing),
     topping: normText(b?.topping),
     cut: normText(b?.cut),
+    // NOTE: nicotine `strength` is deliberately KEPT here even though it does
+    // not influence the *technical* score. It feeds `personalFit` (matched
+    // against the profile's `strength_preference`), which is 20% of the final
+    // score — so a strength edit CAN move the number a user sees, and dropping
+    // it would reintroduce exactly the staleness bug this rewrite fixes.
+    // What strength must never do is imply aromatic intensity; that separation
+    // is enforced in pairingScoreCanonical.jsx, not here.
     strength: normText(b?.strength),
     room_note: normText(b?.room_note),
     // Hashed: flavor note lists can be long and are only used as a signal.

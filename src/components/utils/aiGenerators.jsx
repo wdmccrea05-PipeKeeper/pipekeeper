@@ -1,5 +1,11 @@
 import { base44 } from "@/api/base44Client";
-import { buildPairingsForPipes, inferBlendCategory, getAromaticIntensity } from "@/components/utils/pairingScoreCanonical";
+import {
+  buildPairingsForPipes,
+  inferBlendCategory,
+  getAromaticIntensity,
+  normalizePipeForPairing,
+  normalizeTobaccoForPairing,
+} from "@/components/utils/pairingScoreCanonical";
 import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
 import { resolveBowlVariant } from "@/components/utils/pipeVariants";
 
@@ -176,6 +182,53 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
     aromatic_intensity: b.aromatic_intensity || null,
   }));
 
+  // Structured context for the LLM, derived from the SAME normalization the
+  // scorer uses. The prompt must never carry a second, divergent reading of
+  // aromatic status / dedication / chamber geometry.
+  const pipeProfiles = pipesDataCapped.map((p) => {
+    const n = normalizePipeForPairing(p);
+    return {
+      pipe_id: p.pipe_id,
+      bowl_variant_id: p.bowl_variant_id,
+      pipe_name: p.pipe_name,
+      // This generator recommends focus reassignments, so the LLM still needs
+      // the raw tags it would be changing alongside the normalized reading.
+      current_focus: p.focus || [],
+      maker: p.maker || null,
+      shape: p.shape || null,
+      dedication: n.dedicationType,
+      dedication_strength: n.dedicationStrength,
+      named_blend_focus: n.exactBlendFocus,
+      chamber_width: n.chamberWidthCategory,
+      chamber_depth: n.chamberDepthCategory,
+      chamber_diameter_mm: n.chamberDiameterMm,
+      chamber_depth_mm: n.chamberDepthMm,
+      chamber_volume: n.chamberVolume,
+      bowl_material: n.bowlMaterial,
+      smoking_character: n.smokingCharacter,
+      draw: n.drawCharacter,
+      data_confidence: n.confidence,
+    };
+  });
+
+  const blendProfiles = blendsDataCapped.map((b) => {
+    const n = normalizeTobaccoForPairing(b);
+    return {
+      tobacco_id: b.id,
+      tobacco_name: b.name,
+      blend_family: n.blendFamily,
+      is_aromatic: n.isAromatic,
+      aromatic_intensity: n.aromaticIntensity,
+      cut: n.cut,
+      components: n.tobaccoComponents,
+      has_latakia: n.hasLatakia,
+      has_perique: n.hasPerique,
+      has_black_cavendish: n.hasBlackCavendish,
+      is_lakeland: n.isLakeland,
+      data_confidence: n.confidence,
+    };
+  });
+
   const profileContext = profile
     ? {
         preferred_blend_types: profile.preferred_blend_types || [],
@@ -256,11 +309,11 @@ ${whatIfText ? `## USER FEEDBACK / CONTEXT\n${String(whatIfText).substring(0, 25
 ## PIPE SCORING SUMMARY
 ${JSON.stringify(pipeScoreSummaries)}
 
-## FULL PIPE CONFIGURATIONS
-${JSON.stringify(pipesDataCapped)}${pipesTruncatedNote}
+## PIPE PROFILES (normalized by the canonical pairing scorer)
+${JSON.stringify(pipeProfiles)}${pipesTruncatedNote}
 
-## BLEND INVENTORY
-${JSON.stringify(blendsDataCapped)}${blendsTruncatedNote}
+## BLEND INVENTORY (normalized by the canonical pairing scorer)
+${JSON.stringify(blendProfiles)}${blendsTruncatedNote}
 
 ## USER PREFERENCES
 ${JSON.stringify(profileContext)}
