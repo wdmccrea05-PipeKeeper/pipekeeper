@@ -1418,6 +1418,7 @@ export function calibrateScore(raw) {
     const [x0, y0] = CALIBRATION_POINTS[i - 1];
     const [x1, y1] = CALIBRATION_POINTS[i];
     if (r <= x1) {
+      if (x1 === x0) return round1(y0);
       const t = (r - x0) / (x1 - x0);
       return round1(y0 + t * (y1 - y0));
     }
