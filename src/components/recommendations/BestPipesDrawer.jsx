@@ -105,6 +105,11 @@ export default function BestPipesDrawer({
                         {item.maker && (
                           <div className="text-xs text-[#B48C4B] mt-0.5 ml-7">{item.maker}</div>
                         )}
+                        {item.recommended_bowl_name && (
+                          <div className="text-xs text-[#D8C7A6]/80 mt-0.5 ml-7">
+                            Recommended bowl: {item.recommended_bowl_name}
+                          </div>
+                        )}
                       </div>
                       <div
                         className="flex-shrink-0 text-sm font-bold px-2.5 py-1 rounded-full"

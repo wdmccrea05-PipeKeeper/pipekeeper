@@ -20,7 +20,7 @@ import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer'
 import BestPipesDrawer from '@/components/recommendations/BestPipesDrawer';
 import TobaccoInventoryManager from '@/components/tobacco/TobaccoInventoryManager';
 import CellarLog from '@/components/tobacco/CellarLog';
-import { scorePipeBlend } from '@/components/utils/pairingScoreCanonical';
+import { rankPipesForBlend } from '@/components/utils/pairingScoreCanonical';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { Button } from '@/components/ui/button';
 import { formatWeight } from '@/components/utils/localeFormatters';
@@ -684,23 +684,22 @@ export default function TobaccoDetail() {
       ]);
       const userProfile = userProfiles?.[0] || null;
 
-      const scored = (pipes || [])
-        .filter((p) => !p.ai_excluded)
-        .map((p) => {
-          const { score, why, confidence } = scorePipeBlend(p, blend, userProfile);
-          return {
-            pipe_id: p.id,
-            pipe_name: p.name,
-            maker: p.maker,
-            shape: p.shape,
-            bowl_material: p.bowl_material,
-            score,
-            why,
-            confidence,
-          };
-        })
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 3);
+      const scored = rankPipesForBlend(
+        (pipes || []).filter((p) => !p.ai_excluded),
+        blend,
+        userProfile,
+        { includeMainWhenBowls: true, collapseToParent: true, limit: 3 }
+      ).map((entry) => ({
+        pipe_id: entry.pipe_id,
+        pipe_name: entry.pipe_name,
+        maker: entry.variant?.maker,
+        shape: entry.variant?.shape,
+        bowl_material: entry.variant?.bowl_material,
+        recommended_bowl_name: entry.bowl_name,
+        score: entry.score,
+        why: entry.why,
+        confidence: entry.confidence,
+      }));
 
       setBestPipesResults(scored);
     } catch (e) {

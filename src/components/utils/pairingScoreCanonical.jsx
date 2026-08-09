@@ -1,3 +1,5 @@
+import { expandPipesToVariants } from "@/components/utils/pipeVariants";
+
 /**
  * CANONICAL pairing scorer — single source of truth for tobacco ⇄ pipe compatibility.
  *
@@ -6,7 +8,8 @@
  *
  * Model: multi-dimensional weighted compatibility.
  *   technicalScore = Σ(component.score × component.weight)
- *   finalScore     = technicalScore × 0.80 + personalFit × 0.20
+ *   finalScore     = technicalScore                    (no personalization evidence)
+ *                or = technicalScore × 0.80 + personalFit × 0.20
  *
  * Personal preference factors are kept SEPARATE from the technical score so
  * that a pipe/blend pairing can be explained on physical/technical grounds.
@@ -32,6 +35,151 @@ export const COMPONENT_WEIGHTS = Object.freeze({
   smokingCharacter: 0.05,
 });
 
+
+export const AROMATIC_CLASSIFICATION_PRECEDENCE = Object.freeze([
+  'explicit is_aromatic boolean',
+  'explicit blend family/type identifying aromatic',
+  'structured casing/topping metadata identifying added aromatic flavoring',
+  'explicit aromatic_intensity metadata',
+  'recognized structurally non-aromatic family',
+  'otherwise unknown',
+]);
+
+export const BLEND_FAMILY_NORMALIZATION_RULES = Object.freeze([
+  'lakeland when explicit lakeland metadata exists',
+  'aromatic when aromatic classification is explicit or strongly evidenced',
+  'balkan when explicit balkan metadata exists',
+  'english when explicit english/oriental/latakia metadata exists',
+  'vaper only when explicit Virginia/Perique metadata exists or both Virginia and Perique are confirmed in composition',
+  'darkFired when explicit dark-fired/Kentucky metadata exists',
+  'burley when explicit burley/codger/American metadata exists',
+  'virginia when explicit Virginia metadata exists or composition is Virginia-led without stronger evidence',
+  'unknown/other when evidence is insufficient',
+]);
+
+export const GEOMETRY_INFERENCE_HIERARCHY = Object.freeze([
+  'measured chamber dimensions',
+  'explicit chamber volume/size metadata',
+  'reliable bowl-style inference',
+  'weak shape inference',
+  'unknown',
+]);
+
+export const MATERIAL_SCORING_RATIONALE = Object.freeze({
+  meerschaum: 'Small bonus for low ghosting and neutral flavour carryover, especially useful for aromatics and ghost-sensitive leaf.',
+  cob: 'Small bonus when moisture forgiveness or easy cross-blend use helps, especially with aromatics and burley-forward blends.',
+  clay: 'Useful for flavour purity with Virginia/VaPer leaf, but slightly penalised for hot/wet heavy aromatics.',
+  morta: 'Near-neutral, low-carryover wood-like material.',
+  briar: 'Neutral baseline reference material.',
+  cherryWood: 'Slight penalty because fruitwoods can add their own sweetness or character.',
+  oliveWood: 'Slight penalty because fruitwoods can add their own sweetness or character.',
+  other: 'Unknown material treated as neutral baseline.',
+});
+
+export const COMPONENT_RULES = Object.freeze([
+  {
+    rule: 'Dedication / ghosting fit',
+    rawInputs: ['pipe.focus', 'blend.name', 'blend.blend_type', 'blend.blend_family', 'blend.tobacco_components', 'blend.is_aromatic'],
+    component: 'dedication',
+    weight: COMPONENT_WEIGHTS.dedication,
+    confidence: 'strong compatibility signal',
+    rationale: 'Dedicated pipes mainly matter through ghosting risk and family-specific purpose matching.',
+  },
+  {
+    rule: 'Chamber geometry fit',
+    rawInputs: ['pipe.bowl_diameter_mm', 'pipe.bowl_depth_mm', 'pipe.chamber_volume', 'pipe.shape', 'pipe.bowlStyle', 'blend.cut', 'blend.blend_family', 'blend.aromatic_intensity'],
+    component: 'chamberGeometry',
+    weight: COMPONENT_WEIGHTS.chamberGeometry,
+    confidence: 'strong compatibility signal when measured; fallback inference otherwise',
+    rationale: 'Measured chamber geometry is a primary physical compatibility signal; inferred geometry is damped toward neutral.',
+  },
+  {
+    rule: 'Cut / packing behaviour',
+    rawInputs: ['blend.cut', 'pipe.bowl_diameter_mm', 'pipe.bowl_depth_mm', 'pipe.chamber_volume', 'pipe.shape', 'pipe.bowlStyle'],
+    component: 'tobaccoCut',
+    weight: COMPONENT_WEIGHTS.tobaccoCut,
+    confidence: 'moderate expert heuristic',
+    rationale: 'Cut influences packing density and burn rate, but should not dominate ghosting or geometry fundamentals.',
+  },
+  {
+    rule: 'Leaf-composition geometry fit',
+    rawInputs: ['blend.tobacco_components', 'blend.blend_type', 'pipe.bowl_diameter_mm', 'pipe.chamber_volume'],
+    component: 'blendComposition',
+    weight: COMPONENT_WEIGHTS.blendComposition,
+    confidence: 'moderate expert heuristic',
+    rationale: 'Virginia, Latakia, Perique, and dark-fired leaf respond differently to chamber width and airflow.',
+  },
+  {
+    rule: 'Aromatic moisture / topping behaviour',
+    rawInputs: ['blend.is_aromatic', 'blend.aromatic_intensity', 'pipe.bowl_diameter_mm', 'pipe.chamber_volume'],
+    component: 'aromaticCompatibility',
+    weight: COMPONENT_WEIGHTS.aromaticCompatibility,
+    confidence: 'moderate expert heuristic',
+    rationale: 'Topped blends often benefit from more room and can punish tiny wet-smoking chambers.',
+  },
+  {
+    rule: 'Material-specific compatibility',
+    rawInputs: ['pipe.bowl_material', 'blend.is_aromatic', 'blend.blend_family'],
+    component: 'material',
+    weight: COMPONENT_WEIGHTS.material,
+    confidence: 'weak tendency',
+    rationale: 'Material only receives small, defensible adjustments tied to ghosting, flavour carryover, or heat behaviour.',
+  },
+  {
+    rule: 'Smoking character fit',
+    rawInputs: ['pipe.usage_characteristics', 'pipe.smoking_characteristics', 'blend.is_aromatic', 'blend.aromatic_intensity', 'blend.cut', 'blend.blend_family'],
+    component: 'smokingCharacter',
+    weight: COMPONENT_WEIGHTS.smokingCharacter,
+    confidence: 'weak tendency',
+    rationale: 'Recorded smoking behaviour can refine otherwise-close matches, but only modestly.',
+  },
+]);
+
+export const SCORER_VARIABLE_INVENTORY = Object.freeze([
+  { field: 'pipe.focus', normalization: 'normalizeFocus()', component: 'dedication', scoringEffect: 'dedication family and explicitness', missingDataBehavior: 'neutral dedication', confidenceEffect: 'lowers pipe confidence' },
+  { field: 'pipe.bowl_diameter_mm', normalization: 'numeric mm → width category', component: 'chamberGeometry, tobaccoCut, blendComposition, aromaticCompatibility', scoringEffect: 'measured width drives geometry', missingDataBehavior: 'fallback to metadata/inference/neutral', confidenceEffect: 'major geometry confidence factor' },
+  { field: 'pipe.bowl_depth_mm', normalization: 'numeric mm → depth category', component: 'chamberGeometry, tobaccoCut', scoringEffect: 'measured depth adjusts burn fit', missingDataBehavior: 'fallback to metadata/inference/neutral', confidenceEffect: 'major geometry confidence factor' },
+  { field: 'pipe.chamber_volume', normalization: 'enum/derived volume', component: 'chamberGeometry, aromaticCompatibility, personalFit', scoringEffect: 'fallback geometry and session-size fit', missingDataBehavior: 'no fallback volume bonus', confidenceEffect: 'medium pipe-confidence factor' },
+  { field: 'pipe.shape', normalization: 'weak shape geometry map', component: 'chamberGeometry', scoringEffect: 'weak fallback only for reliable shapes', missingDataBehavior: 'unknown geometry', confidenceEffect: 'shape inference lowers confidence' },
+  { field: 'pipe.bowlStyle', normalization: 'reliable bowl-style geometry map', component: 'chamberGeometry', scoringEffect: 'reliable fallback when measured data absent', missingDataBehavior: 'unknown geometry', confidenceEffect: 'moderate confidence support' },
+  { field: 'pipe.bowl_material', normalization: 'normalizeMaterial()', component: 'material', scoringEffect: 'small material adjustment', missingDataBehavior: 'neutral baseline', confidenceEffect: 'minor pipe-confidence factor' },
+  { field: 'pipe.usage_characteristics', normalization: 'parseSmokingText()', component: 'smokingCharacter', scoringEffect: 'cool/hot/wet/open/restricted adjustments', missingDataBehavior: 'neutral smoking character', confidenceEffect: 'missing lowers pipe confidence' },
+  { field: 'pipe.smoking_characteristics', normalization: 'parseSmokingText()', component: 'smokingCharacter', scoringEffect: 'same as usage_characteristics', missingDataBehavior: 'neutral smoking character', confidenceEffect: 'missing lowers pipe confidence' },
+  { field: 'blend.name / tobacco_name', normalization: 'lower-cased exact-name compare', component: 'dedication', scoringEffect: 'exact named-blend dedication match', missingDataBehavior: 'no exact-match bonus', confidenceEffect: 'none' },
+  { field: 'blend.blend_type / type', normalization: 'lower()', component: 'dedication, aromatic classification, blend family', scoringEffect: 'family classification and explicit aromatic/VaPer detection', missingDataBehavior: 'rely on other metadata', confidenceEffect: 'lowers tobacco confidence' },
+  { field: 'blend.blend_family', normalization: 'lower()', component: 'aromatic classification, blend family', scoringEffect: 'family classification fallback', missingDataBehavior: 'rely on other metadata', confidenceEffect: 'lowers tobacco confidence' },
+  { field: 'blend.is_aromatic', normalization: 'explicit boolean', component: 'dedication, aromaticCompatibility, blend family', scoringEffect: 'highest-priority aromatic classification', missingDataBehavior: 'tri-state remains possible', confidenceEffect: 'major tobacco-confidence factor' },
+  { field: 'blend.aromatic_intensity', normalization: 'light/medium/heavy enum', component: 'aromaticCompatibility', scoringEffect: 'heavy/light aromatic geometry handling', missingDataBehavior: 'unknown aromatic intensity', confidenceEffect: 'supports tobacco confidence when present' },
+  { field: 'blend.casing', normalization: 'structured flavoring treatment parser', component: 'aromatic classification', scoringEffect: 'can explicitly identify added flavouring but does not auto-classify every casing', missingDataBehavior: 'no flavoring-treatment evidence', confidenceEffect: 'supports confidence when explicit' },
+  { field: 'blend.topping', normalization: 'structured flavoring treatment parser', component: 'aromatic classification', scoringEffect: 'can explicitly identify added flavouring but does not auto-classify every topping', missingDataBehavior: 'no flavoring-treatment evidence', confidenceEffect: 'supports confidence when explicit' },
+  { field: 'blend.flavor_notes', normalization: 'joined lowercase text', component: 'aromatic intensity only after aromatic classification', scoringEffect: 'supports intensity/reasoning only', missingDataBehavior: 'no note-based intensity support', confidenceEffect: 'minor support only' },
+  { field: 'blend.flavor_profile', normalization: 'joined lowercase text', component: 'aromatic intensity only after aromatic classification', scoringEffect: 'supports intensity/reasoning only', missingDataBehavior: 'no profile-based intensity support', confidenceEffect: 'minor support only' },
+  { field: 'blend.tobacco_components', normalization: 'normalized component array', component: 'dedication, blendComposition, blend family', scoringEffect: 'composition and VaPer/Latakia evidence', missingDataBehavior: 'neutral composition score', confidenceEffect: 'major tobacco-confidence factor' },
+  { field: 'blend.cut', normalization: 'lower()', component: 'tobaccoCut, chamberGeometry', scoringEffect: 'packing/burn heuristics', missingDataBehavior: 'neutral cut score', confidenceEffect: 'missing lowers tobacco confidence' },
+  { field: 'blend.strength', normalization: 'mild/medium/full enum', component: 'personalFit only', scoringEffect: 'personal strength preference match', missingDataBehavior: 'no strength preference evidence', confidenceEffect: 'minor tobacco-confidence factor' },
+  { field: 'profile.preferred_blend_types', normalization: 'normalized array', component: 'personalFit', scoringEffect: 'personalized family/type preference', missingDataBehavior: 'no personalization effect', confidenceEffect: 'none' },
+  { field: 'profile.strength_preference', normalization: 'lower()', component: 'personalFit', scoringEffect: 'personalized strength preference', missingDataBehavior: 'no personalization effect', confidenceEffect: 'none' },
+  { field: 'profile.smoke_duration_preference', normalization: 'lower() against chamber volume', component: 'personalFit', scoringEffect: 'personalized session-length fit', missingDataBehavior: 'no personalization effect', confidenceEffect: 'none' },
+  { field: 'profile.pipe_size_preference', normalization: 'lower() against chamber volume', component: 'personalFit', scoringEffect: 'personalized size preference', missingDataBehavior: 'no personalization effect', confidenceEffect: 'none' },
+]);
+
+export const CONFIDENCE_FACTORS = Object.freeze({
+  pipe: Object.freeze({
+    geometryEvidence: 0.4,
+    dedicationEvidence: 0.2,
+    chamberVolumeEvidence: 0.15,
+    materialEvidence: 0.1,
+    smokingEvidence: 0.15,
+  }),
+  tobacco: Object.freeze({
+    aromaticEvidence: 0.3,
+    familyEvidence: 0.2,
+    compositionEvidence: 0.25,
+    cutEvidence: 0.15,
+    strengthEvidence: 0.1,
+  }),
+});
+
 /* ------------------------------------------------------------------ *
  * Keyword tables
  * ------------------------------------------------------------------ */
@@ -55,12 +203,16 @@ const UTILITY_KEYWORDS = [
   "all-purpose", "all purpose", "everyday", "rotation",
 ];
 
-// Strong aromatic topping/casing signals found in flavor notes
+// Flavor-note text may support intensity after aromatic classification,
+// but never creates aromatic status on its own.
 const HEAVY_AROMATIC_NOTE_RE =
   /(vanilla|cherry|maple|rum|caramel|honey|chocolate|coconut|amaretto|butterscotch|whisk(e)?y|bourbon|toffee|goopy|very sweet|strong topping|heavy topping|syrup|intense)/;
 
 const LIGHT_AROMATIC_NOTE_RE =
   /(light topping|subtle|hint of|mild casing|lightly cased|light casing)/;
+
+const EXPLICIT_FLAVORING_TREATMENT_RE =
+  /(vanilla|cherry|maple|rum|bourbon|whisk(e)?y|caramel|chocolate|cocoa|coconut|amaretto|butterscotch|fruit|berry|citrus|plum|fig|honey|molasses|liqueur|floral|lakeland|topping|syrup)/;
 
 // Blend types whose structure is unambiguously non-aromatic
 const KNOWN_NON_AROMATIC_BLEND_TYPES = [
@@ -88,6 +240,28 @@ function flavorTextOf(blend) {
   return [joinText(blend?.flavor_notes), joinText(blend?.flavor_profile)].join(" ").trim();
 }
 
+function hasMeaningfulValue(v) {
+  const s = lower(v);
+  return !!s && s !== 'none' && s !== 'unknown' && s !== 'n/a';
+}
+
+function parseFlavoringTreatment(blend) {
+  const casing = lower(blend?.casing);
+  const topping = lower(blend?.topping);
+  const joined = [casing, topping].filter(Boolean).join(' ').trim();
+  if (!joined) {
+    return { hasFlavoringTreatment: false, explicitAromaticFlavoring: false, source: 'none', text: '' };
+  }
+  const hasTreatment = [casing, topping].some(hasMeaningfulValue);
+  const explicitAromaticFlavoring = hasTreatment && EXPLICIT_FLAVORING_TREATMENT_RE.test(joined);
+  return {
+    hasFlavoringTreatment: hasTreatment,
+    explicitAromaticFlavoring,
+    source: explicitAromaticFlavoring ? 'structured_flavoring' : 'generic_treatment',
+    text: joined,
+  };
+}
+
 /**
  * True when the blend's *structure* (blend type / components) is a recognized
  * non-aromatic family. Does not look at explicit aromatic fields.
@@ -108,63 +282,75 @@ export function isKnownNonAromaticBlend(blend) {
  */
 export function inferAromaticFromFields(blend) {
   const explicitIntensity = normalizeIntensityValue(blend?.aromatic_intensity);
+  const treatment = parseFlavoringTreatment(blend);
 
   // 1. Explicit boolean field wins
-  if (typeof blend?.is_aromatic === "boolean") {
+  if (typeof blend?.is_aromatic === 'boolean') {
     return {
       isAromatic: blend.is_aromatic,
       intensity: blend.is_aromatic ? explicitIntensity ?? intensityFromNotes(blend) : null,
-      source: "explicit_field",
+      source: 'explicit_field',
+      hasFlavoringTreatment: treatment.hasFlavoringTreatment,
     };
   }
 
-  // 2. blend_type literally says aromatic
+  // 2. Explicit family/type metadata that literally identifies an aromatic
   const bt = blendTypeOf(blend);
-  if (bt.includes("aromatic")) {
-    return {
-      isAromatic: true,
-      intensity: explicitIntensity ?? intensityFromNotes(blend),
-      source: "blend_type",
-    };
-  }
-
-  // 3. Casing / topping / blend_family fields
-  const casing = lower(blend?.casing);
-  const topping = lower(blend?.topping);
   const family = lower(blend?.blend_family);
-  if ((casing && casing !== "none") || (topping && topping !== "none")) {
+  if (bt.includes('aromatic')) {
     return {
       isAromatic: true,
       intensity: explicitIntensity ?? intensityFromNotes(blend),
-      source: "casing_topping",
+      source: 'blend_type',
+      hasFlavoringTreatment: treatment.hasFlavoringTreatment,
     };
   }
-  if (family.includes("aromatic")) {
+  if (family.includes('aromatic')) {
     return {
       isAromatic: true,
       intensity: explicitIntensity ?? intensityFromNotes(blend),
-      source: "blend_family",
+      source: 'blend_family',
+      hasFlavoringTreatment: treatment.hasFlavoringTreatment,
     };
   }
 
-  // 4. An explicit aromatic_intensity implies an aromatic blend
+  // 3. Structured flavoring metadata can identify added aromatic flavouring.
+  if (treatment.explicitAromaticFlavoring) {
+    return {
+      isAromatic: true,
+      intensity: explicitIntensity ?? intensityFromNotes(blend),
+      source: 'structured_flavoring',
+      hasFlavoringTreatment: true,
+    };
+  }
+
+  // 4. Explicit aromatic intensity is direct aromatic metadata.
   if (explicitIntensity) {
-    return { isAromatic: true, intensity: explicitIntensity, source: "aromatic_intensity" };
+    return {
+      isAromatic: true,
+      intensity: explicitIntensity,
+      source: 'aromatic_intensity',
+      hasFlavoringTreatment: treatment.hasFlavoringTreatment,
+    };
   }
 
-  // 5. Structurally-known non-aromatic families
+  // 5. Structurally-known non-aromatic families.
   if (isKnownNonAromaticBlend(blend)) {
-    return { isAromatic: false, intensity: null, source: "blend_type_structure" };
+    return {
+      isAromatic: false,
+      intensity: null,
+      source: 'blend_type_structure',
+      hasFlavoringTreatment: treatment.hasFlavoringTreatment,
+    };
   }
 
-  // 6. Flavor-note heuristic (only for blends we could not classify above)
-  const notes = flavorTextOf(blend);
-  if (notes && HEAVY_AROMATIC_NOTE_RE.test(notes)) {
-    return { isAromatic: true, intensity: intensityFromNotes(blend) ?? "heavy", source: "flavor_notes" };
-  }
-
-  // 7. Unknown — do NOT guess "non-aromatic"
-  return { isAromatic: null, intensity: null, source: "unknown" };
+  // 6. Unknown — natural tasting notes do not create aromatic status.
+  return {
+    isAromatic: null,
+    intensity: null,
+    source: 'unknown',
+    hasFlavoringTreatment: treatment.hasFlavoringTreatment,
+  };
 }
 
 function normalizeIntensityValue(v) {
@@ -209,39 +395,32 @@ function normalizeCut(blend) {
 function inferBlendFamily(blend, aromaticInfo, components) {
   const bt = blendTypeOf(blend);
   const family = lower(blend?.blend_family);
-  const comps = components.join(" ");
+  const comps = components.join(' ');
   const all = `${bt} ${family} ${comps}`;
+  const hasVirginia = /virginia/.test(comps) || bt.includes('virginia') || family.includes('virginia');
+  const hasPerique = /perique/.test(comps) || bt.includes('perique') || family.includes('perique');
+  const hasLatakia = /latakia/.test(comps) || bt.includes('latakia') || family.includes('latakia');
+  const hasOriental = /oriental|turkish/.test(comps) || bt.includes('oriental') || bt.includes('turkish') || family.includes('oriental');
+  const hasBurley = /burley/.test(comps) || bt.includes('burley') || family.includes('burley');
+  const hasDarkFired = /dark fired|dark-fired|kentucky/.test(comps) || bt.includes('dark fired') || family.includes('dark fired') || bt === 'kentucky';
 
-  if (bt === "lakeland" || family.includes("lakeland") || /lakeland/.test(all)) return "lakeland";
-
-  // Explicit aromatic treatment dominates family classification for pairing
-  if (aromaticInfo.isAromatic === true) return "aromatic";
-
-  if (bt.includes("balkan")) return "balkan";
-  if (
-    bt.includes("english") ||
-    bt.includes("latakia") ||
-    bt.includes("oriental") ||
-    bt.includes("turkish") ||
-    /latakia/.test(comps)
-  ) {
-    return "english";
+  if (bt === 'lakeland' || family.includes('lakeland') || /lakeland/.test(all)) return 'lakeland';
+  if (aromaticInfo.isAromatic === true) return 'aromatic';
+  if (bt.includes('balkan') || family.includes('balkan')) return 'balkan';
+  if (bt.includes('english') || family.includes('english') || hasLatakia || hasOriental) return 'english';
+  if (bt.includes('virginia/perique') || bt.includes('va/per') || family.includes('vaper') || family.includes('virginia/perique')) return 'vaper';
+  if (hasVirginia && hasPerique) return 'vaper';
+  if (hasDarkFired) return 'darkFired';
+  if (bt.includes('burley') || family.includes('burley') || bt === 'american' || bt === 'codger blend' || (hasBurley && !hasVirginia)) return 'burley';
+  if (bt.includes('virginia') || family.includes('virginia')) return 'virginia';
+  if (!bt || bt === 'cavendish' || bt === 'shag' || bt === 'other' || bt === 'navy flake') {
+    if (hasVirginia && !hasBurley && !hasLatakia) return 'virginia';
+    if (hasBurley && !hasLatakia) return 'burley';
+    return 'unknown';
   }
-  if (bt.includes("perique") || /perique/.test(comps)) {
-    if (bt.includes("virginia") || /virginia/.test(comps) || bt === "perique") return "vaper";
-    return "vaper";
-  }
-  if (bt === "navy flake") return "vaper";
-  if (bt.includes("dark fired") || bt === "kentucky" || /dark fired|kentucky/.test(comps)) return "darkFired";
-  if (bt.includes("burley") || bt === "american" || bt === "codger blend") return "burley";
-  if (bt.includes("virginia")) return "virginia";
-  if (bt === "cavendish" || bt === "shag" || bt === "other" || !bt) {
-    if (/virginia/.test(comps) && !/burley|latakia/.test(comps)) return "virginia";
-    if (/burley/.test(comps)) return "burley";
-    return "unknown";
-  }
-  if (/virginia/.test(comps)) return "virginia";
-  return "other";
+  if (hasVirginia && !hasLatakia) return 'virginia';
+  if (hasBurley && !hasLatakia) return 'burley';
+  return 'other';
 }
 
 /**
@@ -255,15 +434,44 @@ export function normalizeTobaccoForPairing(blend) {
   const bt = blendTypeOf(b);
   const family = inferBlendFamily(b, aromaticInfo, components);
 
-  const known = [
-    !!bt,
-    components.length > 0,
-    !!normalizeCut(b),
-    aromaticInfo.isAromatic !== null,
-    !!normalizeStrength(b),
-    !!flavorTextOf(b),
-  ];
-  const confidence = round1(known.filter(Boolean).length / known.length);
+  const treatment = parseFlavoringTreatment(b);
+  const aromaticEvidenceScore =
+    aromaticInfo.source === 'explicit_field' ? 1
+      : aromaticInfo.source === 'blend_type' || aromaticInfo.source === 'blend_family' ? 0.85
+      : aromaticInfo.source === 'structured_flavoring' ? 0.75
+      : aromaticInfo.source === 'aromatic_intensity' ? 0.7
+      : aromaticInfo.source === 'blend_type_structure' ? 0.65
+      : 0;
+  const familyEvidenceScore = family === 'unknown' ? 0 : family === 'other' ? 0.35 : 1;
+  const discoveryMetadataComplete = !(b?.metadata_source === 'ai_discovery') || b?.metadata_complete !== false;
+  const confidenceDetails = {
+    explicitAromaticStatus: typeof b?.is_aromatic === 'boolean',
+    aromaticStatusKnown: aromaticInfo.isAromatic !== null,
+    aromaticStatusSource: aromaticInfo.source,
+    blendCompositionKnown: components.length > 0,
+    cutKnown: !!normalizeCut(b),
+    strengthKnown: !!normalizeStrength(b),
+    blendFamilyKnown: family !== 'unknown',
+    hasFlavoringTreatment: treatment.hasFlavoringTreatment,
+    aiDiscoveryMetadataComplete: discoveryMetadataComplete,
+    inferredFields: [],
+    missingFields: [],
+  };
+
+  if (!confidenceDetails.explicitAromaticStatus && aromaticInfo.isAromatic !== null) confidenceDetails.inferredFields.push('is_aromatic');
+  if (!confidenceDetails.blendCompositionKnown) confidenceDetails.missingFields.push('tobacco_components');
+  if (!confidenceDetails.cutKnown) confidenceDetails.missingFields.push('cut');
+  if (!confidenceDetails.aromaticStatusKnown) confidenceDetails.missingFields.push('is_aromatic');
+  if (!confidenceDetails.strengthKnown) confidenceDetails.missingFields.push('strength');
+  if (!confidenceDetails.aiDiscoveryMetadataComplete) confidenceDetails.missingFields.push('ai_discovery_metadata');
+
+  const confidenceBase =
+    CONFIDENCE_FACTORS.tobacco.aromaticEvidence * aromaticEvidenceScore +
+    CONFIDENCE_FACTORS.tobacco.familyEvidence * familyEvidenceScore +
+    CONFIDENCE_FACTORS.tobacco.compositionEvidence * (confidenceDetails.blendCompositionKnown ? 1 : 0) +
+    CONFIDENCE_FACTORS.tobacco.cutEvidence * (confidenceDetails.cutKnown ? 1 : 0) +
+    CONFIDENCE_FACTORS.tobacco.strengthEvidence * (confidenceDetails.strengthKnown ? 1 : 0);
+  const confidence = round1(clamp(confidenceBase - (discoveryMetadataComplete ? 0 : 0.15), 0, 1));
 
   return {
     name: String(b.tobacco_name ?? b.name ?? ""),
@@ -272,6 +480,8 @@ export function normalizeTobaccoForPairing(blend) {
     isAromatic: aromaticInfo.isAromatic,
     aromaticSource: aromaticInfo.source,
     aromaticIntensity: aromaticInfo.isAromatic === true ? aromaticInfo.intensity : null,
+    hasFlavoringTreatment: aromaticInfo.hasFlavoringTreatment,
+    flavoringTreatmentSource: treatment.source,
     tobaccoComponents: components,
     hasLatakia: /latakia/.test(compText) || bt.includes("latakia") || bt.includes("balkan"),
     hasPerique: /perique/.test(compText) || bt.includes("perique"),
@@ -284,6 +494,7 @@ export function normalizeTobaccoForPairing(blend) {
     cut: normalizeCut(b),
     strength: normalizeStrength(b),
     confidence,
+    confidenceDetails,
   };
 }
 
@@ -322,39 +533,21 @@ export function getAromaticIntensity(blend) {
  * Pipe normalization
  * ------------------------------------------------------------------ */
 
-const SHAPE_GEOMETRY = {
-  // narrow / deep
-  canadian: ["narrow", "deep"],
-  liverpool: ["narrow", "deep"],
-  lovat: ["narrow", "deep"],
-  lumberman: ["narrow", "deep"],
-  churchwarden: ["narrow", "deep"],
-  chimney: ["narrow", "deep"],
-  prince: ["narrow", "medium"],
-  // medium / medium
-  billiard: ["medium", "medium"],
-  "bent billiard": ["medium", "medium"],
-  apple: ["medium", "medium"],
-  "bent apple": ["medium", "medium"],
-  dublin: ["medium", "medium"],
-  "bent dublin": ["medium", "medium"],
-  pot: ["medium", "shallow"],
-  tomato: ["medium", "shallow"],
-  egg: ["medium", "medium"],
-  brandy: ["medium", "medium"],
-  author: ["medium", "medium"],
-  poker: ["medium", "medium"],
-  // wide / shallow
-  bulldog: ["wide", "shallow"],
-  rhodesian: ["wide", "shallow"],
-  bulldozer: ["wide", "shallow"],
-  volcano: ["wide", "shallow"],
-  blowfish: ["wide", "shallow"],
-  // wide / deep
-  calabash: ["wide", "deep"],
-  "reverse calabash": ["wide", "deep"],
-  bullmoose: ["wide", "medium"],
-  freehand: ["wide", "deep"],
+const SHARED_GEOMETRY_TENDENCIES = {
+  chimney: ['narrow', 'deep'],
+  stack: ['narrow', 'deep'],
+  pot: ['wide', 'shallow'],
+};
+
+// The same labels intentionally appear in both maps below because bowlStyle and
+// shape are distinct fields with different confidence levels.
+const RELIABLE_BOWL_STYLE_GEOMETRY = {
+  ...SHARED_GEOMETRY_TENDENCIES,
+};
+
+const WEAK_SHAPE_GEOMETRY = {
+  ...SHARED_GEOMETRY_TENDENCIES,
+  prince: ['medium', 'shallow'],
 };
 
 const VOLUME_TO_WIDTH = {
@@ -435,7 +628,7 @@ function classifyFocusToken(token) {
   if (/non[-\s]?aromatic/.test(t)) return "nonAromatic";
   if (t.includes("aromatic")) return "aromatic";
   if (t.includes("lakeland")) return "lakeland";
-  if (t.includes("perique") || t.includes("vaper") || t.includes("navy")) return "vaper";
+  if (t.includes("perique") || t.includes("vaper")) return "vaper";
   if (t.includes("english") || t.includes("balkan") || t.includes("latakia") || t.includes("oriental") || t.includes("turkish")) return "english";
   if (t.includes("virginia")) return "virginia";
   if (t.includes("burley") || t.includes("american") || t.includes("codger")) return "burley";
@@ -515,37 +708,53 @@ export function normalizePipeForPairing(pipe) {
   const chamberDiameterMm = Number.isFinite(diameter) && diameter > 0 ? diameter : null;
   const chamberDepthMm = Number.isFinite(depth) && depth > 0 ? depth : null;
 
-  const shapeKey = lower(p.shape);
+  const shapeKey = lower(p.shape).replace(/^bent\s+/, '');
   const bowlStyleKey = lower(p.bowlStyle);
-  const shapeGeom =
-    SHAPE_GEOMETRY[shapeKey] ||
-    SHAPE_GEOMETRY[shapeKey.replace(/^bent\s+/, "")] ||
-    (bowlStyleKey.includes("chimney") ? SHAPE_GEOMETRY.chimney : null) ||
-    (bowlStyleKey.includes("squat") || bowlStyleKey.includes("pot") ? SHAPE_GEOMETRY.pot : null) ||
-    null;
+  const reliableBowlStyleGeom =
+    Object.entries(RELIABLE_BOWL_STYLE_GEOMETRY).find(([key]) => bowlStyleKey.includes(key))?.[1] || null;
+  const weakShapeGeom = WEAK_SHAPE_GEOMETRY[shapeKey] || null;
 
   const volumeEnum = normalizeVolumeEnum(p.chamber_volume);
 
+  const hasMeasuredWidth = chamberDiameterMm !== null;
+  const hasMeasuredDepth = chamberDepthMm !== null;
   let chamberWidthCategory = widthCategoryFromMm(chamberDiameterMm);
   let chamberDepthCategory = depthCategoryFromMm(chamberDepthMm);
-  let geometrySource = "measured";
+  let widthSource = hasMeasuredWidth ? 'measured' : null;
+  let depthSource = hasMeasuredDepth ? 'measured' : null;
 
   if (!chamberWidthCategory) {
     if (volumeEnum) {
-      chamberWidthCategory = VOLUME_TO_WIDTH[lower(p.chamber_volume)] || (volumeEnum === "extraLarge" ? "wide" : null);
-      geometrySource = "volumeEnum";
-    } else if (shapeGeom) {
-      chamberWidthCategory = shapeGeom[0];
-      geometrySource = "shape";
-    } else {
-      geometrySource = "unknown";
+      chamberWidthCategory = VOLUME_TO_WIDTH[lower(p.chamber_volume)] || (volumeEnum === 'extraLarge' ? 'wide' : null);
+      widthSource = chamberWidthCategory ? 'volumeEnum' : null;
+    } else if (reliableBowlStyleGeom) {
+      chamberWidthCategory = reliableBowlStyleGeom[0];
+      widthSource = chamberWidthCategory ? 'reliableBowlStyle' : null;
+    } else if (weakShapeGeom) {
+      chamberWidthCategory = weakShapeGeom[0];
+      widthSource = chamberWidthCategory ? 'weakShape' : null;
     }
   }
   if (!chamberDepthCategory) {
-    if (shapeGeom) chamberDepthCategory = shapeGeom[1];
-    else if (volumeEnum === "small") chamberDepthCategory = "shallow";
-    else if (volumeEnum === "large" || volumeEnum === "extraLarge") chamberDepthCategory = "deep";
+    if (reliableBowlStyleGeom) {
+      chamberDepthCategory = reliableBowlStyleGeom[1];
+      depthSource = chamberDepthCategory ? 'reliableBowlStyle' : null;
+    } else if (weakShapeGeom) {
+      chamberDepthCategory = weakShapeGeom[1];
+      depthSource = chamberDepthCategory ? 'weakShape' : null;
+    } else if (volumeEnum === 'small') {
+      chamberDepthCategory = 'shallow';
+      depthSource = 'volumeEnum';
+    } else if (volumeEnum === 'large' || volumeEnum === 'extraLarge') {
+      chamberDepthCategory = 'deep';
+      depthSource = 'volumeEnum';
+    }
   }
+
+  const geometrySource =
+    hasMeasuredWidth && hasMeasuredDepth ? 'measured'
+      : hasMeasuredWidth || hasMeasuredDepth ? 'partialMeasured'
+      : widthSource || depthSource || 'unknown';
 
   const chamberVolume =
     volumeCategoryFromMm(chamberDiameterMm, chamberDepthMm) || volumeEnum || null;
@@ -586,15 +795,47 @@ export function normalizePipeForPairing(pipe) {
   const drawCharacter = smoking.openDraw ? "open" : smoking.restricted ? "restricted" : smoking.hasData ? "neutral" : null;
   const isWetSmoker = smoking.hasData ? (smoking.isWet ? true : smoking.isDry ? false : null) : null;
 
-  const known = [
-    chamberDiameterMm !== null,
-    chamberDepthMm !== null,
-    !!volumeEnum || chamberVolume !== null,
-    normalizeMaterial(p) !== "other",
-    dedicationType !== "unknown",
-    smoking.hasData,
-  ];
-  const confidence = round1(known.filter(Boolean).length / known.length);
+  const geometryEvidenceScore =
+    geometrySource === 'measured' ? 1
+      : geometrySource === 'partialMeasured' ? 0.85
+      : geometrySource === 'volumeEnum' ? 0.65
+      : geometrySource === 'reliableBowlStyle' ? 0.5
+      : geometrySource === 'weakShape' ? 0.25
+      : 0;
+  const dedicationEvidenceScore =
+    dedicationStrength === 'explicit' ? 1
+      : dedicationType !== 'unknown' ? 0.55
+      : 0.2;
+  const confidenceDetails = {
+    measuredGeometry: geometrySource === 'measured',
+    geometrySource,
+    chamberVolumeKnown: chamberVolume !== null || !!volumeEnum,
+    explicitPipeDedication: dedicationStrength === 'explicit',
+    pipeDedicationKnown: dedicationType !== 'unknown',
+    smokingCharacteristicsKnown: smoking.hasData,
+    materialKnown: normalizeMaterial(p) !== 'other',
+    inferredFields: [],
+    missingFields: [],
+  };
+
+  if (geometrySource === 'weakShape') confidenceDetails.inferredFields.push('chamber_geometry');
+  if (geometrySource === 'reliableBowlStyle') confidenceDetails.inferredFields.push('chamber_geometry');
+  if (dedicationStrength === 'inferred') confidenceDetails.inferredFields.push('pipe_dedication');
+  if (geometrySource === 'unknown') confidenceDetails.missingFields.push('chamber_geometry');
+  if (!confidenceDetails.chamberVolumeKnown) confidenceDetails.missingFields.push('chamber_volume');
+  if (!confidenceDetails.pipeDedicationKnown) confidenceDetails.missingFields.push('focus');
+  if (!confidenceDetails.smokingCharacteristicsKnown) confidenceDetails.missingFields.push('smoking_characteristics');
+  if (!confidenceDetails.materialKnown) confidenceDetails.missingFields.push('bowl_material');
+
+  const confidence = round1(clamp(
+    CONFIDENCE_FACTORS.pipe.geometryEvidence * geometryEvidenceScore +
+    CONFIDENCE_FACTORS.pipe.dedicationEvidence * dedicationEvidenceScore +
+    CONFIDENCE_FACTORS.pipe.chamberVolumeEvidence * (confidenceDetails.chamberVolumeKnown ? 1 : 0) +
+    CONFIDENCE_FACTORS.pipe.materialEvidence * (confidenceDetails.materialKnown ? 1 : 0) +
+    CONFIDENCE_FACTORS.pipe.smokingEvidence * (confidenceDetails.smokingCharacteristicsKnown ? 1 : 0),
+    0,
+    1,
+  ));
 
   return {
     pipeId: p.pipe_id ?? p.id ?? null,
@@ -615,6 +856,7 @@ export function normalizePipeForPairing(pipe) {
     drawCharacter,
     isWetSmoker,
     confidence,
+    confidenceDetails,
   };
 }
 
@@ -770,11 +1012,21 @@ function scoreChamberGeometry(pipeN, tobN) {
 
   score = clamp(score, 0, 10);
 
-  const measured = pipeN.geometrySource === "measured";
+  const geometryDamping = {
+    measured: 1,
+    partialMeasured: 0.85,
+    volumeEnum: 0.75,
+    reliableBowlStyle: 0.55,
+    weakShape: 0.35,
+    unknown: 0,
+  };
   let damped = false;
-  if (!measured) {
-    // Non-measured geometry is a weaker signal: pull toward neutral
-    score = 6.5 + (score - 6.5) * 0.7;
+  const factor = geometryDamping[pipeN.geometrySource] ?? 0;
+  if (factor <= 0) {
+    return { score: 6, reason: 'Chamber dimensions unknown — geometry treated as neutral.', damped: true };
+  }
+  if (factor < 1) {
+    score = 6.5 + (score - 6.5) * factor;
     damped = true;
   }
 
@@ -964,31 +1216,33 @@ function scoreAromaticCompatibility(pipeN, tobN) {
 function scoreMaterial(pipeN, tobN) {
   const mat = pipeN.bowlMaterial;
   const fam = tobN.blendFamily;
-  const isAromatic = tobN.isAromatic === true || fam === "aromatic";
+  const isAromatic = tobN.isAromatic === true || fam === 'aromatic';
+  const isGhostSensitive = fam === 'virginia' || fam === 'vaper';
 
   switch (mat) {
-    case "meerschaum":
-      return { score: 8, reason: "Meerschaum bowl provides a clean, neutral smoking experience and resists ghosting." };
-    case "cob":
-      return isAromatic
-        ? { score: 8, reason: "Corn cob breathes well and shrugs off aromatic ghosting." }
-        : { score: 7, reason: "Corn cob is forgiving and adds little of its own character." };
-    case "clay":
-      if (fam === "virginia" || fam === "vaper") return { score: 8, reason: "Clay delivers pure, unmasked Virginia flavor." };
-      return isAromatic
-        ? { score: 6, reason: "Clay smokes hot for a heavily topped blend." }
-        : { score: 7, reason: "Clay gives an unfiltered read on this blend." };
-    case "morta":
-      return { score: 7, reason: "Morta is nearly neutral and adds little flavor of its own." };
-    case "briar":
-      return { score: 6, reason: "Briar is the versatile baseline for this blend." };
-    case "cherryWood":
-    case "oliveWood":
-      return isAromatic
-        ? { score: 6, reason: "Fruitwood bowl adds sweetness that suits a topped blend." }
-        : { score: 5.5, reason: "Fruitwood bowl can impart its own flavor." };
+    case 'meerschaum':
+      if (isAromatic || isGhostSensitive) {
+        return { score: 7, reason: 'Meerschaum gets a small compatibility bonus here because its low carryover helps topped or ghost-sensitive leaf.' };
+      }
+      return { score: 6.5, reason: 'Meerschaum is a neutral, low-carryover material.' };
+    case 'cob':
+      if (isAromatic || fam === 'burley' || fam === 'darkFired') {
+        return { score: 6.8, reason: 'Corn cob earns a small bonus here for moisture forgiveness and easy cross-blend use.' };
+      }
+      return { score: 6.2, reason: 'Corn cob is serviceable and fairly neutral for this blend.' };
+    case 'clay':
+      if (fam === 'virginia' || fam === 'vaper') return { score: 6.8, reason: 'Clay gets a small bonus for flavour purity with Virginia-forward leaf.' };
+      if (isAromatic && tobN.aromaticIntensity === 'heavy') return { score: 5.5, reason: 'Clay is slightly penalised here because a hot-smoke-prone material can punish a heavy aromatic.' };
+      return { score: 6.2, reason: 'Clay is close to neutral for this blend.' };
+    case 'morta':
+      return { score: 6.4, reason: 'Morta is nearly neutral and low-carryover, so it gets only a slight bonus.' };
+    case 'briar':
+      return { score: 6, reason: 'Briar is the neutral baseline reference material.' };
+    case 'cherryWood':
+    case 'oliveWood':
+      return { score: 5.7, reason: 'Fruitwoods take a slight compatibility penalty because they can add their own sweetness or flavour.' };
     default:
-      return { score: 6, reason: "Bowl material is unrecorded — treated as neutral." };
+      return { score: 6, reason: 'Bowl material is unrecorded — treated as the neutral baseline.' };
   }
 }
 
@@ -1031,59 +1285,86 @@ function scoreSmokingCharacter(pipeN, tobN) {
 
 function scorePersonalFit(pipeN, tobN, userProfile, blend) {
   if (!userProfile) {
-    return { score: 5, reasons: [], hasProfile: false };
+    return {
+      score: null,
+      reasons: [],
+      hasProfile: false,
+      hasPersonalizationEvidence: false,
+      evidenceCount: 0,
+    };
   }
 
   let score = 5;
   const reasons = [];
+  let evidenceCount = 0;
 
   const prefTypes = toArray(userProfile.preferred_blend_types).map((x) => lower(x));
   const blendType = lower(blend?.blend_type || blend?.type);
   if (prefTypes.length) {
+    evidenceCount += 1;
     if (
       prefTypes.includes(blendType) ||
       prefTypes.some((p) => p && (p === tobN.blendFamily || (blendType && (p.includes(blendType) || blendType.includes(p)))))
     ) {
       score += 2.5;
-      reasons.push("Matches your preferred blend types.");
+      reasons.push('Matches your preferred blend types.');
     }
   }
 
   const strengthPref = lower(userProfile.strength_preference);
   if (strengthPref && tobN.strength) {
+    evidenceCount += 1;
     if (strengthPref.includes(tobN.strength)) {
       score += 1.5;
-      reasons.push("Matches your preferred strength.");
+      reasons.push('Matches your preferred strength.');
     }
   }
 
   const duration = lower(userProfile.smoke_duration_preference);
   const volume = pipeN.chamberVolume;
   if (duration && volume) {
+    evidenceCount += 1;
     const isLong = /long|extended|hour/.test(duration);
     const isShort = /short|quick|15|20|30/.test(duration);
-    const isBig = volume === "large" || volume === "extraLarge";
-    const isSmall = volume === "small";
+    const isBig = volume === 'large' || volume === 'extraLarge';
+    const isSmall = volume === 'small';
     if ((isLong && isBig) || (isShort && isSmall)) {
       score += 1;
-      reasons.push("Chamber capacity matches your usual session length.");
+      reasons.push('Chamber capacity matches your usual session length.');
     } else if ((isLong && isSmall) || (isShort && isBig)) {
       score -= 1;
-      reasons.push("Chamber capacity does not match your usual session length.");
+      reasons.push('Chamber capacity does not match your usual session length.');
     }
   }
 
   const sizePref = lower(userProfile.pipe_size_preference);
   if (sizePref && volume) {
+    evidenceCount += 1;
     const wantsLarge = /large|big|magnum/.test(sizePref);
     const wantsSmall = /small|pocket|nose/.test(sizePref);
-    if ((wantsLarge && (volume === "large" || volume === "extraLarge")) || (wantsSmall && volume === "small")) {
+    if ((wantsLarge && (volume === 'large' || volume === 'extraLarge')) || (wantsSmall && volume === 'small')) {
       score += 0.5;
-      reasons.push("Pipe size matches your stated preference.");
+      reasons.push('Pipe size matches your stated preference.');
     }
   }
 
-  return { score: clamp(score, 0, 10), reasons, hasProfile: true };
+  if (evidenceCount === 0) {
+    return {
+      score: null,
+      reasons: [],
+      hasProfile: true,
+      hasPersonalizationEvidence: false,
+      evidenceCount: 0,
+    };
+  }
+
+  return {
+    score: clamp(score, 0, 10),
+    reasons,
+    hasProfile: true,
+    hasPersonalizationEvidence: true,
+    evidenceCount,
+  };
 }
 
 /* ------------------------------------------------------------------ *
@@ -1120,22 +1401,40 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
   technicalScore = round1(clamp(technicalScore, 0, 10));
 
   const personal = scorePersonalFit(pipeN, tobN, userProfile, blend);
-  const personalFit = round1(personal.score);
+  const personalFit = personal.score == null ? null : round1(personal.score);
 
-  const finalScore = round1(clamp(technicalScore * 0.8 + personalFit * 0.2, 0, 10));
+  const finalScore = personal.hasPersonalizationEvidence
+    ? round1(clamp(technicalScore * 0.8 + personalFit * 0.2, 0, 10))
+    : technicalScore;
 
   // Confidence: how complete the underlying records are
   const confidence = round1(clamp((tobN.confidence * 0.5 + pipeN.confidence * 0.5), 0, 1));
+  const confidenceDetails = {
+    measuredGeometry: pipeN.confidenceDetails?.measuredGeometry || false,
+    geometrySource: pipeN.geometrySource,
+    explicitAromaticStatus: tobN.confidenceDetails?.explicitAromaticStatus || false,
+    aromaticStatusKnown: tobN.confidenceDetails?.aromaticStatusKnown || false,
+    blendCompositionKnown: tobN.confidenceDetails?.blendCompositionKnown || false,
+    cutKnown: tobN.confidenceDetails?.cutKnown || false,
+    explicitPipeDedication: pipeN.confidenceDetails?.explicitPipeDedication || false,
+    smokingCharacteristicsKnown: pipeN.confidenceDetails?.smokingCharacteristicsKnown || false,
+    aiDiscoveryMetadataComplete: tobN.confidenceDetails?.aiDiscoveryMetadataComplete !== false,
+    inferredFields: [...new Set([...(pipeN.confidenceDetails?.inferredFields || []), ...(tobN.confidenceDetails?.inferredFields || [])])],
+    missingFields: [...new Set([...(pipeN.confidenceDetails?.missingFields || []), ...(tobN.confidenceDetails?.missingFields || [])])],
+  };
 
-  const whyList = buildWhy(components, personal, pipeN, tobN);
+  const whyList = buildWhy(components, personal, pipeN, tobN, confidenceDetails);
 
   return {
     score: finalScore,
+    finalScore,
     technicalScore,
     personalFit,
+    hasPersonalizationEvidence: personal.hasPersonalizationEvidence,
     confidence,
+    confidenceDetails,
     components,
-    why: whyList.join(" "),
+    why: whyList.join(' '),
     whyList,
     reasons: whyList,
     normalizedPipe: pipeN,
@@ -1148,7 +1447,7 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
 const NEUTRAL_COMPONENT_SCORE = 6;
 const MENTION_THRESHOLD = 0.25;
 
-function buildWhy(components, personal, pipeN, tobN) {
+function buildWhy(components, personal, pipeN, tobN, confidenceDetails) {
   const entries = Object.entries(components)
     .map(([key, c]) => ({
       key,
@@ -1168,12 +1467,16 @@ function buildWhy(components, personal, pipeN, tobN) {
   }
 
   if (tobN.isAromatic === null) {
-    why.push("Blend record does not say whether it is aromatic — score is provisional.");
-  } else if (!pipeN.chamberDiameterMm && pipeN.geometrySource !== "measured") {
-    why.push("Chamber measurements are missing, so geometry is estimated.");
+    why.push('Blend record does not say whether it is aromatic — score is provisional.');
+  } else if (!pipeN.chamberDiameterMm && pipeN.geometrySource !== 'measured') {
+    why.push('Chamber measurements are missing, so geometry is estimated.');
   }
 
-  if (personal.hasProfile && personal.reasons.length) {
+  if (confidenceDetails?.aiDiscoveryMetadataComplete === false) {
+    why.push('AI discovery metadata is incomplete, so no authoritative canonical score is shown.');
+  }
+
+  if (personal.hasPersonalizationEvidence && personal.reasons.length) {
     why.push(personal.reasons[0]);
   }
 
@@ -1207,6 +1510,7 @@ export function buildPairingsForPipes(pipeVariants, blends, userProfile) {
         confidence: result.confidence,
         technical_score: result.technicalScore,
         personal_fit: result.personalFit,
+        has_personalization_evidence: result.hasPersonalizationEvidence,
       };
     });
 
@@ -1223,4 +1527,71 @@ export function buildPairingsForPipes(pipeVariants, blends, userProfile) {
       recommendations: recs.slice(0, 10),
     };
   });
+}
+
+export function rankPipesForBlend(pipes, blend, userProfile, {
+  includeMainWhenBowls = true,
+  collapseToParent = true,
+  limit = 3,
+} = {}) {
+  const variants = expandPipesToVariants(pipes || [], { includeMainWhenBowls });
+  const scored = variants.map((variant) => {
+    const result = scorePipeBlendDiagnostic(variant, blend, userProfile);
+    return {
+      pipe_id: String(variant.pipe_id ?? variant.id),
+      pipe_name: String(variant.pipe_name ?? variant.name ?? ""),
+      bowl_variant_id: variant.bowl_variant_id ?? null,
+      variant_name: variant.variant_name ?? variant.name ?? "",
+      bowl_name: variant.bowl_variant_id
+        ? String(variant.__bowl?.name ?? variant.variant_name?.replace(/^.*?\s-\s/, "") ?? variant.bowl_variant_id)
+        : null,
+      score: result.score,
+      finalScore: result.finalScore,
+      technicalScore: result.technicalScore,
+      personalFit: result.personalFit,
+      hasPersonalizationEvidence: result.hasPersonalizationEvidence,
+      confidence: result.confidence,
+      confidenceDetails: result.confidenceDetails,
+      why: result.why,
+      components: result.components,
+      normalizedPipe: result.normalizedPipe,
+      normalizedTobacco: result.normalizedTobacco,
+      variant,
+    };
+  }).sort((a, b) =>
+    (b.score || 0) - (a.score || 0) ||
+    (b.technicalScore || 0) - (a.technicalScore || 0) ||
+    String(a.variant_name || "").localeCompare(String(b.variant_name || ""))
+  );
+
+  if (!collapseToParent) return scored.slice(0, limit);
+
+  const bestByPipe = new Map();
+  for (const entry of scored) {
+    const current = bestByPipe.get(entry.pipe_id);
+    if (!current) {
+      bestByPipe.set(entry.pipe_id, entry);
+      continue;
+    }
+    if (
+      entry.score > current.score ||
+      (entry.score === current.score && entry.technicalScore > current.technicalScore) ||
+      (
+        entry.score === current.score &&
+        entry.technicalScore === current.technicalScore &&
+        !!entry.bowl_variant_id &&
+        !current.bowl_variant_id
+      )
+    ) {
+      bestByPipe.set(entry.pipe_id, entry);
+    }
+  }
+
+  return [...bestByPipe.values()]
+    .sort((a, b) =>
+      (b.score || 0) - (a.score || 0) ||
+      (b.technicalScore || 0) - (a.technicalScore || 0) ||
+      String(a.pipe_name || "").localeCompare(String(b.pipe_name || ""))
+    )
+    .slice(0, limit);
 }
