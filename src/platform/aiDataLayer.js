@@ -10,6 +10,7 @@
 import { base44 } from '@/api/base44Client';
 import { MODULE_REGISTRY } from './moduleRegistry';
 import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
+import { aggregateCollection } from '@/components/keeper-core/aggregation/collectionAggregation';
 
 
 function getRegistryList() {
@@ -192,46 +193,48 @@ export async function getUnderusedItems(userEmail, moduleId = null) {
  */
 export async function getCollectionStats(userEmail, moduleId = null) {
   try {
+    const agg = await aggregateCollection(userEmail);
+    const moduleMap = {
+      pipekeeper: agg?.pipes,
+      tobacco: agg?.tobacco,
+      whiskeykeeper: agg?.whiskey,
+      cigarkeeper: agg?.cigar,
+      winekeeper: agg?.wine,
+    };
+
     if (moduleId) {
-      const items = await getModuleItems(userEmail, moduleId);
-      const totalValue = items.reduce((sum, i) => sum + (i.estimated_value || 0), 0);
-      
+      const moduleStats = moduleMap[moduleId] || {};
+      const itemCount = Number(moduleStats?.count || 0);
+      const totalValue = Number(moduleStats?.value || 0);
+
       return {
         moduleId,
-        itemCount: items.length,
+        itemCount,
         totalValue,
-        averageValue: items.length > 0 ? totalValue / items.length : 0,
-        favoriteCount: items.filter(i => i.is_favorite).length,
-        averageRating: items.length > 0 
-          ? items.reduce((sum, i) => sum + (i.rating || 0), 0) / items.length 
-          : 0,
+        averageValue: itemCount > 0 ? totalValue / itemCount : 0,
+        favoriteCount: Number(moduleStats?.favorite || 0),
+        averageRating: moduleStats?.avgRating ?? 0,
       };
     }
-    
-    // All modules
-    const modules = getRegistryList().filter(m => m && m.status === 'active' && m.entityName);
-    const stats = {};
-    let totalValue = 0;
-    let totalItems = 0;
-    
-    for (const module of modules) {
-      const items = await getModuleItems(userEmail, module.id);
-      const moduleValue = items.reduce((sum, i) => sum + (i.estimated_value || 0), 0);
-      
-      stats[module.id] = {
-        itemCount: items.length,
-        totalValue: moduleValue,
-      };
-      
-      totalValue += moduleValue;
-      totalItems += items.length;
-    }
-    
+
+    const byModule = Object.fromEntries(
+      Object.entries(moduleMap).map(([key, moduleStats]) => [
+        key,
+        {
+          itemCount: Number(moduleStats?.count || 0),
+          totalValue: Number(moduleStats?.value || 0),
+        },
+      ]),
+    );
+
+    const totalItems = Number(agg?.total?.items || 0);
+    const totalValue = Number(agg?.total?.value || 0);
+
     return {
       totalItems,
       totalValue,
       averageValuePerItem: totalItems > 0 ? totalValue / totalItems : 0,
-      byModule: stats,
+      byModule,
     };
   } catch (err) {
     console.error('Get stats failed:', err);

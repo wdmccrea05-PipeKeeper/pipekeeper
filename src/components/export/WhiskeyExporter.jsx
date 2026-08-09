@@ -8,6 +8,8 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { toast } from 'sonner';
 import { getBottleUnitValue, getBottleDisplayValueLabel } from '@/components/utils/whiskeyValueHelpers';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { selectWhiskeyMetrics } from '@/lib/collection/whiskeySelectors';
+import { selectActiveBottles } from '@/lib/collection/activeFilters';
 
 export default function WhiskeyExporter() {
   const [loading, setLoading] = useState(false);
@@ -23,6 +25,12 @@ export default function WhiskeyExporter() {
   const { data: tastingLogs = [] } = useQuery({
     queryKey: ['tasting-logs-export', user?.email],
     queryFn: () => base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date'),
+    enabled: !!user?.email,
+  });
+
+  const { data: inventoryUnits = [] } = useQuery({
+    queryKey: ['whiskey-inventory-export', user?.email],
+    queryFn: () => base44.entities.WhiskeyInventoryUnit.filter({ created_by: user?.email }),
     enabled: !!user?.email,
   });
 
@@ -123,10 +131,15 @@ export default function WhiskeyExporter() {
       doc.text(`Owner: ${user?.full_name || user?.email || ''}`, pageWidth / 2, 34, { align: 'center' });
 
       // Summary stats
-      const totalValue = bottles.reduce((sum, b) => sum + getBottleUnitValue(b), 0);
-      const totalBottles = bottles.reduce((sum, b) => sum + (Number(b.bottle_count) || 1), 0);
-      const unopened = bottles.filter(b => !b.opened_date).length;
-      const avgRating = bottles.filter(b => b.rating).reduce((s, b, _, a) => s + b.rating / a.length, 0);
+      const activeBottles = selectActiveBottles(bottles);
+      const whiskeyMetrics = selectWhiskeyMetrics(activeBottles, inventoryUnits, tastingLogs);
+      const totalValue = whiskeyMetrics.collection_value;
+      const totalBottles = whiskeyMetrics.total_bottles;
+      const unopened = whiskeyMetrics.sealed_bottles;
+      const ratedBottles = activeBottles.filter((b) => Number(b?.rating) > 0);
+      const avgRating = ratedBottles.length
+        ? ratedBottles.reduce((s, b) => s + Number(b.rating), 0) / ratedBottles.length
+        : null;
 
       const fmtMoney = (n) => formatFromBase(Number(n));
 
@@ -138,7 +151,7 @@ export default function WhiskeyExporter() {
       doc.text(`Total Bottles: ${totalBottles}`, 20, 52);
       doc.text(`Unopened: ${unopened}`, 20, 58);
       doc.text(`Total Purchase Value: ${fmtMoney(totalValue)}`, 20, 64);
-      if (avgRating) doc.text(`Average Rating: ${avgRating.toFixed(1)} / 5`, 20, 70);
+      if (avgRating != null) doc.text(`Average Rating: ${avgRating.toFixed(1)} / 5`, 20, 70);
 
       // Bottle details
       let y = 85;
@@ -149,7 +162,7 @@ export default function WhiskeyExporter() {
 
       doc.setFontSize(9);
 
-      for (const [idx, bottle] of bottles.entries()) {
+      for (const [idx, bottle] of activeBottles.entries()) {
         if (y > pageHeight - 40) {
           doc.addPage();
           y = 20;

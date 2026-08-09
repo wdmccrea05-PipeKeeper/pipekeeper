@@ -188,16 +188,8 @@ describe('selectDisplayRating — consistent rounding', () => {
 // ---------------------------------------------------------------------------
 
 describe('collection value selectors', () => {
-  test('selectPipeCollectionValue sums all pipes (active filter is caller responsibility)', () => {
-    // The selector intentionally sums all records passed to it.
-    // Callers must apply selectActivePipes() first when archived exclusion is needed.
-    // 200 + 150 + 50 + 999 (archived p4) = 1399
-    expect(selectPipeCollectionValue(PIPES)).toBe(1399);
-  });
-
-  test('selectPipeCollectionValue on active-only pipes excludes archived value', () => {
-    const active = selectActivePipes(PIPES);
-    expect(selectPipeCollectionValue(active)).toBe(400); // 200 + 150 + 50
+  test('selectPipeCollectionValue excludes archived records via canonical active filtering', () => {
+    expect(selectPipeCollectionValue(PIPES)).toBe(400); // 200 + 150 + 50
   });
 
   test('selectTotalSticks sums singles_equivalent', () => {
@@ -221,7 +213,8 @@ describe('collection value selectors', () => {
     const blends = [{ manual_market_value: 50 }];
     const bottles = [{ purchase_price: 80 }];
     const cigars = [{ singles_equivalent: 5, estimated_unit_value: 10 }];
-    const cross = selectTotalCollectionValue({ pipes, blends, bottles, inventoryUnits: [], cigars });
+    const wines = [{ quantity: 2, estimated_unit_value: 15 }];
+    const cross = selectTotalCollectionValue({ pipes, blends, bottles, inventoryUnits: [], cigars, wines });
     expect(typeof cross).toBe('number');
     expect(cross).toBeGreaterThan(0);
   });
@@ -487,14 +480,27 @@ describe('selectCollectionSummary — cross-module consistency', () => {
     const blends = [{ manual_market_value: 40 }];
     const bottles = [{ purchase_price: 60 }];
     const cigars = [{ singles_equivalent: 2, estimated_unit_value: 10 }];
+    const wines = [{ quantity: 3, estimated_unit_value: 15, rating: 4 }];
 
-    const summary = selectCollectionSummary({ pipes, smokingLogs: [], blends, bottles, inventoryUnits: [], tastingLogs: [], cigars, humidors: [] });
+    const summary = selectCollectionSummary({
+      pipes,
+      smokingLogs: [],
+      blends,
+      bottles,
+      inventoryUnits: [],
+      tastingLogs: [],
+      cigars,
+      humidors: [],
+      wines,
+      wineTastings: [],
+    });
 
     const modulesTotal =
       summary.pipe.collection_value +
       summary.tobacco.cellar_value +
       summary.whiskey.collection_value +
-      summary.cigar.collection_value;
+      summary.cigar.collection_value +
+      summary.wine.collection_value;
 
     expect(summary.total_value).toBeCloseTo(modulesTotal, 10);
   });

@@ -1,4 +1,5 @@
 import { formatCurrencyAmount } from '@/utils/currency';
+import { getBottleUnitValue as selectBottleUnitValue } from '@/lib/collection/whiskeySelectors';
 
 export function toNumber(value, fallback = 0) {
   const n = Number(value);
@@ -6,14 +7,11 @@ export function toNumber(value, fallback = 0) {
 }
 
 export function getBottleUnitValue(bottle) {
-  if (toNumber(bottle?.collector_value, 0) > 0) return toNumber(bottle.collector_value, 0);
-  if (toNumber(bottle?.aftermarket_price, 0) > 0) return toNumber(bottle.aftermarket_price, 0);
-  if (toNumber(bottle?.retail_price, 0) > 0) return toNumber(bottle.retail_price, 0);
-  if (toNumber(bottle?.purchase_price, 0) > 0) return toNumber(bottle.purchase_price, 0);
-  return 0;
+  return selectBottleUnitValue(bottle);
 }
 
 export function getBottleDisplayValueLabel(bottle) {
+  if (toNumber(bottle?.manual_value_override, 0) > 0) return 'Manual Value';
   if (toNumber(bottle?.collector_value, 0) > 0) return 'Collector Value';
   if (toNumber(bottle?.aftermarket_price, 0) > 0) return 'Aftermarket Value';
   if (toNumber(bottle?.retail_price, 0) > 0) return 'Retail Value';

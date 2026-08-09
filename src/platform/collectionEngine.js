@@ -11,6 +11,7 @@
 
 import { base44 } from '@/api/base44Client';
 import { MODULE_REGISTRY, getModule } from './moduleRegistry';
+import { aggregateCollection } from '@/components/keeper-core/aggregation/collectionAggregation';
 
 // ============================
 // COLLECTION VALUE ENGINE
@@ -21,32 +22,41 @@ import { MODULE_REGISTRY, getModule } from './moduleRegistry';
  */
 export async function calculateCollectionValue(userEmail, moduleId = null) {
   try {
-    const modules = moduleId 
-      ? [getModule(moduleId)]
-      : Object.values(MODULE_REGISTRY).filter(m => m.status === 'active');
-    
-    let totalValue = 0;
-    const breakdown = {};
-    
-    for (const module of modules) {
-      const items = await base44.entities[module.entityName].filter({
-        created_by: userEmail,
-      });
-      
-      const moduleValue = (items || []).reduce((sum, item) => {
-        return sum + (item.estimated_value || 0);
-      }, 0);
-      
-      breakdown[module.id] = {
-        count: items?.length || 0,
-        value: moduleValue,
+    const agg = await aggregateCollection(userEmail);
+    const moduleStats = {
+      pipekeeper: agg?.pipes,
+      tobacco: agg?.tobacco,
+      whiskeykeeper: agg?.whiskey,
+      cigarkeeper: agg?.cigar,
+      winekeeper: agg?.wine,
+    };
+
+    if (moduleId) {
+      const stats = moduleStats[moduleId] || {};
+      return {
+        total: Number(stats?.value || 0),
+        breakdown: {
+          [moduleId]: {
+            count: Number(stats?.count || 0),
+            value: Number(stats?.value || 0),
+          },
+        },
+        lastUpdated: new Date().toISOString(),
       };
-      
-      totalValue += moduleValue;
     }
-    
+
+    const breakdown = Object.fromEntries(
+      Object.entries(moduleStats).map(([key, stats]) => [
+        key,
+        {
+          count: Number(stats?.count || 0),
+          value: Number(stats?.value || 0),
+        },
+      ]),
+    );
+
     return {
-      total: totalValue,
+      total: Number(agg?.total?.value || 0),
       breakdown,
       lastUpdated: new Date().toISOString(),
     };
