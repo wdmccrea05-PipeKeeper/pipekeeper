@@ -17,6 +17,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import WhiskeyInsuranceExporter from '@/components/export/WhiskeyInsuranceExporter';
 import { selectWhiskeyMetrics, getBottleUnitValue, selectOpenBottleValue, selectSealedBottleValue } from '@/lib/collection/whiskeySelectors';
+import { getAverageRating } from '@/shared/utils/calculations/collectionStats';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
@@ -106,10 +107,10 @@ export default function WhiskeyInsightsPage() {
     try { if (!l?.tasting_date) return false; const d = parseISO(l.tasting_date.slice(0, 10)); return isWithinInterval(d, { start: oneWeekAgo, end: now }); } catch { return false; }
   }).length, [tastingLogs, oneWeekAgo, now]);
 
-  const averageRating = useMemo(() => {
-    const rated = bottles.filter(b => b.rating != null && b.rating !== '' && Number(b.rating) > 0);
-    return rated.length > 0 ? (rated.reduce((sum, b) => sum + Number(b.rating), 0) / rated.length).toFixed(2) : 0;
-  }, [bottles]);
+  const averageRating = useMemo(
+    () => getAverageRating(bottles, (b) => b?.rating)?.toFixed(2) ?? '0',
+    [bottles]
+  );
 
   const getBottleValue = (b) => getBottleUnitValue(b);
 

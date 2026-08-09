@@ -416,3 +416,74 @@ export function selectWineReadyToDrinkCount(wines) {
   if (!Array.isArray(wines)) return 0;
   return wines.filter((w) => getWineDrinkWindowStatus(w) === 'drink_now').length;
 }
+
+// ---------------------------------------------------------------------------
+// Tasting-log selectors
+// ---------------------------------------------------------------------------
+
+/**
+ * Count WineTasting records (all tastings for the wine collection).
+ *
+ * @param {object[]} tastings
+ * @returns {number}
+ */
+export function selectWineTastingCount(tastings) {
+  return Array.isArray(tastings) ? tastings.length : 0;
+}
+
+/**
+ * Build a map of { wine_id → tasting count } from WineTasting records.
+ *
+ * @param {object[]} tastings
+ * @returns {Record<string, number>}
+ */
+export function buildWineTastingIndex(tastings) {
+  if (!Array.isArray(tastings)) return {};
+  return tastings.reduce((acc, t) => {
+    if (!t?.wine_id) return acc;
+    acc[t.wine_id] = (acc[t.wine_id] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+// ---------------------------------------------------------------------------
+// Combined metrics object
+// ---------------------------------------------------------------------------
+
+/**
+ * selectWineMetrics — compute all canonical wine metrics in one call.
+ *
+ * Mirrors the selectWhiskeyMetrics / selectPipeMetrics pattern so every
+ * surface (dashboard, insights, reports, AI) can consume a single object.
+ *
+ * @param {object[]} wines
+ * @param {object[]} [tastings]
+ * @returns {{
+ *   wine_count:          number,
+ *   total_in_cellar:     number,
+ *   collection_value:    number,
+ *   unvalued_count:      number,
+ *   ready_to_drink:      number,
+ *   total_tastings:      number,
+ *   average_rating:      number|null,
+ * }}
+ */
+export function selectWineMetrics(wines = [], tastings = []) {
+  const wineList = Array.isArray(wines) ? wines : [];
+
+  const rated = wineList.filter((w) => w?.rating != null && Number(w.rating) > 0);
+  const average_rating =
+    rated.length > 0
+      ? rated.reduce((s, w) => s + Number(w.rating), 0) / rated.length
+      : null;
+
+  return {
+    wine_count:       selectWineCount(wineList),
+    total_in_cellar:  selectTotalWineBottles(wineList),
+    collection_value: selectWineCollectionValue(wineList),
+    unvalued_count:   selectUnvaluedWineCount(wineList),
+    ready_to_drink:   selectWineReadyToDrinkCount(wineList),
+    total_tastings:   selectWineTastingCount(tastings),
+    average_rating,
+  };
+}

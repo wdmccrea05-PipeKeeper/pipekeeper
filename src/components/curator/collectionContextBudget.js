@@ -16,6 +16,7 @@
  */
 
 import { filterAiEligibleItems } from '@/platform/aiEligibility';
+import { buildSessionsByPipeIndex } from '@/lib/collection/pipeSelectors';
 
 // ---------------------------------------------------------------------------
 // Mode selection
@@ -91,21 +92,38 @@ export function buildSafeCollectionContext(rawContext = {}) {
   const eligibleBottleIds = eligibleBottles.map((b) => b.id);
   const eligibleWineIds = eligibleWines.map((w) => w.id);
 
+  // Build O(1) lookup indexes before mapping — avoids O(n²) .filter() inside .map()
+  const pipeSessionIdx  = buildSessionsByPipeIndex(smokingLogs);
+  const blendSessionIdx = smokingLogs.reduce((acc, l) => {
+    if (l?.blend_id) acc[l.blend_id] = (acc[l.blend_id] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Tasting indexes (bottle_id and wine_id)
+  const bottleTastingIdx = {};
+  tastingLogs.forEach((l) => {
+    if (l?.bottle_id) bottleTastingIdx[l.bottle_id] = (bottleTastingIdx[l.bottle_id] || 0) + 1;
+  });
+  const wineTastingIdx = {};
+  wineTastingLogs.forEach((l) => {
+    if (l?.wine_id) wineTastingIdx[l.wine_id] = (wineTastingIdx[l.wine_id] || 0) + 1;
+  });
+
   // ── Build summaries (detail level varies by mode) ────────────────────────
   const pipeSummaries = eligiblePipes.map((p) =>
-    _pipeSummary(p, mode, smokingLogs)
+    _pipeSummary(p, mode, pipeSessionIdx)
   );
 
   const blendSummaries = eligibleBlends.map((b) =>
-    _blendSummary(b, mode, smokingLogs)
+    _blendSummary(b, mode, blendSessionIdx)
   );
 
   const bottleSummaries = eligibleBottles.map((b) =>
-    _bottleSummary(b, mode, tastingLogs)
+    _bottleSummary(b, mode, bottleTastingIdx)
   );
 
   const wineSummaries = eligibleWines.map((w) =>
-    _wineSummary(w, mode, wineTastingLogs)
+    _wineSummary(w, mode, wineTastingIdx)
   );
 
   // ── Aggregated log stats (no raw log objects sent to LLM) ────────────────
@@ -217,32 +235,32 @@ export function buildPromptBlock(safeContext) {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function _pipeSummary(pipe, mode, smokingLogs) {
-  const sessions = smokingLogs.filter((l) => l.pipe_id === pipe.id).length;
+function _pipeSummary(pipe, mode, sessionIdx) {
+  const sessions = sessionIdx[pipe.id] || 0;
   if (mode === 'small') {
     return `[${pipe.id}] ${pipe.name || '—'} | ${pipe.maker || '—'} | shape: ${pipe.shape || '—'} | sessions: ${sessions}`;
   }
   return `[${pipe.id}] ${pipe.name || '—'} | sessions: ${sessions}`;
 }
 
-function _blendSummary(blend, mode, smokingLogs) {
-  const sessions = smokingLogs.filter((l) => l.blend_id === blend.id).length;
+function _blendSummary(blend, mode, sessionIdx) {
+  const sessions = sessionIdx[blend.id] || 0;
   if (mode === 'small') {
     return `[${blend.id}] ${blend.name || '—'} | ${blend.blend_type || '—'} | oz: ${_blendOz(blend)} | sessions: ${sessions}`;
   }
   return `[${blend.id}] ${blend.name || '—'} | sessions: ${sessions}`;
 }
 
-function _bottleSummary(bottle, mode, tastingLogs) {
-  const tastings = tastingLogs.filter((l) => l.bottle_id === bottle.id).length;
+function _bottleSummary(bottle, mode, tastingIdx) {
+  const tastings = tastingIdx[bottle.id] || 0;
   if (mode === 'small') {
     return `[${bottle.id}] ${bottle.name || '—'} | ${bottle.type || '—'} | rating: ${bottle.rating || '—'} | tastings: ${tastings}`;
   }
   return `[${bottle.id}] ${bottle.name || '—'} | tastings: ${tastings}`;
 }
 
-function _wineSummary(wine, mode, wineTastingLogs) {
-  const tastings = wineTastingLogs.filter((l) => l.wine_id === wine.id).length;
+function _wineSummary(wine, mode, tastingIdx) {
+  const tastings = tastingIdx[wine.id] || 0;
   if (mode === 'small') {
     return `[${wine.id}] ${wine.name || '—'} | ${wine.producer || '—'} | ${wine.vintage || '—'} | ${wine.style || '—'} | qty: ${wine.quantity || 1} | tastings: ${tastings}`;
   }

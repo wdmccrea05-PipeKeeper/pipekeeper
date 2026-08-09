@@ -128,6 +128,31 @@ export function selectPipeCollectionValue(pipes) {
 // ---------------------------------------------------------------------------
 
 /**
+ * Build a bowls-weighted usage index keyed by pipe_id (or blend_id).
+ *
+ * Unlike buildSessionsByPipeIndex (which counts raw log rows), this
+ * weights each log by the number of bowls smoked so that multi-bowl
+ * sessions count proportionally.
+ *
+ * The `getBowlsFn` parameter must be the canonical getBowlsUsed helper from
+ * schemaCompatibility so weighting logic lives in exactly one place.
+ *
+ * @param {object[]} smokingLogs
+ * @param {string}   idField       - 'pipe_id' or 'blend_id'
+ * @param {function} getBowlsFn    - getBowlsUsed(log) → number
+ * @returns {Record<string, number>}
+ */
+export function buildBowlsWeightedIndex(smokingLogs, idField, getBowlsFn) {
+  if (!Array.isArray(smokingLogs)) return {};
+  return smokingLogs.reduce((acc, log) => {
+    const id = log?.[idField];
+    if (!id) return acc;
+    acc[id] = (acc[id] || 0) + (getBowlsFn ? getBowlsFn(log) : 1);
+    return acc;
+  }, {});
+}
+
+/**
  * selectPipeMetrics — compute all canonical pipe metrics in one call.
  *
  * @param {object[]} pipes
