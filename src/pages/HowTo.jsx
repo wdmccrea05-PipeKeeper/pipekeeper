@@ -262,6 +262,62 @@ export default function HowTo() {
           </Q>
         </Section>
 
+        <Section title="Pipe Club">
+          <Q id="pipe-club-start" q="How do I start a Pipe Club session?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Go to <strong>Pipe Club</strong> from the main navigation.</li>
+              <li>Tap <strong>Start Session</strong>.</li>
+              <li>Enter the date and time, and optionally the club name, location, and notes.</li>
+              <li>Tap <strong>Next</strong> to proceed to pipe selection.</li>
+            </ol>
+          </Q>
+          <Q id="pipe-club-select-pipes" q="How do I select the pipes I brought?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>On the <strong>Pipes</strong> step, you'll see all pipes in your collection.</li>
+              <li>Tap each pipe you physically brought to the meeting to select it. You can select multiple pipes.</li>
+              <li>Use <strong>Select All</strong> or <strong>Clear All</strong> for quick bulk selection.</li>
+              <li>For system pipes with interchangeable bowls (Falcon, Gabotherm, etc.), a bowl selector appears — choose the specific bowl you have with you.</li>
+              <li>Tap <strong>Next</strong> to proceed to blend selection.</li>
+            </ol>
+          </Q>
+          <Q id="pipe-club-select-blend" q="How do I identify the club blend?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>On the <strong>Blend</strong> step, choose a source tab: <strong>My Collection</strong>, <strong>Wishlist</strong>, or <strong>New / Not Owned</strong>.</li>
+              <li><strong>My Collection:</strong> Search and select a blend you already own.</li>
+              <li><strong>Wishlist:</strong> Search and select a blend from your Want List.</li>
+              <li><strong>New / Not Owned:</strong> Use <strong>Quick Lookup</strong> to search all known blends in the system and auto-fill metadata, or enter the manufacturer and blend name manually, then tap <strong>Identify Blend (AI)</strong> to auto-fill blend type, family, aromatic status, cut, strength, and components.</li>
+              <li>Review and adjust any auto-filled fields if needed.</li>
+              <li>Tap <strong>Score Pipes</strong> to get the recommendation.</li>
+            </ol>
+          </Q>
+          <Q id="pipe-club-recommendation" q="How do I read the recommendation?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>The <strong>Recommendation</strong> step shows the best-matched pipe from the ones you brought, with a confidence tier and explanation.</li>
+              <li>A runner-up alternative pipe is also shown if available.</li>
+              <li>The explanation describes why the pipe and blend work well together (specialization match, chamber geometry, cut compatibility, etc.).</li>
+              <li>Tap <strong>Next</strong> to proceed to the Log step.</li>
+            </ol>
+          </Q>
+          <Q id="pipe-club-log" q="How do I log the session results?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>On the <strong>Log</strong> step, select which pipe you actually smoked (optional — may differ from the recommendation).</li>
+              <li>Rate the overall tobacco (1–5 stars) and the pipe + tobacco pairing (1–5 stars).</li>
+              <li>Indicate whether you would smoke this combination again.</li>
+              <li>Add any post-session notes about how it smoked.</li>
+              <li>If the blend was not from your collection, choose a disposition: <strong>Add to Wishlist</strong> (want to buy it) or <strong>Not For Me</strong> (exclude from future recommendations).</li>
+              <li>Tap <strong>Save Session</strong> to record it.</li>
+            </ol>
+          </Q>
+          <Q id="pipe-club-history" q="How do I view past Pipe Club sessions?">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Go to <strong>Pipe Club</strong> from the main navigation.</li>
+              <li>The most recent session appears under <strong>Session History</strong>.</li>
+              <li>Tap <strong>Show all</strong> or the session card to see the full history list.</li>
+              <li>Pipe Club sessions also appear in the main Session History calendar.</li>
+            </ol>
+          </Q>
+        </Section>
+
         <Section title="Managing Whiskey (WhiskeyKeeper)">
           <Q id="add-bottle" q="How do I add a whiskey bottle to my collection?">
             <ol className="list-decimal list-inside space-y-2">

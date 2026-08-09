@@ -324,6 +324,56 @@ export default function FAQFull() {
           </Q>
         </Section>
 
+        <Section title="Pipe Club">
+          <Q id="pipe-club-what" q="What is Pipe Club?">
+            <p>Pipe Club is a session-based feature designed for pipe club meetings or gatherings where someone brings a tobacco you may not own. You select the pipes you physically brought with you, identify the club blend (from your collection, your wishlist, or a new/unowned blend), and the canonical pairing engine instantly recommends the best pipe from what you actually have on hand — not your entire collection.</p>
+          </Q>
+          <Q id="pipe-club-start" q="How do I start a Pipe Club session?">
+            <ol className="list-decimal list-inside space-y-1">
+              <li>Go to <strong>Pipe Club</strong> from the main navigation.</li>
+              <li>Tap <strong>Start Session</strong>.</li>
+              <li>Enter the session date, club name, and location (optional).</li>
+              <li>Select the pipes you brought with you.</li>
+              <li>Identify the club blend — choose from your collection, wishlist, or enter a new blend.</li>
+              <li>Review the recommendation, then log which pipe you actually used and rate the experience.</li>
+            </ol>
+          </Q>
+          <Q id="pipe-club-recommendation" q="How does the Pipe Club recommendation work?">
+            <p>The canonical pairing engine scores only the pipes you selected as "present" — not your entire collection. It uses the same multi-dimensional scoring as the full Pairing Matrix (pipe specialization, chamber geometry, tobacco cut, blend composition, aromatic compatibility, bowl material, and smoking character), but narrowed to the pipes you have with you. The recommendation shows the best-matched pipe and a runner-up alternative, each with a confidence tier and explanation of why the pairing works.</p>
+          </Q>
+          <Q id="pipe-club-blend-sources" q="Where can I select the club blend from?">
+            <p>You can identify the club blend from three sources:</p>
+            <ul className="list-disc list-inside space-y-1 mt-1">
+              <li><strong>My Collection</strong> — search and select a blend you already own.</li>
+              <li><strong>Wishlist</strong> — select a blend from your Want List that you don't own yet.</li>
+              <li><strong>New / Not Owned</strong> — enter a new blend manually, use Quick Lookup to search all known blends in the system, or tap <strong>Identify Blend (AI)</strong> to auto-fill metadata.</li>
+            </ul>
+          </Q>
+          <Q id="pipe-club-quick-lookup" q="What is Quick Lookup and how do I use it?">
+            <p>Quick Lookup searches the entire global tobacco blend database — not just your collection — to instantly find and pre-fill blend metadata. When entering a new/unowned blend, type the name or manufacturer in the Quick Lookup field. Selecting a result auto-fills blend type, family, aromatic status, cut, strength, and components so the pairing engine has accurate data to score against your pipes. You can still adjust any field after selection.</p>
+          </Q>
+          <Q id="pipe-club-identify-ai" q="What does the Identify Blend (AI) button do?">
+            <p>If Quick Lookup doesn't find the blend, enter the name and manufacturer, then tap <strong>Identify Blend (AI)</strong>. The AI attempts to determine the blend type, family, aromatic status, intensity, tobacco components, cut, strength, casing, and topping. It returns null for any field it can't confidently determine — you can fill in the rest manually. This ensures the pairing engine has enough metadata to produce an accurate recommendation even for blends not in the system database.</p>
+          </Q>
+          <Q id="pipe-club-bowl-variants" q="Can I select a specific interchangeable bowl for a system pipe?">
+            <p>Yes. When selecting pipes you brought, pipes with interchangeable bowls (like Falcon or Gabotherm) show a bowl selector. Choose the specific bowl you have with you — the pairing engine will score that bowl's geometry and material rather than the parent pipe's defaults. If no bowl is selected, the engine uses the pipe's base configuration.</p>
+          </Q>
+          <Q id="pipe-club-log" q="What should I record after the session?">
+            <p>After the session, the Log step lets you record:</p>
+            <ul className="list-disc list-inside space-y-1 mt-1">
+              <li><strong>Pipe actually smoked</strong> — which pipe you ended up using (may differ from the recommendation).</li>
+              <li><strong>Overall tobacco rating</strong> — 1–5 stars for the blend itself.</li>
+              <li><strong>Pairing rating</strong> — 1–5 stars for how well the pipe and blend worked together.</li>
+              <li><strong>Would smoke again?</strong> — Yes, No, or Not sure.</li>
+              <li><strong>Post-session notes</strong> — how it smoked, any observations.</li>
+              <li><strong>Disposition</strong> (unowned blends only) — add the blend to your Wishlist or mark it Not For Me to influence future recommendations.</li>
+            </ul>
+          </Q>
+          <Q id="pipe-club-history" q="Where can I see my past Pipe Club sessions?">
+            <p>Pipe Club sessions are listed on the Pipe Club home page under <strong>Session History</strong>. Tap any session to see the blend, date, recommended pipe, and your logged ratings. Pipe Club sessions also appear in the main Session History calendar alongside your regular smoking logs.</p>
+          </Q>
+        </Section>
+
         <Section title="Pipe Reassignment & Collection Analysis">
           <Q id="pipe-reassignment-what" q="What is pipe reassignment?">
             <p className="mb-2">Pipe reassignment is when the Curator detects that a pipe's real-world usage pattern diverges from its recorded specialization. For example:</p>
