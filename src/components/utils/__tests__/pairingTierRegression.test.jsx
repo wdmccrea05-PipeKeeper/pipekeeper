@@ -405,7 +405,7 @@ describe('Exact user blend dedication (EXACT_USER_BLEND)', () => {
 // ─── Multiple dedicated blends ────────────────────────────────────────────────
 
 describe('Multiple dedicated blends (Phase 6)', () => {
-  const multiBlendsePipe = {
+  const multiBlendsPipe = {
     pipe_id: 'multi-blend-pipe',
     pipe_name: 'Multi Blend Pipe',
     focus: ['Autumn Evening', 'Cult Blood Red Moon', 'Sutliff Z92 Vanilla Custard'],
@@ -415,9 +415,9 @@ describe('Multiple dedicated blends (Phase 6)', () => {
   };
 
   test('all three dedicated blends get EXACT_USER_BLEND tier', () => {
-    const r1 = scorePipeBlendDiagnostic(multiBlendsePipe, autumnEvening, null);
-    const r2 = scorePipeBlendDiagnostic(multiBlendsePipe, cultBloodRedMoon, null);
-    const r3 = scorePipeBlendDiagnostic(multiBlendsePipe, sutliffZ92, null);
+    const r1 = scorePipeBlendDiagnostic(multiBlendsPipe, autumnEvening, null);
+    const r2 = scorePipeBlendDiagnostic(multiBlendsPipe, cultBloodRedMoon, null);
+    const r3 = scorePipeBlendDiagnostic(multiBlendsPipe, sutliffZ92, null);
     expect(r1.tier.name).toBe('EXACT_USER_BLEND');
     expect(r2.tier.name).toBe('EXACT_USER_BLEND');
     expect(r3.tier.name).toBe('EXACT_USER_BLEND');
@@ -425,17 +425,17 @@ describe('Multiple dedicated blends (Phase 6)', () => {
 
   test('all three dedicated blends score at least 9.5', () => {
     const scores = [autumnEvening, cultBloodRedMoon, sutliffZ92].map(
-      (b) => scorePipeBlend(multiBlendsePipe, b, null).score
+      (b) => scorePipeBlend(multiBlendsPipe, b, null).score
     );
     scores.forEach((s) => expect(s).toBeGreaterThanOrEqual(9.5));
   });
 
   test('non-dedicated Virginia flake scores lower than any dedicated blend', () => {
-    const vaResult = scorePipeBlend(multiBlendsePipe, virginiaFlake, null);
+    const vaResult = scorePipeBlend(multiBlendsPipe, virginiaFlake, null);
     const minDedicated = Math.min(
-      scorePipeBlend(multiBlendsePipe, autumnEvening, null).score,
-      scorePipeBlend(multiBlendsePipe, cultBloodRedMoon, null).score,
-      scorePipeBlend(multiBlendsePipe, sutliffZ92, null).score
+      scorePipeBlend(multiBlendsPipe, autumnEvening, null).score,
+      scorePipeBlend(multiBlendsPipe, cultBloodRedMoon, null).score,
+      scorePipeBlend(multiBlendsPipe, sutliffZ92, null).score
     );
     expect(minDedicated).toBeGreaterThan(vaResult.score);
   });
@@ -527,7 +527,7 @@ describe('English-dedicated pipe ranking invariants', () => {
     expect(result.score).toBeLessThanOrEqual(3.5);
   });
 
-  test('English blade is EXACT_SPECIALIZATION — score ≥ 8.8 (with +1.0 shift)', () => {
+  test('English blend is EXACT_SPECIALIZATION — score ≥ 8.8 (with +1.0 shift)', () => {
     const result = scorePipeBlend(englishPipe, englishBlend, null);
     expect(result.tier.name).toBe('EXACT_SPECIALIZATION');
     expect(result.score).toBeGreaterThanOrEqual(8.8);
