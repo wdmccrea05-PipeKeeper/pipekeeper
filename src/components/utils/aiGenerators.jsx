@@ -1,182 +1,94 @@
 import { base44 } from "@/api/base44Client";
-import { buildPairingsForPipes, isAromaticBlend, getAromaticIntensity } from "@/components/utils/pairingScoreCanonical";
+import {
+  buildPairingsForPipes,
+  inferBlendCategory,
+  getAromaticIntensity,
+  normalizePipeForPairing,
+  normalizeTobaccoForPairing,
+} from "@/components/utils/pairingScoreCanonical";
 import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
+import { resolveBowlVariant } from "@/components/utils/pipeVariants";
 
 // === Hard Rules Enforcement ===
-
-function norm(s) {
-  return String(s || "").trim().toLowerCase();
-}
-
-function classifyBlend(blendType) {
-  const t = norm(blendType);
-  if (!t) return "UNKNOWN";
-  if (t.includes("aromatic")) return "AROMATIC";
-  return "NON_AROMATIC";
-}
-
-// Decide pipe "mode" from focus list based on actual taxonomy
-function classifyPipeMode(focusArr) {
-  const f = (Array.isArray(focusArr) ? focusArr : []).map(norm);
-
-  const hasAromatic =
-    f.some((x) => x === "aromatic" || x.includes("aromatic")) ||
-    f.some((x) => x.includes("english aromatic"));
-
-  const hasNonAromatic =
-    f.some((x) => x === "non-aromatic" || x === "non aromatic" || x.includes("non-aromatic")) ||
-    f.some((x) => ["english", "balkan", "latakia", "virginia", "va/per", "vaper", "perique", "burley", "oriental"].includes(x));
-
-  // If user explicitly sets Aromatic, treat as Aromatic-only
-  if (hasAromatic && !hasNonAromatic) return "AROMATIC_ONLY";
-
-  // If user explicitly sets Non-Aromatic OR any classic non-aromatic focus tags, treat as Non-Aromatic-only
-  if (hasNonAromatic && !hasAromatic) return "NON_AROMATIC_ONLY";
-
-  // If both appear, treat as mixed (no category filtering)
-  if (hasAromatic && hasNonAromatic) return "MIXED";
-
-  // If nothing conclusive, don't filter
-  return "MIXED";
-}
-
-function parseAromaticIntensityFromFocus(focusArr) {
-  const f = (Array.isArray(focusArr) ? focusArr : []).map(norm);
-
-  // Explicit intensity
-  if (f.some((x) => x.includes("heavy aromat") || x === "heavy")) return "HEAVY";
-  if (f.some((x) => x.includes("light aromat") || x === "light")) return "LIGHT";
-
-  // If they use generic "Aromatics", interpret as medium preference (but don't hard-zero)
-  if (f.some((x) => x === "aromatics" || x.includes("aromatic"))) return "MEDIUM";
-
-  return null;
-}
-
-function clampScore(n, min = 0, max = 10) {
-  const x = Number(n);
-  if (!Number.isFinite(x)) return min;
-  return Math.max(min, Math.min(max, x));
-}
-
-function deriveFocusCategory(focus) {
-  const f = (focus || []).map(x => norm(x));
-  
-  // Explicit aromatic signals
-  const aroSignals = ["aromatic", "aromatics", "light aromatics", "medium aromatics", "heavy aromatics", "english aromatic"];
-  const hasAro = aroSignals.some(s => f.some(fx => fx === s || fx.includes(s)));
-  
-  // Classic non-aromatic signals
-  const nonAroSignals = ["english", "balkan", "latakia", "virginia", "va/per", "vaper", "perique", "burley", "oriental", "kentucky"];
-  const hasNonAro = nonAroSignals.some(s => f.includes(s));
-  
-  // If explicit aromatic and no non-aromatic: AROMATIC_ONLY
-  if (hasAro && !hasNonAro) return "AROMATIC_ONLY";
-  
-  // If non-aromatic signals exist (with or without generic aromatic): NON_AROMATIC_ONLY
-  if (hasNonAro) return "NON_AROMATIC_ONLY";
-  
-  // If aromatic but no hard signals: still aromatic
-  if (hasAro) return "AROMATIC_ONLY";
-  
-  // Default: no restriction
-  return "MIXED";
-}
 
 export async function generatePairingsAI({ pipes, blends, profile }) {
   // Enforce AI exclusion: collector-only or ai_excluded items must not appear in recommendations
   const eligiblePipes = filterAiEligibleItems(pipes || []);
   const eligibleBlends = filterAiEligibleItems(blends || []);
 
-  // Normalize focus tags for consistent matching
-  function normalizeFocus(focusArr) {
-    const f = Array.isArray(focusArr) ? focusArr : [];
-    const joined = f.join(" ").toLowerCase();
+  // Expand pipes to include bowl variants as separate entries.
+  // Bowl variants inherit any unspecified value (focus AND geometry) from the
+  // parent pipe via resolveBowlVariant(), so a bowl with no focus of its own is
+  // scored exactly the same here as it is on the pipe detail screen.
+  const toPipeData = (source, { pipeId, pipeName, bowlVariantId }) => ({
+    pipe_id: pipeId,
+    pipe_name: pipeName,
+    bowl_variant_id: bowlVariantId,
 
-    const out = new Set(f);
+    maker: source.maker || null,
+    shape: source.shape || null,
+    bowlStyle: source.bowlStyle || null,
+    shankShape: source.shankShape || null,
+    bend: source.bend || null,
+    sizeClass: source.sizeClass || null,
 
-    // Normalize Aromatic tags
-    if (joined.includes("aromatic")) out.add("Aromatic"); // covers Aromatic/Aromatics/Heavy Aromatics/Light Aromatics
-    if (joined.includes("non-aromatic") || joined.includes("non aromatic")) out.add("Non-Aromatic");
+    bowl_material: source.bowl_material ?? null,
+    chamber_volume: source.chamber_volume ?? null,
+    bowl_diameter_mm: source.bowl_diameter_mm ?? null,
+    bowl_depth_mm: source.bowl_depth_mm ?? null,
+    bowl_height_mm: source.bowl_height_mm ?? null,
+    bowl_width_mm: source.bowl_width_mm ?? null,
+    filter_type: source.filter_type ?? null,
+    usage_characteristics: source.usage_characteristics ?? null,
+    smoking_characteristics: source.smoking_characteristics ?? null,
 
-    // Normalize intensity tags
-    if (joined.includes("heavy")) out.add("Heavy Aromatics");
-    if (joined.includes("light")) out.add("Light Aromatics");
-    if (joined.includes("medium")) out.add("Medium Aromatics");
+    // Raw focus tags — canonical normalizeFocus()/normalizePipeForPairing() in
+    // pairingScoreCanonical is the ONLY place focus is interpreted.
+    focus: Array.isArray(source.focus) ? source.focus : [],
+    notes: source.notes || "",
+  });
 
-    return [...out];
-  }
-
-  // Expand pipes to include bowl variants as separate entries
   const pipesData = [];
   for (const p of eligiblePipes) {
     const pid = String(p.id);
+    const bowls = Array.isArray(p.interchangeable_bowls) ? p.interchangeable_bowls : [];
 
-    if (Array.isArray(p.interchangeable_bowls) && p.interchangeable_bowls.length > 0) {
-      p.interchangeable_bowls.forEach((bowl, idx) => {
-        const bowlId = bowl?.bowl_variant_id || `bowl_${idx}`;
-        pipesData.push({
-          pipe_id: pid,
-          pipe_name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
-          bowl_variant_id: bowlId,
-
-          maker: p.maker || null,
-          shape: bowl.shape || p.shape || null,
-          bowlStyle: bowl.bowlStyle || p.bowlStyle || null,
-          shankShape: bowl.shankShape || p.shankShape || null,
-          bend: bowl.bend || p.bend || null,
-          sizeClass: bowl.sizeClass || p.sizeClass || null,
-
-          bowl_material: bowl.bowl_material ?? p.bowl_material ?? null,
-          chamber_volume: bowl.chamber_volume ?? p.chamber_volume ?? null,
-          bowl_diameter_mm: bowl.bowl_diameter_mm ?? p.bowl_diameter_mm ?? null,
-          bowl_depth_mm: bowl.bowl_depth_mm ?? p.bowl_depth_mm ?? null,
-          bowl_height_mm: bowl.bowl_height_mm ?? null,
-          bowl_width_mm: bowl.bowl_width_mm ?? null,
-
-          focus: normalizeFocus(Array.isArray(bowl.focus) ? bowl.focus : []),
-          notes: bowl.notes || "",
-        });
+    if (bowls.length > 0) {
+      bowls.forEach((bowl, idx) => {
+        const variant = resolveBowlVariant(p, bowl, idx);
+        pipesData.push(
+          toPipeData(variant, {
+            pipeId: pid,
+            pipeName: `${p.name} - ${bowl?.name || `Bowl ${idx + 1}`}`,
+            bowlVariantId: variant.bowl_variant_id,
+          })
+        );
       });
     } else {
-      pipesData.push({
-        pipe_id: pid,
-        pipe_name: p.name,
-        bowl_variant_id: null,
-
-        maker: p.maker || null,
-        shape: p.shape || null,
-        bowlStyle: p.bowlStyle || null,
-        shankShape: p.shankShape || null,
-        bend: p.bend || null,
-        sizeClass: p.sizeClass || null,
-
-        bowl_material: p.bowl_material ?? null,
-        chamber_volume: p.chamber_volume ?? null,
-        bowl_diameter_mm: p.bowl_diameter_mm ?? null,
-        bowl_depth_mm: p.bowl_depth_mm ?? null,
-
-        focus: normalizeFocus(Array.isArray(p.focus) ? p.focus : []),
-        notes: p.notes || "",
-      });
+      pipesData.push(toPipeData(p, { pipeId: pid, pipeName: p.name, bowlVariantId: null }));
     }
   }
 
   const blendsData = eligibleBlends.map((b) => {
     // Use canonical helpers
-    const isAro = isAromaticBlend(b);
-    const intensity = isAro ? getAromaticIntensity(b) : null;
-    
+    const category = inferBlendCategory(b);
+    const intensity = category === "aromatic" ? getAromaticIntensity(b) : null;
+
     return {
       tobacco_id: String(b.id),
       tobacco_name: b.name,
       manufacturer: b.manufacturer || null,
       blend_type: b.blend_type || null,
+      blend_family: b.blend_family || null,
       strength: b.strength || null,
       cut: b.cut || null,
       flavor_notes: b.flavor_notes || null,
+      flavor_profile: b.flavor_profile || null,
       tobacco_components: b.tobacco_components || null,
-      category: isAro ? "aromatic" : "non_aromatic",
+      casing: b.casing || null,
+      topping: b.topping || null,
+      is_aromatic: typeof b.is_aromatic === "boolean" ? b.is_aromatic : undefined,
+      category,
       aromatic_intensity: intensity,
     };
     });
@@ -212,49 +124,42 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
   const pipesData = [];
   for (const p of eligiblePipes) {
     const pid = String(p.id);
+    const bowls = Array.isArray(p.interchangeable_bowls) ? p.interchangeable_bowls : [];
 
-    if (Array.isArray(p.interchangeable_bowls) && p.interchangeable_bowls.length > 0) {
-      p.interchangeable_bowls.forEach((bowl, idx) => {
-        pipesData.push({
-          pipe_id: pid,
-          pipe_name: `${p.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
-          bowl_variant_id: bowl.bowl_variant_id || `bowl_${idx}`,
-          maker: p.maker,
-          shape: bowl.shape || p.shape,
-          bowlStyle: bowl.bowlStyle || p.bowlStyle,
-          shankShape: bowl.shankShape || p.shankShape,
-          bend: bowl.bend || p.bend,
-          sizeClass: bowl.sizeClass || p.sizeClass,
-          bowl_material: bowl.bowl_material ?? p.bowl_material,
-          chamber_volume: bowl.chamber_volume ?? p.chamber_volume,
-          bowl_diameter_mm: bowl.bowl_diameter_mm ?? p.bowl_diameter_mm,
-          bowl_depth_mm: bowl.bowl_depth_mm ?? p.bowl_depth_mm,
-          focus: Array.isArray(bowl.focus) ? bowl.focus : [],
-          smoking_characteristics: p.smoking_characteristics,
-          condition: p.condition,
-          usage_bowls_count: p.usage_bowls_count ?? null,
-        });
+    const toEntry = (source, pipeName, bowlVariantId) => ({
+      pipe_id: pid,
+      pipe_name: pipeName,
+      bowl_variant_id: bowlVariantId,
+      maker: source.maker ?? null,
+      shape: source.shape ?? null,
+      bowlStyle: source.bowlStyle ?? null,
+      shankShape: source.shankShape ?? null,
+      bend: source.bend ?? null,
+      sizeClass: source.sizeClass ?? null,
+      bowl_material: source.bowl_material ?? null,
+      chamber_volume: source.chamber_volume ?? null,
+      bowl_diameter_mm: source.bowl_diameter_mm ?? null,
+      bowl_depth_mm: source.bowl_depth_mm ?? null,
+      bowl_height_mm: source.bowl_height_mm ?? null,
+      bowl_width_mm: source.bowl_width_mm ?? null,
+      filter_type: source.filter_type ?? null,
+      focus: Array.isArray(source.focus) ? source.focus : [],
+      usage_characteristics: source.usage_characteristics ?? null,
+      smoking_characteristics: source.smoking_characteristics ?? null,
+      condition: source.condition ?? null,
+      usage_bowls_count: source.usage_bowls_count ?? null,
+    });
+
+    if (bowls.length > 0) {
+      bowls.forEach((bowl, idx) => {
+        // resolveBowlVariant applies the canonical parent-inheritance rule.
+        const variant = resolveBowlVariant(p, bowl, idx);
+        pipesData.push(
+          toEntry(variant, `${p.name} - ${bowl?.name || `Bowl ${idx + 1}`}`, variant.bowl_variant_id)
+        );
       });
     } else {
-      pipesData.push({
-        pipe_id: pid,
-        pipe_name: p.name,
-        bowl_variant_id: null,
-        maker: p.maker,
-        shape: p.shape,
-        bowlStyle: p.bowlStyle,
-        shankShape: p.shankShape,
-        bend: p.bend,
-        sizeClass: p.sizeClass,
-        bowl_material: p.bowl_material,
-        chamber_volume: p.chamber_volume,
-        bowl_diameter_mm: p.bowl_diameter_mm,
-        bowl_depth_mm: p.bowl_depth_mm,
-        focus: Array.isArray(p.focus) ? p.focus : [],
-        smoking_characteristics: p.smoking_characteristics,
-        condition: p.condition,
-        usage_bowls_count: p.usage_bowls_count ?? null,
-      });
+      pipesData.push(toEntry(p, p.name, null));
     }
   }
 
@@ -263,13 +168,66 @@ export async function generateOptimizationAI({ pipes, blends, profile, whatIfTex
     id: b.id,
     name: b.name,
     blend_type: b.blend_type,
+    blend_family: b.blend_family || null,
     strength: b.strength,
     cut: b.cut,
     flavor_notes: b.flavor_notes || null,
+    flavor_profile: b.flavor_profile || null,
     tobacco_components: b.tobacco_components || null,
     manufacturer: b.manufacturer || null,
     aging_potential: b.aging_potential || null,
+    casing: b.casing || null,
+    topping: b.topping || null,
+    is_aromatic: typeof b.is_aromatic === "boolean" ? b.is_aromatic : undefined,
+    aromatic_intensity: b.aromatic_intensity || null,
   }));
+
+  // Structured context for the LLM, derived from the SAME normalization the
+  // scorer uses. The prompt must never carry a second, divergent reading of
+  // aromatic status / dedication / chamber geometry.
+  const pipeProfiles = pipesDataCapped.map((p) => {
+    const n = normalizePipeForPairing(p);
+    return {
+      pipe_id: p.pipe_id,
+      bowl_variant_id: p.bowl_variant_id,
+      pipe_name: p.pipe_name,
+      // This generator recommends focus reassignments, so the LLM still needs
+      // the raw tags it would be changing alongside the normalized reading.
+      current_focus: p.focus || [],
+      maker: p.maker || null,
+      shape: p.shape || null,
+      dedication: n.dedicationType,
+      dedication_strength: n.dedicationStrength,
+      named_blend_focus: n.exactBlendFocus,
+      chamber_width: n.chamberWidthCategory,
+      chamber_depth: n.chamberDepthCategory,
+      chamber_diameter_mm: n.chamberDiameterMm,
+      chamber_depth_mm: n.chamberDepthMm,
+      chamber_volume: n.chamberVolume,
+      bowl_material: n.bowlMaterial,
+      smoking_character: n.smokingCharacter,
+      draw: n.drawCharacter,
+      data_confidence: n.confidence,
+    };
+  });
+
+  const blendProfiles = blendsDataCapped.map((b) => {
+    const n = normalizeTobaccoForPairing(b);
+    return {
+      tobacco_id: b.id,
+      tobacco_name: b.name,
+      blend_family: n.blendFamily,
+      is_aromatic: n.isAromatic,
+      aromatic_intensity: n.aromaticIntensity,
+      cut: n.cut,
+      components: n.tobaccoComponents,
+      has_latakia: n.hasLatakia,
+      has_perique: n.hasPerique,
+      has_black_cavendish: n.hasBlackCavendish,
+      is_lakeland: n.isLakeland,
+      data_confidence: n.confidence,
+    };
+  });
 
   const profileContext = profile
     ? {
@@ -351,11 +309,11 @@ ${whatIfText ? `## USER FEEDBACK / CONTEXT\n${String(whatIfText).substring(0, 25
 ## PIPE SCORING SUMMARY
 ${JSON.stringify(pipeScoreSummaries)}
 
-## FULL PIPE CONFIGURATIONS
-${JSON.stringify(pipesDataCapped)}${pipesTruncatedNote}
+## PIPE PROFILES (normalized by the canonical pairing scorer)
+${JSON.stringify(pipeProfiles)}${pipesTruncatedNote}
 
-## BLEND INVENTORY
-${JSON.stringify(blendsDataCapped)}${blendsTruncatedNote}
+## BLEND INVENTORY (normalized by the canonical pairing scorer)
+${JSON.stringify(blendProfiles)}${blendsTruncatedNote}
 
 ## USER PREFERENCES
 ${JSON.stringify(profileContext)}

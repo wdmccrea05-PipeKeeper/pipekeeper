@@ -25,6 +25,7 @@ import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { getCurrentPairingMatrix } from "@/components/utils/pairingPolicy";
 
 export default function AIUpdatesPanel({ pipes, blends, profile }) {
   const { t } = useTranslation();
@@ -46,12 +47,7 @@ export default function AIUpdatesPanel({ pipes, blends, profile }) {
     queryKey: ["activePairings", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
-      const active = await base44.entities.PairingMatrix.filter(
-        { created_by: user.email, is_active: true },
-        "-created_date",
-        1
-      );
-      return active?.[0] || null;
+      return await getCurrentPairingMatrix(user?.email);
     },
   });
 

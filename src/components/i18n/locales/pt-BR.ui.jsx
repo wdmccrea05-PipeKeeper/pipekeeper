@@ -700,6 +700,9 @@ const ptBRUI = {
     top3Matches: "3 melhores correspondências",
     show: "Mostrar",
     hide: "Ocultar",
+    noCollectionMatches: "Ainda não há blends na sua coleção para pontuar.",
+    suggestNew: "Sugerir blends fora da sua coleção",
+    outsideCollection: "Sugestões fora da sua coleção",
   },
 
   logoLibraryBrowser: {

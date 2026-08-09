@@ -827,6 +827,9 @@ const esUI = {
     top3Matches: "3 mejores coincidencias",
     show: "Mostrar",
     hide: "Ocultar",
+    noCollectionMatches: "Aún no hay mezclas en tu colección para puntuar.",
+    suggestNew: "Sugerir mezclas fuera de tu colección",
+    outsideCollection: "Sugerencias fuera de tu colección",
   },
 
   logoLibraryBrowser: {

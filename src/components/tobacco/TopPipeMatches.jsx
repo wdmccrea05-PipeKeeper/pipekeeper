@@ -8,6 +8,9 @@ import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
 import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
+import { pairingMatrixQueryOptions } from "@/components/utils/pairingPolicy";
+import { getVariantFromPipe } from "@/components/utils/pipeVariants";
+import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
@@ -20,27 +23,8 @@ export default function TopPipeMatches({ blend, pipes }) {
 
   const { user } = useCurrentUser();
 
-  const { data: savedPairings } = useQuery({
-    // Use the same cache key as PairingGrid / AI panel so refresh/regenerate stay in sync
-    queryKey: ['activePairings', user?.email],
-    queryFn: async () => {
-      // Load active first, fallback to latest (same as PairingGrid)
-      const active = await base44.entities.PairingMatrix.filter(
-        { created_by: user?.email, is_active: true },
-        '-created_date',
-        1
-      );
-      if (active?.[0]) return active[0];
-
-      const latest = await base44.entities.PairingMatrix.filter(
-        { created_by: user?.email },
-        '-created_date',
-        1
-      );
-      return latest?.[0] || null;
-    },
-    enabled: !!user?.email,
-  });
+  // Standardised matrix retrieval (active, else latest, else null).
+  const { data: savedPairings } = useQuery(pairingMatrixQueryOptions(user?.email));
 
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', user?.email],
@@ -51,10 +35,11 @@ export default function TopPipeMatches({ blend, pipes }) {
     enabled: !!user?.email,
   });
 
-  // Track changes that should trigger auto-refresh
-  const pipesFocusFingerprint = React.useMemo(() => 
-    JSON.stringify(pipes.map(p => ({ id: p.id, focus: p.focus }))),
-    [pipes]
+  // Fingerprint the ACTUAL scoring inputs so any edit (focus, chamber
+  // geometry, material, usage characteristics, bowl variants) re-scores.
+  const pipesScoringFingerprint = React.useMemo(
+    () => buildArtifactFingerprint({ pipes, blends: blend ? [blend] : [], profile: userProfile || null }),
+    [pipes, blend, userProfile]
   );
 
   // Auto-trigger matching when blend is first loaded or when data changes
@@ -62,7 +47,7 @@ export default function TopPipeMatches({ blend, pipes }) {
     if (blend && pipes.length > 0) {
       updateMatchesFromData();
     }
-  }, [blend?.id, pipes.length, savedPairings?.pairings, userProfile?.id]);
+  }, [blend?.id, pipes.length, savedPairings?.pairings, userProfile?.id, pipesScoringFingerprint]);
 
 
 
@@ -75,21 +60,16 @@ export default function TopPipeMatches({ blend, pipes }) {
     // ALWAYS calculate scores for ALL eligible pipes against THIS specific blend
     // Don't rely on pre-computed top-10 which might exclude this blend
     const scoredPipes = eligiblePipes.map((pipe) => {
-      const { score, why } = scorePipeBlend(
-        { focus: pipe.focus || [], pipe_id: pipe.id, pipe_name: pipe.name, bowl_variant_id: null },
-        {
-          blend_type: blend?.blend_type,
-          strength: blend?.strength,
-          flavor_notes: blend?.flavor_notes,
-          tobacco_components: blend?.tobacco_components,
-          aromatic_intensity: blend?.aromatic_intensity,
-          tobacco_name: blend?.name,
-          tobacco_id: blend?.id,
-        },
+      // Score the COMPLETE pipe record (never a stripped {focus, id, name}
+      // object) so chamber geometry, material, shape and usage characteristics
+      // reach the scorer. See pairingPolicy.jsx rule R4.
+      const { score, why, confidence } = scorePipeBlend(
+        { ...getVariantFromPipe(pipe, null), pipe_id: pipe.id, pipe_name: pipe.name, bowl_variant_id: null },
+        { ...blend, tobacco_name: blend?.name, tobacco_id: blend?.id },
         userProfile
       );
 
-      return { pipe, score, reasoning: why };
+      return { pipe, score, reasoning: why, confidence };
     });
 
     const filtered = scoredPipes.filter(m => m.score > 0).sort((a, b) => b.score - a.score);

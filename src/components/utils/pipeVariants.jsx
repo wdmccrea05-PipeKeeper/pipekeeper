@@ -5,6 +5,60 @@ export function getPipeVariantKey(pipeId, bowlVariantId) {
   return `${pipeId || "unknown"}::${bowlVariantId || "main"}`;
 }
 
+/**
+ * Canonical bowl-variant inheritance rule.
+ *
+ * A bowl variant is a *partial override* of its parent pipe: any field the bowl
+ * does not specify is inherited from the parent. This applies to focus AND to
+ * every physical scoring input (chamber geometry, material, shape, usage
+ * characteristics). Previously `generatePairingsAI()` passed `[]` for a bowl
+ * with no focus while `getVariantFromPipe()` inherited the parent's focus,
+ * which produced different scores for the same bowl on different screens.
+ *
+ * All bowl-variant construction MUST go through this function.
+ */
+export function resolveBowlVariant(pipe, bowl, index = 0) {
+  if (!pipe) return null;
+  const b = bowl || {};
+  const bowlVariantId = b.bowl_variant_id || `bowl_${index}`;
+  const bowlName = b.name || `Bowl ${index + 1}`;
+  const inherit = (key) => (b[key] ?? pipe[key] ?? null);
+  const bowlFocus = Array.isArray(b.focus) && b.focus.length > 0 ? b.focus : null;
+
+  return {
+    ...pipe,
+    bowl_variant_id: bowlVariantId,
+    variant_key: getPipeVariantKey(pipe.id, bowlVariantId),
+    variant_name: `${pipe.name} - ${bowlName}`,
+
+    // Focus/specialization inherits from the parent when the bowl has none.
+    focus: bowlFocus || (Array.isArray(pipe.focus) ? pipe.focus : []),
+    specialization: inherit("specialization"),
+
+    // Physical scoring inputs
+    shape: inherit("shape"),
+    bowlStyle: inherit("bowlStyle"),
+    shankShape: inherit("shankShape"),
+    bend: inherit("bend"),
+    sizeClass: inherit("sizeClass"),
+    bowl_material: inherit("bowl_material"),
+    chamber_volume: inherit("chamber_volume"),
+    bowl_diameter_mm: inherit("bowl_diameter_mm"),
+    bowl_depth_mm: inherit("bowl_depth_mm"),
+    bowl_height_mm: inherit("bowl_height_mm"),
+    bowl_width_mm: inherit("bowl_width_mm"),
+    bowl_outer_diameter_mm: inherit("bowl_outer_diameter_mm"),
+    filter_type: inherit("filter_type"),
+    usage_characteristics: inherit("usage_characteristics"),
+    smoking_characteristics: inherit("smoking_characteristics"),
+    dimensions_notes: inherit("dimensions_notes"),
+    notes: b.notes || pipe.notes || "",
+
+    __bowl_index: index,
+    __bowl: b,
+  };
+}
+
 export function expandPipesToVariants(pipes = [], { includeMainWhenBowls = false } = {}) {
   const out = [];
 
@@ -24,18 +78,8 @@ export function expandPipesToVariants(pipes = [], { includeMainWhenBowls = false
       }
 
       bowls.forEach((b, i) => {
-        const bowl_variant_id = b?.bowl_variant_id || `bowl_${i}`;
-        const bowlName = b?.name || `Bowl ${i + 1}`;
-
-        out.push({
-          ...p,
-          // promote bowl as a "variant" overlay
-          bowl_variant_id,
-          variant_key: getPipeVariantKey(p.id, bowl_variant_id),
-          variant_name: `${p.name} - ${bowlName}`,
-          __bowl_index: i,
-          __bowl: b,
-        });
+        // Bowl variants inherit unspecified parent values (focus + geometry).
+        out.push(resolveBowlVariant(p, b, i));
       });
 
       return;
@@ -61,56 +105,13 @@ export function getVariantFromPipe(pipe, bowlVariantId) {
 
   if (bowlVariantId) {
     // 1) Prefer explicit id match first (supports UUIDs / stable ids)
-    const direct = bowls.find((b, i) => (b?.bowl_variant_id || `bowl_${i}`) === bowlVariantId);
-    if (direct) {
-      const idx = bowls.indexOf(direct);
-      return {
-        ...pipe,
-        bowl_variant_id: bowlVariantId,
-        variant_key: getPipeVariantKey(pipe.id, bowlVariantId),
-        variant_name: `${pipe.name} - ${direct.name || "Bowl"}`,
-        focus: Array.isArray(direct.focus) ? direct.focus : (Array.isArray(pipe.focus) ? pipe.focus : []),
-
-        chamber_volume: direct.chamber_volume ?? pipe.chamber_volume,
-        bowl_diameter_mm: direct.bowl_diameter_mm ?? pipe.bowl_diameter_mm,
-        bowl_depth_mm: direct.bowl_depth_mm ?? pipe.bowl_depth_mm,
-        bowl_height_mm: direct.bowl_height_mm ?? pipe.bowl_height_mm,
-        bowl_outer_diameter_mm: direct.bowl_outer_diameter_mm ?? pipe.bowl_outer_diameter_mm,
-
-        bowl_material: direct.bowl_material ?? pipe.bowl_material,
-        specialization: direct.specialization ?? pipe.specialization,
-        dimensions_notes: direct.dimensions_notes ?? pipe.dimensions_notes,
-
-        __bowl_index: idx,
-        __bowl: direct,
-      };
-    }
+    const idx = bowls.findIndex((b, i) => (b?.bowl_variant_id || `bowl_${i}`) === bowlVariantId);
+    if (idx >= 0) return resolveBowlVariant(pipe, bowls[idx], idx);
 
     // 2) Fallback to legacy bowl_# parsing
-    const idx = parseInt(String(bowlVariantId).replace("bowl_", ""), 10);
-    const bowl = Number.isFinite(idx) ? bowls[idx] : null;
-
-    if (bowl) {
-      return {
-        ...pipe,
-        bowl_variant_id: bowlVariantId,
-        variant_key: getPipeVariantKey(pipe.id, bowlVariantId),
-        variant_name: `${pipe.name} - ${bowl.name || `Bowl ${idx + 1}`}`,
-        focus: Array.isArray(bowl.focus) ? bowl.focus : (Array.isArray(pipe.focus) ? pipe.focus : []),
-
-        chamber_volume: bowl.chamber_volume ?? pipe.chamber_volume,
-        bowl_diameter_mm: bowl.bowl_diameter_mm ?? pipe.bowl_diameter_mm,
-        bowl_depth_mm: bowl.bowl_depth_mm ?? pipe.bowl_depth_mm,
-        bowl_height_mm: bowl.bowl_height_mm ?? pipe.bowl_height_mm,
-        bowl_outer_diameter_mm: bowl.bowl_outer_diameter_mm ?? pipe.bowl_outer_diameter_mm,
-
-        bowl_material: bowl.bowl_material ?? pipe.bowl_material,
-        specialization: bowl.specialization ?? pipe.specialization,
-        dimensions_notes: bowl.dimensions_notes ?? pipe.dimensions_notes,
-
-        __bowl_index: idx,
-        __bowl: bowl,
-      };
+    const legacyIdx = parseInt(String(bowlVariantId).replace("bowl_", ""), 10);
+    if (Number.isFinite(legacyIdx) && bowls[legacyIdx]) {
+      return resolveBowlVariant(pipe, bowls[legacyIdx], legacyIdx);
     }
   }
 

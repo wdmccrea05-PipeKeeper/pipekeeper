@@ -47,6 +47,31 @@
       },
       "description": "List of tobacco types in the blend"
     },
+    "is_aromatic": {
+      "type": "boolean",
+      "description": "Whether this blend uses aromatic casings/toppings. Separate from tobacco composition."
+    },
+    "aromatic_intensity": {
+      "type": "string",
+      "enum": [
+        "light",
+        "medium",
+        "heavy"
+      ],
+      "description": "Intensity of aromatic treatment when is_aromatic is true."
+    },
+    "blend_family": {
+      "type": "string",
+      "description": "Normalized blend family separate from tobacco composition."
+    },
+    "casing": {
+      "type": "string",
+      "description": "Casing flavors applied to the tobacco."
+    },
+    "topping": {
+      "type": "string",
+      "description": "Topping flavors applied post-processing."
+    },
     "cut": {
       "type": "string",
       "enum": [

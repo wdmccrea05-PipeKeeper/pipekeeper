@@ -680,6 +680,9 @@ const deUI = {
     top3Matches: "Top 3 Treffer",
     show: "Anzeigen",
     hide: "Ausblenden",
+    noCollectionMatches: "Noch keine Sorten in Ihrer Sammlung zum Bewerten.",
+    suggestNew: "Sorten außerhalb Ihrer Sammlung vorschlagen",
+    outsideCollection: "Vorschläge außerhalb Ihrer Sammlung",
   },
 
   logoLibraryBrowser: {

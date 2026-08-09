@@ -1,34 +1,306 @@
 /**
- * CANONICAL pairing scorer - Single source of truth for all pairing calculations
- * Used by: PairingMatrix, PairingGrid, MatchingEngine, AIGenerators
+ * CANONICAL pairing scorer — single source of truth for tobacco ⇄ pipe compatibility.
+ *
+ * Used by: PairingMatrix / PairingGrid, MatchingEngine, TopPipeMatches,
+ * TopBlendMatches, TobaccoDetail (Best Pipes), aiGenerators.
+ *
+ * Model: multi-dimensional weighted compatibility.
+ *   technicalScore = Σ(component.score × component.weight)
+ *   finalScore     = technicalScore × 0.80 + personalFit × 0.20
+ *
+ * Personal preference factors are kept SEPARATE from the technical score so
+ * that a pipe/blend pairing can be explained on physical/technical grounds.
  */
 
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+const round1 = (n) => Math.round(n * 10) / 10;
+
+const toArray = (v) => (Array.isArray(v) ? v : v == null || v === "" ? [] : [v]);
+const lower = (v) => String(v ?? "").toLowerCase().trim();
+const joinText = (v) => toArray(v).map((x) => lower(x)).join(" ");
+
+/* ------------------------------------------------------------------ *
+ * Component weights
+ * ------------------------------------------------------------------ */
+export const COMPONENT_WEIGHTS = Object.freeze({
+  dedication: 0.30,
+  chamberGeometry: 0.20,
+  tobaccoCut: 0.15,
+  blendComposition: 0.15,
+  aromaticCompatibility: 0.10,
+  material: 0.05,
+  smokingCharacter: 0.05,
+});
+
+/* ------------------------------------------------------------------ *
+ * Keyword tables
+ * ------------------------------------------------------------------ */
 
 // Recognized aromatic category focus keywords
-const AROMATIC_FOCUS_KEYWORDS = ["aromatic", "aromatics"];
+export const AROMATIC_FOCUS_KEYWORDS = ["aromatic", "aromatics"];
 
-// Recognized non-aromatic blend-type category focus keywords
-const NON_AROMATIC_FOCUS_KEYWORDS = [
+// Recognized non-aromatic blend-type category focus keywords.
+// NOTE: "cavendish" is deliberately NOT here — Cavendish is a *processing*
+// style used by both aromatic and non-aromatic blends.
+export const NON_AROMATIC_FOCUS_KEYWORDS = [
   "english", "virginia", "burley", "balkan", "latakia",
-  "oriental", "turkish", "virginia/perique", "virginia/burley", "navy flake",
-  "dark fired", "cavendish", "perique", "american", "burley-based",
+  "oriental", "turkish", "virginia/perique", "vaper", "virginia/burley",
+  "navy flake", "dark fired", "kentucky", "perique", "american",
+  "burley-based", "lakeland",
 ];
 
-// All recognized category keywords (used for category-gating logic)
-const CATEGORY_KEYWORDS = [...AROMATIC_FOCUS_KEYWORDS, ...NON_AROMATIC_FOCUS_KEYWORDS];
+
+const UTILITY_KEYWORDS = [
+  "utility", "versatile", "multi", "multiple", "any", "general",
+  "all-purpose", "all purpose", "everyday", "rotation",
+];
+
+// Strong aromatic topping/casing signals found in flavor notes
+const HEAVY_AROMATIC_NOTE_RE =
+  /(vanilla|cherry|maple|rum|caramel|honey|chocolate|coconut|amaretto|butterscotch|whisk(e)?y|bourbon|toffee|goopy|very sweet|strong topping|heavy topping|syrup|intense)/;
+
+const LIGHT_AROMATIC_NOTE_RE =
+  /(light topping|subtle|hint of|mild casing|lightly cased|light casing)/;
+
+// Blend types whose structure is unambiguously non-aromatic
+const KNOWN_NON_AROMATIC_BLEND_TYPES = [
+  "english", "balkan", "english balkan", "full english/oriental",
+  "latakia blend", "oriental/turkish", "virginia", "virginia/oriental",
+  "virginia/perique", "perique", "dark fired kentucky", "kentucky",
+  "burley", "burley-based",
+];
+
+// Blend types that say nothing about casing/topping either way
+const AMBIGUOUS_BLEND_TYPES = [
+  "cavendish", "navy flake", "virginia/burley", "american", "codger blend",
+  "shag", "other", "lakeland", "plug",
+];
+
+/* ------------------------------------------------------------------ *
+ * Tobacco normalization
+ * ------------------------------------------------------------------ */
+
+function blendTypeOf(blend) {
+  return lower(blend?.blend_type || blend?.type || "");
+}
+
+function flavorTextOf(blend) {
+  return [joinText(blend?.flavor_notes), joinText(blend?.flavor_profile)].join(" ").trim();
+}
 
 /**
- * CANONICAL blend category inference
+ * True when the blend's *structure* (blend type / components) is a recognized
+ * non-aromatic family. Does not look at explicit aromatic fields.
+ */
+export function isKnownNonAromaticBlend(blend) {
+  const bt = blendTypeOf(blend);
+  if (!bt) return false;
+  if (bt.includes("aromatic")) return false;
+  if (AMBIGUOUS_BLEND_TYPES.includes(bt)) return false;
+  return KNOWN_NON_AROMATIC_BLEND_TYPES.includes(bt);
+}
+
+/**
+ * Infer aromatic status + intensity from all available fields.
+ * Returns { isAromatic: true|false|null, intensity: 'light'|'medium'|'heavy'|null, source }
+ *
+ * IMPORTANT: nicotine strength is NEVER used as a proxy for aromatic intensity.
+ */
+export function inferAromaticFromFields(blend) {
+  const explicitIntensity = normalizeIntensityValue(blend?.aromatic_intensity);
+
+  // 1. Explicit boolean field wins
+  if (typeof blend?.is_aromatic === "boolean") {
+    return {
+      isAromatic: blend.is_aromatic,
+      intensity: blend.is_aromatic ? explicitIntensity ?? intensityFromNotes(blend) : null,
+      source: "explicit_field",
+    };
+  }
+
+  // 2. blend_type literally says aromatic
+  const bt = blendTypeOf(blend);
+  if (bt.includes("aromatic")) {
+    return {
+      isAromatic: true,
+      intensity: explicitIntensity ?? intensityFromNotes(blend),
+      source: "blend_type",
+    };
+  }
+
+  // 3. Casing / topping / blend_family fields
+  const casing = lower(blend?.casing);
+  const topping = lower(blend?.topping);
+  const family = lower(blend?.blend_family);
+  if ((casing && casing !== "none") || (topping && topping !== "none")) {
+    return {
+      isAromatic: true,
+      intensity: explicitIntensity ?? intensityFromNotes(blend),
+      source: "casing_topping",
+    };
+  }
+  if (family.includes("aromatic")) {
+    return {
+      isAromatic: true,
+      intensity: explicitIntensity ?? intensityFromNotes(blend),
+      source: "blend_family",
+    };
+  }
+
+  // 4. An explicit aromatic_intensity implies an aromatic blend
+  if (explicitIntensity) {
+    return { isAromatic: true, intensity: explicitIntensity, source: "aromatic_intensity" };
+  }
+
+  // 5. Structurally-known non-aromatic families
+  if (isKnownNonAromaticBlend(blend)) {
+    return { isAromatic: false, intensity: null, source: "blend_type_structure" };
+  }
+
+  // 6. Flavor-note heuristic (only for blends we could not classify above)
+  const notes = flavorTextOf(blend);
+  if (notes && HEAVY_AROMATIC_NOTE_RE.test(notes)) {
+    return { isAromatic: true, intensity: intensityFromNotes(blend) ?? "heavy", source: "flavor_notes" };
+  }
+
+  // 7. Unknown — do NOT guess "non-aromatic"
+  return { isAromatic: null, intensity: null, source: "unknown" };
+}
+
+function normalizeIntensityValue(v) {
+  const s = lower(v);
+  if (s === "light" || s === "mild") return "light";
+  if (s === "medium" || s === "moderate") return "medium";
+  if (s === "heavy" || s === "strong") return "heavy";
+  return null;
+}
+
+function intensityFromNotes(blend) {
+  const notes = flavorTextOf(blend);
+  if (!notes) return null;
+  if (LIGHT_AROMATIC_NOTE_RE.test(notes)) return "light";
+  if (HEAVY_AROMATIC_NOTE_RE.test(notes)) return "heavy";
+  return null;
+}
+
+function normalizeComponents(blend) {
+  return toArray(blend?.tobacco_components)
+    .map((c) => lower(c))
+    .filter(Boolean);
+}
+
+function normalizeStrength(blend) {
+  const s = lower(blend?.strength);
+  if (!s) return null;
+  if (s.includes("full")) return "full";
+  if (s.includes("mild")) return "mild";
+  if (s.includes("medium")) return "medium";
+  return null;
+}
+
+const FLAKE_CUTS = new Set(["flake", "coin", "plug", "broken flake", "navy flake", "crumble cake", "rope", "twist"]);
+
+function normalizeCut(blend) {
+  const c = lower(blend?.cut);
+  if (!c) return null;
+  return c;
+}
+
+function inferBlendFamily(blend, aromaticInfo, components) {
+  const bt = blendTypeOf(blend);
+  const family = lower(blend?.blend_family);
+  const comps = components.join(" ");
+  const all = `${bt} ${family} ${comps}`;
+
+  if (bt === "lakeland" || family.includes("lakeland") || /lakeland/.test(all)) return "lakeland";
+
+  // Explicit aromatic treatment dominates family classification for pairing
+  if (aromaticInfo.isAromatic === true) return "aromatic";
+
+  if (bt.includes("balkan")) return "balkan";
+  if (
+    bt.includes("english") ||
+    bt.includes("latakia") ||
+    bt.includes("oriental") ||
+    bt.includes("turkish") ||
+    /latakia/.test(comps)
+  ) {
+    return "english";
+  }
+  if (bt.includes("perique") || /perique/.test(comps)) {
+    if (bt.includes("virginia") || /virginia/.test(comps) || bt === "perique") return "vaper";
+    return "vaper";
+  }
+  if (bt === "navy flake") return "vaper";
+  if (bt.includes("dark fired") || bt === "kentucky" || /dark fired|kentucky/.test(comps)) return "darkFired";
+  if (bt.includes("burley") || bt === "american" || bt === "codger blend") return "burley";
+  if (bt.includes("virginia")) return "virginia";
+  if (bt === "cavendish" || bt === "shag" || bt === "other" || !bt) {
+    if (/virginia/.test(comps) && !/burley|latakia/.test(comps)) return "virginia";
+    if (/burley/.test(comps)) return "burley";
+    return "unknown";
+  }
+  if (/virginia/.test(comps)) return "virginia";
+  return "other";
+}
+
+/**
+ * Normalize a tobacco blend record into the pairing model.
+ */
+export function normalizeTobaccoForPairing(blend) {
+  const b = blend || {};
+  const aromaticInfo = inferAromaticFromFields(b);
+  const components = normalizeComponents(b);
+  const compText = components.join(" ");
+  const bt = blendTypeOf(b);
+  const family = inferBlendFamily(b, aromaticInfo, components);
+
+  const known = [
+    !!bt,
+    components.length > 0,
+    !!normalizeCut(b),
+    aromaticInfo.isAromatic !== null,
+    !!normalizeStrength(b),
+    !!flavorTextOf(b),
+  ];
+  const confidence = round1(known.filter(Boolean).length / known.length);
+
+  return {
+    name: String(b.tobacco_name ?? b.name ?? ""),
+    blendType: bt || null,
+    blendFamily: family,
+    isAromatic: aromaticInfo.isAromatic,
+    aromaticSource: aromaticInfo.source,
+    aromaticIntensity: aromaticInfo.isAromatic === true ? aromaticInfo.intensity : null,
+    tobaccoComponents: components,
+    hasLatakia: /latakia/.test(compText) || bt.includes("latakia") || bt.includes("balkan"),
+    hasPerique: /perique/.test(compText) || bt.includes("perique"),
+    hasBlackCavendish: /cavendish/.test(compText) || bt === "cavendish",
+    hasDarkFired: /dark fired|dark-fired|kentucky/.test(compText) || bt.includes("dark fired") || bt === "kentucky",
+    hasVirginia: /virginia/.test(compText) || bt.includes("virginia"),
+    hasBurley: /burley/.test(compText) || bt.includes("burley"),
+    hasOriental: /oriental|turkish|izmir|yenidje|smyrna|drama/.test(compText) || bt.includes("oriental") || bt.includes("turkish"),
+    isLakeland: family === "lakeland",
+    cut: normalizeCut(b),
+    strength: normalizeStrength(b),
+    confidence,
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Backward-compatible tobacco helpers
+ * ------------------------------------------------------------------ */
+
+/**
+ * CANONICAL blend category inference.
+ * Returns "aromatic" | "non_aromatic" | "unknown".
+ * Unknown is a real state — a missing record is NOT assumed non-aromatic.
  */
 export function inferBlendCategory(blend) {
-  const bt = String(blend?.blend_type || blend?.type || "").toLowerCase();
-  
-  // ANY blend_type containing "aromatic" is aromatic
-  if (bt.includes("aromatic")) return "aromatic";
-  
-  // Everything else is non-aromatic
-  return "non_aromatic";
+  const { isAromatic } = inferAromaticFromFields(blend);
+  if (isAromatic === true) return "aromatic";
+  if (isAromatic === false) return "non_aromatic";
+  return "unknown";
 }
 
 export function isAromaticBlend(blend) {
@@ -36,255 +308,919 @@ export function isAromaticBlend(blend) {
 }
 
 /**
- * CANONICAL aromatic intensity inference
- * Priority: explicit field > flavor notes heuristic > strength fallback
+ * CANONICAL aromatic intensity.
+ * Priority: explicit aromatic_intensity field > flavor-note heuristic.
+ * Nicotine strength is NEVER used — it describes nicotine, not topping.
  */
 export function getAromaticIntensity(blend) {
-  // 1. Check explicit field first
-  const explicit = blend?.aromatic_intensity;
-  if (explicit === "light" || explicit === "Light") return "light";
-  if (explicit === "medium" || explicit === "Medium") return "medium";
-  if (explicit === "heavy" || explicit === "Heavy") return "heavy";
-  
-  // 2. Heuristic from flavor notes
-  const notes = String(blend?.flavor_notes || "").toLowerCase();
-  if (/(goopy|very sweet|strong topping|heavy topping|syrup|intense)/.test(notes)) return "heavy";
-  if (/(light topping|subtle|hint of|mild casing)/.test(notes)) return "light";
-  
-  // 3. Fallback to strength (weak signal but better than nothing)
-  const s = String(blend?.strength || "").toLowerCase();
-  if (s.includes("full")) return "heavy";
-  if (s.includes("mild")) return "light";
-  if (s.includes("medium")) return "medium";
-  
+  const explicit = normalizeIntensityValue(blend?.aromatic_intensity);
+  if (explicit) return explicit;
+  return intensityFromNotes(blend);
+}
+
+/* ------------------------------------------------------------------ *
+ * Pipe normalization
+ * ------------------------------------------------------------------ */
+
+const SHAPE_GEOMETRY = {
+  // narrow / deep
+  canadian: ["narrow", "deep"],
+  liverpool: ["narrow", "deep"],
+  lovat: ["narrow", "deep"],
+  lumberman: ["narrow", "deep"],
+  churchwarden: ["narrow", "deep"],
+  chimney: ["narrow", "deep"],
+  prince: ["narrow", "medium"],
+  // medium / medium
+  billiard: ["medium", "medium"],
+  "bent billiard": ["medium", "medium"],
+  apple: ["medium", "medium"],
+  "bent apple": ["medium", "medium"],
+  dublin: ["medium", "medium"],
+  "bent dublin": ["medium", "medium"],
+  pot: ["medium", "shallow"],
+  tomato: ["medium", "shallow"],
+  egg: ["medium", "medium"],
+  brandy: ["medium", "medium"],
+  author: ["medium", "medium"],
+  poker: ["medium", "medium"],
+  // wide / shallow
+  bulldog: ["wide", "shallow"],
+  rhodesian: ["wide", "shallow"],
+  bulldozer: ["wide", "shallow"],
+  volcano: ["wide", "shallow"],
+  blowfish: ["wide", "shallow"],
+  // wide / deep
+  calabash: ["wide", "deep"],
+  "reverse calabash": ["wide", "deep"],
+  bullmoose: ["wide", "medium"],
+  freehand: ["wide", "deep"],
+};
+
+const VOLUME_TO_WIDTH = {
+  small: "narrow",
+  medium: "medium",
+  large: "wide",
+  "extra large": "wide",
+};
+
+function widthCategoryFromMm(mm) {
+  if (!Number.isFinite(mm) || mm <= 0) return null;
+  if (mm < 17) return "narrow";
+  if (mm <= 22) return "medium";
+  return "wide";
+}
+
+function depthCategoryFromMm(mm) {
+  if (!Number.isFinite(mm) || mm <= 0) return null;
+  if (mm < 32) return "shallow";
+  if (mm <= 42) return "medium";
+  return "deep";
+}
+
+function volumeCategoryFromMm(diameterMm, depthMm) {
+  if (!Number.isFinite(diameterMm) || !Number.isFinite(depthMm)) return null;
+  const r = diameterMm / 2;
+  const mm3 = Math.PI * r * r * depthMm;
+  if (mm3 < 5000) return "small";
+  if (mm3 < 9500) return "medium";
+  if (mm3 < 13500) return "large";
+  return "extraLarge";
+}
+
+function normalizeVolumeEnum(v) {
+  const s = lower(v);
+  if (!s) return null;
+  if (s === "small") return "small";
+  if (s === "medium") return "medium";
+  if (s === "large") return "large";
+  if (s === "extra large" || s === "extralarge" || s === "xl") return "extraLarge";
+  return null;
+}
+
+function normalizeMaterial(pipe) {
+  const m = lower(pipe?.bowl_material);
+  if (!m) return "other";
+  if (m.includes("briar")) return "briar";
+  if (m.includes("meer")) return "meerschaum";
+  if (m.includes("cob") || m.includes("corn")) return "cob";
+  if (m.includes("clay")) return "clay";
+  if (m.includes("morta")) return "morta";
+  if (m.includes("cherry")) return "cherryWood";
+  if (m.includes("olive")) return "oliveWood";
+  return "other";
+}
+
+function parseSmokingText(pipe) {
+  const text = `${lower(pipe?.usage_characteristics)} ${lower(pipe?.smoking_characteristics)}`.trim();
+  if (!text) {
+    return { text: "", smokesCool: false, smokesHot: false, isWet: false, isDry: false, openDraw: false, restricted: false, hasData: false };
+  }
+  return {
+    text,
+    smokesCool: /(smokes cool|cool smoker|runs cool|cool smoking)/.test(text),
+    smokesHot: /(smokes hot|hot smoker|runs hot|hot smoking)/.test(text),
+    isWet: /(wet|gurgl)/.test(text),
+    isDry: /\bdry\b/.test(text),
+    openDraw: /(open draw|open drawing|airy draw)/.test(text),
+    restricted: /(restricted|tight draw)/.test(text),
+    hasData: true,
+  };
+}
+
+function classifyFocusToken(token) {
+  const t = lower(token);
+  if (!t) return null;
+  if (UTILITY_KEYWORDS.some((k) => t.includes(k))) return "generalPurpose";
+  if (/non[-\s]?aromatic/.test(t)) return "nonAromatic";
+  if (t.includes("aromatic")) return "aromatic";
+  if (t.includes("lakeland")) return "lakeland";
+  if (t.includes("perique") || t.includes("vaper") || t.includes("navy")) return "vaper";
+  if (t.includes("english") || t.includes("balkan") || t.includes("latakia") || t.includes("oriental") || t.includes("turkish")) return "english";
+  if (t.includes("virginia")) return "virginia";
+  if (t.includes("burley") || t.includes("american") || t.includes("codger")) return "burley";
+  if (t.includes("dark fired") || t.includes("kentucky")) return "burley";
   return null;
 }
 
 /**
- * Normalize focus array into searchable tokens
+ * Normalize focus array into searchable tokens (backward compatible shape,
+ * with additional dedication metadata).
  */
 export function normalizeFocus(focusArr) {
-  const focus = (Array.isArray(focusArr) ? focusArr : [])
-    .map((x) => String(x || "").trim())
-    .filter(Boolean);
+  const focus = toArray(focusArr).map((x) => String(x || "").trim()).filter(Boolean);
+  const low = focus.map((x) => x.toLowerCase());
 
-  const lower = focus.map((x) => x.toLowerCase());
+  const isUtility = low.some((x) => UTILITY_KEYWORDS.some((k) => x.includes(k)));
 
-  // Utility/versatile tags mean no hard restrictions
-  const isUtility = lower.some((x) =>
-    ["utility", "versatile", "multi", "multiple", "any", "general"].some((k) => x.includes(k))
+  const wantsHeavyAromatics = low.some((x) => x.includes("heavy arom"));
+  const wantsLightAromatics = low.some((x) => x.includes("light arom"));
+  const wantsMediumAromatics =
+    low.some((x) => x.includes("medium arom")) ||
+    (low.some((x) => x.includes("arom")) && !hasNonAromaticToken(low) && !wantsHeavyAromatics && !wantsLightAromatics);
+
+  const categories = low.map(classifyFocusToken).filter(Boolean);
+  const nonUtilityCategories = categories.filter((c) => c !== "generalPurpose");
+  const uniqueCategories = [...new Set(nonUtilityCategories)];
+
+  const allAromaticCategory = low.length > 0 && uniqueCategories.length === 1 && uniqueCategories[0] === "aromatic";
+  const allNonAromaticCategory =
+    low.length > 0 &&
+    uniqueCategories.length > 0 &&
+    uniqueCategories.every((c) => c !== "aromatic" && c !== "generalPurpose");
+
+  const explicitLanguage = low.some((x) =>
+    /(only|dedicated|dedicate)/.test(x)
   );
 
-  // Intensity preferences (soft, not hard filters)
-  const wantsHeavyAromatics = lower.some((x) => x.includes("heavy arom"));
-  const wantsLightAromatics = lower.some((x) => x.includes("light arom"));
-  const wantsMediumAromatics =
-    lower.some((x) => x.includes("medium arom")) ||
-    (lower.some((x) => x.includes("arom")) && !wantsHeavyAromatics && !wantsLightAromatics);
+  const aromaticOnly = !isUtility && (low.some((x) =>
+    /(aromatic(s)?\s*only|aromatic[-\s]*dedicated|dedicated\s*to\s*aromatic)/.test(x)
+  ) || allAromaticCategory);
 
-  // True when ALL focus items are pure aromatic category keywords
-  const allAromaticCategory =
-    lower.length > 0 &&
-    lower.every((x) => AROMATIC_FOCUS_KEYWORDS.includes(x));
+  const nonAromaticOnly = !isUtility && (low.some((x) =>
+    /(non[-\s]?aromatic(s)?\s*only|non[-\s]?aromatic[-\s]*dedicated|dedicated\s*to\s*non)/.test(x)
+  ) || allNonAromaticCategory);
 
-  // True when ALL focus items are pure non-aromatic blend-type keywords
-  const allNonAromaticCategory =
-    lower.length > 0 &&
-    lower.every((x) => NON_AROMATIC_FOCUS_KEYWORDS.some((k) => x === k || x === k + "s"));
-
-  // Dedicated/Only flags: explicit language OR fully-categorical focus array
-  const aromaticOnly =
-    !isUtility &&
-    (lower.some((x) =>
-      /(aromatic(s)?\s*only|aromatic[-\s]*dedicated|dedicated\s*to\s*aromatic)/.test(x)
-    ) || allAromaticCategory);
-
-  const nonAromaticOnly =
-    !isUtility &&
-    (lower.some((x) =>
-      /(non[-\s]?aromatic(s)?\s*only|non[-\s]?aromatic[-\s]*dedicated|dedicated\s*to\s*non)/.test(x)
-    ) || allNonAromaticCategory);
+  // Focus entries that are not recognized categories are treated as blend names
+  const exactBlendFocus = focus.filter((x) => classifyFocusToken(x) === null);
 
   return {
     focus,
-    lower,
+    lower: low,
     isUtility,
     aromaticOnly,
     nonAromaticOnly,
     wantsHeavyAromatics,
     wantsLightAromatics,
     wantsMediumAromatics,
+    categories: uniqueCategories,
+    explicitLanguage,
+    exactBlendFocus,
   };
 }
 
-/**
- * Count keyword matches between focus and text
- */
-function countKeywordMatches(focusLower, text) {
-  const t = String(text || "").toLowerCase();
-  let hits = 0;
-  
-  for (const kw of focusLower) {
-    if (!kw) continue;
-    // Ignore generic category tags
-    if (["aromatic", "aromatics", "non-aromatic", "non aromatic"].includes(kw)) continue;
-    if (t.includes(kw)) hits += 1;
-  }
-  
-  return hits;
+function hasNonAromaticToken(low) {
+  return low.some((x) => /non[-\s]?aromatic/.test(x));
 }
 
 /**
- * CANONICAL scoring function for pipe-blend compatibility
- * Returns { score: 0-10, why: string }
+ * Normalize a pipe (or pipe/bowl variant) record into the pairing model.
  */
-export function scorePipeBlend(pipeVariant, blend, userProfile) {
-  const nf = normalizeFocus(pipeVariant?.focus);
-  const aromatic = isAromaticBlend(blend);
+export function normalizePipeForPairing(pipe) {
+  const p = pipe || {};
+  const nf = normalizeFocus(p.focus);
 
-  // ── EXACT BLEND NAME MATCH must be checked BEFORE any category gating ──
-  // A pipe focused on "Cowboy Coffee" should always score 10 for Cowboy Coffee,
-  // regardless of what other focus items it has.
-  const blendName = String(blend?.tobacco_name || blend?.name || "").toLowerCase();
-  if (blendName && nf.lower.some((f) => f === blendName)) {
-    return { score: 10, why: "Exact blend match to pipe focus." };
-  }
+  const diameter = Number(p.bowl_diameter_mm);
+  const depth = Number(p.bowl_depth_mm);
+  const chamberDiameterMm = Number.isFinite(diameter) && diameter > 0 ? diameter : null;
+  const chamberDepthMm = Number.isFinite(depth) && depth > 0 ? depth : null;
 
-  // ── Detect if focus contains specific blend names (not just categories) ──
-  // Only apply category gating based on focus items that ARE recognized category keywords
-  const categoryFocusItems = nf.lower.filter((f) =>
-    CATEGORY_KEYWORDS.some((k) => f === k || f === k + "s" || f.startsWith(k + " ") || f.endsWith(" " + k))
-  );
+  const shapeKey = lower(p.shape);
+  const bowlStyleKey = lower(p.bowlStyle);
+  const shapeGeom =
+    SHAPE_GEOMETRY[shapeKey] ||
+    SHAPE_GEOMETRY[shapeKey.replace(/^bent\s+/, "")] ||
+    (bowlStyleKey.includes("chimney") ? SHAPE_GEOMETRY.chimney : null) ||
+    (bowlStyleKey.includes("squat") || bowlStyleKey.includes("pot") ? SHAPE_GEOMETRY.pot : null) ||
+    null;
 
-  // HARD category gating ONLY if pipe is explicitly dedicated
-  if (nf.aromaticOnly && !aromatic) {
-    return { score: 0, why: "Pipe is dedicated to aromatics only." };
-  }
-  if (nf.nonAromaticOnly && aromatic) {
-    return { score: 0, why: "Pipe is dedicated to non-aromatics only." };
-  }
+  const volumeEnum = normalizeVolumeEnum(p.chamber_volume);
 
-  // Soft category gating: only apply if the focus contains category-type keywords
-  const pipeHasAromaticFocus = nf.wantsHeavyAromatics || nf.wantsLightAromatics || nf.wantsMediumAromatics ||
-    categoryFocusItems.some((x) => x === "aromatic" || x === "aromatics");
+  let chamberWidthCategory = widthCategoryFromMm(chamberDiameterMm);
+  let chamberDepthCategory = depthCategoryFromMm(chamberDepthMm);
+  let geometrySource = "measured";
 
-  const pipeHasNonAromaticFocus = !nf.isUtility &&
-    categoryFocusItems.some((x) =>
-      ["english", "virginia", "burley", "balkan", "latakia", "oriental", "virginia/perique", "virginia/burley", "navy flake", "dark fired"].some((k) => x.includes(k))
-    ) && !pipeHasAromaticFocus;
-
-  if (pipeHasAromaticFocus && !aromatic) {
-    return { score: 2, why: "Pipe is focused on aromatics; non-aromatic blends are a poor fit." };
-  }
-  if (pipeHasNonAromaticFocus && aromatic) {
-    return { score: 2, why: "Pipe is focused on non-aromatic blends; aromatics are a poor fit." };
-  }
-
-  // Base score
-  let score = 4;
-  const reasons = [];
-
-  // Focus keyword matching vs blend attributes
-  const blendType = blend?.blend_type || "";
-  const notes = (Array.isArray(blend?.flavor_notes) ? blend.flavor_notes.join(" ") : blend?.flavor_notes) || "";
-  const comps = (Array.isArray(blend?.tobacco_components) ? blend.tobacco_components.join(" ") : blend?.tobacco_components) || "";
-
-  // Direct blend type match to any focus item (strong signal)
-  const blendTypeLower = String(blendType).toLowerCase();
-  const blendTypeMatchCount = nf.lower.filter((f) => {
-    const fClean = f.replace(/[^\w\-\/]/g, ""); // normalize punctuation
-    const btClean = blendTypeLower.replace(/[^\w\-\/]/g, "");
-    return fClean === btClean;
-  }).length;
-
-  let hits =
-    countKeywordMatches(nf.lower, blendType) +
-    countKeywordMatches(nf.lower, notes) +
-    countKeywordMatches(nf.lower, comps);
-
-  // If blend type directly matches a focus item, boost score significantly
-  if (blendTypeMatchCount > 0) {
-    score += 5;
-    reasons.push("Blend type matches pipe focus.");
-  } else if (hits >= 2) {
-    score += 4;
-    reasons.push("Strong match to pipe focus keywords.");
-  } else if (hits === 1) {
-    score += 2;
-    reasons.push("Partial match to pipe focus keywords.");
-  }
-
-  // Aromatic intensity soft preference (never hard-zero)
-  if (aromatic) {
-    score += 2;
-    const intensity = getAromaticIntensity(blend);
-
-    if (nf.wantsHeavyAromatics) {
-      if (intensity === "heavy") score += 2;
-      else if (intensity === "medium") score += 1;
-      else if (intensity === "light") score -= 0.5;
-      reasons.push("Pipe prefers heavier aromatics.");
-    } else if (nf.wantsLightAromatics) {
-      if (intensity === "light") score += 2;
-      else if (intensity === "medium") score += 1;
-      else if (intensity === "heavy") score -= 0.5;
-      reasons.push("Pipe prefers lighter aromatics.");
-    } else if (nf.wantsMediumAromatics) {
-      if (intensity === "medium") score += 2;
-      else if (intensity === "light" || intensity === "heavy") score += 0.5;
-      reasons.push("Pipe prefers medium aromatics.");
+  if (!chamberWidthCategory) {
+    if (volumeEnum) {
+      chamberWidthCategory = VOLUME_TO_WIDTH[lower(p.chamber_volume)] || (volumeEnum === "extraLarge" ? "wide" : null);
+      geometrySource = "volumeEnum";
+    } else if (shapeGeom) {
+      chamberWidthCategory = shapeGeom[0];
+      geometrySource = "shape";
+    } else {
+      geometrySource = "unknown";
     }
   }
-
-  // User preference boosts (soft)
-  const prefs = userProfile || {};
-  const prefTypes = Array.isArray(prefs.preferred_blend_types) ? prefs.preferred_blend_types : [];
-  const strengthPref = prefs.strength_preference || null;
-
-  if (prefTypes.some((t) => String(t).toLowerCase() === String(blendType).toLowerCase())) {
-    score += 1.5;
-    reasons.push("Matches your preferred blend types.");
+  if (!chamberDepthCategory) {
+    if (shapeGeom) chamberDepthCategory = shapeGeom[1];
+    else if (volumeEnum === "small") chamberDepthCategory = "shallow";
+    else if (volumeEnum === "large" || volumeEnum === "extraLarge") chamberDepthCategory = "deep";
   }
-  if (strengthPref && String(strengthPref).toLowerCase() === String(blend?.strength || "").toLowerCase()) {
-    score += 0.5;
-    reasons.push("Matches your preferred strength.");
+
+  const chamberVolume =
+    volumeCategoryFromMm(chamberDiameterMm, chamberDepthMm) || volumeEnum || null;
+
+  // Dedication
+  const categories = nf.categories;
+  let dedicationType = "unknown";
+  let dedicationStrength = "general";
+
+  if (nf.isUtility && categories.length === 0) {
+    dedicationType = "generalPurpose";
+    dedicationStrength = "general";
+  } else if (categories.length === 1) {
+    dedicationType = categories[0] === "nonAromatic" ? "generalPurpose" : categories[0];
+    dedicationStrength = nf.explicitLanguage ? "explicit" : "inferred";
+    if (categories[0] === "nonAromatic") dedicationStrength = "inferred";
+  } else if (categories.length > 1) {
+    // Mixed but coherent families collapse to the dominant non-aromatic bucket
+    if (categories.includes("aromatic")) {
+      dedicationType = "aromatic";
+    } else if (categories.includes("english")) {
+      dedicationType = "english";
+    } else if (categories.includes("vaper")) {
+      dedicationType = "vaper";
+    } else if (categories.includes("virginia")) {
+      dedicationType = "virginia";
+    } else {
+      dedicationType = categories[0];
+    }
+    dedicationStrength = "general";
+  } else if (nf.exactBlendFocus.length > 0) {
+    dedicationType = "specificBlend";
+    dedicationStrength = nf.explicitLanguage ? "explicit" : "inferred";
   }
+
+  const smoking = parseSmokingText(p);
+  const smokingCharacter = smoking.smokesCool ? "cool" : smoking.smokesHot ? "hot" : smoking.hasData ? "neutral" : null;
+  const drawCharacter = smoking.openDraw ? "open" : smoking.restricted ? "restricted" : smoking.hasData ? "neutral" : null;
+  const isWetSmoker = smoking.hasData ? (smoking.isWet ? true : smoking.isDry ? false : null) : null;
+
+  const known = [
+    chamberDiameterMm !== null,
+    chamberDepthMm !== null,
+    !!volumeEnum || chamberVolume !== null,
+    normalizeMaterial(p) !== "other",
+    dedicationType !== "unknown",
+    smoking.hasData,
+  ];
+  const confidence = round1(known.filter(Boolean).length / known.length);
+
+  return {
+    pipeId: p.pipe_id ?? p.id ?? null,
+    pipeName: String(p.pipe_name ?? p.name ?? ""),
+    bowlVariantId: p.bowl_variant_id ?? null,
+    dedicationType,
+    dedicationStrength,
+    exactBlendFocus: nf.exactBlendFocus,
+    focusCategories: categories,
+    chamberDiameterMm,
+    chamberDepthMm,
+    chamberVolume,
+    chamberWidthCategory,
+    chamberDepthCategory,
+    geometrySource,
+    bowlMaterial: normalizeMaterial(p),
+    smokingCharacter,
+    drawCharacter,
+    isWetSmoker,
+    confidence,
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Component scorers
+ * ------------------------------------------------------------------ */
+
+function scoreDedication(pipeN, tobN) {
+  const { dedicationType: ded, dedicationStrength: strength } = pipeN;
+  const fam = tobN.blendFamily;
+  const strongScore = strength === "explicit" ? 9 : 8;
+
+  // Exact blend-name dedication
+  const blendName = lower(tobN.name);
+  if (blendName && pipeN.exactBlendFocus.some((f) => lower(f) === blendName)) {
+    return { score: 10, reason: "Exact blend match to pipe focus." };
+  }
+
+  if (ded === "unknown") {
+    return { score: 6, reason: "Pipe has no declared dedication — treated as neutral." };
+  }
+  if (ded === "generalPurpose") {
+    return { score: 6, reason: "General-purpose pipe — compatible but no specialization advantage." };
+  }
+  if (ded === "specificBlend") {
+    return { score: 5, reason: "Pipe is dedicated to specific named blends rather than this one." };
+  }
+  if (fam === "unknown") {
+    return { score: 5, reason: "Blend family is unknown — dedication fit cannot be confirmed." };
+  }
+
+  const isEnglishFamily = fam === "english" || fam === "balkan" || tobN.hasLatakia;
+
+  if (ded === "aromatic") {
+    if (fam === "aromatic") {
+      return {
+        score: strongScore,
+        reason: strength === "explicit"
+          ? "Aromatic-dedicated pipe matches this aromatic blend and avoids ghosting your non-aromatic pipes."
+          : "Aromatic-focused pipe matches this aromatic blend and avoids ghosting your non-aromatic pipes.",
+      };
+    }
+    if (isEnglishFamily) {
+      return { score: 1, reason: "Aromatic-dedicated pipe — Latakia/English blends would clash with existing sweet ghosting." };
+    }
+    if (fam === "lakeland") {
+      return { score: 2, reason: "Lakeland blends need their own pipe; this one is dedicated to aromatics." };
+    }
+    return { score: 3, reason: "Aromatic-dedicated pipe carries sweet ghosting that muddies non-aromatic blends." };
+  }
+
+  if (ded === "english") {
+    if (isEnglishFamily) {
+      return {
+        score: strongScore,
+        reason: "English/Latakia-dedicated pipe is purpose-built for this smoky mixture.",
+      };
+    }
+    if (fam === "aromatic") {
+      return { score: 1, reason: "English/Latakia-dedicated pipe — aromatic blends risk flavor carryover." };
+    }
+    if (fam === "lakeland") {
+      return { score: 2, reason: "Lakeland floral casing would ghost an English-dedicated pipe." };
+    }
+    if (fam === "virginia" || fam === "vaper") {
+      return { score: 5, reason: "Latakia ghosting in this English pipe will mask delicate Virginia sweetness." };
+    }
+    return { score: 6, reason: "English-dedicated pipe handles this blend acceptably." };
+  }
+
+  if (ded === "virginia") {
+    if (fam === "virginia") return { score: 8, reason: "Virginia-dedicated pipe keeps this Virginia clean and bright." };
+    if (fam === "vaper") return { score: 7, reason: "Virginia-dedicated pipe suits this Virginia/Perique blend." };
+    if (fam === "burley" || fam === "darkFired") return { score: 6, reason: "Virginia-dedicated pipe is workable for this blend." };
+    if (fam === "aromatic") return { score: 2, reason: "Virginia-dedicated pipe — aromatic topping would ghost it." };
+    if (fam === "lakeland") return { score: 2, reason: "Lakeland casing would ghost this Virginia-dedicated pipe." };
+    if (isEnglishFamily) return { score: 3, reason: "Latakia would ghost this Virginia-dedicated pipe." };
+    return { score: 6, reason: "Virginia-dedicated pipe is workable for this blend." };
+  }
+
+  if (ded === "vaper") {
+    if (fam === "vaper") return { score: 9, reason: "VaPer-dedicated pipe is a purpose match for this Virginia/Perique blend." };
+    if (fam === "virginia") return { score: 8, reason: "VaPer-dedicated pipe handles straight Virginias well." };
+    if (fam === "burley" || fam === "darkFired") return { score: 6, reason: "VaPer-dedicated pipe is workable for this blend." };
+    if (fam === "aromatic") return { score: 2, reason: "VaPer-dedicated pipe — aromatic topping would ghost it." };
+    if (fam === "lakeland") return { score: 2, reason: "Lakeland casing would ghost this VaPer-dedicated pipe." };
+    if (isEnglishFamily) return { score: 3, reason: "Latakia would ghost this VaPer-dedicated pipe." };
+    return { score: 6, reason: "VaPer-dedicated pipe is workable for this blend." };
+  }
+
+  if (ded === "burley") {
+    if (fam === "burley" || fam === "darkFired") return { score: 8, reason: "Burley-dedicated pipe suits this nutty/dark-fired blend." };
+    if (fam === "virginia" || fam === "vaper") return { score: 6, reason: "Burley-dedicated pipe is workable for this blend." };
+    if (isEnglishFamily) return { score: 5, reason: "Burley-dedicated pipe can take Latakia but is not optimized for it." };
+    if (fam === "aromatic") return { score: 3, reason: "Burley-dedicated pipe — aromatic topping risks ghosting." };
+    if (fam === "lakeland") return { score: 2, reason: "Lakeland casing would ghost this Burley-dedicated pipe." };
+    return { score: 6, reason: "Burley-dedicated pipe is workable for this blend." };
+  }
+
+  if (ded === "lakeland") {
+    if (fam === "lakeland") return { score: 9, reason: "Lakeland-dedicated pipe contains the floral casing where it belongs." };
+    if (fam === "aromatic") return { score: 5, reason: "Lakeland-dedicated pipe carries floral ghosting into aromatics." };
+    return { score: 3, reason: "Lakeland-dedicated pipe would impose floral ghosting on this blend." };
+  }
+
+  return { score: 6, reason: "Pipe dedication is neutral for this blend." };
+}
+
+const GEOMETRY_TABLE = {
+  virginia: { narrow: 9, medium: 7.5, wide: 5.5 },
+  vaper: { narrow: 8.5, medium: 8, wide: 6 },
+  english: { narrow: 5.5, medium: 8, wide: 9 },
+  balkan: { narrow: 5.5, medium: 8, wide: 9 },
+  burley: { narrow: 6.5, medium: 8, wide: 7.5 },
+  darkFired: { narrow: 6, medium: 7.5, wide: 8 },
+  lakeland: { narrow: 7, medium: 7.5, wide: 7 },
+  other: { narrow: 6.5, medium: 7, wide: 6.5 },
+  unknown: { narrow: 6, medium: 6.5, wide: 6 },
+};
+
+const AROMATIC_GEOMETRY = {
+  heavy: { narrow: 6, medium: 8, wide: 7.5 },
+  medium: { narrow: 6.5, medium: 8, wide: 7.5 },
+  light: { narrow: 7, medium: 8, wide: 7.5 },
+  unknown: { narrow: 6.5, medium: 8, wide: 7.5 },
+};
+
+function scoreChamberGeometry(pipeN, tobN) {
+  const width = pipeN.chamberWidthCategory;
+  const depth = pipeN.chamberDepthCategory;
+
+  if (!width) {
+    return { score: 6, reason: "Chamber dimensions unknown — geometry treated as neutral.", damped: true };
+  }
+
+  const fam = tobN.blendFamily;
+  const table =
+    fam === "aromatic"
+      ? AROMATIC_GEOMETRY[tobN.aromaticIntensity || "unknown"]
+      : GEOMETRY_TABLE[fam] || GEOMETRY_TABLE.other;
+
+  let score = table[width];
+
+  // Depth interacts with how the leaf burns
+  const isFlakeish = tobN.cut ? FLAKE_CUTS.has(tobN.cut) : false;
+  if (fam === "virginia" || fam === "vaper") {
+    if (depth === "deep") score += 0.5;
+    if (depth === "shallow") score -= 0.5;
+  }
+  if (isFlakeish && depth === "deep") score += 0.25;
+  if (fam === "aromatic" && depth === "deep" && tobN.aromaticIntensity === "heavy") score -= 0.25;
+  if ((fam === "english" || fam === "balkan") && depth === "shallow") score += 0.25;
 
   score = clamp(score, 0, 10);
 
-  return { 
-    score, 
-    why: reasons.join(" ") || "General compatibility based on focus and blend characteristics." 
+  const measured = pipeN.geometrySource === "measured";
+  let damped = false;
+  if (!measured) {
+    // Non-measured geometry is a weaker signal: pull toward neutral
+    score = 6.5 + (score - 6.5) * 0.7;
+    damped = true;
+  }
+
+  const sizeText = pipeN.chamberDiameterMm
+    ? `${Math.round(pipeN.chamberDiameterMm)}mm`
+    : width;
+
+  let reason;
+  if (fam === "english" || fam === "balkan") {
+    reason = width === "narrow"
+      ? `Narrow ${sizeText} chamber crowds this Latakia mixture — it prefers more air.`
+      : `${width === "wide" ? "Wide" : "Medium"} ${sizeText} chamber suits this complex Latakia/Oriental mixture.`;
+  } else if (fam === "virginia" || fam === "vaper") {
+    reason = width === "wide"
+      ? `Wide ${sizeText} chamber can push Virginias toward harshness.`
+      : `${width === "narrow" ? "Narrow" : "Medium"} ${sizeText} chamber concentrates Virginia sweetness.`;
+  } else if (fam === "aromatic") {
+    reason = width === "narrow"
+      ? `Small ${sizeText} chamber can run hot and wet with a topped blend.`
+      : `${width === "wide" ? "Wide" : "Medium"} ${sizeText} chamber gives this topped blend room to burn cleanly.`;
+  } else {
+    reason = `${width === "narrow" ? "Narrow" : width === "wide" ? "Wide" : "Medium"} ${sizeText} chamber is a reasonable fit for this blend.`;
+  }
+
+  return { score: clamp(score, 0, 10), reason, damped };
+}
+
+function scoreTobaccoCut(pipeN, tobN) {
+  const cut = tobN.cut;
+  const width = pipeN.chamberWidthCategory || "medium";
+  const depth = pipeN.chamberDepthCategory || "medium";
+
+  if (!cut) {
+    return { score: 5, reason: "Cut is unknown — packing behaviour cannot be assessed." };
+  }
+
+  let score = 6;
+  let reason = "";
+
+  const narrowOrMedium = width === "narrow" || width === "medium";
+
+  switch (cut) {
+    case "flake":
+    case "coin":
+    case "plug":
+    case "broken flake":
+    case "navy flake": {
+      if (narrowOrMedium && depth === "deep") { score = 9; reason = "Deep flake-friendly chamber gives folded flake a long, controlled burn."; }
+      else if (narrowOrMedium) { score = 8.5; reason = "Chamber suits folded or rubbed-out flake."; }
+      else if (width === "wide" && depth === "shallow") { score = 6; reason = "Wide shallow bowl is workable for flake but not ideal geometry."; }
+      else { score = 7; reason = "Wide chamber takes rubbed-out flake, though folded flake prefers a narrower bowl."; }
+      break;
+    }
+    case "ribbon": {
+      if (width === "medium") { score = 8; reason = "Ribbon cut packs easily and burns consistently in this chamber."; }
+      else if (width === "narrow") { score = 7; reason = "Ribbon works in a narrow chamber but packs denser."; }
+      else { score = 7.5; reason = "Ribbon cut burns evenly in this wider chamber."; }
+      break;
+    }
+    case "shag": {
+      score = width === "narrow" ? 7.5 : 7;
+      reason = "Shag is forgiving but burns fast — shorter chambers suit it best.";
+      break;
+    }
+    case "cube cut": {
+      if (width === "wide" || width === "medium") { score = 8; reason = "Cube cut loads loosely and burns well in this chamber."; }
+      else { score = 6.5; reason = "Cube cut is bulky for a narrow chamber."; }
+      break;
+    }
+    case "ready rubbed": {
+      score = width === "medium" ? 8 : 7.5;
+      reason = "Ready rubbed packs like ribbon with a little more air.";
+      break;
+    }
+    case "rope":
+    case "twist": {
+      score = width === "medium" ? 7 : 6.5;
+      reason = "Rope/twist needs slicing and rubbing but works in most chambers.";
+      break;
+    }
+    case "crumble cake": {
+      score = width === "medium" ? 8 : 7.5;
+      reason = "Crumble cake breaks apart easily and packs well here.";
+      break;
+    }
+    default: {
+      score = 6;
+      reason = "Cut has no strong geometry preference.";
+    }
+  }
+
+  return { score: clamp(Math.max(score, 3), 0, 10), reason };
+}
+
+function scoreBlendComposition(pipeN, tobN) {
+  if (!tobN.tobaccoComponents.length) {
+    return { score: 5, reason: "Tobacco components are not recorded." };
+  }
+
+  const width = pipeN.chamberWidthCategory;
+  let score = 6;
+  const notes = [];
+
+  const virginiaHeavy = tobN.hasVirginia && !tobN.hasLatakia;
+  if (virginiaHeavy && (width === "narrow" || width === "medium")) {
+    score += 1;
+    notes.push("Virginia-forward leaf rewards this narrower chamber.");
+  } else if (virginiaHeavy && width === "wide") {
+    score -= 0.5;
+    notes.push("Virginia-forward leaf can get hot in a wide chamber.");
+  }
+
+  if (tobN.hasLatakia) {
+    if (width === "wide" || width === "medium") {
+      score += 1;
+      notes.push("Latakia-bearing leaf opens up in a roomier chamber.");
+    } else if (width === "narrow") {
+      score -= 0.5;
+      notes.push("Latakia can turn ashy when crowded into a narrow chamber.");
+    }
+  }
+
+  if (tobN.hasPerique) {
+    if (width === "wide") {
+      score -= 0.5;
+      notes.push("Perique intensifies in large bowls.");
+    } else {
+      score += 0.5;
+      notes.push("Perique stays balanced in this chamber size.");
+    }
+  }
+
+  if (tobN.hasDarkFired && (width === "medium" || width === "wide")) {
+    score += 0.5;
+    notes.push("Dark-fired leaf benefits from a medium-to-wide chamber.");
+  }
+
+  if (tobN.tobaccoComponents.length >= 4) {
+    if (width === "narrow") {
+      score -= 0.5;
+      notes.push("A complex multi-leaf mixture prefers more air than this chamber gives.");
+    } else {
+      score += 0.5;
+      notes.push("A complex multi-leaf mixture has room to develop here.");
+    }
+  }
+
+  return {
+    score: clamp(score, 0, 10),
+    reason: notes[0] || "Composition is compatible with this chamber.",
   };
 }
 
+function scoreAromaticCompatibility(pipeN, tobN) {
+  if (tobN.isAromatic === null) {
+    return { score: 5, reason: "Aromatic status unknown for this blend." };
+  }
+  if (tobN.isAromatic === false) {
+    return { score: 6, reason: "Non-aromatic blend — no topping-related moisture concerns." };
+  }
+
+  const width = pipeN.chamberWidthCategory;
+  const volume = pipeN.chamberVolume;
+  const intensity = tobN.aromaticIntensity || "unknown";
+
+  let score;
+  if (intensity === "heavy") {
+    if (width === "narrow" || volume === "small") score = 4;
+    else if (width === "wide" && volume === "extraLarge") score = 6.5;
+    else score = width === "medium" ? 8 : 7;
+  } else if (intensity === "light") {
+    score = width === "narrow" ? 7.5 : 8;
+  } else {
+    score = width === "narrow" ? 6 : 8;
+  }
+
+  const reason =
+    intensity === "heavy" && (width === "narrow" || volume === "small")
+      ? "Heavily topped tobacco can gunk up and smoke wet in a small chamber."
+      : intensity === "heavy"
+        ? "Chamber size lets a heavily topped blend burn without going wet."
+        : "Lightly topped blend is easy-going across chamber sizes.";
+
+  return { score: clamp(score, 0, 10), reason };
+}
+
+function scoreMaterial(pipeN, tobN) {
+  const mat = pipeN.bowlMaterial;
+  const fam = tobN.blendFamily;
+  const isAromatic = tobN.isAromatic === true || fam === "aromatic";
+
+  switch (mat) {
+    case "meerschaum":
+      return { score: 8, reason: "Meerschaum bowl provides a clean, neutral smoking experience and resists ghosting." };
+    case "cob":
+      return isAromatic
+        ? { score: 8, reason: "Corn cob breathes well and shrugs off aromatic ghosting." }
+        : { score: 7, reason: "Corn cob is forgiving and adds little of its own character." };
+    case "clay":
+      if (fam === "virginia" || fam === "vaper") return { score: 8, reason: "Clay delivers pure, unmasked Virginia flavor." };
+      return isAromatic
+        ? { score: 6, reason: "Clay smokes hot for a heavily topped blend." }
+        : { score: 7, reason: "Clay gives an unfiltered read on this blend." };
+    case "morta":
+      return { score: 7, reason: "Morta is nearly neutral and adds little flavor of its own." };
+    case "briar":
+      return { score: 6, reason: "Briar is the versatile baseline for this blend." };
+    case "cherryWood":
+    case "oliveWood":
+      return isAromatic
+        ? { score: 6, reason: "Fruitwood bowl adds sweetness that suits a topped blend." }
+        : { score: 5.5, reason: "Fruitwood bowl can impart its own flavor." };
+    default:
+      return { score: 6, reason: "Bowl material is unrecorded — treated as neutral." };
+  }
+}
+
+function scoreSmokingCharacter(pipeN, tobN) {
+  let score = 6;
+  const notes = [];
+
+  const heavyAromatic = tobN.isAromatic === true && tobN.aromaticIntensity === "heavy";
+
+  if (pipeN.smokingCharacter === "hot" && heavyAromatic) {
+    score -= 0.5;
+    notes.push("Pipe runs hot, and a heavily topped blend already tends hot and wet.");
+  }
+  if (pipeN.smokingCharacter === "cool") {
+    score += 0.3;
+    notes.push("Pipe smokes cool, which flatters this blend.");
+  }
+  if (pipeN.isWetSmoker === true && heavyAromatic) {
+    score -= 0.5;
+    notes.push("Pipe tends to gurgle; a moist topped blend will make that worse.");
+  }
+  if (pipeN.drawCharacter === "open" && (tobN.blendFamily === "english" || tobN.blendFamily === "balkan")) {
+    score += 0.2;
+    notes.push("Open draw suits a Latakia mixture.");
+  }
+  if (pipeN.drawCharacter === "restricted" && tobN.cut && FLAKE_CUTS.has(tobN.cut)) {
+    score += 0.2;
+    notes.push("Restricted draw pairs nicely with a slow-burning flake.");
+  }
+
+  return {
+    score: clamp(score, 0, 10),
+    reason: notes[0] || (pipeN.smokingCharacter ? "Smoking character is neutral for this blend." : "No recorded smoking characteristics."),
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Personal fit (kept OUT of the technical score)
+ * ------------------------------------------------------------------ */
+
+function scorePersonalFit(pipeN, tobN, userProfile, blend) {
+  if (!userProfile) {
+    return { score: 5, reasons: [], hasProfile: false };
+  }
+
+  let score = 5;
+  const reasons = [];
+
+  const prefTypes = toArray(userProfile.preferred_blend_types).map((x) => lower(x));
+  const blendType = lower(blend?.blend_type || blend?.type);
+  if (prefTypes.length) {
+    if (
+      prefTypes.includes(blendType) ||
+      prefTypes.some((p) => p && (p === tobN.blendFamily || (blendType && (p.includes(blendType) || blendType.includes(p)))))
+    ) {
+      score += 2.5;
+      reasons.push("Matches your preferred blend types.");
+    }
+  }
+
+  const strengthPref = lower(userProfile.strength_preference);
+  if (strengthPref && tobN.strength) {
+    if (strengthPref.includes(tobN.strength)) {
+      score += 1.5;
+      reasons.push("Matches your preferred strength.");
+    }
+  }
+
+  const duration = lower(userProfile.smoke_duration_preference);
+  const volume = pipeN.chamberVolume;
+  if (duration && volume) {
+    const isLong = /long|extended|hour/.test(duration);
+    const isShort = /short|quick|15|20|30/.test(duration);
+    const isBig = volume === "large" || volume === "extraLarge";
+    const isSmall = volume === "small";
+    if ((isLong && isBig) || (isShort && isSmall)) {
+      score += 1;
+      reasons.push("Chamber capacity matches your usual session length.");
+    } else if ((isLong && isSmall) || (isShort && isBig)) {
+      score -= 1;
+      reasons.push("Chamber capacity does not match your usual session length.");
+    }
+  }
+
+  const sizePref = lower(userProfile.pipe_size_preference);
+  if (sizePref && volume) {
+    const wantsLarge = /large|big|magnum/.test(sizePref);
+    const wantsSmall = /small|pocket|nose/.test(sizePref);
+    if ((wantsLarge && (volume === "large" || volume === "extraLarge")) || (wantsSmall && volume === "small")) {
+      score += 0.5;
+      reasons.push("Pipe size matches your stated preference.");
+    }
+  }
+
+  return { score: clamp(score, 0, 10), reasons, hasProfile: true };
+}
+
+/* ------------------------------------------------------------------ *
+ * Main scorer
+ * ------------------------------------------------------------------ */
+
 /**
- * Build pairings for all pipe variants
+ * Full multi-dimensional scoring result.
+ * Prefer this for new callers that want the component breakdown.
+ */
+export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
+  const pipeN = normalizePipeForPairing(pipeVariant);
+  const tobN = normalizeTobaccoForPairing(blend);
+
+  const raw = {
+    dedication: scoreDedication(pipeN, tobN),
+    chamberGeometry: scoreChamberGeometry(pipeN, tobN),
+    tobaccoCut: scoreTobaccoCut(pipeN, tobN),
+    blendComposition: scoreBlendComposition(pipeN, tobN),
+    aromaticCompatibility: scoreAromaticCompatibility(pipeN, tobN),
+    material: scoreMaterial(pipeN, tobN),
+    smokingCharacter: scoreSmokingCharacter(pipeN, tobN),
+  };
+
+  const components = {};
+  let technicalScore = 0;
+  for (const [key, weight] of Object.entries(COMPONENT_WEIGHTS)) {
+    const part = raw[key];
+    const score = round1(clamp(part.score, 0, 10));
+    const contribution = round1(score * weight);
+    technicalScore += score * weight;
+    components[key] = { score, weight, contribution, reason: part.reason };
+  }
+  technicalScore = round1(clamp(technicalScore, 0, 10));
+
+  const personal = scorePersonalFit(pipeN, tobN, userProfile, blend);
+  const personalFit = round1(personal.score);
+
+  const finalScore = round1(clamp(technicalScore * 0.8 + personalFit * 0.2, 0, 10));
+
+  // Confidence: how complete the underlying records are
+  const confidence = round1(clamp((tobN.confidence * 0.5 + pipeN.confidence * 0.5), 0, 1));
+
+  const whyList = buildWhy(components, personal, pipeN, tobN);
+
+  return {
+    score: finalScore,
+    technicalScore,
+    personalFit,
+    confidence,
+    components,
+    why: whyList.join(" "),
+    whyList,
+    reasons: whyList,
+    normalizedPipe: pipeN,
+    normalizedTobacco: tobN,
+  };
+}
+
+// Contribution above/below the neutral 6.0 baseline decides whether a
+// component is worth mentioning to the user.
+const NEUTRAL_COMPONENT_SCORE = 6;
+const MENTION_THRESHOLD = 0.25;
+
+function buildWhy(components, personal, pipeN, tobN) {
+  const entries = Object.entries(components)
+    .map(([key, c]) => ({
+      key,
+      reason: c.reason,
+      delta: (c.score - NEUTRAL_COMPONENT_SCORE) * c.weight,
+    }))
+    .filter((e) => Math.abs(e.delta) >= MENTION_THRESHOLD && e.reason)
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+
+  const why = entries.slice(0, 3).map((e) => e.reason);
+
+  if (!why.length) {
+    why.push(
+      components.dedication.reason ||
+        "General compatibility based on pipe and blend characteristics."
+    );
+  }
+
+  if (tobN.isAromatic === null) {
+    why.push("Blend record does not say whether it is aromatic — score is provisional.");
+  } else if (!pipeN.chamberDiameterMm && pipeN.geometrySource !== "measured") {
+    why.push("Chamber measurements are missing, so geometry is estimated.");
+  }
+
+  if (personal.hasProfile && personal.reasons.length) {
+    why.push(personal.reasons[0]);
+  }
+
+  return why;
+}
+
+/**
+ * CANONICAL scoring function for pipe ⇄ blend compatibility.
+ *
+ * Backward compatible: returns `{ score, why }` where `why` is a string.
+ * New callers can additionally read `whyList`, `components`, `technicalScore`,
+ * `personalFit` and `confidence` from the same object.
+ */
+export function scorePipeBlend(pipeVariant, blend, userProfile) {
+  return scorePipeBlendDiagnostic(pipeVariant, blend, userProfile);
+}
+
+/**
+ * Build pairings for all pipe variants.
  * Returns array of { pipe_id, pipe_name, bowl_variant_id, recommendations[] }
  */
 export function buildPairingsForPipes(pipeVariants, blends, userProfile) {
   return (pipeVariants || []).map((pv) => {
     const recs = (blends || []).map((b) => {
-      const { score, why } = scorePipeBlend(pv, b, userProfile);
+      const result = scorePipeBlend(pv, b, userProfile);
       return {
         tobacco_id: String(b.tobacco_id ?? b.id),
         tobacco_name: String(b.tobacco_name ?? b.name),
-        score,
-        reasoning: why,
+        score: result.score,
+        reasoning: result.why,
+        confidence: result.confidence,
+        technical_score: result.technicalScore,
+        personal_fit: result.personalFit,
       };
     });
 
-    // Sort by score descending
-    recs.sort((a, b) => (b.score || 0) - (a.score || 0));
-
-    // Keep only top 10 to reduce storage
-    const topRecs = recs.slice(0, 10);
+    // Deterministic ordering: score desc, then name asc for stable ties
+    recs.sort((a, b) =>
+      (b.score || 0) - (a.score || 0) ||
+      String(a.tobacco_name).localeCompare(String(b.tobacco_name))
+    );
 
     return {
-      pipe_id: String(pv.pipe_id),
-      pipe_name: String(pv.pipe_name),
+      pipe_id: String(pv.pipe_id ?? pv.id),
+      pipe_name: String(pv.pipe_name ?? pv.name),
       bowl_variant_id: pv.bowl_variant_id ?? null,
-      recommendations: topRecs,
+      recommendations: recs.slice(0, 10),
     };
   });
 }

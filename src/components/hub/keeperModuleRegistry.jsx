@@ -9,3 +9,5 @@ export {
   getModuleByType,
   getModuleByKey,
 } from '@/components/utils/moduleRegistry';
+
+export { getEnabledModuleCount } from '@/components/keeper-core/modules/keeperModules';
