@@ -105,7 +105,7 @@ function buildRecord(itemType, result) {
     varietal: clean(result.varietal || result.grape_variety),
     region: clean(result.region),
     appellation: clean(result.appellation),
-    style: clean(result.style || result.wine_type),
+    style: clean(result.style || result.wine_type) ? String(result.style || result.wine_type).toLowerCase() : undefined,
     abv: clean(result.abv) ? Number(result.abv) : undefined,
     notes: clean(result.description || result.notes),
     purchase_price: clean(result.purchase_price),

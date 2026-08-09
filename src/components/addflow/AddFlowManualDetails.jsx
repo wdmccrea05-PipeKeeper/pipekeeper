@@ -14,7 +14,7 @@ const CONDITIONS = ['Mint', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'E
 const CIGAR_BODY = ['mild', 'mild_medium', 'medium', 'medium_full', 'full'];
 const CIGAR_INTENSITY_LABELS = { mild: 'Mild', mild_medium: 'Mild-Medium', medium: 'Medium', medium_full: 'Medium-Full', full: 'Full' };
 const WRAPPERS = ['Colorado Claro', 'Colorado', 'Colorado Maduro', 'Maduro', 'Oscuro', 'Natural', 'Claro', 'Double Claro (Candela)', 'Connecticut Shade', 'Connecticut Broadleaf', 'Ecuadorian Connecticut', 'Habano', 'San Andres Maduro', 'Cameroon', 'Sumatra', 'Indonesian', 'Other'];
-const WINE_STYLES = ['Red', 'White', 'Rosé', 'Sparkling', 'Dessert / Fortified', 'Orange', 'Other'];
+const WINE_STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
 
 const inputStyle = {
   background: 'rgba(20,13,8,0.7)',

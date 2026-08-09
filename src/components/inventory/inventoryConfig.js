@@ -3,6 +3,7 @@ export const INVENTORY_MODULES = {
   BOTTLE: 'bottle',
   PIPE: 'pipe',
   WINE: 'wine',
+  CIGAR: 'cigar',
 };
 
 export const CONTAINER_TYPES = {
@@ -91,6 +92,17 @@ export const inventoryConfig = {
       status: STATUS_TYPES.UNOPENED,
       storage: STORAGE_TYPES.BAR,
       cellarDate: '',
+      purchasePrice: '',
+    },
+  },
+
+  [INVENTORY_MODULES.CIGAR]: {
+    label: 'Cigar Inventory',
+    containers: null,
+    statuses: null,
+    storageOptions: null,
+    defaults: {
+      quantity: 1,
       purchasePrice: '',
     },
   },

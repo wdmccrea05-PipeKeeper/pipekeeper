@@ -52,6 +52,10 @@ export class InventoryEngine {
       return this.buildWinePayload(formData);
     }
 
+    if (this.moduleType === INVENTORY_MODULES.CIGAR) {
+      return this.buildCigarPayload(formData);
+    }
+
     return {};
   }
 
@@ -179,6 +183,15 @@ export class InventoryEngine {
       acquisition_method: formData.acquisitionMethod || undefined,
       cellared_date:
         formData.storage === STORAGE_TYPES.CELLAR ? formData.cellarDate || undefined : undefined,
+    });
+  }
+
+  buildCigarPayload(formData = {}) {
+    const qty = toNumber(formData.quantity);
+    return cleanObject({
+      quantity: qty,
+      initial_quantity: qty,
+      purchase_price: toNumber(formData.purchasePrice),
     });
   }
 }
