@@ -214,6 +214,7 @@ export function buildCertificationReport({
   lines.push('');
   if (defects.length === 0) {
     lines.push('_No defects identified._');
+    lines.push('');
   } else {
     for (const severity of ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']) {
       const group = defects.filter((d) => d.severity === severity);

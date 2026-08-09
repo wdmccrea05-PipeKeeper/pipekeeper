@@ -389,10 +389,13 @@ describe('Certification — Coverage Matrix', () => {
       let normOk = true;
       try {
         normalizeTobaccoForPairing(blend);
+      } catch {
+        normOk = false;
+      }
+      try {
         scorePipeBlend(pipes[0], blend, profile);
       } catch {
         scoringOk = false;
-        normOk = false;
       }
 
       coverageMatrix.push({
