@@ -55,6 +55,17 @@ export function buildPipeProfileContext(pipe) {
   return lines.join('\n');
 }
 
+export function sanitizeAiDiscoveryMatches(rawMatches) {
+  return (rawMatches || []).map((match) => ({
+    manufacturer: match?.manufacturer || '',
+    blend_name: match?.blend_name || '',
+    reasoning: match?.reasoning || '',
+    estimatedSuitability: match?.estimated_suitability || 'promising',
+    confidence: match?.metadata_confidence || 'insufficient metadata',
+    canonicalScore: null,
+  }));
+}
+
 export default function TopBlendMatches({ pipe, blends, userProfile }) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -74,6 +85,7 @@ export default function TopBlendMatches({ pipe, blends, userProfile }) {
           blend_name: blend.name,
           logo: blend.logo,
           score,
+          canonicalScore: score,
           confidence,
           reasoning: why,
         };
@@ -138,7 +150,8 @@ CRITICAL: Do NOT include any URLs, links, sources, or citations in your response
 For each of the 3 recommendations, provide:
 - manufacturer (the brand/company name)
 - blend_name (the specific product name)
-- score (1-10, compatibility with this pipe)
+- estimated_suitability (one of: promising, possible, uncertain)
+- metadata_confidence (one of: sufficient metadata, partial metadata, insufficient metadata)
 - reasoning (why this blend pairs well with this pipe; no sources or links)`,
         response_json_schema: {
           type: "object",
@@ -150,7 +163,8 @@ For each of the 3 recommendations, provide:
                 properties: {
                   manufacturer: { type: "string" },
                   blend_name: { type: "string" },
-                  score: { type: "number" },
+                  estimated_suitability: { type: "string" },
+                  metadata_confidence: { type: "string" },
                   reasoning: { type: "string" }
                 }
               }
@@ -182,7 +196,7 @@ For each of the 3 recommendations, provide:
         });
       });
 
-      setAiMatches(filteredMatches);
+      setAiMatches(sanitizeAiDiscoveryMatches(filteredMatches));
     } catch (err) {
       console.error('Error finding matches:', err);
       setAiMatches([]);
@@ -197,7 +211,27 @@ For each of the 3 recommendations, provide:
     return 'bg-amber-100 text-amber-800 border-amber-300';
   };
 
-  const renderRow = (match, idx, logo) => (
+  const getDiscoveryBadge = (match) => {
+    if (match.canonicalScore != null) {
+      return {
+        text: `${match.canonicalScore}/10`,
+        className: getScoreColor(match.canonicalScore),
+      };
+    }
+
+    const suitability = String(match.estimatedSuitability || 'promising').toLowerCase();
+    if (suitability === 'possible') {
+      return { text: 'Possible', className: 'bg-amber-100 text-amber-800 border-amber-300' };
+    }
+    if (suitability === 'uncertain') {
+      return { text: 'Uncertain', className: 'bg-slate-100 text-slate-800 border-slate-300' };
+    }
+    return { text: 'Promising', className: 'bg-green-100 text-green-800 border-green-300' };
+  };
+
+  const renderRow = (match, idx, logo) => {
+    const badge = getDiscoveryBadge(match);
+    return (
     <div key={`${match.manufacturer}-${match.blend_name}-${idx}`} className="p-3 rounded-lg bg-[#1A2B3A] border border-[#E0D8C8]/10">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 flex-1">
@@ -211,14 +245,19 @@ For each of the 3 recommendations, provide:
           <div className="flex-1 min-w-0">
             <p className="font-medium text-[#E0D8C8]">{match.manufacturer} - {match.blend_name}</p>
             <p className="text-xs text-[#E0D8C8]/70 mt-1">{match.reasoning}</p>
+            {match.canonicalScore == null ? (
+              <p className="text-[11px] text-[#E0D8C8]/55 mt-1">
+                AI discovery only — canonical score unavailable with current metadata.
+              </p>
+            ) : null}
           </div>
         </div>
-        <Badge className={getScoreColor(match.score)}>
-          {match.score}/10
+        <Badge className={badge.className}>
+          {badge.text}
         </Badge>
       </div>
     </div>
-  );
+  )};
 
   return (
     <Card className="border-[#A35C5C]/30 bg-[#223447]">

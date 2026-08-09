@@ -1,3 +1,5 @@
+import { expandPipesToVariants } from "@/components/utils/pipeVariants";
+
 /**
  * CANONICAL pairing scorer — single source of truth for tobacco ⇄ pipe compatibility.
  *
@@ -1504,4 +1506,71 @@ export function buildPairingsForPipes(pipeVariants, blends, userProfile) {
       recommendations: recs.slice(0, 10),
     };
   });
+}
+
+export function rankPipesForBlend(pipes, blend, userProfile, {
+  includeMainWhenBowls = true,
+  collapseToParent = true,
+  limit = 3,
+} = {}) {
+  const variants = expandPipesToVariants(pipes || [], { includeMainWhenBowls });
+  const scored = variants.map((variant) => {
+    const result = scorePipeBlendDiagnostic(variant, blend, userProfile);
+    return {
+      pipe_id: String(variant.pipe_id ?? variant.id),
+      pipe_name: String(variant.pipe_name ?? variant.name ?? ""),
+      bowl_variant_id: variant.bowl_variant_id ?? null,
+      variant_name: variant.variant_name ?? variant.name ?? "",
+      bowl_name: variant.bowl_variant_id
+        ? String(variant.__bowl?.name ?? variant.variant_name?.replace(/^.*?\s-\s/, "") ?? variant.bowl_variant_id)
+        : null,
+      score: result.score,
+      finalScore: result.finalScore,
+      technicalScore: result.technicalScore,
+      personalFit: result.personalFit,
+      hasPersonalizationEvidence: result.hasPersonalizationEvidence,
+      confidence: result.confidence,
+      confidenceDetails: result.confidenceDetails,
+      why: result.why,
+      components: result.components,
+      normalizedPipe: result.normalizedPipe,
+      normalizedTobacco: result.normalizedTobacco,
+      variant,
+    };
+  }).sort((a, b) =>
+    (b.score || 0) - (a.score || 0) ||
+    (b.technicalScore || 0) - (a.technicalScore || 0) ||
+    String(a.variant_name || "").localeCompare(String(b.variant_name || ""))
+  );
+
+  if (!collapseToParent) return scored.slice(0, limit);
+
+  const bestByPipe = new Map();
+  for (const entry of scored) {
+    const current = bestByPipe.get(entry.pipe_id);
+    if (!current) {
+      bestByPipe.set(entry.pipe_id, entry);
+      continue;
+    }
+    if (
+      entry.score > current.score ||
+      (entry.score === current.score && entry.technicalScore > current.technicalScore) ||
+      (
+        entry.score === current.score &&
+        entry.technicalScore === current.technicalScore &&
+        !!entry.bowl_variant_id &&
+        !current.bowl_variant_id
+      )
+    ) {
+      bestByPipe.set(entry.pipe_id, entry);
+    }
+  }
+
+  return [...bestByPipe.values()]
+    .sort((a, b) =>
+      (b.score || 0) - (a.score || 0) ||
+      (b.technicalScore || 0) - (a.technicalScore || 0) ||
+      String(a.pipe_name || "").localeCompare(String(b.pipe_name || ""))
+    )
+    .slice(0, limit);
 }

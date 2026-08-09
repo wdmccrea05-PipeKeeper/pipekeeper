@@ -7,9 +7,8 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import PipeShapeIcon from "@/components/pipes/PipeShapeIcon";
-import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
+import { rankPipesForBlend } from "@/components/utils/pairingScoreCanonical";
 import { pairingMatrixQueryOptions } from "@/components/utils/pairingPolicy";
-import { getVariantFromPipe } from "@/components/utils/pipeVariants";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -59,26 +58,18 @@ export default function TopPipeMatches({ blend, pipes }) {
 
     // ALWAYS calculate scores for ALL eligible pipes against THIS specific blend
     // Don't rely on pre-computed top-10 which might exclude this blend
-    const scoredPipes = eligiblePipes.map((pipe) => {
-      // Score the COMPLETE pipe record (never a stripped {focus, id, name}
-      // object) so chamber geometry, material, shape and usage characteristics
-      // reach the scorer. See pairingPolicy.jsx rule R4.
-      const { score, why, confidence } = scorePipeBlend(
-        { ...getVariantFromPipe(pipe, null), pipe_id: pipe.id, pipe_name: pipe.name, bowl_variant_id: null },
-        { ...blend, tobacco_name: blend?.name, tobacco_id: blend?.id },
-        userProfile
-      );
-
-      return { pipe, score, reasoning: why, confidence };
-    });
-
-    const filtered = scoredPipes.filter(m => m.score > 0).sort((a, b) => b.score - a.score);
-
-    const topThree = filtered.slice(0, 3).map(m => ({
-      pipe_id: m.pipe.id,
-      pipe_name: m.pipe.name,
+    const topThree = rankPipesForBlend(
+      eligiblePipes,
+      { ...blend, tobacco_name: blend?.name, tobacco_id: blend?.id },
+      userProfile,
+      { includeMainWhenBowls: true, collapseToParent: true, limit: 3 }
+    ).filter((m) => m.score > 0).map((m) => ({
+      pipe_id: m.pipe_id,
+      pipe_name: m.pipe_name,
+      bowl_variant_id: m.bowl_variant_id,
+      recommended_bowl_name: m.bowl_name,
       match_score: m.score,
-      reasoning: m.reasoning
+      reasoning: m.why,
     }));
 
     setMatches(topThree);
@@ -188,6 +179,11 @@ export default function TopPipeMatches({ blend, pipes }) {
                             {match.match_score}/10
                           </Badge>
                         </div>
+                        {match.recommended_bowl_name ? (
+                          <p className="text-xs mb-1" style={{ color: "rgba(212,165,116,0.85)" }}>
+                            Recommended bowl: {match.recommended_bowl_name}
+                          </p>
+                        ) : null}
                         <p className="text-xs leading-relaxed" style={{ color: "rgba(224,216,200,0.75)" }}>{match.reasoning}</p>
                       </div>
                     </div>

@@ -13,6 +13,7 @@ import {
   normalizePipeForPairing,
   normalizeTobaccoForPairing,
   COMPONENT_WEIGHTS,
+  rankPipesForBlend,
 } from '../pairingScoreCanonical';
 
 // Test fixtures
@@ -210,7 +211,10 @@ describe('Component structure', () => {
     const withoutProfile = scorePipeBlendDiagnostic(testPipes[0], testBlends[2], null);
 
     expect(withProfile.technicalScore).toBe(withoutProfile.technicalScore);
-    expect(withProfile.personalFit).toBeGreaterThan(withoutProfile.personalFit);
+    expect(withoutProfile.personalFit).toBe(null);
+    expect(withoutProfile.hasPersonalizationEvidence).toBe(false);
+    expect(withProfile.personalFit).toBeGreaterThan(5);
+    expect(withProfile.hasPersonalizationEvidence).toBe(true);
     expect(withProfile.score).toBeGreaterThan(withoutProfile.score);
 
     const expected = Object.entries(withProfile.components)
@@ -261,14 +265,16 @@ describe('Chamber geometry', () => {
       .toBeLessThan(measured.components.chamberGeometry.score);
   });
 
-  test('falls back to shape geometry when nothing is measured', () => {
-    const canadian = normalizePipeForPairing({ focus: [], shape: 'Canadian' });
-    expect(canadian.chamberWidthCategory).toBe('narrow');
-    expect(canadian.chamberDepthCategory).toBe('deep');
+  test('weak shapes stay unknown and only reliable fallback shapes infer geometry', () => {
+    const churchwarden = normalizePipeForPairing({ focus: [], shape: 'Churchwarden' });
+    expect(churchwarden.chamberWidthCategory).toBe(null);
+    expect(churchwarden.chamberDepthCategory).toBe(null);
+    expect(churchwarden.geometrySource).toBe('unknown');
 
-    const bulldog = normalizePipeForPairing({ focus: [], shape: 'Bulldog' });
-    expect(bulldog.chamberWidthCategory).toBe('wide');
-    expect(bulldog.chamberDepthCategory).toBe('shallow');
+    const pot = normalizePipeForPairing({ focus: [], shape: 'Pot' });
+    expect(pot.chamberWidthCategory).toBe('wide');
+    expect(pot.chamberDepthCategory).toBe('shallow');
+    expect(pot.geometrySource).toBe('weakShape');
   });
 
   test('unknown geometry is neutral rather than punitive', () => {
@@ -331,6 +337,42 @@ describe('Bowl material', () => {
   test('cob is forgiving for aromatics', () => {
     const cob = scorePipeBlend({ focus: [], bowl_material: 'Corn Cob' }, aromatic, null);
     expect(cob.components.material.score).toBe(8);
+  });
+});
+
+describe('Personalization neutrality and variant ranking', () => {
+  test('empty profile is mathematically neutral', () => {
+    const result = scorePipeBlendDiagnostic(testPipes[0], testBlends[2], {});
+    expect(result.hasPersonalizationEvidence).toBe(false);
+    expect(result.personalFit).toBe(null);
+    expect(result.finalScore).toBe(result.technicalScore);
+  });
+
+  test('meaningful profile can alter final score', () => {
+    const profile = { preferred_blend_types: ['Aromatic'] };
+    const result = scorePipeBlendDiagnostic(testPipes[0], testBlends[2], profile);
+    expect(result.hasPersonalizationEvidence).toBe(true);
+    expect(result.finalScore).not.toBe(result.technicalScore);
+  });
+
+  test('variant ranking collapses duplicate parent pipes while keeping the winning bowl', () => {
+    const blend = { name: 'Big Maple', blend_type: 'Aromatic', is_aromatic: true, aromatic_intensity: 'heavy', cut: 'Ribbon' };
+    const pipes = [{
+      id: 'parent-1',
+      name: 'System Pipe',
+      focus: ['Versatile'],
+      bowl_diameter_mm: 18,
+      bowl_depth_mm: 36,
+      interchangeable_bowls: [
+        { bowl_variant_id: 'aro', name: 'Aromatic Bowl', focus: ['Aromatic'], bowl_diameter_mm: 20, bowl_depth_mm: 38 },
+        { bowl_variant_id: 'eng', name: 'English Bowl', focus: ['English'], bowl_diameter_mm: 20, bowl_depth_mm: 38 },
+      ],
+    }];
+
+    const [winner] = rankPipesForBlend(pipes, blend, null, { includeMainWhenBowls: true, collapseToParent: true, limit: 3 });
+    expect(winner.pipe_id).toBe('parent-1');
+    expect(winner.bowl_variant_id).toBe('aro');
+    expect(winner.bowl_name).toBe('Aromatic Bowl');
   });
 });
 
