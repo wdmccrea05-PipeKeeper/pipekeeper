@@ -140,6 +140,7 @@ export async function generateCollectionReport(userEmail, options = {}) {
         totalValue: moduleValue,
         averageValue: moduleCount > 0 ? moduleValue / moduleCount : 0,
         topItems: canonicalAggregate.reportableItems
+          .slice()
           .sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0))
           .slice(0, 5)
           .map(i => ({

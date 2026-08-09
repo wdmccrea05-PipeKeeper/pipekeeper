@@ -3,14 +3,16 @@ export function runReportingParityChecks({ userReport, reconciliationReport }) {
 
   const reportUsers = Number(userReport?.subscriptionStatus?.currentPayingUsers || 0);
   const reconUsers = Number(reconciliationReport?.reconciliationTotals?.matched_subscriptions || 0);
+  const delta = Math.abs(reportUsers - reconUsers);
+  const allowedDelta = Math.max(1, Math.floor(reportUsers * 0.25));
   checks.push({
     key: 'paying_users_vs_matched_subscriptions',
     left: reportUsers,
     right: reconUsers,
-    pass: reportUsers <= reconUsers,
-    message: reportUsers <= reconUsers
-      ? 'Paying user count is bounded by matched subscriptions.'
-      : 'Paying user count exceeds matched subscriptions.',
+    pass: reportUsers <= reconUsers && delta <= allowedDelta,
+    message: reportUsers <= reconUsers && delta <= allowedDelta
+      ? 'Paying user and matched subscription counts are within parity bounds.'
+      : 'Paying user and matched subscription counts are outside parity bounds.',
   });
 
   const unmatchedPaid = Number(reconciliationReport?.reliability?.unmatchedPaidTransactions || 0);

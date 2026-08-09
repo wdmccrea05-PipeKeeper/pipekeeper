@@ -16,13 +16,15 @@ export async function getCanonicalUserLifecycleReport(payload = {}) {
     canonicalEnvelope: buildLifecycleEnvelope({ range: report?.dateRange, report }),
     canonicalDictionaryVersion: 'v1-lifecycle-canonical',
     canonicalTimezone: report?.meta?.reportingTimezone || CANONICAL_REPORTING_TIMEZONE,
-    metricDictionary: CANONICAL_METRIC_DICTIONARY,
+    metricKeys: Object.keys(CANONICAL_METRIC_DICTIONARY),
   };
 }
 
 export async function getCanonicalReconciliationReport(payload = {}) {
-  const report = await invokeCanonical('getUserSubscriptionReportV3', payload);
-  const unmatched = await invokeCanonical('getUnmatchedPayments', {});
+  const [report, unmatched] = await Promise.all([
+    invokeCanonical('getUserSubscriptionReportV3', payload),
+    invokeCanonical('getUnmatchedPayments', {}),
+  ]);
   return {
     report,
     unmatched,
@@ -41,8 +43,10 @@ export async function getCanonicalCuratorAnalytics(periodDays) {
 }
 
 export async function getCanonicalExecutiveKpis(dateRange = '30d') {
-  const userReport = await getCanonicalUserLifecycleReport({ dateRange });
-  const reconciliation = await getCanonicalReconciliationReport({ dateRange });
+  const [userReport, reconciliation] = await Promise.all([
+    getCanonicalUserLifecycleReport({ dateRange }),
+    getCanonicalReconciliationReport({ dateRange }),
+  ]);
   const reconciliationReport = reconciliation?.report || {};
   const parity = runReportingParityChecks({ userReport, reconciliationReport });
   const integrityFindings = findIntegrityFindings({ userReport });

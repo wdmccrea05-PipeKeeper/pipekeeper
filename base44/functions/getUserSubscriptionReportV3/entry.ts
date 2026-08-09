@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { CANONICAL_LIFECYCLE_MODEL_VERSION, CANONICAL_METRIC_DICTIONARY_VERSION } from '../_shared/reportingMetrics.ts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // getUserSubscriptionReportV3 — V9 canonical reporting layer
@@ -1987,8 +1988,8 @@ Deno.serve(async (req) => {
       meta: {
         generatedAt: now.toISOString(),
         reportVersion: 'v9-canonical',
-        canonicalLifecycleModelVersion: 'v1-lifecycle-canonical',
-        canonicalMetricDictionaryVersion: 'v1-lifecycle-canonical',
+        canonicalLifecycleModelVersion: CANONICAL_LIFECYCLE_MODEL_VERSION,
+        canonicalMetricDictionaryVersion: CANONICAL_METRIC_DICTIONARY_VERSION,
         reportingTimezone,
         generatedLocalDateTime: formatLocalDateTime(now, reportingTimezone),
         endDateInclusionRule: 'End date is inclusive (local end-of-day, 23:59:59.999 in the reporting timezone).',

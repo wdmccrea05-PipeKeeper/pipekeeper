@@ -3,6 +3,7 @@ export type PeriodKind = 'week' | 'month' | 'quarter' | 'year';
 export const CANONICAL_REPORTING_TIMEZONE = 'America/Indianapolis';
 
 export const CANONICAL_METRIC_DICTIONARY_VERSION = 'v1-lifecycle-canonical';
+export const CANONICAL_LIFECYCLE_MODEL_VERSION = 'v1-lifecycle-canonical';
 
 // Backend mirror: keep this lightweight dictionary in the Deno shared layer.
 // Frontend richer descriptors live in src/lib/analytics/canonicalMetricDictionary.js.
