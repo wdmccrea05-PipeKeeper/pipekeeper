@@ -533,16 +533,20 @@ export function getAromaticIntensity(blend) {
  * Pipe normalization
  * ------------------------------------------------------------------ */
 
-const RELIABLE_BOWL_STYLE_GEOMETRY = {
+const SHARED_GEOMETRY_TENDENCIES = {
   chimney: ['narrow', 'deep'],
   stack: ['narrow', 'deep'],
   pot: ['wide', 'shallow'],
 };
 
+// The same labels intentionally appear in both maps below because bowlStyle and
+// shape are distinct fields with different confidence levels.
+const RELIABLE_BOWL_STYLE_GEOMETRY = {
+  ...SHARED_GEOMETRY_TENDENCIES,
+};
+
 const WEAK_SHAPE_GEOMETRY = {
-  chimney: ['narrow', 'deep'],
-  stack: ['narrow', 'deep'],
-  pot: ['wide', 'shallow'],
+  ...SHARED_GEOMETRY_TENDENCIES,
   prince: ['medium', 'shallow'],
 };
 
@@ -712,30 +716,45 @@ export function normalizePipeForPairing(pipe) {
 
   const volumeEnum = normalizeVolumeEnum(p.chamber_volume);
 
+  const hasMeasuredWidth = chamberDiameterMm !== null;
+  const hasMeasuredDepth = chamberDepthMm !== null;
   let chamberWidthCategory = widthCategoryFromMm(chamberDiameterMm);
   let chamberDepthCategory = depthCategoryFromMm(chamberDepthMm);
-  let geometrySource = chamberWidthCategory || chamberDepthCategory ? 'measured' : 'unknown';
+  let widthSource = hasMeasuredWidth ? 'measured' : null;
+  let depthSource = hasMeasuredDepth ? 'measured' : null;
 
   if (!chamberWidthCategory) {
     if (volumeEnum) {
       chamberWidthCategory = VOLUME_TO_WIDTH[lower(p.chamber_volume)] || (volumeEnum === 'extraLarge' ? 'wide' : null);
-      geometrySource = 'volumeEnum';
+      widthSource = chamberWidthCategory ? 'volumeEnum' : null;
     } else if (reliableBowlStyleGeom) {
       chamberWidthCategory = reliableBowlStyleGeom[0];
-      geometrySource = 'reliableBowlStyle';
+      widthSource = chamberWidthCategory ? 'reliableBowlStyle' : null;
     } else if (weakShapeGeom) {
       chamberWidthCategory = weakShapeGeom[0];
-      geometrySource = 'weakShape';
-    } else {
-      geometrySource = 'unknown';
+      widthSource = chamberWidthCategory ? 'weakShape' : null;
     }
   }
   if (!chamberDepthCategory) {
-    if (geometrySource === 'reliableBowlStyle' && reliableBowlStyleGeom) chamberDepthCategory = reliableBowlStyleGeom[1];
-    else if (geometrySource === 'weakShape' && weakShapeGeom) chamberDepthCategory = weakShapeGeom[1];
-    else if (volumeEnum === 'small') chamberDepthCategory = 'shallow';
-    else if (volumeEnum === 'large' || volumeEnum === 'extraLarge') chamberDepthCategory = 'deep';
+    if (reliableBowlStyleGeom) {
+      chamberDepthCategory = reliableBowlStyleGeom[1];
+      depthSource = chamberDepthCategory ? 'reliableBowlStyle' : null;
+    } else if (weakShapeGeom) {
+      chamberDepthCategory = weakShapeGeom[1];
+      depthSource = chamberDepthCategory ? 'weakShape' : null;
+    } else if (volumeEnum === 'small') {
+      chamberDepthCategory = 'shallow';
+      depthSource = 'volumeEnum';
+    } else if (volumeEnum === 'large' || volumeEnum === 'extraLarge') {
+      chamberDepthCategory = 'deep';
+      depthSource = 'volumeEnum';
+    }
   }
+
+  const geometrySource =
+    hasMeasuredWidth && hasMeasuredDepth ? 'measured'
+      : hasMeasuredWidth || hasMeasuredDepth ? 'partialMeasured'
+      : widthSource || depthSource || 'unknown';
 
   const chamberVolume =
     volumeCategoryFromMm(chamberDiameterMm, chamberDepthMm) || volumeEnum || null;
@@ -778,6 +797,7 @@ export function normalizePipeForPairing(pipe) {
 
   const geometryEvidenceScore =
     geometrySource === 'measured' ? 1
+      : geometrySource === 'partialMeasured' ? 0.85
       : geometrySource === 'volumeEnum' ? 0.65
       : geometrySource === 'reliableBowlStyle' ? 0.5
       : geometrySource === 'weakShape' ? 0.25
@@ -994,6 +1014,7 @@ function scoreChamberGeometry(pipeN, tobN) {
 
   const geometryDamping = {
     measured: 1,
+    partialMeasured: 0.85,
     volumeEnum: 0.75,
     reliableBowlStyle: 0.55,
     weakShape: 0.35,
