@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import UserReportDateRange from '@/components/reports/UserReportDateRange';
 import UserReportAuditTable from '@/components/reports/UserReportAuditTable';
 import SubscriptionReconciliationSummary from '@/components/reports/SubscriptionReconciliationSummary';
 import ProviderVerificationPanel from '@/components/reports/ProviderVerificationPanel';
+import { getCanonicalUserLifecycleReport } from '@/lib/analytics/canonicalAnalyticsService';
 
 const DATE_RANGE_OPTIONS = [
   { value: 'today', label: 'Today' },
@@ -35,8 +35,8 @@ export default function UserReport() {
         payload.startDate = customStart;
         payload.endDate = customEnd;
       }
-      const response = await base44.functions.invoke('getUserSubscriptionReportV3', payload);
-      setData(response?.data ?? response);
+      const response = await getCanonicalUserLifecycleReport(payload);
+      setData(response);
     } catch (err) {
       setError(err?.message || 'Failed to load report');
     } finally {

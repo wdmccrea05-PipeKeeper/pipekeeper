@@ -1,5 +1,30 @@
 export type MetricInterval = 'month' | 'year';
 export type PeriodKind = 'week' | 'month' | 'quarter' | 'year';
+export const CANONICAL_REPORTING_TIMEZONE = 'America/Indianapolis';
+
+export const CANONICAL_METRIC_DICTIONARY_VERSION = 'v1-metric-dictionary';
+export const CANONICAL_LIFECYCLE_MODEL_VERSION = 'v1-lifecycle-model';
+
+// Backend mirror: keep this lightweight dictionary in the Deno shared layer.
+// Frontend richer descriptors live in src/lib/analytics/canonicalMetricDictionary.js.
+export const CANONICAL_METRIC_DICTIONARY = {
+  total_registered_users: {
+    sourceEntities: ['User'],
+    formula: 'count(non-merged registered users)',
+  },
+  current_paying_users: {
+    sourceEntities: ['ActiveContract', 'Subscription', 'SubscriptionEvent'],
+    formula: 'distinct users with canonical paying status',
+  },
+  mrr: {
+    sourceEntities: ['ActiveContract', 'Subscription'],
+    formula: 'sum(monthly-normalized amount for paying contracts)',
+  },
+  arr: {
+    sourceEntities: ['ActiveContract', 'Subscription'],
+    formula: 'mrr*12',
+  },
+} as const;
 
 export const REPORTING_ACTIVE_STATUSES = new Set(['active', 'trialing', 'trial', 'past_due', 'paid']);
 

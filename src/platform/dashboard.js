@@ -13,6 +13,8 @@
 //   - AI-eligible count
 //   - module summary cards
 
+import { buildCanonicalCollectionAggregate } from './reporting.js';
+
 /**
  * Aggregate statistics for a single collection of items.
  * Works with both raw module records and normalized platform items.
@@ -37,26 +39,14 @@ export function aggregateCollectionStats(items) {
     };
   }
 
-  let totalCollectionValue = 0;
-  let favoriteCount = 0;
-  let aiExcludedCount = 0;
-
-  for (const item of items) {
-    if (!item) continue;
-
-    const value = item.estimated_value ?? item.purchase_price ?? 0;
-    totalCollectionValue += typeof value === "number" ? value : parseFloat(value) || 0;
-
-    if (item.is_favorite || item.favorite) favoriteCount++;
-    if (item.ai_excluded) aiExcludedCount++;
-  }
+  const aggregate = buildCanonicalCollectionAggregate(items);
 
   return {
-    totalItemCount: items.length,
-    favoriteCount,
-    aiEligibleCount: items.length - aiExcludedCount,
-    aiExcludedCount,
-    totalCollectionValue,
+    totalItemCount: aggregate.totalCount,
+    favoriteCount: aggregate.favoriteCount,
+    aiEligibleCount: aggregate.aiEligibleCount,
+    aiExcludedCount: aggregate.aiExcludedCount,
+    totalCollectionValue: aggregate.totalValue,
   };
 }
 

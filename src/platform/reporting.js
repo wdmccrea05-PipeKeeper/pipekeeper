@@ -65,6 +65,18 @@ export function buildReportData(items, options = {}) {
   };
 }
 
+export function buildCanonicalCollectionAggregate(items, options = {}) {
+  const report = buildReportData(items, options);
+  return {
+    totalCount: report.totalCount,
+    totalValue: report.totalValue,
+    favoriteCount: report.favoriteCount,
+    aiExcludedCount: report.aiExcludedCount,
+    aiEligibleCount: report.totalCount - report.aiExcludedCount,
+    reportableItems: report.items,
+  };
+}
+
 /**
  * Build report data aggregated across multiple modules.
  *
