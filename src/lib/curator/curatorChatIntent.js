@@ -74,9 +74,15 @@ export function classifyIntent(message) {
   ];
   if (correctionPatterns.some((p) => p.test(t))) return 'USER_CORRECTION';
 
-  const followUpPattern = /\b(it|that|this one|this pipe|that pipe|this blend|that blend|this bottle|that bottle|the one|how does it|how does that|how does this|where does it|is it redundant|what would you do with it|how does it compare|why that one|what about the other)\b/i;
-  const comparisonPattern = /\b(compare|redundant|overlap|where does it sit|how does it fit)\b/i;
-  if (followUpPattern.test(t) || comparisonPattern.test(t)) return 'FOLLOW_UP';
+  // FOLLOW_UP — references to previous items ("that one", "how does it compare").
+  // Skip when the message is a recommendation request: words like "that" or
+  // "it" in "the pipe that can accommodate both" are relative pronouns, not
+  // references to a previous recommendation.
+  if (!isRecommendationRequest(message)) {
+    const followUpPattern = /\b(it|that|this one|this pipe|that pipe|this blend|that blend|this bottle|that bottle|the one|how does it|how does that|how does this|where does it|is it redundant|what would you do with it|how does it compare|why that one|what about the other)\b/i;
+    const comparisonPattern = /\b(compare|redundant|overlap|where does it sit|how does it fit)\b/i;
+    if (followUpPattern.test(t) || comparisonPattern.test(t)) return 'FOLLOW_UP';
+  }
 
   // Collection impact / replacement queries — always go to LLM
   if (/\b(replacing|replace|swap|switching|removing|adding|substitut)\b/i.test(t) &&
