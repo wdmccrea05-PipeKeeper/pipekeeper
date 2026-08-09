@@ -1,0 +1,138 @@
+/**
+ * Canonical representative pipe dataset for Pairing Engine Certification.
+ *
+ * Covers: aromatic-dedicated, english-dedicated, virginia-dedicated, general purpose,
+ * ghosted pipes, interchangeable bowls, and various geometry classes.
+ *
+ * Fields match the shape expected by normalizePipeForPairing() and scorePipeBlend().
+ */
+
+export const CERTIFICATION_PIPES = [
+  {
+    id: 'cert-pipe-aromatic',
+    pipe_id: 'cert-pipe-aromatic',
+    pipe_name: 'Aromatic Dedicated Billiard',
+    name: 'Aromatic Dedicated Billiard',
+    focus: ['Aromatic'],
+    shape: 'Billiard',
+    bowl_diameter_mm: 20,
+    bowl_depth_mm: 38,
+    bowl_material: 'Briar',
+    _archetype: 'Aromatic Dedicated',
+  },
+  {
+    id: 'cert-pipe-english',
+    pipe_id: 'cert-pipe-english',
+    pipe_name: 'English Dedicated Pipe',
+    name: 'English Dedicated Pipe',
+    focus: ['English', 'Balkan'],
+    shape: 'Billiard',
+    bowl_diameter_mm: 22,
+    bowl_depth_mm: 42,
+    bowl_material: 'Briar',
+    _archetype: 'English Dedicated',
+  },
+  {
+    id: 'cert-pipe-virginia',
+    pipe_id: 'cert-pipe-virginia',
+    pipe_name: 'Virginia/VaPer Dedicated',
+    name: 'Virginia/VaPer Dedicated',
+    focus: ['Virginia', 'VaPer'],
+    shape: 'Billiard',
+    bowl_diameter_mm: 19,
+    bowl_depth_mm: 40,
+    bowl_material: 'Briar',
+    _archetype: 'Virginia Dedicated',
+  },
+  {
+    id: 'cert-pipe-general',
+    pipe_id: 'cert-pipe-general',
+    pipe_name: 'General Purpose Billiard',
+    name: 'General Purpose Billiard',
+    focus: ['Versatile'],
+    shape: 'Billiard',
+    bowl_diameter_mm: 20,
+    bowl_depth_mm: 38,
+    bowl_material: 'Briar',
+    _archetype: 'General Purpose Pipe',
+  },
+  {
+    id: 'cert-pipe-large-english',
+    pipe_id: 'cert-pipe-large-english',
+    pipe_name: 'Large English Bent',
+    name: 'Large English Bent',
+    focus: ['English'],
+    shape: 'Bent',
+    bowl_diameter_mm: 24,
+    bowl_depth_mm: 48,
+    bowl_material: 'Briar',
+    _archetype: 'Large English',
+  },
+  {
+    id: 'cert-pipe-meerschaum',
+    pipe_id: 'cert-pipe-meerschaum',
+    pipe_name: 'Meerschaum General',
+    name: 'Meerschaum General',
+    focus: ['Aromatic'],
+    shape: 'Billiard',
+    bowl_diameter_mm: 20,
+    bowl_depth_mm: 36,
+    bowl_material: 'Meerschaum',
+    _archetype: 'Meerschaum Pipe',
+  },
+  {
+    id: 'cert-pipe-ghosted',
+    pipe_id: 'cert-pipe-ghosted',
+    pipe_name: 'Ghosted Aromatic Pipe',
+    name: 'Ghosted Aromatic Pipe',
+    focus: ['Aromatic'],
+    shape: 'Billiard',
+    bowl_diameter_mm: 20,
+    bowl_depth_mm: 38,
+    bowl_material: 'Briar',
+    usage_characteristics: 'ghosted heavy aromatic',
+    _archetype: 'Ghosted Pipe',
+  },
+  {
+    id: 'cert-pipe-no-dims',
+    pipe_id: 'cert-pipe-no-dims',
+    pipe_name: 'Pipe Without Chamber Dimensions',
+    name: 'Pipe Without Chamber Dimensions',
+    focus: ['Versatile'],
+    shape: 'Billiard',
+    bowl_material: 'Briar',
+    _archetype: 'Missing Chamber Dimensions',
+  },
+  {
+    id: 'cert-pipe-interchangeable',
+    pipe_id: 'cert-pipe-interchangeable',
+    pipe_name: 'Peterson System Pipe',
+    name: 'Peterson System Pipe',
+    focus: ['Versatile'],
+    shape: 'Billiard',
+    bowl_diameter_mm: 19,
+    bowl_depth_mm: 38,
+    bowl_material: 'Briar',
+    bowl_variants: [
+      {
+        bowl_variant_id: 'cert-bowl-a',
+        name: 'Large Bowl',
+        bowl_diameter_mm: 22,
+        bowl_depth_mm: 44,
+        focus: ['English'],
+      },
+      {
+        bowl_variant_id: 'cert-bowl-b',
+        name: 'Small Aromatic Bowl',
+        bowl_diameter_mm: 17,
+        bowl_depth_mm: 30,
+        focus: ['Aromatic'],
+      },
+    ],
+    _archetype: 'Pipe with interchangeable bowls',
+  },
+];
+
+export const CERTIFICATION_PIPES_BY_ARCHETYPE = Object.fromEntries(
+  CERTIFICATION_PIPES.map((p) => [p._archetype, p])
+);

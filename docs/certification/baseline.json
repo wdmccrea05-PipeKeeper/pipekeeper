@@ -1,0 +1,48 @@
+{
+  "capturedAt": "2026-08-09T16:12:23.182Z",
+  "pairingEngineVersion": "1.0.0-canonical",
+  "scorerVersion": "1.0.0-canonical",
+  "taxonomyVersion": "1.0.0",
+  "normalizationVersion": "1.0.0",
+  "componentWeights": {
+    "dedication": 0.3,
+    "chamberGeometry": 0.2,
+    "tobaccoCut": 0.15,
+    "blendComposition": 0.15,
+    "aromaticCompatibility": 0.1,
+    "material": 0.05,
+    "smokingCharacter": 0.05
+  },
+  "blendCount": 15,
+  "pipeCount": 9,
+  "bowlVariantCount": 2,
+  "archetypes": [
+    "Heavy Aromatic",
+    "Light Aromatic",
+    "Straight Virginia",
+    "Virginia Flake",
+    "True VaPer",
+    "English",
+    "Balkan",
+    "Burley",
+    "Lakeland",
+    "Dark Fired",
+    "Navy Flake",
+    "English Aromatic",
+    "Non-aromatic Cavendish",
+    "Unknown Family",
+    "Unknown Components"
+  ],
+  "pipeArchetypes": [
+    "Aromatic Dedicated",
+    "English Dedicated",
+    "Virginia Dedicated",
+    "General Purpose Pipe",
+    "Large English",
+    "Meerschaum Pipe",
+    "Ghosted Pipe",
+    "Missing Chamber Dimensions",
+    "Pipe with interchangeable bowls"
+  ],
+  "scorerVariableCount": 25
+}
