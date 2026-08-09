@@ -14,6 +14,13 @@ import {
 import { classifyDiagnosticIntent, DIAGNOSTIC_INTENT } from '@/lib/curator/curatorIntentClassifier.js';
 import { answerCuratorDeterministicQuery } from '@/lib/curator/curatorDeterministicChat.js';
 import { analyzeWineOptimizationIssues } from '@/lib/curator/wineOptimization.js';
+import {
+  isRecommendationRequest,
+  detectRejection,
+  resolveReference,
+  extractRecommendationsFromResponse,
+} from '@/lib/curator/conversationState.js';
+import { classifyIntent } from '@/lib/curator/curatorChatIntent.js';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -151,94 +158,9 @@ function validateAnswerEntityMatch(targetEntity, reply = '', updatedEntityContex
   return true;
 }
 
-function classifyIntent(message) {
-  const t = message.toLowerCase().trim();
-
-  const constraintPatterns = [
-    /\b(i want to|i don't want to|i don't want|i prefer|i prefer to|i use it for|i keep it for|i only use|it's only for|only for|never for|never used for|leave it|keep it as)\b/i,
-    /\b(non-aromatic|aromatic-only|english-only|virginia-only|burley-only|constraint|exclude|don't suggest)\b/i,
-  ];
-  if (constraintPatterns.some((p) => p.test(t))) return 'FOLLOW_UP_CONSTRAINT';
-
-  const nextCandidatePatterns = [
-    /\b(what is the next|what's the next|what's next|next best|next one|next strongest|next candidate|second.?best|after that|who's next|what comes after)\b/i,
-    /^(and )?next[?.]?$/i,
-    /\bwhat about the next\b/i,
-  ];
-  if (nextCandidatePatterns.some((p) => p.test(t))) return 'FOLLOW_UP_NEXT_CANDIDATE';
-
-  const correctionPatterns = [
-    /\bbut (i have it|i use it|i don't|it never|it isn't|it is not|i already)\b/i,
-    /\b(that'?s? not right|that'?s? wrong|that'?s? incorrect|that'?s? not accurate)\b/i,
-    /\bit never (smoked|seen|had|been used for|been assigned)\b/i,
-    /\bi (use|have|keep) it (for|as) (only|exclusively|just|aromatic|english|virginia|burley)/i,
-    /\b(never smoked|never used|never had)\b/i,
-    /\b(already on my (list|shopping list|want list|wishlist)|already (tracked|listed|owned|in my|classified|specialized|assigned))\b/i,
-    /\bi already (have|own|have it|own it|tracked|added|listed)\b/i,
-    /\b(that bottle is already|that blend is already|that pipe is already)\b/i,
-    /\bactually[,.]? (it|that|i|no)\b/i,
-    /^(no[,.]|nope[,.]|not quite[,.]|that'?s? not|but it|but i|but that)\b/i,
-    /\bi don't use it that way\b/i,
-  ];
-  if (correctionPatterns.some((p) => p.test(t))) return 'USER_CORRECTION';
-
-  const followUpPattern = /\b(it|that|this one|this pipe|that pipe|this blend|that blend|this bottle|that bottle|the one|how does it|how does that|how does this|where does it|is it redundant|what would you do with it|how does it compare|why that one|what about the other)\b/i;
-  const comparisonPattern = /\b(compare|redundant|overlap|where does it sit|how does it fit)\b/i;
-  if (followUpPattern.test(t) || comparisonPattern.test(t)) return 'FOLLOW_UP';
-
-  // Collection impact / replacement queries — always go to LLM
-  if (/\b(replacing|replace|swap|switching|removing|adding|substitut)\b/i.test(t) &&
-      /\b(effect|impact|change|affect|difference|collection|cellar|profile|gap|coverage)\b/i.test(t)) return 'COLLECTION_IMPACT';
-
-  if (/\b(pairing|pair with|pair together|combine|combination|explain why .+ work together)\b/i.test(t)) return 'EXPLAIN_PAIRING';
-
-  // PAIRING_SCORE_QUERY — questions about pairing scores, ratings, best/worst pairings
-  const pairingScorePatterns = [
-    /\b(pairing.*(score|rating|rated|rank)|score.*(pairing|pair)|rating.*(pairing|pair))\b/i,
-    /\b(best|worst|highest|lowest|top|weakest|strongest).*(pairing|pair|match|compatibility)\b/i,
-    /\b(pairing|pair).*(best|worst|highest|lowest|top|weakest|strongest)\b/i,
-    /\b(score|scored|rating|rated).*(under|below|above|higher|lower|greater|less than|at least|or (lower|higher))\b/i,
-    /\b(under|below|above|higher|lower).*(score|scored|rating|rated)\b/i,
-    /\b(show|list|find|what).*(pairing|pair).*(score|rated|rating|low|high)\b/i,
-    /\b(low|high|weak|poor|best|top).*(rated|scored).*(pairing|pair)\b/i,
-    /\b(compatibility|compatible|goes with|smoke with|pipe for|tobacco for)\b/i,
-  ];
-  if (pairingScorePatterns.some((p) => p.test(t))) return 'PAIRING_SCORE_QUERY';
-
-  // DIRECT RECOMMENDATION — explicit ask for a suggestion/recommendation (must come before SESSION_RECOMMENDATION)
-  const directRecPatterns = [
-    /\b(what (is|would be|should i|do you recommend|would you recommend)|which (blend|tobacco|pipe|bottle)|recommend (a|an|some|the best)|good (blend|tobacco|pipe|bottle)|suggest (a|an)|what.*(good|smooth|mild|full|strong|light).*(blend|tobacco|smoke|pipe|bottle)|good.*to smoke|good.*with (coffee|tea|whiskey|beer|food|meal)|what.*go(es)? with|pair with coffee|pair with tea|what.*for (morning|evening|night|afternoon|after dinner|mid-morning|bedtime))\b/i,
-    /\bwhat (blend|tobacco|pipe|bottle|whiskey|smoke) (should|would|do you|can you|could you)\b/i,
-    /\b(is there a|are there any|any (good|recommended|suggestions for)) (blend|tobacco|pipe|bottle|whiskey)\b/i,
-  ];
-  if (directRecPatterns.some((p) => p.test(t))) return 'DIRECT_RECOMMENDATION';
-
-  if (/\b(tonight|enjoy|smoke|drink|open next|session|use|revisit|rediscover|haven.?t used|haven.?t had)\b/i.test(t)) return 'SESSION_RECOMMENDATION';
-  if (/\b(restock|running low|running out|buy next|replenish)\b/i.test(t)) return 'RESTOCK_ADVICE';
-  if (/\b(gap|missing|biggest gap|collection gap)\b/i.test(t)) return 'GAP_ANALYSIS';
-  if (/\b(redundant|most redundant|overlap)\b/i.test(t)) return 'COLLECTION_ANALYSIS';
-
-  const reassignPatterns = [
-    /\b(reassign|reassignment|respecializ|re-specializ)\b/i,
-    /\b(change (specialization|focus|role)|new role|different role|better suited elsewhere|better specialization)\b/i,
-    /\b(no longer fits|doesn.?t fit).*(specializ|focus|role|lane)/i,
-    /\b(benefit.*(reassign|respecializ|new role|different role))/i,
-    /\b(strongest|best).*(reassignment|respecializ|candidate)/i,
-    /\b(which|what) pipe.*(reassign|respecializ|should change|new specializ|no longer fits)/i,
-  ];
-  if (reassignPatterns.some((p) => p.test(t))) return 'PIPE_REASSIGNMENT_ANALYSIS';
-
-  if (/\b(evaluate|assess|how does .+ fit|where does .+ sit|role of)\b/i.test(t)) return 'EVALUATE_OWNED_ITEM';
-
-  if (/\b(how much|what.*(worth|value|valued|valuable|price)|value of|most valuable|least valuable|insure|insurance)\b/i.test(t)) return 'VALUE_QUERY';
-  if (/\b(what do i (own|have)|how many|list (my|all)|show me|inventory|do i have any|which (blends|pipes|bottles) do i)\b/i.test(t)) return 'INVENTORY_QUERY';
-  if (/\b(budget|under \$|spend|afford|price range|best.*for \$|cheap|expensive|bang for|worth the money)\b/i.test(t)) return 'PURCHASE_BUDGET';
-  if (/\b(weekend|week lineup|lineup|schedule|plan (for|my|a)|rotation plan|week.*smoke|smoke.*week)\b/i.test(t)) return 'LINEUP_PLANNING';
-  if (/\b(sleeper|underrated|hidden gem|overlooked|not enough credit|underappreciated|undervalued)\b/i.test(t)) return 'SLEEPER_QUERY';
-  if (/\b(haven.?t (touched|used|smoked|opened|had)|not used|sitting untouched|sitting idle|collecting dust|unopened)\b/i.test(t)) return 'UNUSED_QUERY';
-
-  return 'UNKNOWN';
-}
+// classifyIntent is imported from '@/lib/curator/curatorChatIntent.js'
+// (extracted for testability — see conversationState.test.js and
+// curatorChatIntent.test.js)
 
 function evaluateOwnedBottle(bottle, bottles = [], tastingLogs = []) {
   const type = norm(bottle.type || bottle.whiskey_type || 'unknown');
@@ -679,6 +601,38 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
     ? `USER CONSTRAINTS: ${JSON.stringify(entityContext.constraints)}\n`
     : '';
 
+  // ── Conversation state (multi-turn continuity) ──────────────────────────────
+  const rejectedItems = Array.isArray(entityContext.rejectedItems) ? entityContext.rejectedItems : [];
+  const previousRecommendations = Array.isArray(entityContext.recommendations) ? entityContext.recommendations : [];
+
+  const conversationStateSections = [
+    previousRecommendations.length > 0
+      ? `PREVIOUSLY RECOMMENDED: ${previousRecommendations.map((r) => `${r.name}${r.rank ? ` (#${r.rank})` : ''}`).join(', ')}`
+      : '',
+    rejectedItems.length > 0
+      ? `REJECTED BY USER (DO NOT recommend these again): ${rejectedItems.map((r) => `${r.name} (${r.reason || 'rejected'})`).join(', ')}`
+      : '',
+    entityContext.preferences && Object.keys(entityContext.preferences).length > 0
+      ? `USER PREFERENCES: ${JSON.stringify(entityContext.preferences)}`
+      : '',
+  ].filter(Boolean).join('\n');
+
+  const conversationStateNote = conversationStateSections
+    ? `\n═══ CONVERSATION STATE ═══\n${conversationStateSections}\n`
+    : '';
+
+  const continuityInstructions = (previousRecommendations.length > 0 || rejectedItems.length > 0)
+    ? `
+═══ CONVERSATION CONTINUITY (CRITICAL) ═══
+This is an ongoing conversation about the user's collection — NOT an independent search.
+- If the user references a previous recommendation ("that one", "the jumbo", "next best", "which of those"), resolve it against the CONVERSATION STATE above.
+- If the user rejects a previous recommendation ("too bulky", "not that one", "forget the"), EXCLUDE it and provide the next-best option from the collection.
+- INHERIT all unnamed constraints from previous turns. Do NOT reset the query when the user adds a new constraint.
+- NEVER ask the user to repeat or rephrase their question — you have the full conversation history and state.
+- If the user says "next best" or "give me another option", re-run the analysis yourself using the preserved criteria plus any new rejections/preferences, and return the next-best qualifying item.
+`
+    : '';
+
   return `You are Curator — a world-class collector intelligence assistant specializing in pipe tobacco, whiskey, cigars, fine wines, and collectibles. You combine the knowledge of an expert tobacconist, master sommelier, and seasoned collector advisor.
 
 ═══ COLLECTION DATA STATUS ═══
@@ -699,7 +653,7 @@ Only treat a phrase as a product name if the user explicitly asks about a specif
 ═══ USER COLLECTION ═══
 ${collectionSummary || 'No collection data yet.'}
 
-${currentSubject}${constraints}${recentHistory ? `═══ CONVERSATION HISTORY ═══\n${recentHistory}\n` : ''}
+${currentSubject}${constraints}${conversationStateNote}${continuityInstructions}${recentHistory ? `═══ CONVERSATION HISTORY ═══\n${recentHistory}\n` : ''}
 ═══ YOUR MISSION ═══
 Answer the user's question with the precision of a trusted expert. You have two roles:
 1. COLLECTION ANALYST: Use the actual collection data above to give personalized insights
@@ -1046,11 +1000,14 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
       };
     }
 
+    // No active subject and no specific constraint context — escalate to LLM
+    // with the constraint stored in conversation state, rather than producing
+    // a dead-end "constraint applied" message.
     return {
-      reply: `Understood — ${constraintValue} constraint applied. Tell me what you want to evaluate or ask about, and I will keep that in mind.`,
+      reply: null,
       updatedEntityContext: {
         ...entityContext,
-        constraints: { [constraintType]: constraintValue },
+        constraints: { ...(entityContext.constraints || {}), [constraintType]: constraintValue },
       },
     };
   }
@@ -1061,11 +1018,13 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
     const currentCursor = entityContext.rankedCursor || 0;
     const nextCursor = currentCursor + 1;
 
+    // When we don't have a locally-ranked list (e.g., the previous answer came
+    // from the LLM), return null to escalate to the LLM. The LLM has the full
+    // conversation history and the conversation state (rejected items, prior
+    // recommendations) in its prompt, so it can continue the analysis without
+    // the user needing to repeat their question.
     if (!rankedCandidates || rankedCandidates.length === 0) {
-      return {
-        reply: `I haven't retained the ranked list from that last answer, so I should re-run the analysis. Ask me the question again and I'll generate a fresh ranked set.`,
-        updatedEntityContext: { ...entityContext, rankedCandidates: [], rankedCursor: 0 },
-      };
+      return null;
     }
 
     if (nextCursor >= rankedCandidates.length) {
@@ -1715,10 +1674,39 @@ export default function ExpertTobacconistChat({
     setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content: text }]);
     setInput('');
     try {
+      // ── Conversation state: detect rejections and references ──────────────
+      // Before processing, check if the user is rejecting a previous
+      // recommendation ("the jumbo is too bulky") or referencing one ("that
+      // one"). This updates the conversation state so the LLM and local
+      // handlers have the full context.
+      const allCollectionItems = [
+        ...(collectionContext?.pipes || []),
+        ...(collectionContext?.blends || []),
+        ...(collectionContext?.bottles || []),
+        ...(collectionContext?.wines || []),
+        ...(collectionContext?.cigars || []),
+      ];
+      const existingRecommendations = Array.isArray(entityContext?.recommendations) ? entityContext.recommendations : [];
+      const rejection = detectRejection(text, existingRecommendations, allCollectionItems);
+      let effectiveEntityContext = entityContext;
+      if (rejection) {
+        effectiveEntityContext = {
+          ...entityContext,
+          rejectedItems: [
+            ...(Array.isArray(entityContext?.rejectedItems) ? entityContext.rejectedItems : []),
+            { name: rejection.rejectedItemName, reason: rejection.reason },
+          ],
+          preferences: rejection.newPreference
+            ? { ...(entityContext?.preferences || {}), [rejection.newPreference]: 'high' }
+            : (entityContext?.preferences || {}),
+        };
+        setEntityContext(effectiveEntityContext);
+      }
+
       // ── Diagnostic intent check (MUST run before LLM routing) ──────────────
       // Intercepts collection issue labels (e.g., "Wines Without a Drinking Window")
       // so they are never misrouted to the LLM as product/blend name lookups.
-      const diagnosticIntent = classifyDiagnosticIntent(text, entityContext?.structuredIssueContext);
+      const diagnosticIntent = classifyDiagnosticIntent(text, effectiveEntityContext?.structuredIssueContext);
       if (diagnosticIntent) {
         const wines = Array.isArray(collectionContext?.wines) ? collectionContext.wines : [];
         const diagnosticReply = buildWineDiagnosticResponse(diagnosticIntent, wines);
@@ -1731,7 +1719,7 @@ export default function ExpertTobacconistChat({
       }
 
       const intent = classifyIntent(text);
-      const deterministic = answerCuratorDeterministicQuery(text, collectionContext, entityContext, activeModules);
+      const deterministic = answerCuratorDeterministicQuery(text, collectionContext, effectiveEntityContext, activeModules);
       if (deterministic?.handled) {
         setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: deterministic.reply }]);
         return;
@@ -1740,24 +1728,30 @@ export default function ExpertTobacconistChat({
 
       if (useLLM) {
         // Use LLM for domain-knowledge queries (similarity, external products, comparison, etc.)
-        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, entityContext);
+        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, effectiveEntityContext);
         const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
         const cleanReply = llmReply.trim() || 'I was not able to generate a response. Please try rephrasing.';
-        // Update entity context with any named product mentioned (skip for diagnostic phrases)
+        // Extract recommendations from the LLM response and store in conversation state
+        const extractedRecs = extractRecommendationsFromResponse(cleanReply, collectionContext);
+        // Update entity context with named product and extracted recommendations
         if (!diagnosticIntent) {
           const namedProductMatch = text.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z&][a-zA-Z']+){1,4})\b/g);
-          if (namedProductMatch?.[0]) {
-            setEntityContext((prev) => ({
-              ...prev,
+          setEntityContext((prev) => ({
+            ...prev,
+            ...(namedProductMatch?.[0] ? {
               subject: { name: namedProductMatch[0], type: 'external', id: null },
               topicIntent: 'similarity_query',
               lastClaimType: 'llm_recommendation',
               lastEvidenceClass: 'STRONG',
-            }));
-          }
+            } : {}),
+            recommendations: extractedRecs.length > 0
+              ? extractedRecs
+              : (Array.isArray(prev.recommendations) ? prev.recommendations : []),
+            rejectedItems: Array.isArray(prev.rejectedItems) ? prev.rejectedItems : [],
+          }));
         }
         setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: cleanReply }]);
         return;
@@ -1765,31 +1759,63 @@ export default function ExpertTobacconistChat({
 
       // Rule-based engine for collection-specific queries
       const targetEntity = classifyTargetEntity(text);
-      const result = answerQuestion(text, collectionContext, { ...entityContext, analysisContext }, isSingleModuleMode, activeModules, continueAnalysis);
+      const result = answerQuestion(text, collectionContext, { ...effectiveEntityContext, analysisContext }, isSingleModuleMode, activeModules, continueAnalysis);
 
       // null result means the local engine couldn't handle it — escalate to LLM
       if (!result) {
-        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, entityContext);
+        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, effectiveEntityContext);
         const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
-        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: llmReply.trim() || 'I was not able to generate a response. Please try rephrasing.' }]);
+        const cleanReply = llmReply.trim() || 'I was not able to generate a response. Please try rephrasing.';
+        // Extract recommendations from the LLM response
+        const extractedRecs = extractRecommendationsFromResponse(cleanReply, collectionContext);
+        if (extractedRecs.length > 0) {
+          setEntityContext((prev) => ({ ...prev, recommendations: extractedRecs }));
+        }
+        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: cleanReply }]);
         return;
       }
 
       const { reply, updatedEntityContext, newAnalysisContext } = result || {};
 
+      // Null reply (but non-null result) means the local engine wants to
+      // escalate to LLM while still updating the conversation state — e.g.,
+      // FOLLOW_UP_CONSTRAINT with no active subject, where the constraint
+      // should be saved and the LLM should handle the actual response.
+      if (result && !reply) {
+        const ctxForLLM = updatedEntityContext || effectiveEntityContext;
+        if (updatedEntityContext) setEntityContext(updatedEntityContext);
+        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, ctxForLLM);
+        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
+        const llmReply = typeof response?.data === 'string'
+          ? response.data
+          : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
+        const cleanReply = llmReply.trim() || 'I was not able to generate a response. Please try rephrasing.';
+        const extractedRecs = extractRecommendationsFromResponse(cleanReply, collectionContext);
+        if (extractedRecs.length > 0) {
+          setEntityContext((prev) => ({ ...prev, recommendations: extractedRecs }));
+        }
+        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: cleanReply }]);
+        return;
+      }
+
       // Answer validation guard — if the reply doesn't match the requested entity, escalate to LLM
       let finalReply = reply;
       if (reply && !validateAnswerEntityMatch(targetEntity, reply, updatedEntityContext)) {
         // Escalate to LLM rather than producing filler text
-        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, entityContext);
+        const llmPrompt = buildLLMPrompt(text, collectionContext, messages, effectiveEntityContext);
         const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
         finalReply = llmReply.trim() || finalReply;
+        // Extract recommendations from the LLM response
+        const extractedRecs = extractRecommendationsFromResponse(finalReply, collectionContext);
+        if (extractedRecs.length > 0) {
+          setEntityContext((prev) => ({ ...prev, recommendations: extractedRecs }));
+        }
       }
 
       if (newAnalysisContext) setAnalysisContext(newAnalysisContext);
