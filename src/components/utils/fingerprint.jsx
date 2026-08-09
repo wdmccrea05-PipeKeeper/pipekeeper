@@ -150,7 +150,7 @@ export function fingerprintProfile(profile) {
  * Bumping SCORER_VERSION forces every cached PairingMatrix to be regenerated —
  * do that whenever the scoring model itself changes, not just its inputs.
  */
-export const SCORER_VERSION = "2-multidimensional";
+export const SCORER_VERSION = "3-taxonomy-final";
 
 export function buildArtifactFingerprint({ pipes = [], blends = [], profile = null }) {
   const payload = {

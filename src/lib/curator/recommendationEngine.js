@@ -73,7 +73,9 @@ const BLEND_TYPE_STRENGTH_INFERENCE = {
 
 const KNOWN_BLENDS = {
   // Cornell & Diehl
-  'Autumn Evening':            { blend_type: 'Virginia/Perique', strength: 'Medium' },
+  // Cornell & Diehl Autumn Evening is a Virginia + Black Cavendish aromatic blend.
+  // It does NOT contain Perique; classifying it as VaPer is incorrect.
+  'Autumn Evening':            { blend_type: 'Aromatic',          strength: 'Medium' },
   'Billy Budd':                { blend_type: 'Virginia',          strength: 'Mild' },
   'Blue Ridge':                { blend_type: 'Virginia',          strength: 'Mild' },
   'Burley Flake #3':           { blend_type: 'Burley',            strength: 'Medium' },
@@ -180,7 +182,9 @@ const KNOWN_BLENDS = {
   'HH Mature Virginia':        { blend_type: 'Virginia',          strength: 'Medium' },
   'HH Old Dark Fired':         { blend_type: 'Burley',            strength: 'Full' },
   'HH Pure Virginia':          { blend_type: 'Virginia',          strength: 'Medium' },
-  'Navy Flake':                { blend_type: 'Virginia/Perique',  strength: 'Medium-Full' },
+  // Mac Baren Navy Flake is a pressed Virginia/Burley blend with no confirmed
+  // Perique component. VaPer requires Virginia + Perique in the composition.
+  'Navy Flake':                { blend_type: 'Virginia',           strength: 'Medium-Full' },
   'Roll Cake':                 { blend_type: 'Virginia',          strength: 'Medium' },
   'Virginia No. 1':            { blend_type: 'Virginia',          strength: 'Medium' },
   'Solent Mixture':            { blend_type: 'Virginia',          strength: 'Mild' },
@@ -964,8 +968,13 @@ function analyzeMetadata(context) {
       const payload = {};
       const currentValues = {};
       if (catalogData.blend_type && blend.blend_type !== catalogData.blend_type) {
-        payload.blend_type     = catalogData.blend_type;
-        currentValues.blend_type = blend.blend_type;
+        // Apply the same canonical guard used in the missing-type path so that
+        // the reclassification suggestion cannot bypass VaPer/aromatic checks.
+        const guardedType = canonicalBlendTypeCandidate(blend, catalogData.blend_type);
+        if (guardedType) {
+          payload.blend_type     = guardedType;
+          currentValues.blend_type = blend.blend_type;
+        }
       }
       if (catalogData.strength && blend.strength && blend.strength !== catalogData.strength) {
         payload.strength     = catalogData.strength;
@@ -985,7 +994,7 @@ function analyzeMetadata(context) {
         blend_type: blend.blend_type,
         strength:   blend.strength || null,
         currentClassification: blend.blend_type,
-        proposedClassification: catalogData.blend_type,
+        proposedClassification: payload.blend_type ?? blend.blend_type,
         proposedChange: {
           confidence,
           payload,
