@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { base44 } from "@/api/base44Client";
 import { TrendingUp, Users, Target, RefreshCw, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getCanonicalCuratorAnalytics } from "@/lib/analytics/canonicalAnalyticsService";
 
 export default function CuratorAnalyticsDashboard() {
   const { isAdmin } = useCurrentUser();
@@ -24,13 +24,9 @@ export default function CuratorAnalyticsDashboard() {
   const loadAnalytics = async () => {
     setLoading(true);
     try {
-      const [recResult, segResult] = await Promise.all([
-        base44.functions.invoke('getRecommendationAnalytics', { period_days: periodDays }),
-        base44.functions.invoke('getUserSegmentAnalytics', { period_days: periodDays }),
-      ]);
-
-      setData(recResult.data);
-      setSegmentData(segResult.data);
+      const result = await getCanonicalCuratorAnalytics(periodDays);
+      setData(result?.recommendation || null);
+      setSegmentData(result?.segment || null);
     } catch (error) {
       console.error('Failed to load analytics:', error);
     } finally {

@@ -6,7 +6,7 @@
 
 import { base44 } from '@/api/base44Client';
 import { MODULE_REGISTRY } from './moduleRegistry';
-import { aggregateCollection } from '@/components/keeper-core/aggregation/collectionAggregation';
+import { buildCanonicalCollectionAggregate } from './reporting.js';
 
 function getModuleId(module) {
   return module?.id || module?.key || module?.moduleKey || module?.entityName || 'unknown';
@@ -34,7 +34,8 @@ export async function exportToCSV(userEmail, options = {}) {
         created_by: userEmail,
       });
       
-      for (const item of (items || [])) {
+      const canonicalAggregate = buildCanonicalCollectionAggregate(items || []);
+      for (const item of canonicalAggregate.reportableItems) {
         rows.push([
           module.name,
           item.name || '',
@@ -85,11 +86,13 @@ export async function exportToJSON(userEmail, options = {}) {
         created_by: userEmail,
       });
       const moduleId = getModuleId(module);
-      
+
+      const canonicalAggregate = buildCanonicalCollectionAggregate(items || []);
       exportData.modules[moduleId] = {
         name: module.name || module.displayName || moduleId,
-        count: items?.length || 0,
-        items: items || [],
+        count: canonicalAggregate.totalCount,
+        totalValue: canonicalAggregate.totalValue,
+        items: canonicalAggregate.reportableItems,
       };
     }
     
@@ -120,23 +123,19 @@ export async function generateCollectionReport(userEmail, options = {}) {
       summary: {},
       modules: {},
     };
-    const agg = await aggregateCollection(userEmail);
-    const moduleStats = {
-      pipekeeper: agg?.pipes,
-      tobacco: agg?.tobacco,
-      whiskeykeeper: agg?.whiskey,
-      cigarkeeper: agg?.cigar,
-      winekeeper: agg?.wine,
-    };
     
     let totalValue = 0;
     let totalItems = 0;
     
     for (const module of modulesToInclude) {
       const moduleId = getModuleId(module);
-      const stats = moduleStats[moduleId] || {};
-      const moduleValue = Number(stats?.value || 0);
-      const moduleCount = Number(stats?.count || 0);
+      const items = await base44.entities[module.entityName].filter({
+        created_by: userEmail,
+      });
+      
+      const canonicalAggregate = buildCanonicalCollectionAggregate(items || []);
+      const moduleValue = canonicalAggregate.totalValue;
+      const moduleCount = canonicalAggregate.totalCount;
       
       totalValue += moduleValue;
       totalItems += moduleCount;
@@ -146,7 +145,15 @@ export async function generateCollectionReport(userEmail, options = {}) {
         count: moduleCount,
         totalValue: moduleValue,
         averageValue: moduleCount > 0 ? moduleValue / moduleCount : 0,
-        topItems: [],
+        topItems: canonicalAggregate.reportableItems
+          .slice()
+          .sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0))
+          .slice(0, 5)
+          .map(i => ({
+            name: i.name,
+            value: i.estimated_value,
+            rating: i.rating,
+          })),
       };
     }
     
