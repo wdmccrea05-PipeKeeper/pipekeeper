@@ -15,4 +15,5 @@ export {
   inferAromaticFromFields,
   isKnownNonAromaticBlend,
   COMPONENT_WEIGHTS,
+  calibrateScore,
 } from "@/components/utils/pairingScoreCanonical";

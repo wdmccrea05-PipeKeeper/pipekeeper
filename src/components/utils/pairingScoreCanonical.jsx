@@ -1060,7 +1060,8 @@ function scoreTobaccoCut(pipeN, tobN) {
   const depth = pipeN.chamberDepthCategory || "medium";
 
   if (!cut) {
-    return { score: 5, reason: "Cut is unknown — packing behaviour cannot be assessed." };
+    // Unknown cut is genuinely neutral — it reduces confidence, not compatibility.
+    return { score: 6.5, reason: "Cut is unknown — packing behaviour cannot be assessed." };
   }
 
   let score = 6;
@@ -1123,7 +1124,8 @@ function scoreTobaccoCut(pipeN, tobN) {
 
 function scoreBlendComposition(pipeN, tobN) {
   if (!tobN.tobaccoComponents.length) {
-    return { score: 5, reason: "Tobacco components are not recorded." };
+    // Unknown composition is genuinely neutral — it reduces confidence, not compatibility.
+    return { score: 6.5, reason: "Tobacco components are not recorded." };
   }
 
   const width = pipeN.chamberWidthCategory;
@@ -1182,7 +1184,8 @@ function scoreBlendComposition(pipeN, tobN) {
 
 function scoreAromaticCompatibility(pipeN, tobN) {
   if (tobN.isAromatic === null) {
-    return { score: 5, reason: "Aromatic status unknown for this blend." };
+    // Unknown aromatic status is genuinely neutral — it reduces confidence, not compatibility.
+    return { score: 6.5, reason: "Aromatic status unknown for this blend." };
   }
   if (tobN.isAromatic === false) {
     return { score: 6, reason: "Non-aromatic blend — no topping-related moisture concerns." };
@@ -1368,6 +1371,62 @@ function scorePersonalFit(pipeN, tobN, userProfile, blend) {
 }
 
 /* ------------------------------------------------------------------ *
+ * Score calibration
+ *
+ * The raw weighted sum of component scores clusters around 6–8 even for
+ * excellent matches because:
+ *   • low-weight components (material, smokingCharacter) anchor near 6
+ *   • missing-data neutrals previously dragged mediocre and good toward
+ *     the same band
+ *
+ * calibrateScore() maps the raw compatibility output to a display scale
+ * that uses the full 1–10 range meaningfully.  The curve is:
+ *   • monotonically increasing — ranking is always preserved
+ *   • fixed at (0,0) and (10,10) — hard limits are unchanged
+ *   • neutral at (6.5, 6.5) — a truly average match stays average
+ *   • expands the upper range so a strong raw score (≈ 8) maps to ≈ 8.5–9
+ *   • slightly compresses the lower range so hard conflicts stay clearly low
+ *
+ * Piecewise linear control points:
+ *   raw →  calibrated
+ *   0.0  →   0.0
+ *   4.0  →   3.5    (hard conflicts remain clearly low)
+ *   5.5  →   5.0    (mediocre / acceptable stays below 5)
+ *   6.5  →   6.5    (neutral fixed-point)
+ *   7.5  →   7.8    (good/very good — slight upward nudge)
+ *   8.0  →   8.5    (strong → excellent display score)
+ *   9.0  →   9.5    (near-ceiling raw → outstanding display score)
+ *   9.5  →   9.8    (theoretical raw ceiling → near-perfect display)
+ *  10.0  →  10.0    (perfect stays perfect)
+ * ------------------------------------------------------------------ */
+
+const CALIBRATION_POINTS = [
+  [0.0, 0.0],
+  [4.0, 3.5],
+  [5.5, 5.0],
+  [6.5, 6.5],
+  [7.5, 7.8],
+  [8.0, 8.5],
+  [9.0, 9.5],
+  [9.5, 9.8],
+  [10.0, 10.0],
+];
+
+export function calibrateScore(raw) {
+  const r = clamp(raw, 0, 10);
+  for (let i = 1; i < CALIBRATION_POINTS.length; i++) {
+    const [x0, y0] = CALIBRATION_POINTS[i - 1];
+    const [x1, y1] = CALIBRATION_POINTS[i];
+    if (r <= x1) {
+      if (x1 === x0) return round1(y0);
+      const t = (r - x0) / (x1 - x0);
+      return round1(y0 + t * (y1 - y0));
+    }
+  }
+  return 10;
+}
+
+/* ------------------------------------------------------------------ *
  * Main scorer
  * ------------------------------------------------------------------ */
 
@@ -1390,15 +1449,16 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
   };
 
   const components = {};
-  let technicalScore = 0;
+  let rawTechnicalScore = 0;
   for (const [key, weight] of Object.entries(COMPONENT_WEIGHTS)) {
     const part = raw[key];
     const score = round1(clamp(part.score, 0, 10));
     const contribution = round1(score * weight);
-    technicalScore += score * weight;
+    rawTechnicalScore += score * weight;
     components[key] = { score, weight, contribution, reason: part.reason };
   }
-  technicalScore = round1(clamp(technicalScore, 0, 10));
+  rawTechnicalScore = round1(clamp(rawTechnicalScore, 0, 10));
+  const technicalScore = calibrateScore(rawTechnicalScore);
 
   const personal = scorePersonalFit(pipeN, tobN, userProfile, blend);
   const personalFit = personal.score == null ? null : round1(personal.score);
@@ -1429,6 +1489,7 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
     score: finalScore,
     finalScore,
     technicalScore,
+    rawTechnicalScore,
     personalFit,
     hasPersonalizationEvidence: personal.hasPersonalizationEvidence,
     confidence,
@@ -1509,6 +1570,7 @@ export function buildPairingsForPipes(pipeVariants, blends, userProfile) {
         reasoning: result.why,
         confidence: result.confidence,
         technical_score: result.technicalScore,
+        raw_technical_score: result.rawTechnicalScore,
         personal_fit: result.personalFit,
         has_personalization_evidence: result.hasPersonalizationEvidence,
       };

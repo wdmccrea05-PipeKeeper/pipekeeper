@@ -200,7 +200,7 @@ describe('dimension: tobacco cut', () => {
     expect(cut).toBeTruthy();
     const noCut = { ...virginiaFlake, cut: undefined };
     expect(normalizeTobaccoForPairing(noCut).cut).toBe(null);
-    expect(comp(pipe({}), noCut, 'tobaccoCut').score).toBe(5);
+    expect(comp(pipe({}), noCut, 'tobaccoCut').score).toBe(6.5);
   });
 });
 
@@ -223,9 +223,8 @@ describe('dimension: blend composition', () => {
 
   test('missing — no tobacco_components is neutral', () => {
     expect(normalizeTobaccoForPairing(bareBlend).tobaccoComponents).toEqual([]);
-    // 5 is the scorer's uniform "unknown" value (same as unknown cut / unknown
-    // aromatic status) — a slight uncertainty discount, never a wrong answer.
-    expect(comp(pipe({}), bareBlend, 'blendComposition').score).toBe(5);
+    // 6.5 is the neutral "unknown" value — missing data reduces confidence, not compatibility.
+    expect(comp(pipe({}), bareBlend, 'blendComposition').score).toBe(6.5);
   });
 });
 
@@ -245,9 +244,9 @@ describe('dimension: aromatic status', () => {
     expect(tiny).toBeLessThan(roomy);
   });
 
-  test('missing — unknown aromatic status is neutral 5, never assumed non-aromatic', () => {
+  test('missing — unknown aromatic status is neutral 6.5, never assumed non-aromatic', () => {
     expect(normalizeTobaccoForPairing(bareBlend).isAromatic).toBe(null);
-    expect(comp(pipe({}), bareBlend, 'aromaticCompatibility').score).toBe(5);
+    expect(comp(pipe({}), bareBlend, 'aromaticCompatibility').score).toBe(6.5);
   });
 });
 

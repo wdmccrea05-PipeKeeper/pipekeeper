@@ -14,6 +14,7 @@ import {
   normalizeTobaccoForPairing,
   COMPONENT_WEIGHTS,
   rankPipesForBlend,
+  calibrateScore,
 } from '../pairingScoreCanonical';
 
 // Test fixtures
@@ -205,12 +206,12 @@ describe('Component structure', () => {
     expect(weightSum).toBeCloseTo(1, 5);
   });
 
-  test('technical score is the weighted component sum and excludes personal fit', () => {
+  test('raw technical score is the weighted component sum and excludes personal fit', () => {
     const profile = { preferred_blend_types: ['Aromatic'], strength_preference: 'Medium' };
     const withProfile = scorePipeBlendDiagnostic(testPipes[0], testBlends[2], profile);
     const withoutProfile = scorePipeBlendDiagnostic(testPipes[0], testBlends[2], null);
 
-    expect(withProfile.technicalScore).toBe(withoutProfile.technicalScore);
+    expect(withProfile.rawTechnicalScore).toBe(withoutProfile.rawTechnicalScore);
     expect(withoutProfile.personalFit).toBe(null);
     expect(withoutProfile.hasPersonalizationEvidence).toBe(false);
     expect(withProfile.personalFit).toBeGreaterThan(5);
@@ -219,7 +220,7 @@ describe('Component structure', () => {
 
     const expected = Object.entries(withProfile.components)
       .reduce((sum, [, c]) => sum + c.score * c.weight, 0);
-    expect(withProfile.technicalScore).toBeCloseTo(Math.round(expected * 10) / 10, 5);
+    expect(withProfile.rawTechnicalScore).toBeCloseTo(Math.round(expected * 10) / 10, 5);
   });
 
   test('backward-compatible { score, why } shape is preserved', () => {
@@ -300,9 +301,9 @@ describe('Tobacco cut', () => {
     expect(scorePipeBlend(narrowDeep, blend, null).components.tobaccoCut.score).toBe(7);
   });
 
-  test('unknown cut is neutral at 5', () => {
+  test('unknown cut is neutral at 6.5', () => {
     const blend = { name: 'No Cut', blend_type: 'Virginia' };
-    expect(scorePipeBlend(medium, blend, null).components.tobaccoCut.score).toBe(5);
+    expect(scorePipeBlend(medium, blend, null).components.tobaccoCut.score).toBe(6.5);
   });
 
   test('no cut/geometry combination drops below 3', () => {
@@ -450,3 +451,151 @@ export const TEST_FIXTURES = {
   blends: testBlends,
   pipes: testPipes
 };
+
+// ── Calibration tests ───────────────────────────────────────────────────────
+
+describe('Score calibration', () => {
+  test('calibrateScore is monotonically increasing', () => {
+    const samples = [0, 1, 2, 3, 4, 5, 5.5, 6, 6.5, 7, 7.5, 7.8, 8, 8.5, 9, 9.5, 10];
+    for (let i = 1; i < samples.length; i++) {
+      expect(calibrateScore(samples[i])).toBeGreaterThanOrEqual(calibrateScore(samples[i - 1]));
+    }
+  });
+
+  test('calibrateScore preserves boundary values', () => {
+    expect(calibrateScore(0)).toBe(0);
+    expect(calibrateScore(10)).toBe(10);
+  });
+
+  test('neutral raw score maps to neutral display score', () => {
+    // 6.5 is the declared fixed point in the calibration curve
+    expect(calibrateScore(6.5)).toBe(6.5);
+  });
+
+  test('strong raw score expands toward 9+', () => {
+    // Per the calibration curve: raw 8.5 → calibrated 9.0, raw 8.0 → calibrated 8.5
+    expect(calibrateScore(8.5)).toBeGreaterThanOrEqual(9.0);
+    expect(calibrateScore(8.0)).toBeGreaterThanOrEqual(8.5);
+  });
+
+  test('calibration never reduces a strong raw score below the raw value', () => {
+    // Above the neutral point the calibrated score should be >= raw score
+    const highRaws = [6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
+    for (const r of highRaws) {
+      expect(calibrateScore(r)).toBeGreaterThanOrEqual(r);
+    }
+  });
+
+  test('excellent archetype match — aromatic-dedicated pipe + heavy aromatic blend — reaches 8.5+', () => {
+    const pipe = {
+      pipe_id: 'p-aro',
+      focus: ['Aromatics Only'],
+      bowl_diameter_mm: 20,
+      bowl_depth_mm: 38,
+      bowl_material: 'Meerschaum',
+    };
+    const blend = {
+      id: 'b-aro',
+      name: 'Autumn Evening',
+      blend_type: 'Aromatic',
+      is_aromatic: true,
+      aromatic_intensity: 'medium',
+      cut: 'Ribbon',
+      tobacco_components: ['Virginia', 'Black Cavendish'],
+    };
+    const result = scorePipeBlendDiagnostic(pipe, blend, null);
+    expect(result.score).toBeGreaterThanOrEqual(8.5);
+  });
+
+  test('excellent archetype match — English-dedicated pipe + Latakia English blend — reaches 8.3+', () => {
+    const pipe = {
+      pipe_id: 'p-en',
+      focus: ['English Only'],
+      bowl_diameter_mm: 22,
+      bowl_depth_mm: 38,
+      bowl_material: 'Briar',
+    };
+    const blend = {
+      id: 'b-en',
+      name: 'Nightcap',
+      blend_type: 'English',
+      is_aromatic: false,
+      cut: 'Ribbon',
+      tobacco_components: ['Latakia', 'Virginia', 'Oriental', 'Perique'],
+    };
+    const result = scorePipeBlendDiagnostic(pipe, blend, null);
+    expect(result.score).toBeGreaterThanOrEqual(8.3);
+  });
+
+  test('hard conflict — aromatic-dedicated pipe + heavy English — stays clearly below 6', () => {
+    const pipe = {
+      pipe_id: 'p-aro',
+      focus: ['Aromatics Only'],
+      bowl_diameter_mm: 20,
+      bowl_depth_mm: 38,
+      bowl_material: 'Briar',
+    };
+    const blend = {
+      id: 'b-en',
+      name: 'Nightcap',
+      blend_type: 'English',
+      is_aromatic: false,
+      cut: 'Ribbon',
+      tobacco_components: ['Latakia', 'Virginia', 'Oriental', 'Perique'],
+    };
+    const result = scorePipeBlendDiagnostic(pipe, blend, null);
+    expect(result.score).toBeLessThan(6);
+  });
+
+  test('missing data reduces confidence significantly while leaving score workable', () => {
+    // Full data + excellent match
+    const richPipe = { pipe_id: 'p', focus: ['Aromatics Only'], bowl_diameter_mm: 20, bowl_depth_mm: 38, bowl_material: 'Briar', usage_characteristics: 'Smokes cool' };
+    const richBlend = { id: 'b', name: 'Big Aromatic', blend_type: 'Aromatic', is_aromatic: true, aromatic_intensity: 'medium', cut: 'Ribbon', tobacco_components: ['Virginia', 'Black Cavendish'], strength: 'Mild' };
+    const rich = scorePipeBlendDiagnostic(richPipe, richBlend, null);
+
+    // Same logical match but missing geometry/cut/components
+    const sparsePipe = { pipe_id: 'p2', focus: ['Aromatics Only'] };
+    const sparseBlend = { id: 'b2', name: 'Big Aromatic', blend_type: 'Aromatic', is_aromatic: true };
+    const sparse = scorePipeBlendDiagnostic(sparsePipe, sparseBlend, null);
+
+    // Confidence should drop substantially when key data is missing
+    expect(rich.confidence).toBeGreaterThan(sparse.confidence);
+    const confidenceDrop = rich.confidence - sparse.confidence;
+    expect(confidenceDrop).toBeGreaterThan(0.3);
+
+    // Score should not collapse to "terrible" — a sparse but logically-positive
+    // pairing should still read as workable/good
+    expect(sparse.score).toBeGreaterThan(6.5);
+  });
+
+  test('a score of 10 is rare — not achieved by ordinary matches', () => {
+    // Only an exact-blend-name pipe focus produces dedication=10;
+    // other components stay well below 10, so a score of exactly 10 should be rare.
+    const generalPipe = { pipe_id: 'p', focus: ['Versatile'], bowl_diameter_mm: 20, bowl_depth_mm: 38, bowl_material: 'Briar' };
+    const blend = { id: 'b', name: 'Autumn Evening', blend_type: 'Aromatic', is_aromatic: true, aromatic_intensity: 'medium', cut: 'Ribbon' };
+    const result = scorePipeBlendDiagnostic(generalPipe, blend, null);
+    expect(result.score).toBeLessThan(10);
+  });
+
+  test('higher raw compatibility never produces a lower calibrated score', () => {
+    // For a family of related pipes with varying geometry quality, ranking is preserved
+    const blend = { id: 'b', name: 'VA Flake', blend_type: 'Virginia', is_aromatic: false, cut: 'Flake', tobacco_components: ['Virginia'] };
+    const narrowDeepVa = { pipe_id: 'p1', focus: ['Virginia'], bowl_diameter_mm: 16, bowl_depth_mm: 46 };
+    const narrowMedVa = { pipe_id: 'p2', focus: ['Virginia'], bowl_diameter_mm: 16, bowl_depth_mm: 38 };
+    const widePipe = { pipe_id: 'p3', focus: ['Virginia'], bowl_diameter_mm: 24, bowl_depth_mm: 28 };
+
+    const s1 = scorePipeBlendDiagnostic(narrowDeepVa, blend, null);
+    const s2 = scorePipeBlendDiagnostic(narrowMedVa, blend, null);
+    const s3 = scorePipeBlendDiagnostic(widePipe, blend, null);
+
+    // Ranking: narrow+deep > narrow+medium > wide+shallow (for Virginia flake)
+    expect(s1.score).toBeGreaterThan(s3.score);
+    // rawTechnicalScore ordering matches calibrated score ordering
+    if (s1.rawTechnicalScore > s2.rawTechnicalScore) {
+      expect(s1.score).toBeGreaterThanOrEqual(s2.score);
+    }
+    if (s2.rawTechnicalScore > s3.rawTechnicalScore) {
+      expect(s2.score).toBeGreaterThanOrEqual(s3.score);
+    }
+  });
+});

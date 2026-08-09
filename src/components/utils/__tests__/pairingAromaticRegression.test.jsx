@@ -196,7 +196,7 @@ describe('Legacy and unknown records', () => {
   test('unknown blend family gets a mild uncertainty penalty, not a zero', () => {
     const r = scorePipeBlendDiagnostic(aromaticDedicatedPipe, { name: 'Unmarked Jar' }, null);
     expect(r.components.dedication.score).toBe(5);
-    expect(r.components.aromaticCompatibility.score).toBe(5);
+    expect(r.components.aromaticCompatibility.score).toBe(6.5);
     expect(r.score).toBeGreaterThan(3);
     expect(r.confidence).toBeLessThan(0.6);
     expect(r.whyList.join(' ')).toMatch(/provisional/i);
