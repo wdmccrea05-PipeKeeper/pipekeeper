@@ -48,7 +48,7 @@ export const COMPONENT_WEIGHTS = Object.freeze({
  * ------------------------------------------------------------------ */
 export const COMPATIBILITY_TIERS = Object.freeze({
   EXACT_USER_BLEND:     { shift: +2.5, floor: 9.5, ceiling: 10.0 },
-  EXACT_SPECIALIZATION: { shift: +1.0, floor: null, ceiling: 9.4 },
+  EXACT_SPECIALIZATION: { shift: +1.0, floor: null, ceiling: 9.5 },
   PREFERRED:            { shift: +0.5, floor: null, ceiling: 8.9 },
   COMPATIBLE:           { shift: 0,   floor: null, ceiling: 7.5 },
   GENERAL:              { shift: 0,   floor: null, ceiling: 10.0 },
