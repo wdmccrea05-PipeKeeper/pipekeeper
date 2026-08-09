@@ -23,7 +23,7 @@ import {
 import { scorePipeBlend as scoreViaShimA } from '../pairingScore';
 import { scorePipeBlend as scoreViaShimB } from '../pairingScorer';
 import { getVariantFromPipe, resolveBowlVariant } from '../pipeVariants';
-import { buildArtifactFingerprint, SCORER_VERSION } from '../fingerprint';
+import { buildArtifactFingerprint, SCORER_VERSION, hashString, stableStringify, fingerprintPipe, fingerprintBlend } from '../fingerprint';
 
 const NEUTRAL = 6;
 
@@ -486,6 +486,23 @@ describe('pairing cache fingerprinting', () => {
   test('the scorer version is part of the fingerprint', () => {
     expect(SCORER_VERSION).toBeTruthy();
     expect(fp([p1], [b1])).toEqual(expect.any(String));
+  });
+
+  test('SCORER_VERSION is "3-taxonomy-final" after taxonomy cleanup', () => {
+    expect(SCORER_VERSION).toBe('3-taxonomy-final');
+  });
+
+  test('same pipe + blend + different SCORER_VERSION produces a different fingerprint', () => {
+    // Build what the fingerprint would have looked like under the previous version.
+    const prevVersionPayload = {
+      v: '2-multidimensional',
+      pipes: [p1].map(fingerprintPipe),
+      blends: [b1].map(fingerprintBlend),
+      profile: null,
+    };
+    const prevFp = hashString(stableStringify(prevVersionPayload));
+    const currentFp = fp([p1], [b1]);
+    expect(currentFp).not.toBe(prevFp);
   });
 
   // Deliberate deviation from the "remove strength" instruction: nicotine

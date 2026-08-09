@@ -174,7 +174,9 @@ describe('generateRecommendations — wine record optimization', () => {
 
         const rec = recs.find((r) => r.goal === 'blend_missing_type');
         const item = rec?.items?.find((i) => i.id === 'b1');
-        expect(item?.proposedChange?.payload?.blend_type).toBeUndefined();
+        // Catalog now maps Navy Flake to Virginia (not VaPer); whatever it
+        // suggests, Virginia/Perique must never be the outcome.
+        expect(item?.proposedChange?.payload?.blend_type).not.toBe('Virginia/Perique');
       });
 
       it('does not override explicit non-aromatic evidence with aromatic catalog labels', () => {
@@ -193,6 +195,92 @@ describe('generateRecommendations — wine record optimization', () => {
         const rec = recs.find((r) => r.goal === 'blend_missing_type');
         const item = rec?.items?.find((i) => i.id === 'b2');
         expect(item?.proposedChange?.payload?.blend_type).toBeUndefined();
+      });
+
+      it('Autumn Evening catalog entry is Aromatic, not Virginia/Perique', () => {
+        // The catalog must not classify Autumn Evening (Virginia + Black Cavendish
+        // aromatic blend) as Virginia/Perique.
+        const recs = generateRecommendations({
+          activeModules: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
+          blends: [
+            // blend_type is blank — tests the catalog lookup path
+            { id: 'ae1', name: 'Autumn Evening', blend_type: '', is_aromatic: true },
+          ],
+          pipes: [],
+          bottles: [],
+          cigars: [],
+          smokingLogs: [],
+          tastingLogs: [],
+        });
+
+        const rec = recs.find((r) => r.goal === 'blend_missing_type');
+        const item = rec?.items?.find((i) => i.id === 'ae1');
+        // Should NOT suggest Virginia/Perique
+        expect(item?.proposedChange?.payload?.blend_type).not.toBe('Virginia/Perique');
+      });
+
+      it('Navy Flake catalog entry is Virginia, not Virginia/Perique', () => {
+        // Navy Flake has no confirmed Perique component; the catalog must not
+        // classify it as VaPer.
+        const recs = generateRecommendations({
+          activeModules: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
+          blends: [
+            { id: 'nf1', name: 'Navy Flake', blend_type: '', tobacco_components: ['Virginia', 'Burley'] },
+          ],
+          pipes: [],
+          bottles: [],
+          cigars: [],
+          smokingLogs: [],
+          tastingLogs: [],
+        });
+
+        const rec = recs.find((r) => r.goal === 'blend_missing_type');
+        const item = rec?.items?.find((i) => i.id === 'nf1');
+        expect(item?.proposedChange?.payload?.blend_type).not.toBe('Virginia/Perique');
+      });
+
+      it('reclassification path cannot suggest VaPer without confirmed Virginia + Perique', () => {
+        // A blend currently classified as 'English' named 'Autumn Evening' should
+        // not be reclassified to 'Virginia/Perique' via the catalog. Autumn Evening
+        // is now catalogued as Aromatic, but because is_aromatic is false on this
+        // record the canonical guard must block even that — so no blend_type change
+        // should be proposed at all.
+        const recs = generateRecommendations({
+          activeModules: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
+          blends: [
+            // has a blend_type already set — exercises the reclassification path
+            { id: 're1', name: 'Autumn Evening', blend_type: 'English', is_aromatic: false },
+          ],
+          pipes: [],
+          bottles: [],
+          cigars: [],
+          smokingLogs: [],
+          tastingLogs: [],
+        });
+
+        const rec = recs.find((r) => r.goal === 'blend_reclassification');
+        const item = rec?.items?.find((i) => i.id === 're1');
+        // The canonical guard blocks Aromatic (is_aromatic: false) and the catalog
+        // no longer carries VaPer for this blend — so no blend_type should be proposed.
+        expect(item?.proposedChange?.payload?.blend_type).toBeUndefined();
+      });
+
+      it('Perique alone in tobacco_components does not imply VaPer', () => {
+        const recs = generateRecommendations({
+          activeModules: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
+          blends: [
+            { id: 'per1', name: 'Some Blend', blend_type: '', tobacco_components: ['Perique'] },
+          ],
+          pipes: [],
+          bottles: [],
+          cigars: [],
+          smokingLogs: [],
+          tastingLogs: [],
+        });
+
+        const rec = recs.find((r) => r.goal === 'blend_missing_type');
+        const item = rec?.items?.find((i) => i.id === 'per1');
+        expect(item?.proposedChange?.payload?.blend_type).not.toBe('Virginia/Perique');
       });
   });
 });
