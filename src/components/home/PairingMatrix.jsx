@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { getPipeVariantKey } from "@/components/utils/pipeVariants";
-import { regeneratePairings } from "@/components/utils/pairingRegeneration";
+import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
+import { pairingMatrixQueryOptions } from "@/components/utils/pairingPolicy";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
@@ -26,18 +27,9 @@ export default function PairingMatrix({ user }) {
     enabled: !!user?.email,
   });
 
-  const { data: activePairingsRecord, isLoading: artifactsLoading } = useQuery({
-    queryKey: ["activePairings", user?.email],
-    queryFn: async () => {
-      const active = await base44.entities.PairingMatrix.filter(
-        { created_by: user?.email, is_active: true },
-        "-created_date",
-        1
-      );
-      return active?.[0] || null;
-    },
-    enabled: !!user?.email,
-  });
+  const { data: activePairingsRecord, isLoading: artifactsLoading } = useQuery(
+    pairingMatrixQueryOptions(user?.email)
+  );
 
   const { data: blends = [] } = useQuery({
     queryKey: ["blends", user?.email],
@@ -60,14 +52,13 @@ export default function PairingMatrix({ user }) {
   const regenPairings = async () => {
     setRegenerating(true);
     try {
-      await regeneratePairings({
+      await regeneratePairingsConsistent({
         pipes,
         blends,
         profile: userProfile,
         user,
         queryClient,
         activePairings: activePairingsRecord,
-        mode: "merge"
       });
       await queryClient.invalidateQueries({ queryKey: ["activePairings", user.email] });
       toast.success(t("pairingMatrix.regenSuccess"));

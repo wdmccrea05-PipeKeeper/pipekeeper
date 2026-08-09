@@ -115,9 +115,28 @@ describe('Aromatic Intensity', () => {
     expect(getAromaticIntensity(testBlends[2])).toBe('medium');
   });
 
-  test('never falls back to nicotine strength', () => {
+  // Replaces the removed test that asserted `strength: 'Full'` -> 'heavy'.
+  // That test defended the exact bug this rebuild removes.
+  test('strength does not affect aromatic intensity', () => {
+    expect(getAromaticIntensity({ strength: 'Full' })).toBe(null);
+    expect(getAromaticIntensity({ strength: 'Mild' })).toBe(null);
     expect(getAromaticIntensity({ blend_type: 'Aromatic', strength: 'Full' })).toBe(null);
-    expect(getAromaticIntensity({ blend_type: 'Aromatic', strength: 'Mild' })).toBe(null);
+  });
+
+  test('explicit aromatic_intensity field is used', () => {
+    expect(getAromaticIntensity({ aromatic_intensity: 'heavy' })).toBe('heavy');
+    expect(getAromaticIntensity({ aromatic_intensity: 'light' })).toBe('light');
+    expect(getAromaticIntensity({ aromatic_intensity: 'medium' })).toBe('medium');
+  });
+
+  test('flavor notes can indicate aromatic intensity', () => {
+    expect(getAromaticIntensity({ flavor_notes: ['Vanilla', 'Caramel'] })).toBe('heavy');
+  });
+
+  test('explicit field wins over flavor notes and strength', () => {
+    expect(
+      getAromaticIntensity({ aromatic_intensity: 'light', flavor_notes: ['Vanilla'], strength: 'Full' })
+    ).toBe('light');
   });
 
   test('derives intensity from flavor notes only', () => {

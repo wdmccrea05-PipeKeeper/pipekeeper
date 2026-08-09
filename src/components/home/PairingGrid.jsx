@@ -41,12 +41,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
     queryKey: ["activePairings", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
-      const active = await base44.entities.PairingMatrix.filter(
-        { created_by: user.email, is_active: true },
-        "-created_date",
-        1
-      );
-      return active?.[0] || null;
+      return await getCurrentPairingMatrix(user?.email);
     },
   });
 
@@ -110,14 +105,10 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
           bowl_variant_id: pv.bowl_variant_id || null,
           name: variant?.variant_name || pv.variant_name || pv.name || t('common.unknown'),
           focus: Array.isArray(variant?.focus) ? variant.focus : [],
-          chamber_volume: variant?.chamber_volume,
-          bowl_diameter_mm: variant?.bowl_diameter_mm,
-          bowl_depth_mm: variant?.bowl_depth_mm,
-          bowl_material: variant?.bowl_material,
-          shape: variant?.shape,
-          bowlStyle: variant?.bowlStyle,
-          usage_characteristics: variant?.usage_characteristics,
-          smoking_characteristics: variant?.smoking_characteristics,
+          // Complete resolved pipe/bowl record — the canonical scorer reads
+          // chamber geometry, material, shape and usage characteristics, so it
+          // must never receive a stripped {focus, id, name} object.
+          variant: variant || pipe || null,
           recommendations: pairing?.recommendations || pairing?.blend_matches || [],
         };
       } catch (e) {
@@ -128,6 +119,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
           bowl_variant_id: null,
           name: 'Error loading variant',
           focus: [],
+          variant: null,
           recommendations: [],
         };
       }
@@ -237,20 +229,13 @@ function PipeCard({ row, allBlends, userProfile }) {
   const [selectedBlendId, setSelectedBlendId] = useState("");
   const [calculatedScore, setCalculatedScore] = useState(null);
 
-  // Canonical scorer input: every pairing-relevant field the row carries
+  // Canonical scorer input: the COMPLETE resolved pipe/bowl record.
   const pipeForScore = useMemo(() => ({
+    ...(row.variant || {}),
     pipe_id: row.pipe_id,
     pipe_name: row.name,
     bowl_variant_id: row.bowl_variant_id,
     focus: row.focus || [],
-    chamber_volume: row.chamber_volume,
-    bowl_diameter_mm: row.bowl_diameter_mm,
-    bowl_depth_mm: row.bowl_depth_mm,
-    bowl_material: row.bowl_material,
-    shape: row.shape,
-    bowlStyle: row.bowlStyle,
-    usage_characteristics: row.usage_characteristics,
-    smoking_characteristics: row.smoking_characteristics,
   }), [row]);
 
   // Top matches: always recompute locally to ensure up-to-date scores (artifact may be stale)
@@ -285,8 +270,21 @@ function PipeCard({ row, allBlends, userProfile }) {
       // else fall through to local recompute
     }
 
+    // Absence from the cached PairingMatrix means "not in the cached top-N",
+    // never "incompatible" — always fall back to the canonical live score.
+    // See src/components/utils/pairingPolicy.jsx (rule R1).
+    const selectedBlend = (allBlends || []).find((b) => String(b.id) === sid);
+    if (selectedBlend) {
+      const { score } = scorePipeBlend(
+        pipeForScore,
+        { ...selectedBlend, tobacco_id: sid, tobacco_name: selectedBlend.name },
+        userProfile
+      );
+      return score;
+    }
+
     return calculatedScore;
-  }, [selectedBlendId, row.recommendations, calculatedScore]);
+  }, [selectedBlendId, row.recommendations, calculatedScore, allBlends, pipeForScore, userProfile]);
 
   const calculateScore = () => {
     if (!selectedBlendId) {

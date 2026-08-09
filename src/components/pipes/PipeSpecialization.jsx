@@ -12,6 +12,11 @@ import { toast } from "sonner";
 import SpecializationRecommender from "./SpecializationRecommender";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { FOCUS_OPTIONS, FOCUS_LABEL_KEY } from "@/components/utils/focusOptions";
+import {
+  inferBlendCategory,
+  normalizeFocus,
+  normalizeTobaccoForPairing,
+} from "@/components/utils/pairingScoreCanonical";
 
 export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser }) {
   const { t } = useTranslation();
@@ -54,28 +59,34 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
     });
   };
 
-  // Find matching blends based on designations
-  const hasNonAromaticFocus = designations.some(d => 
-    d.toLowerCase().includes('non-aromatic') || d.toLowerCase().includes('non aromatic')
-  );
-  const hasAromaticFocus = designations.some(d => 
-    d.toLowerCase() === 'aromatic' && !d.toLowerCase().includes('non')
-  );
-  
-  const matchingBlends = blends.filter(blend => {
-    const isAromaticBlend = blend.blend_type?.toLowerCase() === 'aromatic';
-    
-    // Exclude aromatics if non-aromatic focus
-    if (hasNonAromaticFocus && isAromaticBlend) return false;
-    
-    // Exclude non-aromatics if aromatic focus
-    if (hasAromaticFocus && !isAromaticBlend) return false;
-    
-    // Otherwise match on blend type
-    return designations.some(designation => 
-      blend.blend_type?.toLowerCase().includes(designation.toLowerCase()) ||
-      designation.toLowerCase().includes(blend.blend_type?.toLowerCase())
-    );
+  // Find matching blends based on designations.
+  // Classification is delegated entirely to the canonical scorer — this screen
+  // must never re-implement aromatic detection (the old
+  // `blend_type?.toLowerCase() === 'aromatic'` check missed "English Aromatic",
+  // "Aromatic/Burley", and every record that only sets `is_aromatic`).
+  const normalizedFocus = normalizeFocus(designations);
+  const hasNonAromaticFocus = normalizedFocus.nonAromaticOnly;
+  const hasAromaticFocus = normalizedFocus.aromaticOnly;
+
+  const matchingBlends = blends.filter((blend) => {
+    const category = inferBlendCategory(blend);
+
+    // "unknown" is never treated as a match or a mismatch — it is excluded from
+    // both filters rather than being assumed non-aromatic.
+    if (hasNonAromaticFocus && category === "aromatic") return false;
+    if (hasAromaticFocus && category === "non_aromatic") return false;
+
+    const blendType = String(blend?.blend_type || "").toLowerCase();
+    const blendFamily = normalizeTobaccoForPairing(blend).blendFamily;
+
+    return designations.some((designation) => {
+      const d = String(designation || "").toLowerCase().trim();
+      if (!d) return false;
+      if (d === "aromatic" && category === "aromatic") return true;
+      if (blendFamily !== "unknown" && d.includes(blendFamily)) return true;
+      if (!blendType) return false;
+      return blendType.includes(d) || d.includes(blendType);
+    });
   });
 
   if (!isPaidUser) {

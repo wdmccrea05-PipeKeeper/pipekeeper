@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
-import { getPipeVariantKey } from "@/components/utils/pipeVariants";
+import { getPipeVariantKey, getVariantFromPipe } from "@/components/utils/pipeVariants";
 import { regeneratePairingsConsistent } from "@/components/utils/pairingRegeneration";
+import { scorePipeBlend } from "@/components/utils/pairingScoreCanonical";
+import { pairingMatrixQueryOptions } from "@/components/utils/pairingPolicy";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
 
@@ -34,19 +36,11 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
     staleTime: 30_000,
   });
 
-  // Load active PairingMatrix (this is the single source of truth)
-  const { data: activePairings, isLoading: pairingsLoading } = useQuery({
-    queryKey: ["activePairings", user?.email],
-    enabled: !!user?.email,
-    queryFn: async () => {
-      const active = await base44.entities.PairingMatrix.filter(
-        { created_by: user.email, is_active: true },
-        "-created_date",
-        1
-      );
-      return active?.[0] || null;
-    },
-  });
+  // Load the cached PairingMatrix. It is a cache of top-N recommendations,
+  // NOT the source of truth — see src/components/utils/pairingPolicy.jsx.
+  const { data: activePairings, isLoading: pairingsLoading } = useQuery(
+    pairingMatrixQueryOptions(user?.email)
+  );
 
   const bowlOptions = useMemo(() => {
     const bowls = Array.isArray(pipe?.interchangeable_bowls) ? pipe.interchangeable_bowls : [];
@@ -89,26 +83,48 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
     return found;
   }, [activePairings, pipe?.id, pipe?.name, activeBowlVariantId]);
 
-  const top3 = useMemo(() => {
-    const recs = pairingEntry?.recommendations || pairingEntry?.blend_matches || [];
-    // CRITICAL: Always sort by score descending before slicing
-    return [...recs]
-      .filter((r) => (r.score ?? 0) > 0)
-      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-      .slice(0, 3);
-  }, [pairingEntry]);
-
   // Filter blends to AI-eligible only
   // NOTE: filterAiEligibleItems already excludes ai_excluded=true and scope="collector_only"
   const eligibleBlends = useMemo(() => filterAiEligibleItems(blends), [blends]);
+
+  // COMPLETE resolved pipe/bowl record for the canonical scorer.
+  const scoredVariant = useMemo(() => {
+    if (!pipe) return null;
+    const normalizedBowlId =
+      (!activeBowlVariantId || activeBowlVariantId === "main" || activeBowlVariantId === "null")
+        ? null
+        : activeBowlVariantId;
+    return getVariantFromPipe(pipe, normalizedBowlId);
+  }, [pipe, activeBowlVariantId]);
+
+  const top3 = useMemo(() => {
+    const recs = pairingEntry?.recommendations || pairingEntry?.blend_matches || [];
+    const cached = [...recs]
+      .filter((r) => (r.score ?? 0) > 0)
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+      .slice(0, 3);
+    if (cached.length > 0) return cached;
+
+    // No cached entry for this variant — compute live rather than showing
+    // nothing, which users read as "no compatible tobaccos".
+    if (!scoredVariant) return [];
+    return eligibleBlends
+      .map((b) => {
+        const { score, why } = scorePipeBlend(scoredVariant, b, userProfile);
+        return { tobacco_id: String(b.id), tobacco_name: b.name, score, reasoning: why };
+      })
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+  }, [pairingEntry, scoredVariant, eligibleBlends, userProfile]);
 
   const [selectedBlendId, setSelectedBlendId] = useState("");
   const selectedBlend = useMemo(() => eligibleBlends.find((b) => String(b.id) === String(selectedBlendId)) || null, [eligibleBlends, selectedBlendId]);
 
   const selectedBlendScore = useMemo(() => {
-    if (!selectedBlend || !pairingEntry) return null;
-    const recs = pairingEntry.recommendations || pairingEntry.blend_matches || [];
+    if (!selectedBlend) return null;
 
+    const recs = pairingEntry?.recommendations || pairingEntry?.blend_matches || [];
     const sid = String(selectedBlend.id);
 
     const hit = recs.find((r) =>
@@ -116,9 +132,13 @@ export default function MatchingEngine({ pipe, blends = [], isPaidUser }) {
       String(r.blend_id ?? "") === sid ||
       String(r.id ?? "") === sid
     );
+    if (hit?.score != null) return hit.score;
 
-    return hit?.score ?? null;
-  }, [pairingEntry, selectedBlend]);
+    // Absence from the cached matrix means "not in the cached top-N", never
+    // "incompatible". Fall back to the canonical live score (policy rule R1).
+    if (!scoredVariant) return null;
+    return scorePipeBlend(scoredVariant, selectedBlend, userProfile).score;
+  }, [pairingEntry, selectedBlend, scoredVariant, userProfile]);
 
   if (!isPaidUser) {
     return (

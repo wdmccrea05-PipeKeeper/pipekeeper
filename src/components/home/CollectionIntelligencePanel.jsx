@@ -27,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { getCurrentPairingMatrix } from "@/components/utils/pairingPolicy";
 
 // Maximum insights shown by default (prevents cognitive overload)
 const DEFAULT_VISIBLE = 4;
@@ -368,12 +369,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, bottles = [
     queryKey: ["activePairings", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
-      const active = await base44.entities.PairingMatrix.filter(
-        { created_by: user.email, is_active: true },
-        "-created_date",
-        1
-      );
-      return active?.[0] || null;
+      return await getCurrentPairingMatrix(user?.email);
     },
     staleTime: 60_000,
   });
