@@ -214,7 +214,6 @@ export default function PipeClubHistory() {
 
   const handleDispositionChange = async (session, newDisp) => {
     try {
-      const currentDisp = session.disposition ?? "none";
 
       // Update AcquisitionItem if it exists
       if (session.wishlist_item_id) {

@@ -182,8 +182,10 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
   // Navigate
   const goNext = () => {
     const idx = STEPS.indexOf(step);
-    if (idx < STEPS.length - 1) setStep(STEPS[idx + 1]);
-    if (STEPS[idx + 1] === STEP_RESULTS) runScoring();
+    if (idx >= STEPS.length - 1) return;
+    const nextStep = STEPS[idx + 1];
+    setStep(nextStep);
+    if (nextStep === STEP_RESULTS) runScoring();
   };
   const goBack = () => {
     const idx = STEPS.indexOf(step);

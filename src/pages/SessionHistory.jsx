@@ -14,6 +14,12 @@ import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 const BASE_MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar", "pipe_club"];
 
+function getModuleLabel(key) {
+  if (key === "all") return "All";
+  if (key === "pipe_club") return "Pipe Club";
+  return key[0].toUpperCase() + key.slice(1);
+}
+
 function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions = [], wineTastings = [], pipeClubSessions = [] }) {
   const pipeRows = (smokingLogs || []).map((log) => ({
     id: `pipe_${log.id}`,
@@ -121,7 +127,7 @@ export default function SessionHistory() {
             variant={moduleFilter === key ? "default" : "outline"}
             onClick={() => setModuleFilter(key)}
           >
-            {t(`sessionHistory.filter.${key}`, key === "all" ? "All" : key === "pipe_club" ? "Pipe Club" : key[0].toUpperCase() + key.slice(1))}
+            {t(`sessionHistory.filter.${key}`, getModuleLabel(key))}
           </Button>
         ))}
       </div>
@@ -161,7 +167,7 @@ export default function SessionHistory() {
                 >
                   <p className="text-sm font-semibold">{row.itemLabel}</p>
                   <p className="text-xs text-[#D8C7A6]/70 mt-1">
-                    {t(`sessionHistory.module.${row.moduleType}`, row.moduleType === "pipe_club" ? "Pipe Club" : row.moduleType)}
+                    {t(`sessionHistory.module.${row.moduleType}`, getModuleLabel(row.moduleType))}
                     {row.rating != null ? ` • ★ ${row.rating}` : ""}
                   </p>
                 </button>
@@ -190,7 +196,7 @@ export default function SessionHistory() {
             </button>
 
             <div className="mb-1 text-xs uppercase tracking-widest text-[#B48C4B]">
-              {t(`sessionHistory.module.${selectedSession.moduleType}`, selectedSession.moduleType === "pipe_club" ? "Pipe Club" : selectedSession.moduleType)}
+              {t(`sessionHistory.module.${selectedSession.moduleType}`, getModuleLabel(selectedSession.moduleType))}
             </div>
 
             <h3 className="text-lg font-bold text-[#F5F1E7] pr-6">{selectedSession.itemLabel}</h3>
