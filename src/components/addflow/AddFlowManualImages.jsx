@@ -987,6 +987,14 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         ...imageMetaPayload,
       });
 
+      // Ensure created_by is set (required by Wine and other entities)
+      if (!recordPayload.created_by) {
+        try {
+          const me = await base44.auth.me();
+          if (me?.email) recordPayload.created_by = me.email;
+        } catch { /* ignore — will surface as validation error if required */ }
+      }
+
       const created = await base44.entities[ENTITIES[itemType]].create(recordPayload);
 
       if (itemType === 'blend') {
