@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav';
 
-import { getBottleUnitValue } from '@/components/utils/whiskeyValueHelpers';
+import { selectWhiskeyMetrics } from '@/lib/collection/whiskeySelectors';
 
 import { BarChart3 } from 'lucide-react';
 import WhiskeyValueIntelligence from '@/components/whiskey/WhiskeyValueIntelligence';
@@ -28,10 +28,27 @@ function WhiskeyAnalyticsInner() {
     enabled: !!user?.email,
   });
 
-  const totalValue = bottles.reduce((sum, b) => sum + getBottleUnitValue(b), 0);
-  const avgRating = bottles.filter(b => b?.rating > 0).reduce((sum, b, _, arr) => sum + (b.rating / arr.length), 0);
-  const totalBottles = bottles.length;
-  const openBottles = bottles.filter(b => b?.fill_level && b.fill_level !== 'Empty').length;
+  const { data: inventoryUnits = [] } = useQuery({
+    queryKey: ['whiskey-inventory-units', user?.email],
+    queryFn: async () => {
+      const result = await base44.entities.WhiskeyInventoryUnit.filter({ created_by: user?.email });
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+  });
+
+  const whiskeyMetrics = useMemo(
+    () => selectWhiskeyMetrics(bottles, inventoryUnits, []),
+    [bottles, inventoryUnits],
+  );
+  const totalValue = whiskeyMetrics.collection_value;
+  const avgRating = useMemo(() => {
+    const rated = bottles.filter((b) => Number(b?.rating) > 0);
+    if (!rated.length) return null;
+    return rated.reduce((sum, b) => sum + Number(b.rating), 0) / rated.length;
+  }, [bottles]);
+  const totalBottles = whiskeyMetrics.total_bottles;
+  const openBottles = whiskeyMetrics.open_bottles;
 
   return (
     <div className="space-y-6">
@@ -55,7 +72,7 @@ function WhiskeyAnalyticsInner() {
         </p>
       </div>
 
-      {bottles.length > 0 ? (
+      {whiskeyMetrics.bottle_types > 0 ? (
         <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div

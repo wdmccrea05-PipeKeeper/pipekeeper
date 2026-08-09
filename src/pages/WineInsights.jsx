@@ -10,7 +10,8 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import WineInsuranceExporter from '@/components/export/WineInsuranceExporter';
 import { importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
-import { selectWineCollectionValue, selectUnvaluedWineCount, hasWineValuation, getWinePrimaryImage, getWineTotalValue } from '@/lib/collection/wineSelectors';
+import { selectWineCollectionValue, selectUnvaluedWineCount, hasWineValuation, getWinePrimaryImage, getWineTotalValue, selectWineMetrics, getWineDrinkWindowStatus } from '@/lib/collection/wineSelectors';
+import { selectBreakdownByField } from '@/lib/analytics/breakdownUtils';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
@@ -80,33 +81,46 @@ export default function WineInsights() {
   const wineSelectedDayRows = useMemo(() => wineByDate[calSelectedDate] || [], [wineByDate, calSelectedDate]);
 
   const stats = useMemo(() => {
-    const totalBottles = wines.length;
-    const totalInCellar = wines.reduce((s, w) => s + (w.quantity || 1), 0);
-    const totalValue = selectWineCollectionValue(wines);
-    const unvalued = selectUnvaluedWineCount(wines);
-    const lowConfidence = wines.filter(w => { const conf = w.valuation_confidence || w.market_valuation_confidence; return hasWineValuation(w) && conf === 'low'; }).length;
-    const rated = wines.filter(w => w.rating > 0);
-    const avgRating = rated.length > 0 ? (rated.reduce((s, w) => s + w.rating, 0) / rated.length).toFixed(1) : '—';
+    const metrics = selectWineMetrics(wines, tastings);
+    const lowConfidence = wines.filter(w => {
+      const conf = w.valuation_confidence || w.market_valuation_confidence;
+      return hasWineValuation(w) && conf === 'low';
+    }).length;
 
-    const styleBreakdown = {};
-    wines.forEach(w => { if (w.style) styleBreakdown[w.style] = (styleBreakdown[w.style] || 0) + 1; });
-    const regionBreakdown = {};
-    wines.forEach(w => { if (w.region) regionBreakdown[w.region] = (regionBreakdown[w.region] || 0) + 1; });
-    const varietalBreakdown = {};
-    wines.forEach(w => { if (w.varietal) varietalBreakdown[w.varietal] = (varietalBreakdown[w.varietal] || 0) + 1; });
+    const styleBreakdown   = selectBreakdownByField(wines, 'style');
+    const regionBreakdown  = selectBreakdownByField(wines, 'region');
+    const varietalBreakdown = selectBreakdownByField(wines, 'varietal');
+
+    const avgRating = metrics.average_rating != null
+      ? metrics.average_rating.toFixed(1)
+      : '—';
 
     const now = new Date();
-    const drinkingNow = wines.filter(w => {
-      if (!w.drink_window_start || !w.drink_window_end) return false;
-      return new Date(w.drink_window_start) <= now && new Date(w.drink_window_end) >= now;
-    });
-    const tooYoung = wines.filter(w => w.drink_window_start && new Date(w.drink_window_start) > now);
-    const pastPeak = wines.filter(w => w.drink_window_end && new Date(w.drink_window_end) < now);
+    const drinkingNow = wines.filter(w => getWineDrinkWindowStatus(w) === 'drink_now');
+    const tooYoung    = wines.filter(w => getWineDrinkWindowStatus(w) === 'too_young');
+    const pastPeak    = wines.filter(w => getWineDrinkWindowStatus(w) === 'past_peak');
 
-    const topByValue = [...wines].sort((a, b) => getWineTotalValue(b) - getWineTotalValue(a)).slice(0, 3);
+    const topByValue  = [...wines].sort((a, b) => getWineTotalValue(b) - getWineTotalValue(a)).slice(0, 3);
     const topByRating = [...wines].filter(w => w.rating > 0).sort((a, b) => b.rating - a.rating).slice(0, 1);
 
-    return { totalBottles, totalInCellar, totalValue, avgRating, styleBreakdown, regionBreakdown, varietalBreakdown, drinkingNow: drinkingNow.length, tooYoung: tooYoung.length, pastPeak: pastPeak.length, tastingCount: tastings.length, unvalued, lowConfidence, topByValue, topByRating, drinkingNowWines: drinkingNow };
+    return {
+      totalBottles:   metrics.wine_count,
+      totalInCellar:  metrics.total_in_cellar,
+      totalValue:     metrics.collection_value,
+      avgRating,
+      styleBreakdown,
+      regionBreakdown,
+      varietalBreakdown,
+      drinkingNow:     drinkingNow.length,
+      tooYoung:        tooYoung.length,
+      pastPeak:        pastPeak.length,
+      tastingCount:    metrics.total_tastings,
+      unvalued:        metrics.unvalued_count,
+      lowConfidence,
+      topByValue,
+      topByRating,
+      drinkingNowWines: drinkingNow,
+    };
   }, [wines, tastings]);
 
   const wineImportDef = importDefinitions['winekeeper_wines'];

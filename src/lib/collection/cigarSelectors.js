@@ -13,6 +13,7 @@
  */
 
 import { calculateCigarValue } from '@/utils/cigarValuation';
+import { selectActiveCigars } from './activeFilters.js';
 
 // ---------------------------------------------------------------------------
 // Rarity / Collectibility scoring — WhiskeyKeeper/WineKeeper-style model
@@ -369,8 +370,7 @@ export function hasCigarValuation(cigar) {
  * @returns {number}
  */
 export function selectValuedCigarCount(cigars) {
-  if (!Array.isArray(cigars)) return 0;
-  return cigars.filter((c) => hasCigarValuation(c)).length;
+  return selectActiveCigars(cigars).filter((c) => hasCigarValuation(c)).length;
 }
 
 // ---------------------------------------------------------------------------
@@ -384,7 +384,7 @@ export function selectValuedCigarCount(cigars) {
  * @returns {number}
  */
 export function selectCigarTypes(cigars) {
-  return Array.isArray(cigars) ? cigars.length : 0;
+  return selectActiveCigars(cigars).length;
 }
 
 /**
@@ -394,8 +394,7 @@ export function selectCigarTypes(cigars) {
  * @returns {number}
  */
 export function selectTotalSticks(cigars) {
-  if (!Array.isArray(cigars)) return 0;
-  return cigars.reduce((sum, c) => sum + getCigarAvailableQuantity(c), 0);
+  return selectActiveCigars(cigars).reduce((sum, c) => sum + getCigarAvailableQuantity(c), 0);
 }
 
 /**
@@ -407,8 +406,7 @@ export function selectTotalSticks(cigars) {
  * @returns {number}
  */
 export function selectReadyToSmokeCount(cigars) {
-  if (!Array.isArray(cigars)) return 0;
-  return cigars.filter((c) => {
+  return selectActiveCigars(cigars).filter((c) => {
     if (!c) return false;
     const qty = getCigarAvailableQuantity(c);
     if (qty <= 0) return false;
@@ -435,8 +433,7 @@ export function selectHumidorCount(humidors) {
  * @returns {number}
  */
 export function selectCigarCollectionValue(cigars) {
-  if (!Array.isArray(cigars)) return 0;
-  return cigars.reduce((sum, c) => sum + getCigarTotalValue(c), 0);
+  return selectActiveCigars(cigars).reduce((sum, c) => sum + getCigarTotalValue(c), 0);
 }
 
 // ---------------------------------------------------------------------------

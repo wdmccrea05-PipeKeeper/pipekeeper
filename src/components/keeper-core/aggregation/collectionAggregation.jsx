@@ -11,12 +11,18 @@
 
 import { base44 } from '@/api/base44Client';
 import { shouldFetchModuleData } from '@/components/utils/moduleReleaseState';
-import { getPipeValue } from '@/components/keeper-core/value/valueAggregation';
+import {
+  selectPipeMetrics,
+  getPipeUnitValue,
+} from '@/lib/collection/pipeSelectors';
 import {
   selectWhiskeyMetrics,
   getBottleUnitValue,
 } from '@/lib/collection/whiskeySelectors';
-import { getBlendValue } from '@/lib/collection/tobaccoSelectors';
+import {
+  selectTobaccoMetrics,
+  getBlendValue,
+} from '@/lib/collection/tobaccoSelectors';
 import {
   selectCigarMetrics,
   getCigarUnitValue,
@@ -24,20 +30,21 @@ import {
 } from '@/lib/collection/cigarSelectors';
 import {
   getWineTotalValue,
-  selectWineCollectionValue,
-  selectTotalWineBottles,
-  selectWineCount,
+  selectWineMetrics,
 } from '@/lib/collection/wineSelectors';
+import {
+  selectActivePipes,
+  selectActiveBlends,
+  selectActiveBottles,
+  selectActiveCigars,
+  selectActiveWines,
+  selectActiveInventoryUnits,
+} from '@/lib/collection/activeFilters';
 import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
+import { getAverageRating } from '@/shared/utils/calculations/collectionStats';
+import { selectFavoriteCount } from '@/lib/analytics/breakdownUtils';
 
 
-
-/**
- * Get total tobacco value using the canonical getBlendValue selector.
- */
-function getTobaccoValue(blend) {
-  return getBlendValue(blend);
-}
 
 /**
  * Aggregate complete collection statistics
@@ -96,38 +103,43 @@ export async function aggregateCollection(userEmail) {
     const humidorsList = Array.isArray(humidors) ? humidors : [];
     const winesList = Array.isArray(wines) ? wines : [];
     const wineTastingsList = Array.isArray(wineTastings) ? wineTastings : [];
+    const activePipes = selectActivePipes(pipesList);
+    const activeTobaccos = selectActiveBlends(tobaccosList);
+    const activeBottles = selectActiveBottles(bottlesList);
+    const activeInventoryUnits = selectActiveInventoryUnits(inventoryUnitsList);
+    const activeCigars = selectActiveCigars(cigarsList);
+    const activeWines = selectActiveWines(winesList);
 
     // === PIPES MODULE ===
-    const pipesCount = pipesList.length;
-    const pipesValue = pipesList.reduce((sum, p) => sum + getPipeValue(p), 0);
+    const canonicalPipe = selectPipeMetrics(activePipes, smokingLogsList);
     const pipeStats = {
-      count: pipesCount,
-      value: pipesValue,
-      favorite: pipesList.filter(p => p.is_favorite).length,
-      rated: pipesList.filter(p => p.rating).length,
-      avgRating: pipesList.filter(p => p.rating).length > 0
-        ? (pipesList.reduce((sum, p) => sum + (p.rating || 0), 0) / pipesList.filter(p => p.rating).length).toFixed(2)
-        : 0,
+     count: canonicalPipe.pipe_count,
+     value: canonicalPipe.collection_value,
+     favorite: selectFavoriteCount(activePipes),
+     rated: activePipes.filter((p) => Number(p?.rating) > 0).length,
+     avgRating: getAverageRating(activePipes, (p) => p?.rating),
     };
 
     // === TOBACCO MODULE ===
-    const tobaccosCount = tobaccosList.length;
-    const tobaccosValue = tobaccosList.reduce((sum, t) => sum + getTobaccoValue(t), 0);
+    const canonicalTobacco = selectTobaccoMetrics(activeTobaccos);
     const tobaccoStats = {
-      count: tobaccosCount,
-      value: tobaccosValue,
-      favorite: tobaccosList.filter(t => t.is_favorite).length,
-      rated: tobaccosList.filter(t => t.rating).length,
-      avgRating: tobaccosList.filter(t => t.rating).length > 0
-        ? (tobaccosList.reduce((sum, t) => sum + (t.rating || 0), 0) / tobaccosList.filter(t => t.rating).length).toFixed(2)
-        : 0,
-      open: tobaccosList.reduce((sum, t) => sum + (Number(t.tin_tins_open) || 0) + (Number(t.bulk_open) || 0) + (Number(t.pouch_pouches_open) || 0), 0),
-      cellared: tobaccosList.reduce((sum, t) => sum + (Number(t.tin_tins_cellared) || 0) + (Number(t.bulk_cellared) || 0) + (Number(t.pouch_pouches_cellared) || 0), 0),
+     count: canonicalTobacco.blend_types,
+     value: canonicalTobacco.cellar_value,
+     favorite: selectFavoriteCount(activeTobaccos),
+     rated: activeTobaccos.filter((t) => Number(t?.rating) > 0).length,
+     avgRating: getAverageRating(activeTobaccos, (t) => t?.rating),
+     open: canonicalTobacco.open_blends,
+     cellared: activeTobaccos.reduce((sum, t) => {
+       const tinOz = (Number(t?.tin_tins_cellared) || 0) * (Number(t?.tin_size_oz) || 0);
+       const bulkOz = Number(t?.bulk_cellared) || 0;
+       const pouchOz = (Number(t?.pouch_pouches_cellared) || 0) * (Number(t?.pouch_size_oz) || 0);
+       return sum + tinOz + bulkOz + pouchOz;
+     }, 0),
     };
 
     // === WHISKEY MODULE ===
      // All metrics derived from canonical selectors — no ad-hoc calculations here.
-     const canonicalWhiskey = selectWhiskeyMetrics(bottlesList, inventoryUnitsList, tastingLogsList);
+     const canonicalWhiskey = selectWhiskeyMetrics(activeBottles, activeInventoryUnits, tastingLogsList);
 
      const whiskeyStats = {
        // Canonical dual metrics — use these everywhere, never use just "count" for whiskey
@@ -140,17 +152,15 @@ export async function aggregateCollection(userEmail) {
        unopened: canonicalWhiskey.sealed_bottles,
        // Legacy alias
        sealed: canonicalWhiskey.sealed_bottles,
-       favorite: bottlesList.filter(b => b.favorite).length,
-       rated: bottlesList.filter(b => b.rating).length,
-       avgRating: bottlesList.filter(b => b.rating).length > 0
-         ? (bottlesList.reduce((sum, b) => sum + (b.rating || 0), 0) / bottlesList.filter(b => b.rating).length).toFixed(2)
-         : 0,
-       tastings: canonicalWhiskey.total_tastings,
+      favorite: activeBottles.filter((b) => b?.favorite || b?.is_favorite).length,
+      rated: activeBottles.filter((b) => Number(b?.rating) > 0).length,
+      avgRating: getAverageRating(activeBottles, (b) => b?.rating),
+      tastings: canonicalWhiskey.total_tastings,
      };
 
     // === CIGAR MODULE ===
-    const canonicalCigar = selectCigarMetrics(cigarsList, humidorsList);
-    const ratedCigars = cigarsList.filter(c => c.rating);
+    const canonicalCigar = selectCigarMetrics(activeCigars, humidorsList);
+    const ratedCigars = activeCigars.filter((c) => Number(c?.rating) > 0);
     const cigarStats = {
       cigarTypes: canonicalCigar.cigar_types,
       totalSticks: canonicalCigar.total_sticks,
@@ -158,29 +168,29 @@ export async function aggregateCollection(userEmail) {
       humidorCount: canonicalCigar.humidor_count,
       count: canonicalCigar.cigar_types, // legacy alias
       value: canonicalCigar.collection_value,
-      favorite: cigarsList.filter(c => c.is_favorite).length,
+      favorite: selectFavoriteCount(activeCigars),
       rated: ratedCigars.length,
-      avgRating: ratedCigars.length > 0
-        ? (ratedCigars.reduce((sum, c) => sum + (c.rating || 0), 0) / ratedCigars.length).toFixed(2)
-        : 0,
+      avgRating: getAverageRating(activeCigars, (c) => c?.rating),
       sessions: cigarSessionsList.length,
     };
 
     // === WINE MODULE (internal/admin only) ===
     // All metrics derived from canonical wineSelectors — no ad-hoc calculations here.
+    const canonicalWine = selectWineMetrics(activeWines, wineTastingsList);
     const wineStats = {
-      wineTypes: selectWineCount(winesList),       // distinct wine entries
-      totalBottles: selectTotalWineBottles(winesList), // sum of all quantities
-      count: selectWineCount(winesList),           // legacy alias
-      value: selectWineCollectionValue(winesList), // canonical priority chain
-      tastings: wineTastingsList.length,
-      favorite: winesList.filter(w => w.is_favorite).length,
+      wineTypes: canonicalWine.wine_count,
+      totalBottles: canonicalWine.total_in_cellar,
+      count: canonicalWine.wine_count,
+      value: canonicalWine.collection_value,
+      tastings: canonicalWine.total_tastings,
+      favorite: selectFavoriteCount(activeWines),
       rated: wineTastingsList.filter(wt => wt.rating).length,
+      avgRating: canonicalWine.average_rating,
     };
 
     // Most valuable wine (for highlights) — uses canonical getWineTotalValue
-    const mostValuableWine = winesList.length > 0
-      ? winesList.reduce((max, w) => getWineTotalValue(w) > getWineTotalValue(max) ? w : max)
+    const mostValuableWine = activeWines.length > 0
+      ? activeWines.reduce((max, w) => getWineTotalValue(w) > getWineTotalValue(max) ? w : max)
       : null;
 
     // === USAGE PATTERNS ===
@@ -206,16 +216,16 @@ export async function aggregateCollection(userEmail) {
     });
 
     // === HIGHLIGHTS ===
-    const mostUsedPipe = pipesList.length > 0
-      ? pipesList.reduce((max, p) => {
+    const mostUsedPipe = activePipes.length > 0
+      ? activePipes.reduce((max, p) => {
           const pUses = pipeUsageMap[p.id] || 0;
           const maxUses = pipeUsageMap[max.id] || 0;
           return pUses > maxUses ? p : max;
         })
       : null;
 
-    const mostTastedBottle = bottlesList.length > 0
-      ? bottlesList.reduce((max, b) => {
+    const mostTastedBottle = activeBottles.length > 0
+      ? activeBottles.reduce((max, b) => {
           const bKey = b.id || b.name;
           const maxKey = max.id || max.name;
           const bUses = bottleUsageMap[bKey] || 0;
@@ -228,56 +238,56 @@ export async function aggregateCollection(userEmail) {
     const mostTastedBottleKey = mostTastedBottle?.id || mostTastedBottle?.name;
     const tastings = mostTastedBottleKey ? (bottleUsageMap[mostTastedBottleKey] || 0) : 0;
 
-    const mostValuedBottle = bottlesList.length > 0
-      ? bottlesList.reduce((max, b) => {
+    const mostValuedBottle = activeBottles.length > 0
+      ? activeBottles.reduce((max, b) => {
           const bVal = getBottleUnitValue(b);
           const maxVal = getBottleUnitValue(max);
           return bVal > maxVal ? b : max;
         })
       : null;
 
-    const oldestBottle = bottlesList.length > 0
-      ? bottlesList.reduce((oldest, b) => {
+    const oldestBottle = activeBottles.length > 0
+      ? activeBottles.reduce((oldest, b) => {
           if (!oldest.purchase_date) return b;
           if (!b.purchase_date) return oldest;
           return new Date(b.purchase_date) < new Date(oldest.purchase_date) ? b : oldest;
         })
       : null;
 
-    const oldestPipe = pipesList.length > 0
-      ? pipesList.reduce((oldest, p) => {
+    const oldestPipe = activePipes.length > 0
+      ? activePipes.reduce((oldest, p) => {
           if (!oldest.purchase_date) return p;
           if (!p.purchase_date) return oldest;
           return new Date(p.purchase_date) < new Date(oldest.purchase_date) ? p : oldest;
         })
       : null;
 
-    const highestRatedBottle = bottlesList.filter(b => b.rating).length > 0
-      ? bottlesList.reduce((max, b) => {
+    const highestRatedBottle = activeBottles.filter((b) => Number(b?.rating) > 0).length > 0
+      ? activeBottles.reduce((max, b) => {
           const bRating = b.rating || 0;
           const maxRating = max.rating || 0;
           return bRating > maxRating ? b : max;
         })
       : null;
 
-    const mostSmokedCigar = cigarsList.length > 0
-      ? cigarsList.reduce((max, c) => {
+    const mostSmokedCigar = activeCigars.length > 0
+      ? activeCigars.reduce((max, c) => {
           const cUses = cigarUsageMap[c.id] || 0;
           const maxUses = cigarUsageMap[max.id] || 0;
           return cUses > maxUses ? c : max;
         })
       : null;
 
-    const highestRatedCigar = cigarsList.filter(c => c.rating).length > 0
-      ? cigarsList.reduce((max, c) => {
+    const highestRatedCigar = ratedCigars.length > 0
+      ? ratedCigars.reduce((max, c) => {
           const cRating = c.rating || 0;
           const maxRating = max.rating || 0;
           return cRating > maxRating ? c : max;
         })
       : null;
 
-    const highestValueCigar = cigarsList.length > 0
-      ? cigarsList.reduce((max, c) => {
+    const highestValueCigar = activeCigars.length > 0
+      ? activeCigars.reduce((max, c) => {
           const cVal = getCigarUnitValue(c) * getCigarAvailableQuantity(c);
           const maxVal = getCigarUnitValue(max) * getCigarAvailableQuantity(max);
           return cVal > maxVal ? c : max;
@@ -295,18 +305,18 @@ export async function aggregateCollection(userEmail) {
             value: getCigarUnitValue(highestValueCigar) * getCigarAvailableQuantity(highestValueCigar),
           }
         : null,
-      pipesList.length > 0
+      activePipes.length > 0
         ? {
             recordType: 'pipe',
-            record: pipesList.reduce((max, p) => (getPipeValue(p) > getPipeValue(max) ? p : max)),
-            value: pipesList.reduce((max, p) => Math.max(max, getPipeValue(p)), 0),
+            record: activePipes.reduce((max, p) => (getPipeUnitValue(p) > getPipeUnitValue(max) ? p : max)),
+            value: activePipes.reduce((max, p) => Math.max(max, getPipeUnitValue(p)), 0),
           }
         : null,
-      tobaccosList.length > 0
+      activeTobaccos.length > 0
         ? {
             recordType: 'blend',
-            record: tobaccosList.reduce((max, b) => (getTobaccoValue(b) > getTobaccoValue(max) ? b : max)),
-            value: tobaccosList.reduce((max, b) => Math.max(max, getTobaccoValue(b)), 0),
+            record: activeTobaccos.reduce((max, b) => (getBlendValue(b) > getBlendValue(max) ? b : max)),
+            value: activeTobaccos.reduce((max, b) => Math.max(max, getBlendValue(b)), 0),
           }
         : null,
       mostValuableWine && getWineTotalValue(mostValuableWine) > 0
@@ -317,8 +327,8 @@ export async function aggregateCollection(userEmail) {
     const mostValuableItem = allModuleValueLeaders.sort((a, b) => b.value - a.value)[0] || null;
 
     // === TOTALS ===
-    const totalItems = pipesCount + tobaccosCount + bottlesList.length + cigarsList.length + winesList.length;
-    const totalValue = pipesValue + tobaccosValue + whiskeyStats.value + cigarStats.value + wineStats.value;
+    const totalItems = pipeStats.count + tobaccoStats.count + whiskeyStats.count + cigarStats.count + wineStats.count;
+    const totalValue = pipeStats.value + tobaccoStats.value + whiskeyStats.value + cigarStats.value + wineStats.value;
 
     return {
       // Per-module statistics
@@ -344,7 +354,7 @@ export async function aggregateCollection(userEmail) {
           id: mostUsedPipe.id,
           name: mostUsedPipe.name,
           uses: pipeUsageMap[mostUsedPipe.id] || 0,
-          value: getPipeValue(mostUsedPipe),
+          value: getPipeUnitValue(mostUsedPipe),
         } : null,
         mostTastedBottle: mostTastedBottle ? {
           id: mostTastedBottle.id,

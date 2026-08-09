@@ -12,6 +12,8 @@
  *  collection_value        — total value across all pipe records
  */
 
+import { selectActivePipes } from './activeFilters.js';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -52,7 +54,7 @@ export function getPipeUnitValue(pipe) {
  * @returns {number}
  */
 export function selectPipeCount(pipes) {
-  return Array.isArray(pipes) ? pipes.length : 0;
+  return selectActivePipes(pipes).length;
 }
 
 /**
@@ -88,9 +90,10 @@ export function buildSessionsByPipeIndex(smokingLogs) {
  * @returns {object|null}
  */
 export function selectMostSmokedPipe(pipes, smokingLogs) {
-  if (!Array.isArray(pipes) || pipes.length === 0) return null;
+  const activePipes = selectActivePipes(pipes);
+  if (activePipes.length === 0) return null;
   const idx = buildSessionsByPipeIndex(smokingLogs);
-  const withCount = pipes
+  const withCount = activePipes
     .map((p) => ({ ...p, _sessions: idx[p.id] || 0 }))
     .filter((p) => p._sessions > 0);
   if (withCount.length === 0) return null;
@@ -106,8 +109,7 @@ export function selectMostSmokedPipe(pipes, smokingLogs) {
  * @returns {number}
  */
 export function selectSpecializedPipesCount(pipes) {
-  if (!Array.isArray(pipes)) return 0;
-  return pipes.filter(
+  return selectActivePipes(pipes).filter(
     (p) => p?.specialization && String(p.specialization).trim().length > 0
   ).length;
 }
@@ -119,13 +121,37 @@ export function selectSpecializedPipesCount(pipes) {
  * @returns {number}
  */
 export function selectPipeCollectionValue(pipes) {
-  if (!Array.isArray(pipes)) return 0;
-  return pipes.reduce((sum, p) => sum + getPipeUnitValue(p), 0);
+  return selectActivePipes(pipes).reduce((sum, p) => sum + getPipeUnitValue(p), 0);
 }
 
 // ---------------------------------------------------------------------------
 // Combined metrics object
 // ---------------------------------------------------------------------------
+
+/**
+ * Build a bowls-weighted usage index keyed by pipe_id (or blend_id).
+ *
+ * Unlike buildSessionsByPipeIndex (which counts raw log rows), this
+ * weights each log by the number of bowls smoked so that multi-bowl
+ * sessions count proportionally.
+ *
+ * The `getBowlsFn` parameter must be the canonical getBowlsUsed helper from
+ * schemaCompatibility so weighting logic lives in exactly one place.
+ *
+ * @param {object[]} smokingLogs
+ * @param {string}   idField       - 'pipe_id' or 'blend_id'
+ * @param {function} getBowlsFn    - getBowlsUsed(log) → number
+ * @returns {Record<string, number>}
+ */
+export function buildBowlsWeightedIndex(smokingLogs, idField, getBowlsFn) {
+  if (!Array.isArray(smokingLogs)) return {};
+  return smokingLogs.reduce((acc, log) => {
+    const id = log?.[idField];
+    if (!id) return acc;
+    acc[id] = (acc[id] || 0) + (getBowlsFn ? getBowlsFn(log) : 1);
+    return acc;
+  }, {});
+}
 
 /**
  * selectPipeMetrics — compute all canonical pipe metrics in one call.

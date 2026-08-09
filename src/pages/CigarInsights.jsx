@@ -35,6 +35,8 @@ import {
 } from '@/components/insights/InsightsShell';
 import { GOLD_PALETTE, MODULE_ACCENTS } from '@/lib/theme/tokens';
 import { buildTopN } from '@/lib/analytics/aggregateUtils';
+import { selectCigarMetrics } from '@/lib/collection/cigarSelectors';
+import { selectFavoriteCount, selectFlagCount } from '@/lib/analytics/breakdownUtils';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -202,12 +204,14 @@ function CigarInsightsInner() {
   const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
 
   const valuationRows = useMemo(() => cigars.map(c => ({ cigar: c, valuation: calculateCigarValue(c) })), [cigars]);
-  const totalQty = cigars.reduce((s, c) => s + Number(c?.singles_equivalent ?? c?.quantity ?? 0), 0);
-  const totalValue = valuationRows.reduce((sum, r) => sum + Number(r.valuation.estimatedTotalValue || 0), 0);
-  const valuedCount = valuationRows.filter(r => !r.valuation.isMissing).length;
-  const favorites = cigars.filter(c => c?.is_favorite).length;
-  const missingValuationCount = valuationRows.filter(r => r.valuation.isMissing).length;
-  const staleValuationCount = valuationRows.filter(r => r.valuation.isStale).length;
+
+  const cigarMetrics = useMemo(() => selectCigarMetrics(cigars, humidors), [cigars, humidors]);
+  const totalQty    = useMemo(() => cigarMetrics.total_sticks, [cigarMetrics]);
+  const totalValue  = useMemo(() => cigarMetrics.collection_value, [cigarMetrics]);
+  const valuedCount = useMemo(() => cigarMetrics.valued_cigar_count, [cigarMetrics]);
+  const favorites  = useMemo(() => selectFavoriteCount(cigars), [cigars]);
+  const missingValuationCount = useMemo(() => valuationRows.filter(r => r.valuation.isMissing).length, [valuationRows]);
+  const staleValuationCount   = useMemo(() => valuationRows.filter(r => r.valuation.isStale).length,   [valuationRows]);
 
   const highestValueCigars = useMemo(() => valuationRows
     .filter(r => Number(r.valuation.estimatedTotalValue || 0) > 0)
@@ -271,10 +275,10 @@ function CigarInsightsInner() {
   }).length, [cigars, today]);
 
   const acquisitionCounts = useMemo(() => ({
-    wishlist: cigars.filter(c => c?.wishlist).length,
-    shopping: cigars.filter(c => c?.shopping_list).length,
-    restock: cigars.filter(c => c?.restock_flag).length,
-    notForMe: cigars.filter(c => c?.not_for_me).length,
+    wishlist:  selectFlagCount(cigars, 'wishlist'),
+    shopping:  selectFlagCount(cigars, 'shopping_list'),
+    restock:   selectFlagCount(cigars, 'restock_flag'),
+    notForMe:  selectFlagCount(cigars, 'not_for_me'),
   }), [cigars]);
 
   const tonightCandidates = useMemo(() => cigars

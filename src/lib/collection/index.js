@@ -18,5 +18,7 @@ export * from './whiskeySelectors.js';
 export * from './pipeSelectors.js';
 export * from './tobaccoSelectors.js';
 export * from './cigarSelectors.js';
+export * from './wineSelectors.js';
 export * from './summarySelectors.js';
 export * from './collectionValidator.js';
+export * from './activeFilters.js';

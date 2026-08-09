@@ -21,6 +21,10 @@ import {
   selectCellarValue,
 } from './tobaccoSelectors.js';
 import { selectCigarMetrics, selectCigarCollectionValue } from './cigarSelectors.js';
+import {
+  selectWineMetrics,
+  selectWineCollectionValue,
+} from './wineSelectors.js';
 
 // ---------------------------------------------------------------------------
 // Cross-module totals
@@ -35,6 +39,7 @@ import { selectCigarMetrics, selectCigarCollectionValue } from './cigarSelectors
  * @param {object[]} params.bottles
  * @param {object[]} params.inventoryUnits - WhiskeyInventoryUnit records
  * @param {object[]} params.cigars
+ * @param {object[]} params.wines
  * @returns {number}
  */
 export function selectTotalCollectionValue({
@@ -43,12 +48,14 @@ export function selectTotalCollectionValue({
   bottles = [],
   inventoryUnits = [],
   cigars = [],
+  wines = [],
 } = {}) {
   return (
     selectPipeCollectionValue(pipes) +
     selectCellarValue(blends) +
     selectWhiskeyCollectionValue(bottles, inventoryUnits) +
-    selectCigarCollectionValue(cigars)
+    selectCigarCollectionValue(cigars) +
+    selectWineCollectionValue(wines)
   );
 }
 
@@ -71,11 +78,14 @@ export function selectTotalCollectionValue({
  * @param {object[]} params.tastingLogs
  * @param {object[]} params.cigars
  * @param {object[]} params.humidors       - HumidorLocation records (optional)
+ * @param {object[]} params.wines
+ * @param {object[]} params.wineTastings
  * @returns {{
  *   pipe: ReturnType<selectPipeMetrics>,
  *   tobacco: ReturnType<selectTobaccoMetrics>,
  *   whiskey: ReturnType<selectWhiskeyMetrics>,
  *   cigar: ReturnType<selectCigarMetrics>,
+ *   wine: ReturnType<selectWineMetrics>,
  *   total_value: number,
  * }}
  */
@@ -88,17 +98,21 @@ export function selectCollectionSummary({
   tastingLogs = [],
   cigars = [],
   humidors = [],
+  wines = [],
+  wineTastings = [],
 } = {}) {
   const pipe = selectPipeMetrics(pipes, smokingLogs);
   const tobacco = selectTobaccoMetrics(blends);
   const whiskey = selectWhiskeyMetrics(bottles, inventoryUnits, tastingLogs);
   const cigar = selectCigarMetrics(cigars, humidors);
+  const wine = selectWineMetrics(wines, wineTastings);
 
   const total_value =
     pipe.collection_value +
     tobacco.cellar_value +
     whiskey.collection_value +
-    cigar.collection_value;
+    cigar.collection_value +
+    wine.collection_value;
 
-  return { pipe, tobacco, whiskey, cigar, total_value };
+  return { pipe, tobacco, whiskey, cigar, wine, total_value };
 }

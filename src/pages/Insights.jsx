@@ -10,7 +10,7 @@ import {
   calculateCellaredOzFromBlend,
   calculateTobaccoCollectionValue,
 } from "@/components/utils/tobaccoQuantityHelpers";
-import { selectPipeCollectionValue } from "@/lib/collection/pipeSelectors";
+import { selectPipeCollectionValue, buildBowlsWeightedIndex } from "@/lib/collection/pipeSelectors";
 import { isAppleBuild } from "@/components/utils/appVariant";
 import PipeKeeperModuleNav from "@/components/modules/PipeKeeperModuleNav";
 import {
@@ -1097,25 +1097,15 @@ export default function Insights() {
     [smokingLogs, oneWeekAgo, now]
   );
 
-  const pipeUsage = useMemo(() => {
-    const map = {};
-    smokingLogs.forEach((l) => {
-      if (l?.pipe_id) {
-        map[l.pipe_id] = (map[l.pipe_id] || 0) + getBowlsUsed(l);
-      }
-    });
-    return map;
-  }, [smokingLogs]);
+  const pipeUsage = useMemo(
+    () => buildBowlsWeightedIndex(smokingLogs, 'pipe_id', getBowlsUsed),
+    [smokingLogs]
+  );
 
-  const blendUsage = useMemo(() => {
-    const map = {};
-    smokingLogs.forEach((l) => {
-      if (l?.blend_id) {
-        map[l.blend_id] = (map[l.blend_id] || 0) + getBowlsUsed(l);
-      }
-    });
-    return map;
-  }, [smokingLogs]);
+  const blendUsage = useMemo(
+    () => buildBowlsWeightedIndex(smokingLogs, 'blend_id', getBowlsUsed),
+    [smokingLogs]
+  );
 
   const mostUsedPipe = useMemo(() => {
     if (!Object.keys(pipeUsage).length) return null;
