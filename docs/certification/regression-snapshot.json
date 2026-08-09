@@ -1,0 +1,407 @@
+{
+  "capturedAt": "2026-08-09T16:13:52.787Z",
+  "scorerVersion": "1.0.0-canonical",
+  "taxonomyVersion": "1.0.0",
+  "normalizationVersion": "1.0.0",
+  "componentWeights": {
+    "dedication": 0.3,
+    "chamberGeometry": 0.2,
+    "tobaccoCut": 0.15,
+    "blendComposition": 0.15,
+    "aromaticCompatibility": 0.1,
+    "material": 0.05,
+    "smokingCharacter": 0.05
+  },
+  "scores": {
+    "Heavy Aromatic": {
+      "Aromatic Dedicated": {
+        "finalScore": 7.7,
+        "technicalScore": 7.7,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 8,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 8,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "English Dedicated": {
+        "finalScore": 5.6,
+        "technicalScore": 5.6,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 1,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 8,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "Virginia Dedicated": {
+        "finalScore": 5.9,
+        "technicalScore": 5.9,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 2,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 8,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "General Purpose Pipe": {
+        "finalScore": 7,
+        "technicalScore": 7,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 6,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 8,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      }
+    },
+    "Light Aromatic": {
+      "Aromatic Dedicated": {
+        "finalScore": 7.7,
+        "technicalScore": 7.7,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 8,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 8,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "English Dedicated": {
+        "finalScore": 5.6,
+        "technicalScore": 5.6,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 1,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 8,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "Virginia Dedicated": {
+        "finalScore": 5.9,
+        "technicalScore": 5.9,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 2,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 8,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "General Purpose Pipe": {
+        "finalScore": 7,
+        "technicalScore": 7,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 6,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 8,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      }
+    },
+    "Straight Virginia": {
+      "Aromatic Dedicated": {
+        "finalScore": 5.9,
+        "technicalScore": 5.9,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 3,
+          "chamberGeometry": 7.5,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "English Dedicated": {
+        "finalScore": 6.5,
+        "technicalScore": 6.5,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 5,
+          "chamberGeometry": 7.5,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "Virginia Dedicated": {
+        "finalScore": 7.4,
+        "technicalScore": 7.4,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 8,
+          "chamberGeometry": 7.5,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "General Purpose Pipe": {
+        "finalScore": 6.8,
+        "technicalScore": 6.8,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 6,
+          "chamberGeometry": 7.5,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      }
+    },
+    "Virginia Flake": {
+      "Aromatic Dedicated": {
+        "finalScore": 5.9,
+        "technicalScore": 5.9,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 3,
+          "chamberGeometry": 7.5,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "English Dedicated": {
+        "finalScore": 6.5,
+        "technicalScore": 6.5,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 5,
+          "chamberGeometry": 7.5,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "Virginia Dedicated": {
+        "finalScore": 7.4,
+        "technicalScore": 7.4,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 8,
+          "chamberGeometry": 7.5,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "General Purpose Pipe": {
+        "finalScore": 6.8,
+        "technicalScore": 6.8,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 6,
+          "chamberGeometry": 7.5,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      }
+    },
+    "True VaPer": {
+      "Aromatic Dedicated": {
+        "finalScore": 6.1,
+        "technicalScore": 6.1,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 3,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7.5,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "English Dedicated": {
+        "finalScore": 6.7,
+        "technicalScore": 6.7,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 5,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7.5,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "Virginia Dedicated": {
+        "finalScore": 7.9,
+        "technicalScore": 7.9,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 9,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7.5,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "General Purpose Pipe": {
+        "finalScore": 7,
+        "technicalScore": 7,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 6,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8.5,
+          "blendComposition": 7.5,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      }
+    },
+    "English": {
+      "Aromatic Dedicated": {
+        "finalScore": 5.4,
+        "technicalScore": 5.4,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 1,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "English Dedicated": {
+        "finalScore": 7.5,
+        "technicalScore": 7.5,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 8,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "Virginia Dedicated": {
+        "finalScore": 5.9,
+        "technicalScore": 5.9,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 3,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      },
+      "General Purpose Pipe": {
+        "finalScore": 6.9,
+        "technicalScore": 6.9,
+        "confidence": 0.9,
+        "components": {
+          "dedication": 6,
+          "chamberGeometry": 8,
+          "tobaccoCut": 8,
+          "blendComposition": 7,
+          "aromaticCompatibility": 6,
+          "material": 6,
+          "smokingCharacter": 6
+        }
+      }
+    }
+  },
+  "rankings": {
+    "Heavy Aromatic": [
+      "cert-pipe-aromatic",
+      "cert-pipe-ghosted",
+      "cert-pipe-meerschaum",
+      "cert-pipe-general",
+      "cert-pipe-no-dims",
+      "cert-pipe-virginia",
+      "cert-pipe-english",
+      "cert-pipe-large-english"
+    ],
+    "Light Aromatic": [
+      "cert-pipe-aromatic",
+      "cert-pipe-ghosted",
+      "cert-pipe-meerschaum",
+      "cert-pipe-general",
+      "cert-pipe-no-dims",
+      "cert-pipe-virginia",
+      "cert-pipe-english",
+      "cert-pipe-large-english"
+    ],
+    "Straight Virginia": [
+      "cert-pipe-virginia",
+      "cert-pipe-general",
+      "cert-pipe-english",
+      "cert-pipe-no-dims",
+      "cert-pipe-meerschaum",
+      "cert-pipe-aromatic",
+      "cert-pipe-ghosted",
+      "cert-pipe-large-english"
+    ],
+    "Virginia Flake": [
+      "cert-pipe-virginia",
+      "cert-pipe-general",
+      "cert-pipe-english",
+      "cert-pipe-no-dims",
+      "cert-pipe-meerschaum",
+      "cert-pipe-aromatic",
+      "cert-pipe-ghosted",
+      "cert-pipe-large-english"
+    ]
+  }
+}
