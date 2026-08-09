@@ -678,13 +678,16 @@ export default function TobaccoDetail() {
     setBestPipesResults(null);
 
     try {
-      const pipes = await scopedEntities.Pipe.listForUser(userEmail, '-updated_date', 200).catch(() => []);
-      const userProfile = null;
+      const [pipes, userProfiles] = await Promise.all([
+        scopedEntities.Pipe.listForUser(userEmail, '-updated_date', 200).catch(() => []),
+        base44.entities.UserProfile.filter({ user_email: userEmail }).catch(() => []),
+      ]);
+      const userProfile = userProfiles?.[0] || null;
 
       const scored = (pipes || [])
         .filter((p) => !p.ai_excluded)
         .map((p) => {
-          const { score, why } = scorePipeBlend(p, blend, userProfile);
+          const { score, why, confidence } = scorePipeBlend(p, blend, userProfile);
           return {
             pipe_id: p.id,
             pipe_name: p.name,
@@ -693,6 +696,7 @@ export default function TobaccoDetail() {
             bowl_material: p.bowl_material,
             score,
             why,
+            confidence,
           };
         })
         .sort((a, b) => b.score - a.score)

@@ -831,6 +831,9 @@ const enUI = {
     top3Matches: "Top 3 Matches",
     show: "Show",
     hide: "Hide",
+    noCollectionMatches: "No blends in your collection to score yet.",
+    suggestNew: "Suggest Blends Outside Your Collection",
+    outsideCollection: "Suggestions outside your collection",
   },
 
   pairingGrid: {

@@ -41,6 +41,11 @@ const DEFAULT_FORM_DATA = {
   name: '',
   manufacturer: '',
   blend_type: '',
+  blend_family: '',
+  is_aromatic: null,
+  aromatic_intensity: '',
+  casing: '',
+  topping: '',
   tobacco_components: [],
   cut: '',
   strength: '',
@@ -170,16 +175,21 @@ Include all available details such as:
 - Official blend name
 - Manufacturer/Brand
 - Blend type (Virginia, English, Aromatic, etc.)
+- Blend family (normalized family such as Virginia, Virginia/Perique, English, Balkan, Burley, Lakeland, Aromatic) — this is SEPARATE from blend type and tobacco composition
+- Whether the blend is aromatic (is_aromatic): true only when casings or toppings are applied. This is independent of tobacco composition — a Virginia/Burley blend can still be aromatic.
+- Aromatic intensity (aromatic_intensity): "light", "medium" or "heavy", based ONLY on how much casing/topping is applied. Never derive this from nicotine strength.
+- Casing flavors applied to the leaf before processing
+- Topping flavors applied after processing
 - Tobacco components (types of tobacco used)
 - Cut type (Flake, Ribbon, etc.)
-- Strength level
+- Strength level (nicotine strength only)
 - Room note
 - Flavor notes/profile
 - Tin sizes commonly available
 - Production status (current, discontinued, etc.)
 - Aging potential
 
-Return complete and accurate information based on the blend name or description provided.`,
+Return complete and accurate information based on the blend name or description provided. Omit any field you are not confident about rather than guessing.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -187,6 +197,11 @@ Return complete and accurate information based on the blend name or description 
             name: { type: "string" },
             manufacturer: { type: "string" },
             blend_type: { type: "string" },
+            blend_family: { type: "string" },
+            is_aromatic: { type: "boolean" },
+            aromatic_intensity: { type: "string", enum: ["light", "medium", "heavy"] },
+            casing: { type: "string" },
+            topping: { type: "string" },
             tobacco_components: { type: "array", items: { type: "string" } },
             cut: { type: "string" },
             strength: { type: "string" },
@@ -363,6 +378,8 @@ Return complete and accurate information based on the blend name or description 
       pouch_pouches_open: roundOptional(formData.pouch_pouches_open),
       pouch_pouches_cellared: roundOptional(formData.pouch_pouches_cellared),
       rating: formData.rating ? Math.round(Number(formData.rating)) : null,
+      is_aromatic: typeof formData.is_aromatic === 'boolean' ? formData.is_aromatic : undefined,
+      aromatic_intensity: formData.aromatic_intensity || undefined,
     };
     const sanitizedPayload = Object.fromEntries(
       Object.entries(cleanedData).filter(([, value]) => value !== undefined)

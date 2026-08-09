@@ -75,21 +75,13 @@ export default function TopPipeMatches({ blend, pipes }) {
     // ALWAYS calculate scores for ALL eligible pipes against THIS specific blend
     // Don't rely on pre-computed top-10 which might exclude this blend
     const scoredPipes = eligiblePipes.map((pipe) => {
-      const { score, why } = scorePipeBlend(
-        { focus: pipe.focus || [], pipe_id: pipe.id, pipe_name: pipe.name, bowl_variant_id: null },
-        {
-          blend_type: blend?.blend_type,
-          strength: blend?.strength,
-          flavor_notes: blend?.flavor_notes,
-          tobacco_components: blend?.tobacco_components,
-          aromatic_intensity: blend?.aromatic_intensity,
-          tobacco_name: blend?.name,
-          tobacco_id: blend?.id,
-        },
+      const { score, why, confidence } = scorePipeBlend(
+        { ...pipe, pipe_id: pipe.id, pipe_name: pipe.name, bowl_variant_id: null, focus: pipe.focus || [] },
+        { ...blend, tobacco_name: blend?.name, tobacco_id: blend?.id },
         userProfile
       );
 
-      return { pipe, score, reasoning: why };
+      return { pipe, score, reasoning: why, confidence };
     });
 
     const filtered = scoredPipes.filter(m => m.score > 0).sort((a, b) => b.score - a.score);

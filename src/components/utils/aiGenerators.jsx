@@ -1,5 +1,5 @@
 import { base44 } from "@/api/base44Client";
-import { buildPairingsForPipes, isAromaticBlend, getAromaticIntensity } from "@/components/utils/pairingScoreCanonical";
+import { buildPairingsForPipes, inferBlendCategory, getAromaticIntensity } from "@/components/utils/pairingScoreCanonical";
 import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
 
 // === Hard Rules Enforcement ===
@@ -133,6 +133,8 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
           bowl_depth_mm: bowl.bowl_depth_mm ?? p.bowl_depth_mm ?? null,
           bowl_height_mm: bowl.bowl_height_mm ?? null,
           bowl_width_mm: bowl.bowl_width_mm ?? null,
+          usage_characteristics: bowl.usage_characteristics ?? p.usage_characteristics ?? null,
+          smoking_characteristics: bowl.smoking_characteristics ?? p.smoking_characteristics ?? null,
 
           focus: normalizeFocus(Array.isArray(bowl.focus) ? bowl.focus : []),
           notes: bowl.notes || "",
@@ -155,6 +157,8 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
         chamber_volume: p.chamber_volume ?? null,
         bowl_diameter_mm: p.bowl_diameter_mm ?? null,
         bowl_depth_mm: p.bowl_depth_mm ?? null,
+        usage_characteristics: p.usage_characteristics ?? null,
+        smoking_characteristics: p.smoking_characteristics ?? null,
 
         focus: normalizeFocus(Array.isArray(p.focus) ? p.focus : []),
         notes: p.notes || "",
@@ -164,19 +168,24 @@ export async function generatePairingsAI({ pipes, blends, profile }) {
 
   const blendsData = eligibleBlends.map((b) => {
     // Use canonical helpers
-    const isAro = isAromaticBlend(b);
-    const intensity = isAro ? getAromaticIntensity(b) : null;
-    
+    const category = inferBlendCategory(b);
+    const intensity = category === "aromatic" ? getAromaticIntensity(b) : null;
+
     return {
       tobacco_id: String(b.id),
       tobacco_name: b.name,
       manufacturer: b.manufacturer || null,
       blend_type: b.blend_type || null,
+      blend_family: b.blend_family || null,
       strength: b.strength || null,
       cut: b.cut || null,
       flavor_notes: b.flavor_notes || null,
+      flavor_profile: b.flavor_profile || null,
       tobacco_components: b.tobacco_components || null,
-      category: isAro ? "aromatic" : "non_aromatic",
+      casing: b.casing || null,
+      topping: b.topping || null,
+      is_aromatic: typeof b.is_aromatic === "boolean" ? b.is_aromatic : undefined,
+      category,
       aromatic_intensity: intensity,
     };
     });

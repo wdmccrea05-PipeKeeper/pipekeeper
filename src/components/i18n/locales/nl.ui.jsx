@@ -700,6 +700,9 @@ const nlUI = {
     top3Matches: "Top 3 overeenkomsten",
     show: "Tonen",
     hide: "Verbergen",
+    noCollectionMatches: "Nog geen melanges in uw collectie om te scoren.",
+    suggestNew: "Melanges buiten uw collectie voorstellen",
+    outsideCollection: "Suggesties buiten uw collectie",
   },
 
   logoLibraryBrowser: {

@@ -738,6 +738,9 @@ const frUI = {
     top3Matches: "Top 3 des correspondances",
     show: "Afficher",
     hide: "Masquer",
+    noCollectionMatches: "Aucun mélange à évaluer dans votre collection.",
+    suggestNew: "Suggérer des mélanges hors de votre collection",
+    outsideCollection: "Suggestions hors de votre collection",
   },
 
   logoLibraryBrowser: {

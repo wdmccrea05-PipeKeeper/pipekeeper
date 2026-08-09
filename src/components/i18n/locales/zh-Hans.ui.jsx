@@ -695,6 +695,9 @@ const zhHansUI = {
     top3Matches: "前3个匹配",
     show: "显示",
     hide: "隐藏",
+    noCollectionMatches: "您的收藏中还没有可评分的烟丝。",
+    suggestNew: "推荐收藏之外的烟丝",
+    outsideCollection: "收藏之外的建议",
   },
 
   logoLibraryBrowser: {

@@ -774,6 +774,9 @@ const jaUI = {
     top3Matches: "トップ3マッチ",
     show: "表示",
     hide: "非表示",
+    noCollectionMatches: "評価できるブレンドがコレクションにありません。",
+    suggestNew: "コレクション外のブレンドを提案",
+    outsideCollection: "コレクション外の提案",
   },
 
   logoLibraryBrowser: {

@@ -700,6 +700,9 @@ const itUI = {
     top3Matches: "Top 3 corrispondenze",
     show: "Mostra",
     hide: "Nascondi",
+    noCollectionMatches: "Nessuna miscela da valutare nella tua collezione.",
+    suggestNew: "Suggerisci miscele fuori dalla tua collezione",
+    outsideCollection: "Suggerimenti fuori dalla tua collezione",
   },
 
   logoLibraryBrowser: {

@@ -113,6 +113,11 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
           chamber_volume: variant?.chamber_volume,
           bowl_diameter_mm: variant?.bowl_diameter_mm,
           bowl_depth_mm: variant?.bowl_depth_mm,
+          bowl_material: variant?.bowl_material,
+          shape: variant?.shape,
+          bowlStyle: variant?.bowlStyle,
+          usage_characteristics: variant?.usage_characteristics,
+          smoking_characteristics: variant?.smoking_characteristics,
           recommendations: pairing?.recommendations || pairing?.blend_matches || [],
         };
       } catch (e) {
@@ -232,31 +237,34 @@ function PipeCard({ row, allBlends, userProfile }) {
   const [selectedBlendId, setSelectedBlendId] = useState("");
   const [calculatedScore, setCalculatedScore] = useState(null);
 
+  // Canonical scorer input: every pairing-relevant field the row carries
+  const pipeForScore = useMemo(() => ({
+    pipe_id: row.pipe_id,
+    pipe_name: row.name,
+    bowl_variant_id: row.bowl_variant_id,
+    focus: row.focus || [],
+    chamber_volume: row.chamber_volume,
+    bowl_diameter_mm: row.bowl_diameter_mm,
+    bowl_depth_mm: row.bowl_depth_mm,
+    bowl_material: row.bowl_material,
+    shape: row.shape,
+    bowlStyle: row.bowlStyle,
+    usage_characteristics: row.usage_characteristics,
+    smoking_characteristics: row.smoking_characteristics,
+  }), [row]);
+
   // Top matches: always recompute locally to ensure up-to-date scores (artifact may be stale)
   const topMatches = useMemo(() => {
     const scored = (allBlends || []).map((b) => {
       const { score } = scorePipeBlend(
-        { 
-          pipe_id: row.pipe_id, 
-          pipe_name: row.name, 
-          bowl_variant_id: row.bowl_variant_id,
-          focus: row.focus || [] 
-        },
-        {
-          tobacco_id: String(b.id),
-          tobacco_name: b.name,
-          blend_type: b.blend_type,
-          strength: b.strength,
-          flavor_notes: b.flavor_notes,
-          tobacco_components: b.tobacco_components,
-          aromatic_intensity: b.aromatic_intensity,
-        },
+        pipeForScore,
+        { ...b, tobacco_id: String(b.id), tobacco_name: b.name },
         userProfile
       );
       return { tobacco_id: String(b.id), tobacco_name: b.name, score };
     });
     return scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
-  }, [row, allBlends, userProfile]);
+  }, [pipeForScore, allBlends, userProfile]);
 
   const selectedBlendScore = useMemo(() => {
     if (!selectedBlendId) return calculatedScore;
@@ -293,21 +301,8 @@ function PipeCard({ row, allBlends, userProfile }) {
 
     // Deterministic scoring (same everywhere)
     const { score } = scorePipeBlend(
-      { 
-        pipe_id: row.pipe_id, 
-        pipe_name: row.name, 
-        bowl_variant_id: row.bowl_variant_id,
-        focus: row.focus || [] 
-      },
-      {
-        tobacco_id: String(selectedBlend.id),
-        tobacco_name: selectedBlend.name,
-        blend_type: selectedBlend.blend_type,
-        strength: selectedBlend.strength,
-        flavor_notes: selectedBlend.flavor_notes,
-        tobacco_components: selectedBlend.tobacco_components,
-        aromatic_intensity: selectedBlend.aromatic_intensity,
-      },
+      pipeForScore,
+      { ...selectedBlend, tobacco_id: String(selectedBlend.id), tobacco_name: selectedBlend.name },
       userProfile
     );
     setCalculatedScore(score);

@@ -736,6 +736,9 @@ const plUI = {
     top3Matches: "3 najlepsze dopasowania",
     show: "Pokaż",
     hide: "Ukryj",
+    noCollectionMatches: "Brak mieszanek w kolekcji do oceny.",
+    suggestNew: "Zaproponuj mieszanki spoza kolekcji",
+    outsideCollection: "Propozycje spoza kolekcji",
   },
 
   logoLibraryBrowser: {

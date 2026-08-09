@@ -7,3 +7,12 @@ export {
   getAromaticIntensity,
   inferBlendCategory,
 } from "@/components/utils/pairingScoreCanonical";
+
+export {
+  scorePipeBlendDiagnostic,
+  normalizePipeForPairing,
+  normalizeTobaccoForPairing,
+  inferAromaticFromFields,
+  isKnownNonAromaticBlend,
+  COMPONENT_WEIGHTS,
+} from "@/components/utils/pairingScoreCanonical";
