@@ -1,0 +1,174 @@
+{
+  "name": "PipeClubSession",
+  "type": "object",
+  "description": "A recorded Pipe Club / tasting session. Designed to be extensible for future cigar-club and whiskey-tasting session types via session_type.",
+  "properties": {
+    "session_type": {
+      "type": "string",
+      "enum": ["pipe_club", "cigar_club", "whiskey_tasting", "wine_tasting"],
+      "default": "pipe_club",
+      "description": "Type of tasting/club session"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time of the session (ISO 8601)"
+    },
+    "club_name": {
+      "type": "string",
+      "description": "Optional name of the pipe club or meeting group"
+    },
+    "location": {
+      "type": "string",
+      "description": "Optional location where the meeting took place"
+    },
+    "notes": {
+      "type": "string",
+      "description": "General notes about the session"
+    },
+    "pipes_present": {
+      "type": "string",
+      "description": "JSON array of pipes/bowls physically present at the meeting: [{pipe_id, pipe_name, maker, bowl_variant_id, bowl_name}]"
+    },
+    "proposed_blend_id": {
+      "type": "string",
+      "description": "ID of an owned TobaccoBlend, if the club tobacco comes from the user's collection"
+    },
+    "proposed_blend_name": {
+      "type": "string",
+      "description": "Display name of the proposed/shared tobacco blend"
+    },
+    "proposed_blend_manufacturer": {
+      "type": "string",
+      "description": "Manufacturer of the proposed tobacco blend"
+    },
+    "proposed_blend_source": {
+      "type": "string",
+      "enum": ["collection", "wishlist", "new"],
+      "description": "Where the proposed blend originated: user's collection, wishlist, or new entry"
+    },
+    "temp_tobacco_snapshot": {
+      "type": "string",
+      "description": "JSON snapshot of a temporary/unowned tobacco for this session: {name, manufacturer, blend_family, blend_type, tobacco_components, is_aromatic, aromatic_intensity, casing, topping, cut, strength}. Used when proposed_blend_source is 'new'. Not added to owned inventory."
+    },
+    "recommended_pipe_id": {
+      "type": "string",
+      "description": "Pipe ID of the canonical scorer's top recommendation"
+    },
+    "recommended_pipe_name": {
+      "type": "string",
+      "description": "Display name of the recommended pipe"
+    },
+    "recommended_bowl_variant_id": {
+      "type": "string",
+      "description": "Bowl variant ID of the recommendation, if applicable"
+    },
+    "recommended_bowl_name": {
+      "type": "string",
+      "description": "Display name of the recommended bowl variant, if applicable"
+    },
+    "recommended_score": {
+      "type": "number",
+      "description": "Canonical pairing score (0–10) for the top recommendation"
+    },
+    "recommended_confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence level of the recommendation based on scorer diagnostics"
+    },
+    "recommended_is_best_available": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the recommendation is 'Best Available' rather than 'Best Choice' — e.g., when all present pipes have meaningful conflicts"
+    },
+    "recommended_why": {
+      "type": "string",
+      "description": "Canonical scorer reasoning for the top recommendation"
+    },
+    "alternative_pipe_id": {
+      "type": "string",
+      "description": "Pipe ID of the second-best recommendation"
+    },
+    "alternative_pipe_name": {
+      "type": "string",
+      "description": "Display name of the alternative pipe"
+    },
+    "alternative_bowl_variant_id": {
+      "type": "string",
+      "description": "Bowl variant ID of the alternative recommendation, if applicable"
+    },
+    "alternative_bowl_name": {
+      "type": "string",
+      "description": "Bowl name of the alternative recommendation, if applicable"
+    },
+    "alternative_score": {
+      "type": "number",
+      "description": "Canonical pairing score (0–10) for the alternative pipe"
+    },
+    "alternative_why": {
+      "type": "string",
+      "description": "Canonical scorer reasoning for the alternative recommendation"
+    },
+    "actual_pipe_id": {
+      "type": "string",
+      "description": "Pipe ID of the pipe the user actually smoked"
+    },
+    "actual_pipe_name": {
+      "type": "string",
+      "description": "Display name of the pipe actually smoked"
+    },
+    "actual_bowl_variant_id": {
+      "type": "string",
+      "description": "Bowl variant ID of the bowl actually used"
+    },
+    "actual_bowl_name": {
+      "type": "string",
+      "description": "Display name of the bowl actually used"
+    },
+    "overall_rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Overall tobacco rating after smoking (1–5)"
+    },
+    "pairing_rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Rating of how well the pipe and tobacco paired (1–5)"
+    },
+    "would_smoke_again": {
+      "type": "boolean",
+      "description": "Whether the user would smoke this tobacco again"
+    },
+    "post_session_notes": {
+      "type": "string",
+      "description": "Notes captured after the smoke"
+    },
+    "disposition": {
+      "type": "string",
+      "enum": ["none", "wishlist", "not_for_me"],
+      "default": "none",
+      "description": "User's disposition toward the proposed tobacco: wishlist to track it, not_for_me to exclude from future recommendations"
+    },
+    "wishlist_item_id": {
+      "type": "string",
+      "description": "ID of the AcquisitionItem created when disposition is wishlist"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was created"
+    },
+    "updated_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was last updated"
+    }
+  },
+  "required": ["date", "proposed_blend_name", "created_by"]
+}

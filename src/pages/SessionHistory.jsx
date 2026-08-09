@@ -12,9 +12,9 @@ import { sortByLabel } from "@/lib/sorting/alphabetical";
 import { X, Star } from "lucide-react";
 import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
-const BASE_MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar"];
+const BASE_MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar", "pipe_club"];
 
-function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions = [], wineTastings = [] }) {
+function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions = [], wineTastings = [], pipeClubSessions = [] }) {
   const pipeRows = (smokingLogs || []).map((log) => ({
     id: `pipe_${log.id}`,
     moduleType: "pipe",
@@ -54,7 +54,16 @@ function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions =
     notes: tasting.notes || "",
   }));
 
-  return [...pipeRows, ...whiskeyRows, ...cigarRows, ...wineRows];
+  const pipeClubRows = (pipeClubSessions || []).map((s) => ({
+    id: `pipe_club_${s.id}`,
+    moduleType: "pipe_club",
+    date: s.date,
+    itemLabel: [s.proposed_blend_name, s.club_name].filter(Boolean).join(" · ") || "Pipe Club session",
+    rating: s.overall_rating ?? null,
+    notes: s.post_session_notes || "",
+  }));
+
+  return [...pipeRows, ...whiskeyRows, ...cigarRows, ...wineRows, ...pipeClubRows];
 }
 
 export default function SessionHistory() {
@@ -70,15 +79,16 @@ export default function SessionHistory() {
     queryKey: ["session-history-calendar", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
-      const [smokingLogs, tastingLogs, cigarSessions, wineTastings] = await Promise.all([
+      const [smokingLogs, tastingLogs, cigarSessions, wineTastings, pipeClubSessions] = await Promise.all([
         fetchAllEntities(base44.entities.SmokingLog, { created_by: user.email }, "-date", 5000, 200, 'SessionHistory:SmokingLog').catch(() => []),
         fetchAllEntities(base44.entities.TastingLog, { created_by: user.email }, "-tasting_date", 5000, 200, 'SessionHistory:TastingLog').catch(() => []),
         fetchAllEntities(base44.entities.CigarSession, { created_by: user.email }, "-date", 5000, 200, 'SessionHistory:CigarSession').catch(() => []),
         wineEnabled
           ? fetchAllEntities(base44.entities.WineTasting, { created_by: user.email }, "-date", 5000, 200, 'SessionHistory:WineTasting').catch(() => [])
           : Promise.resolve([]),
+        fetchAllEntities(base44.entities.PipeClubSession, { created_by: user.email }, "-date", 5000, 200, 'SessionHistory:PipeClubSession').catch(() => []),
       ]);
-      return { smokingLogs, tastingLogs, cigarSessions, wineTastings };
+      return { smokingLogs, tastingLogs, cigarSessions, wineTastings, pipeClubSessions };
     },
   });
 
@@ -111,7 +121,7 @@ export default function SessionHistory() {
             variant={moduleFilter === key ? "default" : "outline"}
             onClick={() => setModuleFilter(key)}
           >
-            {t(`sessionHistory.filter.${key}`, key === "all" ? "All" : key[0].toUpperCase() + key.slice(1))}
+            {t(`sessionHistory.filter.${key}`, key === "all" ? "All" : key === "pipe_club" ? "Pipe Club" : key[0].toUpperCase() + key.slice(1))}
           </Button>
         ))}
       </div>
@@ -151,7 +161,7 @@ export default function SessionHistory() {
                 >
                   <p className="text-sm font-semibold">{row.itemLabel}</p>
                   <p className="text-xs text-[#D8C7A6]/70 mt-1">
-                    {t(`sessionHistory.module.${row.moduleType}`, row.moduleType)}
+                    {t(`sessionHistory.module.${row.moduleType}`, row.moduleType === "pipe_club" ? "Pipe Club" : row.moduleType)}
                     {row.rating != null ? ` • ★ ${row.rating}` : ""}
                   </p>
                 </button>
@@ -180,7 +190,7 @@ export default function SessionHistory() {
             </button>
 
             <div className="mb-1 text-xs uppercase tracking-widest text-[#B48C4B]">
-              {t(`sessionHistory.module.${selectedSession.moduleType}`, selectedSession.moduleType)}
+              {t(`sessionHistory.module.${selectedSession.moduleType}`, selectedSession.moduleType === "pipe_club" ? "Pipe Club" : selectedSession.moduleType)}
             </div>
 
             <h3 className="text-lg font-bold text-[#F5F1E7] pr-6">{selectedSession.itemLabel}</h3>
