@@ -36,6 +36,103 @@ export const COMPONENT_WEIGHTS = Object.freeze({
 });
 
 
+/* ------------------------------------------------------------------ *
+ * Compatibility tier system (Phase 3–9)
+ *
+ * Tiers gate what the final display score can reach regardless of how
+ * strong secondary variables (geometry, cut, material) are.
+ *
+ * shift   — added to the calibrated score before ceiling is applied.
+ * ceiling — hard upper limit. Secondary bonuses cannot push beyond it.
+ * floor   — hard lower limit (only for EXACT_USER_BLEND guarantee).
+ * ------------------------------------------------------------------ */
+export const COMPATIBILITY_TIERS = Object.freeze({
+  EXACT_USER_BLEND:     { shift: +2.5, floor: 9.5, ceiling: 10.0 },
+  EXACT_SPECIALIZATION: { shift: +1.0, floor: null, ceiling: 9.4 },
+  PREFERRED:            { shift: +0.5, floor: null, ceiling: 8.9 },
+  COMPATIBLE:           { shift: 0,   floor: null, ceiling: 7.5 },
+  GENERAL:              { shift: 0,   floor: null, ceiling: 10.0 },
+  CONFLICTING:          { shift: -1.0, floor: null, ceiling: 4.9 },
+  STRONGLY_CONFLICTING: { shift: -2.0, floor: null, ceiling: 3.5 },
+});
+
+/**
+ * Specialization compatibility matrix.
+ * dedicationType × blendFamily → tier name.
+ *
+ * dedicationType values: generalPurpose, aromatic, english (covers balkan/latakia),
+ *   vaper, virginia, burley (covers darkFired), lakeland, specificBlend, unknown.
+ * blendFamily values: aromatic, english, balkan, vaper, virginia, burley,
+ *   darkFired, lakeland, unknown, other.
+ */
+export const SPECIALIZATION_MATRIX = Object.freeze({
+  generalPurpose: {
+    aromatic: 'GENERAL', english: 'GENERAL', balkan: 'GENERAL',
+    vaper: 'GENERAL', virginia: 'GENERAL', burley: 'GENERAL',
+    darkFired: 'GENERAL', lakeland: 'GENERAL', unknown: 'GENERAL', other: 'GENERAL',
+  },
+  aromatic: {
+    aromatic: 'EXACT_SPECIALIZATION',
+    english: 'STRONGLY_CONFLICTING', balkan: 'STRONGLY_CONFLICTING',
+    vaper: 'CONFLICTING', virginia: 'CONFLICTING',
+    burley: 'CONFLICTING', darkFired: 'CONFLICTING',
+    lakeland: 'CONFLICTING',
+    unknown: 'COMPATIBLE', other: 'COMPATIBLE',
+  },
+  english: {
+    english: 'EXACT_SPECIALIZATION', balkan: 'EXACT_SPECIALIZATION',
+    aromatic: 'STRONGLY_CONFLICTING',
+    vaper: 'CONFLICTING', virginia: 'CONFLICTING',
+    burley: 'COMPATIBLE', darkFired: 'COMPATIBLE',
+    lakeland: 'STRONGLY_CONFLICTING',
+    unknown: 'COMPATIBLE', other: 'COMPATIBLE',
+  },
+  vaper: {
+    vaper: 'EXACT_SPECIALIZATION', virginia: 'PREFERRED',
+    aromatic: 'STRONGLY_CONFLICTING',
+    english: 'CONFLICTING', balkan: 'CONFLICTING',
+    burley: 'COMPATIBLE', darkFired: 'COMPATIBLE',
+    lakeland: 'STRONGLY_CONFLICTING',
+    unknown: 'COMPATIBLE', other: 'COMPATIBLE',
+  },
+  virginia: {
+    virginia: 'EXACT_SPECIALIZATION', vaper: 'PREFERRED',
+    aromatic: 'STRONGLY_CONFLICTING',
+    english: 'CONFLICTING', balkan: 'CONFLICTING',
+    burley: 'COMPATIBLE', darkFired: 'COMPATIBLE',
+    lakeland: 'STRONGLY_CONFLICTING',
+    unknown: 'COMPATIBLE', other: 'COMPATIBLE',
+  },
+  burley: {
+    burley: 'EXACT_SPECIALIZATION', darkFired: 'PREFERRED',
+    virginia: 'COMPATIBLE', vaper: 'COMPATIBLE',
+    english: 'COMPATIBLE', balkan: 'COMPATIBLE',
+    aromatic: 'CONFLICTING',
+    lakeland: 'STRONGLY_CONFLICTING',
+    unknown: 'COMPATIBLE', other: 'COMPATIBLE',
+  },
+  lakeland: {
+    lakeland: 'EXACT_SPECIALIZATION',
+    aromatic: 'COMPATIBLE',
+    english: 'CONFLICTING', balkan: 'CONFLICTING',
+    virginia: 'CONFLICTING', vaper: 'CONFLICTING',
+    burley: 'CONFLICTING', darkFired: 'CONFLICTING',
+    unknown: 'COMPATIBLE', other: 'COMPATIBLE',
+  },
+  specificBlend: {
+    // specificBlend pipes are dedicated to named blends, not families.
+    // Family-level compatibility falls back to general/compatible.
+    aromatic: 'COMPATIBLE', english: 'COMPATIBLE', balkan: 'COMPATIBLE',
+    vaper: 'COMPATIBLE', virginia: 'COMPATIBLE', burley: 'COMPATIBLE',
+    darkFired: 'COMPATIBLE', lakeland: 'COMPATIBLE', unknown: 'COMPATIBLE', other: 'COMPATIBLE',
+  },
+  unknown: {
+    aromatic: 'GENERAL', english: 'GENERAL', balkan: 'GENERAL',
+    vaper: 'GENERAL', virginia: 'GENERAL', burley: 'GENERAL',
+    darkFired: 'GENERAL', lakeland: 'GENERAL', unknown: 'GENERAL', other: 'GENERAL',
+  },
+});
+
 export const AROMATIC_CLASSIFICATION_PRECEDENCE = Object.freeze([
   'explicit is_aromatic boolean',
   'explicit blend family/type identifying aromatic',
@@ -965,6 +1062,43 @@ function scoreDedication(pipeN, tobN) {
   return { score: 6, reason: "Pipe dedication is neutral for this blend." };
 }
 
+/**
+ * Determine which compatibility tier applies to a pipe+tobacco pairing.
+ * Exported so callers can display tier labels.
+ *
+ * @param {object} pipeN - normalized pipe from normalizePipeForPairing()
+ * @param {object} tobN  - normalized tobacco from normalizeTobaccoForPairing()
+ * @returns {{ name: string } & TierConstraints}
+ */
+export function computeCompatibilityTier(pipeN, tobN) {
+  const { exactBlendFocus, focusCategories, dedicationType } = pipeN;
+  const blendName = lower(tobN.name);
+
+  // 1. Exact user-defined blend dedication (highest priority)
+  if (exactBlendFocus.length > 0 && blendName && exactBlendFocus.some((f) => lower(f) === blendName)) {
+    return { name: 'EXACT_USER_BLEND', ...COMPATIBILITY_TIERS.EXACT_USER_BLEND };
+  }
+
+  // 2. Pipe is dedicated exclusively to named blends but this is not one of them → general
+  if (exactBlendFocus.length > 0 && focusCategories.length === 0) {
+    return { name: 'GENERAL', ...COMPATIBILITY_TIERS.GENERAL };
+  }
+
+  // 3. Family-based specialization matrix lookup
+  const fam = tobN.blendFamily || 'unknown';
+  const dedType = dedicationType || 'unknown';
+  const row = SPECIALIZATION_MATRIX[dedType] || SPECIALIZATION_MATRIX.unknown;
+  const tierName = row[fam] || row.other || 'GENERAL';
+  return { name: tierName, ...COMPATIBILITY_TIERS[tierName] };
+}
+
+function applyTierConstraint(score, tier) {
+  let adjusted = score + (tier.shift || 0);
+  if (tier.ceiling != null) adjusted = Math.min(adjusted, tier.ceiling);
+  if (tier.floor != null) adjusted = Math.max(adjusted, tier.floor);
+  return round1(clamp(adjusted, 0, 10));
+}
+
 const GEOMETRY_TABLE = {
   virginia: { narrow: 9, medium: 7.5, wide: 5.5 },
   vaper: { narrow: 8.5, medium: 8, wide: 6 },
@@ -1460,12 +1594,18 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
   rawTechnicalScore = round1(clamp(rawTechnicalScore, 0, 10));
   const technicalScore = calibrateScore(rawTechnicalScore);
 
+  // Compatibility tier: gates the final score so secondary variables cannot
+  // overwhelm explicit specialization or user-defined blend dedication.
+  const tier = computeCompatibilityTier(pipeN, tobN);
+  const tieredScore = applyTierConstraint(technicalScore, tier);
+
   const personal = scorePersonalFit(pipeN, tobN, userProfile, blend);
   const personalFit = personal.score == null ? null : round1(personal.score);
 
-  const finalScore = personal.hasPersonalizationEvidence
+  const preTierFinal = personal.hasPersonalizationEvidence
     ? round1(clamp(technicalScore * 0.8 + personalFit * 0.2, 0, 10))
     : technicalScore;
+  const finalScore = applyTierConstraint(preTierFinal, tier);
 
   // Confidence: how complete the underlying records are
   const confidence = round1(clamp((tobN.confidence * 0.5 + pipeN.confidence * 0.5), 0, 1));
@@ -1483,11 +1623,13 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
     missingFields: [...new Set([...(pipeN.confidenceDetails?.missingFields || []), ...(tobN.confidenceDetails?.missingFields || [])])],
   };
 
-  const whyList = buildWhy(components, personal, pipeN, tobN, confidenceDetails);
+  const whyList = buildWhy(components, personal, pipeN, tobN, confidenceDetails, tier);
 
   return {
     score: finalScore,
     finalScore,
+    tieredScore,
+    tier,
     technicalScore,
     rawTechnicalScore,
     personalFit,
@@ -1508,7 +1650,32 @@ export function scorePipeBlendDiagnostic(pipeVariant, blend, userProfile) {
 const NEUTRAL_COMPONENT_SCORE = 6;
 const MENTION_THRESHOLD = 0.25;
 
-function buildWhy(components, personal, pipeN, tobN, confidenceDetails) {
+function buildTierReason(tier, pipeN, tobN) {
+  switch (tier.name) {
+    case 'EXACT_USER_BLEND':
+      return `You explicitly dedicated this pipe to ${tobN.name} — highest specialization priority.`;
+    case 'EXACT_SPECIALIZATION':
+      return `This blend's family matches the pipe's declared specialization exactly.`;
+    case 'PREFERRED':
+      return `This blend is a preferred match for this pipe's specialization.`;
+    case 'CONFLICTING':
+      return `This blend family conflicts with the pipe's specialization — ghosting risk.`;
+    case 'STRONGLY_CONFLICTING':
+      return `This blend family strongly conflicts with the pipe's specialization — not recommended.`;
+    default:
+      return null;
+  }
+}
+
+function buildWhy(components, personal, pipeN, tobN, confidenceDetails, tier) {
+  const why = [];
+
+  // Lead with the tier reason so the most important factor is always stated first.
+  if (tier) {
+    const tierReason = buildTierReason(tier, pipeN, tobN);
+    if (tierReason) why.push(tierReason);
+  }
+
   const entries = Object.entries(components)
     .map(([key, c]) => ({
       key,
@@ -1518,7 +1685,8 @@ function buildWhy(components, personal, pipeN, tobN, confidenceDetails) {
     .filter((e) => Math.abs(e.delta) >= MENTION_THRESHOLD && e.reason)
     .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
 
-  const why = entries.slice(0, 3).map((e) => e.reason);
+  const componentReasons = entries.slice(0, 3).map((e) => e.reason);
+  why.push(...componentReasons);
 
   if (!why.length) {
     why.push(
