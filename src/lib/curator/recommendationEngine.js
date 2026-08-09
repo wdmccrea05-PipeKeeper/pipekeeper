@@ -29,6 +29,7 @@ import { generateGrowExpandRecommendations } from './growExpandEngine.js';
 import { normalizeAcquisitionState } from './acquisitionNormalizer.js';
 import { filterAiEligibleItems } from '../../platform/aiEligibility.js';
 import { shouldRefreshWineValuation, getWineValuationStatus } from '../valuation/wineValuation.js';
+import { normalizeTobaccoForPairing } from '../../components/utils/pairingScoreCanonical.jsx';
 
 // ─── Thresholds ───────────────────────────────────────────────────────────────
 
@@ -296,9 +297,48 @@ const KNOWN_BLENDS = {
  * 3. No match → { payload: null, confidence: 0 }
  */
 /** Build a proposedChange payload for a blend from a catalog match, including only missing fields. */
+function hasConfirmedVaPerComposition(blend) {
+  const components = Array.isArray(blend?.tobacco_components) ? blend.tobacco_components : [];
+  const lowerComponents = components.map((c) => String(c || '').toLowerCase());
+  return lowerComponents.some((c) => c.includes('virginia')) && lowerComponents.some((c) => c.includes('perique'));
+}
+
+function hasExplicitVaPerMetadata(blend) {
+  const type = String(blend?.blend_type || '').toLowerCase();
+  const family = String(blend?.blend_family || '').toLowerCase();
+  return /virginia\/perique|va\/per|\bvaper\b/.test(type) || /virginia\/perique|\bvaper\b/.test(family);
+}
+
+function canonicalBlendTypeCandidate(blend, candidate) {
+  const normalizedCandidate = String(candidate || '').trim();
+  if (!normalizedCandidate) return null;
+
+  if (normalizedCandidate === 'Virginia/Perique') {
+    if (!hasExplicitVaPerMetadata(blend) && !hasConfirmedVaPerComposition(blend)) {
+      return null;
+    }
+  }
+
+  if (normalizedCandidate === 'Aromatic' && blend?.is_aromatic === false) {
+    return null;
+  }
+
+  const inferred = normalizeTobaccoForPairing({
+    ...blend,
+    blend_type: normalizedCandidate,
+  });
+  if (normalizedCandidate === 'Aromatic' && inferred.isAromatic !== true) return null;
+  if (normalizedCandidate === 'Virginia/Perique' && inferred.blendFamily !== 'vaper') return null;
+
+  return normalizedCandidate;
+}
+
 function buildBlendPayload(blend, data) {
   const payload = {};
-  if (!blend.blend_type || blend.blend_type === '' || blend.blend_type === 'Unknown') payload.blend_type = data.blend_type;
+  if (!blend.blend_type || blend.blend_type === '' || blend.blend_type === 'Unknown') {
+    const candidateType = canonicalBlendTypeCandidate(blend, data.blend_type);
+    if (candidateType) payload.blend_type = candidateType;
+  }
   if (!blend.strength   || blend.strength   === '') payload.strength   = data.strength;
   return Object.keys(payload).length ? payload : null;
 }

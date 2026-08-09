@@ -101,6 +101,19 @@
       ],
       "description": "Nicotine strength"
     },
+    "classification_confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Confidence from automated taxonomy classification."
+    },
+    "classification_source": {
+      "type": "string",
+      "description": "Source/audit note for automated taxonomy classification."
+    },
     "room_note": {
       "type": "string",
       "enum": [

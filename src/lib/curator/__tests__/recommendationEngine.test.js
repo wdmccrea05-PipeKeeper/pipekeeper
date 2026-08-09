@@ -157,5 +157,42 @@ describe('generateRecommendations — wine record optimization', () => {
         expect(r.moduleKey).toBe('wine');
       });
   });
-});
 
+  describe('generateRecommendations — canonical tobacco classification guardrails', () => {
+      it('does not infer Virginia/Perique from Navy Flake name alone', () => {
+        const recs = generateRecommendations({
+          activeModules: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
+          blends: [
+            { id: 'b1', name: 'Navy Flake', blend_type: '', tobacco_components: ['Virginia', 'Burley'] },
+          ],
+          pipes: [],
+          bottles: [],
+          cigars: [],
+          smokingLogs: [],
+          tastingLogs: [],
+        });
+
+        const rec = recs.find((r) => r.goal === 'blend_missing_type');
+        const item = rec?.items?.find((i) => i.id === 'b1');
+        expect(item?.proposedChange?.payload?.blend_type).toBeUndefined();
+      });
+
+      it('does not override explicit non-aromatic evidence with aromatic catalog labels', () => {
+        const recs = generateRecommendations({
+          activeModules: { pipekeeper: true, whiskeykeeper: false, winekeeper: false, cigarkeeper: false },
+          blends: [
+            { id: 'b2', name: 'Autumn Evening', blend_type: '', is_aromatic: false },
+          ],
+          pipes: [],
+          bottles: [],
+          cigars: [],
+          smokingLogs: [],
+          tastingLogs: [],
+        });
+
+        const rec = recs.find((r) => r.goal === 'blend_missing_type');
+        const item = rec?.items?.find((i) => i.id === 'b2');
+        expect(item?.proposedChange?.payload?.blend_type).toBeUndefined();
+      });
+  });
+});
