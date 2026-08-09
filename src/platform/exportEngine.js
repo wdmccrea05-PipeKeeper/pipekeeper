@@ -6,6 +6,7 @@
 
 import { base44 } from '@/api/base44Client';
 import { MODULE_REGISTRY } from './moduleRegistry';
+import { aggregateCollection } from '@/components/keeper-core/aggregation/collectionAggregation';
 import { buildCanonicalCollectionAggregate } from './reporting.js';
 
 function getModuleId(module) {
@@ -123,19 +124,29 @@ export async function generateCollectionReport(userEmail, options = {}) {
       summary: {},
       modules: {},
     };
+
+    const agg = await aggregateCollection(userEmail);
+    const moduleStats = {
+      pipekeeper: agg?.pipes,
+      tobacco: agg?.tobacco,
+      whiskeykeeper: agg?.whiskey,
+      cigarkeeper: agg?.cigar,
+      winekeeper: agg?.wine,
+    };
     
     let totalValue = 0;
     let totalItems = 0;
     
     for (const module of modulesToInclude) {
       const moduleId = getModuleId(module);
+      const stats = moduleStats[moduleId] || {};
       const items = await base44.entities[module.entityName].filter({
         created_by: userEmail,
       });
       
       const canonicalAggregate = buildCanonicalCollectionAggregate(items || []);
-      const moduleValue = canonicalAggregate.totalValue;
-      const moduleCount = canonicalAggregate.totalCount;
+      const moduleValue = Number(stats?.value ?? canonicalAggregate.totalValue ?? 0);
+      const moduleCount = Number(stats?.count ?? canonicalAggregate.totalCount ?? 0);
       
       totalValue += moduleValue;
       totalItems += moduleCount;
