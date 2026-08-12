@@ -36,7 +36,7 @@ function MiniTag({ children, tone = 'default' }) {
   };
   const style = tones[tone] || tones.default;
   return (
-    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={style}>
+    <span className="px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap leading-none" style={style}>
       {children}
     </span>
   );
@@ -121,7 +121,7 @@ export default function CigarCard({
         {/* Quantity badge */}
         {cigar?.quantity > 0 && (
           <div
-            className={`absolute ${quantityBadgePositionClass} left-3 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold`}
+            className={`absolute ${quantityBadgePositionClass} left-3 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap leading-none`}
             style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}
           >
             <Package className="w-3 h-3" />

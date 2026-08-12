@@ -15,7 +15,7 @@ import { getItemPhoto } from '@/lib/images/getItemPhoto';
 function MiniBadge({ children }) {
   return (
     <span
-      className="px-2.5 py-1 rounded-full text-xs font-medium"
+      className="px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap leading-none"
       style={{
         background: 'rgba(180,140,75,0.18)',
         border: '1px solid rgba(180,140,75,0.28)',

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
  * Badge — softer, more readable, consistent palette.
  */
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-wide transition-colors",
+  "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-wide transition-colors whitespace-nowrap leading-none",
   {
     variants: {
       variant: {

@@ -60,7 +60,7 @@ function Badge({ text, tone = 'neutral' }) {
 
   return (
     <span
-      className="text-[11px] px-3 py-1 rounded-full font-medium"
+      className="text-[11px] px-3 py-1 rounded-full font-medium whitespace-nowrap leading-none"
       style={{ background: style.bg, color: style.color, border: `1px solid ${style.border}` }}
     >
       {text}

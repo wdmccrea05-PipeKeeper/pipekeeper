@@ -39,7 +39,7 @@ function Badge({ children, tone = 'default' }) {
   const style = tones[tone] || tones.default;
 
   return (
-    <span className="px-2 py-1 rounded-full text-xs font-medium" style={style}>
+    <span className="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap leading-none" style={style}>
       {children}
     </span>
   );

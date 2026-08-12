@@ -26,7 +26,7 @@ function MiniBadge({ children, tone = 'default' }) {
 
   return (
     <span
-      className="px-2.5 py-1 rounded-full text-xs font-medium"
+      className="px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap leading-none"
       style={styles[tone] || styles.default}
     >
       {children}
@@ -114,7 +114,7 @@ export default function WineListItem({
           <div className="flex flex-wrap gap-2">
             {drinkWindowStatus && (
               <span
-                className="px-2.5 py-1 rounded-full text-xs font-medium"
+                className="px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap leading-none"
                 style={{
                   background: `${DRINK_WINDOW_COLORS[drinkWindowStatus]}22`,
                   border: `1px solid ${DRINK_WINDOW_COLORS[drinkWindowStatus]}44`,
