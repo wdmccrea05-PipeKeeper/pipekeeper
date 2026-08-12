@@ -25,11 +25,15 @@ function TrioItem({ item, label }) {
 
   return (
     <div
-      className="flex-1 min-w-0 rounded-lg px-4 py-3 text-center space-y-1"
+      className="min-w-0 rounded-lg px-4 py-3 text-center space-y-1"
       style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(140,105,65,0.15)' }}
     >
       <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'rgba(224,216,200,0.35)' }}>{label}</div>
-      <div className="text-base font-semibold leading-snug" style={{ color }} title={item?.name || '—'}>
+      <div
+        className="text-base font-semibold leading-snug"
+        style={{ color, hyphens: 'none', overflowWrap: 'break-word', wordBreak: 'normal' }}
+        title={item?.name || '—'}
+      >
         {item?.name || '—'}
       </div>
       {page && (
@@ -99,7 +103,7 @@ export default function CuratorPairingResults({ pairings = [] }) {
               </div>
             </div>
 
-            <div className="flex gap-2 mb-3 flex-wrap">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
               {items.map((entry) => (
                 <TrioItem key={`${pairing.id}_${entry.label}`} item={entry.item} label={entry.label} />
               ))}
