@@ -176,3 +176,105 @@ export async function trackIntegrationEvent(
     console.warn('Integration telemetry logging failed:', error?.message || error);
   }
 }
+
+/**
+ * Tracked InvokeLLM (backend) — wraps base44.integrations.Core.InvokeLLM with telemetry.
+ * Returns the InvokeLLM result, or throws with classification attached.
+ */
+export async function trackedInvokeLLM(
+  base44: any,
+  params: any,
+  attribution: {
+    feature: string;
+    module?: string;
+    userId?: string | null;
+    email?: string | null;
+    backendFunction?: string;
+    triggerContext?: string;
+  }
+): Promise<any> {
+  const startTime = Date.now();
+  const { add_context_from_internet, file_urls, model } = params || {};
+
+  try {
+    const result = await base44.integrations.Core.InvokeLLM(params);
+
+    await trackIntegrationEvent(base44, {
+      ...attribution,
+      operation: 'InvokeLLM',
+      success: true,
+      durationMs: Date.now() - startTime,
+      model: model || null,
+      internetEnabled: Boolean(add_context_from_internet),
+      hasFileUrls: Boolean(
+        file_urls && (Array.isArray(file_urls) ? file_urls.length > 0 : Boolean(file_urls))
+      ),
+    });
+
+    return result;
+  } catch (error: any) {
+    const category = classifyIntegrationError(error);
+
+    await trackIntegrationEvent(base44, {
+      ...attribution,
+      operation: 'InvokeLLM',
+      success: false,
+      durationMs: Date.now() - startTime,
+      model: model || null,
+      internetEnabled: Boolean(add_context_from_internet),
+      hasFileUrls: Boolean(
+        file_urls && (Array.isArray(file_urls) ? file_urls.length > 0 : Boolean(file_urls))
+      ),
+      errorCategory: category,
+      errorMessage: error?.message,
+    });
+
+    error._integrationErrorCategory = category;
+    throw error;
+  }
+}
+
+/**
+ * Tracked UploadFile (backend) — wraps base44.integrations.Core.UploadFile with telemetry.
+ */
+export async function trackedUploadFile(
+  base44: any,
+  params: any,
+  attribution: {
+    feature: string;
+    module?: string;
+    userId?: string | null;
+    email?: string | null;
+    backendFunction?: string;
+    triggerContext?: string;
+  }
+): Promise<any> {
+  const startTime = Date.now();
+
+  try {
+    const result = await base44.integrations.Core.UploadFile(params);
+
+    await trackIntegrationEvent(base44, {
+      ...attribution,
+      operation: 'UploadFile',
+      success: true,
+      durationMs: Date.now() - startTime,
+    });
+
+    return result;
+  } catch (error: any) {
+    const category = classifyIntegrationError(error);
+
+    await trackIntegrationEvent(base44, {
+      ...attribution,
+      operation: 'UploadFile',
+      success: false,
+      durationMs: Date.now() - startTime,
+      errorCategory: category,
+      errorMessage: error?.message,
+    });
+
+    error._integrationErrorCategory = category;
+    throw error;
+  }
+}

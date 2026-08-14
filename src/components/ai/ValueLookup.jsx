@@ -98,7 +98,7 @@ Provide a detailed valuation in JSON format with:
             value_trend: { type: "string" }
           }
         }
-      });
+      }, { feature: 'valuation.lookup', module: 'shared' });
 
       setValuation(result);
     } catch (err) {

@@ -162,7 +162,7 @@ For each of the 3 recommendations, provide:
             }
           }
         }
-      });
+      }, { feature: 'pipe.top_blend_matches', module: 'pipekeeper' });
 
       // Filter out any recommendations that duplicate owned blends
       const filteredMatches = (result?.matches || []).filter(match => {

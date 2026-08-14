@@ -249,7 +249,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
             add_context_from_internet: true,
             response_json_schema: SCHEMA_BY_TYPE[itemType],
             model: "gemini_3_flash",
-          });
+          }, { feature: 'session.external_search', module: 'shared' });
 
           const remoteItems = (llmResult?.results || []).map((item) =>
             normalizeRemoteResult(itemType, item)

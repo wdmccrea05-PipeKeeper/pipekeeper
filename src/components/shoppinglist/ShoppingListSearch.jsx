@@ -45,7 +45,7 @@ async function searchTobacco(query) {
         },
       },
     },
-  });
+  }, { feature: 'shoppinglist.search', module: 'shared' });
 
   return rankSearchResults(query, result?.blends || [], "blend").slice(0, 10);
 }
@@ -74,7 +74,7 @@ async function searchPipe(query) {
         },
       },
     },
-  });
+  }, { feature: 'shoppinglist.search', module: 'shared' });
 
   return rankSearchResults(query, result?.pipes || [], "pipe").slice(0, 10);
 }
@@ -104,7 +104,7 @@ async function searchBottle(query) {
         },
       },
     },
-  });
+  }, { feature: 'shoppinglist.search', module: 'shared' });
 
   return rankSearchResults(query, result?.bottles || [], "bottle").slice(0, 10);
 }

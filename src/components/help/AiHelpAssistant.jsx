@@ -88,7 +88,7 @@ Instructions:
       const response = await trackedInvokeLLM({
         prompt,
         model: 'gemini_3_flash',
-      });
+      }, { feature: 'help.ai_assistant', module: 'shared' });
 
       const relatedIds = articles.flatMap(a => a.relatedArticles || []).slice(0, 4);
 

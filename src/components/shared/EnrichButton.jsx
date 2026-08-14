@@ -106,7 +106,7 @@ Field guidelines:
         condition: { type: ['string', 'null'] },
       },
     },
-  });
+  }, { feature: 'pipe.enrichment', module: 'pipekeeper' });
 
   const updates = {};
   for (const field of missingFields) {
@@ -153,7 +153,7 @@ Field guidelines:
         country: { type: ['string', 'null'] },
       },
     },
-  });
+  }, { feature: 'whiskey.enrichment', module: 'whiskeykeeper' });
 
   const updates = {};
   for (const field of missingFields) {
@@ -247,7 +247,7 @@ Enums:
         valuation_notes: { type: ['string', 'null'] },
       },
     },
-  });
+  }, { feature: 'cigar.enrichment', module: 'cigarkeeper' });
 
   const updates = {};
 
@@ -343,7 +343,7 @@ Rules:
         valuation_notes: { type: ['string', 'null'] },
       },
     },
-  });
+  }, { feature: 'wine.enrichment', module: 'winekeeper' });
 
   const updates = {};
 
