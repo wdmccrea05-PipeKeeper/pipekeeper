@@ -18,8 +18,8 @@ export default function AddFlowChoice({ typeLabel, onQuickAdd, onManualAdd, onSc
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-white/10 flex-shrink-0 ml-4"
-          style={{ color: 'rgba(224,216,200,0.5)' }}
+          className="flex items-center justify-center rounded-full transition-colors hover:bg-white/10 flex-shrink-0 ml-4"
+          style={{ color: 'rgba(224,216,200,0.5)', minHeight: 44, minWidth: 44, width: 44, height: 44 }}
         >
           <X className="w-4 h-4" />
         </button>

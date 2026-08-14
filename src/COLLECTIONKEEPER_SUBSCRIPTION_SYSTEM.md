@@ -106,7 +106,7 @@ Per-module free tier limit enforcement.
 **Default Free Tier Limits:**
 ```javascript
 PipeKeeper Free:
-  - 10 pipes
+  - 5 pipes
   - 10 tobacco blends
   - 100 sessions/month
 
@@ -231,7 +231,7 @@ Each module has independent free tier limits:
 if (hasModuleProAccess(user, 'pipekeeper')) {
   // PipeKeeper features: unlimited
 } else {
-  // PipeKeeper features: 10 max (free limit)
+  // PipeKeeper features: 5 pipes max, 10 blends max (free limit)
 }
 
 if (hasModuleProAccess(user, 'whiskeykeeper')) {

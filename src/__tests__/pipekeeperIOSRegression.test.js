@@ -1,6 +1,12 @@
 /* eslint-disable */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+// Mock moduleEntitlements to avoid JSX import chain (PipeIcon) that triggers
+// @vitejs/plugin-react preamble errors in the test environment.
+vi.mock('@/components/utils/moduleEntitlements', () => ({
+  hasModuleProAccess: () => false,
+}));
+
 // ─── Mock setup ─────────────────────────────────────────────────────────────
 // Mock window/navigator before importing modules
 
@@ -79,7 +85,7 @@ describe('[Issue 2] Native iOS barcode scanner detection', () => {
       },
     });
     // No BarcodeDetector in window
-    const mod = await import('@/components/identify/BarcodeScannerModal');
+    const mod = await import('@/components/identify/barcodeScanCapabilities');
     expect(mod.canAttemptLiveBarcodeScan()).toBe(true);
   });
 
@@ -87,7 +93,7 @@ describe('[Issue 2] Native iOS barcode scanner detection', () => {
     delete window.webkit;
     delete window.BarcodeDetector;
     Object.defineProperty(navigator, 'mediaDevices', { value: undefined, configurable: true });
-    const mod = await import('@/components/identify/BarcodeScannerModal');
+    const mod = await import('@/components/identify/barcodeScanCapabilities');
     expect(mod.canAttemptLiveBarcodeScan()).toBe(false);
   });
 
@@ -142,14 +148,13 @@ describe('[Issue 5] Free tier limit consistency', () => {
   });
 
   it('hasReachedLimit returns false for pro users', async () => {
-    const { hasReachedLimit } = await import('@/components/utils/moduleLimits');
-    const proUser = { role: 'admin', subscription_tier: 'pro' };
-    // Mock hasModuleProAccess to return true for pro users
+    // Override the top-level mock for this test: pro users have no limits
     vi.doMock('@/components/utils/moduleEntitlements', () => ({
       hasModuleProAccess: () => true,
     }));
-    const { hasReachedLimit: hrl } = await import('@/components/utils/moduleLimits');
-    expect(hrl(proUser, null, 'pipekeeper', 'pipes', 100)).toBe(false);
+    const { hasReachedLimit } = await import('@/components/utils/moduleLimits');
+    const proUser = { role: 'admin', subscription_tier: 'pro' };
+    expect(hasReachedLimit(proUser, null, 'pipekeeper', 'pipes', 100)).toBe(false);
   });
 
   it('hasReachedLimit returns true when count >= limit for free users', async () => {

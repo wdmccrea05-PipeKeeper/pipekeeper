@@ -86,8 +86,8 @@ export default function AddFlowManualBasic({ itemType, typeLabel, onBack, onNext
         {onClose && (
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
-            style={{ color: 'rgba(224,216,200,0.5)' }}
+            className="flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+            style={{ color: 'rgba(224,216,200,0.5)', minHeight: 44, minWidth: 44, width: 44, height: 44 }}
           >
             <X className="w-4 h-4" />
           </button>

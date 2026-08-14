@@ -742,7 +742,7 @@ function LogoLibraryPicker({ onSelect, onClose, initialQuery = '' }) {
     >
       <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(180,140,75,0.12)' }}>
         <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>Browse Logo Library</p>
-        <button type="button" onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10">
+        <button type="button" onClick={onClose} className="flex items-center justify-center rounded-full hover:bg-white/10" style={{ minHeight: 44, minWidth: 44, width: 44, height: 44 }}>
           <X className="w-3.5 h-3.5" style={{ color: 'rgba(224,216,200,0.6)' }} />
         </button>
       </div>

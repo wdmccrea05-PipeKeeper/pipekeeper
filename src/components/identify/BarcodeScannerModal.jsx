@@ -14,43 +14,17 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { X, Loader2, Barcode, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isIOSWebView, hasNativeBarcodeScanner, requestNativeBarcodeScan } from '@/components/utils/nativeIAPBridge';
+import {
+  canAttemptLiveBarcodeScan,
+  isBarcodeDetectorSupported,
+  isIOSSafari,
+  PREFERRED_BARCODE_FORMATS,
+} from './barcodeScanCapabilities';
+
+// Re-export for backward compatibility (AddFlowIdentify imports from here)
+export { canAttemptLiveBarcodeScan };
 
 const SCAN_INTERVAL_MS = 300; // scan a frame every 300ms
-
-const PREFERRED_BARCODE_FORMATS = ['upc_a', 'upc_e', 'ean_13', 'ean_8', 'code_128', 'code_39', 'itf', 'codabar'];
-
-function isBarcodeDetectorSupported() {
-  return typeof window !== 'undefined' && 'BarcodeDetector' in window;
-}
-
-function isIOSSafari() {
-  if (typeof navigator === 'undefined') return false;
-  const ua = String(navigator.userAgent || '').toLowerCase();
-  const isIOS = /iphone|ipad|ipod/.test(ua);
-  const isSafari = ua.includes('safari') && !ua.includes('crios') && !ua.includes('fxios') && !ua.includes('edgios');
-  return isIOS && isSafari;
-}
-
-/**
- * Whether ANY scanning method is available (web BarcodeDetector OR native bridge).
- * This is the canonical check used by AddFlowIdentify to decide whether to
- * show the "Scan Barcode with Camera" button.
- */
-export function canAttemptLiveBarcodeScan() {
-  // Web BarcodeDetector + getUserMedia
-  if (
-    isBarcodeDetectorSupported()
-    && typeof navigator !== 'undefined'
-    && !!navigator?.mediaDevices?.getUserMedia
-  ) {
-    return true;
-  }
-  // Native iOS bridge
-  if (hasNativeBarcodeScanner()) {
-    return true;
-  }
-  return false;
-}
 
 export default function BarcodeScannerModal({ open, onDetected, onClose }) {
   const videoRef = useRef(null);

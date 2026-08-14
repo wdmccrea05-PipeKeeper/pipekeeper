@@ -431,7 +431,8 @@ export default function PaywallModal({
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-all z-10"
+          className="absolute top-4 right-4 rounded-lg hover:bg-white/10 transition-all z-10 flex items-center justify-center"
+          style={{ minHeight: 44, minWidth: 44, width: 44, height: 44 }}
           aria-label={t('common.cancel')}
         >
           <X className="w-5 h-5" style={{ color: 'rgba(224, 216, 200, 0.6)' }} />
