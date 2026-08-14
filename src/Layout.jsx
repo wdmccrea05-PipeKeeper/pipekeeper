@@ -39,6 +39,7 @@ export default function Layout({ children, currentPageName }) {
                   onClick={() => setQuickAccessOpen(true)}
                   className="text-[#E0D8C8] hover:bg-white/10"
                   title={t('nav.quickAccess', 'Quick Access')}
+                  style={{ minHeight: 44 }}
                 >
                   <Zap className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">{t('nav.quickAccess', 'Quick Access')}</span>

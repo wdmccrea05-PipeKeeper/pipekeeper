@@ -13,6 +13,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
   const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
   const [newBrandName, setNewBrandName] = useState('');
+  const [newBlendName, setNewBlendName] = useState('');
   const queryClient = useQueryClient();
   
   const { data: customLogos = [] } = useQuery({
@@ -29,55 +30,66 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
   
   const allBrands = getAvailableBrands(customLogos);
   
-  // Smart search - match any part of any word in the search query
+  // Smart search - match blend name (primary) or brand/manufacturer (secondary)
   const filteredBrands = searchQuery.trim() === '' 
     ? allBrands 
     : allBrands
         .map(brandObj => {
+          const blendLower = (brandObj.blendName || '').toLowerCase();
           const brandLower = brandObj.brand.toLowerCase();
           const queryLower = searchQuery.toLowerCase();
           
           // Split search query into individual terms
           const searchTerms = queryLower.split(/[\s,]+/).filter(term => term.length > 0);
           
-          // Calculate relevance score
+          // Calculate relevance score — blend name match takes priority
           let score = 0;
           
-          if (brandLower === queryLower) {
-            score = 100; // exact match
+          // Blend name matches (higher priority)
+          if (blendLower && blendLower === queryLower) {
+            score = 100; // exact blend match
+          } else if (blendLower && blendLower.startsWith(queryLower)) {
+            score = 95;
+          } else if (blendLower && blendLower.includes(queryLower)) {
+            score = 90;
+          } else if (brandLower === queryLower) {
+            score = 80; // exact brand match
           } else if (brandLower.startsWith(queryLower)) {
-            score = 90; // starts with full query
+            score = 70;
           } else if (brandLower.includes(queryLower)) {
-            score = 80; // contains full query
+            score = 60;
           } else {
-            // Check if brand matches any of the search terms
+            // Check if blend or brand matches any of the search terms
+            const blendWords = blendLower ? blendLower.split(/[\s&]+/) : [];
             const brandWords = brandLower.split(/[\s&]+/);
             let matchCount = 0;
             
             for (const term of searchTerms) {
-              // Check exact word match
-              if (brandWords.some(w => w === term)) {
+              // Blend name word match (higher priority)
+              if (blendWords.some(w => w === term)) {
                 matchCount += 10;
-                score += 70;
-              }
-              // Check word starts with term
-              else if (brandWords.some(w => w.startsWith(term))) {
-                matchCount += 5;
                 score += 50;
               }
-              // Check word contains term
-              else if (brandWords.some(w => w.includes(term))) {
-                matchCount += 3;
+              else if (blendWords.some(w => w.startsWith(term))) {
+                matchCount += 5;
+                score += 35;
+              }
+              // Brand word match (lower priority)
+              else if (brandWords.some(w => w === term)) {
+                matchCount += 5;
                 score += 30;
               }
-              // Check if brand contains term anywhere
-              else if (brandLower.includes(term)) {
+              else if (brandWords.some(w => w.startsWith(term))) {
+                matchCount += 3;
+                score += 20;
+              }
+              // Contains match
+              else if ((blendLower && blendLower.includes(term)) || brandLower.includes(term)) {
                 matchCount += 1;
                 score += 10;
               }
             }
             
-            // Bonus for matching multiple terms
             if (matchCount > 0 && searchTerms.length > 1) {
               score += matchCount * 5;
             }
@@ -102,11 +114,13 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
       const result = await trackedUploadFile({ file }, { feature: 'blend.logo_upload', module: 'pipekeeper' });
       await base44.entities.TobaccoLogoLibrary.create({
         brand_name: newBrandName.trim(),
+        blend_name: newBlendName.trim() || null,
         logo_url: result.file_url,
         is_custom: true
       });
       queryClient.invalidateQueries({ queryKey: ['custom-tobacco-logos'] });
       setNewBrandName('');
+      setNewBlendName('');
       e.target.value = '';
     } catch (err) {
       console.error('Upload error:', err);
@@ -117,7 +131,10 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
   
   const handleDeleteCustom = (e, brandObj) => {
     e.stopPropagation();
-    const logoEntry = customLogos.find(l => l.brand_name === brandObj.brand);
+    // Find the custom logo entry matching both brand and blend (if any)
+    const logoEntry = customLogos.find(l => 
+      l.brand_name === brandObj.brand && (l.blend_name || null) === (brandObj.blendName || null)
+    );
     if (logoEntry) {
       deleteMutation.mutate(logoEntry.id);
     }
@@ -135,6 +152,12 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
           <div className="border border-amber-200 bg-amber-50 rounded-lg p-3 space-y-2">
             <p className="text-sm font-medium text-amber-800">{t("logoLibraryBrowser.addCustomLogo")}</p>
             <div className="flex gap-2">
+              <Input
+                value={newBlendName}
+                onChange={(e) => setNewBlendName(e.target.value)}
+                placeholder="Blend name (optional, e.g. Haunted Bookshop)"
+                className="flex-1"
+              />
               <Input
                 value={newBrandName}
                 onChange={(e) => setNewBrandName(e.target.value)}
@@ -171,7 +194,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t("logoLibraryBrowser.searchPlaceholder")}
+              placeholder="Search by blend name or manufacturer…"
               className="pl-10"
             />
           </div>
@@ -180,9 +203,12 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {filteredBrands.map((brandObj) => {
                 const isSelected = currentLogo === brandObj.logo;
+                // Display: blend name as primary label when available, manufacturer as secondary
+                const primaryLabel = brandObj.blendName || brandObj.brand;
+                const secondaryLabel = brandObj.blendName ? brandObj.brand : null;
                 
                 return (
-                  <div key={`${brandObj.brand}-${brandObj.isCustom}`} className="flex flex-col">
+                  <div key={`${brandObj.brand}-${brandObj.blendName || ''}-${brandObj.isCustom}`} className="flex flex-col">
                     <button
                       onClick={() => handleSelect(brandObj)}
                       className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 overflow-hidden ${
@@ -194,7 +220,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
                       <div className="w-full h-full flex items-center justify-center p-3 bg-white">
                         <img 
                           src={brandObj.logo} 
-                          alt={brandObj.brand}
+                          alt={primaryLabel}
                           className="max-w-full max-h-full object-contain"
                           crossOrigin="anonymous"
                           onError={(e) => {
@@ -218,10 +244,17 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
                         </button>
                       )}
                     </button>
-                    <p className="text-xs text-stone-600 mt-1 px-1 text-center truncate">
-                      {brandObj.brand}
-                      {brandObj.isCustom && <span className="text-amber-600"> ✦</span>}
-                    </p>
+                    <div className="mt-1 px-1 text-center">
+                      <p className="text-xs font-medium text-stone-800 truncate leading-tight">
+                        {primaryLabel}
+                      </p>
+                      {secondaryLabel && (
+                        <p className="text-[10px] text-stone-500 truncate leading-tight">
+                          {secondaryLabel}
+                        </p>
+                      )}
+                      {brandObj.isCustom && <span className="text-amber-600 text-[10px]">✦</span>}
+                    </div>
                   </div>
                 );
               })}
@@ -230,7 +263,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
             {filteredBrands.length === 0 && (
               <div className="text-center py-12 text-stone-500">
                 <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>{t("logoLibraryBrowser.noBrandsFound", { query: searchQuery })}</p>
+                <p>No matches found for "{searchQuery}"</p>
               </div>
             )}
           </div>

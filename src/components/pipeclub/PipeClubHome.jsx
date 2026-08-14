@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import PipeIcon from "@/components/icons/PipeIcon";
 import PipeClubSessionWizard from "./PipeClubSessionWizard";
 import PipeClubHistory from "./PipeClubHistory";
+import { parseBlends } from "./pipeClubPairing";
 import { useQueryClient } from "@tanstack/react-query";
 
 const ACCENT = "#D4A574";
@@ -163,7 +164,15 @@ export default function PipeClubHome() {
                 <PipeIcon className="w-4 h-4" color={ACCENT} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-[#F5F1E7] truncate">{recentSessions[0]?.proposed_blend_name}</p>
+                <p className="text-sm font-semibold text-[#F5F1E7] truncate">
+                  {(() => {
+                    const s = recentSessions[0];
+                    if (!s) return '';
+                    const allBlends = parseBlends(s.blends, s);
+                    if (allBlends.length > 1) return `${allBlends.length} blends — ${allBlends[0]?.blend_name}…`;
+                    return s.proposed_blend_name;
+                  })()}
+                </p>
                 <p className="text-xs text-[#D8C7A6]/50">{recentSessions[0]?.date ? new Date(recentSessions[0].date).toLocaleDateString() : ""}</p>
               </div>
               <span className="text-xs text-[#D4A574]">View all →</span>

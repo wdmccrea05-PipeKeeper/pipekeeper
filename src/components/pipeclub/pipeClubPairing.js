@@ -121,3 +121,58 @@ export function parseTempTobaccoSnapshot(json) {
     return null;
   }
 }
+
+/**
+ * Serialize the blends array for storage in the PipeClubSession.blends field.
+ * Each blend entry contains: source, blend_id, name, manufacturer, temp_snapshot,
+ * and optionally a recommendation object.
+ *
+ * @param {Array} blends - array of blend entry objects
+ * @returns {string} JSON
+ */
+export function serializeBlends(blends) {
+  if (!Array.isArray(blends) || blends.length === 0) return JSON.stringify([]);
+  const items = blends.map((b, index) => ({
+    index,
+    blend_id: b.blendId ?? null,
+    blend_name: b.name ?? '',
+    manufacturer: b.manufacturer ?? '',
+    source: b.source ?? 'new',
+    temp_snapshot: b.tempBlend ?? null,
+    recommendation: b.recommendation ?? null,
+  }));
+  return JSON.stringify(items);
+}
+
+/**
+ * Parse the blends JSON field from a saved PipeClubSession.
+ * Returns an array of blend entry objects, or [] if not present.
+ * Falls back to legacy single-blend fields when blends is null/empty.
+ *
+ * @param {string|null} json
+ * @param {object|null} session - the full session record for legacy fallback
+ * @returns {Array}
+ */
+export function parseBlends(json, session = null) {
+  if (json) {
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {
+      // fall through to legacy
+    }
+  }
+  // Legacy fallback: reconstruct from single-blend fields
+  if (session && session.proposed_blend_name) {
+    return [{
+      index: 0,
+      blend_id: session.proposed_blend_id ?? null,
+      blend_name: session.proposed_blend_name,
+      manufacturer: session.proposed_blend_manufacturer ?? '',
+      source: session.proposed_blend_source ?? 'new',
+      temp_snapshot: parseTempTobaccoSnapshot(session.temp_tobacco_snapshot),
+      recommendation: null,
+    }];
+  }
+  return [];
+}

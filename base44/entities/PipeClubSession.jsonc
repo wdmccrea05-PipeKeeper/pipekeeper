@@ -1,0 +1,203 @@
+{
+  "name": "PipeClubSession",
+  "type": "object",
+  "description": "A recorded Pipe Club / tasting session. Designed to be extensible for future cigar-club and whiskey-tasting session types via session_type. Supports multiple blends per session (real-world pipe club meetings often sample several tobaccos).",
+  "properties": {
+    "session_type": {
+      "type": "string",
+      "enum": [
+        "pipe_club",
+        "cigar_club",
+        "whiskey_tasting",
+        "wine_tasting"
+      ],
+      "default": "pipe_club",
+      "description": "Type of tasting/club session"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time of the session (ISO 8601)"
+    },
+    "club_name": {
+      "type": "string",
+      "description": "Optional name of the pipe club or meeting group"
+    },
+    "location": {
+      "type": "string",
+      "description": "Optional location where the meeting took place"
+    },
+    "notes": {
+      "type": "string",
+      "description": "General notes about the session"
+    },
+    "pipes_present": {
+      "type": "string",
+      "description": "JSON array of pipes/bowls physically present at the meeting: [{pipe_id, pipe_name, maker, bowl_variant_id, bowl_name}]"
+    },
+    "blends": {
+      "type": "string",
+      "description": "JSON array of all blends for this session: [{blend_id, blend_name, manufacturer, source, temp_snapshot, recommendation}]. Each entry's recommendation object contains {pipe_id, pipe_name, bowl_variant_id, bowl_name, score, confidence, is_best_available, why, alternative_pipe_id, alternative_pipe_name, alternative_bowl_variant_id, alternative_bowl_name, alternative_score, alternative_why}. Backward compatible: when null, fall back to the legacy single-blend fields."
+    },
+    "proposed_blend_id": {
+      "type": "string",
+      "description": "Legacy single-blend field. ID of an owned TobaccoBlend, if the club tobacco comes from the user's collection. For multi-blend sessions, this holds the first/primary blend for backward compatibility."
+    },
+    "proposed_blend_name": {
+      "type": "string",
+      "description": "Legacy single-blend field. Display name of the proposed/shared tobacco blend. For multi-blend sessions, holds the first/primary blend name."
+    },
+    "proposed_blend_manufacturer": {
+      "type": "string",
+      "description": "Legacy single-blend field. Manufacturer of the proposed tobacco blend. For multi-blend sessions, holds the first/primary blend manufacturer."
+    },
+    "proposed_blend_source": {
+      "type": "string",
+      "enum": [
+        "collection",
+        "wishlist",
+        "new"
+      ],
+      "description": "Legacy single-blend field. Where the proposed blend originated. For multi-blend sessions, holds the first/primary blend source."
+    },
+    "temp_tobacco_snapshot": {
+      "type": "string",
+      "description": "Legacy single-blend field. JSON snapshot of a temporary/unowned tobacco. For multi-blend sessions, holds the first/primary blend snapshot."
+    },
+    "recommended_pipe_id": {
+      "type": "string",
+      "description": "Legacy single-blend field. Pipe ID of the canonical scorer's top recommendation for the primary blend."
+    },
+    "recommended_pipe_name": {
+      "type": "string",
+      "description": "Legacy single-blend field. Display name of the recommended pipe."
+    },
+    "recommended_bowl_variant_id": {
+      "type": "string",
+      "description": "Legacy single-blend field. Bowl variant ID of the recommendation, if applicable."
+    },
+    "recommended_bowl_name": {
+      "type": "string",
+      "description": "Legacy single-blend field. Display name of the recommended bowl variant, if applicable."
+    },
+    "recommended_score": {
+      "type": "number",
+      "description": "Legacy single-blend field. Canonical pairing score (0\u201310) for the top recommendation."
+    },
+    "recommended_confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Legacy single-blend field. Confidence level of the recommendation."
+    },
+    "recommended_is_best_available": {
+      "type": "boolean",
+      "default": false,
+      "description": "Legacy single-blend field. True when the recommendation is 'Best Available' rather than 'Best Choice'."
+    },
+    "recommended_why": {
+      "type": "string",
+      "description": "Legacy single-blend field. Canonical scorer reasoning for the top recommendation."
+    },
+    "alternative_pipe_id": {
+      "type": "string",
+      "description": "Legacy single-blend field. Pipe ID of the second-best recommendation."
+    },
+    "alternative_pipe_name": {
+      "type": "string",
+      "description": "Legacy single-blend field. Display name of the alternative pipe."
+    },
+    "alternative_bowl_variant_id": {
+      "type": "string",
+      "description": "Legacy single-blend field. Bowl variant ID of the alternative recommendation, if applicable."
+    },
+    "alternative_bowl_name": {
+      "type": "string",
+      "description": "Legacy single-blend field. Bowl name of the alternative recommendation, if applicable."
+    },
+    "alternative_score": {
+      "type": "number",
+      "description": "Legacy single-blend field. Canonical pairing score (0\u201310) for the alternative pipe."
+    },
+    "alternative_why": {
+      "type": "string",
+      "description": "Legacy single-blend field. Canonical scorer reasoning for the alternative recommendation."
+    },
+    "actual_blend_index": {
+      "type": "number",
+      "description": "Index into the blends array of the blend the user actually smoked (0-based). Null if not recorded or legacy single-blend session."
+    },
+    "actual_pipe_id": {
+      "type": "string",
+      "description": "Pipe ID of the pipe the user actually smoked"
+    },
+    "actual_pipe_name": {
+      "type": "string",
+      "description": "Display name of the pipe actually smoked"
+    },
+    "actual_bowl_variant_id": {
+      "type": "string",
+      "description": "Bowl variant ID of the bowl actually used"
+    },
+    "actual_bowl_name": {
+      "type": "string",
+      "description": "Display name of the bowl actually used"
+    },
+    "overall_rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Overall tobacco rating after smoking (1\u20135)"
+    },
+    "pairing_rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Rating of how well the pipe and tobacco paired (1\u20135)"
+    },
+    "would_smoke_again": {
+      "type": "boolean",
+      "description": "Whether the user would smoke this tobacco again"
+    },
+    "post_session_notes": {
+      "type": "string",
+      "description": "Notes captured after the smoke"
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "none",
+        "wishlist",
+        "not_for_me"
+      ],
+      "default": "none",
+      "description": "User's disposition toward the proposed tobacco: wishlist to track it, not_for_me to exclude from future recommendations"
+    },
+    "wishlist_item_id": {
+      "type": "string",
+      "description": "ID of the AcquisitionItem created when disposition is wishlist"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was created"
+    },
+    "updated_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when this record was last updated"
+    }
+  },
+  "required": [
+    "date",
+    "proposed_blend_name",
+    "created_by"
+  ]
+}

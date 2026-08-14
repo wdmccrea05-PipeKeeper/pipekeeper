@@ -1,16 +1,16 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Loader2, Star, BookmarkPlus, ThumbsDown, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Star, BookmarkPlus, ThumbsDown, Check, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import PipePresentSelector from "./PipePresentSelector";
 import ClubBlendEntry from "./ClubBlendEntry";
 import PipeClubResults from "./PipeClubResults";
-import { rankPresentPipes, serializePipesPresent, getConfidenceTier, isBestAvailable } from "./pipeClubPairing";
+import { rankPresentPipes, serializePipesPresent, serializeBlends, getConfidenceTier, isBestAvailable } from "./pipeClubPairing";
 import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 import { QUERY_KEYS, STALE_TIME } from "@/lib/queryKeys";
 import { pairingMatrixQueryOptions } from "@/components/utils/pairingPolicy";
@@ -26,7 +26,7 @@ const STEPS = [STEP_SETUP, STEP_PIPES, STEP_BLEND, STEP_RESULTS, STEP_LOG];
 const STEP_LABELS = {
   [STEP_SETUP]: "Session",
   [STEP_PIPES]: "Pipes",
-  [STEP_BLEND]: "Blend",
+  [STEP_BLEND]: "Blends",
   [STEP_RESULTS]: "Recommendation",
   [STEP_LOG]: "Log",
 };
@@ -38,7 +38,7 @@ function StepIndicator({ currentStep }) {
       {STEPS.map((s, i) => (
         <React.Fragment key={s}>
           <div
-            className="text-xs px-2 py-0.5 rounded-full font-medium transition-colors"
+            className="text-xs px-2 py-0.5 rounded-full font-medium transition-colors whitespace-nowrap"
             style={{
               background: i <= idx ? "rgba(180,140,75,0.25)" : "rgba(255,255,255,0.04)",
               color: i <= idx ? "#D4A574" : "rgba(224,216,200,0.35)",
@@ -48,7 +48,7 @@ function StepIndicator({ currentStep }) {
             {STEP_LABELS[s]}
           </div>
           {i < STEPS.length - 1 && (
-            <div className="flex-1 h-px" style={{ background: "rgba(180,140,75,0.15)" }} />
+            <div className="flex-1 h-px min-w-[4px]" style={{ background: "rgba(180,140,75,0.15)" }} />
           )}
         </React.Fragment>
       ))}
@@ -77,7 +77,28 @@ function StarRating({ value, onChange, label }) {
 }
 
 /**
+ * Build an effective blend object from a blend entry (for the scorer).
+ */
+function buildEffectiveBlend(entry, blends, wishlistItems) {
+  if (!entry) return null;
+  if (entry.source === "collection" && entry.blendId) {
+    return blends.find((b) => b.id === entry.blendId) ?? null;
+  }
+  if (entry.source === "wishlist" && entry.blendId) {
+    const wi = wishlistItems.find((w) => w.id === entry.blendId);
+    if (!wi) return null;
+    return { name: wi.name, manufacturer: wi.manufacturer };
+  }
+  if (entry.source === "new") {
+    return entry.tempBlend?.name ? entry.tempBlend : null;
+  }
+  return null;
+}
+
+/**
  * PipeClubSessionWizard — multi-step wizard for a Pipe Club session.
+ * Supports multiple blends per session. Each blend gets its own recommendation
+ * against the pipes present at the meeting.
  *
  * Props:
  *   onComplete  () => void    - called after session is saved
@@ -100,24 +121,27 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
   const [selectedPipeIds, setSelectedPipeIds] = useState(new Set());
   const [bowlSelections, setBowlSelections] = useState({});
 
-  // Step 3 — blend
-  const [blendSource, setBlendSource] = useState("new"); // "collection" | "wishlist" | "new"
-  const [selectedBlendId, setSelectedBlendId] = useState(null);
-  const [tempBlend, setTempBlend] = useState({});
+  // Step 3 — blends (MULTIPLE)
+  // Each blend entry: { source, blendId, tempBlend, name, manufacturer, recommendation }
+  const [blends, setBlends] = useState([]);
+  // Current blend being added
+  const [currentBlendSource, setCurrentBlendSource] = useState("new");
+  const [currentBlendId, setCurrentBlendId] = useState(null);
+  const [currentTempBlend, setCurrentTempBlend] = useState({});
   const [blendSearch, setBlendSearch] = useState("");
 
   // Step 4 — results
-  const [best, setBest] = useState(null);
-  const [alternative, setAlternative] = useState(null);
+  const [selectedBlendIndex, setSelectedBlendIndex] = useState(0);
 
   // Step 5 — log
+  const [actualBlendIndex, setActualBlendIndex] = useState(0);
   const [actualPipeId, setActualPipeId] = useState(null);
   const [actualBowlVariantId, setActualBowlVariantId] = useState(null);
   const [overallRating, setOverallRating] = useState(null);
   const [pairingRating, setPairingRating] = useState(null);
   const [wouldSmokeAgain, setWouldSmokeAgain] = useState(null);
   const [postNotes, setPostNotes] = useState("");
-  const [disposition, setDisposition] = useState("none"); // "none" | "wishlist" | "not_for_me"
+  const [disposition, setDisposition] = useState("none");
 
   // Data
   const { data: pipes = [], isLoading: pipesLoading } = useQuery({
@@ -127,7 +151,7 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
     staleTime: STALE_TIME.HOMEPAGE,
   });
 
-  const { data: blends = [] } = useQuery({
+  const { data: blendsCollection = [] } = useQuery({
     queryKey: QUERY_KEYS.blendSummary(user?.email),
     queryFn: () => fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user?.email }, '-updated_date', 5000, 200, 'PipeClub:TobaccoBlend'),
     enabled: !!user?.email,
@@ -163,21 +187,11 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
     }).filter(Boolean);
   }, [pipes, selectedPipeIds, bowlSelections]);
 
-  // Derived: effective blend for scoring
+  // Derived: effective blend for the currently selected blend index
   const effectiveBlend = useMemo(() => {
-    if (blendSource === "collection" && selectedBlendId) {
-      return blends.find((b) => b.id === selectedBlendId) ?? null;
-    }
-    if (blendSource === "wishlist" && selectedBlendId) {
-      const wi = wishlistItems.find((w) => w.id === selectedBlendId);
-      if (!wi) return null;
-      return { name: wi.name, manufacturer: wi.manufacturer };
-    }
-    if (blendSource === "new") {
-      return tempBlend?.name ? tempBlend : null;
-    }
-    return null;
-  }, [blendSource, selectedBlendId, blends, wishlistItems, tempBlend]);
+    const entry = blends[selectedBlendIndex];
+    return buildEffectiveBlend(entry, blendsCollection, wishlistItems);
+  }, [blends, selectedBlendIndex, blendsCollection, wishlistItems]);
 
   // Navigate
   const goNext = () => {
@@ -185,71 +199,141 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
     if (idx >= STEPS.length - 1) return;
     const nextStep = STEPS[idx + 1];
     setStep(nextStep);
-    if (nextStep === STEP_RESULTS) runScoring();
+    if (nextStep === STEP_RESULTS) {
+      runAllScoring();
+    }
   };
   const goBack = () => {
     const idx = STEPS.indexOf(step);
     if (idx > 0) setStep(STEPS[idx - 1]);
   };
 
-  const runScoring = () => {
-    if (!effectiveBlend || presentPipeRecords.length === 0) return;
+  // Score ALL blends against present pipes
+  const runAllScoring = useCallback(() => {
+    if (presentPipeRecords.length === 0) return;
 
-    // Build present-pipe records including bowl variant expansion for the scorer.
-    // Expand: if a specific bowl is selected, only pass that bowl to the scorer
-    // by temporarily overwriting bowl_variants.
     const pipesForScorer = presentPipeRecords.map((pipe) => {
       const bvId = pipe.selectedBowlVariantId;
       if (bvId === null || !Array.isArray(pipe.bowl_variants) || pipe.bowl_variants.length === 0) {
         return pipe;
       }
-      // User selected a specific bowl — restrict bowl_variants to that bowl only
       const specificBowl = pipe.bowl_variants.find((bv) => bv.id === bvId);
       return { ...pipe, bowl_variants: specificBowl ? [specificBowl] : pipe.bowl_variants };
     });
 
-    const { best: b, alternative: a } = rankPresentPipes(pipesForScorer, effectiveBlend, userProfile);
-    setBest(b);
-    setAlternative(a);
+    setBlends((prev) => prev.map((entry, index) => {
+      const blend = buildEffectiveBlend(entry, blendsCollection, wishlistItems);
+      if (!blend) return entry;
+      const { best, alternative } = rankPresentPipes(pipesForScorer, blend, userProfile);
+      return { ...entry, recommendation: { best, alternative } };
+    }));
+  }, [presentPipeRecords, blendsCollection, wishlistItems, userProfile]);
+
+  // Add the current blend to the list
+  const handleAddBlend = () => {
+    let name = "";
+    let manufacturer = "";
+
+    if (currentBlendSource === "collection" && currentBlendId) {
+      const b = blendsCollection.find((x) => x.id === currentBlendId);
+      if (!b) return;
+      name = b.name;
+      manufacturer = b.manufacturer || "";
+    } else if (currentBlendSource === "wishlist" && currentBlendId) {
+      const w = wishlistItems.find((x) => x.id === currentBlendId);
+      if (!w) return;
+      name = w.name;
+      manufacturer = w.manufacturer || "";
+    } else if (currentBlendSource === "new") {
+      if (!currentTempBlend?.name || !currentTempBlend?.manufacturer) return;
+      name = currentTempBlend.name;
+      manufacturer = currentTempBlend.manufacturer;
+    }
+
+    // Check for duplicates
+    const isDuplicate = blends.some((b) =>
+      b.name?.toLowerCase() === name.toLowerCase() &&
+      b.manufacturer?.toLowerCase() === manufacturer.toLowerCase()
+    );
+    if (isDuplicate) {
+      toast.error("This blend is already added.");
+      return;
+    }
+
+    setBlends((prev) => [...prev, {
+      source: currentBlendSource,
+      blendId: currentBlendSource === "collection" || currentBlendSource === "wishlist" ? currentBlendId : null,
+      tempBlend: currentBlendSource === "new" ? currentTempBlend : null,
+      name,
+      manufacturer,
+      recommendation: null,
+    }]);
+
+    // Reset current blend form
+    setCurrentBlendId(null);
+    setCurrentTempBlend({});
+    setBlendSearch("");
+    toast.success(`${name} added to session.`);
+  };
+
+  // Remove a blend from the list
+  const handleRemoveBlend = (index) => {
+    setBlends((prev) => prev.filter((_, i) => i !== index));
+    if (selectedBlendIndex >= blends.length - 1 && selectedBlendIndex > 0) {
+      setSelectedBlendIndex(selectedBlendIndex - 1);
+    }
   };
 
   const handleSave = async () => {
     if (!user?.email) return;
+    if (blends.length === 0) {
+      toast.error("Add at least one blend before saving.");
+      return;
+    }
     setSaving(true);
     try {
-      // Determine blend metadata
-      const blendName = effectiveBlend?.name ?? "";
-      const blendManufacturer = effectiveBlend?.manufacturer ?? "";
-      const propBlendId = blendSource === "collection" ? selectedBlendId : null;
+      // Primary blend (first) for legacy fields
+      const primaryBlend = blends[0];
+      const blendName = primaryBlend.name ?? "";
+      const blendManufacturer = primaryBlend.manufacturer ?? "";
+      const propBlendId = primaryBlend.source === "collection" ? primaryBlend.blendId : null;
+      const tempSnapshot = primaryBlend.source === "new" && primaryBlend.tempBlend
+        ? JSON.stringify(primaryBlend.tempBlend)
+        : null;
 
       // Build pipes-present JSON
       const pipesJson = serializePipesPresent(presentPipeRecords);
 
-      // Build temp tobacco snapshot for new blends
-      const tempSnapshot = blendSource === "new" && effectiveBlend
-        ? JSON.stringify(tempBlend)
-        : null;
+      // Build blends JSON (with recommendations)
+      const blendsJson = serializeBlends(blends);
 
-      // Wishlist / not-for-me — handle AcquisitionItem creation
+      // Primary blend's recommendation for legacy fields
+      const primaryRec = primaryBlend.recommendation;
+      const primaryBest = primaryRec?.best;
+      const primaryAlt = primaryRec?.alternative;
+
+      // Wishlist / not-for-me — handle AcquisitionItem creation for the actual smoked blend
+      const actualBlend = blends[actualBlendIndex] || primaryBlend;
+      const actualBlendName = actualBlend.name ?? "";
+      const actualBlendManufacturer = actualBlend.manufacturer ?? "";
+
       let wishlistItemId = null;
-      if (disposition === "wishlist" && blendSource !== "collection") {
-        // Check for existing wishlist/not-for-me entry
+      if (disposition === "wishlist" && actualBlend.source !== "collection") {
         const existing = wishlistItems.find(
           (w) =>
             w.item_type === "blend" &&
-            (w.name || "").toLowerCase() === blendName.toLowerCase() &&
-            (w.manufacturer || "").toLowerCase() === blendManufacturer.toLowerCase()
+            (w.name || "").toLowerCase() === actualBlendName.toLowerCase() &&
+            (w.manufacturer || "").toLowerCase() === actualBlendManufacturer.toLowerCase()
         );
         if (existing) {
-          // Update to wishlist if it was not_for_me
           if (existing.status === "do_not_buy_again") {
             await base44.entities.AcquisitionItem.update(existing.id, { status: "wishlist" });
           }
           wishlistItemId = existing.id;
         } else {
           const created = await base44.entities.AcquisitionItem.create({
-            name: blendName,
-            manufacturer: blendManufacturer,
+            name: actualBlendName,
+            manufacturer: actualBlendManufacturer,
             item_type: "blend",
             status: "wishlist",
             created_by: user.email,
@@ -260,15 +344,15 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
         const existing = wishlistItems.find(
           (w) =>
             w.item_type === "blend" &&
-            (w.name || "").toLowerCase() === blendName.toLowerCase()
+            (w.name || "").toLowerCase() === actualBlendName.toLowerCase()
         );
         if (existing) {
           await base44.entities.AcquisitionItem.update(existing.id, { status: "do_not_buy_again" });
           wishlistItemId = existing.id;
         } else {
           const created = await base44.entities.AcquisitionItem.create({
-            name: blendName,
-            manufacturer: blendManufacturer,
+            name: actualBlendName,
+            manufacturer: actualBlendManufacturer,
             item_type: "blend",
             status: "do_not_buy_again",
             created_by: user.email,
@@ -290,25 +374,28 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
         location: sessionMeta.location || null,
         notes: sessionMeta.notes || null,
         pipes_present: pipesJson,
+        blends: blendsJson,
+        // Legacy single-blend fields (populated from primary/first blend)
         proposed_blend_id: propBlendId,
         proposed_blend_name: blendName,
         proposed_blend_manufacturer: blendManufacturer,
-        proposed_blend_source: blendSource,
+        proposed_blend_source: primaryBlend.source,
         temp_tobacco_snapshot: tempSnapshot,
-        recommended_pipe_id: best?.pipe_id ?? null,
-        recommended_pipe_name: best?.pipe_name ?? null,
-        recommended_bowl_variant_id: best?.bowl_variant_id ?? null,
-        recommended_bowl_name: best?.bowl_name ?? null,
-        recommended_score: best?.score ?? null,
-        recommended_confidence: best ? getConfidenceTier(best) : null,
-        recommended_is_best_available: best ? isBestAvailable(best) : false,
-        recommended_why: best?.why ?? null,
-        alternative_pipe_id: alternative?.pipe_id ?? null,
-        alternative_pipe_name: alternative?.pipe_name ?? null,
-        alternative_bowl_variant_id: alternative?.bowl_variant_id ?? null,
-        alternative_bowl_name: alternative?.bowl_name ?? null,
-        alternative_score: alternative?.score ?? null,
-        alternative_why: alternative?.why ?? null,
+        recommended_pipe_id: primaryBest?.pipe_id ?? null,
+        recommended_pipe_name: primaryBest?.pipe_name ?? null,
+        recommended_bowl_variant_id: primaryBest?.bowl_variant_id ?? null,
+        recommended_bowl_name: primaryBest?.bowl_name ?? null,
+        recommended_score: primaryBest?.score ?? null,
+        recommended_confidence: primaryBest ? getConfidenceTier(primaryBest) : null,
+        recommended_is_best_available: primaryBest ? isBestAvailable(primaryBest) : false,
+        recommended_why: primaryBest?.why ?? null,
+        alternative_pipe_id: primaryAlt?.pipe_id ?? null,
+        alternative_pipe_name: primaryAlt?.pipe_name ?? null,
+        alternative_bowl_variant_id: primaryAlt?.bowl_variant_id ?? null,
+        alternative_bowl_name: primaryAlt?.bowl_name ?? null,
+        alternative_score: primaryAlt?.score ?? null,
+        alternative_why: primaryAlt?.why ?? null,
+        actual_blend_index: blends.length > 1 ? actualBlendIndex : null,
         actual_pipe_id: actualPipeId || null,
         actual_pipe_name: actualPipe?.name ?? null,
         actual_bowl_variant_id: actualBowlVariantId || null,
@@ -325,6 +412,7 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
       toast.success("Pipe Club session saved!");
       onComplete?.();
     } catch (err) {
+      console.error("[PipeClubSessionWizard] save failed:", err);
       toast.error("Failed to save session. Please try again.");
     } finally {
       setSaving(false);
@@ -334,18 +422,15 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
   // Validation
   const canGoNext = useMemo(() => {
     if (step === STEP_PIPES) return selectedPipeIds.size > 0;
-    if (step === STEP_BLEND) {
-      if (blendSource === "new") return !!(tempBlend?.name && tempBlend?.manufacturer);
-      return !!selectedBlendId;
-    }
+    if (step === STEP_BLEND) return blends.length > 0;
     return true;
-  }, [step, selectedPipeIds, blendSource, tempBlend, selectedBlendId]);
+  }, [step, selectedPipeIds, blends]);
 
   const filteredBlends = useMemo(() => {
-    if (!blendSearch.trim()) return blends;
+    if (!blendSearch.trim()) return blendsCollection;
     const q = blendSearch.toLowerCase();
-    return blends.filter((b) => (b.name || "").toLowerCase().includes(q) || (b.manufacturer || "").toLowerCase().includes(q));
-  }, [blends, blendSearch]);
+    return blendsCollection.filter((b) => (b.name || "").toLowerCase().includes(q) || (b.manufacturer || "").toLowerCase().includes(q));
+  }, [blendsCollection, blendSearch]);
 
   const filteredWishlist = useMemo(() => {
     const active = wishlistItems.filter((w) => ["wishlist", "shopping_list"].includes(w.status));
@@ -353,6 +438,26 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
     const q = blendSearch.toLowerCase();
     return active.filter((w) => (w.name || "").toLowerCase().includes(q));
   }, [wishlistItems, blendSearch]);
+
+  // Current blend being added — effective object for preview
+  const currentBlendPreview = useMemo(() => {
+    return buildEffectiveBlend(
+      { source: currentBlendSource, blendId: currentBlendId, tempBlend: currentTempBlend },
+      blendsCollection,
+      wishlistItems
+    );
+  }, [currentBlendSource, currentBlendId, currentTempBlend, blendsCollection, wishlistItems]);
+
+  const canAddCurrentBlend = useMemo(() => {
+    if (currentBlendSource === "new") return !!(currentTempBlend?.name && currentTempBlend?.manufacturer);
+    return !!currentBlendId;
+  }, [currentBlendSource, currentBlendId, currentTempBlend]);
+
+  // Currently selected blend's recommendation
+  const currentResult = useMemo(() => {
+    const entry = blends[selectedBlendIndex];
+    return entry?.recommendation ?? null;
+  }, [blends, selectedBlendIndex]);
 
   return (
     <div
@@ -363,7 +468,7 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
         <h2 className="text-lg font-bold text-[#F5F1E7]" style={{ fontFamily: "'Georgia', serif" }}>
           Pipe Club Session
         </h2>
-        <button onClick={onCancel} className="text-[#D8C7A6]/50 hover:text-[#D8C7A6] text-xl leading-none">×</button>
+        <button onClick={onCancel} className="text-[#D8C7A6]/50 hover:text-[#D8C7A6] text-xl leading-none">✕</button>
       </div>
 
       <StepIndicator currentStep={step} />
@@ -435,20 +540,64 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
         </div>
       )}
 
-      {/* ── Step 3: Blend selection ── */}
+      {/* ── Step 3: Blends (MULTIPLE) ── */}
       {step === STEP_BLEND && (
         <div className="space-y-3">
+          <p className="text-sm text-[#D8C7A6]/70">
+            Add one or more blends for this session. You can select a specific blend when viewing recommendations.
+          </p>
+
+          {/* Already-added blends list */}
+          {blends.length > 0 && (
+            <div className="space-y-1.5">
+              {blends.map((entry, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                  style={{ background: "rgba(60,40,20,0.4)", border: "1px solid rgba(180,140,75,0.25)" }}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#F5F1E7] truncate">{entry.name}</p>
+                    {entry.manufacturer && <p className="text-xs text-[#B48C4B] truncate">{entry.manufacturer}</p>}
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0"
+                    style={{ background: "rgba(180,140,75,0.15)", color: "#D4A574", border: "1px solid rgba(180,140,75,0.25)" }}
+                  >
+                    {entry.source}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveBlend(i)}
+                    className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full hover:bg-[rgba(163,92,92,0.2)] transition-colors"
+                    style={{ color: "rgba(224,216,200,0.5)" }}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Divider */}
+          {blends.length > 0 && (
+            <div className="flex items-center gap-3 pt-1">
+              <div style={{ flex: 1, height: 1, background: "rgba(180,140,75,0.15)" }} />
+              <span className="text-xs text-[#D8C7A6]/40">Add another</span>
+              <div style={{ flex: 1, height: 1, background: "rgba(180,140,75,0.15)" }} />
+            </div>
+          )}
+
           {/* Source tabs */}
           <div className="flex gap-1 rounded-lg p-1" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(180,140,75,0.15)" }}>
             {[["collection", "My Collection"], ["wishlist", "Wishlist"], ["new", "New / Not Owned"]].map(([src, label]) => (
               <button
                 key={src}
                 type="button"
-                onClick={() => { setBlendSource(src); setSelectedBlendId(null); }}
+                onClick={() => { setCurrentBlendSource(src); setCurrentBlendId(null); }}
                 className="flex-1 text-xs py-1.5 rounded-md transition-colors font-medium"
                 style={{
-                  background: blendSource === src ? "rgba(180,140,75,0.25)" : "transparent",
-                  color: blendSource === src ? "#D4A574" : "rgba(224,216,200,0.5)",
+                  background: currentBlendSource === src ? "rgba(180,140,75,0.25)" : "transparent",
+                  color: currentBlendSource === src ? "#D4A574" : "rgba(224,216,200,0.5)",
                 }}
               >
                 {label}
@@ -456,7 +605,7 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
             ))}
           </div>
 
-          {(blendSource === "collection" || blendSource === "wishlist") && (
+          {(currentBlendSource === "collection" || currentBlendSource === "wishlist") && (
             <Input
               value={blendSearch}
               onChange={(e) => setBlendSearch(e.target.value)}
@@ -465,18 +614,18 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
             />
           )}
 
-          {blendSource === "collection" && (
-            <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
+          {currentBlendSource === "collection" && (
+            <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
               {filteredBlends.length === 0 && <p className="text-sm text-[#D8C7A6]/50 text-center py-4">No blends found.</p>}
               {filteredBlends.map((b) => (
                 <button
                   key={b.id}
                   type="button"
-                  onClick={() => setSelectedBlendId(b.id)}
+                  onClick={() => setCurrentBlendId(b.id)}
                   className="w-full text-left px-3 py-2 rounded-xl transition-colors"
                   style={{
-                    background: selectedBlendId === b.id ? "rgba(60,40,20,0.5)" : "rgba(255,255,255,0.03)",
-                    border: `1px solid ${selectedBlendId === b.id ? "rgba(180,140,75,0.4)" : "rgba(180,140,75,0.15)"}`,
+                    background: currentBlendId === b.id ? "rgba(60,40,20,0.5)" : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${currentBlendId === b.id ? "rgba(180,140,75,0.4)" : "rgba(180,140,75,0.15)"}`,
                   }}
                 >
                   <p className="text-sm font-medium text-[#F5F1E7]">{b.name}</p>
@@ -486,18 +635,18 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
             </div>
           )}
 
-          {blendSource === "wishlist" && (
-            <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
+          {currentBlendSource === "wishlist" && (
+            <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
               {filteredWishlist.length === 0 && <p className="text-sm text-[#D8C7A6]/50 text-center py-4">No wishlist blends found.</p>}
               {filteredWishlist.map((w) => (
                 <button
                   key={w.id}
                   type="button"
-                  onClick={() => setSelectedBlendId(w.id)}
+                  onClick={() => setCurrentBlendId(w.id)}
                   className="w-full text-left px-3 py-2 rounded-xl transition-colors"
                   style={{
-                    background: selectedBlendId === w.id ? "rgba(60,40,20,0.5)" : "rgba(255,255,255,0.03)",
-                    border: `1px solid ${selectedBlendId === w.id ? "rgba(180,140,75,0.4)" : "rgba(180,140,75,0.15)"}`,
+                    background: currentBlendId === w.id ? "rgba(60,40,20,0.5)" : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${currentBlendId === w.id ? "rgba(180,140,75,0.4)" : "rgba(180,140,75,0.15)"}`,
                   }}
                 >
                   <p className="text-sm font-medium text-[#F5F1E7]">{w.name}</p>
@@ -507,9 +656,21 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
             </div>
           )}
 
-          {blendSource === "new" && (
-            <ClubBlendEntry initialData={tempBlend} onChange={setTempBlend} />
+          {currentBlendSource === "new" && (
+            <ClubBlendEntry initialData={currentTempBlend} onChange={setCurrentTempBlend} />
           )}
+
+          {/* Add blend button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleAddBlend}
+            disabled={!canAddCurrentBlend}
+            className="w-full gap-2 text-[#D4A574] border-[rgba(180,140,75,0.3)] hover:bg-[rgba(180,140,75,0.1)]"
+          >
+            <Plus className="w-4 h-4" />
+            Add Blend to Session
+          </Button>
         </div>
       )}
 
@@ -519,15 +680,41 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
           {selectedPipeIds.size === 0 && (
             <p className="text-sm text-[#D8C7A6]/60 text-center py-4">No pipes selected. Go back and select at least one pipe.</p>
           )}
-          {selectedPipeIds.size > 0 && !effectiveBlend && (
-            <p className="text-sm text-[#D8C7A6]/60 text-center py-4">No blend selected. Go back to choose a blend.</p>
+          {selectedPipeIds.size > 0 && blends.length === 0 && (
+            <p className="text-sm text-[#D8C7A6]/60 text-center py-4">No blends added. Go back to add at least one blend.</p>
           )}
-          {selectedPipeIds.size > 0 && effectiveBlend && (
-            <PipeClubResults
-              best={best}
-              alternative={alternative}
-              blendName={effectiveBlend?.name}
-            />
+          {selectedPipeIds.size > 0 && blends.length > 0 && (
+            <>
+              {/* Blend selector */}
+              {blends.length > 1 && (
+                <div className="space-y-1.5">
+                  <label className="text-xs text-[#D8C7A6]/70">Select a blend to view its recommendation:</label>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {blends.map((entry, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setSelectedBlendIndex(i)}
+                        className="text-xs px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
+                        style={{
+                          background: selectedBlendIndex === i ? "rgba(180,140,75,0.25)" : "rgba(255,255,255,0.04)",
+                          border: `1px solid ${selectedBlendIndex === i ? "rgba(180,140,75,0.4)" : "rgba(180,140,75,0.15)"}`,
+                          color: selectedBlendIndex === i ? "#D4A574" : "rgba(224,216,200,0.5)",
+                        }}
+                      >
+                        {entry.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <PipeClubResults
+                best={currentResult?.best}
+                alternative={currentResult?.alternative}
+                blendName={blends[selectedBlendIndex]?.name}
+              />
+            </>
           )}
         </div>
       )}
@@ -535,6 +722,30 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
       {/* ── Step 5: Log ── */}
       {step === STEP_LOG && (
         <div className="space-y-4">
+          {/* Which blend was smoked */}
+          {blends.length > 1 && (
+            <div className="space-y-2">
+              <label className="text-xs text-[#D8C7A6]/70">Which blend did you smoke?</label>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {blends.map((entry, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setActualBlendIndex(i)}
+                    className="w-full text-left px-3 py-2 rounded-xl text-sm transition-colors"
+                    style={{
+                      background: actualBlendIndex === i ? "rgba(60,40,20,0.4)" : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${actualBlendIndex === i ? "rgba(180,140,75,0.35)" : "rgba(180,140,75,0.12)"}`,
+                    }}
+                  >
+                    <span className="text-[#F5F1E7]">{entry.name}</span>
+                    {entry.manufacturer && <span className="text-[#B48C4B] ml-2 text-xs">{entry.manufacturer}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Actual pipe used */}
           <div className="space-y-2">
             <label className="text-xs text-[#D8C7A6]/70">Pipe actually smoked (optional)</label>
@@ -608,7 +819,7 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
           </div>
 
           {/* Disposition — only show for unowned/wishlist blends */}
-          {blendSource !== "collection" && (
+          {blends[actualBlendIndex]?.source !== "collection" && (
             <div className="space-y-2 pt-1">
               <p className="text-xs text-[#D8C7A6]/70">Add to your tobacco tracking:</p>
               <div className="flex gap-2">

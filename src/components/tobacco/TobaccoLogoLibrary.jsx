@@ -80,24 +80,36 @@ export function getTobaccoLogo(manufacturer, customLogos = []) {
 }
 
 /**
- * Get all available brand names (including custom uploaded logos)
+ * Get all available brand entries (including custom uploaded logos).
+ * Each entry includes blend_name when available so the browser can display
+ * the specific product name as the primary label and manufacturer as secondary.
+ *
  * @param {Array} customLogos - Array of custom logo objects from database
- * @returns {Array<{brand: string, logo: string, isCustom: boolean}>} Array of brand objects
+ * @returns {Array<{brand: string, blendName: string|null, logo: string, isCustom: boolean}>}
  */
 export function getAvailableBrands(customLogos = []) {
   const builtInBrands = Object.keys(TOBACCO_LOGOS).map(brand => ({
     brand,
+    blendName: null,
     logo: TOBACCO_LOGOS[brand],
     isCustom: false
   }));
   
   const customBrands = customLogos.map(item => ({
     brand: item.brand_name,
+    blendName: item.blend_name || null,
     logo: item.logo_url,
     isCustom: true
   }));
   
-  return [...customBrands, ...builtInBrands].sort((a, b) => 
-    a.brand.localeCompare(b.brand)
-  );
+  // Sort: blend-specific entries first (by blend name), then generic brand entries (by brand name)
+  return [...customBrands, ...builtInBrands].sort((a, b) => {
+    // Blend-specific entries come first
+    if (a.blendName && !b.blendName) return -1;
+    if (!a.blendName && b.blendName) return 1;
+    // Within blend-specific, sort by blend name
+    if (a.blendName && b.blendName) return a.blendName.localeCompare(b.blendName);
+    // Within generic, sort by brand name
+    return a.brand.localeCompare(b.brand);
+  });
 }

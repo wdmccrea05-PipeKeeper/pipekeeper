@@ -43,6 +43,7 @@ export default function BackButton({ currentPageName, className = '' }) {
       onClick={handleBack}
       className={`text-[#E0D8C8] hover:bg-white/10 ${className}`}
       aria-label={t('common.back', 'Back')}
+      style={{ minHeight: 44, paddingLeft: 12, paddingRight: 12 }}
     >
       <ArrowLeft className="w-4 h-4 mr-1" />
       <span>{t('common.back', 'Back')}</span>

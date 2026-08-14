@@ -11,7 +11,7 @@ import { hasModuleProAccess } from './moduleEntitlements';
 
 const FREE_LIMITS = {
   pipekeeper: {
-    pipes: 10,
+    pipes: 5,
     tobaccoBlends: 10,
     sessionsPerMonth: 100,
     breakInSchedules: 1,

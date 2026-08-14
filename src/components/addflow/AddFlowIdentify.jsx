@@ -34,8 +34,8 @@ function ModeSelector({ onSelectUPC, onSelectPhoto, onManual, onBack, typeLabel 
       <div className="flex items-center gap-3 px-6 pt-6 pb-5">
         <button
           onClick={onBack}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
-          style={{ color: 'rgba(224,216,200,0.6)' }}
+          className="flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+          style={{ color: 'rgba(224,216,200,0.6)', minHeight: 44, minWidth: 44, width: 44, height: 44 }}
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -162,7 +162,8 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
         <div className="flex items-center gap-3 px-6 pt-6 pb-5">
           <button
             onClick={onBack}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+            className="flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+          style={{ color: 'rgba(224,216,200,0.6)', minHeight: 44, minWidth: 44, width: 44, height: 44 }}
             style={{ color: 'rgba(224,216,200,0.6)' }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -312,8 +313,8 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
       <div className="flex items-center gap-3 px-6 pt-6 pb-5">
         <button
           onClick={onBack}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
-          style={{ color: 'rgba(224,216,200,0.6)' }}
+          className="flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+          style={{ color: 'rgba(224,216,200,0.6)', minHeight: 44, minWidth: 44, width: 44, height: 44 }}
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -518,8 +519,8 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
       <div className="flex items-center gap-3 px-6 pt-6 pb-5">
         <button
           onClick={onBack}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
-          style={{ color: 'rgba(224,216,200,0.6)' }}
+          className="flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+          style={{ color: 'rgba(224,216,200,0.6)', minHeight: 44, minWidth: 44, width: 44, height: 44 }}
         >
           <ArrowLeft className="w-4 h-4" />
         </button>

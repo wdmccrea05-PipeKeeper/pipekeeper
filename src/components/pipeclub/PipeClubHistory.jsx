@@ -6,6 +6,7 @@ import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 import { Star, X, CalendarDays, MapPin, BookmarkPlus, ThumbsDown, Check, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PipeIcon from "@/components/icons/PipeIcon";
+import { parseBlends } from "./pipeClubPairing";
 import { toast } from "sonner";
 
 const ACCENT = "#D4A574";
@@ -74,12 +75,36 @@ function SessionDetailModal({ session, onClose, onDispositionChange }) {
         </button>
 
         <div className="text-xs uppercase tracking-widest text-[#B48C4B] mb-1">Pipe Club Session</div>
-        <h3 className="text-xl font-bold text-[#F5F1E7] pr-6 mb-1" style={{ fontFamily: "'Georgia', serif" }}>
-          {session.proposed_blend_name}
-        </h3>
-        {session.proposed_blend_manufacturer && (
-          <p className="text-sm text-[#B48C4B] mb-3">{session.proposed_blend_manufacturer}</p>
-        )}
+        {(() => {
+          const allBlends = parseBlends(session.blends, session);
+          if (allBlends.length > 1) {
+            return (
+              <>
+                <h3 className="text-xl font-bold text-[#F5F1E7] pr-6 mb-1" style={{ fontFamily: "'Georgia', serif" }}>
+                  {allBlends.length} Blends
+                </h3>
+                <div className="space-y-1 mb-3">
+                  {allBlends.map((b, i) => (
+                    <div key={i}>
+                      <p className="text-sm font-medium text-[#F5F1E7]">{b.blend_name}</p>
+                      {b.manufacturer && <p className="text-xs text-[#B48C4B]">{b.manufacturer}</p>}
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          }
+          return (
+            <>
+              <h3 className="text-xl font-bold text-[#F5F1E7] pr-6 mb-1" style={{ fontFamily: "'Georgia', serif" }}>
+                {session.proposed_blend_name}
+              </h3>
+              {session.proposed_blend_manufacturer && (
+                <p className="text-sm text-[#B48C4B] mb-3">{session.proposed_blend_manufacturer}</p>
+              )}
+            </>
+          );
+        })()}
 
         <div className="flex flex-wrap gap-2 mb-4">
           <DispositionBadge disposition={session.disposition} />
@@ -292,7 +317,15 @@ export default function PipeClubHistory() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <p className="font-semibold text-[#F5F1E7] text-sm leading-tight truncate">{session.proposed_blend_name}</p>
+                  <p className="font-semibold text-[#F5F1E7] text-sm leading-tight truncate">
+                    {(() => {
+                      const allBlends = parseBlends(session.blends, session);
+                      if (allBlends.length > 1) {
+                        return `${allBlends.length} blends: ${allBlends.map(b => b.blend_name).join(', ')}`;
+                      }
+                      return session.proposed_blend_name;
+                    })()}
+                  </p>
                   <DispositionBadge disposition={session.disposition} />
                 </div>
                 {session.proposed_blend_manufacturer && (

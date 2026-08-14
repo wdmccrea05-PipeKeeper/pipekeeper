@@ -4,11 +4,15 @@
   "properties": {
     "brand_name": {
       "type": "string",
-      "description": "Name of the tobacco brand"
+      "description": "Name of the tobacco brand / manufacturer"
+    },
+    "blend_name": {
+      "type": "string",
+      "description": "Optional specific blend/product name this image represents. When set, the image is blend-specific (e.g. 'Haunted Bookshop') rather than a generic manufacturer logo. When null, the image is a generic brand logo."
     },
     "logo_url": {
       "type": "string",
-      "description": "URL of the brand logo"
+      "description": "URL of the brand/blend logo or product image"
     },
     "is_custom": {
       "type": "boolean",

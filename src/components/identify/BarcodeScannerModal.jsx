@@ -2,16 +2,18 @@
  * BarcodeScannerModal
  *
  * Live camera barcode scanner using getUserMedia + BarcodeDetector when supported.
- * On unsupported browsers/devices (including iPhone Safari), the modal shows a
- * manual-entry fallback message and returns users to typed barcode entry.
+ * On iOS (including native WKWebView), BarcodeDetector is unavailable, so the
+ * modal attempts a native bridge scan first (via window.webkit.messageHandlers.scanBarcode).
+ * If neither web nor native scanning is available, shows manual-entry fallback.
  *
  * Usage:
  *   <BarcodeScannerModal open={true} onDetected={(code) => ...} onClose={() => ...} />
  */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { X, Loader2, Barcode } from 'lucide-react';
+import { X, Loader2, Barcode, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { isIOSWebView, hasNativeBarcodeScanner, requestNativeBarcodeScan } from '@/components/utils/nativeIAPBridge';
 
 const SCAN_INTERVAL_MS = 300; // scan a frame every 300ms
 
@@ -29,12 +31,25 @@ function isIOSSafari() {
   return isIOS && isSafari;
 }
 
+/**
+ * Whether ANY scanning method is available (web BarcodeDetector OR native bridge).
+ * This is the canonical check used by AddFlowIdentify to decide whether to
+ * show the "Scan Barcode with Camera" button.
+ */
 export function canAttemptLiveBarcodeScan() {
-  return (
+  // Web BarcodeDetector + getUserMedia
+  if (
     isBarcodeDetectorSupported()
     && typeof navigator !== 'undefined'
     && !!navigator?.mediaDevices?.getUserMedia
-  );
+  ) {
+    return true;
+  }
+  // Native iOS bridge
+  if (hasNativeBarcodeScanner()) {
+    return true;
+  }
+  return false;
 }
 
 export default function BarcodeScannerModal({ open, onDetected, onClose }) {
@@ -46,7 +61,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
   const detectedRef = useRef(false);
   const [retryNonce, setRetryNonce] = useState(0);
 
-  const [status, setStatus] = useState('starting'); // 'starting' | 'scanning' | 'error' | 'unsupported'
+  const [status, setStatus] = useState('starting'); // 'starting' | 'scanning' | 'error' | 'unsupported' | 'native_scanning'
   const [errorMsg, setErrorMsg] = useState('');
   const [unsupportedMsg, setUnsupportedMsg] = useState('');
 
@@ -86,6 +101,25 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
     stopCamera();
     onDetected(normalizedCode);
   }, [stopCamera, onDetected]);
+
+  // ── Native bridge scan ──
+  const startNativeBridgeScan = useCallback(async () => {
+    setStatus('native_scanning');
+    try {
+      const code = await requestNativeBarcodeScan();
+      handleDetected(code);
+    } catch (err) {
+      if (detectedRef.current) return; // already detected and handled
+      const msg = err?.message || '';
+      if (msg.includes('cancelled')) {
+        // User cancelled — close the modal cleanly
+        handleClose();
+        return;
+      }
+      setErrorMsg(`Native scanner error: ${msg}`);
+      setStatus('error');
+    }
+  }, [handleDetected, handleClose]);
 
   // Start scanning loop using BarcodeDetector
   const startNativeScanner = useCallback(async (stream) => {
@@ -144,9 +178,19 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
     setErrorMsg('');
     setUnsupportedMsg('');
 
+    // ── Priority 1: Native iOS bridge (works in WKWebView where BarcodeDetector is unavailable) ──
+    if (hasNativeBarcodeScanner()) {
+      startNativeBridgeScan();
+      return;
+    }
+
+    // ── Priority 2: Web BarcodeDetector ──
     if (!isBarcodeDetectorSupported()) {
+      const inNativeApp = isIOSWebView();
       setUnsupportedMsg(
-        isIOSSafari()
+        inNativeApp
+          ? 'Live camera scanning requires a newer app version. Please type the barcode manually below.'
+          : isIOSSafari()
           ? 'Live camera scanning is not supported on iPhone Safari yet. Please use manual barcode entry.'
           : 'Live camera scanning is not supported in this browser. Manual barcode entry is still available.'
       );
@@ -196,7 +240,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
         if (!cancelled) {
           const msg =
             err?.name === 'NotAllowedError'
-              ? 'Camera permission denied. Allow camera access in browser settings and try again.'
+              ? 'Camera permission denied. Allow camera access in your device settings and try again.'
               : err?.name === 'NotFoundError'
               ? 'No camera found on this device.'
               : `Camera error: ${err?.message || 'Unknown error'}`;
@@ -210,12 +254,14 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
       cancelled = true;
       stopCamera();
     };
-  }, [open, startNativeScanner, stopCamera, retryNonce]);
+  }, [open, startNativeScanner, startNativeBridgeScan, stopCamera, retryNonce]);
 
   if (!open) return null;
 
   const headerLabel = status === 'scanning'
     ? 'Point camera at barcode'
+    : status === 'native_scanning'
+    ? 'Scanning with camera…'
     : status === 'unsupported'
     ? 'Live scan unavailable'
     : status === 'error'
@@ -227,27 +273,38 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
       className="fixed inset-0 z-[999] flex flex-col items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.92)' }}
     >
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 z-10"
-        style={{ background: 'rgba(0,0,0,0.5)' }}>
-        <div className="flex items-center gap-2">
-          <Barcode className="w-5 h-5" style={{ color: '#D4A574' }} />
-          <span className="font-semibold text-sm" style={{ color: '#F5F1E7' }}>
+      {/* Header — safe-area aware, 44pt close button */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 z-10"
+        style={{
+          background: 'rgba(0,0,0,0.5)',
+          paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
+          paddingBottom: '0.75rem',
+        }}>
+        <div className="flex items-center gap-2 min-w-0">
+          <Barcode className="w-5 h-5 flex-shrink-0" style={{ color: '#D4A574' }} />
+          <span className="font-semibold text-sm truncate" style={{ color: '#F5F1E7' }}>
             {headerLabel}
           </span>
         </div>
         <button
           onClick={handleClose}
-          className="w-8 h-8 flex items-center justify-center rounded-full"
+          className="flex items-center justify-center rounded-full flex-shrink-0"
           aria-label="Close scanner"
-          style={{ background: 'rgba(255,255,255,0.12)', color: '#F5F1E7' }}
+          style={{
+            background: 'rgba(255,255,255,0.12)',
+            color: '#F5F1E7',
+            minHeight: 44,
+            minWidth: 44,
+            width: 44,
+            height: 44,
+          }}
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Video viewfinder */}
-      {status !== 'error' && status !== 'unsupported' && (
+      {/* Video viewfinder (web BarcodeDetector only) */}
+      {status !== 'error' && status !== 'unsupported' && status !== 'native_scanning' && (
         <div className="relative w-full max-w-sm mx-4" style={{ aspectRatio: '1/1', maxHeight: '60vh' }}>
           <video
             ref={videoRef}
@@ -286,6 +343,20 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
         </div>
       )}
 
+      {/* Native bridge scanning — show spinner while native camera is active */}
+      {status === 'native_scanning' && (
+        <div className="mx-6 text-center">
+          <Camera className="w-12 h-12 mx-auto mb-4" style={{ color: '#D4A574' }} />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" style={{ color: '#D4A574' }} />
+          <p className="text-base font-semibold mb-1" style={{ color: '#F5F1E7' }}>
+            Camera Active
+          </p>
+          <p className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
+            Point your camera at the barcode. The scanner will detect it automatically.
+          </p>
+        </div>
+      )}
+
       {/* Unsupported browser message */}
       {status === 'unsupported' && (
         <div className="mx-6 text-center">
@@ -296,7 +367,7 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
           <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.6)' }}>
             {unsupportedMsg || "Your browser doesn't support live barcode scanning. Please type the barcode number manually."}
           </p>
-          <Button onClick={handleClose} variant="outline" className="w-full">
+          <Button onClick={handleClose} variant="outline" className="w-full" style={{ minHeight: 44 }}>
             Continue to Manual Entry
           </Button>
         </div>
@@ -315,10 +386,11 @@ export default function BarcodeScannerModal({ open, onDetected, onClose }) {
                 setRetryNonce((v) => v + 1);
               }}
               className="w-full"
+              style={{ minHeight: 44 }}
             >
               Retry Camera
             </Button>
-            <Button onClick={handleClose} variant="outline" className="w-full">
+            <Button onClick={handleClose} variant="outline" className="w-full" style={{ minHeight: 44 }}>
               Type Manually Instead
             </Button>
           </div>
