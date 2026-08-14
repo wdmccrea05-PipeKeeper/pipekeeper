@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useAccessSummary } from "@/components/hooks/useAccessSummary";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { rankSearchResults } from "@/utils/search/SmartSearchEngine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,7 @@ const SHOPPING_TYPES = [
 ];
 
 async function searchTobacco(query) {
-  const result = await base44.integrations.Core.InvokeLLM({
+  const result = await trackedInvokeLLM({
     prompt: `Search for pipe tobacco blend: "${query}". Return 5 matching blends with details.`,
     add_context_from_internet: true,
     response_json_schema: {
@@ -50,7 +51,7 @@ async function searchTobacco(query) {
 }
 
 async function searchPipe(query) {
-  const result = await base44.integrations.Core.InvokeLLM({
+  const result = await trackedInvokeLLM({
     prompt: `Search for pipe or pipe maker: "${query}". Return 5 matching pipes/brands with details.`,
     add_context_from_internet: true,
     response_json_schema: {
@@ -79,7 +80,7 @@ async function searchPipe(query) {
 }
 
 async function searchBottle(query) {
-  const result = await base44.integrations.Core.InvokeLLM({
+  const result = await trackedInvokeLLM({
     prompt: `Search for whiskey bottle: "${query}". Return up to 5 matching bottles.`,
     add_context_from_internet: true,
     response_json_schema: {

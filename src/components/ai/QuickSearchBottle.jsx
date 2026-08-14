@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { rankSearchResults } from '@/utils/search/SmartSearchEngine';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +101,7 @@ export default function QuickSearchBottle({ isOpen, onClose, onBottleAdded }) {
     setSearched(true);
     setResults([]);
 
-    const result = await base44.integrations.Core.InvokeLLM({
+    const result = await trackedInvokeLLM({
       prompt: `You are a whiskey expert database. Search for exact whiskey bottles matching: "${query}".
 Focus on the core release, not variants. Return up to 8 matching bottles as structured data.
 For each bottle, provide all known details. Include age statement, proof/ABV, and typical retail price.
@@ -129,6 +130,10 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
           }
         }
       }
+    }, {
+      feature: 'quick_add.whiskey.search',
+      module: 'whiskeykeeper',
+      internetEnabled: true,
     });
 
     const deduplicated = deduplicateBottles(result?.bottles || []);

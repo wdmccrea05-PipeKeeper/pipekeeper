@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { Loader2, Sparkles, RefreshCw } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { filterAiEligibleItems } from "@/components/platform/aiEligibility";
@@ -112,7 +113,7 @@ Use these preferences to personalize recommendations.`;
 
       const existingBlendsText = existingBlends.map(b => `- ${b.fullName}`).join('\n');
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `You are an expert pipe tobacco advisor helping an adult user manage their personal collection.
 
 CRITICAL INSTRUCTION: The user ALREADY OWNS these blends - DO NOT RECOMMEND ANY OF THEM:

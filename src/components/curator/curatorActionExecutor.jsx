@@ -4,9 +4,11 @@
  * Low-level LLM call layer for Curator action workflows.
  *
  * Strategy:
- *   1. Try base44.functions.invoke('invokeCuratorLLM', payload) — the dedicated
- *      server-side function with prompt caching, rate-limiting, and logging.
- *   2. On any failure, fall back to base44.integrations.Core.InvokeLLM directly.
+ *   1. Call base44.functions.invoke('invokeCuratorLLM', payload) — the dedicated
+ *      server-side function with prompt caching, rate-limiting, and telemetry.
+ *   2. On failure, surface the error directly. No fallback direct InvokeLLM —
+ *      credit exhaustion and provider failures must not trigger a second
+ *      paid integration attempt.
  *
  * The result is always parsed JSON matching:
  *   { summary: string, items: ActionItem[] }
@@ -56,36 +58,17 @@ export default async function curatorActionExecutor({ actionType, context, reque
   const requestPromise = (async () => {
     let responseText;
 
-    // ── Primary path: dedicated server function ─────────────────────────────
+    // ── Single path: dedicated server function ───────────────────────────────
+    // The backend function handles prompt caching, rate-limiting, telemetry,
+    // and error classification. No fallback — one Curator question = one LLM call.
     try {
       const fnResult = await base44.functions.invoke('invokeCuratorLLM', payload);
       const fnPayload = fnResult?.data ?? fnResult;
       responseText = typeof fnPayload === 'string'
         ? fnPayload
         : fnPayload?.result || fnPayload?.text || fnPayload?.content;
-    } catch {
-      // Fall through to direct LLM call
-    }
-
-    // ── Fallback: direct InvokeLLM integration ───────────────────────────────
-    if (!responseText) {
-      try {
-        const fallbackResponse = await base44.integrations.Core.InvokeLLM({
-          prompt: `Action type: ${actionType}\n\n${contextBlock}`,
-          response_json_schema: {
-            type: 'object',
-            properties: {
-              summary: { type: 'string' },
-              items: { type: 'array' },
-            },
-          },
-        });
-        responseText = typeof fallbackResponse === 'string'
-          ? fallbackResponse
-          : fallbackResponse?.result || fallbackResponse?.text || fallbackResponse?.content;
-      } catch (err) {
-        throw new Error(`Curator LLM call failed: ${err?.message || err}`);
-      }
+    } catch (err) {
+      throw new Error(`Curator LLM call failed: ${err?.message || err}`);
     }
 
     if (!responseText) {

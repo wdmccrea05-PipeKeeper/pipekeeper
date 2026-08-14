@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, Search, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function QuickSearchPipe({ open, onOpenChange, onAdd }) {
@@ -31,7 +32,7 @@ export default function QuickSearchPipe({ open, onOpenChange, onAdd }) {
 
     setLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `Search for information about this pipe: "${query}"
 
 Search the web for detailed information about this specific pipe maker, model, or brand. Include:
@@ -75,6 +76,10 @@ Return an array of relevant pipe matches with detailed information. Include 3-5 
             }
           }
         }
+      }, {
+        feature: 'quick_add.pipe.search',
+        module: 'pipekeeper',
+        internetEnabled: true,
       });
 
       const ranked = rankSearchResults(query, result.pipes || [], 'pipe');

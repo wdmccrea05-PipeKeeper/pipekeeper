@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 
 // ─── Name normalization ────────────────────────────────────────────────────
 export function normalizeName(name) {
@@ -330,9 +331,11 @@ export function buildFindSimilarPrompt(recordType, anchor, context) {
 export async function runFindSimilar({ recordType, anchor, context }) {
   const prompt = buildFindSimilarPrompt(recordType, anchor, context);
 
-  const responseText = await base44.integrations.Core.InvokeLLM({
+  const responseText = await trackedInvokeLLM({
     prompt,
     add_context_from_internet: false,
+  }, {
+    feature: 'recommendation.find_similar',
   });
 
   const raw = typeof responseText === "string" ? responseText : JSON.stringify(responseText);

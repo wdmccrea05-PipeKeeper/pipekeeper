@@ -8,6 +8,7 @@
  */
 
 import { base44 } from '@/api/base44Client';
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { normalizeIdentifiedItem } from './normalizeIdentifiedItem';
 
 // ── LLM prompts per item type ─────────────────────────────────────────────────
@@ -174,10 +175,13 @@ export async function identifyByUPC(code, itemTypeHint = null) {
     };
   }
 
-  const raw = await base44.integrations.Core.InvokeLLM({
+  const raw = await trackedInvokeLLM({
     prompt: buildUPCPrompt(trimmedCode, itemTypeHint),
     add_context_from_internet: true,
     response_json_schema: UPC_RESPONSE_SCHEMA,
+  }, {
+    feature: 'catalog.upc_lookup',
+    internetEnabled: true,
   });
 
   // Inject the original scanned/typed code so normalizers can preserve it

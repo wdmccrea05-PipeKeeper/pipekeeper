@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, Search, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { motion, AnimatePresence } from "framer-motion";
 
 const BLEND_COLORS = {
@@ -41,7 +42,7 @@ export default function QuickSearchTobacco({ open, onOpenChange, onAdd }) {
 
     setLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `Search for information about this pipe tobacco blend: "${query}"
 
 Search the web for detailed information about this specific tobacco blend. Include:
@@ -85,6 +86,10 @@ Return an array of relevant tobacco blend matches with detailed information. Inc
             }
           }
         }
+      }, {
+        feature: 'quick_add.blend.search',
+        module: 'pipekeeper',
+        internetEnabled: true,
       });
 
       const ranked = rankSearchResults(query, result.blends || [], 'blend');

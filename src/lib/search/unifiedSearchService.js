@@ -24,8 +24,31 @@ import {
 } from './searchQueries.js';
 import { normalizeLLMResults, normalizeImageResult } from './searchAdapters.js';
 import { rankResults } from './searchRanking.js';
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
+import {
+  classifyIntegrationError,
+  getUserFacingMessage,
+  normalizeQueryForTelemetry,
+  INTEGRATION_ERROR_CATEGORIES,
+} from '@/lib/integrationErrorClassification';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function moduleForItemType(itemType) {
+  if (itemType === 'pipe' || itemType === 'blend') return 'pipekeeper';
+  if (itemType === 'bottle') return 'whiskeykeeper';
+  if (itemType === 'cigar') return 'cigarkeeper';
+  if (itemType === 'wine') return 'winekeeper';
+  return null;
+}
+
+function moduleForEntityType(entityType) {
+  if (entityType === 'pipe' || entityType === 'blend') return 'pipekeeper';
+  if (entityType === 'bottle') return 'whiskeykeeper';
+  if (entityType === 'cigar') return 'cigarkeeper';
+  if (entityType === 'wine') return 'winekeeper';
+  return null;
+}
 
 /**
  * Return true when a raw LLM image object contains any recognisable image URL
@@ -90,16 +113,21 @@ function preferResultWithImage(a, b) {
  * @param {Object} schema - JSON schema for the expected response
  * @returns {Promise<Object|null>}
  */
-async function callLLM(prompt, schema) {
+async function callLLM(prompt, schema, attribution = {}) {
+  const normalizedQuery = attribution.normalizedQuery || null;
   try {
-    const result = await base44.integrations.Core.InvokeLLM({
+    const result = await trackedInvokeLLM({
       prompt,
       response_json_schema: schema,
       add_context_from_internet: true,
+    }, {
+      ...attribution,
+      normalizedQuery,
     });
-    return result || null;
-  } catch {
-    return null;
+    return { data: result || null, error: null };
+  } catch (error) {
+    const category = classifyIntegrationError(error);
+    return { data: null, error: { category, message: error?.message } };
   }
 }
 
@@ -120,22 +148,48 @@ async function callLLM(prompt, schema) {
  */
 export async function searchForRecord(query, itemType, options = {}) {
   const { maxResults = 10 } = options;
+  const trimmed = query?.trim();
 
-  if (!query?.trim()) return { results: [], noResults: true };
+  if (!trimmed) return { results: [], noResults: true, errorCategory: null, userMessage: null };
 
-  const prompt = buildQuickAddPrompt(query.trim(), itemType);
-  const llmResult = await callLLM(prompt, QUICK_ADD_RESPONSE_SCHEMA);
+  const feature = `quick_add.${itemType}.search`;
+  const normalizedQuery = normalizeQueryForTelemetry(trimmed);
+  const prompt = buildQuickAddPrompt(trimmed, itemType);
+  const { data: llmResult, error } = await callLLM(prompt, QUICK_ADD_RESPONSE_SCHEMA, {
+    feature,
+    module: moduleForItemType(itemType),
+    internetEnabled: true,
+    normalizedQuery,
+  });
+
+  if (error) {
+    return {
+      results: [],
+      noResults: true,
+      errorCategory: error.category,
+      userMessage: getUserFacingMessage(error.category),
+    };
+  }
 
   if (!llmResult || !Array.isArray(llmResult.items) || llmResult.items.length === 0) {
-    return { results: [], noResults: true };
+    return {
+      results: [],
+      noResults: true,
+      errorCategory: INTEGRATION_ERROR_CATEGORIES.VALID_ZERO_RESULTS,
+      userMessage: null,
+    };
   }
 
   const normalized = normalizeLLMResults(llmResult.items, itemType);
-  const ranked = rankResults(query.trim(), normalized, itemType);
+  const ranked = rankResults(trimmed, normalized, itemType);
 
   return {
     results: ranked.slice(0, maxResults),
     noResults: ranked.length === 0,
+    errorCategory: ranked.length === 0
+      ? INTEGRATION_ERROR_CATEGORIES.VALID_ZERO_RESULTS
+      : null,
+    userMessage: null,
   };
 }
 
@@ -202,7 +256,11 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
 
   const prompt = buildImageSearchPrompt(entityType, fields, { seed });
 
-  const llmResult = await callLLM(prompt, IMAGE_SEARCH_RESPONSE_SCHEMA);
+  const { data: llmResult } = await callLLM(prompt, IMAGE_SEARCH_RESPONSE_SCHEMA, {
+    feature: 'catalog.image_search',
+    module: moduleForEntityType(entityType),
+    internetEnabled: true,
+  });
 
   if (!llmResult || !Array.isArray(llmResult.images) || llmResult.images.length === 0) {
     return { results: [], exactMatch: null, totalCandidates: 0, noResults: true };
@@ -241,7 +299,11 @@ export async function searchForImages(entityType, fields = {}, options = {}) {
   if (finalResults.length < 3) {
     const broadSeed = seed ?? Date.now();
     const broadPrompt = buildImageSearchPrompt(entityType, fields, { seed: broadSeed, broad: true });
-    const broadResult = await callLLM(broadPrompt, IMAGE_SEARCH_RESPONSE_SCHEMA);
+    const { data: broadResult } = await callLLM(broadPrompt, IMAGE_SEARCH_RESPONSE_SCHEMA, {
+      feature: 'catalog.image_search',
+      module: moduleForEntityType(entityType),
+      internetEnabled: true,
+    });
 
     if (broadResult && Array.isArray(broadResult.images) && broadResult.images.length > 0) {
       const broadValid = broadResult.images.filter(rawHasImageUrl);

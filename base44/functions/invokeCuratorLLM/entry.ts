@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { classifyIntegrationError } from '../../shared/integrationTelemetry.ts';
 
 const RESPONSE_CACHE = new Map<string, { text: string; cachedAt: number }>();
 const CACHE_TTL_MS = 60 * 1000;
@@ -107,6 +108,7 @@ Deno.serve(async (req) => {
     const baseUsagePayload = {
       endpoint: 'invokeCuratorLLM',
       function_name: 'invokeCuratorLLM',
+      feature: 'curator.question',
       feature_area: 'curator',
       module: 'shared_shell',
       frequency_bucket: 'per_request',
@@ -166,9 +168,11 @@ Deno.serve(async (req) => {
       const base44 = createClientFromRequest(req);
       const user = await base44.auth.me().catch(() => null);
       const userTier = user ? await resolveUserTier(base44, user) : 'unknown';
+      const errorCategory = classifyIntegrationError(error);
       await trackUsage(base44, {
         endpoint: 'invokeCuratorLLM',
         function_name: 'invokeCuratorLLM',
+        feature: 'curator.question',
         feature_area: 'curator',
         module: 'shared_shell',
         frequency_bucket: 'per_request',
@@ -181,6 +185,7 @@ Deno.serve(async (req) => {
         success: false,
         cached: false,
         error: error?.message || 'Failed to invoke curator model',
+        error_category: errorCategory,
         latency_ms: Date.now() - startedAt,
       });
     } catch {

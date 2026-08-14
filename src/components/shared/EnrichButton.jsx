@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Zap, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { deriveWineValuationPatch } from '@/lib/valuation/wineValuation';
@@ -79,7 +80,7 @@ async function enrichPipe(record) {
 
   if (missingFields.length === 0) return {};
 
-  const result = await base44.integrations.Core.InvokeLLM({
+  const result = await trackedInvokeLLM({
     prompt: `You are a pipe expert. Given this pipe record, fill in only the clearly identifiable missing fields.
 Return null for any field you are not confident about.
 
@@ -125,7 +126,7 @@ async function enrichBottle(record) {
 
   if (missingFields.length === 0) return {};
 
-  const result = await base44.integrations.Core.InvokeLLM({
+  const result = await trackedInvokeLLM({
     prompt: `You are a whiskey expert. Given this bottle record, fill in only the clearly identifiable missing fields.
 Return null for any field you are not confident about.
 
@@ -181,7 +182,7 @@ async function enrichCigar(record) {
   const hasPhoto = Array.isArray(record.photos) && record.photos.length > 0;
   const willRefreshValuation = shouldRefreshCigarValuation(record);
 
-  const result = await base44.integrations.Core.InvokeLLM({
+  const result = await trackedInvokeLLM({
     prompt: `You are a cigar expert doing production data enrichment for a collector app.
 Return only high-confidence metadata. Use null when uncertain.
 
@@ -293,7 +294,7 @@ async function enrichWine(record) {
     return {};
   }
 
-  const result = await base44.integrations.Core.InvokeLLM({
+  const result = await trackedInvokeLLM({
     prompt: `You are a fine wine expert doing data enrichment for a collector app.
 Return only high-confidence metadata. Use null when uncertain.
 

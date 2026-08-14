@@ -3,6 +3,7 @@ import { Send, Loader2, BookOpen, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { buildAiContext, getArticleById } from './documentationRegistry';
 import ReactMarkdown from 'react-markdown';
 
@@ -84,7 +85,7 @@ Instructions:
 - Do NOT say documentation is missing if you found relevant articles above.
 - Keep the answer concise — under 250 words.`;
 
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await trackedInvokeLLM({
         prompt,
         model: 'gemini_3_flash',
       });

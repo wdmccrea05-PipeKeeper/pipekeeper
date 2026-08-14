@@ -1,6 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { trackIntegrationEvent, classifyIntegrationError } from '../../shared/integrationTelemetry.ts';
 
 Deno.serve(async (req) => {
+  const startedAt = Date.now();
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -30,96 +32,80 @@ ${blend_type ? `Type: ${blend_type}` : ''}
 ${strength ? `Strength: ${strength}` : ''}
 ${description ? `Description: ${description}` : ''}`;
 
-    // Get cut
-    let cut;
+    // ── Single structured LLM call for all enrichment fields ──────────────────
+    // Previously this made 4 separate InvokeLLM calls (cut, rating,
+    // production_status, aging_potential). Now consolidated into 1 call.
+    let enriched: Record<string, unknown> = {};
+
     try {
-      const cutResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `For this tobacco blend: ${context}
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `For this tobacco blend, determine the following fields. Return null for any field you cannot confidently determine — do not guess.
 
-Determine the most likely cut type. Choose from: ${cutTypes.join(', ')}
+Blend context:
+${context}
 
-Return only the cut type name.`,
+Determine:
+1. cut — the most likely cut type. Choose from: ${cutTypes.join(', ')}
+2. rating — personal smoking rating from 1 to 5 (5 = exceptional, 1 = poor). Return a number or null.
+3. production_status — current production status. Choose from: ${productionStatuses.join(', ')}
+4. aging_potential — how well it ages over time. Choose from: ${agingPotentials.join(', ')}
+
+Return all four fields. Use null for any field you cannot determine.`,
         response_json_schema: {
           type: 'object',
-          properties: { cut: { type: 'string' } },
+          properties: {
+            cut: { type: ['string', 'null'] },
+            rating: { type: ['number', 'null'] },
+            production_status: { type: ['string', 'null'] },
+            aging_potential: { type: ['string', 'null'] },
+          },
         },
       });
-      if (cutResult?.cut && cutTypes.includes(cutResult.cut)) {
-        cut = cutResult.cut;
+
+      // Validate each field against its enum — do not invent values
+      if (result?.cut && cutTypes.includes(result.cut)) {
+        enriched.cut = result.cut;
       }
-    } catch (err) {
-      console.warn('Cut determination failed:', err.message);
-    }
+      if (result?.rating && typeof result.rating === 'number' && result.rating >= 1 && result.rating <= 5) {
+        enriched.rating = result.rating;
+      }
+      if (result?.production_status && productionStatuses.includes(result.production_status)) {
+        enriched.production_status = result.production_status;
+      }
+      if (result?.aging_potential && agingPotentials.includes(result.aging_potential)) {
+        enriched.aging_potential = result.aging_potential;
+      }
 
-    // Get rating (1-5)
-    let rating;
-    try {
-      const ratingResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `For this tobacco blend: ${context}
-
-Based on its reputation and characteristics, estimate a personal smoking rating from 1 to 5, where 5 is exceptional and 1 is poor.
-
-Return only a number between 1 and 5.`,
-        response_json_schema: {
-          type: 'object',
-          properties: { rating: { type: 'number' } },
-        },
+      await trackIntegrationEvent(base44, {
+        feature: 'blend.enrichment',
+        operation: 'InvokeLLM',
+        module: 'pipekeeper',
+        success: true,
+        durationMs: Date.now() - startedAt,
+        invocationCount: 1,
+        userId: user?.id,
+        email: user?.email,
+        backendFunction: 'enrichTobaccoBlend',
+        triggerContext: 'user_action',
       });
-      if (ratingResult?.rating && ratingResult.rating >= 1 && ratingResult.rating <= 5) {
-        rating = ratingResult.rating;
-      }
     } catch (err) {
-      console.warn('Rating determination failed:', err.message);
-    }
-
-    // Get production status
-    let production_status;
-    try {
-      const prodResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `For this tobacco blend: ${context}
-
-Determine the current production status. Choose from: ${productionStatuses.join(', ')}
-
-Return only the production status.`,
-        response_json_schema: {
-          type: 'object',
-          properties: { production_status: { type: 'string' } },
-        },
+      const category = classifyIntegrationError(err);
+      await trackIntegrationEvent(base44, {
+        feature: 'blend.enrichment',
+        operation: 'InvokeLLM',
+        module: 'pipekeeper',
+        success: false,
+        durationMs: Date.now() - startedAt,
+        errorCategory: category,
+        errorMessage: err?.message,
+        invocationCount: 1,
+        userId: user?.id,
+        email: user?.email,
+        backendFunction: 'enrichTobaccoBlend',
+        triggerContext: 'user_action',
       });
-      if (prodResult?.production_status && productionStatuses.includes(prodResult.production_status)) {
-        production_status = prodResult.production_status;
-      }
-    } catch (err) {
-      console.warn('Production status determination failed:', err.message);
+      console.warn('Enrichment failed:', err.message);
     }
-
-    // Get aging potential
-    let aging_potential;
-    try {
-      const agingResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `For this tobacco blend: ${context}
-
-Assess its aging potential (how well it ages over time). Choose from: ${agingPotentials.join(', ')}
-
-Return only the aging potential.`,
-        response_json_schema: {
-          type: 'object',
-          properties: { aging_potential: { type: 'string' } },
-        },
-      });
-      if (agingResult?.aging_potential && agingPotentials.includes(agingResult.aging_potential)) {
-        aging_potential = agingResult.aging_potential;
-      }
-    } catch (err) {
-      console.warn('Aging potential determination failed:', err.message);
-    }
-
-    // Return enriched data
-    const enriched = {};
-    if (cut) enriched.cut = cut;
-    if (rating) enriched.rating = rating;
-    if (production_status) enriched.production_status = production_status;
-    if (aging_potential) enriched.aging_potential = aging_potential;
 
     return Response.json(enriched);
   } catch (error) {

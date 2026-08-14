@@ -687,8 +687,10 @@ export default function AddFlowIdentify({ itemType, typeLabel, onBack, onManual,
         setQuickSearchQuery(query);
         setSearchingQuickSearch(true);
         try {
-          const { results } = await searchForRecord(query, 'pipe', { maxResults: MAX_QUICK_SEARCH_RESULTS });
-          setQuickSearchMatches(results || []);
+          const { results: pipeResults, errorCategory: pipeSearchErr } = await searchForRecord(query, 'pipe', { maxResults: MAX_QUICK_SEARCH_RESULTS });
+          // If search failed (not just zero results), still allow manual proceed —
+          // the photo identification itself already succeeded.
+          setQuickSearchMatches(pipeResults || []);
         } catch {
           setQuickSearchMatches([]);
         } finally {

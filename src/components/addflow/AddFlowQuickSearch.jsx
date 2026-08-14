@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { ArrowLeft, ChevronRight, Globe, Loader2, PenLine, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { searchForRecord } from '@/lib/search/unifiedSearchService';
@@ -45,7 +45,6 @@ function SourceChip({ domain, isInternational }) {
 }
 
 function subtitleFor(itemType, item) {
-  // Unified shape: subtitle is already set. Fall back to legacy fields for compatibility.
   if (item.subtitle) return item.subtitle;
   if (itemType === 'blend') return item.manufacturer || item.matchedBrand;
   if (itemType === 'pipe') return item.maker || item.matchedBrand;
@@ -63,7 +62,6 @@ function descriptionFor(item) {
   return item.metadata?.description || item.description || '';
 }
 
-const DEBOUNCE_MS = 400;
 const MIN_CHARS = 2;
 
 export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSelect, onManual }) {
@@ -71,40 +69,70 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [results, setResults] = useState([]);
-  const debounceRef = useRef(null);
+  const [errorCategory, setErrorCategory] = useState(null);
+  const [userMessage, setUserMessage] = useState(null);
+  const requestIdRef = useRef(0);
+  const lastSearchedQueryRef = useRef('');
   const inputRef = useRef(null);
 
-  // Live search with debounce
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+  // Explicit submit — one search per user action, not one per keystroke.
+  // Stale results are ignored via requestId. Identical repeated queries
+  // are skipped. Manual Add remains available regardless of search state.
+  const performSearch = async (searchQuery) => {
+    const trimmed = (searchQuery || '').trim();
+    if (trimmed.length < MIN_CHARS) return;
 
-    if (query.trim().length < MIN_CHARS) {
-      setResults([]);
-      setSearched(false);
-      setLoading(false);
-      return;
-    }
+    // Skip identical immediately repeated queries
+    if (trimmed === lastSearchedQueryRef.current && !loading) return;
+
+    const currentRequestId = ++requestIdRef.current;
+    lastSearchedQueryRef.current = trimmed;
 
     setLoading(true);
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const { results: ranked } = await searchForRecord(query.trim(), itemType, { maxResults: 10 });
-        setResults(ranked);
-      } catch {
+    setErrorCategory(null);
+    setUserMessage(null);
+
+    try {
+      const {
+        results: ranked,
+        errorCategory: errCat,
+        userMessage: errMsg,
+      } = await searchForRecord(trimmed, itemType, { maxResults: 10 });
+
+      // Ignore stale results from a previous request
+      if (currentRequestId !== requestIdRef.current) return;
+
+      setResults(ranked || []);
+      if (errCat && errCat !== 'VALID_ZERO_RESULTS') {
+        setErrorCategory(errCat);
+        setUserMessage(errMsg);
+      }
+    } catch {
+      if (currentRequestId === requestIdRef.current) {
         setResults([]);
-      } finally {
+        setErrorCategory('PROVIDER_ERROR');
+        setUserMessage('Search is temporarily unavailable. You can try again later or add this item manually.');
+      }
+    } finally {
+      if (currentRequestId === requestIdRef.current) {
         setLoading(false);
         setSearched(true);
       }
-    }, DEBOUNCE_MS);
+    }
+  };
 
-    return () => clearTimeout(debounceRef.current);
-  }, [query, itemType]);
+  const handleSubmit = (e) => {
+    e?.preventDefault();
+    performSearch(query);
+  };
 
   const handleClear = () => {
     setQuery('');
     setResults([]);
     setSearched(false);
+    setErrorCategory(null);
+    setUserMessage(null);
+    lastSearchedQueryRef.current = '';
     inputRef.current?.focus();
   };
 
@@ -156,8 +184,8 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
       <div className="mx-6" style={{ height: 1, background: 'rgba(180,140,75,0.12)' }} />
 
       <div className="px-6 py-5 flex flex-col gap-4">
-        {/* Search input — live dropdown */}
-        <div className="relative">
+        {/* Search input — explicit submit (Enter or Search button) */}
+        <form onSubmit={handleSubmit} className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'rgba(180,140,75,0.5)' }} />
           <Input
             ref={inputRef}
@@ -165,27 +193,40 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
             onChange={(e) => setQuery(e.target.value)}
             placeholder={PLACEHOLDERS[itemType]}
             autoFocus
-            className="pl-9 pr-9"
+            className="pl-9 pr-20"
             style={{
               background: 'rgba(20,13,8,0.7)',
               border: '1px solid rgba(180,140,75,0.3)',
               color: '#F5F1E7',
             }}
           />
-          {query && (
+          {query && !loading && (
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-3 top-1/2 -translate-y-1/2"
+              className="absolute right-16 top-1/2 -translate-y-1/2"
               style={{ color: 'rgba(224,216,200,0.4)' }}
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          {loading && (
+          {loading ? (
             <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin pointer-events-none" style={{ color: 'rgba(180,140,75,0.6)' }} />
+          ) : (
+            <button
+              type="submit"
+              disabled={query.trim().length < MIN_CHARS}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40"
+              style={{
+                background: query.trim().length >= MIN_CHARS ? 'rgba(180,140,75,0.18)' : 'transparent',
+                border: '1px solid rgba(180,140,75,0.25)',
+                color: '#D4A574',
+              }}
+            >
+              Search
+            </button>
           )}
-        </div>
+        </form>
 
         {/* Results */}
         {!loading && results.length > 0 && (
@@ -250,19 +291,27 @@ export default function AddFlowQuickSearch({ itemType, typeLabel, onBack, onSele
 
         {!loading && searched && results.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>
-              No trusted matches found for "{query}"
-            </p>
-            <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.3)' }}>
-              Add manually or try a different search.
-            </p>
+            {userMessage ? (
+              <p className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                {userMessage}
+              </p>
+            ) : (
+              <>
+                <p className="text-sm" style={{ color: 'rgba(224,216,200,0.5)' }}>
+                  No trusted matches found for "{query}"
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.3)' }}>
+                  Add manually or try a different search.
+                </p>
+              </>
+            )}
           </div>
         )}
 
-        {!loading && !searched && query.length < MIN_CHARS && (
+        {!loading && !searched && query.trim().length < MIN_CHARS && (
           <div className="text-center py-8" style={{ color: 'rgba(224,216,200,0.3)' }}>
             <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">Type to search</p>
+            <p className="text-sm">Type a name and press Search</p>
           </div>
         )}
 

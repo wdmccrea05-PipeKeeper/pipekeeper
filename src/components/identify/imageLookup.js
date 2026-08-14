@@ -9,6 +9,8 @@
 
 import { base44 } from '@/api/base44Client';
 import { normalizeIdentifiedItem, normalizeSingleCandidate } from './normalizeIdentifiedItem';
+import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
+import { classifyIntegrationError, INTEGRATION_ERROR_CATEGORIES } from '@/lib/integrationErrorClassification';
 
 // ── LLM prompts per item type ─────────────────────────────────────────────────
 
@@ -321,7 +323,10 @@ export async function uploadIdentifyImages(files) {
   const results = await Promise.all(
     files.map(async (file) => {
       try {
-        const response = await base44.integrations.Core.UploadFile({ file });
+        const response = await trackedUploadFile({ file }, {
+          feature: 'photo.upload',
+          triggerContext: 'user_action',
+        });
         if (!response?.file_url) {
           throw createIdentifyError('MISSING_IMAGE_URL', 'Upload completed but no image URL was returned.');
         }
@@ -357,21 +362,30 @@ export async function identifyByImageUrls(imageUrls, itemType) {
 
   let raw;
   try {
-    raw = await base44.integrations.Core.InvokeLLM({
+    raw = await trackedInvokeLLM({
       prompt: promptForType(itemType),
       add_context_from_internet: true,
       file_urls: imageUrls,
       response_json_schema: schemaForType(itemType),
+    }, {
+      feature: `photo.${itemType}.identification`,
+      module: itemType === 'pipe' ? 'pipekeeper' : itemType === 'blend' ? 'pipekeeper' : itemType === 'cigar' ? 'cigarkeeper' : itemType === 'wine' ? 'winekeeper' : 'whiskeykeeper',
+      internetEnabled: true,
+      hasFileUrls: true,
+      triggerContext: 'user_action',
     });
   } catch (error) {
-    const message = String(error?.message || '').toLowerCase();
-    if (message.includes('timeout')) {
+    const category = classifyIntegrationError(error);
+    if (category === INTEGRATION_ERROR_CATEGORIES.TIMEOUT) {
       throw createIdentifyError('NETWORK_TIMEOUT', 'Identification timed out. Please try again.');
     }
-    if (message.includes('api key') || message.includes('unauthorized') || message.includes('forbidden')) {
+    if (category === INTEGRATION_ERROR_CATEGORIES.INTEGRATION_UNAVAILABLE) {
       throw createIdentifyError('MISSING_API_CONFIG', 'Image identification is temporarily unavailable. Please try again later.');
     }
-    throw createIdentifyError('AI_REQUEST_FAILED', 'Photo identification failed. Please try again.', { message: error?.message });
+    if (category === INTEGRATION_ERROR_CATEGORIES.INTEGRATION_CREDIT_EXHAUSTED) {
+      throw createIdentifyError('CREDIT_EXHAUSTED', 'AI identification is temporarily unavailable. You can still add this item manually with your photo.');
+    }
+    throw createIdentifyError('AI_REQUEST_FAILED', 'Photo identification failed. Please try again or add manually.', { message: error?.message });
   }
 
   if (!raw || typeof raw !== 'object') {

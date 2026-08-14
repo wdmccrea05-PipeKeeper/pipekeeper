@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { Search, Loader2, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { rankSearchResults } from "@/utils/search/SmartSearchEngine";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -243,7 +244,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
 
       if (needsRemoteFallback) {
         try {
-          const llmResult = await base44.integrations.Core.InvokeLLM({
+          const llmResult = await trackedInvokeLLM({
             prompt: buildPrompt(itemType, q),
             add_context_from_internet: true,
             response_json_schema: SCHEMA_BY_TYPE[itemType],
