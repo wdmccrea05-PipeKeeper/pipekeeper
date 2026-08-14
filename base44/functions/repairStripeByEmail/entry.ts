@@ -4,7 +4,7 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, safeStripeError, stripeSanityCheck } from "./_utils/stripe.js";
+import { getStripeClient, safeStripeError, stripeSanityCheck } from "../../shared/stripeUtils.ts";
 
 const PRICE_ID_PREMIUM_MONTHLY = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_MONTHLY") || "").trim();
 const PRICE_ID_PREMIUM_ANNUAL = (Deno.env.get("STRIPE_PRICE_ID_PREMIUM_ANNUAL") || "").trim();
@@ -336,7 +336,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("[repairStripeByEmail] error:", error);
-    const { safeStripeError } = await import("./_utils/stripe.ts");
+    const { safeStripeError } = await import("../../shared/stripeUtils.ts");
     return Response.json({ 
       ok: false, 
       error: "FUNCTION_ERROR",

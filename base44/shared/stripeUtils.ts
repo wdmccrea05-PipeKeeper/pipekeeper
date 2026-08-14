@@ -1,5 +1,5 @@
 import Stripe from "npm:stripe@17.5.0";
-import { getStripeSecretKeyLive } from "../../../shared/remoteConfig.ts";
+import { getStripeSecretKeyLive } from "./remoteConfig.ts";
 
 /**
  * Creates Stripe client with standard process (env var first, RemoteConfig backup)

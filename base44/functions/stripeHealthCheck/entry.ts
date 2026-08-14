@@ -1,7 +1,7 @@
 // Stripe health check - verifies ENV key and API connectivity
 // Updated: 2026-02-05
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, StripeKeyError, safeStripeError } from "./_utils/stripeClient.ts";
+import { getStripeClient, StripeKeyError, safeStripeError } from "../../shared/stripeClient.ts";
 
 Deno.serve(async (req: Request) => {
   try {

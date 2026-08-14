@@ -1,4 +1,4 @@
-import { getStripeClient } from "../_shared/getStripeClient.ts";
+import { getStripeClient } from "../../../shared/getStripeClient.ts";
 
 function json(status: number, body: any) {
   return new Response(JSON.stringify(body), {

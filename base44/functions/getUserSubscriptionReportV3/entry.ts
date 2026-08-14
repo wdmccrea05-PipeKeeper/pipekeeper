@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-import { CANONICAL_LIFECYCLE_MODEL_VERSION, CANONICAL_METRIC_DICTIONARY_VERSION } from '../_shared/reportingMetrics.ts';
+import { CANONICAL_LIFECYCLE_MODEL_VERSION, CANONICAL_METRIC_DICTIONARY_VERSION } from '../../shared/reportingMetrics.ts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // getUserSubscriptionReportV3 — V9 canonical reporting layer

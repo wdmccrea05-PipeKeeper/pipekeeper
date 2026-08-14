@@ -9,8 +9,8 @@
  * Usage: npm run build (automatically calls this)
  */
 
-import { helpContentFull } from '../components/i18n/helpContent-full.js';
-import { translations } from '../components/i18n/translations-complete.js';
+import { helpContentFull } from '../../shared/helpContentFull.ts';
+import { translations } from '../../shared/translationsComplete.ts';
 
 const REQUIRED_LOCALES = ['en', 'es', 'fr', 'de', 'it', 'pt-BR', 'nl', 'pl', 'ja', 'zh-Hans'];
 const FORBIDDEN_KEY_PREFIXES = [

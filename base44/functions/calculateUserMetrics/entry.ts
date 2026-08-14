@@ -6,7 +6,7 @@ import {
   normalizeMetricInterval,
   parseMetricDate,
   summarizeRevenueRowsInRange,
-} from '../_shared/reportingMetrics.ts';
+} from '../../shared/reportingMetrics.ts';
 
 Deno.serve(async (req) => {
   try {

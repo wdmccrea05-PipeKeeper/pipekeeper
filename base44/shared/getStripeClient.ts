@@ -3,7 +3,7 @@
 
 import Stripe from "npm:stripe@17.5.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient as getSingleton, getStripeSecretKey as getSecretFromSingleton } from '../../../shared/stripeClientSingleton.ts';
+import { getStripeClient as getSingleton, getStripeSecretKey as getSecretFromSingleton } from './stripeClientSingleton.ts';
 
 let cachedStripe: Stripe | null = null;
 let cachedKeyFingerprint: string | null = null;

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
+import { getStripeClient, stripeKeyErrorResponse, safeStripeError } from "../../shared/stripeUtils.ts";
 
 function normEmail(v) {
   return String(v || "").trim().toLowerCase();

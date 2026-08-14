@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { getEntitlementTier, hasPaidAccess, hasProAccess, getPlanLabel } from './premiumAccessResolver.ts';
+import { getEntitlementTier, hasPaidAccess, hasProAccess, getPlanLabel } from '../../shared/premiumAccessResolver.ts';
 
 /**
  * Tests all active paid subscriptions to verify canonical resolver grants correct access

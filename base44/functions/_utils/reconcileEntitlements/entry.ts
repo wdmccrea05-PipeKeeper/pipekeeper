@@ -3,7 +3,7 @@ if (typeof Deno?.serve !== "function") {
   throw new Error("FATAL: Invalid runtime - Base44 requires Deno.serve");
 }
 
-import { getStripeClient, safeStripeError } from "./stripe.ts";
+import { getStripeClient, safeStripeError } from "../../../shared/stripeUtils.ts";
 
 const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 

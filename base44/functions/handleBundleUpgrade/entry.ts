@@ -14,7 +14,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { getStripeClient, safeStripeError } from './_utils/stripe.ts';
+import { getStripeClient, safeStripeError } from '../../shared/stripeUtils.ts';
 
 type BundleType = 'bundle_3' | 'bundle_4';
 

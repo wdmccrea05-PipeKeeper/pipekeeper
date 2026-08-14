@@ -1,6 +1,6 @@
 // Admin-only endpoint: Force refresh Stripe client singleton
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { clearStripeClientCache, verifyStripeConnection } from "../_shared/stripeClientSingleton.ts";
+import { clearStripeClientCache, verifyStripeConnection } from "../../../shared/stripeClientSingleton.ts";
 
 Deno.serve(async (req) => {
   try {

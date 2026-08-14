@@ -1,4 +1,4 @@
-import { getStripeSecretKey } from "../_shared/getStripeClient.ts";
+import { getStripeSecretKey } from "../../../shared/getStripeClient.ts";
 
 function json(status: number, body: any) {
   return new Response(JSON.stringify(body), {

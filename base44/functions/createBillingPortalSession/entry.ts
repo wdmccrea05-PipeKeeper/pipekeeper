@@ -1,6 +1,6 @@
 // Force redeploy: 2026-02-01
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
-import { getStripeClient, stripeSanityCheck, stripeKeyErrorResponse, safeStripeError } from "./_utils/stripe.ts";
+import { getStripeClient, stripeSanityCheck, stripeKeyErrorResponse, safeStripeError } from "../../shared/stripeUtils.ts";
 
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
 

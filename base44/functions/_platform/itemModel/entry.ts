@@ -4,7 +4,7 @@
 // Provides helpers for normalizing raw module records into the shared
 // platform item shape without rewriting any existing schema.
 
-import { isValidModuleType, MODULE_TYPES } from "./moduleTypes.ts";
+import { isValidModuleType, MODULE_TYPES } from "../../../shared/moduleTypes.ts";
 
 export interface PlatformItem {
   id: string;
