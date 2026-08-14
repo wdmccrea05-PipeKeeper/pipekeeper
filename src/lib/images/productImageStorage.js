@@ -12,6 +12,7 @@
  */
 
 import { base44 } from '@/api/base44Client';
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 
 // ── File extension helpers ────────────────────────────────────────────────────
 
@@ -87,7 +88,7 @@ export async function uploadImageToStorage(blob, options = {}) {
       ? blob
       : new File([blob], filename, { type: mimeType.split(';')[0].trim() });
 
-    const result = await base44.integrations.Core.UploadFile({ file });
+    const result = await trackedUploadFile({ file }, { feature: 'catalog.image_storage', module: 'shared' });
 
     const fileUrl = result?.file_url;
     if (!fileUrl) throw new Error('No file_url returned');

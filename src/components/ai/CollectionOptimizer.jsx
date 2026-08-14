@@ -5,6 +5,7 @@ import { isAppleBuild } from "@/components/utils/appVariant";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import { safeGetItem, safeSetItem } from "@/components/utils/safeStorage";
 import { safeStringify } from "@/components/utils/safeStringify";
 import { waitForAssistantMessage } from "@/components/utils/agentWait";
@@ -893,7 +894,7 @@ ${englishUserText}
     const uploadedUrls = [];
     for (const file of Array.from(files || [])) {
       try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const { file_url } = await trackedUploadFile({ file }, { feature: 'collection.optimizer', module: 'shared' });
         uploadedUrls.push(file_url);
       } catch (err) {
         console.error("Error uploading photo:", err);

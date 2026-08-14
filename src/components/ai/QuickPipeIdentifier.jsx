@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera, Upload, Loader2, CheckCircle2, Sparkles, TrendingUp } from "lucide-react";
@@ -39,7 +40,7 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
 
     for (const file of files) {
       try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const { file_url } = await trackedUploadFile({ file }, { feature: 'photo.pipe.identification', module: 'pipekeeper' });
         uploadedUrls.push(file_url);
       } catch (error) {
         console.error('Upload failed:', error);
@@ -54,7 +55,7 @@ export default function QuickPipeIdentifier({ pipes, blends }) {
     if (!file) return;
 
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await trackedUploadFile({ file }, { feature: 'photo.pipe.identification', module: 'pipekeeper' });
       setPhotos([...photos, file_url]);
     } catch (error) {
       console.error('Camera capture failed:', error);
@@ -91,7 +92,7 @@ Return a JSON object:
   "confidence_without_clarification": "high/medium/low"
 }`;
 
-      const clarificationCheck = await base44.integrations.Core.InvokeLLM({
+      const clarificationCheck = await trackedInvokeLLM({
         prompt: clarificationPrompt,
         file_urls: photos,
         response_json_schema: {
@@ -103,7 +104,7 @@ Return a JSON object:
             confidence_without_clarification: { type: "string" }
           }
         }
-      });
+      }, { feature: 'photo.pipe.identification', module: 'pipekeeper' });
 
       // If clarification needed and confidence is not high, show questions
       if (clarificationCheck.needs_clarification && clarificationCheck.confidence_without_clarification !== 'high') {
@@ -194,7 +195,7 @@ Return JSON:
   "confidence": "high/medium/low"
 }`;
 
-      const parsed = await base44.integrations.Core.InvokeLLM({
+      const parsed = await trackedInvokeLLM({
         prompt: parsePrompt,
         response_json_schema: {
           type: "object",
@@ -212,7 +213,7 @@ Return JSON:
             confidence: { type: "string" }
           }
         }
-      });
+      }, { feature: 'photo.pipe.identification', module: 'pipekeeper' });
 
       setIdentified({ ...parsed, agent_response: responseText });
       setClarificationNeeded(null);
@@ -281,7 +282,7 @@ Return JSON with these exact fields:
   "confidence": "high/medium/low"
 }`;
 
-        const parsed = await base44.integrations.Core.InvokeLLM({
+        const parsed = await trackedInvokeLLM({
           prompt: parsePrompt,
           response_json_schema: {
             type: "object",
@@ -299,7 +300,7 @@ Return JSON with these exact fields:
               confidence: { type: "string" }
             }
           }
-        });
+        }, { feature: 'photo.pipe.identification', module: 'pipekeeper' });
 
         setIdentified({ ...parsed, agent_response: responseText });
         setClarificationNeeded(null);
@@ -388,7 +389,7 @@ Return JSON:
   "recommendation": "Strong addition / Good addition / Consider alternatives"
 }`;
 
-      const parsed = await base44.integrations.Core.InvokeLLM({
+      const parsed = await trackedInvokeLLM({
         prompt: parsePrompt,
         response_json_schema: {
           type: "object",
@@ -400,7 +401,7 @@ Return JSON:
             recommendation: { type: "string" }
           }
         }
-      });
+      }, { feature: 'photo.pipe.identification', module: 'pipekeeper' });
 
       setImpactAnalysis({ ...parsed, agent_response: responseText });
     } catch (error) {

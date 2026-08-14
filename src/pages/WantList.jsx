@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -203,11 +204,11 @@ function AddItemFlow({ onDone, onBack }) {
     setLoading(true);
     setSearched(false);
     try {
-      const llmResult = await base44.integrations.Core.InvokeLLM({
+      const llmResult = await trackedInvokeLLM({
         prompt: SEARCH_PROMPTS[itemType](query.trim()),
         response_json_schema: SEARCH_SCHEMA,
         add_context_from_internet: true,
-      });
+      }, { feature: 'wantlist.search', module: 'shared' });
       const rawItems = Array.isArray(llmResult?.items) ? llmResult.items.filter((i) => i?.name) : [];
       const ranked = rankSearchResults(query.trim(), rawItems, itemType);
       setResults(ranked.slice(0, 10));

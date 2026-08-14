@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
@@ -20,7 +21,7 @@ export default function TobaccoSearch({ onSelect }) {
 
     setLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `Search for information about this pipe tobacco blend: "${query}"
 
 Search the web for detailed information about this specific tobacco blend. Include:
@@ -66,7 +67,7 @@ Return an array of relevant tobacco blend matches with detailed information.`,
             }
           }
         }
-      });
+      }, { feature: 'blend.search', module: 'pipekeeper' });
 
       setResults(result.blends || []);
     } catch (err) {

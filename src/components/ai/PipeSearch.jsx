@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { useCurrency } from "@/lib/currency/useCurrency";
@@ -43,7 +44,7 @@ export default function PipeSearch({ onSelect }) {
     setHasSearched(true);
     setResults([]);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `Search for information about this pipe: "${query}"
 
 Search the web for detailed information about this specific pipe maker, model, or brand. Include:
@@ -109,7 +110,7 @@ Return an array of relevant pipe matches with detailed information.`,
             }
           }
         }
-      });
+      }, { feature: 'pipe.search', module: 'pipekeeper' });
 
       setResults(extractPipes(result));
     } catch (err) {

@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { X } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { base44 } from '@/api/base44Client';
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import FormSection from '@/components/forms/FormSection';
 import BottleCatalogSearch from './BottleCatalogSearch';
@@ -135,7 +136,7 @@ export default function BottleForm({
       const blob = await response.blob();
       const file = new File([blob], 'bottle-photo.jpg', { type: 'image/jpeg' });
 
-      const result = await base44.integrations.Core.UploadFile({ file });
+      const result = await trackedUploadFile({ file }, { feature: 'bottle.form_upload', module: 'whiskeykeeper' });
       const uploadedUrl =
         result?.file_url || result?.url || result?.publicUrl || result?.photo || '';
 

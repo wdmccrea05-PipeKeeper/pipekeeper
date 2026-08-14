@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trash2, Edit, Layers, Camera, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
 const BOWL_MATERIALS = ["Briar", "Meerschaum", "Corn Cob", "Clay", "Olive Wood", "Cherry Wood", "Morta", "Other"];
@@ -84,7 +85,7 @@ export default function InterchangeableBowls({ pipe, onUpdate }) {
 
     try {
       setUploadingPhoto(true);
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await trackedUploadFile({ file }, { feature: 'pipe.interchangeable_bowls', module: 'pipekeeper' });
       setBowlForm({ ...bowlForm, photo: file_url });
     } catch (error) {
       console.error("Error uploading photo:", error);

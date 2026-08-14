@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@/components/utils/navigation";
 import { base44 } from "@/api/base44Client";
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { safeUpdate } from "@/components/utils/safeUpdate";
 import { toast } from "sonner";
@@ -399,7 +400,7 @@ export default function ProfilePage() {
     setCropperImage(null);
     setUploadingAvatar(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
+      const { file_url } = await trackedUploadFile({ file: croppedFile }, { feature: 'profile.avatar_upload', module: 'shared' });
       setFormData((p) => ({ ...p, avatar_url: file_url }));
       if (profileId) {
         await safeUpdate("UserProfile", profileId, { avatar_url: file_url }, email);

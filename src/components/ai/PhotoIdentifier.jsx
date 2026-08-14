@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Camera, Sparkles, AlertTriangle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
 import FeatureGate from "@/components/subscription/FeatureGate";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
@@ -19,7 +20,7 @@ export default function PhotoIdentifier({ onIdentify }) {
 
     setUploading(true);
     try {
-      const uploadPromises = files.map(file => base44.integrations.Core.UploadFile({ file }));
+      const uploadPromises = files.map(file => trackedUploadFile({ file }, { feature: 'photo.identification', module: 'shared' }));
       const results = await Promise.all(uploadPromises);
       const urls = results.map(r => r.file_url);
       setUploadedPhotos(prev => [...prev, ...urls]);
@@ -35,7 +36,7 @@ export default function PhotoIdentifier({ onIdentify }) {
 
     setAnalyzing(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `Analyze these pipe images to identify and extract all possible details including geometry.
 
 Look for:
@@ -84,7 +85,7 @@ Provide detailed identification results including geometry fields that can be us
             chamber_volume: { type: "string" }
           }
         }
-      });
+      }, { feature: 'photo.identification', module: 'shared' });
 
       // Convert to form data format
       const formData = {

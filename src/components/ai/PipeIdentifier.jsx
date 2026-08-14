@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 const COLLECTOR_CARD_STYLE = {
@@ -137,7 +138,7 @@ export default function PipeIdentifier() {
 
     try {
       const uploadPromises = photos.map((file) =>
-        base44.integrations.Core.UploadFile({ file })
+        trackedUploadFile({ file }, { feature: 'photo.pipe.identification', module: 'pipekeeper' })
       );
       const uploaded = await Promise.all(uploadPromises);
       const fileUrls = uploaded.map((r) => r.file_url).filter(Boolean);
@@ -178,12 +179,12 @@ Rules:
 - notable_features should summarize things like finish, military mount, silver band, unusual stem, etc.
 - condition should be brief, such as "Good used condition" or "Fair with visible wear".`;
 
-      const identification = await base44.integrations.Core.InvokeLLM({
+      const identification = await trackedInvokeLLM({
         prompt,
         file_urls: fileUrls,
         response_json_schema: RESULT_SCHEMA,
         model: "claude_sonnet_4_6",
-      });
+      }, { feature: 'photo.pipe.identification', module: 'pipekeeper' });
 
       setResult(identification);
       setShowMoreDetails(false);

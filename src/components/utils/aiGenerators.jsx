@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import {
   buildPairingsForPipes,
   inferBlendCategory,
@@ -340,7 +341,7 @@ ${JSON.stringify(profileContext)}
 Respond with detailed JSON:`;
 
 
-  const result = await base44.integrations.Core.InvokeLLM({
+  const result = await trackedInvokeLLM({
     prompt,
     response_json_schema: {
       type: "object",
@@ -398,7 +399,7 @@ Respond with detailed JSON:`;
         }
       },
     },
-  });
+  }, { feature: 'ai.generator', module: 'shared' });
 
   // Always normalize the shape so downstream UI never crashes
   return {
@@ -450,7 +451,7 @@ export async function generateBreakInScheduleAI({ pipe, blends, profile }) {
     bowl_depth_mm: pipe?.bowl_depth_mm ?? null,
   };
 
-  const result = await base44.integrations.Core.InvokeLLM({
+  const result = await trackedInvokeLLM({
     prompt: `Create a break-in schedule for this pipe.
 
 Rules:
@@ -490,7 +491,7 @@ Return JSON:
       },
       required: ["schedule"],
     }
-  });
+  }, { feature: 'ai.generator', module: 'shared' });
 
   return { schedule: result?.schedule || [] };
 }

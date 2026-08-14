@@ -9,6 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { ACTION_TYPE, PRIORITY_STYLES, MODULE_KEY, CATEGORY } from '@/lib/curator/recommendationSchema.js';
 import CuratorItemPreviewList from './CuratorItemPreviewList';
 
@@ -232,7 +233,7 @@ function RecordOptimizationActions({ rec, onAction }) {
       let cancelled = false;
       setSearching(true);
       const name = item.itemName || item.recordName || '';
-      base44.integrations.Core.InvokeLLM({
+      trackedInvokeLLM({
         prompt: `Search online for the official age statement for the whiskey "${name}". Check the manufacturer's website, major retailers (Total Wine, Master of Malt, Whisky Exchange), and whisky databases (Whiskybase, LCBO).
 
 Return a JSON object with:
@@ -252,7 +253,7 @@ Important: Many whiskies DO have age statements — e.g. Talisker Skye is NAS bu
             source: { type: 'string' },
           },
         },
-      }).then((res) => {
+      }, { feature: 'curator.recommendation', module: 'shared' }).then((res) => {
         if (cancelled) return;
         if (res?.age != null) {
           setSearchResults(prev => ({ ...prev, [itemId]: { age: res.age, is_nas: res.is_nas, confidence: res.confidence, source: res.source } }));

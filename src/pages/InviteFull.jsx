@@ -5,6 +5,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
+import { trackedSendEmail } from '@/lib/integrationTelemetry';
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -96,12 +97,12 @@ The CollectionKeeper Team
 
 If you didn't expect this invitation, you can safely ignore this email.`;
 
-          await base44.integrations.Core.SendEmail({
+          await trackedSendEmail({
             to: email,
             subject: `You've been invited to CollectionKeeper`,
             body: emailBody,
             from_name: 'CollectionKeeper'
-          });
+          }, { feature: 'referral.invite_email', module: 'shared' });
         }
         setSubmitted(true);
         setEmailFields(['']);

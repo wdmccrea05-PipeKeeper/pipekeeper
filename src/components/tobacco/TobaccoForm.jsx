@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, Loader2, Plus, Search, Check, Edit, Library } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
 import ImageCropper from "@/components/pipes/ImageCropper";
@@ -168,7 +169,7 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
 
     setSearching(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `Find detailed information about this pipe tobacco blend: "${searchQuery}"
         
 Include all available details such as:
@@ -212,7 +213,7 @@ Return complete and accurate information based on the blend name or description 
             aging_potential: { type: "string" }
           }
         }
-      });
+      }, { feature: 'blend.form', module: 'pipekeeper' });
 
       if (result) {
         const normalizedFlavorProfile = normalizeFlavorProfile(
@@ -270,7 +271,7 @@ Return complete and accurate information based on the blend name or description 
       const blob = await response.blob();
       const file = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
       
-      const result = await base44.integrations.Core.UploadFile({ file });
+      const result = await trackedUploadFile({ file }, { feature: 'blend.form', module: 'pipekeeper' });
       
       if (isLogo) {
         handleChange('logo', result.file_url);

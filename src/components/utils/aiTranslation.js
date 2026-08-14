@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 
 /**
  * Get the current user locale from localStorage (pk_lang key).
@@ -33,7 +34,7 @@ export async function translateToEnglish(text, locale) {
   if (!text || !text.trim() || isEnglishLocale(lang)) return text;
 
   try {
-    const result = await base44.integrations.Core.InvokeLLM({
+    const result = await trackedInvokeLLM({
       prompt: `Translate the following text to English. Return ONLY the translated text, nothing else, no explanation, no quotes.\n\nText to translate:\n${text}`,
       response_json_schema: {
         type: "object",
@@ -42,7 +43,7 @@ export async function translateToEnglish(text, locale) {
         },
         required: ["translation"],
       },
-    });
+    }, { feature: 'i18n.translation', module: 'shared' });
     return result?.translation || text;
   } catch (err) {
     console.warn("[aiTranslation] translateToEnglish failed, using original:", err);
@@ -78,7 +79,7 @@ export async function translateFromEnglish(text, locale) {
   const langName = LOCALE_NAMES[lang] || lang;
 
   try {
-    const result = await base44.integrations.Core.InvokeLLM({
+    const result = await trackedInvokeLLM({
       prompt: `Translate the following text to ${langName}. Preserve all markdown formatting (bold, bullets, headers). Return ONLY the translated text, nothing else.\n\nText to translate:\n${text}`,
       response_json_schema: {
         type: "object",
@@ -87,7 +88,7 @@ export async function translateFromEnglish(text, locale) {
         },
         required: ["translation"],
       },
-    });
+    }, { feature: 'i18n.translation', module: 'shared' });
     return result?.translation || text;
   } catch (err) {
     console.warn("[aiTranslation] translateFromEnglish failed, using original:", err);

@@ -4,6 +4,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Button } from "@/components/ui/button";
 import { Loader2, Ruler } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { toast } from "sonner";
 
 export default function PipeMeasurementCalculator({ pipe, onUpdate }) {
@@ -45,7 +46,7 @@ CRITICAL RULES:
 
 Return JSON with ONLY the missing measurements and geometry details you found verified data for. Include dimensions_found=true and dimensions_source if you found any verified measurements.`;
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt,
         add_context_from_internet: true,
         response_json_schema: {
@@ -68,7 +69,7 @@ Return JSON with ONLY the missing measurements and geometry details you found ve
             notes: { type: ["string", "null"] }
           }
         }
-      });
+      }, { feature: 'pipe.measurement_calc', module: 'pipekeeper' });
 
       // Filter out null values and existing measurements
       const updates = {};

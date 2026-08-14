@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, Loader2, Search, Edit, ArrowLeftRight } from "lucide-react";
 import FormSection from '@/components/forms/FormSection';
 import { base44 } from "@/api/base44Client";
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import PipeSearch from "@/components/ai/PipeSearch";
 import PhotoIdentifier from "@/components/ai/PhotoIdentifier";
 import ImageCropper from "@/components/pipes/ImageCropper";
@@ -168,7 +169,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
     }
 
     try {
-      const uploadPromises = files.map(file => base44.integrations.Core.UploadFile({ file }));
+      const uploadPromises = files.map(file => trackedUploadFile({ file }, { feature: 'pipe.form_upload', module: 'pipekeeper' }));
       const results = await Promise.all(uploadPromises);
       const urls = results.map(r => r.file_url);
 
@@ -204,7 +205,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       const file = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
       
       // Upload
-      const result = await base44.integrations.Core.UploadFile({ file });
+      const result = await trackedUploadFile({ file }, { feature: 'pipe.form_upload', module: 'pipekeeper' });
       
       // If editing existing photo, replace it
       if (editingPhotoIndex !== null) {

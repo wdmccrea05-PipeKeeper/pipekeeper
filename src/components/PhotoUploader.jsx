@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Image as ImageIcon, X, Loader2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from '@/api/base44Client';
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import { toast } from 'sonner';
 
@@ -54,7 +55,7 @@ export default function PhotoUploader({
       const res = await fetch(croppedDataUrl);
       const blob = await res.blob();
       const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await trackedUploadFile({ file }, { feature: 'photo.upload', module: 'shared' });
       const newPhotos = [...existingPhotos, file_url];
       if (typeof onPhotosSelected === 'function') onPhotosSelected(newPhotos);
       didSucceed = true;

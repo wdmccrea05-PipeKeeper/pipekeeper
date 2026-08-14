@@ -18,6 +18,7 @@
  */
 
 import { base44 } from '@/api/base44Client';
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import {
   IMAGE_SEARCH_CONFIG,
   isSerpApiConfigured,
@@ -124,11 +125,11 @@ export async function runTier1LLMSearch(entityType, fields, options = {}) {
   const prompt = buildTier1LLMPrompt(entityType, fields, options);
 
   try {
-    const result = await base44.integrations.Core.InvokeLLM({
+    const result = await trackedInvokeLLM({
       prompt,
       response_json_schema: LLM_IMAGE_SCHEMA,
       add_context_from_internet: true,
-    });
+    }, { feature: 'catalog.image_search', module: 'shared' });
 
     if (!result || !Array.isArray(result.images)) return [];
     return result.images.filter(Boolean);

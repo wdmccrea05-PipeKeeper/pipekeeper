@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Check, Upload, Loader2, Trash2 } from "lucide-react";
 import { getAvailableBrands } from "@/components/tobacco/TobaccoLogoLibrary";
 import { base44 } from "@/api/base44Client";
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
@@ -98,7 +99,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
     
     setUploading(true);
     try {
-      const result = await base44.integrations.Core.UploadFile({ file });
+      const result = await trackedUploadFile({ file }, { feature: 'blend.logo_upload', module: 'pipekeeper' });
       await base44.entities.TobaccoLogoLibrary.create({
         brand_name: newBrandName.trim(),
         logo_url: result.file_url,

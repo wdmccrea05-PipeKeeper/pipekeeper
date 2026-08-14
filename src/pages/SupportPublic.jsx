@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { trackedSendEmail } from '@/lib/integrationTelemetry';
 import { ChevronDown, ChevronUp, Mail, CheckCircle, AlertCircle } from "lucide-react";
 
 const FAQS = [
@@ -57,11 +58,11 @@ export default function SupportPublic() {
     e.preventDefault();
     setStatus("sending");
     try {
-      await base44.integrations.Core.SendEmail({
+      await trackedSendEmail({
         to: "admin@pipekeeperapp.com",
         subject: `[CollectionKeeper Support] ${form.topic} — from ${form.name}`,
         body: `Topic: ${form.topic}\nName: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`,
-      });
+      }, { feature: 'support.public_email', module: 'shared' });
       setStatus("success");
       setForm({ topic: "General Help", name: "", email: "", message: "" });
     } catch {

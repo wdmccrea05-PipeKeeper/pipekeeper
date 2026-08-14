@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -127,7 +128,7 @@ ${geometryFields.map((f) => `- ${f}: ${pipe[f] || "Unknown"} ${isMissingGeometry
 
 Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return minimal confident suggestions.`;
 
-          const result = await base44.integrations.Core.InvokeLLM({
+          const result = await trackedInvokeLLM({
             prompt,
             file_urls: pipe.photos || [],
             response_json_schema: {
@@ -155,7 +156,7 @@ Only propose values for fields marked "NEEDS UPDATE". Use strict enums. Return m
                 },
               },
             },
-          });
+          }, { feature: 'pipe.batch_measurements', module: 'pipekeeper' });
 
           // Build updates object (only fields that are missing AND proposed with Medium+ confidence)
           const updates = {};

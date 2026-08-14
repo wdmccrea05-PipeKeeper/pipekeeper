@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
+import { trackedSendEmail } from '@/lib/integrationTelemetry';
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -130,12 +131,12 @@ Message:
 ${formData.message}
       `;
 
-      await base44.integrations.Core.SendEmail({
+      await trackedSendEmail({
         to: SUPPORT_EMAIL,
         subject: `[Support] ${formData.topic} — from ${formData.name}`,
         body: emailBody,
         from_name: "CollectionKeeper Support Form",
-      });
+      }, { feature: 'support.email', module: 'shared' });
 
       setSubmitted(true);
       setFormData({ topic: "", name: "", email: user?.email || "", message: "" });

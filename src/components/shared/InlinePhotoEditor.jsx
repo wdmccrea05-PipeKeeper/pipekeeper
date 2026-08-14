@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Camera, ImagePlus, Pencil, X, Loader2, BookImage, Search } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import { Input } from '@/components/ui/input';
 import { findInternalImageMatches } from '@/lib/images/imageLibraryMatcher';
@@ -214,7 +215,7 @@ export default function InlinePhotoEditor({
 
   // Upload a File object, returns the remote URL
   async function uploadFile(file) {
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await trackedUploadFile({ file }, { feature: 'photo.inline_edit', module: 'shared' });
     return file_url;
   }
 

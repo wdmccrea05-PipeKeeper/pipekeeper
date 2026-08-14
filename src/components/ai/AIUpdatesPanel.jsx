@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useNavigate } from "@/components/utils/navigation";
 import { buildArtifactFingerprint } from "@/components/utils/fingerprint";
@@ -266,7 +267,7 @@ ${blendsToUpdate
 
 Return JSON in the requested schema with updates ONLY for blends that should change categories.`;
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt,
         response_json_schema: {
           type: "object",
@@ -286,7 +287,7 @@ Return JSON in the requested schema with updates ONLY for blends that should cha
             },
           },
         },
-      });
+      }, { feature: 'whiskey.ai_updates', module: 'whiskeykeeper' });
 
       const updates = Array.isArray(result?.updates) ? result.updates : [];
       if (updates.length === 0) {
@@ -349,7 +350,7 @@ Existing: ${pipe.length_mm ? `Length: ${pipe.length_mm}mm` : ""} ${
 
 CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT estimate or guess. Return null if no verified data exists.`;
 
-            const result = await base44.integrations.Core.InvokeLLM({
+            const result = await trackedInvokeLLM({
               prompt,
               add_context_from_internet: true,
               response_json_schema: {
@@ -366,7 +367,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
                   dimensions_source: { type: ["string", "null"] },
                 },
               },
-            });
+            }, { feature: 'whiskey.ai_updates', module: 'whiskeykeeper' });
 
             const updates = {};
             let foundAny = false;

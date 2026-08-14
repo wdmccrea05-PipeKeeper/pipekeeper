@@ -162,4 +162,42 @@ export async function trackedUploadFile(params, attribution = {}) {
   }
 }
 
+/**
+ * Tracked SendEmail — wraps base44.integrations.Core.SendEmail with telemetry.
+ *
+ * @param {Object} params - SendEmail parameters { to, subject, body }
+ * @param {Object} attribution - Telemetry attribution { feature, module, ... }
+ * @returns {Promise<any>}
+ */
+export async function trackedSendEmail(params, attribution = {}) {
+  const startTime = Date.now();
+
+  try {
+    const result = await base44.integrations.Core.SendEmail(params);
+
+    logIntegrationEvent({
+      ...attribution,
+      operation: 'SendEmail',
+      success: true,
+      durationMs: Date.now() - startTime,
+    });
+
+    return result;
+  } catch (error) {
+    const category = classifyIntegrationError(error);
+
+    logIntegrationEvent({
+      ...attribution,
+      operation: 'SendEmail',
+      success: false,
+      durationMs: Date.now() - startTime,
+      errorCategory: category,
+      errorMessage: error?.message,
+    });
+
+    error._integrationErrorCategory = category;
+    throw error;
+  }
+}
+
 export { classifyIntegrationError, normalizeQueryForTelemetry };

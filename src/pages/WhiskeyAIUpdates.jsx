@@ -3,6 +3,7 @@ import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Button } from '@/components/ui/button';
@@ -74,7 +75,7 @@ export default function WhiskeyAIUpdates() {
         if (!bottle.age) missing.push('age');
         if (!bottle.abv) missing.push('abv');
 
-        const result = await base44.integrations.Core.InvokeLLM({
+        const result = await trackedInvokeLLM({
           prompt: `Look up accurate details for this whiskey bottle: "${bottle.name}"${bottle.type ? ` (${bottle.type})` : ''}.
 Fill only these missing fields: ${missing.join(', ')}.
 Return null for any field you cannot verify with confidence.`,
@@ -89,7 +90,7 @@ Return null for any field you cannot verify with confidence.`,
               abv: { type: ['number', 'null'] },
             },
           },
-        });
+        }, { feature: 'whiskey.ai_updates', module: 'whiskeykeeper' });
 
         const updates = {};
         missing.forEach(field => {
@@ -131,7 +132,7 @@ Return null for any field you cannot verify with confidence.`,
     try {
       const types = ['Single Malt', 'Blended Malt', 'Single Grain', 'Blended Grain', 'Blended Whiskey', 'Bourbon', 'Rye', 'Tennessee Whiskey', 'Irish Whiskey', 'Scotch Whisky', 'Other'];
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `Classify each whiskey bottle below to the correct type from this list: ${types.join(', ')}.
 
 Bottles to classify:
@@ -153,7 +154,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
             },
           },
         },
-      });
+      }, { feature: 'whiskey.ai_updates', module: 'whiskeykeeper' });
 
       let updated = 0;
       for (const classification of result?.classifications || []) {
@@ -191,7 +192,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
     try {
       let updated = 0;
       for (const bottle of toUpdate) {
-        const result = await base44.integrations.Core.InvokeLLM({
+        const result = await trackedInvokeLLM({
           prompt: `What is the official ABV (alcohol by volume %) for "${bottle.name}"${bottle.distillery ? ` by ${bottle.distillery}` : ''}? Return null if unknown.`,
           add_context_from_internet: true,
           response_json_schema: {
@@ -200,7 +201,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
               abv: { type: ['number', 'null'] },
             },
           },
-        });
+        }, { feature: 'whiskey.ai_updates', module: 'whiskeykeeper' });
         if (result?.abv && result.abv > 0 && result.abv <= 100) {
           await base44.entities.Bottle.update(bottle.id, { abv: result.abv });
           updated++;
@@ -232,7 +233,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
     try {
       let updated = 0;
       for (const bottle of toUpdate) {
-        const result = await base44.integrations.Core.InvokeLLM({
+        const result = await trackedInvokeLLM({
           prompt: `What is the standard bottle size for "${bottle.name}"${bottle.type ? ` (${bottle.type})` : ''}? Choose from: ${sizes.join(', ')}. Return null if unknown.`,
           add_context_from_internet: true,
           response_json_schema: {
@@ -241,7 +242,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
               bottle_size: { type: ['string', 'null'] },
             },
           },
-        });
+        }, { feature: 'whiskey.ai_updates', module: 'whiskeykeeper' });
         if (result?.bottle_size && sizes.includes(result.bottle_size)) {
           await base44.entities.Bottle.update(bottle.id, { bottle_size: result.bottle_size });
           updated++;

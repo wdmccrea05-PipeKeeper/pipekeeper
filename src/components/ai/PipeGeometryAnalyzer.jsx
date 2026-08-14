@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -163,7 +164,7 @@ Provide detailed reasoning bullets for each suggestion explaining:
 
 NEVER invent values outside the strict enums. Default to Unknown with explanation when uncertain.`;
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt,
         file_urls: selectedPipe.photos || [],
         response_json_schema: {
@@ -211,7 +212,7 @@ NEVER invent values outside the strict enums. Default to Unknown with explanatio
             dimensions_used: { type: "boolean" },
           },
         },
-      });
+      }, { feature: 'pipe.geometry_analysis', module: 'pipekeeper' });
 
       // Convert to suggestions format for UI
       const suggestions = [];

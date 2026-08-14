@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
 import { Search, Barcode, Camera, Loader2, ArrowLeft } from "lucide-react";
 import ExternalItemSearch from "@/components/session/ExternalItemSearch";
 
@@ -106,12 +107,12 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
           : itemType === "cigar"
           ? "premium cigar (brand, vitola, and line)"
           : "whiskey or spirits bottle";
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `Look up UPC/EAN barcode "${code}" for a ${productType}. Return the product name and details if found.`,
         add_context_from_internet: true,
         response_json_schema: UPC_SCHEMA[itemType] || UPC_SCHEMA.bottle,
         model: "gemini_3_flash",
-      });
+      }, { feature: 'session.external_item', module: 'shared' });
       if (result?.name || result?.brand) {
         onSelect({ ...result, item_type: itemType });
       } else {
@@ -130,7 +131,7 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
     setPhotoLoading(true);
     setPhotoError("");
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await trackedUploadFile({ file }, { feature: 'session.external_item', module: 'shared' });
       const productType =
         itemType === "blend"
           ? "pipe tobacco blend (tin or pouch label)"
@@ -139,11 +140,11 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
           : itemType === "cigar"
           ? "premium cigar (band label, showing brand, line, and vitola)"
           : "pipe (maker, model, and shape)";
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt: `Identify this ${productType} from the photo. Return the product details you can see or infer.`,
         file_urls: [file_url],
         response_json_schema: PHOTO_SCHEMA[itemType] || PHOTO_SCHEMA.bottle,
-      });
+      }, { feature: 'session.external_item', module: 'shared' });
       if (result && (result.name || result.maker || result.model || result.brand)) {
         onSelect({ ...result, item_type: itemType });
       } else {

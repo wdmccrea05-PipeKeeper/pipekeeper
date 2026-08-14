@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
 
 const COLLECTOR_CARD_STYLE = {
   background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
@@ -34,7 +35,7 @@ export default function BottleIdentifier({ onBottleIdentified }) {
     try {
       const uploadedUrls = [];
       for (const file of files) {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const { file_url } = await trackedUploadFile({ file }, { feature: 'photo.whiskey.identification', module: 'whiskeykeeper' });
         uploadedUrls.push(file_url);
       }
       setPhotoUrls(uploadedUrls);
@@ -60,7 +61,7 @@ export default function BottleIdentifier({ onBottleIdentified }) {
       if (distilleryHint) hints.push(`Distillery: ${distilleryHint}`);
       if (typeHint) hints.push(`Type: ${typeHint}`);
 
-      const apiResult = await base44.integrations.Core.InvokeLLM({
+      const apiResult = await trackedInvokeLLM({
         prompt: `Identify this whiskey bottle from the provided images. 
 
 ${hints.length > 0 ? `User provided hints:\n${hints.join('\n')}\n\n` : ''}
@@ -94,7 +95,7 @@ Provide detailed, accurate information based on what you can see in the images.`
             confidence: { type: "string" }
           }
         }
-      });
+      }, { feature: 'photo.whiskey.identification', module: 'whiskeykeeper' });
 
       const bottleData = {
         name: apiResult.name || '',

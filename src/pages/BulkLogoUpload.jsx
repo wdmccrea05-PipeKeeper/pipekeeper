@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
+import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
@@ -47,7 +48,7 @@ export default function BulkLogoUploadPage() {
 
       try {
         // Upload the file
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const { file_url } = await trackedUploadFile({ file }, { feature: 'blend.bulk_logo_upload', module: 'pipekeeper' });
 
         // Check if this brand already exists in the library
         const existing = await base44.entities.TobaccoLogoLibrary.filter({ 

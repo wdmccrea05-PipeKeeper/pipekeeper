@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useNavigate } from "@/components/utils/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -114,7 +115,7 @@ ${blendsToUpdate.map((b) => `- ${b.name} (current: ${b.blend_type || "Unknown"})
 
 Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const result = await trackedInvokeLLM({
         prompt,
         response_json_schema: {
           type: "object",
@@ -132,7 +133,7 @@ Return JSON: { "updates": [ { "name": "...", "new_type": "..." } ] }`;
             },
           },
         },
-      });
+      }, { feature: 'whiskey.ai_updates', module: 'whiskeykeeper' });
 
       const updates = Array.isArray(result?.updates) ? result.updates : [];
       if (updates.length === 0) {
@@ -342,7 +343,7 @@ Return JSON with:
 - sources: [domain names of sources used]
 - message: explanation of what was/wasn't found`;
 
-                        const result = await base44.integrations.Core.InvokeLLM({
+                        const result = await trackedInvokeLLM({
                           prompt,
                           add_context_from_internet: true,
                           response_json_schema: {
@@ -360,7 +361,7 @@ Return JSON with:
                               message: { type: "string" },
                             },
                           },
-                        });
+                        }, { feature: 'whiskey.ai_updates', module: 'whiskeykeeper' });
 
                         if (!result.found || !result.updates || Object.keys(result.updates).length === 0) {
                           setMeasurementLookupState({
