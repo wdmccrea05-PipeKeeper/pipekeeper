@@ -177,12 +177,7 @@ export class InventoryEngine {
   buildWinePayload(formData = {}) {
     return cleanObject({
       quantity: toNumber(formData.quantity),
-      bottle_status: formData.status || STATUS_TYPES.UNOPENED,
-      storage: formData.storage || STORAGE_TYPES.BAR,
       purchase_price: toNumber(formData.purchasePrice),
-      acquisition_method: formData.acquisitionMethod || undefined,
-      cellared_date:
-        formData.storage === STORAGE_TYPES.CELLAR ? formData.cellarDate || undefined : undefined,
     });
   }
 
