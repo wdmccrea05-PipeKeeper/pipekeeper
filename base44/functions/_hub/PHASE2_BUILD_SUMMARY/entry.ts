@@ -1,4 +1,4 @@
-COLLECTIONKEEPER HUB — PHASE 2 BUILD COMPLETE
+export default `COLLECTIONKEEPER HUB — PHASE 2 BUILD COMPLETE
 
 ═══════════════════════════════════════════════════════════════════════════════
 
@@ -185,7 +185,7 @@ AGGREGATION:
 
 ACTIVITY OBJECT:
 {
-  id: 'smoking-${log.id}',
+  id: 'smoking-\${log.id}',
   type: 'smoking',                  // Type: smoking, tasting, etc.
   module: 'pipes',                  // Source module
   date: log.date,
@@ -319,4 +319,4 @@ Extract Keeper Core Services:
 This will make the ecosystem truly cohesive and reduce code duplication
 across modules.
 
-═══════════════════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════════════════`;

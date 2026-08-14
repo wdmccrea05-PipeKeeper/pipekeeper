@@ -1,4 +1,4 @@
-# MODULE EXPERIENCE EXPANSION PASS — COMPLETION SUMMARY
+export default `# MODULE EXPERIENCE EXPANSION PASS — COMPLETION SUMMARY
 
 **Completed:** 2026-03-14  
 **Scope:** In-Module Quick Launch + WhiskeyKeeper AI Collection Tools
@@ -121,7 +121,7 @@ All 10 acceptance criteria have been met:
 - **Insights:** Navigate to Insights page
 
 **Implementation:**
-- Uses shared `ModuleQuickLaunch` component
+- Uses shared \`ModuleQuickLaunch\` component
 - 6 action buttons in responsive grid (2 cols mobile, 6 cols desktop)
 - Matches Home page QuickActions visual style exactly
 - Curator icon uses custom image, others use Lucide icons
@@ -150,7 +150,7 @@ All 10 acceptance criteria have been met:
 - **Insights:** Navigate to WhiskeyInsights page
 
 **Implementation:**
-- Uses shared `ModuleQuickLaunch` component
+- Uses shared \`ModuleQuickLaunch\` component
 - 6 action buttons in responsive grid (2 cols mobile, 6 cols desktop)
 - Matches Home page QuickActions and PipeKeeper Quick Launch styles exactly
 - Integrated modals and sheets for AI workflows
@@ -165,7 +165,7 @@ All 10 acceptance criteria have been met:
 1. User clicks "Quick Search Bottle"
 2. Dialog opens with search input
 3. User types: "Lagavulin 16" (example)
-4. Click Search → LLM queries web with `add_context_from_internet: true`
+4. Click Search → LLM queries web with \`add_context_from_internet: true\`
 5. Results display with full metadata cards
 6. User clicks "Add to Collection" on a result
 7. Bottle record created with autofilled data:
@@ -184,7 +184,7 @@ All 10 acceptance criteria have been met:
 4. Photos upload to server, URLs stored
 5. Optional: User adds hints (name, distillery, type)
 6. Click "Identify Bottle"
-7. LLM vision analyzes images with `file_urls` parameter
+7. LLM vision analyzes images with \`file_urls\` parameter
 8. Returns structured bottle data (name, distillery, region, type, age, ABV, etc.)
 9. Sheet closes, Quick Add sheet opens with pre-filled BottleForm
 10. User reviews autofilled data (can edit any field)
@@ -197,8 +197,8 @@ All 10 acceptance criteria have been met:
 ## BOTTLE LOOKUP (How It Works)
 
 **QuickSearchBottle (AI-Powered Search):**
-- Uses `base44.integrations.Core.InvokeLLM`
-- Parameter: `add_context_from_internet: true`
+- Uses \`base44.integrations.Core.InvokeLLM\`
+- Parameter: \`add_context_from_internet: true\`
 - Prompt: Searches for whiskey by name/distillery/brand
 - Returns JSON schema with structured bottle metadata
 - Fields autofilled from search results:
@@ -215,9 +215,9 @@ All 10 acceptance criteria have been met:
   * production_status (current, discontinued, limited)
 
 **BottleIdentifier (Photo-Based AI):**
-- Uses `base44.integrations.Core.InvokeLLM` with `file_urls`
+- Uses \`base44.integrations.Core.InvokeLLM\` with \`file_urls\`
 - User uploads label/bottle photos
-- Photos uploaded via `Core.UploadFile`, URLs passed to LLM
+- Photos uploaded via \`Core.UploadFile\`, URLs passed to LLM
 - LLM vision analyzes images and extracts:
   * Visible text on label
   * Brand/distillery identification
@@ -268,7 +268,7 @@ All 10 acceptance criteria have been met:
 3. Two upload options:
    - Upload Photos (file picker)
    - Take Photo (camera capture on mobile)
-4. Files uploaded via `base44.integrations.Core.UploadFile`
+4. Files uploaded via \`base44.integrations.Core.UploadFile\`
 5. File URLs stored in component state
 6. On "Identify Bottle" click, URLs passed to LLM
 7. LLM processes images and returns data
@@ -292,7 +292,7 @@ All 10 acceptance criteria have been met:
 - Fully functional, unchanged
 
 ✅ **Quick Launch → Add Bottle:**
-- Click → Navigates to `/Whiskey?action=add`
+- Click → Navigates to \`/Whiskey?action=add\`
 - URL parameter triggers form open
 - Identical to clicking header button
 - Standard form flow maintained
@@ -335,12 +335,12 @@ All 10 acceptance criteria have been met:
 All new components match the canonical Home page style:
 
 ### Color Palette:
-- Background: `linear-gradient(145deg, rgba(52, 37, 24, 0.75), rgba(42, 30, 20, 0.88))`
-- Borders: `rgba(120, 90, 65, 0.32)`
-- Box Shadow: `0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12)`
-- Accent Gold: `rgba(180, 140, 75, 0.95)`
-- Text Primary: `#F5F1E7`
-- Text Secondary: `rgba(224, 216, 200, 0.75)`
+- Background: \`linear-gradient(145deg, rgba(52, 37, 24, 0.75), rgba(42, 30, 20, 0.88))\`
+- Borders: \`rgba(120, 90, 65, 0.32)\`
+- Box Shadow: \`0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12)\`
+- Accent Gold: \`rgba(180, 140, 75, 0.95)\`
+- Text Primary: \`#F5F1E7\`
+- Text Secondary: \`rgba(224, 216, 200, 0.75)\`
 
 ### Typography:
 - Headers: Georgia serif, 4xl bold
@@ -444,7 +444,7 @@ All new components match the canonical Home page style:
 ## TECHNICAL ARCHITECTURE
 
 ### AI Integration Pattern:
-```javascript
+\`\`\`javascript
 // Quick Search (Web Context)
 const result = await base44.integrations.Core.InvokeLLM({
   prompt: "Search for whiskey: [user query]",
@@ -458,7 +458,7 @@ const result = await base44.integrations.Core.InvokeLLM({
   file_urls: [uploadedPhotoUrls],
   response_json_schema: { /* structured bottle schema */ }
 });
-```
+\`\`\`
 
 ### State Management:
 - TanStack Query for server state
@@ -468,7 +468,7 @@ const result = await base44.integrations.Core.InvokeLLM({
 - Sheet/Dialog modals for forms
 
 ### Navigation Pattern:
-- Quick Launch actions use `navigate()` or `window.location.href`
+- Quick Launch actions use \`navigate()\` or \`window.location.href\`
 - URL parameters (action=add) trigger form open on mount
 - Clean URL after form opens (replaceState)
 - Module nav persists across all module pages
@@ -581,4 +581,4 @@ All code is production-ready:
 
 **Status:** COMPLETE ✅  
 **Quality:** PRODUCTION-READY ✅  
-**Module Parity:** ACHIEVED ✅
+**Module Parity:** ACHIEVED ✅`;
