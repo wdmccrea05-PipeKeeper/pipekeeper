@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { trackedInvokeLLM } from '../../shared/integrationTelemetry.ts';
 
 const BATCH_SIZE = 50;
 const CHECKPOINT_PATH = '/tmp/i18n_generation_checkpoint.json';
@@ -37,7 +38,7 @@ ${JSON.stringify(
 Output only valid JSON, no commentary, keys unchanged, values in "${locale}" language.`;
 
   try {
-    const result = await base44.integrations.Core.InvokeLLM({
+    const result = await trackedInvokeLLM(base44, {
       prompt,
       response_json_schema: {
         type: 'object',
@@ -46,7 +47,7 @@ Output only valid JSON, no commentary, keys unchanged, values in "${locale}" lan
           return acc;
         }, {}),
       },
-    });
+    }, { feature: 'i18n.generate_missing', module: 'shared' });
 
     return result || {};
   } catch (error) {

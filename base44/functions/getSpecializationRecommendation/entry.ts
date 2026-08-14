@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { trackedInvokeLLM } from '../../shared/integrationTelemetry.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -212,7 +213,7 @@ Return JSON:
   "blend_coverage_gaps": string[]
 }`;
 
-    const response = await base44.integrations.Core.InvokeLLM({
+    const response = await trackedInvokeLLM(base44, {
       prompt,
       response_json_schema: {
         type: "object",
@@ -248,7 +249,7 @@ Return JSON:
         },
         required: ["recommended_specializations", "reasoning", "collection_fit"]
       }
-    });
+    }, { feature: 'pipe.specialization', module: 'pipekeeper' });
 
     return Response.json({
       success: true,

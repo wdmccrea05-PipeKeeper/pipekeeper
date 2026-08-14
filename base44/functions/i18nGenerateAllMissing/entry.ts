@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { trackedInvokeLLM } from '../../shared/integrationTelemetry.ts';
 
 const MISSING_KEYS_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/cf7882bca_pk32_missing_keys.json";
 
@@ -78,13 +79,13 @@ Return format:
   "another.key": "another translation"
 }`;
 
-        const result = await base44.integrations.Core.InvokeLLM({
+        const result = await trackedInvokeLLM(base44, {
           prompt,
           response_json_schema: {
             type: "object",
             additionalProperties: { type: "string" }
           }
-        });
+        }, { feature: 'i18n.generate_all', module: 'shared' });
 
         Object.assign(localeTranslations, result);
       }

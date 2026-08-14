@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { trackedInvokeLLM } from '../../shared/integrationTelemetry.ts';
 
 /**
  * Automated i18n backfill function
@@ -44,13 +45,13 @@ ${keys.slice(0, 30).join(', ')}${keys.length > 30 ? '... (and ' + (keys.length -
 **Output format:** { "key1": "translated value 1", "key2": "translated value 2", ... }`;
 
   try {
-    const response = await base44.integrations.Core.InvokeLLM({
+    const response = await trackedInvokeLLM(base44, {
       prompt,
       response_json_schema: {
         type: 'object',
         additionalProperties: { type: 'string' }
       }
-    });
+    }, { feature: 'i18n.auto_translate', module: 'shared' });
     return response || {};
   } catch (error) {
     console.error(`Translation failed for locale ${locale}:`, error.message);

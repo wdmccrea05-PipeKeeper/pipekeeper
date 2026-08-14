@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { trackedInvokeLLM } from '../../shared/integrationTelemetry.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -59,7 +60,7 @@ Return JSON with this structure:
 }`;
 
         // Call AI with web search enabled
-        const aiResult = await base44.integrations.Core.InvokeLLM({
+        const aiResult = await trackedInvokeLLM(base44, {
           prompt,
           add_context_from_internet: true,
           response_json_schema: {
@@ -74,7 +75,7 @@ Return JSON with this structure:
               ai_projection_36m: { type: "number" }
             }
           }
-        });
+        }, { feature: 'blend.value_estimate', module: 'pipekeeper' });
 
         // Update blend with AI valuation
         const updateData = {

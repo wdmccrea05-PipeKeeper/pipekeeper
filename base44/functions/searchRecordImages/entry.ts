@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { trackedInvokeLLM } from '../../shared/integrationTelemetry.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -51,7 +52,7 @@ Deno.serve(async (req) => {
       searchPrompt = parts.join(' ') || query;
     }
 
-    const result = await base44.integrations.Core.InvokeLLM({
+    const result = await trackedInvokeLLM(base44, {
       prompt: `Find real product image URLs for: "${searchPrompt}".
 Return a JSON object with a "results" array of 6-8 image results. Each result must have:
 - "url": a direct image URL (jpg/png/webp) from a reliable source like ${sourceHint}
@@ -77,7 +78,7 @@ Prefer official product photography over editorial images.`,
           },
         },
       },
-    });
+    }, { feature: 'catalog.image_search', module: 'shared' });
 
     const rawResults = result?.results || [];
 

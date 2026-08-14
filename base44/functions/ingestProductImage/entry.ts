@@ -20,6 +20,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { trackedUploadFile } from '../../shared/integrationTelemetry.ts';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -268,7 +269,7 @@ Deno.serve(async (req) => {
           extractedFilename,
           { type: extractedContentType.split(';')[0].trim() },
         );
-        const extractedUpload = await base44.integrations.Core.UploadFile({ file: extractedFile });
+        const extractedUpload = await trackedUploadFile(base44, { file: extractedFile }, { feature: 'catalog.image_ingest', module: 'shared' });
         const extractedFileUrl = extractedUpload?.file_url;
         if (!extractedFileUrl) throw new Error('No file_url returned from UploadFile');
 
@@ -312,7 +313,7 @@ Deno.serve(async (req) => {
         filename,
         { type: contentType.split(';')[0].trim() },
       );
-      const uploadResult = await base44.integrations.Core.UploadFile({ file });
+      const uploadResult = await trackedUploadFile(base44, { file }, { feature: 'catalog.image_ingest', module: 'shared' });
       fileUrl = uploadResult?.file_url;
       if (!fileUrl) throw new Error('No file_url returned from UploadFile');
     } catch (uploadError) {

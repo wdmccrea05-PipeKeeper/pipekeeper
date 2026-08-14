@@ -11,6 +11,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { trackedInvokeLLM } from '../../shared/integrationTelemetry.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -79,7 +80,7 @@ Rules:
 
     let aiResult = null;
     try {
-      aiResult = await base44.integrations.Core.InvokeLLM({
+      aiResult = await trackedInvokeLLM(base44, {
         prompt,
         add_context_from_internet: true,
         response_json_schema: {
@@ -101,7 +102,7 @@ Rules:
             },
           },
         },
-      });
+      }, { feature: 'whiskey.auto_enrich', module: 'whiskeykeeper' });
     } catch (llmErr) {
       console.error('[autoEnrichBottleMetadata] LLM call failed:', llmErr);
       return Response.json({ enriched: 0, skipped: toEnrich.length, errors: 1 });
