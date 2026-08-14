@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Search, Check, Upload, Loader2, Trash2 } from "lucide-react";
@@ -14,6 +14,7 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
   const [uploading, setUploading] = useState(false);
   const [newBrandName, setNewBrandName] = useState('');
   const [newBlendName, setNewBlendName] = useState('');
+  const [expandedGroups, setExpandedGroups] = useState({});
   const queryClient = useQueryClient();
   
   const { data: customLogos = [] } = useQuery({
@@ -100,25 +101,6 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
         .filter(item => item.score > 0)
         .sort((a, b) => b.score - a.score);
 
-  // When multiple logos share the same manufacturer (no blend name), add a
-  // distinguishable index number so users can tell them apart. This does NOT
-  // invent blend names — it only numbers existing entries by their position.
-  const brandIndexMap = useMemo(() => {
-    const counts = {};
-    filteredBrands.forEach(b => {
-      if (!b.blendName) counts[b.brand] = (counts[b.brand] || 0) + 1;
-    });
-    const map = {};
-    const counters = {};
-    filteredBrands.forEach(b => {
-      if (!b.blendName && counts[b.brand] > 1) {
-        counters[b.brand] = (counters[b.brand] || 0) + 1;
-        map[b.logo] = { index: counters[b.brand], total: counts[b.brand] };
-      }
-    });
-    return map;
-  }, [filteredBrands]);
-
   const handleSelect = (brandObj) => {
     onSelect(brandObj.logo);
     onClose();
@@ -157,6 +139,81 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
     if (logoEntry) {
       deleteMutation.mutate(logoEntry.id);
     }
+  };
+
+  // Split into identified (has blend name) and unidentified (manufacturer-only)
+  const isSearching = searchQuery.trim() !== '';
+  const identifiedEntries = filteredBrands.filter(b => b.blendName);
+  const unidentifiedEntries = filteredBrands.filter(b => !b.blendName);
+
+  // Group unidentified entries by manufacturer
+  const groupMap = {};
+  unidentifiedEntries.forEach(b => {
+    if (!groupMap[b.brand]) groupMap[b.brand] = [];
+    groupMap[b.brand].push(b);
+  });
+  const groupedUnidentified = Object.entries(groupMap)
+    .map(([brand, entries]) => ({ brand, entries }))
+    .sort((a, b) => a.brand.localeCompare(b.brand));
+
+  // Render a single logo tile — identified entries show blend name as primary,
+  // unidentified entries show "Unidentified stock image" as primary.
+  // Manufacturer is always shown as the secondary label.
+  const renderTile = (brandObj) => {
+    const isSelected = currentLogo === brandObj.logo;
+    const primaryLabel = brandObj.blendName || 'Unidentified stock image';
+    const secondaryLabel = brandObj.brand;
+
+    return (
+      <div key={`${brandObj.brand}-${brandObj.blendName || ''}-${brandObj.logo}`} className="flex flex-col">
+        <button
+          onClick={() => handleSelect(brandObj)}
+          className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 overflow-hidden ${
+            isSelected
+              ? 'border-amber-600 bg-amber-100'
+              : 'border-stone-200 bg-white'
+          }`}
+        >
+          <div className="w-full h-full flex items-center justify-center p-3 bg-white">
+            <img
+              src={brandObj.logo}
+              alt={primaryLabel}
+              className="max-w-full max-h-full object-contain"
+              crossOrigin="anonymous"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                const parent = e.target.parentElement;
+                parent.innerHTML = `<div class="text-amber-600 text-4xl">🍂</div>`;
+              }}
+            />
+          </div>
+          {isSelected && (
+            <div className="absolute top-2 right-2 bg-amber-600 rounded-full p-1">
+              <Check className="w-3 h-3 text-white" />
+            </div>
+          )}
+          {brandObj.isCustom && (
+            <button
+              onClick={(e) => handleDeleteCustom(e, brandObj)}
+              className="absolute bottom-2 right-2 bg-rose-500/90 hover:bg-rose-600 rounded-full p-1"
+            >
+              <Trash2 className="w-3 h-3 text-white" />
+            </button>
+          )}
+        </button>
+        <div className="mt-1 px-1 text-center">
+          <p className="text-xs font-medium text-stone-800 truncate leading-tight">
+            {primaryLabel}
+          </p>
+          {secondaryLabel && (
+            <p className="text-[10px] text-stone-500 truncate leading-tight">
+              {secondaryLabel}
+            </p>
+          )}
+          {brandObj.isCustom && <span className="text-amber-600 text-[10px]">✦</span>}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -219,78 +276,75 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {filteredBrands.map((brandObj) => {
-                const isSelected = currentLogo === brandObj.logo;
-                // Display: blend name as primary label when available, manufacturer as secondary
-                const primaryLabel = brandObj.blendName || brandObj.brand;
-                const secondaryLabel = brandObj.blendName ? brandObj.brand : null;
-                // Index suffix for manufacturer-only entries sharing a brand (e.g., "· 1/142")
-                const indexInfo = brandIndexMap[brandObj.logo];
-                
-                return (
-                  <div key={`${brandObj.brand}-${brandObj.blendName || ''}-${brandObj.isCustom}`} className="flex flex-col">
-                    <button
-                      onClick={() => handleSelect(brandObj)}
-                      className={`relative aspect-square rounded-lg border-2 transition-all hover:border-amber-500 overflow-hidden ${
-                        isSelected 
-                          ? 'border-amber-600 bg-amber-100' 
-                          : 'border-stone-200 bg-white'
-                      }`}
-                    >
-                      <div className="w-full h-full flex items-center justify-center p-3 bg-white">
-                        <img 
-                          src={brandObj.logo} 
-                          alt={primaryLabel}
-                          className="max-w-full max-h-full object-contain"
-                          crossOrigin="anonymous"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            const parent = e.target.parentElement;
-                            parent.innerHTML = `<div class="text-amber-600 text-4xl">🍂</div>`;
-                          }}
-                        />
-                      </div>
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 bg-amber-600 rounded-full p-1">
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                      )}
-                      {brandObj.isCustom && (
-                        <button
-                          onClick={(e) => handleDeleteCustom(e, brandObj)}
-                          className="absolute bottom-2 right-2 bg-rose-500/90 hover:bg-rose-600 rounded-full p-1"
-                        >
-                          <Trash2 className="w-3 h-3 text-white" />
-                        </button>
-                      )}
-                    </button>
-                    <div className="mt-1 px-1 text-center">
-                      <p className="text-xs font-medium text-stone-800 truncate leading-tight">
-                        {primaryLabel}
-                      </p>
-                      {secondaryLabel && (
-                        <p className="text-[10px] text-stone-500 truncate leading-tight">
-                          {secondaryLabel}
-                        </p>
-                      )}
-                      {indexInfo && (
-                        <p className="text-[10px] text-stone-400 truncate leading-tight">
-                          · {indexInfo.index}/{indexInfo.total}
-                        </p>
-                      )}
-                      {brandObj.isCustom && <span className="text-amber-600 text-[10px]">✦</span>}
-                    </div>
+            {/* Search mode: flat grid of all matching entries */}
+            {isSearching && (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {filteredBrands.map((brandObj) => renderTile(brandObj))}
+                </div>
+                {filteredBrands.length === 0 && (
+                  <div className="text-center py-12 text-stone-500">
+                    <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No matches found for "{searchQuery}"</p>
                   </div>
-                );
-              })}
-            </div>
-            
-            {filteredBrands.length === 0 && (
-              <div className="text-center py-12 text-stone-500">
-                <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No matches found for "{searchQuery}"</p>
-              </div>
+                )}
+              </>
+            )}
+
+            {/* Browse mode: identified entries + collapsed manufacturer groups */}
+            {!isSearching && (
+              <>
+                {identifiedEntries.length > 0 && (
+                  <>
+                    <p className="text-xs font-semibold text-stone-600 mb-2">
+                      Identified blends ({identifiedEntries.length})
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
+                      {identifiedEntries.map((brandObj) => renderTile(brandObj))}
+                    </div>
+                  </>
+                )}
+
+                {groupedUnidentified.length > 0 && (
+                  <>
+                    <p className="text-xs font-semibold text-stone-600 mb-2">
+                      Stock images by manufacturer ({groupedUnidentified.length})
+                    </p>
+                    <div className="space-y-4">
+                      {groupedUnidentified.map(({ brand, entries }) => {
+                        const isExpanded = expandedGroups[brand];
+                        return (
+                          <div key={brand}>
+                            <button
+                              onClick={() => setExpandedGroups(prev => ({ ...prev, [brand]: !prev[brand] }))}
+                              className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors mb-2"
+                            >
+                              <span className="text-sm font-medium text-stone-700">
+                                {brand} · {entries.length} image{entries.length > 1 ? 's' : ''}
+                              </span>
+                              <span className="text-xs text-stone-500">
+                                {isExpanded ? 'Collapse' : 'Show all'}
+                              </span>
+                            </button>
+                            {isExpanded && (
+                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                {entries.map((brandObj) => renderTile(brandObj))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {identifiedEntries.length === 0 && groupedUnidentified.length === 0 && (
+                  <div className="text-center py-12 text-stone-500">
+                    <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No images available</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
