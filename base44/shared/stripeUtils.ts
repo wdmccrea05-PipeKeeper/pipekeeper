@@ -69,3 +69,12 @@ export function safeStripeError(e: any): string {
 export async function stripeSanityCheck(stripe: Stripe) {
   // Optional: verify client works
 }
+
+
+export function stripeKeyErrorResponse(e: any) {
+  return {
+    ok: false,
+    error: "STRIPE_KEY_ERROR",
+    message: String(e?.message || e || "Stripe key configuration error")
+  };
+}
