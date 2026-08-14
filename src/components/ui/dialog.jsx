@@ -52,11 +52,12 @@ const DialogContent = React.forwardRef(function DialogContent(
         {children}
         <DialogPrimitive.Close
           className={cn(
-            "absolute right-5 top-5 rounded-xl p-1.5",
+            "absolute right-5 top-5 rounded-xl p-1.5 flex items-center justify-center",
             "border border-[rgba(180,140,75,0.22)] bg-[rgba(0,0,0,0.20)]",
             "text-[rgba(224,216,200,0.65)] hover:text-[#F5F1E7] hover:bg-[rgba(255,255,255,0.06)]",
             "focus:outline-none transition-colors"
           )}
+          style={{ minHeight: 44, minWidth: 44 }}
         >
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>

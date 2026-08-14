@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Search, Check, Upload, Loader2, Trash2 } from "lucide-react";
@@ -99,6 +99,25 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
         })
         .filter(item => item.score > 0)
         .sort((a, b) => b.score - a.score);
+
+  // When multiple logos share the same manufacturer (no blend name), add a
+  // distinguishable index number so users can tell them apart. This does NOT
+  // invent blend names — it only numbers existing entries by their position.
+  const brandIndexMap = useMemo(() => {
+    const counts = {};
+    filteredBrands.forEach(b => {
+      if (!b.blendName) counts[b.brand] = (counts[b.brand] || 0) + 1;
+    });
+    const map = {};
+    const counters = {};
+    filteredBrands.forEach(b => {
+      if (!b.blendName && counts[b.brand] > 1) {
+        counters[b.brand] = (counters[b.brand] || 0) + 1;
+        map[b.logo] = { index: counters[b.brand], total: counts[b.brand] };
+      }
+    });
+    return map;
+  }, [filteredBrands]);
 
   const handleSelect = (brandObj) => {
     onSelect(brandObj.logo);
@@ -206,6 +225,8 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
                 // Display: blend name as primary label when available, manufacturer as secondary
                 const primaryLabel = brandObj.blendName || brandObj.brand;
                 const secondaryLabel = brandObj.blendName ? brandObj.brand : null;
+                // Index suffix for manufacturer-only entries sharing a brand (e.g., "· 1/142")
+                const indexInfo = brandIndexMap[brandObj.logo];
                 
                 return (
                   <div key={`${brandObj.brand}-${brandObj.blendName || ''}-${brandObj.isCustom}`} className="flex flex-col">
@@ -251,6 +272,11 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
                       {secondaryLabel && (
                         <p className="text-[10px] text-stone-500 truncate leading-tight">
                           {secondaryLabel}
+                        </p>
+                      )}
+                      {indexInfo && (
+                        <p className="text-[10px] text-stone-400 truncate leading-tight">
+                          · {indexInfo.index}/{indexInfo.total}
                         </p>
                       )}
                       {brandObj.isCustom && <span className="text-amber-600 text-[10px]">✦</span>}

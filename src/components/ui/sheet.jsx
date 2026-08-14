@@ -58,7 +58,8 @@ const SheetContent = React.forwardRef(({ side = "right", className, children, ..
         />
         {children}
         <SheetPrimitive.Close
-          className="absolute right-4 top-4 rounded-md border border-[rgba(140,105,65,0.35)] bg-black/20 p-1 text-[#D7C9B2] transition-colors hover:bg-white/5 hover:text-white"
+          className="absolute right-4 top-4 rounded-md border border-[rgba(140,105,65,0.35)] bg-black/20 p-1 text-[#D7C9B2] transition-colors hover:bg-white/5 hover:text-white flex items-center justify-center"
+          style={{ minHeight: 44, minWidth: 44 }}
         >
           <X className="h-4 w-4" />
           <span className="sr-only">{t('common.close')}</span>
