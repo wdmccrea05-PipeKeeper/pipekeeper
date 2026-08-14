@@ -98,21 +98,27 @@ function buildRecord(itemType, result) {
     upc: clean(result.upc),
     ean: clean(result.ean),
   };
-  if (itemType === 'wine') return {
-    name: result.name,
-    producer: clean(result.producer || result.winery),
-    vintage: clean(result.vintage) ? Number(result.vintage) : undefined,
-    varietal: clean(result.varietal || result.grape_variety),
-    region: clean(result.region),
-    appellation: clean(result.appellation),
-    style: clean(result.style || result.wine_type) ? String(result.style || result.wine_type).toLowerCase() : undefined,
-    abv: clean(result.abv) ? Number(result.abv) : undefined,
-    notes: clean(result.description || result.notes),
-    purchase_price: clean(result.purchase_price),
-    barcode: clean(result.barcode),
-    upc: clean(result.upc),
-    ean: clean(result.ean),
-  };
+  if (itemType === 'wine') {
+    const WINE_STYLE_ENUM = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
+    const rawStyle = result.style || result.wine_type;
+    const lowerStyle = rawStyle ? String(rawStyle).toLowerCase().trim() : '';
+    const validStyle = lowerStyle
+      ? (WINE_STYLE_ENUM.includes(lowerStyle) ? lowerStyle : 'other')
+      : undefined;
+
+    return {
+      name: result.name,
+      producer: clean(result.producer || result.winery),
+      vintage: clean(result.vintage) ? Number(result.vintage) : undefined,
+      varietal: clean(result.varietal || result.grape_variety),
+      region: clean(result.region),
+      appellation: clean(result.appellation),
+      style: validStyle,
+      abv: clean(result.abv) ? Number(result.abv) : undefined,
+      notes: clean(result.description || result.notes),
+      purchase_price: clean(result.purchase_price),
+    };
+  }
   return { name: result.name };
 }
 
