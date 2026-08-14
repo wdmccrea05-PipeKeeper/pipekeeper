@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { barcodesMatch } from '@/platform/productNormalization';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 const ENTITIES = { blend: 'TobaccoBlend', pipe: 'Pipe', bottle: 'Bottle', cigar: 'Cigar', wine: 'Wine' };
 
@@ -106,9 +107,13 @@ function buildRecord(itemType, result) {
       ? (WINE_STYLE_ENUM.includes(lowerStyle) ? lowerStyle : 'other')
       : undefined;
 
+    // producer is required by the Wine schema — default if the LLM omitted it
+    const producerValue = clean(result.producer || result.winery)
+      || (result.name ? result.name.split(' ')[0] : 'Unknown Producer');
+
     return {
       name: result.name,
-      producer: clean(result.producer || result.winery),
+      producer: producerValue,
       vintage: clean(result.vintage) ? Number(result.vintage) : undefined,
       varietal: clean(result.varietal || result.grape_variety),
       region: clean(result.region),
@@ -116,7 +121,7 @@ function buildRecord(itemType, result) {
       style: validStyle,
       abv: clean(result.abv) ? Number(result.abv) : undefined,
       notes: clean(result.description || result.notes),
-      purchase_price: clean(result.purchase_price),
+      purchase_price: clean(result.purchase_price) ? Number(result.purchase_price) : undefined,
     };
   }
   return { name: result.name };
@@ -189,6 +194,23 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
   const [saving, setSaving] = useState(false);
   const [duplicates, setDuplicates] = useState(null); // null = not checked yet
   const [checkingDups, setCheckingDups] = useState(false);
+  const { user } = useCurrentUser();
+
+  const resolveCreatedBy = async (cleanData) => {
+    if (cleanData.created_by) return;
+    // Prefer the already-fetched current user from the hook (no extra API call)
+    if (user?.email) {
+      cleanData.created_by = user.email;
+      return;
+    }
+    // Fallback: fetch the current user directly
+    try {
+      const me = await base44.auth.me();
+      if (me?.email) cleanData.created_by = me.email;
+    } catch {
+      // last resort — leave unset; create will fail with a clear validation error
+    }
+  };
 
   const handleCreate = async () => {
     setSaving(true);
@@ -209,16 +231,14 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
       const cleanData = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
 
       // Ensure created_by is set (required by Wine and other entities)
-      if (!cleanData.created_by) {
-        const me = await base44.auth.me();
-        if (me?.email) cleanData.created_by = me.email;
-      }
+      await resolveCreatedBy(cleanData);
 
       const record = await base44.entities[ENTITIES[itemType]].create(cleanData);
       toast.success(`${typeLabel} added!`);
       onCreated(record);
     } catch (e) {
-      toast.error(e?.message || 'Failed to create record');
+      console.error('[AddFlowQuickConfirm] create failed:', e, 'payload:', buildRecord(itemType, result));
+      toast.error(e?.message || 'Failed to create record', { duration: 6000 });
     } finally {
       setSaving(false);
       setCheckingDups(false);
@@ -231,15 +251,13 @@ export default function AddFlowQuickConfirm({ itemType, typeLabel, result, onBac
     try {
       const data = buildRecord(itemType, result);
       const cleanData = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
-      if (!cleanData.created_by) {
-        const me = await base44.auth.me();
-        if (me?.email) cleanData.created_by = me.email;
-      }
+      await resolveCreatedBy(cleanData);
       const record = await base44.entities[ENTITIES[itemType]].create(cleanData);
       toast.success(`${typeLabel} added!`);
       onCreated(record);
     } catch (e) {
-      toast.error(e?.message || 'Failed to create record');
+      console.error('[AddFlowQuickConfirm] create-anyway failed:', e, 'payload:', buildRecord(itemType, result));
+      toast.error(e?.message || 'Failed to create record', { duration: 6000 });
     } finally {
       setSaving(false);
     }
