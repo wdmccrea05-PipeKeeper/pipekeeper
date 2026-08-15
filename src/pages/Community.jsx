@@ -49,7 +49,9 @@ function CommunityPageInner() {
     // Key must match Profile page so cache is shared and invalidated together
     queryKey: ['user-profile', user?.id, user?.email],
     queryFn: async () => {
+      // PK_SAFE_QUERY: Current user's profile lookup by email — returns single record
       const byEmail = await base44.entities.UserProfile.filter({ user_email: user?.email }).catch(() => []);
+      // PK_SAFE_QUERY: Current user's profile lookup by created_by — returns single record
       const byCreated = await base44.entities.UserProfile.filter({ created_by: user?.email }).catch(() => []);
       // Deduplicate and pick most recently updated
       const seen = new Set();
@@ -86,6 +88,7 @@ function CommunityPageInner() {
 
   const { data: connections = [] } = useQuery({
     queryKey: ['connections', user?.email],
+    // PK_SAFE_QUERY: Current user's connections — bounded to follower_email
     queryFn: () => base44.entities.UserConnection.filter({ follower_email: user?.email }),
     enabled: !!user?.email,
   });
@@ -93,7 +96,9 @@ function CommunityPageInner() {
   const { data: friendships = [], isLoading: friendshipsLoading } = useQuery({
     queryKey: ['friendships', user?.email],
     queryFn: async () => {
+      // PK_SAFE_QUERY: Current user's sent friendships — bounded to requester_email
       const sent = await base44.entities.Friendship.filter({ requester_email: user?.email });
+      // PK_SAFE_QUERY: Current user's received friendships — bounded to recipient_email
       const received = await base44.entities.Friendship.filter({ recipient_email: user?.email });
       return [...sent, ...received];
     },
@@ -102,6 +107,7 @@ function CommunityPageInner() {
 
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friend-requests', user?.email],
+    // PK_SAFE_QUERY: Current user's pending friend requests — bounded to recipient_email + status
     queryFn: () => base44.entities.Friendship.filter({ recipient_email: user?.email, status: 'pending' }),
     enabled: !!user?.email,
   });
@@ -110,56 +116,57 @@ function CommunityPageInner() {
     queryKey: ['community-unread-messages', user?.email, activeTab],
     queryFn: async () => {
       if (!user?.email) return [];
+      // PK_SAFE_QUERY: Current user's unread messages — bounded to recipient_email + is_read
       return base44.entities.Message.filter({
         recipient_email: user.email,
         is_read: false,
       });
     },
     enabled: !!user?.email,
-    refetchInterval: activeTab === 'inbox' ? 5000 : 30000,
+    refetchInterval: activeTab === 'inbox' ? 15000 : 60000,
+    refetchIntervalInBackground: false,
     retry: false,
   });
 
   const { data: allPublicProfiles = [] } = useQuery({
     queryKey: ['all-public-profiles'],
     queryFn: () => fetchAllEntities(base44.entities.UserProfile, { is_public: true }, '-updated_date', 5000, 200, 'Community:publicProfiles'),
+    staleTime: 60_000,
+  });
+
+  const hasActiveFilters = !!(
+    activeSearchQuery.trim() ||
+    activeLocationFilters.country ||
+    activeLocationFilters.city ||
+    activeLocationFilters.state ||
+    activeLocationFilters.zipCode
+  );
+
+  // Server-side search: delegates filtering to the backend function so the
+  // client only receives matching results — not the entire public profile set.
+  const { data: searchResults = [], isLoading: searchLoading } = useQuery({
+    queryKey: ['community-search', activeSearchQuery, activeLocationFilters],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('searchCommunityProfiles', {
+        query: activeSearchQuery,
+        locationFilters: activeLocationFilters,
+        pageSize: 100,
+      });
+      if (!res?.ok) throw new Error(res?.error || 'Search failed');
+      return res.results || [];
+    },
+    enabled: hasActiveFilters,
+    staleTime: 30_000,
   });
 
   const publicProfiles = useMemo(() => {
-    let filtered = [...allPublicProfiles].filter(p => !blocked.includes(p.user_email));
-    
-    if (activeSearchQuery.trim()) {
-      filtered = filtered.filter(p => 
-        p.display_name?.toLowerCase().includes(activeSearchQuery.toLowerCase()) ||
-        p.user_email?.toLowerCase().includes(activeSearchQuery.toLowerCase())
-      );
+    // When filters are active, use server-side search results (already filtered + blocked-aware)
+    if (hasActiveFilters) {
+      return searchResults;
     }
-    
-    if (activeLocationFilters.country || activeLocationFilters.city || activeLocationFilters.state || activeLocationFilters.zipCode) {
-      filtered = filtered.filter(p => {
-        if (!p.show_location) return false;
-        
-        let matches = true;
-        
-        if (activeLocationFilters.country) {
-          matches = matches && p.country?.toLowerCase().includes(activeLocationFilters.country.toLowerCase());
-        }
-        if (activeLocationFilters.city) {
-          matches = matches && p.city?.toLowerCase().includes(activeLocationFilters.city.toLowerCase());
-        }
-        if (activeLocationFilters.state) {
-          matches = matches && p.state_province?.toLowerCase().includes(activeLocationFilters.state.toLowerCase());
-        }
-        if (activeLocationFilters.zipCode) {
-          matches = matches && p.postal_code?.toLowerCase().includes(activeLocationFilters.zipCode.toLowerCase());
-        }
-        
-        return matches;
-      });
-    }
-    
-    return filtered;
-  }, [allPublicProfiles, activeSearchQuery, activeLocationFilters, blocked]);
+    // No filters: show all public profiles (minus blocked) for the discover grid
+    return [...allPublicProfiles].filter(p => !blocked.includes(p.user_email));
+  }, [allPublicProfiles, searchResults, hasActiveFilters, blocked]);
 
   const followMutation = useMutation({
     mutationFn: (email) => base44.entities.UserConnection.create({

@@ -35,7 +35,9 @@ FILES MODIFIED
 1. components/utils/hubDataHelpers.js (CRITICAL CHANGES)
    
    USER SCOPING:
+   // PK_SAFE_QUERY: documentation example — not a real query
    - Before: base44.entities.Pipe.list() → returns ALL users' data (unsafe)
+   // PK_SAFE_QUERY: documentation example — not a real query
    - After:  base44.entities.Pipe.filter({created_by: userEmail}) → safe
    
    TOBACCO INTEGRATION:
@@ -110,10 +112,12 @@ FILES MODIFIED
 DATA SCOPING PATTERN
 
 BEFORE (Unsafe):
+  // PK_SAFE_QUERY: documentation example — not a real query
   const pipes = await base44.entities.Pipe.list();
   // Returns ALL users' pipes — could expose data
 
 AFTER (Safe):
+  // PK_SAFE_QUERY: documentation example — not a real query
   const pipes = await base44.entities.Pipe.filter({ 
     created_by: userEmail 
   });

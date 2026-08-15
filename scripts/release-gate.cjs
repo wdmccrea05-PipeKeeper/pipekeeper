@@ -45,11 +45,37 @@ runCheck('1.  Duplicate source collision check', () => {
   }
 });
 
-// 2. Unsafe entity query audit
-runCheck('2.  Unsafe entity query audit', () => {
+// 2. Unsafe entity query audit (enforce 0 unexplained HIGH findings)
+runCheck('2.  Unsafe entity query audit (0 HIGH required)', () => {
   try {
-    exec('node scripts/audit-unsafe-queries.cjs', 30000);
-    return 'No HIGH-severity findings';
+    const out = exec('node scripts/audit-unsafe-queries.cjs', 30000);
+    // Verify zero HIGH findings — the audit prints "Total HIGH: N"
+    if (/Total HIGH:\s*[1-9]/.test(out)) {
+      throw new Error('HIGH-severity unsafe queries remain — fix or annotate with PK_SAFE_QUERY');
+    }
+    return '0 HIGH-severity findings (all queries bounded or paginated)';
+  } catch (e) {
+    throw new Error(e.stdout || e.message);
+  }
+});
+
+// 2b. Silent fallback audit (baseline check — fails only if count INCREASES)
+//     Current baseline: 45 production-critical .catch(() => []) patterns.
+//     These are tracked for incremental migration to fetchAllEntities.
+//     The gate fails if the count goes ABOVE the baseline (new regressions).
+const SILENT_FALLBACK_BASELINE = 45;
+runCheck('2b. Silent fallback audit (baseline: ' + SILENT_FALLBACK_BASELINE + ')', () => {
+  try {
+    const out = exec('node scripts/audit-silent-fallbacks.cjs', 30000);
+    const match = out.match(/PRODUCTION_CRITICAL:\s*(\d+)/);
+    const count = match ? parseInt(match[1], 10) : -1;
+    if (count < 0) {
+      throw new Error('Could not parse silent fallback count');
+    }
+    if (count > SILENT_FALLBACK_BASELINE) {
+      throw new Error(`Silent fallback count INCREASED to ${count} (baseline: ${SILENT_FALLBACK_BASELINE}) — new .catch(() => []) in production-critical paths`);
+    }
+    return `${count} production-critical fallbacks (baseline: ${SILENT_FALLBACK_BASELINE}) — no new regressions`;
   } catch (e) {
     throw new Error(e.stdout || e.message);
   }
@@ -122,6 +148,42 @@ runCheck('8.  Pagination / full-fetch tests', () => {
     const out = exec('npx vitest run src/__tests__/paginationFullFetch.test.js --reporter=default 2>&1', 120000);
     if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
     return 'Pagination tests passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
+// 9. Apple JWS verifier security tests
+runCheck('9.  Apple JWS verifier security tests', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/appleJwsVerifierSecurity.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Apple JWS security tests passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
+// 10. Export completeness regression tests
+runCheck('10. Export completeness regression tests', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/exportCompletenessRegression.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Export completeness tests passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
+// 11. Analytics parity regression tests
+runCheck('11. Analytics parity regression tests', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/analyticsParityRegression.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Analytics parity tests passed';
   } catch (e) {
     const out = e.stdout || e.message;
     throw new Error(out.substring(0, 500));
