@@ -16,37 +16,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// ─── 1. CollectionQueryError component ─────────────────────────────────────
-
-describe('CollectionQueryError — error banner behavior', () => {
-  it('renders nothing when isError is false', async () => {
-    const React = await import('react');
-    const { render } = await import('@testing-library/react');
-    const CollectionQueryError = (await import('@/components/ui/CollectionQueryError')).default;
-
-    const { container } = render(
-      React.createElement(CollectionQueryError, { isError: false })
-    );
-    expect(container.firstChild).toBeNull();
-  });
-
-  it('renders error banner with retry button when isError is true', async () => {
-    const React = await import('react');
-    const { render } = await import('@testing-library/react');
-    const CollectionQueryError = (await import('@/components/ui/CollectionQueryError')).default;
-
-    const onRetry = vi.fn();
-    const { getByText } = render(
-      React.createElement(CollectionQueryError, {
-        isError: true,
-        onRetry,
-        label: 'Could not load pipes.',
-      })
-    );
-    expect(getByText('Could not load pipes.')).toBeTruthy();
-    expect(getByText('Retry')).toBeTruthy();
-  });
-});
+// CollectionQueryError component tests live in CollectionQueryError.test.jsx
+// (JSX transform requires .jsx test file extension)
 
 // ─── 2. collectionAggregation — Promise.allSettled partial failure ────────
 

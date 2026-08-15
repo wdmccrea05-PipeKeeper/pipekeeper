@@ -1,15 +1,12 @@
 import React from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
-/**
- * Non-destructive error banner for collection data queries.
- * Shows when isError is true, preserves any existing data underneath.
- * Used across insights pages, hub, and share surfaces to surface
- * data-load failures without overwriting last-known-good state.
- */
+// Non-destructive error banner for collection data queries.
+// Shows when isError is true, preserves any existing data underneath.
+// Used across insights pages, hub, and share surfaces to surface
+// data-load failures without overwriting last-known-good state.
 export default function CollectionQueryError({ isError, onRetry, label, compact = false }) {
-  if (!isError) return null;
-  return (
+  return isError ? (
     <div
       className={`rounded-lg ${compact ? 'p-2.5' : 'p-3'} mb-3`}
       style={{
@@ -41,5 +38,5 @@ export default function CollectionQueryError({ isError, onRetry, label, compact 
         )}
       </div>
     </div>
-  );
+  ) : null;
 }
