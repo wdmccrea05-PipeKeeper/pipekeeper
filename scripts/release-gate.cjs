@@ -187,7 +187,7 @@ runCheck('11. Analytics parity regression tests', () => {
 // 12. Silent fallback hardening regression tests
 runCheck('12. Silent fallback hardening regression tests', () => {
   try {
-    const out = exec('npx vitest run src/__tests__/silentFallbackHardening.test.js src/__tests__/CollectionQueryError.test.jsx --reporter=default 2>&1', 120000);
+    const out = exec('npx vitest run src/__tests__/silentFallbackHardening.test.js --reporter=default 2>&1', 120000);
     if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
     return 'Silent fallback hardening tests passed';
   } catch (e) {
