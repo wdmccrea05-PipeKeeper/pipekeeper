@@ -37,6 +37,7 @@ import LogTastingModal from '@/components/whiskey/LogTastingModal';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { safeUpdate } from '@/components/utils/safeUpdate';
 import QuickActions from '@/components/home/QuickActions';
@@ -49,6 +50,7 @@ import { selectCellarValue as calculateTobaccoCollectionValue } from '@/lib/coll
 import { selectPipeCollectionValue } from '@/lib/collection/pipeSelectors';
 import { selectWineCollectionValue, selectTotalWineBottles, selectWineCount, getWineTotalValue, selectWineReadyToDrinkCount, getWinePrimaryImage } from '@/lib/collection/wineSelectors';
 import { buildHubHighlightCandidates } from '@/components/hub/highlightSelection';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 
 
 const safe = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
@@ -312,41 +314,44 @@ export default function CollectionHub() {
   const cigarOpenable = enabled.cigarkeeper;
   const wineOpenable = enabled.winekeeper;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['collection-hub-dashboard', user?.email],
     enabled: !!user?.email && !modulesLoading,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
-      const [pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions, whiskeyInventory, wines, wineTastings] = await Promise.all([
+      const [
+        pipes, blends, smokeLogs, bottles, tastings, cigars, cigarSessions,
+        whiskeyInventory, wines, wineTastings
+      ] = await Promise.all([
         pipekeeperOpenable
-          ? base44.entities.Pipe.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
+          ? fetchAllEntities(base44.entities.Pipe, { created_by: user.email }, '-updated_date', 5000, 200, 'CollectionHub:Pipe')
           : Promise.resolve([]),
         pipekeeperOpenable
-          ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
+          ? fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date', 5000, 200, 'CollectionHub:TobaccoBlend')
           : Promise.resolve([]),
         pipekeeperOpenable
-          ? base44.entities.SmokingLog.filter({ created_by: user.email }, '-date', 200).catch(() => [])
+          ? fetchAllEntities(base44.entities.SmokingLog, { created_by: user.email }, '-date', 5000, 200, 'CollectionHub:SmokingLog')
           : Promise.resolve([]),
         whiskeyOpenable
-          ? base44.entities.Bottle.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
+          ? fetchAllEntities(base44.entities.Bottle, { created_by: user.email }, '-updated_date', 5000, 200, 'CollectionHub:Bottle')
           : Promise.resolve([]),
         whiskeyOpenable
-          ? base44.entities.TastingLog.filter({ created_by: user.email }, '-tasting_date', 100).catch(() => [])
+          ? fetchAllEntities(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date', 5000, 200, 'CollectionHub:TastingLog')
           : Promise.resolve([]),
         cigarOpenable
-          ? base44.entities.Cigar.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
+          ? fetchAllEntities(base44.entities.Cigar, { created_by: user.email }, '-updated_date', 5000, 200, 'CollectionHub:Cigar')
           : Promise.resolve([]),
         cigarOpenable
-          ? base44.entities.CigarSession.filter({ created_by: user.email }, '-date', 100).catch(() => [])
+          ? fetchAllEntities(base44.entities.CigarSession, { created_by: user.email }, '-date', 5000, 200, 'CollectionHub:CigarSession')
           : Promise.resolve([]),
         whiskeyOpenable
-          ? base44.entities.WhiskeyInventoryUnit.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
+          ? fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, '-updated_date', 5000, 200, 'CollectionHub:WhiskeyInventoryUnit')
           : Promise.resolve([]),
         wineOpenable
-          ? base44.entities.Wine.filter({ created_by: user.email }, '-updated_date', 300).catch(() => [])
+          ? fetchAllEntities(base44.entities.Wine, { created_by: user.email }, '-updated_date', 5000, 200, 'CollectionHub:Wine')
           : Promise.resolve([]),
         wineOpenable
-          ? base44.entities.WineTasting.filter({ created_by: user.email }, '-date', 100).catch(() => [])
+          ? fetchAllEntities(base44.entities.WineTasting, { created_by: user.email }, '-date', 5000, 200, 'CollectionHub:WineTasting')
           : Promise.resolve([]),
       ]);
 
@@ -693,6 +698,18 @@ export default function CollectionHub() {
           </div>
         </div>
       </section>
+
+      {isError ? (
+        <div className="rounded-2xl p-5 flex items-center justify-between gap-4" style={{ background: 'rgba(179,95,95,0.12)', border: '1px solid rgba(179,95,95,0.32)' }}>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>{t('common.errorLoadingData', 'Unable to load your collection data.')}</p>
+            <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>{t('common.retryPrompt', 'Your data is safe. Please try again.')}</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()} style={{ borderColor: 'rgba(179,95,95,0.4)', color: '#E0D8C8', minHeight: 44, flexShrink: 0 }}>
+            {t('common.retry', 'Retry')}
+          </Button>
+        </div>
+      ) : null}
 
       <section className="space-y-4">
         <SectionTitle>{t('hub.collectionSummary')}</SectionTitle>

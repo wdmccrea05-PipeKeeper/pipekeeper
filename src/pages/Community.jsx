@@ -18,6 +18,7 @@ import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { SafeText } from "@/components/ui/SafeText";
 import CommunityReferralTab from "@/components/referral/CommunityReferralTab";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 function CommunityPageInner() {
   const { t } = useTranslation();
@@ -121,8 +122,7 @@ function CommunityPageInner() {
 
   const { data: allPublicProfiles = [] } = useQuery({
     queryKey: ['all-public-profiles'],
-    queryFn: () => base44.entities.UserProfile.filter({ is_public: true }, '-updated_date', 200),
-    // TODO: Paginate this query as community grows. Currently capped at 200 most-recently-updated public profiles.
+    queryFn: () => fetchAllEntities(base44.entities.UserProfile, { is_public: true }, '-updated_date', 5000, 200, 'Community:publicProfiles'),
   });
 
   const publicProfiles = useMemo(() => {
