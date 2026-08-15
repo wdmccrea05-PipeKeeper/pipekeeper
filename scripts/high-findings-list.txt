@@ -1,0 +1,8 @@
+[HIGH] src/components/export/CollectionReportExporter.jsx:45 | Pipe.filter() — no limit argument | const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+[HIGH] src/components/export/CollectionReportExporter.jsx:60 | Pipe.filter() — no limit argument | const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+[HIGH] src/components/export/CollectionReportExporter.jsx:88 | TobaccoBlend.filter() — no limit argument | const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+[HIGH] src/components/export/CollectionReportExporter.jsx:108 | TobaccoBlend.filter() — no limit argument | const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+[HIGH] src/components/export/CollectionReportExporter.jsx:137 | Pipe.filter() — no limit argument | const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+[HIGH] src/components/export/CollectionReportExporter.jsx:154 | Pipe.filter() — no limit argument | const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+[HIGH] src/components/export/CollectionReportExporter.jsx:155 | TobaccoBlend.filter() — no limit argument | const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+[HIGH] src/components/export/CollectionReportExporter.jsx:239 | Pipe.filter() — no limit argument | base44.entities.Pipe.filter({ created_by: user?.email }),
