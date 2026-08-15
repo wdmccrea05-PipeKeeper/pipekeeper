@@ -38,6 +38,7 @@ import { buildTopN } from '@/lib/analytics/aggregateUtils';
 import { selectCigarMetrics } from '@/lib/collection/cigarSelectors';
 import { selectFavoriteCount, selectFlagCount } from '@/lib/analytics/breakdownUtils';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
+import CollectionQueryError from '@/components/ui/CollectionQueryError';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -169,35 +170,38 @@ function CigarInsightsInner() {
     { key: 'sessions', label: t('insightsTabs.sessions') },
   ]), [t]);
 
-  const { data: cigars = [], isLoading: cigarsLoading } = useQuery({
+  const { data: cigars = [], isLoading: cigarsLoading, isError: cigarsError, refetch: refetchCigars } = useQuery({
     queryKey: QUERY_KEYS.cigars(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return fetchAllEntities(base44.entities.Cigar, { created_by: user?.email }, '-created_date').catch(() => []);
+      return fetchAllEntities(base44.entities.Cigar, { created_by: user?.email }, '-created_date');
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,
   });
 
-  const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
+  const { data: sessions = [], isLoading: sessionsLoading, isError: sessionsError, refetch: refetchSessions } = useQuery({
     queryKey: QUERY_KEYS.cigarSessions(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return fetchAllEntities(base44.entities.CigarSession, { created_by: user?.email }, '-date').catch(() => []);
+      return fetchAllEntities(base44.entities.CigarSession, { created_by: user?.email }, '-date');
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.SESSION_HISTORY,
   });
 
-  const { data: humidors = [] } = useQuery({
+  const { data: humidors = [], isError: humidorsError, refetch: refetchHumidors } = useQuery({
     queryKey: QUERY_KEYS.humidors(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return fetchAllEntities(base44.entities.HumidorLocation, { created_by: user?.email }, '-updated_date').catch(() => []);
+      return fetchAllEntities(base44.entities.HumidorLocation, { created_by: user?.email }, '-updated_date');
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,
   });
+
+  const hasQueryError = !!user?.email && (cigarsError || sessionsError || humidorsError);
+  const retryAll = () => { refetchCigars(); refetchSessions(); refetchHumidors(); };
 
   // ── Derived data ────────────────────────────────────────────────────────────
 
@@ -360,6 +364,12 @@ function CigarInsightsInner() {
       />
 
       <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.cigarkeeper} />
+
+      <CollectionQueryError
+        isError={hasQueryError}
+        onRetry={retryAll}
+        label="Some cigar data could not be loaded. Showing cached data where available."
+      />
 
       {/* ── SUMMARY ─────────────────────────────────────────────────────── */}
       {activeTab === 'summary' && (

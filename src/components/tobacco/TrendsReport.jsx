@@ -359,7 +359,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
             files: [new File([blob], 'trends.png', { type: 'image/png' })],
             title: t("trends.myPipeKeeperTrends"),
             text: narrative
-          }).catch(() => {});
+          }).catch(() => {}); // PK_SAFE_FALLBACK: Web Share API rejection — user cancelled the share sheet; not a data error.
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');

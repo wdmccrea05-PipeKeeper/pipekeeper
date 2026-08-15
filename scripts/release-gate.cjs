@@ -59,25 +59,19 @@ runCheck('2.  Unsafe entity query audit (0 HIGH required)', () => {
   }
 });
 
-// 2b. Silent fallback audit (baseline check — fails only if count INCREASES)
-//     Current baseline: 45 production-critical .catch(() => []) patterns.
-//     These are tracked for incremental migration to fetchAllEntities.
-//     The gate fails if the count goes ABOVE the baseline (new regressions).
-const SILENT_FALLBACK_BASELINE = 45;
-runCheck('2b. Silent fallback audit (baseline: ' + SILENT_FALLBACK_BASELINE + ')', () => {
+// 2b. Silent fallback audit (0 unexplained critical required)
+//     Every critical .catch(() => []) must be either fixed (removed),
+//     reclassified with a documented PK_SAFE_FALLBACK annotation, or
+//     removed as dead code. No grandfathered baseline for critical paths.
+runCheck('2b. Silent fallback audit (0 unexplained critical)', () => {
   try {
-    const out = exec('node scripts/audit-silent-fallbacks.cjs', 30000);
-    const match = out.match(/PRODUCTION_CRITICAL:\s*(\d+)/);
-    const count = match ? parseInt(match[1], 10) : -1;
-    if (count < 0) {
-      throw new Error('Could not parse silent fallback count');
-    }
-    if (count > SILENT_FALLBACK_BASELINE) {
-      throw new Error(`Silent fallback count INCREASED to ${count} (baseline: ${SILENT_FALLBACK_BASELINE}) — new .catch(() => []) in production-critical paths`);
-    }
-    return `${count} production-critical fallbacks (baseline: ${SILENT_FALLBACK_BASELINE}) — no new regressions`;
+    const out = exec('node scripts/audit-silent-fallbacks.cjs --strict', 30000);
+    return '0 unexplained production-critical silent fallbacks';
   } catch (e) {
-    throw new Error(e.stdout || e.message);
+    const out = e.stdout || e.message || '';
+    const match = out.match(/unexplained:\s*(\d+)/);
+    const count = match ? parseInt(match[1], 10) : '?';
+    throw new Error(`${count} unexplained production-critical silent fallbacks remain — fix, annotate with PK_SAFE_FALLBACK, or remove`);
   }
 });
 
@@ -190,6 +184,18 @@ runCheck('11. Analytics parity regression tests', () => {
   }
 });
 
+// 12. Silent fallback hardening regression tests
+runCheck('12. Silent fallback hardening regression tests', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/silentFallbackHardening.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Silent fallback hardening tests passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
 console.log('\n═══ Summary ═══');
 for (const r of results) {
   console.log(`  ${r.status === 'PASS' ? '✓' : '✗'} ${r.name}`);
@@ -200,5 +206,5 @@ if (failed) {
   process.exit(1);
 }
 
-console.log('\n✓ RELEASE GATE PASSED — ready for device QA.\n');
+console.log('\n✓ RELEASE GATE PASSED — ready for release candidate.\n');
 process.exit(0);

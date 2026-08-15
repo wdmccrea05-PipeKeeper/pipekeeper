@@ -31,15 +31,16 @@ Deno.serve(async (req) => {
       // PK_SAFE_QUERY: Admin report — all referral credits needed for complete report
       base44.asServiceRole.entities.SubscriptionCredit.filter({ source: 'referral' }),
       base44.asServiceRole.entities.ReferralReward.list('-granted_at', 500),
-      base44.asServiceRole.entities.ReferralEarnedAccess.list('-granted_at', 200).catch(() => []),
+      base44.asServiceRole.entities.ReferralEarnedAccess.list('-granted_at', 200),
       // PK_SAFE_QUERY: Admin report — fetching active remote config keys (small bounded set)
+      // PK_SAFE_FALLBACK: Expiry health metadata is supplemental to the report — if missing, report still shows all referral data, just without last-run timestamps.
       base44.asServiceRole.entities.RemoteConfig.filter({ environment: 'live', is_active: true })
         .then(rows => (rows || []).filter(r =>
           r.key === 'referral_expiry_last_run_at' ||
           r.key === 'referral_expiry_last_expired_count' ||
           r.key === 'referral_expiry_last_synced_count'
         ))
-        .catch(() => []),
+        .catch(() => []), // PK_SAFE_FALLBACK: Expiry health metadata is supplemental — report still shows all referral data without last-run timestamps.
     ]);
 
     // ─── Funnel ───────────────────────────────────────────────────────────────

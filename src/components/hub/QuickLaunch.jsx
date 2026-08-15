@@ -10,6 +10,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import LogSessionSelector from "@/components/session/LogSessionSelector";
 import CombinedSessionModal from "@/components/session/CombinedSessionModal";
 import LogTastingModal from "@/components/whiskey/LogTastingModal";
+import CollectionQueryError from "@/components/ui/CollectionQueryError";
 
 function BottleQuickIcon({ className, style }) {
   return (
@@ -94,20 +95,20 @@ export default function QuickLaunch() {
   const pipekeeperEnabled = enabled.pipekeeper;
   const hasDualSessionModules = whiskeyEnabled && pipekeeperEnabled;
 
-  const { data: combinedSessionData } = useQuery({
+  const { data: combinedSessionData, isError: combinedError, refetch: refetchCombined } = useQuery({
     queryKey: ["quick-launch-combined-session-data", user?.email, pipekeeperEnabled, whiskeyEnabled],
     enabled: !!user?.email && hasDualSessionModules && (showCombinedModal || showWhiskeyModal),
     staleTime: 60 * 1000,
     queryFn: async () => {
       const [pipes, blends, bottles] = await Promise.all([
         pipekeeperEnabled
-          ? base44.entities.Pipe.filter({ created_by: user.email }, "-updated_date", 500).catch(() => [])
+          ? base44.entities.Pipe.filter({ created_by: user.email }, "-updated_date", 500)
           : Promise.resolve([]),
         pipekeeperEnabled
-          ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, "-updated_date", 500).catch(() => [])
+          ? base44.entities.TobaccoBlend.filter({ created_by: user.email }, "-updated_date", 500)
           : Promise.resolve([]),
         whiskeyEnabled
-          ? base44.entities.Bottle.filter({ created_by: user.email }, "-updated_date", 500).catch(() => [])
+          ? base44.entities.Bottle.filter({ created_by: user.email }, "-updated_date", 500)
           : Promise.resolve([]),
       ]);
 
@@ -120,12 +121,12 @@ export default function QuickLaunch() {
   });
 
   // Whiskey-only tasting data (no pipekeeper needed)
-  const { data: whiskeyOnlyBottles } = useQuery({
+  const { data: whiskeyOnlyBottles, isError: whiskeyOnlyError, refetch: refetchWhiskeyOnly } = useQuery({
     queryKey: ["quick-launch-whiskey-bottles", user?.email],
     enabled: !!user?.email && whiskeyEnabled && showWhiskeyModal && !hasDualSessionModules,
     staleTime: 60 * 1000,
     queryFn: async () => {
-      const bottles = await base44.entities.Bottle.filter({ created_by: user.email }, "-updated_date", 500).catch(() => []);
+      const bottles = await base44.entities.Bottle.filter({ created_by: user.email }, "-updated_date", 500);
       return Array.isArray(bottles) ? bottles : [];
     },
   });
@@ -260,6 +261,15 @@ export default function QuickLaunch() {
         onSelectWhiskey={handleOpenWhiskeyTasting}
         onSelectCombined={handleOpenCombinedSessionFlow}
       />
+
+      {(showCombinedModal || showWhiskeyModal) && (
+        <CollectionQueryError
+          isError={hasDualSessionModules ? combinedError : whiskeyOnlyError}
+          onRetry={hasDualSessionModules ? refetchCombined : refetchWhiskeyOnly}
+          label="Could not load your collection items for session logging."
+          compact
+        />
+      )}
 
       <CombinedSessionModal
         isOpen={showCombinedModal}

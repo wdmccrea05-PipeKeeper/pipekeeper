@@ -309,11 +309,11 @@ export async function runScheduledRefreshForUser(userEmail, moduleKey, base44) {
   try {
     let items = [];
     if (moduleKey === 'whiskeykeeper') {
-      items = await base44.entities.Bottle.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []);
+      items = await base44.entities.Bottle.filter({ created_by: userEmail }, '-created_date', 1000);
     } else if (moduleKey === 'pipekeeper') {
       const [pipes, tobaccos] = await Promise.all([
-        base44.entities.Pipe.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
-        base44.entities.TobaccoBlend.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
+        base44.entities.Pipe.filter({ created_by: userEmail }, '-created_date', 1000),
+        base44.entities.TobaccoBlend.filter({ created_by: userEmail }, '-created_date', 1000),
       ]);
       items = [
         ...pipes.map((p) => ({ ...p, _itemType: 'pipe' })),
@@ -321,17 +321,17 @@ export async function runScheduledRefreshForUser(userEmail, moduleKey, base44) {
       ];
     } else if (moduleKey === 'cigarkeeper') {
       const [cigars, priceObservations, valueSnapshots] = await Promise.all([
-        base44.entities.Cigar.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
+        base44.entities.Cigar.filter({ created_by: userEmail }, '-created_date', 1000),
         base44.entities.PriceObservation.filter(
           { created_by: userEmail, module_key: 'cigarkeeper', item_type: 'cigar' },
           '-observed_date',
           5000
-        ).catch(() => []),
+        ),
         base44.entities.ItemValueSnapshot.filter(
           { created_by: userEmail, module_key: 'cigarkeeper', item_type: 'cigar' },
           '-snapshot_date',
           5000
-        ).catch(() => []),
+        ),
       ]);
       items = Array.isArray(cigars) ? cigars.map((c) => ({ ...c, _itemType: 'cigar' })) : [];
       const observationsByItem = groupByItemId(priceObservations);
@@ -365,13 +365,13 @@ export async function runScheduledRefreshForUser(userEmail, moduleKey, base44) {
             bottle_id: item.id,
             created_by: userEmail,
             snapshot_date: today,
-          }, null, 1).catch(() => []);
+          }, null, 1);
         } else {
           existingToday = await base44.entities.ItemValueSnapshot.filter({
             item_id: item.id,
             created_by: userEmail,
             snapshot_date: today,
-          }, null, 1).catch(() => []);
+          }, null, 1);
         }
 
         if (snapshotExistsToday(existingToday, today)) {
@@ -404,6 +404,7 @@ export async function runScheduledRefreshForUser(userEmail, moduleKey, base44) {
 
     // Update last_auto_refresh_at
     try {
+      // PK_SAFE_FALLBACK: Timestamp update is non-critical — if it fails, refresh still ran; next refresh may re-run sooner but no data is lost.
       const existing = await base44.entities.ValuationSettings.filter({ created_by: userEmail }, null, 1).catch(() => []);
       const nowISO = new Date().toISOString();
       if (existing && existing.length > 0) {

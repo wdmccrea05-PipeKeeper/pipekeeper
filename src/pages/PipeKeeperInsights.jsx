@@ -14,6 +14,7 @@ import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import CollectionReportExporter from '@/components/export/CollectionReportExporter';
 import SmokingLogReportExporter from '@/components/export/SmokingLogReportExporter';
 import AgingReportExporter from '@/components/export/AgingReportExporter';
+import CollectionQueryError from '@/components/ui/CollectionQueryError';
 import {
   InsightsPageShell,
   InsightsHeader,
@@ -45,37 +46,39 @@ export default function PipeKeeperInsights() {
     { key: 'sessions', label: t('insightsTabs.sessions') },
   ]), [t]);
 
-  const { data: pipes = [], isLoading: pipesLoading } = useQuery({
+  const { data: pipes = [], isLoading: pipesLoading, isError: pipesError, refetch: refetchPipes } = useQuery({
     queryKey: ['pipes-insights', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return fetchAllEntities(base44.entities.Pipe, { created_by: user.email }, '-updated_date').catch(() => []);
+      return fetchAllEntities(base44.entities.Pipe, { created_by: user.email }, '-updated_date');
     },
     enabled: !!user?.email,
     staleTime: 30_000,
   });
 
-  const { data: blends = [], isLoading: blendsLoading } = useQuery({
+  const { data: blends = [], isLoading: blendsLoading, isError: blendsError, refetch: refetchBlends } = useQuery({
     queryKey: ['blends-insights', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date').catch(() => []);
+      return fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user.email }, '-updated_date');
     },
     enabled: !!user?.email,
     staleTime: 30_000,
   });
 
-  const { data: smokingLogs = [], isLoading: logsLoading } = useQuery({
+  const { data: smokingLogs = [], isLoading: logsLoading, isError: logsError, refetch: refetchLogs } = useQuery({
     queryKey: ['smoking-logs-insights', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return fetchAllEntities(base44.entities.SmokingLog, { created_by: user.email }, '-date').catch(() => []);
+      return fetchAllEntities(base44.entities.SmokingLog, { created_by: user.email }, '-date');
     },
     enabled: !!user?.email,
     staleTime: 30_000,
   });
 
   const isLoading = pipesLoading || blendsLoading || logsLoading;
+  const hasQueryError = pipesError || blendsError || logsError;
+  const retryAll = () => { refetchPipes(); refetchBlends(); refetchLogs(); };
 
   const pipeSessionRows = useMemo(() => (smokingLogs || []).map(s => ({
     id: `pipe_${s.id}`,
@@ -137,6 +140,12 @@ export default function PipeKeeperInsights() {
       />
 
       <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+
+      <CollectionQueryError
+        isError={hasQueryError}
+        onRetry={retryAll}
+        label="Some collection data could not be loaded. Showing cached data where available."
+      />
 
       {activeTab === 'summary' && (
         <div className="space-y-6">

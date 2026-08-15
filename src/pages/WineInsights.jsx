@@ -30,6 +30,7 @@ import {
 } from '@/components/insights/InsightsShell';
 import { MODULE_ACCENTS } from '@/lib/theme/tokens';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
+import CollectionQueryError from '@/components/ui/CollectionQueryError';
 
 const ACCENT = '#8B3A3A';
 const WINE_GOLD = '#D4A574';
@@ -54,19 +55,22 @@ export default function WineInsights() {
     { key: 'drinkingwindow', label: t('insightsTabs.drinkingWindow') },
   ]), [t]);
 
-  const { data: wines = [] } = useQuery({
+  const { data: wines = [], isError: winesError, refetch: refetchWines } = useQuery({
     queryKey: QUERY_KEYS.wines(user?.email),
-    queryFn: async () => fetchAllEntities(base44.entities.Wine, { created_by: user?.email }, '-created_date').catch(() => []),
+    queryFn: async () => fetchAllEntities(base44.entities.Wine, { created_by: user?.email }, '-created_date'),
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,
   });
 
-  const { data: tastings = [] } = useQuery({
+  const { data: tastings = [], isError: tastingsError, refetch: refetchTastings } = useQuery({
     queryKey: QUERY_KEYS.wineTastingsSummary(user?.email),
-    queryFn: async () => fetchAllEntities(base44.entities.WineTasting, { created_by: user?.email }, '-date').catch(() => []),
+    queryFn: async () => fetchAllEntities(base44.entities.WineTasting, { created_by: user?.email }, '-date'),
     enabled: !!user?.email,
     staleTime: STALE_TIME.SESSION_HISTORY,
   });
+
+  const hasQueryError = !!user?.email && (winesError || tastingsError);
+  const retryAll = () => { refetchWines(); refetchTastings(); };
 
   const wineSessions = useMemo(() => (tastings || []).map((tasting) => ({
     id: `wine_${tasting.id}`, moduleType: 'wine', date: tasting.date,
@@ -134,6 +138,12 @@ export default function WineInsights() {
       />
 
       <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.winekeeper} />
+
+      <CollectionQueryError
+        isError={hasQueryError}
+        onRetry={retryAll}
+        label="Some wine data could not be loaded. Showing cached data where available."
+      />
 
       {/* SUMMARY */}
       {activeTab === 'summary' && (

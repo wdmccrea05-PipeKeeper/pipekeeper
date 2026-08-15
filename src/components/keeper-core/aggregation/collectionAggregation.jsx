@@ -60,12 +60,16 @@ export async function aggregateCollection(userEmail) {
   try {
     const [userByEmail, userByUserEmail, profileByUserEmail, profileByCreatedBy] = await Promise.all([
       // PK_SAFE_QUERY: User lookup by email — returns single record, not full dataset
+      // PK_SAFE_FALLBACK: User context lookup — if this fails, module fetching proceeds with null context (conservative under-fetch). Total aggregation failure would be worse.
       base44.entities.User.filter({ email: userEmail }).catch(() => []),
       // PK_SAFE_QUERY: User lookup by user_email — returns single record, not full dataset
+      // PK_SAFE_FALLBACK: User context lookup — if this fails, module fetching proceeds with null context (conservative under-fetch). Total aggregation failure would be worse.
       base44.entities.User.filter({ user_email: userEmail }).catch(() => []),
       // PK_SAFE_QUERY: Profile lookup by user_email — returns single record, not full dataset
+      // PK_SAFE_FALLBACK: Profile context lookup — if this fails, module fetching proceeds with null profile (conservative). Total aggregation failure would be worse.
       base44.entities.UserProfile.filter({ user_email: userEmail }).catch(() => []),
       // PK_SAFE_QUERY: Profile lookup by created_by — returns single record, not full dataset
+      // PK_SAFE_FALLBACK: Profile context lookup — if this fails, module fetching proceeds with null profile (conservative). Total aggregation failure would be worse.
       base44.entities.UserProfile.filter({ created_by: userEmail }).catch(() => []),
     ]);
 
@@ -82,19 +86,41 @@ export async function aggregateCollection(userEmail) {
     // WineKeeper: internal/admin only — shouldFetchModuleData respects the 'internal' release state
     const fetchWine = shouldFetchModuleData('winekeeper', userContext);
 
-    const [pipes, tobaccos, bottles, smokingLogs, tastingLogs, inventoryUnits, cigars, cigarSessions, humidors, wines, wineTastings] = await Promise.all([
-      fetchPipe ? fetchAllEntities(base44.entities.Pipe, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Pipe').catch(() => []) : Promise.resolve([]),
-      fetchPipe ? fetchAllEntities(base44.entities.TobaccoBlend, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:TobaccoBlend').catch(() => []) : Promise.resolve([]),
-      fetchWhiskey ? fetchAllEntities(base44.entities.Bottle, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Bottle').catch(() => []) : Promise.resolve([]),
-      fetchPipe ? fetchAllEntities(base44.entities.SmokingLog, { created_by: userEmail }, '-date', 5000, 200, 'collectionAggregation:SmokingLog').catch(() => []) : Promise.resolve([]),
-      fetchWhiskey ? fetchAllEntities(base44.entities.TastingLog, { created_by: userEmail }, '-tasting_date', 5000, 200, 'collectionAggregation:TastingLog').catch(() => []) : Promise.resolve([]),
-      fetchWhiskey ? fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:WhiskeyInventoryUnit').catch(() => []) : Promise.resolve([]),
-      fetchCigar ? fetchAllEntities(base44.entities.Cigar, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Cigar').catch(() => []) : Promise.resolve([]),
-      fetchCigar ? fetchAllEntities(base44.entities.CigarSession, { created_by: userEmail }, '-date', 5000, 200, 'collectionAggregation:CigarSession').catch(() => []) : Promise.resolve([]),
-      fetchCigar ? fetchAllEntities(base44.entities.HumidorLocation, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:HumidorLocation').catch(() => []) : Promise.resolve([]),
-      fetchWine ? fetchAllEntities(base44.entities.Wine, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Wine').catch(() => []) : Promise.resolve([]),
-      fetchWine ? fetchAllEntities(base44.entities.WineTasting, { created_by: userEmail }, '-date', 5000, 200, 'collectionAggregation:WineTasting').catch(() => []) : Promise.resolve([]),
+    // Use Promise.allSettled so a single module failure does not collapse the
+    // entire aggregation. Successfully loaded modules are preserved; failed
+    // modules default to empty with a diagnostic log.
+    const moduleResults = await Promise.allSettled([
+      fetchPipe ? fetchAllEntities(base44.entities.Pipe, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Pipe') : Promise.resolve([]),
+      fetchPipe ? fetchAllEntities(base44.entities.TobaccoBlend, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:TobaccoBlend') : Promise.resolve([]),
+      fetchWhiskey ? fetchAllEntities(base44.entities.Bottle, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Bottle') : Promise.resolve([]),
+      fetchPipe ? fetchAllEntities(base44.entities.SmokingLog, { created_by: userEmail }, '-date', 5000, 200, 'collectionAggregation:SmokingLog') : Promise.resolve([]),
+      fetchWhiskey ? fetchAllEntities(base44.entities.TastingLog, { created_by: userEmail }, '-tasting_date', 5000, 200, 'collectionAggregation:TastingLog') : Promise.resolve([]),
+      fetchWhiskey ? fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:WhiskeyInventoryUnit') : Promise.resolve([]),
+      fetchCigar ? fetchAllEntities(base44.entities.Cigar, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Cigar') : Promise.resolve([]),
+      fetchCigar ? fetchAllEntities(base44.entities.CigarSession, { created_by: userEmail }, '-date', 5000, 200, 'collectionAggregation:CigarSession') : Promise.resolve([]),
+      fetchCigar ? fetchAllEntities(base44.entities.HumidorLocation, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:HumidorLocation') : Promise.resolve([]),
+      fetchWine ? fetchAllEntities(base44.entities.Wine, { created_by: userEmail }, '-updated_date', 5000, 200, 'collectionAggregation:Wine') : Promise.resolve([]),
+      fetchWine ? fetchAllEntities(base44.entities.WineTasting, { created_by: userEmail }, '-date', 5000, 200, 'collectionAggregation:WineTasting') : Promise.resolve([]),
     ]);
+
+    const moduleNames = ['Pipe', 'TobaccoBlend', 'Bottle', 'SmokingLog', 'TastingLog', 'WhiskeyInventoryUnit', 'Cigar', 'CigarSession', 'HumidorLocation', 'Wine', 'WineTasting'];
+    const settled = moduleResults.map((r, i) => {
+      if (r.status === 'fulfilled') return r.value;
+      console.error(`[collectionAggregation] Failed to load ${moduleNames[i]}:`, r.reason?.message || r.reason);
+      return [];
+    });
+
+    const pipes = settled[0];
+    const tobaccos = settled[1];
+    const bottles = settled[2];
+    const smokingLogs = settled[3];
+    const tastingLogs = settled[4];
+    const inventoryUnits = settled[5];
+    const cigars = settled[6];
+    const cigarSessions = settled[7];
+    const humidors = settled[8];
+    const wines = settled[9];
+    const wineTastings = settled[10];
 
     const pipesList = Array.isArray(pipes) ? pipes : [];
     const tobaccosList = Array.isArray(tobaccos) ? tobaccos : [];

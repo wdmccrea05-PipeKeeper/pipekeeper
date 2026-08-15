@@ -311,9 +311,9 @@ export default function CollectionInsightsSharePage() {
     queryKey: ['share-user-profile', user?.email],
     queryFn: async () => {
       // PK_SAFE_QUERY: Profile lookup by email — returns single record for share page
-      const byEmail = await base44.entities.UserProfile.filter({ user_email: user?.email }).catch(() => []);
+      const byEmail = await base44.entities.UserProfile.filter({ user_email: user?.email });
       // PK_SAFE_QUERY: Profile lookup by created_by — returns single record for share page
-      const byCreatedBy = await base44.entities.UserProfile.filter({ created_by: user?.email }).catch(() => []);
+      const byCreatedBy = await base44.entities.UserProfile.filter({ created_by: user?.email });
       return [...byEmail, ...byCreatedBy][0] || null;
     },
     enabled: !!user?.email,

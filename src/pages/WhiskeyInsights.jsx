@@ -36,6 +36,7 @@ import {
 } from '@/components/insights/InsightsShell';
 import { MODULE_ACCENTS } from '@/lib/theme/tokens';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
+import CollectionQueryError from '@/components/ui/CollectionQueryError';
 
 export default function WhiskeyInsightsPage() {
   const { t } = useTranslation();
@@ -55,37 +56,39 @@ export default function WhiskeyInsightsPage() {
     { key: 'sessions', label: t('insightsTabs.sessions') },
   ]), [t]);
 
-  const { data: bottles = [], isLoading: bottlesLoading } = useQuery({
+  const { data: bottles = [], isLoading: bottlesLoading, isError: bottlesError, refetch: refetchBottles } = useQuery({
     queryKey: QUERY_KEYS.bottles(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return fetchAllEntities(base44.entities.Bottle, { created_by: user.email }, '-updated_date').catch(() => []);
+      return fetchAllEntities(base44.entities.Bottle, { created_by: user.email }, '-updated_date');
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,
   });
 
-  const { data: tastingLogs = [], isLoading: logsLoading } = useQuery({
+  const { data: tastingLogs = [], isLoading: logsLoading, isError: logsError, refetch: refetchLogs } = useQuery({
     queryKey: ['tasting-logs', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return fetchAllEntities(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date').catch(() => []);
+      return fetchAllEntities(base44.entities.TastingLog, { created_by: user.email }, '-tasting_date');
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.SESSION_HISTORY,
   });
 
-  const { data: inventoryUnits = [], isLoading: inventoryLoading } = useQuery({
+  const { data: inventoryUnits = [], isLoading: inventoryLoading, isError: inventoryError, refetch: refetchInventory } = useQuery({
     queryKey: QUERY_KEYS.whiskeyInventory(user?.email),
     queryFn: async () => {
       if (!user?.email) return [];
-      return fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, '-updated_date').catch(() => []);
+      return fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: user.email }, '-updated_date');
     },
     enabled: !!user?.email,
     staleTime: STALE_TIME.COLLECTION,
   });
 
   const isDataLoading = !!user?.email && (bottlesLoading || logsLoading || inventoryLoading);
+  const hasQueryError = !!user?.email && (bottlesError || logsError || inventoryError);
+  const retryAll = () => { refetchBottles(); refetchLogs(); refetchInventory(); };
 
   const whiskeySessions = useMemo(() => (tastingLogs || []).map(log => ({
     id: `whiskey_${log.id}`, moduleType: 'whiskey', date: log.tasting_date,
@@ -214,6 +217,12 @@ export default function WhiskeyInsightsPage() {
         />
 
         <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.whiskeykeeper} />
+
+        <CollectionQueryError
+          isError={hasQueryError}
+          onRetry={retryAll}
+          label="Some whiskey data could not be loaded. Showing cached data where available."
+        />
 
         {/* SUMMARY */}
         {activeTab === 'summary' && (
