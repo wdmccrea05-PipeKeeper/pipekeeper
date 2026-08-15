@@ -59,9 +59,13 @@ export async function aggregateCollection(userEmail) {
 
   try {
     const [userByEmail, userByUserEmail, profileByUserEmail, profileByCreatedBy] = await Promise.all([
+      // PK_SAFE_QUERY: User lookup by email — returns single record, not full dataset
       base44.entities.User.filter({ email: userEmail }).catch(() => []),
+      // PK_SAFE_QUERY: User lookup by user_email — returns single record, not full dataset
       base44.entities.User.filter({ user_email: userEmail }).catch(() => []),
+      // PK_SAFE_QUERY: Profile lookup by user_email — returns single record, not full dataset
       base44.entities.UserProfile.filter({ user_email: userEmail }).catch(() => []),
+      // PK_SAFE_QUERY: Profile lookup by created_by — returns single record, not full dataset
       base44.entities.UserProfile.filter({ created_by: userEmail }).catch(() => []),
     ]);
 

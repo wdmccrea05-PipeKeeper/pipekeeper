@@ -10,6 +10,7 @@ import { selectWhiskeyMetrics } from '@/lib/collection/whiskeySelectors';
 import { BarChart3 } from 'lucide-react';
 import WhiskeyValueIntelligence from '@/components/whiskey/WhiskeyValueIntelligence';
 import { useCurrency } from '@/lib/currency/useCurrency';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 
 function WhiskeyAnalyticsInner() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ function WhiskeyAnalyticsInner() {
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles', user?.email],
     queryFn: async () => {
-      const result = await base44.entities.Bottle.filter({ created_by: user?.email });
+      const result = await fetchAllEntities(base44.entities.Bottle, { created_by: user?.email }, '-updated_date', 5000, 200, 'WhiskeyAnalytics:bottles');
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,
@@ -31,7 +32,7 @@ function WhiskeyAnalyticsInner() {
   const { data: inventoryUnits = [] } = useQuery({
     queryKey: ['whiskey-inventory-units', user?.email],
     queryFn: async () => {
-      const result = await base44.entities.WhiskeyInventoryUnit.filter({ created_by: user?.email });
+      const result = await fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: user?.email }, '-updated_date', 5000, 200, 'WhiskeyAnalytics:inventory');
       return Array.isArray(result) ? result : [];
     },
     enabled: !!user?.email,

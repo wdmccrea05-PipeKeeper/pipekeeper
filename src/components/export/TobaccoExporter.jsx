@@ -7,6 +7,7 @@ import jsPDF from 'jspdf';
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from 'sonner';
 import { calculateCellaredOzFromLogs } from "@/components/utils/tobaccoQuantityHelpers";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 // ─── PDF HELPERS ────────────────────────────────────────────────────────────
 
@@ -84,13 +85,13 @@ export default function TobaccoExporter() {
 
   const { data: blends = [] } = useQuery({
     queryKey: ['tobacco-blends', user?.email],
-    queryFn: () => base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+    queryFn: () => fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user?.email }),
     enabled: !!user?.email,
   });
 
   const { data: cellarLogs = [] } = useQuery({
     queryKey: ['cellar-logs-all', user?.email],
-    queryFn: () => base44.entities.CellarLog.filter({ created_by: user?.email }),
+    queryFn: () => fetchAllEntities(base44.entities.CellarLog, { created_by: user?.email }),
     enabled: !!user?.email,
   });
 

@@ -95,6 +95,7 @@ export default function CollectionInsightsPanel({ pipes, blends, user, activeTab
     queryKey: ["user-profile", user?.email],
     enabled: !!user?.email,
     queryFn: async () => {
+      // PK_SAFE_QUERY: Single profile lookup by email — returns first match only, not a full dataset
       const profiles = await base44.entities.UserProfile.filter({ user_email: user?.email }).catch(() => []);
       return profiles[0] || null;
     },

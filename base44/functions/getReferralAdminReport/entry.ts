@@ -28,9 +28,11 @@ Deno.serve(async (req) => {
     const [events, programs, credits, referralRewards, earnedAccessRecords, expiryHealthRecords] = await Promise.all([
       base44.asServiceRole.entities.ReferralEvent.list('-invite_sent_at', 500),
       base44.asServiceRole.entities.ReferralProgram.list('-qualified_referrals', 100),
+      // PK_SAFE_QUERY: Admin report — all referral credits needed for complete report
       base44.asServiceRole.entities.SubscriptionCredit.filter({ source: 'referral' }),
       base44.asServiceRole.entities.ReferralReward.list('-granted_at', 500),
       base44.asServiceRole.entities.ReferralEarnedAccess.list('-granted_at', 200).catch(() => []),
+      // PK_SAFE_QUERY: Admin report — fetching active remote config keys (small bounded set)
       base44.asServiceRole.entities.RemoteConfig.filter({ environment: 'live', is_active: true })
         .then(rows => (rows || []).filter(r =>
           r.key === 'referral_expiry_last_run_at' ||

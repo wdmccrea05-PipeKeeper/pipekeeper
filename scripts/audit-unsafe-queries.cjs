@@ -70,7 +70,30 @@ function findUnsafeQueries() {
           // Check if a limit argument is present (3rd or 2nd arg)
           // .filter(filterObj, sortOrder, limit, skip) — limit is arg 3
           // .list(sortOrder, limit) — limit is arg 2
-          const callContent = trimmed.substring(trimmed.indexOf('(') + 1);
+          // Use the match position to find the correct opening paren (not one
+          // from an arrow function or other context earlier on the line)
+          const matchIndex = match.index ?? 0;
+          const matchEnd = matchIndex + match[0].length;
+          let callContent = trimmed.substring(matchEnd);
+
+          // Handle multi-line calls: we're inside the filter( call, so depth
+          // starts at 1. Join subsequent lines until depth reaches 0 (closing paren).
+          let depth = 1;
+          let callComplete = false;
+          for (const ch of callContent) {
+            if (ch === '(' || ch === '[' || ch === '{') depth++;
+            else if (ch === ')' || ch === ']' || ch === '}') { depth--; if (depth === 0) { callComplete = true; break; } }
+          }
+          if (!callComplete) {
+            for (let j = i + 1; j < Math.min(i + 10, lines.length) && !callComplete; j++) {
+              callContent += ' ' + lines[j].trim();
+              for (const ch of lines[j]) {
+                if (ch === '(' || ch === '[' || ch === '{') depth++;
+                else if (ch === ')' || ch === ']' || ch === '}') { depth--; if (depth === 0) { callComplete = true; break; } }
+              }
+            }
+          }
+
           const argCount = countTopLevelArgs(callContent);
 
           const isFilter = !!filterMatch;

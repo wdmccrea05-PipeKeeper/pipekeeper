@@ -9,6 +9,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { toast } from 'sonner';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 export default function PipeExporter() {
   const { t } = useTranslation();
@@ -19,7 +20,7 @@ export default function PipeExporter() {
 
   const { data: pipes = [] } = useQuery({
     queryKey: ['pipes', user?.email],
-    queryFn: () => base44.entities.Pipe.filter({ created_by: user?.email }),
+    queryFn: () => fetchAllEntities(base44.entities.Pipe, { created_by: user?.email }),
     enabled: !!user?.email,
   });
 

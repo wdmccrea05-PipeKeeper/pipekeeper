@@ -53,6 +53,7 @@ export default function AdminReports() {
   const blockUserMutation = useMutation({
     mutationFn: async ({ reportId, reportedEmail }) => {
       // Update user profile to mark as blocked
+      // PK_SAFE_QUERY: Admin user lookup by reported email — returns single profile record
       const profiles = await base44.entities.UserProfile.filter({ user_email: reportedEmail });
       if (profiles[0]) {
         await base44.entities.UserProfile.update(profiles[0].id, {

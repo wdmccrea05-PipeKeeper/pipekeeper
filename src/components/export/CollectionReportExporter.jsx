@@ -17,6 +17,7 @@ import { calculateTotalOzFromBlend, calculateCellaredOzFromBlend } from "@/compo
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight, formatDate } from "@/components/utils/localeFormatters";
 import { useCurrency } from "@/lib/currency/useCurrency";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 export default function CollectionReportExporter({ user }) {
   const { t } = useTranslation();
@@ -42,7 +43,7 @@ export default function CollectionReportExporter({ user }) {
   // each fetch Pipe data independently. This is a known inefficiency — a shared fetch helper
   // should be introduced in a future refactor if multiple reports are generated per session.
   const generatePipeCSV = async () => {
-    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+    const pipes = await fetchAllEntities(base44.entities.Pipe, { created_by: user?.email });
     
     let csv = t("reports.pipeCollectionReportTitle") + "\n";
     csv += t("reports.generated") + `: ${formatDate(new Date(), 'short')}\n`;
@@ -57,7 +58,7 @@ export default function CollectionReportExporter({ user }) {
   };
 
   const generatePipePDF = async () => {
-    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+    const pipes = await fetchAllEntities(base44.entities.Pipe, { created_by: user?.email });
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
 
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
@@ -85,7 +86,7 @@ export default function CollectionReportExporter({ user }) {
   };
 
   const generateTobaccoCSV = async () => {
-    const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+    const blends = await fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user?.email });
     
     let csv = t("reports.tobaccoCollectionReportTitle") + "\n";
     csv += t("reports.generated") + `: ${formatDate(new Date(), 'short')}\n`;
@@ -105,7 +106,7 @@ export default function CollectionReportExporter({ user }) {
   };
 
   const generateTobaccoPDF = async () => {
-    const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+    const blends = await fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user?.email });
 
     let html = `<div style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
       <h1 style="color: #0a0a0a; font-weight: bold; font-size: 28px;">${t("reports.tobaccoCollectionReportTitle")}</h1>
@@ -134,7 +135,7 @@ export default function CollectionReportExporter({ user }) {
   };
 
   const generateInsuranceCSV = async () => {
-    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
+    const pipes = await fetchAllEntities(base44.entities.Pipe, { created_by: user?.email });
     const totalValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     
     let csv = t("reports.insuranceValuationReport") + "\n";
@@ -151,8 +152,8 @@ export default function CollectionReportExporter({ user }) {
   };
 
   const generateInsurancePDF = async () => {
-    const pipes = await base44.entities.Pipe.filter({ created_by: user?.email });
-    const blends = await base44.entities.TobaccoBlend.filter({ created_by: user?.email });
+    const pipes = await fetchAllEntities(base44.entities.Pipe, { created_by: user?.email });
+    const blends = await fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user?.email });
     const totalPipesValue = pipes.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
     const totalBlendsValue = blends.reduce((sum, b) => sum + (b.manual_market_value || b.ai_estimated_value || 0), 0);
     const totalValue = totalPipesValue + totalBlendsValue;
@@ -236,8 +237,8 @@ export default function CollectionReportExporter({ user }) {
 
   const generateStatsCSV = async () => {
     const [pipes, blends, logs] = await Promise.all([
-      base44.entities.Pipe.filter({ created_by: user?.email }),
-      base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+      fetchAllEntities(base44.entities.Pipe, { created_by: user?.email }),
+      fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user?.email }),
       base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', MAX_REPORT_LOGS)
     ]);
 
@@ -264,8 +265,8 @@ export default function CollectionReportExporter({ user }) {
 
   const generateStatsPDF = async () => {
     const [pipes, blends, logs] = await Promise.all([
-      base44.entities.Pipe.filter({ created_by: user?.email }),
-      base44.entities.TobaccoBlend.filter({ created_by: user?.email }),
+      fetchAllEntities(base44.entities.Pipe, { created_by: user?.email }),
+      fetchAllEntities(base44.entities.TobaccoBlend, { created_by: user?.email }),
       base44.entities.SmokingLog.filter({ created_by: user?.email }, '-date', MAX_REPORT_LOGS)
     ]);
 

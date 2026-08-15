@@ -115,11 +115,13 @@ Deno.serve(async (req: Request) => {
 
     let allSubs: any[] = [];
     if (userId) {
+      // PK_SAFE_QUERY: Subscription lookup by user_id — typically 1-5 records per user
       const byUserId = await base44.entities.Subscription.filter({ user_id: userId });
       allSubs = byUserId || [];
     }
 
     if (allSubs.length === 0) {
+      // PK_SAFE_QUERY: Subscription lookup by email+provider — typically 1-5 records per user
       const byEmail = await base44.entities.Subscription.filter({ user_email: email, provider: 'stripe' });
       allSubs = byEmail || [];
     }

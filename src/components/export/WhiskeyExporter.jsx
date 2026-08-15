@@ -10,6 +10,7 @@ import { getBottleUnitValue, getBottleDisplayValueLabel } from '@/components/uti
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { selectWhiskeyMetrics } from '@/lib/collection/whiskeySelectors';
 import { selectActiveBottles } from '@/lib/collection/activeFilters';
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 export default function WhiskeyExporter() {
   const [loading, setLoading] = useState(false);
@@ -18,19 +19,19 @@ export default function WhiskeyExporter() {
 
   const { data: bottles = [] } = useQuery({
     queryKey: ['bottles-export', user?.email],
-    queryFn: () => base44.entities.Bottle.filter({ created_by: user?.email }),
+    queryFn: () => fetchAllEntities(base44.entities.Bottle, { created_by: user?.email }),
     enabled: !!user?.email,
   });
 
   const { data: tastingLogs = [] } = useQuery({
     queryKey: ['tasting-logs-export', user?.email],
-    queryFn: () => base44.entities.TastingLog.filter({ created_by: user?.email }, '-tasting_date'),
+    queryFn: () => fetchAllEntities(base44.entities.TastingLog, { created_by: user?.email }, '-tasting_date'),
     enabled: !!user?.email,
   });
 
   const { data: inventoryUnits = [] } = useQuery({
     queryKey: ['whiskey-inventory-export', user?.email],
-    queryFn: () => base44.entities.WhiskeyInventoryUnit.filter({ created_by: user?.email }),
+    queryFn: () => fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: user?.email }),
     enabled: !!user?.email,
   });
 

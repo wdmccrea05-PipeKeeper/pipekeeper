@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { jsPDF } from 'npm:jspdf@2.5.1';
 import { differenceInMonths } from 'npm:date-fns@3.6.0';
 import { requireEntitlement } from '../../shared/requireEntitlement.ts';
+import { fetchAllEntitiesServer } from '../../shared/fetchAllEntitiesServer.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -24,8 +25,8 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     const { startDate, endDate } = payload;
 
-    const blends = await base44.entities.TobaccoBlend.filter({ created_by: user.email });
-    const cellarLogs = await base44.entities.CellarLog.filter({ created_by: user.email });
+    const blends = await fetchAllEntitiesServer(base44.entities.TobaccoBlend, { created_by: user.email }, '-created_date', 5000, 200, 'agingReportPDF:blends');
+    const cellarLogs = await fetchAllEntitiesServer(base44.entities.CellarLog, { created_by: user.email }, '-date', 5000, 200, 'agingReportPDF:cellarLogs');
 
     const startDateObj = new Date(startDate);
     const endDateObj = new Date(endDate);

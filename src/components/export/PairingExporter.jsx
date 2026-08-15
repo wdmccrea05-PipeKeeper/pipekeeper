@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import jsPDF from 'jspdf';
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 export default function PairingExporter({ pipes, blends }) {
   const { t } = useTranslation();
@@ -18,7 +19,7 @@ export default function PairingExporter({ pipes, blends }) {
   const { data: pairingMatrix } = useQuery({
     queryKey: ['pairing-matrix', user?.email],
     queryFn: async () => {
-      const results = await base44.entities.PairingMatrix.filter({ created_by: user?.email });
+      const results = await fetchAllEntities(base44.entities.PairingMatrix, { created_by: user?.email });
       return results[0];
     },
     enabled: !!user?.email,

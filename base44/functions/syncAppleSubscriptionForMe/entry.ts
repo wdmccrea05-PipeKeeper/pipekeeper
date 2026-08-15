@@ -4,8 +4,14 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import {
+  verifyAppleJws,
+  isTransactionActive,
+  appleDateToIso,
+  type VerifiedAppleTransaction,
+} from '../../shared/appleJwsVerifier.ts';
 
-const normEmail = (email) => String(email || "").trim().toLowerCase();
+const normEmail = (email: string) => String(email || "").trim().toLowerCase();
 
 function uniqueModules(modules: string[]) {
   return [...new Set((modules || []).map((m) => String(m || '').trim().toLowerCase()).filter(Boolean))];
@@ -16,7 +22,6 @@ function resolveAppleProductAccess(productId: string) {
   const isAnnual = product.includes('annual') || product.includes('year');
 
   // ── Bundles (check FIRST — bundle IDs may contain single-module keywords) ──
-  // 4-module / all-modules bundle
   if (product.includes('all_module') || product.includes('allmodule') ||
       product.includes('four_module') || product.includes('fourmodule') ||
       product.includes('4_module') || product.includes('4module') ||
@@ -30,7 +35,6 @@ function resolveAppleProductAccess(productId: string) {
     };
   }
 
-  // 3-module bundle
   if (product.includes('three_module') || product.includes('threemodule') ||
       product.includes('3_module') || product.includes('3module') ||
       (product.includes('bundle') && !product.includes('wine') && !product.includes('founders'))) {
@@ -43,7 +47,6 @@ function resolveAppleProductAccess(productId: string) {
     };
   }
 
-  // Founders bundle (2 modules: PK + WK)
   if (product.includes('founders')) {
     return {
       planKey: isAnnual ? 'founders_bundle_annual' : 'founders_bundle_monthly',
@@ -54,45 +57,17 @@ function resolveAppleProductAccess(productId: string) {
     };
   }
 
-  // ── Single modules ──
   if (product.includes('whiskey')) {
-    return {
-      planKey: isAnnual ? 'whiskeykeeper_pro_annual' : 'whiskeykeeper_pro_monthly',
-      modules: ['whiskeykeeper'],
-      productKind: 'single',
-      checkoutType: 'single_module',
-      billingInterval: isAnnual ? 'year' : 'month',
-    };
+    return { planKey: isAnnual ? 'whiskeykeeper_pro_annual' : 'whiskeykeeper_pro_monthly', modules: ['whiskeykeeper'], productKind: 'single', checkoutType: 'single_module', billingInterval: isAnnual ? 'year' : 'month' };
   }
-
   if (product.includes('cigar')) {
-    return {
-      planKey: isAnnual ? 'cigarkeeper_pro_annual' : 'cigarkeeper_pro_monthly',
-      modules: ['cigarkeeper'],
-      productKind: 'single',
-      checkoutType: 'single_module',
-      billingInterval: isAnnual ? 'year' : 'month',
-    };
+    return { planKey: isAnnual ? 'cigarkeeper_pro_annual' : 'cigarkeeper_pro_monthly', modules: ['cigarkeeper'], productKind: 'single', checkoutType: 'single_module', billingInterval: isAnnual ? 'year' : 'month' };
   }
-
   if (product.includes('wine')) {
-    return {
-      planKey: isAnnual ? 'winekeeper_pro_annual' : 'winekeeper_pro_monthly',
-      modules: ['winekeeper'],
-      productKind: 'single',
-      checkoutType: 'single_module',
-      billingInterval: isAnnual ? 'year' : 'month',
-    };
+    return { planKey: isAnnual ? 'winekeeper_pro_annual' : 'winekeeper_pro_monthly', modules: ['winekeeper'], productKind: 'single', checkoutType: 'single_module', billingInterval: isAnnual ? 'year' : 'month' };
   }
 
-  // Default: pipekeeper (the original/primary single-module product)
-  return {
-    planKey: isAnnual ? 'pipekeeper_pro_annual' : 'pipekeeper_pro_monthly',
-    modules: ['pipekeeper'],
-    productKind: 'single',
-    checkoutType: 'single_module',
-    billingInterval: isAnnual ? 'year' : 'month',
-  };
+  return { planKey: isAnnual ? 'pipekeeper_pro_annual' : 'pipekeeper_pro_monthly', modules: ['pipekeeper'], productKind: 'single', checkoutType: 'single_module', billingInterval: isAnnual ? 'year' : 'month' };
 }
 
 Deno.serve(async (req) => {
@@ -106,113 +81,158 @@ Deno.serve(async (req) => {
 
     const emailLower = normEmail(authUser.email);
     const userId = authUser.id;
-    
+
     if (!userId) {
-      return Response.json({ 
-        error: 'User ID not available',
-        code: 'NO_USER_ID'
-      }, { status: 400 });
-    }
-    
-    const body = await req.json().catch(() => ({}));
-    
-    const active = !!body.active;
-    const expiresAt = body.expiresAt || null;
-    const productId = body.productId || '';
-    const pendingProductId = body.pendingProductId || '';
-    const pendingUpgradeEffectiveDate = body.pendingUpgradeEffectiveDate || null;
-    const originalTransactionId = body.originalTransactionId || '';
-    const verificationProof = body.verificationProof || null; // Server-side verification data
-    
-    // When originalTransactionId is missing, proceed as UNVERIFIED rather than
-    // rejecting entirely. The subscription will use apple_unverified_${userId} as
-    // its provider_subscription_id (see below) and be marked isVerified=false.
-    // This ensures users whose iOS wrapper doesn't send the transaction ID still
-    // get their modules resolved from the product ID. The security risk is minimal:
-    // the subscription is always linked to the current authenticated user, and
-    // modules are resolved from the client-sent productId (same trust level with
-    // or without the transaction ID). Admins can review unverified subscriptions
-    // via the provider_subscription_id prefix.
-    if (active && !originalTransactionId) {
-      console.warn(`[syncAppleSubscriptionForMe] Proceeding with UNVERIFIED active claim from user ${userId}: no originalTransactionId provided. Subscription will be marked unverified.`);
-    }
-    
-    // Determine if this is verified (requires server-side proof from App Store)
-    const isVerified = !!verificationProof;
-    
-    // Determine tier
-    let tier = body.tier || 'pro';
-    if (!body.tier && productId.toLowerCase().includes('pro')) {
-      tier = 'pro';
-    }
-    if (String(tier).toLowerCase() === 'premium') {
-      tier = 'pro';
+      return Response.json({ error: 'User ID not available', code: 'NO_USER_ID' }, { status: 400 });
     }
 
+    const body = await req.json().catch(() => ({}));
+
+    const clientActive = !!body.active;
+    const clientExpiresAt = body.expiresAt || null;
+    const clientProductId = body.productId || '';
+    const pendingProductId = body.pendingProductId || '';
+    const pendingUpgradeEffectiveDate = body.pendingUpgradeEffectiveDate || null;
+    const clientOriginalTransactionId = body.originalTransactionId || '';
+    const verificationProof = body.verificationProof || null;
+
+    // ── AUTHORITATIVE SERVER-SIDE VERIFICATION ──────────────────────────────
+    // The client may tell us "I have transaction X." We must independently
+    // determine what transaction X means before granting durable entitlement.
+    //
+    // verificationProof is the JWS token from StoreKit 2's
+    // Transaction.jsonRepresentation. We verify it server-side using Apple's
+    // certificate chain. Only a VERIFIED transaction can grant durable paid
+    // access. Unverified client assertions are stored as
+    // pending_verification and do NOT grant paid access.
+
+    let verifiedTx: VerifiedAppleTransaction | null = null;
+    let verificationStatus: 'verified' | 'pending_verification' | 'unverified' = 'unverified';
+    let verificationError: string | null = null;
+
+    if (verificationProof) {
+      try {
+        verifiedTx = await verifyAppleJws(verificationProof);
+        if (verifiedTx) {
+          verificationStatus = 'verified';
+        } else {
+          verificationStatus = 'pending_verification';
+          verificationError = 'JWS signature verification failed';
+          console.warn(`[syncAppleSubscriptionForMe] JWS verification FAILED for user ${userId}`);
+        }
+      } catch (verifyErr) {
+        verificationStatus = 'pending_verification';
+        verificationError = verifyErr?.message || 'Verification error';
+        console.warn(`[syncAppleSubscriptionForMe] JWS verification error for user ${userId}:`, verifyErr);
+      }
+    } else {
+      verificationStatus = 'pending_verification';
+      verificationError = 'No verificationProof provided';
+      console.warn(`[syncAppleSubscriptionForMe] No verificationProof from user ${userId} — storing as pending_verification`);
+    }
+
+    // ── DETERMINE AUTHORITATIVE ACTIVE STATE ────────────────────────────────
+    // CRITICAL PRECEDENCE RULE:
+    //   A verified server-side negative state must NEVER be overwritten by an
+    //   unverified positive client assertion.
+    //
+    // If we have a verified transaction:
+    //   - Use the VERIFIED expiration, revocation, and product ID
+    //   - Ignore client-supplied active/expiresAt/productId
+    //
+    // If we do NOT have a verified transaction (pending_verification):
+    //   - Do NOT grant durable paid access
+    //   - Store the subscription record as pending_verification
+    //   - Preserve existing access for migration safety (see below)
+
+    let authoritativeActive = false;
+    let authoritativeProductId = clientProductId;
+    let authoritativeExpiresAt: string | null = clientExpiresAt;
+    let authoritativeOriginalTransactionId = clientOriginalTransactionId;
+
+    if (verifiedTx) {
+      // Use VERIFIED transaction data — ignore client assertions
+      authoritativeActive = isTransactionActive(verifiedTx);
+      authoritativeProductId = verifiedTx.productId;
+      authoritativeExpiresAt = appleDateToIso(verifiedTx.expiresDate);
+      authoritativeOriginalTransactionId = verifiedTx.originalTransactionId || verifiedTx.transactionId;
+
+      // Log if client state contradicts verified state
+      if (clientActive && !authoritativeActive) {
+        console.warn(`[syncAppleSubscriptionForMe] Client reports active=true but VERIFIED state is inactive for user ${userId}. Verified state takes precedence.`);
+      }
+      if (clientProductId && clientProductId !== authoritativeProductId) {
+        console.warn(`[syncAppleSubscriptionForMe] Client productId=${clientProductId} differs from VERIFIED productId=${authoritativeProductId} for user ${userId}. Verified state takes precedence.`);
+      }
+    } else {
+      // No verified transaction — do NOT grant durable paid access
+      authoritativeActive = false;
+    }
+
+    // Determine tier
+    let tier = body.tier || 'pro';
+    if (String(tier).toLowerCase() === 'premium') tier = 'pro';
+
     // ── Deferred upgrade handling ──────────────────────────────────────────
-    // Apple's StoreKit 2 exposes autoRenewalPreference (the pending product ID)
-    // and the renewal date (when the upgrade takes effect). We must grant the
-    // CURRENT product's modules until the effective date, then switch to the
-    // pending product after renewal. Never grant the upgrade early.
     const now = new Date();
     const pendingEffective = pendingUpgradeEffectiveDate ? new Date(pendingUpgradeEffectiveDate) : null;
     const upgradeHasTakenEffect = pendingProductId && pendingEffective && pendingEffective <= now;
-    const effectiveProductId = upgradeHasTakenEffect ? pendingProductId : productId;
-
-    if (pendingProductId && pendingEffective && pendingEffective > now) {
-      console.log(`[syncAppleSubscriptionForMe] Deferred upgrade pending for user ${userId}: current=${productId} → pending=${pendingProductId} effective=${pendingUpgradeEffectiveDate}. Granting current product modules.`);
-    } else if (upgradeHasTakenEffect) {
-      console.log(`[syncAppleSubscriptionForMe] Deferred upgrade took effect for user ${userId}: now active=${pendingProductId} (was ${productId})`);
-    }
+    const effectiveProductId = upgradeHasTakenEffect ? pendingProductId : authoritativeProductId;
 
     const productAccess = resolveAppleProductAccess(effectiveProductId);
     const activeModules = uniqueModules(productAccess.modules);
     const modulesCsv = activeModules.join(',');
-    
-    // FIX ISSUE-11: Add server-side expiry check.
-    // Do NOT grant paid access if expiresAt is populated and already in the past,
-    // regardless of what the iOS client reports.
-    const clientReportsActive = active;
-    const serverVerifiedExpiry = expiresAt ? new Date(expiresAt) > new Date() : true;
-    const effectiveActive = clientReportsActive && serverVerifiedExpiry;
 
-    if (!effectiveActive && clientReportsActive && !serverVerifiedExpiry) {
-      console.warn(`[syncAppleSubscriptionForMe] Client reports active but expiresAt=${expiresAt} is in the past — marking expired for user ${userId}`);
-    }
-
-    // Determine status: Trust iOS client only when server-side expiry check also passes
-    const status = effectiveActive ? 'active' : 'expired';
+    // Status: only 'active' if VERIFIED and not expired
+    const status = authoritativeActive ? 'active' : 'expired';
 
     // Create stable provider subscription ID
-    const providerSubId = originalTransactionId || `apple_unverified_${userId}`;
-    
+    const providerSubId = authoritativeOriginalTransactionId || `apple_unverified_${userId}`;
+
     const nowIso = new Date().toISOString();
-    
-    // Find existing Apple subscription by provider_subscription_id
+
+    // Find existing Apple subscription
     const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
       provider: 'apple',
-      provider_subscription_id: providerSubId
+      provider_subscription_id: providerSubId,
     });
-    
+
     const existingAppleSub = existingSubs?.[0];
-    
-    // CONFLICT CHECK: If subscription exists and belongs to different user, deny
+
+    // CONFLICT CHECK
     if (existingAppleSub && existingAppleSub.user_id && existingAppleSub.user_id !== userId) {
       console.warn(`[syncAppleSubscriptionForMe] Apple subscription ${providerSubId} already linked to user ${existingAppleSub.user_id}, requested by ${userId}`);
       return Response.json({
         ok: false,
-        error: 'This Apple subscription is already linked to a different PipeKeeper account',
+        error: 'This Apple subscription is already linked to a different account',
         code: 'ALREADY_LINKED',
-        existing_user_id: existingAppleSub.user_id
       }, { status: 409 });
     }
-    
-    // BACKFILL CHECK: If subscription exists but missing user_email, add it
-    if (existingAppleSub && !existingAppleSub.user_email) {
-      console.log(`[syncAppleSubscriptionForMe] Backfilling user_email for Apple subscription ${providerSubId}`);
+
+    // ── MIGRATION SAFETY ────────────────────────────────────────────────────
+    // Do NOT revoke legitimate existing Apple subscribers during the transition
+    // to authoritative verification.
+    //
+    // If this is the first time we see a client without verificationProof, but
+    // they already have an ACTIVE Apple subscription record, preserve their
+    // access temporarily while we attempt verification.
+    //
+    // The subscription is marked with verification_status='pending_verification'
+    // so it can be distinguished from verified subscriptions. A scheduled
+    // retry should attempt re-verification. If verification consistently fails,
+    // admin review is required before revoking.
+    //
+    // A temporary Apple/API/network failure must NOT immediately remove a
+    // legitimate user's access.
+
+    let migrationGraceActive = false;
+    if (!verifiedTx && existingAppleSub && existingAppleSub.status === 'active') {
+      // Existing active subscriber — preserve access during migration
+      migrationGraceActive = true;
+      console.warn(`[syncAppleSubscriptionForMe] MIGRATION GRACE: Preserving existing active Apple subscription ${providerSubId} for user ${userId} while verification is pending. verification_status=${verificationStatus}`);
     }
-    
-    const subData = {
+
+    const subData: Record<string, any> = {
       user_id: userId,
       user_email: emailLower,
       provider: 'apple',
@@ -221,8 +241,7 @@ Deno.serve(async (req) => {
       stripe_customer_id: null,
       status,
       tier,
-      // Keep both keys for compatibility with legacy readers that still check camelCase.
-      product_id: productId || null,
+      product_id: authoritativeProductId || null,
       pending_upgrade_product_id: pendingProductId || null,
       pending_upgrade_effective_date: pendingUpgradeEffectiveDate || null,
       plan_key: productAccess.planKey,
@@ -232,35 +251,36 @@ Deno.serve(async (req) => {
       product_kind: productAccess.productKind,
       checkout_type: productAccess.checkoutType,
       primary_module: activeModules[0] || null,
-      current_period_end: expiresAt,
-      current_period_start: effectiveActive ? nowIso : (existingAppleSub?.current_period_start || null),
+      current_period_end: authoritativeExpiresAt,
+      current_period_start: authoritativeActive ? nowIso : (existingAppleSub?.current_period_start || null),
       started_at: existingAppleSub?.started_at || nowIso,
       subscriptionStartedAt: existingAppleSub?.subscriptionStartedAt || existingAppleSub?.started_at || nowIso,
       billing_interval: productAccess.billingInterval,
       amount: null,
-      cancel_at_period_end: false
+      cancel_at_period_end: false,
     };
-    
+
     if (existingAppleSub) {
       await base44.asServiceRole.entities.Subscription.update(existingAppleSub.id, subData);
-      console.log(`[syncAppleSubscriptionForMe] Updated Apple subscription ${providerSubId} for user ${userId}, verified=${isVerified}`);
+      console.log(`[syncAppleSubscriptionForMe] Updated Apple subscription ${providerSubId} for user ${userId}, verified=${verificationStatus === 'verified'}, migrationGrace=${migrationGraceActive}`);
     } else {
       await base44.asServiceRole.entities.Subscription.create(subData);
-      console.log(`[syncAppleSubscriptionForMe] Created Apple subscription ${providerSubId} for user ${userId}, verified=${isVerified}`);
-    }
-    
-    // Only mark paid when server-side expiry check confirms subscription is still active
-    const shouldMarkPaid = effectiveActive;
-
-    if (shouldMarkPaid && !isVerified) {
-      console.warn(`[syncAppleSubscriptionForMe] Granting access based on unverified client claim for user ${userId}. originalTransactionId=${originalTransactionId}`);
+      console.log(`[syncAppleSubscriptionForMe] Created Apple subscription ${providerSubId} for user ${userId}, verified=${verificationStatus === 'verified'}`);
     }
 
-    // ── Merge earned-access modules so iOS sync never overwrites referral rewards ──
-    // Fetch all currently active ReferralEarnedAccess records for this user and
-    // union their modules with the iOS subscription modules.  This ensures that
-    // a user who has both an iOS paid subscription AND referral-earned access
-    // retains both module sets after every app-launch sync.
+    // ── DETERMINE PAID ACCESS ───────────────────────────────────────────────
+    // Only grant durable paid access when:
+    //   1. Transaction is VERIFIED and active, OR
+    //   2. Migration grace period is active (existing subscriber, verification pending)
+    //
+    // An unverified client assertion alone CANNOT grant durable paid access.
+    const shouldMarkPaid = authoritativeActive || migrationGraceActive;
+
+    if (shouldMarkPaid && !verifiedTx && migrationGraceActive) {
+      console.warn(`[syncAppleSubscriptionForMe] Granting access via MIGRATION GRACE for user ${userId}. This is temporary — verification must succeed on subsequent syncs or admin review is required.`);
+    }
+
+    // ── Merge earned-access modules ──────────────────────────────────────────
     const nowTs = new Date();
     let earnedRecords: any[] = [];
     let earnedModules: string[] = [];
@@ -274,11 +294,9 @@ Deno.serve(async (req) => {
       );
       earnedModules = [...new Set(stillActive.map((r: any) => String(r.module).toLowerCase()))];
     } catch (earnedErr) {
-      // Non-fatal — proceed with iOS modules only
       console.warn('[syncAppleSubscriptionForMe] Could not fetch earned-access records (non-fatal):', earnedErr);
     }
 
-    // Union of iOS subscription modules + referral-earned modules
     const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
     const iosModules: string[] = shouldMarkPaid ? activeModules : [];
     const allActiveModules: string[] = [...new Set([...iosModules, ...earnedModules])];
@@ -286,13 +304,12 @@ Deno.serve(async (req) => {
     const grantedModulesCsv = allActiveModules.join(',') || '';
     const hasAnyAccess = allActiveModules.length > 0 || shouldMarkPaid;
 
-    // Compute all four per-module flags — do not leave any unwritten
     const modulePaidFlags: Record<string, boolean> = {};
     for (const mod of ALL_MODULES) {
       modulePaidFlags[`${mod}_paid`] = allActiveModules.includes(mod);
     }
 
-    // Earned-access canonical fields — derived from the already-fetched records
+    // Earned-access canonical fields
     let referralEarnedAccess = false;
     let referralEarnedModule: string | null = null;
     let referralEarnedExpiresAt: string | null = null;
@@ -327,9 +344,8 @@ Deno.serve(async (req) => {
         referral_earned_access: referralEarnedAccess,
         referral_earned_module: referralEarnedModule,
         referral_earned_expires_at: referralEarnedExpiresAt,
-        platform: 'ios'
+        platform: 'ios',
       });
-      console.log(`[syncAppleSubscriptionForMe] Created user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}, allModules=${grantedModulesCsv}`);
     } else {
       const updates: Record<string, any> = {
         subscription_level: shouldMarkPaid ? 'paid' : 'free',
@@ -350,17 +366,14 @@ Deno.serve(async (req) => {
           subscription_level: shouldMarkPaid ? 'paid' : 'free',
           subscription_status: status,
           paid_modules_csv: grantedModulesCsv,
+          apple_verification_status: verificationStatus,
         },
       };
-      // Only set platform if not already set
-      if (!users[0].platform) {
-        updates.platform = 'ios';
-      }
+      if (!users[0].platform) updates.platform = 'ios';
       await base44.asServiceRole.entities.User.update(users[0].id, updates);
-      console.log(`[syncAppleSubscriptionForMe] Updated user ${emailLower} subscription_level=${shouldMarkPaid ? 'paid' : 'free'}, tier=${tier}, allModules=${grantedModulesCsv}`);
     }
 
-    // ── Upsert UserEntitlement row with merged state ────────────────────────────
+    // ── Upsert UserEntitlement ────────────────────────────────────────────────
     try {
       const existingEnt = await base44.asServiceRole.entities.UserEntitlement.filter({ user_id: userId });
       const entData = {
@@ -384,9 +397,8 @@ Deno.serve(async (req) => {
     } catch (entErr) {
       console.warn('[syncAppleSubscriptionForMe] Could not upsert UserEntitlement (non-fatal):', entErr);
     }
-    
-    // ── Referral qualification: fire when a referred user's iOS sub becomes active ──
-    // Only trigger when transitioning to active (not on every sync)
+
+    // ── Referral qualification ──────────────────────────────────────────────────
     if (shouldMarkPaid && (!existingAppleSub || existingAppleSub.status !== 'active')) {
       try {
         const referredUser = users?.[0] || null;
@@ -395,7 +407,7 @@ Deno.serve(async (req) => {
             referredUserId: userId,
             referredEmail: emailLower,
             subscriptionId: providerSubId,
-            subscriptionAmount: null, // Amount not available from iOS client sync
+            subscriptionAmount: null,
             subscriptionInterval: productAccess.billingInterval || 'month',
             billingProvider: 'ios',
           });
@@ -405,16 +417,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Log successful sync for monitoring
-    console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${emailLower} userId=${userId} tier=${tier} status=${status} active=${active} verified=${isVerified} productId=${productId} effectiveProductId=${effectiveProductId} allModules=${grantedModulesCsv} pendingUpgrade=${pendingProductId || 'none'} pendingEffective=${pendingUpgradeEffectiveDate || 'none'}`);
+    console.log(`[syncAppleSubscriptionForMe] SUCCESS: user=${emailLower} userId=${userId} tier=${tier} status=${status} verified=${verificationStatus === 'verified'} migrationGrace=${migrationGraceActive} productId=${authoritativeProductId} modules=${grantedModulesCsv}`);
 
     return Response.json({
       ok: true,
       synced: true,
-      verified: isVerified,
+      verified: verificationStatus === 'verified',
+      verification_status: verificationStatus,
+      verification_error: verificationError,
+      migration_grace: migrationGraceActive,
       tier,
       status,
-      active,
+      active: authoritativeActive,
       modules_csv: grantedModulesCsv,
       ios_modules_csv: modulesCsv,
       earned_modules: earnedModules,
@@ -425,10 +439,9 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error(`[syncAppleSubscriptionForMe] ERROR:`, error);
-    return Response.json({ 
+    return Response.json({
       ok: false,
       error: error?.message || 'Failed to sync Apple subscription',
-      stack: error?.stack
     }, { status: 500 });
   }
 });
