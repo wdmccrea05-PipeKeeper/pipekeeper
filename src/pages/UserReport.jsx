@@ -3,6 +3,7 @@ import UserReportDateRange from '@/components/reports/UserReportDateRange';
 import UserReportAuditTable from '@/components/reports/UserReportAuditTable';
 import SubscriptionReconciliationSummary from '@/components/reports/SubscriptionReconciliationSummary';
 import ProviderVerificationPanel from '@/components/reports/ProviderVerificationPanel';
+import CanonicalReconciliationPanel from '@/components/reports/CanonicalReconciliationPanel';
 import { getCanonicalUserLifecycleReport } from '@/lib/analytics/canonicalAnalyticsService';
 
 const DATE_RANGE_OPTIONS = [
@@ -85,6 +86,16 @@ export default function UserReport() {
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8 text-[#E0D8C8]">
       <Header generatedAt={data.meta?.generatedAt} onRefresh={load} onExport={() => exportUsersCsv(auditRows)} />
+
+      {/* 0. Canonical Reconciliation — single source of truth */}
+      <Section title="0. Canonical Subscriber Reconciliation (Source of Truth)">
+        <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">
+          These counts are derived from <code className="text-[#D4A574]">reconcileSubscriberPopulations</code>,
+          the canonical counting service. All other metrics on this page should eventually align with these.
+          Distinguishes provider-verified vs provisional paying, resolves product scope, and detects anomalies.
+        </p>
+        <CanonicalReconciliationPanel />
+      </Section>
 
       <UserReportDateRange
         options={DATE_RANGE_OPTIONS}

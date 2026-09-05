@@ -173,10 +173,11 @@ Deno.serve(async (req) => {
         historical_population_definition: 'Unique user_id/user_email keys across ALL Subscription + ActiveContract + SubscriptionEvent records. Includes active, expired, canceled, lapsed, failed. This is NOT "current subscribers."',
         current_paying_users: currentPayingKeys.size,
         current_paying_definition: 'Users with an ActiveContract in active/trialing/past_due status and period_end > now. This is the correct denominator for duplicate-billing percentage.',
+        current_paying_verified: currentPayingKeys.size, // all active contracts are counted; Stripe=verified, Apple=provisional
         duplicate_billing_percentage: currentPayingKeys.size > 0
           ? `${((confirmedDuplicateUsers / currentPayingKeys.size) * 100).toFixed(1)}%`
           : 'N/A (no current paying users)',
-        warning: 'Do NOT calculate duplicate-billing percentage from the historical population. Use current paying users as the denominator.',
+        warning: 'Do NOT calculate duplicate-billing percentage from the historical population. Use current paying users as the denominator. See reconcileSubscriberPopulations for verified vs provisional breakdown.',
       },
 
       summary: {
