@@ -1,7 +1,7 @@
 {
   "name": "UserEntitlement",
   "type": "object",
-  "description": "Derived entitlement record \u2014 one row per user. Computed exclusively from ActiveContract rows. Never written by sync, webhooks, or UI directly. Rebuilt on each normalization pass.",
+  "description": "Canonical entitlement record \u2014 one row per user. Computed by the canonical reconcileEntitlementForUser service from authoritative sources (ActiveContract, Subscription, provider verification, legitimate non-paid grants). Every active entitlement has traceable provenance explaining why it exists.",
   "properties": {
     "user_id": {
       "type": "string",
@@ -14,7 +14,16 @@
     "has_access": {
       "type": "boolean",
       "default": false,
-      "description": "True if the user has at least one active contract"
+      "description": "True if the user has at least one active contract or legitimate non-paid grant"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro"
+      ],
+      "default": "free",
+      "description": "Canonical access tier derived from the reconciler. 'pro' means the user has paid or legitimate non-paid access."
     },
     "active_contract_ids": {
       "type": "array",
@@ -23,12 +32,19 @@
       },
       "description": "IDs of all ActiveContract rows contributing to this entitlement"
     },
+    "backing_subscription_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of legacy Subscription rows that back the active contracts"
+    },
     "modules": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Union of all modules across active contracts"
+      "description": "Union of all modules across active contracts and non-paid grants"
     },
     "pipekeeper": {
       "type": "boolean",
@@ -82,10 +98,64 @@
       "format": "date-time",
       "description": "Earliest upcoming renewal date across all active contracts"
     },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "paid_contract",
+        "grandfathered",
+        "promotional",
+        "referral",
+        "manual_admin",
+        "trial",
+        "provisional_apple",
+        "unresolved",
+        "none"
+      ],
+      "default": "none",
+      "description": "Provenance: why this entitlement exists. Every has_access=true record must have a traceable source_type."
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "verified_active",
+        "verified_inactive",
+        "provisional",
+        "verification_unavailable",
+        "manual_review"
+      ],
+      "default": "manual_review",
+      "description": "Provider verification state of the backing contract"
+    },
+    "granted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this entitlement was first granted (earliest contract start or grant date)"
+    },
+    "effective_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the current entitlement period became effective"
+    },
+    "effective_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the current entitlement period ends (paid-through date). Null if no end date."
+    },
+    "non_paid_grants": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Legitimate non-paid access grants (referral, grandfathered, promotional, manual). Each entry: {source, module, grant_id, start_at, end_at}."
+    },
+    "reconciler_version": {
+      "type": "string",
+      "description": "Version of the canonical reconciler that produced this record"
+    },
     "computed_at": {
       "type": "string",
       "format": "date-time",
-      "description": "When this entitlement was last recomputed"
+      "description": "When this entitlement was last recomputed by the canonical reconciler"
     }
   },
   "required": [

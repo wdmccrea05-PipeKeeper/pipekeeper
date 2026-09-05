@@ -220,6 +220,18 @@ runCheck('14. Duplicate subscription guard regression tests', () => {
   }
 });
 
+// 15. Contract → Entitlement reconciliation tests (P0: paid but Free bug)
+runCheck('15. Contract → Entitlement reconciliation tests', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/reconcileEntitlementForUser.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Contract → Entitlement reconciliation tests passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
 console.log('\n═══ Summary ═══');
 for (const r of results) {
   console.log(`  ${r.status === 'PASS' ? '✓' : '✗'} ${r.name}`);

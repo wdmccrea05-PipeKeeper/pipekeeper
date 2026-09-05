@@ -16,18 +16,8 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.46";
 import { fetchAllEntitiesServer } from "../../shared/fetchAllEntitiesServer.ts";
 import { resolveProductScope, buildPriceIdMap } from "../../shared/productScopeResolver.ts";
 
-const normEmail = (e: unknown) => String(e || "").trim().toLowerCase();
+import { normEmail, isActiveStatus, isExpired } from "../../shared/subscriptionHelpers.ts";
 const now = () => new Date();
-
-function isActiveStatus(status: string): boolean {
-  const s = String(status || "").toLowerCase();
-  return s === "active" || s === "trialing" || s === "past_due" || s === "trial";
-}
-
-function isExpired(periodEnd: string | null | undefined): boolean {
-  if (!periodEnd) return false;
-  return new Date(periodEnd) <= now();
-}
 
 Deno.serve(async (req) => {
   try {
