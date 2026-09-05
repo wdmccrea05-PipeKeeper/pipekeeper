@@ -20,6 +20,7 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import Stripe from 'npm:stripe@13.11.0';
+import { shouldBlockNewSubscription } from '../../shared/duplicateSubscriptionGuard.ts';
 
 function getStripeClient() {
   const key = Deno.env.get('STRIPE_SECRET_KEY');
@@ -369,6 +370,29 @@ Deno.serve(async (req) => {
       upgrade_intent: isUpgradeIntent,
       initiated_from: 'module_upgrade_flow',
     };
+
+    // ── Duplicate Subscription Guard ──
+    // Block checkout if user already has an active subscription for any of the requested modules
+    try {
+      const byEmail = await base44.asServiceRole.entities.Subscription.filter({ user_email: email }, '-created_date', 50);
+      const byUserId = userId ? await base44.asServiceRole.entities.Subscription.filter({ user_id: userId }, '-created_date', 50) : [];
+      const existingSubs = [...new Map([...byEmail, ...byUserId].map((s: any) => [s.id, s])).values()];
+
+      for (const mod of modules) {
+        const guardResult = shouldBlockNewSubscription(existingSubs, billingPeriod, mod);
+        if (guardResult.block) {
+          console.warn(`[createModuleCheckoutSession] Blocked duplicate checkout for ${email} module=${mod}: ${guardResult.reason}`);
+          return Response.json({
+            success: false,
+            error: `You already have an active subscription for ${mod}. Please manage your existing plan in subscription settings, or contact support if you believe this is an error.`,
+            duplicate_block: true,
+            existing_subscription_id: guardResult.existingSubscriptionId,
+          }, { status: 409 });
+        }
+      }
+    } catch (e: any) {
+      console.warn('[createModuleCheckoutSession] Duplicate guard check failed (non-blocking):', e?.message);
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
