@@ -63,15 +63,24 @@
     "product_source": {
       "type": "string",
       "enum": [
+        "stripe_product",
+        "stripe_price",
+        "apple_product_id",
+        "checkout_metadata",
+        "price_id_lookup",
+        "plan_key",
         "modules_csv",
         "product_kind",
         "bundle_signal",
-        "price_id_lookup",
+        "primary_module",
+        "legacy_subscription",
+        "historical_plan_key",
         "amount_lookup",
+        "amount_interval_inference",
         "manual",
         "unknown"
       ],
-      "description": "How product was resolved \u2014 for full auditability"
+      "description": "How product was resolved \u2014 for full auditability. Provider-truth sources (stripe_product, stripe_price, apple_product_id) outrank historical inference (amount_interval_inference, legacy_subscription)."
     },
     "modules": {
       "type": "array",
@@ -151,6 +160,40 @@
       "type": "string",
       "format": "date-time",
       "description": "Apple deferred upgrade: the renewal date when the pending product takes effect. Null when no pending upgrade."
+    },
+    "resolved_price_id": {
+      "type": "string",
+      "description": "Authoritative Stripe price ID recovered from the live provider subscription. Null for non-Stripe or when not yet verified."
+    },
+    "resolved_product_id": {
+      "type": "string",
+      "description": "Authoritative provider product ID (Stripe product ID or Apple product ID) recovered from the live provider. Null when not yet verified."
+    },
+    "resolved_plan_key": {
+      "type": "string",
+      "description": "Canonical CollectionKeeper plan key resolved from provider truth (e.g. pipekeeper_pro_annual, four_module_bundle_monthly)."
+    },
+    "provider_verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the provider was last live-verified for this contract. Null if never verified."
+    },
+    "reconciliation_status": {
+      "type": "string",
+      "enum": [
+        "provider_matched",
+        "provider_recovered",
+        "provider_mismatch",
+        "provider_subscription_missing",
+        "provider_lookup_failed",
+        "historical_inferred",
+        "unresolved",
+        "provisional_apple",
+        "stale_not_active",
+        "not_reconciled"
+      ],
+      "default": "not_reconciled",
+      "description": "Per-contract reconciliation classification from the canonical contract reconciler."
     },
     "quality": {
       "type": "string",
