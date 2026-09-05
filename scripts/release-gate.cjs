@@ -256,6 +256,18 @@ runCheck('17. Billing lifecycle reconciler tests', () => {
   }
 });
 
+// 18. Stripe product identity resolver tests (P0: provider chain recovery)
+runCheck('18. Stripe product identity resolver tests', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/stripeProductResolver.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Stripe product identity resolver tests passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
 console.log('\n═══ Summary ═══');
 for (const r of results) {
   console.log(`  ${r.status === 'PASS' ? '✓' : '✗'} ${r.name}`);

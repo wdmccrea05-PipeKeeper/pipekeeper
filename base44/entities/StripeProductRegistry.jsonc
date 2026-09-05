@@ -1,0 +1,132 @@
+{
+  "name": "StripeProductRegistry",
+  "type": "object",
+  "description": "Canonical persistent mapping of Stripe Price/Product IDs to CollectionKeeper plan keys and module scopes. Built from authoritative Stripe API queries. Historical/archived prices remain mapped even after they are removed from environment variables, so the application never needs to re-infer the same legacy price from dollar amount.",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple"
+      ],
+      "description": "Payment provider"
+    },
+    "price_id": {
+      "type": "string",
+      "description": "Stripe Price ID (e.g. price_xxx). Unique within provider."
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Stripe Product ID (e.g. prod_xxx)"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Stripe Product name at time of mapping (snapshot)"
+    },
+    "price_nickname": {
+      "type": "string",
+      "description": "Stripe Price nickname if present (snapshot)"
+    },
+    "canonical_plan_key": {
+      "type": "string",
+      "description": "CollectionKeeper plan key from PLAN_CATALOG (e.g. pipekeeper_pro_annual)"
+    },
+    "canonical_product": {
+      "type": "string",
+      "enum": [
+        "pipekeeper",
+        "whiskeykeeper",
+        "cigarkeeper",
+        "winekeeper",
+        "bundle",
+        "unknown"
+      ],
+      "description": "Canonical product resolved from provider truth"
+    },
+    "canonical_modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Canonical module list resolved from provider truth"
+    },
+    "billing_interval": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "annual",
+        "unknown"
+      ],
+      "description": "Billing interval from the Stripe Price recurring object"
+    },
+    "amount_cents": {
+      "type": "number",
+      "description": "Stripe Price unit_amount in cents"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "stripe_price_active": {
+      "type": "boolean",
+      "description": "Whether the Stripe Price was active at last verification"
+    },
+    "is_historical": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this price is archived/legacy (no longer sold)"
+    },
+    "mapping_source": {
+      "type": "string",
+      "enum": [
+        "stripe_product_metadata",
+        "stripe_price_metadata",
+        "stripe_product_name",
+        "stripe_price_nickname",
+        "env_var_price_map",
+        "persisted_registry",
+        "manual",
+        "legacy_subscription"
+      ],
+      "description": "How the canonical mapping was established"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Confidence of the mapping"
+    },
+    "first_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this price/product was first discovered and mapped"
+    },
+    "last_verified": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this mapping was last verified against the live Stripe API"
+    },
+    "current_contract_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of current (provider-active) ActiveContract rows using this price"
+    },
+    "historical_contract_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of historical/stale ActiveContract rows using this price"
+    }
+  },
+  "required": [
+    "provider",
+    "price_id",
+    "canonical_plan_key",
+    "mapping_source",
+    "confidence",
+    "first_seen",
+    "last_verified"
+  ]
+}
