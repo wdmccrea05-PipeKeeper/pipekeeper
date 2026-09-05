@@ -136,19 +136,57 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── Compute canonical populations for correct denominator ───────────────
+    // The "97 users" is a HISTORICAL population. The correct denominator for
+    // duplicate-billing percentage is "current paying users."
+    const now = new Date();
+    const currentPayingKeys = new Set<string>();
+    for (const c of allContracts) {
+      const status = String(c.status || '').toLowerCase();
+      const pe = c.period_end ? new Date(c.period_end) : null;
+      if (['active', 'trialing', 'past_due'].includes(status) && (!pe || pe > now)) {
+        const key = String(c.user_id || c.user_email || '');
+        if (key) currentPayingKeys.add(key);
+      }
+    }
+
+    const historicalKeys = new Set<string>();
+    for (const s of allSubs) { const k = s.user_id || s.user_email; if (k) historicalKeys.add(String(k)); }
+    for (const c of allContracts) { const k = c.user_id || c.user_email; if (k) historicalKeys.add(String(k)); }
+    for (const e of allEvents) { const k = e.user_id || e.user_email || e.normalized_email; if (k) historicalKeys.add(String(k)); }
+
+    const confirmedDuplicateUsers = flaggedUsers.filter((u: any) =>
+      u.conflicts.some((c: any) => c.classification === 'CONFIRMED_DUPLICATE_BILLING')
+    ).length;
+
     // ── Build summary ──────────────────────────────────────────────────────
     const summary = summarizeAudit(perUserResults);
 
     // Add additional context
     const report = {
       audit_timestamp: new Date().toISOString(),
-      audit_version: 'corrected_v2',
+      audit_version: 'corrected_v3_with_denominator_reconciliation',
+
+      // ── DENOMINATOR RECONCILIATION ──
+      denominator: {
+        historical_users_evaluated: historicalKeys.size,
+        historical_population_definition: 'Unique user_id/user_email keys across ALL Subscription + ActiveContract + SubscriptionEvent records. Includes active, expired, canceled, lapsed, failed. This is NOT "current subscribers."',
+        current_paying_users: currentPayingKeys.size,
+        current_paying_definition: 'Users with an ActiveContract in active/trialing/past_due status and period_end > now. This is the correct denominator for duplicate-billing percentage.',
+        duplicate_billing_percentage: currentPayingKeys.size > 0
+          ? `${((confirmedDuplicateUsers / currentPayingKeys.size) * 100).toFixed(1)}%`
+          : 'N/A (no current paying users)',
+        warning: 'Do NOT calculate duplicate-billing percentage from the historical population. Use current paying users as the denominator.',
+      },
+
       summary: {
         ...summary,
         users_with_multiple_records: usersWithMultipleRecords,
         total_subscription_records: allSubs.length,
         total_active_contract_records: allContracts.length,
         total_subscription_events: allEvents.length,
+        current_paying_users: currentPayingKeys.size,
+        confirmed_duplicate_billing_users: confirmedDuplicateUsers,
       },
       flagged_users: flaggedUsers,
       classification_legend: {
@@ -158,7 +196,7 @@ Deno.serve(async (req) => {
         CONFIRMED_DUPLICATE_BILLING: 'Successful charges occurred for overlapping subscriptions covering the same entitlement during the same billing period. Enters refund-remediation workflow.',
         MANUAL_REVIEW: 'Evidence is insufficient to determine customer intent or billing status safely.',
       },
-      note: 'Previous audit result (30 of 96 users with conflicts) is WITHDRAWN as unverified. This corrected audit uses entitlement scope, temporal overlap, and charge evidence to classify conflicts.',
+      note: 'Previous audit result (30 of 96 users with conflicts) is WITHDRAWN. The 96 is a historical population, not current subscribers. Use reconcileSubscriberPopulations for canonical population counts. Do not perform batch remediation until populations are reconciled.',
     };
 
     console.log('[auditDuplicateBilling] Audit complete:', JSON.stringify(report.summary, null, 2));
