@@ -80,30 +80,151 @@ export default function CanonicalReconciliationPanel() {
         </div>
       )}
 
-      {/* By module */}
+      {/* By module — UNIQUE CURRENT PAYING USERS */}
       <div>
-        <p className="text-sm font-semibold text-[#D4A574] mb-2">Paying by Module/Scope</p>
+        <p className="text-sm font-semibold text-[#D4A574] mb-1">Paying by Module/Scope</p>
+        <p className="text-xs text-[#E0D8C8]/40 mb-2">Unique current paying users entitled to each module from current billing contracts. A user with multiple modules appears once in each.</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <MetricCard label="PipeKeeper" value={byMod.pipekeeper ?? 0} />
-          <MetricCard label="CigarKeeper" value={byMod.cigarkeeper ?? 0} />
-          <MetricCard label="WhiskeyKeeper" value={byMod.whiskeykeeper ?? 0} />
-          <MetricCard label="WineKeeper" value={byMod.winekeeper ?? 0} />
-          <MetricCard label="Multi-Module Bundles" value={byMod.multi_module_bundles ?? 0} />
+          <MetricCard label="PipeKeeper" value={byMod.pipekeeper ?? 0} sub="unique current paying users" />
+          <MetricCard label="CigarKeeper" value={byMod.cigarkeeper ?? 0} sub="unique current paying users" />
+          <MetricCard label="WhiskeyKeeper" value={byMod.whiskeykeeper ?? 0} sub="unique current paying users" />
+          <MetricCard label="WineKeeper" value={byMod.winekeeper ?? 0} sub="unique current paying users" />
+          <MetricCard label="Multi-Module Bundles" value={byMod.multi_module_bundles ?? 0} sub="unique users with 2+ modules" />
           <MetricCard label="Unresolved Scope" value={byMod.unresolved_scope ?? 0} warn={(byMod.unresolved_scope ?? 0) > 0}
             sub="anomaly — needs resolution" />
         </div>
       </div>
 
-      {/* By provider */}
+      {/* By provider — SAME unique current user population */}
       <div>
-        <p className="text-sm font-semibold text-[#D4A574] mb-2">Paying by Provider</p>
+        <p className="text-sm font-semibold text-[#D4A574] mb-1">Paying by Provider</p>
+        <p className="text-xs text-[#E0D8C8]/40 mb-2">Unique current paying users by provider. Provider counts are unique users by provider — a user with both Stripe and Apple appears in both.</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <MetricCard label="Stripe (Verified)" value={byProv.stripe_verified ?? 0} />
+          <MetricCard label="Stripe (Verified)" value={byProv.stripe_verified ?? 0} sub="live API verified" />
           <MetricCard label="Apple (Verified)" value={byProv.apple_verified ?? 0} />
-          <MetricCard label="Apple (Provisional)" value={byProv.apple_provisional ?? 0} warn={(byProv.apple_provisional ?? 0) > 0} />
+          <MetricCard label="Apple (Provisional)" value={byProv.apple_provisional ?? 0} warn={(byProv.apple_provisional ?? 0) > 0} sub="pending App Store Server API" />
           <MetricCard label="Manual/Other" value={(byProv.manual_verified ?? 0) + (byProv.google ?? 0)} />
         </div>
       </div>
+
+      {/* Stale local contracts */}
+      {data.stale_local_contracts?.total > 0 && (
+        <div>
+          <p className="text-sm font-semibold text-[#D4A574] mb-2">
+            Stale Local Contracts — {data.stale_local_contracts.total} (active locally but NOT current at provider)
+          </p>
+          <div className="overflow-auto max-h-48 rounded-lg border border-[#8b6239]/25">
+            <table className="w-full text-xs">
+              <thead className="bg-[#2a1f18] sticky top-0">
+                <tr>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Email</th>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Provider</th>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Local Status</th>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Provider Status</th>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Lifecycle</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data.stale_local_contracts.detail || []).map((c, i) => (
+                  <tr key={i} className="border-t border-[#8b6239]/15">
+                    <td className="px-2 py-1.5 font-mono">{c.email || '—'}</td>
+                    <td className="px-2 py-1.5">{c.provider}</td>
+                    <td className="px-2 py-1.5">{c.local_status}</td>
+                    <td className="px-2 py-1.5">{c.provider_status}</td>
+                    <td className="px-2 py-1.5">{c.lifecycle_classification?.replace(/_/g, ' ')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Registry usage proof */}
+      {data.registry_usage?.length > 0 && (
+        <div>
+          <p className="text-sm font-semibold text-[#D4A574] mb-2">StripeProductRegistry Usage Proof</p>
+          <div className="overflow-auto max-h-48 rounded-lg border border-[#8b6239]/25">
+            <table className="w-full text-xs">
+              <thead className="bg-[#2a1f18] sticky top-0">
+                <tr>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Product ID</th>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Price ID</th>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Product Name</th>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Canonical Plan</th>
+                  <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Modules</th>
+                  <th className="text-right px-2 py-2 text-[#E0D8C8]/70">Current Contracts</th>
+                  <th className="text-right px-2 py-2 text-[#E0D8C8]/70">Unique Users</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.registry_usage.map((r, i) => (
+                  <tr key={i} className="border-t border-[#8b6239]/15">
+                    <td className="px-2 py-1.5 font-mono">{r.product_id}</td>
+                    <td className="px-2 py-1.5 font-mono">{r.price_id}</td>
+                    <td className="px-2 py-1.5">{r.product_name}</td>
+                    <td className="px-2 py-1.5">{r.canonical_plan}</td>
+                    <td className="px-2 py-1.5">{(r.canonical_modules || []).join(', ')}</td>
+                    <td className="px-2 py-1.5 text-right">{r.current_contracts_using}</td>
+                    <td className="px-2 py-1.5 text-right">{r.current_unique_users}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Contract → Product → User proof table */}
+      {data.proof_table?.length > 0 && (
+        <div>
+          <p className="text-sm font-semibold text-[#D4A574] mb-1">
+            Contract → Product → User Proof Table ({data.proof_table_summary?.current_rows ?? 0} current of {data.proof_table_summary?.total_rows ?? 0} total)
+          </p>
+          <p className="text-xs text-[#E0D8C8]/40 mb-2">
+            Resolved: {data.proof_table_summary?.provider_resolved ?? 0} PROVIDER_RESOLVED · {data.proof_table_summary?.legacy_resolved ?? 0} LEGACY_RESOLVED · {data.proof_table_summary?.amount_inferred ?? 0} AMOUNT_INFERRED · {data.proof_table_summary?.unresolved ?? 0} UNRESOLVED
+          </p>
+          <details className="rounded-lg border border-[#8b6239]/25 bg-[#1f1712]/70">
+            <summary className="px-4 py-2 text-xs text-[#E0D8C8]/70 cursor-pointer">Show all rows</summary>
+            <div className="overflow-auto max-h-96">
+              <table className="w-full text-xs">
+                <thead className="bg-[#2a1f18] sticky top-0">
+                  <tr>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">User</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Provider</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Sub ID</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Price ID</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Product ID</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Registry</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Plan</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Modules</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Identity</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Lifecycle</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Current?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.proof_table.map((r, i) => (
+                    <tr key={i} className={`border-t border-[#8b6239]/15 ${r.is_current ? '' : 'opacity-40'}`}>
+                      <td className="px-2 py-1.5 font-mono max-w-[140px] truncate" title={r.user_email}>{r.user_email || r.user_id}</td>
+                      <td className="px-2 py-1.5">{r.provider}</td>
+                      <td className="px-2 py-1.5 font-mono max-w-[100px] truncate" title={r.stripe_subscription_id}>{r.stripe_subscription_id || '—'}</td>
+                      <td className="px-2 py-1.5 font-mono max-w-[100px] truncate" title={r.stripe_price_id}>{r.stripe_price_id || '—'}</td>
+                      <td className="px-2 py-1.5 font-mono max-w-[100px] truncate" title={r.stripe_product_id}>{r.stripe_product_id || '—'}</td>
+                      <td className="px-2 py-1.5">{r.registry_mapped ? '✓' : '—'}</td>
+                      <td className="px-2 py-1.5">{r.canonical_plan || '—'}</td>
+                      <td className="px-2 py-1.5">{(r.canonical_modules || []).join(', ') || '—'}</td>
+                      <td className="px-2 py-1.5">{r.product_identity_classification?.replace(/_/g, ' ')}</td>
+                      <td className="px-2 py-1.5">{r.lifecycle_classification?.replace(/_/g, ' ')}</td>
+                      <td className="px-2 py-1.5">{r.is_current ? '✓' : '✗'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+      )}
 
       {/* Entitlement anomalies */}
       {entAnom.total > 0 && (

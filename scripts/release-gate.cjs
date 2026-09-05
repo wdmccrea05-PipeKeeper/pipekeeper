@@ -280,6 +280,18 @@ runCheck('19. Final entitlement reconciliation invariants', () => {
   }
 });
 
+// 20. Dashboard consistency invariants (P0: production dashboard must use canonical data)
+runCheck('20. Dashboard consistency invariants', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/dashboardConsistencyInvariants.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Dashboard consistency invariants passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
 console.log('\n═══ Summary ═══');
 for (const r of results) {
   console.log(`  ${r.status === 'PASS' ? '✓' : '✗'} ${r.name}`);
