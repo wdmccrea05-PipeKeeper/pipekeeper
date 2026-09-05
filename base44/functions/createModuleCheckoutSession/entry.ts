@@ -371,24 +371,23 @@ Deno.serve(async (req) => {
       initiated_from: 'module_upgrade_flow',
     };
 
-    // ── Duplicate Subscription Guard ──
-    // Block checkout if user already has an active subscription for any of the requested modules
+    // ── Duplicate Subscription Guard (scope-aware) ──
+    // Pass the FULL module array so the guard can identify bundle upgrades
+    // (e.g., PipeKeeper single → 3-module bundle is an upgrade, not a duplicate)
     try {
       const byEmail = await base44.asServiceRole.entities.Subscription.filter({ user_email: email }, '-created_date', 50);
       const byUserId = userId ? await base44.asServiceRole.entities.Subscription.filter({ user_id: userId }, '-created_date', 50) : [];
       const existingSubs = [...new Map([...byEmail, ...byUserId].map((s: any) => [s.id, s])).values()];
 
-      for (const mod of modules) {
-        const guardResult = shouldBlockNewSubscription(existingSubs, billingPeriod, mod);
-        if (guardResult.block) {
-          console.warn(`[createModuleCheckoutSession] Blocked duplicate checkout for ${email} module=${mod}: ${guardResult.reason}`);
-          return Response.json({
-            success: false,
-            error: `You already have an active subscription for ${mod}. Please manage your existing plan in subscription settings, or contact support if you believe this is an error.`,
-            duplicate_block: true,
-            existing_subscription_id: guardResult.existingSubscriptionId,
-          }, { status: 409 });
-        }
+      const guardResult = shouldBlockNewSubscription(existingSubs, billingPeriod, modules);
+      if (guardResult.block) {
+        console.warn(`[createModuleCheckoutSession] Blocked duplicate checkout for ${email} modules=[${modules.join(',')}]: ${guardResult.reason}`);
+        return Response.json({
+          success: false,
+          error: `You already have an active subscription covering one or more of these modules (${modules.join(', ')}). Please manage your existing plan in subscription settings, or contact support if you believe this is an error.`,
+          duplicate_block: true,
+          existing_subscription_id: guardResult.existingSubscriptionId,
+        }, { status: 409 });
       }
     } catch (e: any) {
       console.warn('[createModuleCheckoutSession] Duplicate guard check failed (non-blocking):', e?.message);
