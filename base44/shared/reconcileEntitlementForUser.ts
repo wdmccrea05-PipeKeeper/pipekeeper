@@ -138,6 +138,7 @@ export interface ReconcileInput {
   nonPaidGrants?: NonPaidGrantLike[];
   priceIdMap: Record<string, string>;
   stripeVerification?: Record<string, StripeVerificationResult>; // keyed by provider_subscription_id
+  productIdentityClassifications?: Record<string, string>; // contract ID → PROVIDER_RESOLVED | LEGACY_RESOLVED | AMOUNT_INFERRED | UNRESOLVED
   previousEntitlement?: {
     has_access?: boolean;
     tier?: string;
@@ -160,6 +161,7 @@ export interface ContractDetail {
   period_end?: string;
   included: boolean;          // whether this contract contributes to entitlement
   exclusion_reason?: string;
+  product_identity_classification?: string;
 }
 
 export interface ReconcileOutput {
@@ -191,7 +193,7 @@ export interface ReconcileOutput {
   reconciler_version: string;
 }
 
-export const RECONCILER_VERSION = 'canonical_v1';
+export const RECONCILER_VERSION = 'canonical_v2';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -345,6 +347,22 @@ export function reconcileEntitlementForUser(input: ReconcileInput): ReconcileOut
       exclusionReason = `contract_not_currently_active (status: ${c.status})`;
     }
 
+    // Product identity eligibility: Stripe contracts must be PROVIDER_RESOLVED or
+    // LEGACY_RESOLVED for automatic entitlement creation. AMOUNT_INFERRED and
+    // UNRESOLVED do not auto-grant (but preserve last-known access if previous
+    // entitlement existed — never downgrade on identity resolution failure).
+    const productIdentityClassification = input.productIdentityClassifications?.[c.id] || 'unknown';
+    const isProductResolved = productIdentityClassification === 'PROVIDER_RESOLVED' || productIdentityClassification === 'LEGACY_RESOLVED';
+
+    if (included && provider === 'stripe' && !isProductResolved) {
+      if (previousEntitlement?.has_access === true) {
+        anomalies.push(`product_identity_not_resolved_preserved: contract ${c.id} (classification: ${productIdentityClassification}) — access preserved from last known state`);
+      } else {
+        included = false;
+        exclusionReason = `product_identity_not_resolved (classification: ${productIdentityClassification})`;
+      }
+    }
+
     contractsDetail.push({
       contract_id: c.id,
       provider,
@@ -358,6 +376,7 @@ export function reconcileEntitlementForUser(input: ReconcileInput): ReconcileOut
       period_end: c.period_end,
       included,
       exclusion_reason: exclusionReason,
+      product_identity_classification: productIdentityClassification,
     });
 
     if (included) {

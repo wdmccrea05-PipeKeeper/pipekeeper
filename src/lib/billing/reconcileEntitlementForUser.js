@@ -8,10 +8,10 @@
 
 import { resolveProductScope, buildPriceIdMap } from './productScopeResolver.js';
 
-export const RECONCILER_VERSION = 'canonical_v1';
+export const RECONCILER_VERSION = 'canonical_v2';
 
 export function reconcileEntitlementForUser(input) {
-  const { user_id, user_email, contracts, subscriptions, events = [], nonPaidGrants = [], priceIdMap, stripeVerification = {}, previousEntitlement } = input;
+  const { user_id, user_email, contracts, subscriptions, events = [], nonPaidGrants = [], priceIdMap, stripeVerification = {}, productIdentityClassifications = {}, previousEntitlement } = input;
   const email = String(user_email || '').trim().toLowerCase();
 
   const anomalies = [];
@@ -130,11 +130,26 @@ export function reconcileEntitlementForUser(input) {
       exclusionReason = `contract_not_currently_active (status: ${c.status})`;
     }
 
+    // Product identity eligibility: Stripe contracts must be PROVIDER_RESOLVED or
+    // LEGACY_RESOLVED for automatic entitlement creation.
+    const productIdentityClassification = productIdentityClassifications[c.id] || 'unknown';
+    const isProductResolved = productIdentityClassification === 'PROVIDER_RESOLVED' || productIdentityClassification === 'LEGACY_RESOLVED';
+
+    if (included && provider === 'stripe' && !isProductResolved) {
+      if (previousEntitlement?.has_access === true) {
+        anomalies.push(`product_identity_not_resolved_preserved: contract ${c.id} (classification: ${productIdentityClassification}) — access preserved from last known state`);
+      } else {
+        included = false;
+        exclusionReason = `product_identity_not_resolved (classification: ${productIdentityClassification})`;
+      }
+    }
+
     contractsDetail.push({
       contract_id: c.id, provider, provider_subscription_id: subId || undefined,
       status: c.status, is_currently_active: currentlyActive, scope, verification,
       stripe_verified_state: stripeState, period_start: c.period_start, period_end: c.period_end,
       included, exclusion_reason: exclusionReason,
+      product_identity_classification: productIdentityClassification,
     });
 
     if (included) {

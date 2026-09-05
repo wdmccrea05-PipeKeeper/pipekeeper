@@ -7,17 +7,22 @@
  *                      → CollectionKeeper Plan → Module Scope
  *
  * Resolution priority (highest confidence first):
- *   1.  Stripe Product metadata (plan_key or modules)     → PROVIDER_RESOLVED
- *   2.  Stripe Price metadata (plan_key or modules)       → PROVIDER_RESOLVED
- *   3.  Stripe Product name (keyword matching)             → PROVIDER_RESOLVED
- *   4.  Stripe Price nickname (keyword matching)           → PROVIDER_RESOLVED
- *   5.  Persisted registry (by price_id)                  → PROVIDER_RESOLVED
- *   6.  Persisted registry (by product_id)                → PROVIDER_RESOLVED
+ *   1.  Persisted registry (by product_id)                → PROVIDER_RESOLVED  [AUTHORITATIVE KEY]
+ *   2.  Persisted registry (by price_id)                  → PROVIDER_RESOLVED
+ *   3.  Stripe Product metadata (plan_key or modules)     → PROVIDER_RESOLVED
+ *   4.  Stripe Price metadata (plan_key or modules)       → PROVIDER_RESOLVED
+ *   5.  Stripe Product name (keyword matching)            → PROVIDER_RESOLVED  [DISCOVERY ONLY]
+ *   6.  Stripe Price nickname (keyword matching)          → PROVIDER_RESOLVED  [DISCOVERY ONLY]
  *   7.  Current env-var price_id_map                       → PROVIDER_RESOLVED
  *   8.  Apple product ID                                    → PROVIDER_RESOLVED
  *   9.  Legacy local fields (plan_key, modules, etc.)     → LEGACY_RESOLVED
  *   10. Amount + interval                                   → AMOUNT_INFERRED (low)
  *   11. UNRESOLVED
+ *
+ * Product ID is the durable authoritative key. Once a Product ID has been
+ * mapped to a canonical plan, the resolver uses that mapping directly and
+ * does NOT depend on name keyword parsing on subsequent runs. Name parsing
+ * is used only to discover previously unmapped products.
  *
  * A legacy Stripe Price absent from current environment variables is NOT
  * a reason to fall back to dollar amount. The resolver queries the Stripe
@@ -303,7 +308,61 @@ export function resolveProductIdentityFromStripeChain(
   let provider_chain_resolved = false;
 
   // ════════════════════════════════════════════════════════════════════════
-  // 1-7. STRIPE PROVIDER CHAIN (if we have a live Stripe subscription)
+  // 1. PERSISTED REGISTRY BY PRODUCT_ID (authoritative — Product ID is the
+  //    durable key. Once a Product ID is mapped, name parsing is never used.
+  //    Uses the contract's resolved_product_id from a prior recovery pass.)
+  // ════════════════════════════════════════════════════════════════════════
+  if (registry && contract.resolved_product_id) {
+    const entry = registry.find(
+      (e) => e.provider === 'stripe' && e.product_id === contract.resolved_product_id,
+    );
+    if (entry && entry.canonical_plan_key && PLAN_CATALOG[entry.canonical_plan_key]) {
+      const plan = PLAN_CATALOG[entry.canonical_plan_key];
+      provider_chain_resolved = true;
+      return {
+        ...empty,
+        classification: 'PROVIDER_RESOLVED',
+        resolution_source: 'persisted_registry_product_id',
+        resolved_product: plan.product,
+        resolved_modules: plan.modules,
+        resolved_price_id: contract.resolved_price_id || entry.price_id || null,
+        resolved_product_id: contract.resolved_product_id,
+        resolved_plan_key: entry.canonical_plan_key,
+        confidence: 'high',
+        provider_chain_attempted: false,
+        provider_chain_resolved: true,
+      };
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 2. PERSISTED REGISTRY BY PRICE_ID (from contract's resolved_price_id)
+  // ════════════════════════════════════════════════════════════════════════
+  if (registry && contract.resolved_price_id) {
+    const entry = registry.find(
+      (e) => e.provider === 'stripe' && e.price_id === contract.resolved_price_id,
+    );
+    if (entry && entry.canonical_plan_key && PLAN_CATALOG[entry.canonical_plan_key]) {
+      const plan = PLAN_CATALOG[entry.canonical_plan_key];
+      provider_chain_resolved = true;
+      return {
+        ...empty,
+        classification: 'PROVIDER_RESOLVED',
+        resolution_source: 'persisted_registry_price_id',
+        resolved_product: plan.product,
+        resolved_modules: plan.modules,
+        resolved_price_id: contract.resolved_price_id,
+        resolved_product_id: contract.resolved_product_id || entry.product_id || null,
+        resolved_plan_key: entry.canonical_plan_key,
+        confidence: 'high',
+        provider_chain_attempted: false,
+        provider_chain_resolved: true,
+      };
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 3-7. STRIPE PROVIDER CHAIN (live discovery for unmapped products)
   // ════════════════════════════════════════════════════════════════════════
   if (provider_truth?.stripe_subscription) {
     provider_chain_attempted = true;

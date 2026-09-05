@@ -130,7 +130,55 @@ export function resolveProductIdentityFromStripeChain(input) {
   let provider_chain_attempted = false;
   let provider_chain_resolved = false;
 
-  // 1-7. STRIPE PROVIDER CHAIN
+  // 1. PERSISTED REGISTRY BY PRODUCT_ID (authoritative — Product ID is the durable key)
+  if (registry && contract.resolved_product_id) {
+    const entry = registry.find(
+      (e) => e.provider === 'stripe' && e.product_id === contract.resolved_product_id,
+    );
+    if (entry && entry.canonical_plan_key && PLAN_CATALOG[entry.canonical_plan_key]) {
+      const plan = PLAN_CATALOG[entry.canonical_plan_key];
+      provider_chain_resolved = true;
+      return {
+        ...empty,
+        classification: 'PROVIDER_RESOLVED',
+        resolution_source: 'persisted_registry_product_id',
+        resolved_product: plan.product,
+        resolved_modules: plan.modules,
+        resolved_price_id: contract.resolved_price_id || entry.price_id || null,
+        resolved_product_id: contract.resolved_product_id,
+        resolved_plan_key: entry.canonical_plan_key,
+        confidence: 'high',
+        provider_chain_attempted: false,
+        provider_chain_resolved: true,
+      };
+    }
+  }
+
+  // 2. PERSISTED REGISTRY BY PRICE_ID (from contract's resolved_price_id)
+  if (registry && contract.resolved_price_id) {
+    const entry = registry.find(
+      (e) => e.provider === 'stripe' && e.price_id === contract.resolved_price_id,
+    );
+    if (entry && entry.canonical_plan_key && PLAN_CATALOG[entry.canonical_plan_key]) {
+      const plan = PLAN_CATALOG[entry.canonical_plan_key];
+      provider_chain_resolved = true;
+      return {
+        ...empty,
+        classification: 'PROVIDER_RESOLVED',
+        resolution_source: 'persisted_registry_price_id',
+        resolved_product: plan.product,
+        resolved_modules: plan.modules,
+        resolved_price_id: contract.resolved_price_id,
+        resolved_product_id: contract.resolved_product_id || entry.product_id || null,
+        resolved_plan_key: entry.canonical_plan_key,
+        confidence: 'high',
+        provider_chain_attempted: false,
+        provider_chain_resolved: true,
+      };
+    }
+  }
+
+  // 3-7. STRIPE PROVIDER CHAIN (live discovery for unmapped products)
   if (provider_truth?.stripe_subscription) {
     provider_chain_attempted = true;
     const chain = extractStripeChainData(provider_truth.stripe_subscription);
