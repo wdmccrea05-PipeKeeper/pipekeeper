@@ -14,7 +14,16 @@ export function getCompanionPlatform() {
     if (platformParam === "ios") return "ios";
 
     const ua = (navigator.userAgent || "").toLowerCase();
-    if (ua.includes("pipekeeperios") || ua.includes("pipekeeper-companion") || ua.includes("pipekeepercompanion")) {
+    if (
+      ua.includes("pipekeeperios") ||
+      ua.includes("pipekeeper-companion") ||
+      ua.includes("pipekeepercompanion") ||
+      // CollectionKeeper (post-rename) UA markers
+      ua.includes("collectionkeeperios") ||
+      ua.includes("collectionkeeper-companion") ||
+      ua.includes("collectionkeepercompanion") ||
+      ua.includes("collectionkeeper")
+    ) {
       return "ios";
     }
 

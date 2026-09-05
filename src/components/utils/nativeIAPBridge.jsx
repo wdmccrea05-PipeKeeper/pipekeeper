@@ -8,7 +8,12 @@ export const isIOSWebView = () => {
     handlers.pipeKeeper ||
     handlers.PipeKeeper ||
     handlers.ios ||
-    handlers.nativeApp
+    handlers.nativeApp ||
+    // CollectionKeeper (post-rename) handler names
+    handlers.collectionkeeper ||
+    handlers.collectionKeeper ||
+    handlers.CollectionKeeper ||
+    handlers.collectionkeeperios
   );
 };
 
@@ -118,6 +123,11 @@ const safePost = (payload) => {
       handlers.PipeKeeper,
       handlers.ios,
       handlers.nativeApp,
+      // CollectionKeeper (post-rename) handler names
+      handlers.collectionkeeper,
+      handlers.collectionKeeper,
+      handlers.CollectionKeeper,
+      handlers.collectionkeeperios,
     ];
 
     for (const handler of candidates) {

@@ -37,6 +37,7 @@ function AppleSubscription() {
   const queryClient = useQueryClient();
   const [upgrading, setUpgrading] = React.useState(false);
   const [syncMessage, setSyncMessage] = React.useState("");
+  const [restoring, setRestoring] = React.useState(false);
 
   React.useEffect(() => {
     if (!isAppleBuild || !isIOSWebView()) return;
@@ -58,6 +59,41 @@ function AppleSubscription() {
 
     return cleanup;
   }, [queryClient, refetch]);
+
+  const handleRestorePurchases = async () => {
+    setRestoring(true);
+    setSyncMessage("");
+    try {
+      if (isIOSWebView()) {
+        // On iOS — trigger native subscription status request
+        requestNativeSubscriptionStatus();
+        setSyncMessage(t("subscription.restoreInProgress", "Restore request sent. If you have an active subscription, it will sync shortly."));
+      } else {
+        // On web but in Apple build — user may have purchased via App Store
+        // but is accessing the web version. Attempt a pending-verification sync.
+        const { base44 } = await import("@/api/base44Client");
+        const result = await base44.functions.invoke("syncAppleSubscriptionForMe", {
+          active: true,
+          tier: "pro",
+          productId: "",
+          originalTransactionId: "",
+          verificationProof: null,
+        });
+        if (result?.data?.ok) {
+          setSyncMessage(t("subscription.restoreSynced", "Subscription sync attempted. If you have an active Apple subscription, please open the CollectionKeeper iOS app to complete verification."));
+          await refetch();
+          queryClient.invalidateQueries({ queryKey: ["subscription"] });
+          queryClient.invalidateQueries({ queryKey: ["current-user"] });
+        } else {
+          setSyncMessage(result?.data?.error || t("subscription.syncStatusFailed"));
+        }
+      }
+    } catch (err) {
+      setSyncMessage(err?.message || t("subscription.syncStatusFailed"));
+    } finally {
+      setRestoring(false);
+    }
+  };
 
   const freeFeatures = [
     t("subscription.appleFeatureFree1"),
@@ -140,9 +176,20 @@ function AppleSubscription() {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-[#e8d5b7]">{t("subscription.title")}</h1>
 
-        <Button variant="secondary" onClick={openManage}>
-          {t("subscription.manage")}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleRestorePurchases}
+            disabled={restoring}
+          >
+            {restoring
+              ? t("subscription.restoring", "Restoring...")
+              : t("subscription.restorePurchases", "Restore Purchases")}
+          </Button>
+          <Button variant="secondary" onClick={openManage}>
+            {t("subscription.manage")}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
