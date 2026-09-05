@@ -196,6 +196,18 @@ runCheck('12. Silent fallback hardening regression tests', () => {
   }
 });
 
+// 13. Apple sync failure regression tests (P0: manscor13@yahoo.com)
+runCheck('13. Apple sync failure regression tests', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/appleSyncFailureRegression.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Apple sync failure regression tests passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
 console.log('\n═══ Summary ═══');
 for (const r of results) {
   console.log(`  ${r.status === 'PASS' ? '✓' : '✗'} ${r.name}`);
