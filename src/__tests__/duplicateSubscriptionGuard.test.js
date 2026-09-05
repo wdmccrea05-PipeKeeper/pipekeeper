@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { describe, it, expect } from 'vitest';
-import { detectDuplicateConflicts, shouldBlockNewSubscription } from '../../base44/shared/duplicateSubscriptionGuard.ts';
+import { detectDuplicateConflicts, shouldBlockNewSubscription } from '@/lib/billing/duplicateSubscriptionGuard';
 
 describe('duplicateSubscriptionGuard', () => {
   describe('detectDuplicateConflicts', () => {
