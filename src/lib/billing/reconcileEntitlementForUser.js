@@ -11,7 +11,7 @@ import { resolveProductScope, buildPriceIdMap } from './productScopeResolver.js'
 export const RECONCILER_VERSION = 'canonical_v2';
 
 export function reconcileEntitlementForUser(input) {
-  const { user_id, user_email, contracts, subscriptions, events = [], nonPaidGrants = [], priceIdMap, stripeVerification = {}, productIdentityClassifications = {}, previousEntitlement } = input;
+  const { user_id, user_email, contracts, subscriptions, events = [], nonPaidGrants = [], priceIdMap, stripeVerification = {}, productIdentityClassifications = {}, allowMissingProductClassificationForLegacyTests = false, previousEntitlement } = input;
   const email = String(user_email || '').trim().toLowerCase();
 
   const anomalies = [];

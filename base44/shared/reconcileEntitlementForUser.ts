@@ -139,6 +139,7 @@ export interface ReconcileInput {
   priceIdMap: Record<string, string>;
   stripeVerification?: Record<string, StripeVerificationResult>; // keyed by provider_subscription_id
   productIdentityClassifications?: Record<string, string>; // contract ID → PROVIDER_RESOLVED | LEGACY_RESOLVED | AMOUNT_INFERRED | UNRESOLVED
+  allowMissingProductClassificationForLegacyTests?: boolean; // TEST-ONLY: when true, missing classification is treated as eligible. Production callers MUST NEVER set this.
   previousEntitlement?: {
     has_access?: boolean;
     tier?: string;
@@ -223,7 +224,7 @@ function isContractCurrentlyActive(c: ActiveContractLike): boolean {
 // ── Main reconciler ──────────────────────────────────────────────────────────
 
 export function reconcileEntitlementForUser(input: ReconcileInput): ReconcileOutput {
-  const { user_id, user_email, contracts, subscriptions, events = [], nonPaidGrants = [], priceIdMap, stripeVerification = {}, previousEntitlement } = input;
+  const { user_id, user_email, contracts, subscriptions, events = [], nonPaidGrants = [], priceIdMap, stripeVerification = {}, productIdentityClassifications = {}, allowMissingProductClassificationForLegacyTests = false, previousEntitlement } = input;
   const email = normEmail(user_email);
 
   const anomalies: string[] = [];
@@ -351,12 +352,19 @@ export function reconcileEntitlementForUser(input: ReconcileInput): ReconcileOut
     // LEGACY_RESOLVED for automatic entitlement creation. AMOUNT_INFERRED and
     // UNRESOLVED do not auto-grant (but preserve last-known access if previous
     // entitlement existed — never downgrade on identity resolution failure).
-    // Only enforce when a classification was explicitly provided for this contract;
-    // when absent (e.g., no resolver was run), fall back to the verification decision.
-    const productIdentityClassification = input.productIdentityClassifications?.[c.id];
+    //
+    // STRICT DEFAULT: When no classification is provided for a contract, it
+    // defaults to UNRESOLVED — meaning automatic Stripe grant is BLOCKED unless
+    // the caller explicitly passes productIdentityClassifications with
+    // PROVIDER_RESOLVED or LEGACY_RESOLVED.
+    //
+    // Test-only escape hatch: allowMissingProductClassificationForLegacyTests=true
+    // relaxes this to the old permissive behavior. Production callers MUST NEVER
+    // set this flag.
+    const productIdentityClassification = productIdentityClassifications[c.id] || (allowMissingProductClassificationForLegacyTests ? undefined : 'UNRESOLVED');
     const isProductResolved = productIdentityClassification === 'PROVIDER_RESOLVED' || productIdentityClassification === 'LEGACY_RESOLVED';
 
-    if (included && provider === 'stripe' && productIdentityClassification !== undefined && !isProductResolved) {
+    if (included && provider === 'stripe' && !isProductResolved) {
       if (previousEntitlement?.has_access === true) {
         anomalies.push(`product_identity_not_resolved_preserved: contract ${c.id} (classification: ${productIdentityClassification}) — access preserved from last known state`);
       } else {
