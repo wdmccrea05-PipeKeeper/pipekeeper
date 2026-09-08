@@ -45,6 +45,7 @@ import { resolveProductIdentityFromStripeChain } from "../../shared/stripeProduc
 import { reconcileContractV2 } from "../../shared/billingLifecycleReconciler.ts";
 import { getStripeClient } from "../../shared/getStripeClient.ts";
 import { normEmail, isActiveStatus, isExpired } from "../../shared/subscriptionHelpers.ts";
+import { resolveHistoricalPlan } from "../../shared/historicalPlanResolver.ts";
 
 const ACTIVE_LIFECYCLES = ["PROVIDER_ACTIVE", "PROVIDER_TRIALING", "PROVIDER_CANCELED_BUT_ENTITLED_UNTIL_DATE"];
 
@@ -508,29 +509,108 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 5d. Historical / Ever-purchased
+    // 5d. Historical / Ever-purchased — full evidence-chain resolution
+    // Builds row-level historical billing rows from BOTH ActiveContract billing rows
+    // AND Subscription records, resolving commercial plan for each using the
+    // prioritized evidence chain in historicalPlanResolver.
+    const historicalBillingRows: any[] = [];
+
+    // 5d.1: Add ActiveContract-derived billing rows as historical rows
+    for (const r of billingRows) {
+      historicalBillingRows.push({
+        ...r,
+        source_entity: "ActiveContract",
+        reason_unresolved: r.product_identity_classification === "UNRESOLVED"
+          ? "Product identity not resolved from Stripe chain"
+          : null,
+      });
+    }
+
+    // 5d.2: For each Subscription NOT covered by an ActiveContract, build a historical row
+    const histBillingRowSubIds = new Set(billingRows.map((r: any) => r.provider_subscription_id).filter(Boolean));
+    for (const s of allSubs) {
+      const subId = s.provider_subscription_id || s.stripe_subscription_id || "";
+      if (subId && histBillingRowSubIds.has(subId)) continue; // already covered by ActiveContract
+
+      const key = String(s.user_id || s.user_email || "");
+      if (!key) continue;
+
+      const provider = String(s.provider || "stripe").toLowerCase();
+      const stripeVer = subId ? stripeVerification[subId] : null;
+
+      // Resolve commercial plan using the full evidence chain
+      const resolution = resolveHistoricalPlan(
+        s as any,
+        stripeVer || null,
+        priceIdMap,
+        PLAN_DISPLAY,
+        registry as any[],
+      );
+
+      const subStatus = String(s.status || "unknown").toLowerCase();
+      const isCurrent = ["active", "trialing", "past_due"].includes(subStatus) && !isExpired(s.current_period_end);
+
+      historicalBillingRows.push({
+        user_id: s.user_id,
+        email: s.user_email,
+        provider,
+        provider_customer_id: s.stripe_customer_id || (stripeVer as any)?.customer || undefined,
+        provider_subscription_id: subId || undefined,
+        original_transaction_id: provider === "apple" ? subId : undefined,
+
+        provider_lifecycle_status: (stripeVer as any)?.status || s.status,
+        lifecycle_classification: stripeVer ? "PROVIDER_VERIFIED" : "HISTORICAL_INFERRED",
+        is_current: isCurrent,
+        current_paid_through_date: s.current_period_end || (stripeVer as any)?.current_period_end || undefined,
+
+        stripe_price_id: resolution.stripe_price_id || undefined,
+        stripe_product_id: resolution.stripe_product_id || undefined,
+        stripe_product_name: resolution.stripe_product_name || undefined,
+        stripe_item_count: (stripeVer as any)?.item_count || 1,
+
+        canonical_plan_key: resolution.plan_key || undefined,
+        plan_family: resolution.plan_family,
+        plan_type: resolution.plan_type,
+        bundle_type: resolution.bundle_type,
+
+        modules: resolution.modules,
+
+        product_resolution_source: resolution.resolution_source,
+        product_resolution_confidence: resolution.confidence,
+        product_identity_classification: resolution.classification,
+        reason_unresolved: resolution.reason_unresolved,
+
+        amount_cents: s.amount != null ? Math.round(s.amount * 100) : (stripeVer as any)?.amount_cents,
+        currency: "usd",
+        billing_interval: s.billing_interval || ((stripeVer as any)?.interval === "year" ? "annual" : (stripeVer as any)?.interval) || undefined,
+
+        first_paid_date: s.started_at || s.subscriptionStartedAt || s.current_period_start || undefined,
+        renewal_date: s.current_period_end || undefined,
+        cancel_state: subStatus === "canceled" ? "canceled" : subStatus === "expired" ? "expired" : "active",
+
+        source_entity: "Subscription",
+
+        // Internal metadata for evidence audit
+        internal_plan_key: s.plan_key || undefined,
+        internal_product_kind: s.product_kind || undefined,
+        internal_checkout_type: s.checkout_type || undefined,
+        internal_modules_csv: s.modules_csv || undefined,
+        internal_primary_module: s.primary_module || undefined,
+      });
+    }
+
+    // Recalculate historical_by_plan using resolved plans
     const historicalPlanSets: Record<string, Set<string>> = {};
     for (const family of Object.keys(PLAN_FAMILY_KEYS)) {
       historicalPlanSets[family] = new Set();
     }
     historicalPlanSets['Unknown/Unresolved'] = new Set();
 
-    for (const r of billingRows) {
+    for (const r of historicalBillingRows) {
       const key = String(r.user_id || r.email || "");
       const family = r.plan_family || 'Unknown/Unresolved';
       if (!historicalPlanSets[family]) historicalPlanSets[family] = new Set();
       if (key) historicalPlanSets[family].add(key);
-    }
-
-    // Also check Subscription records for historical plan evidence
-    for (const s of allSubs) {
-      const key = String(s.user_id || s.user_email || "");
-      if (!key) continue;
-      const planKey = s.plan_key || "";
-      const planDisplay = planKey ? PLAN_DISPLAY[planKey] : null;
-      const family = planDisplay?.display_name || 'Unknown/Unresolved';
-      if (!historicalPlanSets[family]) historicalPlanSets[family] = new Set();
-      historicalPlanSets[family].add(key);
     }
 
     // ── 6. PRODUCT ID AUDIT ────────────────────────────────────────────────────
@@ -881,7 +961,8 @@ Deno.serve(async (req) => {
 
       // ── DATA QUALITY / ANOMALIES ─────────────────────────────────────────────
       data_quality: {
-        total_anomalies: anomalies.length,
+        total_anomalies: anomalies.reduce((sum: number, a: any) => sum + (a.count || 0), 0),
+        total_anomaly_categories: anomalies.length,
         stale_local_contracts: staleLocalContracts.length,
         unmapped_products: unmappedProducts.length,
         paid_no_entitlement: paidNoEntitlement.length,
@@ -904,6 +985,37 @@ Deno.serve(async (req) => {
         legacy_resolved: billingRows.filter(r => r.product_identity_classification === "LEGACY_RESOLVED").length,
         amount_inferred: billingRows.filter(r => r.product_identity_classification === "AMOUNT_INFERRED").length,
         unresolved: billingRows.filter(r => r.product_identity_classification === "UNRESOLVED").length,
+      },
+
+      // ── ROW-LEVEL HISTORICAL BILLING DATA ────────────────────────────────────
+      historical_billing_rows: historicalBillingRows,
+      historical_billing_rows_summary: {
+        total: historicalBillingRows.length,
+        from_active_contract: historicalBillingRows.filter(r => r.source_entity === "ActiveContract").length,
+        from_subscription: historicalBillingRows.filter(r => r.source_entity === "Subscription").length,
+        checkout_explicit: historicalBillingRows.filter(r => r.product_identity_classification === "CHECKOUT_EXPLICIT").length,
+        provider_explicit: historicalBillingRows.filter(r => r.product_identity_classification === "PROVIDER_EXPLICIT").length,
+        registry_resolved: historicalBillingRows.filter(r => r.product_identity_classification === "REGISTRY_RESOLVED").length,
+        internal_explicit: historicalBillingRows.filter(r => r.product_identity_classification === "INTERNAL_EXPLICIT").length,
+        multi_item_bundle: historicalBillingRows.filter(r => r.product_identity_classification === "MULTI_ITEM_BUNDLE").length,
+        env_price_resolved: historicalBillingRows.filter(r => r.product_identity_classification === "ENV_PRICE_RESOLVED").length,
+        product_name_resolved: historicalBillingRows.filter(r => r.product_identity_classification === "PRODUCT_NAME_RESOLVED").length,
+        amount_inferred: historicalBillingRows.filter(r => r.product_identity_classification === "AMOUNT_INFERRED").length,
+        unresolved: historicalBillingRows.filter(r => r.product_identity_classification === "UNRESOLVED").length,
+      },
+
+      // ── MULTI-ITEM SUBSCRIPTION ANALYSIS ──────────────────────────────────────
+      multi_item_subscription_analysis: {
+        single_item_count: historicalBillingRows.filter(r => (r.stripe_item_count || 1) === 1).length,
+        multi_item_count: historicalBillingRows.filter(r => (r.stripe_item_count || 1) > 1).length,
+        multi_item_rows: historicalBillingRows.filter(r => (r.stripe_item_count || 1) > 1).map(r => ({
+          email: r.email,
+          provider_subscription_id: r.provider_subscription_id,
+          item_count: r.stripe_item_count,
+          plan_family: r.plan_family,
+          modules: r.modules,
+          classification: r.product_identity_classification,
+        })),
       },
 
       // ── PER-USER BILLING LEDGER ──────────────────────────────────────────────

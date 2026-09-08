@@ -22,6 +22,9 @@ export default function CanonicalBillingSections({ billing }) {
   const historicalByPlan = billing.historical_by_plan || {};
   const billingRows = billing.billing_rows || [];
   const userLedger = billing.user_ledger || [];
+  const historicalBillingRows = billing.historical_billing_rows || [];
+  const historicalSummary = billing.historical_billing_rows_summary || {};
+  const multiItemAnalysis = billing.multi_item_subscription_analysis || {};
 
   return (
     <div className="space-y-8">
@@ -109,26 +112,155 @@ export default function CanonicalBillingSections({ billing }) {
       <Section title="7. Historical / Ever-Purchased by Plan">
         <p className="text-xs text-[#E0D8C8]/40 -mt-1 mb-2">
           Users who have <em>ever</em> purchased each plan (current or historical). Includes expired, canceled, and lapsed subscriptions.
+          Click any card to drill down into the underlying purchaser rows.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Object.entries(historicalByPlan).map(([plan, counts]) => {
             const isUnknown = plan === 'Unknown/Unresolved';
+            const isBundle = plan.includes('Bundle');
+            const count = counts.ever_purchased_users ?? 0;
+            const isActive = drilldown === `hist-${plan}`;
             return (
-              <Card
+              <div
                 key={plan}
-                title={plan}
-                value={counts.ever_purchased_users ?? 0}
-                warn={isUnknown && (counts.ever_purchased_users ?? 0) > 0}
-              />
+                onClick={() => count > 0 && setDrilldown(isActive ? null : `hist-${plan}`)}
+                className={`rounded-xl border p-4 cursor-pointer transition-colors ${
+                  isActive ? 'border-[#D4A574] bg-[#2a1f18]' :
+                  isUnknown && count > 0 ? 'border-yellow-700/40 bg-yellow-900/10 hover:border-yellow-600/60' :
+                  isBundle && count > 0 ? 'border-[#D4A574]/40 bg-[#1f1712]/70 hover:border-[#D4A574]/70' :
+                  'border-[#8b6239]/25 bg-[#1f1712]/70 hover:border-[#8b6239]/50'
+                }`}
+              >
+                <p className="text-xs uppercase tracking-wider text-[#E0D8C8]/60">{plan}</p>
+                <p className={`text-2xl font-semibold mt-1 ${
+                  isUnknown && count > 0 ? 'text-yellow-300' :
+                  isBundle && count > 0 ? 'text-[#D4A574]' : 'text-[#F5F1E7]'
+                }`}>{count}</p>
+                {count > 0 && (
+                  <p className="text-xs text-[#D4A574]/70 mt-1">{isActive ? '▲ Hide rows' : '▼ Show rows'}</p>
+                )}
+              </div>
             );
           })}
         </div>
+
+        {/* Historical resolution summary */}
+        <div className="mt-3 rounded-lg border border-[#8b6239]/25 bg-[#1f1712]/70 p-3 text-xs space-y-1">
+          <p className="font-semibold text-[#D4A574]">Historical Resolution Summary</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
+            <span className="text-[#E0D8C8]/70">Total rows: <span className="text-[#F5F1E7]">{historicalSummary.total ?? 0}</span></span>
+            <span className="text-[#E0D8C8]/70">From ActiveContract: <span className="text-[#F5F1E7]">{historicalSummary.from_active_contract ?? 0}</span></span>
+            <span className="text-[#E0D8C8]/70">From Subscription: <span className="text-[#F5F1E7]">{historicalSummary.from_subscription ?? 0}</span></span>
+            <span className="text-emerald-300/80">Internal explicit: {historicalSummary.internal_explicit ?? 0}</span>
+            <span className="text-emerald-300/80">Registry resolved: {historicalSummary.registry_resolved ?? 0}</span>
+            <span className="text-emerald-300/80">Env price resolved: {historicalSummary.env_price_resolved ?? 0}</span>
+            <span className="text-yellow-300/80">Product name: {historicalSummary.product_name_resolved ?? 0}</span>
+            <span className="text-yellow-300/80">Amount inferred: {historicalSummary.amount_inferred ?? 0}</span>
+            <span className="text-yellow-300/80">Multi-item bundle: {historicalSummary.multi_item_bundle ?? 0}</span>
+            <span className="text-red-300/80">Unresolved: {historicalSummary.unresolved ?? 0}</span>
+          </div>
+        </div>
+
+        {/* Multi-item subscription analysis */}
+        {(multiItemAnalysis.multi_item_count ?? 0) > 0 && (
+          <div className="mt-2 rounded-lg border border-[#D4A574]/30 bg-[#1f1712]/70 p-3 text-xs">
+            <p className="font-semibold text-[#D4A574]">Multi-Item Subscriptions (potential bundles)</p>
+            <p className="text-[#E0D8C8]/60 mt-1">
+              Single-item: {multiItemAnalysis.single_item_count ?? 0} · Multi-item: {multiItemAnalysis.multi_item_count ?? 0}
+            </p>
+            {multiItemAnalysis.multi_item_rows?.length > 0 && (
+              <div className="mt-2 overflow-auto max-h-40">
+                <table className="w-full text-xs">
+                  <thead className="bg-[#2a1f18] sticky top-0">
+                    <tr>
+                      <th className="text-left px-2 py-1 text-[#E0D8C8]/70">Email</th>
+                      <th className="text-left px-2 py-1 text-[#E0D8C8]/70">Items</th>
+                      <th className="text-left px-2 py-1 text-[#E0D8C8]/70">Resolved Plan</th>
+                      <th className="text-left px-2 py-1 text-[#E0D8C8]/70">Modules</th>
+                      <th className="text-left px-2 py-1 text-[#E0D8C8]/70">Classification</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {multiItemAnalysis.multi_item_rows.map((r, i) => (
+                      <tr key={i} className="border-t border-[#8b6239]/15">
+                        <td className="px-2 py-1 font-mono">{r.email || '-'}</td>
+                        <td className="px-2 py-1 text-right">{r.item_count}</td>
+                        <td className="px-2 py-1">{r.plan_family || <span className="text-yellow-300">unresolved</span>}</td>
+                        <td className="px-2 py-1">{(r.modules || []).join(', ') || '-'}</td>
+                        <td className="px-2 py-1 text-[#E0D8C8]/60">{r.classification}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Drill-down table for selected historical plan */}
+        {drilldown && drilldown.startsWith('hist-') && (() => {
+          const planName = drilldown.replace('hist-', '');
+          const rows = historicalBillingRows.filter(r => (r.plan_family || 'Unknown/Unresolved') === planName);
+          if (rows.length === 0) return null;
+          return (
+            <div className="mt-3 rounded-xl border border-[#D4A574]/30 overflow-auto max-h-96">
+              <table className="w-full text-xs">
+                <thead className="bg-[#2a1f18] sticky top-0">
+                  <tr>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Email</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Provider</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Sub ID</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Product ID</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Price ID</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Product Name</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Modules</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Resolution</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Confidence</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Status</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Amount</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Source</th>
+                    <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Reason Unresolved</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={i} className="border-t border-[#8b6239]/15 align-top">
+                      <td className="px-2 py-1.5 font-mono">{r.email || r.user_id || '-'}</td>
+                      <td className="px-2 py-1.5">{r.provider || '-'}</td>
+                      <td className="px-2 py-1.5 font-mono text-[#E0D8C8]/60 max-w-[140px] truncate" title={r.provider_subscription_id}>{r.provider_subscription_id || '-'}</td>
+                      <td className="px-2 py-1.5 font-mono text-[#E0D8C8]/60 max-w-[120px] truncate" title={r.stripe_product_id}>{r.stripe_product_id || '-'}</td>
+                      <td className="px-2 py-1.5 font-mono text-[#E0D8C8]/60 max-w-[120px] truncate" title={r.stripe_price_id}>{r.stripe_price_id || '-'}</td>
+                      <td className="px-2 py-1.5">{r.stripe_product_name || '-'}</td>
+                      <td className="px-2 py-1.5">{(r.modules || []).join(', ') || '-'}</td>
+                      <td className="px-2 py-1.5">
+                        <span className={
+                          r.product_identity_classification === 'UNRESOLVED' ? 'text-red-300' :
+                          r.product_identity_classification === 'AMOUNT_INFERRED' ? 'text-yellow-300' :
+                          'text-emerald-300'
+                        }>{r.product_resolution_source || '-'}</span>
+                      </td>
+                      <td className="px-2 py-1.5">{r.product_resolution_confidence || '-'}</td>
+                      <td className="px-2 py-1.5">
+                        <span className={r.is_current ? 'text-emerald-300' : 'text-[#E0D8C8]/60'}>
+                          {r.is_current ? 'current' : 'historical'}
+                        </span>
+                      </td>
+                      <td className="px-2 py-1.5 text-right">{r.amount_cents ? `$${(r.amount_cents / 100).toFixed(2)}` : '-'}</td>
+                      <td className="px-2 py-1.5 text-[#E0D8C8]/60">{r.source_entity || '-'}</td>
+                      <td className="px-2 py-1.5 text-red-300/70 max-w-[200px]">{r.reason_unresolved || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </Section>
 
       {/* ── Data Quality ─────────────────────────────────────────────────────── */}
       <Section title="8. Billing Data Quality (Canonical)">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card title="Total Anomalies" value={dq.total_anomalies ?? 0} warn={(dq.total_anomalies ?? 0) > 0} />
+          <Card title="Total Anomalous Records" value={dq.total_anomalies ?? 0} sub={`${dq.total_anomaly_categories ?? 0} categories`} warn={(dq.total_anomalies ?? 0) > 0} />
           <Card title="Stale Local Contracts" value={dq.stale_local_contracts ?? 0} warn={(dq.stale_local_contracts ?? 0) > 0} />
           <Card title="Unmapped Products" value={dq.unmapped_products ?? 0} warn={(dq.unmapped_products ?? 0) > 0} />
           <Card title="Paid No Entitlement" value={dq.paid_no_entitlement ?? 0} warn={(dq.paid_no_entitlement ?? 0) > 0} />
