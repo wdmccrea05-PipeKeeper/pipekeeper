@@ -292,6 +292,18 @@ runCheck('20. Dashboard consistency invariants', () => {
   }
 });
 
+// 21. Canonical billing dataset invariants (P0: User Report billing must use canonical data)
+runCheck('21. Canonical billing dataset invariants', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/canonicalBillingDataset.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Canonical billing dataset invariants passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
 console.log('\n═══ Summary ═══');
 for (const r of results) {
   console.log(`  ${r.status === 'PASS' ? '✓' : '✗'} ${r.name}`);

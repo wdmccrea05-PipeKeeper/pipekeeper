@@ -351,10 +351,12 @@ export function reconcileEntitlementForUser(input: ReconcileInput): ReconcileOut
     // LEGACY_RESOLVED for automatic entitlement creation. AMOUNT_INFERRED and
     // UNRESOLVED do not auto-grant (but preserve last-known access if previous
     // entitlement existed — never downgrade on identity resolution failure).
-    const productIdentityClassification = input.productIdentityClassifications?.[c.id] || 'unknown';
+    // Only enforce when a classification was explicitly provided for this contract;
+    // when absent (e.g., no resolver was run), fall back to the verification decision.
+    const productIdentityClassification = input.productIdentityClassifications?.[c.id];
     const isProductResolved = productIdentityClassification === 'PROVIDER_RESOLVED' || productIdentityClassification === 'LEGACY_RESOLVED';
 
-    if (included && provider === 'stripe' && !isProductResolved) {
+    if (included && provider === 'stripe' && productIdentityClassification !== undefined && !isProductResolved) {
       if (previousEntitlement?.has_access === true) {
         anomalies.push(`product_identity_not_resolved_preserved: contract ${c.id} (classification: ${productIdentityClassification}) — access preserved from last known state`);
       } else {

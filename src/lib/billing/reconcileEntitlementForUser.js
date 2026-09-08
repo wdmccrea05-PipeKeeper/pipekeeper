@@ -131,11 +131,15 @@ export function reconcileEntitlementForUser(input) {
     }
 
     // Product identity eligibility: Stripe contracts must be PROVIDER_RESOLVED or
-    // LEGACY_RESOLVED for automatic entitlement creation.
-    const productIdentityClassification = productIdentityClassifications[c.id] || 'unknown';
+    // LEGACY_RESOLVED for automatic entitlement creation. AMOUNT_INFERRED and
+    // UNRESOLVED do not auto-grant (but preserve last-known access if previous
+    // entitlement existed — never downgrade on identity resolution failure).
+    // Only enforce when a classification was explicitly provided for this contract;
+    // when absent (e.g., no resolver was run), fall back to the verification decision.
+    const productIdentityClassification = productIdentityClassifications[c.id];
     const isProductResolved = productIdentityClassification === 'PROVIDER_RESOLVED' || productIdentityClassification === 'LEGACY_RESOLVED';
 
-    if (included && provider === 'stripe' && !isProductResolved) {
+    if (included && provider === 'stripe' && productIdentityClassification !== undefined && !isProductResolved) {
       if (previousEntitlement?.has_access === true) {
         anomalies.push(`product_identity_not_resolved_preserved: contract ${c.id} (classification: ${productIdentityClassification}) — access preserved from last known state`);
       } else {
