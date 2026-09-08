@@ -45,6 +45,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_pk' })],
       subscriptions: [{ id: 'sub_1', user_id: 'user_1', user_email: 'test@example.com', provider: 'stripe', provider_subscription_id: 'sub_pk', product_id: 'price_pk_a', status: 'active' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_pk: { provider_subscription_id: 'sub_pk', exists: true, status: 'active', verification_available: true },
       },
@@ -67,6 +68,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_wk' })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_wk', product_id: 'price_wk_a', status: 'active' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_wk: { provider_subscription_id: 'sub_wk', exists: true, status: 'active', verification_available: true },
       },
@@ -88,6 +90,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_4b' })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_4b', product_id: 'price_4bundle_a', status: 'active' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_4b: { provider_subscription_id: 'sub_4b', exists: true, status: 'active', verification_available: true },
       },
@@ -107,6 +110,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_pk' })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_pk', product_id: 'price_pk_a' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_pk: { provider_subscription_id: 'sub_pk', exists: true, status: 'active', verification_available: true },
       },
@@ -126,6 +130,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_pk' })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_pk', product_id: 'price_pk_a' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_pk: { provider_subscription_id: 'sub_pk', exists: true, status: 'active', verification_available: true },
       },
@@ -149,6 +154,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_stale' })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_stale', product_id: 'price_pk_a' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_stale: { provider_subscription_id: 'sub_stale', exists: true, status: 'canceled', verification_available: true },
       },
@@ -169,6 +175,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_renewed', period_end: PAST })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_renewed', product_id: 'price_pk_a' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_renewed: {
           provider_subscription_id: 'sub_renewed', exists: true, status: 'active',
@@ -195,6 +202,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [renewedContract],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_1', product_id: 'price_pk_a' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_1: { provider_subscription_id: 'sub_1', exists: true, status: 'active', verification_available: true },
       },
@@ -216,6 +224,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ status: 'active', period_end: FUTURE })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_1', product_id: 'price_pk_a', cancel_at_period_end: true }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_1: { provider_subscription_id: 'sub_1', exists: true, status: 'active', cancel_at_period_end: true, verification_available: true },
       },
@@ -234,6 +243,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ status: 'expired', period_end: PAST })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_1', product_id: 'price_pk_a' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_1: { provider_subscription_id: 'sub_1', exists: true, status: 'canceled', verification_available: true },
       },
@@ -251,6 +261,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_outage' })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_outage', product_id: 'price_pk_a' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_outage: { provider_subscription_id: 'sub_outage', exists: false, verification_available: false, raw_error: 'API timeout' },
       },
@@ -272,6 +283,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'apple', provider_subscription_id: 'apple_orig_1' })],
       subscriptions: [{ id: 'sub_1', provider: 'apple', provider_subscription_id: 'apple_orig_1', product_id: 'com.collectionkeeper.pipekeeper.annual' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
     });
 
     expect(result.has_access).toBe(true);
@@ -288,6 +300,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'apple', provider_subscription_id: 'apple_orig_2', modules: ['pipekeeper'] })],
       subscriptions: [{ id: 'sub_1', provider: 'apple', provider_subscription_id: 'apple_orig_2' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
     });
 
     expect(result.has_access).toBe(true);
@@ -303,6 +316,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'apple', provider_subscription_id: 'apple_orig_3', status: 'expired', period_end: PAST })],
       subscriptions: [{ id: 'sub_1', provider: 'apple', provider_subscription_id: 'apple_orig_3' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
     });
 
     expect(result.has_access).toBe(false);
@@ -317,6 +331,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_1' })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_1', product_id: 'price_pk_a' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_1: { provider_subscription_id: 'sub_1', exists: true, status: 'active', verification_available: true },
       },
@@ -336,6 +351,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       subscriptions: [],
       nonPaidGrants: [{ id: 'grant_1', user_id: 'user_1', module: 'pipekeeper', source: 'referral', status: 'active', start_at: PAST, end_at: FUTURE, reward_type: 'free_month' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
     });
 
     expect(result.has_access).toBe(true);
@@ -352,6 +368,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [],
       subscriptions: [],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
     });
 
     expect(result.has_access).toBe(false);
@@ -367,6 +384,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [makeContract({ provider: 'stripe', provider_subscription_id: 'sub_unknown', amount_cents: 0, billing_interval: 'unknown' })],
       subscriptions: [{ id: 'sub_1', provider: 'stripe', provider_subscription_id: 'sub_unknown' }],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
       stripeVerification: {
         sub_unknown: { provider_subscription_id: 'sub_unknown', exists: true, status: 'active', verification_available: true },
       },
@@ -384,6 +402,7 @@ describe('reconcileEntitlementForUser — Contract → Entitlement', () => {
       contracts: [],
       subscriptions: [],
       priceIdMap: PRICE_ID_MAP,
+      allowMissingProductClassificationForLegacyTests: true,
     });
 
     expect(result.reconciler_version).toBe(RECONCILER_VERSION);

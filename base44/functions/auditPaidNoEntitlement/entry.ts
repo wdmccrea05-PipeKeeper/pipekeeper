@@ -27,6 +27,7 @@ import {
   type StripeVerificationResult,
 } from "../../shared/reconcileEntitlementForUser.ts";
 import { getStripeClient } from "../../shared/getStripeClient.ts";
+import { resolveProductIdentityFromStripeChain } from "../../shared/stripeProductResolver.ts";
 
 import { normEmail, isActiveStatus, isExpired } from "../../shared/subscriptionHelpers.ts";
 
@@ -228,6 +229,33 @@ Deno.serve(async (req) => {
           const stripeVerification: Record<string, StripeVerificationResult> = {};
           if (stripeState) stripeVerification[c.provider_subscription_id] = stripeState;
 
+          // Build product identity classifications for all user contracts
+          const productIdentityClassifications: Record<string, string> = {};
+          for (const uc of userContracts) {
+            const subId = uc.provider_subscription_id;
+            const legacySub = userSubs.find((s: any) =>
+              (s.provider_subscription_id && s.provider_subscription_id === subId) ||
+              normEmail(s.user_email) === normEmail(uc.user_email)
+            );
+            const providerTruth = {
+              stripe_subscription: null,
+              stripe_lookup_error: null,
+              stripe_not_found: stripeVerification[subId]?.exists === false,
+            };
+            try {
+              const resolverResult = resolveProductIdentityFromStripeChain({
+                contract: uc,
+                legacy_subscription: legacySub,
+                provider_truth: providerTruth,
+                price_id_map: priceIdMap,
+                registry: [],
+              });
+              productIdentityClassifications[uc.id] = resolverResult.classification;
+            } catch {
+              productIdentityClassifications[uc.id] = 'UNRESOLVED';
+            }
+          }
+
           const result = reconcileEntitlementForUser({
             user_id: c.user_id,
             user_email: c.user_email,
@@ -236,6 +264,7 @@ Deno.serve(async (req) => {
             nonPaidGrants: userGrants,
             priceIdMap,
             stripeVerification,
+            productIdentityClassifications,
             previousEntitlement: ue ? {
               has_access: ue.has_access, tier: ue.tier, modules: ue.modules,
               source_type: ue.source_type, verification_status: ue.verification_status,

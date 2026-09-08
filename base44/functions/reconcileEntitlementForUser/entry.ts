@@ -26,6 +26,7 @@ import {
   type StripeVerificationResult,
 } from "../../shared/reconcileEntitlementForUser.ts";
 import { getStripeClient } from "../../shared/getStripeClient.ts";
+import { resolveProductIdentityFromStripeChain } from "../../shared/stripeProductResolver.ts";
 
 const normEmail = (e: unknown) => String(e || "").trim().toLowerCase();
 
@@ -222,6 +223,33 @@ async function processSingleUser({
     }
   }
 
+  // ── Build product identity classifications (registry-first) ───────────────
+  const productIdentityClassifications: Record<string, string> = {};
+  for (const c of contracts) {
+    const subId = c.provider_subscription_id;
+    const legacySub = subscriptions.find((s: any) =>
+      (s.provider_subscription_id && s.provider_subscription_id === subId) ||
+      normEmail(s.user_email) === normEmail(c.user_email)
+    );
+    const providerTruth = {
+      stripe_subscription: null,
+      stripe_lookup_error: null,
+      stripe_not_found: stripeVerification[subId]?.exists === false,
+    };
+    try {
+      const resolverResult = resolveProductIdentityFromStripeChain({
+        contract: c,
+        legacy_subscription: legacySub,
+        provider_truth: providerTruth,
+        price_id_map: priceIdMap,
+        registry: [],
+      });
+      productIdentityClassifications[c.id] = resolverResult.classification;
+    } catch {
+      productIdentityClassifications[c.id] = 'UNRESOLVED';
+    }
+  }
+
   // ── Run canonical reconciler ──────────────────────────────────────────────
   const previousEntitlement = existingEntitlements[0] || undefined;
   const result = reconcileEntitlementForUser({
@@ -232,6 +260,7 @@ async function processSingleUser({
     nonPaidGrants,
     priceIdMap,
     stripeVerification,
+    productIdentityClassifications,
     previousEntitlement: previousEntitlement ? {
       has_access: previousEntitlement.has_access,
       tier: previousEntitlement.tier,
