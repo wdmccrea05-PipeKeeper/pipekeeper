@@ -280,7 +280,7 @@ Deno.serve(async (req) => {
         // Keep MANUAL_REVIEW
       }
 
-      const isCurrent = ACTIVE_LIFECYCLES.includes(lifecycleClassification);
+      const isCurrent = ACTIVE_LIFECYCLES.includes(lifecycleClassification) || c.is_active === true;
 
       // Track stale local contracts
       if (isActiveStatus(c.status) && !isExpired(c.period_end) && !isCurrent) {
