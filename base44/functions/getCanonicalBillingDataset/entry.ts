@@ -332,6 +332,22 @@ Deno.serve(async (req) => {
       if (planType === 'bundle' && modules.length <= 1) anomalyCodes.push("BUNDLE_LOST_MODULE_IDENTITY");
       if (planType === 'single' && modules.length > 1) anomalyCodes.push("SINGLE_PLAN_WITH_MULTIPLE_MODULES");
 
+      // Compute MRR from amount + interval (contracts may not have mrr_cents populated)
+      const amountCents = c.amount_cents ?? stripeVerification[subId]?.amount_cents ?? undefined;
+      const billingInterval = c.billing_interval || (stripeVerification[subId]?.interval === 'year' ? 'annual' : stripeVerification[subId]?.interval) || undefined;
+      let computedMrr = c.mrr_cents ?? 0;
+      let finalAmountCents = amountCents;
+      if (finalAmountCents == null && matchingSub?.amount) {
+        finalAmountCents = Math.round(matchingSub.amount * 100);
+        const subInterval = matchingSub.billing_interval || billingInterval;
+        if (subInterval === 'year' || subInterval === 'annual') computedMrr = Math.round(finalAmountCents / 12);
+        else if (subInterval === 'month' || subInterval === 'monthly') computedMrr = finalAmountCents;
+      }
+      if ((!computedMrr || computedMrr === 0) && finalAmountCents != null && billingInterval) {
+        if (billingInterval === 'annual' || billingInterval === 'year') computedMrr = Math.round(finalAmountCents / 12);
+        else if (billingInterval === 'monthly' || billingInterval === 'month') computedMrr = finalAmountCents;
+      }
+
       // Build the canonical billing row
       const row = {
         canonical_contract_id: c.id,
@@ -375,10 +391,10 @@ Deno.serve(async (req) => {
         entitlement_provenance: entitlementProvenance,
 
         // Billing
-        amount_cents: c.amount_cents ?? stripeVerification[subId]?.amount_cents ?? undefined,
+        amount_cents: finalAmountCents,
         currency: c.currency || "usd",
-        billing_interval: c.billing_interval || (stripeVerification[subId]?.interval === 'year' ? 'annual' : stripeVerification[subId]?.interval) || undefined,
-        mrr_cents: c.mrr_cents ?? undefined,
+        billing_interval: billingInterval,
+        mrr_cents: computedMrr,
 
         // Dates
         first_paid_date: matchingSub?.started_at || matchingSub?.subscriptionStartedAt || c.period_start || undefined,
@@ -609,6 +625,8 @@ Deno.serve(async (req) => {
     }));
 
     // ── 8. BUNDLE SUBSCRIBER PROOF ─────────────────────────────────────────────
+    // Search BOTH ActiveContract-derived billing rows AND Subscription records
+    // for bundle evidence (point #12: search ALL sources)
     const bundleRows = billingRows.filter(r =>
       r.plan_type === 'bundle' || (r.modules.length > 1 && r.bundle_type)
     );
@@ -627,7 +645,54 @@ Deno.serve(async (req) => {
       interval: r.billing_interval,
       plan_key: r.canonical_plan_key,
       product_resolution_source: r.product_resolution_source,
+      source_entity: "ActiveContract",
     }));
+
+    // Also search Subscription records for bundle evidence not in ActiveContract
+    const billingRowSubIds = new Set(billingRows.map(r => r.provider_subscription_id).filter(Boolean));
+    for (const s of allSubs) {
+      const subId = s.provider_subscription_id || s.stripe_subscription_id || "";
+      if (subId && billingRowSubIds.has(subId)) continue; // already in billing rows
+
+      const planKey = s.plan_key || "";
+      const planDisplay = planKey ? PLAN_DISPLAY[planKey] : null;
+      const isBundleSub = planDisplay?.plan_type === 'bundle' ||
+        s.product_kind === 'founders' || s.product_kind === 'bundle_3' || s.product_kind === 'bundle_4' ||
+        s.checkout_type === 'bundle_2' || s.checkout_type === 'bundle_3' || s.checkout_type === 'bundle_4' ||
+        (s.modules_csv && s.modules_csv.split(',').length > 1);
+
+      if (!isBundleSub) continue;
+
+      // Resolve bundle display from plan_key
+      const bundleDisplay = planDisplay?.display_name ||
+        (s.product_kind === 'founders' || s.checkout_type === 'bundle_2' ? 'Founders Bundle' :
+         s.product_kind === 'bundle_3' || s.checkout_type === 'bundle_3' ? 'Three-Module Bundle' :
+         s.product_kind === 'bundle_4' || s.checkout_type === 'bundle_4' ? 'Four-Module Bundle' : 'Unknown Bundle');
+      const modulesFromCsv = s.modules_csv ? s.modules_csv.split(',').map((m: string) => m.trim().toLowerCase()).filter(Boolean) :
+        (planDisplay?.modules || []);
+
+      const subStatus = String(s.status || 'unknown').toLowerCase();
+      const isCurrentSub = ['active', 'trialing', 'past_due'].includes(subStatus) &&
+        !isExpired(s.current_period_end);
+
+      bundleProof.push({
+        email: s.user_email,
+        user_id: s.user_id,
+        provider_subscription_id: subId || undefined,
+        stripe_product_id: s.product_id || undefined,
+        stripe_price_id: undefined,
+        stripe_product_name: undefined,
+        canonical_bundle: bundleDisplay,
+        modules: modulesFromCsv,
+        lifecycle: isCurrentSub ? "PROVIDER_ACTIVE" : "HISTORICAL",
+        current: isCurrentSub ? "current" : "historical",
+        amount_cents: s.amount ? Math.round(s.amount * 100) : undefined,
+        interval: s.billing_interval || undefined,
+        plan_key: planKey || undefined,
+        product_resolution_source: "subscription_plan_key",
+        source_entity: "Subscription",
+      });
+    }
 
     // ── 9. DATA QUALITY / ANOMALIES ────────────────────────────────────────────
     const anomalies: any[] = [];
@@ -708,6 +773,15 @@ Deno.serve(async (req) => {
     }));
 
     // ── 11. REVENUE ────────────────────────────────────────────────────────────
+    // Compute entitled keys from UserEntitlement records (has_access === true)
+    const entitledKeys = new Set<string>();
+    for (const ue of allEntitlements) {
+      if (ue.has_access === true) {
+        const key = String(ue.user_id || ue.user_email || "");
+        if (key) entitledKeys.add(key);
+      }
+    }
+
     const currentMrr = currentRows.reduce((sum, r) => sum + (r.mrr_cents || 0), 0);
     const currentArr = currentMrr * 12;
 
@@ -730,9 +804,7 @@ Deno.serve(async (req) => {
       current_billing_summary: {
         current_paying_users: new Set(currentRows.map(r => String(r.user_id || r.email || "")).filter(Boolean)).size,
         current_contracts: currentRows.length,
-        current_entitled_users: [...entitlementsByUserId.values()].flat().filter((ue: any) => ue.has_access === true).length > 0
-          ? new Set([...entitlementsByUserId.entries()].flatMap(([uid, ues]) => ues.some((ue: any) => ue.has_access) ? [uid] : [])).size
-          : 0,
+        current_entitled_users: entitledKeys.size,
         mrr_cents: currentMrr,
         arr_cents: currentArr,
         mrr: currentMrr / 100,
@@ -769,22 +841,22 @@ Deno.serve(async (req) => {
         pipekeeper: {
           paid_entitlement_users: modulePaidSets.pipekeeper.size,
           non_paid_entitlement_users: moduleNonPaidSets.pipekeeper.size,
-          total_entitled_users: moduleEntitledSets.pipekeeper.size || modulePaidSets.pipekeeper.size,
+          total_entitled_users: new Set([...modulePaidSets.pipekeeper, ...moduleNonPaidSets.pipekeeper]).size,
         },
         whiskeykeeper: {
           paid_entitlement_users: modulePaidSets.whiskeykeeper.size,
           non_paid_entitlement_users: moduleNonPaidSets.whiskeykeeper.size,
-          total_entitled_users: moduleEntitledSets.whiskeykeeper.size || modulePaidSets.whiskeykeeper.size,
+          total_entitled_users: new Set([...modulePaidSets.whiskeykeeper, ...moduleNonPaidSets.whiskeykeeper]).size,
         },
         cigarkeeper: {
           paid_entitlement_users: modulePaidSets.cigarkeeper.size,
           non_paid_entitlement_users: moduleNonPaidSets.cigarkeeper.size,
-          total_entitled_users: moduleEntitledSets.cigarkeeper.size || modulePaidSets.cigarkeeper.size,
+          total_entitled_users: new Set([...modulePaidSets.cigarkeeper, ...moduleNonPaidSets.cigarkeeper]).size,
         },
         winekeeper: {
           paid_entitlement_users: modulePaidSets.winekeeper.size,
           non_paid_entitlement_users: moduleNonPaidSets.winekeeper.size,
-          total_entitled_users: moduleEntitledSets.winekeeper.size || modulePaidSets.winekeeper.size,
+          total_entitled_users: new Set([...modulePaidSets.winekeeper, ...moduleNonPaidSets.winekeeper]).size,
         },
       },
 

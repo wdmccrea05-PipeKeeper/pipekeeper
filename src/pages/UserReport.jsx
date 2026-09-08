@@ -4,6 +4,7 @@ import UserReportAuditTable from '@/components/reports/UserReportAuditTable';
 import SubscriptionReconciliationSummary from '@/components/reports/SubscriptionReconciliationSummary';
 import ProviderVerificationPanel from '@/components/reports/ProviderVerificationPanel';
 import CanonicalReconciliationPanel from '@/components/reports/CanonicalReconciliationPanel';
+import CanonicalBillingSections from '@/components/reports/CanonicalBillingSections';
 import { getCanonicalUserLifecycleReport } from '@/lib/analytics/canonicalAnalyticsService';
 
 const DATE_RANGE_OPTIONS = [
@@ -50,12 +51,13 @@ export default function UserReport() {
     load();
   }, [dateRange, customStart, customEnd]);
 
-  const auditRows = useMemo(() => data?.auditUsers || [], [data]);
-  const subRows = useMemo(() => data?.auditSubscriptions || [], [data]);
-  const canonicalSubs = useMemo(() => data?.canonicalCurrentPaidSubscriptionsDetail || [], [data]);
-  const subHistory = useMemo(() => data?.subscriptionHistoryDetail || [], [data]);
-  const reconTotals = useMemo(() => data?.subscriptionReconciliationTotals || null, [data]);
-  const multiSubUsers = useMemo(() => data?.multiSubscriptionUsers || [], [data]);
+  const v3 = data?.deprecated_v3_billing || {};
+  const auditRows = useMemo(() => v3.auditUsers || [], [v3]);
+  const subRows = useMemo(() => v3.auditSubscriptions || [], [v3]);
+  const canonicalSubs = useMemo(() => v3.canonicalCurrentPaidSubscriptionsDetail || [], [v3]);
+  const subHistory = useMemo(() => v3.subscriptionHistoryDetail || [], [v3]);
+  const reconTotals = useMemo(() => v3.subscriptionReconciliationTotals || null, [v3]);
+  const multiSubUsers = useMemo(() => v3.multiSubscriptionUsers || [], [v3]);
 
   if (loading) return <div className="p-8 text-[#E0D8C8]">Loading user report…</div>;
 
@@ -75,13 +77,7 @@ export default function UserReport() {
   if (!data) return <div className="p-8 text-[#E0D8C8]">No report data returned.</div>;
 
   const ua = data.userActivity || {};
-  const ss = data.subscriptionStatus || {};
   const acq = data.acquisition || {};
-  const pb = data.providerBreakdown || {};
-  const prod = data.productBreakdown || {};
-  const dq = data.dataQuality || {};
-  const rev = data.revenue || {};
-  const ren = data.renewals || {};
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8 text-[#E0D8C8]">
@@ -126,29 +122,6 @@ export default function UserReport() {
           <Card title="Active Free Users (30d)" value={ua.activeFreeUsers ?? 0} />
           <Card title="Active Paying Users (30d)" value={ua.activePayingUsers ?? 0} />
         </div>
-      </Section>
-
-      {/* 2. Subscription Status */}
-      <Section title="2. Subscription Status (current)">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card title="Current Entitled Users" value={ss.currentEntitledUsers ?? 0} highlight />
-          <Card
-            title={ss.provisional_label || "Current Paying Users"}
-            value={ss.currentPayingUsers ?? 0}
-            highlight
-            sub={ss.metric_provisional ? '⚠ Provisional — not provider-verified' : undefined}
-          />
-          <Card title="Current Trials" value={ss.currentTrials ?? 0} />
-          <Card title="Current Past-Due" value={ss.currentPastDue ?? 0} warn={(ss.currentPastDue ?? 0) > 0} />
-          <Card title="Canceling but Entitled" value={ss.cancelingButEntitled ?? 0} />
-          <Card title="Expired" value={ss.expiredUsers ?? 0} />
-        </div>
-        {ss.metric_provisional && (
-          <div className="mt-3 rounded-lg border border-amber-700/30 bg-amber-900/10 p-3 text-xs text-amber-300/80 leading-relaxed">
-            ⚠ {ss.provisional_reason}
-          </div>
-        )}
-        <EntitlementReconciliation rec={data.entitlementReconciliation} />
       </Section>
 
       {/* 2b. Provider Verification */}
@@ -201,55 +174,12 @@ export default function UserReport() {
         </div>
       </Section>
 
-      {/* 4. Provider Breakdown */}
-      <Section title="4. Paid Users by Provider">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {Object.entries(pb).map(([provider, counts]) => (
-            <Card key={provider} title={providerLabel(provider)} value={(counts).paying ?? 0} sub={`entitled: ${(counts).entitled ?? 0}`} />
-          ))}
-        </div>
-      </Section>
-
-      {/* 5. Product Breakdown */}
-      <Section title="5. Paid & Entitled Users by Product">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {Object.entries(prod).map(([product, counts]) => (
-            <Card key={product} title={productLabel(product)} value={(counts).paying ?? 0} sub={`entitled: ${(counts).entitled ?? 0}`} />
-          ))}
-        </div>
-      </Section>
-
-      {/* 6. Revenue & Renewals */}
-      <Section title="6. Revenue & Renewals (run-rate)">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <Card title="MRR" value={`$${formatMoney(rev.mrr)}`} />
-          <Card title="ARR (run-rate)" value={`$${formatMoney(rev.arr)}`} />
-          <Card title="Known Revenue Rows" value={rev.knownRevenueRows ?? 0} />
-          <Card title="Renewals This Week" value={`$${formatMoney(ren.week?.revenue)}`} />
-          <Card title="Renewals This Month" value={`$${formatMoney(ren.month?.revenue)}`} />
-        </div>
-      </Section>
-
-      {/* 7. Data Quality */}
-      <Section title="7. Data Quality & Exceptions">
-        <DataQualityWarning dq={dq} />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-          <Card title="Unmatched Subscriptions" value={dq.unmatchedSubscriptions ?? 0} warn={(dq.unmatchedSubscriptions ?? 0) > 0} />
-          <Card title="Subs Without User IDs" value={dq.subscriptionsWithoutUserIds ?? 0} warn={(dq.subscriptionsWithoutUserIds ?? 0) > 0} />
-          <Card title="Duplicate Contracts" value={dq.duplicateContracts ?? 0} warn={(dq.duplicateContracts ?? 0) > 0} />
-          <Card title="Conflicting Statuses" value={dq.conflictingStatuses ?? 0} warn={(dq.conflictingStatuses ?? 0) > 0} />
-          <Card title="Missing First-Paid Date" value={dq.missingFirstPaidDate ?? 0} warn={(dq.missingFirstPaidDate ?? 0) > 0} />
-          <Card title="Missing Amount" value={dq.missingAmount ?? 0} warn={(dq.missingAmount ?? 0) > 0} />
-          <Card title="Missing Interval" value={dq.missingInterval ?? 0} warn={(dq.missingInterval ?? 0) > 0} />
-          <Card title="Unknown Product" value={dq.unknownProduct ?? 0} warn={(dq.unknownProduct ?? 0) > 0} />
-          <Card title="Unknown Provider" value={dq.unknownProvider ?? 0} warn={(dq.unknownProvider ?? 0) > 0} />
-          <Card title="Invalid Dates" value={dq.invalidDates ?? 0} warn={(dq.invalidDates ?? 0) > 0} />
-          <Card title="Synthetic Identities" value={dq.syntheticIdentities ?? 0} warn={(dq.syntheticIdentities ?? 0) > 0} />
-        </div>
-        {data.excludedRecords?.length > 0 && (
-          <ExcludedRecordsTable records={data.excludedRecords} />
-        )}
-      </Section>
+      {/* ── CANONICAL BILLING SECTIONS (from getCanonicalBillingDataset) ─────── */}
+      {/* Sections 2, 4, 5, 6, 7, 8, 9, 10, 11, 12 are now driven by the canonical */}
+      {/* billing dataset — NOT getUserSubscriptionReportV3. The old V3 billing   */}
+      {/* aggregates (providerBreakdown, productBreakdown, revenue, dataQuality)  */}
+      {/* are deprecated and kept only in data.deprecated_v3_billing for audit.    */}
+      <CanonicalBillingSections billing={data.billing} />
 
       {/* 7b. First-time paid users — evidence & confidence categories */}
       <Section title={`7b. First-Time Paid Users — Evidence (${(data.newFirstTimePaidUsersDetail || []).length})`}>
