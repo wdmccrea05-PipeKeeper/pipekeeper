@@ -296,15 +296,19 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Resolve plan display name
-      const planKey = resolverResult.resolved_plan_key || c.resolved_plan_key || matchingSub?.plan_key || "";
+      // Resolve plan display name — PRIORITIZE the ActiveContract's resolved_plan_key
+      // (set by executeBillingReconciliationClosure) over the live Stripe re-resolution,
+      // so Apple/manual grants and non-Stripe bundles are correctly classified.
+      const planKey = c.resolved_plan_key || resolverResult.resolved_plan_key || matchingSub?.plan_key || "";
       const planDisplay = planKey ? PLAN_DISPLAY[planKey] : null;
       const planFamily = planDisplay ? planDisplay.display_name : null;
       const planType = planDisplay ? planDisplay.plan_type : (planKey ? 'unknown' : 'unknown');
       const bundleType = planDisplay?.plan_type === 'bundle' ? planDisplay.display_name : (c.bundle_name || null);
 
-      // Modules from canonical resolver
-      const modules = resolverResult.resolved_modules || [];
+      // Modules from canonical resolver, falling back to ActiveContract modules
+      const modules = (resolverResult.resolved_modules && resolverResult.resolved_modules.length > 0)
+        ? resolverResult.resolved_modules
+        : (c.modules || []);
 
       // Entitlement lookup (Defect C fix: get ALL entitlements for this user)
       const userEntitlements = entitlementsByUserId.get(String(c.user_id || "")) ||
