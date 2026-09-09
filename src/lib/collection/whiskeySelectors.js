@@ -101,8 +101,10 @@ export function selectBottleTypes(bottles) {
 export function selectTotalBottles(bottles, inventoryUnits) {
   const units = selectActiveInventoryUnits(inventoryUnits);
   if (units.length > 0) return units.length;
+  // Legacy fallback: sum bottle_count. Zero is a legitimate state — do NOT
+  // coerce 0/null/undefined to 1. A bottle with no explicit count has 0 inventory.
   return selectActiveBottles(bottles).reduce(
-    (sum, b) => sum + (n(b.bottle_count) || 1),
+    (sum, b) => sum + Math.max(0, n(b.bottle_count)),
     0
   );
 }
@@ -158,7 +160,8 @@ export function selectCollectionValue(bottles, inventoryUnits) {
   return bottleList.reduce((sum, b) => {
     if (!b) return sum;
     const unitValue = getBottleUnitValue(b);
-    const count = hasUnits ? Math.max(0, idx[b.id] || 0) : n(b.bottle_count) || 1;
+    // Zero is a legitimate state — do NOT coerce 0/null/undefined to 1.
+    const count = hasUnits ? Math.max(0, idx[b.id] || 0) : Math.max(0, n(b.bottle_count));
     return sum + unitValue * count;
   }, 0);
 }

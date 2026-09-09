@@ -26,7 +26,9 @@ export function getBottleCount(bottle) {
   const quantity = toNumber(bottle?.quantity, 0);
   if (quantity > 0) return quantity;
 
-  return 1;
+  // Zero is a legitimate inventory state (empty/finished bottle).
+  // Do NOT coerce 0/null/undefined to 1.
+  return 0;
 }
 
 /**
@@ -47,7 +49,8 @@ export function buildInventoryCountByBottleId(inventoryUnits = []) {
 
 export function getEffectiveBottleCount(bottle, inventoryCountByBottleId = {}, hasInventoryUnits = false) {
   if (hasInventoryUnits) {
-    return Math.max(1, toNumber(inventoryCountByBottleId?.[bottle?.id], 0));
+    // Zero is a legitimate inventory state — do NOT coerce to 1.
+    return Math.max(0, toNumber(inventoryCountByBottleId?.[bottle?.id], 0));
   }
   return getBottleCount(bottle);
 }

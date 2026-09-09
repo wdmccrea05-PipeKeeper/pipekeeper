@@ -27,6 +27,14 @@ import { useCurrency } from "@/lib/currency/useCurrency";
 import AddFlowModal from "@/components/addflow/AddFlowModal";
 import { getItemPhoto } from '@/lib/images/getItemPhoto';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
+import WhiskeyCollectionFilter from "@/components/whiskey/WhiskeyCollectionFilter";
+import {
+  COLLECTION_FILTERS,
+  filterByLifecycle,
+  getInventoryCount,
+  getLifecycleState,
+} from "@/lib/collection/inventoryLifecycle";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 function safeText(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
@@ -43,21 +51,28 @@ function safeText(value, fallback = "—") {
   return fallback;
 }
 
-function BottleGridCard({ bottle, onOpen }) {
+function BottleGridCard({ bottle, onOpen, inventoryCount = 0 }) {
   const photo = getItemPhoto(bottle);
   const unitValue = resolveBottleUnitValue(bottle);
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
+  const isArchived = bottle?.is_archived === true;
+  const isEmpty = !isArchived && inventoryCount === 0;
 
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="text-left rounded-2xl overflow-hidden transition-all hover:translate-y-[-1px]"
+      className="text-left rounded-2xl overflow-hidden transition-all hover:translate-y-[-1px] relative"
       style={{
         background: "linear-gradient(145deg, rgba(39,27,18,0.96), rgba(25,17,11,0.98))",
-        border: "1px solid rgba(180,140,75,0.18)",
+        border: isArchived
+          ? "1px solid rgba(120,120,120,0.25)"
+          : isEmpty
+          ? "1px solid rgba(180,140,75,0.12)"
+          : "1px solid rgba(180,140,75,0.18)",
         boxShadow: "0 10px 26px rgba(0,0,0,0.25)",
+        opacity: isArchived ? 0.7 : 1,
       }}
     >
       <div className="aspect-[4/5] bg-[rgba(255,255,255,0.03)] flex items-center justify-center overflow-hidden">
@@ -71,6 +86,24 @@ function BottleGridCard({ bottle, onOpen }) {
           <div className="text-[#D8C7A6]/45 text-sm">No photo</div>
         )}
       </div>
+
+      {/* Status badge */}
+      {isArchived && (
+        <div
+          className="absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium"
+          style={{ background: 'rgba(120,120,120,0.3)', color: '#ccc' }}
+        >
+          Archived
+        </div>
+      )}
+      {isEmpty && !isArchived && (
+        <div
+          className="absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium"
+          style={{ background: 'rgba(180,140,75,0.15)', color: 'rgba(224,216,200,0.6)' }}
+        >
+          Empty
+        </div>
+      )}
 
       <div className="p-4 space-y-2">
         <h3 className="text-lg font-semibold text-[#F5F1E7] leading-tight break-words">
@@ -87,29 +120,47 @@ function BottleGridCard({ bottle, onOpen }) {
           <div className="text-sm text-[#E0D8C8]">
             {unitValue > 0 ? formatFromBase(unitValue) : t('common.noValue')}
           </div>
-          {bottle.favorite ? (
-            <Star className="w-4 h-4 text-[#D4A574]" fill="currentColor" />
-          ) : null}
+          <div className="flex items-center gap-2">
+            <span
+              className="text-xs px-2 py-0.5 rounded-full"
+              style={{
+                background: inventoryCount > 0 ? 'rgba(123,155,91,0.12)' : 'rgba(255,255,255,0.04)',
+                color: inventoryCount > 0 ? '#9BBF7B' : 'rgba(224,216,200,0.5)',
+              }}
+            >
+              {inventoryCount} {inventoryCount === 1 ? 'btl' : 'btl'}
+            </span>
+            {bottle.favorite ? (
+              <Star className="w-4 h-4 text-[#D4A574]" fill="currentColor" />
+            ) : null}
+          </div>
         </div>
       </div>
     </button>
   );
 }
 
-function BottleListRow({ bottle, onOpen }) {
+function BottleListRow({ bottle, onOpen, inventoryCount = 0 }) {
   const photo = getItemPhoto(bottle);
   const unitValue = resolveBottleUnitValue(bottle);
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
+  const isArchived = bottle?.is_archived === true;
+  const isEmpty = !isArchived && inventoryCount === 0;
 
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="w-full text-left rounded-2xl p-4 flex items-center gap-4 transition-all hover:translate-y-[-1px]"
+      className="w-full text-left rounded-2xl p-4 flex items-center gap-4 transition-all hover:translate-y-[-1px] relative"
       style={{
         background: "linear-gradient(145deg, rgba(39,27,18,0.96), rgba(25,17,11,0.98))",
-        border: "1px solid rgba(180,140,75,0.18)",
+        border: isArchived
+          ? "1px solid rgba(120,120,120,0.25)"
+          : isEmpty
+          ? "1px solid rgba(180,140,75,0.12)"
+          : "1px solid rgba(180,140,75,0.18)",
+        opacity: isArchived ? 0.7 : 1,
       }}
     >
       <div className="w-16 h-20 rounded-xl bg-[rgba(255,255,255,0.03)] flex items-center justify-center overflow-hidden shrink-0">
@@ -139,6 +190,33 @@ function BottleListRow({ bottle, onOpen }) {
                 .filter(Boolean)
                 .join(" · ")}
             </p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <span
+                className="text-xs px-2 py-0.5 rounded-full"
+                style={{
+                  background: inventoryCount > 0 ? 'rgba(123,155,91,0.12)' : 'rgba(255,255,255,0.04)',
+                  color: inventoryCount > 0 ? '#9BBF7B' : 'rgba(224,216,200,0.5)',
+                }}
+              >
+                {inventoryCount} {inventoryCount === 1 ? 'bottle' : 'bottles'}
+              </span>
+              {isArchived && (
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(120,120,120,0.2)', color: '#ccc' }}
+                >
+                  Archived
+                </span>
+              )}
+              {isEmpty && !isArchived && (
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(180,140,75,0.12)', color: 'rgba(224,216,200,0.5)' }}
+                >
+                  Empty
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="text-right shrink-0">
@@ -170,6 +248,7 @@ function WhiskeyInner() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState('name');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [collectionFilter, setCollectionFilter] = useState(COLLECTION_FILTERS.ALL);
 
   const userEmail = user?.email || null;
   const shouldOpenAdd = new URLSearchParams(location.search).get("action") === "add";
@@ -188,6 +267,47 @@ function WhiskeyInner() {
     staleTime: STALE_TIME.COLLECTION,
   });
 
+  const { data: inventoryUnits = [] } = useQuery({
+    queryKey: ['whiskey-inventory', userEmail],
+    queryFn: () => fetchAllEntities(base44.entities.WhiskeyInventoryUnit, { created_by: userEmail }),
+    enabled: !!userEmail && !userLoading,
+    staleTime: STALE_TIME.COLLECTION,
+  });
+
+  // Build inventory count index: { bottle_id → count }
+  const inventoryCountByBottleId = useMemo(() => {
+    const idx = {};
+    for (const unit of inventoryUnits) {
+      if (unit?.bottle_id) {
+        idx[unit.bottle_id] = (idx[unit.bottle_id] || 0) + 1;
+      }
+    }
+    return idx;
+  }, [inventoryUnits]);
+
+  const hasInventoryUnits = inventoryUnits.length > 0;
+
+  // Get inventory count for a single bottle
+  const getBottleInventoryCount = (bottle) => {
+    return getInventoryCount(
+      bottle,
+      inventoryCountByBottleId[bottle?.id] || 0,
+      hasInventoryUnits,
+      ['bottle_count', 'quantity']
+    );
+  };
+
+  // Compute filter counts
+  const filterCounts = useMemo(() => {
+    const counts = { all: 0, in_stock: 0, empty: 0, archived: 0 };
+    for (const bottle of bottles) {
+      counts.all += 1;
+      const state = getLifecycleState(bottle, getBottleInventoryCount(bottle));
+      counts[state] = (counts[state] || 0) + 1;
+    }
+    return counts;
+  }, [bottles, inventoryCountByBottleId, hasInventoryUnits]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Open add modal if action=add
   useEffect(() => {
     if (shouldOpenAdd) setShowAddModal(true);
@@ -196,7 +316,13 @@ function WhiskeyInner() {
   const filteredBottles = useMemo(() => {
     let results = bottles;
     const q = search.trim().toLowerCase();
-    
+
+    // Apply lifecycle filter (All / In Stock / Empty / Archived)
+    if (collectionFilter !== COLLECTION_FILTERS.ALL) {
+      results = filterByLifecycle(results, collectionFilter, getBottleInventoryCount);
+    }
+
+    // Apply search
     if (q) {
       results = results.filter((bottle) => {
         const haystack = [
@@ -253,6 +379,14 @@ function WhiskeyInner() {
           <p className="text-[#D8C7A6]/76 mt-2">
             {filteredBottles.length} bottle{filteredBottles.length === 1 ? "" : "s"}
           </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <WhiskeyCollectionFilter
+            value={collectionFilter}
+            onChange={setCollectionFilter}
+            counts={filterCounts}
+          />
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -369,6 +503,7 @@ function WhiskeyInner() {
               key={bottle.id}
               bottle={bottle}
               onOpen={() => openBottleDetail(bottle)}
+              inventoryCount={getBottleInventoryCount(bottle)}
             />
           ))}
         </div>
@@ -379,6 +514,7 @@ function WhiskeyInner() {
               key={bottle.id}
               bottle={bottle}
               onOpen={() => openBottleDetail(bottle)}
+              inventoryCount={getBottleInventoryCount(bottle)}
             />
           ))}
         </div>

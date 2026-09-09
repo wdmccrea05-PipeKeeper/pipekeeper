@@ -48,6 +48,8 @@ const DEFAULT_FORM = (defaultBottleType = 'whiskey') => ({
   valuation_notes: '',
   value_source_notes: '',
   replacement_difficulty: '',
+  // Initial inventory — explicit, zero is legitimate (reference/finished/history)
+  initial_bottle_count: '',
 });
 
 function toNumberOrNull(value) {
@@ -174,6 +176,9 @@ export default function BottleForm({
       collector_value: toNumberOrNull(formData.collector_value),
       manual_value_override: toNumberOrNull(formData.manual_value_override),
       rating: toNumberOrNull(formData.rating),
+      // Set bottle_count from the explicit initial_bottle_count field.
+      // Zero is legitimate — do NOT coerce to 1.
+      bottle_count: toNumberOrNull(formData.initial_bottle_count) ?? 0,
       value_last_updated:
         formData.retail_price || formData.aftermarket_price || formData.collector_value || formData.manual_value_override
           ? new Date().toISOString()
@@ -430,6 +435,25 @@ export default function BottleForm({
 
             {/* INVENTORY & PURCHASE SECTION */}
             <FormSection title="Inventory & Purchase" defaultOpen={false}>
+              {/* Initial inventory — explicit, zero is legitimate */}
+              <div className="mb-4">
+                <label className="text-sm text-[#D8C7A6] block mb-2">
+                  {t('whiskey.initialBottleCount', 'Initial Bottle Count')}
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="999"
+                  value={formData.initial_bottle_count || ''}
+                  onChange={(e) => handleChange('initial_bottle_count', e.target.value)}
+                  placeholder="0"
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
+                />
+                <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
+                  {t('whiskey.initialBottleCountHint', 'Enter 0 for a reference, previously owned, or already finished bottle. You can add bottles later without deleting the record.')}
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">

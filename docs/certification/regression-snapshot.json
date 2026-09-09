@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-09T17:10:38.395Z",
+  "capturedAt": "2026-09-09T02:10:36.831Z",
   "scorerVersion": "1.0.0-canonical",
   "taxonomyVersion": "1.0.0",
   "normalizationVersion": "1.0.0",
@@ -15,11 +15,11 @@
   "scores": {
     "Heavy Aromatic": {
       "Aromatic Dedicated": {
-        "finalScore": 9.1,
-        "technicalScore": 8.1,
-        "confidence": 0.9,
+        "finalScore": 9.5,
+        "technicalScore": 8.5,
+        "confidence": 1,
         "components": {
-          "dedication": 8,
+          "dedication": 9,
           "chamberGeometry": 8,
           "tobaccoCut": 8,
           "blendComposition": 7,
@@ -31,7 +31,7 @@
       "English Dedicated": {
         "finalScore": 3.1,
         "technicalScore": 5.1,
-        "confidence": 0.9,
+        "confidence": 1,
         "components": {
           "dedication": 1,
           "chamberGeometry": 8,
@@ -73,11 +73,11 @@
     },
     "Light Aromatic": {
       "Aromatic Dedicated": {
-        "finalScore": 9.1,
-        "technicalScore": 8.1,
-        "confidence": 0.9,
+        "finalScore": 9.5,
+        "technicalScore": 8.5,
+        "confidence": 1,
         "components": {
-          "dedication": 8,
+          "dedication": 9,
           "chamberGeometry": 8,
           "tobaccoCut": 8,
           "blendComposition": 7,
@@ -89,7 +89,7 @@
       "English Dedicated": {
         "finalScore": 3.1,
         "technicalScore": 5.1,
-        "confidence": 0.9,
+        "confidence": 1,
         "components": {
           "dedication": 1,
           "chamberGeometry": 8,
@@ -133,7 +133,7 @@
       "Aromatic Dedicated": {
         "finalScore": 4.6,
         "technicalScore": 5.6,
-        "confidence": 0.9,
+        "confidence": 1,
         "components": {
           "dedication": 3,
           "chamberGeometry": 7.5,
@@ -147,7 +147,7 @@
       "English Dedicated": {
         "finalScore": 4.9,
         "technicalScore": 6.5,
-        "confidence": 0.9,
+        "confidence": 1,
         "components": {
           "dedication": 5,
           "chamberGeometry": 7.5,
@@ -191,7 +191,7 @@
       "Aromatic Dedicated": {
         "finalScore": 4.6,
         "technicalScore": 5.6,
-        "confidence": 0.9,
+        "confidence": 1,
         "components": {
           "dedication": 3,
           "chamberGeometry": 7.5,
@@ -205,7 +205,7 @@
       "English Dedicated": {
         "finalScore": 4.9,
         "technicalScore": 6.5,
-        "confidence": 0.9,
+        "confidence": 1,
         "components": {
           "dedication": 5,
           "chamberGeometry": 7.5,
@@ -249,7 +249,7 @@
       "Aromatic Dedicated": {
         "finalScore": 4.9,
         "technicalScore": 5.9,
-        "confidence": 0.9,
+        "confidence": 1,
         "components": {
           "dedication": 3,
           "chamberGeometry": 8,
@@ -263,7 +263,7 @@
       "English Dedicated": {
         "finalScore": 4.9,
         "technicalScore": 6.8,
-        "confidence": 0.9,
+        "confidence": 1,
         "components": {
           "dedication": 5,
           "chamberGeometry": 8,
@@ -307,7 +307,7 @@
       "Aromatic Dedicated": {
         "finalScore": 2.9,
         "technicalScore": 4.9,
-        "confidence": 0.9,
+        "confidence": 1,
         "components": {
           "dedication": 1,
           "chamberGeometry": 8,
@@ -319,11 +319,11 @@
         }
       },
       "English Dedicated": {
-        "finalScore": 8.8,
-        "technicalScore": 7.8,
-        "confidence": 0.9,
+        "finalScore": 9.2,
+        "technicalScore": 8.2,
+        "confidence": 1,
         "components": {
-          "dedication": 8,
+          "dedication": 9,
           "chamberGeometry": 8,
           "tobaccoCut": 8,
           "blendComposition": 7,

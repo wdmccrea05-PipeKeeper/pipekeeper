@@ -34,6 +34,7 @@ import LogTastingModal from "@/components/whiskey/LogTastingModal";
 import InlinePhotoEditor from "@/components/shared/InlinePhotoEditor";
 import ShareRecordModal from "@/components/share/ShareRecordModal";
 import InventoryManager from "@/components/whiskey/InventoryManager";
+import BottleLifecycleControls from "@/components/whiskey/BottleLifecycleControls";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import {
@@ -423,6 +424,7 @@ function BottleDetailInner() {
   const [showInventoryManager, setShowInventoryManager] = useState(
     params.get("inventory") === "1"
   );
+  const [inventoryUnits, setInventoryUnits] = useState([]);
   const [valueSnapshots, setValueSnapshots] = useState([]);
   const [priceObservations, setPriceObservations] = useState([]);
   const [showSnapshotModal, setShowSnapshotModal] = useState(false);
@@ -507,6 +509,23 @@ function BottleDetailInner() {
     } catch (e) {
       console.error("[BottleDetail] failed to load bottles", e);
       setAllBottles([]);
+    }
+  }
+
+  async function loadInventoryUnits() {
+    if (!bottleId || !userEmail) {
+      setInventoryUnits([]);
+      return;
+    }
+    try {
+      const rows = await base44.entities.WhiskeyInventoryUnit.filter({
+        bottle_id: bottleId,
+        created_by: userEmail,
+      });
+      setInventoryUnits(Array.isArray(rows) ? rows : []);
+    } catch (e) {
+      console.error("[BottleDetail] failed to load inventory units", e);
+      setInventoryUnits([]);
     }
   }
 
@@ -618,6 +637,7 @@ function BottleDetailInner() {
           20
         ).catch(() => []),
         loadPriceObservations(),
+        loadInventoryUnits(),
       ]);
       if (mounted) {
         const snapshots = snapshotRows || [];
@@ -967,6 +987,17 @@ function BottleDetailInner() {
                 </Button>
               </div>
 
+              {/* Inventory lifecycle controls — Finish Bottle, Add Bottle, Archive/Unarchive */}
+              <BottleLifecycleControls
+                bottle={bottle}
+                inventoryUnitCount={inventoryUnits.length}
+                hasInventoryUnits={inventoryUnits.length > 0}
+                userEmail={userEmail}
+                onAfterChange={async () => {
+                  await Promise.all([loadBottle(), loadInventoryUnits()]);
+                }}
+              />
+
               {tastings.length > 0 ? (
                 <div className="space-y-3">
                   <h3 className="text-sm uppercase tracking-wider text-[#D4A574] font-semibold">
@@ -1033,15 +1064,17 @@ function BottleDetailInner() {
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete bottle?</AlertDialogTitle>
+              <AlertDialogTitle>Delete {displayName}?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone.
+                This permanently removes this whiskey record and its associated history (tasting notes, inventory, valuations, and purchase records). This action cannot be undone.
+                <br /><br />
+                <strong>If you simply no longer own a bottle</strong>, set inventory to zero (Finish Bottle) or archive it instead — both preserve your history.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{t('common.cancel', 'Cancel')}</AlertDialogCancel>
               <AlertDialogAction onClick={handleDelete} disabled={deleting}>
-                {deleting ? t('common.deleting', 'Deleting...') : t('common.delete', 'Delete')}
+                {deleting ? t('common.deleting', 'Deleting...') : t('common.delete', 'Delete Permanently')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

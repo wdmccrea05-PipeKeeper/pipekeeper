@@ -372,7 +372,9 @@ export default function InventoryManager({ bottle, onClose }) {
 // Helper: compute inventory value for a bottle given its units
 export function computeInventoryValue(bottle, units) {
   const marketValue = getBottleUnitValue(bottle);
-  if (!marketValue || !units?.length) return marketValue * (bottle.bottle_count || 1);
+  // Zero is a legitimate inventory state — do NOT coerce bottle_count to 1.
+  if (!marketValue) return 0;
+  if (!units?.length) return marketValue * Math.max(0, Number(bottle.bottle_count) || 0);
 
   return units.reduce((sum, u) => {
     const mult = u.status === 'open' ? (FILL_MULTIPLIER[u.fill_level] || 1) : 1;

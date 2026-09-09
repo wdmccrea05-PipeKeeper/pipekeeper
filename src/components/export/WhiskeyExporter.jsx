@@ -41,7 +41,8 @@ export default function WhiskeyExporter() {
       'Age (Years)', 'ABV (%)', 'Bottle Size',
       'Purchase Price', 'Purchase Location', 'Purchase Date',
       'Fill Level', 'Opened Date', 'Bottle Count',
-      'Rating', 'Favorite', 'Notes'
+      'Rating', 'Favorite', 'Notes',
+      'Archived', 'Archived At'
     ];
 
     const rows = bottles.map(b => [
@@ -58,10 +59,13 @@ export default function WhiskeyExporter() {
       b.purchase_date || '',
       b.fill_level || '',
       b.opened_date || '',
-      b.bottle_count || 1,
+      // Preserve zero — do NOT coerce to 1. Zero is a legitimate inventory state.
+      b.bottle_count != null ? b.bottle_count : 0,
       b.rating || '',
       b.favorite ? 'Yes' : 'No',
       b.notes || '',
+      b.is_archived ? 'Yes' : 'No',
+      b.archived_at || '',
     ]);
 
     const csvContent = [

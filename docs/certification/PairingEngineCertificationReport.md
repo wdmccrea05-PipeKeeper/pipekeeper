@@ -1,6 +1,6 @@
 # Pairing Engine Certification Report
 
-**Generated:** 2026-08-09T17:10:36.135Z
+**Generated:** 2026-09-09T02:09:34.422Z
 
 ## Executive Summary
 
@@ -105,61 +105,61 @@ CONDITIONALLY CERTIFIED
 
 | Operation | Avg Time (ms) | Max Time (ms) | Status |
 |-----------|--------------|--------------|--------|
-| scorePipeBlend (single) | 0.18 | 2.35 | ✅ Fast |
-| buildPairingsForPipes | 0.11 | 13.11 | ✅ Fast |
+| scorePipeBlend (single) | 0.03 | 0.07 | ✅ Fast |
+| buildPairingsForPipes | 0.03 | 3.16 | ✅ Fast |
 
 ## Regression Summary
 
-**Previous Baseline:** 2026-08-09T17:10:12.721Z
+**Previous Baseline:** 2026-08-09T17:10:38.395Z
 
 _No regressions detected from previous certified build._
 
 ## Confidence Calibration
 
-- ✅ **Heavy Aromatic × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Heavy Aromatic × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Heavy Aromatic × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Heavy Aromatic × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Heavy Aromatic × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Light Aromatic × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Light Aromatic × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Light Aromatic × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Light Aromatic × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Light Aromatic × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Straight Virginia × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Straight Virginia × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Straight Virginia × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Straight Virginia × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Straight Virginia × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Virginia Flake × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Virginia Flake × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Virginia Flake × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Virginia Flake × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Virginia Flake × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **True VaPer × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **True VaPer × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **True VaPer × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **True VaPer × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **True VaPer × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **English × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **English × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **English × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **English × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **English × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Balkan × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Balkan × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Balkan × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Balkan × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Balkan × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Burley × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Burley × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Burley × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Burley × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Burley × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Lakeland × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Lakeland × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Lakeland × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Lakeland × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Lakeland × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Dark Fired × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Dark Fired × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Dark Fired × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Dark Fired × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Dark Fired × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Navy Flake × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Navy Flake × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Navy Flake × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Navy Flake × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Navy Flake × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **English Aromatic × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **English Aromatic × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **English Aromatic × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **English Aromatic × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **English Aromatic × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Non-aromatic Cavendish × Aromatic Dedicated** (confidence=0.9): High confidence — well-evidenced pair
-- ✅ **Non-aromatic Cavendish × English Dedicated** (confidence=0.9): High confidence — well-evidenced pair
+- ✅ **Non-aromatic Cavendish × Aromatic Dedicated** (confidence=1): High confidence — well-evidenced pair
+- ✅ **Non-aromatic Cavendish × English Dedicated** (confidence=1): High confidence — well-evidenced pair
 - ✅ **Non-aromatic Cavendish × Virginia Dedicated** (confidence=0.9): High confidence — well-evidenced pair
 - ✅ **Unknown Family × Aromatic Dedicated** (confidence=0.6): Confidence in valid range
 - ✅ **Unknown Family × English Dedicated** (confidence=0.6): Confidence in valid range
 - ✅ **Unknown Family × Virginia Dedicated** (confidence=0.6): Confidence in valid range
-- ✅ **Unknown Components × Aromatic Dedicated** (confidence=0.4): Low confidence — missing metadata
-- ✅ **Unknown Components × English Dedicated** (confidence=0.4): Low confidence — missing metadata
+- ✅ **Unknown Components × Aromatic Dedicated** (confidence=0.5): Low confidence — missing metadata
+- ✅ **Unknown Components × English Dedicated** (confidence=0.5): Low confidence — missing metadata
 - ✅ **Unknown Components × Virginia Dedicated** (confidence=0.4): Low confidence — missing metadata
 
 ## Defect Inventory

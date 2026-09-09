@@ -173,8 +173,8 @@
     },
     "bottle_count": {
       "type": "number",
-      "default": 1,
-      "description": "Legacy bottle count \u2014 use inventory units instead"
+      "default": 0,
+      "description": "Legacy bottle count \u2014 use inventory units instead. Zero is a legitimate state (empty/finished). Do NOT default to 1."
     },
     "favorite": {
       "type": "boolean",
@@ -185,6 +185,16 @@
       "type": "boolean",
       "default": false,
       "description": "Whether legacy bottle_count has been migrated to inventory units"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this whiskey has been archived (removed from normal collection browsing but history retained). Non-destructive \u2014 reversible via unarchive."
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this whiskey was archived. Null when not archived."
     }
   },
   "required": [
