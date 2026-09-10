@@ -33,8 +33,8 @@ export function getWineUnitValue(wine) {
   if (!wine) return 0;
   const qty = getWineQuantity(wine);
   if (wine.manual_valuation_enabled && n(wine.manual_estimated_value) > 0) return n(wine.manual_estimated_value);
-  if (n(wine.estimated_total_value) > 0) return n(wine.estimated_total_value) / qty;
-  if (n(wine.market_estimated_total_value) > 0) return n(wine.market_estimated_total_value) / qty;
+  if (n(wine.estimated_total_value) > 0) return qty > 0 ? n(wine.estimated_total_value) / qty : n(wine.estimated_total_value);
+  if (n(wine.market_estimated_total_value) > 0) return qty > 0 ? n(wine.market_estimated_total_value) / qty : n(wine.market_estimated_total_value);
   if (n(wine.estimated_unit_value) > 0) return n(wine.estimated_unit_value);
   if (n(wine.market_estimated_unit_value) > 0) return n(wine.market_estimated_unit_value);
   if (n(wine.estimated_value) > 0) return n(wine.estimated_value);
@@ -45,6 +45,9 @@ export function getWineUnitValue(wine) {
 export function getWineTotalValue(wine) {
   if (!wine) return 0;
   const qty = getWineQuantity(wine);
+  // Zero-quantity wines contribute $0 to current inventory value.
+  // The per-unit value may still be displayed for reference (via getWineUnitValue).
+  if (qty === 0) return 0;
   if (wine.manual_valuation_enabled && n(wine.manual_estimated_value) > 0) return n(wine.manual_estimated_value) * qty;
   if (n(wine.estimated_total_value) > 0) return n(wine.estimated_total_value);
   if (n(wine.market_estimated_total_value) > 0) return n(wine.market_estimated_total_value);

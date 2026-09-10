@@ -52,6 +52,8 @@ export default function WineListItem({
   const drinkWindowStatus = getWineDrinkWindowStatus(wine);
   const drinkWindowLabel = drinkWindowStatus ? t(`wine.${drinkWindowStatus === 'drink_now' ? 'drinkNow' : drinkWindowStatus === 'too_young' ? 'tooYoung' : 'pastPeak'}`) : null;
   const styleLabel = wine?.style ? t(`wine.styles.${wine.style}`, wine.style) : null;
+  const isArchived = wine?.is_archived === true;
+  const isEmpty = !isArchived && quantity === 0;
 
   return (
     <div
@@ -59,8 +61,13 @@ export default function WineListItem({
       onClick={onOpen}
       style={{
         background: 'linear-gradient(145deg, rgba(58,40,28,0.98), rgba(31,21,16,0.98))',
-        border: '1px solid rgba(139,58,58,0.18)',
+        border: isArchived
+          ? '1px solid rgba(120,120,120,0.25)'
+          : isEmpty
+          ? '1px solid rgba(139,58,58,0.12)'
+          : '1px solid rgba(139,58,58,0.18)',
         boxShadow: '0 10px 28px rgba(0,0,0,0.32)',
+        opacity: isArchived ? 0.7 : 1,
       }}
     >
       <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
@@ -126,6 +133,8 @@ export default function WineListItem({
             )}
             {styleLabel && <MiniBadge>{styleLabel}</MiniBadge>}
             {wine?.varietal && <MiniBadge>{wine.varietal}</MiniBadge>}
+            {isArchived && <MiniBadge>Archived</MiniBadge>}
+            {isEmpty && <MiniBadge>Empty</MiniBadge>}
             {wine?.rating > 0 && (
               <MiniBadge tone="accent">
                 <span className="inline-flex items-center gap-1">

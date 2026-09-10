@@ -672,6 +672,16 @@ export default function WineDetail() {
                     ★ {t('wine.favorites')}
                   </span>
                 )}
+                {wine.is_archived && (
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(120,120,120,0.3)', color: '#ccc' }}>
+                    Archived
+                  </span>
+                )}
+                {qty === 0 && !wine.is_archived && (
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(139,58,58,0.15)', color: 'rgba(224,216,200,0.6)' }}>
+                    Empty
+                  </span>
+                )}
               </div>
               {wine.rating > 0 && (
                 <div className="flex items-center gap-1.5 mt-1">
@@ -723,7 +733,7 @@ export default function WineDetail() {
             <InfoRow label={t('wine.appellation')} value={wine.appellation} />
             <InfoRow label={t('wine.bottleSize')} value={wine.bottle_size} />
             <InfoRow label="ABV" value={wine.abv ? `${wine.abv}%` : null} />
-            <InfoRow label={t('wine.quantity')} value={qty > 0 ? t('wine.quantityBottles', { count: qty }) : null} />
+            <InfoRow label={t('wine.quantity')} value={t('wine.quantityBottles', { count: qty })} />
             <InfoRow label={t('wine.purchasePrice')} value={wine.purchase_price ? formatFromBase(wine.purchase_price) : null} />
             <InfoRow label={t('wine.cellarLocation')} value={wine.cellar_location} />
             <InfoRow label={t('wine.drinkingWindowStart')} value={wine.drink_window_start || wine.drinking_window_start ? formatDate(wine.drink_window_start || wine.drinking_window_start) : null} />
