@@ -21,6 +21,12 @@ import {
   getWinePrimaryImage, sortWines, filterWines, searchWines,
   getWineValuationConfidence,
 } from '@/lib/collection/wineSelectors';
+import {
+  COLLECTION_FILTERS,
+  filterByLifecycle,
+  getLifecycleState,
+} from '@/lib/collection/inventoryLifecycle';
+import WineCollectionFilter from '@/components/wine/WineCollectionFilter';
 
 const SORT_OPTIONS = [
   { value: 'name_asc', labelKey: 'wine.sortNameAsc' },
@@ -51,6 +57,9 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
   const totalValue = getWineTotalValue(wine);
   const confidence = getWineValuationConfidence(wine);
   const photo = getWinePrimaryImage(wine);
+  const qty = getWineQuantity(wine);
+  const isArchived = wine.is_archived === true;
+  const isEmpty = !isArchived && qty === 0;
   const dwLabel = dwStatus ? t(`wine.${dwStatus === 'drink_now' ? 'drinkNow' : dwStatus === 'too_young' ? 'tooYoung' : 'pastPeak'}`) : null;
   const styleLabel = wine.style ? t(`wine.styles.${wine.style}`, wine.style) : null;
 
@@ -59,8 +68,13 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
       className="rounded-2xl overflow-hidden transition-all hover:border-[rgba(139,58,58,0.5)] hover:-translate-y-0.5 cursor-pointer flex flex-col"
       style={{
         background: 'linear-gradient(135deg, rgba(52,32,22,0.98), rgba(30,18,12,1))',
-        border: '1px solid rgba(139,58,58,0.28)',
+        border: isArchived
+          ? '1px solid rgba(120,120,120,0.25)'
+          : isEmpty
+          ? '1px solid rgba(139,58,58,0.12)'
+          : '1px solid rgba(139,58,58,0.28)',
         boxShadow: '0 10px 28px rgba(0,0,0,0.42)',
+        opacity: isArchived ? 0.7 : 1,
       }}
       onClick={(e) => {
         if (e.target.closest('button')) return;
@@ -83,9 +97,19 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
             </span>
           </div>
         )}
-        {wine.is_favorite && (
+        {wine.is_favorite && !isArchived && (
           <div className="absolute top-3 right-3">
             <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(212,165,116,0.75)', color: '#fff' }}>★</span>
+          </div>
+        )}
+        {isArchived && (
+          <div className="absolute top-3 right-3">
+            <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: 'rgba(120,120,120,0.3)', color: '#ccc' }}>Archived</span>
+          </div>
+        )}
+        {isEmpty && !isArchived && (
+          <div className="absolute top-3 right-3">
+            <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: 'rgba(139,58,58,0.15)', color: 'rgba(224,216,200,0.6)' }}>Empty</span>
           </div>
         )}
       </div>
@@ -109,8 +133,11 @@ function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWan
               {dwLabel}
             </span>
           )}
-          {getWineQuantity(wine) > 1 && (
-          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(224,216,200,0.65)' }}>×{getWineQuantity(wine)}</span>
+          {qty > 0 && (
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(224,216,200,0.65)' }}>×{qty}</span>
+          )}
+          {qty === 0 && !isArchived && (
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(139,58,58,0.12)', color: 'rgba(224,216,200,0.5)' }}>0 btl</span>
           )}
           {wine.rating > 0 && (
             <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-0.5" style={{ background: 'rgba(196,112,112,0.12)', color: '#C47070', border: '1px solid rgba(196,112,112,0.25)' }}>
@@ -176,6 +203,7 @@ export default function Wines() {
   const [sortBy, setSortBy] = useState('name_asc');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({});
+  const [collectionFilter, setCollectionFilter] = useState(COLLECTION_FILTERS.ALL);
 
   const invalidateWines = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(userEmail) });
   const invalidateWineTastingsSummary = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wineTastingsSummary(userEmail) });
@@ -200,12 +228,35 @@ export default function Wines() {
     onSuccess: invalidateWines,
   });
 
+  // Compute filter counts for the lifecycle filter tabs
+  const filterCounts = useMemo(() => {
+    const counts = { all: 0, in_stock: 0, empty: 0, archived: 0 };
+    for (const wine of wines) {
+      counts.all += 1;
+      const state = getLifecycleState(wine, getWineQuantity(wine));
+      counts[state] = (counts[state] || 0) + 1;
+    }
+    return counts;
+  }, [wines]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const filtered = useMemo(() => {
-    let list = searchWines(wines, search);
+    let list = wines;
+
+    // Apply lifecycle filter FIRST (All / In Stock / Empty / Archived)
+    if (collectionFilter !== COLLECTION_FILTERS.ALL) {
+      list = filterByLifecycle(list, collectionFilter, (w) => getWineQuantity(w));
+    }
+
+    // Apply search (narrows the already-filtered result set)
+    list = searchWines(list, search);
+
+    // Apply categorical filters
     list = filterWines(list, filters);
+
+    // Sort
     list = sortWines(list, sortBy);
     return list;
-  }, [wines, search, sortBy, filters]);
+  }, [wines, collectionFilter, search, sortBy, filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDelete = (wine) => {
     if (window.confirm(t('wine.deleteConfirm', { name: wine.name }))) deleteMutation.mutate(wine.id);
@@ -240,6 +291,13 @@ export default function Wines() {
           {t('wine.addBottle')}
         </Button>
       </div>
+
+      {/* Lifecycle filter tabs — All / In Stock / Empty / Archived */}
+      <WineCollectionFilter
+        value={collectionFilter}
+        onChange={setCollectionFilter}
+        counts={filterCounts}
+      />
 
       {/* Search + Sort + Filter row */}
       <div className="flex gap-3 flex-wrap items-center">

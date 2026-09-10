@@ -22,6 +22,7 @@ import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
+import WineLifecycleControls from '@/components/wine/WineLifecycleControls';
 import UnifiedValuationCard from '@/components/valuation/UnifiedValuationCard';
 import { buildValuationSnapshot, resolveValueTrend } from '@/components/valuation/valueEngine';
 import { refreshItemValue, seedInitialSnapshotIfMissing } from '@/components/valuation/valueRefreshService';
@@ -603,6 +604,19 @@ export default function WineDetail() {
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Lifecycle controls: Consume / Add / Archive / Delete */}
+        <WineLifecycleControls
+          wine={wine}
+          onUpdated={(updates) => {
+            queryClient.setQueryData(QUERY_KEYS.wine(wineId), (prev) => prev ? { ...prev, ...updates } : prev);
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
+          }}
+          onDelete={() => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wines(user?.email) });
+            navigate('/Wines');
+          }}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

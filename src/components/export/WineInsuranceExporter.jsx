@@ -69,6 +69,8 @@ export default function WineInsuranceExporter({ user, wines = [] }) {
       'Rating',
       'Purchase Date',
       'Valuation Confidence',
+      'Archived',
+      'Archived At',
       'Notes',
     ];
 
@@ -80,7 +82,7 @@ export default function WineInsuranceExporter({ user, wines = [] }) {
       w.style || '',
       w.region || '',
       w.country_of_origin || '',
-      w.quantity || 1,
+      w.quantity ?? 0,
       w.bottle_size || '',
       w.purchase_price || '',
       getWineUnitValue(w) > 0 ? getWineUnitValue(w).toFixed(2) : '',
@@ -90,6 +92,8 @@ export default function WineInsuranceExporter({ user, wines = [] }) {
       w.rating || '',
       w.purchase_date || '',
       w.valuation_confidence || w.market_valuation_confidence || '',
+      w.is_archived ? 'Yes' : 'No',
+      w.archived_at || '',
       w.notes || '',
     ]);
 
@@ -116,9 +120,9 @@ export default function WineInsuranceExporter({ user, wines = [] }) {
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      const totalBottles = wines.reduce((s, w) => s + (w.quantity || 1), 0);
+      const totalBottles = wines.reduce((s, w) => s + (w.quantity ?? 0), 0);
       const totalValue = wines.reduce((s, w) => s + getWineTotalValue(w), 0);
-      const totalPurchase = wines.reduce((s, w) => s + (Number(w.purchase_price) || 0) * (w.quantity || 1), 0);
+      const totalPurchase = wines.reduce((s, w) => s + (Number(w.purchase_price) || 0) * (w.quantity ?? 0), 0);
 
       // Cover
       doc.setFontSize(20);
@@ -146,7 +150,7 @@ export default function WineInsuranceExporter({ user, wines = [] }) {
       doc.setFontSize(9);
 
       for (const [index, wine] of wines.entries()) {
-        const qty = wine.quantity || 1;
+        const qty = wine.quantity ?? 0;
         const unitValue = getWineUnitValue(wine);
         const totalVal = getWineTotalValue(wine);
 
