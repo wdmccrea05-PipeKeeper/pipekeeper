@@ -33,7 +33,7 @@ export default function WineForm({ wine, onSaved, onCancel }) {
     varietal: wine?.varietal || '',
     style: wine?.style || 'red',
     bottle_size: wine?.bottle_size || '750ml',
-    quantity: wine?.quantity ?? 1,
+    quantity: wine?.quantity ?? 0,
     purchase_price: wine?.purchase_price || '',
     estimated_value: wine?.estimated_value || '',
     manual_valuation_enabled: wine?.manual_valuation_enabled || false,
@@ -57,7 +57,7 @@ export default function WineForm({ wine, onSaved, onCancel }) {
     const payload = {
       ...form,
       vintage: form.vintage ? Number(form.vintage) : undefined,
-      quantity: Number(form.quantity) || 1,
+      quantity: Number(form.quantity) || 0,
       purchase_price: form.purchase_price ? Number(form.purchase_price) : undefined,
       estimated_value: form.estimated_value ? Number(form.estimated_value) : undefined,
       manual_estimated_value: form.manual_estimated_value ? Number(form.manual_estimated_value) : undefined,

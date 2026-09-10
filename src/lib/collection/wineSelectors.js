@@ -26,7 +26,7 @@ function n(v) {
 
 export function getWineQuantity(wine) {
   if (!wine) return 0;
-  return Math.max(1, n(wine.quantity) || 1);
+  return n(wine.quantity);
 }
 
 export function getWineUnitValue(wine) {

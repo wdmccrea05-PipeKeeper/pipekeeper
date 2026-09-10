@@ -351,7 +351,7 @@ function WhiskeyInner() {
         return new Date(b.updated_date || 0).getTime() - new Date(a.updated_date || 0).getTime();
       }
     });
-  }, [bottles, search, sortBy]);
+  }, [bottles, search, sortBy, collectionFilter, inventoryCountByBottleId, hasInventoryUnits]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function openBottleDetail(bottle) {
     navigate(`/BottleDetail?id=${encodeURIComponent(bottle.id)}`);

@@ -1,7 +1,7 @@
 {
   "name": "Wine",
   "type": "object",
-  "description": "A wine bottle in a user's WineKeeper collection.",
+  "description": "A wine bottle in a user's WineKeeper collection. Supports zero-inventory (quantity=0) as a valid state and non-destructive archiving.",
   "properties": {
     "name": {
       "type": "string",
@@ -84,7 +84,8 @@
     },
     "quantity": {
       "type": "number",
-      "description": "Number of bottles in inventory"
+      "default": 0,
+      "description": "Number of bottles in inventory. Zero is a legitimate state (empty/finished). Do NOT default to 1."
     },
     "notes": {
       "type": "string",
@@ -106,6 +107,16 @@
       "type": "boolean",
       "default": false,
       "description": "Whether this wine is excluded from AI recommendations"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this wine has been archived (removed from normal collection browsing but history retained). Non-destructive \u2014 reversible via unarchive."
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this wine was archived. Null when not archived."
     },
     "created_by": {
       "type": "string",
