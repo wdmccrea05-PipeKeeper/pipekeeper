@@ -83,8 +83,8 @@ describe('Safe-Area Regression Tests', () => {
   it('normalizeTier returns free for non-pro payloads', () => {
     const syncPath = path.resolve(process.cwd(), 'src/components/utils/appleSubscriptionSync.jsx');
     const sync = fs.existsSync(syncPath) ? fs.readFileSync(syncPath, 'utf-8') : '';
-    // The function should return "free" as the default, not "pro"
-    expect(sync).toContain("return 'free'");
+    // The function should return "free" as the default, not "pro" (accept single or double quotes)
+    expect(sync.match(/return\s+["']free["']/)).toBeTruthy();
   });
 
   // 11. Foreground refresh listener exists in useCurrentUser
