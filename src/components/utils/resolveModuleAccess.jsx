@@ -77,10 +77,33 @@ function isUnverifiedAppleSubscription(sub) {
   return subId.startsWith('apple_unverified_') || subId.startsWith('apple_pending_');
 }
 
+// Provisional Apple access expires 30 days after the reported period end.
+// This prevents unverified customer-reported purchases from granting
+// indefinite access without provider verification.
+const PROVISIONAL_EXPIRY_DAYS = 30;
+function hasProvisionalAppleExpired(sub) {
+  if (!isUnverifiedAppleSubscription(sub)) return false;
+  const periodEnd = sub.current_period_end;
+  if (!periodEnd) return false; // No period end — don't expire yet
+  const expiryMs = PROVISIONAL_EXPIRY_DAYS * 86400000;
+  return Date.now() > new Date(periodEnd).getTime() + expiryMs;
+}
+
 function getSubscriptionLifecycle(sub) {
   if (!sub) return { grantsAccess: false, status: 'none', verificationStatus: 'verified_inactive', reason: 'No subscription' };
 
   const status = String(sub.status || '').toLowerCase();
+
+  // PROVISIONAL APPLE EXPIRY: unverified Apple subscriptions expire 30 days
+  // after the reported period end, even if status is "active".
+  if (isUnverifiedAppleSubscription(sub) && hasProvisionalAppleExpired(sub)) {
+    return {
+      grantsAccess: false,
+      status: 'expired',
+      verificationStatus: 'verified_inactive',
+      reason: 'Apple provisional access expired (30 days past period end without verification)',
+    };
+  }
 
   if (status === 'active' || status === 'trialing' || status === 'trial') {
     return { grantsAccess: true, status, verificationStatus: 'verified_active', reason: `Subscription ${status}` };
@@ -121,12 +144,19 @@ function moduleInSubscriptionScope(sub, key, user) {
   // LEGACY FALLBACK: subscriptions created before module-specific subscriptions
   // have modules_csv=null and plan_key=null. For these, infer pipekeeper as the
   // default module (PipeKeeper was the only module when legacy premium/pro
-  // subscriptions were created).
+  // subscriptions were created). Only applies to REAL provider subscriptions
+  // (Stripe sub_* / Apple apple_*), NOT synthetic/manual grants which require
+  // explicit provider verification.
   const hasNoModuleScope = !sub.modules_csv && !sub.plan_key && !sub.planKey;
   if (hasNoModuleScope) {
-    const tier = String(sub.tier || '').toLowerCase();
-    if (key === 'pipekeeper' && (tier === 'premium' || tier === 'pro')) {
-      return true;
+    const psub = String(sub.provider_subscription_id || '');
+    const isSynthetic = psub.startsWith('manual_grant_') || psub.startsWith('pro_manual_') || psub.startsWith('test_');
+    const isRealProvider = psub.startsWith('sub_') || psub.startsWith('apple_') || psub.startsWith('apple_unverified_');
+    if (isRealProvider && !isSynthetic) {
+      const tier = String(sub.tier || '').toLowerCase();
+      if (key === 'pipekeeper' && (tier === 'premium' || tier === 'pro')) {
+        return true;
+      }
     }
   }
 

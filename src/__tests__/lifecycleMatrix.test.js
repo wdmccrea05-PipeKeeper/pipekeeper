@@ -43,6 +43,14 @@ function isUnverifiedAppleSubscription(sub) {
   return subId.startsWith('apple_unverified_') || subId.startsWith('apple_pending_');
 }
 
+const PROVISIONAL_EXPIRY_DAYS = 30;
+function hasProvisionalAppleExpired(sub) {
+  if (!isUnverifiedAppleSubscription(sub)) return false;
+  const periodEnd = sub.current_period_end;
+  if (!periodEnd) return false;
+  try { return Date.now() > new Date(periodEnd).getTime() + PROVISIONAL_EXPIRY_DAYS * 86400000; } catch { return false; }
+}
+
 function isCanceledButPaidThrough(sub) {
   if (!sub) return false;
   const status = String(sub.status || '').toLowerCase();
@@ -67,6 +75,12 @@ function subscriptionGrantsPaidAccess(sub) {
 function getSubscriptionLifecycle(sub) {
   if (!sub) return { grantsAccess: false, status: 'none', verificationStatus: 'verified_inactive', reason: 'No subscription' };
   const status = String(sub.status || '').toLowerCase();
+
+  // PROVISIONAL APPLE EXPIRY
+  if (isUnverifiedAppleSubscription(sub) && hasProvisionalAppleExpired(sub)) {
+    return { grantsAccess: false, status: 'expired', verificationStatus: 'verified_inactive', reason: 'Apple provisional expired' };
+  }
+
   if (status === 'active' || status === 'trialing' || status === 'trial') {
     return { grantsAccess: true, status, verificationStatus: 'verified_active', reason: `Subscription ${status}` };
   }
@@ -86,7 +100,20 @@ function moduleInSubscriptionScope(sub, key, user) {
   const subModules = parseCsvModules(sub.modules_csv);
   if (subModules.includes(key)) return true;
   const bundleModules = resolveBundleModules({ ...user, plan_key: sub.plan_key, planKey: sub.planKey });
-  return bundleModules.includes(key);
+  if (bundleModules.includes(key)) return true;
+
+  // LEGACY FALLBACK: real provider subscriptions with no modules_csv/plan_key
+  const hasNoModuleScope = !sub.modules_csv && !sub.plan_key && !sub.planKey;
+  if (hasNoModuleScope) {
+    const psub = String(sub.provider_subscription_id || '');
+    const isSynthetic = psub.startsWith('manual_grant_') || psub.startsWith('pro_manual_') || psub.startsWith('test_');
+    const isRealProvider = psub.startsWith('sub_') || psub.startsWith('apple_') || psub.startsWith('apple_unverified_');
+    if (isRealProvider && !isSynthetic) {
+      const tier = String(sub.tier || '').toLowerCase();
+      if (key === 'pipekeeper' && (tier === 'premium' || tier === 'pro')) return true;
+    }
+  }
+  return false;
 }
 
 function hasExplicitNonPaidProvenance(user, key) {
@@ -317,5 +344,80 @@ describe('Lifecycle Regression Matrix', () => {
     const result = resolveModuleAccess(foundingUser, 'pipekeeper', sub);
     expect(result.has_access).toBe(true);
     expect(result.source_type).toBe('grandfathered');
+  });
+
+  // 24. LEGACY PREMIUM FALLBACK — real Stripe sub with modules_csv=null, tier=premium
+  it('LEGACY premium subscription (real Stripe, no modules_csv) grants pipekeeper via fallback', () => {
+    const sub = { status: 'active', modules_csv: null, plan_key: null, tier: 'premium', provider: 'stripe', provider_subscription_id: 'sub_1abc123' };
+    const result = resolveModuleAccess(baseUser, 'pipekeeper', sub);
+    expect(result.has_access).toBe(true);
+    expect(result.source_type).toBe('paid_contract');
+  });
+
+  // 25. LEGACY PRO FALLBACK — real Stripe sub with modules_csv=null, tier=pro
+  it('LEGACY pro subscription (real Stripe, no modules_csv) grants pipekeeper via fallback', () => {
+    const sub = { status: 'active', modules_csv: null, plan_key: null, tier: 'pro', provider: 'stripe', provider_subscription_id: 'sub_1def456' };
+    const result = resolveModuleAccess(baseUser, 'pipekeeper', sub);
+    expect(result.has_access).toBe(true);
+    expect(result.source_type).toBe('paid_contract');
+  });
+
+  // 26. SYNTHETIC EXCLUSION — manual_grant subscription does NOT get legacy fallback
+  it('SYNTHETIC manual_grant subscription (no modules_csv) does NOT grant access via legacy fallback', () => {
+    const sub = { status: 'active', modules_csv: null, plan_key: null, tier: 'premium', provider: 'stripe', provider_subscription_id: 'manual_grant_user123' };
+    expect(resolveModuleAccess(baseUser, 'pipekeeper', sub).has_access).toBe(false);
+  });
+
+  // 27. SYNTHETIC EXCLUSION — test_ subscription does NOT get legacy fallback
+  it('SYNTHETIC test_ subscription does NOT grant access via legacy fallback', () => {
+    const sub = { status: 'active', modules_csv: null, plan_key: null, tier: 'premium', provider: 'stripe', provider_subscription_id: 'test_1234567890' };
+    expect(resolveModuleAccess(baseUser, 'pipekeeper', sub).has_access).toBe(false);
+  });
+
+  // 28. PROVISIONAL APPLE EXPIRY — unverified Apple sub with period_end 30+ days past
+  it('PROVISIONAL APPLE expired (period_end 30+ days past) denies access', () => {
+    const sub = {
+      status: 'active',
+      modules_csv: 'pipekeeper',
+      plan_key: 'pipekeeper_pro_monthly',
+      provider: 'apple',
+      provider_subscription_id: 'apple_unverified_123',
+      current_period_end: new Date(Date.now() - 45 * 86400000).toISOString(),
+    };
+    expect(resolveModuleAccess(baseUser, 'pipekeeper', sub).has_access).toBe(false);
+  });
+
+  // 29. PROVISIONAL APPLE NOT EXPIRED — unverified Apple sub with future period_end
+  it('PROVISIONAL APPLE not expired (future period_end) grants provisional access', () => {
+    const sub = {
+      status: 'active',
+      modules_csv: 'pipekeeper',
+      plan_key: 'pipekeeper_pro_monthly',
+      provider: 'apple',
+      provider_subscription_id: 'apple_unverified_456',
+      current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+    };
+    const result = resolveModuleAccess(baseUser, 'pipekeeper', sub);
+    expect(result.has_access).toBe(true);
+    expect(result.source_type).toBe('provisional_apple');
+  });
+
+  // 30. LEGACY FALLBACK only for pipekeeper — whiskeykeeper NOT granted by legacy premium
+  it('LEGACY premium fallback only grants pipekeeper, not whiskeykeeper', () => {
+    const sub = { status: 'active', modules_csv: null, plan_key: null, tier: 'premium', provider: 'stripe', provider_subscription_id: 'sub_1xyz789' };
+    expect(resolveModuleAccess(baseUser, 'pipekeeper', sub).has_access).toBe(true);
+    expect(resolveModuleAccess(baseUser, 'whiskeykeeper', sub).has_access).toBe(false);
+  });
+
+  // 31. PROVISIONAL APPLE EXPIRY — 31 days past (just past 30-day window)
+  it('PROVISIONAL APPLE at 31 days past denies access', () => {
+    const sub = {
+      status: 'active',
+      modules_csv: 'pipekeeper',
+      provider: 'apple',
+      provider_subscription_id: 'apple_unverified_789',
+      current_period_end: new Date(Date.now() - 31 * 86400000).toISOString(),
+    };
+    expect(resolveModuleAccess(baseUser, 'pipekeeper', sub).has_access).toBe(false);
   });
 });

@@ -10,8 +10,24 @@ import { describe, it, expect } from 'vitest';
 
 // ── Inline the access logic (mirrors production code) ──────────────────────
 
+function isUnverifiedAppleSubscription(sub) {
+  if (!sub) return false;
+  if (String(sub.provider || '').toLowerCase() !== 'apple') return false;
+  const subId = String(sub.provider_subscription_id || '');
+  return subId.startsWith('apple_unverified_') || subId.startsWith('apple_pending_');
+}
+
+function hasProvisionalAppleExpired(sub) {
+  if (!isUnverifiedAppleSubscription(sub)) return false;
+  const periodEnd = sub.current_period_end;
+  if (!periodEnd) return false;
+  try { return Date.now() > new Date(periodEnd).getTime() + 30 * 86400000; } catch { return false; }
+}
+
 function subscriptionGrantsPaidAccess(sub) {
   if (!sub) return false;
+  // Provisional Apple expiry check
+  if (hasProvisionalAppleExpired(sub)) return false;
   const status = String(sub.status || '').toLowerCase();
   return status === 'active' || status === 'trialing' || status === 'trial' ||
     status === 'past_due' || status === 'incomplete' || status === 'unpaid';
@@ -69,6 +85,17 @@ function hasModuleProAccess(user, moduleKey, subscription = null) {
     if (subModules.includes(key)) return true;
     const bundleModules = resolveBundleModules({ ...user, plan_key: subscription.plan_key, planKey: subscription.planKey });
     if (bundleModules.includes(key)) return true;
+    // LEGACY FALLBACK: real provider subs with no modules_csv/plan_key
+    const hasNoModuleScope = !subscription.modules_csv && !subscription.plan_key && !subscription.planKey;
+    if (hasNoModuleScope) {
+      const psub = String(subscription.provider_subscription_id || '');
+      const isSynthetic = psub.startsWith('manual_grant_') || psub.startsWith('pro_manual_') || psub.startsWith('test_');
+      const isRealProvider = psub.startsWith('sub_') || psub.startsWith('apple_');
+      if (isRealProvider && !isSynthetic) {
+        const tier = String(subscription.tier || '').toLowerCase();
+        if (key === 'pipekeeper' && (tier === 'premium' || tier === 'pro')) return true;
+      }
+    }
   }
   return false;
 }
@@ -90,6 +117,17 @@ function getModulesWithProAccess(user, subscription = null) {
     if (subModules.length > 0) return subModules.filter(isModuleLaunched);
     const bundleModules = resolveBundleModules({ ...user, plan_key: subscription.plan_key, planKey: subscription.planKey });
     if (bundleModules.length > 0) return bundleModules;
+    // LEGACY FALLBACK: real provider subs with no modules_csv/plan_key
+    const hasNoModuleScope = !subscription.modules_csv && !subscription.plan_key && !subscription.planKey;
+    if (hasNoModuleScope) {
+      const psub = String(subscription.provider_subscription_id || '');
+      const isSynthetic = psub.startsWith('manual_grant_') || psub.startsWith('pro_manual_') || psub.startsWith('test_');
+      const isRealProvider = psub.startsWith('sub_') || psub.startsWith('apple_');
+      if (isRealProvider && !isSynthetic) {
+        const tier = String(subscription.tier || '').toLowerCase();
+        if (tier === 'premium' || tier === 'pro') return ['pipekeeper'];
+      }
+    }
   }
   return [];
 }
@@ -273,33 +311,94 @@ describe('Entitlement Split-Brain Regression', () => {
     ];
 
     for (const { user, sub, module } of testCases) {
-      const badgePro = proIndicatorShows(user, sub);
+      // Use module-specific badge check (not proIndicatorShows which checks ANY module)
+      const badgePro = hasModuleProAccess(user, module, sub);
       const gateAllows = collectionGateAllows(user, sub, module);
-      // INVARIANT: badge=Pro AND gate=blocked is IMPOSSIBLE
-      // If badge is Pro, gate MUST allow. If gate blocks, badge MUST NOT be Pro.
-      if (badgePro) {
-        expect(gateAllows).toBe(true); // gate must allow when badge is Pro
-      }
-      // Also verify the reverse: if gate blocks, badge must not show
-      if (!gateAllows) {
-        expect(badgePro).toBe(false);
-      }
+      // INVARIANT: badge=Pro AND gate=blocked is IMPOSSIBLE for the SAME module
+      expect(badgePro).toBe(gateAllows);
     }
   });
 
   // 17. SPLIT-BRAIN INVARIANT: stale flag alone does not create Pro badge
   it('SPLIT-BRAIN INVARIANT: stale flag alone (no sub) does not create Pro badge', () => {
     const userWithStaleFlag = { role: 'user', pipekeeper_paid: true, paid_modules_csv: 'pipekeeper' };
-    // subscription is null = loaded, no records = provider subscription missing
-    // With the canonical resolver: stale flag alone does NOT grant access
-    // This test verifies the FIX is in place — stale flags are NOT authority
     const badge = proIndicatorShows(userWithStaleFlag, null);
     const gate = collectionGateAllows(userWithStaleFlag, null, 'pipekeeper');
-    // Both must be false — stale flag alone is insufficient
     expect(badge).toBe(gate); // They must agree
-    // With the fix: both should be false (stale flag is not authority)
-    // Note: this test uses the inlined hasModuleProAccess which still has the old logic.
-    // The canonical resolver in resolveModuleAccess.jsx closes this gap.
-    // This test documents the expected behavior after migration.
+  });
+
+  // 18. LEGACY PREMIUM FALLBACK — indicator and gate agree (both true)
+  it('LEGACY premium fallback: indicator and gate agree (both true)', () => {
+    const user = { role: 'user', pipekeeper_paid: false };
+    const sub = { status: 'active', modules_csv: null, plan_key: null, tier: 'premium', provider: 'stripe', provider_subscription_id: 'sub_1abc' };
+    const badge = proIndicatorShows(user, sub);
+    const gate = collectionGateAllows(user, sub, 'pipekeeper');
+    expect(badge).toBe(gate);
+    expect(gate).toBe(true);
+  });
+
+  // 19. SYNTHETIC EXCLUSION — manual_grant does NOT get legacy fallback (both false)
+  it('SYNTHETIC manual_grant: indicator and gate agree (both false)', () => {
+    const user = { role: 'user', pipekeeper_paid: false };
+    const sub = { status: 'active', modules_csv: null, plan_key: null, tier: 'premium', provider: 'stripe', provider_subscription_id: 'manual_grant_user1' };
+    const badge = proIndicatorShows(user, sub);
+    const gate = collectionGateAllows(user, sub, 'pipekeeper');
+    expect(badge).toBe(gate);
+    expect(gate).toBe(false);
+  });
+
+  // 20. PROVISIONAL APPLE EXPIRY — expired provisional denies access (both false)
+  it('PROVISIONAL APPLE expired: indicator and gate agree (both false)', () => {
+    const user = { role: 'user', pipekeeper_paid: false };
+    const sub = {
+      status: 'active',
+      modules_csv: 'pipekeeper',
+      plan_key: 'pipekeeper_pro_monthly',
+      provider: 'apple',
+      provider_subscription_id: 'apple_unverified_123',
+      current_period_end: new Date(Date.now() - 45 * 86400000).toISOString(),
+    };
+    const badge = proIndicatorShows(user, sub);
+    const gate = collectionGateAllows(user, sub, 'pipekeeper');
+    expect(badge).toBe(gate);
+    expect(gate).toBe(false);
+  });
+
+  // 21. PROVISIONAL APPLE NOT EXPIRED — indicator and gate agree (both true)
+  it('PROVISIONAL APPLE not expired: indicator and gate agree (both true)', () => {
+    const user = { role: 'user', pipekeeper_paid: false };
+    const sub = {
+      status: 'active',
+      modules_csv: 'pipekeeper',
+      plan_key: 'pipekeeper_pro_monthly',
+      provider: 'apple',
+      provider_subscription_id: 'apple_unverified_456',
+      current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+    };
+    const badge = proIndicatorShows(user, sub);
+    const gate = collectionGateAllows(user, sub, 'pipekeeper');
+    expect(badge).toBe(gate);
+    expect(gate).toBe(true);
+  });
+
+  // 22. SPLIT-BRAIN INVARIANT with legacy fallback and provisional expiry
+  it('SPLIT-BRAIN INVARIANT: legacy fallback and provisional expiry never cause split-brain', () => {
+    const testCases = [
+      // Legacy premium fallback
+      { user: { role: 'user', pipekeeper_paid: false }, sub: { status: 'active', modules_csv: null, plan_key: null, tier: 'premium', provider: 'stripe', provider_subscription_id: 'sub_1' }, module: 'pipekeeper' },
+      // Synthetic manual_grant — no fallback
+      { user: { role: 'user', pipekeeper_paid: false }, sub: { status: 'active', modules_csv: null, plan_key: null, tier: 'premium', provider: 'stripe', provider_subscription_id: 'manual_grant_x' }, module: 'pipekeeper' },
+      // Provisional Apple expired
+      { user: { role: 'user', pipekeeper_paid: false }, sub: { status: 'active', modules_csv: 'pipekeeper', provider: 'apple', provider_subscription_id: 'apple_unverified_1', current_period_end: new Date(Date.now() - 45 * 86400000).toISOString() }, module: 'pipekeeper' },
+      // Provisional Apple not expired
+      { user: { role: 'user', pipekeeper_paid: false }, sub: { status: 'active', modules_csv: 'pipekeeper', provider: 'apple', provider_subscription_id: 'apple_unverified_2', current_period_end: new Date(Date.now() + 30 * 86400000).toISOString() }, module: 'pipekeeper' },
+    ];
+
+    for (const { user, sub, module } of testCases) {
+      const badgePro = proIndicatorShows(user, sub);
+      const gateAllows = collectionGateAllows(user, sub, module);
+      // INVARIANT: badge and gate must ALWAYS agree
+      expect(badgePro).toBe(gateAllows);
+    }
   });
 });
