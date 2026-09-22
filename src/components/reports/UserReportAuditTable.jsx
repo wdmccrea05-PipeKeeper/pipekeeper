@@ -186,6 +186,8 @@ function UserTable({ rows }) {
     { key: 'current_payment_status', label: 'Payment' },
     { key: 'provider', label: 'Provider' },
     { key: 'products', label: 'Products' },
+    { key: 'entitlement_source_type', label: 'Access Source' },
+    { key: 'entitlement_verification_status', label: 'Verification' },
     { key: 'first_paid_at', label: 'First Paid', fmt: fmtDate },
     { key: 'first_paid_source', label: 'First Paid Source' },
     { key: 'matching_confidence', label: 'Match' },

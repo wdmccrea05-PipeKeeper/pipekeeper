@@ -304,6 +304,46 @@ runCheck('21. Canonical billing dataset invariants', () => {
   }
 });
 
+// 22. Lifecycle regression matrix (P0: stale flags cannot independently grant access)
+runCheck('22. Lifecycle regression matrix', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/lifecycleMatrix.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Lifecycle regression matrix passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
+// 23. Entitlement split-brain regression (P0: indicator and gate must agree)
+runCheck('23. Entitlement split-brain regression', () => {
+  try {
+    const out = exec('npx vitest run src/__tests__/entitlementSplitBrainRegression.test.js --reporter=default 2>&1', 120000);
+    if (/Test Files.*1 failed/.test(out)) throw new Error('Test failures detected');
+    return 'Entitlement split-brain regression passed';
+  } catch (e) {
+    const out = e.stdout || e.message;
+    throw new Error(out.substring(0, 500));
+  }
+});
+
+// 24. Static check: resolver excludes synthetic subscriptions from legacy fallback
+runCheck('24. Synthetic subscription exclusion static check', () => {
+  const fs = require('fs');
+  const resolver = fs.readFileSync(path.join(ROOT, 'src/components/utils/resolveModuleAccess.jsx'), 'utf-8');
+  if (!resolver.includes('manual_grant_')) {
+    throw new Error('Resolver missing manual_grant_ synthetic exclusion in legacy fallback');
+  }
+  if (!resolver.includes('hasProvisionalAppleExpired')) {
+    throw new Error('Resolver missing provisional Apple expiry check');
+  }
+  if (!resolver.includes('PROVISIONAL_EXPIRY_DAYS')) {
+    throw new Error('Resolver missing provisional expiry constant');
+  }
+  return 'Synthetic exclusion and provisional expiry checks present';
+});
+
 console.log('\n═══ Summary ═══');
 for (const r of results) {
   console.log(`  ${r.status === 'PASS' ? '✓' : '✗'} ${r.name}`);

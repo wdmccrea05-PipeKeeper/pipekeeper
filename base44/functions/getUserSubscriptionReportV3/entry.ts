@@ -907,6 +907,8 @@ function buildCanonicalUsers(users, contracts, activityIndex, eventIndex, entitl
       is_manual_access: false, // would come from a manual grant entity if exists
       is_referral_access: !!referralByUserId.get(userId),
       is_promotional_access: false,
+      entitlement_source_type: entitlementByUserId.get(userId)?.source_type || null,
+      entitlement_verification_status: entitlementByUserId.get(userId)?.verification_status || null,
       is_entitlement_only_access: is_currently_entitled && entitledContracts.length === 0 && !referralByUserId.get(userId),
       has_canceling_but_entitled,
       has_expired,
@@ -1308,6 +1310,8 @@ Deno.serve(async (req) => {
       platform_history_count: Array.isArray(r.platform_history) ? r.platform_history.length : 0,
       device_history_count: Array.isArray(r.device_history) ? r.device_history.length : 0,
       current_entitlement: r.is_currently_entitled,
+      entitlement_source_type: r.entitlement_source_type || '-',
+      entitlement_verification_status: r.entitlement_verification_status || '-',
       current_payment_status: r.is_currently_paying ? 'paying' : (r.is_trial ? 'trial' : (r.is_past_due ? 'past_due' : (r.has_expired ? 'expired' : 'none'))),
       provider: r.current_provider || '-',
       products: (r.current_products || []).join(', ') || '-',
