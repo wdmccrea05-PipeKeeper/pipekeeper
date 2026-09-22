@@ -43,25 +43,53 @@ export function isSubscriptionInGracePeriod(subscription) {
 }
 
 /**
- * Check if subscription grants paid access (including grace period)
+ * Check if a canceled subscription is still paid through (period_end in future)
+ * @param {Object} subscription - Subscription entity
+ * @returns {boolean} - True if canceled but current_period_end is still in the future
+ */
+export function isCanceledButPaidThrough(subscription) {
+  if (!subscription) return false;
+
+  const status = String(subscription?.status || "").toLowerCase();
+  if (status !== "canceled" && status !== "cancelled") return false;
+
+  const periodEnd = subscription?.current_period_end;
+  if (!periodEnd) return false;
+
+  try {
+    const endDate = new Date(periodEnd);
+    if (Number.isNaN(endDate.getTime())) return false;
+    return Date.now() < endDate.getTime();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if subscription grants paid access (including grace period and canceled-paid-through)
  * @param {Object} subscription - Subscription entity
  * @returns {boolean} - True if paid access should be granted
  */
 export function subscriptionGrantsPaidAccess(subscription) {
   if (!subscription) return false;
-  
+
   const status = String(subscription?.status || "").toLowerCase();
-  
+
   // Active and trial statuses always grant access
   if (status === "active" || status === "trialing" || status === "trial") {
     return true;
   }
-  
+
   // Failed payment statuses: check grace period
   if (status === "past_due" || status === "incomplete" || status === "unpaid") {
     return isSubscriptionInGracePeriod(subscription);
   }
-  
+
+  // Canceled but paid through future period_end: grant access until period ends
+  if (status === "canceled" || status === "cancelled") {
+    return isCanceledButPaidThrough(subscription);
+  }
+
   return false;
 }
 
