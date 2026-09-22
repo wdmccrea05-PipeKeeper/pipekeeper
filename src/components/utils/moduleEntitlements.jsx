@@ -9,6 +9,7 @@
  */
 
 import { hasPaidAccess } from './premiumAccess';
+import { subscriptionGrantsPaidAccess } from './gracePeriod';
 import { MODULES, MODULE_LIST, getActiveModules } from './moduleRegistry';
 import { isModuleLaunched } from './moduleReleaseState';
 
@@ -152,6 +153,19 @@ export function hasModuleProAccess(user, moduleKey, subscription = null) {
   const explicitModules = getExplicitModuleEntitlements(user);
   if (explicitModules.includes(key)) return true;
 
+  // ── SUBSCRIPTION-BACKED MODULE ACCESS ──────────────────────────────────
+  // If the user entity fields aren't set (e.g., Apple IAP sync hasn't completed
+  // yet, or webhook hasn't fired), but the subscription record IS active and
+  // grants this module, access must be granted. This prevents the split-brain
+  // where the Pro indicator says "Pro Active" but the collection gate says Free.
+  if (subscription && subscriptionGrantsPaidAccess(subscription)) {
+    const subModules = parseCsvModules(subscription.modules_csv);
+    if (subModules.includes(key)) return true;
+    // Check plan_key-derived bundle modules
+    const bundleModules = resolveBundleModules({ ...user, plan_key: subscription.plan_key, planKey: subscription.planKey });
+    if (bundleModules.includes(key)) return true;
+  }
+
   return false;
 }
 
@@ -171,7 +185,16 @@ export function getModulesWithProAccess(user, subscription = null) {
 
   if (hasLegacyBroadAccess(user)) return getLaunchedActiveModules();
 
-  if (!hasPaidAccess(user, subscription)) return [];
+  // ── SUBSCRIPTION-BACKED MODULE DERIVATION ──────────────────────────────
+  // If user entity fields aren't set but the subscription is active, derive
+  // modules from the subscription record. This ensures the Pro indicator and
+  // the collection gate use the same source of truth.
+  if (subscription && subscriptionGrantsPaidAccess(subscription)) {
+    const subModules = parseCsvModules(subscription.modules_csv);
+    if (subModules.length > 0) return subModules.filter((m) => isModuleLaunched(m));
+    const bundleModules = resolveBundleModules({ ...user, plan_key: subscription.plan_key, planKey: subscription.planKey });
+    if (bundleModules.length > 0) return bundleModules;
+  }
 
   return [];
 }

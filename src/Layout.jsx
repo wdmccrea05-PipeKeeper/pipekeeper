@@ -82,7 +82,7 @@ export default function Layout({ children, currentPageName }) {
 
       <GlobalReferralBanner />
 
-      <main className="flex-1 overflow-y-auto pb-28 md:pb-16">
+      <main className="flex-1 overflow-y-auto pb-28 md:pb-16" style={{ paddingBottom: 'calc(7rem + env(safe-area-inset-bottom))' }}>
         <div className="ck-page-shell pt-6 md:pt-8 lg:pt-10">
           {children}
         </div>

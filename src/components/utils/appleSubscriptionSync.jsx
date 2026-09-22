@@ -9,7 +9,7 @@ function normalizeTier(rawTier, productId) {
   const product = safeString(productId).toLowerCase();
   if (tier === "premium" || tier === "pro") return "pro";
   if (product.includes("pro")) return "pro";
-  return "pro";
+  return "free";
 }
 
 /**

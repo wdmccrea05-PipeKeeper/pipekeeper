@@ -313,6 +313,31 @@ export function useCurrentUser() {
     };
   }, [userLoading, user?.email, queryClient, refetchUser, refetchSubscription]);
 
+  // ── FOREGROUND REFRESH ──────────────────────────────────────────────────
+  // When the app returns to the foreground (e.g., user purchased via Apple IAP
+  // while in the background, or the previous sync failed), re-trigger the
+  // native subscription status request and invalidate cached queries. This
+  // ensures the Apple IAP sync runs on every app foreground, not just on mount.
+  // CRITICAL FIX: Without this, a user who purchases via App Store and returns
+  // to the app never triggers a re-sync, leaving their entitlement unsynced.
+  useEffect(() => {
+    if (!isIOSWebView()) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Re-request native subscription status — the listener above will
+        // handle the response and call syncAppleSubscriptionStatus.
+        requestNativeSubscriptionStatus();
+        // Invalidate cached queries to force fresh data.
+        queryClient.invalidateQueries({ queryKey: ['subscription'] });
+        queryClient.invalidateQueries({ queryKey: ['current-user'] });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [queryClient]);
+
   // Authoritative provider: user.subscription_provider, then subscription.provider.
   const provider = resolveProviderFromUser(user) || resolveSubscriptionProvider(subscription);
 

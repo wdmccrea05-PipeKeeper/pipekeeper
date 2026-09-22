@@ -5,22 +5,24 @@
 import React from 'react';
 import { Sparkles, Crown } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { getEntitlementTier, hasPaidAccess, hasProAccess, isTrialingAccess, getPlanLabel } from '@/components/utils/premiumAccess';
+import { getEntitlementTier, isTrialingAccess, getPlanLabel } from '@/components/utils/premiumAccess';
+import { getModulesWithProAccess } from '@/components/utils/moduleEntitlements';
 
 export default function PremiumActiveIndicator({ user, subscription }) {
   const { t } = useTranslation();
-  
-  // Use canonical resolver
-  const tier = getEntitlementTier(user, subscription);
-  const hasPremium = hasPaidAccess(user, subscription);
-  const isProTier = hasProAccess(user, subscription);
+
+  // CANONICAL: Use the SAME module-level access check as the collection gate.
+  // This eliminates the split-brain where the Pro indicator says "Pro Active"
+  // while the collection gate enforces Free limits.
+  const paidModules = getModulesWithProAccess(user, subscription);
+  const hasModuleLevelPro = paidModules.length > 0;
   const isTrial = isTrialingAccess(user, subscription);
   const tierLabel = getPlanLabel(user, subscription);
-  
-  // Hide if user doesn't have premium access
-  if (!hasPremium && !isTrial) return null;
-  
-  const isPaidSubscriber = hasPremium && !isTrial;
+
+  // Hide if user doesn't have module-level paid access or trial
+  if (!hasModuleLevelPro && !isTrial) return null;
+
+  const isPaidSubscriber = hasModuleLevelPro && !isTrial;
   
   return (
     <div className="bg-gradient-to-r from-[#8b3a3a]/20 to-[#6d2e2e]/20 border-l-4 border-[#A35C5C] px-4 py-2 mb-4">
