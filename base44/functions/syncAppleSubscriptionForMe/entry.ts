@@ -183,21 +183,37 @@ Deno.serve(async (req) => {
     const activeModules = uniqueModules(productAccess.modules);
     const modulesCsv = activeModules.join(',');
 
-    // Status: only 'active' if VERIFIED and not expired
-    const status = authoritativeActive ? 'active' : 'expired';
-
     // Create stable provider subscription ID
     const providerSubId = authoritativeOriginalTransactionId || `apple_unverified_${userId}`;
 
     const nowIso = new Date().toISOString();
 
-    // Find existing Apple subscription
+    // Find existing Apple subscription — try by provider_subscription_id first,
+    // then by user_id + provider to catch apple_pending_ / apple_unverified_
+    // subscriptions that were created by manual entitlement repair or a previous
+    // sync with a different transaction ID. Without this fallback, a manual
+    // repair subscription (apple_pending_<userId>) would be orphaned and a
+    // duplicate expired subscription would be created, stripping the user's
+    // access.
     const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
       provider: 'apple',
       provider_subscription_id: providerSubId,
     });
 
-    const existingAppleSub = existingSubs?.[0];
+    let existingAppleSub = existingSubs?.[0];
+
+    if (!existingAppleSub) {
+      const subsByUser = await base44.asServiceRole.entities.Subscription.filter({
+        provider: 'apple',
+        user_id: userId,
+      });
+      // Prefer an active subscription; otherwise take the most recent.
+      const activeSub = subsByUser?.find((s: any) => s.status === 'active');
+      existingAppleSub = activeSub || subsByUser?.[0] || null;
+      if (existingAppleSub) {
+        console.warn(`[syncAppleSubscriptionForMe] Found existing Apple subscription ${existingAppleSub.provider_subscription_id} by user_id lookup (not by provider_subscription_id). Will update in place to avoid duplicate.`);
+      }
+    }
 
     // CONFLICT CHECK
     if (existingAppleSub && existingAppleSub.user_id && existingAppleSub.user_id !== userId) {
@@ -227,16 +243,31 @@ Deno.serve(async (req) => {
 
     let migrationGraceActive = false;
     if (!verifiedTx && existingAppleSub && existingAppleSub.status === 'active') {
-      // Existing active subscriber — preserve access during migration
+      // Existing active subscriber — preserve access during migration.
+      // This covers both apple_pending_ (manual repair) and apple_unverified_
+      // (previous sync without verification) subscriptions.
       migrationGraceActive = true;
-      console.warn(`[syncAppleSubscriptionForMe] MIGRATION GRACE: Preserving existing active Apple subscription ${providerSubId} for user ${userId} while verification is pending. verification_status=${verificationStatus}`);
+      console.warn(`[syncAppleSubscriptionForMe] MIGRATION GRACE: Preserving existing active Apple subscription ${existingAppleSub.provider_subscription_id} for user ${userId} while verification is pending. verification_status=${verificationStatus}`);
     }
+
+    // Status: only 'active' if VERIFIED and not expired.
+    // MIGRATION GRACE: if we're preserving an existing active subscription
+    // (apple_pending_ or apple_unverified_), keep its status as 'active'
+    // so the resolver and downstream components continue to grant access.
+    const status = (authoritativeActive || migrationGraceActive) ? 'active' : 'expired';
+
+    // When migration grace is active and we don't have a verified transaction,
+    // preserve the existing provider_subscription_id (e.g. apple_pending_<userId>)
+    // to avoid orphaning ActiveContract records and other references.
+    const effectiveProviderSubId = (migrationGraceActive && !verifiedTx && existingAppleSub?.provider_subscription_id)
+      ? existingAppleSub.provider_subscription_id
+      : providerSubId;
 
     const subData: Record<string, any> = {
       user_id: userId,
       user_email: emailLower,
       provider: 'apple',
-      provider_subscription_id: providerSubId,
+      provider_subscription_id: effectiveProviderSubId,
       stripe_subscription_id: null,
       stripe_customer_id: null,
       status,
@@ -251,8 +282,8 @@ Deno.serve(async (req) => {
       product_kind: productAccess.productKind,
       checkout_type: productAccess.checkoutType,
       primary_module: activeModules[0] || null,
-      current_period_end: authoritativeExpiresAt,
-      current_period_start: authoritativeActive ? nowIso : (existingAppleSub?.current_period_start || null),
+      current_period_end: authoritativeExpiresAt || (migrationGraceActive ? existingAppleSub?.current_period_end : null) || null,
+      current_period_start: (authoritativeActive || migrationGraceActive) ? (existingAppleSub?.current_period_start || nowIso) : (existingAppleSub?.current_period_start || null),
       started_at: existingAppleSub?.started_at || nowIso,
       subscriptionStartedAt: existingAppleSub?.subscriptionStartedAt || existingAppleSub?.started_at || nowIso,
       billing_interval: productAccess.billingInterval,

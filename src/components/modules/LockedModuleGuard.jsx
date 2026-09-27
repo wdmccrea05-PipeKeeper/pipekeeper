@@ -121,7 +121,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
   const isAdmin = String(user?.role || '').toLowerCase() === 'admin' || user?.is_admin === true;
   const hasLegacyAccess = Boolean(user?.isFoundingMember || user?.legacy_broad_module_access);
 
-  if (!isAdmin && !hasLegacyAccess && !hasModuleProAccess(user, key) && !hasModuleFreeAccess(user, key)) {
+  if (!isAdmin && !hasLegacyAccess && !hasModuleProAccess(user, key, subscription) && !hasModuleFreeAccess(user, key)) {
     // If user has any paid access at all (wrong module), show upgrade prompt.
     // Otherwise show the standard subscribe CTA.
     const hasSomePaidAccess = hasPaidAccess(user, subscription);
