@@ -36,7 +36,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite, onEdit }
         withTexture={false}
       >
         <LuxuryObjectFrame
-          src={blend.logo || blend.photo}
+          src={blend.photos?.[0] || blend.logo || blend.photo}
           alt={blend.name}
           aspectRatio="4/3"
           objectFit="contain"
