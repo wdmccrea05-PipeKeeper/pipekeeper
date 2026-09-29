@@ -36,9 +36,9 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite, onEd
             background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))",
             borderColor: "rgba(120, 90, 65, 0.2)"
           }}>
-            {blend.logo || blend.photo ? (
+            {blend.photos?.[0] || blend.logo || blend.photo ? (
               <img 
-                src={blend.logo || blend.photo} 
+                src={blend.photos?.[0] || blend.logo || blend.photo} 
                 alt={blend.name} 
                 className={`w-full h-full ${blend.logo ? 'object-contain p-2' : 'object-cover'}`}
                 onError={(e) => {

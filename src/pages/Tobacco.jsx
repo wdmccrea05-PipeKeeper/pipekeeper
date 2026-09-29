@@ -502,7 +502,7 @@ export default function TobaccoPage() {
                     exit={{ opacity: 0, scale: 0.95 }}
                   >
                     <CollectorDisplayCard
-                      image={blend.logo || blend.photo}
+                      image={blend.photos?.[0] || blend.logo || blend.photo}
                       title={blend.name}
                       subtitle={blend.manufacturer || t("tobaccoExtended.unknownMaker")}
                       badges={

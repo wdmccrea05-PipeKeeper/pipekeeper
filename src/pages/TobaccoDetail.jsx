@@ -32,6 +32,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { scopedEntities } from '@/components/api/scopedEntities';
 import { base44 } from '@/api/base44Client';
 import UnifiedValuationCard from '@/components/valuation/UnifiedValuationCard';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 import {
   buildValuationSnapshot,
@@ -725,7 +726,7 @@ export default function TobaccoDetail() {
     );
   }
 
-  const mainPhoto = blend.logo || blend.photos?.[0];
+  const mainPhoto = blend.photos?.[0] || blend.logo;
   const totalOz =
     (Number(blend.tin_total_quantity_oz) || 0) +
     (Number(blend.bulk_total_quantity_oz) || 0) +
@@ -832,13 +833,13 @@ export default function TobaccoDetail() {
                   setBlend((prev) => ({ ...prev, ...updates }));
 
                   // Keep the collection page cache in sync before navigation back.
-                  queryClient.setQueryData(['tobacco-blends', userEmail], (current = []) => {
+                  queryClient.setQueryData(QUERY_KEYS.blends(userEmail), (current = []) => {
                     const records = Array.isArray(current) ? current : [];
                     return records.map((record) =>
                       record?.id === blend.id ? { ...record, ...updates } : record
                     );
                   });
-                  queryClient.invalidateQueries({ queryKey: ['tobacco-blends', userEmail] });
+                  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.blends(userEmail) });
                 } catch (err) {
                   console.error('[TobaccoDetail] photo update failed', err);
                   toast.error(err?.message || 'Failed to update photos');
