@@ -820,8 +820,25 @@ export default function TobaccoDetail() {
               brand={blend.manufacturer || ''}
               onUpdate={async (updatedPhotos) => {
                 try {
-                  await scopedEntities.TobaccoBlend.update(blend.id, { photos: updatedPhotos });
-                  setBlend((prev) => ({ ...prev, photos: updatedPhotos }));
+                  const cleanPhotos = Array.isArray(updatedPhotos) ? updatedPhotos.filter(Boolean) : [];
+                  // Tobacco inventory cards render `logo` first. The detail photo
+                  // editor previously updated only `photos`, so the detail page
+                  // could show the new label while the inventory card continued to
+                  // use an older/generic logo. Keep the canonical display image and
+                  // photo gallery synchronized.
+                  const nextLogo = cleanPhotos[0] || null;
+                  const updates = { photos: cleanPhotos, logo: nextLogo };
+                  await scopedEntities.TobaccoBlend.update(blend.id, updates);
+                  setBlend((prev) => ({ ...prev, ...updates }));
+
+                  // Keep the collection page cache in sync before navigation back.
+                  queryClient.setQueryData(['tobacco-blends', userEmail], (current = []) => {
+                    const records = Array.isArray(current) ? current : [];
+                    return records.map((record) =>
+                      record?.id === blend.id ? { ...record, ...updates } : record
+                    );
+                  });
+                  queryClient.invalidateQueries({ queryKey: ['tobacco-blends', userEmail] });
                 } catch (err) {
                   console.error('[TobaccoDetail] photo update failed', err);
                   toast.error(err?.message || 'Failed to update photos');
