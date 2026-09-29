@@ -658,6 +658,20 @@ export default function TobaccoPage() {
           onClose={() => setShowAddFlow(false)}
           initialItemType="blend"
           onCreated={(record) => {
+            // Update the visible collection immediately with the fully refreshed
+            // record returned by AddFlow. Invalidation still refetches server truth,
+            // but the inventory card no longer waits on a stale cached blend object.
+            if (record?.id) {
+              queryClient.setQueryData(QUERY_KEYS.blends(user?.email), (current = []) => {
+                const existing = Array.isArray(current) ? current : [];
+                const index = existing.findIndex((blend) => blend?.id === record.id);
+                if (index === -1) return [record, ...existing];
+
+                const next = [...existing];
+                next[index] = { ...next[index], ...record };
+                return next;
+              });
+            }
             invalidateBlendQueries(queryClient, user?.email);
           }}
         />
