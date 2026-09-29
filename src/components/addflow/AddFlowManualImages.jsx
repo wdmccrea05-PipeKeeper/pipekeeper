@@ -26,6 +26,24 @@ function cleanObject(obj) {
   );
 }
 
+/**
+ * Persist a selected blend label as part of the TobaccoBlend record and verify
+ * the round-trip. Image-library links are supplemental metadata; the record's
+ * `logo` field is the canonical label image used by blend cards/details.
+ */
+async function persistBlendLabel(recordId, imageUrl) {
+  if (!recordId || !imageUrl) return null;
+
+  await base44.entities.TobaccoBlend.update(recordId, { logo: imageUrl });
+  const refreshed = await base44.entities.TobaccoBlend.get(recordId);
+
+  if (refreshed?.logo !== imageUrl) {
+    throw new Error('Blend label image was uploaded but did not persist to the blend record. Please try again.');
+  }
+
+  return refreshed;
+}
+
 function buildBaseRecord(itemType, data) {
   if (itemType === 'blend') {
     return cleanObject({
@@ -938,7 +956,15 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
         });
 
         await base44.entities[ENTITIES[itemType]].update(finalData._quickRecord.id, updateData);
-        const refreshedRecord = await base44.entities[ENTITIES[itemType]].get(finalData._quickRecord.id).catch((refreshError) => {
+
+        // Blend labels must live on TobaccoBlend.logo itself. Previously the
+        // image could be uploaded/linked to the library while the blend record
+        // remained unchanged, making the selection disappear after reload.
+        const persistedBlend = itemType === 'blend' && imageUrl
+          ? await persistBlendLabel(finalData._quickRecord.id, imageUrl)
+          : null;
+
+        const refreshedRecord = persistedBlend || await base44.entities[ENTITIES[itemType]].get(finalData._quickRecord.id).catch((refreshError) => {
           console.error(`[AddFlowManualImages] failed to refresh ${itemType} record after update:`, finalData._quickRecord.id, refreshError);
           return null;
         });
@@ -997,6 +1023,12 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
 
       const created = await base44.entities[ENTITIES[itemType]].create(recordPayload);
 
+      // Verify the canonical blend record owns the selected label image.
+      // This covers both device uploads and selections from the label library.
+      const persistedCreated = itemType === 'blend' && imageUrl
+        ? await persistBlendLabel(created.id, imageUrl)
+        : created;
+
       if (itemType === 'blend') {
         await createCellarLogsForBlend(created.id, recordPayload, created.name);
       }
@@ -1030,7 +1062,7 @@ export default function AddFlowManualImages({ itemType, typeLabel, data, onBack,
       }
 
       toast.success(`${typeLabel} saved!`);
-      onCreated?.({ ...created, ...recordPayload });
+      onCreated?.({ ...created, ...recordPayload, ...(persistedCreated || {}) });
     } catch (error) {
       toast.error(error?.message || 'Failed to save');
     } finally {
