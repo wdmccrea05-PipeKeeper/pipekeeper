@@ -217,7 +217,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                     {t("subscriptionBackup.sending")}
                   </>
                 ) : (
-                  t("subscriptionBackup.submitRequest")
+                  t("subscriptionBackup.requestUnlock")
                 )}
               </Button>
 
