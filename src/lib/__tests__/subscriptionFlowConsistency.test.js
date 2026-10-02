@@ -140,7 +140,7 @@ describe("apple subscription sync", () => {
     );
 
     expect(invoke).toHaveBeenCalledTimes(1);
-    expect(invoke.mock.calls[0][0].originalTransactionId).toBeNull();
+    expect(invoke.mock.calls[0][0].originalTransactionId).toBe("");
     expect(result).toMatchObject({ ok: true, unverified: true });
   });
 
