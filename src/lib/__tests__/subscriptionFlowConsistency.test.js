@@ -131,16 +131,17 @@ describe("apple subscription sync", () => {
     expect(normalized.originalTransactionId).toBe("tx_123");
   });
 
-  it("skips active sync when originalTransactionId is missing", async () => {
-    const invoke = vi.fn();
+  it("syncs active status through the unverified fallback when originalTransactionId is missing", async () => {
+    const invoke = vi.fn().mockResolvedValue({ data: { ok: true, unverified: true } });
 
     const result = await syncAppleSubscriptionStatus(
       { active: true, tier: "pro", productId: "com.pipekeeper.pro.monthly" },
       { invoke }
     );
 
-    expect(result.skipped).toBe(true);
-    expect(invoke).not.toHaveBeenCalled();
+    expect(invoke).toHaveBeenCalledTimes(1);
+    expect(invoke.mock.calls[0][0].originalTransactionId).toBeNull();
+    expect(result).toMatchObject({ ok: true, unverified: true });
   });
 
   it("invalidates and refetches user state after successful sync", async () => {
