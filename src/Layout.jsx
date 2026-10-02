@@ -67,7 +67,13 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Mobile / tablet nav drawer */}
         {menuOpen && (
-          <div className="md:hidden border-t border-white/10 bg-[rgba(20,15,12,0.97)]">
+          <div
+            className="md:hidden fixed left-0 right-0 z-50 border-t border-white/10 bg-[#140f0c] shadow-2xl overflow-y-auto"
+            style={{
+              top: 'calc(env(safe-area-inset-top) + 72px)',
+              maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 72px)',
+            }}
+          >
             <div className="ck-page-shell py-3">
               <ModuleNav
                 currentPageName={currentPageName}
