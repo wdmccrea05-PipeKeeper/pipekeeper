@@ -12,21 +12,25 @@ import Stripe from 'npm:stripe@13.11.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
+// Price IDs are public identifiers. Environment values win when present, but
+// production checkout must not fail merely because VITE_* variables were not
+// propagated into a Base44 function deployment. These fallbacks were verified
+// against StripeProductRegistry on 2026-10-01.
 const PLAN_TO_STRIPE_PRICE = {
-  'pipekeeper_pro_monthly': Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY'),
-  'pipekeeper_pro_annual': Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL'),
-  'whiskeykeeper_pro_monthly': Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY'),
-  'whiskeykeeper_pro_annual': Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL'),
-  'cigarkeeper_pro_monthly': Deno.env.get('VITE_STRIPE_CIGARKEEPER_MONTHLY'),
-  'cigarkeeper_pro_annual': Deno.env.get('VITE_STRIPE_CIGARKEEPER_ANNUAL'),
-  'winekeeper_pro_monthly': Deno.env.get('VITE_STRIPE_WINEKEEPER_MONTHLY'),
-  'winekeeper_pro_annual': Deno.env.get('VITE_STRIPE_WINEKEEPER_ANNUAL'),
-  'three_module_bundle_monthly': Deno.env.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY'),
-  'three_module_bundle_annual': Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL'),
-  'four_module_bundle_monthly': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY'),
-  'four_module_bundle_annual': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL'),
-  'founders_bundle_annual': Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL'),
-  'founders_bundle_monthly': Deno.env.get('VITE_STRIPE_FOUNDERS_MONTHLY'),
+  'pipekeeper_pro_monthly': Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY') || 'price_1SsDgEDycvQWC88PmdvlxFDa',
+  'pipekeeper_pro_annual': Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL') || 'price_1SsDU6DycvQWC88PIwpmt7Oc',
+  'whiskeykeeper_pro_monthly': Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY') || 'price_1TBfYEDycvQWC88P5mfqoWzF',
+  'whiskeykeeper_pro_annual': Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL') || 'price_1TBfZPDycvQWC88Pk0T31lxi',
+  'cigarkeeper_pro_monthly': Deno.env.get('VITE_STRIPE_CIGARKEEPER_MONTHLY') || 'price_1TBfbJDycvQWC88PIjsHAufT',
+  'cigarkeeper_pro_annual': Deno.env.get('VITE_STRIPE_CIGARKEEPER_ANNUAL') || 'price_1TBfaeDycvQWC88PkAHy3qIC',
+  'winekeeper_pro_monthly': Deno.env.get('VITE_STRIPE_WINEKEEPER_MONTHLY') || 'price_1TBfcdDycvQWC88PV0OV4t9B',
+  'winekeeper_pro_annual': Deno.env.get('VITE_STRIPE_WINEKEEPER_ANNUAL') || 'price_1TBfd7DycvQWC88PHrCnHl1X',
+  'three_module_bundle_monthly': Deno.env.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY') || 'price_1TBfdyDycvQWC88PPKSN5uVJ',
+  'three_module_bundle_annual': Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL') || 'price_1TBfekDycvQWC88P5nZsEr7j',
+  'four_module_bundle_monthly': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_MONTHLY') || 'price_1TBffYDycvQWC88PA6qrWSRB',
+  'four_module_bundle_annual': Deno.env.get('VITE_STRIPE_FOUR_BUNDLE_ANNUAL') || 'price_1TBfgDDycvQWC88P0Y3VwJa6',
+  'founders_bundle_annual': Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL') || 'price_1TBfhVDycvQWC88PdZ1jQNwX',
+  'founders_bundle_monthly': Deno.env.get('VITE_STRIPE_FOUNDERS_MONTHLY') || 'price_1TKgGnDycvQWC88PwdJo75R5',
 };
 
 /**
