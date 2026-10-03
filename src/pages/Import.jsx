@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { analyzeImportRows, executeImportRows, importDefinitionList, importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
 import { parseCsvText } from '@/lib/imports/csvImportUtils';
+import { TOBACCO_IMPORT_ENUMS } from '@/components/tobacco/tobaccoConstants';
 
 // Maps each import definition id prefix to a module key
 const IMPORT_MODULE_MAP = {
@@ -362,6 +363,21 @@ export default function ImportPage() {
                 <li>Warnings can import; errors are blocked until corrected.</li>
               </ul>
             </div>
+
+            {definition?.entity === 'TobaccoBlend' && (
+              <div className="rounded-lg border border-stone-600 bg-stone-900/40 p-4 text-sm text-stone-200">
+                <p className="font-semibold text-stone-100 mb-2">Accepted tobacco values</p>
+                <p className="text-xs text-stone-400 mb-3">Constrained fields must use one of these values. Matching is case-insensitive; the imported value is normalized to the canonical spelling.</p>
+                <div className="space-y-2">
+                  {Object.entries(TOBACCO_IMPORT_ENUMS).map(([field, values]) => (
+                    <div key={field}>
+                      <span className="font-medium">{field}:</span>{' '}
+                      <span className="text-stone-300">{values.join(', ')}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="border-2 border-dashed border-stone-500/60 rounded-lg p-6 text-center space-y-3">
               <Upload className="w-10 h-10 text-stone-400 mx-auto" />
