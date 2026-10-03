@@ -1,6 +1,13 @@
 import { base44 } from '@/api/base44Client';
 import { scopedEntities } from '@/components/api/scopedEntities';
-import { BLEND_TYPES } from '@/components/tobacco/tobaccoConstants';
+import {
+  BLEND_TYPES,
+  TOBACCO_CUTS,
+  TOBACCO_STRENGTHS,
+  TOBACCO_ROOM_NOTES,
+  TOBACCO_PRODUCTION_STATUSES as TOBACCO_PRODUCTION,
+  TOBACCO_AGING_POTENTIALS,
+} from '@/components/tobacco/tobaccoConstants';
 import { normalizeCigarPayload } from '@/platform/normalizeCigarPayload';
 import {
   compactString,
@@ -18,9 +25,6 @@ import {
 const PIPE_CONDITIONS = ['Mint', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'Estate - Unrestored'];
 const PIPE_FINISHES = ['Smooth', 'Sandblast', 'Rusticated', 'Partially Rusticated', 'Carved', 'Natural', 'Other'];
 const PIPE_MATERIALS = ['Briar', 'Meerschaum', 'Corn Cob', 'Clay', 'Olive Wood', 'Cherry Wood', 'Morta', 'Other'];
-
-const TOBACCO_CUTS = ['Ribbon', 'Flake', 'Broken Flake', 'Ready Rubbed', 'Plug', 'Coin', 'Cube Cut', 'Crumble Cake', 'Shag', 'Rope', 'Twist', 'Other'];
-const TOBACCO_PRODUCTION = ['Current Production', 'Discontinued', 'Limited Edition', 'Vintage'];
 
 const WHISKEY_TYPES = ['Bourbon', 'Rye', 'Single Malt', 'Blended', 'Japanese Whisky', 'Irish Whiskey', 'Scotch Whisky', 'Other'];
 const WHISKEY_BOTTLE_SIZES = ['50ml', '100ml', '200ml', '375ml', '500ml', '700ml', '750ml', '1L', '1.75L', 'Other'];
@@ -106,6 +110,9 @@ function coerceBlendPayload(row, extras) {
   const blendType = parseEnum(row.blend_type, BLEND_TYPES);
   const cut = parseEnum(row.cut, TOBACCO_CUTS);
   const productionStatus = parseEnum(row.production_status, TOBACCO_PRODUCTION);
+  const strength = parseEnum(row.strength, TOBACCO_STRENGTHS);
+  const roomNote = parseEnum(row.room_note, TOBACCO_ROOM_NOTES);
+  const agingPotential = parseEnum(row.aging_potential, TOBACCO_AGING_POTENTIALS);
   const packageType = compactString(row.package_type);
   const packageSize = parseNumber(row.package_size);
 
@@ -119,9 +126,12 @@ function coerceBlendPayload(row, extras) {
   if (!gramsRemaining.ok) errors.push('grams_remaining is invalid');
   if (!tinsRemaining.ok) errors.push('tins_remaining is invalid');
   if (!jarsRemaining.ok) errors.push('jars_remaining is invalid');
-  if (!blendType.ok) errors.push('blend_type is invalid');
-  if (!cut.ok) errors.push('cut is invalid');
-  if (!productionStatus.ok) errors.push('production_status is invalid');
+  if (!blendType.ok) errors.push(`blend_type is invalid. Valid values: ${BLEND_TYPES.join(', ')}`);
+  if (!cut.ok) errors.push(`cut is invalid. Valid values: ${TOBACCO_CUTS.join(', ')}`);
+  if (!productionStatus.ok) errors.push(`production_status is invalid. Valid values: ${TOBACCO_PRODUCTION.join(', ')}`);
+  if (!strength.ok) errors.push(`strength is invalid. Valid values: ${TOBACCO_STRENGTHS.join(', ')}`);
+  if (!roomNote.ok) errors.push(`room_note is invalid. Valid values: ${TOBACCO_ROOM_NOTES.join(', ')}`);
+  if (!agingPotential.ok) errors.push(`aging_potential is invalid. Valid values: ${TOBACCO_AGING_POTENTIALS.join(', ')}`);
   if (!packageSize.ok) errors.push('package_size is invalid');
 
   const gramsAsOz = gramsRemaining.value ? gramsRemaining.value / GRAMS_PER_OUNCE : undefined;
@@ -149,7 +159,10 @@ function coerceBlendPayload(row, extras) {
     blend_type: blendType.value,
     tobacco_components: parseStringList(row.components),
     cut: cut.value,
+    strength: strength.value,
+    room_note: roomNote.value,
     production_status: productionStatus.value,
+    aging_potential: agingPotential.value,
     tin_size_oz: inferredTinSize,
     tin_total_tins: inferredTinCount,
     tin_tins_open: undefined,
