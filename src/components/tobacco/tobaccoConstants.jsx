@@ -27,6 +27,27 @@ export const BLEND_TYPES = [
   "Virginia/Perique",
 ];
 
+// Canonical constrained tobacco metadata values. Import validation, forms,
+// filters, and AI normalization should consume these exports rather than
+// maintaining local copies.
+export const TOBACCO_CUTS = [
+  "Broken Flake", "Coin", "Crumble Cake", "Cube Cut", "Flake", "Plug",
+  "Ready Rubbed", "Ribbon", "Rope", "Shag", "Twist", "Other"
+];
+export const TOBACCO_STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
+export const TOBACCO_ROOM_NOTES = ["Pleasant", "Neutral", "Strong", "Very Strong"];
+export const TOBACCO_PRODUCTION_STATUSES = ["Current Production", "Discontinued", "Limited Edition", "Vintage"];
+export const TOBACCO_AGING_POTENTIALS = ["Poor", "Fair", "Good", "Excellent"];
+
+export const TOBACCO_IMPORT_ENUMS = {
+  blend_type: BLEND_TYPES,
+  cut: TOBACCO_CUTS,
+  strength: TOBACCO_STRENGTHS,
+  room_note: TOBACCO_ROOM_NOTES,
+  production_status: TOBACCO_PRODUCTION_STATUSES,
+  aging_potential: TOBACCO_AGING_POTENTIALS,
+};
+
 // Display color map for blend type badges
 export const BLEND_TYPE_COLORS = {
   "Virginia":             "bg-yellow-600 text-yellow-100 border-yellow-500/60",
