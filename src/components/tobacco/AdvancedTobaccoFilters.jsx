@@ -9,18 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Filter, X } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-const BLEND_TYPES = ["American", "Aromatic", "Balkan", "Burley", "Burley-based", "Cavendish", "Codger Blend",
-  "Dark Fired Kentucky", "English", "English Aromatic", "English Balkan", "Full English/Oriental", "Kentucky",
-  "Lakeland", "Latakia Blend", "Navy Flake", "Oriental/Turkish", "Other", "Perique", "Shag", "Virginia",
-  "Virginia/Burley", "Virginia/Oriental", "Virginia/Perique"];
-
-const CUTS = ["Broken Flake", "Coin", "Crumble Cake", "Cube Cut", "Flake", "Other", "Plug", "Ready Rubbed",
-  "Ribbon", "Rope", "Shag", "Twist"];
-
-const STRENGTHS = ["Full", "Medium", "Medium-Full", "Mild", "Mild-Medium"];
-const ROOM_NOTES = ["Neutral", "Pleasant", "Strong", "Very Strong"];
-const PRODUCTION_STATUSES = ["Current Production", "Discontinued", "Limited Edition", "Vintage"];
-const AGING_POTENTIALS = ["Excellent", "Fair", "Good", "Poor"];
+import { BLEND_TYPES, TOBACCO_CUTS as CUTS, TOBACCO_STRENGTHS as STRENGTHS, TOBACCO_ROOM_NOTES as ROOM_NOTES, TOBACCO_PRODUCTION_STATUSES as PRODUCTION_STATUSES, TOBACCO_AGING_POTENTIALS as AGING_POTENTIALS } from "@/components/tobacco/tobaccoConstants";
 
 export default function AdvancedTobaccoFilters({ filters, onFilterChange, onReset }) {
   const { t } = useTranslation();
