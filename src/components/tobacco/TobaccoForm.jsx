@@ -29,12 +29,7 @@ import FormSection from '@/components/forms/FormSection';
 import FlavorProfileField from '@/components/tobacco/FlavorProfileField';
 import { normalizeFlavorProfile } from '@/components/tobacco/flavorNotes';
 
-import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
-const CUTS = ["Broken Flake", "Coin", "Crumble Cake", "Cube Cut", "Flake", "Plug", "Ready Rubbed", "Ribbon", "Rope", "Shag", "Twist", "Other"];
-const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
-const ROOM_NOTES = ["Pleasant", "Neutral", "Strong", "Very Strong"];
-const PRODUCTION_STATUS = ["Current Production", "Discontinued", "Limited Edition", "Vintage"];
-const AGING_POTENTIAL = ["Poor", "Fair", "Good", "Excellent"];
+import { BLEND_TYPES, TOBACCO_CUTS as CUTS, TOBACCO_STRENGTHS as STRENGTHS, TOBACCO_ROOM_NOTES as ROOM_NOTES, TOBACCO_PRODUCTION_STATUSES as PRODUCTION_STATUS, TOBACCO_AGING_POTENTIALS as AGING_POTENTIAL } from "@/components/tobacco/tobaccoConstants";
 
 const COMMON_FLAVOR_NOTES = ["Earthy", "Sweet", "Nutty", "Woody", "Smoky", "Spicy", "Fruity", "Floral", "Tangy", "Creamy", "Peppery", "Chocolate", "Coffee", "Vanilla", "Honey", "Leather", "Grass", "Hay", "Citrus", "Plum", "Fig", "Raisin"];
 
