@@ -229,14 +229,46 @@ Deno.serve(async (req) => {
         }
 
         if (canonicalPlanKey) {
+          // A manually curated historical row is an explicit CollectionKeeper
+          // override. Stripe can leave superseded legacy Prices marked active,
+          // so provider active=true must never reactivate one of these rows.
+          const preserveHistoricalOverride =
+            existing?.is_historical === true &&
+            existing?.stripe_price_active === false &&
+            existing?.mapping_source === "manual" &&
+            existing?.confidence === "high";
+
+          if (preserveHistoricalOverride) {
+            canonicalPlanKey = existing.canonical_plan_key || canonicalPlanKey;
+            canonicalProduct = existing.canonical_product || canonicalProduct;
+            canonicalModules = existing.canonical_modules?.length
+              ? existing.canonical_modules
+              : canonicalModules;
+            mappingSource = "manual";
+            confidence = "high";
+          }
+
+          // Some legacy Stripe Prices have incomplete/incorrect recurring
+          // metadata. Product names such as "Annual Subscription" are a safer
+          // fallback when the row is not mapped by an environment Price ID.
+          const nameSaysAnnual =
+            lower.includes("annual") || lower.includes("yearly");
+          const resolvedInterval =
+            price.recurring?.interval === "year" || nameSaysAnnual
+              ? "annual"
+              : "monthly";
+
           const entry: any = {
             provider: "stripe", price_id: price.id, product_id: product.id,
             product_name: product.name, price_nickname: price.nickname || "",
             canonical_plan_key: canonicalPlanKey, canonical_product: canonicalProduct,
             canonical_modules: canonicalModules,
-            billing_interval: price.recurring?.interval === "year" ? "annual" : "monthly",
+            billing_interval: preserveHistoricalOverride && existing?.billing_interval
+              ? existing.billing_interval
+              : resolvedInterval,
             amount_cents: price.unit_amount, currency: price.currency || "usd",
-            stripe_price_active: price.active, is_historical: !price.active,
+            stripe_price_active: preserveHistoricalOverride ? false : price.active,
+            is_historical: preserveHistoricalOverride ? true : !price.active,
             mapping_source: mappingSource, confidence,
             first_seen: existing?.first_seen || now, last_verified: now,
           };
