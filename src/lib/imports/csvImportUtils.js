@@ -141,12 +141,16 @@ export function parseStringList(value) {
     .filter(Boolean);
 }
 
-export function parseEnum(value, allowedValues = []) {
+export function parseEnum(value, allowedValues = [], aliases = {}) {
   if (value === undefined || value === null || value === '') return { ok: true, value: undefined };
   const raw = String(value).trim();
-  const found = allowedValues.find((entry) => entry.toLowerCase() === raw.toLowerCase());
-  if (!found) return { ok: false };
-  return { ok: true, value: found };
+  const normalized = raw.toLowerCase().replace(/[\s_-]+/g, ' ').trim();
+  const found = allowedValues.find((entry) => entry.toLowerCase().replace(/[\s_-]+/g, ' ').trim() === normalized);
+  if (found) return { ok: true, value: found };
+  const aliasTarget = aliases[normalized] || aliases[raw.toLowerCase()];
+  if (!aliasTarget) return { ok: false };
+  const canonical = allowedValues.find((entry) => entry.toLowerCase() === String(aliasTarget).toLowerCase());
+  return canonical ? { ok: true, value: canonical } : { ok: false };
 }
 
 export function compactString(value) {
