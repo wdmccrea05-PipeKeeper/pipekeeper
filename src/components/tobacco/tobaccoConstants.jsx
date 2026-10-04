@@ -20,13 +20,13 @@ export const BLEND_TYPES = [
   "Oriental/Turkish",
   "Other",
   "Perique",
+  "Scottish",
   "Shag",
   "Virginia",
   "Virginia/Burley",
+  "Virginia/Cavendish",
   "Virginia/Oriental",
   "Virginia/Perique",
-  "Virginia/Cavendish",
-  "Scottish",
 ];
 
 // Canonical constrained tobacco metadata values. Import validation, forms,
@@ -36,7 +36,7 @@ export const TOBACCO_CUTS = [
   "Broad Cut", "Broken Flake", "Coin/Medallion", "Coarse Cut", "Crimp Cut",
   "Cross Cut", "Crumble Cake", "Crushed Plug", "Cube Cut", "Flake", "Granulated",
   "Loose Cut", "Mixture", "Plug", "Ready Rubbed", "Ribbon", "Roll Cake", "Rope",
-  "Shag", "Spun Cut", "Twist", "Other"
+  "Other", "Shag", "Spun Cut", "Twist"
 ];
 
 // Common commercial/collector synonyms normalize to canonical values so imports
