@@ -67,6 +67,34 @@ describe('bulk import system', () => {
     expect(analysis.counts.error).toBe(1);
   });
 
+  test('normalizes common tobacco taxonomy aliases during import', async () => {
+    const definition = importDefinitions.pipekeeper_blends;
+    const parsed = parseCsvText(
+      'manufacturer,blend_name,blend_type,cut,strength,room_note,production_status,aging_potential\nTest Maker,Test Blend,Va/Per,ready-rubbed,Medium,Pleasant,Current Production,Good\n'
+    );
+    const analysis = await analyzeImportRows({
+      definition,
+      headers: parsed.headers,
+      rawHeaders: parsed.rawHeaders,
+      rows: parsed.rows,
+      duplicateHeaders: parsed.duplicateHeaders,
+      parseErrors: parsed.parseErrors,
+      userEmail: 'user@example.com',
+    });
+    expect(analysis.rows[0].errors).toHaveLength(0);
+    expect(analysis.rows[0].payload.blend_type).toBe('Virginia/Perique');
+    expect(analysis.rows[0].payload.cut).toBe('Ready Rubbed');
+  });
+
+  test('accepts expanded commercial tobacco cut taxonomy', async () => {
+    const definition = importDefinitions.pipekeeper_blends;
+    for (const cut of ['Broad Cut', 'Coarse Cut', 'Cross Cut', 'Loose Cut', 'Roll Cake', 'Spun Cut', 'Coin/Medallion']) {
+      const parsed = parseCsvText(`manufacturer,blend_name,cut\\nTest Maker,Test Blend,${cut}\\n`);
+      const analysis = await analyzeImportRows({ definition, headers: parsed.headers, rawHeaders: parsed.rawHeaders, rows: parsed.rows, duplicateHeaders: parsed.duplicateHeaders, parseErrors: parsed.parseErrors, userEmail: 'user@example.com' });
+      expect(analysis.rows[0].errors).toHaveLength(0);
+    }
+  });
+
   test('supports duplicate detection and skip mode', async () => {
     const definition = importDefinitions.whiskeykeeper_bottles;
     mockBase44.entities.Bottle.filter.mockResolvedValueOnce([

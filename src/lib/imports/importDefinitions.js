@@ -7,6 +7,8 @@ import {
   TOBACCO_ROOM_NOTES,
   TOBACCO_PRODUCTION_STATUSES as TOBACCO_PRODUCTION,
   TOBACCO_AGING_POTENTIALS,
+  TOBACCO_CUT_ALIASES,
+  TOBACCO_BLEND_TYPE_ALIASES,
 } from '@/components/tobacco/tobaccoConstants';
 import { normalizeCigarPayload } from '@/platform/normalizeCigarPayload';
 import {
@@ -107,8 +109,8 @@ function coerceBlendPayload(row, extras) {
   const gramsRemaining = parseNumber(row.grams_remaining);
   const tinsRemaining = parseInteger(row.tins_remaining);
   const jarsRemaining = parseInteger(row.jars_remaining);
-  const blendType = parseEnum(row.blend_type, BLEND_TYPES);
-  const cut = parseEnum(row.cut, TOBACCO_CUTS);
+  const blendType = parseEnum(row.blend_type, BLEND_TYPES, TOBACCO_BLEND_TYPE_ALIASES);
+  const cut = parseEnum(row.cut, TOBACCO_CUTS, TOBACCO_CUT_ALIASES);
   const productionStatus = parseEnum(row.production_status, TOBACCO_PRODUCTION);
   const strength = parseEnum(row.strength, TOBACCO_STRENGTHS);
   const roomNote = parseEnum(row.room_note, TOBACCO_ROOM_NOTES);

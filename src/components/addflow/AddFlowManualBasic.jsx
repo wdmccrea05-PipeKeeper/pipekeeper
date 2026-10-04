@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { BLEND_TYPES } from '@/components/tobacco/tobaccoConstants';
+import { PIPE_ENUM_SETS } from '@/components/utils/schemaCompatibility';
 
-const BLEND_TYPES = ['Virginia', 'Virginia/Perique', 'Virginia/Burley', 'English', 'Balkan', 'Aromatic', 'Burley', 'Burley-based', 'Latakia Blend', 'Oriental/Turkish', 'American', 'Cavendish', 'Kentucky', 'Dark Fired Kentucky', 'Perique', 'Lakeland', 'Codger Blend', 'Other'];
-const SHAPES = ['Billiard', 'Apple', 'Bent Billiard', 'Dublin', 'Bulldog', 'Rhodesian', 'Canadian', 'Lovat', 'Poker', 'Freehand', 'Churchwarden', 'Calabash', 'Volcano', 'Horn', 'Other', 'Unknown'];
+const SHAPES = Array.from(PIPE_ENUM_SETS.shape);
 const WHISKEY_TYPES = ['Single Malt Scotch', 'Blended Scotch', 'Bourbon', 'Rye', 'Irish', 'Japanese', 'Canadian', 'Tennessee', 'Single Grain', 'Other'];
 const VITOLAS = ['Robusto', 'Toro', 'Churchill', 'Corona', 'Lancero', 'Panatela', 'Belicoso', 'Torpedo', 'Figurado', 'Perfecto', 'Gordo', 'Gigante', 'Short Robusto', 'Petite Corona', 'Lonsdale', 'Other'];
 const WINE_STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];

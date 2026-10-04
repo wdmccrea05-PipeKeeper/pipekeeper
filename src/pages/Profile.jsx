@@ -32,22 +32,14 @@ import { PK_THEME } from "@/components/utils/pkTheme";
 
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { canUserAccessModule } from "@/components/utils/moduleReleaseState";
+import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
+import { PIPE_ENUM_SETS } from "@/components/utils/schemaCompatibility";
 
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
-// TODO: Move BLEND_TYPES and PIPE_SHAPES to the translation system so labels are translatable.
-const BLEND_TYPES = [
-  "Virginia", "Virginia/Perique", "English", "Balkan", "Aromatic",
-  "Burley", "Virginia/Burley", "Latakia Blend", "Oriental/Turkish",
-  "Navy Flake", "Dark Fired", "Cavendish",
-];
-
-const PIPE_SHAPES = [
-  "Billiard", "Bulldog", "Dublin", "Apple", "Author", "Bent",
-  "Canadian", "Churchwarden", "Freehand", "Lovat", "Poker",
-  "Prince", "Rhodesian", "Zulu", "Calabash",
-];
+// Canonical taxonomies keep profile preferences aligned with collection entry.
+const PIPE_SHAPES = Array.from(PIPE_ENUM_SETS.shape).filter((shape) => !['Unknown', 'Other'].includes(shape));
 
 // Note fields where the most-recently-updated record's exact value (including "")
 // must take precedence over the pick() fallback logic.
