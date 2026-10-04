@@ -8,10 +8,10 @@ import { toast } from 'sonner';
 import { BLEND_TYPES } from '@/components/tobacco/tobaccoConstants';
 import { PIPE_ENUM_SETS } from '@/components/utils/schemaCompatibility';
 
-const SHAPES = Array.from(PIPE_ENUM_SETS.shape);
-const WHISKEY_TYPES = ['Single Malt Scotch', 'Blended Scotch', 'Bourbon', 'Rye', 'Irish', 'Japanese', 'Canadian', 'Tennessee', 'Single Grain', 'Other'];
-const VITOLAS = ['Robusto', 'Toro', 'Churchill', 'Corona', 'Lancero', 'Panatela', 'Belicoso', 'Torpedo', 'Figurado', 'Perfecto', 'Gordo', 'Gigante', 'Short Robusto', 'Petite Corona', 'Lonsdale', 'Other'];
-const WINE_STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
+const SHAPES = Array.from(PIPE_ENUM_SETS.shape).sort((a, b) => a.localeCompare(b));
+const WHISKEY_TYPES = ['Blended Scotch', 'Bourbon', 'Canadian', 'Irish', 'Japanese', 'Other', 'Rye', 'Single Grain', 'Single Malt Scotch', 'Tennessee'];
+const VITOLAS = ['Belicoso', 'Churchill', 'Corona', 'Figurado', 'Gigante', 'Gordo', 'Lancero', 'Lonsdale', 'Other', 'Panatela', 'Perfecto', 'Petite Corona', 'Robusto', 'Short Robusto', 'Toro', 'Torpedo'];
+const WINE_STYLES = ['dessert', 'fortified', 'orange', 'other', 'red', 'rosé', 'sparkling', 'white'];
 
 const FIELDS = {
   blend: [
