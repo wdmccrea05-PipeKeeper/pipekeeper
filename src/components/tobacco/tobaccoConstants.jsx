@@ -25,15 +25,47 @@ export const BLEND_TYPES = [
   "Virginia/Burley",
   "Virginia/Oriental",
   "Virginia/Perique",
+  "Virginia/Cavendish",
+  "Scottish",
 ];
 
 // Canonical constrained tobacco metadata values. Import validation, forms,
 // filters, and AI normalization should consume these exports rather than
 // maintaining local copies.
 export const TOBACCO_CUTS = [
-  "Broken Flake", "Coin", "Crumble Cake", "Cube Cut", "Flake", "Plug",
-  "Ready Rubbed", "Ribbon", "Rope", "Shag", "Twist", "Other"
+  "Broad Cut", "Broken Flake", "Coin/Medallion", "Coarse Cut", "Crimp Cut",
+  "Cross Cut", "Crumble Cake", "Crushed Plug", "Cube Cut", "Flake", "Granulated",
+  "Loose Cut", "Mixture", "Plug", "Ready Rubbed", "Ribbon", "Roll Cake", "Rope",
+  "Shag", "Spun Cut", "Twist", "Other"
 ];
+
+// Common commercial/collector synonyms normalize to canonical values so imports
+// and external identification do not reject harmless terminology differences.
+export const TOBACCO_CUT_ALIASES = {
+  "broad ribbon": "Broad Cut",
+  "broad ribbon cut": "Broad Cut",
+  "cake": "Crumble Cake",
+  "coin": "Coin/Medallion",
+  "coins": "Coin/Medallion",
+  "curly cut": "Coin/Medallion",
+  "medallion": "Coin/Medallion",
+  "medallions": "Coin/Medallion",
+  "ready-rubbed": "Ready Rubbed",
+  "ready rubbed": "Ready Rubbed",
+  "roll cut": "Coin/Medallion",
+  "spun": "Spun Cut",
+};
+
+export const TOBACCO_BLEND_TYPE_ALIASES = {
+  "va/per": "Virginia/Perique",
+  "vaper": "Virginia/Perique",
+  "va/bur": "Virginia/Burley",
+  "va/or": "Virginia/Oriental",
+  "va/cav": "Virginia/Cavendish",
+  "virginia cavendish": "Virginia/Cavendish",
+  "dark fired": "Dark Fired Kentucky",
+  "dark-fired kentucky": "Dark Fired Kentucky",
+};
 export const TOBACCO_STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
 export const TOBACCO_ROOM_NOTES = ["Pleasant", "Neutral", "Strong", "Very Strong"];
 export const TOBACCO_PRODUCTION_STATUSES = ["Current Production", "Discontinued", "Limited Edition", "Vintage"];
@@ -52,6 +84,8 @@ export const TOBACCO_IMPORT_ENUMS = {
 export const BLEND_TYPE_COLORS = {
   "Virginia":             "bg-yellow-600 text-yellow-100 border-yellow-500/60",
   "Virginia/Perique":     "bg-orange-700 text-orange-100 border-orange-600/60",
+  "Virginia/Cavendish":   "bg-amber-700 text-amber-100 border-amber-600/60",
+  "Scottish":             "bg-slate-600 text-slate-100 border-slate-500/60",
   "Virginia/Burley":      "bg-yellow-700 text-yellow-100 border-yellow-600/60",
   "Virginia/Oriental":    "bg-orange-600 text-orange-100 border-orange-500/60",
   "English":              "bg-slate-700 text-slate-100 border-slate-600/60",
