@@ -36,8 +36,7 @@ import AddFlowModal from "@/components/addflow/AddFlowModal";
 import { hasModuleProAccess } from "@/components/utils/moduleEntitlements";
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
-import { BLEND_TYPES } from "@/components/tobacco/tobaccoConstants";
-const STRENGTHS = ["Mild", "Mild-Medium", "Medium", "Medium-Full", "Full"];
+import { BLEND_TYPES, TOBACCO_STRENGTHS as STRENGTHS } from "@/components/tobacco/tobaccoConstants";
 const SORT_OPTIONS = [
   { value: "-created_date", label: "tobaccoPage.recentlyAdded", i18nKey: true },
   { value: "favorites", label: "tobaccoPage.favoritesFirst", i18nKey: true },
