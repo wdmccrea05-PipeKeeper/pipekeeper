@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { buildSessionCalendarData } from "@/lib/sessionHistory/calendarData";
 import { sortByLabel } from "@/lib/sorting/alphabetical";
-import { X, Star } from "lucide-react";
+import { X, Star, CalendarDays, List } from "lucide-react";
 import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 const BASE_MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar", "pipe_club"];
@@ -18,6 +18,13 @@ function getModuleLabel(key) {
   if (key === "all") return "All";
   if (key === "pipe_club") return "Pipe Club";
   return key[0].toUpperCase() + key.slice(1);
+}
+
+function formatDateLabel(value) {
+  if (!value) return "Unknown date";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 
 function normalizeSessions({ smokingLogs = [], tastingLogs = [], cigarSessions = [], wineTastings = [], pipeClubSessions = [] }) {
@@ -80,6 +87,7 @@ export default function SessionHistory() {
   const [moduleFilter, setModuleFilter] = useState("all");
   const [selectedDate, setSelectedDate] = useState(toLocalDateYmd(new Date()));
   const [selectedSession, setSelectedSession] = useState(null);
+  const [viewMode, setViewMode] = useState("list");
 
   const { data, isLoading } = useQuery({
     queryKey: ["session-history-calendar", user?.email],
@@ -101,6 +109,12 @@ export default function SessionHistory() {
   const sessions = useMemo(() => normalizeSessions(data || {}), [data]);
   const { byDate, highlightedDates } = useMemo(
     () => buildSessionCalendarData(sessions, moduleFilter),
+    [sessions, moduleFilter]
+  );
+  const chronologicalRows = useMemo(
+    () => [...sessions]
+      .filter((row) => moduleFilter === "all" || row.moduleType === moduleFilter)
+      .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)),
     [sessions, moduleFilter]
   );
   const selectedDayRows = useMemo(
@@ -132,50 +146,67 @@ export default function SessionHistory() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-        <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-3">
-          <Calendar
-            mode="single"
-            selected={new Date(`${selectedDate}T12:00:00`)}
-            onSelect={(date) => {
-              if (date) setSelectedDate(toLocalDateYmd(date));
-            }}
-            modifiers={{ hasSessions: highlightedDates }}
-            modifiersClassNames={{
-              hasSessions: "ring-1 ring-[#B48C4B] ring-offset-0",
-            }}
-          />
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-[#D8C7A6]/70">
+          {chronologicalRows.length} {chronologicalRows.length === 1 ? "session" : "sessions"}
+        </p>
+        <div className="flex gap-2">
+          <Button size="sm" variant={viewMode === "list" ? "default" : "outline"} onClick={() => setViewMode("list")}>
+            <List className="w-4 h-4 mr-2" /> List
+          </Button>
+          <Button size="sm" variant={viewMode === "calendar" ? "default" : "outline"} onClick={() => setViewMode("calendar")}>
+            <CalendarDays className="w-4 h-4 mr-2" /> Calendar
+          </Button>
         </div>
+      </div>
 
-        <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-5">
-          <h2 className="text-lg font-semibold mb-3">
-            {selectedDate}
-          </h2>
+      {viewMode === "list" ? (
+        <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-4">
           {isLoading ? (
             <p className="text-[#D8C7A6]/75">{t("common.loading", "Loading...")}</p>
-          ) : selectedDayRows.length === 0 ? (
-            <p className="text-[#D8C7A6]/75">
-              {t("sessionHistory.emptyDay", "No sessions logged for this day.")}
-            </p>
+          ) : chronologicalRows.length === 0 ? (
+            <p className="text-[#D8C7A6]/75">No sessions logged.</p>
           ) : (
-            <div className="space-y-3">
-              {selectedDayRows.map((row) => (
-                <button
-                  key={row.id}
-                  onClick={() => setSelectedSession(row)}
-                  className="w-full text-left rounded-xl p-3 border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(180,140,75,0.08)] hover:border-[rgba(180,140,75,0.45)] transition-colors cursor-pointer"
-                >
-                  <p className="text-sm font-semibold">{row.itemLabel}</p>
-                  <p className="text-xs text-[#D8C7A6]/70 mt-1">
-                    {t(`sessionHistory.module.${row.moduleType}`, getModuleLabel(row.moduleType))}
-                    {row.rating != null ? ` • ★ ${row.rating}` : ""}
-                  </p>
+            <div className="space-y-2">
+              {chronologicalRows.map((row) => (
+                <button key={row.id} onClick={() => setSelectedSession(row)}
+                  className="w-full text-left rounded-xl p-3 border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(180,140,75,0.08)] transition-colors">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">{row.itemLabel}</p>
+                      <p className="text-xs text-[#D8C7A6]/70 mt-1">{formatDateLabel(row.date)} • {getModuleLabel(row.moduleType)}</p>
+                      {row.notes ? <p className="text-xs text-[#E0D8C8]/70 mt-2 line-clamp-2">{row.notes}</p> : null}
+                    </div>
+                    {row.rating != null ? <span className="text-xs text-[#B48C4B] shrink-0">★ {row.rating}</span> : null}
+                  </div>
                 </button>
               ))}
             </div>
           )}
         </div>
-      </div>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+          <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-3">
+            <Calendar mode="single" selected={new Date(`${selectedDate}T12:00:00`)}
+              onSelect={(date) => { if (date) setSelectedDate(toLocalDateYmd(date)); }}
+              modifiers={{ hasSessions: highlightedDates }}
+              modifiersClassNames={{ hasSessions: "ring-1 ring-[#B48C4B] ring-offset-0" }} />
+          </div>
+          <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-5">
+            <h2 className="text-lg font-semibold mb-3">{selectedDate}</h2>
+            {selectedDayRows.length === 0 ? <p className="text-[#D8C7A6]/75">No sessions logged for this day.</p> : (
+              <div className="space-y-3">{selectedDayRows.map((row) => (
+                <button key={row.id} onClick={() => setSelectedSession(row)}
+                  className="w-full text-left rounded-xl p-3 border border-[rgba(180,140,75,0.2)] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(180,140,75,0.08)] transition-colors">
+                  <p className="text-sm font-semibold">{row.itemLabel}</p>
+                  <p className="text-xs text-[#D8C7A6]/70 mt-1">{getModuleLabel(row.moduleType)}{row.rating != null ? ` • ★ ${row.rating}` : ""}</p>
+                  {row.notes ? <p className="text-xs text-[#E0D8C8]/70 mt-2 line-clamp-2">{row.notes}</p> : null}
+                </button>
+              ))}</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Session Detail Modal */}
       {selectedSession && (
