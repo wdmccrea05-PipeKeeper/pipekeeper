@@ -460,8 +460,9 @@ function formatSessionLine(log, { pipes = [], blends = [], includePipe = false, 
   const pipeName = pipe?.name || log?.pipe_name || log?.external_pipe_name || null;
   const blendName = blend?.name || log?.blend_name || log?.external_blend_name || null;
   const details = [includePipe ? pipeName : null, includeBlend ? blendName : null].filter(Boolean).join(' — ');
-  const note = includeNotes && String(log?.notes || '').trim() ? ` — Notes: ${String(log.notes).trim()}` : '';
-  return `- ${formatSessionDate(log?.date || log?.created_date)}${details ? ` — ${details}` : ''}${note}`;
+  const noteText = includeNotes ? String(log?.notes || '').trim() : '';
+  const heading = `• ${formatSessionDate(log?.date || log?.created_date)}${details ? ` · ${details}` : ''}`;
+  return noteText ? `${heading}\n  ${noteText}` : heading;
 }
 
 function buildOtherModuleHistoryReply(message, context = {}) {
