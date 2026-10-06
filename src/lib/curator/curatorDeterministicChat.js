@@ -464,6 +464,125 @@ function formatSessionLine(log, { pipes = [], blends = [], includePipe = false, 
   return `- ${formatSessionDate(log?.date || log?.created_date)}${details ? ` — ${details}` : ''}${note}`;
 }
 
+function buildOtherModuleHistoryReply(message, context = {}) {
+  const lower = norm(message);
+  const historyIntent = /\b(tasted|tasting|smoked|session|sessions|logged|log|history|dates?|notes?|ratings?|pairings?)\b/i.test(message)
+    && /\b(all|every|when|date|dates|notes|history|logged|sessions?|tastings?|compare|rating|ratings|pairing|pairings)\b/i.test(message);
+  if (!historyIntent) return null;
+
+  const modules = [
+    {
+      type: 'whiskey',
+      records: context.bottles || [],
+      logs: context.tastingLogs || [],
+      idKeys: ['bottle_id', 'bottleId'],
+      nameKeys: ['bottle_name', 'external_bottle_name'],
+      dateKeys: ['tasting_date', 'date', 'created_date'],
+      modulePattern: /\bwhisk(?:e)?y|bourbon|scotch|bottle|tasting\b/i,
+      extra: (log) => [
+        log?.rating != null ? `Rating: ${log.rating}/5` : null,
+        log?.serving_method ? `Served: ${log.serving_method}` : null,
+        log?.pairing ? `Pairing: ${log.pairing}` : null,
+      ],
+      notes: (log) => log?.notes,
+    },
+    {
+      type: 'cigar',
+      records: context.cigars || [],
+      logs: context.cigarSessions || [],
+      idKeys: ['cigar_id', 'cigarId'],
+      nameKeys: ['cigar_name', 'external_cigar_name'],
+      dateKeys: ['date', 'created_date'],
+      modulePattern: /\bcigar|cigars|vitola\b/i,
+      extra: (log) => [
+        log?.rating != null ? `Rating: ${log.rating}/5` : null,
+        log?.pairing ? `Pairing: ${log.pairing}` : null,
+        log?.overall_enjoyment != null ? `Enjoyment: ${log.overall_enjoyment}/5` : null,
+        log?.burn_quality ? `Burn: ${log.burn_quality}` : null,
+        log?.draw_quality ? `Draw: ${log.draw_quality}` : null,
+      ],
+      notes: (log) => [
+        log?.notes,
+        log?.construction_notes && `Construction: ${log.construction_notes}`,
+        log?.burn_notes && `Burn: ${log.burn_notes}`,
+        log?.draw_notes && `Draw: ${log.draw_notes}`,
+        log?.flavor_progression && `Progression: ${log.flavor_progression}`,
+        log?.first_third_notes && `First third: ${log.first_third_notes}`,
+        log?.second_third_notes && `Second third: ${log.second_third_notes}`,
+        log?.final_third_notes && `Final third: ${log.final_third_notes}`,
+      ].filter(Boolean).join(' | '),
+    },
+    {
+      type: 'wine',
+      records: context.wines || [],
+      logs: context.wineTastingLogs || [],
+      idKeys: ['wine_id', 'wineId'],
+      nameKeys: ['wine_name', 'external_wine_name'],
+      dateKeys: ['date', 'tasting_date', 'created_date'],
+      modulePattern: /\bwine|wines|vintage|winery\b/i,
+      extra: (log) => [
+        log?.rating != null ? `Rating: ${log.rating}/5` : null,
+        log?.serving_method ? `Served: ${log.serving_method}` : null,
+        log?.food_pairing ? `Food pairing: ${log.food_pairing}` : null,
+        log?.occasion ? `Occasion: ${log.occasion}` : null,
+      ],
+      notes: (log) => [
+        log?.notes,
+        log?.aroma_notes && `Aroma: ${log.aroma_notes}`,
+        log?.palate_notes && `Palate: ${log.palate_notes}`,
+        log?.finish_notes && `Finish: ${log.finish_notes}`,
+      ].filter(Boolean).join(' | '),
+    },
+  ];
+
+  const namedCandidates = modules.flatMap((m) => m.records.map((record) => ({ module: m, record })))
+    .filter(({ record }) => norm(record?.name) && lower.includes(norm(record.name)))
+    .sort((a, b) => norm(b.record.name).length - norm(a.record.name).length);
+  let selected = namedCandidates[0] || null;
+
+  if (!selected) {
+    const module = modules.find((m) => m.modulePattern.test(message));
+    if (!module) return null;
+    // For a module-wide request, return every historical row.
+    selected = { module, record: null };
+  }
+
+  const { module, record } = selected;
+  if (!module.logs.length) return null;
+  const recordIds = record ? new Set([String(record.id)]) : null;
+  const recordName = record ? norm(record.name) : null;
+  const matches = module.logs.filter((log) => {
+    if (!record) return true;
+    const id = module.idKeys.map((key) => log?.[key]).find(Boolean);
+    const name = norm(module.nameKeys.map((key) => log?.[key]).find(Boolean));
+    return (id && recordIds.has(String(id))) || (name && name === recordName);
+  }).sort((a, b) => {
+    const da = module.dateKeys.map((key) => a?.[key]).find(Boolean);
+    const db = module.dateKeys.map((key) => b?.[key]).find(Boolean);
+    return new Date(da || 0) - new Date(db || 0);
+  });
+
+  const label = record?.name || `all ${module.type} history`;
+  if (!matches.length) return { handled: true, reply: `I don't see any logged ${module.type} history for ${label}.` };
+
+  const wantsNotes = /\bnotes?|aroma|palate|finish|construction|burn|draw|flavor|progression\b/i.test(message);
+  const wantsDetails = wantsNotes || /\brating|ratings|pairing|pairings|served|serving|occasion\b/i.test(message);
+  const lines = matches.map((log) => {
+    const dateValue = module.dateKeys.map((key) => log?.[key]).find(Boolean);
+    const loggedName = module.nameKeys.map((key) => log?.[key]).find(Boolean);
+    const recordFromId = module.records.find((r) => module.idKeys.some((key) => String(log?.[key] || '') === String(r.id)));
+    const name = record?.name || recordFromId?.name || loggedName || `Unknown ${module.type}`;
+    const extras = wantsDetails ? module.extra(log).filter(Boolean) : [];
+    const notes = wantsNotes ? String(module.notes(log) || '').trim() : '';
+    return `- ${formatSessionDate(dateValue)} — ${name}${extras.length ? ` — ${extras.join(' — ')}` : ''}${notes ? ` — Notes: ${notes}` : ''}`;
+  });
+  const noteCount = matches.filter((log) => String(module.notes(log) || '').trim()).length;
+  return {
+    handled: true,
+    reply: `I found ${pluralize(matches.length, module.type === 'cigar' ? 'logged session' : 'logged tasting')} for ${label}.${wantsNotes ? ` ${noteCount} have saved notes.` : ''}\n${lines.join('\n')}`,
+  };
+}
+
 function buildSessionHistoryReply(message, context = {}) {
   const lower = norm(message);
   const historyIntent = /\b(session|sessions|smoked|smoke|logged|log|history|dates?|notes?|used|use)\b/i.test(message)
@@ -727,6 +846,7 @@ export function answerCuratorDeterministicQuery(message, context = {}, entityCon
     () => buildMissingFieldReply(message, context),
     () => buildImageGapReply(message, context),
     () => buildInventoryReply(message, context),
+    () => buildOtherModuleHistoryReply(message, context),
     () => buildSessionHistoryReply(message, context),
     () => buildUsageReply(message, context),
     () => buildValuationReply(message, context),

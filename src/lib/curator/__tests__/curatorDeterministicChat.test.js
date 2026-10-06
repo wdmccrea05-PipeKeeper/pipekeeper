@@ -187,4 +187,39 @@ describe('answerCuratorDeterministicQuery', () => {
   });
 
 
+  it('returns whiskey tasting history with notes ratings serving and pairings', () => {
+    const result = answerCuratorDeterministicQuery('Show every tasting of Rare Breed with notes ratings and pairings', {
+      bottles: [{ id: 'w1', name: 'Rare Breed' }],
+      tastingLogs: [{ bottle_id: 'w1', bottle_name: 'Rare Breed', tasting_date: '2026-05-01T12:00:00Z', notes: 'Caramel and oak', rating: 4.5, serving_method: 'Neat', pairing: 'Dark chocolate' }],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('Rare Breed');
+    expect(result.reply).toContain('Caramel and oak');
+    expect(result.reply).toContain('4.5/5');
+    expect(result.reply).toContain('Dark chocolate');
+  });
+
+  it('returns cigar session history including detailed session notes', () => {
+    const result = answerCuratorDeterministicQuery('Pull all sessions for Padron 1964 with notes', {
+      cigars: [{ id: 'c1', name: 'Padron 1964' }],
+      cigarSessions: [{ cigar_id: 'c1', cigar_name: 'Padron 1964', date: '2026-04-01', notes: 'Excellent', first_third_notes: 'Cocoa', final_third_notes: 'Espresso', rating: 5 }],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('Padron 1964');
+    expect(result.reply).toContain('Cocoa');
+    expect(result.reply).toContain('Espresso');
+  });
+
+  it('returns wine tasting history with sensory notes and food pairing', () => {
+    const result = answerCuratorDeterministicQuery('Show all tastings of Caymus with notes and pairings', {
+      wines: [{ id: 'v1', name: 'Caymus' }],
+      wineTastingLogs: [{ wine_id: 'v1', wine_name: 'Caymus', date: '2026-03-01', notes: 'Rich', aroma_notes: 'Cassis', palate_notes: 'Dark fruit', finish_notes: 'Long', food_pairing: 'Steak', rating: 4 }],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('Caymus');
+    expect(result.reply).toContain('Cassis');
+    expect(result.reply).toContain('Dark fruit');
+    expect(result.reply).toContain('Steak');
+  });
+
 });
