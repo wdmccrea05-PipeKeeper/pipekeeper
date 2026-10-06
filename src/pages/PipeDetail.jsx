@@ -513,6 +513,7 @@ export default function PipeDetail() {
   const [smokingLogs, setSmokingLogs] = useState([]);
   const [sessionsOpen, setSessionsOpen] = useState(false);
   const [selectedSessionDay, setSelectedSessionDay] = useState(null);
+  const [sessionViewMode, setSessionViewMode] = useState('list');
 
   useEffect(() => {
     let mounted = true;
@@ -1240,7 +1241,7 @@ export default function PipeDetail() {
               id: log.id,
               moduleType: 'pipe',
               date: log.date || log.created_date,
-              itemLabel: log.tobacco_blend_name || '',
+              itemLabel: log.blend_name || log.external_blend_name || 'Smoke',
               rating: log.rating,
               notes: log.notes,
             }));
@@ -1276,6 +1277,27 @@ export default function PipeDetail() {
 
                 {sessionsOpen && (
                   <div className="mt-4 space-y-4">
+                    <div className="flex gap-2">
+                      <Button size="sm" variant={sessionViewMode === 'list' ? 'default' : 'outline'} onClick={() => setSessionViewMode('list')}>List</Button>
+                      <Button size="sm" variant={sessionViewMode === 'calendar' ? 'default' : 'outline'} onClick={() => setSessionViewMode('calendar')}>Calendar</Button>
+                    </div>
+                    {sessionViewMode === 'list' ? (
+                      <div className="space-y-2">
+                        {[...sessionRows].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).map((log, i) => (
+                          <div key={log.id || i} className="rounded-xl p-3" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(180,140,75,0.12)' }}>
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-medium text-[#F5F1E7]">{log.itemLabel}</p>
+                                <p className="text-xs text-[#D8C7A6]/60 mt-1">{new Date(log.date).toLocaleDateString()}</p>
+                                {log.notes ? <p className="text-xs text-[#E0D8C8]/70 mt-2 whitespace-pre-wrap">{log.notes}</p> : <p className="text-xs text-[#E0D8C8]/40 mt-2 italic">No session notes recorded.</p>}
+                              </div>
+                              {log.rating != null && <span className="text-xs text-[#D4A574]">★ {log.rating}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <>
                     <Calendar
                       mode="single"
                       selected={selectedSessionDay}
@@ -1318,6 +1340,8 @@ export default function PipeDetail() {
                           ))
                         )}
                       </div>
+                    )}
+                      </>
                     )}
                   </div>
                 )}
