@@ -241,10 +241,10 @@ export default function CuratorWorkspace({
       whiskeyActive ? safeFilter(base44.entities.Bottle,         { created_by: userEmail }, '-updated_date',  200, 'bottles')        : Promise.resolve([]),
       wineActive    ? safeFilter(base44.entities.Wine,           { created_by: userEmail }, '-updated_date',  200, 'wines')          : Promise.resolve([]),
       pipeActive    ? safeFilter(base44.entities.SmokingLog,     { created_by: userEmail }, '-date',          2000, 'smokingLogs')    : Promise.resolve([]),
-      whiskeyActive ? safeFilter(base44.entities.TastingLog,     { created_by: userEmail }, '-tasting_date',   200, 'tastingLogs')   : Promise.resolve([]),
-      wineActive    ? safeFilter(base44.entities.WineTasting,    { created_by: userEmail }, '-date',           300, 'wineTastingLogs') : Promise.resolve([]),
+      whiskeyActive ? safeFilter(base44.entities.TastingLog,     { created_by: userEmail }, '-tasting_date',  2000, 'tastingLogs')   : Promise.resolve([]),
+      wineActive    ? safeFilter(base44.entities.WineTasting,    { created_by: userEmail }, '-date',          2000, 'wineTastingLogs') : Promise.resolve([]),
       cigarActive   ? safeFilter(base44.entities.Cigar,          { created_by: userEmail }, '-updated_date',   200, 'cigars')        : Promise.resolve([]),
-      cigarActive   ? safeFilter(base44.entities.CigarSession,   { created_by: userEmail }, '-date',           300, 'cigarSessions') : Promise.resolve([]),
+      cigarActive   ? safeFilter(base44.entities.CigarSession,   { created_by: userEmail }, '-date',          2000, 'cigarSessions') : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: userEmail }, null,        500, 'inventoryUnits') : Promise.resolve([]),
       safeFilter(base44.entities.AcquisitionItem, { created_by: userEmail }, '-created_date', 300, 'acquisitionItems'),
       // Fetch active pairing matrix for Curator context (pipe-tobacco compatibility scores)
