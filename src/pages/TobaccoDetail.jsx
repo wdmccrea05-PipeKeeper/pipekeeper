@@ -487,6 +487,7 @@ export default function TobaccoDetail() {
   const [similarResult, setSimilarResult] = useState(null);
   const [similarError, setSimilarError] = useState(null);
   const [isUpdatingInventory, setIsUpdatingInventory] = useState(false);
+  const [smokingLogs, setSmokingLogs] = useState([]);
 
   const [showBestPipes, setShowBestPipes] = useState(false);
   const [bestPipesLoading, setBestPipesLoading] = useState(false);
@@ -520,7 +521,7 @@ export default function TobaccoDetail() {
       }
 
       try {
-        const [record, snapshots, observations] = await Promise.all([
+        const [record, snapshots, observations, logs] = await Promise.all([
           scopedEntities.TobaccoBlend.getForUser(userEmail, blendId),
           base44.entities.ItemValueSnapshot.filter(
             { module_key: 'pipekeeper', item_type: 'tobacco', item_id: blendId, created_by: userEmail },
@@ -530,11 +531,15 @@ export default function TobaccoDetail() {
             { module_key: 'pipekeeper', item_type: 'tobacco', item_id: blendId, created_by: userEmail },
             '-observed_date', 20
           ).catch(() => []),
+          base44.entities.SmokingLog.filter(
+            { blend_id: blendId, created_by: userEmail }, '-date', 500
+          ).catch(() => []),
         ]);
         if (mounted) {
           setBlend(record);
           setValueSnapshots(snapshots || []);
           setPriceObservations(observations || []);
+          setSmokingLogs(Array.isArray(logs) ? logs : []);
 
           // Auto-seed the first value snapshot if none exist yet
           if (record && userEmail && (snapshots || []).length === 0) {
@@ -926,6 +931,34 @@ export default function TobaccoDetail() {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <p className="text-sm font-semibold text-[#F5F1E7]">Smoking Sessions</p>
+            <p className="text-xs text-[#D8C7A6]/60 mt-1">History for this blend, newest first.</p>
+          </div>
+          <span className="text-xs px-2 py-1 rounded-full bg-[rgba(180,140,75,0.18)] text-[#D4A574]">{smokingLogs.length}</span>
+        </div>
+        {smokingLogs.length === 0 ? (
+          <p className="text-sm text-[#D8C7A6]/50">No smoking sessions logged for this blend.</p>
+        ) : (
+          <div className="space-y-2 max-h-[32rem] overflow-y-auto">
+            {[...smokingLogs].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).map((log) => (
+              <div key={log.id} className="rounded-xl p-3" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(180,140,75,0.12)' }}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-[#F5F1E7]">{log.pipe_name || log.external_pipe_name || 'Pipe session'}</p>
+                    <p className="text-xs text-[#D8C7A6]/60 mt-1">{log.date ? new Date(log.date).toLocaleDateString() : 'Unknown date'}</p>
+                    {log.notes ? <p className="text-xs text-[#E0D8C8]/70 mt-2 whitespace-pre-wrap">{log.notes}</p> : <p className="text-xs text-[#E0D8C8]/40 mt-2 italic">No session notes recorded.</p>}
+                  </div>
+                  {log.rating != null ? <span className="text-xs text-[#D4A574]">★ {log.rating}</span> : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <TobaccoInventoryManager blend={blend} onUpdate={handleBlendUpdate} isUpdating={isUpdatingInventory} />
