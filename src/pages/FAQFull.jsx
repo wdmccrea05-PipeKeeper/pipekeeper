@@ -324,6 +324,30 @@ export default function FAQFull() {
           </Q>
         </Section>
 
+        <Section title="Curator — Collection History">
+          <Q id="curator-history" q="Can Curator search my past sessions and tasting notes?">
+            <p>Yes. Curator can search the history you have logged in PipeKeeper, WhiskeyKeeper, CigarKeeper, and WineKeeper. You can ask for dates, saved notes, ratings, serving details, and pairings using normal conversational questions.</p>
+          </Q>
+          <Q id="curator-history-pipe" q="What historical questions can I ask about pipes and tobacco?">
+            <div className="space-y-2">
+              <p>Curator can retrieve sessions for a named pipe, a named tobacco blend, or pipe-material groups such as corn cob, briar, meerschaum, clay, and morta. It can include the date, pipe, blend, and saved notes.</p>
+              <p>Examples: <strong>“Pull all logged sessions for my Missouri Meerschaum Legend with notes,”</strong> <strong>“Show every time I smoked Nightcap,”</strong> or <strong>“Compare my notes from my cobs versus briars.”</strong></p>
+            </div>
+          </Q>
+          <Q id="curator-history-whiskey" q="What historical questions can I ask about whiskey?">
+            <p>Ask for a bottle's tasting history or your broader whiskey tasting history. Curator can return tasting dates, notes, ratings, serving method, and recorded pairings. Example: <strong>“Show every tasting of Rare Breed with notes, ratings, and pairings.”</strong></p>
+          </Q>
+          <Q id="curator-history-cigar" q="What historical questions can I ask about cigars?">
+            <p>Curator can retrieve cigar sessions with dates and saved session details, including general notes, construction, burn, draw, flavor progression, notes by thirds, ratings, enjoyment, and pairings when those details were logged. Example: <strong>“Pull all sessions for Padron 1964 with notes.”</strong></p>
+          </Q>
+          <Q id="curator-history-wine" q="What historical questions can I ask about wine?">
+            <p>Curator can retrieve wine tasting history with dates, ratings, serving method, food pairings, occasion, and your general, aroma, palate, and finish notes. Example: <strong>“Show all tastings of Caymus with notes and food pairings.”</strong></p>
+          </Q>
+          <Q id="curator-history-source" q="Where does Curator get historical answers?">
+            <p>Historical answers come from the sessions and tastings saved in your own CollectionKeeper records. Curator can only return details that were actually logged, so adding useful notes and ratings makes future historical searches more valuable.</p>
+          </Q>
+        </Section>
+
         <Section title="Pipe Club">
           <Q id="pipe-club-what" q="What is Pipe Club?">
             <p>Pipe Club is a session-based feature designed for pipe club meetings or gatherings where someone brings a tobacco you may not own. You select the pipes you physically brought with you, identify the club blend (from your collection, your wishlist, or a new/unowned blend), and the canonical pairing engine instantly recommends the best pipe from what you actually have on hand — not your entire collection.</p>

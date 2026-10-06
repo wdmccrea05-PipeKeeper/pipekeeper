@@ -222,4 +222,37 @@ describe('answerCuratorDeterministicQuery', () => {
     expect(result.reply).toContain('Steak');
   });
 
+  it('returns module-wide whiskey history when no bottle is named', () => {
+    const result = answerCuratorDeterministicQuery('Show all my whiskey tasting history with notes', {
+      bottles: [{ id: 'w1', name: 'Bottle A' }, { id: 'w2', name: 'Bottle B' }],
+      tastingLogs: [
+        { bottle_id: 'w1', bottle_name: 'Bottle A', tasting_date: '2026-01-01', notes: 'A note' },
+        { bottle_id: 'w2', bottle_name: 'Bottle B', tasting_date: '2026-01-02', notes: 'B note' },
+      ],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('Bottle A');
+    expect(result.reply).toContain('Bottle B');
+  });
+
+  it('returns module-wide cigar history when no cigar is named', () => {
+    const result = answerCuratorDeterministicQuery('Show all my cigar sessions with notes', {
+      cigars: [{ id: 'c1', name: 'Cigar A' }],
+      cigarSessions: [{ cigar_id: 'c1', cigar_name: 'Cigar A', date: '2026-01-03', notes: 'Cigar note' }],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('Cigar A');
+    expect(result.reply).toContain('Cigar note');
+  });
+
+  it('returns module-wide wine history when no wine is named', () => {
+    const result = answerCuratorDeterministicQuery('Show all my wine tasting history with notes', {
+      wines: [{ id: 'v1', name: 'Wine A' }],
+      wineTastingLogs: [{ wine_id: 'v1', wine_name: 'Wine A', date: '2026-01-04', notes: 'Wine note' }],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('Wine A');
+    expect(result.reply).toContain('Wine note');
+  });
+
 });

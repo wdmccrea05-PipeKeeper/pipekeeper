@@ -3,7 +3,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
-import { BookOpen, MessageSquare, AlertCircle, Search, Mail, ExternalLink } from 'lucide-react';
+import { BookOpen, MessageSquare, AlertCircle, Search, Mail, ExternalLink, Lightbulb } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -73,7 +73,7 @@ export default function HelpCenter() {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8 bg-[rgba(20,15,10,0.5)] border border-[rgba(180,140,75,0.15)]">
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-[rgba(20,15,10,0.5)] border border-[rgba(180,140,75,0.15)]">
             <TabsTrigger value="tutorials" className="gap-2">
               <BookOpen className="w-4 h-4" />
               <span className="hidden sm:inline">{t('help.tutorials', 'Tutorials')}</span>
@@ -85,6 +85,10 @@ export default function HelpCenter() {
             <TabsTrigger value="ai" className="gap-2">
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">{t('help.ai', 'AI Help')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="tips" className="gap-2">
+              <Lightbulb className="w-4 h-4" />
+              <span className="hidden sm:inline">Tips</span>
             </TabsTrigger>
             <TabsTrigger value="diagnostic" className="gap-2">
               <AlertCircle className="w-4 h-4" />
@@ -173,6 +177,47 @@ export default function HelpCenter() {
               </CardHeader>
               <CardContent>
                 <AiHelpAssistant />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tips & Tricks Tab */}
+          <TabsContent value="tips" className="space-y-6">
+            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
+              <CardHeader>
+                <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5" /> Tips & Tricks
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5 text-[#D7C9B2]/85">
+                <p>CollectionKeeper can do more than store collection records. Try these less-obvious features to get more value from your history and collection data.</p>
+                <div>
+                  <h3 className="font-semibold text-[#F5F1E7]">Ask Curator about your history</h3>
+                  <p className="text-sm mt-1">Curator can search the actual sessions and tastings you have logged — including dates and saved notes — across PipeKeeper, WhiskeyKeeper, CigarKeeper, and WineKeeper.</p>
+                  <div className="mt-2 text-sm space-y-1">
+                    <p>Try: “What dates did I smoke a cob, and what notes did I log?”</p>
+                    <p>Try: “Show every time I smoked Nightcap and my notes.”</p>
+                    <p>Try: “Show every tasting of Rare Breed with notes, ratings, and pairings.”</p>
+                    <p>Try: “Pull all sessions for Padron 1964 with notes.”</p>
+                    <p>Try: “Show all tastings of Caymus with notes and food pairings.”</p>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#F5F1E7]">Compare how you actually use your collection</h3>
+                  <p className="text-sm mt-1">PipeKeeper history can compare categories as well as individual records. For example: “Compare my notes from my cobs versus briars.”</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#F5F1E7]">Ask collection questions in plain language</h3>
+                  <p className="text-sm mt-1">Curator can answer many inventory and pairing questions directly from your saved data, such as open bottles, low-stock items, missing metadata, or the best and lowest-scoring pipe/tobacco pairings.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#F5F1E7]">Use Pipe Club for what you brought — not everything you own</h3>
+                  <p className="text-sm mt-1">Select only the pipes physically with you, identify the blend being shared, and Pipe Club recommends the best match from that smaller on-hand set.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#F5F1E7]">Log details now so Curator becomes smarter later</h3>
+                  <p className="text-sm mt-1">Session notes, ratings, serving methods, pairings, sensory notes, and other observations become searchable historical context. The richer the log, the more useful your future questions can be.</p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
