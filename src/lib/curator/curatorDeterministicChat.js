@@ -647,11 +647,16 @@ function buildSessionHistoryReply(message, context = {}) {
     const blend = namedBlends[0];
     const matches = chronological(logs.filter((log) => logMatchesBlends(log, [blend])));
     if (!matches.length) return { handled: true, reply: `I don't see any logged smoking sessions for ${blend.name}.` };
-    const wantsNotes = /\bnotes?\b/i.test(message);
+    const wantsNotes = /\bnotes?|tasting notes?|session notes?|comments?\b/i.test(message);
     const noteCount = matches.filter((log) => String(log?.notes || '').trim()).length;
+    const noteSummary = wantsNotes
+      ? noteCount
+        ? ` ${noteCount} of those sessions have saved session notes.`
+        : ' None of those sessions have text in the saved session Notes field.'
+      : '';
     return {
       handled: true,
-      reply: `I found ${pluralize(matches.length, 'logged session')} for ${blend.name}.${wantsNotes ? ` ${noteCount} of those sessions have saved notes.` : ''}\n${matches.map((log) => formatSessionLine(log, { pipes, blends, includePipe: true, includeBlend: false, includeNotes: wantsNotes })).join('\n')}`,
+      reply: `I found ${pluralize(matches.length, 'logged session')} for ${blend.name}.${noteSummary}\n${matches.map((log) => formatSessionLine(log, { pipes, blends, includePipe: true, includeBlend: false, includeNotes: wantsNotes })).join('\n')}`,
     };
   }
 
@@ -675,11 +680,11 @@ function buildSessionHistoryReply(message, context = {}) {
   const matches = chronological(logs.filter((log) => logMatchesPipes(log, targetPipes)));
   if (!matches.length) return { handled: true, reply: `I don't see any logged smoking sessions for ${targetLabel}.` };
 
-  const wantsNotes = /\bnotes?\b/i.test(message);
+  const wantsNotes = /\bnotes?|tasting notes?|session notes?|comments?\b/i.test(message);
   const noteCount = matches.filter((log) => String(log?.notes || '').trim()).length;
   return {
     handled: true,
-    reply: `I found ${pluralize(matches.length, 'logged session')} for ${targetLabel}.${wantsNotes ? ` ${noteCount} of those sessions have saved notes.` : ''}\n${matches.map((log) => formatSessionLine(log, { pipes, blends, includePipe: targetPipes.length > 1, includeBlend: true, includeNotes: wantsNotes })).join('\n')}`,
+    reply: `I found ${pluralize(matches.length, 'logged session')} for ${targetLabel}.${wantsNotes ? (noteCount ? ` ${noteCount} of those sessions have saved session notes.` : ' None of those sessions have text in the saved session Notes field.') : ''}\n${matches.map((log) => formatSessionLine(log, { pipes, blends, includePipe: targetPipes.length > 1, includeBlend: true, includeNotes: wantsNotes })).join('\n')}`,
   };
 }
 
