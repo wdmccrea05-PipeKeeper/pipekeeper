@@ -117,4 +117,41 @@ describe('answerCuratorDeterministicQuery', () => {
     expect(result.handled).toBe(true);
     expect(result.reply).toContain('missing ratings');
   });
+  it('returns all logged sessions and notes for a named pipe', () => {
+    const result = answerCuratorDeterministicQuery('Pull all of my logged sessions for Missouri Meerschaum Legend, along with the notes for those sessions', {
+      pipes: [{ id: 'p1', name: 'Missouri Meerschaum Legend', bowl_material: 'Corn Cob' }],
+      blends: [{ id: 'b1', name: 'Carter Hall' }],
+      smokingLogs: [
+        { id: 's1', pipe_id: 'p1', blend_id: 'b1', date: '2026-09-01T12:00:00Z', notes: 'Sweet and cool.' },
+        { id: 's2', pipe_id: 'p1', blend_id: 'b1', date: '2026-09-10T12:00:00Z', notes: 'Great outdoors.' },
+      ],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('2 logged sessions');
+    expect(result.reply).toContain('Carter Hall');
+    expect(result.reply).toContain('Sweet and cool.');
+    expect(result.reply).toContain('Great outdoors.');
+  });
+
+  it('returns session history across all corn cob pipes', () => {
+    const result = answerCuratorDeterministicQuery('What are all the dates that I smoked a cob and what notes did I log?', {
+      pipes: [
+        { id: 'p1', name: 'Legend', bowl_material: 'Corn Cob' },
+        { id: 'p2', name: 'Country Gentleman', bowl_material: 'Corn Cob' },
+        { id: 'p3', name: 'Briar Billiard', bowl_material: 'Briar' },
+      ],
+      blends: [],
+      smokingLogs: [
+        { pipe_id: 'p1', date: '2026-08-01T12:00:00Z', notes: 'Legend note' },
+        { pipe_id: 'p2', date: '2026-08-02T12:00:00Z', notes: 'CG note' },
+        { pipe_id: 'p3', date: '2026-08-03T12:00:00Z', notes: 'Briar note' },
+      ],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('2 logged sessions');
+    expect(result.reply).toContain('Legend note');
+    expect(result.reply).toContain('CG note');
+    expect(result.reply).not.toContain('Briar note');
+  });
+
 });
