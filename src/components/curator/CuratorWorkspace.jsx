@@ -240,7 +240,7 @@ export default function CuratorWorkspace({
       pipeActive    ? safeFilter(base44.entities.TobaccoBlend,   { created_by: userEmail }, '-updated_date',  200, 'blends')         : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.Bottle,         { created_by: userEmail }, '-updated_date',  200, 'bottles')        : Promise.resolve([]),
       wineActive    ? safeFilter(base44.entities.Wine,           { created_by: userEmail }, '-updated_date',  200, 'wines')          : Promise.resolve([]),
-      pipeActive    ? safeFilter(base44.entities.SmokingLog,     { created_by: userEmail }, '-date',           300, 'smokingLogs')    : Promise.resolve([]),
+      pipeActive    ? safeFilter(base44.entities.SmokingLog,     { created_by: userEmail }, '-date',          2000, 'smokingLogs')    : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.TastingLog,     { created_by: userEmail }, '-tasting_date',   200, 'tastingLogs')   : Promise.resolve([]),
       wineActive    ? safeFilter(base44.entities.WineTasting,    { created_by: userEmail }, '-date',           300, 'wineTastingLogs') : Promise.resolve([]),
       cigarActive   ? safeFilter(base44.entities.Cigar,          { created_by: userEmail }, '-updated_date',   200, 'cigars')        : Promise.resolve([]),
