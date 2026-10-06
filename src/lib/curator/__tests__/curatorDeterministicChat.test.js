@@ -154,4 +154,37 @@ describe('answerCuratorDeterministicQuery', () => {
     expect(result.reply).not.toContain('Briar note');
   });
 
+  it('returns all history for a named blend across pipes', () => {
+    const result = answerCuratorDeterministicQuery('Show every time I smoked Nightcap and the notes', {
+      pipes: [{ id: 'p1', name: 'Dublin', bowl_material: 'Briar' }, { id: 'p2', name: 'Legend', bowl_material: 'Corn Cob' }],
+      blends: [{ id: 'b1', name: 'Nightcap' }],
+      smokingLogs: [
+        { pipe_id: 'p1', blend_id: 'b1', date: '2026-07-01T12:00:00Z', notes: 'Rich evening smoke' },
+        { pipe_id: 'p2', blend_id: 'b1', date: '2026-07-02T12:00:00Z', notes: 'Cob softened it' },
+      ],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('2 logged sessions');
+    expect(result.reply).toContain('Dublin');
+    expect(result.reply).toContain('Legend');
+    expect(result.reply).toContain('Rich evening smoke');
+  });
+
+  it('compares cob and briar session histories with notes', () => {
+    const result = answerCuratorDeterministicQuery('Compare my notes from my cobs versus briars', {
+      pipes: [{ id: 'p1', name: 'Legend', bowl_material: 'Corn Cob' }, { id: 'p2', name: 'Billiard', bowl_material: 'Briar' }],
+      blends: [{ id: 'b1', name: 'Carter Hall' }],
+      smokingLogs: [
+        { pipe_id: 'p1', blend_id: 'b1', date: '2026-06-01T12:00:00Z', notes: 'Dry and sweet' },
+        { pipe_id: 'p2', blend_id: 'b1', date: '2026-06-02T12:00:00Z', notes: 'Deeper flavor' },
+      ],
+    });
+    expect(result.handled).toBe(true);
+    expect(result.reply).toContain('corn cob pipes');
+    expect(result.reply).toContain('briar pipes');
+    expect(result.reply).toContain('Dry and sweet');
+    expect(result.reply).toContain('Deeper flavor');
+  });
+
+
 });
