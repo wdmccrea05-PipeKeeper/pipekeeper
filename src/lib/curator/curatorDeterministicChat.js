@@ -447,6 +447,93 @@ function buildInventoryReply(message, context = {}) {
   return null;
 }
 
+function formatSessionDate(value) {
+  if (!value) return 'Unknown date';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function buildSessionHistoryReply(message, context = {}) {
+  const lower = norm(message);
+  const historyIntent = /\b(session|sessions|smoked|smoke|logged|log|history|dates?|notes?)\b/i.test(message)
+    && /\b(all|every|when|date|dates|notes|history|logged|sessions?)\b/i.test(message);
+  if (!historyIntent) return null;
+
+  const logs = context.smokingLogs || [];
+  const pipes = context.pipes || [];
+  const blends = context.blends || [];
+  if (!logs.length) return null;
+
+  // Resolve an explicitly named pipe first. Longest names win so a short model
+  // name cannot steal a more specific match.
+  const namedPipe = [...pipes]
+    .filter((p) => norm(p.name) && lower.includes(norm(p.name)))
+    .sort((a, b) => norm(b.name).length - norm(a.name).length)[0] || null;
+
+  // Collector-friendly material/category language. This makes questions like
+  // “all dates I smoked a cob” work across every corn-cob pipe in the collection.
+  const materialMatchers = [
+    { pattern: /\b(cob|cobs|corn cob|corncob)s?\b/i, value: 'corn cob', label: 'corn cob pipes' },
+    { pattern: /\bmeerschaum(s)?\b/i, value: 'meerschaum', label: 'meerschaum pipes' },
+    { pattern: /\bbriar(s)?\b/i, value: 'briar', label: 'briar pipes' },
+    { pattern: /\bclay(s)?\b/i, value: 'clay', label: 'clay pipes' },
+    { pattern: /\bmorta(s)?\b/i, value: 'morta', label: 'morta pipes' },
+  ];
+  const materialMatch = materialMatchers.find((m) => m.pattern.test(message));
+
+  let targetPipes = [];
+  let targetLabel = '';
+  if (namedPipe) {
+    targetPipes = [namedPipe];
+    targetLabel = namedPipe.name;
+  } else if (materialMatch) {
+    targetPipes = pipes.filter((p) => norm(p.bowl_material).replace(/[-_]/g, ' ') === materialMatch.value);
+    targetLabel = materialMatch.label;
+  } else {
+    // If the question is clearly about a pipe but we cannot identify which one,
+    // let the conversational/LLM path handle clarification rather than guessing.
+    if (/\bpipe\b/i.test(message)) return null;
+    return null;
+  }
+
+  const ids = new Set(targetPipes.map((p) => String(p.id)));
+  const names = new Set(targetPipes.map((p) => norm(p.name)).filter(Boolean));
+  const matches = logs.filter((log) => {
+    const id = log?.pipe_id || log?.pipeId;
+    const name = norm(log?.pipe_name || log?.external_pipe_name);
+    return (id && ids.has(String(id))) || (name && names.has(name));
+  }).sort((a, b) => new Date(a.date || a.created_date || 0) - new Date(b.date || b.created_date || 0));
+
+  if (!targetPipes.length) {
+    return { handled: true, reply: `I don't see any ${targetLabel} in your current PipeKeeper collection.` };
+  }
+  if (!matches.length) {
+    return { handled: true, reply: `I don't see any logged smoking sessions for ${targetLabel}.` };
+  }
+
+  const wantsNotes = /\bnotes?\b/i.test(message);
+  const wantsBlend = /\bblend|tobacco|smoked\b/i.test(message) || wantsNotes;
+  const pipeById = new Map(pipes.map((p) => [String(p.id), p]));
+  const blendById = new Map(blends.map((b) => [String(b.id), b]));
+  const lines = matches.map((log) => {
+    const pipe = pipeById.get(String(log?.pipe_id || log?.pipeId || ''));
+    const blend = blendById.get(String(log?.blend_id || log?.blendId || ''));
+    const pipeName = pipe?.name || log?.pipe_name || log?.external_pipe_name || 'Unknown pipe';
+    const blendName = blend?.name || log?.blend_name || log?.external_blend_name || null;
+    const details = [targetPipes.length > 1 ? pipeName : null, wantsBlend && blendName ? blendName : null].filter(Boolean).join(' — ');
+    const note = wantsNotes && log?.notes ? ` — Notes: ${String(log.notes).trim()}` : '';
+    return `- ${formatSessionDate(log?.date || log?.created_date)}${details ? ` — ${details}` : ''}${note}`;
+  });
+
+  const noteCount = matches.filter((log) => String(log?.notes || '').trim()).length;
+  const noteSummary = wantsNotes ? ` ${noteCount} of those sessions have saved notes.` : '';
+  return {
+    handled: true,
+    reply: `I found ${pluralize(matches.length, 'logged session')} for ${targetLabel}.${noteSummary}\n${lines.join('\n')}`,
+  };
+}
+
 function buildUsageReply(message, context = {}) {
   const lowerMessage = norm(message);
 
@@ -610,6 +697,7 @@ export function answerCuratorDeterministicQuery(message, context = {}, entityCon
     () => buildMissingFieldReply(message, context),
     () => buildImageGapReply(message, context),
     () => buildInventoryReply(message, context),
+    () => buildSessionHistoryReply(message, context),
     () => buildUsageReply(message, context),
     () => buildValuationReply(message, context),
   ];
