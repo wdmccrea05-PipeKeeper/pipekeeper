@@ -238,7 +238,18 @@ Deno.serve(async (req) => {
             existing?.mapping_source === "manual" &&
             existing?.confidence === "high";
 
-          if (preserveHistoricalOverride) {
+          // An active Stripe Price is not necessarily a sellable/current
+          // CollectionKeeper price. If a canonical plan has an active env-var
+          // Price ID, every other Price for that same plan is superseded even
+          // when Stripe itself still reports it as active.
+          const currentPriceForPlan = Object.entries(envPriceMap)
+            .find(([, planKey]) => planKey === canonicalPlanKey)?.[0] || null;
+          const isSupersededPrice =
+            !!currentPriceForPlan && currentPriceForPlan !== price.id;
+          const preserveAsHistorical =
+            preserveHistoricalOverride || isSupersededPrice;
+
+          if (preserveAsHistorical) {
             canonicalPlanKey = existing.canonical_plan_key || canonicalPlanKey;
             canonicalProduct = existing.canonical_product || canonicalProduct;
             canonicalModules = existing.canonical_modules?.length
@@ -263,12 +274,12 @@ Deno.serve(async (req) => {
             product_name: product.name, price_nickname: price.nickname || "",
             canonical_plan_key: canonicalPlanKey, canonical_product: canonicalProduct,
             canonical_modules: canonicalModules,
-            billing_interval: preserveHistoricalOverride && existing?.billing_interval
+            billing_interval: preserveAsHistorical && existing?.billing_interval
               ? existing.billing_interval
               : resolvedInterval,
             amount_cents: price.unit_amount, currency: price.currency || "usd",
-            stripe_price_active: preserveHistoricalOverride ? false : price.active,
-            is_historical: preserveHistoricalOverride ? true : !price.active,
+            stripe_price_active: preserveAsHistorical ? false : price.active,
+            is_historical: preserveAsHistorical ? true : !price.active,
             mapping_source: mappingSource, confidence,
             first_seen: existing?.first_seen || now, last_verified: now,
           };
