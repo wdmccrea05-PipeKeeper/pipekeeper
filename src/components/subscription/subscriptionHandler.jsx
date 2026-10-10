@@ -31,12 +31,23 @@ export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModule
     return { planKey, modules: [module] };
   }
 
-  if (selectedPlan === 'three') {
-    throw new Error('Multi-module bundles are not available in this checkout flow.');
-  }
-
-  if (selectedPlan === 'four') {
-    throw new Error('Multi-module bundles are not available in this checkout flow.');
+  const bundleKeys = { founders: 'founders_bundle', three: 'three_module_bundle', four: 'four_module_bundle' };
+  if (bundleKeys[selectedPlan]) {
+    const planKey = `${bundleKeys[selectedPlan]}_${billingPeriod}`;
+    const bundleModules = {
+      founders: ['pipekeeper', 'whiskeykeeper'],
+      three: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+      four: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+    }[selectedPlan];
+    if (!bundleModules.every((module) => selectedModules.includes(module))) {
+      throw new Error('Selected modules do not match the requested bundle.');
+    }
+    try {
+      getRequiredStripePlan(planKey);
+    } catch {
+      throw new Error('This subscription option is not currently available. Please contact support.');
+    }
+    return { planKey, modules: bundleModules };
   }
 
   throw new Error('Invalid plan selection');
