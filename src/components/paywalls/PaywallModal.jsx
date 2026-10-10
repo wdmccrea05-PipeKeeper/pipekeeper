@@ -390,6 +390,8 @@ export default function PaywallModal({
       await selectPlan(plan, billingPeriod, {
         selectedModules: type === 'multi' ? selectedModules.filter((m) => isModuleLaunched(m)) : [],
         baseModule: offerConfig.primaryModule,
+        successUrl: "/CollectionHub",
+        cancelUrl: "/Onboarding",
       });
     } catch (err) {
       console.error('[Paywall] Plan selection failed:', err);
@@ -412,6 +414,20 @@ export default function PaywallModal({
       />,
     ];
 
+    if (type === 'multi') {
+      const selected = selectedModules.filter((module) => isModuleLaunched(module));
+      const bundles = [
+        { plan: 'founders', modules: ['pipekeeper', 'whiskeykeeper'], title: 'Founders Bundle', monthly: '4.99', annual: '49.99' },
+        { plan: 'three', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], title: 'Three-Module Bundle', monthly: '7.99', annual: '79.99' },
+        { plan: 'four', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], title: 'Four-Module Bundle', monthly: '8.99', annual: '89.99' },
+      ];
+      return bundles.filter(({ modules }) => modules.every((module) => selected.includes(module))).map(({ plan, title, monthly, annual }) => (
+        <PricingCard key={plan} title={title} priceMonthly={monthly} priceAnnual={annual}
+          cta={t('subscription.chooseBundle')} highlighted={plan === (selected.length === 4 ? 'four' : selected.length === 3 ? 'three' : 'founders')}
+          isSelected={selectedPlan === plan} onSelect={() => handleSelectPlan(plan)}
+          isLoading={isLoading && selectedPlan === plan} billingPeriod={billingPeriod} />
+      ));
+    }
     return cards;
   };
 
