@@ -461,7 +461,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
     try {
       await selectPlan(selectedPlan, billingPeriod, {
         selectedModules: getSelectedModules(),
-        successUrl: '/SubscriptionSuccessFlow?next=/CollectionHub',
+        successUrl: '/CollectionHub',
         cancelUrl: '/Onboarding',
       });
     } catch (error) {
