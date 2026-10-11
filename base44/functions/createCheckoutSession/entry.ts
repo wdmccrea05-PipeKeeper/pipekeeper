@@ -67,19 +67,17 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
     checkoutType = 'bundle_3';
     productKind = 'bundle';
     bundleName = 'three_module_bundle';
-    moduleCount = Math.min(normalizedModules.length || 3, 3);
-    modulesCsv = normalizedModules.slice(0, 3).join(',') || 'pipekeeper';
-    primaryModule = normalizedModules[0] || 'pipekeeper';
-    appSlug = toValidAppSlug(primaryModule || 'pipekeeper');
+    moduleCount = 3;
+    modulesCsv = 'pipekeeper,whiskeykeeper,cigarkeeper';
+    primaryModule = 'pipekeeper';
+    appSlug = 'pipekeeper';
   } else if (planKey.includes('four_module')) {
     checkoutType = 'bundle_4';
     productKind = 'bundle';
     bundleName = 'four_module_bundle';
     moduleCount = 4;
-    modulesCsv = normalizedModules.length
-      ? normalizedModules.slice(0, 4).join(',')
-      : 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper';
-    primaryModule = normalizedModules[0] || 'pipekeeper';
+    modulesCsv = 'pipekeeper,whiskeykeeper,cigarkeeper,winekeeper';
+    primaryModule = 'pipekeeper';
     appSlug = 'pipekeeper';
   } else if (planKey.includes('founders')) {
     checkoutType = 'bundle_2';
@@ -90,6 +88,7 @@ function buildCheckoutMetadata(planKey, selectedModules = [], user) {
     primaryModule = 'pipekeeper';
     appSlug = 'pipekeeper';
   } else {
+    primaryModule = String(planKey).split('_pro_')[0];
     checkoutType = 'single_module';
     productKind = 'module';
     moduleCount = 1;
@@ -200,6 +199,20 @@ Deno.serve(async (req) => {
         },
       });
       customerId = customer.id;
+    }
+
+    // Provider-side duplicate protection: legacy prices may differ even for the same module.
+    // Block only identical active price purchases; complementary-module purchases remain allowed.
+    const existingSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100 });
+    const duplicate = existingSubscriptions.data.find((subscription) =>
+      ['active', 'trialing', 'past_due'].includes(subscription.status) &&
+      subscription.items?.data?.some((item) => item.price?.id === priceId)
+    );
+    if (duplicate) {
+      return Response.json({
+        error: 'You already have this subscription. Manage your existing subscription instead of purchasing it again.',
+        code: 'ALREADY_SUBSCRIBED',
+      }, { status: 409 });
     }
 
     // Build canonical metadata — same object goes on session AND subscription
