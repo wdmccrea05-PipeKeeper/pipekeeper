@@ -2,6 +2,7 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
 import viteConfig from './vite.config.js';
 import path from 'path';
+import react from '@vitejs/plugin-react';
 
 /**
  * Dedicated Vitest config — merged on top of vite.config.js so that
@@ -19,6 +20,7 @@ import path from 'path';
 export default mergeConfig(
   viteConfig,
   defineConfig({
+    plugins: [react({ fastRefresh: false })],
     test: {
       globals: true,
       environment: 'jsdom',
