@@ -21,13 +21,14 @@ import { SUBSCRIPTION_PLANS } from '@/lib/billing/subscriptionPlans';
 import { initiateCheckoutWithIntent } from '@/components/subscription/subscriptionHandler';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { toast } from 'sonner';
+import { getPaywallOptions } from '@/lib/billing/paywallOptions';
 
 function getModuleLabel(t, moduleKey) {
   return t(`hub.${moduleKey}`, moduleKey);
 }
 
-// WineKeeper intentionally excluded — not publicly launched
-const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'];
+// Keep module offerings aligned with the canonical public release-state registry.
+const ALL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
 
 function launchedModules() {
   return ALL_MODULES.filter((m) => isModuleLaunched(m));
@@ -416,13 +417,7 @@ export default function PaywallModal({
 
     if (type === 'multi') {
       const selected = selectedModules.filter((module) => isModuleLaunched(module));
-      const bundles = [
-        { plan: 'founders', modules: ['pipekeeper', 'whiskeykeeper'], title: 'Founders Bundle', monthly: '4.99', annual: '49.99' },
-        { plan: 'three', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], title: 'Three-Module Bundle', monthly: '7.99', annual: '79.99' },
-        { plan: 'four', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], title: 'Four-Module Bundle', monthly: '8.99', annual: '89.99' },
-      ];
-      // Offer only bundles that cover every selected module; a cheaper partial bundle must not hide the complete option.
-      const coveringBundles = bundles.filter(({ modules }) => selected.every((module) => modules.includes(module)));
+      const { coveringBundles, individualModules } = getPaywallOptions(selected);
       const bundleCards = coveringBundles.map(({ plan, modules, title, monthly, annual }) => (
         <PricingCard key={plan} title={`${title} (${modules.map((module) => getModuleLabel(t, module)).join(', ')})`}
           priceMonthly={monthly} priceAnnual={annual} cta={t('subscription.chooseBundle')}
@@ -430,7 +425,7 @@ export default function PaywallModal({
           onSelect={() => handleSelectPlan(plan)} billingPeriod={billingPeriod} />
       ));
       // Any combination can be purchased one module at a time, even when no bundle matches.
-      const individualCards = selected.map((module) => (
+      const individualCards = individualModules.map((module) => (
         <PricingCard key={`single-${module}`} title={`${getModuleLabel(t, module)} Pro`}
           priceMonthly="2.99" priceAnnual="29.99"
           cta={t('subscription.unlockModuleCta', { module: getModuleLabel(t, module) })}

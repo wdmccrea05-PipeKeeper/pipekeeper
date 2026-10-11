@@ -14,7 +14,6 @@ import ModuleSelectionStep from './ModuleSelectionStep';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 import { markPipeOnboardingComplete } from './onboardingState';
 
-import { usePaywall } from '@/components/subscription/usePaywall';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { isInternalModuleTester } from '@/components/utils/moduleReleaseState';
 import PaywallModal from '@/components/subscription/PaywallModal';
@@ -66,7 +65,6 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { saveModulePreferences } = useModuleVisibility();
-  const { selectPlan, isLoading } = usePaywall();
 
   const moduleStep = {
     title: 'Choose Your Modules',
@@ -457,19 +455,6 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       .map(([key]) => key);
   };
 
-  const handlePaywallSelect = async (selectedPlan, billingPeriod) => {
-    try {
-      await selectPlan(selectedPlan, billingPeriod, {
-        selectedModules: getSelectedModules(),
-        successUrl: '/CollectionHub',
-        cancelUrl: '/Onboarding',
-      });
-    } catch (error) {
-      console.error('Paywall selection failed:', error);
-      // Error is already shown via toast in usePaywall
-    }
-  };
-
   const handlePaywallClose = () => {
     setShowPaywall(false);
     // Continue onboarding with free tier
@@ -486,8 +471,6 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
         type="multi"
         selectedModules={getSelectedModules()}
         onClose={handlePaywallClose}
-        onSelectPlan={handlePaywallSelect}
-        isLoading={isLoading}
       />
     );
   }
