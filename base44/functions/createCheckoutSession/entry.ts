@@ -280,8 +280,10 @@ Deno.serve(async (req) => {
         code: 'OVERLAPPING_SUBSCRIPTION',
       }, { status: 409 });
     }
-    if (actionType === 'upgrade_existing' && collisions.length && !currentPlanKey) {
-      return Response.json({ error: 'Upgrade requires the current subscription plan.', code: 'UPGRADE_REVIEW_REQUIRED' }, { status: 409 });
+    if (actionType === 'upgrade_existing' && collisions.length) {
+      // The old subscription must be migrated/canceled by a verified upgrade workflow first.
+      // Merely passing an actionType must not bypass duplicate-billing protection.
+      return Response.json({ error: 'Existing overlapping subscription must be reconciled before starting a replacement checkout.', code: 'UPGRADE_REVIEW_REQUIRED' }, { status: 409 });
     }
 
     // Build canonical metadata — same object goes on session AND subscription
