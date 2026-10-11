@@ -384,12 +384,12 @@ export default function PaywallModal({
 
   const header = getHeader();
 
-  const handleSelectPlan = async (plan) => {
+  const handleSelectPlan = async (plan, module = null) => {
     setSelectedPlan(plan);
     try {
       await selectPlan(plan, billingPeriod, {
         selectedModules: type === 'multi' ? selectedModules.filter((m) => isModuleLaunched(m)) : [],
-        baseModule: offerConfig.primaryModule,
+        baseModule: module || offerConfig.primaryModule,
         successUrl: "/CollectionHub",
         cancelUrl: "/Onboarding",
       });
@@ -421,12 +421,25 @@ export default function PaywallModal({
         { plan: 'three', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], title: 'Three-Module Bundle', monthly: '7.99', annual: '79.99' },
         { plan: 'four', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], title: 'Four-Module Bundle', monthly: '8.99', annual: '89.99' },
       ];
-      return bundles.filter(({ modules }) => modules.every((module) => selected.includes(module))).map(({ plan, title, monthly, annual }) => (
-        <PricingCard key={plan} title={title} priceMonthly={monthly} priceAnnual={annual}
-          cta={t('subscription.chooseBundle')} highlighted={plan === (selected.length === 4 ? 'four' : selected.length === 3 ? 'three' : 'founders')}
-          isSelected={selectedPlan === plan} onSelect={() => handleSelectPlan(plan)}
-          isLoading={isLoading && selectedPlan === plan} billingPeriod={billingPeriod} />
+      const matchingBundles = bundles.filter(({ modules }) => modules.every((module) => selected.includes(module)));
+      // A bundle may include additional modules, but must never omit a selected module.
+      const coveringBundles = matchingBundles.length ? matchingBundles : bundles.filter(({ modules }) => selected.every((module) => modules.includes(module)));
+      const bundleCards = coveringBundles.map(({ plan, modules, title, monthly, annual }) => (
+        <PricingCard key={plan} title={`${title} (${modules.map((module) => getModuleLabel(t, module)).join(', ')})`}
+          priceMonthly={monthly} priceAnnual={annual} cta={t('subscription.chooseBundle')}
+          highlighted={modules.length === selected.length} isSelected={selectedPlan === plan}
+          onSelect={() => handleSelectPlan(plan)} billingPeriod={billingPeriod} />
       ));
+      // Any combination can be purchased one module at a time, even when no bundle matches.
+      const individualCards = selected.map((module) => (
+        <PricingCard key={`single-${module}`} title={`${getModuleLabel(t, module)} Pro`}
+          priceMonthly="2.99" priceAnnual="29.99"
+          cta={t('subscription.unlockModuleCta', { module: getModuleLabel(t, module) })}
+          isSelected={selectedPlan === `single-${module}`}
+          onSelect={() => handleSelectPlan('single', module)}
+          billingPeriod={billingPeriod} />
+      ));
+      return [...bundleCards, ...individualCards];
     }
     return cards;
   };

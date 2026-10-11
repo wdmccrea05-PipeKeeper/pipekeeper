@@ -39,7 +39,7 @@ export function getPlanFromSelection(selectedPlan, billingPeriod, selectedModule
       three: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
       four: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
     }[selectedPlan];
-    if (!bundleModules.every((module) => selectedModules.includes(module))) {
+    if (!selectedModules.every((module) => bundleModules.includes(module))) {
       throw new Error('Selected modules do not match the requested bundle.');
     }
     try {
