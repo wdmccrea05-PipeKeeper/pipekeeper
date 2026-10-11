@@ -201,18 +201,87 @@ Deno.serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Provider-side duplicate protection: legacy prices may differ even for the same module.
-    // Block only identical active price purchases; complementary-module purchases remain allowed.
-    const existingSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100 });
-    const duplicate = existingSubscriptions.data.find((subscription) =>
-      ['active', 'trialing', 'past_due'].includes(subscription.status) &&
-      subscription.items?.data?.some((item) => item.price?.id === priceId)
+    // Check all active provider subscriptions, including historical Stripe prices.
+    // Never treat a new price ID as proof of a new entitlement.
+    const planModules: Record<string, string[]> = {
+      pipekeeper: ['pipekeeper'], whiskeykeeper: ['whiskeykeeper'],
+      cigarkeeper: ['cigarkeeper'], winekeeper: ['winekeeper'],
+      founders: ['pipekeeper', 'whiskeykeeper'],
+      three: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+      four: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+    };
+    const modulesForPlan = (key: string): string[] => {
+      if (key.startsWith('founders_bundle_')) return planModules.founders;
+      if (key.startsWith('three_module_bundle_')) return planModules.three;
+      if (key.startsWith('four_module_bundle_')) return planModules.four;
+      const module = key.split('_pro_')[0];
+      return planModules[module] || [];
+    };
+    const requestedModules = modulesForPlan(planKey);
+    if (!requestedModules.length) {
+      return Response.json({ error: 'Unrecognized subscription plan.', code: 'UNKNOWN_PLAN' }, { status: 400 });
+    }
+    const currentSubscriptions = [];
+    let cursor: string | undefined;
+    do {
+      const page = await stripe.subscriptions.list({ customer: customerId, status: 'all', limit: 100, ...(cursor ? { starting_after: cursor } : {}) });
+      currentSubscriptions.push(...page.data);
+      cursor = page.has_more ? page.data[page.data.length - 1]?.id : undefined;
+    } while (cursor);
+    const activeSubscriptions = currentSubscriptions.filter((sub) =>
+      ['active', 'trialing', 'past_due'].includes(sub.status)
     );
-    if (duplicate) {
+    const recognizedPriceToPlan = new Map(Object.entries(PLAN_TO_STRIPE_PRICE).map(([key, value]) => [value, key]));
+    const knownModules = new Set(['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper']);
+    const overlaps = (a: string[], b: string[]) => a.some((module) => b.includes(module));
+    const collisions = [];
+    for (const sub of activeSubscriptions) {
+      const owned = new Set<string>();
+      let unresolved = false;
+      for (const item of sub.items.data) {
+        const itemPriceId = item.price?.id;
+        const fromPrice = modulesForPlan(recognizedPriceToPlan.get(itemPriceId) || '');
+        const metadata = sub.metadata || {};
+        const fromPlan = modulesForPlan(metadata.plan_key || '');
+        const fromCsv = String(metadata.modules_csv || '').split(',').map((v) => v.trim().toLowerCase()).filter((v) => knownModules.has(v));
+        // Historical prices: Stripe product metadata/name is authoritative when available.
+        let fromProduct: string[] = [];
+        if (!fromPrice.length && !fromPlan.length && !fromCsv.length) {
+          const productId = typeof item.price?.product === 'string' ? item.price.product : item.price?.product?.id;
+          if (productId) {
+            const product = await stripe.products.retrieve(productId);
+            const productModules = String(product.metadata?.modules_csv || product.metadata?.modules || '').split(',').map((v) => v.trim().toLowerCase()).filter((v) => knownModules.has(v));
+            fromProduct = productModules;
+            if (!fromProduct.length) {
+              const name = String(product.name || '').toLowerCase();
+              if (name.includes('founders') || name.includes('2-module')) fromProduct = planModules.founders;
+              else if (name.includes('3-module') || name.includes('three-module')) fromProduct = planModules.three;
+              else if (name.includes('4-module') || name.includes('four-module')) fromProduct = planModules.four;
+              else fromProduct = [...knownModules].filter((module) => name.includes(module));
+            }
+          }
+        }
+        const resolved = fromPrice.length ? fromPrice : fromPlan.length ? fromPlan : fromCsv.length ? fromCsv : fromProduct;
+        if (!resolved.length) unresolved = true;
+        resolved.forEach((module) => owned.add(module));
+      }
+      if (overlaps(requestedModules, [...owned])) collisions.push(sub.id);
+      // For a new purchase, ambiguous legacy subscriptions require review, not another charge.
+      if (unresolved && actionType === 'new_purchase') {
+        return Response.json({
+          error: 'An existing subscription needs billing review before another purchase can be started.',
+          code: 'EXISTING_SUBSCRIPTION_REVIEW_REQUIRED',
+        }, { status: 409 });
+      }
+    }
+    if (collisions.length && actionType !== 'upgrade_existing') {
       return Response.json({
-        error: 'You already have this subscription. Manage your existing subscription instead of purchasing it again.',
-        code: 'ALREADY_SUBSCRIBED',
+        error: 'You already have a subscription covering one or more selected modules. Please manage or upgrade your existing subscription.',
+        code: 'OVERLAPPING_SUBSCRIPTION',
       }, { status: 409 });
+    }
+    if (actionType === 'upgrade_existing' && collisions.length && !currentPlanKey) {
+      return Response.json({ error: 'Upgrade requires the current subscription plan.', code: 'UPGRADE_REVIEW_REQUIRED' }, { status: 409 });
     }
 
     // Build canonical metadata — same object goes on session AND subscription
