@@ -30,6 +30,7 @@ const SAFE_CIGAR_FIELDS = new Set([
 const SAFE_WINE_FIELDS = new Set([
   'producer', 'vintage', 'region', 'appellation', 'country', 'varietal', 'wine_type', 'style',
   'purchase_price', 'estimated_value', 'quantity', 'drink_window_status', 'drinking_window_status',
+  'drink_window_start', 'drink_window_end',
   'strategy_state', 'strategy_reason', 'notes',
 ]);
 

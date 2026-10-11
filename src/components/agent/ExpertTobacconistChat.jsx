@@ -14,6 +14,8 @@ import {
 import { classifyDiagnosticIntent, DIAGNOSTIC_INTENT } from '@/lib/curator/curatorIntentClassifier.js';
 import { answerCuratorDeterministicQuery } from '@/lib/curator/curatorDeterministicChat.js';
 import { analyzeWineOptimizationIssues } from '@/lib/curator/wineOptimization.js';
+import { buildWineDrinkingWindowFix } from '@/lib/curator/wineDrinkingWindowFix.js';
+import CuratorChatFixAction from '@/components/curator/CuratorChatFixAction.jsx';
 import {
   isRecommendationRequest,
   detectRejection,
@@ -316,7 +318,7 @@ function safeCuratorFallback(context, question) {
  * @param {object[]} wines — wine records from collectionContext
  * @returns {string} Formatted response text
  */
-function buildWineDiagnosticResponse(diagnosticIntent, wines = []) {
+function buildWineDiagnosticText(diagnosticIntent, wines = []) {
   if (!diagnosticIntent) return null;
 
   const issues = analyzeWineOptimizationIssues(wines);
@@ -342,11 +344,12 @@ function buildWineDiagnosticResponse(diagnosticIntent, wines = []) {
     const moreCount = Math.max(0, affected.length - 10);
     const moreNote = moreCount > 0 ? `\n- …and ${moreCount} more` : '';
 
-    const autoFixable = issue?.autoFixable
-      ? '\n\nI can estimate drinking windows from vintage, producer, varietal, region, and style, then save suggested drink-from/drink-by dates for review.'
-      : '';
+    const estimableCount = buildWineDrinkingWindowFix(affected)?.items.length || 0;
+    const fixLine = estimableCount > 0
+      ? `\n\n${estimableCount === affected.length ? 'They all have' : `${estimableCount} of them have`} a vintage plus a style or varietal, so I can estimate drink-from and drink-by dates and save them right here — use the button below.`
+      : '\n\nNone of them have both a vintage and a style or varietal yet, so I cannot estimate a window. Fill those in and ask me again.';
 
-    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} missing drinking-window data:\n${wineLines.join('\n')}${moreNote}${autoFixable}\n\nOptions:\n- Auto-Fix Safe: estimate windows from vintage + style for wines with enough data\n- Review & Apply: see proposed dates before saving\n- Open Records: view the affected wines directly`;
+    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} missing drinking-window data:\n${wineLines.join('\n')}${moreNote}${fixLine}`;
   }
 
   // Wine missing valuation
@@ -369,7 +372,7 @@ function buildWineDiagnosticResponse(diagnosticIntent, wines = []) {
     const moreCount = Math.max(0, affected.length - 10);
     const moreNote = moreCount > 0 ? `\n- …and ${moreCount} more` : '';
 
-    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} without valuation data:\n${wineLines.join('\n')}${moreNote}\n\nOptions:\n- Auto-Fix Safe: bootstrap from purchase price where available\n- Review & Apply: confirm proposed valuations before saving\n- Open Records: view and update the affected wines manually`;
+    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} without valuation data:\n${wineLines.join('\n')}${moreNote}\n\nThe price you paid is the one valuation figure Curator can read reliably, so setting a purchase price on these wines gives every value calculation a baseline.`;
   }
 
   // Wine stale valuation
@@ -388,7 +391,7 @@ function buildWineDiagnosticResponse(diagnosticIntent, wines = []) {
     const moreCount = Math.max(0, affected.length - 8);
     const moreNote = moreCount > 0 ? `\n- …and ${moreCount} more` : '';
 
-    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} with stale valuation data:\n${wineLines.join('\n')}${moreNote}\n\nOptions:\n- Auto-Fix Safe: refresh market estimates\n- Review & Apply: confirm updated values before saving`;
+    return `You have ${affected.length} wine${affected.length > 1 ? 's' : ''} with stale valuation data:\n${wineLines.join('\n')}${moreNote}\n\nWorth re-checking against current market prices, starting with the highest-value bottles.`;
   }
 
   // Wine missing core metadata
@@ -459,6 +462,23 @@ function fuzzyMatchRecord(name, records = []) {
     return hits.length >= Math.ceil(targetWords.length * 0.5);
   });
   return wordMatch || null;
+}
+
+/**
+ * Wine diagnostic reply plus, for issues Curator can fix deterministically, the
+ * finding that backs the in-chat apply button.
+ *
+ * @returns {{ text: string, fix: object|null }|null}
+ */
+function buildWineDiagnosticResponse(diagnosticIntent, wines = []) {
+  const text = buildWineDiagnosticText(diagnosticIntent, wines);
+  if (!text) return null;
+
+  const fix = diagnosticIntent?.intent === DIAGNOSTIC_INTENT.WINE_MISSING_DRINKING_WINDOW
+    ? buildWineDrinkingWindowFix(wines)
+    : null;
+
+  return { text, fix };
 }
 
 function buildLLMPrompt(userMessage, context = {}, history = [], entityContext = {}) {
@@ -1569,6 +1589,7 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 export default function ExpertTobacconistChat({
   preFillMessage,
   onPreFillConsumed,
+  onApplyFix,
   collectionContext,
   isSingleModuleMode = false,
   activeModules = {},
@@ -1636,6 +1657,34 @@ export default function ExpertTobacconistChat({
       // Don't auto-focus on preFill — iOS won't show keyboard without a user gesture
     }
   }, [preFillMessage, onPreFillConsumed]);
+
+  /**
+   * Saves a Curator-suggested fix (e.g. estimated drinking windows) straight from
+   * the chat, through the same apply pipeline the optimization board uses.
+   */
+  const applySuggestedFix = useCallback(async (message) => {
+    if (!message?.fix || typeof onApplyFix !== 'function') return;
+
+    setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, fixState: 'applying', fixNote: null } : m)));
+
+    let result = null;
+    try {
+      result = await onApplyFix(message.fix);
+    } catch (err) {
+      result = { ok: false, error: String(err?.message || err) };
+    }
+
+    const appliedCount = result?.ok ? (result.appliedCount || 0) : 0;
+    setMessages((prev) => prev.map((m) => (m.id === message.id
+      ? {
+          ...m,
+          fixState: appliedCount > 0 ? 'applied' : 'failed',
+          fixNote: appliedCount > 0
+            ? `${appliedCount} wine${appliedCount === 1 ? '' : 's'} saved with estimated drink-from and drink-by dates.`
+            : (result?.error || 'Those changes could not be saved.'),
+        }
+      : m)));
+  }, [onApplyFix]);
 
   /**
    * Determines if this query should go to the LLM.
@@ -1726,7 +1775,15 @@ export default function ExpertTobacconistChat({
         const wines = Array.isArray(collectionContext?.wines) ? collectionContext.wines : [];
         const diagnosticReply = buildWineDiagnosticResponse(diagnosticIntent, wines);
         if (diagnosticReply) {
-          setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: diagnosticReply }]);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `assistant-${Date.now()}`,
+              role: 'assistant',
+              content: diagnosticReply.text,
+              fix: diagnosticReply.fix,
+            },
+          ]);
           return;
         }
         // diagnosticReply is null for non-wine diagnostic types (pipes, whiskey, etc.)
@@ -1978,11 +2035,19 @@ export default function ExpertTobacconistChat({
                         i++;
                       }
                       return output;
-                    })()}
-                  </div>
-                </div>
-              </div>
-            ))}
+                      })()}
+                      </div>
+                      {m.fix && (
+                        <CuratorChatFixAction
+                          count={m.fix.items.length}
+                          state={m.fixState || 'idle'}
+                          note={m.fixNote}
+                          onApply={() => applySuggestedFix(m)}
+                        />
+                      )}
+                      </div>
+                      </div>
+                      ))}
             {isSending && (
               <div className="flex justify-start">
                 <div className="max-w-[85%]">

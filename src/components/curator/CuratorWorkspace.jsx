@@ -681,7 +681,7 @@ export default function CuratorWorkspace({
 
     case 'chat':
       return (
-        <>{modals}<ExpertTobacconistChat threadId={threadId} setThreadId={setThreadId} preFillMessage={preFillMessage} onPreFillConsumed={() => setPreFillMessage('')} collectionContext={ctx} isSingleModuleMode={isSingleModuleMode} activeModules={moduleEnabled} initialEntityContext={chatEntityContext} /></>
+        <>{modals}<ExpertTobacconistChat threadId={threadId} setThreadId={setThreadId} preFillMessage={preFillMessage} onPreFillConsumed={() => setPreFillMessage('')} onApplyFix={(finding) => handleAction('apply_fix', finding)} collectionContext={ctx} isSingleModuleMode={isSingleModuleMode} activeModules={moduleEnabled} initialEntityContext={chatEntityContext} /></>
       );
 
     default:

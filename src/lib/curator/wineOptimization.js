@@ -154,7 +154,8 @@ export function analyzeWineOptimizationIssues(wines = [], wineTastings = [], pre
   // Missing drinking window
   const missingWindow = wines.filter(
     (w) => !w.drink_from && !w.drink_by && !w.drinking_window &&
-           !w.drink_window_status && !w.drinking_window_start
+           !w.drink_window_status && !w.drinking_window_start &&
+           !w.drink_window_start && !w.drink_window_end
   );
   if (missingWindow.length > 0) {
     // Only auto-fix when we have enough identity data (vintage + style/varietal)
