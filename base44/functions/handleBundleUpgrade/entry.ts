@@ -138,6 +138,14 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
+    // SAFETY: this legacy flow canceled paid subscriptions BEFORE replacement checkout
+    // completed. Disable destructive upgrades until an atomic migration is implemented.
+    return Response.json({
+      success: false,
+      code: 'SAFE_UPGRADE_REQUIRED',
+      error: 'Automatic bundle upgrades are temporarily unavailable. Your existing subscription remains active; contact support for a safe migration.',
+    }, { status: 409 });
+
     const body = await req.json().catch(() => ({}));
     const targetBundleType = String(body?.targetBundleType || '').trim() as BundleType;
     const billingPeriod = String(body?.billingPeriod || '').trim();

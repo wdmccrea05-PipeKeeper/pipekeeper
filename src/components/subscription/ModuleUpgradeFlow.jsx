@@ -131,6 +131,9 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
         currentState.paidModules.length > 0;
 
       if (isBundleUpgrade) {
+        setError('Bundle upgrades require a safe billing migration. Your existing subscriptions remain active. Please contact support.');
+        setIsProcessing(false);
+        return;
         const canUpgrade = canProcessBundleUpgrade(user, selectedOption.modules);
 
         if (!canUpgrade?.canUpgrade) {
