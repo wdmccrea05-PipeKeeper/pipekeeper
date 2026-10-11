@@ -2,7 +2,6 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
 import viteConfig from './vite.config.js';
 import path from 'path';
-import react from '@vitejs/plugin-react';
 
 /**
  * Dedicated Vitest config — merged on top of vite.config.js so that
@@ -18,9 +17,9 @@ import react from '@vitejs/plugin-react';
  *                    leaked handle in one file cannot block others
  */
 export default mergeConfig(
-  viteConfig,
+  { ...viteConfig, plugins: [] },
   defineConfig({
-    plugins: [react({ fastRefresh: false })],
+    plugins: [],
     test: {
       globals: true,
       environment: 'jsdom',
