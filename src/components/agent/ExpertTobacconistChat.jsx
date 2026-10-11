@@ -1666,6 +1666,21 @@ export default function ExpertTobacconistChat({
     return true;
   }
 
+  // Bound remote inference so an unresponsive backend cannot lock the chat indefinitely.
+  const invokeCuratorWithTimeout = async (prompt) => {
+    let timer;
+    try {
+      return await Promise.race([
+        base44.functions.invoke('invokeCuratorLLM', { prompt }),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error('Curator request timed out. Please retry.')), 45000);
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || isSending) return;
@@ -1729,7 +1744,7 @@ export default function ExpertTobacconistChat({
       if (useLLM) {
         // Use LLM for domain-knowledge queries (similarity, external products, comparison, etc.)
         const llmPrompt = buildLLMPrompt(text, collectionContext, messages, effectiveEntityContext);
-        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
+        const response = await invokeCuratorWithTimeout(llmPrompt);
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
@@ -1764,7 +1779,7 @@ export default function ExpertTobacconistChat({
       // null result means the local engine couldn't handle it — escalate to LLM
       if (!result) {
         const llmPrompt = buildLLMPrompt(text, collectionContext, messages, effectiveEntityContext);
-        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
+        const response = await invokeCuratorWithTimeout(llmPrompt);
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
@@ -1788,7 +1803,7 @@ export default function ExpertTobacconistChat({
         const ctxForLLM = updatedEntityContext || effectiveEntityContext;
         if (updatedEntityContext) setEntityContext(updatedEntityContext);
         const llmPrompt = buildLLMPrompt(text, collectionContext, messages, ctxForLLM);
-        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
+        const response = await invokeCuratorWithTimeout(llmPrompt);
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
@@ -1806,7 +1821,7 @@ export default function ExpertTobacconistChat({
       if (reply && !validateAnswerEntityMatch(targetEntity, reply, updatedEntityContext)) {
         // Escalate to LLM rather than producing filler text
         const llmPrompt = buildLLMPrompt(text, collectionContext, messages, effectiveEntityContext);
-        const response = await base44.functions.invoke('invokeCuratorLLM', { prompt: llmPrompt });
+        const response = await invokeCuratorWithTimeout(llmPrompt);
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
