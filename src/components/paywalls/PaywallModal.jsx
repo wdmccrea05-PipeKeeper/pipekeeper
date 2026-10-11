@@ -421,9 +421,8 @@ export default function PaywallModal({
         { plan: 'three', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'], title: 'Three-Module Bundle', monthly: '7.99', annual: '79.99' },
         { plan: 'four', modules: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], title: 'Four-Module Bundle', monthly: '8.99', annual: '89.99' },
       ];
-      const matchingBundles = bundles.filter(({ modules }) => modules.every((module) => selected.includes(module)));
-      // A bundle may include additional modules, but must never omit a selected module.
-      const coveringBundles = matchingBundles.length ? matchingBundles : bundles.filter(({ modules }) => selected.every((module) => modules.includes(module)));
+      // Offer only bundles that cover every selected module; a cheaper partial bundle must not hide the complete option.
+      const coveringBundles = bundles.filter(({ modules }) => selected.every((module) => modules.includes(module)));
       const bundleCards = coveringBundles.map(({ plan, modules, title, monthly, annual }) => (
         <PricingCard key={plan} title={`${title} (${modules.map((module) => getModuleLabel(t, module)).join(', ')})`}
           priceMonthly={monthly} priceAnnual={annual} cta={t('subscription.chooseBundle')}
