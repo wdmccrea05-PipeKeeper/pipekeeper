@@ -385,7 +385,7 @@ export default function PaywallModal({
   const header = getHeader();
 
   const handleSelectPlan = async (plan, module = null) => {
-    setSelectedPlan(plan);
+    setSelectedPlan(plan === 'single' && module ? `single-${module}` : plan);
     try {
       await selectPlan(plan, billingPeriod, {
         selectedModules: type === 'multi' ? selectedModules.filter((m) => isModuleLaunched(m)) : [],
