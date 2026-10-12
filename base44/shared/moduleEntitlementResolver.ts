@@ -22,8 +22,12 @@ export const HARDCODED_PRICE_TO_MODULES: Record<string, string[]> = {
   'price_1SsDgEDycvQWC88PmdvlxFDa': ['pipekeeper'], // PipeKeeper Monthly
   'price_1SsDU6DycvQWC88PIwpmt7Oc': ['pipekeeper'], // PipeKeeper Annual
   // WhiskeyKeeper
-  'price_1TBfcdDycvQWC88PV0OV4t9B': ['whiskeykeeper'], // WhiskeyKeeper Monthly
-  'price_1TBfd7DycvQWC88PHrCnHl1X': ['whiskeykeeper'], // WhiskeyKeeper Annual
+  'price_1TBfYEDycvQWC88P5mfqoWzF': ['whiskeykeeper'], // WhiskeyKeeper Monthly
+  'price_1TBfZPDycvQWC88Pk0T31lxi': ['whiskeykeeper'], // WhiskeyKeeper Annual
+  'price_1TBffYDycvQWC88PA6qrWSRB': ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], // 4-Module Monthly
+  'price_1TBfgDDycvQWC88P0Y3VwJa6': ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], // 4-Module Annual
+  'price_1TBfcdDycvQWC88PV0OV4t9B': ['winekeeper'], // WhiskeyKeeper Monthly
+  'price_1TBfd7DycvQWC88PHrCnHl1X': ['winekeeper'], // WhiskeyKeeper Annual
   // CigarKeeper
   'price_1TBfbJDycvQWC88PIjsHAufT': ['cigarkeeper'], // CigarKeeper Monthly
   'price_1TBfaeDycvQWC88PkAHy3qIC': ['cigarkeeper'], // CigarKeeper Annual

@@ -19,8 +19,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 const HARDCODED_PRICE_TO_MODULES: Record<string, string[]> = {
   'price_1SsDgEDycvQWC88PmdvlxFDa': ['pipekeeper'],
   'price_1SsDU6DycvQWC88PIwpmt7Oc': ['pipekeeper'],
-  'price_1TBfcdDycvQWC88PV0OV4t9B': ['whiskeykeeper'],
-  'price_1TBfd7DycvQWC88PHrCnHl1X': ['whiskeykeeper'],
+  'price_1TBfYEDycvQWC88P5mfqoWzF': ['whiskeykeeper'], // WhiskeyKeeper Monthly
+  'price_1TBfZPDycvQWC88Pk0T31lxi': ['whiskeykeeper'], // WhiskeyKeeper Annual
+  'price_1TBffYDycvQWC88PA6qrWSRB': ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], // 4-Module Monthly
+  'price_1TBfgDDycvQWC88P0Y3VwJa6': ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'], // 4-Module Annual
+  'price_1TBfcdDycvQWC88PV0OV4t9B': ['winekeeper'],
+  'price_1TBfd7DycvQWC88PHrCnHl1X': ['winekeeper'],
   'price_1TBfbJDycvQWC88PIjsHAufT': ['cigarkeeper'],
   'price_1TBfaeDycvQWC88PkAHy3qIC': ['cigarkeeper'],
   'price_1TKgGnDycvQWC88PwdJo75R5': ['pipekeeper', 'whiskeykeeper'],
