@@ -137,6 +137,6 @@ export function classifyAccount(email, subId) {
   const e = norm(email), s = norm(subId);
   if (s.startsWith('test_') || /test_sub|test_\d+/.test(s)) return 'test_account';
   if (e.startsWith('admin@') || e.includes('admin@pipekeeperapp')) return 'internal_admin';
-  if (['pipekeepertest', '@example.com', '@test.'].some((p) => e.includes(p))) return 'test_account';
+  if (['pipekeepertest', 'test@pipekeeperapp.com', '@example.com', '@test.'].some((p) => e.includes(p))) return 'test_account';
   return 'production_customer';
 }
