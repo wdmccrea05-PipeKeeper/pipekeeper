@@ -362,7 +362,7 @@ export function reconcileEntitlementForUser(input: ReconcileInput): ReconcileOut
     // relaxes this to the old permissive behavior. Production callers MUST NEVER
     // set this flag.
     const productIdentityClassification = productIdentityClassifications[c.id] || (allowMissingProductClassificationForLegacyTests ? undefined : 'UNRESOLVED');
-    const isProductResolved = productIdentityClassification === 'PROVIDER_RESOLVED' || productIdentityClassification === 'LEGACY_RESOLVED';
+    const isProductResolved = productIdentityClassification === 'PROVIDER_RESOLVED' || productIdentityClassification === 'LEGACY_RESOLVED' || (allowMissingProductClassificationForLegacyTests && productIdentityClassification === undefined);
 
     if (included && provider === 'stripe' && !isProductResolved) {
       if (previousEntitlement?.has_access === true) {
