@@ -93,36 +93,44 @@ describe("per-module Pro isolation (required scenarios 1–3)", () => {
 // ─── Test: bundle access (required scenarios 4–6) ────────────────────────────
 
 describe("bundle access (required scenarios 4–6)", () => {
-  it("Founders Bundle unlocks PipeKeeper + WhiskeyKeeper only", () => {
+  const activeSubscription = (plan_key) => ({
+    status: "active",
+    provider: "stripe",
+    provider_subscription_id: "sub_verified_bundle_fixture",
+    plan_key,
+  });
+
+  it("Founders Bundle grants only its modules with active subscription evidence", () => {
     const user = { plan_key: "founders_bundle_monthly" };
-    expect(hasModuleProAccess(user, "pipekeeper")).toBe(true);
-    expect(hasModuleProAccess(user, "whiskeykeeper")).toBe(true);
-    expect(hasModuleProAccess(user, "cigarkeeper")).toBe(false);
+    const sub = activeSubscription("founders_bundle_monthly");
+    expect(hasModuleProAccess(user, "pipekeeper", sub)).toBe(true);
+    expect(hasModuleProAccess(user, "whiskeykeeper", sub)).toBe(true);
+    expect(hasModuleProAccess(user, "cigarkeeper", sub)).toBe(false);
   });
 
-  it("3-Module Bundle via plan_key unlocks PipeKeeper + WhiskeyKeeper + CigarKeeper", () => {
+  it("3-Module Bundle grants scoped modules with active subscription evidence", () => {
     const user = { plan_key: "three_module_bundle_monthly" };
-    const modules = getModulesWithProAccess(user);
-    expect(modules).toContain("pipekeeper");
-    expect(modules).toContain("whiskeykeeper");
-    expect(modules).toContain("cigarkeeper");
+    const modules = getModulesWithProAccess(user, activeSubscription(user.plan_key));
+    expect(modules).toEqual(expect.arrayContaining(["pipekeeper", "whiskeykeeper", "cigarkeeper"]));
+    expect(modules).not.toContain("winekeeper");
   });
 
-  it("3-Module Bundle does NOT return an empty module list (critical bug fix)", () => {
-    const userMonthly = { plan_key: "three_module_bundle_monthly" };
-    const userAnnual  = { plan_key: "three_module_bundle_annual" };
-    const userBundle3 = { plan_key: "bundle_3_monthly" };
-    expect(getModulesWithProAccess(userMonthly).length).toBeGreaterThan(0);
-    expect(getModulesWithProAccess(userAnnual).length).toBeGreaterThan(0);
-    expect(getModulesWithProAccess(userBundle3).length).toBeGreaterThan(0);
+  it("monthly, annual, and legacy bundle keys resolve when subscription is active", () => {
+    for (const plan_key of ["three_module_bundle_monthly", "three_module_bundle_annual", "bundle_3_monthly"]) {
+      const modules = getModulesWithProAccess({ plan_key }, activeSubscription(plan_key));
+      expect(modules).toEqual(expect.arrayContaining(["pipekeeper", "whiskeykeeper", "cigarkeeper"]));
+    }
   });
 
-  it("3-Module Bundle via entitlements hint unlocks all three modules", () => {
+  it("entitlement hints alone never grant paid access after loading", () => {
     const user = { entitlements: ["three_module_bundle"] };
-    const modules = getModulesWithProAccess(user);
-    expect(modules).toContain("pipekeeper");
-    expect(modules).toContain("whiskeykeeper");
-    expect(modules).toContain("cigarkeeper");
+    expect(getModulesWithProAccess(user, null)).toEqual([]);
+    expect(getModulesWithProAccess(user)).toEqual([]);
+  });
+
+  it("expired subscriptions override stale bundle plan labels", () => {
+    const user = { plan_key: "three_module_bundle_monthly" };
+    expect(getModulesWithProAccess(user, { ...activeSubscription(user.plan_key), status: "expired" })).toEqual([]);
   });
 });
 
