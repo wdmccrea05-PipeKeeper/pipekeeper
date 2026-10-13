@@ -179,7 +179,7 @@ export function hasModuleFreeAccess(_user, moduleKey) {
   return Boolean(key) && isModuleLaunched(key);
 }
 
-export function getModuleTier(user, moduleKey, subscription = null) {
+export function getModuleTier(user, moduleKey, subscription = undefined) {
   const key = normalizeModuleKey(moduleKey);
   if (!key || !isModuleLaunched(key)) return 'locked';
   if (hasModuleProAccess(user, key, subscription)) return 'pro';
@@ -190,7 +190,7 @@ export function getModuleTier(user, moduleKey, subscription = null) {
 /**
  * For Pro users: all active modules. For free: empty.
  */
-export function getUserEntitlements(user, subscription = null) {
+export function getUserEntitlements(user, subscription = undefined) {
   return getModulesWithProAccess(user, subscription).length > 0
     ? [ENTITLEMENTS.PRO]
     : [ENTITLEMENTS.FREE];

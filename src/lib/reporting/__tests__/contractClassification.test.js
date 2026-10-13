@@ -214,7 +214,7 @@ describe('classifyAccount — test/internal account detection', () => {
   });
 
   it('classifies admin@ email as internal_admin', () => {
-    expect(classifyAccount('admin@pipekeeperapp.com', 'sub_123')).toBe('test_account');
+    expect(classifyAccount('admin@pipekeeperapp.com', 'sub_123')).toBe('internal_admin');
   });
 
   it('classifies normal user as production_customer', () => {

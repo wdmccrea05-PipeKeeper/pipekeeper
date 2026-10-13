@@ -66,11 +66,11 @@ function resolveAppleProductId(productId) {
 function resolveEffectiveProduct(productId, pendingProductId, pendingUpgradeEffectiveDate) {
   const now = new Date();
   const pendingEffective = pendingUpgradeEffectiveDate ? new Date(pendingUpgradeEffectiveDate) : null;
-  const upgradeHasTakenEffect = pendingProductId && pendingEffective && pendingEffective <= now;
+  const upgradeHasTakenEffect = Boolean(pendingProductId && pendingEffective && pendingEffective <= now);
   return {
     effectiveProductId: upgradeHasTakenEffect ? pendingProductId : productId,
     upgradeHasTakenEffect,
-    isDeferred: pendingProductId && pendingEffective && pendingEffective > now,
+    isDeferred: Boolean(pendingProductId && pendingEffective && pendingEffective > now),
   };
 }
 
@@ -181,7 +181,7 @@ describe("resolveAppleProductId — edge cases", () => {
 
 describe("Deferred upgrade handling", () => {
   test("grants current product when upgrade is in the future", () => {
-    const futureDate = "2026-08-16T00:00:00.000Z";
+    const futureDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     const { effectiveProductId, isDeferred, upgradeHasTakenEffect } = resolveEffectiveProduct(
       "collectionkeeper_3_modules_monthly",
       "collectionkeeper_all_modules_monthly",
@@ -214,7 +214,7 @@ describe("Deferred upgrade handling", () => {
   });
 
   test("deferred upgrade resolves to 3 modules until effective date, then 4", () => {
-    const futureDate = "2026-08-16T00:00:00.000Z";
+    const futureDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     const { effectiveProductId } = resolveEffectiveProduct(
       "collectionkeeper_3_modules_monthly",
       "collectionkeeper_all_modules_monthly",

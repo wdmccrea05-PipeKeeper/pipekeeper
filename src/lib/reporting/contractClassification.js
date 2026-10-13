@@ -114,7 +114,7 @@ export function shouldSkipFallbackSubscription(sub, acCoverageKeys) {
 export function classifyAccount(email, subscriptionId) {
   const e = norm(email);
   const s = norm(subscriptionId);
-  if (e.includes('pipekeepertest') || e.includes('test@pipekeeper') || e === 'admin@pipekeeperapp.com') {
+  if (e.includes('pipekeepertest') || e.includes('test@pipekeeper') || e === 'test@pipekeeperapp.com' || e === 'admin@pipekeeperapp.com') {
     return 'test_account';
   }
   if (/^test_|_test@|test_sub_|test_12345|test_1771/.test(s + '|' + e)) {
