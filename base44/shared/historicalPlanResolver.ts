@@ -107,7 +107,7 @@ const MODULE_FAMILY_MAP: Record<string, string> = {
 };
 
 const PRODUCT_NAME_KEYWORDS: Array<{ keywords: string[]; family: string; type: "single" | "bundle"; modules: string[] }> = [
-  { keywords: ["4-module", "four-module", "four module", "4 module", "all-module"], "all module", "all access"], family: "Four-Module Bundle", type: "bundle", modules: ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"] },
+  { keywords: ["4-module", "four-module", "four module", "4 module", "all-module", "all module", "all access"], family: "Four-Module Bundle", type: "bundle", modules: ["pipekeeper", "whiskeykeeper", "cigarkeeper", "winekeeper"] },
   { keywords: ["3-module", "three-module", "three module", "3 module"], family: "Three-Module Bundle", type: "bundle", modules: ["pipekeeper", "whiskeykeeper", "cigarkeeper"] },
   { keywords: ["founders", "founder", "2-module", "two-module", "two module", "2 module"], family: "Founders Bundle", type: "bundle", modules: ["pipekeeper", "whiskeykeeper"] },
   { keywords: ["whiskeykeeper", "whiskey keeper", "whiskey-keeper"], family: "WhiskeyKeeper Individual", type: "single", modules: ["whiskeykeeper"] },
