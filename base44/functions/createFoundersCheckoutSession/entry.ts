@@ -1,102 +1,39 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import Stripe from 'npm:stripe@15.0.0';
 
-function getStripeClient() {
-  return new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
-}
-
-/**
- * Create Stripe checkout session for Founders Bundle
- * Only available to users who subscribed to PipeKeeper before Feb 1, 2026
- */
+// Compatibility endpoint. The canonical checkout function owns Stripe prices,
+// duplicate-subscription checks, and webhook metadata for every plan.
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
+    if (!user?.email) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (!user?.email) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // Keep eligibility identical to checkFoundersEligibility.
+    if (!Deno.env.get('FOUNDERS_CUTOFF_DATE')) {
+      return Response.json({ error: 'Founders Bundle offer is not active' }, { status: 403 });
     }
 
     const { billingInterval = 'year' } = await req.json();
-    const FOUNDERS_CUTOFF = new Date('2026-02-01T00:00:00.000Z');
-    const email = user.email.toLowerCase().trim();
-
-    // FOUNDERS_CUTOFF_DATE is set at WhiskeyKeeper launch — accounts created before it qualify.
-    const cutoffStr = Deno.env.get('FOUNDERS_CUTOFF_DATE');
-    if (!cutoffStr) {
-      return Response.json({ error: 'Founders Bundle offer is not yet active' }, { status: 403 });
+    if (!['month', 'year'].includes(billingInterval)) {
+      return Response.json({ error: 'Invalid billing interval' }, { status: 400 });
     }
 
-    const FOUNDERS_CUTOFF_CHECK = new Date(cutoffStr);
-    const accountCreatedDate = new Date(user.created_date);
-    const isEligible = accountCreatedDate < FOUNDERS_CUTOFF_CHECK;
-
-    if (!isEligible) {
-      return Response.json({ error: 'Not eligible for Founders Bundle' }, { status: 403 });
+    const origin = String(Deno.env.get('APP_URL') || '').replace(/\/$/, '');
+    if (!origin || !/^https:\/\//.test(origin)) {
+      return Response.json({ error: 'Checkout return URL is not configured' }, { status: 503 });
     }
 
-    // Get Stripe client
-    const stripe = getStripeClient();
-
-    // Determine price ID based on interval
-    // Founders Bundle: PipeKeeper + WhiskeyKeeper
-    // Price IDs should be set in environment
-    const priceId = billingInterval === 'month'
-      ? Deno.env.get('STRIPE_PRICE_ID_FOUNDERS_MONTHLY') || 'price_founders_monthly'
-      : Deno.env.get('STRIPE_PRICE_ID_FOUNDERS_ANNUAL') || 'price_founders_annual';
-
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
-      customer_email: email,
-      mode: 'subscription',
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${Deno.env.get('APP_URL')}/SubscriptionSuccess?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${Deno.env.get('APP_URL')}/Subscription`,
-      metadata: {
-        app: 'pipekeeper',
-        app_slug: 'pipekeeper',
-        app_environment: String(Deno.env.get('APP_ENV') || Deno.env.get('ENVIRONMENT') || 'production').trim().toLowerCase(),
-        legacy_app_slug: 'collectionkeeper',
-        app_aliases: 'pipekeeper,collectionkeeper',
-        plan_key: billingInterval === 'month' ? 'founders_bundle_monthly' : 'founders_bundle_annual',
-        modules_csv: 'pipekeeper,whiskeykeeper',
-        primary_module: 'pipekeeper',
-        bundle_type: 'founders',
-        user_email: email,
-        interval: billingInterval,
-      },
-      subscription_data: {
-        metadata: {
-          app: 'pipekeeper',
-          app_slug: 'pipekeeper',
-          app_environment: String(Deno.env.get('APP_ENV') || Deno.env.get('ENVIRONMENT') || 'production').trim().toLowerCase(),
-          legacy_app_slug: 'collectionkeeper',
-          app_aliases: 'pipekeeper,collectionkeeper',
-          plan_key: billingInterval === 'month' ? 'founders_bundle_monthly' : 'founders_bundle_annual',
-          modules_csv: 'pipekeeper,whiskeykeeper',
-          primary_module: 'pipekeeper',
-          bundle_type: 'founders',
-          user_email: email,
-          interval: billingInterval,
-        },
-      },
+    const response = await base44.functions.invoke('createCheckoutSession', {
+      planKey: billingInterval === 'month' ? 'founders_bundle_monthly' : 'founders_bundle_annual',
+      selectedModules: ['pipekeeper', 'whiskeykeeper'],
+      actionType: 'new_purchase',
+      successUrl: origin + '/SubscriptionSuccess?session_id={CHECKOUT_SESSION_ID}',
+      cancelUrl: origin + '/Subscription',
     });
-
-    return Response.json({
-      sessionId: session.id,
-      url: session.url,
-    });
+    return Response.json(response?.data || response);
   } catch (error) {
-    console.error('Founders checkout error:', error);
-    return Response.json(
-      { error: error.message || 'Failed to create checkout session' },
-      { status: 500 }
-    );
+    console.error('Founders checkout delegation error:', error);
+    const status = error?.response?.status || 500;
+    return Response.json(error?.response?.data || { error: 'Failed to start checkout' }, { status });
   }
 });

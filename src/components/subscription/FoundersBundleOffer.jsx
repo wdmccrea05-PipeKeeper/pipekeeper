@@ -36,8 +36,12 @@ export default function FoundersBundleOffer({ onSuccess }) {
   async function handlePurchase(interval = 'year') {
     setLoading(true);
     try {
-      const result = await base44.functions.invoke('createFoundersCheckoutSession', {
-        billingInterval: interval,
+      const result = await base44.functions.invoke('createCheckoutSession', {
+        planKey: interval === 'month' ? 'founders_bundle_monthly' : 'founders_bundle_annual',
+        selectedModules: ['pipekeeper', 'whiskeykeeper'],
+        actionType: 'new_purchase',
+        successUrl: window.location.origin + '/SubscriptionSuccess?session_id={CHECKOUT_SESSION_ID}',
+        cancelUrl: window.location.origin + '/Subscription',
       });
 
       if (result?.data?.url) {
