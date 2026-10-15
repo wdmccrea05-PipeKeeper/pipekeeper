@@ -702,11 +702,11 @@ export default function CollectionHub() {
       {isError ? (
         <div className="rounded-2xl p-5 flex items-center justify-between gap-4" style={{ background: 'rgba(179,95,95,0.12)', border: '1px solid rgba(179,95,95,0.32)' }}>
           <div className="min-w-0">
-            <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>{t('common.errorLoadingData', 'Unable to load your collection data.')}</p>
-            <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>{t('common.retryPrompt', 'Your data is safe. Please try again.')}</p>
+            <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>{t('common.errorLoadingData')}</p>
+            <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.6)' }}>{t('common.retryPrompt')}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => refetch()} style={{ borderColor: 'rgba(179,95,95,0.4)', color: '#E0D8C8', minHeight: 44, flexShrink: 0 }}>
-            {t('common.retry', 'Retry')}
+            {t('common.retry')}
           </Button>
         </div>
       ) : null}

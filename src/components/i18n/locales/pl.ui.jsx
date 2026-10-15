@@ -3,6 +3,7 @@
 // Priority: main pl.jsx wins — these only fill gaps.
 
 const plUI = {
+  common: { errorLoadingData: "Nie udało się wczytać danych kolekcji.", retryPrompt: "Twoje dane są bezpieczne. Spróbuj ponownie." },
   featureGate: {
     collectionOptimizationName: "Optymalizacja kolekcji",
     collectionOptimizationDesc: "Uzyskaj analizę swojej kolekcji opartą na AI z rekomendacjami specjalizacji, identyfikacją luk i planowaniem scenariuszy z dostępem Pro lub starszym Premium.",

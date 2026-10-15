@@ -3,6 +3,7 @@
 // Priority: main ja.jsx wins — these only fill gaps.
 
 const jaUI = {
+  common: { errorLoadingData: "コレクションデータを読み込めませんでした。", retryPrompt: "データは安全に保存されています。もう一度お試しください。" },
   featureGate: {
     collectionOptimizationName: "コレクション最適化",
     collectionOptimizationDesc: "AI主導のコレクション分析で、専門化の推奨、ギャップの特定、What-Ifシナリオ計画を取得できます。ProまたはレガシーPremiumアクセスが必要です。",

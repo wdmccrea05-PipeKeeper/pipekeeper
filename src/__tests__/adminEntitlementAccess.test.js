@@ -206,7 +206,8 @@ describe('getModulesWithProAccess — admin gets all modules', () => {
 
   it('pipekeeper-only paid user returns only pipekeeper', () => {
     const user = paidUser(['pipekeeper']);
-    expect(getModulesWithProAccess(user, null)).toEqual(['pipekeeper']);
+    expect(getModulesWithProAccess(user, { status: 'active', plan_key: 'pipekeeper_pro_monthly', modules_csv: 'pipekeeper' })).toEqual(['pipekeeper']);
+    expect(getModulesWithProAccess(user, null)).toEqual([]);
   });
 });
 

@@ -3,6 +3,7 @@
 // Priority: main en.jsx wins — these only fill gaps.
 
 const enUI = {
+  common: { errorLoadingData: "Unable to load your collection data.", retryPrompt: "Your data is safe. Please try again." },
   featureGate: {
     collectionOptimizationName: "Collection Optimization",
     collectionOptimizationDesc: "Get AI-powered analysis of your collection with specialization recommendations, gap identification, and what-if scenario planning with Pro or legacy Premium access.",
