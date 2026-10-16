@@ -110,12 +110,12 @@ describe("Scenario 4 – CigarKeeper Pro user receives Pro limits", () => {
     const user = { role: "user", cigarkeeper_paid: true };
     const cap = getModuleLimits("cigarkeeper").cigars;
     // Pro user should not hit the limit no matter the count
-    expect(hasReachedLimit(user, { status: "active", plan_key: "cigarkeeper_pro_monthly" }, "cigarkeeper", "cigars", cap * 100)).toBe(false);
+    expect(hasReachedLimit(user, { status: "active", plan_key: "cigarkeeper_pro_monthly", modules_csv: "cigarkeeper" }, "cigarkeeper", "cigars", cap * 100)).toBe(false);
   });
 
   it("cigarkeeper_paid user gets null remaining (unlimited)", () => {
     const user = { role: "user", cigarkeeper_paid: true };
-    expect(getRemainingBeforeLimit(user, { status: "active", plan_key: "cigarkeeper_pro_monthly" }, "cigarkeeper", "cigars", 5)).toBeNull();
+    expect(getRemainingBeforeLimit(user, { status: "active", plan_key: "cigarkeeper_pro_monthly", modules_csv: "cigarkeeper" }, "cigarkeeper", "cigars", 5)).toBeNull();
   });
 
   it("three-module-bundle user has no cigarkeeper limits", () => {
