@@ -100,6 +100,6 @@ describe('Safe-Area Regression Tests', () => {
     const entPath = path.resolve(process.cwd(), 'src/components/utils/moduleEntitlements.jsx');
     const ent = fs.existsSync(entPath) ? fs.readFileSync(entPath, 'utf-8') : '';
     expect(ent).toContain('subscriptionGrantsPaidAccess');
-    expect(ent).toContain('SUBSCRIPTION-BACKED');
+    expect(ent).toContain('getCanonicalProModules(user, subscription)');
   });
 });

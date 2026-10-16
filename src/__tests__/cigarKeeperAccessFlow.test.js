@@ -110,23 +110,23 @@ describe("Scenario 4 – CigarKeeper Pro user receives Pro limits", () => {
     const user = { role: "user", cigarkeeper_paid: true };
     const cap = getModuleLimits("cigarkeeper").cigars;
     // Pro user should not hit the limit no matter the count
-    expect(hasReachedLimit(user, null, "cigarkeeper", "cigars", cap * 100)).toBe(false);
+    expect(hasReachedLimit(user, { status: "active", plan_key: "cigarkeeper_pro_monthly" }, "cigarkeeper", "cigars", cap * 100)).toBe(false);
   });
 
   it("cigarkeeper_paid user gets null remaining (unlimited)", () => {
     const user = { role: "user", cigarkeeper_paid: true };
-    expect(getRemainingBeforeLimit(user, null, "cigarkeeper", "cigars", 5)).toBeNull();
+    expect(getRemainingBeforeLimit(user, { status: "active", plan_key: "cigarkeeper_pro_monthly" }, "cigarkeeper", "cigars", 5)).toBeNull();
   });
 
   it("three-module-bundle user has no cigarkeeper limits", () => {
     const user = { role: "user", plan_key: "three_module_bundle_monthly" };
     const cap = getModuleLimits("cigarkeeper").cigars;
-    expect(hasReachedLimit(user, null, "cigarkeeper", "cigars", cap)).toBe(false);
+    expect(hasReachedLimit(user, { status: "active", plan_key: "three_module_bundle_monthly" }, "cigarkeeper", "cigars", cap)).toBe(false);
   });
 
   it("three-module-bundle user has pro tier for cigarkeeper", () => {
     const user = { role: "user", plan_key: "three_module_bundle_monthly" };
-    expect(getModuleTier(user, "cigarkeeper")).toBe("pro");
+    expect(getModuleTier(user, "cigarkeeper", { status: "active", plan_key: "three_module_bundle_monthly" })).toBe("pro");
   });
 });
 
@@ -321,9 +321,9 @@ describe("Scenario 10 – PipeKeeper/WhiskeyKeeper access behavior does not regr
 
   it("founders bundle covers PipeKeeper + WhiskeyKeeper only, not CigarKeeper", () => {
     const user = { plan_key: "founders_bundle_monthly" };
-    expect(hasModuleProAccess(user, "pipekeeper")).toBe(true);
-    expect(hasModuleProAccess(user, "whiskeykeeper")).toBe(true);
-    expect(hasModuleProAccess(user, "cigarkeeper")).toBe(false);
+    expect(hasModuleProAccess(user, "pipekeeper", { status: "active", plan_key: "founders_bundle_monthly" })).toBe(true);
+    expect(hasModuleProAccess(user, "whiskeykeeper", { status: "active", plan_key: "founders_bundle_monthly" })).toBe(true);
+    expect(hasModuleProAccess(user, "cigarkeeper", { status: "active", plan_key: "founders_bundle_monthly" })).toBe(false);
   });
 
   it("LockedModuleGuard step-3 predicate is always false for pipekeeper and whiskeykeeper", () => {
