@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useNavigate } from '@/components/utils/navigation';
 import { createPageUrl } from '@/components/utils/createPageUrl';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 /**
  * Founders Bundle Offer - visible only to eligible users
@@ -12,6 +13,7 @@ import { createPageUrl } from '@/components/utils/createPageUrl';
  */
 export default function FoundersBundleOffer({ onSuccess }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [eligible, setEligible] = useState(null);
   const [loading, setLoading] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(true);
@@ -47,13 +49,13 @@ export default function FoundersBundleOffer({ onSuccess }) {
       if (result?.data?.url) {
         const opened = window.open(result.data.url, "_blank", "noopener,noreferrer");
         if (!opened || opened?.closed) {
-          toast.error("Unable to open checkout here. Please try again from the Subscription page.");
+          toast.error(t('foundersOffer.checkoutUnavailable'));
           navigate(createPageUrl("Subscription"));
         }
       }
     } catch (e) {
       console.error('Checkout error:', e);
-      toast.error('Failed to start checkout. Please try again.');
+      toast.error(t('foundersOffer.checkoutFailed'));
     } finally {
       setLoading(false);
     }
@@ -67,7 +69,7 @@ export default function FoundersBundleOffer({ onSuccess }) {
       }}>
         <div className="flex items-center justify-center gap-2">
           <Loader className="w-4 h-4 animate-spin" style={{ color: 'rgba(180,140,75,0.6)' }} />
-          <span style={{ color: 'rgba(224,216,200,0.5)' }}>Checking offer eligibility...</span>
+          <span style={{ color: 'rgba(224,216,200,0.5)' }}>{t('foundersOffer.checking')}</span>
         </div>
       </div>
     );
@@ -107,14 +109,14 @@ export default function FoundersBundleOffer({ onSuccess }) {
             <div style={{ color: '#D4AF37' }}>✓</div>
             <div className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>
               <div style={{ color: '#F5F1E7' }} className="font-semibold">PipeKeeper</div>
-              <div style={{ color: 'rgba(180,140,75,0.6)' }}>Full pipe collection</div>
+              <div style={{ color: 'rgba(180,140,75,0.6)' }}>{t('foundersOffer.pipes')}</div>
             </div>
           </div>
           <div className="flex gap-2">
             <div style={{ color: '#D4AF37' }}>✓</div>
             <div className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>
               <div style={{ color: '#F5F1E7' }} className="font-semibold">WhiskeyKeeper</div>
-              <div style={{ color: 'rgba(180,140,75,0.6)' }}>Bottle inventory & AI valuation</div>
+              <div style={{ color: 'rgba(180,140,75,0.6)' }}>{t('foundersOffer.whiskey')}</div>
             </div>
           </div>
         </div>
@@ -128,7 +130,7 @@ export default function FoundersBundleOffer({ onSuccess }) {
             <span className="text-3xl font-bold" style={{ color: '#D4AF37' }}>
               $49.99
             </span>
-            <span style={{ color: 'rgba(224,216,200,0.5)' }}>per year</span>
+            <span style={{ color: 'rgba(224,216,200,0.5)' }}>{t('foundersOffer.perYear')}</span>
           </div>
           <div className="text-xs" style={{ color: 'rgba(180,140,75,0.6)' }}>
             Save $30/year vs. buying modules separately

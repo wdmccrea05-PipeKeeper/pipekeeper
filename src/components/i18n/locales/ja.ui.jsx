@@ -4,6 +4,21 @@
 
 const jaUI = {
   common: { errorLoadingData: "コレクションデータを読み込めませんでした。", retryPrompt: "データは安全に保存されています。もう一度お試しください。" },
+  foundersOffer: {
+    checkoutUnavailable: "決済画面を開けません。サブスクリプション画面からお試しください。",
+    checkoutFailed: "決済を開始できませんでした。もう一度お試しください。",
+    checking: "対象資格を確認しています...",
+    title: "創設メンバー限定バンドル",
+    description: "PipeKeeperとWhiskeyKeeperを創設メンバー特別価格で利用できます。",
+    pipes: "パイプコレクション全機能",
+    whiskey: "ボトル管理とAI査定",
+    pricing: "期間限定の創設メンバー価格",
+    perYear: "年間",
+    savings: "個別購入より年間30ドルお得",
+    processing: "処理中...",
+    claim: "創設メンバーバンドルを購入",
+    limited: "創設メンバー限定の特典です。",
+  },
   featureGate: {
     collectionOptimizationName: "コレクション最適化",
     collectionOptimizationDesc: "AI主導のコレクション分析で、専門化の推奨、ギャップの特定、What-Ifシナリオ計画を取得できます。ProまたはレガシーPremiumアクセスが必要です。",

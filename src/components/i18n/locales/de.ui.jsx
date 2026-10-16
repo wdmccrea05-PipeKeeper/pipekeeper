@@ -3,6 +3,21 @@
 // Priority: main de.jsx wins — these only fill gaps.
 
 const deUI = {
+  foundersOffer: {
+    checkoutUnavailable: "Checkout konnte nicht geöffnet werden. Bitte über Abonnements erneut versuchen.",
+    checkoutFailed: "Checkout konnte nicht gestartet werden. Bitte erneut versuchen.",
+    checking: "Berechtigung wird geprüft...",
+    title: "Exklusives Gründerpaket",
+    description: "PipeKeeper und WhiskeyKeeper zum besonderen Gründerpreis freischalten.",
+    pipes: "Vollständige Pfeifensammlung",
+    whiskey: "Flaschenbestand und KI-Bewertung",
+    pricing: "Zeitlich begrenzter Gründerpreis",
+    perYear: "pro Jahr",
+    savings: "30 $ jährlich gegenüber Einzelmodulen sparen",
+    processing: "Wird verarbeitet...",
+    claim: "Gründerpaket sichern",
+    limited: "Begrenztes Angebot für Gründungsmitglieder.",
+  },
   featureGate: {
     collectionOptimizationName: "Sammlungsoptimierung",
     collectionOptimizationDesc: "Erhalten Sie eine KI-gestützte Analyse Ihrer Sammlung mit Spezialisierungsempfehlungen, Lückenidentifikation und Was-wäre-wenn-Szenarioplanung mit Pro- oder Legacy-Premium-Zugang.",

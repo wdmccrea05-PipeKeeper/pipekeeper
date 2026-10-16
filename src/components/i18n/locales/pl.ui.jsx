@@ -4,6 +4,21 @@
 
 const plUI = {
   common: { errorLoadingData: "Nie udało się wczytać danych kolekcji.", retryPrompt: "Twoje dane są bezpieczne. Spróbuj ponownie." },
+  foundersOffer: {
+    checkoutUnavailable: "Nie można otworzyć płatności. Spróbuj na stronie Subskrypcje.",
+    checkoutFailed: "Nie udało się rozpocząć płatności. Spróbuj ponownie.",
+    checking: "Sprawdzanie uprawnień...",
+    title: "Ekskluzywny pakiet założycielski",
+    description: "Odblokuj PipeKeeper i WhiskeyKeeper w specjalnej cenie dla założycieli.",
+    pipes: "Pełna kolekcja fajek",
+    whiskey: "Inwentarz butelek i wycena AI",
+    pricing: "Ograniczona czasowo cena dla założycieli",
+    perYear: "rocznie",
+    savings: "Oszczędź 30 USD rocznie względem osobnych modułów",
+    processing: "Przetwarzanie...",
+    claim: "Wybierz pakiet założycielski",
+    limited: "Oferta ograniczona do członków założycieli.",
+  },
   featureGate: {
     collectionOptimizationName: "Optymalizacja kolekcji",
     collectionOptimizationDesc: "Uzyskaj analizę swojej kolekcji opartą na AI z rekomendacjami specjalizacji, identyfikacją luk i planowaniem scenariuszy z dostępem Pro lub starszym Premium.",

@@ -4,6 +4,21 @@
 
 const enUI = {
   common: { errorLoadingData: "Unable to load your collection data.", retryPrompt: "Your data is safe. Please try again." },
+  foundersOffer: {
+    checkoutUnavailable: "Unable to open checkout here. Please try again from the Subscription page.",
+    checkoutFailed: "Failed to start checkout. Please try again.",
+    checking: "Checking offer eligibility...",
+    title: "Founders Bundle Exclusive",
+    description: "As an early PipeKeeper supporter, unlock PipeKeeper and WhiskeyKeeper at a special founding member price.",
+    pipes: "Full pipe collection",
+    whiskey: "Bottle inventory & AI valuation",
+    pricing: "Limited-time founding member pricing",
+    perYear: "per year",
+    savings: "Save $30/year vs. buying modules separately",
+    processing: "Processing...",
+    claim: "Claim Founders Bundle",
+    limited: "Offer limited to founding members. Secure your spot today.",
+  },
   featureGate: {
     collectionOptimizationName: "Collection Optimization",
     collectionOptimizationDesc: "Get AI-powered analysis of your collection with specialization recommendations, gap identification, and what-if scenario planning with Pro or legacy Premium access.",
