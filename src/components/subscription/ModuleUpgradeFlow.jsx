@@ -214,7 +214,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
         setError(
           sessionRes?.data?.error ||
           sessionRes?.error ||
-          'Failed to create checkout session.'
+          t('subscription.checkoutCreateFailed')
         );
         setIsProcessing(false);
         return;
@@ -235,12 +235,12 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
 
       const opened = window.open(checkoutUrl, "_blank", "noopener,noreferrer");
       if (!opened || opened?.closed) {
-        toast.error("Unable to open checkout here. Please try again from the Subscription page.");
+        toast.error(t('foundersOffer.checkoutUnavailable'));
         navigate(createPageUrl("Subscription"));
       }
     } catch (err) {
       console.error('[ModuleUpgradeFlow]', err);
-      setError(err?.message || 'An unexpected error occurred.');
+      setError(err?.message || t('subscription.unexpectedCheckoutError'));
       setIsProcessing(false);
     }
   };

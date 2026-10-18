@@ -96,10 +96,10 @@ export default function FoundersBundleOffer({ onSuccess }) {
       <div className="space-y-4 max-w-2xl">
         <div>
           <h3 className="text-xl font-bold mb-2" style={{ color: '#F5F1E7', fontFamily: 'Georgia, serif' }}>
-            Founders Bundle Exclusive
+            {t('foundersOffer.title')}
           </h3>
           <p className="text-sm" style={{ color: 'rgba(224,216,200,0.8)' }}>
-            As an early PipeKeeper supporter, unlock the complete collector's suite at a special founding member price.
+            {t('foundersOffer.description')}
           </p>
         </div>
 
@@ -124,16 +124,16 @@ export default function FoundersBundleOffer({ onSuccess }) {
         {/* Pricing */}
         <div className="bg-black/20 rounded-lg p-4 space-y-2">
           <div className="text-sm" style={{ color: 'rgba(180,140,75,0.6)' }}>
-            Limited-time founding member pricing
+            {t('foundersOffer.pricing')}
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold" style={{ color: '#D4AF37' }}>
-              $49.99
+              {t('foundersOffer.annualPrice')}
             </span>
             <span style={{ color: 'rgba(224,216,200,0.5)' }}>{t('foundersOffer.perYear')}</span>
           </div>
           <div className="text-xs" style={{ color: 'rgba(180,140,75,0.6)' }}>
-            Save $30/year vs. buying modules separately
+            {t('foundersOffer.savings')}
           </div>
         </div>
 
@@ -152,19 +152,19 @@ export default function FoundersBundleOffer({ onSuccess }) {
             {loading ? (
               <>
                 <Loader className="w-4 h-4 mr-2 animate-spin" />
-                Processing...
+                {t('foundersOffer.processing')}
               </>
             ) : (
               <>
                 <Crown className="w-4 h-4 mr-2" />
-                Claim Founders Bundle
+                {t('foundersOffer.claim')}
               </>
             )}
           </Button>
         </div>
 
         <div className="text-xs text-center" style={{ color: 'rgba(180,140,75,0.5)' }}>
-          Offer limited to founding members. Secure your spot today.
+          {t('foundersOffer.limited')}
         </div>
       </div>
     </div>

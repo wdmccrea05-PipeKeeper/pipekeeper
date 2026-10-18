@@ -67,7 +67,7 @@ function AppleSubscription() {
       if (isIOSWebView()) {
         // On iOS — trigger native subscription status request
         requestNativeSubscriptionStatus();
-        setSyncMessage(t("subscription.restoreInProgress", "Restore request sent. If you have an active subscription, it will sync shortly."));
+        setSyncMessage(t("subscription.restoreInProgress"));
       } else {
         // On web but in Apple build — user may have purchased via App Store
         // but is accessing the web version. Attempt a pending-verification sync.
@@ -80,7 +80,7 @@ function AppleSubscription() {
           verificationProof: null,
         });
         if (result?.data?.ok) {
-          setSyncMessage(t("subscription.restoreSynced", "Subscription sync attempted. If you have an active Apple subscription, please open the CollectionKeeper iOS app to complete verification."));
+          setSyncMessage(t("subscription.restoreSynced"));
           await refetch();
           queryClient.invalidateQueries({ queryKey: ["subscription"] });
           queryClient.invalidateQueries({ queryKey: ["current-user"] });
@@ -183,8 +183,8 @@ function AppleSubscription() {
             disabled={restoring}
           >
             {restoring
-              ? t("subscription.restoring", "Restoring...")
-              : t("subscription.restorePurchases", "Restore Purchases")}
+              ? t("subscription.restoring")
+              : t("subscription.restorePurchases")}
           </Button>
           <Button variant="secondary" onClick={openManage}>
             {t("subscription.manage")}
