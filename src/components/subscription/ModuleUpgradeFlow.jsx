@@ -17,7 +17,6 @@ import {
   getUserSubscriptionState,
   getNextUpgradeRecommendation,
   getAvailableUpgradePaths,
-  canProcessBundleUpgrade,
 } from '@/components/utils/subscriptionDecisionLogic';
 import {
   calculatePrice,
@@ -109,7 +108,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
   if (!user || !currentState) {
     return (
       <div className="p-6 text-center text-[#E0D8C8]">
-        {t('common.loading') || 'Loading...'}
+        {t('common.loading')}
       </div>
     );
   }
@@ -131,50 +130,11 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
         currentState.paidModules.length > 0;
 
       if (isBundleUpgrade) {
-        setError('Bundle upgrades require a safe billing migration. Your existing subscriptions remain active. Please contact support.');
+        // Existing paid subscriptions require an atomic, verified migration.
+        // Never cancel an existing subscription or start an overlapping checkout here.
+        setError(t('subscription.bundleMigrationRequired'));
         setIsProcessing(false);
         return;
-        const canUpgrade = canProcessBundleUpgrade(user, selectedOption.modules);
-
-        if (!canUpgrade?.canUpgrade) {
-          setError(
-            canUpgrade?.reason === 'cannot_downgrade'
-              ? 'This selection would reduce module access and cannot be processed as an upgrade.'
-              : canUpgrade?.reason === 'already_has_bundle'
-                ? 'You already appear to have access to this bundle.'
-                : 'This bundle upgrade cannot be processed.'
-          );
-          setIsProcessing(false);
-          return;
-        }
-
-        const subscriptionRows = await fetchUserSubscriptionRows(user);
-        const cancelableSubs = getCancelableUpgradeSubscriptions(subscriptionRows);
-        const currentSubscriptionIds = cancelableSubs
-          .map(getRealProviderSubscriptionId)
-          .filter(Boolean);
-
-        if (currentSubscriptionIds.length > 0) {
-          const upgradeRes = await base44.functions.invoke('handleBundleUpgrade', {
-            currentSubscriptionIds,
-            targetBundleType: selectedOption.type,
-            billingPeriod,
-          });
-
-          if (!upgradeRes?.data?.success) {
-            const serverError =
-              upgradeRes?.data?.error ||
-              upgradeRes?.error ||
-              'Failed to prepare the bundle upgrade.';
-            setError(serverError);
-            setIsProcessing(false);
-            return;
-          }
-        } else {
-          console.warn(
-            '[ModuleUpgradeFlow] No cancelable Stripe subscriptions found before bundle checkout.'
-          );
-        }
       }
 
       const moduleRouteMap = {
@@ -248,7 +208,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
   const currentModules = currentState.paidModules.length > 0 ? (
     <div className="mb-6">
       <h3 className="text-lg font-bold mb-3" style={{ color: '#F5F1E7' }}>
-        Your Current Modules
+        {t('subscription.currentModules')}
       </h3>
       <div className="flex flex-wrap gap-2">
         {currentState.paidModules.map((module) => (
@@ -275,12 +235,13 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
       }}
     >
       <p style={{ color: '#E0D8C8' }}>
-        {t('subscription.noModulesPurchased') || 'No modules purchased yet.'}
+        {t('subscription.noModulesPurchased')}
       </p>
     </div>
   );
 
   const upgradeOptions = availablePaths.map((path) => {
+    const requiresMigration = path.type.startsWith('bundle') && currentState.paidModules.length > 0;
     const price = calculatePrice(billingPeriod, path.modules);
     const displayPrice = formatPrice(price);
     const savings = path.type.startsWith('bundle')
@@ -291,9 +252,13 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
     return (
       <div
         key={`${path.type}-${path.modules.join(',')}`}
-        onClick={() => handleSelectOption(path)}
+        onClick={() => { if (!requiresMigration) handleSelectOption(path); }}
+        role={requiresMigration ? 'group' : 'button'}
+        aria-disabled={requiresMigration}
+        tabIndex={requiresMigration ? -1 : 0}
         className={cn(
-          'p-5 rounded-lg border-2 cursor-pointer transition-all',
+          'p-5 rounded-lg border-2 transition-all',
+          requiresMigration ? 'cursor-not-allowed opacity-75' : 'cursor-pointer',
           selectedOption?.type === path.type &&
             selectedOption?.modules.join(',') === path.modules.join(',')
             ? 'bg-[#A35C5C]/20 border-[#A35C5C]'
@@ -304,7 +269,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
           <h4 className="text-lg font-bold" style={{ color: '#F5F1E7' }}>
             {path.type === 'single'
               ? getModuleDisplayName(path.modules[0])
-              : `${path.modules.length}-Module Bundle`}
+              : t('subscription.moduleBundleCount', { count: path.modules.length })}
           </h4>
 
           {isRecommended && (
@@ -316,7 +281,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
               }}
             >
               <Zap className="w-3 h-3" />
-              Recommended
+              {t('subscription.recommended')}
             </span>
           )}
         </div>
@@ -325,7 +290,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
           className="text-sm mb-3"
           style={{ color: 'rgba(224,216,200,0.7)' }}
         >
-          {path.description}
+          {requiresMigration ? t('subscription.bundleMigrationRequired') : path.description}
         </p>
 
         <div className="text-2xl font-bold mb-2" style={{ color: '#D4A574' }}>
@@ -334,13 +299,13 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
             className="text-sm"
             style={{ color: 'rgba(224,216,200,0.6)' }}
           >
-            /{billingPeriod === 'monthly' ? 'mo' : 'yr'}
+            /{billingPeriod === 'monthly' ? t('subscription.monthAbbrev') : t('subscription.yearAbbrev')}
           </span>
         </div>
 
         {savings && savings.savingsPercentage > 0 && (
           <p className="text-xs" style={{ color: '#10B981' }}>
-            Save {savings.savingsPercentage}% vs individual modules
+            {t('subscription.bundleSavingsPercent', { count: savings.savingsPercentage })}
           </p>
         )}
 
@@ -377,7 +342,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
                 : 'bg-[#3a2a20]/50 text-[#E0D8C8]/70 hover:bg-[#3a2a20]'
             )}
           >
-            {period === 'monthly' ? 'Monthly' : 'Annual'}
+            {period === 'monthly' ? t('subscription.monthlyLabel') : t('subscription.annualLabel')}
           </button>
         ))}
       </div>
@@ -395,7 +360,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
           />
           <div>
             <p className="font-semibold" style={{ color: '#E05D5D' }}>
-              {t('common.error') || 'Error'}
+              {t('common.error')}
             </p>
             <p
               className="text-sm"
@@ -420,7 +385,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
                 onClick={() => setSelectedOption(null)}
                 disabled={isProcessing}
               >
-                {t('common.cancel') || 'Cancel'}
+                {t('common.cancel')}
               </Button>
 
               <Button
@@ -428,7 +393,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
                 disabled={isProcessing}
                 className="bg-[#A35C5C] hover:bg-[#8F4E4E]"
               >
-                {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
+                {isProcessing ? t('subscription.processingCheckout') : t('subscription.proceedToCheckout')}
               </Button>
             </div>
           )}
@@ -439,7 +404,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
           style={{ background: 'rgba(42, 31, 24, 0.5)' }}
         >
           <p style={{ color: '#E0D8C8' }}>
-            {t('subscription.allModulesPurchased') || 'All modules already purchased.'}
+            {t('subscription.allModulesPurchased')}
           </p>
         </div>
       )}
