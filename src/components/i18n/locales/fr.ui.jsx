@@ -467,6 +467,7 @@ const frUI = {
     processingCheckout: "Traitement...",
     proceedToCheckout: "Passer au paiement",
     currentModules: "Vos modules actuels",
+    contactSupportForUpgrade: "Contacter le support pour cette mise à niveau",
   },
   share: {
     backHome: "Retour à l'accueil",

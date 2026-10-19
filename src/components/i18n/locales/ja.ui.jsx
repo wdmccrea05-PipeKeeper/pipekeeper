@@ -533,6 +533,7 @@ const jaUI = {
     processingCheckout: "処理中...",
     proceedToCheckout: "決済に進む",
     currentModules: "現在のモジュール",
+    contactSupportForUpgrade: "このアップグレードについてサポートに問い合わせる",
   },
   insights: {
     reportsTooltip: "参照または文書化のためにコレクションのエクスポート可能なサマリーを生成します。",

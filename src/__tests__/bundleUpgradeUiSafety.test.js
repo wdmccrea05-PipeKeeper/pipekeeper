@@ -12,10 +12,11 @@ describe('existing subscriber bundle upgrade safety', () => {
     expect(source).toContain("if (isBundleUpgrade) {");
     expect(source).toContain("setError(t('subscription.bundleMigrationRequired'))");
     expect(source).not.toContain("base44.functions.invoke('handleBundleUpgrade'");
+    expect(source).toContain('mailto:admin@pipekeeperapp.com');
   });
   it('localizes bundle warnings and checkout actions in all supported offer languages', () => {
     for (const lang of ['en', 'es', 'fr', 'de', 'ja', 'pl']) {
-      for (const key of ['bundleMigrationRequired','moduleBundleCount','monthlyLabel','annualLabel','proceedToCheckout','processingCheckout','currentModules','fourModuleBundleDescription']) {
+      for (const key of ['bundleMigrationRequired','moduleBundleCount','monthlyLabel','annualLabel','proceedToCheckout','processingCheckout','currentModules','fourModuleBundleDescription','contactSupportForUpgrade']) {
         const translated = translate('subscription.' + key, { count: 4 }, lang);
         expect(translated, lang + ':' + key).toBeTruthy();
         expect(translated, lang + ':' + key).not.toBe('subscription.' + key);

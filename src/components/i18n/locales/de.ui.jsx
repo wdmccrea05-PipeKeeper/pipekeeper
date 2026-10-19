@@ -429,6 +429,7 @@ const deUI = {
     processingCheckout: "Wird verarbeitet...",
     proceedToCheckout: "Zur Kasse",
     currentModules: "Ihre aktuellen Module",
+    contactSupportForUpgrade: "Support für dieses Upgrade kontaktieren",
   },
   insights: {
     reportsTooltip: "Erstellen Sie exportierbare Zusammenfassungen Ihrer Sammlung zur Referenz oder Dokumentation.",

@@ -551,6 +551,7 @@ const enUI = {
     processingCheckout: "Processing...",
     proceedToCheckout: "Proceed to Checkout",
     currentModules: "Your Current Modules",
+    contactSupportForUpgrade: "Contact support about this upgrade",
   },
   share: {
     backHome: "Back Home",

@@ -478,6 +478,7 @@ const plUI = {
     processingCheckout: "Przetwarzanie...",
     proceedToCheckout: "Przejdź do płatności",
     currentModules: "Twoje obecne moduły",
+    contactSupportForUpgrade: "Skontaktuj się z pomocą w sprawie aktualizacji",
   },
   insights: {
     reportsTooltip: "Generuj eksportowalne podsumowania kolekcji do odniesienia lub dokumentacji.",

@@ -549,6 +549,7 @@ const esUI = {
     proceedToCheckout: "Continuar al pago",
     currentModules: "Tus módulos actuales",
     fourModuleBundleDescription: "PipeKeeper + WhiskeyKeeper + CigarKeeper + WineKeeper en un solo plan.",
+    contactSupportForUpgrade: "Contactar con soporte para esta actualización",
   },
   share: {
     backHome: "Volver al inicio",

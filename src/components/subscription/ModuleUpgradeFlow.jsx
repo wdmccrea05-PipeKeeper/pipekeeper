@@ -23,71 +23,6 @@ import {
   formatPrice,
   getBundleSavings,
 } from '@/components/utils/bundlePricingEngine';
-import { subscriptionGrantsPaidAccess } from '@/components/utils/gracePeriod';
-
-const normEmail = (email) => String(email || '').trim().toLowerCase();
-
-function getSubscriptionSortTime(sub) {
-  return new Date(
-    sub?.current_period_start ||
-    sub?.updated_date ||
-    sub?.created_date ||
-    0
-  ).getTime();
-}
-
-function getRealProviderSubscriptionId(sub) {
-  return (
-    sub?.provider_subscription_id ||
-    sub?.stripe_subscription_id ||
-    null
-  );
-}
-
-function isStripeLikeSubscription(sub) {
-  const provider = String(sub?.provider || '').toLowerCase();
-  return provider === '' || provider === 'stripe';
-}
-
-function isCancelablePaidStripeSubscription(sub) {
-  if (!sub) return false;
-  if (!subscriptionGrantsPaidAccess(sub)) return false;
-  if (!isStripeLikeSubscription(sub)) return false;
-  return !!getRealProviderSubscriptionId(sub);
-}
-
-async function fetchUserSubscriptionRows(user) {
-  if (!user) return [];
-
-  const userId = user.id || user.auth_user_id || null;
-  const email = user.email ? normEmail(user.email) : null;
-
-  let subs = [];
-
-  try {
-    if (userId) {
-      subs = await base44.entities.Subscription.filter({ user_id: userId });
-    }
-  } catch (err) {
-    console.warn('[ModuleUpgradeFlow] user_id subscription lookup failed:', err);
-  }
-
-  try {
-    if ((!subs || subs.length === 0) && email) {
-      subs = await base44.entities.Subscription.filter({ user_email: email });
-    }
-  } catch (err) {
-    console.warn('[ModuleUpgradeFlow] user_email subscription lookup failed:', err);
-  }
-
-  return Array.isArray(subs) ? subs : [];
-}
-
-function getCancelableUpgradeSubscriptions(subscriptionRows = []) {
-  return [...subscriptionRows]
-    .filter(isCancelablePaidStripeSubscription)
-    .sort((a, b) => getSubscriptionSortTime(b) - getSubscriptionSortTime(a));
-}
 
 export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
   const { t } = useTranslation();
@@ -307,6 +242,16 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
           <p className="text-xs" style={{ color: '#10B981' }}>
             {t('subscription.bundleSavingsPercent', { count: savings.savingsPercentage })}
           </p>
+        )}
+
+        {requiresMigration && (
+          <a
+            href={`mailto:admin@pipekeeperapp.com?subject=${encodeURIComponent('CollectionKeeper bundle migration assistance')}`}
+            onClick={(event) => event.stopPropagation()}
+            className="inline-block text-sm underline mb-3 text-[#D4A574]"
+          >
+            {t('subscription.contactSupportForUpgrade')}
+          </a>
         )}
 
         <div className="mt-3 space-y-1">
