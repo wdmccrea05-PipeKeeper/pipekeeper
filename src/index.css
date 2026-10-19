@@ -119,3 +119,10 @@
     overflow-wrap: break-word;
   }
 }
+/* Keep app layouts within narrow mobile viewports without clipping text. */
+html, body, #root { max-width: 100%; min-width: 0; }
+@media (max-width: 640px) {
+  html, body { overflow-x: clip; }
+  input, textarea, select { max-width: 100%; }
+  [role="dialog"] { max-width: calc(100vw - 24px); }
+}

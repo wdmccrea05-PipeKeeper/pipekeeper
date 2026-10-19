@@ -34,11 +34,11 @@ const STEP_LABELS = {
 function StepIndicator({ currentStep }) {
   const idx = STEPS.indexOf(currentStep);
   return (
-    <div className="flex items-center gap-1 mb-5">
+    <div className="grid grid-cols-5 gap-1 mb-5 w-full min-w-0">
       {STEPS.map((s, i) => (
         <React.Fragment key={s}>
           <div
-            className="text-xs px-2 py-0.5 rounded-full font-medium transition-colors whitespace-nowrap"
+            className="min-w-0 text-center text-[9px] sm:text-xs px-0.5 sm:px-2 py-1 rounded-full font-medium transition-colors leading-tight break-words"
             style={{
               background: i <= idx ? "rgba(180,140,75,0.25)" : "rgba(255,255,255,0.04)",
               color: i <= idx ? "#D4A574" : "rgba(224,216,200,0.35)",
@@ -47,9 +47,7 @@ function StepIndicator({ currentStep }) {
           >
             {STEP_LABELS[s]}
           </div>
-          {i < STEPS.length - 1 && (
-            <div className="flex-1 h-px min-w-[4px]" style={{ background: "rgba(180,140,75,0.15)" }} />
-          )}
+          
         </React.Fragment>
       ))}
     </div>
@@ -461,7 +459,7 @@ export default function PipeClubSessionWizard({ onComplete, onCancel }) {
 
   return (
     <div
-      className="rounded-2xl p-5 space-y-4 w-full max-w-lg mx-auto"
+      className="rounded-2xl p-3 sm:p-5 space-y-4 w-full max-w-lg min-w-0 mx-auto overflow-x-hidden [&_input]:min-w-0 [&_textarea]:min-w-0"
       style={{ background: "linear-gradient(145deg, rgba(38,26,18,0.99), rgba(25,17,12,1))", border: "1px solid rgba(180,140,75,0.2)" }}
     >
       <div className="flex items-center justify-between">
