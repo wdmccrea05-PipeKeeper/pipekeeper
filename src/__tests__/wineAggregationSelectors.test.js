@@ -51,10 +51,10 @@ describe('getWineTotalValue respects canonical priority chain', () => {
     expect(getWineTotalValue(wine)).toBe(0);
   });
 
-  it('treats quantity=0 or missing as 1', () => {
+  it('does not count unstocked wine with missing quantity', () => {
     const wine = { purchase_price: 40 };
-    // quantity defaults to 1 via getWineQuantity
-    expect(getWineTotalValue(wine)).toBe(40);
+    // Inventory selectors do not invent bottles when quantity is missing.
+    expect(getWineTotalValue(wine)).toBe(0);
   });
 });
 
@@ -72,7 +72,7 @@ describe('selectWineCollectionValue sums getWineTotalValue across collection', (
   it('correctly sums multiple wines', () => {
     const wines = [
       { purchase_price: 30, quantity: 2 },  // 60
-      { estimated_total_value: 200 },        // 200
+      { estimated_total_value: 200, quantity: 1 }, // 200
       { manual_valuation_enabled: true, manual_estimated_value: 50, quantity: 3 }, // 150
     ];
     expect(selectWineCollectionValue(wines)).toBe(410);
@@ -95,9 +95,9 @@ describe('selectTotalWineBottles sums quantities', () => {
     expect(selectTotalWineBottles([])).toBe(0);
   });
 
-  it('treats missing quantity as 1', () => {
+  it('treats missing quantity as zero inventory', () => {
     const wines = [{ name: 'A' }, { name: 'B' }];
-    expect(selectTotalWineBottles(wines)).toBe(2);
+    expect(selectTotalWineBottles(wines)).toBe(0);
   });
 
   it('sums quantity across wines correctly', () => {
