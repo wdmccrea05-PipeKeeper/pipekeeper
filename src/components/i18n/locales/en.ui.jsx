@@ -552,6 +552,7 @@ const enUI = {
     proceedToCheckout: "Proceed to Checkout",
     currentModules: "Your Current Modules",
     contactSupportForUpgrade: "Contact support about this upgrade",
+    fourModuleBundleDescription: "PipeKeeper + WhiskeyKeeper + CigarKeeper + WineKeeper in one plan.",
   },
   share: {
     backHome: "Back Home",

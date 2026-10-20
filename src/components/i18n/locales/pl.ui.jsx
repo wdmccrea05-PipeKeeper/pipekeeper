@@ -479,6 +479,7 @@ const plUI = {
     proceedToCheckout: "Przejdź do płatności",
     currentModules: "Twoje obecne moduły",
     contactSupportForUpgrade: "Skontaktuj się z pomocą w sprawie aktualizacji",
+    fourModuleBundleDescription: "PipeKeeper + WhiskeyKeeper + CigarKeeper + WineKeeper w jednym planie.",
   },
   insights: {
     reportsTooltip: "Generuj eksportowalne podsumowania kolekcji do odniesienia lub dokumentacji.",

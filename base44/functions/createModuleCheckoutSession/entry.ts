@@ -209,14 +209,16 @@ async function findOrCreateStripeCustomer(base44: any, stripe: any, user: any, a
       : [];
     if (Array.isArray(subsByUserId)) candidates.push(...subsByUserId);
   } catch (err) {
-    console.warn('[createModuleCheckoutSession] Subscription lookup by user_id failed:', err);
+    console.error('[createModuleCheckoutSession] Subscription lookup by user_id failed; refusing checkout:', err);
+    throw new Error('Unable to verify existing subscriptions. Please try again later.');
   }
 
   try {
     const subsByEmail = await base44.asServiceRole.entities.Subscription.filter({ user_email: email });
     if (Array.isArray(subsByEmail)) candidates.push(...subsByEmail);
   } catch (err) {
-    console.warn('[createModuleCheckoutSession] Subscription lookup by email failed:', err);
+    console.error('[createModuleCheckoutSession] Subscription lookup by email failed; refusing checkout:', err);
+    throw new Error('Unable to verify existing subscriptions. Please try again later.');
   }
 
   const customerIdFromSub =
@@ -390,7 +392,12 @@ Deno.serve(async (req) => {
         }, { status: 409 });
       }
     } catch (e: any) {
-      console.warn('[createModuleCheckoutSession] Duplicate guard check failed (non-blocking):', e?.message);
+      console.error('[createModuleCheckoutSession] Duplicate guard check failed; refusing checkout:', e?.message);
+      return Response.json({
+        success: false,
+        code: 'SUBSCRIPTION_VERIFICATION_UNAVAILABLE',
+        error: 'Unable to verify existing subscriptions. No payment was initiated. Please try again later.',
+      }, { status: 503 });
     }
 
     const session = await stripe.checkout.sessions.create({

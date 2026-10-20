@@ -534,6 +534,7 @@ const jaUI = {
     proceedToCheckout: "決済に進む",
     currentModules: "現在のモジュール",
     contactSupportForUpgrade: "このアップグレードについてサポートに問い合わせる",
+    fourModuleBundleDescription: "PipeKeeper・WhiskeyKeeper・CigarKeeper・WineKeeperを1つのプランで利用できます。",
   },
   insights: {
     reportsTooltip: "参照または文書化のためにコレクションのエクスポート可能なサマリーを生成します。",

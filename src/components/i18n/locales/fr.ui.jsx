@@ -468,6 +468,7 @@ const frUI = {
     proceedToCheckout: "Passer au paiement",
     currentModules: "Vos modules actuels",
     contactSupportForUpgrade: "Contacter le support pour cette mise à niveau",
+    fourModuleBundleDescription: "PipeKeeper + WhiskeyKeeper + CigarKeeper + WineKeeper dans un seul forfait.",
   },
   share: {
     backHome: "Retour à l'accueil",

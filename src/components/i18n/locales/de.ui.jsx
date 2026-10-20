@@ -430,6 +430,7 @@ const deUI = {
     proceedToCheckout: "Zur Kasse",
     currentModules: "Ihre aktuellen Module",
     contactSupportForUpgrade: "Support für dieses Upgrade kontaktieren",
+    fourModuleBundleDescription: "PipeKeeper + WhiskeyKeeper + CigarKeeper + WineKeeper in einem Tarif.",
   },
   insights: {
     reportsTooltip: "Erstellen Sie exportierbare Zusammenfassungen Ihrer Sammlung zur Referenz oder Dokumentation.",
