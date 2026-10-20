@@ -161,7 +161,7 @@ describe("Apple Subscription Restore Purchases Button", () => {
     );
 
     expect(subscriptionSource).toContain("handleRestorePurchases");
-    expect(subscriptionSource).toContain("Restore Purchases");
+    expect(subscriptionSource).toContain('t("subscription.restorePurchases")');
     expect(subscriptionSource).toContain("requestNativeSubscriptionStatus");
   });
 
