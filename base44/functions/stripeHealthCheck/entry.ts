@@ -29,8 +29,8 @@ Deno.serve(async (req: Request) => {
           error: err.code,
           message: err.message,
           envDetected: null,
-          keyPrefix: null,
-          keyLength: null,
+          keyConfigured: false,
+          keyMode: null,
           apiConnect: "FAIL",
         });
       }
@@ -52,8 +52,8 @@ Deno.serve(async (req: Request) => {
     return Response.json({
       ok: true,
       envDetected: meta.environment,
-      keyPrefix: key.slice(0, 8),
-      keyLength: key.length,
+      keyConfigured: Boolean(key),
+      keyMode: meta.environment,
       keyMasked: meta.masked,
       apiConnect,
       apiError,

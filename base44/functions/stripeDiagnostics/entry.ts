@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     // Check 1: Secret present
     const secretKey = Deno.env.get("STRIPE_SECRET_KEY");
     results.checks.secret_present = !!secretKey && secretKey.startsWith("sk_");
-    results.details.secret_key = secretKey ? `${secretKey.slice(0, 8)}...` : "MISSING";
+    results.details.secret_key = secretKey ? "CONFIGURED" : "MISSING";
 
     if (!results.checks.secret_present) {
       results.health = "UNHEALTHY";
@@ -88,10 +88,12 @@ Deno.serve(async (req) => {
       founders_bundle_annual:   Deno.env.get("VITE_STRIPE_FOUNDERS_ANNUAL")       || "MISSING",
       three_module_monthly:     Deno.env.get("VITE_STRIPE_THREE_BUNDLE_MONTHLY")  || "MISSING",
       three_module_annual:      Deno.env.get("VITE_STRIPE_THREE_BUNDLE_ANNUAL")   || "MISSING",
+      four_module_monthly:      Deno.env.get("VITE_STRIPE_FOUR_BUNDLE_MONTHLY")   || "MISSING",
+      four_module_annual:       Deno.env.get("VITE_STRIPE_FOUR_BUNDLE_ANNUAL")    || "MISSING",
     };
 
-    results.details.webhook_secret = Deno.env.get("STRIPE_WEBHOOK_SECRET") 
-      ? `${Deno.env.get("STRIPE_WEBHOOK_SECRET")!.slice(0, 8)}...` 
+    results.details.webhook_secret = Deno.env.get("STRIPE_WEBHOOK_SECRET")
+      ? "CONFIGURED"
       : "MISSING";
 
     return Response.json(results);
