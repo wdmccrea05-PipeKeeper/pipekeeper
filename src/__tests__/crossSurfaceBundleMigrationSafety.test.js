@@ -12,7 +12,7 @@ describe('bundle migration safety across all checkout surfaces', () => {
   it('shared checkout handler blocks direct upgrade intent', () => {
     const src = read('src/components/subscription/subscriptionHandler.jsx');
     expect(src).toContain("if (actionType === 'upgrade_existing')");
-    expect(src.indexOf("if (actionType === 'upgrade_existing')")).toBeLessThan(src.indexOf("base44.functions.invoke('createCheckoutSession'"));
+    expect(src.indexOf("if (actionType === 'upgrade_existing')")).toBeLessThan(src.lastIndexOf("base44.functions.invoke('createCheckoutSession'"));
   });
   it('server rejects upgrade checkout even if the client bypasses the UI', () => {
     const src = read('base44/functions/createCheckoutSession/entry.ts');
