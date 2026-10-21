@@ -78,6 +78,10 @@ const SINGLE_MODULE_PRICES: Record<string, Record<BillingPeriod, string | undefi
 
 // Bundle price IDs
 const BUNDLE_PRICES: Partial<Record<CheckoutType, Record<BillingPeriod, string | undefined>>> = {
+  bundle_2: {
+    monthly: Deno.env.get('VITE_STRIPE_FOUNDERS_MONTHLY'),
+    annual: Deno.env.get('VITE_STRIPE_FOUNDERS_ANNUAL'),
+  },
   bundle_3: {
     monthly: Deno.env.get('VITE_STRIPE_THREE_BUNDLE_MONTHLY'),
     annual: Deno.env.get('VITE_STRIPE_THREE_BUNDLE_ANNUAL'),
@@ -138,6 +142,21 @@ function normalizeType(inputType: unknown, modules: string[]): CheckoutType | nu
   if (raw === 'bundle_4') return modules.length === 4 ? 'bundle_4' : null;
 
   return inferTypeFromModules(modules);
+}
+
+// Bundle prices grant a fixed product scope; reject requests that claim a
+// different set of modules for the same Stripe price.
+const CANONICAL_BUNDLE_MODULES: Record<string, string[]> = {
+  bundle_2: ['pipekeeper', 'whiskeykeeper'],
+  bundle_3: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper'],
+  bundle_4: ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'],
+};
+
+function isValidBundleScope(type: CheckoutType, modules: string[]): boolean {
+  if (type === 'single') return modules.length === 1;
+  const expected = CANONICAL_BUNDLE_MODULES[type];
+  return Boolean(expected && expected.length === modules.length &&
+    expected.every((module) => modules.includes(module)));
 }
 
 function getModuleDescriptor(type: CheckoutType, modules: string[]) {
@@ -311,6 +330,13 @@ Deno.serve(async (req) => {
 
     if (!type) {
       return Response.json({ error: 'Invalid checkout type for selected modules.' }, { status: 400 });
+    }
+
+    if (!isValidBundleScope(type, modules)) {
+      return Response.json({
+        error: 'Selected modules do not match the requested bundle product.',
+        code: 'INVALID_BUNDLE_SCOPE',
+      }, { status: 400 });
     }
 
     if (!successUrl || !cancelUrl) {
