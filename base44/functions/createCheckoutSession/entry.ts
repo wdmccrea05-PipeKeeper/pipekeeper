@@ -157,6 +157,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Server-side hard stop: never open a second checkout for an existing
+    // subscription upgrade, even if a client bypasses the UI.
+    if (actionType === 'upgrade_existing') {
+      return Response.json({
+        error: 'Automatic subscription migration is not yet available. Your current plan remains active. Contact support for assistance.',
+        code: 'SAFE_UPGRADE_REQUIRED',
+      }, { status: 409 });
+    }
+
     const priceId = PLAN_TO_STRIPE_PRICE[planKey];
     if (!priceId) {
       console.error(`[createCheckoutSession] Missing price ID for planKey="${planKey}". Check VITE_STRIPE_* env vars.`);

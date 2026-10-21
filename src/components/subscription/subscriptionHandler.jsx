@@ -185,6 +185,12 @@ export async function initiateCheckoutWithIntent(
     throw new Error(`Invalid actionType: ${actionType}`);
   }
 
+  // Never allow a caller to bypass the verified migration requirement.
+  // A direct checkout is not a safe replacement for an active subscription.
+  if (actionType === 'upgrade_existing') {
+    throw new Error('Automatic bundle migration is not yet available. Your current subscription remains active. Contact support for assistance.');
+  }
+
   // Validate the Stripe price ID is configured
   const stripeConfig = getStripeConfig();
   const stripePlan = stripeConfig[targetPlanKey];

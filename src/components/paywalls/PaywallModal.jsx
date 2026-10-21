@@ -177,42 +177,11 @@ function ExistingSubscriberView({
       const successUrl = `/SubscriptionSuccessFlow?next=${encodeURIComponent('/CollectionHub')}`;
       const cancelUrl = '/Subscription';
 
-      // For bundle upgrades, cancel existing subscription first
+      // Paid-to-bundle migration is not yet atomic. Do not cancel existing
+      // access or start a potentially overlapping checkout.
       if (selectedOption.actionType === 'upgrade_existing') {
-        // handleBundleUpgrade cancels the existing sub before we open bundle checkout.
-        // We import base44 lazily to avoid circular deps.
-        const { base44 } = await import('@/api/base44Client');
-        const userId = user?.id || user?.auth_user_id;
-        const email = user?.email;
-        let subs = [];
-        if (userId) subs = await base44.entities.Subscription.filter({ user_id: userId }).catch(() => []);
-        if (subs.length === 0 && email) subs = await base44.entities.Subscription.filter({ user_email: email }).catch(() => []);
-
-        // find cancelable Stripe subscription IDs
-        const cancelableIds = (Array.isArray(subs) ? subs : [])
-          .filter(
-            (s) =>
-              ['active', 'trialing', 'past_due'].includes(String(s?.status || '').toLowerCase()) &&
-              (String(s?.provider || '').toLowerCase() === 'stripe' || !s?.provider) &&
-              (s?.provider_subscription_id || s?.stripe_subscription_id)
-          )
-          .map((s) => s?.provider_subscription_id || s?.stripe_subscription_id)
-          .filter(Boolean);
-
-        if (cancelableIds.length > 0) {
-          const targetBundle = selectedOption.targetPlanKey?.startsWith('three_module_bundle') ? 'three_module' : 'founders';
-          const upgradeRes = await base44.functions.invoke('handleBundleUpgrade', {
-            currentSubscriptionIds: cancelableIds,
-            targetBundleType: targetBundle,
-            billingPeriod: selectedOption.targetPlanKey?.includes('monthly') ? 'monthly' : 'annual',
-          });
-          if (!upgradeRes?.data?.success) {
-            const serverError = upgradeRes?.data?.error || upgradeRes?.error || t('subscription.checkoutError');
-            setError(serverError);
-            setIsProcessing(false);
-            return;
-          }
-        }
+        setError(t('subscription.bundleMigrationRequired'));
+        return;
       }
 
       await initiateCheckoutWithIntent(
