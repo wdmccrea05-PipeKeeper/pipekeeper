@@ -279,41 +279,12 @@ export default function SubscriptionFull() {
     setMessage("");
 
     try {
-      // For bundle upgrades, cancel existing subscription first
+      // Existing paid subscriptions cannot safely be migrated through a new
+      // checkout session. Preserve access and direct customers to support.
+      // Do not cancel Stripe subscriptions or create overlapping charges.
       if (option.actionType === "upgrade_existing") {
-        const userId = user?.id || user?.auth_user_id;
-        const email = user?.email;
-        let subs = [];
-        if (userId) subs = await base44.entities.Subscription.filter({ user_id: userId }).catch(() => []);
-        if (subs.length === 0 && email) subs = await base44.entities.Subscription.filter({ user_email: email }).catch(() => []);
-
-        const cancelableIds = (Array.isArray(subs) ? subs : [])
-          .filter(
-            (s) =>
-              ["active", "trialing", "past_due"].includes(String(s?.status || "").toLowerCase()) &&
-              (String(s?.provider || "").toLowerCase() === "stripe" || !s?.provider) &&
-              (s?.provider_subscription_id || s?.stripe_subscription_id)
-          )
-          .map((s) => s?.provider_subscription_id || s?.stripe_subscription_id)
-          .filter(Boolean);
-
-        if (cancelableIds.length > 0) {
-          const targetBundle = option.targetPlanKey?.startsWith('four_module_bundle')
-            ? 'bundle_4'
-            : option.targetPlanKey?.startsWith('three_module_bundle')
-            ? 'bundle_3'
-            : 'founders';
-          const upgradeRes = await base44.functions.invoke("handleBundleUpgrade", {
-            currentSubscriptionIds: cancelableIds,
-            targetBundleType: targetBundle,
-            billingPeriod: option.targetPlanKey?.includes("monthly") ? "monthly" : "annual",
-          });
-          if (!upgradeRes?.data?.success) {
-            setUpgradeError(upgradeRes?.data?.error || upgradeRes?.error || t("subscriptionFull.failedToPrepareUpgrade"));
-            setIsUpgrading(false);
-            return;
-          }
-        }
+        setUpgradeError(t("subscription.bundleMigrationRequired"));
+        return;
       }
 
       await initiateCheckoutWithIntent(
@@ -518,10 +489,14 @@ export default function SubscriptionFull() {
           {selectedUpgradeOption && (
             <Button
               className="w-full"
-              onClick={() => handleUpgradeWithIntent(selectedUpgradeOption)}
+              onClick={() => selectedUpgradeOption.actionType === "upgrade_existing"
+                ? window.location.assign("mailto:admin@pipekeeperapp.com?subject=CollectionKeeper%20Bundle%20Upgrade")
+                : handleUpgradeWithIntent(selectedUpgradeOption)}
               disabled={isUpgrading}
             >
-              {isUpgrading
+              {selectedUpgradeOption.actionType === "upgrade_existing"
+                ? t("subscription.contactSupportForUpgrade")
+                : isUpgrading
                 ? t("subscriptionFull.processing")
                 : `${t("subscriptionFull.continue")} — ${planLabels[selectedUpgradeOption.targetPlanKey]?.name || selectedUpgradeOption.label}`}
             </Button>
