@@ -138,9 +138,9 @@ export default function LogSessionSelector({
     options.length >= 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2";
 
   return (
-    <div className="fixed inset-0 z-[1300] bg-black/70 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[1300] bg-black/70 flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto overscroll-contain" onClick={onClose}>
       <div
-        className="w-full max-w-4xl rounded-2xl overflow-hidden"
+        className="w-full max-w-4xl rounded-2xl my-auto flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2rem)] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         style={{
           background:
@@ -149,7 +149,7 @@ export default function LogSessionSelector({
           boxShadow: "0 18px 48px rgba(0,0,0,0.55)",
         }}
       >
-        <div className="px-5 py-4 flex items-center justify-between border-b border-[rgba(180,140,75,0.14)]">
+        <div className="px-5 py-4 flex shrink-0 items-center justify-between border-b border-[rgba(180,140,75,0.14)]">
           <div>
             <h3 className="font-bold text-[#F8F2E8] text-3xl sm:text-4xl leading-tight">
               {t('session.logSession', 'Log Session')}
@@ -169,7 +169,7 @@ export default function LogSessionSelector({
           </button>
         </div>
 
-        <div className={`p-5 grid ${gridClassName} gap-3`}>
+        <div className={`p-5 grid ${gridClassName} gap-3 overflow-y-auto overscroll-contain min-h-0 touch-pan-y`}>
           {options.map((option) => {
             const Icon = option.Icon;
 
