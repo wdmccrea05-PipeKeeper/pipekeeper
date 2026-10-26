@@ -26,17 +26,13 @@ const ROOT = resolve(__dirname, '..');
 // comment lines and parse the first JSON object we encounter.
 function loadAuditConfig() {
   const configPath = join(ROOT, 'docs/i18n/auditConfig.json');
-  try {
-    const raw = readFileSync(configPath, 'utf8');
-    const jsonStart = raw.indexOf('{');
-    const jsonEnd = raw.lastIndexOf('}') + 1;
-    if (jsonStart >= 0 && jsonEnd > jsonStart) {
-      return JSON.parse(raw.slice(jsonStart, jsonEnd));
-    }
-  } catch {
-    // Config file unavailable – fall back to built-in defaults
+  // Fail closed: an accidentally moved or invalid config must not silently
+  // change the audit baseline or generate misleading daily alerts.
+  const config = JSON.parse(readFileSync(configPath, 'utf8'));
+  if (!Array.isArray(config.properNounAllowlist) || !Array.isArray(config.excludePatterns)) {
+    throw new Error('Invalid i18n audit config: expected properNounAllowlist and excludePatterns arrays');
   }
-  return { properNounAllowlist: [], excludePatterns: [] };
+  return config;
 }
 
 const auditConfig = loadAuditConfig();
