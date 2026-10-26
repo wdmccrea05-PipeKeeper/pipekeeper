@@ -8,7 +8,7 @@ Its goal is to prevent i18n backsliding — catching raw English text that
 should use `t("some.key")` — without blocking development on day one.
 
 It **reuses** the proper-noun allowlist and exclude patterns already defined in
-`src/components/i18n/auditConfig.json.jsx`.
+`docs/i18n/auditConfig.json`.
 
 ---
 
@@ -196,7 +196,7 @@ src/components/i18n/locales/zh-Hans.ui.jsx  Simplified Chinese
 | `toast-hardcoded` | String literals passed to `toast.*()` | `toast.success("Saved!")` |
 
 Strings shorter than 4 characters, all-caps constants, URLs, and values in
-the **proper-noun allowlist** in `auditConfig.json.jsx` are automatically
+the **proper-noun allowlist** in `auditConfig.json` are automatically
 ignored.
 
 ---
@@ -205,7 +205,7 @@ ignored.
 
 If a string should legitimately appear untranslated (brand name, technical
 term), add it to the `properNounAllowlist` in
-`src/components/i18n/auditConfig.json.jsx`:
+`docs/i18n/auditConfig.json`:
 
 ```json
 {
@@ -229,7 +229,7 @@ hard to translate.
 | `eslint-plugin-i18n-guard.js` | `scripts/` | ESLint plugin — editor-time warnings |
 | `install-hooks.sh` | `scripts/` | Installs the pre-commit hook |
 | `i18n-check.js` | `scripts/` | Static CLI regression guard (CI + pre-commit) |
-| `auditConfig.json.jsx` | `src/components/i18n/` | Shared allowlist & config |
+| `auditConfig.json` | `src/components/i18n/` | Shared allowlist & config |
 | `i18nAuditReports.jsx` | `src/components/utils/` | Runtime DOM audit (browser) |
 | `hardcoded_strings_user_facing.jsx` | `src/components/i18n/_audit/` | Manual audit output log |
 | `functions/i18nAudit.ts` | `functions/` | Server-side admin audit (Deno) |

@@ -67,7 +67,7 @@ npm test
 1. Look at the reported file and line number.
 2. Replace the hardcoded string with a `t("some.key")` call.
 3. Add the translation key to `translations.js` for all supported languages.
-4. If the string is a proper noun or brand name, add it to `src/components/i18n/auditConfig.json.jsx` (the `.json.jsx` extension is intentional — it is a JSX module that exports a JSON-shaped object).
+4. If the string is a proper noun or brand name, add it to `docs/i18n/auditConfig.json`.
 5. Re-run `npm run i18n:check -- --fail-on-findings` until it passes.
 
 See [`docs/i18n-check.md`](./i18n-check.md) for full remediation steps.

@@ -5,7 +5,7 @@
  * Scans src/pages/* and src/components/* for newly introduced hardcoded
  * user-facing strings in JSX so they can be caught before they reach
  * production.  Reuses the proper-noun allowlist and exclude patterns from
- * src/components/i18n/auditConfig.json.jsx.
+ * docs/i18n/auditConfig.json.
  *
  * Usage:
  *   npm run i18n:check          # warn mode (default)
@@ -25,7 +25,7 @@ const ROOT = resolve(__dirname, '..');
 // The file is a .jsx but its content is plain JSON so we strip any leading
 // comment lines and parse the first JSON object we encounter.
 function loadAuditConfig() {
-  const configPath = join(ROOT, 'src/components/i18n/auditConfig.json.jsx');
+  const configPath = join(ROOT, 'docs/i18n/auditConfig.json');
   try {
     const raw = readFileSync(configPath, 'utf8');
     const jsonStart = raw.indexOf('{');
@@ -411,7 +411,7 @@ function main() {
   console.log('     calls with the shared locale/currency helpers in src/components/utils/localeFormatters.jsx');
   console.log('     or src/lib/currency/.');
   console.log('  6. If a string is a proper noun or brand name, add it to');
-  console.log('     src/components/i18n/auditConfig.json.jsx → properNounAllowlist.');
+  console.log('     docs/i18n/auditConfig.json → properNounAllowlist.');
   console.log('─'.repeat(60));
   console.log();
 
