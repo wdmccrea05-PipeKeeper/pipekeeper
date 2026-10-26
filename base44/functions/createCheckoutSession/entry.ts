@@ -304,6 +304,32 @@ Deno.serve(async (req) => {
       metadata.current_plan_key = currentPlanKey;
     }
 
+    // Validate the actual Stripe catalog immediately before checkout.
+    // Historical fallback IDs may remain in source after a price is archived.
+    // Never create a session for an inactive, one-time or wrong-interval price.
+    let stripePrice;
+    try {
+      stripePrice = await stripe.prices.retrieve(priceId);
+    } catch (error) {
+      console.error('[createCheckoutSession] Stripe price lookup failed for', planKey, error);
+      return Response.json({
+        error: 'Unable to verify this subscription price. Please try again later.',
+        code: 'PRICE_VERIFICATION_UNAVAILABLE',
+      }, { status: 503 });
+    }
+    const expectedInterval = planKey.endsWith('_annual') ? 'year' : 'month';
+    if (!stripePrice.active || stripePrice.type !== 'recurring' ||
+        stripePrice.recurring?.interval !== expectedInterval) {
+      console.error('[createCheckoutSession] Invalid Stripe price configuration', {
+        planKey, active: stripePrice.active, type: stripePrice.type,
+        interval: stripePrice.recurring?.interval,
+      });
+      return Response.json({
+        error: 'This subscription price is currently unavailable. Please contact support.',
+        code: 'INACTIVE_OR_MISMATCHED_PRICE',
+      }, { status: 409 });
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
