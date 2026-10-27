@@ -351,6 +351,24 @@ Deno.serve(async (req) => {
       String(Deno.env.get('APP_ENV') || Deno.env.get('ENVIRONMENT') || 'production').trim().toLowerCase();
     const priceId = resolvePriceId(type, billingPeriod, modules);
 
+    // Validate against Stripe before creating a paid checkout session.
+    // Fail closed on archived, one-time, or wrong-interval prices.
+    if (priceId) {
+      let verifiedPrice;
+      try {
+        verifiedPrice = await stripe.prices.retrieve(priceId);
+      } catch (error) {
+        console.error('[createModuleCheckoutSession] Stripe price lookup failed:', safeStripeError(error));
+        return Response.json({ error: 'Subscription price is temporarily unavailable.', code: 'PRICE_UNAVAILABLE' }, { status: 503 });
+      }
+      const expectedInterval = billingPeriod === 'annual' ? 'year' : 'month';
+      if (!verifiedPrice.active || verifiedPrice.type !== 'recurring' || verifiedPrice.recurring?.interval !== expectedInterval) {
+        console.error('[createModuleCheckoutSession] Invalid Stripe price for requested interval', { type, billingPeriod });
+        return Response.json({ error: 'Subscription price is not available.', code: 'INVALID_PRICE' }, { status: 503 });
+      }
+    }
+
+
     if (!priceId) {
       return Response.json(
         {
