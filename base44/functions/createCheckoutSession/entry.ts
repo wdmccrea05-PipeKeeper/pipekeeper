@@ -18,7 +18,7 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 // against StripeProductRegistry on 2026-10-01.
 const PLAN_TO_STRIPE_PRICE = {
   'pipekeeper_pro_monthly': Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY') || 'price_1SsDgEDycvQWC88PmdvlxFDa',
-  'pipekeeper_pro_annual': Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL') || 'price_1SsDU6DycvQWC88PIwpmt7Oc',
+  'pipekeeper_pro_annual': Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL') || '' // Archived annual price must be configured with an active Stripe price,
   'whiskeykeeper_pro_monthly': Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY') || 'price_1TBfYEDycvQWC88P5mfqoWzF',
   'whiskeykeeper_pro_annual': Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_ANNUAL') || 'price_1TBfZPDycvQWC88Pk0T31lxi',
   'cigarkeeper_pro_monthly': Deno.env.get('VITE_STRIPE_CIGARKEEPER_MONTHLY') || 'price_1TBfbJDycvQWC88PIjsHAufT',
