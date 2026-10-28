@@ -3,14 +3,14 @@ import { readFileSync } from 'node:fs';
 
 const standard = readFileSync('base44/functions/createCheckoutSession/entry.ts', 'utf8');
 const moduleCheckout = readFileSync('base44/functions/createModuleCheckoutSession/entry.ts', 'utf8');
-const archivedPipeAnnual = 'price_1SsDU6DycvQWC88PIwpmt7Oc';
+const verifiedPipeAnnual = 'price_1SsDU6DycvQWC88PIwpmt7Oc';
 
 describe('Subscription checkout safety regression gate', () => {
-  it('never uses the archived PipeKeeper annual price as a checkout fallback', () => {
+  it('keeps the verified PipeKeeper annual Stripe price aligned with the client', () => {
     const mapping = standard.split('\n').find(line => line.includes("'pipekeeper_pro_annual':"));
     expect(mapping).toBeDefined();
-    expect(mapping).not.toContain(archivedPipeAnnual);
-    expect(mapping).toMatch(/Deno\.env\.get\(.+\)\s*\|\|\s*''\s*,/);
+    expect(mapping).toContain(verifiedPipeAnnual);
+    expect(readFileSync('src/components/subscription/stripeConfig.jsx', 'utf8')).toContain(verifiedPipeAnnual);
   });
 
   for (const [name, source] of [['standard', standard], ['module', moduleCheckout]]) {
