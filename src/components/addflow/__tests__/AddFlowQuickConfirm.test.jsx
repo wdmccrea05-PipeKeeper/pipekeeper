@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AddFlowQuickConfirm from '@/components/addflow/AddFlowQuickConfirm';
 
 const { createMock, meMock, successMock, errorMock } = vi.hoisted(() => ({
@@ -23,6 +24,8 @@ vi.mock('@/api/base44Client', () => ({
   },
 }));
 
+vi.mock('@/components/hooks/useCurrentUser', () => ({ useCurrentUser: () => ({ user: { email: 'user@example.com' }, isLoading: false }) }));
+
 vi.mock('sonner', () => ({
   toast: {
     success: successMock,
@@ -40,6 +43,7 @@ describe('AddFlowQuickConfirm', () => {
   it('initializes empty pipe photo arrays when creating from quick confirm', async () => {
     const onCreated = vi.fn();
     render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <AddFlowQuickConfirm
         itemType="pipe"
         typeLabel="Pipe"
@@ -49,6 +53,7 @@ describe('AddFlowQuickConfirm', () => {
         onManual={vi.fn()}
         onCreated={onCreated}
       />
+      </QueryClientProvider>
     );
 
     fireEvent.click(screen.getByRole('button', { name: /add to collection/i }));
