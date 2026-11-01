@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { SendHorizontal } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { buildSessionPlan } from '@/lib/curator/sessionPlanner.js';
