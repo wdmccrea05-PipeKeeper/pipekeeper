@@ -3,7 +3,6 @@
 // Priority: main en.jsx wins — these only fill gaps.
 
 const enUI = {
-  common: { errorLoadingData: "Unable to load your collection data.", retryPrompt: "Your data is safe. Please try again." },
   foundersOffer: {
     checkoutUnavailable: "Unable to open checkout here. Please try again from the Subscription page.",
     checkoutFailed: "Failed to start checkout. Please try again.",
@@ -358,6 +357,8 @@ const enUI = {
     identifyPipeDesc: "Use advanced AI to identify your pipe's maker, model, year, and other details from photos of stampings and characteristics.",
   },
   common: {
+    errorLoadingData: "Unable to load your collection data.",
+    retryPrompt: "Your data is safe. Please try again.",
     appName: "PipeKeeper",
     cancel: "Cancel",
     save: "Save",
