@@ -30,16 +30,24 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Allow both admin users and automation (no user context)
+    // An unauthenticated request is never proof of a trusted scheduler.
+    // Require either an authenticated administrator or a dedicated shared
+    // automation token; reject missing configuration and bad credentials.
+    const expectedToken = Deno.env.get('REFERRAL_EXPIRY_CRON_TOKEN');
+    const suppliedToken = req.headers.get('x-referral-expiry-token');
     let isAutomation = false;
-    try {
-      const user = await base44.auth.me();
-      if (user && user.role !== 'admin') {
+    if (suppliedToken) {
+      if (!expectedToken || suppliedToken !== expectedToken) {
+        return Response.json({ error: 'Unauthorized automation token' }, { status: 401 });
+      }
+      isAutomation = true;
+    } else {
+      let user = null;
+      try { user = await base44.auth.me(); } catch { /* unauthenticated */ }
+      if (!user) return Response.json({ error: 'Authentication required' }, { status: 401 });
+      if (user.role !== 'admin') {
         return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
       }
-    } catch {
-      // No user context — assume automation invocation
-      isAutomation = true;
     }
 
     const now = new Date();
