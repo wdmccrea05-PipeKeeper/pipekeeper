@@ -3,7 +3,6 @@
 // Priority: main pl.jsx wins — these only fill gaps.
 
 const plUI = {
-  common: { errorLoadingData: "Nie udało się wczytać danych kolekcji.", retryPrompt: "Twoje dane są bezpieczne. Spróbuj ponownie." },
   foundersOffer: {
     checkoutUnavailable: "Nie można otworzyć płatności. Spróbuj na stronie Subskrypcje.",
     checkoutFailed: "Nie udało się rozpocząć płatności. Spróbuj ponownie.",
@@ -328,6 +327,8 @@ const plUI = {
     breakIn: "Docieranie",
   },
   common: {
+    errorLoadingData: "Nie udało się wczytać danych kolekcji.",
+    retryPrompt: "Twoje dane są bezpieczne. Spróbuj ponownie.",
     appName: "PipeKeeper",
     cancel: "Anuluj",
     save: "Zapisz",
@@ -2077,7 +2078,7 @@ const plUI = {
     ],
     tierDiffQ: "What is the difference between Free and Pro?",
     tierDiffSteps: [
-      "Free: PipeKeeper allows up to 5 pipes and 10 blends; WhiskeyKeeper allows up to 10 bottles. Basic features, no AI features.",
+      "Free: PipeKeeper allows up to 5 pipes and 10 blends; WhiskeyKeeper allows up to 10 bottles. Basic ******, no AI features.",
       "Pro: Unlimited items per module, AI pairings, collection optimization, AI identification, break-in schedules, valuation tools, Value & Strategy section, export reports, and priority support.",
       "Each public module (PipeKeeper and WhiskeyKeeper) can be subscribed to individually.",
       "The Founders Bundle unlocks both public modules at a discounted rate.",
