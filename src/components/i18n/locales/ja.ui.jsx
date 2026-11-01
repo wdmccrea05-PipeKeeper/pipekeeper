@@ -3,7 +3,6 @@
 // Priority: main ja.jsx wins — these only fill gaps.
 
 const jaUI = {
-  common: { errorLoadingData: "コレクションデータを読み込めませんでした。", retryPrompt: "データは安全に保存されています。もう一度お試しください。" },
   foundersOffer: {
     checkoutUnavailable: "決済画面を開けません。サブスクリプション画面からお試しください。",
     checkoutFailed: "決済を開始できませんでした。もう一度お試しください。",
@@ -349,6 +348,8 @@ const jaUI = {
     breakIn: "慣らし",
   },
   common: {
+    errorLoadingData: "コレクションデータを読み込めませんでした。",
+    retryPrompt: "データは安全に保存されています。もう一度お試しください。",
     appName: "PipeKeeper",
     cancel: "キャンセル",
     save: "保存",
