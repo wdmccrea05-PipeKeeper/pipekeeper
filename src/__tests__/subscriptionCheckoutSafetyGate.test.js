@@ -25,6 +25,12 @@ describe('Subscription checkout safety regression gate', () => {
       expect(recurring).toBeGreaterThan(retrieve);
       expect(interval).toBeGreaterThan(retrieve);
       expect(checkout).toBeGreaterThan(interval);
+      // The guard must reject invalid prices before Stripe checkout is called.
+      const guardedRegion = source.slice(retrieve, checkout);
+      expect(guardedRegion).toMatch(/return Response\.json\(/);
+      expect(guardedRegion).toMatch(/status:\s*(409|503)/);
+      expect(guardedRegion).toMatch(/\.type\s*!==\s*'recurring'/);
+      expect(guardedRegion).toMatch(/\.recurring\?\.interval\s*!==\s*expectedInterval/);
     });
   }
 });
