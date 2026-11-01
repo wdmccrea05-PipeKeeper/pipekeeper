@@ -60,7 +60,7 @@ function canonicalModule(m: string): string {
 const SINGLE_MODULE_PRICES: Record<string, Record<BillingPeriod, string | undefined>> = {
   pipekeeper: {
     monthly: Deno.env.get('VITE_STRIPE_PIPEKEEPER_MONTHLY'),
-    annual: Deno.env.get('VITE_STRIPE_PIPEKEEPER_ANNUAL'),
+    annual: Deno.env.get('******'),
   },
   whiskeykeeper: {
     monthly: Deno.env.get('VITE_STRIPE_WHISKEYKEEPER_MONTHLY'),
