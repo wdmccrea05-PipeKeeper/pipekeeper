@@ -542,7 +542,8 @@ function buildOtherModuleHistoryReply(message, context = {}) {
   let selected = namedCandidates[0] || null;
 
   if (!selected) {
-    const module = modules.find((m) => m.modulePattern.test(message));
+    const explicitModule = modules.find((m) => new RegExp(`\\b${m.type === 'whiskey' ? 'whisk(?:e)?y|bourbon|scotch' : m.type === 'cigar' ? 'cigars?' : 'wines?'}\\b`, 'i').test(message));
+    const module = explicitModule || modules.find((m) => m.modulePattern.test(message) && m.logs.length);
     if (!module) return null;
     // For a module-wide request, return every historical row.
     selected = { module, record: null };
