@@ -848,12 +848,12 @@ function buildModuleReply(message, activeModules = {}) {
 export function answerCuratorDeterministicQuery(message, context = {}, entityContext = {}, activeModules = {}) {
   const handlers = [
     () => buildModuleReply(message, activeModules),
-    () => buildPairingScoreReply(message, context, entityContext),
     () => buildMissingFieldReply(message, context),
     () => buildImageGapReply(message, context),
     () => buildInventoryReply(message, context),
     () => buildOtherModuleHistoryReply(message, context),
     () => buildSessionHistoryReply(message, context),
+    () => buildPairingScoreReply(message, context, entityContext),
     () => buildUsageReply(message, context),
     () => buildValuationReply(message, context),
   ];
