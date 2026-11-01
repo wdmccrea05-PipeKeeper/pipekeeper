@@ -2078,7 +2078,7 @@ const plUI = {
     ],
     tierDiffQ: "What is the difference between Free and Pro?",
     tierDiffSteps: [
-      "Free: PipeKeeper allows up to 5 pipes and 10 blends; WhiskeyKeeper allows up to 10 bottles. Basic features, no AI features.",
+      "Free: PipeKeeper allows up to 5 pipes and 10 blends; WhiskeyKeeper allows up to 10 bottles. Basic ******, no AI features.",
       "Pro: Unlimited items per module, AI pairings, collection optimization, AI identification, break-in schedules, valuation tools, Value & Strategy section, export reports, and priority support.",
       "Each public module (PipeKeeper and WhiskeyKeeper) can be subscribed to individually.",
       "The Founders Bundle unlocks both public modules at a discounted rate.",
