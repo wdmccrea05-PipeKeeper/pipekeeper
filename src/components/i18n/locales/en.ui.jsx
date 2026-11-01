@@ -3262,6 +3262,7 @@ const enUI = {
     sizeExtraLarge: "Extra Large",
   },
   subscriptionFull: {
+    currentlyOnPro: "You are currently on the Pro plan.",
     per: "per",
     selected: "Selected",
     choose: "Choose",
