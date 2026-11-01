@@ -413,6 +413,10 @@ const frUI = {
     upToDateOpt: "À jour",
   },
   subscription: {
+    free: "Gratuit",
+    pro: "Pro",
+    syncStatusFailed: "Impossible de synchroniser le statut de l’abonnement Apple.",
+    syncStillProcessing: "La vérification de l’abonnement est en cours. Réessayez après avoir restauré vos achats.",
     appleFeatureFree1: "Ajouter jusqu'à 5 pipes",
     appleFeatureFree2: "Ajouter jusqu'à 10 mélanges de tabac",
     appleFeatureFree3: "Voir, modifier et organiser votre collection",
@@ -3169,6 +3173,7 @@ const frUI = {
   },
 
   subscriptionFull: {
+    currentlyOnPro: "Vous utilisez actuellement le forfait Pro.",
     per: "par",
     selected: "Sélectionné",
     choose: "Choisir",
