@@ -6,7 +6,7 @@ describe('summarySelectors', () => {
     const total = selectTotalCollectionValue({
       pipes: [{ estimated_value: 100 }],
       blends: [{ manual_market_value: 50 }],
-      bottles: [{ purchase_price: 20 }],
+      bottles: [{ purchase_price: 20, bottle_count: 1 }],
       inventoryUnits: [],
       cigars: [{ singles_equivalent: 2, estimated_unit_value: 10 }],
     });
@@ -26,4 +26,3 @@ describe('summarySelectors', () => {
     expect(total).toBe(25);
   });
 });
-

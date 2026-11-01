@@ -1,9 +1,36 @@
 import { describe, expect, test } from 'vitest';
 import {
+  calculateCigarValue,
   deriveCigarValuationPatch,
+  getRemainingSticks,
   shouldRefreshCigarValuation,
   normalizeCigarValuationConfidence,
 } from '../cigarValuation';
+
+describe('getRemainingSticks', () => {
+  test('uses available single sticks, including an explicit zero', () => {
+    expect(getRemainingSticks({ singles_equivalent: 0, quantity: 3, cigars_per_package: 10 })).toBe(0);
+    expect(getRemainingSticks({ singles_equivalent: 2, quantity: 3, cigars_per_package: 10 })).toBe(2);
+  });
+
+  test('converts package quantity to individual sticks and clamps negatives', () => {
+    expect(getRemainingSticks({ quantity: 2, cigars_per_package: 10 })).toBe(20);
+    expect(getRemainingSticks({ quantity: -2, cigars_per_package: 10 })).toBe(0);
+  });
+});
+
+describe('calculateCigarValue', () => {
+  test('recalculates a stored total from the unit value and current stick count', () => {
+    const value = calculateCigarValue({
+      singles_equivalent: 2,
+      market_estimated_unit_value: 10,
+      market_estimated_total_value: 100,
+    });
+
+    expect(value.estimatedUnitValue).toBe(10);
+    expect(value.estimatedTotalValue).toBe(20);
+  });
+});
 
 describe('normalizeCigarValuationConfidence', () => {
   test('returns "high" for "high"', () => {

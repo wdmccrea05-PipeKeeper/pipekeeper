@@ -12,10 +12,16 @@ describe("moduleLimits module-scoped enforcement", () => {
     expect(hasReachedLimit(user, null, "pipekeeper", "pipes", 10)).toBe(true);
   });
 
-  it("removes limits only for the entitled module", () => {
+  it("does not grant legacy flags when no subscription record exists", () => {
     const user = { entitlement_tier: "pro", paid_modules_csv: "whiskeykeeper" };
-    expect(hasReachedLimit(user, null, "whiskeykeeper", "bottles", 999)).toBe(false);
-    expect(getRemainingBeforeLimit(user, null, "whiskeykeeper", "bottles", 999)).toBeNull();
+    expect(hasReachedLimit(user, null, "whiskeykeeper", "bottles", 999)).toBe(true);
+    expect(getRemainingBeforeLimit(user, null, "whiskeykeeper", "bottles", 999)).toBe(0);
+  });
+
+  it("uses legacy flags only while subscription state is still loading", () => {
+    const user = { entitlement_tier: "pro", paid_modules_csv: "whiskeykeeper" };
+    expect(hasReachedLimit(user, undefined, "whiskeykeeper", "bottles", 999)).toBe(false);
+    expect(getRemainingBeforeLimit(user, undefined, "whiskeykeeper", "bottles", 999)).toBeNull();
   });
 
   it("founders bundle does not unlock cigarkeeper by default", () => {

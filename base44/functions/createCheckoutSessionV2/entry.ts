@@ -1,6 +1,7 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import Stripe from "npm:stripe@17.5.0";
 import { shouldBlockNewSubscription } from "../../shared/duplicateSubscriptionGuard.ts";
+import { getSafeRedirectOrigin } from "../../shared/safeRedirectOrigins.ts";
 
 function getStripeClient() {
   const key = (Deno.env.get("STRIPE_SECRET_KEY") || "").trim();
@@ -15,6 +16,7 @@ function getStripeClient() {
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
+const APP_ALLOWED_ORIGINS = Deno.env.get("APP_ALLOWED_ORIGINS") || "";
 
 // Module-specific price ID mapping (no global Pro tier)
 const MODULE_PRICE_MAP: Record<string, Record<string, string>> = {
@@ -55,9 +57,7 @@ function getPlatform(req) {
 }
 
 function safeOrigin(req) {
-  const origin = req.headers.get("origin");
-  if (origin && origin.startsWith("http")) return origin;
-  return APP_URL;
+  return getSafeRedirectOrigin(req.headers.get("origin"), APP_URL, APP_ALLOWED_ORIGINS);
 }
 
 async function safePersistCustomerId(base44, email, customerId) {

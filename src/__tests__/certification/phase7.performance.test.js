@@ -13,6 +13,7 @@ import {
   rankPipesForBlend,
   normalizeTobaccoForPairing,
   normalizePipeForPairing,
+  calibrateScore,
 } from '@/components/utils/pairingScoreCanonical';
 import { CERTIFICATION_BLENDS } from './fixtures/tobaccoDataset';
 import { CERTIFICATION_PIPES } from './fixtures/pipeDataset';
@@ -96,7 +97,8 @@ describe('Phase 7 — Performance', () => {
       const computed = Object.values(result.components).reduce(
         (sum, c) => sum + c.score * c.weight, 0
       );
-      expect(Math.abs(computed - result.technicalScore)).toBeLessThan(0.2);
+      expect(Math.round(computed * 10) / 10).toBe(result.rawTechnicalScore);
+      expect(result.technicalScore).toBe(calibrateScore(result.rawTechnicalScore));
     });
   });
 });

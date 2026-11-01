@@ -102,3 +102,9 @@ Run these manually after the gate passes, before deploying to production:
 
 The deploy workflow (`.github/workflows/deploy.yml`) runs the release gate automatically on every push to `main`.  
 A failed gate blocks the deploy job.
+
+## Payment redirect origins
+
+Set `APP_URL` to the canonical application URL in each Base44 environment. Add any first-party staging or preview origins to `APP_ALLOWED_ORIGINS` as a comma-separated list. Checkout and billing portal redirects reject origins outside this allowlist and fall back to `APP_URL`; do not add user-controlled or third-party origins.
+
+Production deployment is manual and requires the `approve_production_deploy` workflow input. Configure the `github-pages` environment with the production owner as a required reviewer before enabling releases; pushes to `main` run checks and builds but do not publish.

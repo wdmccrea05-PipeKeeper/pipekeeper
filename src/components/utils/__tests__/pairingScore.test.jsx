@@ -507,6 +507,18 @@ describe('Score calibration', () => {
     expect(result.score).toBeGreaterThanOrEqual(8.5);
   });
 
+  test('diagnostics distinguish the raw weighted score from its calibrated technical score', () => {
+    const result = scorePipeBlendDiagnostic(testPipes[0], testBlends[2], null);
+    const weightedScore = Object.values(result.components).reduce(
+      (sum, component) => sum + component.score * component.weight,
+      0
+    );
+
+    expect(Math.round(weightedScore * 10) / 10).toBe(result.rawTechnicalScore);
+    expect(result.technicalScore).toBe(calibrateScore(result.rawTechnicalScore));
+    expect(result.finalScore).toBe(result.tieredScore);
+  });
+
   test('excellent archetype match — English-dedicated pipe + Latakia English blend — reaches 8.3+', () => {
     const pipe = {
       pipe_id: 'p-en',
