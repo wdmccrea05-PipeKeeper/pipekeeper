@@ -89,7 +89,7 @@ describe('bulk import system', () => {
   test('accepts expanded commercial tobacco cut taxonomy', async () => {
     const definition = importDefinitions.pipekeeper_blends;
     for (const cut of ['Broad Cut', 'Coarse Cut', 'Cross Cut', 'Loose Cut', 'Roll Cake', 'Spun Cut', 'Coin/Medallion']) {
-      const parsed = parseCsvText(`manufacturer,blend_name,cut\\nTest Maker,Test Blend,${cut}\\n`);
+      const parsed = parseCsvText(`manufacturer,blend_name,cut\nTest Maker,Test Blend,${cut}\n`);
       const analysis = await analyzeImportRows({ definition, headers: parsed.headers, rawHeaders: parsed.rawHeaders, rows: parsed.rows, duplicateHeaders: parsed.duplicateHeaders, parseErrors: parsed.parseErrors, userEmail: 'user@example.com' });
       expect(analysis.rows[0].errors).toHaveLength(0);
     }
