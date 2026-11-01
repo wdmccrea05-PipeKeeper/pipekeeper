@@ -1,0 +1,28 @@
+name: Subscription Safety Checks
+on:
+  pull_request:
+    paths:
+      - 'base44/functions/createCheckoutSession/**'
+      - 'base44/functions/createModuleCheckoutSession/**'
+      - 'src/components/subscription/**'
+      - 'src/pages/SubscriptionFull.jsx'
+      - 'src/components/i18n/locales/**'
+      - 'src/__tests__/subscription*'
+      - '.github/workflows/subscription-safety.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  subscription-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Verify checkout and translation regressions
+        run: npm test -- --run src/__tests__/subscriptionCheckoutSafetyGate.test.js src/__tests__/subscriptionTranslationRegression.test.js src/__tests__/stripePriceRuntimeValidation.test.js
+      - name: Verify production build
+        run: npm run build
