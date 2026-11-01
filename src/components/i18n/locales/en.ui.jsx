@@ -3,7 +3,6 @@
 // Priority: main en.jsx wins — these only fill gaps.
 
 const enUI = {
-  common: { errorLoadingData: "Unable to load your collection data.", retryPrompt: "Your data is safe. Please try again." },
   foundersOffer: {
     checkoutUnavailable: "Unable to open checkout here. Please try again from the Subscription page.",
     checkoutFailed: "Failed to start checkout. Please try again.",
@@ -358,6 +357,8 @@ const enUI = {
     identifyPipeDesc: "Use advanced AI to identify your pipe's maker, model, year, and other details from photos of stampings and characteristics.",
   },
   common: {
+    errorLoadingData: "Unable to load your collection data.",
+    retryPrompt: "Your data is safe. Please try again.",
     appName: "PipeKeeper",
     cancel: "Cancel",
     save: "Save",
@@ -469,7 +470,7 @@ const enUI = {
     appleFeatureFree1: "Add up to 5 pipes",
     appleFeatureFree2: "Add up to 10 tobacco blends",
     appleFeatureFree3: "View, edit, and organize your collection",
-    appleFeatureFree4: "Basic notes and ratings",
+    appleFeatureFree4: "Basic ****** and ratings",
     appleFeatureFree5: "Search pipes and tobaccos",
     appleFeatureFree6: "Multilingual support (10 languages)",
     appleFeatureFree7: "Cloud sync",
@@ -2439,7 +2440,7 @@ const enUI = {
   },
   formsExtended: {
     material: "Material",
-    basicInfo: "Basic Info",
+    basicInfo: "Basic ******",
     physicalCharacteristics: "Physical Characteristics",
     interchangeableBowls: "Interchangeable Bowls",
     interchangeableBowlsDesc: "Does this pipe have swappable bowls?",
@@ -2830,7 +2831,7 @@ const enUI = {
     freeTier: "Free Tier",
     upTo5Pipes: "Up to 5 pipes",
     upTo10Tobacco: "Up to 10 tobacco blends",
-    basicCollection: "Basic collection management",
+    basicCollection: "Basic ****** management",
     photoUploads: "Photo uploads",
     subscriptionTiersQuestion: "What are the subscription tiers and what's included?",
     freeTrial7Days: "7-day trial of all premium features",
@@ -3262,11 +3263,12 @@ const enUI = {
     sizeExtraLarge: "Extra Large",
   },
   subscriptionFull: {
+    currentlyOnPro: "You are currently on the Pro plan.",
     per: "per",
     selected: "Selected",
     choose: "Choose",
     subActiveCheck: "Subscription active ✅",
-    basicItemRecords: "Basic item records",
+    basicItemRecords: "Basic ****** records",
     notesAndPhotos: "Notes and photos",
     manualOrganization: "Manual organization",
     freeTierDesc: "Core cataloging for pipes and cellar items.",
@@ -4138,7 +4140,7 @@ const enUI = {
     faq4q: "I was charged but my premium features aren't unlocked.",
     faq4a: "First, try 'Restore Purchases' in the app settings (or re-login on the web app). If that doesn't work within a few minutes, email us at admin@pipekeeperapp.com with your order number or Apple receipt and we'll resolve it manually.",
     faq5q: "How do I add a new pipe, blend, or bottle?",
-    faq5a: "All items are added through the unified Add Flow wizard. Click 'Add' from any module page, or use the Quick Access button (lightning bolt icon in the top header) from any page. The wizard guides you through: choosing item type, searching an online library to auto-fill details, entering basic info, optional details, inventory, and photos.",
+    faq5a: "All items are added through the unified Add Flow wizard. Click 'Add' from any module page, or use the Quick Access button (lightning bolt icon in the top header) from any page. The wizard guides you through: choosing item type, searching an online library to auto-fill details, entering basic ******, optional details, inventory, and photos.",
     faq6q: "How do I use Plan Session in the Curator?",
     faq6a: "Open the Curator from the top navigation. In the Expert Actions panel, click 'Plan Session'. The AI generates 3 curated session recommendations — each pairing a pipe with a tobacco blend (and a whiskey bottle if WhiskeyKeeper is active). Each card shows a confidence score and rationale. Click 'Try This' to use a session, 'Skip' to dismiss it, or 'Ask Curator' to discuss it.",
     faq7q: "Can I export or back up my collection data?",
