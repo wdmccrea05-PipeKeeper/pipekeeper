@@ -1,13 +1,13 @@
 # Pairing Engine Certification Report
 
-**Generated:** 2026-11-01T19:38:32.872Z
+**Generated:** 2026-11-01T20:16:48.410Z
 
 ## Executive Summary
 
-**Overall Result:** FAIL
+**Overall Result:** PASS
 
 ```
-CONDITIONALLY CERTIFIED
+CERTIFIED FOR PRODUCTION
 ```
 
 ## Environment
@@ -70,21 +70,21 @@ CONDITIONALLY CERTIFIED
 
 ## Explainability Validation
 
-- ⚠️ **Heavy Aromatic × Aromatic Dedicated**: Score contradiction detected
-- ⚠️ **Heavy Aromatic × English Dedicated**: Score contradiction detected
-- ⚠️ **Heavy Aromatic × Virginia Dedicated**: Score contradiction detected
-- ⚠️ **Light Aromatic × Aromatic Dedicated**: Score contradiction detected
-- ⚠️ **Light Aromatic × English Dedicated**: Score contradiction detected
-- ⚠️ **Light Aromatic × Virginia Dedicated**: Score contradiction detected
-- ⚠️ **Straight Virginia × Aromatic Dedicated**: Score contradiction detected
+- ✅ **Heavy Aromatic × Aromatic Dedicated**: Scores predict explanation
+- ✅ **Heavy Aromatic × English Dedicated**: Scores predict explanation
+- ✅ **Heavy Aromatic × Virginia Dedicated**: Scores predict explanation
+- ✅ **Light Aromatic × Aromatic Dedicated**: Scores predict explanation
+- ✅ **Light Aromatic × English Dedicated**: Scores predict explanation
+- ✅ **Light Aromatic × Virginia Dedicated**: Scores predict explanation
+- ✅ **Straight Virginia × Aromatic Dedicated**: Scores predict explanation
 - ✅ **Straight Virginia × English Dedicated**: Scores predict explanation
-- ⚠️ **Straight Virginia × Virginia Dedicated**: Score contradiction detected
-- ⚠️ **Virginia Flake × Aromatic Dedicated**: Score contradiction detected
+- ✅ **Straight Virginia × Virginia Dedicated**: Scores predict explanation
+- ✅ **Virginia Flake × Aromatic Dedicated**: Scores predict explanation
 - ✅ **Virginia Flake × English Dedicated**: Scores predict explanation
-- ⚠️ **Virginia Flake × Virginia Dedicated**: Score contradiction detected
+- ✅ **Virginia Flake × Virginia Dedicated**: Scores predict explanation
 - ✅ **True VaPer × Aromatic Dedicated**: Scores predict explanation
 - ✅ **True VaPer × English Dedicated**: Scores predict explanation
-- ⚠️ **True VaPer × Virginia Dedicated**: Score contradiction detected
+- ✅ **True VaPer × Virginia Dedicated**: Scores predict explanation
 
 ## Stability (5-Run Determinism)
 
@@ -105,12 +105,12 @@ CONDITIONALLY CERTIFIED
 
 | Operation | Avg Time (ms) | Max Time (ms) | Status |
 |-----------|--------------|--------------|--------|
-| scorePipeBlend (single) | 0.03 | 0.07 | ✅ Fast |
-| buildPairingsForPipes | 0.04 | 5.17 | ✅ Fast |
+| scorePipeBlend (single) | 0.08 | 0.16 | ✅ Fast |
+| buildPairingsForPipes | 0.16 | 19.13 | ✅ Fast |
 
 ## Regression Summary
 
-**Previous Baseline:** 2026-11-01T19:35:14.895Z
+**Previous Baseline:** 2026-11-01T19:39:47.240Z
 
 _No regressions detected from previous certified build._
 
@@ -164,41 +164,19 @@ _No regressions detected from previous certified build._
 
 ## Defect Inventory
 
-### HIGH (11)
-- **explanation_contradicts_score**: Heavy Aromatic × Aromatic Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: Heavy Aromatic × English Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: Heavy Aromatic × Virginia Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: Light Aromatic × Aromatic Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: Light Aromatic × English Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: Light Aromatic × Virginia Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: Straight Virginia × Aromatic Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: Straight Virginia × Virginia Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: Virginia Flake × Aromatic Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: Virginia Flake × Virginia Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
-- **explanation_contradicts_score**: True VaPer × Virginia Dedicated: computed score diverges
-  - Root cause: Weighted sum does not match technicalScore
+_No defects identified._
 
 ## Production Readiness
 
 ```
-CONDITIONALLY CERTIFIED
+CERTIFIED FOR PRODUCTION
 ```
 
 ### Evidence
 
-- Phase results: baseline=PASS, crossSurface=PASS, knownTruth=PASS, explainability=FAIL, performance=PASS, stability=PASS, confidence=PASS, coverage=PASS
+- Phase results: baseline=PASS, crossSurface=PASS, knownTruth=PASS, explainability=PASS, edgeCases=PASS, performance=PASS, stability=PASS, confidence=PASS, coverage=PASS
 - Critical defects: 0
-- High defects: 11
+- High defects: 0
 - Medium defects: 0
 - Low defects: 0
 - All archetypes covered: Yes
