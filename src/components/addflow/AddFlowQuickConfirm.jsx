@@ -1,4 +1,3 @@
-import React from "react";
 import React, { useState } from 'react';
 import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Loader2, PenLine, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
