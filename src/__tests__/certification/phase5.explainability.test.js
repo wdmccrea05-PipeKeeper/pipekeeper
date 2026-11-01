@@ -6,7 +6,7 @@
  */
 
 import { describe, test, expect } from 'vitest';
-import { scorePipeBlendDiagnostic } from '@/components/utils/pairingScoreCanonical';
+import { scorePipeBlendDiagnostic, calibrateScore } from '@/components/utils/pairingScoreCanonical';
 import { CERTIFICATION_BLENDS } from './fixtures/tobaccoDataset';
 import { CERTIFICATION_PIPES } from './fixtures/pipeDataset';
 import { USER_PROFILES } from './fixtures/userProfiles';
@@ -82,12 +82,13 @@ describe('Phase 5 — Explainability Validation', () => {
           expect(result.technicalScore).toBeLessThanOrEqual(10);
         });
 
-        test(`${blend._archetype} × ${pipe._archetype}: technicalScore ≈ weighted sum of components`, () => {
+        test(`${blend._archetype} × ${pipe._archetype}: raw score is weighted sum and technicalScore is calibrated`, () => {
           const result = scorePipeBlendDiagnostic(pipe, blend, profile);
           const computed = Object.values(result.components).reduce(
             (sum, c) => sum + c.score * c.weight, 0
           );
-          expect(Math.abs(computed - result.technicalScore)).toBeLessThan(0.2);
+          expect(Math.round(computed * 10) / 10).toBe(result.rawTechnicalScore);
+          expect(result.technicalScore).toBe(calibrateScore(result.rawTechnicalScore));
         });
       }
     }

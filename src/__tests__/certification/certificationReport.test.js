@@ -22,6 +22,7 @@ import {
   normalizeTobaccoForPairing,
   normalizePipeForPairing,
   COMPONENT_WEIGHTS,
+  calibrateScore,
 } from '@/components/utils/pairingScoreCanonical';
 import { resolveBowlVariant } from '@/components/utils/pipeVariants';
 
@@ -226,9 +227,12 @@ describe('Certification — Phase 5: Explainability', () => {
         expect(result.finalScore).toBeLessThanOrEqual(10);
 
         const computed = Object.values(result.components).reduce((s, c) => s + c.score * c.weight, 0);
-        const contradiction = Math.abs(computed - result.technicalScore) > 0.2;
+        const roundedRawScore = Math.round(computed * 10) / 10;
+        const rawContradiction = roundedRawScore !== result.rawTechnicalScore;
+        const calibrationContradiction = result.technicalScore !== calibrateScore(result.rawTechnicalScore);
+        const contradiction = rawContradiction || calibrationContradiction;
         if (contradiction) {
-          addDefect('explanation_contradicts_score', `${blend._archetype} × ${pipe._archetype}: computed score diverges`, 'HIGH', 'Weighted sum does not match technicalScore');
+          addDefect('explanation_contradicts_score', `${blend._archetype} × ${pipe._archetype}: computed score diverges`, 'HIGH', 'Weighted sum does not match rawTechnicalScore or calibration does not match technicalScore');
         }
 
         explainabilityResults.push({
@@ -238,7 +242,8 @@ describe('Certification — Phase 5: Explainability', () => {
           note: contradiction ? 'Score contradiction detected' : 'Scores predict explanation',
         });
 
-        expect(Math.abs(computed - result.technicalScore)).toBeLessThan(0.2);
+        expect(roundedRawScore).toBe(result.rawTechnicalScore);
+        expect(result.technicalScore).toBe(calibrateScore(result.rawTechnicalScore));
       });
     }
   }
@@ -251,9 +256,11 @@ describe('Certification — Phase 5: Explainability', () => {
 // ─── Phase 6: Edge Cases ─────────────────────────────────────────────────────
 
 describe('Certification — Phase 6: Edge Cases', () => {
-  test('empty profile: technicalScore === finalScore', () => {
+  test('empty profile: finalScore respects tier constraints without personalization', () => {
     const result = scorePipeBlendDiagnostic(pipes[0], blends[0], USER_PROFILES.empty);
-    expect(result.finalScore).toBe(result.technicalScore);
+    expect(result.hasPersonalizationEvidence).toBe(false);
+    expect(result.finalScore).toBe(result.tieredScore);
+    expect(result.technicalScore).toBe(calibrateScore(result.rawTechnicalScore));
     addPhaseResult('edgeCases', 'PASS');
   });
 

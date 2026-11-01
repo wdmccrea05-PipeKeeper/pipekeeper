@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Search, X, CheckSquare, Square } from "lucide-react";
+import { Search, CheckSquare, Square } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

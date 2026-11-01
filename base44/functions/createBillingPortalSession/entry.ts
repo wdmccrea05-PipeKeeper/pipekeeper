@@ -1,8 +1,10 @@
 // Force redeploy: 2026-02-01
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { getStripeClient, stripeSanityCheck, stripeKeyErrorResponse, safeStripeError } from "../../shared/stripeUtils.ts";
+import { getSafeRedirectOrigin } from "../../shared/safeRedirectOrigins.ts";
 
 const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
+const APP_ALLOWED_ORIGINS = Deno.env.get("APP_ALLOWED_ORIGINS") || "";
 
 function getPlatform(req) {
   try {
@@ -15,9 +17,7 @@ function getPlatform(req) {
 }
 
 function safeOrigin(req) {
-  const origin = req.headers.get("origin");
-  if (origin && origin.startsWith("http")) return origin;
-  return APP_URL;
+  return getSafeRedirectOrigin(req.headers.get("origin"), APP_URL, APP_ALLOWED_ORIGINS);
 }
 
 async function safePersistCustomerId(base44, email, customerId) {

@@ -10,7 +10,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import WineInsuranceExporter from '@/components/export/WineInsuranceExporter';
 import { importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
-import { selectWineCollectionValue, selectUnvaluedWineCount, hasWineValuation, getWinePrimaryImage, getWineTotalValue, selectWineMetrics, getWineDrinkWindowStatus } from '@/lib/collection/wineSelectors';
+import { hasWineValuation, getWinePrimaryImage, getWineTotalValue, selectWineMetrics, getWineDrinkWindowStatus } from '@/lib/collection/wineSelectors';
 import { selectBreakdownByField } from '@/lib/analytics/breakdownUtils';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';

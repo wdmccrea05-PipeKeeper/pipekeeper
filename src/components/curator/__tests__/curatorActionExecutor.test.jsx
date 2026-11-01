@@ -25,38 +25,20 @@ describe("curatorActionExecutor", () => {
     vi.clearAllMocks();
   });
 
-  it("parses valid JSON response from fallback InvokeLLM", async () => {
+  it("does not fall back to a direct LLM call when the server function fails", async () => {
     base44.functions.invoke.mockRejectedValueOnce(new Error("no function"));
-    base44.integrations.Core.InvokeLLM.mockResolvedValueOnce(
-      JSON.stringify({
-        summary: "1 recommendation found",
-        items: [
-          {
-            id: "rec_1",
-            type: "specialization",
-            title: "Assign Pipe A to Outdoor Rotation",
-            explanation: "Good fit",
-            rationale: "Usage pattern",
-            confidence: 0.9,
-            recordType: "pipe",
-            recordId: "pipe_1",
-            recordName: "Pipe A",
-            proposedChanges: { specialization: "Outdoor Rotation" },
-            followUpPrompt: "Why?",
-          },
-        ],
-      })
-    );
+    base44.integrations.Core.InvokeLLM.mockResolvedValueOnce("fallback response");
 
-    const result = await curatorActionExecutor({
+    await expect(curatorActionExecutor({
       actionType: "recommend_specializations",
       context: { pipes: [], blends: [], bottles: [] },
       requestId: "req_1",
-    });
-
-    expect(result.summary).toBe("1 recommendation found");
-    expect(result.items).toHaveLength(1);
-    expect(result.items[0].recordId).toBe("pipe_1");
+    })).rejects.toThrow("Curator LLM call failed: no function");
+    expect(base44.functions.invoke).toHaveBeenCalledWith(
+      "invokeCuratorLLM",
+      expect.objectContaining({ actionType: "recommend_specializations", requestId: "req_1" })
+    );
+    expect(base44.integrations.Core.InvokeLLM).not.toHaveBeenCalled();
   });
 
   it("prefers invokeCuratorLLM function when available", async () => {
@@ -92,8 +74,7 @@ describe("curatorActionExecutor", () => {
   });
 
   it("throws when no response is returned", async () => {
-    base44.functions.invoke.mockRejectedValueOnce(new Error("no function"));
-    base44.integrations.Core.InvokeLLM.mockResolvedValueOnce("");
+    base44.functions.invoke.mockResolvedValueOnce("");
 
     await expect(
       curatorActionExecutor({
@@ -102,5 +83,6 @@ describe("curatorActionExecutor", () => {
         requestId: "req_3",
       })
     ).rejects.toThrow("Curator returned no response.");
+    expect(base44.integrations.Core.InvokeLLM).not.toHaveBeenCalled();
   });
 });

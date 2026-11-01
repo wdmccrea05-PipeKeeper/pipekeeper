@@ -4,14 +4,16 @@ const STALE_VALUATION_DAYS = 180;
 const REFRESH_AFTER_DAYS = 30;
 
 export function getRemainingSticks(cigar) {
-  const singles = toNumber(cigar?.singles_equivalent);
-  if (singles && singles > 0) return singles;
+  const singlesValue = cigar?.singles_equivalent;
+  if (singlesValue !== null && singlesValue !== undefined && singlesValue !== '') {
+    const singles = Number(singlesValue);
+    if (Number.isFinite(singles)) return Math.max(0, singles);
+  }
 
   const qty = toNumber(cigar?.quantity);
+  if (qty <= 0) return 0;
   const cpp = toNumber(cigar?.cigars_per_package);
-  if (qty && qty > 0 && cpp && cpp > 0) return qty * cpp;
-
-  return qty && qty > 0 ? qty : 0;
+  return cpp > 0 ? qty * cpp : qty;
 }
 
 function getBasisSticks(cigar, remainingSticks) {
@@ -181,7 +183,7 @@ export function calculateCigarValue(cigar) {
     confidenceScore = cigar?.valuation_confidence || 'high';
   } else if (manualUnit && manualUnit > 0) {
     estimatedUnitValue = manualUnit;
-    estimatedTotalValue = manualTotal && manualTotal > 0 ? manualTotal : (remainingSticks > 0 ? manualUnit * remainingSticks : null);
+    estimatedTotalValue = remainingSticks > 0 ? manualUnit * remainingSticks : null;
     replacementCostEstimate = manualReplacement && manualReplacement > 0
       ? manualReplacement
       : (basisSticks > 0 ? manualUnit * basisSticks : estimatedTotalValue);
@@ -197,9 +199,9 @@ export function calculateCigarValue(cigar) {
     estimatedUnitValue = marketUnit && marketUnit > 0
       ? marketUnit
       : (remainingSticks > 0 ? marketTotal / remainingSticks : null);
-    estimatedTotalValue = marketTotal && marketTotal > 0
-      ? marketTotal
-      : (estimatedUnitValue != null && remainingSticks > 0 ? estimatedUnitValue * remainingSticks : null);
+    estimatedTotalValue = estimatedUnitValue != null && remainingSticks > 0
+      ? estimatedUnitValue * remainingSticks
+      : null;
     replacementCostEstimate = marketReplacement && marketReplacement > 0
       ? marketReplacement
       : (estimatedUnitValue != null && basisSticks > 0 ? estimatedUnitValue * basisSticks : estimatedTotalValue);

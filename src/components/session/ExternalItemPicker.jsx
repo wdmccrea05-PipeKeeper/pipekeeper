@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
 import { Search, Barcode, Camera, Loader2, ArrowLeft } from "lucide-react";
 import ExternalItemSearch from "@/components/session/ExternalItemSearch";

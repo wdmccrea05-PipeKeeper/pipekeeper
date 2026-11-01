@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Camera, Image as ImageIcon, X, Loader2 } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { base44 } from '@/api/base44Client';
 import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import { toast } from 'sonner';

@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, BookOpen, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { base44 } from '@/api/base44Client';
 import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { buildAiContext, getArticleById } from './documentationRegistry';
 import ReactMarkdown from 'react-markdown';

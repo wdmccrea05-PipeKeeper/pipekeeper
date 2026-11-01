@@ -9,8 +9,11 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 import Stripe from 'npm:stripe@13.11.0';
+import { areAllowedRedirectUrls } from '../../shared/safeRedirectOrigins.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
+const APP_URL = Deno.env.get('APP_URL') || 'https://pipekeeper.app';
+const APP_ALLOWED_ORIGINS = Deno.env.get('APP_ALLOWED_ORIGINS') || '';
 
 // Price IDs are public identifiers. Environment values win when present, but
 // production checkout must not fail merely because VITE_* variables were not
@@ -145,6 +148,10 @@ Deno.serve(async (req) => {
 
     if (!planKey) {
       return Response.json({ error: 'Plan key is required' }, { status: 400 });
+    }
+
+    if (!areAllowedRedirectUrls(successUrl, cancelUrl, APP_URL, APP_ALLOWED_ORIGINS)) {
+      return Response.json({ error: 'Checkout redirect URLs are not allowed.' }, { status: 400 });
     }
 
     // Validate actionType — no silent fallback to a wrong checkout type

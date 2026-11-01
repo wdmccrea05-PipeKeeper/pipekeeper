@@ -1,6 +1,7 @@
 // User-facing endpoint: Create Stripe billing portal session for current user
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.23";
 import Stripe from "npm:stripe@17.5.0";
+import { getSafeRedirectOrigin, isAllowedRedirectUrl } from "../../shared/safeRedirectOrigins.ts";
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
 
@@ -72,7 +73,11 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const returnUrl = body.returnUrl || Deno.env.get("APP_URL") || "https://pipekeeper.app/Profile";
+    const appUrl = Deno.env.get("APP_URL") || "https://pipekeeper.app";
+    const allowedOrigins = Deno.env.get("APP_ALLOWED_ORIGINS") || "";
+    const returnUrl = isAllowedRedirectUrl(body.returnUrl, appUrl, allowedOrigins)
+      ? new URL(String(body.returnUrl)).toString()
+      : `${getSafeRedirectOrigin(null, appUrl, allowedOrigins)}/Profile`;
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,

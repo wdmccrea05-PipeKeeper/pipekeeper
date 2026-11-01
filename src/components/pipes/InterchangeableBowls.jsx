@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trash2, Edit, Layers, Camera, X } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import { useTranslation } from "@/components/i18n/safeTranslation";
 

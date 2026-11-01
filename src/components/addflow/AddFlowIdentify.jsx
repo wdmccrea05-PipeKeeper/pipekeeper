@@ -163,8 +163,7 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
           <button
             onClick={onBack}
             className="flex items-center justify-center rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
-          style={{ color: 'rgba(224,216,200,0.6)', minHeight: 44, minWidth: 44, width: 44, height: 44 }}
-            style={{ color: 'rgba(224,216,200,0.6)' }}
+            style={{ color: 'rgba(224,216,200,0.6)', minHeight: 44, minWidth: 44, width: 44, height: 44 }}
           >
             <ArrowLeft className="w-4 h-4" />
           </button>

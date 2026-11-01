@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 import { Users, History, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import PipeIcon from "@/components/icons/PipeIcon";
 import PipeClubSessionWizard from "./PipeClubSessionWizard";
 import PipeClubHistory from "./PipeClubHistory";

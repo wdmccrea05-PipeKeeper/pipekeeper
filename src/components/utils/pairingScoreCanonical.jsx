@@ -7,9 +7,10 @@ import { expandPipesToVariants } from "@/components/utils/pipeVariants";
  * TopBlendMatches, TobaccoDetail (Best Pipes), aiGenerators.
  *
  * Model: multi-dimensional weighted compatibility.
- *   technicalScore = Σ(component.score × component.weight)
- *   finalScore     = technicalScore                    (no personalization evidence)
- *                or = technicalScore × 0.80 + personalFit × 0.20
+ *   rawTechnicalScore = Σ(component.score × component.weight)
+ *   technicalScore    = calibrateScore(rawTechnicalScore)
+ *   finalScore        = tier-constrained technicalScore, optionally blended
+ *                       with personalFit when personalization evidence exists.
  *
  * Personal preference factors are kept SEPARATE from the technical score so
  * that a pipe/blend pairing can be explained on physical/technical grounds.

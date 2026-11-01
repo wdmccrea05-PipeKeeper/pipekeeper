@@ -21,6 +21,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import Stripe from 'npm:stripe@13.11.0';
 import { shouldBlockNewSubscription } from '../../shared/duplicateSubscriptionGuard.ts';
+import { areAllowedRedirectUrls } from '../../shared/safeRedirectOrigins.ts';
+
+const APP_URL = Deno.env.get('APP_URL') || 'https://pipekeeper.app';
+const APP_ALLOWED_ORIGINS = Deno.env.get('APP_ALLOWED_ORIGINS') || '';
 
 function getStripeClient() {
   const key = Deno.env.get('STRIPE_SECRET_KEY');
@@ -186,27 +190,6 @@ function resolveCheckoutAppSlug(type: CheckoutType, modules: string[]): string {
   return 'pipekeeper';
 }
 
-function getBaseUrl(url: string): string {
-  const parsed = new URL(url);
-  return `${parsed.protocol}//${parsed.host}`;
-}
-
-function assertSafeRedirectUrl(successUrl: string, cancelUrl: string) {
-  const success = new URL(successUrl);
-  const cancel = new URL(cancelUrl);
-
-  if (!['http:', 'https:'].includes(success.protocol) || !['http:', 'https:'].includes(cancel.protocol)) {
-    throw new Error('Invalid redirect URL protocol.');
-  }
-
-  const successBase = getBaseUrl(successUrl);
-  const cancelBase = getBaseUrl(cancelUrl);
-
-  if (successBase !== cancelBase) {
-    throw new Error('Success and cancel URLs must share the same origin.');
-  }
-}
-
 async function findOrCreateStripeCustomer(base44: any, stripe: any, user: any, appSlug: string, appEnvironment: string) {
   const email = normEmail(user?.email);
   if (!email) {
@@ -343,7 +326,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing redirect URLs.' }, { status: 400 });
     }
 
-    assertSafeRedirectUrl(successUrl, cancelUrl);
+    if (!areAllowedRedirectUrls(successUrl, cancelUrl, APP_URL, APP_ALLOWED_ORIGINS)) {
+      return Response.json({ error: 'Checkout redirect URLs are not allowed.' }, { status: 400 });
+    }
 
     const moduleDescriptor = getModuleDescriptor(type, modules);
     const appSlug = resolveCheckoutAppSlug(type, modules);

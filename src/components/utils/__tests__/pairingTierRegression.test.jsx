@@ -24,7 +24,6 @@ import {
   normalizePipeForPairing,
   normalizeTobaccoForPairing,
   computeCompatibilityTier,
-  COMPATIBILITY_TIERS,
   buildPairingsForPipes,
 } from '../pairingScoreCanonical';
 

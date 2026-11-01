@@ -7,7 +7,6 @@
  * Supports: pipe, blend (tobacco), bottle (whiskey)
  */
 
-import { base44 } from '@/api/base44Client';
 import { normalizeIdentifiedItem, normalizeSingleCandidate } from './normalizeIdentifiedItem';
 import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
 import { classifyIntegrationError, INTEGRATION_ERROR_CATEGORIES } from '@/lib/integrationErrorClassification';

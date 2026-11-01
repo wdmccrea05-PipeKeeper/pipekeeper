@@ -99,7 +99,7 @@ describe('Safe-Area Regression Tests', () => {
   it('hasModuleProAccess uses subscription for module derivation', () => {
     const entPath = path.resolve(process.cwd(), 'src/components/utils/moduleEntitlements.jsx');
     const ent = fs.existsSync(entPath) ? fs.readFileSync(entPath, 'utf-8') : '';
-    expect(ent).toContain('subscriptionGrantsPaidAccess');
+    expect(ent).toContain('resolveModuleAccess(user, moduleKey, subscription)');
     expect(ent).toContain('getCanonicalProModules(user, subscription)');
   });
 });

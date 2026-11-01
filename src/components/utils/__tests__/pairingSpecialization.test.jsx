@@ -17,8 +17,6 @@ import {
   scorePipeBlend,
   scorePipeBlendDiagnostic,
   normalizePipeForPairing,
-  normalizeTobaccoForPairing,
-  computeCompatibilityTier,
   inferBlendFamily,
   inferAromaticFromFields,
 } from '../pairingScoreCanonical';

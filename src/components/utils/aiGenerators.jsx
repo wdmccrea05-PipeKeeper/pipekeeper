@@ -1,4 +1,3 @@
-import { base44 } from "@/api/base44Client";
 import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import {
   buildPairingsForPipes,

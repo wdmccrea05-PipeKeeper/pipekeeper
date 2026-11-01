@@ -15,8 +15,6 @@
  *   authoritative subscription lifecycle says no.
  */
 
-import { hasPaidAccess } from './premiumAccess';
-import { subscriptionGrantsPaidAccess } from './gracePeriod';
 import { MODULES, MODULE_LIST, getActiveModules } from './moduleRegistry';
 import { isModuleLaunched } from './moduleReleaseState';
 import { resolveModuleAccess, getCanonicalProModules, checkLegacyProjectionMismatch } from './resolveModuleAccess';

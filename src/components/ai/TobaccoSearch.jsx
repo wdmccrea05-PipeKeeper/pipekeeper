@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, ChevronRight } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/components/i18n/safeTranslation";

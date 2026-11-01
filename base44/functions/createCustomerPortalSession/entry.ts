@@ -4,6 +4,10 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 
 // Inline getStripeClient to avoid import issues
 import Stripe from "npm:stripe@17.5.0";
+import { getSafeRedirectOrigin, isAllowedRedirectUrl } from "../../shared/safeRedirectOrigins.ts";
+
+const APP_URL = Deno.env.get("APP_URL") || "https://pipekeeper.app";
+const APP_ALLOWED_ORIGINS = Deno.env.get("APP_ALLOWED_ORIGINS") || "";
 
 let cachedStripe: Stripe | null = null;
 let cachedKeyFingerprint: string | null = null;
@@ -111,9 +115,10 @@ Deno.serve(async (req) => {
       body = {};
     }
 
-    const returnUrl =
-      (body?.returnUrl && String(body.returnUrl)) ||
-      (req.headers.get("origin") || "https://pipekeeper.app");
+    const requestedReturnUrl = body?.returnUrl || req.headers.get("origin");
+    const returnUrl = isAllowedRedirectUrl(requestedReturnUrl, APP_URL, APP_ALLOWED_ORIGINS)
+      ? new URL(String(requestedReturnUrl)).toString()
+      : getSafeRedirectOrigin(null, APP_URL, APP_ALLOWED_ORIGINS);
 
     // ---- Service-role reads (avoid "Authentication required to view users") ----
     const srv = base44.asServiceRole;

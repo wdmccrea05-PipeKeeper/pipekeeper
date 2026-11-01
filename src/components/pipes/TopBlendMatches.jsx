@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { base44 } from "@/api/base44Client";
 import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { Loader2, Sparkles, RefreshCw } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";

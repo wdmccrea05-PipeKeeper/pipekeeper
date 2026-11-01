@@ -12,7 +12,7 @@
  *  collection_value      — total value of owned cigar inventory
  */
 
-import { calculateCigarValue } from '@/utils/cigarValuation';
+import { calculateCigarValue, getRemainingSticks } from '@/utils/cigarValuation';
 import { selectActiveCigars } from './activeFilters.js';
 
 // ---------------------------------------------------------------------------
@@ -290,8 +290,7 @@ function hasValuationInput(cigar) {
  */
 export function getCigarAvailableQuantity(cigar) {
   if (!cigar) return 0;
-  const qty = cigar.singles_equivalent ?? cigar.quantity ?? 0;
-  return Math.max(0, n(qty));
+  return getRemainingSticks(cigar);
 }
 
 /**
