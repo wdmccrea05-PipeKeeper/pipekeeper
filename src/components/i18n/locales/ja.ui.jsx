@@ -1219,6 +1219,7 @@ const jaUI = {
   },
 
   subscriptionFull: {
+    activeSuffix: "有効",
     per: "あたり",
     selected: "選択中",
     choose: "選択",
