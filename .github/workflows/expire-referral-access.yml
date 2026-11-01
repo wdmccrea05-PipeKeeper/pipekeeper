@@ -7,9 +7,8 @@ name: Expire Referral Earned Access
 #   BASE44_APP_URL — full base URL of the deployed Base44 app
 #                    e.g. https://collectionkeeper.base44.app
 #
-# The expireReferralEarnedAccess function accepts unauthenticated automation
-# invocations (no user context → isAutomation = true path) so no API key
-# is required beyond the correct app endpoint URL.
+# Requires REFERRAL_EXPIRY_CRON_TOKEN in GitHub Actions secrets and the
+# same value in Base44 function environment. Anonymous requests are rejected.
 
 on:
   schedule:
@@ -29,6 +28,7 @@ jobs:
       - name: Invoke expireReferralEarnedAccess
         env:
           BASE44_APP_URL: ${{ secrets.BASE44_APP_URL }}
+          REFERRAL_EXPIRY_CRON_TOKEN: ${{ secrets.REFERRAL_EXPIRY_CRON_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -36,6 +36,11 @@ jobs:
             echo "ERROR: BASE44_APP_URL secret is not configured." >&2
             echo "Set it to the full base URL of your Base44 deployment," >&2
             echo "e.g. https://collectionkeeper.base44.app" >&2
+            exit 1
+          fi
+
+          if [ -z "${REFERRAL_EXPIRY_CRON_TOKEN:-}" ]; then
+            echo "ERROR: REFERRAL_EXPIRY_CRON_TOKEN is not configured in GitHub Actions secrets." >&2
             exit 1
           fi
 
@@ -50,6 +55,7 @@ jobs:
             --retry-max-time 120 \
             -X POST "$ENDPOINT" \
             -H "Content-Type: application/json" \
+            -H "x-referral-expiry-token: ${REFERRAL_EXPIRY_CRON_TOKEN}" \
             -d '{}' \
             -w "\n%{http_code}")
 
