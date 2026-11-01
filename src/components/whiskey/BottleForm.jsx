@@ -5,7 +5,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { base44 } from '@/api/base44Client';
 import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import ImageCropper from '@/components/pipes/ImageCropper';
 import FormSection from '@/components/forms/FormSection';

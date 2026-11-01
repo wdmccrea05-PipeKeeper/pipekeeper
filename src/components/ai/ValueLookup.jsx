@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/components/i18n/safeTranslation";

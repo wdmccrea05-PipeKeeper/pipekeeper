@@ -11,7 +11,6 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, Loader2, Search, Edit, ArrowLeftRight } from "lucide-react";
 import FormSection from '@/components/forms/FormSection';
-import { base44 } from "@/api/base44Client";
 import { trackedUploadFile } from '@/lib/integrationTelemetry';
 import PipeSearch from "@/components/ai/PipeSearch";
 import PhotoIdentifier from "@/components/ai/PhotoIdentifier";

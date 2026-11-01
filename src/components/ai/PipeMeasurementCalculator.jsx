@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { Button } from "@/components/ui/button";
 import { Loader2, Ruler } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { toast } from "sonner";
 

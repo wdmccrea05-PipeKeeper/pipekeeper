@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { trackedSendEmail } from '@/lib/integrationTelemetry';
 import { ChevronDown, ChevronUp, Mail, CheckCircle, AlertCircle } from "lucide-react";
 

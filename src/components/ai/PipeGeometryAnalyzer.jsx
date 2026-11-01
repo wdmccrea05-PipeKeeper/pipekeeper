@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { base44 } from "@/api/base44Client";
 import { trackedInvokeLLM } from '@/lib/integrationTelemetry';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

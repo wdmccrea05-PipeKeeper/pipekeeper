@@ -17,9 +17,7 @@ import { analyzeWineOptimizationIssues } from '@/lib/curator/wineOptimization.js
 import { buildWineDrinkingWindowFix } from '@/lib/curator/wineDrinkingWindowFix.js';
 import CuratorChatFixAction from '@/components/curator/CuratorChatFixAction.jsx';
 import {
-  isRecommendationRequest,
   detectRejection,
-  resolveReference,
   extractRecommendationsFromResponse,
 } from '@/lib/curator/conversationState.js';
 import { classifyIntent } from '@/lib/curator/curatorChatIntent.js';
