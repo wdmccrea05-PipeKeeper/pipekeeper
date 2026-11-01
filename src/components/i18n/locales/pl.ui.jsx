@@ -3,7 +3,6 @@
 // Priority: main pl.jsx wins — these only fill gaps.
 
 const plUI = {
-  common: { errorLoadingData: "Nie udało się wczytać danych kolekcji.", retryPrompt: "Twoje dane są bezpieczne. Spróbuj ponownie." },
   foundersOffer: {
     checkoutUnavailable: "Nie można otworzyć płatności. Spróbuj na stronie Subskrypcje.",
     checkoutFailed: "Nie udało się rozpocząć płatności. Spróbuj ponownie.",
@@ -328,6 +327,8 @@ const plUI = {
     breakIn: "Docieranie",
   },
   common: {
+    errorLoadingData: "Nie udało się wczytać danych kolekcji.",
+    retryPrompt: "Twoje dane są bezpieczne. Spróbuj ponownie.",
     appName: "PipeKeeper",
     cancel: "Anuluj",
     save: "Zapisz",
