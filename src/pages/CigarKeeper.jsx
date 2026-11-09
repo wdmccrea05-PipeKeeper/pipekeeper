@@ -1,3 +1,4 @@
+import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -27,7 +28,7 @@ const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc4971
 
 function formatDate(value, locale) {
   if (!value) return '—';
-  const d = new Date(value);
+  const d = parseDisplayDate(value);
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleDateString(locale || undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }

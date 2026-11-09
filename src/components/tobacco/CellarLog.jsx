@@ -1,3 +1,4 @@
+import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -366,7 +367,7 @@ export default function CellarLog({ blend }) {
                         )}
                         <span className="flex items-center gap-1 text-xs text-[#3a2a20]/60">
                           <Calendar className="w-3 h-3" />
-                          {log.date ? format(new Date(log.date), 'MMM d, yyyy') : '—'}
+                          {log.date ? format(parseDisplayDate(log.date), 'MMM d, yyyy') : '—'}
                         </span>
                       </div>
                     </div>

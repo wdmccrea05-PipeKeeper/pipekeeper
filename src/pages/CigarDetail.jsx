@@ -1,3 +1,4 @@
+import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -88,7 +89,7 @@ function safePrimitive(value, fallback = '—') {
 
 function formatDate(value) {
   if (!value) return '—';
-  const d = new Date(value);
+  const d = parseDisplayDate(value);
   if (Number.isNaN(d.getTime())) return '—';
   return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(d);
 }

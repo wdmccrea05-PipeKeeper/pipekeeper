@@ -1,3 +1,4 @@
+import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 /**
  * activityNormalizer — shared utility for normalizing SmokingLog and TastingLog
  * entries into a single canonical activity model used across dashboard surfaces.
@@ -20,7 +21,7 @@ function safeText(value, fallback = "") {
 
 function formatActivityDate(dateString) {
   if (!dateString) return "";
-  const dt = new Date(dateString);
+  const dt = parseDisplayDate(dateString);
   if (Number.isNaN(dt.getTime())) return "";
   return dt.toLocaleDateString();
 }

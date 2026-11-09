@@ -1,3 +1,4 @@
+import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -118,7 +119,7 @@ function SessionDetailModal({ session, onClose, onDispositionChange }) {
         <div className="space-y-1 mb-4">
           <div className="flex items-center gap-2 text-sm text-[#D8C7A6]/70">
             <CalendarDays className="w-4 h-4 text-[#B48C4B]/60 flex-shrink-0" />
-            {new Date(session.date).toLocaleDateString()}
+            {parseDisplayDate(session.date).toLocaleDateString()}
           </div>
           {session.club_name && (
             <p className="text-sm text-[#D8C7A6]/70 ml-6">{session.club_name}</p>
@@ -332,7 +333,7 @@ export default function PipeClubHistory() {
                 )}
                 <div className="flex items-center gap-3 mt-1 flex-wrap">
                   <span className="text-xs text-[#D8C7A6]/50">
-                    {new Date(session.date).toLocaleDateString()}
+                    {parseDisplayDate(session.date).toLocaleDateString()}
                   </span>
                   {session.club_name && (
                     <span className="text-xs text-[#D8C7A6]/50">{session.club_name}</span>

@@ -1,3 +1,4 @@
+import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 /**
  * Locale-aware formatting utilities for numbers, dates, and currency
  * Respects user's selected language (pk_lang from localStorage)
@@ -38,7 +39,7 @@ export function formatNumber(value, decimals = 0) {
 export function formatDate(date, style = 'medium') {
   if (!date) return '—';
   
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = parseDisplayDate(date);
   if (isNaN(d.getTime())) return '—';
   
   const options = {
@@ -57,7 +58,7 @@ export function formatDate(date, style = 'medium') {
 export function formatDateTime(date, includeTime = true) {
   if (!date) return '—';
   
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = parseDisplayDate(date);
   if (isNaN(d.getTime())) return '—';
   
   const options = includeTime
@@ -94,7 +95,7 @@ export function formatCurrency(value, options = {}) {
 export function formatRelativeTime(date) {
   if (!date) return '—';
   
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = parseDisplayDate(date);
   if (isNaN(d.getTime())) return '—';
   
   const now = new Date();
@@ -166,7 +167,7 @@ export function useLocaleFormatting() {
     },
     formatDate: (date, style = 'medium') => {
       if (!date) return '—';
-      const d = typeof date === 'string' ? new Date(date) : date;
+      const d = parseDisplayDate(date);
       if (isNaN(d.getTime())) return '—';
       const options = {
         short: { year: 'numeric', month: 'numeric', day: 'numeric' },
@@ -178,7 +179,7 @@ export function useLocaleFormatting() {
     },
     formatDateTime: (date, includeTime = true) => {
       if (!date) return '—';
-      const d = typeof date === 'string' ? new Date(date) : date;
+      const d = parseDisplayDate(date);
       if (isNaN(d.getTime())) return '—';
       const options = includeTime
         ? { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }

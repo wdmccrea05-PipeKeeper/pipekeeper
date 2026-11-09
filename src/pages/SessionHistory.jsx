@@ -1,3 +1,4 @@
+import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -22,7 +23,7 @@ function getModuleLabel(key) {
 
 function formatDateLabel(value) {
   if (!value) return "Unknown date";
-  const d = new Date(value);
+  const d = parseDisplayDate(value);
   if (Number.isNaN(d.getTime())) return String(value);
   return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }

@@ -1,3 +1,4 @@
+import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -950,7 +951,7 @@ export default function TobaccoDetail() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-[#F5F1E7]">{log.pipe_name || log.external_pipe_name || 'Pipe session'}</p>
-                    <p className="text-xs text-[#D8C7A6]/60 mt-1">{log.date ? new Date(log.date).toLocaleDateString() : 'Unknown date'}</p>
+                    <p className="text-xs text-[#D8C7A6]/60 mt-1">{log.date ? parseDisplayDate(log.date).toLocaleDateString() : 'Unknown date'}</p>
                     {log.notes ? <p className="text-xs text-[#E0D8C8]/70 mt-2 whitespace-pre-wrap">{log.notes}</p> : <p className="text-xs text-[#E0D8C8]/40 mt-2 italic">No session notes recorded.</p>}
                   </div>
                   {log.rating != null ? <span className="text-xs text-[#D4A574]">★ {log.rating}</span> : null}

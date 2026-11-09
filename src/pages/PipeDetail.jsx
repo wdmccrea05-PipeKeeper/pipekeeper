@@ -1,3 +1,4 @@
+import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMeasurement } from '@/components/utils/measurementConversion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -1288,7 +1289,7 @@ export default function PipeDetail() {
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <p className="text-sm font-medium text-[#F5F1E7]">{log.itemLabel}</p>
-                                <p className="text-xs text-[#D8C7A6]/60 mt-1">{new Date(log.date).toLocaleDateString()}</p>
+                                <p className="text-xs text-[#D8C7A6]/60 mt-1">{parseDisplayDate(log.date).toLocaleDateString()}</p>
                                 {log.notes ? <p className="text-xs text-[#E0D8C8]/70 mt-2 whitespace-pre-wrap">{log.notes}</p> : <p className="text-xs text-[#E0D8C8]/40 mt-2 italic">No session notes recorded.</p>}
                               </div>
                               {log.rating != null && <span className="text-xs text-[#D4A574]">★ {log.rating}</span>}
