@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { formatDateTime } from "@/components/utils/localeFormatters";
 import EntitlementAudit from "@/components/admin/EntitlementAudit";
 
 export default function AdminSubscriptionTools() {
@@ -164,7 +165,7 @@ export default function AdminSubscriptionTools() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.provider", "Provider")}</label>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.provider")}</label>
                 <Select value={provider} onValueChange={setProvider} disabled={loading}>
                   <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
                     <SelectValue />
@@ -172,7 +173,7 @@ export default function AdminSubscriptionTools() {
                   <SelectContent>
                     <SelectItem value="stripe">Stripe</SelectItem>
                     <SelectItem value="apple">iOS</SelectItem>
-                    <SelectItem value="manual">Manual</SelectItem>
+                    <SelectItem value="manual">{t("admin.manual")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -185,30 +186,30 @@ export default function AdminSubscriptionTools() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">{t("admin.active")}</SelectItem>
-                    <SelectItem value="trialing">{t("admin.trialing", "Trialing")}</SelectItem>
-                    <SelectItem value="past_due">{t("admin.pastDue", "Past Due")}</SelectItem>
-                    <SelectItem value="incomplete">{t("admin.incomplete", "Incomplete")}</SelectItem>
+                    <SelectItem value="trialing">{t("admin.trialing")}</SelectItem>
+                    <SelectItem value="past_due">{t("admin.pastDue")}</SelectItem>
+                    <SelectItem value="incomplete">{t("admin.incomplete")}</SelectItem>
                     <SelectItem value="inactive">{t("admin.inactive")}</SelectItem>
-                    <SelectItem value="canceled">{t("admin.canceled", "Canceled")}</SelectItem>
+                    <SelectItem value="canceled">{t("admin.canceled")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.billingInterval", "Billing Interval")}</label>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.billingInterval")}</label>
                 <Select value={billingInterval} onValueChange={setBillingInterval} disabled={loading}>
                   <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="monthly">{t("admin.monthly", "Monthly")}</SelectItem>
-                    <SelectItem value="annual">{t("admin.annual", "Annual")}</SelectItem>
+                    <SelectItem value="monthly">{t("admin.monthly")}</SelectItem>
+                    <SelectItem value="annual">{t("admin.annual")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.activeModules", "Active Modules")}</label>
+                <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.activeModules")}</label>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   {Object.keys(moduleFlags).map((moduleId) => (
                     <label key={moduleId} className="flex items-center gap-2 text-[#E0D8C8]">
@@ -290,11 +291,11 @@ export default function AdminSubscriptionTools() {
                   <p className="text-[#E0D8C8] font-medium">{updatedUser.full_name}</p>
                 </div>
                  <div>
-                    <p className="text-[#E0D8C8]/50">{t("admin.hasPaidAccess", "Has Paid Access")}</p>
+                    <p className="text-[#E0D8C8]/50">{t("admin.hasPaidAccess")}</p>
                     <p className="text-[#E0D8C8] font-medium">{updatedUser.has_paid_access ? "Yes" : "No"}</p>
                   </div>
                   <div>
-                    <p className="text-[#E0D8C8]/50">{t("admin.entitlementTier", "Entitlement Tier")}</p>
+                    <p className="text-[#E0D8C8]/50">{t("admin.entitlementTier")}</p>
                     <p className="text-[#E0D8C8] font-medium">{updatedUser.entitlement_tier || t("subscription.free")}</p>
                   </div>
                   <div>
@@ -302,18 +303,18 @@ export default function AdminSubscriptionTools() {
                     <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_status || t("admin.inactive")}</p>
                   </div>
                   <div>
-                    <p className="text-[#E0D8C8]/50">{t("admin.provider", "Provider")}</p>
+                    <p className="text-[#E0D8C8]/50">{t("admin.provider")}</p>
                     <p className="text-[#E0D8C8] font-medium">{updatedUser.subscription_provider || t("admin.none")}</p>
                   </div>
                   <div>
-                    <p className="text-[#E0D8C8]/50">{t("admin.activeModules", "Active Modules")}</p>
+                    <p className="text-[#E0D8C8]/50">{t("admin.activeModules")}</p>
                     <p className="text-[#E0D8C8] font-medium">{updatedUser.paid_modules_csv || "—"}</p>
                   </div>
                 <div>
                   <p className="text-[#E0D8C8]/50">{t("admin.updatedAt")}</p>
                   <p className="text-[#E0D8C8] font-medium">
                     {updatedUser.subscriptionUpdatedAt
-                      ? new Date(updatedUser.subscriptionUpdatedAt).toLocaleString()
+                      ? formatDateTime(updatedUser.subscriptionUpdatedAt)
                       : "—"}
                   </p>
                 </div>

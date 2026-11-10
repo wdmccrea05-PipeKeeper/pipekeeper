@@ -1434,6 +1434,18 @@ const enUI = {
   },
 
   admin: {
+    provider: 'Provider',
+    trialing: 'Trialing',
+    pastDue: 'Past Due',
+    incomplete: 'Incomplete',
+    canceled: 'Canceled',
+    billingInterval: 'Billing Interval',
+    monthly: 'Monthly',
+    annual: 'Annual',
+    activeModules: 'Active Modules',
+    hasPaidAccess: 'Has Paid Access',
+    entitlementTier: 'Entitlement Tier',
+    manual: 'Manual',
     // Access control
     accessDenied: "Access Denied",
     accessRequired: "Admin access required",
