@@ -446,6 +446,8 @@ const esUI = {
     upToDateOpt: "Actualizado",
   },
   subscription: {
+    checkoutActivationSuccess: "¡Suscripción activada!",
+    checkoutManualReviewNotice: "El pago directo no está disponible en este momento. Usa el formulario para solicitar una revisión manual del acceso o escribe a",
     appleFeatureFree1: "Agregar hasta 5 pipas",
     appleFeatureFree2: "Agregar hasta 10 mezclas de tabaco",
     appleFeatureFree3: "Ver, editar y organizar tu colección",

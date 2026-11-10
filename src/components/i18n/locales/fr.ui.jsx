@@ -413,6 +413,8 @@ const frUI = {
     upToDateOpt: "À jour",
   },
   subscription: {
+    checkoutActivationSuccess: "Abonnement activé !",
+    checkoutManualReviewNotice: "Le paiement direct est actuellement indisponible. Utilisez le formulaire pour demander une vérification manuelle de l’accès ou écrivez à",
     free: "Gratuit",
     pro: "Pro",
     syncStatusFailed: "Impossible de synchroniser le statut de l’abonnement Apple.",

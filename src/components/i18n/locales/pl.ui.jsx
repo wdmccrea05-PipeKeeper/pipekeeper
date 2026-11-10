@@ -420,6 +420,8 @@ const plUI = {
     upToDateOpt: "Aktualne",
   },
   subscription: {
+    checkoutActivationSuccess: "Subskrypcja aktywowana!",
+    checkoutManualReviewNotice: "Płatność bezpośrednia jest obecnie niedostępna. Użyj formularza, aby poprosić o ręczną weryfikację dostępu, lub napisz na",
     appleFeatureFree1: "Dodaj do 5 fajek",
     appleFeatureFree2: "Dodaj do 10 mieszanek tytoniowych",
     appleFeatureFree3: "Przeglądaj, edytuj i organizuj swoją kolekcję",

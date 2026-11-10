@@ -127,7 +127,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
           {/* Plans unavailable notice */}
           {!hasAnyPlan && (
             <div className="rounded-lg bg-[#A35C5C]/10 border border-[#A35C5C]/30 px-4 py-3 text-sm text-[#E0D8C8]/80">
-              Direct checkout is not available right now. Use the form below to request manual access review, or email{" "}
+              {t('subscription.checkoutManualReviewNotice')}{" "}
               <a href={`mailto:${SUPPORT_EMAIL}`} className="underline text-[#D4A574]">
                 {SUPPORT_EMAIL}
               </a>

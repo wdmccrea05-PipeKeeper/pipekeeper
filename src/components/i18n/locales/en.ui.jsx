@@ -467,6 +467,8 @@ const enUI = {
     upToDateOpt: "Up to Date",
   },
   subscription: {
+    checkoutActivationSuccess: "Subscription activated!",
+    checkoutManualReviewNotice: "Direct checkout is not available right now. Use the form below to request manual access review, or email",
     appleFeatureFree1: "Add up to 5 pipes",
     appleFeatureFree2: "Add up to 10 tobacco blends",
     appleFeatureFree3: "View, edit, and organize your collection",

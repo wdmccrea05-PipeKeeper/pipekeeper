@@ -96,7 +96,7 @@ export function usePaywall() {
         await handlePostPurchase();
 
         // Success
-        toast.success('Subscription activated!');
+        toast.success(t('subscription.checkoutActivationSuccess'));
         navigate(targetUrl);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to activate subscription';
@@ -113,7 +113,7 @@ export function usePaywall() {
         setIsLoading(false);
       }
     },
-    [navigate]
+    [navigate, t]
   );
 
   /**

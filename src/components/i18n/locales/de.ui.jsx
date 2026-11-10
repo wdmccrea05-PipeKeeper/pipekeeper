@@ -388,6 +388,8 @@ const deUI = {
     upToDateOpt: "Aktuell",
   },
   subscription: {
+    checkoutActivationSuccess: "Abonnement aktiviert!",
+    checkoutManualReviewNotice: "Die direkte Zahlung ist derzeit nicht verfügbar. Nutzen Sie das Formular für eine manuelle Zugangsprüfung oder schreiben Sie an",
     appleFeatureFree1: "Bis zu 5 Pfeifen hinzufügen",
     appleFeatureFree2: "Bis zu 10 Tabakmischungen hinzufügen",
     appleFeatureFree3: "Sammlung anzeigen, bearbeiten und organisieren",
