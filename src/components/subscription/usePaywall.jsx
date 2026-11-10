@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useNavigate } from 'react-router-dom';
 import { useAccessSummary } from '@/components/hooks/useAccessSummary';
 import { toast } from 'sonner';
@@ -15,6 +16,7 @@ import {
  */
 export function usePaywall() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const access = useAccessSummary();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -58,7 +60,7 @@ export function usePaywall() {
         setError(message);
 
         if (message === 'popup_blocked_or_redirect_disallowed') {
-          toast.error('Unable to open checkout here. Please try again from the Subscription page.');
+          toast.error(t('foundersOffer.checkoutUnavailable'));
           navigate(createPageUrl('Subscription'));
         } else {
           // Show user-facing toast error
@@ -76,7 +78,7 @@ export function usePaywall() {
         setIsLoading(false);
       }
     },
-    [selectedBillingPeriod]
+    [selectedBillingPeriod, navigate, t]
   );
 
   /**
