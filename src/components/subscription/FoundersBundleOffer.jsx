@@ -115,7 +115,7 @@ export default function FoundersBundleOffer({ onSuccess }) {
           <div className="flex gap-2">
             <div style={{ color: '#D4AF37' }}>✓</div>
             <div className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>
-              <div style={{ color: '#F5F1E7' }} className="font-semibold">WhiskeyKeeper</div>
+              <div style={{ color: '#F5F1E7' }} className="font-semibold">{t("foundersOffer.whiskeyBrand")}</div>
               <div style={{ color: 'rgba(180,140,75,0.6)' }}>{t('foundersOffer.whiskey')}</div>
             </div>
           </div>

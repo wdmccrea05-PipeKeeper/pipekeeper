@@ -410,6 +410,7 @@ const enUI = {
     item22: "Session notes, ratings, serving methods, pairings, sensory notes, and other observations become searchable historical context. The richer the log, the more useful your future questions can be.",
   },
   foundersOffer: {
+    whiskeyBrand: "WhiskeyKeeper",
     checkoutUnavailable: "Unable to open checkout here. Please try again from the Subscription page.",
     checkoutFailed: "Failed to start checkout. Please try again.",
     checking: "Checking offer eligibility...",
