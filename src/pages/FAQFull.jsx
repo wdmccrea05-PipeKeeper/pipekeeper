@@ -156,7 +156,7 @@ export default function FAQFull() {
               <p className="mt-4 text-sm text-[#D8C7A6]/75">
                 {t("faqFull.fullFeatureDescription")}: {" "}
                 <a href="https://www.pipekeeperapp.com/features" target="_blank" rel="noopener noreferrer" className="text-[#D8C7A6] underline decoration-[rgba(163,92,92,0.6)] underline-offset-2 hover:text-[#F5F1E7]">
-                  pipekeeperapp.com/features
+                  {t("faqFullAdditional.item1")}
                 </a>
               </p>
             </div>
@@ -196,81 +196,81 @@ export default function FAQFull() {
           </Q>
         </Section>
 
-        <Section title="CigarKeeper">
+        <Section title={t("faqFullAdditional.item2")}>
           <Q id="cigarkeeper-what" q="What is CigarKeeper?">
-            <p>CigarKeeper is a dedicated module for tracking your cigar collection, managing humidors, logging smoking sessions, and getting AI-powered insights and recommendations. It works alongside PipeKeeper and WhiskeyKeeper as part of the CollectionKeeper suite.</p>
+            <p>{t("faqFullAdditional.item3")}</p>
           </Q>
           <Q id="cigarkeeper-free-vs-pro" q="What's included in the free vs. pro CigarKeeper plan?">
             <div className="space-y-3">
               <div className="rounded-xl border border-[rgba(140,105,65,0.25)] bg-[rgba(28,21,16,0.72)] p-4">
-                <h4 className="mb-2 font-semibold text-[#F5F1E7]">Free Tier</h4>
+                <h4 className="mb-2 font-semibold text-[#F5F1E7]">{t("faqFullAdditional.item4")}</h4>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li>Up to 10 cigars in your collection</li>
-                  <li>1 humidor with maintenance alerts</li>
-                  <li>Session logging (unlimited)</li>
-                  <li>Basic collection view and search</li>
+                  <li>{t("faqFullAdditional.item5")}</li>
+                  <li>{t("faqFullAdditional.item6")}</li>
+                  <li>{t("faqFullAdditional.item7")}</li>
+                  <li>{t("faqFullAdditional.item8")}</li>
                 </ul>
               </div>
               <div className="rounded-xl border border-[rgba(180,140,75,0.32)] bg-[rgba(58,40,22,0.72)] p-4">
-                <h4 className="mb-2 font-semibold text-[#F5F1E7]">Pro Tier</h4>
+                <h4 className="mb-2 font-semibold text-[#F5F1E7]">{t("faqFullAdditional.item9")}</h4>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li>Unlimited cigars and humidors</li>
-                  <li>Curator AI recommendations</li>
-                  <li>Collection insights and analytics</li>
-                  <li>Aging readiness and value tracking</li>
-                  <li>Advanced session analytics</li>
-                  <li>Export reports</li>
+                  <li>{t("faqFullAdditional.item10")}</li>
+                  <li>{t("faqFullAdditional.item11")}</li>
+                  <li>{t("faqFullAdditional.item12")}</li>
+                  <li>{t("faqFullAdditional.item13")}</li>
+                  <li>{t("faqFullAdditional.item14")}</li>
+                  <li>{t("faqFullAdditional.item15")}</li>
                 </ul>
               </div>
-              <p className="text-sm text-[#D8C7A6]/75">You can start using CigarKeeper on the free tier immediately — no payment required.</p>
+              <p className="text-sm text-[#D8C7A6]/75">{t("faqFullAdditional.item16")}</p>
             </div>
           </Q>
           <Q id="cigarkeeper-humidor" q="How do humidor maintenance alerts work?">
-            <p>When you set up a humidor you can specify how often humidity should be checked and when humidity aids should be replaced. CigarKeeper tracks these intervals and shows alerts on the CigarKeeper home page when a check or replacement is overdue or coming up within 3 days. Log a maintenance event to reset the timer.</p>
+            <p>{t("faqFullAdditional.item17")}</p>
           </Q>
           <Q id="cigarkeeper-sessions" q="Can I log sessions for cigars not in my collection?">
-            <p>Yes. When logging a session, toggle <strong>Smoked outside my collection</strong> to record a cigar you tried elsewhere. You can capture the brand, line, vitola, tasting notes, and ratings — and optionally add it to your wishlist afterward.</p>
+            <p>{t("faqFullAdditional.item18")} <strong>{t("faqFullAdditional.item19")}</strong> {t("faqFullAdditional.item20")}</p>
           </Q>
           <Q id="cigarkeeper-onboarding" q="How do I get started with CigarKeeper?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Enable CigarKeeper from your Profile → Module Settings, or select it during initial onboarding.</li>
-              <li>The CigarKeeper onboarding wizard will walk you through adding your first cigar and setting preferences.</li>
-              <li>Add a humidor to organize your collection and enable maintenance tracking.</li>
-              <li>Start logging smoking sessions to build your history.</li>
+              <li>{t("faqFullAdditional.item21")}</li>
+              <li>{t("faqFullAdditional.item22")}</li>
+              <li>{t("faqFullAdditional.item23")}</li>
+              <li>{t("faqFullAdditional.item24")}</li>
             </ol>
           </Q>
         </Section>
 
-        <Section title="Curator Chat">
+        <Section title={t("faqFullAdditional.item25")}>
           <Q id="curator-chat-overview" q="What can I ask the Curator?">
-            <p>The Curator is an AI advisor that understands your entire collection — pipes, blends, bottles, and session history. You can ask it:</p>
+            <p>{t("faqFullAdditional.item26")}</p>
             <ul className="list-disc list-inside space-y-1 mt-2">
-              <li>"Which pipe should I reassign?" — identifies pipes whose real usage diverges from their focus.</li>
-              <li>"What is my most redundant pipe?" — finds crowded shape lanes with low usage.</li>
-              <li>"What should I smoke tonight?" — generates a curated pipe + blend pairing.</li>
-              <li>"What's the biggest gap in my collection?" — identifies missing blend families or styles.</li>
-              <li>"Explain this pairing" — rationale for why a pipe and blend work together.</li>
+              <li>{t("faqFullAdditional.item27")}</li>
+              <li>{t("faqFullAdditional.item28")}</li>
+              <li>{t("faqFullAdditional.item29")}</li>
+              <li>{t("faqFullAdditional.item30")}</li>
+              <li>{t("faqFullAdditional.item31")}</li>
             </ul>
           </Q>
           <Q id="curator-follow-ups" q="How do I follow up in Curator conversations?">
-            <p className="mb-2">After the Curator gives a recommendation, you can ask natural follow-ups:</p>
+            <p className="mb-2">{t("faqFullAdditional.item32")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li><strong>Next best option:</strong> Ask "what comes next?", "and then?", or "next candidate" to explore ranked alternatives without losing the original context.</li>
-              <li><strong>Apply a constraint:</strong> Say "I want to keep it non-aromatic" or "I prefer English blends only". The Curator will re-evaluate whether the recommendation still holds given your constraint.</li>
-              <li><strong>Correct something:</strong> If the Curator misunderstood your collection, say "actually, I use it for..." The Curator will flag the discrepancy and adjust future recommendations.</li>
+              <li><strong>{t("faqFullAdditional.item33")}</strong> {t("faqFullAdditional.item34")}</li>
+              <li><strong>{t("faqFullAdditional.item35")}</strong> {t("faqFullAdditional.item36")}</li>
+              <li><strong>{t("faqFullAdditional.item37")}</strong> {t("faqFullAdditional.item38")}</li>
             </ul>
           </Q>
           <Q id="curator-confidence" q="What do confidence levels mean in Curator recommendations?">
-            <p className="mb-2">Confidence reflects the strength of the underlying evidence:</p>
+            <p className="mb-2">{t("faqFullAdditional.item39")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li><strong>Strong:</strong> 6+ sessions with 70%+ consistent signal. The recommendation is well-supported by usage data.</li>
-              <li><strong>Moderate:</strong> 3-5 sessions with a lean in one direction. The pattern is visible but still building.</li>
-              <li><strong>Weak:</strong> Early signal with limited data. More usage history would sharpen the picture.</li>
+              <li><strong>{t("faqFullAdditional.item40")}</strong> {t("faqFullAdditional.item41")}</li>
+              <li><strong>{t("faqFullAdditional.item42")}</strong> {t("faqFullAdditional.item43")}</li>
+              <li><strong>{t("faqFullAdditional.item44")}</strong> {t("faqFullAdditional.item45")}</li>
             </ul>
-            <p className="mt-2">Higher confidence recommendations are safer to act on. Lower confidence suggestions are exploratory.</p>
+            <p className="mt-2">{t("faqFullAdditional.item46")}</p>
           </Q>
           <Q id="curator-constraints" q="What happens when I apply a constraint?">
-            <p>When you mention a constraint like "I want to keep it non-aromatic", the Curator re-evaluates the previous recommendation. If the constraint contradicts the signal (e.g., the pipe is pulling toward Aromatic but you want non-aromatic), the Curator will exclude it and suggest the next best candidate instead. If the constraint aligns with the signal, the Curator confirms that the recommendation still holds. Constraints stay active throughout the conversation so you can explore alternatives while keeping your preferences in mind.</p>
+            <p>{t("faqFullAdditional.item47")}</p>
           </Q>
         </Section>
 
@@ -295,133 +295,133 @@ export default function FAQFull() {
           </Q>
         </Section>
 
-        <Section title="Value &amp; Strategy">
+        <Section title={t("faqFullAdditional.item48")}>
           <Q id="value-strategy-what" q="What is the Value &amp; Strategy section?">
-            <p className="mb-2">Every item detail page (bottles, pipes, and tobacco blends) includes a <strong>Value &amp; Strategy</strong> section that shows computed valuation data and a strategic recommendation tailored to that item type.</p>
-            <p>It displays: Current Value with a confidence badge (High / Medium / Low), a Value Trend indicator, a Rarity Score from 0–100, a Replacement Difficulty rating, and a Strategy Recommendation (e.g. Hold, Safe to Open, Cellar for Aging, Preserve &amp; Insure) with a bullet-point rationale explaining why.</p>
+            <p className="mb-2">{t("faqFullAdditional.item49")} <strong>{t("faqFullAdditional.item50")}</strong> {t("faqFullAdditional.item51")}</p>
+            <p>{t("faqFullAdditional.item52")}</p>
           </Q>
           <Q id="value-strategy-checkpoint" q="How do I save a value checkpoint?">
-            <p>From any item’s detail page, open the Value &amp; Strategy section and click <strong>Save Checkpoint</strong>. This records the item’s current computed value as a timestamped history entry. Value History shows all past checkpoints so you can track how your item’s value changes over time.</p>
+            <p>{t("faqFullAdditional.item53")} <strong>{t("faqFullAdditional.item54")}</strong>{t("faqFullAdditional.item55")}</p>
           </Q>
           <Q id="value-strategy-observation" q="How do I add a market price observation?">
-            <p>Click <strong>Add Observation</strong> in the Value &amp; Strategy section. You can record a real-world price you found (e.g. an auction result, a retailer listing, a secondary market price), along with the source name, URL, and price type (retail, auction, secondary market, etc.). Observations provide evidence for valuation and are stored separately from computed checkpoints.</p>
+            <p>{t("faqFullAdditional.item56")} <strong>{t("faqFullAdditional.item57")}</strong> {t("faqFullAdditional.item58")}</p>
           </Q>
           <Q id="value-strategy-rarity" q="How is the Rarity Score calculated?">
-            <p>The Rarity Score (0–100) is computed automatically from the item’s data. For whiskey bottles it considers age statement, production status (Discontinued, Allocated, Limited Edition), producer status (closed/silent distillery), ABV, export exclusivity, and whether the bottle is a unicorn or single cask release. For pipes it considers production type (one-off, limited artisan batch, standard artisan, or factory), maker status (deceased/retired/inactive), material, provenance, and age. For tobacco blends it considers discontinuation, manufacturer status, limited batches, regional exclusivity, and cellar age.</p>
-            <p className="mt-2">A score of 0–25 is Common, 25–50 is Moderate, and above 50 is Rare. Scores above 70 are highlighted in red as high-rarity items.</p>
+            <p>{t("faqFullAdditional.item59")}</p>
+            <p className="mt-2">{t("faqFullAdditional.item60")}</p>
           </Q>
           <Q id="value-strategy-badges" q="What do the status badges mean?">
             <ul className="list-disc list-inside space-y-1">
-              <li><strong>Discontinued</strong> — production has ended; supply is finite.</li>
-              <li><strong>Allocated</strong> — supply is restricted or rationed by the producer.</li>
-              <li><strong>Seasonal</strong> — only available at certain times of year.</li>
-              <li><strong>One of a Kind</strong> — unique pipe; irreplaceable.</li>
-              <li><strong>Maker Deceased</strong> — the artisan is no longer alive; no new supply possible.</li>
-              <li><strong>Maker Retired</strong> — the maker no longer produces; existing pieces are the final supply.</li>
-              <li><strong>Exclusive</strong> — market or retailer exclusive release.</li>
+              <li><strong>{t("faqFullAdditional.item61")}</strong> {t("faqFullAdditional.item62")}</li>
+              <li><strong>{t("faqFullAdditional.item63")}</strong> {t("faqFullAdditional.item64")}</li>
+              <li><strong>{t("faqFullAdditional.item65")}</strong> {t("faqFullAdditional.item66")}</li>
+              <li><strong>{t("faqFullAdditional.item67")}</strong> {t("faqFullAdditional.item68")}</li>
+              <li><strong>{t("faqFullAdditional.item69")}</strong> {t("faqFullAdditional.item70")}</li>
+              <li><strong>{t("faqFullAdditional.item71")}</strong> {t("faqFullAdditional.item72")}</li>
+              <li><strong>{t("faqFullAdditional.item73")}</strong> {t("faqFullAdditional.item74")}</li>
             </ul>
-            <p className="mt-2">Badges appear automatically when the corresponding field is set on the item record.</p>
+            <p className="mt-2">{t("faqFullAdditional.item75")}</p>
           </Q>
         </Section>
 
-        <Section title="Curator — Collection History">
+        <Section title={t("faqFullAdditional.item76")}>
           <Q id="curator-history" q="Can Curator search my past sessions and tasting notes?">
-            <p>Yes. Curator can search the history you have logged in PipeKeeper, WhiskeyKeeper, CigarKeeper, and WineKeeper. You can ask for dates, saved notes, ratings, serving details, and pairings using normal conversational questions.</p>
+            <p>{t("faqFullAdditional.item77")}</p>
           </Q>
           <Q id="curator-history-pipe" q="What historical questions can I ask about pipes and tobacco?">
             <div className="space-y-2">
-              <p>Curator can retrieve sessions for a named pipe, a named tobacco blend, or pipe-material groups such as corn cob, briar, meerschaum, clay, and morta. It can include the date, pipe, blend, and saved notes.</p>
-              <p>Examples: <strong>“Pull all logged sessions for my Missouri Meerschaum Legend with notes,”</strong> <strong>“Show every time I smoked Nightcap,”</strong> or <strong>“Compare my notes from my cobs versus briars.”</strong></p>
+              <p>{t("faqFullAdditional.item78")}</p>
+              <p>{t("faqFullAdditional.item79")} <strong>{t("faqFullAdditional.item80")}</strong> <strong>{t("faqFullAdditional.item81")}</strong> or <strong>{t("faqFullAdditional.item82")}</strong></p>
             </div>
           </Q>
           <Q id="curator-history-whiskey" q="What historical questions can I ask about whiskey?">
-            <p>Ask for a bottle's tasting history or your broader whiskey tasting history. Curator can return tasting dates, notes, ratings, serving method, and recorded pairings. Example: <strong>“Show every tasting of Rare Breed with notes, ratings, and pairings.”</strong></p>
+            <p>{t("faqFullAdditional.item83")} <strong>{t("faqFullAdditional.item84")}</strong></p>
           </Q>
           <Q id="curator-history-cigar" q="What historical questions can I ask about cigars?">
-            <p>Curator can retrieve cigar sessions with dates and saved session details, including general notes, construction, burn, draw, flavor progression, notes by thirds, ratings, enjoyment, and pairings when those details were logged. Example: <strong>“Pull all sessions for Padron 1964 with notes.”</strong></p>
+            <p>{t("faqFullAdditional.item85")} <strong>{t("faqFullAdditional.item86")}</strong></p>
           </Q>
           <Q id="curator-history-wine" q="What historical questions can I ask about wine?">
-            <p>Curator can retrieve wine tasting history with dates, ratings, serving method, food pairings, occasion, and your general, aroma, palate, and finish notes. Example: <strong>“Show all tastings of Caymus with notes and food pairings.”</strong></p>
+            <p>{t("faqFullAdditional.item87")} <strong>{t("faqFullAdditional.item88")}</strong></p>
           </Q>
           <Q id="curator-history-source" q="Where does Curator get historical answers?">
-            <p>Historical answers come from the sessions and tastings saved in your own CollectionKeeper records. Curator can only return details that were actually logged, so adding useful notes and ratings makes future historical searches more valuable.</p>
+            <p>{t("faqFullAdditional.item89")}</p>
           </Q>
         </Section>
 
-        <Section title="Pipe Club">
+        <Section title={t("faqFullAdditional.item90")}>
           <Q id="pipe-club-what" q="What is Pipe Club?">
-            <p>Pipe Club is a session-based feature designed for pipe club meetings or gatherings where someone brings a tobacco you may not own. You select the pipes you physically brought with you, identify the club blend (from your collection, your wishlist, or a new/unowned blend), and the canonical pairing engine instantly recommends the best pipe from what you actually have on hand — not your entire collection.</p>
+            <p>{t("faqFullAdditional.item91")}</p>
           </Q>
           <Q id="pipe-club-start" q="How do I start a Pipe Club session?">
             <ol className="list-decimal list-inside space-y-1">
-              <li>Go to <strong>Pipe Club</strong> from the main navigation.</li>
-              <li>Tap <strong>Start Session</strong>.</li>
-              <li>Enter the session date, club name, and location (optional).</li>
-              <li>Select the pipes you brought with you.</li>
-              <li>Identify the club blend — choose from your collection, wishlist, or enter a new blend.</li>
-              <li>Review the recommendation, then log which pipe you actually used and rate the experience.</li>
+              <li>Go to <strong>{t("faqFullAdditional.item92")}</strong> {t("faqFullAdditional.item93")}</li>
+              <li>{t("faqFullAdditional.item94")} <strong>{t("faqFullAdditional.item95")}</strong>.</li>
+              <li>{t("faqFullAdditional.item96")}</li>
+              <li>{t("faqFullAdditional.item97")}</li>
+              <li>{t("faqFullAdditional.item98")}</li>
+              <li>{t("faqFullAdditional.item99")}</li>
             </ol>
           </Q>
           <Q id="pipe-club-recommendation" q="How does the Pipe Club recommendation work?">
-            <p>The canonical pairing engine scores only the pipes you selected as "present" — not your entire collection. It uses the same multi-dimensional scoring as the full Pairing Matrix (pipe specialization, chamber geometry, tobacco cut, blend composition, aromatic compatibility, bowl material, and smoking character), but narrowed to the pipes you have with you. The recommendation shows the best-matched pipe and a runner-up alternative, each with a confidence tier and explanation of why the pairing works.</p>
+            <p>{t("faqFullAdditional.item100")}</p>
           </Q>
           <Q id="pipe-club-blend-sources" q="Where can I select the club blend from?">
-            <p>You can identify the club blend from three sources:</p>
+            <p>{t("faqFullAdditional.item101")}</p>
             <ul className="list-disc list-inside space-y-1 mt-1">
-              <li><strong>My Collection</strong> — search and select a blend you already own.</li>
-              <li><strong>Wishlist</strong> — select a blend from your Want List that you don't own yet.</li>
-              <li><strong>New / Not Owned</strong> — enter a new blend manually, use Quick Lookup to search all known blends in the system, or tap <strong>Identify Blend (AI)</strong> to auto-fill metadata.</li>
+              <li><strong>{t("faqFullAdditional.item102")}</strong> {t("faqFullAdditional.item103")}</li>
+              <li><strong>{t("faqFullAdditional.item104")}</strong> {t("faqFullAdditional.item105")}</li>
+              <li><strong>{t("faqFullAdditional.item106")}</strong> {t("faqFullAdditional.item107")} <strong>{t("faqFullAdditional.item108")}</strong> {t("faqFullAdditional.item109")}</li>
             </ul>
           </Q>
           <Q id="pipe-club-quick-lookup" q="What is Quick Lookup and how do I use it?">
-            <p>Quick Lookup searches the entire global tobacco blend database — not just your collection — to instantly find and pre-fill blend metadata. When entering a new/unowned blend, type the name or manufacturer in the Quick Lookup field. Selecting a result auto-fills blend type, family, aromatic status, cut, strength, and components so the pairing engine has accurate data to score against your pipes. You can still adjust any field after selection.</p>
+            <p>{t("faqFullAdditional.item110")}</p>
           </Q>
           <Q id="pipe-club-identify-ai" q="What does the Identify Blend (AI) button do?">
-            <p>If Quick Lookup doesn't find the blend, enter the name and manufacturer, then tap <strong>Identify Blend (AI)</strong>. The AI attempts to determine the blend type, family, aromatic status, intensity, tobacco components, cut, strength, casing, and topping. It returns null for any field it can't confidently determine — you can fill in the rest manually. This ensures the pairing engine has enough metadata to produce an accurate recommendation even for blends not in the system database.</p>
+            <p>{t("faqFullAdditional.item111")} <strong>{t("faqFullAdditional.item112")}</strong>{t("faqFullAdditional.item113")}</p>
           </Q>
           <Q id="pipe-club-bowl-variants" q="Can I select a specific interchangeable bowl for a system pipe?">
-            <p>Yes. When selecting pipes you brought, pipes with interchangeable bowls (like Falcon or Gabotherm) show a bowl selector. Choose the specific bowl you have with you — the pairing engine will score that bowl's geometry and material rather than the parent pipe's defaults. If no bowl is selected, the engine uses the pipe's base configuration.</p>
+            <p>{t("faqFullAdditional.item114")}</p>
           </Q>
           <Q id="pipe-club-log" q="What should I record after the session?">
-            <p>After the session, the Log step lets you record:</p>
+            <p>{t("faqFullAdditional.item115")}</p>
             <ul className="list-disc list-inside space-y-1 mt-1">
-              <li><strong>Pipe actually smoked</strong> — which pipe you ended up using (may differ from the recommendation).</li>
-              <li><strong>Overall tobacco rating</strong> — 1–5 stars for the blend itself.</li>
-              <li><strong>Pairing rating</strong> — 1–5 stars for how well the pipe and blend worked together.</li>
-              <li><strong>Would smoke again?</strong> — Yes, No, or Not sure.</li>
-              <li><strong>Post-session notes</strong> — how it smoked, any observations.</li>
-              <li><strong>Disposition</strong> (unowned blends only) — add the blend to your Wishlist or mark it Not For Me to influence future recommendations.</li>
+              <li><strong>{t("faqFullAdditional.item116")}</strong> {t("faqFullAdditional.item117")}</li>
+              <li><strong>{t("faqFullAdditional.item118")}</strong> {t("faqFullAdditional.item119")}</li>
+              <li><strong>{t("faqFullAdditional.item120")}</strong> {t("faqFullAdditional.item121")}</li>
+              <li><strong>{t("faqFullAdditional.item122")}</strong> {t("faqFullAdditional.item123")}</li>
+              <li><strong>{t("faqFullAdditional.item124")}</strong> {t("faqFullAdditional.item125")}</li>
+              <li><strong>{t("faqFullAdditional.item126")}</strong> {t("faqFullAdditional.item127")}</li>
             </ul>
           </Q>
           <Q id="pipe-club-history" q="Where can I see my past Pipe Club sessions?">
-            <p>Pipe Club sessions are listed on the Pipe Club home page under <strong>Session History</strong>. Tap any session to see the blend, date, recommended pipe, and your logged ratings. Pipe Club sessions also appear in the main Session History calendar alongside your regular smoking logs.</p>
+            <p>{t("faqFullAdditional.item128")} <strong>{t("faqFullAdditional.item129")}</strong>{t("faqFullAdditional.item130")}</p>
           </Q>
         </Section>
 
-        <Section title="Pipe Reassignment & Collection Analysis">
+        <Section title={t("faqFullAdditional.item131")}>
           <Q id="pipe-reassignment-what" q="What is pipe reassignment?">
-            <p className="mb-2">Pipe reassignment is when the Curator detects that a pipe's real-world usage pattern diverges from its recorded specialization. For example:</p>
+            <p className="mb-2">{t("faqFullAdditional.item132")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>A pipe labeled "English-Only" but 70% of its sessions are Virginia blends.</li>
-              <li>A pipe with no focus but consistently pulls toward a single blend family.</li>
+              <li>{t("faqFullAdditional.item133")}</li>
+              <li>{t("faqFullAdditional.item134")}</li>
             </ul>
-            <p className="mt-2">The Curator ranks reassignment candidates by confidence (strong = 6+ sessions with consistent lean; moderate = 3-5 sessions; weak = early signal). You can ask "Which pipe should I reassign?" to see the top candidate.</p>
+            <p className="mt-2">{t("faqFullAdditional.item135")}</p>
           </Q>
           <Q id="pipe-reassignment-action" q="What should I do with a reassignment recommendation?">
-            <p className="mb-2">You have three options:</p>
+            <p className="mb-2">{t("faqFullAdditional.item136")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li><strong>Accept it:</strong> Update the pipe's focus field to the recommended blend family. This improves future pairing accuracy.</li>
-              <li><strong>Apply a constraint:</strong> If you want to keep the pipe in its current family, say "I want to leave it non-aromatic" (or whatever the constraint is). The Curator will re-evaluate — if the constraint contradicts the usage signal, it will exclude this pipe and show the next candidate instead.</li>
-              <li><strong>Skip it:</strong> Ignore the recommendation. Ask for the next candidate or explore a different topic.</li>
+              <li><strong>{t("faqFullAdditional.item137")}</strong> {t("faqFullAdditional.item138")}</li>
+              <li><strong>{t("faqFullAdditional.item139")}</strong> {t("faqFullAdditional.item140")}</li>
+              <li><strong>{t("faqFullAdditional.item141")}</strong> {t("faqFullAdditional.item142")}</li>
             </ul>
           </Q>
           <Q id="collection-redundancy" q="How do I know if a pipe is redundant?">
-            <p className="mb-2">A pipe is redundant when it occupies a crowded shape lane with low usage. For example:</p>
+            <p className="mb-2">{t("faqFullAdditional.item143")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>You have 3 Billard pipes but one has only 2 logged sessions.</li>
-              <li>The low-usage pipe doesn't have a distinct specialization to justify its place.</li>
+              <li>{t("faqFullAdditional.item144")}</li>
+              <li>{t("faqFullAdditional.item145")}</li>
             </ul>
-            <p className="mt-2">Ask the Curator "What's my most redundant pipe?" to identify candidates. You can keep it if it earns a specialization, or consider consolidating the shape lane.</p>
+            <p className="mt-2">{t("faqFullAdditional.item146")}</p>
           </Q>
         </Section>
 

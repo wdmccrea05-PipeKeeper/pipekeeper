@@ -262,138 +262,138 @@ export default function HowTo() {
           </Q>
         </Section>
 
-        <Section title="Pipe Club">
+        <Section title={t("howToAdditional.item1")}>
           <Q id="pipe-club-start" q="How do I start a Pipe Club session?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to <strong>Pipe Club</strong> from the main navigation.</li>
-              <li>Tap <strong>Start Session</strong>.</li>
-              <li>Enter the date and time, and optionally the club name, location, and notes.</li>
-              <li>Tap <strong>Next</strong> to proceed to pipe selection.</li>
+              <li>Go to <strong>{t("howToAdditional.item2")}</strong> {t("howToAdditional.item3")}</li>
+              <li>{t("howToAdditional.item4")} <strong>{t("howToAdditional.item5")}</strong>.</li>
+              <li>{t("howToAdditional.item6")}</li>
+              <li>{t("howToAdditional.item7")} <strong>{t("howToAdditional.item8")}</strong> {t("howToAdditional.item9")}</li>
             </ol>
           </Q>
           <Q id="pipe-club-select-pipes" q="How do I select the pipes I brought?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>On the <strong>Pipes</strong> step, you'll see all pipes in your collection.</li>
-              <li>Tap each pipe you physically brought to the meeting to select it. You can select multiple pipes.</li>
-              <li>Use <strong>Select All</strong> or <strong>Clear All</strong> for quick bulk selection.</li>
-              <li>For system pipes with interchangeable bowls (Falcon, Gabotherm, etc.), a bowl selector appears — choose the specific bowl you have with you.</li>
-              <li>Tap <strong>Next</strong> to proceed to blend selection.</li>
+              <li>{t("howToAdditional.item10")} <strong>{t("howToAdditional.item11")}</strong> {t("howToAdditional.item12")}</li>
+              <li>{t("howToAdditional.item13")}</li>
+              <li>{t("howToAdditional.item14")} <strong>{t("howToAdditional.item15")}</strong> or <strong>{t("howToAdditional.item16")}</strong> {t("howToAdditional.item17")}</li>
+              <li>{t("howToAdditional.item18")}</li>
+              <li>{t("howToAdditional.item19")} <strong>{t("howToAdditional.item20")}</strong> {t("howToAdditional.item21")}</li>
             </ol>
           </Q>
           <Q id="pipe-club-select-blend" q="How do I identify the club blend?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>On the <strong>Blend</strong> step, choose a source tab: <strong>My Collection</strong>, <strong>Wishlist</strong>, or <strong>New / Not Owned</strong>.</li>
-              <li><strong>My Collection:</strong> Search and select a blend you already own.</li>
-              <li><strong>Wishlist:</strong> Search and select a blend from your Want List.</li>
-              <li><strong>New / Not Owned:</strong> Use <strong>Quick Lookup</strong> to search all known blends in the system and auto-fill metadata, or enter the manufacturer and blend name manually, then tap <strong>Identify Blend (AI)</strong> to auto-fill blend type, family, aromatic status, cut, strength, and components.</li>
-              <li>Review and adjust any auto-filled fields if needed.</li>
-              <li>Tap <strong>Score Pipes</strong> to get the recommendation.</li>
+              <li>{t("howToAdditional.item22")} <strong>{t("howToAdditional.item23")}</strong> {t("howToAdditional.item24")} <strong>{t("howToAdditional.item25")}</strong>, <strong>{t("howToAdditional.item26")}</strong>, or <strong>{t("howToAdditional.item27")}</strong>.</li>
+              <li><strong>{t("howToAdditional.item28")}</strong> {t("howToAdditional.item29")}</li>
+              <li><strong>{t("howToAdditional.item30")}</strong> {t("howToAdditional.item31")}</li>
+              <li><strong>{t("howToAdditional.item32")}</strong> {t("howToAdditional.item33")} <strong>{t("howToAdditional.item34")}</strong> {t("howToAdditional.item35")} <strong>{t("howToAdditional.item36")}</strong> {t("howToAdditional.item37")}</li>
+              <li>{t("howToAdditional.item38")}</li>
+              <li>{t("howToAdditional.item39")} <strong>{t("howToAdditional.item40")}</strong> {t("howToAdditional.item41")}</li>
             </ol>
           </Q>
           <Q id="pipe-club-recommendation" q="How do I read the recommendation?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>The <strong>Recommendation</strong> step shows the best-matched pipe from the ones you brought, with a confidence tier and explanation.</li>
-              <li>A runner-up alternative pipe is also shown if available.</li>
-              <li>The explanation describes why the pipe and blend work well together (specialization match, chamber geometry, cut compatibility, etc.).</li>
-              <li>Tap <strong>Next</strong> to proceed to the Log step.</li>
+              <li>{t("howToAdditional.item42")} <strong>{t("howToAdditional.item43")}</strong> {t("howToAdditional.item44")}</li>
+              <li>{t("howToAdditional.item45")}</li>
+              <li>{t("howToAdditional.item46")}</li>
+              <li>{t("howToAdditional.item47")} <strong>{t("howToAdditional.item48")}</strong> {t("howToAdditional.item49")}</li>
             </ol>
           </Q>
           <Q id="pipe-club-log" q="How do I log the session results?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>On the <strong>Log</strong> step, select which pipe you actually smoked (optional — may differ from the recommendation).</li>
-              <li>Rate the overall tobacco (1–5 stars) and the pipe + tobacco pairing (1–5 stars).</li>
-              <li>Indicate whether you would smoke this combination again.</li>
-              <li>Add any post-session notes about how it smoked.</li>
-              <li>If the blend was not from your collection, choose a disposition: <strong>Add to Wishlist</strong> (want to buy it) or <strong>Not For Me</strong> (exclude from future recommendations).</li>
-              <li>Tap <strong>Save Session</strong> to record it.</li>
+              <li>{t("howToAdditional.item50")} <strong>{t("howToAdditional.item51")}</strong> {t("howToAdditional.item52")}</li>
+              <li>{t("howToAdditional.item53")}</li>
+              <li>{t("howToAdditional.item54")}</li>
+              <li>{t("howToAdditional.item55")}</li>
+              <li>{t("howToAdditional.item56")} <strong>{t("howToAdditional.item57")}</strong> {t("howToAdditional.item58")} <strong>{t("howToAdditional.item59")}</strong> {t("howToAdditional.item60")}</li>
+              <li>{t("howToAdditional.item61")} <strong>{t("howToAdditional.item62")}</strong> {t("howToAdditional.item63")}</li>
             </ol>
           </Q>
           <Q id="pipe-club-history" q="How do I view past Pipe Club sessions?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to <strong>Pipe Club</strong> from the main navigation.</li>
-              <li>The most recent session appears under <strong>Session History</strong>.</li>
-              <li>Tap <strong>Show all</strong> or the session card to see the full history list.</li>
-              <li>Pipe Club sessions also appear in the main Session History calendar.</li>
+              <li>Go to <strong>{t("howToAdditional.item64")}</strong> {t("howToAdditional.item65")}</li>
+              <li>{t("howToAdditional.item66")} <strong>{t("howToAdditional.item67")}</strong>.</li>
+              <li>{t("howToAdditional.item68")} <strong>{t("howToAdditional.item69")}</strong> {t("howToAdditional.item70")}</li>
+              <li>{t("howToAdditional.item71")}</li>
             </ol>
           </Q>
         </Section>
 
-        <Section title="Managing Whiskey (WhiskeyKeeper)">
+        <Section title={t("howToAdditional.item72")}>
           <Q id="add-bottle" q="How do I add a whiskey bottle to my collection?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to <strong>WhiskeyKeeper</strong> from the nav or Collection Hub.</li>
-              <li>Tap <strong>Add Bottle</strong> or use the <strong>+</strong> button.</li>
-              <li>Search by name to auto-fill distillery, region, type, and age — or enter details manually.</li>
-              <li>Set purchase price, fill level, and any tasting notes.</li>
-              <li>Tap <strong>Save</strong> to add it to your collection.</li>
+              <li>Go to <strong>{t("howToAdditional.item73")}</strong> {t("howToAdditional.item74")}</li>
+              <li>{t("howToAdditional.item75")} <strong>{t("howToAdditional.item76")}</strong> {t("howToAdditional.item77")} <strong>+</strong> {t("howToAdditional.item78")}</li>
+              <li>{t("howToAdditional.item79")}</li>
+              <li>{t("howToAdditional.item80")}</li>
+              <li>{t("howToAdditional.item81")} <strong>{t("howToAdditional.item82")}</strong> {t("howToAdditional.item83")}</li>
             </ol>
           </Q>
           <Q id="whiskey-inventory" q="How does inventory tracking work for whiskey?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Each bottle has an inventory unit — Full, High, Medium, Low, or Empty.</li>
-              <li>Open a bottle's detail page and update the <strong>Fill Level</strong> as you work through it.</li>
-              <li>You can also track multiple bottles of the same expression using the bottle count field.</li>
+              <li>{t("howToAdditional.item84")}</li>
+              <li>{t("howToAdditional.item85")} <strong>{t("howToAdditional.item86")}</strong> {t("howToAdditional.item87")}</li>
+              <li>{t("howToAdditional.item88")}</li>
             </ol>
           </Q>
           <Q id="whiskey-tasting" q="How do I log a whiskey tasting?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Open the bottle's detail page and tap <strong>Log Tasting</strong>.</li>
-              <li>Record flavor notes, rating, and any pairing or occasion details.</li>
-              <li>Tasting history appears in the bottle's detail view and in WhiskeyKeeper Insights.</li>
+              <li>{t("howToAdditional.item89")} <strong>{t("howToAdditional.item90")}</strong>.</li>
+              <li>{t("howToAdditional.item91")}</li>
+              <li>{t("howToAdditional.item92")}</li>
             </ol>
           </Q>
           <Q id="whiskey-value" q="How does bottle valuation work?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Open any bottle's detail page and scroll to <strong>Value &amp; Strategy</strong>.</li>
-              <li>The system computes a current value using retail, aftermarket, and collector price signals.</li>
-              <li>Tap <strong>Save Checkpoint</strong> to record a timestamped value snapshot for tracking over time.</li>
-              <li>Add manual <strong>Price Observations</strong> from auctions or retailers to improve accuracy.</li>
+              <li>{t("howToAdditional.item93")} <strong>{t("howToAdditional.item94")}</strong>.</li>
+              <li>{t("howToAdditional.item95")}</li>
+              <li>{t("howToAdditional.item96")} <strong>{t("howToAdditional.item97")}</strong> {t("howToAdditional.item98")}</li>
+              <li>{t("howToAdditional.item99")} <strong>{t("howToAdditional.item100")}</strong> {t("howToAdditional.item101")}</li>
             </ol>
           </Q>
         </Section>
 
-        <Section title="Managing Cigars (CigarKeeper)">
+        <Section title={t("howToAdditional.item102")}>
           <Q id="add-cigar" q="How do I add a cigar to my collection?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to <strong>CigarKeeper</strong> from the nav or Collection Hub.</li>
-              <li>Tap <strong>Add Cigar</strong> or navigate to <strong>Cigars → +</strong>.</li>
-              <li>Enter the brand, line, vitola, wrapper, and other details.</li>
-              <li>Set your quantity and unit type (single, box, 5-pack, etc.).</li>
-              <li>Tap <strong>Save</strong> to add it to your humidor.</li>
+              <li>Go to <strong>{t("howToAdditional.item103")}</strong> {t("howToAdditional.item104")}</li>
+              <li>{t("howToAdditional.item105")} <strong>{t("howToAdditional.item106")}</strong> {t("howToAdditional.item107")} <strong>{t("howToAdditional.item108")}</strong>.</li>
+              <li>{t("howToAdditional.item109")}</li>
+              <li>{t("howToAdditional.item110")}</li>
+              <li>{t("howToAdditional.item111")} <strong>{t("howToAdditional.item112")}</strong> {t("howToAdditional.item113")}</li>
             </ol>
           </Q>
           <Q id="cigar-humidor" q="How do I set up and manage a humidor?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to <strong>Cigars → Humidors tab</strong>.</li>
-              <li>Tap <strong>Add Humidor</strong> and name it.</li>
-              <li>Set capacity, target humidity %, and maintenance interval.</li>
-              <li>Assign cigars to the humidor from each cigar's detail page.</li>
-              <li>Log maintenance events to reset alert timers.</li>
+              <li>Go to <strong>{t("howToAdditional.item114")}</strong>.</li>
+              <li>{t("howToAdditional.item115")} <strong>{t("howToAdditional.item116")}</strong> {t("howToAdditional.item117")}</li>
+              <li>{t("howToAdditional.item118")}</li>
+              <li>{t("howToAdditional.item119")}</li>
+              <li>{t("howToAdditional.item120")}</li>
             </ol>
           </Q>
           <Q id="cigar-session" q="How do I log a cigar smoking session?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Tap <strong>Log Session</strong> from CigarKeeper or the cigar's detail page.</li>
-              <li>Select the cigar, or enter a cigar you smoked outside your collection.</li>
-              <li>Fill in tasting notes, burn/draw quality, pairing, and enjoyment rating.</li>
-              <li>Tap <strong>Save</strong> to record the session.</li>
+              <li>{t("howToAdditional.item121")} <strong>{t("howToAdditional.item122")}</strong> {t("howToAdditional.item123")}</li>
+              <li>{t("howToAdditional.item124")}</li>
+              <li>{t("howToAdditional.item125")}</li>
+              <li>{t("howToAdditional.item126")} <strong>{t("howToAdditional.item127")}</strong> {t("howToAdditional.item128")}</li>
             </ol>
           </Q>
           <Q id="cigar-free-vs-pro" q="What's included in the free vs. pro CigarKeeper plan?">
-            <p><strong>Free tier</strong> — add up to 10 cigars, log sessions, manage 1 humidor, and track basic maintenance alerts.</p>
-            <p><strong>Pro tier</strong> — unlimited cigars and humidors, Curator AI recommendations, collection insights, advanced analytics, and export features.</p>
-            <p>You can start on the free tier immediately after signing up — no payment required.</p>
+            <p><strong>{t("howToAdditional.item129")}</strong> {t("howToAdditional.item130")}</p>
+            <p><strong>{t("howToAdditional.item131")}</strong> {t("howToAdditional.item132")}</p>
+            <p>{t("howToAdditional.item133")}</p>
           </Q>
         </Section>
 
         <Section title={t("howTo.subscriptions")}>
           <Q id="upgrade" q="How do I upgrade to Pro?">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Go to the <strong>Subscription</strong> page (accessible from Profile or the upgrade prompts).</li>
-              <li>Choose what you want to unlock: <strong>PipeKeeper Pro</strong>, <strong>WhiskeyKeeper Pro</strong>, <strong>CigarKeeper Pro</strong>, the <strong>Founders Bundle</strong> (PipeKeeper + WhiskeyKeeper), or the <strong>3-Module Bundle</strong> (PipeKeeper + WhiskeyKeeper + CigarKeeper).</li>
-              <li>Select a monthly or annual plan (annual saves ~17%).</li>
-              <li>Complete payment via the secure checkout.</li>
-              <li>Your Pro features activate immediately.</li>
+              <li>{t("howToAdditional.item134")} <strong>{t("howToAdditional.item135")}</strong> {t("howToAdditional.item136")}</li>
+              <li>{t("howToAdditional.item137")} <strong>{t("howToAdditional.item138")}</strong>, <strong>{t("howToAdditional.item139")}</strong>, <strong>{t("howToAdditional.item140")}</strong>{t("howToAdditional.item141")} <strong>{t("howToAdditional.item142")}</strong> {t("howToAdditional.item143")} <strong>{t("howToAdditional.item144")}</strong> {t("howToAdditional.item145")}</li>
+              <li>{t("howToAdditional.item146")}</li>
+              <li>{t("howToAdditional.item147")}</li>
+              <li>{t("howToAdditional.item148")}</li>
             </ol>
           </Q>
           <Q id="cancel" q={t("howTo.cancelQ")}>
@@ -405,12 +405,12 @@ export default function HowTo() {
           </Q>
           <Q id="tier-diff" q="What is the difference between Free and Pro?">
             <ol className="list-decimal list-inside space-y-2">
-              <li><strong>Free:</strong> PipeKeeper allows up to 5 pipes and 10 blends; WhiskeyKeeper allows up to 10 bottles; CigarKeeper allows up to 10 cigars. Basic features, no AI features.</li>
-              <li><strong>Pro:</strong> Unlimited items per module, AI pairings, collection optimization, AI identification, break-in schedules, valuation tools, Value &amp; Strategy section, export reports, and priority support.</li>
-              <li>Each module (PipeKeeper, WhiskeyKeeper, and CigarKeeper) can be subscribed to individually.</li>
-              <li>The <strong>Founders Bundle</strong> includes PipeKeeper and WhiskeyKeeper together at a discounted rate. CigarKeeper is not included in the Founders Bundle.</li>
-              <li>A <strong>3-Module Bundle</strong> covers PipeKeeper, WhiskeyKeeper, and CigarKeeper together at a further discount.</li>
-              <li>Founding members have grandfathered lifetime Pro access to PipeKeeper and WhiskeyKeeper.</li>
+              <li><strong>{t("howToAdditional.item149")}</strong> {t("howToAdditional.item150")}</li>
+              <li><strong>{t("howToAdditional.item151")}</strong> {t("howToAdditional.item152")}</li>
+              <li>{t("howToAdditional.item153")}</li>
+              <li>{t("howToAdditional.item154")} <strong>{t("howToAdditional.item155")}</strong> {t("howToAdditional.item156")}</li>
+              <li>A <strong>{t("howToAdditional.item157")}</strong> {t("howToAdditional.item158")}</li>
+              <li>{t("howToAdditional.item159")}</li>
             </ol>
           </Q>
         </Section>
