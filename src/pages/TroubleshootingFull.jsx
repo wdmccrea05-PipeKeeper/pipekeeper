@@ -160,69 +160,69 @@ export default function TroubleshootingFull() {
           </TroubleshootingItem>
         </Section>
 
-        <Section icon={Sparkles} title="Value &amp; Strategy" accentClass="text-amber-300">
+        <Section icon={Sparkles} title={t("troubleshootingAdditional.item1")} accentClass="text-amber-300">
           <TroubleshootingItem
             id="rarity-score-unexpected"
-            title="My rarity score seems too high or too low"
+            title={t("troubleshootingAdditional.item2")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p className="mb-2">The rarity score is computed from the fields stored on the item record. If the score looks wrong, check these fields on the item’s edit form:</p>
+            <p className="mb-2">{t("troubleshootingAdditional.item3")}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>Production Status (Discontinued, Limited Edition, Allocated, etc.)</li>
-              <li>Maker Status (Deceased, Retired, Inactive) for pipes</li>
-              <li>Production Type (One-Off, Limited Artisan Batch) for pipes</li>
-              <li>Age Statement for whiskey bottles</li>
-              <li>Cellar age for tobacco blends</li>
+              <li>{t("troubleshootingAdditional.item4")}</li>
+              <li>{t("troubleshootingAdditional.item5")}</li>
+              <li>{t("troubleshootingAdditional.item6")}</li>
+              <li>{t("troubleshootingAdditional.item7")}</li>
+              <li>{t("troubleshootingAdditional.item8")}</li>
             </ul>
-            <p className="mt-2">Once the field is corrected and saved, return to the detail page — the rarity score updates immediately.</p>
+            <p className="mt-2">{t("troubleshootingAdditional.item9")}</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="value-not-showing"
-            title="The Value & Strategy section shows ‘—’ for Current Value"
+            title={t("troubleshootingAdditional.item10")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>No value is shown when none of the value fields have been set on the item. To fix this, open the item’s edit form and enter at least one value: Purchase Price, Estimated Value, Retail Price, or Aftermarket/Collector Value. The section will then display the most relevant value with a confidence badge. You can also save a manual checkpoint via the Value &amp; Strategy section’s <strong>Save Checkpoint</strong> button.</p>
+            <p>{t("troubleshootingAdditional.item11")} <strong>{t("troubleshootingAdditional.item12")}</strong> {t("troubleshootingAdditional.item13")}</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="strategy-recommendation-unexpected"
-            title="The strategy recommendation doesn't seem right for my item"
+            title={t("troubleshootingAdditional.item14")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>The recommendation (e.g. Hold, Cellar, Preserve) is computed automatically from the rarity score, replacement difficulty, and item data. If the recommendation seems wrong, review the item’s production status, maker status (for pipes), and pricing fields — inaccurate inputs produce inaccurate recommendations. You can override specific fields like <strong>Replacement Difficulty</strong> directly on the item record if the computed value doesn’t match reality.</p>
+            <p>{t("troubleshootingAdditional.item15")} <strong>{t("troubleshootingAdditional.item16")}</strong> {t("troubleshootingAdditional.item17")}</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="value-history-empty"
-            title="My Value History is empty"
+            title={t("troubleshootingAdditional.item18")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>Value history records are created only when you manually click <strong>Save Checkpoint</strong> in the Value &amp; Strategy section, or when a Refresh is triggered (which also saves a checkpoint). They are not created automatically on item creation. Click <strong>Save Checkpoint</strong> on any item to start building its history.</p>
+            <p>{t("troubleshootingAdditional.item19")} <strong>{t("troubleshootingAdditional.item20")}</strong> {t("troubleshootingAdditional.item21")} <strong>{t("troubleshootingAdditional.item22")}</strong> {t("troubleshootingAdditional.item23")}</p>
           </TroubleshootingItem>
         </Section>
 
-        <Section icon={RefreshCw} title="Collector's Snapshot" accentClass="text-sky-300">
+        <Section icon={RefreshCw} title={t("troubleshootingAdditional.item24")} accentClass="text-sky-300">
           <TroubleshootingItem
             id="snapshot-only-shows-one-module"
-            title="My Snapshot only shows pipes (or only shows whiskey)"
+            title={t("troubleshootingAdditional.item25")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>The Collector’s Snapshot is module-aware — it only shows cards for your <strong>enabled</strong> modules. If WhiskeyKeeper or PipeKeeper is disabled in your Profile settings, those cards will not appear. Go to <strong>Profile &gt; Module Settings</strong> to enable the modules you want included.</p>
+            <p>{t("troubleshootingAdditional.item26")} <strong>{t("troubleshootingAdditional.item27")}</strong> {t("troubleshootingAdditional.item28")} <strong>{t("troubleshootingAdditional.item29")}</strong> {t("troubleshootingAdditional.item30")}</p>
           </TroubleshootingItem>
 
           <TroubleshootingItem
             id="snapshot-not-updating"
-            title="My Snapshot looks outdated or doesn’t reflect recent additions"
+            title={t("troubleshootingAdditional.item31")}
             openItems={openItems}
             setOpenItems={setOpenItems}
           >
-            <p>Click the <strong>Regenerate</strong> button on the Collection Story card on the Hub to rebuild the snapshot from your current data. The snapshot is also regenerated automatically when significant collection changes are detected, but manual regeneration ensures it reflects your latest items immediately.</p>
+            <p>{t("troubleshootingAdditional.item32")} <strong>{t("troubleshootingAdditional.item33")}</strong> {t("troubleshootingAdditional.item34")}</p>
           </TroubleshootingItem>
         </Section>
       </div>
