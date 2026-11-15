@@ -12,7 +12,7 @@ import {
   noDataResponses,
 } from '@/components/curator/curatorVoiceLayer';
 import { classifyDiagnosticIntent, DIAGNOSTIC_INTENT } from '@/lib/curator/curatorIntentClassifier.js';
-import { answerCuratorDeterministicQuery } from '@/lib/curator/curatorDeterministicChat.js';
+import { answerCuratorDeterministicQuery, isPipeSpecializationQuery, resolveSpecializationPipe } from '@/lib/curator/curatorDeterministicChat.js';
 import { analyzeWineOptimizationIssues } from '@/lib/curator/wineOptimization.js';
 import { buildWineDrinkingWindowFix } from '@/lib/curator/wineDrinkingWindowFix.js';
 import CuratorChatFixAction from '@/components/curator/CuratorChatFixAction.jsx';
@@ -656,6 +656,13 @@ This is an ongoing conversation about the user's collection — NOT an independe
 ═══ COLLECTION DATA STATUS ═══
 ${collectionDataNote}
 ${resolvedItemNote}
+${isPipeSpecializationQuery(userMessage) ? `
+SPECIALIZATION REQUEST (takes priority over pairing-score and product-recommendation rules):
+Keep the requested pipe as the subject. Recommend alternative tobacco-family specializations for THAT pipe, not other pipes or collection-wide best pairings. Explain 2-3 plausible alternatives when evidence supports them, why each suits its recorded shape/material/chamber and smoking history, and give owned blend examples. Compare with its current dedication; do not assume a mismatch merely because the user mentions a score. Existing scores describe current saved pairings only: never invent recalculated scores or promise an improvement. Treat untested options as trials. Do not change the pipe record without an explicit change request.
+Requested pipe record: ${JSON.stringify(resolveSpecializationPipe(userMessage, pipes, entityContext))}
+Relevant session history: ${JSON.stringify(smokingLogs.filter((log) => log.pipe_id === resolveSpecializationPipe(userMessage, pipes, entityContext)?.id || log.pipeId === resolveSpecializationPipe(userMessage, pipes, entityContext)?.id))}
+If the requested pipe cannot be uniquely resolved, ask which owned pipe they mean rather than substituting another pipe.
+` : ''}
 GUARDRAIL: If COLLECTION DATA STATUS is EMPTY, you MUST begin your reply with: "I couldn't access your collection data, so the following analysis is based only on the blends mentioned."
 GUARDRAIL: Never state "you've gone fully X", "you've consolidated around X", or any other collection-wide conclusion unless COLLECTION DATA STATUS is LOADED and you have verified it against the data above.
 
@@ -1794,7 +1801,21 @@ export default function ExpertTobacconistChat({
         setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: deterministic.reply }]);
         return;
       }
-      const useLLM = needsLLM(text, intent);
+      const specializationQuery = isPipeSpecializationQuery(text);
+      const specializationPipe = specializationQuery
+        ? resolveSpecializationPipe(text, collectionContext.pipes || [], effectiveEntityContext)
+        : null;
+      if (specializationQuery) {
+        effectiveEntityContext = {
+          ...effectiveEntityContext,
+          subject: specializationPipe
+            ? { id: specializationPipe.id, name: specializationPipe.name, type: 'pipe' }
+            : null,
+          topicIntent: 'pipe_specialization',
+        };
+        setEntityContext(effectiveEntityContext);
+      }
+      const useLLM = specializationQuery || needsLLM(text, intent);
 
       if (useLLM) {
         // Use LLM for domain-knowledge queries (similarity, external products, comparison, etc.)
@@ -1807,7 +1828,7 @@ export default function ExpertTobacconistChat({
         // Extract recommendations from the LLM response and store in conversation state
         const extractedRecs = extractRecommendationsFromResponse(cleanReply, collectionContext);
         // Update entity context with named product and extracted recommendations
-        if (!diagnosticIntent) {
+        if (!diagnosticIntent && !specializationQuery) {
           const namedProductMatch = text.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z&][a-zA-Z']+){1,4})\b/g);
           setEntityContext((prev) => ({
             ...prev,
