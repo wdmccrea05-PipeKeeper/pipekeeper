@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answerCuratorDeterministicQuery } from '../curatorDeterministicChat.js';
+import { answerCuratorDeterministicQuery, resolveSpecializationPipe } from '../curatorDeterministicChat.js';
 
 const pairingContext = {
   pairingMatrixPairings: [
@@ -25,6 +25,23 @@ const pairingContext = {
 };
 
 describe('answerCuratorDeterministicQuery', () => {
+  it.each([
+    'The nording pairing scores are fairly low with 8.8 being the highest match. Is there a better specialization for the pipe that would score higher matches?',
+    'What else should I dedicate this pipe to?',
+    'Suggest alternative specialisations for my Nording',
+    'Should I reassign my Nording for better pairings?',
+  ])('leaves specialization reasoning to Curator: %s', (message) => {
+    expect(answerCuratorDeterministicQuery(message, pairingContext).handled).toBe(false);
+    expect(answerCuratorDeterministicQuery(message, {}).handled).toBe(false);
+  });
+
+  it('resolves a lowercase maker reference ahead of a stale subject', () => {
+    const pipes = [{ id: 'n', name: 'Nording Freehand', maker: 'Nording' }, ...pairingContext.pipes];
+    expect(resolveSpecializationPipe('other specializations for the nording', pipes, { subject: pairingContext.pipes[0] }).id).toBe('n');
+    expect(resolveSpecializationPipe('what should I dedicate this pipe to?', pipes, { subject: { id: 'n' } }).id).toBe('n');
+    expect(resolveSpecializationPipe('specialization for nording', [...pipes, { id: 'n2', name: 'Nording 2' }])).toBeNull();
+  });
+
   it('filters pairings by normalized score threshold', () => {
     const result = answerCuratorDeterministicQuery('Show pairings scored 4 or lower', pairingContext);
     expect(result.handled).toBe(true);
