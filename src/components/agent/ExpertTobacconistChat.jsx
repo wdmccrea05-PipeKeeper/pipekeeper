@@ -486,6 +486,9 @@ function buildLLMPrompt(userMessage, context = {}, history = [], entityContext =
   const smokingLogs = context.smokingLogs || [];
   const tastingLogs = context.tastingLogs || [];
   const acquisitionItems = context.acquisitionItems || context.wantListItems || [];
+  const specializationSubject = isPipeSpecializationQuery(userMessage)
+    ? resolveSpecializationPipe(userMessage, pipes, entityContext)
+    : null;
 
   // ── Collection availability signal ─────────────────────────────────────────
   const hasCollectionData = blends.length > 0 || pipes.length > 0 || bottles.length > 0 || (context.wines || []).length > 0 || (context.cigars || []).length > 0;
@@ -659,8 +662,8 @@ ${resolvedItemNote}
 ${isPipeSpecializationQuery(userMessage) ? `
 SPECIALIZATION REQUEST (takes priority over pairing-score and product-recommendation rules):
 Keep the requested pipe as the subject. Recommend alternative tobacco-family specializations for THAT pipe, not other pipes or collection-wide best pairings. Explain 2-3 plausible alternatives when evidence supports them, why each suits its recorded shape/material/chamber and smoking history, and give owned blend examples. Compare with its current dedication; do not assume a mismatch merely because the user mentions a score. Existing scores describe current saved pairings only: never invent recalculated scores or promise an improvement. Treat untested options as trials. Do not change the pipe record without an explicit change request.
-Requested pipe record: ${JSON.stringify(resolveSpecializationPipe(userMessage, pipes, entityContext))}
-Relevant session history: ${JSON.stringify(smokingLogs.filter((log) => log.pipe_id === resolveSpecializationPipe(userMessage, pipes, entityContext)?.id || log.pipeId === resolveSpecializationPipe(userMessage, pipes, entityContext)?.id))}
+Requested pipe record: ${JSON.stringify(specializationSubject)}
+Relevant session history: ${JSON.stringify(specializationSubject ? smokingLogs.filter((log) => (log.pipe_id || log.pipeId) === specializationSubject.id) : [])}
 If the requested pipe cannot be uniquely resolved, ask which owned pipe they mean rather than substituting another pipe.
 ` : ''}
 GUARDRAIL: If COLLECTION DATA STATUS is EMPTY, you MUST begin your reply with: "I couldn't access your collection data, so the following analysis is based only on the blends mentioned."
