@@ -846,7 +846,29 @@ function buildModuleReply(message, activeModules = {}) {
   };
 }
 
+// Specialization advice requires reasoning, not a lookup of existing scores.
+export function isPipeSpecializationQuery(message) {
+  return /\b(?:speciali[sz](?:ation|ations|e|ed|ing)|dedicat(?:e|ed|ion|ions|ing)|reassign(?:ment|ments|ed|ing)?|repurpos(?:e|ed|ing))\b/i.test(message);
+}
+
+export function resolveSpecializationPipe(message, pipes = [], entityContext = {}) {
+  const words = (value) => norm(value).match(/[a-z0-9]+/g) || [];
+  const messageWords = new Set(words(message));
+  const exact = pipes.filter((pipe) => norm(pipe.name) && norm(message).includes(norm(pipe.name)));
+  if (exact.length === 1) return exact[0];
+  const aliases = pipes.filter((pipe) => [pipe.name, pipe.maker, pipe.brand].some((value) => {
+    const tokens = words(value).filter((word) => word.length > 2 && !['the', 'pipe', 'tobacco'].includes(word));
+    return tokens.some((word) => messageWords.has(word));
+  }));
+  if (aliases.length === 1) return aliases[0];
+  // An explicit but ambiguous maker reference must not inherit another pipe.
+  if (exact.length > 1 || aliases.length > 1) return null;
+  const subject = entityContext.subject || entityContext.pipe;
+  return pipes.find((pipe) => pipe.id === subject?.id || norm(pipe.name) === norm(subject?.name)) || null;
+}
+
 export function answerCuratorDeterministicQuery(message, context = {}, entityContext = {}, activeModules = {}) {
+  if (isPipeSpecializationQuery(message)) return { handled: false };
   const handlers = [
     () => buildModuleReply(message, activeModules),
     () => buildMissingFieldReply(message, context),
