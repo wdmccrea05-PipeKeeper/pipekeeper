@@ -1,6 +1,6 @@
 # Pairing Engine Certification Report
 
-**Generated:** 2026-11-18T13:18:22.456Z
+**Generated:** 2026-11-20T12:55:20.959Z
 
 ## Executive Summary
 
@@ -105,12 +105,12 @@ CERTIFIED FOR PRODUCTION
 
 | Operation | Avg Time (ms) | Max Time (ms) | Status |
 |-----------|--------------|--------------|--------|
-| scorePipeBlend (single) | 0.02 | 0.05 | ✅ Fast |
-| buildPairingsForPipes | 0.02 | 2.34 | ✅ Fast |
+| scorePipeBlend (single) | 0.01 | 0.04 | ✅ Fast |
+| buildPairingsForPipes | 0.02 | 1.92 | ✅ Fast |
 
 ## Regression Summary
 
-**Previous Baseline:** 2026-11-13T12:48:12.961Z
+**Previous Baseline:** 2026-11-18T13:19:13.003Z
 
 _No regressions detected from previous certified build._
 
