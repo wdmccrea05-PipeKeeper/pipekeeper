@@ -53,7 +53,7 @@ export function buildCollectionReportCsv(report) {
   });
 
   return rows
-    .map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(","))
+    .map((row) => row.map((cell) => `"${String(typeof cell === "string" && /^[=+@\-\t\r]/.test(cell) ? `\u0027${cell}` : cell ?? "").replace(/"/g, '""')}"`).join(","))
     .join("\r\n");
 }
 
