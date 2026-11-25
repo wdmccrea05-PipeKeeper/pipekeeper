@@ -17,6 +17,8 @@ const BLEND_COUNTS = [3, 5, 10];
 
 export default function ReportOptionsPanel({
   availableModules = [],
+  pipes = [],
+  disabled = false,
   options,
   onChange,
   onExportPdf,
@@ -107,6 +109,20 @@ export default function ReportOptionsPanel({
         </div>
       </div>
 
+      {options.modules.pipe && <div className="space-y-3">
+        <label className="block text-sm" style={{ color: TEXT_PRIMARY }}>Pipe
+          <select aria-label="Pipe filter" className="block w-full mt-1 p-2 rounded bg-[#211810]" value={options.pipeId || ''} onChange={(e) => setOption('pipeId', e.target.value)}>
+            <option value="">All pipes</option>
+            {[...pipes].sort((a,b) => (a.name || '').localeCompare(b.name || '')).map((pipe) => <option key={pipe.id} value={pipe.id}>{pipe.name}</option>)}
+          </select>
+        </label>
+        <label className="block text-sm" style={{ color: TEXT_PRIMARY }}>Specialization
+          <select aria-label="Specialization filter" className="block w-full mt-1 p-2 rounded bg-[#211810]" value={options.specialization || ''} onChange={(e) => setOption('specialization', e.target.value)}>
+            <option value="">All specializations</option>
+            {[...new Set(pipes.flatMap((pipe) => Array.isArray(pipe.focus) ? pipe.focus : []))].sort().map((focus) => <option key={focus} value={focus}>{focus}</option>)}
+          </select>
+        </label>
+      </div>}
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -138,13 +154,13 @@ export default function ReportOptionsPanel({
 
       {canExport ? (
         <div className="flex flex-col sm:flex-row gap-2">
-          <Button onClick={onExportPdf} disabled={Boolean(exporting)} className="flex-1" style={{ minHeight: 44 }}>
+          <Button onClick={onExportPdf} disabled={disabled || Boolean(exporting)} className="flex-1" style={{ minHeight: 44 }}>
             {exporting === "pdf" ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
             {t("collectionReports.exportPdf", "Export PDF")}
           </Button>
           <Button
             onClick={onExportCsv}
-            disabled={Boolean(exporting)}
+            disabled={disabled || Boolean(exporting)}
             variant="outline"
             className="flex-1"
             style={{ minHeight: 44 }}

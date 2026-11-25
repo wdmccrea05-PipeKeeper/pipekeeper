@@ -55,7 +55,7 @@ export default function CollectionReports() {
   const [exporting, setExporting] = useState(null);
   const [activeTab, setActiveTab] = useState("pairing");
 
-  const canExport = entitlements.tier === null || entitlements.canUse("EXPORT_REPORTS");
+  const canExport = Boolean(user?.email) && entitlements.canUse("EXPORT_REPORTS");
 
   const availableModules = useMemo(() => {
     const list = [];
@@ -95,6 +95,8 @@ export default function CollectionReports() {
         },
         options: {
           modules: effectiveModules,
+          pipeId: options.pipeId,
+          specialization: options.specialization,
           blendsPerPipe: options.blendsPerPipe,
           includePhotos: options.includePhotos,
           includeExplanations: options.includeExplanations,
@@ -111,6 +113,8 @@ export default function CollectionReports() {
       data.wines,
       data.wineTastings,
       effectiveModules,
+      options.pipeId,
+      options.specialization,
       options.blendsPerPipe,
       options.includePhotos,
       options.includeExplanations,
@@ -180,6 +184,8 @@ export default function CollectionReports() {
       <div className="grid gap-6 xl:grid-cols-[340px_1fr] xl:items-start">
         <div className="xl:sticky xl:top-4">
           <ReportOptionsPanel
+            pipes={data.pipes}
+            disabled={data.isLoading || data.isError || modulesLoading}
             availableModules={availableModules}
             options={options}
             onChange={setOptions}
@@ -199,7 +205,7 @@ export default function CollectionReports() {
 
           <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {modulesLoading || data.isLoading ? (
+          {data.isError ? <p role="alert">Could not load all report data. Please reload before exporting.</p> : modulesLoading || data.isLoading ? (
             <div className="flex items-center justify-center py-16">
               <div className="w-8 h-8 border-4 border-[rgba(180,140,75,0.25)] border-t-[#D4A574] rounded-full animate-spin" />
             </div>

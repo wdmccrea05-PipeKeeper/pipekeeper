@@ -55,7 +55,7 @@ describe('collection report engine', () => {
 
   it('produces top match groups for every selected module', () => {
     const keys = report.topMatches.map((g) => g.key);
-    expect(keys).toEqual(['pipe', 'blend', 'whiskey', 'wine', 'cigar']);
+    expect(keys).toEqual(['combinations', 'pipe', 'blend', 'whiskey', 'wine', 'cigar']);
     report.topMatches.forEach((group) => expect(group.entries.length).toBeGreaterThan(0));
   });
 

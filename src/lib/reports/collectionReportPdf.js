@@ -41,8 +41,12 @@ function writeWrapped(doc, text, x, y, width, { size = 7.6, color = MUTED, lineH
   doc.setFontSize(size);
   doc.setTextColor(color[0], color[1], color[2]);
   const lines = doc.splitTextToSize(String(text), width);
-  doc.text(lines, x, y);
-  return y + lines.length * lineHeight;
+  for (const line of lines) {
+    y = ensureSpace(doc, y, lineHeight);
+    doc.text(line, x, y);
+    y += lineHeight;
+  }
+  return y;
 }
 
 function sectionTitle(doc, title, subtitle, startY) {
@@ -297,17 +301,17 @@ function drawTopMatchesSection(doc, report, photos, startY) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.7);
       doc.setTextColor(INK[0], INK[1], INK[2]);
-      doc.text(`${index + 1}. ${entry.name}`, textX, y);
+      y = writeWrapped(doc, `${index + 1}. ${entry.name}`, textX, y, wrapW - 20, { size: 8.7, color: INK, bold: true, lineHeight: 3.5 });
 
       doc.setTextColor(GOLD[0], GOLD[1], GOLD[2]);
-      doc.text(Number(entry.score || 0).toFixed(1), MARGIN + CONTENT_W, y, { align: "right" });
+      doc.text(entry.score == null ? "Suggestion" : Number(entry.score).toFixed(1), MARGIN + CONTENT_W, y, { align: "right" });
       y += 3.2;
 
       const barW = wrapW - 12;
       doc.setFillColor(TRACK[0], TRACK[1], TRACK[2]);
-      doc.rect(textX, y, barW, 1.4, "F");
+      if (entry.score != null) doc.rect(textX, y, barW, 1.4, "F");
       doc.setFillColor(GOLD[0], GOLD[1], GOLD[2]);
-      doc.rect(textX, y, Math.max(1, barW * Math.min(1, Number(entry.score || 0) / 10)), 1.4, "F");
+      if (entry.score != null) doc.rect(textX, y, Math.max(1, barW * Math.min(1, Number(entry.score) / 10)), 1.4, "F");
       y += 3.2;
 
       if (entry.detail) {
