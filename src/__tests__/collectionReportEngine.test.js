@@ -64,6 +64,27 @@ describe('collection report engine', () => {
     expect(report.complementary.some((g) => g.key === 'sessions')).toBe(true);
   });
 
+
+  it('applies pipe and specialization filters to exported rows', () => {
+    const filtered = buildCollectionReport({ data, options: { modules: { pipe: true }, pipeId: 'p1', specialization: 'Aromatic' } });
+    expect(filtered.pairingChart.map((row) => row.pipeId)).toEqual(['p1']);
+    expect(buildCollectionReportCsv(filtered)).not.toContain('Dublin B');
+  });
+
+  it('keeps cross-module suggestions unique and does not invent scores', () => {
+    const group = report.topMatches.find((entry) => entry.key === 'combinations');
+    expect(group.entries.length).toBeLessThanOrEqual(10);
+    expect(new Set(group.entries.map((entry) => entry.name)).size).toBe(group.entries.length);
+    expect(group.entries.every((entry) => entry.score === null)).toBe(true);
+    expect(JSON.stringify(report.complementary)).not.toContain('Adding a matching blend');
+  });
+
+  it('escapes CSV names and protects spreadsheet formula cells', () => {
+    const csv = buildCollectionReportCsv({ pairingChart: [{ name: '=SUM(1,2)', specialization: 'A "quoted" focus', matches: [] }] });
+    expect(csv).toContain("'=SUM(1,2)");
+    expect(csv).toContain('A ""quoted"" focus');
+  });
+
   it('respects module filters', () => {
     const pipeOnly = buildCollectionReport({
       data,
