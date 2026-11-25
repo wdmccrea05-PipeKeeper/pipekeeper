@@ -17,7 +17,10 @@ import {
   collectionReportFilename,
   downloadCsvFile,
 } from "@/lib/reports/collectionReportCsv";
-import { TEXT_SECONDARY, TEXT_CAPTION } from "@/lib/theme/tokens";
+import { TEXT_PRIMARY, TEXT_SECONDARY, TEXT_CAPTION } from "@/lib/theme/tokens";
+import SmokingLogReportExporter from "@/components/export/SmokingLogReportExporter";
+import AgingReportExporter from "@/components/export/AgingReportExporter";
+import CollectionReportExporter from "@/components/export/CollectionReportExporter";
 
 const DEFAULT_OPTIONS = {
   modules: { pipe: true, whiskey: true, cigar: true, wine: true },
@@ -236,6 +239,23 @@ export default function CollectionReports() {
           )}
         </div>
       </div>
+
+      <section className="mt-10 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold" style={{ color: TEXT_PRIMARY }}>
+            {t("collectionReports.exportReports", "Export Reports")}
+          </h2>
+          <p className="text-sm mt-1" style={{ color: TEXT_CAPTION }}>
+            {t(
+              "collectionReports.exportReportsSubtitle",
+              "Usage logs, cellar aging and collection valuations as PDF or Excel/CSV.",
+            )}
+          </p>
+        </div>
+        <SmokingLogReportExporter user={user} />
+        <AgingReportExporter user={user} />
+        <CollectionReportExporter user={user} />
+      </section>
     </InsightsPageShell>
   );
 }

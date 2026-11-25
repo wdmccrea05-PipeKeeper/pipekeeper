@@ -49,8 +49,6 @@ import {
   InsightsTabBar,
   InsightsKpiGrid,
   InsightStatCard,
-  InsightPanel,
-  InsightSectionHeading,
   InsightsEmptyState,
   InsightsSessionPanel,
 } from "@/components/insights/InsightsShell";
@@ -65,9 +63,6 @@ import PipeValuationTab from "@/components/pipes/PipeValuationTab";
 import RotationPlanner from "@/components/pipes/RotationPlanner";
 import PairingSection from "@/components/pipes/PairingSection";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
-import CollectionReportExporter from "@/components/export/CollectionReportExporter";
-import SmokingLogReportExporter from "@/components/export/SmokingLogReportExporter";
-import AgingReportExporter from "@/components/export/AgingReportExporter";
 import ProFeatureLock from "@/components/subscription/ProFeatureLock";
 
 const TABS = [
@@ -76,7 +71,6 @@ const TABS = [
   { key: 'usage', label: 'Usage' },
   { key: 'statistics', label: 'Statistics' },
   { key: 'trends', label: 'Trends' },
-  { key: 'reports', label: 'Reports' },
   { key: 'sessions', label: 'Sessions' },
   { key: 'pairings', label: 'Pairings' },
   { key: 'aging', label: 'Aging' },
@@ -1437,20 +1431,6 @@ export default function Insights() {
             : <TrendsReport logs={smokingLogs} pipes={pipes} blends={blends} user={user} />
           }
         </ProFeatureLock>
-      )}
-
-      {/* REPORTS */}
-      {activeInsightsTab === 'reports' && (
-        pipes.length === 0 && blends.length === 0
-          ? <InsightsEmptyState message="Add pipes and blends to generate reports." icon={Leaf} />
-          : <InsightPanel>
-              <InsightSectionHeading>{t('insights.reports', 'Export Reports')}</InsightSectionHeading>
-              <div className="space-y-4">
-                <SmokingLogReportExporter user={user} />
-                <AgingReportExporter user={user} />
-                <CollectionReportExporter user={user} />
-              </div>
-            </InsightPanel>
       )}
 
       {/* SESSIONS */}
