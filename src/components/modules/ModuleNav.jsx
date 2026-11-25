@@ -104,6 +104,7 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
     ...moduleItems,
     { page: "WantList", label: t("nav.wantList"), icon: List, path: "/WantList" },
     { page: "Curator", label: t("nav.curator"), icon: Target, path: "/Curator" },
+    { page: "CollectionReports", label: t("nav.reports", "Reports"), icon: FileBarChart2, path: "/CollectionReports" },
     { page: "Community", label: t("nav.community"), icon: Users, path: "/Community" },
     { page: "Profile", label: t("nav.profile"), icon: User, path: "/Profile" },
     { page: "HelpCenter", label: t("nav.help"), icon: HelpCircle, path: "/HelpCenter" },

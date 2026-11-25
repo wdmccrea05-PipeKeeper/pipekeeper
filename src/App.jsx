@@ -41,6 +41,7 @@ import WineKeeper from "@/pages/WineKeeper";
 import WineDetail from "@/pages/WineDetail";
 import Wines from "@/pages/Wines";
 import WineInsights from "@/pages/WineInsights";
+import CollectionReports from "@/pages/CollectionReports";
 import CigarDetail from "@/pages/CigarDetail";
 import CigarFormPage from "@/pages/CigarFormPage";
 import CigarInsights from "@/pages/CigarInsights";
@@ -199,6 +200,15 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="Curator">
             <Curator />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/CollectionReports"
+        element={
+          <LayoutWrapper currentPageName="CollectionReports">
+            <CollectionReports />
           </LayoutWrapper>
         }
       />
