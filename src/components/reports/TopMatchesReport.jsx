@@ -55,7 +55,7 @@ export default function TopMatchesReport({ groups = [], includePhotos = true, in
                       {entry.name}
                     </p>
                     <span className="text-xs font-semibold flex-shrink-0" style={{ color: MODULE_GOLD }}>
-                      {Number(entry.score || 0).toFixed(1)}
+                      {entry.score == null ? 'Suggestion' : Number(entry.score).toFixed(1)}
                     </span>
                   </div>
                   {entry.detail && (
