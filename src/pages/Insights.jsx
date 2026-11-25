@@ -63,7 +63,7 @@ import TobaccoCollectionStats from "@/components/home/TobaccoCollectionStats";
 import TrendsReport from "@/components/tobacco/TrendsReport";
 import PipeValuationTab from "@/components/pipes/PipeValuationTab";
 import RotationPlanner from "@/components/pipes/RotationPlanner";
-import PairingGrid from "@/components/home/PairingGrid";
+import PairingSection from "@/components/pipes/PairingSection";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
 import CollectionReportExporter from "@/components/export/CollectionReportExporter";
 import SmokingLogReportExporter from "@/components/export/SmokingLogReportExporter";
@@ -1476,7 +1476,7 @@ export default function Insights() {
       {activeInsightsTab === 'pairings' && (
         pipes.length === 0 || blends.length === 0
           ? <InsightsEmptyState message="Add pipes and blends to see pairing analytics." icon={Leaf} />
-          : <PairingGrid user={user} pipes={pipes} blends={blends} />
+          : <PairingSection user={user} pipes={pipes} blends={blends} smokingLogs={smokingLogs} />
       )}
 
       {/* AGING */}
