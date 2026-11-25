@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Wine, BarChart3, Plus, BookOpen, FileSpreadsheet, CalendarDays } from 'lucide-react';
+import { Wine, BarChart3, Plus, BookOpen, FileSpreadsheet, CalendarDays, FileBarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,6 +21,7 @@ export default function WineKeeperModuleNav({ currentPageName }) {
     { path: '/Wines', label: t('wine.collection', 'Wine Collection'), icon: Wine },
     { path: '/SessionHistory?module=wine', label: t('sessionHistory.title', 'Tasting History'), icon: CalendarDays },
     { path: '/WineInsights', label: t('nav.insights', 'Insights'), icon: BarChart3 },
+    { path: '/CollectionReports?module=winekeeper', label: t('nav.reports', 'Reports'), icon: FileBarChart2 },
   ];
 
   return (

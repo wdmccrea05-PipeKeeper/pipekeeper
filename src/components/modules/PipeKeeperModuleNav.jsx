@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
-import { Leaf, TrendingUp, FileSpreadsheet, CalendarDays, Users } from "lucide-react";
+import { Leaf, TrendingUp, FileSpreadsheet, CalendarDays, Users, FileBarChart2 } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -43,6 +43,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
     { page: "PipeClub", label: "Pipe Club", icon: Users },
     { page: "SessionHistory", label: t("sessionHistory.title", "Session History"), icon: CalendarDays },
     { page: "Insights", label: t("nav.insights"), icon: TrendingUp },
+    { page: "CollectionReports?module=pipekeeper", label: t("nav.reports", "Reports"), icon: FileBarChart2 },
   ];
 
   return (
@@ -52,7 +53,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
           <NavItem
             key={item.page}
             item={item}
-            active={currentPageName === item.page}
+            active={currentPageName === item.page.split("?")[0]}
           />
         ))}
       </div>

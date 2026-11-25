@@ -18,6 +18,7 @@ import {
   CalendarDays,
   List,
   Wine,
+  FileBarChart2,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
@@ -676,26 +677,43 @@ export default function CollectionHub() {
           boxShadow: '0 18px 46px rgba(0,0,0,0.36)',
         }}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
-          <BrandLogo
-            compact
-            showWordmark={false}
-            imageClassName="w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0"
-          />
-          <div className="min-w-0">
-            <h1
-              className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight"
-              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-            >
-              {t('hub.title')}
-            </h1>
-            <p
-              className="text-sm sm:text-base lg:text-lg mt-1 sm:mt-2"
-              style={{ color: 'rgba(224,216,200,0.78)' }}
-            >
-              {t('hub.hubDescription')}
-            </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-5">
+          <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+            <BrandLogo
+              compact
+              showWordmark={false}
+              imageClassName="w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0"
+            />
+            <div className="min-w-0">
+              <h1
+                className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight"
+                style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+              >
+                {t('hub.title')}
+              </h1>
+              <p
+                className="text-sm sm:text-base lg:text-lg mt-1 sm:mt-2"
+                style={{ color: 'rgba(224,216,200,0.78)' }}
+              >
+                {t('hub.hubDescription')}
+              </p>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => navigate(createPageUrl('CollectionReports'))}
+            className="flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all flex-shrink-0"
+            style={{
+              background: 'rgba(180,140,75,0.12)',
+              border: '1px solid rgba(180,140,75,0.32)',
+              color: '#D4A574',
+              minHeight: 44,
+            }}
+          >
+            <FileBarChart2 className="w-4 h-4" />
+            {t('nav.reports', 'Reports')}
+          </button>
         </div>
       </section>
 

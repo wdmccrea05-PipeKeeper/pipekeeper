@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { TrendingUp, Plus, Cigarette, BookOpen, FileSpreadsheet, CalendarDays } from 'lucide-react';
+import { TrendingUp, Plus, Cigarette, BookOpen, FileSpreadsheet, CalendarDays, FileBarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AddCigarModal from '@/components/cigars/AddCigarModal';
 
@@ -15,13 +15,14 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
     { page: 'Cigars', label: t('cigars.cigars'), Icon: Cigarette },
     { page: 'SessionHistory', label: t('sessionHistory.title', 'Session History'), Icon: CalendarDays },
     { page: 'CigarInsights', label: t('nav.insights'), Icon: TrendingUp },
+    { page: 'CollectionReports?module=cigarkeeper', label: t('nav.reports', 'Reports'), Icon: FileBarChart2 },
   ];
 
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-2">
         {items.map(({ page, label, Icon }) => {
-          const active = currentPageName === page;
+          const active = currentPageName === page.split('?')[0];
           return (
             <Link
               key={page}

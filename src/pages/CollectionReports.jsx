@@ -26,13 +26,32 @@ const DEFAULT_OPTIONS = {
   includeExplanations: true,
 };
 
+// Module menu entries link here with ?module=pipekeeper etc. so the report
+// opens focused on that module instead of every enabled one.
+const MODULE_PARAM_MAP = {
+  pipekeeper: "pipe",
+  whiskeykeeper: "whiskey",
+  cigarkeeper: "cigar",
+  winekeeper: "wine",
+};
+
+function buildInitialOptions() {
+  const param = new URLSearchParams(window.location.search).get("module");
+  const key = MODULE_PARAM_MAP[param];
+  if (!key) return DEFAULT_OPTIONS;
+  return {
+    ...DEFAULT_OPTIONS,
+    modules: { pipe: key === "pipe", whiskey: key === "whiskey", cigar: key === "cigar", wine: key === "wine" },
+  };
+}
+
 export default function CollectionReports() {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const { enabled, isLoading: modulesLoading } = useEnabledModules();
   const entitlements = useEntitlements();
 
-  const [options, setOptions] = useState(DEFAULT_OPTIONS);
+  const [options, setOptions] = useState(buildInitialOptions);
   const [exporting, setExporting] = useState(null);
   const [activeTab, setActiveTab] = useState("pairing");
 

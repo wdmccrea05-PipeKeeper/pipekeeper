@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from "@/components/i18n/safeTranslation";
-import { BookOpen, TrendingUp, Plus, FileSpreadsheet, CalendarDays } from "lucide-react";
+import { BookOpen, TrendingUp, Plus, FileSpreadsheet, CalendarDays, FileBarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WhiskeyBottleIcon from "@/components/icons/WhiskeyBottleIcon";
 
@@ -15,13 +15,14 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
     { page: "Tastings", label: t("whiskey.tastings"), icon: BookOpen },
     { page: "SessionHistory", label: t("sessionHistory.title", "Session History"), icon: CalendarDays },
     { page: "WhiskeyInsights", label: t("nav.insights"), icon: TrendingUp },
+    { page: "CollectionReports?module=whiskeykeeper", label: t("nav.reports", "Reports"), icon: FileBarChart2 },
   ];
 
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-2">
         {items.map((item) => {
-          const active = currentPageName === item.page;
+          const active = currentPageName === item.page.split("?")[0];
           return (
             <Link
               key={item.page}

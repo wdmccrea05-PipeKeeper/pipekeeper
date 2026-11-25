@@ -486,7 +486,8 @@ function buildComplementaryReport({
   });
 
   const sessionIdeas = crossModulePairings
-    .slice(0, 6)
+    .filter((pairing, index, all) => all.findIndex((other) => [other.pipe?.id, other.blend?.id, other.cigar?.id, other.liquid?.id].join('|') === [pairing.pipe?.id, pairing.blend?.id, pairing.cigar?.id, pairing.liquid?.id].join('|')) === index)
+    .slice(0, 10)
     .map((pairing) => ({
       title: [pairing.pipe?.name, pairing.blend?.name, pairing.cigar?.name, pairing.liquid?.name]
         .filter(Boolean)
@@ -556,7 +557,7 @@ function buildComplementaryReport({
       .filter(([, value]) => value.best < 7)
       .map(([label, value]) => ({
         title: `${label} pipes are underserved`,
-        detail: `${value.count} pipe${value.count === 1 ? "" : "s"} with this specialization have no blend scoring above 7. Adding a matching blend would unlock stronger pairings.`,
+        detail: `${value.count} pipe${value.count === 1 ? "" : "s"} with this specialization have no blend scoring above 7. Try its highest-ranked owned blends in small trial sessions before considering a specialization change.`,
         meta: "pipe",
       }));
 
@@ -565,7 +566,7 @@ function buildComplementaryReport({
       .slice(0, 3)
       .map((row) => ({
         title: row.name,
-        detail: `No pipe in your collection scores above 7 for this blend. A different chamber size or family would suit it better.`,
+        detail: `No pipe in your collection scores above 7 for this blend. Try its best available owned pipe match and log the result; the score alone does not establish that a specialization change is needed.`,
         meta: "blend",
       }));
 
@@ -573,7 +574,7 @@ function buildComplementaryReport({
     if (entries.length) {
       groups.push({
         key: "gaps",
-        title: "Pairing gaps to close",
+        title: "Specialization trials with owned blends",
         description: "Where your collection and your pairings do not yet line up.",
         entries,
       });
@@ -611,7 +612,7 @@ export function buildCollectionReport({ data = {}, options = {} } = {}) {
   const modules = options.modules || {};
   const blendsPerPipe = Number(options.blendsPerPipe) || 5;
 
-  const pipes = modules.pipe ? data.pipes || [] : [];
+  const pipes = modules.pipe ? (data.pipes || []).filter((pipe) => (!options.pipeId || pipe.id === options.pipeId) && (!options.specialization || (pipe.focus || []).includes(options.specialization))) : [];
   const blends = modules.pipe ? data.blends || [] : [];
   const bottles = modules.whiskey ? data.bottles || [] : [];
   const wines = modules.wine ? data.wines || [] : [];
@@ -655,6 +656,18 @@ export function buildCollectionReport({ data = {}, options = {} } = {}) {
     cigarSessions,
     wineTastings,
   });
+
+  const sessionGroup = complementary.find((group) => group.key === 'sessions');
+  if (sessionGroup?.entries.length) {
+    topMatches.unshift({
+      key: 'combinations',
+      label: 'Top 10 cross-module combinations',
+      description: 'Ordered session suggestions from Curator. These are suggestions, not measured compatibility scores.',
+      entries: sessionGroup.entries.map((entry) => ({
+        name: entry.title, detail: entry.meta, explanation: entry.detail, score: null,
+      })),
+    });
+  }
 
   const summary = {
     pipes: pipes.filter(isActive).length,
