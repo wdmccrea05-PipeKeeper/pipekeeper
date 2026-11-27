@@ -17,7 +17,17 @@ import {
   Cigarette,
   Wine,
   Zap,
+  ChevronDown,
+  Activity,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
 import { useEnabledModules } from "@/components/hooks/useEnabledKeeperModules";
@@ -45,6 +55,54 @@ function NavItem({ item, isActive, onClick, vertical }) {
       ) : null}
       <span className="line-clamp-1">{item.label}</span>
     </Link>
+  );
+}
+
+/**
+ * Administration — every administrator-only surface lives behind one
+ * permission-controlled menu, so collector navigation stays one short row and
+ * administrators do not lose a third of the screen to a second nav line.
+ */
+function AdministrationMenu({ items, vertical, onItemClick, label }) {
+  const location = useLocation();
+  const isActive = items.some((item) => location.pathname.startsWith(item.path));
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={cn(
+          "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+          vertical && "w-full",
+          isActive
+            ? "bg-[rgba(100,66,34,0.55)] border border-[rgba(180,140,75,0.38)]"
+            : "border border-transparent hover:bg-white/6 hover:border-[rgba(180,140,75,0.15)]"
+        )}
+        style={{ color: isActive ? "#F5F1E7" : "rgba(224,216,200,0.76)" }}
+      >
+        <Shield
+          className="w-4 h-4 flex-shrink-0"
+          style={{ color: isActive ? "#D4A574" : "rgba(180,140,75,0.72)" }}
+        />
+        <span className="line-clamp-1">{label}</span>
+        <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "rgba(180,140,75,0.72)" }} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={vertical ? "start" : "end"} className="w-60">
+        <DropdownMenuLabel>Administration</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {items.map((item) => (
+          <DropdownMenuItem key={item.page} asChild>
+            <Link
+              to={createPageUrl(item.path.replace(/^\//, ""))}
+              onClick={onItemClick}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <item.icon className="w-4 h-4" style={{ color: "rgba(180,140,75,0.85)" }} />
+              <span>{item.label}</span>
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -143,14 +201,18 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
           icon: BarChart3,
           path: "/CuratorAnalyticsDashboard",
         },
+        {
+          page: "AdminDiagnostics",
+          label: t("nav.adminDiagnostics", "Administrative Diagnostics"),
+          icon: Activity,
+          path: "/AdminDiagnostics",
+        },
       ]
     : [];
 
-  const items = [...baseItems, ...adminItems];
-
   return (
     <div className={vertical ? "flex flex-col gap-1 w-full" : "flex flex-wrap items-center gap-1 pb-1 min-w-0 w-full"}>
-      {items.map((item) => {
+      {baseItems.map((item) => {
         const isActive = item.path === '/'
           ? location.pathname === '/'
           : location.pathname.startsWith(item.path);
@@ -164,6 +226,14 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
           />
         );
       })}
+      {adminItems.length > 0 ? (
+        <AdministrationMenu
+          items={adminItems}
+          vertical={vertical}
+          onItemClick={onItemClick}
+          label={t("nav.administration", "Administration")}
+        />
+      ) : null}
       {onQuickAccess ? (
         <button
           type="button"

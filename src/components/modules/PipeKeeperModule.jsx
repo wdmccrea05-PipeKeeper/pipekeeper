@@ -214,8 +214,16 @@ export default function PipeKeeperModule() {
 
   const pipeStats = [
     { label: t('home.totalValue'), value: personalHideTotals ? '—' : formatFromBase(Math.round(totalPipeValue)) },
-    { label: t('home.pipesInCollection'), value: personalHideTotals ? '—' : pipes.length },
-    { label: t('home.tobaccoBlends'), value: personalHideTotals ? '—' : blends.length },
+    {
+      label: t('home.pipesInCollection'),
+      value: personalHideTotals ? '—' : pipes.length,
+      onClick: personalHideTotals ? undefined : () => navigate('/Pipes'),
+    },
+    {
+      label: t('home.tobaccoBlends'),
+      value: personalHideTotals ? '—' : blends.length,
+      onClick: personalHideTotals ? undefined : () => navigate('/Tobacco'),
+    },
     { label: t('home.cellared'), value: formatWeight(totalCellaredOz, 'oz') },
   ];
 
@@ -225,10 +233,10 @@ export default function PipeKeeperModule() {
       subtitle={t('pipekeeper.description')}
       icon={<PipeIcon className="w-6 h-6" style={{ color: '#C89752' }} />}
       accentColor="#C89752"
-      onBackToHub={() => navigate('/CollectionHub')}
       stats={pipeStats}
-      moduleNav={<PipeKeeperModuleNav currentPageName={null} />}
+      moduleNav={<PipeKeeperModuleNav currentPageName="PipeKeeper" />}
       actions={<ModuleQuickLaunch actions={quickLaunchActions} />}
+      highlights={<ModuleHighlightsSection highlights={pipeHighlights} />}
     >
       {/* Free Tier Limit Warnings */}
       {pipeLimit.atLimit && !hasPipekeeperPro && (
@@ -245,9 +253,6 @@ export default function PipeKeeperModule() {
           description={t('pipekeeper.blendLimitReachedDescription', { limit: blendLimit.limit })}
         />
       )}
-
-      {/* Highlights */}
-      <ModuleHighlightsSection highlights={pipeHighlights} />
 
       {/* AI Pipe Identifier Modal */}
       {showIdentifier && (

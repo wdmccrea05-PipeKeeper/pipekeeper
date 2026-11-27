@@ -65,8 +65,16 @@ function WhiskeyKeeperInner() {
 
   const whiskeyStats = [
     { label: t('whiskey.collectionValue'), value: formatFromBase(Math.round(whiskeyMetrics.collection_value)) },
-    { label: t('whiskey.bottleTypes'), value: whiskeyMetrics.bottle_types },
-    { label: t('whiskey.inventory'), value: whiskeyMetrics.total_bottles },
+    {
+      label: t('whiskey.bottleTypes'),
+      value: whiskeyMetrics.bottle_types,
+      onClick: () => navigate('/Whiskey'),
+    },
+    {
+      label: t('whiskey.inventory'),
+      value: whiskeyMetrics.total_bottles,
+      onClick: () => navigate('/Whiskey'),
+    },
     { label: t('whiskey.avgAbv', 'Avg ABV'), value: whiskeyMetrics.avg_abv ? `${whiskeyMetrics.avg_abv.toFixed(1)}%` : '—' },
   ];
 
@@ -84,10 +92,10 @@ function WhiskeyKeeperInner() {
       subtitle={t('whiskeykeeper.description', 'Track, value, and explore your whiskey collection')}
       icon={<WhiskeyKeeperIcon className="w-6 h-6" style={{ color: '#D47C7C' }} />}
       accentColor="#B66565"
-      onBackToHub={() => navigate('/CollectionHub')}
       stats={whiskeyStats}
-      moduleNav={<WhiskeyKeeperModuleNav currentPageName={null} />}
+      moduleNav={<WhiskeyKeeperModuleNav currentPageName="WhiskeyKeeper" />}
       actions={<ModuleQuickLaunch actions={quickLaunchActions} />}
+      highlights={<ModuleHighlightsSection highlights={highlights} />}
     >
       <AddFlowModal
         open={showAddModal}
@@ -99,10 +107,6 @@ function WhiskeyKeeperInner() {
           queryClient.invalidateQueries({ queryKey: ['whiskey-collection', user?.email] });
         }}
       />
-
-      {highlights.length > 0 && (
-        <ModuleHighlightsSection highlights={highlights} />
-      )}
     </ModulePageShell>
   );
 }

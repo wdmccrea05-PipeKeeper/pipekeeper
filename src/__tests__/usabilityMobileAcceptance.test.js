@@ -83,7 +83,7 @@ describe('mobile usability acceptance', () => {
     const reporting = read('src/pages/ReportingCenter.jsx');
     expect(hub).toContain("createPageUrl('ReportingCenter')");
     // Choosing a report renders it on the same screen — no extra page.
-    expect(reporting).toContain('onSelect={setActiveReportId}');
+    expect(reporting).toContain('onSelect={selectReport}');
   });
 
   it('keeps advanced Curator surfaces off the default conversation', () => {

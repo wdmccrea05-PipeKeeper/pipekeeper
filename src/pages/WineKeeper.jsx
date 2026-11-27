@@ -248,8 +248,16 @@ function WineKeeperInner() {
   const collectionValue = selectWineCollectionValue(wines);
 
   const wineStats = [
-    { label: t('wine.bottleTypes', 'Bottle Types'), value: wines.length },
-    { label: t('wine.totalBottles', 'Total Bottles'), value: totalBottles },
+    {
+      label: t('wine.bottleTypes', 'Bottle Types'),
+      value: wines.length,
+      onClick: () => navigate('/Wines'),
+    },
+    {
+      label: t('wine.totalBottles', 'Total Bottles'),
+      value: totalBottles,
+      onClick: () => navigate('/Wines'),
+    },
     { label: t('wine.collectionValue', 'Collection Value'), value: collectionValue > 0 ? formatFromBase(collectionValue) : '—' },
     { label: t('wine.tastingsLogged', 'Tastings'), value: tastings.length },
   ];
@@ -261,10 +269,21 @@ function WineKeeperInner() {
       subtitle={t('winekeeper.description', 'Curate, age, and value your wine collection')}
       icon={<Wine className="w-6 h-6" style={{ color: '#C47070' }} />}
       accentColor="#8B3A3A"
-      onBackToHub={() => navigate('/CollectionHub')}
       stats={wineStats}
-      moduleNav={<WineKeeperModuleNav currentPageName={null} />}
+      moduleNav={<WineKeeperModuleNav currentPageName="WineKeeper" />}
       actions={<ModuleQuickLaunch actions={quickLaunchActions} />}
+      highlights={<ModuleHighlightsSection highlights={highlights} />}
+      activity={
+        recentTastings.length > 0 ? (
+          <ModuleRecentActivitySection title={t('wine.recentTastings', 'Recent Tastings')}>
+            <div className="space-y-3">
+              {recentTastings.map((tasting) => (
+                <RecentTastingCard key={tasting.id} tasting={tasting} t={t} />
+              ))}
+            </div>
+          </ModuleRecentActivitySection>
+        ) : null
+      }
       isEmpty={wines.length === 0}
       emptyState={
         <div
@@ -284,23 +303,7 @@ function WineKeeperInner() {
           </Button>
         </div>
       }
-    >
-
-      {/* Collection Highlights */}
-      <ModuleHighlightsSection highlights={highlights} />
-
-      {/* Recent Tastings */}
-      {recentTastings.length > 0 && (
-        <ModuleRecentActivitySection title={t('wine.recentTastings', 'Recent Tastings')}>
-          <div className="space-y-3">
-            {recentTastings.map((tasting) => (
-              <RecentTastingCard key={tasting.id} tasting={tasting} t={t} />
-            ))}
-          </div>
-        </ModuleRecentActivitySection>
-      )}
-
-    </ModulePageShell>
+    />
 
     <AddFlowModal
       open={showAddModal}

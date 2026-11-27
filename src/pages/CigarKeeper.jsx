@@ -4,21 +4,32 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useTranslation } from '@/components/i18n/safeTranslation';
-import { Cigarette, Plus, BarChart3, BookOpen, Grid3X3, AlertTriangle, TrendingDown, Clock, Droplets } from 'lucide-react';
+import {
+  Cigarette,
+  Plus,
+  BarChart3,
+  Grid3X3,
+  CalendarDays,
+  AlertTriangle,
+  Clock,
+  Droplets,
+} from 'lucide-react';
 import ModulePageShell from '@/components/modules/ModulePageShell';
-import { base44 } from '@/api/base44Client';
-import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
+import ModuleAnalyticsSection from '@/components/modules/ModuleAnalyticsSection';
+import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
+import ModuleRecentActivitySection from '@/components/modules/ModuleRecentActivitySection';
+import CigarKeeperModuleNav from '@/components/modules/CigarKeeperModuleNav';
+import { base44 } from '@/api/base44Client';
 import { getCigarHighlights } from '@/components/cigars/getCigarHighlights';
 import CigarSessionModal from '@/components/cigars/CigarSessionModal';
-import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
-import ModuleRecentActivitySection from '@/components/modules/ModuleRecentActivitySection';
-import { useCurrency } from '@/lib/currency/useCurrency';
-import { getCollectionInsights } from '@/platform/cigarInsights';
 import CigarKeeperDashboard from '@/components/cigars/CigarKeeperDashboard';
 import EmptyState from '@/components/EmptyState';
+import { useCurrency } from '@/lib/currency/useCurrency';
 import { buildCigarCollectionBrief } from '@/lib/cigars/cigarCollectionBrief';
 import { buildDrilldownQuery } from '@/lib/cigars/cigarDashboard';
+import { getCigarSticks } from '@/lib/cigars/humidorInventory';
+import { selectCigarCollectionValue } from '@/lib/collection/cigarSelectors';
 import {
   daysBetween,
   getNextCheckDate,
@@ -227,11 +238,6 @@ function CigarKeeperInner() {
 
   const recentSessions = sessions.slice(0, 5);
 
-  const insights = useMemo(
-    () => getCollectionInsights(cigars, humidors, sessions),
-    [cigars, humidors, sessions]
-  );
-
   const highlights = useMemo(
     () => getCigarHighlights(cigars, formatFromBase).map((h) => ({
       ...h,
@@ -242,34 +248,16 @@ function CigarKeeperInner() {
     [cigars, formatFromBase, navigate]
   );
 
-  const actionItems = [
-    insights.runningLow.length > 0 && {
-      key: 'runningLow',
-      icon: TrendingDown,
-      color: '#D4A574',
-      bg: 'rgba(180,140,75,0.1)',
-      border: 'rgba(180,140,75,0.25)',
-      label: t('cigars.runningLow', { count: insights.runningLow.length }),
-      onClick: () => navigate('/Cigars'),
-    },
-    insights.neglected.length > 0 && {
-      key: 'neglected',
-      icon: Clock,
-      color: 'rgba(224,216,200,0.6)',
-      bg: 'rgba(255,255,255,0.04)',
-      border: 'rgba(140,107,63,0.2)',
-      label: t('cigars.neglectedFavorites', { count: insights.neglected.length }),
-      onClick: () => navigate('/Cigars'),
-    },
-  ].filter(Boolean);
+  const totalSticks = useMemo(
+    () => cigars.reduce((sum, cigar) => sum + getCigarSticks(cigar), 0),
+    [cigars]
+  );
+  const collectionValue = useMemo(() => selectCigarCollectionValue(cigars), [cigars]);
 
-  const alertHumidors = humidors.filter(humidorNeedsAttention).sort((a, b) => {
-    const sa = getHumidorMaintenanceStatus(a);
-    const sb = getHumidorMaintenanceStatus(b);
-    if (sa === 'overdue' && sb !== 'overdue') return -1;
-    if (sb === 'overdue' && sa !== 'overdue') return 1;
-    return 0;
-  });
+  const drillDown = (params) => {
+    const query = buildDrilldownQuery(params);
+    navigate(`/Cigars${query ? `?${query}` : ''}`);
+  };
 
   const quickLaunchActions = [
     {
@@ -282,19 +270,19 @@ function CigarKeeperInner() {
       key: 'browseCollection',
       Icon: Cigarette,
       label: t('cigars.collection'),
-      onClick: () => navigate('/Cigars'),
-    },
-    {
-      key: 'logSession',
-      Icon: BookOpen,
-      label: t('cigars.logSession'),
-      onClick: () => setSessionModalOpen(true),
+      onClick: () => drillDown({ tab: 'collection' }),
     },
     {
       key: 'humidorManager',
       Icon: Grid3X3,
       label: t('cigars.humidors'),
-      onClick: () => navigate('/Cigars?tab=humidors'),
+      onClick: () => drillDown({ tab: 'humidors' }),
+    },
+    {
+      key: 'history',
+      Icon: CalendarDays,
+      label: t('sessionHistory.title', 'Historical Records'),
+      onClick: () => navigate('/SessionHistory'),
     },
     {
       key: 'insights',
@@ -311,16 +299,73 @@ function CigarKeeperInner() {
   ];
 
   const cigarStats = [
-    { label: t('cigars.totalCigars'), value: cigars.length },
-    { label: t('cigars.totalSticks'), value: insights.totalSticks ?? cigars.reduce((s, c) => s + (c.quantity || 1), 0) },
-    { label: t('cigars.humidors'), value: humidors.length },
-    { label: t('cigars.sessionsLogged'), value: sessions.length },
+    {
+      label: t('cigars.totalCigars'),
+      value: cigars.length,
+      onClick: () => drillDown({ tab: 'collection' }),
+    },
+    {
+      label: t('cigars.totalSticks'),
+      value: totalSticks,
+      onClick: () => drillDown({ tab: 'collection' }),
+    },
+    {
+      label: t('cigars.humidors'),
+      value: humidors.length,
+      onClick: () => drillDown({ tab: 'humidors' }),
+    },
+    {
+      label: t('cigars.estimatedValue', 'Est. Value'),
+      value: collectionValue > 0 ? formatFromBase(Math.round(collectionValue)) : '—',
+      onClick: collectionValue > 0 ? () => drillDown({ tab: 'collection' }) : undefined,
+    },
   ];
+
+  const alertHumidors = humidors.filter(humidorNeedsAttention).sort((a, b) => {
+    const sa = getHumidorMaintenanceStatus(a);
+    const sb = getHumidorMaintenanceStatus(b);
+    if (sa === 'overdue' && sb !== 'overdue') return -1;
+    if (sb === 'overdue' && sa !== 'overdue') return 1;
+    return 0;
+  });
+
+  const activity =
+    alertHumidors.length > 0 || recentSessions.length > 0 ? (
+      <>
+        {alertHumidors.length > 0 && (
+          <ModuleRecentActivitySection
+            title={t('cigars.humidorsNeedingAttention')}
+            accent="rgba(224,85,85,0.8)"
+          >
+            <div className="space-y-2">
+              {alertHumidors.map((h) => (
+                <HumidorAlertCard
+                  key={h.id}
+                  humidor={h}
+                  t={t}
+                  onManage={() => drillDown({ tab: 'humidors' })}
+                />
+              ))}
+            </div>
+          </ModuleRecentActivitySection>
+        )}
+
+        {recentSessions.length > 0 && (
+          <ModuleRecentActivitySection title={t('cigars.recentSessions')}>
+            <div className="space-y-3">
+              {recentSessions.map((session) => (
+                <RecentSessionCard key={session.id} session={session} t={t} locale={lang} />
+              ))}
+            </div>
+          </ModuleRecentActivitySection>
+        )}
+      </>
+    ) : null;
 
   return (
     <ModulePageShell
-      title={t('cigarkeeper.title')}
-      subtitle={t('cigarkeeper.description')}
+      title={t('cigarkeeper.title', 'CigarKeeper')}
+      subtitle={t('cigarkeeper.description', 'Track, preserve and explore your cigar collection')}
       icon={
         <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#D4A574" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <rect x="2" y="10" width="16" height="4" rx="2" />
@@ -331,85 +376,42 @@ function CigarKeeperInner() {
         </svg>
       }
       accentColor="#8C6B3F"
-      onBackToHub={() => navigate('/CollectionHub')}
       stats={cigarStats}
-      moduleNav={<CigarKeeperModuleNav currentPageName={null} onLogSession={() => setSessionModalOpen(true)} />}
+      moduleNav={<CigarKeeperModuleNav currentPageName="CigarKeeper" onLogSession={() => setSessionModalOpen(true)} />}
       actions={<ModuleQuickLaunch actions={quickLaunchActions} />}
-    >
-      {actionItems.length > 0 && (
-        <div className="space-y-2">
-          {actionItems.map(({ key, icon: Icon, color, bg, border, label, onClick }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={onClick}
-              className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all hover:brightness-110"
-              style={{ background: bg, border: `1px solid ${border}` }}
-            >
-              <Icon className="w-4 h-4 shrink-0" style={{ color }} />
-              <span className="text-sm font-medium" style={{ color: '#F5F1E7' }}>{label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {cigars.length === 0 ? (
+      isEmpty={cigars.length === 0}
+      emptyState={
         <EmptyState
           icon={Cigarette}
           title={t('cigars.noCigars')}
           description={t('cigars.addFirstCigar')}
           actionLabel={t('cigars.addFirstCigarBtn')}
-          onAction={() => navigate('/Cigars')}
+          onAction={() => navigate('/Cigars?action=add')}
         />
-      ) : (
-        <CigarKeeperDashboard
-          cigars={cigars}
-          humidors={humidors}
-          readingsByHumidor={readingsByHumidor}
-          ratings={cigarRatings}
-          formatCurrency={formatFromBase}
-          tier={user?.tier || 'free'}
-          brief={collectionBrief}
-          onDrilldown={(params) => {
-            const query = buildDrilldownQuery(params);
-            navigate(`/Cigars${query ? `?${query}` : ''}`);
-          }}
-        />
-      )}
-
-      {highlights.length > 0 && (
-        <ModuleHighlightsSection highlights={highlights} />
-      )}
-
-      {/* Humidor alerts */}
-      {alertHumidors.length > 0 && (
-        <ModuleRecentActivitySection
-          title={t('cigars.humidorsNeedingAttention')}
-          accent="rgba(224,85,85,0.8)"
+      }
+      highlights={<ModuleHighlightsSection highlights={highlights} />}
+      analytics={
+        <ModuleAnalyticsSection
+          title={t('cigars.collectionAnalytics', 'Collection analytics')}
+          description={t(
+            'cigars.collectionAnalyticsHint',
+            'Manufacturer, vitola, documentation, aging and environment breakdowns'
+          )}
         >
-          <div className="space-y-2">
-            {alertHumidors.map((h) => (
-              <HumidorAlertCard
-                key={h.id}
-                humidor={h}
-                t={t}
-                onManage={() => navigate('/Cigars?tab=humidors')}
-              />
-            ))}
-          </div>
-        </ModuleRecentActivitySection>
-      )}
-
-      {recentSessions.length > 0 && (
-        <ModuleRecentActivitySection title={t('cigars.recentSessions')}>
-          <div className="space-y-3">
-            {recentSessions.map((session) => (
-              <RecentSessionCard key={session.id} session={session} t={t} locale={lang} />
-            ))}
-          </div>
-        </ModuleRecentActivitySection>
-      )}
-
+          <CigarKeeperDashboard
+            cigars={cigars}
+            humidors={humidors}
+            readingsByHumidor={readingsByHumidor}
+            ratings={cigarRatings}
+            formatCurrency={formatFromBase}
+            tier={user?.tier || 'free'}
+            brief={collectionBrief}
+            onDrilldown={drillDown}
+          />
+        </ModuleAnalyticsSection>
+      }
+      activity={activity}
+    >
       <CigarSessionModal
         isOpen={sessionModalOpen}
         onClose={() => setSessionModalOpen(false)}
