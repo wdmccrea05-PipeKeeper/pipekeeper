@@ -46,15 +46,13 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
       icon: BarChart3,
       label: t("quickAccess.collectionInsights", "Collection Insights"),
       description: t("quickAccess.viewPairingsUsageTrends", "View pairings, usage & trends"),
-      page: "Home",
-      hash: "#insights",
+      page: "Insights",
     },
     {
       icon: FileText,
       label: t("quickAccess.reportsExports", "Reports & Exports"),
       description: t("quickAccess.generatePDFCSV", "Generate PDF & CSV reports"),
-      page: "Home",
-      hash: "#insights",
+      page: "ReportingCenter",
     },
     {
       icon: Wrench,
@@ -78,8 +76,7 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
       icon: Sparkles,
       label: t("quickAccess.aiTools", "AI Tools"),
       description: t("quickAccess.photoIdentificationOptimization", "Photo identification & optimization"),
-      page: "Home",
-      hash: "#ai-tools",
+      page: "AIUpdates",
     },
     {
       icon: CreditCard,
