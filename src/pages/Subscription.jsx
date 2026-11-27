@@ -17,6 +17,7 @@ import {
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useQueryClient } from "@tanstack/react-query";
 import { syncAppleSubscriptionStatus } from "@/components/utils/appleSubscriptionSync";
+import AppreciationOfferCard from "@/components/campaign/AppreciationOfferCard";
 
 function FeatureList({ items }) {
   return (
@@ -191,6 +192,8 @@ function AppleSubscription() {
           </Button>
         </div>
       </div>
+
+      <AppreciationOfferCard surface="subscription" />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="bg-black/40 border-white/10">

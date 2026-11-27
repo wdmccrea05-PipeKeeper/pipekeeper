@@ -49,6 +49,7 @@ import SessionHistory from "@/pages/SessionHistory";
 import ReferralDashboard from "@/pages/ReferralDashboard";
 import ReferralAdminReport from "@/pages/ReferralAdminReport";
 import ReconciliationDashboard from "@/pages/ReconciliationDashboard";
+import AppreciationCampaignAdmin from "@/pages/AppreciationCampaignAdmin";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import ModuleSelectionModal from "@/components/onboarding/ModuleSelectionModal";
@@ -467,6 +468,15 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="ReconciliationDashboard">
             <ReconciliationDashboard />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/AppreciationCampaignAdmin"
+        element={
+          <LayoutWrapper currentPageName="AppreciationCampaignAdmin">
+            <AppreciationCampaignAdmin />
           </LayoutWrapper>
         }
       />

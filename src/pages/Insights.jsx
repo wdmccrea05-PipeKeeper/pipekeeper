@@ -1,4 +1,5 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { trackAppreciationFeatureUse } from "@/components/campaign/featureUsage";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { base44 } from "@/api/base44Client";
@@ -1133,6 +1134,13 @@ export default function Insights() {
   );
 
   const [activeInsightsTab, setActiveInsightsTab] = useState('summary');
+
+  // Campaign attribution: only recorded while a complimentary grant is live.
+  useEffect(() => {
+    if (activeInsightsTab === 'reports') {
+      trackAppreciationFeatureUse('pipekeeper_reports', 'pipekeeper');
+    }
+  }, [activeInsightsTab]);
   const [calSelectedDate, setCalSelectedDate] = useState(toLocalDateYmd(new Date()));
 
   const pipeSessionRows = useMemo(() => smokingLogs.map(s => ({

@@ -2,6 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { useTranslation } from '@/components/i18n/safeTranslation';
+import { trackAppreciationFeatureUse } from '@/components/campaign/featureUsage';
 
 const CURATOR_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png';
 
@@ -94,6 +95,11 @@ export default function CuratorPage() {
       setSurface('plan_session');
     }
   }, [isMultiModuleMode, surface]);
+
+  // Campaign attribution: only recorded while a complimentary grant is live.
+  useEffect(() => {
+    trackAppreciationFeatureUse('curator_ai', 'cross_module');
+  }, []);
 
   const [counts, setCounts] = useState({
     record_optimization: 0,

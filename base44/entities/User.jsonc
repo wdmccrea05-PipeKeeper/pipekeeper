@@ -12,6 +12,31 @@
       "format": "date-time",
       "description": "End of the 7-day complimentary Pro window (exactly 168 hours after the start). Authoritative expiration - never extended by client actions"
     },
+    "appreciation_campaign_id": {
+      "type": "string",
+      "description": "Appreciation campaign the collector redeemed, if any. Written only by backend functions."
+    },
+    "appreciation_grant_activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server-issued activation time of the appreciation grant (mirror of the grant record)"
+    },
+    "appreciation_grant_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server-issued expiration of the appreciation grant, exactly 168 hours after activation (mirror of the grant record)"
+    },
+    "appreciation_grant_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "revoked",
+        "none"
+      ],
+      "default": "none",
+      "description": "Mirror of the grant status for display; the grant record stays authoritative"
+    },
     "isFreeGrandfathered": {
       "type": "boolean",
       "default": false,

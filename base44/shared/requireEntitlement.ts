@@ -1,5 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { resolveProTrial } from "./proTrial.ts";
+import { resolveGrantState } from "./appreciationCampaign.ts";
 
 function normEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -138,6 +139,24 @@ export async function requireEntitlement(req, requiredTier = "paid") {
   const proTrial = resolveProTrial(trialUserRecord || me);
   if (proTrial.active) {
     return { ok: true, me, source: "complimentary_pro", trialEndsAt: proTrial.endsAt };
+  }
+
+  // Collector appreciation grant: a server-issued promotional Pro grant carries
+  // the same backend capability as a paid subscription. The grant record is the
+  // authority — never the client-visible mirror on the account.
+  try {
+    const grants = await base44.entities.AppreciationGrant.filter(
+      { campaign_id: "collector_appreciation_black_friday_2026", user_email: email },
+      "-created_date",
+      5
+    );
+    const grant = Array.isArray(grants) && grants.length > 0 ? grants[0] : null;
+    const grantState = resolveGrantState(grant);
+    if (grantState.active) {
+      return { ok: true, me, source: "appreciation_grant", grantExpiresAt: grantState.expiresAt };
+    }
+  } catch (e) {
+    console.warn("[requireEntitlement] appreciation grant lookup failed:", e);
   }
 
   // Use centralized grace period helper

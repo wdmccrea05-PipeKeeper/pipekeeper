@@ -82,9 +82,17 @@ export default function ReconciliationDashboard() {
           <h1 className="text-2xl font-bold text-[#F5F1E7]">Reconciliation Dashboard</h1>
           <p className="text-xs text-[#E0D8C8]/50 mt-1">Administrator-only · canonical ledger reconciliation</p>
         </div>
-        <button onClick={() => { loadCanonical(); }} className="px-3 py-2 rounded border border-[#8b6239]/40 text-[#E0D8C8] hover:bg-[#8b6239]/20 text-sm">
-          Refresh
-        </button>
+        <div className="flex gap-2">
+          <a
+            href="/AppreciationCampaignAdmin"
+            className="px-3 py-2 rounded border border-[#8b6239]/40 text-[#D4A574] hover:bg-[#8b6239]/20 text-sm"
+          >
+            Appreciation campaign
+          </a>
+          <button onClick={() => { loadCanonical(); }} className="px-3 py-2 rounded border border-[#8b6239]/40 text-[#E0D8C8] hover:bg-[#8b6239]/20 text-sm">
+            Refresh
+          </button>
+        </div>
       </div>
 
       {(loadingReport || loadingUnmatched) && !report && <p className="text-[#E0D8C8]/60">Loading…</p>}

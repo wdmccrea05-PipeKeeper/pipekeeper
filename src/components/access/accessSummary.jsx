@@ -16,7 +16,8 @@ import {
   isInternalModuleTester,
 } from '@/components/utils/moduleReleaseState';
 import { getEntitlementTier, getAccessSource } from '@/components/utils/premiumAccess';
-import { resolveProTrial, getProTrialModules } from '@/components/utils/proTrial';
+import { getProTrialModules } from '@/components/utils/proTrial';
+import { resolveComplimentaryPro } from '@/components/utils/appreciationGrant';
 
 const STRIPE_PRODUCT_MAP = {
   founders_bundle_monthly: { modules: ['pipekeeper', 'whiskeykeeper'], billingPeriod: 'monthly' },
@@ -172,22 +173,24 @@ export function buildAccessSummary(user, subscription) {
   }
 
   const accessSource = getAccessSource(user, subscription);
-  const trial = resolveProTrial(user);
+  const complimentary = resolveComplimentaryPro(user);
+  const trial = complimentary;
 
   // ─── COMPLIMENTARY PRO ACCESS ─────────────────────────────────────────────
-  // The 7-day welcome window grants every module, including ones launched later,
-  // with no payment method on file.
-  if (accessSource === 'trial') {
+  // The welcome window and the collector appreciation grant both cover every
+  // module, including ones launched later, with no payment method on file.
+  if (accessSource === 'trial' || accessSource === 'promotional') {
     return {
       tier: 'pro',
       status: 'complimentary_pro',
       billingPeriod: null,
       provider,
       activeModules: filterModulesByReleaseState(getProTrialModules(), user),
-      planKey: 'complimentary_pro_trial',
+      planKey: accessSource === 'promotional' ? 'complimentary_pro_appreciation' : 'complimentary_pro_trial',
       isFoundingMember: user?.isFoundingMember === true,
       accessSource,
-      isProTrial: true,
+      isProTrial: accessSource === 'trial',
+      isPromotionalPro: accessSource === 'promotional',
       trialEndsAt: trial.endsAt,
       trialDaysRemaining: trial.daysRemaining,
       trialHoursRemaining: trial.hoursRemaining,

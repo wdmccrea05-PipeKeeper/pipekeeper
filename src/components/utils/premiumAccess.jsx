@@ -9,6 +9,7 @@
 import { subscriptionGrantsPaidAccess } from "./gracePeriod";
 import { isModuleLaunched } from "./moduleReleaseState";
 import { resolveProTrial, getProTrialModules } from "./proTrial";
+import { resolveComplimentaryPro } from "./appreciationGrant";
 
 export const FOUNDING_MEMBER_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
 export const PRO_LAUNCH_CUTOFF_ISO = "2026-02-01T00:00:00.000Z";
@@ -121,7 +122,12 @@ export function getAccessSource(user, subscription) {
 
   if (user?.isFoundingMember || user?.legacy_broad_module_access) return "grandfathered";
 
-  if (resolveProTrial(user).active) return "trial";
+  // Complimentary access: the welcome window or a server-issued promotional
+  // grant. Both grant identical Pro capability; the source stays distinguishable.
+  const complimentary = resolveComplimentaryPro(user);
+  if (complimentary.active) {
+    return complimentary.kind === "appreciation" ? "promotional" : "trial";
+  }
 
   return "free";
 }
@@ -154,7 +160,7 @@ export function isFree(user, subscription) {
 export function isTrialingAccess(user, subscription) {
   const subStatus = String(subscription?.status || "").toLowerCase();
   if (subStatus === "trialing" || subStatus === "trial") return true;
-  if (resolveProTrial(user).active) return true;
+  if (resolveComplimentaryPro(user).active) return true;
   return Boolean(
     user?.isOnTrial ??
     user?.trial_active ??
@@ -194,6 +200,7 @@ export function buildCanonicalEntitlements(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
   const accessSource = getAccessSource(user, subscription);
   const trial = resolveProTrial(user);
+  const complimentary = resolveComplimentaryPro(user);
   const isPro = accessSource !== "free";
   const csvModules = String(user?.paid_modules_csv || "")
     .split(",")
@@ -218,12 +225,12 @@ export function buildCanonicalEntitlements(user, subscription) {
   };
 
   // Complimentary access covers every module, including ones launched later.
-  const trialModules = trial.active ? getProTrialModules() : [];
+  const trialModules = complimentary.active ? getProTrialModules() : [];
 
   const proModules = (() => {
     if (!isPro) return [];
     if (explicitModules.length > 0) return explicitModules;
-    if (accessSource === "trial") return trialModules;
+    if (accessSource === "trial" || accessSource === "promotional") return trialModules;
     if (isLegacyBroadAccessUser) return CANONICAL_MODULES.filter(isModuleLaunched);
     if (accessSource === "admin") return CANONICAL_MODULES.filter(isModuleLaunched);
     return [];
@@ -236,6 +243,8 @@ export function buildCanonicalEntitlements(user, subscription) {
     hasPro: isPro,
     isFree: !isPro,
     isProTrial: accessSource === "trial",
+    isPromotionalPro: accessSource === "promotional",
+    complimentary,
     trial: {
       active: trial.active,
       known: trial.known,

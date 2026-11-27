@@ -1,0 +1,98 @@
+{
+  "name": "AppreciationCampaignEvent",
+  "type": "object",
+  "description": "Aggregate campaign funnel events: banner impressions, dismissals, activations, feature usage and expiration notices. Written only by backend functions.",
+  "properties": {
+    "campaign_id": {
+      "type": "string",
+      "description": "Campaign identifier"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Normalized lowercase email of the collector"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "impression",
+        "dismissal",
+        "activation",
+        "feature_use",
+        "expired_notice",
+        "activation_confirmation_view"
+      ],
+      "enumColors": [
+        "blue",
+        "gray",
+        "green",
+        "purple",
+        "yellow",
+        "pink"
+      ],
+      "description": "Kind of funnel event"
+    },
+    "feature": {
+      "type": "string",
+      "description": "Pro feature key for feature_use events (e.g. pipekeeper_curator, whiskeykeeper_reports)"
+    },
+    "module": {
+      "type": "string",
+      "enum": [
+        "pipekeeper",
+        "whiskeykeeper",
+        "cigarkeeper",
+        "winekeeper",
+        "cross_module",
+        "account"
+      ],
+      "enumColors": [
+        "yellow",
+        "blue",
+        "purple",
+        "pink",
+        "green",
+        "gray"
+      ],
+      "description": "Collection module the event relates to"
+    },
+    "surface": {
+      "type": "string",
+      "description": "Where the event happened (hub, module_dashboard, profile, subscription, notification_center)"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server timestamp of the event"
+    },
+    "grant_id": {
+      "type": "string",
+      "description": "Grant record associated with the event, when applicable"
+    }
+  },
+  "required": [
+    "campaign_id",
+    "event_type"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

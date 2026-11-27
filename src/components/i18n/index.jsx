@@ -52,6 +52,7 @@ import jaGenerated from './locales/ja.generated.json';
 import zhHansGenerated from './locales/zh-Hans.generated.json';
 import { docsCurrentTranslations } from './docsCurrent.jsx';
 import { proTrialTranslations } from './locales/proTrialOverrides.jsx';
+import { appreciationTranslations } from './locales/appreciationOverrides.jsx';
 
 const GENERATED_PACKS = {
   fr: frGenerated,
@@ -211,7 +212,9 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
   // Complimentary Pro copy is applied last so it replaces any legacy
   // "7-day Premium trial" wording in every language.
   const withProTrial = deepOverride(withCriticals, proTrialTranslations[lang] || {});
-  return [lang, withProTrial];
+  // Collector appreciation campaign copy, applied last in every language.
+  const withAppreciation = deepOverride(withProTrial, appreciationTranslations[lang] || {});
+  return [lang, withAppreciation];
 }));
 
 const I18nContext = createContext(null);

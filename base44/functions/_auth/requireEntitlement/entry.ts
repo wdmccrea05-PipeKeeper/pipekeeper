@@ -1,5 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
 import { resolveProTrial } from "../../../shared/proTrial.ts";
+import { resolveGrantState } from "../../../shared/appreciationCampaign.ts";
 
 function normEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -138,6 +139,23 @@ export async function requireEntitlement(req, requiredTier = "paid") {
     }
   } catch (e) {
     console.warn("[requireEntitlement] complimentary window lookup failed:", e);
+  }
+
+  // 0b) Collector appreciation grant — a server-issued promotional Pro grant.
+  // The grant record is authoritative; the account mirror is display-only.
+  try {
+    const grants = await base44.entities.AppreciationGrant.filter(
+      { campaign_id: "collector_appreciation_black_friday_2026", user_email: email },
+      "-created_date",
+      5
+    );
+    const grant = Array.isArray(grants) && grants.length > 0 ? grants[0] : null;
+    const grantState = resolveGrantState(grant);
+    if (grantState.active) {
+      return { ok: true, me, complimentary_pro: true, appreciation_grant: true };
+    }
+  } catch (e) {
+    console.warn("[requireEntitlement] appreciation grant lookup failed:", e);
   }
 
   // Use centralized grace period helper

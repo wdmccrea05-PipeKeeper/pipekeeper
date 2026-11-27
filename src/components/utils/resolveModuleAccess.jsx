@@ -33,25 +33,30 @@
 
 import { subscriptionGrantsPaidAccess, isCanceledButPaidThrough } from './gracePeriod';
 import { isModuleLaunched } from './moduleReleaseState';
-import { resolveProTrial } from './proTrial';
+import { resolveComplimentaryPro } from './appreciationGrant';
 
 /**
  * Complimentary Pro access decision. Grants every launched module — modules
  * released later are included automatically because the check is release-state
- * driven rather than a hardcoded list.
+ * driven rather than a hardcoded list. Covers both the welcome window and the
+ * server-issued appreciation grant; the source stays distinguishable.
  */
-function buildTrialDecision(key, trial) {
-  if (!trial?.active || !key || !isModuleLaunched(key)) return null;
+function buildTrialDecision(key, complimentary) {
+  if (!complimentary?.active || !key || !isModuleLaunched(key)) return null;
+  const isAppreciation = complimentary.kind === 'appreciation';
   return {
     has_access: true,
     module: key,
     tier: 'pro',
-    source_type: 'trial',
+    source_type: isAppreciation ? 'promotional_grant' : 'trial',
     verification_status: 'verified_active',
     lifecycle_status: 'complimentary_pro',
-    commercial_plan: 'complimentary_pro_trial',
-    effective_end: trial.endsAt,
-    reason: 'Complimentary Pro access (7-day welcome period)',
+    commercial_plan: isAppreciation ? 'complimentary_pro_appreciation' : 'complimentary_pro_trial',
+    effective_end: complimentary.endsAt,
+    complimentary_kind: complimentary.kind,
+    reason: isAppreciation
+      ? 'Complimentary Pro access (collector appreciation campaign)'
+      : 'Complimentary Pro access (7-day welcome period)',
   };
 }
 
@@ -218,7 +223,7 @@ function hasExplicitNonPaidProvenance(user, key) {
 export function resolveModuleAccess(user, moduleKey, subscription) {
   const key = normalizeKey(moduleKey);
   const role = String(user?.role || '').toLowerCase();
-  const trial = resolveProTrial(user);
+  const complimentary = resolveComplimentaryPro(user);
 
   // 1. Admin — always pro
   if (role === 'admin' || role === 'owner' || user?.is_admin === true) {
@@ -285,7 +290,7 @@ export function resolveModuleAccess(user, moduleKey, subscription) {
       }
       // Subscription is active but module is NOT in scope. Complimentary Pro
       // access still covers every module, so it is checked before denying.
-      const trialForModule = buildTrialDecision(key, trial);
+      const trialForModule = buildTrialDecision(key, complimentary);
       if (trialForModule) return trialForModule;
 
       return {
@@ -324,7 +329,7 @@ export function resolveModuleAccess(user, moduleKey, subscription) {
 
   // 3b. COMPLIMENTARY PRO ACCESS — same capability as a paying subscriber,
   // without separate trial-specific permissions.
-  const trialGrant = buildTrialDecision(key, trial);
+  const trialGrant = buildTrialDecision(key, complimentary);
   if (trialGrant) return trialGrant;
 
   // 4. LEGACY FLAG FALLBACK — only during loading (subscription === undefined)

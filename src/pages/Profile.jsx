@@ -23,6 +23,7 @@ import ModuleVisibilitySettings from "@/components/profile/ModuleVisibilitySetti
 import CurrencyPreferenceSetting from "@/components/profile/CurrencyPreferenceSetting";
 import FormSection from "@/components/forms/FormSection";
 import PrivacySettingsSection from "@/components/community/PrivacySettingsSection";
+import AppreciationOfferCard from "@/components/campaign/AppreciationOfferCard";
 import {
   ALL_MODULE_KEYS,
   buildPrivacyPayload,
@@ -643,6 +644,7 @@ export default function ProfilePage() {
               </CardHeader>
 
               <CardContent className="space-y-6">
+            <AppreciationOfferCard surface="profile" />
             {/* Badges */}
             <div className="flex gap-2 flex-wrap">
               <Badge className={hasPro ? "bg-purple-600 text-white border-0" : "bg-[#A35C5C] text-white border-0"}>

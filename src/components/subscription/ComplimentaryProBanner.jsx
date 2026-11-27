@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Crown, Sparkles, ArrowRight, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useAppreciationCampaign } from '@/components/campaign/useAppreciationCampaign';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const GOLD = '#D4A574';
@@ -30,11 +31,17 @@ function writeFlag(key) {
  * subscribers: paid access always wins.
  */
 export default function ComplimentaryProBanner({ className = '' }) {
-  const { user, hasPaid, isProTrial, proTrial, isLoading } = useCurrentUser();
+  const { user, hasPaid, complimentary, isLoading } = useCurrentUser();
+  // When the appreciation offer is on screen, the old "trial ended" card is
+  // suppressed so the collector never sees two competing notices.
+  const { showOffer: appreciationOfferVisible, expiredGrant: appreciationExpired } = useAppreciationCampaign({
+    surface: 'status_card',
+  });
   const { t } = useTranslation();
   const [expiredDismissed, setExpiredDismissed] = useState(true);
 
-  const endsAt = proTrial?.endsAt || null;
+  const isAppreciation = complimentary?.kind === 'appreciation';
+  const endsAt = complimentary?.endsAt || null;
   const email = user?.email || 'anon';
   const dismissKey = `ck_pro_trial_expired_dismissed_${email}_${endsAt || 'none'}`;
 
@@ -42,14 +49,14 @@ export default function ComplimentaryProBanner({ className = '' }) {
     setExpiredDismissed(readFlag(dismissKey));
   }, [dismissKey]);
 
-  const active = !!isProTrial && !!proTrial?.active;
-  const expired = !active && !!proTrial?.known && !!proTrial?.expired;
+  const active = !!complimentary?.active;
+  const expired = !active && !!complimentary?.known && !!complimentary?.expired;
 
   // One-time milestone notices: three days, one day, and expiry.
   useEffect(() => {
     if (isLoading || !user || hasPaid) return;
     if (active) {
-      const threshold = proTrial.daysRemaining <= 1 ? '1d' : proTrial.daysRemaining <= 3 ? '3d' : null;
+      const threshold = complimentary.daysRemaining <= 1 ? '1d' : complimentary.daysRemaining <= 3 ? '3d' : null;
       if (!threshold) return;
       const key = `ck_pro_trial_notice_${email}_${endsAt}_${threshold}`;
       if (readFlag(key)) return;
@@ -57,7 +64,7 @@ export default function ComplimentaryProBanner({ className = '' }) {
       toast(
         threshold === '1d'
           ? t('proTrial.noticeOneDay')
-          : t('proTrial.noticeThreeDays', { count: proTrial.daysRemaining }),
+          : t('proTrial.noticeThreeDays', { count: complimentary.daysRemaining }),
         { description: t('proTrial.body') }
       );
       return;
@@ -70,19 +77,19 @@ export default function ComplimentaryProBanner({ className = '' }) {
         description: t('proTrial.expiredBody'),
       });
     }
-  }, [active, expired, isLoading, user, hasPaid, proTrial?.daysRemaining, endsAt, email, t]);
+  }, [active, expired, isLoading, user, hasPaid, complimentary?.daysRemaining, endsAt, email, t]);
 
   if (isLoading || !user || hasPaid) return null;
-  if (!active && !(expired && !expiredDismissed)) return null;
+  if (!active && !(expired && !expiredDismissed && !appreciationOfferVisible && !appreciationExpired)) return null;
 
   const formattedEnd = endsAt
     ? new Date(endsAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     : null;
 
   const remainingLabel =
-    proTrial.hoursRemaining <= 24
-      ? t('proTrial.hoursLeft', { count: Math.max(1, proTrial.hoursRemaining) })
-      : t('proTrial.daysLeft', { count: proTrial.daysRemaining });
+    complimentary.hoursRemaining <= 24
+      ? t('proTrial.hoursLeft', { count: Math.max(1, complimentary.hoursRemaining) })
+      : t('proTrial.daysLeft', { count: complimentary.daysRemaining });
 
   if (expired) {
     return (
@@ -147,7 +154,7 @@ export default function ComplimentaryProBanner({ className = '' }) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs uppercase tracking-[0.14em] font-bold" style={{ color: GOLD }}>
-            {t('proTrial.title')}
+            {isAppreciation ? t('appreciation.activeTitle') : t('proTrial.title')}
           </p>
           <p
             className="text-xl sm:text-2xl font-bold mt-0.5 text-wrap-mobile"
@@ -156,8 +163,13 @@ export default function ComplimentaryProBanner({ className = '' }) {
             {remainingLabel}
           </p>
           <p className="text-xs sm:text-sm mt-1 text-wrap-mobile" style={{ color: 'rgba(224,216,200,0.75)' }}>
-            {t('proTrial.body')}
+            {isAppreciation ? t('appreciation.activeSubtitle') : t('proTrial.body')}
           </p>
+          {isAppreciation && (
+            <p className="text-xs sm:text-sm mt-1 text-wrap-mobile" style={{ color: 'rgba(224,216,200,0.7)' }}>
+              {t('appreciation.activeBody')}
+            </p>
+          )}
           {formattedEnd && (
             <p className="text-[11px] mt-1.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
               {t('proTrial.endsOn', { date: formattedEnd })}

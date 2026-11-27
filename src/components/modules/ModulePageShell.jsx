@@ -22,6 +22,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import ComplimentaryProBanner from '@/components/subscription/ComplimentaryProBanner';
+import AppreciationOfferCard from '@/components/campaign/AppreciationOfferCard';
 
 function SectionLabel({ children, color }) {
   return (
@@ -94,6 +95,7 @@ export default function ModulePageShell({
   return (
     <div className="space-y-6 sm:space-y-8">
       <ComplimentaryProBanner />
+      <AppreciationOfferCard surface="module_dashboard" />
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">

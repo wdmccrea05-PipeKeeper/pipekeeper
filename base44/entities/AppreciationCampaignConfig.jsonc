@@ -1,0 +1,55 @@
+{
+  "name": "AppreciationCampaignConfig",
+  "type": "object",
+  "description": "Administrative configuration for the existing-collector appreciation campaign. One record per campaign; readable by the app so the offer can be evaluated, writable by admins only.",
+  "properties": {
+    "campaign_id": {
+      "type": "string",
+      "description": "Campaign identifier"
+    },
+    "is_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "When false, new redemptions are blocked; already-activated grants keep running"
+    },
+    "eligibility_cutoff": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Accounts created before this instant are eligible (campaign launch cutoff)"
+    },
+    "redemption_deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional last moment the offer may be redeemed"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Email of the administrator who last changed the configuration"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal administrative notes"
+    }
+  },
+  "required": [
+    "campaign_id"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

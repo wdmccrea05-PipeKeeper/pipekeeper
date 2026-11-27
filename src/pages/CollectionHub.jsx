@@ -29,6 +29,8 @@ import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
 import ComplimentaryProBanner from '@/components/subscription/ComplimentaryProBanner';
+import AppreciationBanner from '@/components/campaign/AppreciationBanner';
+import AppreciationExpiredDialog from '@/components/campaign/AppreciationExpiredDialog';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import { getPipeValue } from '@/components/keeper-core/value/valueAggregation';
 import { buildUnifiedActivityFeed } from '@/components/utils/activityNormalizer';
@@ -671,6 +673,8 @@ export default function CollectionHub() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       <ComplimentaryProBanner />
+      <AppreciationBanner surface="hub" />
+      <AppreciationExpiredDialog />
       <section
         className="rounded-[28px] p-5 sm:p-8"
         style={{

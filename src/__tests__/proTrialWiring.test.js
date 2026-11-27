@@ -39,9 +39,28 @@ describe('complimentary Pro — wiring guard', () => {
   it('module access, limits and capabilities resolve through the canonical resolver', () => {
     const access = read('src/components/utils/resolveModuleAccess.jsx');
     const premium = read('src/components/utils/premiumAccess.jsx');
-    expect(access).toContain('resolveProTrial');
+    expect(access).toContain('resolveComplimentaryPro');
     expect(premium).toContain('resolveProTrial');
+    expect(premium).toContain('resolveComplimentaryPro');
     expect(premium).toContain('buildCanonicalEntitlements');
+  });
+
+  it('the backend gate also accepts a server-issued appreciation grant', () => {
+    const src = read('base44/functions/_auth/requireEntitlement/entry.ts');
+    expect(src).toContain('AppreciationGrant');
+    expect(src).toContain('resolveGrantState');
+    const grantIndex = src.indexOf('resolveGrantState(grant)');
+    const paidIndex = src.indexOf('subscriptionGrantsPaidAccess(s)');
+    expect(grantIndex).toBeGreaterThan(-1);
+    expect(grantIndex).toBeLessThan(paidIndex);
+  });
+
+  it('the appreciation campaign surfaces are mounted where collectors look', () => {
+    expect(read('src/pages/CollectionHub.jsx')).toContain('AppreciationBanner');
+    expect(read('src/components/modules/ModulePageShell.jsx')).toContain('AppreciationOfferCard');
+    expect(read('src/pages/Profile.jsx')).toContain('AppreciationOfferCard');
+    expect(read('src/pages/Subscription.jsx')).toContain('AppreciationOfferCard');
+    expect(read('src/Layout.jsx')).toContain('AppreciationNotificationCenter');
   });
 
   it('the entitlement hook delegates to the canonical resolver', () => {

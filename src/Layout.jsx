@@ -6,6 +6,7 @@ import CurrencySwitcher from "@/components/nav/CurrencySwitcher";
 import BackButton from "@/components/navigation/BackButton";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import GlobalReferralBanner from "@/components/referral/GlobalReferralBanner";
+import AppreciationNotificationCenter from "@/components/campaign/AppreciationNotificationCenter";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Zap } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -30,6 +31,7 @@ export default function Layout({ children, currentPageName }) {
 
               <div className="flex items-center gap-2">
                 <CurrencySwitcher className="w-[80px] sm:w-[100px]" />
+                <AppreciationNotificationCenter />
                 <LanguageSwitcher className="min-w-[80px] w-[80px] sm:w-[110px] sm:min-w-[130px]" />
 
                 <Button
