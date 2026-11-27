@@ -642,9 +642,15 @@ export function buildHtml(lang, options = {}) {
 <tr><td align="center" style="padding:0;">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background-color:#ffffff;">
 
-<tr><td style="background-color:${ORANGE};padding:20px 30px;">
-<img src="${LOGO_URL}" width="170" alt="${BRAND_NAME}" style="display:block;width:170px;max-width:170px;height:auto;border:0;outline:none;text-decoration:none;" />
-<div style="font-family:${EMAIL_FONT};font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#000000;padding-top:9px;">${BRAND_NAME}</div>
+<tr><td style="background-color:${ORANGE};padding:16px 28px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td width="64" valign="middle" style="width:64px;padding:0 14px 0 0;">
+<img src="${LOGO_URL}" width="64" alt="${BRAND_NAME}" style="display:block;width:64px;max-width:64px;height:auto;border:0;outline:none;text-decoration:none;" />
+</td>
+<td valign="middle" style="font-family:${EMAIL_SERIF};font-size:22px;line-height:1.2;font-weight:700;letter-spacing:0.01em;color:#000000;">${BRAND_NAME}</td>
+</tr>
+</table>
 </td></tr>
 
 <tr><td style="padding:0;line-height:0;">
