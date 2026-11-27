@@ -65,7 +65,7 @@ No journey requires more than three taps, and none requires analytical knowledge
 | 768 | Module rows and report catalogue move to two columns; dialog and sheet max-height keep actions visible. |
 | 1024 / 1440 | Hub capped at 5xl, Curator at 900px, Reporting Center splits into catalogue + result at `xl`. |
 
-Automated results: build clean; full suite **3,646 tests passing**, including the new `usabilityMobileAcceptance` (8 checks) and `curatorSimpleUi` (8 checks) suites.
+Automated results: build clean; full suite **3,656 tests passing**, including the new `usabilityMobileAcceptance` (8 checks) and `curatorSimpleUi` (8 checks) suites.
 
 ## 6. Requires external browser or device verification
 
