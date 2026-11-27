@@ -115,6 +115,8 @@ export async function buildCuratorDataSnapshot({
     pipekeeper: {
       pipes: context.pipes || [],
       tobaccoBlends: context.blends || [],
+      humidors: context.humidors || [],
+      humidorReadings: context.humidorReadings || [],
       smokingLogs: context.smokingLogs || [],
       pairingMatrix: context.pairingMatrixPairings || [],
       pipeSpecializations: (context.pipes || []).map((pipe) => ({

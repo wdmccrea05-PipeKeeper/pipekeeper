@@ -1,0 +1,96 @@
+{
+  "name": "HumidorReading",
+  "type": "object",
+  "description": "One humidity and temperature reading taken in a humidor. Readings build the environmental history chart and drive the collector's own threshold alerts. Documentation only \u2014 never an instruction to act.",
+  "properties": {
+    "humidor_id": {
+      "type": "string",
+      "description": "Id of the HumidorLocation this reading was taken in"
+    },
+    "humidor_name": {
+      "type": "string",
+      "description": "Snapshot of the humidor name at the time of the reading"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the reading was taken"
+    },
+    "humidity_rh": {
+      "type": "number",
+      "description": "Relative humidity percentage recorded"
+    },
+    "temperature_f": {
+      "type": "number",
+      "description": "Temperature in degrees Fahrenheit recorded"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "sensor",
+        "import"
+      ],
+      "enumColors": [
+        "blue",
+        "green",
+        "gray"
+      ],
+      "default": "manual",
+      "description": "How the reading was captured"
+    },
+    "note": {
+      "type": "string",
+      "description": "Optional note recorded with the reading"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who recorded the reading"
+    }
+  },
+  "required": [
+    "humidor_id",
+    "recorded_at"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

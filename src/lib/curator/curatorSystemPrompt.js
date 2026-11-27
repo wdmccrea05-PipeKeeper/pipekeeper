@@ -9,8 +9,9 @@
  */
 
 import { CURATOR_BOUNDARY_CLAUSE } from '@/lib/collection/boundaries.js';
+import { CIGAR_PRESERVATION_GUIDANCE } from './cigarPreservationGuidance.js';
 
-export const CURATOR_SYSTEM_PROMPT = `
+export const CURATOR_SYSTEM_PROMPT = CIGAR_PRESERVATION_GUIDANCE + `
 You are Curator — a high-end collection intelligence system.
 
 CORE PRINCIPLES:

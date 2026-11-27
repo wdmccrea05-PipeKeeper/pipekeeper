@@ -4,6 +4,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import CollectionRecordDetails from '@/components/collection/CollectionRecordDetails';
+import CigarRatingCategories from '@/components/cigars/CigarRatingCategories';
+import CigarStoragePanel from '@/components/cigars/CigarStoragePanel';
+import { logStorageChange } from '@/lib/cigars/logStorageChange';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -842,6 +845,7 @@ function CigarDetailInner() {
     { key: 'inventory', label: t('cigars.detail.inventory') },
     { key: 'sessions', label: t('cigars.detail.sessionsTab', { count: sessions.length }) },
     { key: 'aging', label: t('cigars.detail.aging') },
+    { key: 'ratings', label: t('cigars.detail.ratings', 'Ratings') },
     { key: 'details', label: t('cigars.detail.details') },
   ];
 
@@ -1305,6 +1309,12 @@ function CigarDetailInner() {
                     humidor_section: null,
                     created_by: cigar.created_by || user?.email,
                   });
+                  await logStorageChange({
+                    cigar,
+                    fromHumidor: allHumidors.find((h) => h.id === cigar.humidor_id) || null,
+                    toHumidor: allHumidors.find((h) => h.id === val) || null,
+                    actorEmail: user?.email,
+                  }).catch(() => null);
                   queryClient.invalidateQueries({ queryKey: ['cigar-detail', id, user?.email] });
                   queryClient.invalidateQueries({ queryKey: ['humidor-for-cigar'] });
                   toast.success(t('cigars.detail.humidorUpdated'));
@@ -1359,7 +1369,14 @@ function CigarDetailInner() {
         )}
 
         {activeTab === 'aging' && (
-          <AgingTabContent cigar={cigar} humidor={humidor} />
+          <div className="space-y-4">
+            <AgingTabContent cigar={cigar} humidor={humidor} />
+            <CigarStoragePanel cigar={cigar} humidors={allHumidors} />
+          </div>
+        )}
+
+        {activeTab === 'ratings' && (
+          <CigarRatingCategories cigar={cigar} userEmail={user?.email} />
         )}
 
         {activeTab === 'details' && (

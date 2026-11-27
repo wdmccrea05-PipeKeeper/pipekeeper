@@ -1,0 +1,113 @@
+{
+  "name": "CigarRating",
+  "type": "object",
+  "description": "A dated, structured rating of one cigar. Every category is optional, so a collector can record only what they observed. Ratings accumulate over time and form the historical rating record for a cigar.",
+  "properties": {
+    "cigar_id": {
+      "type": "string",
+      "description": "Id of the Cigar this rating belongs to"
+    },
+    "cigar_name": {
+      "type": "string",
+      "description": "Snapshot of the cigar name at the time of rating"
+    },
+    "rated_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the rating was recorded"
+    },
+    "construction": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Optional rating for construction, 0-5"
+    },
+    "draw": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Optional rating for draw, 0-5"
+    },
+    "burn": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Optional rating for burn, 0-5"
+    },
+    "aroma": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Optional rating for aroma, 0-5"
+    },
+    "flavor": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Optional rating for flavor, 0-5"
+    },
+    "overall": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Optional overall rating, 0-5"
+    },
+    "observations": {
+      "type": "string",
+      "description": "Free-text observations recorded with the rating"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Optional CigarSession this rating was recorded alongside"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who recorded the rating"
+    }
+  },
+  "required": [
+    "cigar_id",
+    "rated_at"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

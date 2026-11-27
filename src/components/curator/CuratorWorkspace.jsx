@@ -232,6 +232,7 @@ export default function CuratorWorkspace({
       smokingLogs, tastingLogs,
       wineTastingLogs,
       cigars, cigarSessions,
+      cigarHumidors, cigarReadings,
       inventoryUnits, acquisitionItems,
       activePairingMatrixRows,
     ] = await Promise.all([
@@ -245,6 +246,8 @@ export default function CuratorWorkspace({
       wineActive    ? safeFilter(base44.entities.WineTasting,    { created_by: userEmail }, '-date',          2000, 'wineTastingLogs') : Promise.resolve([]),
       cigarActive   ? safeFilter(base44.entities.Cigar,          { created_by: userEmail }, '-updated_date',   200, 'cigars')        : Promise.resolve([]),
       cigarActive   ? safeFilter(base44.entities.CigarSession,   { created_by: userEmail }, '-date',          2000, 'cigarSessions') : Promise.resolve([]),
+      cigarActive   ? safeFilter(base44.entities.HumidorLocation, { created_by: userEmail }, null,            50, 'cigarHumidors') : Promise.resolve([]),
+      cigarActive   ? safeFilter(base44.entities.HumidorReading, { created_by: userEmail }, '-recorded_at',   500, 'cigarReadings') : Promise.resolve([]),
       whiskeyActive ? safeFilter(base44.entities.WhiskeyInventoryUnit, { created_by: userEmail }, null,        500, 'inventoryUnits') : Promise.resolve([]),
       safeFilter(base44.entities.AcquisitionItem, { created_by: userEmail }, '-created_date', 300, 'acquisitionItems'),
       // Fetch active pairing matrix for Curator context (pipe-tobacco compatibility scores)
@@ -291,6 +294,8 @@ export default function CuratorWorkspace({
 
     return {
       // §1.2 enforce zero-arrays for disabled modules
+      humidors:       cigarActive ? cigarHumidors : [],
+      humidorReadings: cigarActive ? cigarReadings : [],
       pipes:          pipeActive    ? pipes    : [],
       blends:         pipeActive    ? blends   : [],
       bottles:        whiskeyActive ? bottles  : [],

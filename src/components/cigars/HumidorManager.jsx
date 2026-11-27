@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { getHumidorHealth } from '@/platform/agingReadiness';
 import HumidorMaintenanceLog from './HumidorMaintenanceLog';
+import HumidorDetailDialog from './HumidorDetailDialog';
 import { QUERY_KEYS } from '@/lib/queryKeys';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { getLocale } from '@/components/utils/localeFormatters';
@@ -37,6 +38,15 @@ const EMPTY_FORM = {
   name: '',
   humidor_type: '',
   capacity_count: '',
+  interior_width_in: '',
+  interior_depth_in: '',
+  interior_height_in: '',
+  shelf_count: '',
+  min_humidity_rh: '',
+  max_humidity_rh: '',
+  min_temp_f: '',
+  max_temp_f: '',
+  location_notes: '',
   target_humidity_rh: '',
   target_temp_f: '',
   last_humidity_reading: '',
@@ -58,6 +68,8 @@ const EMPTY_FORM = {
 
 const NUMERIC_HUMIDOR_FIELDS = [
   'capacity_count', 'target_humidity_rh', 'target_temp_f',
+  'interior_width_in', 'interior_depth_in', 'interior_height_in', 'shelf_count',
+  'min_humidity_rh', 'max_humidity_rh', 'min_temp_f', 'max_temp_f',
   'aid_quantity', 'aid_replacement_interval_days', 'check_interval_days',
 ];
 const ENUM_HUMIDOR_FIELDS = ['humidor_type', 'aid_type'];
@@ -322,6 +334,50 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
           </div>
 
           <p className="text-xs font-semibold uppercase tracking-wider pt-1" style={{ color: 'rgba(180,140,75,0.65)' }}>
+            {t('humidor.dimensions', 'Dimensions and tolerance band')}
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label className={labelCls} style={labelColor}>{t('humidor.widthIn', 'Width (in)')}</label>
+              <Input type="number" inputMode="decimal" value={form.interior_width_in} onChange={set('interior_width_in')} placeholder="e.g. 12" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelColor}>{t('humidor.depthIn', 'Depth (in)')}</label>
+              <Input type="number" inputMode="decimal" value={form.interior_depth_in} onChange={set('interior_depth_in')} placeholder="e.g. 9" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelColor}>{t('humidor.heightIn', 'Height (in)')}</label>
+              <Input type="number" inputMode="decimal" value={form.interior_height_in} onChange={set('interior_height_in')} placeholder="e.g. 5" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelColor}>{t('humidor.shelves', 'Shelves / trays')}</label>
+              <Input type="number" inputMode="numeric" value={form.shelf_count} onChange={set('shelf_count')} placeholder="e.g. 2" style={inputStyle} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label className={labelCls} style={labelColor}>{t('humidor.minRh', 'Min RH%')}</label>
+              <Input type="number" inputMode="decimal" value={form.min_humidity_rh} onChange={set('min_humidity_rh')} placeholder="e.g. 62" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelColor}>{t('humidor.maxRh', 'Max RH%')}</label>
+              <Input type="number" inputMode="decimal" value={form.max_humidity_rh} onChange={set('max_humidity_rh')} placeholder="e.g. 72" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelColor}>{t('humidor.minTemp', 'Min °F')}</label>
+              <Input type="number" inputMode="decimal" value={form.min_temp_f} onChange={set('min_temp_f')} placeholder="e.g. 65" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelColor}>{t('humidor.maxTemp', 'Max °F')}</label>
+              <Input type="number" inputMode="decimal" value={form.max_temp_f} onChange={set('max_temp_f')} placeholder="e.g. 75" style={inputStyle} />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls} style={labelColor}>{t('humidor.locationNotes', 'Layout and placement notes')}</label>
+            <Input value={form.location_notes} onChange={set('location_notes')} placeholder="e.g. Study shelf, two trays, bottom drawer for boxes" style={inputStyle} />
+          </div>
+
+          <p className="text-xs font-semibold uppercase tracking-wider pt-1" style={{ color: 'rgba(180,140,75,0.65)' }}>
             {t('humidor.reminders', 'Reminders')}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -368,7 +424,7 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
   );
 }
 
-function HumidorCard({ humidor, assignedCount, onEdit, onDelete, userEmail }) {
+function HumidorCard({ humidor, assignedCount, onEdit, onDelete, onOpenDetail, userEmail }) {
   const { t } = useTranslation();
   const [showMaintenance, setShowMaintenance] = useState(false);
   const [openComposerNonce, setOpenComposerNonce] = useState(0);
@@ -497,6 +553,20 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, userEmail }) {
         </div>
       </div>
 
+      <button
+        type="button"
+        onClick={() => onOpenDetail?.(humidor)}
+        className="mt-3 w-full rounded-lg px-3 py-2 text-xs font-semibold"
+        style={{
+          background: 'rgba(180,140,75,0.12)',
+          border: '1px solid rgba(180,140,75,0.28)',
+          color: '#D4A574',
+          minHeight: 40,
+        }}
+      >
+        {t('humidor.openDetail', 'Environment, inventory and movement')}
+      </button>
+
       {/* Environment snapshot */}
       {(humidor.last_humidity_reading != null || humidor.last_temperature_reading != null) && (
         <div
@@ -617,7 +687,7 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, userEmail }) {
   );
 }
 
-export default function HumidorManager({ cigars = [], onRefresh }) {
+export default function HumidorManager({ cigars = [], onRefresh, focusHumidorId = '', onChanged }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
@@ -632,10 +702,20 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
     enabled: !!user?.email,
   });
 
+  const [detailHumidor, setDetailHumidor] = useState(null);
+
+  // Opened directly from a dashboard drill-down (?tab=humidors&humidor=<id>)
+  useEffect(() => {
+    if (!focusHumidorId) return;
+    const match = humidors.find((h) => h.id === focusHumidorId);
+    if (match) setDetailHumidor(match);
+  }, [focusHumidorId, humidors]);
+
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['humidors', user?.email] });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.humidors(user?.email) });
     if (typeof onRefresh === 'function') onRefresh();
+    if (typeof onChanged === 'function') onChanged();
   };
 
   const createMutation = useMutation({
@@ -741,6 +821,7 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
                     assignedCount={assignedCount}
                     onEdit={() => setEditTarget(humidor)}
                     onDelete={() => setDeleteConfirm(humidor)}
+                    onOpenDetail={setDetailHumidor}
                     userEmail={user?.email}
                   />
                 )}
@@ -788,6 +869,17 @@ export default function HumidorManager({ cigars = [], onRefresh }) {
           })}
         </div>
       )}
+
+      <HumidorDetailDialog
+        humidor={detailHumidor}
+        cigars={cigars}
+        userEmail={user?.email}
+        open={Boolean(detailHumidor)}
+        onOpenChange={(next) => {
+          if (!next) setDetailHumidor(null);
+        }}
+        onChanged={invalidate}
+      />
     </div>
   );
 }

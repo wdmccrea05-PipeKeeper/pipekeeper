@@ -90,6 +90,14 @@
       },
       "description": "Field names that changed in this event"
     },
+    "humidor_id": {
+      "type": "string",
+      "description": "Storage location this event relates to, for storage movements"
+    },
+    "humidor_name": {
+      "type": "string",
+      "description": "Snapshot of the storage location name at the time of the event"
+    },
     "actor_email": {
       "type": "string",
       "description": "Email of the collector or administrator who made the change"

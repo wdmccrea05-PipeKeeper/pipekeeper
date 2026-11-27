@@ -1,7 +1,7 @@
 {
   "name": "HumidorLocation",
   "type": "object",
-  "description": "A humidor or storage location used to track cigars in a user's CigarKeeper collection.",
+  "description": "A humidor or storage location used to track cigars in a user's CigarKeeper collection. Dimensions, capacity and preservation thresholds are optional documentation fields.",
   "properties": {
     "name": {
       "type": "string",
@@ -17,7 +17,34 @@
         "travel",
         "other"
       ],
+      "enumColors": [
+        "blue",
+        "purple",
+        "green",
+        "green",
+        "yellow",
+        "gray"
+      ],
       "description": "Type of humidor or storage container"
+    },
+    "module": {
+      "type": "string",
+      "enum": [
+        "cigars",
+        "pipes",
+        "tobacco",
+        "wine",
+        "shared"
+      ],
+      "enumColors": [
+        "purple",
+        "yellow",
+        "green",
+        "pink",
+        "gray"
+      ],
+      "default": "cigars",
+      "description": "Collection module this storage location belongs to"
     },
     "capacity_count": {
       "type": "number",
@@ -25,7 +52,27 @@
     },
     "current_count": {
       "type": "number",
-      "description": "Current number of cigars stored in this humidor"
+      "description": "Number of cigars the collector documented as stored in this humidor"
+    },
+    "interior_width_in": {
+      "type": "number",
+      "description": "Documented interior width in inches"
+    },
+    "interior_depth_in": {
+      "type": "number",
+      "description": "Documented interior depth in inches"
+    },
+    "interior_height_in": {
+      "type": "number",
+      "description": "Documented interior height in inches"
+    },
+    "shelf_count": {
+      "type": "number",
+      "description": "Number of shelves, trays or dividers in this humidor"
+    },
+    "location_notes": {
+      "type": "string",
+      "description": "Where the humidor sits and how it is arranged (room, shelf, tray layout)"
     },
     "target_humidity_rh": {
       "type": "number",
@@ -34,6 +81,22 @@
     "target_temp_f": {
       "type": "number",
       "description": "Target storage temperature in degrees Fahrenheit"
+    },
+    "min_humidity_rh": {
+      "type": "number",
+      "description": "Lower bound of the collector's own humidity tolerance band"
+    },
+    "max_humidity_rh": {
+      "type": "number",
+      "description": "Upper bound of the collector's own humidity tolerance band"
+    },
+    "min_temp_f": {
+      "type": "number",
+      "description": "Lower bound of the collector's own temperature tolerance band"
+    },
+    "max_temp_f": {
+      "type": "number",
+      "description": "Upper bound of the collector's own temperature tolerance band"
     },
     "notes": {
       "type": "string",
@@ -61,6 +124,14 @@
         "electronic",
         "sponge",
         "other"
+      ],
+      "enumColors": [
+        "blue",
+        "green",
+        "purple",
+        "green",
+        "gray",
+        "gray"
       ],
       "description": "Type of active humidity aid in this humidor"
     },
@@ -106,9 +177,54 @@
       "type": "string",
       "format": "date",
       "description": "Date of the most recent maintenance action of any kind"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the user who created this record"
     }
   },
   "required": [
     "name"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }

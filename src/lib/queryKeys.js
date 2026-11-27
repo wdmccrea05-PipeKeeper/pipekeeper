@@ -24,4 +24,6 @@ export const QUERY_KEYS = {
   cigarSessions: (email) => ['cigar-sessions', email],
   cigarSessionsById: (id, email) => ['cigar-sessions', id, email],
   humidors: (email) => ['humidors', email],
+  cigarRatings: (email) => ['cigar-ratings', email],
+  humidorReadings: (email) => ['humidor-readings', email],
 };

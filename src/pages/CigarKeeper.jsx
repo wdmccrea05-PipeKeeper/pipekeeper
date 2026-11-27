@@ -15,6 +15,9 @@ import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSectio
 import ModuleRecentActivitySection from '@/components/modules/ModuleRecentActivitySection';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { getCollectionInsights } from '@/platform/cigarInsights';
+import CigarKeeperDashboard from '@/components/cigars/CigarKeeperDashboard';
+import { buildCigarCollectionBrief } from '@/lib/cigars/cigarCollectionBrief';
+import { buildDrilldownQuery } from '@/lib/cigars/cigarDashboard';
 import {
   daysBetween,
   getNextCheckDate,
@@ -176,6 +179,51 @@ function CigarKeeperInner() {
     staleTime: STALE_TIME.HOMEPAGE,
   });
 
+  const { data: cigarRatings = [] } = useQuery({
+    queryKey: QUERY_KEYS.cigarRatings(user?.email),
+    queryFn: async () => {
+      const result = await base44.entities.CigarRating.filter(
+        { created_by: user?.email },
+        '-rated_at',
+        500
+      ).catch(() => []);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: STALE_TIME.HOMEPAGE,
+  });
+
+  const { data: humidorReadings = [] } = useQuery({
+    queryKey: QUERY_KEYS.humidorReadings(user?.email),
+    queryFn: async () => {
+      const result = await base44.entities.HumidorReading.filter(
+        { created_by: user?.email },
+        '-recorded_at',
+        500
+      ).catch(() => []);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: STALE_TIME.HOMEPAGE,
+  });
+
+  const readingsByHumidor = useMemo(
+    () =>
+      humidorReadings.reduce((acc, reading) => {
+        const key = reading?.humidor_id;
+        if (!key) return acc;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(reading);
+        return acc;
+      }, {}),
+    [humidorReadings]
+  );
+
+  const collectionBrief = useMemo(
+    () => buildCigarCollectionBrief({ cigars, humidors, readingsByHumidor, ratings: cigarRatings }),
+    [cigars, humidors, readingsByHumidor, cigarRatings]
+  );
+
   const recentSessions = sessions.slice(0, 5);
 
   const insights = useMemo(
@@ -303,6 +351,20 @@ function CigarKeeperInner() {
           ))}
         </div>
       )}
+
+      <CigarKeeperDashboard
+        cigars={cigars}
+        humidors={humidors}
+        readingsByHumidor={readingsByHumidor}
+        ratings={cigarRatings}
+        formatCurrency={formatFromBase}
+        tier={user?.tier || 'free'}
+        brief={collectionBrief}
+        onDrilldown={(params) => {
+          const query = buildDrilldownQuery(params);
+          navigate(`/Cigars${query ? `?${query}` : ''}`);
+        }}
+      />
 
       {highlights.length > 0 && (
         <ModuleHighlightsSection highlights={highlights} />

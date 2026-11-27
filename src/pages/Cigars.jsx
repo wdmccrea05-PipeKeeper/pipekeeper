@@ -27,6 +27,8 @@ import CigarForm from '@/components/cigars/CigarForm';
 import AddCigarModal from '@/components/cigars/AddCigarModal';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 import HumidorManager from '@/components/cigars/HumidorManager';
+import { matchesPreset, presetLabel } from '@/lib/cigars/cigarDocumentation';
+import { logStorageChange } from '@/lib/cigars/logStorageChange';
 import CollectorGridView from '@/components/ui/CollectorGridView';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { CIGAR_STRENGTH_VALUES, formatCigarStrengthLabel } from '@/platform/cigarCatalog';
@@ -140,15 +142,21 @@ function CigarsInner() {
   const searchParams = new URLSearchParams(location.search);
   const actionParam = searchParams.get('action');
   const tabParam = searchParams.get('tab');
+  const presetParam = searchParams.get('preset') || '';
+  const humidorParam = searchParams.get('humidor') || '';
+  const conditionParam = searchParams.get('condition') || '';
+  const queryParam = searchParams.get('q') || '';
 
   const [activeTab, setActiveTab] = useState(tabParam || 'collection');
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('cigarsViewMode') || 'grid');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(queryParam);
   const [sortBy, setSortBy] = useState('name');
   const [filterBody, setFilterBody] = useState('');
   const [filterStrength, setFilterStrength] = useState('');
   const [filterOrigin, setFilterOrigin] = useState('');
-  const [filterHumidor, setFilterHumidor] = useState('');
+  const [filterHumidor, setFilterHumidor] = useState(humidorParam);
+  const [filterPreset, setFilterPreset] = useState(presetParam);
+  const [filterCondition, setFilterCondition] = useState(conditionParam);
   const [filterFavoritesOnly, setFilterFavoritesOnly] = useState(false);
   const [filterLowStockOnly, setFilterLowStockOnly] = useState(false);
   const [filterRecentlySmokedOnly, setFilterRecentlySmokedOnly] = useState(false);
@@ -243,6 +251,30 @@ function CigarsInner() {
     }, {});
   }, [sessionsByCigarId]);
 
+  const { data: cigarRatings = [] } = useQuery({
+    queryKey: QUERY_KEYS.cigarRatings(user?.email),
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const result = await base44.entities.CigarRating.filter(
+        { created_by: user.email },
+        '-rated_at',
+        1000
+      ).catch(() => []);
+      return Array.isArray(result) ? result : [];
+    },
+    enabled: !!user?.email,
+    staleTime: STALE_TIME.COLLECTION,
+  });
+
+  const ratingsByCigarId = useMemo(
+    () =>
+      cigarRatings.reduce((acc, rating) => {
+        if (rating?.cigar_id) acc[rating.cigar_id] = true;
+        return acc;
+      }, {}),
+    [cigarRatings]
+  );
+
   const origins = useMemo(() => {
     const set = new Set(cigars.map((c) => c.country_of_origin).filter(Boolean));
     return Array.from(set).sort();
@@ -268,6 +300,8 @@ function CigarsInner() {
     if (filterStrength) list = list.filter((c) => c.strength === filterStrength);
     if (filterOrigin) list = list.filter((c) => c.country_of_origin === filterOrigin);
     if (filterHumidor) list = list.filter((c) => c.humidor_id === filterHumidor);
+    if (filterCondition) list = list.filter((c) => c.condition === filterCondition);
+    if (filterPreset) list = list.filter((c) => matchesPreset(c, filterPreset, { ratingsByCigarId }));
     if (filterFavoritesOnly) list = list.filter((c) => c.is_favorite);
     if (filterLowStockOnly) {
       list = list.filter((c) => {
@@ -291,6 +325,9 @@ function CigarsInner() {
     filterStrength,
     filterOrigin,
     filterHumidor,
+    filterCondition,
+    filterPreset,
+    ratingsByCigarId,
     filterFavoritesOnly,
     filterLowStockOnly,
     filterRecentlySmokedOnly,
@@ -348,6 +385,12 @@ function CigarsInner() {
         }),
       });
       updateCigarInCache(assignTargetCigar.id, { humidor_id: humidorId });
+      await logStorageChange({
+        cigar: assignTargetCigar,
+        fromHumidor: humidors.find((h) => h.id === assignTargetCigar.humidor_id) || null,
+        toHumidor: humidors.find((h) => h.id === humidorId) || null,
+        actorEmail: user?.email,
+      }).catch(() => null);
       invalidateCigars();
       setAssignDialogOpen(false);
       setAssignTargetCigar(null);
@@ -485,8 +528,35 @@ function CigarsInner() {
         ))}
       </div>
 
+      {(filterPreset || filterCondition || humidorParam) && activeTab === 'collection' && (
+        <div
+          className="mb-3 flex flex-wrap items-center gap-2 rounded-xl px-3 py-2"
+          style={{ background: 'rgba(180,140,75,0.1)', border: '1px solid rgba(180,140,75,0.25)' }}
+        >
+          <span className="text-xs" style={{ color: '#E0D8C8' }}>
+            {filterPreset
+              ? presetLabel(filterPreset) || filterPreset
+              : filterCondition
+                ? `${t('cigars.condition', 'Condition')}: ${filterCondition}`
+                : `${t('cigars.filterHumidor', 'Humidor:')} ${humidors.find((h) => h.id === filterHumidor)?.name || ''}`}
+          </span>
+          <button
+            type="button"
+            className="ml-auto text-xs underline"
+            style={{ color: '#D4A574' }}
+            onClick={() => {
+              setFilterPreset('');
+              setFilterCondition('');
+              setFilterHumidor('');
+            }}
+          >
+            {t('common.clear', 'Clear')}
+          </button>
+        </div>
+      )}
+
       {activeTab === 'humidors' ? (
-        <HumidorManager cigars={cigars} />
+        <HumidorManager cigars={cigars} focusHumidorId={humidorParam} onChanged={invalidateCigars} />
       ) : (
         <>
           {/* Search + sort + view controls */}
