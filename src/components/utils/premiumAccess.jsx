@@ -8,6 +8,7 @@
 
 import { subscriptionGrantsPaidAccess } from "./gracePeriod";
 import { isModuleLaunched } from "./moduleReleaseState";
+import { resolveProTrial, getProTrialModules } from "./proTrial";
 
 export const FOUNDING_MEMBER_CUTOFF = new Date("2026-02-01T00:00:00.000Z");
 export const PRO_LAUNCH_CUTOFF_ISO = "2026-02-01T00:00:00.000Z";
@@ -102,27 +103,58 @@ export function getEntitlementTier(user, subscription) {
   return "free";
 }
 
+/**
+ * Provenance of the user's CURRENT access. Paid access always outranks the
+ * complimentary window; the window outranks nothing else and never overrides
+ * a paid, grandfathered or admin entitlement.
+ *
+ * @returns {'admin'|'paid'|'grandfathered'|'trial'|'free'}
+ */
+export function getAccessSource(user, subscription) {
+  const role = String(user?.role || "").toLowerCase();
+  if (role === "admin" || role === "owner" || user?.is_admin === true) return "admin";
+
+  if (getEntitlementTier(user, subscription) === "pro") {
+    const isNonPaidGrant = Boolean(user?.isFoundingMember) || Boolean(user?.legacy_broad_module_access);
+    return isNonPaidGrant && !subscription ? "grandfathered" : "paid";
+  }
+
+  if (user?.isFoundingMember || user?.legacy_broad_module_access) return "grandfathered";
+
+  if (resolveProTrial(user).active) return "trial";
+
+  return "free";
+}
+
+/** Effective access tier used by every feature gate: pro or free. */
+export function getAccessTier(user, subscription) {
+  return getAccessSource(user, subscription) === "free" ? "free" : "pro";
+}
+
+/** True for a paying subscriber (billing truth — trial is NOT paid). */
 export function hasPaidAccess(user, subscription) {
   return getEntitlementTier(user, subscription) === "pro";
 }
 
-export const hasPro = hasPaidAccess;
-
+/** True when the user has full Pro capability (paid, grandfathered, admin or complimentary). */
 export function hasProAccess(user, subscription) {
-  return getEntitlementTier(user, subscription) === "pro";
+  return getAccessTier(user, subscription) === "pro";
 }
 
+export const hasPro = hasProAccess;
+
 export function hasPremiumAccess(user, subscription) {
-  return getEntitlementTier(user, subscription) === "pro";
+  return hasProAccess(user, subscription);
 }
 
 export function isFree(user, subscription) {
-  return getEntitlementTier(user, subscription) === "free";
+  return !hasProAccess(user, subscription);
 }
 
 export function isTrialingAccess(user, subscription) {
   const subStatus = String(subscription?.status || "").toLowerCase();
   if (subStatus === "trialing" || subStatus === "trial") return true;
+  if (resolveProTrial(user).active) return true;
   return Boolean(
     user?.isOnTrial ??
     user?.trial_active ??
@@ -132,7 +164,7 @@ export function isTrialingAccess(user, subscription) {
 }
 
 export function getPlanLabel(user, subscription) {
-  return getEntitlementTier(user, subscription) === "pro" ? "Pro" : "Free";
+  return hasProAccess(user, subscription) ? "Pro" : "Free";
 }
 
 export function isFoundingMember(user = null) {
@@ -160,7 +192,9 @@ export function isLegacyPremium(subscription) {
  */
 export function buildCanonicalEntitlements(user, subscription) {
   const tier = getEntitlementTier(user, subscription);
-  const isPro = tier === "pro";
+  const accessSource = getAccessSource(user, subscription);
+  const trial = resolveProTrial(user);
+  const isPro = accessSource !== "free";
   const csvModules = String(user?.paid_modules_csv || "")
     .split(",")
     .map((m) => m.trim().toLowerCase())
@@ -183,21 +217,36 @@ export function buildCanonicalEntitlements(user, subscription) {
     return false;
   };
 
+  // Complimentary access covers every module, including ones launched later.
+  const trialModules = trial.active ? getProTrialModules() : [];
+
+  const proModules = (() => {
+    if (!isPro) return [];
+    if (explicitModules.length > 0) return explicitModules;
+    if (accessSource === "trial") return trialModules;
+    if (isLegacyBroadAccessUser) return CANONICAL_MODULES.filter(isModuleLaunched);
+    if (accessSource === "admin") return CANONICAL_MODULES.filter(isModuleLaunched);
+    return [];
+  })();
+
   return {
-    tier,
+    tier: isPro ? "pro" : "free",
+    paidTier: tier,
+    accessSource,
     hasPro: isPro,
     isFree: !isPro,
-    paidModules: isPro
-      ? (() => {
-          if (explicitModules.length > 0) {
-            return explicitModules;
-          }
-          if (isLegacyBroadAccessUser) {
-            return CANONICAL_MODULES.filter(isModuleLaunched);
-          }
-          return [];
-        })()
-      : [],
+    isProTrial: accessSource === "trial",
+    trial: {
+      active: trial.active,
+      known: trial.known,
+      expired: trial.expired,
+      endsAt: trial.endsAt,
+      daysRemaining: trial.daysRemaining,
+      hoursRemaining: trial.hoursRemaining,
+    },
+    trialEndsAt: trial.endsAt,
+    trialDaysRemaining: trial.daysRemaining,
+    paidModules: [...new Set(proModules)],
     limits,
     canUse,
     isLegacyPremium: subscription ? isLegacyPremium(subscription) : false,

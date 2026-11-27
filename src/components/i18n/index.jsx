@@ -51,6 +51,7 @@ import plGenerated from './locales/pl.generated.json';
 import jaGenerated from './locales/ja.generated.json';
 import zhHansGenerated from './locales/zh-Hans.generated.json';
 import { docsCurrentTranslations } from './docsCurrent.jsx';
+import { proTrialTranslations } from './locales/proTrialOverrides.jsx';
 
 const GENERATED_PACKS = {
   fr: frGenerated,
@@ -207,7 +208,10 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
       ? deepOverride(withIntel, generatedPack)
       : withIntel;
   const withCriticals = deepMerge(withGenerated, CRITICAL_FALLBACKS);
-  return [lang, withCriticals];
+  // Complimentary Pro copy is applied last so it replaces any legacy
+  // "7-day Premium trial" wording in every language.
+  const withProTrial = deepOverride(withCriticals, proTrialTranslations[lang] || {});
+  return [lang, withProTrial];
 }));
 
 const I18nContext = createContext(null);

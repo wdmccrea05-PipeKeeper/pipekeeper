@@ -28,6 +28,7 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
 import BrandLogo from '@/components/branding/BrandLogo';
+import ComplimentaryProBanner from '@/components/subscription/ComplimentaryProBanner';
 import CatalogPlate from '@/components/home/CatalogPlate';
 import { getPipeValue } from '@/components/keeper-core/value/valueAggregation';
 import { buildUnifiedActivityFeed } from '@/components/utils/activityNormalizer';
@@ -669,6 +670,7 @@ export default function CollectionHub() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      <ComplimentaryProBanner />
       <section
         className="rounded-[28px] p-5 sm:p-8"
         style={{
@@ -712,7 +714,7 @@ export default function CollectionHub() {
             }}
           >
             <FileBarChart2 className="w-4 h-4" />
-            {t('nav.reports', 'Reports')}
+            {t('nav.reports')}
           </button>
         </div>
       </section>

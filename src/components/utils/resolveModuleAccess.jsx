@@ -33,6 +33,27 @@
 
 import { subscriptionGrantsPaidAccess, isCanceledButPaidThrough } from './gracePeriod';
 import { isModuleLaunched } from './moduleReleaseState';
+import { resolveProTrial } from './proTrial';
+
+/**
+ * Complimentary Pro access decision. Grants every launched module — modules
+ * released later are included automatically because the check is release-state
+ * driven rather than a hardcoded list.
+ */
+function buildTrialDecision(key, trial) {
+  if (!trial?.active || !key || !isModuleLaunched(key)) return null;
+  return {
+    has_access: true,
+    module: key,
+    tier: 'pro',
+    source_type: 'trial',
+    verification_status: 'verified_active',
+    lifecycle_status: 'complimentary_pro',
+    commercial_plan: 'complimentary_pro_trial',
+    effective_end: trial.endsAt,
+    reason: 'Complimentary Pro access (7-day welcome period)',
+  };
+}
 
 const CANONICAL_MODULES = ['pipekeeper', 'whiskeykeeper', 'cigarkeeper', 'winekeeper'];
 
@@ -197,6 +218,7 @@ function hasExplicitNonPaidProvenance(user, key) {
 export function resolveModuleAccess(user, moduleKey, subscription) {
   const key = normalizeKey(moduleKey);
   const role = String(user?.role || '').toLowerCase();
+  const trial = resolveProTrial(user);
 
   // 1. Admin — always pro
   if (role === 'admin' || role === 'owner' || user?.is_admin === true) {
@@ -261,7 +283,11 @@ export function resolveModuleAccess(user, moduleKey, subscription) {
           reason: lifecycle.reason,
         };
       }
-      // Subscription is active but module is NOT in scope — do not grant
+      // Subscription is active but module is NOT in scope. Complimentary Pro
+      // access still covers every module, so it is checked before denying.
+      const trialForModule = buildTrialDecision(key, trial);
+      if (trialForModule) return trialForModule;
+
       return {
         has_access: false,
         module: key,
@@ -295,6 +321,11 @@ export function resolveModuleAccess(user, moduleKey, subscription) {
       reason: nonPaidGrant.reason,
     };
   }
+
+  // 3b. COMPLIMENTARY PRO ACCESS — same capability as a paying subscriber,
+  // without separate trial-specific permissions.
+  const trialGrant = buildTrialDecision(key, trial);
+  if (trialGrant) return trialGrant;
 
   // 4. LEGACY FLAG FALLBACK — only during loading (subscription === undefined)
   // When subscription is undefined (not loaded yet), fall back to legacy flags

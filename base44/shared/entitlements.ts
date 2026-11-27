@@ -26,7 +26,9 @@ export function buildEntitlements({ isPaidSubscriber, isProSubscriber, subscript
   let tier = 'free';
   let isLegacyPremium = false;
 
-  if (isProSubscriber) {
+  if (isProSubscriber || isOnTrial) {
+    // Complimentary Pro access resolves through the same Pro capability set as a
+    // paying subscriber — no trial-specific permission list.
     tier = 'pro';
   } else if (isPaidSubscriber) {
     tier = 'premium';

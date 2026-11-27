@@ -2,10 +2,13 @@ import { base44 } from "@/api/base44Client";
 import { 
   getEntitlementTier, 
   hasPaidAccess, 
+  hasProAccess,
+  getAccessSource,
   isTrialingAccess, 
   getPlanLabel,
   isFoundingMember
 } from "@/components/utils/premiumAccess";
+import { resolveProTrial } from "@/components/utils/proTrial";
 import { attributeStoredReferral } from "@/lib/referral/referralAttribution";
 import { resolveProviderFromUser, resolveSubscriptionProvider } from "@/components/utils/subscriptionProvider";
 import { useEffect } from "react";
@@ -343,11 +346,14 @@ export function useCurrentUser() {
 
   // Use CANONICAL resolver functions (single source of truth)
   // Fast-path: if user.has_paid_access is explicitly true (written by webhook/sync), trust it
-  const tier = getEntitlementTier(user, subscription);
+  const paidTier = getEntitlementTier(user, subscription);
+  const proTrial = resolveProTrial(user);
+  const accessSource = getAccessSource(user, subscription);
+  // Effective tier drives every feature gate; paidTier answers billing questions.
+  const tier = accessSource === "free" ? "free" : "pro";
   const hasPaid = hasPaidAccess(user, subscription);
-  // No premium tier — hasPremium === hasPro === hasPaid
-  const hasPremium = hasPaid;
-  const hasPro = hasPaid;
+  const hasPremium = hasProAccess(user, subscription);
+  const hasPro = hasProAccess(user, subscription);
   const isTrial = isTrialingAccess(user, subscription);
   const planLabel = getPlanLabel(user, subscription);
   const isAdmin = user?.role === "admin";
@@ -380,6 +386,13 @@ export function useCurrentUser() {
     hasPro,
     isTrial,
     planLabel, // Canonical plan label
+    paidTier, // Billing-only tier (pro only for paying subscribers)
+    accessSource, // 'admin' | 'paid' | 'grandfathered' | 'trial' | 'free'
+    isProTrial: accessSource === "trial",
+    proTrial,
+    trialEndsAt: proTrial.endsAt,
+    trialDaysRemaining: proTrial.daysRemaining,
+    trialHoursRemaining: proTrial.hoursRemaining,
     isAdmin,
     isFoundingMember: isFounding,
     pipekeeper_paid, // CRITICAL: Per-module entitlements

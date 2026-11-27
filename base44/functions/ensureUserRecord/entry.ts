@@ -4,8 +4,21 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { PRO_TRIAL_MS } from '../../shared/proTrial.ts';
 
 const normEmail = (email) => String(email || "").trim().toLowerCase();
+
+// The complimentary Pro window is stamped once, at account creation, and never
+// re-stamped. Existing accounts are backfilled from their creation date so an
+// old account resolves as an expired window instead of restarting a new one.
+function deriveTrialWindow(createdAtIso) {
+  const created = createdAtIso ? new Date(createdAtIso) : null;
+  if (!created || Number.isNaN(created.getTime())) return null;
+  return {
+    started_at: created.toISOString(),
+    ends_at: new Date(created.getTime() + PRO_TRIAL_MS).toISOString(),
+  };
+}
 
 Deno.serve(async (req) => {
   try {
@@ -50,6 +63,16 @@ Deno.serve(async (req) => {
         patch.whiskeykeeper_paid = false;
       }
 
+      // Backfill the complimentary Pro window exactly once, derived from the
+      // account creation date so expired windows stay expired.
+      if (!existing.pro_trial_ends_at) {
+        const derived = deriveTrialWindow(existing.created_date || authUser.created_date);
+        if (derived) {
+          patch.pro_trial_started_at = existing.pro_trial_started_at || derived.started_at;
+          patch.pro_trial_ends_at = derived.ends_at;
+        }
+      }
+
       // Single update — no double-write
       await base44.asServiceRole.entities.User.update(existing.id, patch);
       
@@ -82,6 +105,7 @@ Deno.serve(async (req) => {
 
     // User doesn't exist in User entity - create with service role
     console.log('[ensureUserRecord] Creating new User entity for:', emailLower);
+    const trialStart = new Date();
     const newUser = await base44.asServiceRole.entities.User.create({
       email: emailLower,
       full_name: authUser.full_name || authUser.name || null,
@@ -90,7 +114,11 @@ Deno.serve(async (req) => {
       pipekeeper_paid: false,
       whiskeykeeper_paid: false,
       last_login: new Date().toISOString(),
-      role: authUser.role || 'user'
+      role: authUser.role || 'user',
+      // 168 hours of complimentary Pro access, stamped on the account itself so
+      // it follows the user across devices and never resets.
+      pro_trial_started_at: trialStart.toISOString(),
+      pro_trial_ends_at: new Date(trialStart.getTime() + PRO_TRIAL_MS).toISOString(),
     });
 
     // Also create UserProfile for module preferences

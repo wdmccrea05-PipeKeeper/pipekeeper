@@ -15,7 +15,8 @@ import {
   getEffectiveModuleReleaseState,
   isInternalModuleTester,
 } from '@/components/utils/moduleReleaseState';
-import { getEntitlementTier } from '@/components/utils/premiumAccess';
+import { getEntitlementTier, getAccessSource } from '@/components/utils/premiumAccess';
+import { resolveProTrial, getProTrialModules } from '@/components/utils/proTrial';
 
 const STRIPE_PRODUCT_MAP = {
   founders_bundle_monthly: { modules: ['pipekeeper', 'whiskeykeeper'], billingPeriod: 'monthly' },
@@ -53,8 +54,10 @@ function filterModulesByReleaseState(modules, user) {
 }
 
 function resolveTier(user, subscription) {
-  const canonical = getEntitlementTier(user, subscription);
-  return canonical === 'pro' ? 'pro' : 'free';
+  // Effective access tier: paid, grandfathered, admin and complimentary Pro all
+  // resolve to 'pro'. Billing-only questions keep using getEntitlementTier.
+  const source = getAccessSource(user, subscription);
+  return source === 'free' ? 'free' : 'pro';
 }
 
 function resolveProvider(user, subscription) {
@@ -168,6 +171,29 @@ export function buildAccessSummary(user, subscription) {
     };
   }
 
+  const accessSource = getAccessSource(user, subscription);
+  const trial = resolveProTrial(user);
+
+  // ─── COMPLIMENTARY PRO ACCESS ─────────────────────────────────────────────
+  // The 7-day welcome window grants every module, including ones launched later,
+  // with no payment method on file.
+  if (accessSource === 'trial') {
+    return {
+      tier: 'pro',
+      status: 'complimentary_pro',
+      billingPeriod: null,
+      provider,
+      activeModules: filterModulesByReleaseState(getProTrialModules(), user),
+      planKey: 'complimentary_pro_trial',
+      isFoundingMember: user?.isFoundingMember === true,
+      accessSource,
+      isProTrial: true,
+      trialEndsAt: trial.endsAt,
+      trialDaysRemaining: trial.daysRemaining,
+      trialHoursRemaining: trial.hoursRemaining,
+    };
+  }
+
   if (tier === 'pro' && subscription) {
     const mapped = mapSubscriptionToModules(subscription);
     activeModules = mapped.modules;
@@ -213,5 +239,10 @@ export function buildAccessSummary(user, subscription) {
     activeModules,
     planKey,
     isFoundingMember,
+    accessSource,
+    isProTrial: false,
+    trialEndsAt: trial.endsAt,
+    trialDaysRemaining: 0,
+    trialHoursRemaining: 0,
   };
 }

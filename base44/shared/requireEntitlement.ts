@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import { resolveProTrial } from "./proTrial.ts";
 
 function normEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -125,6 +126,19 @@ export async function requireEntitlement(req, requiredTier = "paid") {
   }
 
   const email = normEmail(me.email);
+
+  // Complimentary Pro access: the 7-day welcome window grants the same backend
+  // capability as a paid Pro subscriber, resolved from the account record.
+  let trialUserRecord: any = null;
+  try {
+    const rows = await base44.entities.User.filter({ email });
+    trialUserRecord = Array.isArray(rows) ? rows[0] : null;
+  } catch { /* non-fatal */ }
+
+  const proTrial = resolveProTrial(trialUserRecord || me);
+  if (proTrial.active) {
+    return { ok: true, me, source: "complimentary_pro", trialEndsAt: proTrial.endsAt };
+  }
 
   // Use centralized grace period helper
   const isActive = (s) => {
