@@ -20,7 +20,9 @@ export default function ActionResultSummary({ result, onUndo, undoBusy = false, 
     { key: 'blocked', label: 'Blocked', value: result.blocked, color: 'rgba(224,216,200,0.6)', Icon: Ban },
   ].filter((entry) => entry.value > 0);
 
-  const problems = (result.rows || []).filter((row) => row.status === 'failed' || row.status === 'skipped');
+  const problems = (result.rows || []).filter(
+    (row) => row.status === 'failed' || row.status === 'skipped' || row.status === 'blocked'
+  );
 
   return (
     <div

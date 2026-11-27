@@ -81,6 +81,7 @@ function explainAction(action, alternative) {
     return [
       `${alternative.label} — ${alternative.description || 'one of the options here'}.`,
       alternative.rationale || '',
+      'Nothing has been changed.',
     ].filter(Boolean).join(' ');
   }
   const parts = [];

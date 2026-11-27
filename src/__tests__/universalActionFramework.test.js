@@ -288,14 +288,15 @@ describe('migrated features', () => {
     const panel = read('src/components/collection/DuplicateReviewPanel.jsx');
     expect(panel).toContain('createAction');
     expect(panel).toContain('ActionReviewDialog');
-    expect(panel).toContain('executeActions');
+    expect(panel).toContain('useActionExecution');
     expect(panel).not.toContain('collectionItemMerge');
   });
 
   it('sends bulk documentation edits through the shared executor', () => {
     const page = read('src/pages/CollectionTools.jsx');
-    expect(page).toContain('executeActions');
+    expect(page).toContain('useActionExecution');
     expect(page).toContain("origin: 'collection_tools'");
+    expect(page).toContain('ActionReviewDialog');
     expect(page).not.toContain('collectionItemBulkUpdate');
   });
 

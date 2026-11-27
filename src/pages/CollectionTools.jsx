@@ -7,7 +7,9 @@ import BulkEditPanel from '@/components/collection/BulkEditPanel';
 import DuplicateReviewPanel from '@/components/collection/DuplicateReviewPanel';
 import { Download, Loader2, Search, Copy, PencilLine } from 'lucide-react';
 import { createAction } from '@/lib/actions/actionModel';
-import { executeActions } from '@/lib/actions/actionClient';
+import useActionExecution from '@/hooks/useActionExecution';
+import ActionReviewDialog from '@/components/actions/ActionReviewDialog';
+import ActionResultSummary from '@/components/actions/ActionResultSummary';
 import {
   COLLECTION_ENTITY_NAMES,
   LIFECYCLE_OPTIONS,
@@ -62,7 +64,7 @@ export default function CollectionTools() {
   const [lifecycleFilter, setLifecycleFilter] = useState('active');
   const [sort, setSort] = useState('newest');
   const [selected, setSelected] = useState([]);
-  const [busy, setBusy] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
   const [message, setMessage] = useState('');
 
   const config = MODULE_CONFIG[entityName];
@@ -127,12 +129,16 @@ export default function CollectionTools() {
     setSelected((prev) => (prev.includes(id) ? prev.filter((entry) => entry !== id) : [...prev, id]));
   };
 
-  const applyBulk = async (patch) => {
-    setBusy(true);
+  // The same executor and the same preview as every other surface: a bulk edit
+  // is built as one action, reviewed, then accepted — never written on press.
+  const { status, result, error, execute, undo, reset } = useActionExecution({ onApplied: load });
+  const busy = status === 'executing';
+
+  const reviewBulk = (patch) => {
+    const fields = Object.keys(patch);
     setMessage('');
-    try {
-      const fields = Object.keys(patch);
-      const action = createAction({
+    setPendingAction(
+      createAction({
         type: fields.every((field) => field === 'storage_location_id' || field === 'humidor_id')
           ? 'storage_assign'
           : 'record_update',
@@ -144,21 +150,15 @@ export default function CollectionTools() {
           label: field.replace(/_/g, ' '),
           to: Array.isArray(patch[field]) ? patch[field].join(', ') : patch[field],
         })),
-      });
+      })
+    );
+  };
 
-      const outcome = await executeActions([action]);
-      setMessage(
-        `Updated ${outcome.completed} record(s)${outcome.skipped ? `, ${outcome.skipped} unchanged` : ''}${outcome.failed ? `, ${outcome.failed} failed` : ''}.`
-      );
-      if (outcome.completed > 0) {
-        setSelected([]);
-        await load();
-      }
-    } catch (bulkError) {
-      setMessage(bulkError?.message || 'Bulk update failed');
-    } finally {
-      setBusy(false);
-    }
+  const confirmBulk = async () => {
+    if (!pendingAction) return;
+    const outcome = await execute([pendingAction], { selections: { [pendingAction.id]: true } });
+    setPendingAction(null);
+    if (outcome && outcome.completed > 0) setSelected([]);
   };
 
   const exportCsv = () => {
@@ -312,7 +312,13 @@ export default function CollectionTools() {
             </Button>
           </div>
 
-          {message && <p className="text-xs" style={{ color: 'rgba(224,216,200,0.75)' }}>{message}</p>}
+          {result && <ActionResultSummary result={result} onUndo={undo} onDismiss={reset} />}
+
+          {(message || error) && (
+            <p className="text-xs" style={{ color: error ? '#E0A0A0' : 'rgba(224,216,200,0.75)' }} role={error ? 'alert' : undefined}>
+              {error || message}
+            </p>
+          )}
 
           <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(180,140,75,0.18)' }}>
             {loading ? (
@@ -361,7 +367,16 @@ export default function CollectionTools() {
             )}
           </div>
 
-          <BulkEditPanel selectedCount={selected.length} onApply={applyBulk} busy={busy} />
+          <BulkEditPanel selectedCount={selected.length} onApply={reviewBulk} busy={busy} />
+
+          <ActionReviewDialog
+            open={Boolean(pendingAction)}
+            actions={pendingAction ? [pendingAction] : []}
+            busy={busy}
+            error={error}
+            onConfirm={confirmBulk}
+            onCancel={() => setPendingAction(null)}
+          />
         </>
       )}
     </div>

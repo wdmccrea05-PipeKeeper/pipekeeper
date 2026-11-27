@@ -88,7 +88,13 @@ export default function ActionList({
   };
 
   const confirm = async () => {
-    const outcome = await execute(reviewing, { selections, alternatives });
+    // Reviewing an action is accepting it: a card that starts unselected (a
+    // high-impact one, or one reached by its own review button) must still be
+    // the action that runs, never a silent no-op.
+    const accepted = { ...selections };
+    for (const action of reviewing) accepted[action.id] = true;
+
+    const outcome = await execute(reviewing, { selections: accepted, alternatives });
     if (outcome && outcome.completed > 0) {
       setApplied((prev) => {
         const updated = { ...prev };

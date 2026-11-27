@@ -253,7 +253,7 @@ export default function ReportingCenter() {
                 exporting={exporting}
                 canExport={canExport}
               />
-              {reportFindings.length > 0 && (
+              {reportFindings.some((finding) => finding.actions?.length > 0) && (
                 <div className="no-print">
                   <FindingsReviewPanel
                     title={t("reporting.actionsTitle", "Actions for these findings")}
@@ -261,7 +261,7 @@ export default function ReportingCenter() {
                       "reporting.actionsBody",
                       "Fix what a finding points to without leaving the report. The report recalculates from your records afterwards."
                     )}
-                    findings={reportFindings}
+                    findings={reportFindings.filter((finding) => finding.actions?.length > 0)}
                     states={findingStates}
                     onStateChange={setFindingState}
                     emptyMessage=""

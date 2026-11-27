@@ -283,6 +283,9 @@ export function withCustomValue(action, raw) {
 
   return {
     ...action,
+    // Held on the action itself so it survives choosing an option afterwards and
+    // is applied last, which is what makes a typed value authoritative.
+    customValue: value,
     targets: (action.targets || []).map((target) => ({
       ...target,
       patch: { ...target.patch, [field]: value },

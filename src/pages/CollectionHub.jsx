@@ -4,6 +4,7 @@ import { useNavigate } from '@/components/utils/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { countAttentionFindings } from '@/lib/actions/collectionFindings';
 import { healthUrl } from '@/lib/navigation/returnTo';
+import CollectionHealthRow from '@/components/hub/CollectionHealthRow';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
@@ -559,26 +560,11 @@ export default function CollectionHub() {
           ]}
         />
 
-        <button
-          type="button"
-          onClick={() => navigate(healthUrl({ origin: 'hub' }))}
-          className="w-full flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.22)', minHeight: 56 }}
-        >
-          <span className="min-w-0">
-            <span className="block text-sm font-semibold break-words" style={{ color: '#F5F1E7' }}>
-              {t('hub.collectionHealth', 'Collection health')}
-            </span>
-            <span className="block text-xs break-words" style={{ color: 'rgba(224,216,200,0.6)' }}>
-              {isLoading
-                ? '—'
-                : healthCount > 0
-                ? `${healthCount} ${t('hub.findingsToReview', 'findings to review')}`
-                : t('hub.noFindings', 'Nothing needs your attention')}
-            </span>
-          </span>
-          <ChevronRight className="w-4 h-4 shrink-0" style={{ color: '#D4A574' }} />
-        </button>
+        <CollectionHealthRow
+          count={healthCount}
+          isLoading={isLoading}
+          onOpen={() => navigate(healthUrl({ origin: 'hub' }))}
+        />
       </section>
 
       <LogSessionSelector

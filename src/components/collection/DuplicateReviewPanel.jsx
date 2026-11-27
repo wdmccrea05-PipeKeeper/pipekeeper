@@ -4,8 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Loader2, GitMerge, AlertTriangle } from 'lucide-react';
 import ActionReviewDialog from '@/components/actions/ActionReviewDialog';
 import ActionResultSummary from '@/components/actions/ActionResultSummary';
+import useActionExecution from '@/hooks/useActionExecution';
 import { createAction } from '@/lib/actions/actionModel';
-import { executeActions } from '@/lib/actions/actionClient';
+
+const MODULE_FOR_ENTITY = {
+  Pipe: 'pipekeeper',
+  TobaccoBlend: 'tobacco',
+  Cigar: 'cigarkeeper',
+  Bottle: 'whiskeykeeper',
+  Wine: 'winekeeper',
+};
 
 /**
  * Duplicate review and controlled merge, through the Universal Action Framework.
@@ -22,8 +30,6 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
   const [error, setError] = useState('');
   const [survivors, setSurvivors] = useState({});
   const [reviewing, setReviewing] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -45,6 +51,9 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityName]);
 
+  const { status, result, error: executionError, execute, reset } = useActionExecution();
+  const busy = status === 'executing';
+
   const buildMergeAction = (group) => {
     const survivorId = survivors[group.signature] || group.records[0]?.id;
     const survivor = group.records.find((record) => record.id === survivorId);
@@ -53,7 +62,7 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
     return createAction({
       type: 'record_merge',
       origin: 'duplicates',
-      module: entityName,
+      module: MODULE_FOR_ENTITY[entityName] || null,
       title: `Merge ${duplicates.length} duplicate ${duplicates.length === 1 ? 'record' : 'records'} into "${survivor?.name || 'the selected record'}"`,
       description: 'The record you keep keeps its identity and takes any documentation the duplicates have. Duplicates are archived, not deleted.',
       targets: [
@@ -71,21 +80,15 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
 
   const confirmMerge = async () => {
     if (!reviewing) return;
-    setBusy(true);
     setError('');
-    setResult(null);
-    try {
-      const outcome = await executeActions([reviewing]);
-      setResult(outcome);
-      if (outcome.completed > 0) {
-        await load();
-        if (onMerged) onMerged();
-      }
-    } catch (mergeError) {
-      setError(mergeError?.message || 'Merge failed');
-    } finally {
-      setBusy(false);
-      setReviewing(null);
+    // The merge is the action being reviewed, so it is the action that runs —
+    // high-impact actions start unselected, and an unselected action is dropped
+    // before the request is built.
+    const outcome = await execute([reviewing], { selections: { [reviewing.id]: true } });
+    setReviewing(null);
+    if (outcome && outcome.completed > 0) {
+      await load();
+      if (onMerged) onMerged();
     }
   };
 
@@ -108,7 +111,7 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
       </div>
 
       {error && <p className="text-xs" style={{ color: '#E39A9A' }}>{error}</p>}
-      {result && <ActionResultSummary result={result} onDismiss={() => setResult(null)} />}
+      {result && <ActionResultSummary result={result} onDismiss={reset} />}
 
       {groups.length === 0 ? (
         <p className="text-sm py-4" style={{ color: 'rgba(224,216,200,0.5)' }}>
@@ -171,7 +174,7 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
         open={Boolean(reviewing)}
         actions={reviewing ? [reviewing] : []}
         busy={busy}
-        error={error}
+        error={error || executionError}
         onConfirm={confirmMerge}
         onCancel={() => setReviewing(null)}
       />

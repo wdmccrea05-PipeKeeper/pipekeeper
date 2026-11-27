@@ -75,6 +75,9 @@ export function createAction(input) {
     // specialization) instead of only choosing among the proposed options.
     customField: input?.customField || null,
     customLabel: input?.customLabel || '',
+    // A value the collector typed themselves. Held on the action so it can never
+    // be lost between choosing an option and pressing accept.
+    customValue: input?.customValue ?? null,
   };
 }
 
@@ -91,14 +94,30 @@ export function requiresExplicitConfirm(action) {
   return action?.confirmation === 'explicit';
 }
 
-/** The patch an action would write, taking a chosen alternative into account. */
+/**
+ * The patch an action would write: the chosen alternative first, then any value
+ * the collector typed themselves, which always wins. Ordering it here means a
+ * typed value cannot be silently replaced by the proposed option it sits beside.
+ */
 export function effectiveTargets(action, chosenAlternativeId) {
   const targets = action?.targets || [];
-  if (!chosenAlternativeId) return targets;
-  const alternative = (action?.alternatives || []).find((entry) => entry.id === chosenAlternativeId);
-  if (!alternative) return targets;
-  if (Array.isArray(alternative.targets)) return alternative.targets.map(normalizeTarget);
-  return targets.map((target) => ({ ...target, patch: { ...target.patch, ...(alternative.patch || {}) } }));
+  const alternative = chosenAlternativeId
+    ? (action?.alternatives || []).find((entry) => entry.id === chosenAlternativeId)
+    : null;
+
+  let resolved = targets;
+  if (alternative) {
+    resolved = Array.isArray(alternative.targets)
+      ? alternative.targets.map(normalizeTarget)
+      : targets.map((target) => ({ ...target, patch: { ...target.patch, ...(alternative.patch || {}) } }));
+  }
+
+  const field = action?.customField;
+  if (field && action?.customValue !== null && action?.customValue !== undefined) {
+    resolved = resolved.map((target) => ({ ...target, patch: { ...target.patch, [field]: action.customValue } }));
+  }
+
+  return resolved;
 }
 
 /**
@@ -148,8 +167,27 @@ export function summarizeExecution(response) {
   let duplicates = 0;
 
   for (const action of actions) {
-    if (action?.duplicate_prevented) duplicates += 1;
-    if (action?.status === 'blocked') blocked += 1;
+    // A repeated submission is reported as such. Its stored rows describe the
+    // earlier run, so counting them again would claim a success that did not
+    // happen this time.
+    if (action?.duplicate_prevented) {
+      duplicates += 1;
+      continue;
+    }
+
+    if (action?.status === 'blocked') {
+      blocked += 1;
+      rows.push({
+        actionId: action.id,
+        actionType: action.type,
+        recordId: null,
+        name: '',
+        status: 'blocked',
+        reason: 'prerequisite_failed',
+        changedFields: [],
+      });
+      continue;
+    }
 
     for (const result of action?.results || []) {
       const row = {
@@ -185,7 +223,8 @@ export function summarizeExecution(response) {
       failed > 0 && completed > 0 ? 'partial'
         : failed > 0 ? 'failed'
           : completed > 0 ? 'completed'
-            : 'skipped',
+            : blocked > 0 ? 'blocked'
+              : 'skipped',
   };
 }
 
@@ -205,6 +244,16 @@ export function describeReason(reason) {
       return 'None of the proposed fields can be changed this way.';
     case 'record_changed_since_apply':
       return 'This record was edited after the change, so it was left as it is.';
+    case 'prerequisite_failed':
+      return 'A change this one depends on did not complete, so it was not applied.';
+    case 'invalid_amount':
+      return 'The amount is not a valid number, so nothing was recorded.';
+    case 'unsupported_entity':
+      return 'This kind of record cannot be changed this way.';
+    case 'no_duplicates_selected':
+      return 'No duplicate was selected to merge.';
+    case 'survivor_selected_as_duplicate':
+      return 'The record you chose to keep cannot also be merged away.';
     default:
       return reason ? String(reason).replace(/_/g, ' ') : '';
   }

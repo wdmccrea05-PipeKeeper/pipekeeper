@@ -199,6 +199,25 @@ is open.
 
 ---
 
+## Batch K — Universal action & acceptance framework (prompts 17–19, audited 2026-11-27)
+
+| ID | Item | Status | Files |
+|---|---|---|---|
+| CI2-150 | One executor for every app-proposed change: registry, entitlement, idempotency, ownership, staleness, allowlist, write, read-back, audit, undo | done | `base44/functions/actionExecute/entry.ts`, `base44/shared/actionRegistry.ts` |
+| CI2-151 | Canonical action object and one payload/summary shape | done | `src/lib/actions/actionModel.js` |
+| CI2-152 | One client and one execution hook (in-flight guard, same-key retry, refresh on every outcome) | done | `src/lib/actions/actionClient.js`, `src/hooks/useActionExecution.js` |
+| CI2-153 | Shared card → review → result → undo primitives | done | `src/components/actions/*` |
+| CI2-154 | Curator proposals as framework actions, with conversational references | done | `src/lib/curator/curatorActionPresenter.js`, `curatorActionReferences.js`, `CuratorActionSet.jsx` |
+| CI2-155 | Collection health findings as actions, with defer/dismiss/resolve decisions | done | `src/lib/actions/collectionFindings.js`, `findingState.js`, `src/pages/CollectionHealth.jsx` |
+| CI2-156 | Dashboard and Reporting Center entry into the same finding actions | done | `src/components/hub/CollectionHealthRow.jsx`, `src/pages/ReportingCenter.jsx` |
+| CI2-157 | Duplicate merge previewed and executed through the framework (was a single-click write) | done | `src/components/collection/DuplicateReviewPanel.jsx` |
+| CI2-158 | Bulk documentation edit previewed and executed through the framework, with undo | done | `src/pages/CollectionTools.jsx` |
+| CI2-159 | Twenty-five release scenarios in the regression suite | done | `src/__tests__/actionAcceptanceScenarios.test.js` (36 tests) |
+| CI2-160 | Audit defects: empty accept on high-impact cards, merge never executing, custom value overwritten, replay counted as success, no retry after a dropped connection, refusal messages | done | see §11 of `UNIVERSAL_ACTION_FRAMEWORK.md` |
+| CI2-161 | Storage management panels and sharing revoke moved onto the framework | planned | they keep their current path; no second write path exists |
+
+---
+
 ## Test baseline
 
 | Run | Result | Date |
@@ -208,6 +227,8 @@ is open.
 | Production build | Clean | 2026-11-27 |
 | **Full suite (211 files)** | **3,630 passed, 0 failed** | 2026-11-27 |
 | Production build after readiness review | Clean (exit 0) | 2026-11-27 |
+| **Full suite after the action-framework audit (218 files)** | **3,758 passed, 0 failed** | 2026-11-27 |
+| Live `actionExecute` probe (execute → replay → stale → undo → undo again) | All five outcomes as specified, production data left clean | 2026-11-27 |
 
 Rule: every Batch A/B change must leave these green. Add a guard-rail test when a defect is
 fixed so it cannot silently return.
