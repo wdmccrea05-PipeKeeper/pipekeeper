@@ -21,6 +21,7 @@ import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer'
 import BestPipesDrawer from '@/components/recommendations/BestPipesDrawer';
 import TobaccoInventoryManager from '@/components/tobacco/TobaccoInventoryManager';
 import CellarLog from '@/components/tobacco/CellarLog';
+import TobaccoCellarDocumentation from '@/components/tobacco/TobaccoCellarDocumentation';
 import { rankPipesForBlend } from '@/components/utils/pairingScoreCanonical';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import { Button } from '@/components/ui/button';
@@ -963,6 +964,10 @@ export default function TobaccoDetail() {
       </div>
 
       <TobaccoInventoryManager blend={blend} onUpdate={handleBlendUpdate} isUpdating={isUpdatingInventory} />
+      <TobaccoCellarDocumentation
+        blend={blend}
+        onUpdate={(patch) => setBlend((prev) => ({ ...prev, ...patch }))}
+      />
       <CellarLog blend={blend} />
 
       {/* UNIFIED VALUATION CARD */}

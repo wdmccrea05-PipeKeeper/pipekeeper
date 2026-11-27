@@ -1,7 +1,7 @@
 {
   "name": "StorageLocation",
   "type": "object",
-  "description": "A shared storage location entity for cigars (humidors) and wine (cellars, racks).",
+  "description": "A shared storage location entity for cigars (humidors), pipes, tobacco cellars and wine (cellars, racks).",
   "properties": {
     "name": {
       "type": "string",
@@ -15,6 +15,8 @@
         "rack",
         "bin",
         "cabinet",
+        "tobacco_cellar",
+        "pipe_rack",
         "other"
       ],
       "description": "Type of storage location"
@@ -24,6 +26,8 @@
       "enum": [
         "cigars",
         "wine",
+        "tobacco",
+        "pipes",
         "shared"
       ],
       "description": "Which module this location belongs to"

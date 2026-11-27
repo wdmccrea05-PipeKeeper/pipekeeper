@@ -21,6 +21,8 @@ import { TEXT_PRIMARY, TEXT_SECONDARY, TEXT_CAPTION } from "@/lib/theme/tokens";
 import SmokingLogReportExporter from "@/components/export/SmokingLogReportExporter";
 import AgingReportExporter from "@/components/export/AgingReportExporter";
 import CollectionReportExporter from "@/components/export/CollectionReportExporter";
+import PipeCollectionReportPanel from "@/components/reports/PipeCollectionReportPanel";
+import PipeCharacteristicsCompare from "@/components/pipes/PipeCharacteristicsCompare";
 
 const DEFAULT_OPTIONS = {
   modules: { pipe: true, whiskey: true, cigar: true, wine: true },
@@ -130,6 +132,7 @@ export default function CollectionReports() {
       { key: "pairing", label: t("collectionReports.tabPairing", "Pipe Pairing Chart") },
       { key: "top", label: t("collectionReports.tabTop", "Top Matches") },
       { key: "complementary", label: t("collectionReports.tabComplementary", "Complementary") },
+      { key: "pipes", label: t("collectionReports.tabPipes", "Pipes & Cellar") },
     ],
     [t],
   );
@@ -235,6 +238,12 @@ export default function CollectionReports() {
                 />
               )}
               {activeTab === "complementary" && <ComplementaryReport groups={report.complementary} />}
+              {activeTab === "pipes" && (
+                <div className="space-y-6">
+                  <PipeCollectionReportPanel pipes={data.pipes} blends={data.blends} isLoading={data.isLoading} />
+                  <PipeCharacteristicsCompare pipes={data.pipes} />
+                </div>
+              )}
             </>
           )}
         </div>

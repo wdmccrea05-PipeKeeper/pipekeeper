@@ -16,6 +16,9 @@ import { answerCuratorDeterministicQuery, isPipeSpecializationQuery, resolveSpec
 import { analyzeWineOptimizationIssues } from '@/lib/curator/wineOptimization.js';
 import { buildWineDrinkingWindowFix } from '@/lib/curator/wineDrinkingWindowFix.js';
 import CuratorChatFixAction from '@/components/curator/CuratorChatFixAction.jsx';
+import CuratorSpecializationAction from '@/components/curator/CuratorSpecializationAction.jsx';
+import { buildSpecializationReview, reviewToPromptBlock } from '@/lib/curator/specializationReview.js';
+import { applySpecializationChange } from '@/lib/collection/specialization.js';
 import {
   detectRejection,
   extractRecommendationsFromResponse,
@@ -662,6 +665,7 @@ ${resolvedItemNote}
 ${isPipeSpecializationQuery(userMessage) ? `
 SPECIALIZATION REQUEST (takes priority over pairing-score and product-recommendation rules):
 Keep the requested pipe as the subject. Recommend alternative tobacco-family specializations for THAT pipe, not other pipes or collection-wide best pairings. Explain 2-3 plausible alternatives when evidence supports them, why each suits its recorded shape/material/chamber and smoking history, and give owned blend examples. Compare with its current dedication; do not assume a mismatch merely because the user mentions a score. Existing scores describe current saved pairings only: never invent recalculated scores or promise an improvement. Treat untested options as trials. Do not change the pipe record without an explicit change request.
+${specializationSubject ? reviewToPromptBlock(buildSpecializationReview({ pipe: specializationSubject, smokingLogs, blends })) : ''}
 Requested pipe record: ${JSON.stringify(specializationSubject)}
 Relevant session history: ${JSON.stringify(specializationSubject ? smokingLogs.filter((log) => (log.pipe_id || log.pipeId) === specializationSubject.id) : [])}
 If the requested pipe cannot be uniquely resolved, ask which owned pipe they mean rather than substituting another pipe.
@@ -1695,6 +1699,39 @@ export default function ExpertTobacconistChat({
   }, [onApplyFix]);
 
   /**
+   * Apply a specialization change Curator proposed, only after the collector
+   * confirmed it in the chat. The pipe is re-read first so the change is diffed
+   * against what is stored now, and the result lands in the pipe's history.
+   */
+  const applySpecializationAction = useCallback(async (message) => {
+    const action = message?.specializationAction;
+    if (!action?.pipeId) return;
+    setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, specializationState: 'applying', specializationNote: null } : m)));
+    try {
+      const pipe = await base44.entities.Pipe.get(action.pipeId);
+      const result = await applySpecializationChange({
+        pipe,
+        next: action.focus,
+        note: 'Applied from Curator after confirmation',
+        source: 'curator_chat',
+      });
+      setMessages((prev) => prev.map((m) => (m.id === message.id
+        ? {
+            ...m,
+            specializationState: 'applied',
+            specializationNote: result.recorded
+              ? 'Specialization updated and added to this pipe\'s history.'
+              : 'Specialization updated.',
+          }
+        : m)));
+    } catch (err) {
+      setMessages((prev) => prev.map((m) => (m.id === message.id
+        ? { ...m, specializationState: 'failed', specializationNote: String(err?.message || 'That change could not be saved.') }
+        : m)));
+    }
+  }, []);
+
+  /**
    * Determines if this query should go to the LLM.
    * The LLM is the PRIMARY engine for all intelligence queries.
    * The local rule engine only handles simple structural operations (corrections, constraints, follow-ups).
@@ -1847,7 +1884,27 @@ export default function ExpertTobacconistChat({
             rejectedItems: Array.isArray(prev.rejectedItems) ? prev.rejectedItems : [],
           }));
         }
-        setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: cleanReply }]);
+        const specializationReview = specializationQuery && specializationPipe
+          ? buildSpecializationReview({
+              pipe: specializationPipe,
+              smokingLogs: collectionContext?.smokingLogs || [],
+              blends: collectionContext?.blends || [],
+            })
+          : null;
+        setMessages((prev) => [...prev, {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: cleanReply,
+          specializationAction: specializationReview?.proposed
+            ? {
+                pipeId: specializationPipe.id,
+                pipeName: specializationPipe.name,
+                focus: specializationReview.proposed.focus,
+                confidence: specializationReview.proposed.confidence,
+                current: specializationReview.current,
+              }
+            : null,
+        }]);
         return;
       }
 
@@ -2065,6 +2122,14 @@ export default function ExpertTobacconistChat({
                           state={m.fixState || 'idle'}
                           note={m.fixNote}
                           onApply={() => applySuggestedFix(m)}
+                        />
+                      )}
+                      {m.specializationAction && (
+                        <CuratorSpecializationAction
+                          action={m.specializationAction}
+                          state={m.specializationState || 'idle'}
+                          note={m.specializationNote}
+                          onApply={() => applySpecializationAction(m)}
                         />
                       )}
                       </div>

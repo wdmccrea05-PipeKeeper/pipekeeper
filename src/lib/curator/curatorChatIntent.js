@@ -74,6 +74,14 @@ export function classifyIntent(message) {
   ];
   if (correctionPatterns.some((p) => p.test(t))) return 'USER_CORRECTION';
 
+  // REASSIGNMENT / SPECIALIZATION — checked before FOLLOW_UP so that a phrase
+  // like "should I reassign this pipe" is not read as a vague follow-up. A
+  // specialization question is about the pipe's role; a pairing question is
+  // about how well specific blends suit it, and stays in the pairing branches.
+  if (/\b(reassign|reassignment|respecializ|re-specializ)\b/i.test(t)) {
+    return 'PIPE_REASSIGNMENT_ANALYSIS';
+  }
+
   // FOLLOW_UP — references to previous items ("that one", "how does it compare").
   // Skip when the message is a recommendation request: words like "that" or
   // "it" in "the pipe that can accommodate both" are relative pronouns, not

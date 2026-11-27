@@ -29,6 +29,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import PipeSpecialization from '@/components/pipes/PipeSpecialization';
+import SpecializationHistory from '@/components/pipes/SpecializationHistory';
+import SpecializationReviewPanel from '@/components/collection/SpecializationReviewPanel';
 import MaintenanceLog from '@/components/pipes/MaintenanceLog';
 import PipeConditionTracker from '@/components/pipes/PipeConditionTracker';
 import RotationPlanner from '@/components/pipes/RotationPlanner';
@@ -493,6 +495,7 @@ export default function PipeDetail() {
 
   const [pipe, setPipe] = useState(null);
   const [blends, setBlends] = useState([]);
+  const [specRefreshKey, setSpecRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -1111,12 +1114,27 @@ export default function PipeDetail() {
             </TabsContent>
 
             <TabsContent value="specialization" className="p-4 m-0">
-              <PipeSpecialization
-                pipe={pipe}
-                blends={blends}
-                onUpdate={handlePipeUpdate}
-                isPaidUser={isPaidUser}
-              />
+              <div className="space-y-4">
+                <PipeSpecialization
+                  pipe={pipe}
+                  blends={blends}
+                  onUpdate={(updates) => {
+                    handlePipeUpdate(updates);
+                    setSpecRefreshKey((key) => key + 1);
+                  }}
+                  isPaidUser={isPaidUser}
+                />
+                <SpecializationReviewPanel
+                  pipe={pipe}
+                  blends={blends}
+                  smokingLogs={smokingLogs}
+                  onApplied={(focus) => {
+                    handlePipeUpdate({ focus });
+                    setSpecRefreshKey((key) => key + 1);
+                  }}
+                />
+                <SpecializationHistory pipeId={pipe.id} refreshKey={specRefreshKey} />
+              </div>
             </TabsContent>
 
             <TabsContent value="maintenance" className="p-4 m-0">

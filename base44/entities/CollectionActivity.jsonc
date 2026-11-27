@@ -50,7 +50,9 @@
         "archived",
         "restored",
         "transferred",
-        "gifted"
+        "gifted",
+        "specialization_changed",
+        "recipe_revised"
       ],
       "enumColors": [
         "green",
@@ -67,7 +69,9 @@
         "gray",
         "green",
         "blue",
-        "pink"
+        "pink",
+        "pink",
+        "yellow"
       ],
       "description": "Kind of change that was recorded"
     },

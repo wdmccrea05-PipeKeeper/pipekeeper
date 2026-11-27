@@ -200,4 +200,60 @@ export async function trackedSendEmail(params, attribution = {}) {
   }
 }
 
+/**
+ * Tracked UploadPrivateFile — wraps private uploads with telemetry.
+ *
+ * @param {Object} params - { file }
+ * @param {Object} attribution - Telemetry attribution { feature, module, ... }
+ * @returns {Promise<{file_uri: string}>}
+ */
+export async function trackedUploadPrivateFile(params, attribution = {}) {
+  const startTime = Date.now();
+  try {
+    const result = await base44.integrations.Core.UploadPrivateFile(params);
+    logIntegrationEvent({ ...attribution, operation: 'UploadPrivateFile', success: true, durationMs: Date.now() - startTime });
+    return result;
+  } catch (error) {
+    const category = classifyIntegrationError(error);
+    logIntegrationEvent({
+      ...attribution,
+      operation: 'UploadPrivateFile',
+      success: false,
+      durationMs: Date.now() - startTime,
+      errorCategory: category,
+      errorMessage: error?.message,
+    });
+    error._integrationErrorCategory = category;
+    throw error;
+  }
+}
+
+/**
+ * Tracked CreateFileSignedUrl — wraps signed-URL creation with telemetry.
+ *
+ * @param {Object} params - { file_uri, expires_in }
+ * @param {Object} attribution - Telemetry attribution { feature, module, ... }
+ * @returns {Promise<{signed_url: string}>}
+ */
+export async function trackedCreateSignedUrl(params, attribution = {}) {
+  const startTime = Date.now();
+  try {
+    const result = await base44.integrations.Core.CreateFileSignedUrl(params);
+    logIntegrationEvent({ ...attribution, operation: 'CreateFileSignedUrl', success: true, durationMs: Date.now() - startTime });
+    return result;
+  } catch (error) {
+    const category = classifyIntegrationError(error);
+    logIntegrationEvent({
+      ...attribution,
+      operation: 'CreateFileSignedUrl',
+      success: false,
+      durationMs: Date.now() - startTime,
+      errorCategory: category,
+      errorMessage: error?.message,
+    });
+    error._integrationErrorCategory = category;
+    throw error;
+  }
+}
+
 export { classifyIntegrationError, normalizeQueryForTelemetry };

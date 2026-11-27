@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { trackedUploadPrivateFile, trackedCreateSignedUrl } from '@/lib/integrationTelemetry';
 import { Button } from '@/components/ui/button';
 import { Paperclip, FileText, ExternalLink, Trash2, Loader2 } from 'lucide-react';
 import {
@@ -46,7 +47,10 @@ export default function AttachmentManager({ entityName, record, onDocumentsChang
           setError(validationError);
           continue;
         }
-        const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
+        const { file_uri } = await trackedUploadPrivateFile(
+          { file },
+          { feature: 'collection.attachment', module: entityName },
+        );
         next = addAttachment(next, {
           name: file.name,
           kind: inferAttachmentKind(file),
@@ -65,9 +69,10 @@ export default function AttachmentManager({ entityName, record, onDocumentsChang
   const handleOpen = async (attachment) => {
     setError('');
     try {
-      const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({
-        file_uri: attachment.file_uri,
-      });
+      const { signed_url } = await trackedCreateSignedUrl(
+        { file_uri: attachment.file_uri },
+        { feature: 'collection.attachment_open', module: entityName },
+      );
       window.open(signed_url, '_blank', 'noopener,noreferrer');
     } catch (openError) {
       setError(openError?.message || 'Could not open this file');
