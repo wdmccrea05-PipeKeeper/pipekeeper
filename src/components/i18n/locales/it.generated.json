@@ -829,7 +829,7 @@
   "containerTin": "Latte",
   "containerJar": "Vaso",
   "containerPouch": "Bustina",
-  "containerBulk": "Bulk",
+  "containerBulk": "Sfuso",
   "destination": "Destinazione",
   "movedToOpenCollection": "Spostato nella collezione aperta",
   "toOpen": "Da aprire",
@@ -2121,9 +2121,9 @@
   "item139": "WhiskeyKeeper Pro",
   "item140": "CigarKeeper Pro",
   "item141": ", il",
-  "item142": "Founders Bundle",
+  "item142": "Bundle Founders",
   "item143": "(PipeKeeper + WhiskeyKeeper), o il",
-  "item144": "3-Module Bundle",
+  "item144": "Bundle da 3 moduli",
   "item145": "(PipeKeeper + WhiskeyKeeper + CigarKeeper).",
   "item146": "Scegli un piano mensile o annuale (con l'annuale risparmi circa il 17%).",
   "item147": "Completa il pagamento tramite il checkout sicuro.",
@@ -2134,9 +2134,9 @@
   "item152": "Elementi illimitati per modulo, abbinamenti AI, ottimizzazione collezione, identificazione AI, programmi di rodaggio, strumenti di valutazione, sezione Valore & Strategia, report di esportazione e assistenza prioritaria.",
   "item153": "Ogni modulo (PipeKeeper, WhiskeyKeeper e CigarKeeper) può essere sottoscritto singolarmente.",
   "item154": "Il",
-  "item155": "Founders Bundle",
+  "item155": "Bundle Founders",
   "item156": "include PipeKeeper e WhiskeyKeeper insieme a un prezzo scontato. CigarKeeper non è incluso nel Founders Bundle.",
-  "item157": "3-Module Bundle",
+  "item157": "Bundle da 3 moduli",
   "item158": "copre PipeKeeper, WhiskeyKeeper e CigarKeeper insieme a un ulteriore sconto.",
   "item159": "I membri fondatori hanno l'accesso Pro a vita garantito per PipeKeeper e WhiskeyKeeper."
  },
@@ -2244,7 +2244,7 @@
   "item101": "Puoi identificare la miscela del club da tre fonti:",
   "item102": "La mia collezione",
   "item103": "— cerca e seleziona una miscela che già possiedi.",
-  "item104": "Wishlist",
+  "item104": "Lista dei desideri",
   "item105": "— seleziona una miscela dalla tua lista dei desideri che non possiedi ancora.",
   "item106": "Nuova / Non posseduta",
   "item107": "— inserisci una nuova miscela manualmente, usa la Ricerca rapida per cercare tutte le miscele note nel sistema, o tocca",
@@ -2398,7 +2398,7 @@
  "tobacconist": {
   "tabChat": "Chat",
   "versatilePattern": "Versatile",
-  "whatIf": "What-If",
+  "whatIf": "E se…",
   "recommendationSummary": "Consigli IA",
   "pipesRecommendedForChange": "pipe consigliate per la specializzazione",
   "adoptOrAsk": "Esamina ogni pipa qui sotto per adottare le modifiche o porre domande di chiarimento.",
@@ -2413,7 +2413,7 @@
   "clarificationPlaceholder": "Es: 'Questa pipa scalda molto con gli aromatici', 'La preferisco per le miscele inglesi', 'Troppo umida per questo tipo'..."
  },
  "pipeDetailTabs": {
-  "focus": "Focus",
+  "focus": "Specializzazione",
   "aiSpecializationSuggestion": "Suggerimento specializzazione IA",
   "aiSpecializationDesc": "Ottieni consigli personalizzati sui tipi di tabacco più adatti a questa pipa in base alle sue caratteristiche e alla tua collezione.",
   "breakInShort": "Rodaggio",
@@ -2447,7 +2447,7 @@
   }
  },
  "collectionIntelligence": {
-  "title": "Collection Intelligence",
+  "title": "Intelligenza della collezione",
   "subtitle": "Guida e approfondimenti per la tua collezione",
   "healthTitle": "Salute della collezione",
   "healthRotation": "Bilanciamento rotazione",
@@ -2578,7 +2578,7 @@
   "title": "Griglia di abbinamento",
   "tooltipText": "Visualizza gli abbinamenti consigliati per tutte le pipe e i tabacchi della tua collezione",
   "subtitle": "Matrice di riferimento rapido per la compatibilità pipa-tabacco",
-  "focus": "Focus:",
+  "focus": "Specializzazione:",
   "dim": "Dim:",
   "topMatches": "I 3 migliori abbinamenti",
   "checkAnyBlend": "Controlla qualsiasi miscela",
@@ -2651,7 +2651,7 @@
   "tabs": {
    "all": "Tutto",
    "wish": "Desideri",
-   "shopping": "Shopping",
+   "shopping": "Da acquistare",
    "tried": "Provati",
    "notForMe": "Non per me"
   },
@@ -2675,7 +2675,7 @@
   "categories": {
    "wish": "Desiderio",
    "wishList": "Lista dei desideri",
-   "shopping": "Shopping",
+   "shopping": "Da acquistare",
    "shoppingList": "Lista della spesa",
    "tried": "Provato",
    "triedNotOwned": "Provato (Non posseduto)",
@@ -2778,7 +2778,7 @@
    "pipeType": "Tipo di pipa",
    "pipeTypeOptions": {
     "newProduction": "Produzione recente",
-    "estate": "Estate",
+    "estate": "Usato",
     "artisanCustom": "Artigianale / Custom",
     "vintage": "Vintage"
    },
@@ -2852,7 +2852,7 @@
  },
  "shoppingList": {
   "page": {
-   "title": "Shopping List",
+   "title": "Lista della spesa",
    "subtitle": "Tieni traccia degli acquisti e dei rifornimenti",
    "addItem": "Aggiungi articolo",
    "addToShoppingList": "Aggiungi alla Shopping List",
@@ -3713,7 +3713,7 @@
   "blendType": "Tipo di miscela",
   "cut": "Taglio",
   "strength": "Forza",
-  "roomNote": "Room Note",
+  "roomNote": "Profumo in stanza",
   "agingPotential": "Potenziale di invecchiamento",
   "unknownMaker": "Produttore sconosciuto",
   "tin": "Scatola",
@@ -4625,7 +4625,7 @@
   "totalBlends": "Miscele totali",
   "uniqueBrands": "Marche uniche",
   "favorites": "Preferiti",
-  "tins": "Tins",
+  "tins": "Barattoli",
   "totalTins": "Tins totali",
   "total": "Totale",
   "open": "Aperte",
