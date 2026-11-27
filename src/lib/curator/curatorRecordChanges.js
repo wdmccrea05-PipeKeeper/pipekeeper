@@ -407,7 +407,10 @@ export function buildChangeProposal({
       recordNames: names,
       bulk: targets.length > 1,
       patch: { [field]: first.toRaw },
-      changes: [{ field, label: first.label, from: first.from, to: first.to }],
+      // fromRaw travels with the proposal so the action can assert the value it
+      // was built from and the server can report a stale proposal instead of
+      // overwriting a record that changed in the meantime.
+      changes: [{ field, label: first.label, from: first.from, to: first.to, fromRaw: first.fromRaw, toRaw: first.toRaw }],
       summary: targets.length > 1
         ? `Set ${first.label.toLowerCase()} on ${targets.length} ${entityName} records: ${names.slice(0, 4).join(', ')}${names.length > 4 ? '…' : ''}`
         : `Set ${first.label.toLowerCase()} on "${names[0]}" from ${first.from} to ${first.to}.`,

@@ -274,8 +274,14 @@ describe('migrated features', () => {
     const hook = read('src/components/curator/useCuratorRecordProposals.js');
     expect(hook).toContain('executeActions');
     expect(hook).toContain('undoActionExecution');
-    expect(hook).toContain("origin: 'curator'");
     expect(hook).not.toContain('curatorRecordChange');
+
+    // The actions themselves are built by the presenter, which stamps every one
+    // of them with Curator as the origin and the framework's own shape.
+    const presenter = read('src/lib/curator/curatorActionPresenter.js');
+    expect(presenter).toContain('createAction');
+    expect(presenter).toContain("export const CURATOR_ORIGIN = 'curator'");
+    expect(presenter).toContain('origin: CURATOR_ORIGIN');
   });
 
   it('sends duplicate merges through the shared preview and executor', () => {

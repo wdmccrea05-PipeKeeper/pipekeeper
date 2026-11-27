@@ -332,22 +332,26 @@ describe('Curator — routing, cancellation and boundaries', () => {
   });
 
   it('describes the cancel path without writing anything', () => {
-    const card = readSource('src/components/curator/CuratorChangeProposalCard.jsx');
-    expect(card).toContain('Cancel');
-    expect(card).toContain('Nothing was written');
+    const set = readSource('src/components/curator/CuratorActionSet.jsx');
+    // Deferring or dismissing only changes the card's own state.
+    expect(set).toContain('onReject');
+    expect(set).toContain('onDefer');
+    // Nothing is written until the shared review dialog is confirmed.
+    expect(set).toContain('ActionReviewDialog');
+
     const hook = readSource('src/components/curator/useCuratorRecordProposals.js');
-    expect(hook).toContain('cancelProposal');
-    expect(hook).toContain("proposalState: 'cancelled'");
-    const cancelBlock = hook.slice(hook.indexOf('const cancelProposal'), hook.indexOf('const runUndo'));
-    expect(cancelBlock).not.toContain('functions.invoke');
+    expect(hook).toContain('executeActions');
+    expect(hook).not.toContain('.update(');
+    expect(hook).not.toContain('functions.invoke');
   });
 
   it('reports a failed apply as a failure, never as success', () => {
     const hook = readSource('src/components/curator/useCuratorRecordProposals.js');
-    expect(hook).toContain("proposalState: 'failed'");
-    expect(hook).toContain('No record was changed');
-    const card = readSource('src/components/curator/CuratorChangeProposalCard.jsx');
-    expect(card).toContain('Your record is unchanged');
+    expect(hook).toContain("actionState: outcome.ok ? 'applied' : 'failed'");
+    expect(hook).toContain("actionState: 'failed'");
+    const summary = readSource('src/components/actions/ActionResultSummary.jsx');
+    expect(summary).toContain('Failed');
+    expect(summary).toContain('Nothing was changed.');
   });
 });
 
@@ -485,17 +489,20 @@ describe('Curator — timeout handling', () => {
 });
 
 describe('Curator — mobile surfaces', () => {
-  it('stacks the proposal card and keeps tap targets usable on phones', () => {
-    const card = readSource('src/components/curator/CuratorChangeProposalCard.jsx');
-    expect(card).toContain('grid-cols-1 sm:grid-cols-');
-    expect(card).toContain('flex-col sm:flex-row');
-    expect(card).toContain('min-h-[44px]');
+  it('stacks the action card and keeps tap targets usable on phones', () => {
+    const card = readSource('src/components/actions/ActionCard.jsx');
+    expect(card).toContain('min-h-[40px]');
     expect(card).toContain('break-words');
+    expect(card).toContain('flex-wrap');
+
+    const set = readSource('src/components/curator/CuratorActionSet.jsx');
+    expect(set).toContain('min-w-0');
+    expect(set).toContain('min-h-[40px]');
   });
 
-  it('keeps the chat bubbles and proposal card inside the mobile viewport', () => {
+  it('keeps the chat bubbles and action card inside the mobile viewport', () => {
     const chat = readSource('src/components/agent/ExpertTobacconistChat.jsx');
     expect(chat).toContain('max-w-[92%] sm:max-w-[85%]');
-    expect(chat).toContain('CuratorChangeProposalCard');
+    expect(chat).toContain('CuratorActionSet');
   });
 });
