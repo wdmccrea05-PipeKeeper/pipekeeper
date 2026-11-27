@@ -145,4 +145,27 @@ describe('complimentary Pro access', () => {
     expect(trial.active).toBe(false);
     expect(getAccessSource(unknown, null)).toBe('free');
   });
+
+  it('cannot be extended by a tampered expiration stamp', () => {
+    const tampered = {
+      created_date: iso(NOW - 30 * 24 * 3600 * 1000),
+      pro_trial_started_at: iso(NOW - 30 * 24 * 3600 * 1000),
+      pro_trial_ends_at: iso(NOW + 365 * 24 * 3600 * 1000),
+    };
+    const trial = resolveProTrial(tampered, NOW);
+    expect(trial.active).toBe(false);
+    expect(new Date(trial.endsAt).getTime()).toBe(
+      new Date(tampered.created_date).getTime() + PRO_TRIAL_MS
+    );
+    expect(hasProAccess(tampered, null)).toBe(false);
+  });
+
+  it('honours a stamp that shortens the window (no self-service extension either way)', () => {
+    const shortened = {
+      created_date: iso(NOW - 2 * 24 * 3600 * 1000),
+      pro_trial_ends_at: iso(NOW - 3600 * 1000),
+    };
+    expect(resolveProTrial(shortened, NOW).active).toBe(false);
+    expect(hasProAccess(shortened, null)).toBe(false);
+  });
 });

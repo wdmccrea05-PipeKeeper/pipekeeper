@@ -348,20 +348,39 @@ export const proTrialTranslations = {
   'zh-Hans': zhHans,
 };
 
-// Navigation label that previously relied on an inline English fallback.
-const navReports = {
-  en: 'Reports',
-  es: 'Informes',
-  fr: 'Rapports',
-  de: 'Berichte',
-  it: 'Rapporti',
-  'pt-BR': 'Relatórios',
-  nl: 'Rapporten',
-  pl: 'Raporty',
-  ja: 'レポート',
-  'zh-Hans': '报告',
+// Labels that previously rendered as raw keys (insightsTabs.*) or untranslated
+// English in the Insights tab bars and Reports panels.
+const LANGS = ['en', 'es', 'fr', 'de', 'it', 'pt-BR', 'nl', 'pl', 'ja', 'zh-Hans'];
+
+const TAB_LABELS = {
+  summary: ['Summary', 'Resumen', 'Résumé', 'Übersicht', 'Riepilogo', 'Resumo', 'Overzicht', 'Podsumowanie', '概要', '摘要'],
+  value: ['Value', 'Valor', 'Valeur', 'Wert', 'Valore', 'Valor', 'Waarde', 'Wartość', '価値', '价值'],
+  usage: ['Usage', 'Uso', 'Utilisation', 'Nutzung', 'Utilizzo', 'Uso', 'Gebruik', 'Użycie', '使用状況', '使用情况'],
+  statistics: ['Statistics', 'Estadísticas', 'Statistiques', 'Statistiken', 'Statistiche', 'Estatísticas', 'Statistieken', 'Statystyki', '統計', '统计'],
+  trends: ['Trends', 'Tendencias', 'Tendances', 'Trends', 'Tendenze', 'Tendências', 'Trends', 'Trendy', 'トレンド', '趋势'],
+  reports: ['Reports', 'Informes', 'Rapports', 'Berichte', 'Report', 'Relatórios', 'Rapporten', 'Raporty', 'レポート', '报告'],
+  sessions: ['Sessions', 'Sesiones', 'Séances', 'Sitzungen', 'Sessioni', 'Sessões', 'Sessies', 'Sesje', 'セッション', '场次'],
+  drinkingWindow: ['Drinking Window', 'Ventana de consumo', 'Fenêtre de dégustation', 'Trinkfenster', 'Finestra di beva', 'Janela de consumo', 'Drinkvenster', 'Okno degustacyjne', '飲み頃', '适饮期'],
 };
 
-for (const [lang, pack] of Object.entries(proTrialTranslations)) {
-  pack.nav = { ...(pack.nav || {}), reports: navReports[lang] || navReports.en };
-}
+const REPORT_LABELS = {
+  collectionReports: ['Collection Reports', 'Informes de la colección', 'Rapports de collection', 'Sammlungsberichte', 'Report della collezione', 'Relatórios da coleção', 'Collectierapporten', 'Raporty kolekcji', 'コレクションレポート', '收藏报告'],
+  pairingReport: ['Pipe & Tobacco Pairing Report', 'Informe de maridaje pipa-tabaco', 'Rapport d’accords pipe-tabac', 'Pfeifen-Tabak-Pairing-Bericht', 'Report di abbinamento pipa-tabacco', 'Relatório de harmonização cachimbo-fumo', 'Pijp-tabak-pairingrapport', 'Raport dopasowań fajka-tytoń', 'パイプとタバコの相性レポート', '烟斗与烟草搭配报告'],
+  pairingReportDesc: ['Export every pipe-to-blend match with scores and reasoning.', 'Exporta cada combinación de pipa y mezcla con puntuaciones y razonamiento.', 'Exportez chaque association pipe-mélange avec scores et justifications.', 'Exportiere jede Pfeifen-Tabak-Kombination mit Bewertungen und Begründung.', 'Esporta ogni abbinamento pipa-miscela con punteggi e motivazioni.', 'Exporte cada combinação de cachimbo e mistura com pontuações e justificativas.', 'Exporteer elke pijp-mengsel-combinatie met scores en onderbouwing.', 'Eksportuj każde dopasowanie fajki i mieszanki z ocenami i uzasadnieniem.', 'すべてのパイプとブレンドの組み合わせをスコアと理由付きで出力します。', '导出每一组烟斗与调配的搭配评分和理由。'],
+  agingReport: ['Cellar Aging Report', 'Informe de envejecimiento de la bodega', 'Rapport de vieillissement de la cave', 'Kellerreife-Bericht', 'Report di invecchiamento della cantina', 'Relatório de envelhecimento da adega', 'Kelderrijpingsrapport', 'Raport dojrzewania piwnicy', 'セラー熟成レポート', '酒窖陈年报告'],
+  agingReportDesc: ['Export cellar ages, readiness and projected value.', 'Exporta edades, madurez y valor proyectado.', 'Exportez l’âge, la maturité et la valeur projetée.', 'Exportiere Reifealter, Trinkreife und prognostizierten Wert.', 'Esporta età, maturazione e valore previsto.', 'Exporte idade, maturação e valor projetado.', 'Exporteer leeftijd, rijpheid en verwachte waarde.', 'Eksportuj wiek, dojrzałość i prognozowaną wartość.', '熟成期間、飲み頃、予想価値を出力します。', '导出陈年时长、适饮期和预估价值。'],
+};
+
+LANGS.forEach((lang, i) => {
+  const pack = proTrialTranslations[lang];
+  if (!pack) return;
+  pack.nav = { ...(pack.nav || {}), reports: TAB_LABELS.reports[i] };
+  pack.insightsTabs = Object.fromEntries(
+    Object.entries(TAB_LABELS).map(([key, values]) => [key, values[i]])
+  );
+  pack.insights = {
+    ...(pack.insights || {}),
+    reports: TAB_LABELS.reports[i],
+    ...Object.fromEntries(Object.entries(REPORT_LABELS).map(([key, values]) => [key, values[i]])),
+  };
+});

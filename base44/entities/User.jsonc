@@ -2,6 +2,16 @@
   "name": "User",
   "type": "object",
   "properties": {
+    "pro_trial_started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start of the 7-day complimentary Pro window, stamped once at account creation and never re-stamped"
+    },
+    "pro_trial_ends_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End of the 7-day complimentary Pro window (exactly 168 hours after the start). Authoritative expiration - never extended by client actions"
+    },
     "isFreeGrandfathered": {
       "type": "boolean",
       "default": false,

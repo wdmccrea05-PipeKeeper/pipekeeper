@@ -47,23 +47,29 @@ function toDate(raw) {
 export function getProTrialWindow(user) {
   const storedEnd = toDate(pick(user, END_KEYS));
   const storedStart = toDate(pick(user, START_KEYS));
+  const created = toDate(pick(user, CREATED_KEYS));
+
+  // Hard cap: the window can never run past 168 hours from the immutable
+  // creation date. A writable stamp can shorten access, never lengthen it,
+  // so no client-side value can extend complimentary access.
+  const cap = created ? created.getTime() + PRO_TRIAL_MS : null;
 
   if (storedEnd) {
+    const endMs = cap === null ? storedEnd.getTime() : Math.min(storedEnd.getTime(), cap);
     return {
-      startedAt: (storedStart || new Date(storedEnd.getTime() - PRO_TRIAL_MS)).toISOString(),
-      endsAt: storedEnd.toISOString(),
+      startedAt: (storedStart || new Date(endMs - PRO_TRIAL_MS)).toISOString(),
+      endsAt: new Date(endMs).toISOString(),
       source: 'account',
     };
   }
 
-  const created = toDate(pick(user, CREATED_KEYS));
   if (!created) {
     return { startedAt: null, endsAt: null, source: 'unknown' };
   }
 
   return {
     startedAt: created.toISOString(),
-    endsAt: new Date(created.getTime() + PRO_TRIAL_MS).toISOString(),
+    endsAt: new Date(cap).toISOString(),
     source: 'account-created',
   };
 }

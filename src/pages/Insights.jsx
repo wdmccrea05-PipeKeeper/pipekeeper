@@ -27,6 +27,7 @@ import {
   Clock,
   X,
   Sparkles,
+  FileText,
 } from "lucide-react";
 import { useCurrency } from "@/lib/currency/useCurrency";
 import {
@@ -64,6 +65,9 @@ import RotationPlanner from "@/components/pipes/RotationPlanner";
 import PairingSection from "@/components/pipes/PairingSection";
 import CellarAgingDashboard from "@/components/tobacco/CellarAgingDashboard";
 import ProFeatureLock from "@/components/subscription/ProFeatureLock";
+import CollectionReportExporter from "@/components/export/CollectionReportExporter";
+import PairingExporter from "@/components/export/PairingExporter";
+import AgingReportExporter from "@/components/export/AgingReportExporter";
 
 const TABS = [
   { key: 'summary', label: 'Summary' },
@@ -1262,7 +1266,7 @@ export default function Insights() {
         subtitle={t("pipekeeper.insightsSubtitle", "Explore your pipe and tobacco collection data")}
       />
 
-      <InsightsTabBar tabs={TABS} activeTab={activeInsightsTab} onTabChange={setActiveInsightsTab} activeAccent={MODULE_ACCENTS.pipekeeper} />
+      <InsightsTabBar tabs={[...TABS, { key: 'reports', label: t('insights.reports') }]} activeTab={activeInsightsTab} onTabChange={setActiveInsightsTab} activeAccent={MODULE_ACCENTS.pipekeeper} />
 
       {/* SUMMARY */}
       {activeInsightsTab === 'summary' && (
@@ -1471,6 +1475,37 @@ export default function Insights() {
         pipes.length === 0
           ? <InsightsEmptyState message="Add pipes to use the rotation planner." icon={Flame} />
           : <RotationPlanner user={user} />
+      )}
+
+      {/* REPORTS */}
+      {activeInsightsTab === 'reports' && (
+        <ProFeatureLock featureName={t('insights.reports')}>
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
+              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('insights.collectionReports', 'Collection Reports')}</h4>
+              <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
+                {pipes.length} pipe{pipes.length !== 1 ? 's' : ''}, {blends.length} tobacco blend{blends.length !== 1 ? 's' : ''} — printable summaries, PDF and CSV exports.
+              </p>
+              <CollectionReportExporter user={user} />
+            </div>
+
+            <div className="p-4 rounded-xl" style={{ background: 'rgba(100,130,180,0.08)', border: '1px solid rgba(100,130,180,0.22)' }}>
+              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('insights.pairingReport', 'Pipe & Tobacco Pairing Report')}</h4>
+              <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
+                {t('insights.pairingReportDesc', 'Export every pipe-to-blend match with scores and reasoning.')}
+              </p>
+              <PairingExporter pipes={pipes} blends={blends} />
+            </div>
+
+            <div className="p-4 rounded-xl" style={{ background: 'rgba(46,125,92,0.08)', border: '1px solid rgba(46,125,92,0.22)' }}>
+              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('insights.agingReport', 'Cellar Aging Report')}</h4>
+              <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
+                {t('insights.agingReportDesc', 'Export cellar ages, readiness and projected value.')}
+              </p>
+              <AgingReportExporter user={user} />
+            </div>
+          </div>
+        </ProFeatureLock>
       )}
     </InsightsPageShell>
   );
