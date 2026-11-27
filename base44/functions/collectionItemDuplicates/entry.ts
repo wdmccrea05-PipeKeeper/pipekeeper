@@ -35,9 +35,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: `Unsupported collection entity: ${entityName}` }, { status: 400 });
     }
 
+    // Always the caller's own records: an administrator reviewing collection tools
+    // must see their own collection, never every collector's at once. Ownership is
+    // decided by the shared authorization helper, with its admin override removed.
+    const owner = { ...user, role: 'user' };
     const records = await base44.asServiceRole.entities[entityName].list('-created_date', 2000);
     const mine = (Array.isArray(records) ? records : []).filter((record: any) =>
-      isAuthorizedForRecord(record, user)
+      isAuthorizedForRecord(record, owner)
     );
 
     const groups = findDuplicateGroups(mine, entityName);

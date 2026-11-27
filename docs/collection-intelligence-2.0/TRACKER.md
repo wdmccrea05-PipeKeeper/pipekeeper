@@ -215,6 +215,7 @@ is open.
 | CI2-159 | Twenty-five release scenarios in the regression suite | done | `src/__tests__/actionAcceptanceScenarios.test.js` (36 tests) |
 | CI2-160 | Audit defects: empty accept on high-impact cards, merge never executing, custom value overwritten, replay counted as success, no retry after a dropped connection, refusal messages | done | see §11 of `UNIVERSAL_ACTION_FRAMEWORK.md` |
 | CI2-161 | Storage management panels and sharing revoke moved onto the framework | planned | they keep their current path; no second write path exists |
+| CI2-162 | Collection tools listed every collector's records for an administrator (admin bypass in the ownership check) and cut the collector's own list off at the 300-record page | done | `src/pages/CollectionTools.jsx`, `base44/functions/collectionItemDuplicates/entry.ts` — the list and the duplicate scan are both scoped to the signed-in collector |
 
 ---
 

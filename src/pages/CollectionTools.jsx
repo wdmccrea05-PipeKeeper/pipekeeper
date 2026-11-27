@@ -27,14 +27,6 @@ const SORTS = [
   { value: 'acquisition', label: 'Acquisition date' },
 ];
 
-function isMine(record, user) {
-  if (!record || !user) return false;
-  if (user.role === 'admin') return true;
-  if (record.created_by_id && record.created_by_id === user.id) return true;
-  const email = String(record.created_by || '').toLowerCase();
-  return !!email && email === String(user.email || '').toLowerCase();
-}
-
 function toCsv(rows) {
   const header = ['name', 'maker', 'acquisition_date', 'acquisition_cost', 'acquisition_source', 'serial_number', 'batch_number', 'condition', 'tags', 'lifecycle', 'documents'];
   const escape = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
@@ -74,9 +66,13 @@ export default function CollectionTools() {
     setLoading(true);
     setMessage('');
     try {
-      const page = await base44.entities[entityName].filter({}, { sort: '-created_date', limit: 300 });
-      const items = (page?.items || []).filter((record) => isMine(record, user));
-      setRecords(items);
+      // Scoped to the signed-in collector: an administrator reviewing collection
+      // tools must never see or bulk-edit another collector's records here.
+      const page = await base44.entities[entityName].filter(
+        { created_by: user.email },
+        { sort: '-created_date', limit: 300 }
+      );
+      setRecords(page?.items || []);
     } catch (loadError) {
       setMessage(loadError?.message || 'Could not load records');
       setRecords([]);
