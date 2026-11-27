@@ -73,7 +73,7 @@ export default function HelpCenter() {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8 bg-[rgba(20,15,10,0.5)] border border-[rgba(180,140,75,0.15)]">
+          <TabsList className="flex w-full overflow-x-auto justify-start mb-8 bg-[rgba(20,15,10,0.5)] border border-[rgba(180,140,75,0.15)]">
             <TabsTrigger value="tutorials" className="gap-2">
               <BookOpen className="w-4 h-4" />
               <span className="hidden sm:inline">{t('help.tutorials', 'Tutorials')}</span>

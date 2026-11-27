@@ -647,7 +647,7 @@ export default function WantList() {
   };
 
   return (
-    <div className="min-h-screen pb-10">
+    <div className="min-h-[100dvh] pb-10">
       <div className="max-w-2xl mx-auto px-4 py-6">
         {view === "entry" && (
           <div>

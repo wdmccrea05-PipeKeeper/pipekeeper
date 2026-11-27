@@ -111,7 +111,18 @@ export default function ValuationCenter() {
         {PRIVACY_NOTICE}
       </p>
 
-      {isLoading ? (
+      {!isLoading && items.length === 0 ? (
+        <div
+          className="rounded-2xl px-4 py-8 text-center"
+          style={{ border: '1px solid rgba(180,140,75,0.18)', background: 'rgba(255,255,255,0.02)' }}
+        >
+          <p className="text-sm font-semibold" style={{ color: '#F5F1E7' }}>Nothing to value yet</p>
+          <p className="mt-1 text-[13px] leading-relaxed" style={{ color: 'rgba(224,216,200,0.65)' }}>
+            Add a record to one of your collection modules. Recorded costs, appraisals and owner estimates then
+            appear here with their history.
+          </p>
+        </div>
+      ) : isLoading ? (
         <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>
           <Loader2 className="h-4 w-4 animate-spin" /> Loading your collection…
         </div>

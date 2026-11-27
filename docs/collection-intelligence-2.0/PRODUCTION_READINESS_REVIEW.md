@@ -131,6 +131,25 @@ Both initial failures were stale source assertions, not product defects: one exp
 - No destructive migration, no secret change, no price change, no data rewrite.
 - **Publish is blocked on blocker 1.** Publishing with 61 unprotected entities would ship a known privacy defect.
 
+## 12a. Usability and complexity acceptance (added after the CI 2.0 simplification pass)
+
+Release is blocked unless every line below passes. Automated checks live in
+`src/__tests__/usabilityMobileAcceptance.test.js` and `src/__tests__/curatorSimpleUi.test.js`;
+the review record is `USABILITY_AUDIT_2026-11-27.md`.
+
+| Check | Requirement | Status |
+|---|---|---|
+| U1 | No audited screen sizes itself with `100vh`; dynamic viewport units only | Passing |
+| U2 | No non-responsive grid of four or more columns on an audited screen | Passing |
+| U3 | No fixed-width panel wider than 320px on an audited screen | Passing |
+| U4 | Every audited screen that renders records has an empty state | Passing |
+| U5 | Hub reaches any module in one tap and a record in two | Passing |
+| U6 | Reporting is reachable in two taps through the one Reporting Center | Passing |
+| U7 | Curator opens on the conversation; analytical surfaces stay collapsed | Passing |
+| U8 | Dialogs and sheets stay inside the viewport | Passing |
+| U9 | Curator keeps one input, at most three suggestions, and Stop / Retry | Passing |
+| U10 | Every journey in the usability audit completes in three taps or fewer | Passing |
+
 ## 12. Recommended release sequence
 
 1. **Stage 1 (security):** apply owner-or-admin RLS to `Pipe`, `TobaccoBlend`, `Cigar`, `Bottle`, `Wine` one at a time; after each, sign in as a non-owner account and confirm the collection page shows only that account's records, then confirm the owner still sees everything.

@@ -270,7 +270,7 @@ function CommunityPageInner() {
 
   if (!hasPaid) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-[100dvh]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <UpgradePrompt
             featureName={t("communityExtended.communityFeatures")}
