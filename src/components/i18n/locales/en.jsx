@@ -216,6 +216,8 @@ export default {
     subscriptionRequests: "Subscription Requests",
     subscriptionTools: "Subscription Tools",
     curatorAnalytics: "Curator Analytics",
+    administration: "Administration",
+    adminDiagnostics: "Administrative Diagnostics",
     subscriptionE2ETest: "Sub E2E Test",
     contentModeration: "Content Moderation",
     eventsLog: "Events Log",
@@ -1161,6 +1163,15 @@ export default {
     totalSticks: "Total Sticks",
     humidors: "Humidors",
     sessionsLogged: "Sessions",
+    estimatedValue: "Estimated Value",
+    historicalRecords: "Historical Records",
+    collectionAnalytics: "Collection Analytics",
+    collectionAnalyticsHint: "Manufacturer, vitola, documentation, aging and environment breakdowns",
+  },
+
+  cigarkeeper: {
+    title: "CigarKeeper",
+    description: "Track, preserve and explore your cigar collection",
   },
 
   curator: {

@@ -203,7 +203,7 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
         },
         {
           page: "AdminDiagnostics",
-          label: t("nav.adminDiagnostics", "Administrative Diagnostics"),
+          label: t("nav.adminDiagnostics"),
           icon: Activity,
           path: "/AdminDiagnostics",
         },
@@ -231,7 +231,7 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
           items={adminItems}
           vertical={vertical}
           onItemClick={onItemClick}
-          label={t("nav.administration", "Administration")}
+          label={t("nav.administration")}
         />
       ) : null}
       {onQuickAccess ? (
