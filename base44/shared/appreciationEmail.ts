@@ -17,6 +17,9 @@ export const BRAND_NAME = "CollectionKeeper";
 export const LOGO_URL =
   "https://media.base44.com/images/public/694956e18d119cc497192525/b5c3204ab_CollectionKeeperWB.png";
 export const CLICK_PATH = "/functions/trackAppreciationEmailClick";
+export const UNSUBSCRIBE_PATH = "/functions/unsubscribeAppreciationEmail";
+export const HERO_URL =
+  "https://media.base44.com/images/public/694956e18d119cc497192525/211a3c29fb2c62912e3ca40c77afb2b1_generated_image.png";
 export const DEFAULT_MAILING_ADDRESS = "";
 
 export const EMAIL_LANGS = ["en", "es", "fr", "de", "it", "pt-BR", "nl", "pl", "ja", "zh-Hans"];
@@ -396,6 +399,11 @@ export function clickUrlFor(token) {
   return `${APP_ORIGIN}${CLICK_PATH}?t=${safe}`;
 }
 
+export function unsubscribeUrlFor(token) {
+  const safe = encodeURIComponent(String(token || "test"));
+  return `${APP_ORIGIN}${UNSUBSCRIBE_PATH}?t=${safe}`;
+}
+
 export function redemptionUrl(campaignId) {
   const suffix = campaignId ? `&ec=${encodeURIComponent(campaignId)}` : "";
   return `${APP_URL}/Subscription?appreciation=1&channel=email${suffix}`;
@@ -429,6 +437,7 @@ export function buildVariables(lang, options = {}) {
     mailing_address: mailingAddress,
     brand: BRAND_NAME,
     logo_url: LOGO_URL,
+    hero_url: HERO_URL,
     module_1: MODULES[0],
     module_2: MODULES[1],
     module_3: MODULES[2],
@@ -440,11 +449,12 @@ export function buildVariables(lang, options = {}) {
   return vars;
 }
 
-/** Plain-text alternative, built from the same copy as the HTML template. */
+/** Plain-text alternative, built from the same copy as the HTML email. */
 export function buildPlainText(lang, options = {}) {
   const copy = copyFor(lang);
   const mailingAddress = String(options.mailingAddress || "").trim();
   const ctaUrl = options.ctaUrl || redemptionUrl(options.campaignId);
+  const unsubscribeUrl = options.unsubscribeUrl || unsubscribeUrlFor("test");
   const lines = [
     copy.headline,
     "",
@@ -471,6 +481,7 @@ export function buildPlainText(lang, options = {}) {
     "",
     copy.footerWhy,
     mailingAddress ? `${BRAND_NAME}, ${mailingAddress}` : BRAND_NAME,
+    `${copy.unsubscribe}: ${unsubscribeUrl}`,
   ];
   return lines.join("\n");
 }
@@ -574,4 +585,123 @@ export function chunk(list, size) {
   const out = [];
   for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
   return out;
+}
+
+function esc(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+const EMAIL_FONT = "'Wix Madefor Text', Helvetica, Arial, sans-serif";
+const EMAIL_SERIF = "'Dazzed', Georgia, 'Times New Roman', serif";
+const ORANGE = "#ff773c";
+const CREAM = "#f8f6f4";
+const PAGE_BG = "#f4f1ec";
+const INK = "#0f0e0e";
+const MUTED = "#5d5d5d";
+const LINE = "#e5e7eb";
+
+/**
+ * The campaign email, built in code so the text, logo, hero image and branding
+ * are always present — nothing depends on a separate template compiling.
+ * Table-based with inline styles so Outlook, Gmail and phones all render it.
+ */
+export function buildHtml(lang, options = {}) {
+  const copy = copyFor(lang);
+  const code = normalizeEmailLang(lang);
+  const mailingAddress = String(options.mailingAddress || "").trim();
+  const ctaUrl = options.ctaUrl || redemptionUrl(options.campaignId);
+  const unsubscribeUrl = options.unsubscribeUrl || unsubscribeUrlFor("test");
+  const subject = options.subject || copy.subject;
+  const footerAddress = mailingAddress ? `${BRAND_NAME} &middot; ${esc(mailingAddress)}` : BRAND_NAME;
+
+  const chip = (name) =>
+    `<td width="50%" style="padding:4px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;"><tr><td style="background:${CREAM};border:1px solid ${LINE};border-radius:6px;padding:11px 13px;font-family:${EMAIL_FONT};font-size:14px;font-weight:700;color:${INK};">${esc(name)}</td></tr></table></td>`;
+
+  const featureRows = copy.features
+    .map(
+      (feature) =>
+        `<tr><td valign="top" style="padding:0 0 9px 0;font-family:${EMAIL_FONT};font-size:14px;line-height:1.6;color:${INK};"><span style="color:${ORANGE};font-weight:700;">&#8226;</span>&nbsp;&nbsp;${esc(feature)}</td></tr>`
+    )
+    .join("");
+
+  return `<!DOCTYPE html>
+<html lang="${code}" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="x-apple-disable-message-reformatting" />
+<title>${esc(subject)}</title>
+</head>
+<body style="margin:0;padding:0;background-color:${PAGE_BG};-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(copy.preview)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${PAGE_BG};">
+<tr><td align="center" style="padding:0;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background-color:#ffffff;">
+
+<tr><td style="background-color:${ORANGE};padding:20px 30px;">
+<img src="${LOGO_URL}" width="170" alt="${BRAND_NAME}" style="display:block;width:170px;max-width:170px;height:auto;border:0;outline:none;text-decoration:none;" />
+<div style="font-family:${EMAIL_FONT};font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#000000;padding-top:9px;">${BRAND_NAME}</div>
+</td></tr>
+
+<tr><td style="padding:0;line-height:0;">
+<img src="${HERO_URL}" width="600" alt="${esc(copy.headline)}" style="display:block;width:100%;max-width:600px;height:auto;border:0;outline:none;text-decoration:none;" />
+</td></tr>
+
+<tr><td style="background-color:${CREAM};padding:30px 32px 10px 32px;">
+<div style="font-family:${EMAIL_FONT};font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${ORANGE};padding-bottom:10px;">A thank-you from ${BRAND_NAME}</div>
+<h1 style="margin:0;font-family:${EMAIL_SERIF};font-size:27px;line-height:1.22;font-weight:700;color:${INK};">${esc(copy.headline)}</h1>
+<p style="margin:14px 0 0 0;font-family:${EMAIL_FONT};font-size:16px;line-height:1.6;color:${MUTED};">${esc(copy.intro)}</p>
+</td></tr>
+
+<tr><td style="background-color:#ffffff;padding:22px 32px 6px 32px;">
+<p style="margin:0 0 12px 0;font-family:${EMAIL_FONT};font-size:15px;line-height:1.6;color:${INK};">${esc(copy.gift)}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>${chip(MODULES[0])}${chip(MODULES[1])}</tr>
+<tr>${chip(MODULES[2])}${chip(MODULES[3])}</tr>
+</table>
+</td></tr>
+
+<tr><td style="background-color:#ffffff;padding:16px 32px 24px 32px;">
+<p style="margin:0 0 10px 0;font-family:${EMAIL_FONT};font-size:15px;line-height:1.6;font-weight:700;color:${INK};">${esc(copy.featuresIntro)}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${featureRows}</table>
+</td></tr>
+
+<tr><td style="background-color:${CREAM};padding:26px 32px 30px 32px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-left:4px solid ${ORANGE};">
+<tr><td style="padding:2px 0 2px 14px;">
+<p style="margin:0;font-family:${EMAIL_FONT};font-size:16px;line-height:1.55;font-weight:700;color:${INK};">${esc(copy.deadline)}</p>
+<p style="margin:8px 0 0 0;font-family:${EMAIL_FONT};font-size:14px;line-height:1.6;color:${MUTED};">${esc(copy.timing)}</p>
+</td></tr>
+</table>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:22px auto 0 auto;">
+<tr><td align="center" bgcolor="${ORANGE}" style="border-radius:6px;">
+<a href="${ctaUrl}" target="_blank" style="display:inline-block;padding:16px 34px;font-family:${EMAIL_FONT};font-size:16px;font-weight:700;line-height:1;color:#000000;text-decoration:none;border-radius:6px;">${esc(copy.cta)}</a>
+</td></tr>
+</table>
+<p style="margin:16px 0 0 0;text-align:center;font-family:${EMAIL_FONT};font-size:13px;line-height:1.6;color:${MUTED};">${esc(copy.promise)}</p>
+</td></tr>
+
+<tr><td style="background-color:#ffffff;padding:26px 32px 24px 32px;">
+<p style="margin:0 0 6px 0;font-family:${EMAIL_FONT};font-size:15px;line-height:1.6;color:${INK};">${esc(copy.thanks)}</p>
+<p style="margin:0 0 16px 0;font-family:${EMAIL_FONT};font-size:15px;line-height:1.6;color:${INK};">${esc(copy.signoff)}</p>
+<p style="margin:0;font-family:${EMAIL_SERIF};font-size:19px;line-height:1.4;font-weight:700;color:${INK};">${esc(copy.tagline)}</p>
+<p style="margin:4px 0 12px 0;font-family:${EMAIL_FONT};font-size:13px;line-height:1.6;color:${MUTED};">${esc(copy.builtBy)}</p>
+<p style="margin:0;font-family:${EMAIL_FONT};font-size:13px;line-height:1.6;"><a href="${FACEBOOK_URL}" target="_blank" style="color:${ORANGE};text-decoration:underline;">${esc(copy.follow)}</a></p>
+</td></tr>
+
+<tr><td style="background-color:${PAGE_BG};border-top:1px solid ${LINE};padding:20px 32px 26px 32px;">
+<p style="margin:0 0 6px 0;font-family:${EMAIL_FONT};font-size:11px;line-height:1.6;color:${MUTED};">${esc(copy.footerWhy)}</p>
+<p style="margin:0 0 8px 0;font-family:${EMAIL_FONT};font-size:11px;line-height:1.6;color:${MUTED};">${footerAddress}</p>
+<p style="margin:0;font-family:${EMAIL_FONT};font-size:11px;line-height:1.6;"><a href="${unsubscribeUrl}" target="_blank" style="color:${MUTED};text-decoration:underline;">${esc(copy.unsubscribe)}</a></p>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
 }

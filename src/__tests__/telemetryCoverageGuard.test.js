@@ -16,6 +16,7 @@
  *   - base44/functions/invokeCuratorLLM/entry.ts          (inline telemetry via trackUsage)
  *   - base44/functions/reclassifyTobaccoBlends/entry.ts   (inline telemetry via trackIntegrationEvent)
  *   - base44/functions/extractCuratorSignals/entry.ts     (inline telemetry via trackIntegrationEvent)
+ *   - base44/functions/adminEmailCampaigns/entry.ts         (inline telemetry: one EmailCampaignEvent row per send)
  *   - base44/functions/_hub/MODULE_EXPERIENCE_EXPANSION_SUMMARY/entry.ts (documentation file, not a real function)
  */
 
@@ -44,6 +45,7 @@ const ALLOWED_DIRECT_CALL_FILES = new Set([
   'base44/functions/invokeCuratorLLM/entry.ts',
   'base44/functions/reclassifyTobaccoBlends/entry.ts',
   'base44/functions/extractCuratorSignals/entry.ts',
+  'base44/functions/adminEmailCampaigns/entry.ts',
   'base44/functions/_hub/MODULE_EXPERIENCE_EXPANSION_SUMMARY/entry.ts',
 ]);
 

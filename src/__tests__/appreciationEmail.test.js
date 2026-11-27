@@ -12,17 +12,19 @@ import path from "node:path";
  */
 
 const read = (relative) => fs.readFileSync(path.join(process.cwd(), relative), "utf8");
+const exists = (relative) => fs.existsSync(path.join(process.cwd(), relative));
 
 const shared = read("base44/shared/appreciationEmail.ts");
 const campaignRules = read("base44/shared/appreciationCampaign.ts");
-const template = read("base44/emails/CollectorAppreciation.html");
 const sendFn = read("base44/functions/adminEmailCampaigns/entry.ts");
 const audienceFn = read("base44/functions/appreciationEmailAudience/entry.ts");
 const clickFn = read("base44/functions/trackAppreciationEmailClick/entry.ts");
+const unsubscribeFn = read("base44/functions/unsubscribeAppreciationEmail/entry.ts");
 const reportFn = read("base44/functions/appreciationEmailReport/entry.ts");
 const activateFn = read("base44/functions/activateAppreciationCampaign/entry.ts");
 const workflow = read("base44/workflows/Appreciation Email Campaign Sender.jsonc");
 const page = read("src/pages/EmailCampaigns.jsx");
+const preview = read("src/components/emailcampaign/EmailPreview.jsx");
 
 describe("localized campaign copy", () => {
   it("covers all ten supported languages", () => {
@@ -37,8 +39,7 @@ describe("localized campaign copy", () => {
       const count = (shared.match(new RegExp(`\\n  ${field}`, "g")) || []).length;
       expect(count, `${field} occurrences`).toBe(10);
     }
-    const featureLists = (shared.match(/features: \[/g) || []).length;
-    expect(featureLists).toBe(10);
+    expect((shared.match(/features: \[/g) || []).length).toBe(10);
   });
 
   it("keeps the four modules and the promo promise intact", () => {
@@ -53,29 +54,54 @@ describe("localized campaign copy", () => {
     expect(shared).toContain("appreciation=1&channel=email");
     expect(shared).toContain('APP_ORIGIN = "https://collectionkeeper.base44.app"');
     expect(shared).toContain("/functions/trackAppreciationEmailClick");
+    expect(shared).toContain("/functions/unsubscribeAppreciationEmail");
   });
 });
 
-describe("email template", () => {
-  it("is a branded MJML email with the official logo", () => {
-    expect(template.trim().startsWith("<mjml>")).toBe(true);
-    expect(template).toContain("{{logo_url}}");
-    expect(template).toContain("#ff773c");
-    expect(template).toContain("{{subject_line}}");
-    expect(template).toContain("{{preview}}");
+describe("email rendering", () => {
+  it("builds the email in code so content can never render blank", () => {
+    expect(shared).toContain("export function buildHtml");
+    expect(shared).toContain("<!DOCTYPE html>");
+    expect(shared).toContain("<img src=\"${LOGO_URL}\"");
+    expect(shared).toContain("<img src=\"${HERO_URL}\"");
+    expect(shared).toContain("#ff773c");
+    expect(shared).toContain("Georgia");
+    expect(shared).not.toContain("{{");
   });
 
-  it("carries the CTA, the deadline and a working unsubscribe link", () => {
-    expect(template).toContain('href="{{cta_url}}"');
-    expect(template).toContain("{{deadline}}");
-    expect(template).toContain("{{unsubscribe_url}}");
-    expect(template).toContain("{{mailing_address}}");
-    expect(template).toContain("{{follow_url}}");
+  it("carries the headline, the four modules, every feature and the CTA", () => {
+    expect(shared).toContain("${esc(copy.headline)}");
+    expect(shared).toContain("${esc(copy.gift)}");
+    expect(shared).toContain("${chip(MODULES[0])}");
+    expect(shared).toContain("featureRows");
+    expect(shared).toContain('href="${ctaUrl}"');
+    expect(shared).toContain("${esc(copy.deadline)}");
   });
 
-  it("stacks on mobile by using MJML sections rather than fixed widths", () => {
-    expect(template).toContain("<mj-section");
-    expect(template).not.toContain("width:600px");
+  it("includes a working unsubscribe link and the mailing address", () => {
+    expect(shared).toContain('href="${unsubscribeUrl}"');
+    expect(shared).toContain("footerAddress");
+    expect(shared).toContain("${esc(copy.footerWhy)}");
+  });
+
+  it("is responsive and image-safe for mail clients", () => {
+    expect(shared).toContain('width="600"');
+    expect(shared).toContain("max-width:600px");
+    expect(shared).toContain('name="viewport"');
+    expect(shared).toContain("x-apple-disable-message-reformatting");
+  });
+
+  it("no longer depends on a separate template file", () => {
+    expect(exists("base44/emails/CollectorAppreciation.html")).toBe(false);
+    // template_name survives only as the campaign record's dedupe label, never as a send argument
+    expect((sendFn.match(/template_name: EMAIL_TEMPLATE_NAME,/g) || []).length).toBe(1);
+    expect(sendFn).toContain("html: buildHtml(");
+    expect(sendFn).toContain("text: buildPlainText(");
+  });
+
+  it("previews the real HTML rather than an approximation", () => {
+    expect(preview).toContain("srcDoc={preview.html}");
+    expect(preview).toContain("preview.plain_text");
   });
 });
 
@@ -85,6 +111,7 @@ describe("sending pipeline guards", () => {
     expect(sendFn).toContain("{ status: 403 }");
     expect(audienceFn).toContain("{ status: 403 }");
     expect(reportFn).toContain("{ status: 403 }");
+    expect(unsubscribeFn).not.toContain("auth.me()");
   });
 
   it("requires explicit approval and compliance details before delivery", () => {
@@ -92,6 +119,7 @@ describe("sending pipeline guards", () => {
     expect(sendFn).toContain('"mailing_address_required"');
     expect(sendFn).toContain("approved_by");
     expect(sendFn).toContain('category: "marketing"');
+    expect(sendFn).toContain('from_name: "CollectionKeeper"');
   });
 
   it("refuses to deliver once the redemption window closes", () => {
@@ -119,6 +147,8 @@ describe("sending pipeline guards", () => {
     expect(sendFn).toContain("addSuppression(base44, row.email, suppressionReason");
     expect(sendFn).toContain('reason === "spam" ? "complaint" : reason');
     expect(sendFn).toContain('action === "suppression_add"');
+    expect(unsubscribeFn).toContain('reason: "unsubscribed"');
+    expect(unsubscribeFn).toContain("EmailSuppression");
   });
 
   it("processes scheduled campaigns on a schedule", () => {
@@ -134,6 +164,12 @@ describe("links cannot grant access", () => {
     expect(clickFn).toContain("Response.redirect(redemptionUrl(");
     expect(clickFn).not.toContain("AppreciationGrant");
     expect(clickFn).not.toContain("EmailCampaignRecipient.bulkCreate");
+  });
+
+  it("the unsubscribe endpoint only suppresses one address", () => {
+    expect(unsubscribeFn).toContain('token === "test"');
+    expect(unsubscribeFn).not.toContain("AppreciationGrant");
+    expect(unsubscribeFn).not.toContain("AppreciationCampaignEvent");
   });
 
   it("activation still enforces eligibility, the deadline and one grant per collector", () => {

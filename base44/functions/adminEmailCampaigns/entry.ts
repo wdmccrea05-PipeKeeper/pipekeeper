@@ -5,6 +5,7 @@ import { loadEmailAudience } from "../../shared/appreciationEmailServer.ts";
 import {
   EMAIL_TEMPLATE_KEY,
   EMAIL_TEMPLATE_NAME,
+  buildHtml,
   buildPlainText,
   buildVariables,
   canDeliverCampaign,
@@ -13,6 +14,7 @@ import {
   copyFor,
   normalizeEmailLang,
   redemptionUrl,
+  unsubscribeUrlFor,
 } from "../../shared/appreciationEmail.ts";
 
 const CONCURRENCY = 5;
@@ -91,16 +93,20 @@ async function queueAudience(base44, campaign, audience) {
 async function deliverOne(base44, campaign, row) {
   const nowIso = new Date().toISOString();
   try {
-    const variables = buildVariables(row.language, {
+    const options = {
       mailingAddress: campaign.mailing_address,
       ctaUrl: clickUrlFor(row.click_token),
+      unsubscribeUrl: unsubscribeUrlFor(row.click_token),
       campaignId: campaign.id,
-    });
+      subject: campaign.subject || copyFor(row.language).subject,
+    };
 
     const result = await base44.asServiceRole.integrations.Core.SendEmail({
       to: row.email,
-      template_name: EMAIL_TEMPLATE_NAME,
-      variables,
+      subject: options.subject,
+      html: buildHtml(row.language, options),
+      text: buildPlainText(row.language, options),
+      from_name: "CollectionKeeper",
       category: "marketing",
     });
 
@@ -233,15 +239,21 @@ export default async function (req) {
       const language = normalizeEmailLang(body?.language);
       const mailingAddress = String(body?.mailing_address || "").trim();
       const campaignId = body?.campaign_id || null;
+      const previewOptions = {
+        mailingAddress,
+        campaignId,
+        ctaUrl: redemptionUrl(campaignId),
+        unsubscribeUrl: unsubscribeUrlFor("test"),
+      };
       return Response.json({
         ok: true,
         language,
         subject: copyFor(language).subject,
         preview_text: copyFor(language).preview,
         copy: copyFor(language),
-        variables: buildVariables(language, { mailingAddress, campaignId, ctaUrl: redemptionUrl(campaignId) }),
-        plain_text: buildPlainText(language, { mailingAddress, campaignId }),
-        template_name: EMAIL_TEMPLATE_NAME,
+        variables: buildVariables(language, previewOptions),
+        html: buildHtml(language, previewOptions),
+        plain_text: buildPlainText(language, previewOptions),
       });
     }
 
@@ -300,15 +312,19 @@ export default async function (req) {
       // Review copies go to the administrator only, so they do not require the
       // compliance footer details that a real distribution does.
       const language = normalizeEmailLang(body?.language || "en");
+      const options = {
+        mailingAddress: campaign.mailing_address,
+        ctaUrl: redemptionUrl(campaign.id),
+        unsubscribeUrl: unsubscribeUrlFor("test"),
+        campaignId: campaign.id,
+        subject: campaign.subject || copyFor(language).subject,
+      };
       const result = await base44.asServiceRole.integrations.Core.SendEmail({
         to: adminEmail,
-        template_name: EMAIL_TEMPLATE_NAME,
-        variables: buildVariables(language, {
-          mailingAddress: campaign.mailing_address,
-          ctaUrl: redemptionUrl(campaign.id),
-          campaignId: campaign.id,
-          subjectOverride: campaign.subject || null,
-        }),
+        subject: options.subject,
+        html: buildHtml(language, options),
+        text: buildPlainText(language, options),
+        from_name: "CollectionKeeper",
         category: "marketing",
       });
       const nowIso = new Date().toISOString();
