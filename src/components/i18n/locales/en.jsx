@@ -1163,6 +1163,7 @@ export default {
     totalSticks: "Total Sticks",
     humidors: "Humidors",
     sessionsLogged: "Sessions",
+    humidorsNeedingAttention: "Humidors needing attention",
     estimatedValue: "Estimated Value",
     historicalRecords: "Historical Records",
     collectionAnalytics: "Collection Analytics",

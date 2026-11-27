@@ -281,7 +281,7 @@ function CigarKeeperInner() {
     {
       key: 'history',
       Icon: CalendarDays,
-      label: t('sessionHistory.title', 'Historical Records'),
+      label: t('cigars.historicalRecords'),
       onClick: () => navigate('/SessionHistory'),
     },
     {
@@ -315,7 +315,7 @@ function CigarKeeperInner() {
       onClick: () => drillDown({ tab: 'humidors' }),
     },
     {
-      label: t('cigars.estimatedValue', 'Est. Value'),
+      label: t('cigars.estimatedValue'),
       value: collectionValue > 0 ? formatFromBase(Math.round(collectionValue)) : '—',
       onClick: collectionValue > 0 ? () => drillDown({ tab: 'collection' }) : undefined,
     },
@@ -364,8 +364,8 @@ function CigarKeeperInner() {
 
   return (
     <ModulePageShell
-      title={t('cigarkeeper.title', 'CigarKeeper')}
-      subtitle={t('cigarkeeper.description', 'Track, preserve and explore your cigar collection')}
+      title={t('cigarkeeper.title')}
+      subtitle={t('cigarkeeper.description')}
       icon={
         <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#D4A574" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <rect x="2" y="10" width="16" height="4" rx="2" />
@@ -392,11 +392,8 @@ function CigarKeeperInner() {
       highlights={<ModuleHighlightsSection highlights={highlights} />}
       analytics={
         <ModuleAnalyticsSection
-          title={t('cigars.collectionAnalytics', 'Collection analytics')}
-          description={t(
-            'cigars.collectionAnalyticsHint',
-            'Manufacturer, vitola, documentation, aging and environment breakdowns'
-          )}
+          title={t('cigars.collectionAnalytics')}
+          description={t('cigars.collectionAnalyticsHint')}
         >
           <CigarKeeperDashboard
             cigars={cigars}

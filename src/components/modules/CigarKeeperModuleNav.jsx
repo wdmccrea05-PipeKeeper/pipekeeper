@@ -12,7 +12,7 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
   const [addCigarOpen, setAddCigarOpen] = useState(false);
 
   const items = [
-    { page: 'Cigars', label: t('cigars.cigars'), Icon: Cigarette },
+    { page: 'Cigars', label: t('cigars.collection'), Icon: Cigarette },
     { page: 'SessionHistory', label: t('sessionHistory.title', 'Session History'), Icon: CalendarDays },
     { page: 'CigarInsights', label: t('nav.insights'), Icon: TrendingUp },
     { page: 'ReportingCenter?module=cigarkeeper', label: t('nav.reports', 'Reports'), Icon: FileBarChart2 },
@@ -60,8 +60,8 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('cigars.logSession')}
-          aria-label={t('cigars.logSession')}
+          title={t('session.logSession')}
+          aria-label={t('session.logSession')}
         >
           <BookOpen className="w-4 h-4" />
           <span className="hidden sm:inline">{t('cigars.logSession')}</span>
@@ -71,8 +71,8 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
           size="sm"
           variant="ghost"
           className="gap-1 text-xs"
-          title={t('import.bulkImport')}
-          aria-label={t('import.bulkImport')}
+          title={t('home.bulkImport')}
+          aria-label={t('home.bulkImport')}
         >
           <FileSpreadsheet className="w-4 h-4" />
           <span className="hidden sm:inline">{t('import.bulkImport')}</span>
