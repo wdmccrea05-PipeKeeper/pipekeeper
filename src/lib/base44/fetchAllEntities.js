@@ -30,6 +30,8 @@
  * @param {string}  [label]            Optional caller label (e.g. component name +
  *                                     entity) used in diagnostic console.info logs.
  *                                     Omit in production-silent code paths.
+ * @param {object}  [options]          Set strict to reject failed, malformed or
+ *                                     capped queries instead of returning partial data.
  * @returns {Promise<Array>}           All matching records, deduplicated by id.
  */
 export async function fetchAllEntities(
@@ -39,6 +41,7 @@ export async function fetchAllEntities(
   pageSize = 5000,
   maxPages = 200,
   label = undefined,
+  options = {},
 ) {
   if (label) {
     console.info('[PK:fetch:start]', {
@@ -60,11 +63,14 @@ export async function fetchAllEntities(
     let page;
     try {
       page = await entity.filter(filterObj, sortOrder, pageSize, skip);
-    } catch {
-      // Surface errors from the final completed pages, not a mid-stream retry
+    } catch (error) {
+      if (options.strict) throw error;
       break;
     }
 
+    if (!Array.isArray(page) && options.strict) {
+      throw new Error('Entity query returned an invalid page');
+    }
     if (!Array.isArray(page) || page.length === 0) break;
 
     for (const row of page) {
@@ -87,6 +93,10 @@ export async function fetchAllEntities(
     if (page.length < pageSize) break;
 
     skip += pageSize;
+  }
+
+  if (options.strict && pagesRead === maxPages && skip === maxPages * pageSize) {
+    throw new Error('Entity query exceeded the pagination limit');
   }
 
   if (label) {

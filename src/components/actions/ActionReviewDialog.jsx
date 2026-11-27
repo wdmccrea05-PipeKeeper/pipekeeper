@@ -62,6 +62,12 @@ export default function ActionReviewDialog({
                   {action.title || actionTypeLabel(action.type)}
                 </p>
 
+                {alternatives[action.id] && (
+                  <p className="mt-1 text-[12.5px]" style={{ color: '#C6A15B' }}>
+                    Chosen: {(action.alternatives || []).find((entry) => entry.id === alternatives[action.id])?.label}
+                  </p>
+                )}
+
                 {(action.proposedValues || []).length > 0 && (
                   <div className="mt-1.5 space-y-1">
                     {action.proposedValues.map((row, index) => (

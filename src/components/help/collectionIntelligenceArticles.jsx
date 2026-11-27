@@ -7,6 +7,18 @@
  */
 export const COLLECTION_INTELLIGENCE_ARTICLES = [
   {
+    id: 'collection-health',
+    title: 'Reviewing Collection Health',
+    module: 'hub',
+    category: 'features',
+    summary: 'Review groups of findings and choose which records to inspect.',
+    body: 'Collection Health groups findings by issue type. Select a group to view its records, or open detailed findings and filters to narrow the list by module or issue. A record can appear in more than one group. For storage findings that offer an action, select each record and choose its location before reviewing and accepting the changes. Defer and dismiss record decisions without updating the collection record.',
+    keywords: ['collection health', 'findings', 'storage', 'documentation', 'defer', 'dismiss'],
+    questions: ['how do i review collection health', 'how do i assign storage to a record'],
+    synonyms: ['collection findings', 'record health'],
+    relatedArticles: ['collection-tools', 'reporting-center'],
+  },
+  {
     id: 'collection-tools',
     title: 'Collection Tools: Bulk Edit and Duplicates',
     module: 'hub',

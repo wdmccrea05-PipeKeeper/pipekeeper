@@ -8,6 +8,7 @@
  */
 
 import { base44 } from '@/api/base44Client';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 
 export const FINDING_STATUSES = ['deferred', 'dismissed', 'resolved'];
 
@@ -27,11 +28,10 @@ export function indexFindingStates(rows = []) {
 
 export async function loadFindingStates(email) {
   if (!email) return {};
-  const page = await base44.entities.CollectionFindingState.filter(
-    { user_email: email },
-    { limit: 500 }
+  const rows = await fetchAllEntities(
+    base44.entities.CollectionFindingState, { user_email: email }, '-created_date', 500, 200, undefined, { strict: true }
   );
-  return indexFindingStates(page?.items || []);
+  return indexFindingStates(rows.filter((row) => row.user_email === email));
 }
 
 export async function saveFindingState({ email, finding, status, note = '' }) {
@@ -49,11 +49,13 @@ export async function saveFindingState({ email, finding, status, note = '' }) {
     resolved_at: status === 'resolved' ? new Date().toISOString() : null,
   };
 
-  const page = await base44.entities.CollectionFindingState.filter(
+  const rows = await base44.entities.CollectionFindingState.filter(
     { user_email: email, finding_key: finding.key },
-    { limit: 1 }
+    '-created_date',
+    1
   );
-  const existing = page?.items?.[0];
+  if (!Array.isArray(rows)) throw new Error('Finding state query returned an invalid page');
+  const existing = rows.find((row) => row.user_email === email);
   if (existing) return base44.entities.CollectionFindingState.update(existing.id, payload);
   return base44.entities.CollectionFindingState.create(payload);
 }

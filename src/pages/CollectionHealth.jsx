@@ -69,10 +69,11 @@ function Chip({ active, children, onClick }) {
 export default function CollectionHealth() {
   const { user } = useCurrentUser();
   const { enabled, isLoading: modulesLoading } = useEnabledModules();
-  const { states, setState } = useFindingStates(user);
+  const { states, setState, error: stateError } = useFindingStates(user);
 
   const [moduleFilter, setModuleFilter] = useState(() => initialParam('module'));
   const [typeFilter, setTypeFilter] = useState(() => initialParam('type'));
+  const [showDetails, setShowDetails] = useState(() => Boolean(initialParam('type')));
   const [duplicates, setDuplicates] = useState({ groups: [], scanning: false, scanned: false });
 
   const origin = initialParam('origin');
@@ -140,7 +141,11 @@ export default function CollectionHealth() {
     [collections, data.locations, data.humidors, data.valuations, duplicates.groups]
   );
 
-  const summary = useMemo(() => summarizeFindings(findings), [findings]);
+  const activeFindings = useMemo(
+    () => findings.filter((finding) => !['dismissed', 'resolved'].includes(states[finding.key]?.status)),
+    [findings, states]
+  );
+  const summary = useMemo(() => summarizeFindings(activeFindings), [activeFindings]);
   const visibleFindings = useMemo(
     () => (typeFilter ? findings.filter((finding) => finding.type === typeFilter) : findings),
     [findings, typeFilter]
@@ -181,6 +186,11 @@ export default function CollectionHealth() {
           Some collection data could not be loaded, so this list may be incomplete.
         </p>
       )}
+      {stateError && (
+        <p className="mb-4 text-sm" role="alert" style={{ color: '#E0A0A0' }}>
+          Finding decisions could not be loaded. Please reload before reviewing them.
+        </p>
+      )}
 
       {!isLoading && !hasModules ? (
         <div className="rounded-2xl p-8 text-center" style={{ border: '1px solid rgba(180,140,75,0.18)' }}>
@@ -192,24 +202,40 @@ export default function CollectionHealth() {
         <div className="space-y-4 min-w-0">
           <StatStrip
             items={[
-              { label: 'Needs review', value: isLoading ? '—' : summary.total, onClick: () => setTypeFilter('') },
+              { label: 'Needs review', value: isLoading ? '—' : summary.total, onClick: () => { setTypeFilter(''); setShowDetails(true); } },
               {
                 label: 'Storage',
                 value: isLoading ? '—' : summary.byType.storage,
-                onClick: () => setTypeFilter('storage'),
+                onClick: () => { setTypeFilter('storage'); setShowDetails(true); },
               },
               {
                 label: 'Classification',
                 value: isLoading ? '—' : summary.byType.classification,
-                onClick: () => setTypeFilter('classification'),
+                onClick: () => { setTypeFilter('classification'); setShowDetails(true); },
               },
               {
                 label: 'Documentation',
                 value: isLoading ? '—' : summary.byType.documentation,
-                onClick: () => setTypeFilter('documentation'),
+                onClick: () => { setTypeFilter('documentation'); setShowDetails(true); },
               },
             ]}
           />
+
+          {!isLoading && (
+            <section aria-label="Finding groups" className="space-y-2">
+              {FINDING_TYPES.filter((type) => summary.byType[type.key] > 0).map((type) => (
+                <button
+                  type="button"
+                  key={type.key}
+                  onClick={() => { setTypeFilter(type.key); setShowDetails(true); }}
+                  className="w-full rounded-xl px-4 py-3 text-left min-h-[44px]"
+                  style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(180,140,75,0.18)', color: '#F5F1E7' }}
+                >
+                  {type.label}: {summary.byType[type.key]} <span style={{ color: TEXT_SECONDARY }}>· {['storage', 'documentation', 'valuation'].includes(type.key) ? 'Optional information' : 'Review'} · View records</span>
+                </button>
+              ))}
+            </section>
+          )}
 
           <div className="-mx-1 overflow-x-auto nav-scroll-bar">
             <div className="flex gap-2 px-1 py-1">
@@ -225,6 +251,12 @@ export default function CollectionHealth() {
             </div>
           </div>
 
+          <button type="button" onClick={() => setShowDetails((value) => !value)} aria-expanded={showDetails}
+            className="text-sm font-semibold min-h-[44px]" style={{ color: '#D4A574' }}>
+            {showDetails ? 'Hide detailed findings' : 'View detailed findings and filters'}
+          </button>
+
+          {showDetails && <div className="space-y-4">
           <div className="-mx-1 overflow-x-auto nav-scroll-bar">
             <div className="flex gap-2 px-1 py-1">
               <Chip active={!typeFilter} onClick={() => setTypeFilter('')}>
@@ -283,6 +315,7 @@ export default function CollectionHealth() {
               {duplicates.scanned ? 'Check again' : 'Check for duplicates'}
             </button>
           )}
+          </div>}
 
           {resolvedCount > 0 && (
             <p className="text-[11.5px]" style={{ color: TEXT_CAPTION }}>
@@ -292,8 +325,8 @@ export default function CollectionHealth() {
           )}
 
           <p className="text-[11.5px]" style={{ color: TEXT_CAPTION }}>
-            Optional fields left blank are never counted against you. Defer what you will come back to, and dismiss what
-            does not apply.
+            Some findings concern optional information. Defer what you will come back to, and dismiss what does not
+            apply; neither changes the underlying record.
           </p>
         </div>
       )}

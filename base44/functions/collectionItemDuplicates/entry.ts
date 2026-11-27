@@ -8,6 +8,7 @@ import {
   COLLECTION_ENTITIES,
   findDuplicateGroups,
   isAuthorizedForRecord,
+  listOwnedCollectionRecords,
 } from '../../shared/collectionRecords.ts';
 
 /**
@@ -38,11 +39,9 @@ Deno.serve(async (req) => {
     // Always the caller's own records: an administrator reviewing collection tools
     // must see their own collection, never every collector's at once. Ownership is
     // decided by the shared authorization helper, with its admin override removed.
+    const records = await listOwnedCollectionRecords(base44.asServiceRole.entities[entityName], user);
     const owner = { ...user, role: 'user' };
-    const records = await base44.asServiceRole.entities[entityName].list('-created_date', 2000);
-    const mine = (Array.isArray(records) ? records : []).filter((record: any) =>
-      isAuthorizedForRecord(record, owner)
-    );
+    const mine = records.filter((record: any) => isAuthorizedForRecord(record, owner));
 
     const groups = findDuplicateGroups(mine, entityName);
 

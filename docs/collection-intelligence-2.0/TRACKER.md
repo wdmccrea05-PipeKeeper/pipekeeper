@@ -12,6 +12,127 @@ Status values: `done` · `in-progress` · `blocked` · `planned`
 
 ---
 
+## Independent follow-up audit — 2026-11-27
+
+**Release recommendation: do not release.** This is a partial repair, not acceptance of
+Collection Intelligence 2.0, the Collection Health reconciliation workflow, the app-wide
+Curator upgrade, or the approved facelift. The existing RLS blocker remains. No production
+data, prices, entitlements, deployment, or payment transactions were changed.
+
+Baseline reviewed: `d0ead49c355639326b5122499d8e0fb00ec7d0fc` on default branch
+`main`, authored by `base44-builder[bot]`. GitHub reported that same commit as the
+latest synced main when checked; the checkout is shallow. GitHub returned no releases
+or tags, so the latest published version cannot be established; the tracker's 2.0.0
+is a development label, not evidence of publication. No `AGENTS.md` was present.
+The available instructions were `README.md`, `TESTING_GUIDE.md`, `docs/RELEASE_CHECK.md`
+and the CI 2.0 tracker, readiness review, prompt 13–16 verification, reporting and
+action framework documents. There was no PR template.
+
+Accessible GitHub history includes `25cd0ec` (ownership/query filtering), `d9b3b73`
+(Quick Access), `ceec8e6` (report scrolling), `74d8d1c` (CigarKeeper layout),
+and `d0ead49` (session counts). These are commits, not proof of acceptance. Original
+Base44 prompts, execution/retry/requeue history, prior screenshots and unsynced
+Base44 state were not accessible. The user-supplied desktop/mobile mockup is a design
+reference, not a screenshot of the running app.
+
+| Requirement | Code path | Status and evidence / next step |
+|---|---|---|
+| Collection Tools ownership, switching, pagination, exports and pickers | `CollectionTools.jsx`, `fetchAllEntities.js` | **Partial:** SDK returns arrays, not `{items}`; corrected with paginated, email-keyed queries and stale-account protection. Mocked React tests cover switching, empty account, 501 owned rows and foreign rows. Live two-account RLS, exports and other pickers remain unverified. |
+| Duplicate detection and ownership | `collectionItemDuplicates/entry.ts`, `collectionRecords.ts` | **Partial:** replaced global 2,000-row list with owner-filtered, paginated email/id queries and ownership recheck; mocked shared-function test covers overlapping names, legacy id and empty owner. Deployed backend and real account isolation unverified. |
+| Quick Access, direct links, hidden modules and back navigation | `FeatureQuickAccess.jsx`, module pages | **Open:** recent navigation commit identified; full shortcut inventory and browser journeys not verified. |
+| Report clicks, exact drill-downs, filters and exports | `ReportingCenter.jsx`, `src/components/reports`, `reportCatalog*.js` | **Open:** catalog/fixture tests are not real clicks, taps, export parity, or authorization evidence. Overview's largest-module calculation fixed and fixture-tested; all other interactions remain unverified. |
+| CigarKeeper and other module homepages; mobile screenshots | `CigarKeeper.jsx`, other module pages | **Open:** recent layout commit identified; no authenticated desktop/mobile comparison or screenshots. |
+| Health grouped landing and 200+ findings | `CollectionHealth.jsx`, `collectionHealthGroups.test.jsx` | **Partial:** groups and on-demand details; mocked 240-finding/two-module render and filtering test. Not the approved parchment/oxblood facelift, guided Curator entry, or complete group reconciliation. |
+| Health decisions, preferences, restore and condition/valuation | `findingState.js`, `useFindingStates.js`, `collectionFindings.js` | **Partial:** fixed array query and duplicate decision creation, paginated reads and account-keyed state; deferred/dismissed/resolved tracking preferences and restore remain incomplete. No values are invented. |
+| Storage selection and action confirmation | `FindingRow.jsx`, `FindingsReviewPanel.jsx`, `ActionReviewDialog.jsx` | **Partial:** explicit per-record location choice before review; selected destination appears in confirmation; corrections no longer save a separate resolved decision that would hide the finding after undo. Test uses mocked executor. Bulk same-location selection, inline creation, live undo, stale preview and partial-failure verification remain open. |
+| Curator expertise, context, history, help, import, reports, troubleshooting, two-click actions | `Curator.jsx`, `CuratorWorkspace.jsx`, `src/lib/curator` | **Open:** app-wide expert, context handoff, complete import/reconciliation journeys and two-click acceptance not implemented or verified in this follow-up. Prior documentation is not evidence of current runtime behavior. |
+| Universal Action lifecycle, entitlements and authorization | `actionExecute/entry.ts`, `useActionExecution.js` | **Open:** existing tests exercise parts of the framework; no live two-account execution, stale/partial/replay/undo or entitlement matrix verification. |
+| Dashboards, navigation, responsive, a11y, Help and Tips | hub/module pages, `src/components/help` | **Partial:** Help describes this change. Personalization, all routes, labels, touch/keyboard/overflow, Tips & Tricks and live responsive checks remain open. |
+| Inventory, migrations, photos, documents and history | `src/components/collection`, entity schemas | **Open:** no mutation, migration, legacy, attachment persistence or large-live-collection acceptance performed. |
+| Sharing, Pipe Club, privacy and attachments | `publicShare`, `ShareCenter`, `PipeClub*` | **Open:** live expiration, revocation, selected-field privacy, attachment and two-account checks not performed. |
+| Memberships, gifting, administration and payments | `src/lib/entitlements`, `base44/shared`, `AdminDiagnostics` | **Open:** no signed-in tier matrix, provider sandbox, gifting, expiry, restoration or diagnostics acceptance; no rights or prices changed. |
+| Approved app-wide visual direction | `src/Layout.jsx`, theme and module pages | **Open:** design tokens, fonts and full app facelift not implemented or visually validated. |
+
+### Reporting requirements: traceability, not acceptance
+
+The report definitions are in `src/lib/reports/reportCatalogCore.js` (1–10) and
+`reportCatalogIntelligence.js` (11–20); renderer and export paths are under
+`src/components/reports` and `src/lib/reports`. The existing `reportingCenter.test.js`
+exercises a fixture for the catalog. Except for the targeted overview calculation
+above, calculations, exact record drill-downs, filters, saved views, print/PDF/CSV,
+entitlements and responsive browser interactions are **unverified** for every row:
+
+| # | Requested report | Status / remaining evidence |
+|---|---|---|
+| 1 | Collection Overview | Partial: largest-module fixture regression; full report unverified. |
+| 2 | Composition and Balance | Open: fixture catalog smoke only. |
+| 3 | Characteristics Distribution | Open: fixture catalog smoke only. |
+| 4 | Pipe Specialization | Open: calculations and printable owned matches. |
+| 5 | Pairing Insights | Open: 3–5 owned matches, ranking, explanations and print. |
+| 6 | Historical Preference | Open: fixture catalog smoke only. |
+| 7 | Collection Discovery | Open: collector-owned basis and rankings. |
+| 8 | Overlooked Items | Open: top-10 and underlying records. |
+| 9 | Documentation Completeness | Open: filters and supporting records. |
+| 10 | Health and Condition | Open: condition and record drill-down. |
+| 11 | Aging and Preservation | Open: calculations and empty states. |
+| 12 | Storage Distribution | Open: counts and exclusions against inventory. |
+| 13 | Maker/Producer/Distillery | Open: ranking and supporting records. |
+| 14 | Historical Personal Ratings | Open: calculations and data sufficiency. |
+| 15 | Acquisition and Provenance | Open: privacy and underlying records. |
+| 16 | Insurance and Estate | Open: disclosures, privacy and export parity. |
+| 17 | Annual Review | Open: filtered year and calculations. |
+| 18 | Cross-Collection Characteristics | Open: cross-module permissions and data. |
+| 19 | Historical Valuation | Open: attribution, dates and disclosures. |
+| 20 | Custom Curator reports | Open: authorized generated answers and supporting records. |
+
+### Confirmed defects and deployment dependencies
+
+1. Collection Tools treated an SDK array as `{items}` and passed an options object
+   where positional arguments are required; it therefore displayed an empty list.
+   The replacement uses positional pagination, reports errors, and separates query
+   caches by email and entity. It does not repair missing server RLS.
+2. Finding decisions had the same SDK shape error, causing saved states not to load
+   and existing decisions to be recreated. The fixed path reads arrays and uses the
+   existing matching row. State queries are keyed by user.
+3. Duplicate scanning loaded only the first 2,000 records globally before filtering,
+   missing owned records and unnecessarily loading other owners into the function.
+   The server now queries owner identifiers and pages before grouping.
+4. Finding review silently selected the first storage alternative. It now requires an
+   explicit choice and shows it at confirmation. Automatic resolved-decision writes
+   were removed so undo can expose a reappearing finding.
+5. Overview identified the first module in display order as the largest. It now
+   chooses the module with the most records; `reportingCenter.test.js` checks a
+   larger later module.
+
+The backend duplicate fix requires deployment of the function and shared module;
+frontend fixes require the app build. No schema migration or data backfill is in this
+change. Deployment must wait for RLS and the open acceptance gates. If approved
+later, deploy to a test environment, verify two accounts and affected workflows,
+then deploy backend before frontend. Roll back by reverting the repair commit and
+redeploying both; stored decisions and collection records are not automatically
+reverted. Existing missing RLS and other release blockers persist after rollback.
+
+### Validation and evidence
+
+| Check | Result |
+|---|---|
+| Initial `npm run build`, `npm run lint`, `npm run typecheck`, `npm test` | Could not run: dependencies absent. Installed the lockfile with `npm ci --no-audit --no-fund`. |
+| Baseline `npm run build`; `npm run typecheck` | Pass. |
+| Baseline `npm run lint` | Fail: 11 existing unused-import errors across `accessSummary`, `ShareBuilder`, `CollectionHub`, `Insights` and `ShareCenter`. Final lint has the same 11. |
+| Baseline `timeout 300s npm test` under Node 26.13.0 | 206 files passed, 15 failed; 3,649 tests passed, 18 failed. Seven suites could not start because Node's experimental `localStorage` was undefined; remaining failures also included storage-dependent tests. |
+| Final `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test` | 223 files, 3,785 tests passed, 0 failed or skipped; Node's experimental Web Storage was disabled so jsdom provides storage. |
+| `NODE_OPTIONS=--no-experimental-webstorage npx vitest run src/__tests__/collectionHealthGroups.test.jsx src/__tests__/collectionOwnershipAndDecisions.test.jsx src/__tests__/reportingCenter.test.js` | 3 files, 34 tests passed after the final Health wording change. These are fixture/mocked React tests, not live browser or backend tests. |
+| Final `npm run build`, `npm run typecheck` and ESLint on changed frontend files | Pass; build emits pre-existing chunk warnings. |
+| `NODE_OPTIONS=--no-experimental-webstorage npm run release:check` | Fail before tests: i18n findings 3,275 exceed the 2,666 budget. A separate baseline scan of the reviewed commit found 3,271. New UI copy is not fully localized. |
+| Browser, manual and external checks | **Not performed:** no authenticated Base44 test accounts or authorized sandbox credentials were available. No before/after screenshots, live Curator/import/entitlement flow, real cross-account authorization, payment/provider, mobile keyboard, touch or deployment checks. The user supplied a design mockup only. |
+
+The full suite also updates three tracked certification artifacts as a side effect;
+those test-generated timestamp and timing changes were discarded. Passing mocks and a build do
+not prove server authorization, an actual save, a mobile flow, or release readiness.
+The installed pre-commit hook uses the same already-failing i18n budget and blocked a
+normal commit. It was bypassed solely to publish this explicitly blocked draft for
+review; the failure and additional untranslated strings remain release blockers.
+
 ## Batches and dependencies
 
 Work is grouped so that batches can run without waiting on each other. Arrows mean "depends on".

@@ -126,6 +126,15 @@ describe("report catalogue", () => {
     expect(result.recordCount).toBeGreaterThan(0);
     expect(result.generatedAt).toBeInstanceOf(Date);
   });
+
+  it("reports the largest module by count rather than the first module in display order", () => {
+    const context = buildReportContext({
+      data: { pipes: [fixtures.pipes[0]], cigars: fixtures.cigars },
+      filters: DEFAULT_FILTERS,
+    });
+    const result = runReport("overview", context);
+    expect(result.insights.find((entry) => entry.title === "Largest module").text).toContain("Cigars holds 2 of 3");
+  });
 });
 
 describe("report model and filters", () => {

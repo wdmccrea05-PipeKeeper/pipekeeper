@@ -284,7 +284,9 @@ describe('11 & 12. resolving a finding from a report or a drill-down', () => {
     const panel = read('src/components/actions/FindingsReviewPanel.jsx');
     expect(panel).toContain('Object.fromEntries(actions.map((action) => [action.id, true]))');
     expect(panel).toContain('ActionReviewDialog');
-    expect(panel).toContain("onStateChange(finding, 'resolved')");
+    // A real record correction is derived again after refresh or undo; it must
+    // not permanently hide a finding by storing a separate resolved decision.
+    expect(panel).not.toContain("onStateChange(finding, 'resolved')");
   });
 
   it('is reachable from a dashboard row and from a report, keeping the filters', () => {

@@ -82,6 +82,8 @@ const overview = {
     if (items.length === 0) return { empty: "No records match the current filters." };
 
     const breakdown = moduleBreakdown(items);
+    const largestModule = breakdown.reduce((largest, row) =>
+      !largest || row.records > largest.records ? row : largest, null);
     const recent = items.filter((item) => {
       const months = monthsBetween(item.acquiredAt || item.createdAt);
       return months != null && months <= 12;
@@ -119,8 +121,8 @@ const overview = {
       insights: [
         {
           title: "Largest module",
-          text: breakdown.length
-            ? `${breakdown[0].moduleLabel} holds ${breakdown[0].records} of ${items.length} records (${percent(breakdown[0].records, items.length)}%).`
+          text: largestModule
+            ? `${largestModule.moduleLabel} holds ${largestModule.records} of ${items.length} records (${percent(largestModule.records, items.length)}%).`
             : "No module holds any records in this filter.",
         },
         {

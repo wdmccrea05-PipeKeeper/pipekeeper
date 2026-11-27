@@ -24,6 +24,7 @@ export default function FindingsReviewPanel({
   emptyMessage = 'Nothing needs your attention here.',
 }) {
   const [selections, setSelections] = useState({});
+  const [alternatives, setAlternatives] = useState({});
   const [reviewing, setReviewing] = useState([]);
   const { status, result, error, execute, undo, reset } = useActionExecution({ onApplied });
 
@@ -54,40 +55,22 @@ export default function FindingsReviewPanel({
     });
   }, [visible]);
 
-  const alternatives = useMemo(() => {
-    const out = {};
-    for (const finding of visible) {
-      for (const action of finding.actions || []) {
-        if (action.alternatives?.length) out[action.id] = action.alternatives[0].id;
-      }
-    }
-    return out;
-  }, [visible]);
-
   const selected = visible.filter((finding) => selections[finding.key] && finding.actions?.length > 0);
+  const needsChoice = selected.some((finding) =>
+    finding.actions.some((action) => action.alternatives?.length && !alternatives[action.id])
+  );
 
   const confirm = async () => {
     const actions = reviewing.flatMap((finding) => finding.actions || []);
-    if (actions.length === 0) {
+    if (actions.length === 0 || needsChoice) {
       setReviewing([]);
       return;
     }
 
-    const outcome = await execute(actions, {
+    await execute(actions, {
       selections: Object.fromEntries(actions.map((action) => [action.id, true])),
       alternatives,
     });
-
-    if (outcome?.completed > 0 && onStateChange) {
-      const completedActionIds = new Set(
-        (outcome.rows || []).filter((row) => row.status === 'completed').map((row) => row.actionId)
-      );
-      for (const finding of reviewing) {
-        if ((finding.actions || []).some((action) => completedActionIds.has(action.id))) {
-          await onStateChange(finding, 'resolved');
-        }
-      }
-    }
 
     setReviewing([]);
     setSelections({});
@@ -137,6 +120,8 @@ export default function FindingsReviewPanel({
             }
             status={states[finding.key]?.status || null}
             busy={busy}
+            alternatives={alternatives}
+            onAlternative={(id, choice) => setAlternatives((prev) => ({ ...prev, [id]: choice }))}
             onDefer={onStateChange ? (entry) => onStateChange(entry, 'deferred') : undefined}
             onDismiss={onStateChange ? (entry) => onStateChange(entry, 'dismissed') : undefined}
           />
@@ -151,14 +136,14 @@ export default function FindingsReviewPanel({
           <button
             type="button"
             onClick={() => setReviewing(selected)}
-            disabled={busy}
+            disabled={busy || needsChoice}
             className="rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
             style={{ background: '#A35C5C', color: '#fff', border: 'none' }}
           >
             {applySelectedLabel(selected.length)}
           </button>
           <span className="text-[11.5px]" style={{ color: 'rgba(224,216,200,0.55)' }}>
-            You will see exactly what changes before anything is saved.
+            {needsChoice ? 'Choose a location for each selected record.' : 'You will see exactly what changes before anything is saved.'}
           </span>
         </div>
       )}
