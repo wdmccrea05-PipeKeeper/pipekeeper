@@ -41,7 +41,8 @@
   "optional": "Opzionale",
   "oz": "oz",
   "continue": "Continua",
-  "accessDenied": "Accesso negato"
+  "accessDenied": "Accesso negato",
+  "findSimilar": "Trova simili"
  },
  "notifications": {
   "saved": "Salvato correttamente"
@@ -73,7 +74,8 @@
   "recommendationFailed": "Recupero suggerimenti fallito",
   "valueLookupFailed": "Recupero valore fallito. Riprova.",
   "pipeNotAvailable": "Pipa non disponibile.",
-  "addToCellarFailed": "Aggiunta alla cantina fallita. Riprova."
+  "addToCellarFailed": "Aggiunta alla cantina fallita. Riprova.",
+  "unableToLoadRecord": "Impossibile caricare il record."
  },
  "hub": {
   "title": "CollectionKeeper",
@@ -4916,5 +4918,61 @@
  "updatePairingMatrix": "Matrice di abbinamento aggiornata",
  "updatePairingDesc": "I tuoi suggerimenti di abbinamento sono stati aggiornati in base alla tua collezione.",
  "updateOptimization": "Analisi della collezione aggiornata",
- "updateOptimizationDesc": "L'ottimizzazione della tua collezione è stata aggiornata con gli ultimi dati."
+ "updateOptimizationDesc": "L'ottimizzazione della tua collezione è stata aggiornata con gli ultimi dati.",
+ "fields": {
+  "confidence": "Affidabilità",
+  "medium": "Media",
+  "replacementDifficulty": "Difficoltà di sostituzione",
+  "moderate": "Moderata",
+  "veryHard": "Molto difficile",
+  "makerStatus": "Stato dell'artigiano",
+  "active": "Attivo",
+  "limitedProduction": "Produzione limitata",
+  "retired": "Ritirato / Non più in produzione",
+  "inactive": "Inattivo / Azienda chiusa",
+  "deceased": "Deceduto",
+  "productionType": "Tipo di produzione",
+  "factoryProduction": "Produzione industriale",
+  "standardArtisan": "Artigianale standard",
+  "limitedArtisanBatch": "Lotto artigianale limitato",
+  "oneOff": "Pezzo unico / Su commissione",
+  "artisanTier": "Livello artigianale",
+  "factoryMassProduction": "Industriale / Grande serie",
+  "emergingArtisan": "Artigiano emergente",
+  "establishedArtisan": "Artigiano affermato",
+  "masterCarver": "Maestro intagliatore",
+  "prestigeCollectorTier": "Prestigio / Da collezione",
+  "oneOfAKind": "Pezzo unico / Su commissione",
+  "limitedRun": "Serie limitata / Edizione speciale",
+  "provenanceNotes": "Note su provenienza / certificazione",
+  "replacementDifficultyOverride": "Difficoltà di sostituzione manuale",
+  "engineAutoComputes": "Calcolato automaticamente",
+  "leaveBlankForAuto": "Lascia vuoto per automatico",
+  "select": "Seleziona…",
+  "length": "Lunghezza",
+  "bowlDiameter": "Diametro fornello",
+  "bowlDepth": "Profondità fornello",
+  "stampingText": "Testo punzonato",
+  "bowls": "Fornelli",
+  "measurements": "Misure",
+  "sessions": "Sessioni"
+ },
+ "pipeDetail": {
+  "valuationEngineNote": "Questi campi alimentano direttamente il motore di valutazione condiviso.",
+  "snapshotTitle": "Scheda della pipa",
+  "snapshotSubtitle": "Panoramica rapida della scheda della pipa",
+  "viewGallery": "Clicca per vedere la galleria completa",
+  "functionsTitle": "Funzioni e dettagli della pipa",
+  "functionsSubtitle": "Condizione, rotazione, specializzazione, manutenzione e dettagli completi della scheda",
+  "noSessionNotes": "Nessuna nota di sessione registrata.",
+  "noSessionsOnDay": "Nessuna sessione in questo giorno.",
+  "deleteConfirmTitle": "Eliminare questa pipa?",
+  "deleteConfirmBody": "Verrà eliminata definitivamente",
+  "cannotUndo": "Questa azione non può essere annullata.",
+  "deleted": "Pipa eliminata",
+  "deleteFailed": "Eliminazione della pipa non riuscita",
+  "checkpointSaved": "Punto di valore salvato",
+  "observationSaved": "Osservazione salvata",
+  "valuationUpdated": "Dati di valutazione aggiornati"
+ }
 }
