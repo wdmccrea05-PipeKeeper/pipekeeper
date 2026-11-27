@@ -1,6 +1,7 @@
 {
   "name": "CuratorMessage",
   "type": "object",
+  "description": "One persisted Curator exchange. Records are readable only by the collector they belong to (or an administrator), so a conversation can be restored on another device without ever exposing another collector's thread.",
   "properties": {
     "session_id": {
       "type": "string",
@@ -42,5 +43,46 @@
     "role",
     "content",
     "timestamp"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }

@@ -32,6 +32,8 @@ const PREMIUM_FUNCTIONS = [
   'generateCollectionStory',
   'getSpecializationRecommendation',
   'invokeCuratorLLM',
+  'curatorRecordChange',
+  'curatorConversationHistory',
   'startCuratorSession',
   'persistCuratorMessage',
   'extractCuratorSignals',

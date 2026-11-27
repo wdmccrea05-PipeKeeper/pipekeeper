@@ -24,6 +24,11 @@ import {
   extractRecommendationsFromResponse,
 } from '@/lib/curator/conversationState.js';
 import { classifyIntent } from '@/lib/curator/curatorChatIntent.js';
+import CuratorChangeProposalCard from '@/components/curator/CuratorChangeProposalCard.jsx';
+import useCuratorRecordProposals from '@/components/curator/useCuratorRecordProposals.js';
+import { routeCuratorRequest } from '@/lib/curator/curatorRequestRouter.js';
+import { buildGroundingBlock } from '@/lib/curator/curatorGrounding.js';
+import { describeCuratorFailure, invokeCuratorWithTimeout as invokeCuratorRequest } from '@/lib/curator/curatorInvocation.js';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -661,6 +666,7 @@ This is an ongoing conversation about the user's collection — NOT an independe
 
 ═══ COLLECTION DATA STATUS ═══
 ${collectionDataNote}
+${buildGroundingBlock(context, entityContext)}
 ${resolvedItemNote}
 ${isPipeSpecializationQuery(userMessage) ? `
 SPECIALIZATION REQUEST (takes priority over pairing-score and product-recommendation rules):
@@ -1606,14 +1612,25 @@ export default function ExpertTobacconistChat({
   isSingleModuleMode = false,
   activeModules = {},
   initialEntityContext = null,
+  userEmail = '',
 }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [entityContext, setEntityContext] = useState({});
   const [analysisContext, setAnalysisContext] = useState(null);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const sessionIdRef = useRef(null);
+  const persistedRef = useRef(new Set());
+  const lastActionRunRef = useRef(null);
+  const storageCacheRef = useRef(null);
+  const { confirmProposal, cancelProposal, undoProposal, runUndo } = useCuratorRecordProposals({
+    setMessages,
+    setEntityContext,
+    lastActionRunRef,
+  });
 
   useEffect(() => {
     if (initialEntityContext) {
@@ -1661,6 +1678,64 @@ export default function ExpertTobacconistChat({
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isSending]);
+
+  // Restore the thread this collector was last using, so a reload continues it.
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        if (!sessionIdRef.current) {
+          const stored = typeof window !== 'undefined' ? window.localStorage.getItem('ck_curator_thread') : null;
+          sessionIdRef.current = stored || `curator-${Date.now()}`;
+          if (typeof window !== 'undefined') window.localStorage.setItem('ck_curator_thread', sessionIdRef.current);
+        }
+        const response = await base44.functions.invoke('curatorConversationHistory', {
+          session_id: sessionIdRef.current,
+          limit: 16,
+        });
+        try {
+          const locationRows = await base44.entities.StorageLocation.filter({});
+          const locations = Array.isArray(locationRows) ? locationRows : locationRows?.items || [];
+          storageCacheRef.current = locations.filter(
+            (row) => !userEmail || !row?.created_by || row.created_by === userEmail
+          );
+        } catch {
+          storageCacheRef.current = [];
+        }
+        const restored = response?.data?.messages || [];
+        if (!cancelled && restored.length > 0) {
+          setMessages((prev) => (prev.length > 0 ? prev : restored.map((m, index) => ({
+            id: `restored-${index}`,
+            role: m.role,
+            content: m.content,
+            restored: true,
+          }))));
+        }
+      } catch {
+        // History is additive; a failure must never block the chat.
+      } finally {
+        if (!cancelled) setHistoryLoaded(true);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Persist each new turn once, so the conversation survives navigation.
+  useEffect(() => {
+    if (!historyLoaded) return;
+    const pending = messages.filter((m) => !m.restored && !persistedRef.current.has(m.id));
+    if (pending.length === 0) return;
+    pending.forEach((m) => {
+      persistedRef.current.add(m.id);
+      base44.functions.invoke('persistCuratorMessage', {
+        session_id: sessionIdRef.current,
+        role: m.role,
+        content: m.content,
+        message_index: messages.findIndex((entry) => entry.id === m.id),
+      }).catch(() => {});
+    });
+  }, [messages, historyLoaded]);
 
   useEffect(() => {
     if (preFillMessage) {
@@ -1761,18 +1836,13 @@ export default function ExpertTobacconistChat({
   }
 
   // Bound remote inference so an unresponsive backend cannot lock the chat indefinitely.
+  // The shared wrapper always resolves, so a timeout becomes an honest message.
   const invokeCuratorWithTimeout = async (prompt) => {
-    let timer;
-    try {
-      return await Promise.race([
-        base44.functions.invoke('invokeCuratorLLM', { prompt }),
-        new Promise((_, reject) => {
-          timer = setTimeout(() => reject(new Error('Curator request timed out. Please retry.')), 45000);
-        }),
-      ]);
-    } finally {
-      clearTimeout(timer);
-    }
+    const result = await invokeCuratorRequest({
+      prompt,
+      invoke: (value) => base44.functions.invoke('invokeCuratorLLM', { prompt: value }),
+    });
+    return { data: { result: result.ok ? result.text : describeCuratorFailure(result) } };
   };
 
   const sendMessage = useCallback(async () => {
@@ -1783,6 +1853,55 @@ export default function ExpertTobacconistChat({
     setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content: text }]);
     setInput('');
     try {
+      // ── Routed requests: reversals, boundary refusals, reports, record changes ──
+      const routed = routeCuratorRequest({
+        text,
+        collections: {
+          Pipe: collectionContext?.pipes || [],
+          TobaccoBlend: collectionContext?.blends || [],
+          Cigar: collectionContext?.cigars || [],
+          Bottle: collectionContext?.bottles || [],
+          Wine: collectionContext?.wines || [],
+        },
+        storageLocations: storageCacheRef.current || [],
+        enabledModules: activeModules || {},
+        context: collectionContext,
+      });
+
+      if (routed.kind === 'proposal') {
+        setMessages((prev) => [...prev, {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: routed.content,
+          proposal: routed.proposal,
+          proposalState: 'proposed',
+          proposalResult: null,
+        }]);
+        return;
+      }
+
+      if (routed.kind === 'undo') {
+        const lastApplied = [...messages].reverse().find((m) => m.actionRunId);
+        const undoMessageId = `assistant-${Date.now()}`;
+        setMessages((prev) => [...prev, {
+          id: undoMessageId,
+          role: 'assistant',
+          content: 'Reversing that change now.',
+        }]);
+        await runUndo(undoMessageId, lastApplied?.actionRunId || lastActionRunRef.current);
+        return;
+      }
+
+      if (routed.kind === 'message') {
+        setMessages((prev) => [...prev, {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: routed.content,
+          report: routed.report || null,
+        }]);
+        return;
+      }
+
       // ── Conversation state: detect rejections and references ──────────────
       // Before processing, check if the user is rejecting a previous
       // recommendation ("the jumbo is too bulky") or referencing one ("that
@@ -1981,7 +2100,7 @@ export default function ExpertTobacconistChat({
     } finally {
       setIsSending(false);
     }
-  }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules, continueAnalysis, messages]);
+  }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules, continueAnalysis, messages, runUndo]);
 
   const hasCollection = (collectionContext?.blends?.length || 0) + (collectionContext?.bottles?.length || 0) + (collectionContext?.pipes?.length || 0) > 0;
 
@@ -1999,7 +2118,16 @@ export default function ExpertTobacconistChat({
           {messages.length > 0 && (
             <button
               type="button"
-              onClick={() => { setMessages([]); setEntityContext({}); setAnalysisContext(null); }}
+              onClick={() => {
+                setMessages([]);
+                setEntityContext({});
+                setAnalysisContext(null);
+                lastActionRunRef.current = null;
+                persistedRef.current = new Set();
+                const nextThread = `curator-${Date.now()}`;
+                sessionIdRef.current = nextThread;
+                if (typeof window !== 'undefined') window.localStorage.setItem('ck_curator_thread', nextThread);
+              }}
               className="text-[12px] px-3 py-1.5 rounded-lg"
               style={{ border: '1px solid rgba(255,255,255,0.08)', color: '#71717A' }}
             >
@@ -2116,6 +2244,25 @@ export default function ExpertTobacconistChat({
                       return output;
                       })()}
                       </div>
+                      {m.proposal && (
+                        <CuratorChangeProposalCard
+                          proposal={m.proposal}
+                          state={m.proposalState || 'proposed'}
+                          result={m.proposalResult}
+                          onConfirm={() => confirmProposal(m)}
+                          onCancel={() => cancelProposal(m)}
+                          onUndo={() => undoProposal(m)}
+                        />
+                      )}
+                      {m.report && (
+                        <a
+                          href={m.report.route}
+                          className="inline-flex items-center gap-2 mt-3 text-[13px] font-semibold break-words"
+                          style={{ color: '#C6A15B' }}
+                        >
+                          Open {m.report.title}
+                        </a>
+                      )}
                       {m.fix && (
                         <CuratorChatFixAction
                           count={m.fix.items.length}
