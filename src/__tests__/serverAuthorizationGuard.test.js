@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +19,9 @@ import path from 'node:path';
  *      away from collectors who can open them now.
  */
 
-const FUNCTIONS_DIR = path.resolve(process.cwd(), 'base44', 'functions');
+// globalThis keeps this static guard free of a bare Node global in the linter.
+const REPO_ROOT = globalThis.process?.cwd?.() || '';
+const FUNCTIONS_DIR = path.resolve(REPO_ROOT, 'base44', 'functions');
 
 /** Premium surfaces that must never run for an unauthenticated caller. */
 const PREMIUM_FUNCTIONS = [

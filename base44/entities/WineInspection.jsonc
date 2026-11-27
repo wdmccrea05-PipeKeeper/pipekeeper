@@ -1,0 +1,163 @@
+{
+  "name": "WineInspection",
+  "type": "object",
+  "description": "One dated inspection of a wine bottle: its condition, packaging and the storage conditions where it was kept. Inspections accumulate into a condition and storage history for that bottle. Documentation only.",
+  "properties": {
+    "wine_id": {
+      "type": "string",
+      "description": "Id of the Wine this inspection belongs to"
+    },
+    "wine_name": {
+      "type": "string",
+      "description": "Snapshot of the wine name at the time of the inspection"
+    },
+    "inspected_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the bottle was inspected"
+    },
+    "storage_location_id": {
+      "type": "string",
+      "description": "Cellar or storage location the bottle was inspected in"
+    },
+    "storage_location_name": {
+      "type": "string",
+      "description": "Snapshot of the storage location name at the time of the inspection"
+    },
+    "temperature_f": {
+      "type": "number",
+      "description": "Documented storage temperature in degrees Fahrenheit"
+    },
+    "humidity_rh": {
+      "type": "number",
+      "description": "Documented relative humidity percentage"
+    },
+    "fill_level": {
+      "type": "string",
+      "enum": [
+        "base_neck",
+        "upper_shoulder",
+        "mid_shoulder",
+        "low_shoulder",
+        "below_shoulder",
+        "unknown"
+      ],
+      "enumColors": [
+        "green",
+        "green",
+        "yellow",
+        "yellow",
+        "red",
+        "gray"
+      ],
+      "description": "Documented ullage / fill level of the bottle"
+    },
+    "label_condition": {
+      "type": "string",
+      "enum": [
+        "intact",
+        "stained",
+        "torn",
+        "missing",
+        "unknown"
+      ],
+      "enumColors": [
+        "green",
+        "yellow",
+        "yellow",
+        "red",
+        "gray"
+      ],
+      "description": "Documented condition of the label"
+    },
+    "capsule_condition": {
+      "type": "string",
+      "enum": [
+        "intact",
+        "damaged",
+        "missing",
+        "unknown"
+      ],
+      "enumColors": [
+        "green",
+        "yellow",
+        "red",
+        "gray"
+      ],
+      "description": "Documented condition of the capsule or closure"
+    },
+    "seal_condition": {
+      "type": "string",
+      "enum": [
+        "intact",
+        "seeping",
+        "broken",
+        "unknown"
+      ],
+      "enumColors": [
+        "green",
+        "yellow",
+        "red",
+        "gray"
+      ],
+      "description": "Documented condition of the seal"
+    },
+    "condition": {
+      "type": "string",
+      "description": "Free-text overall condition observation"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text inspection notes"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the collector who recorded the inspection"
+    }
+  },
+  "required": [
+    "wine_id",
+    "inspected_at"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

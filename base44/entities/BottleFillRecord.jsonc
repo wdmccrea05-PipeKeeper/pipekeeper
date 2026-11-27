@@ -1,0 +1,136 @@
+{
+  "name": "BottleFillRecord",
+  "type": "object",
+  "description": "One dated record of how much whiskey remains in a bottle. Records accumulate into a fill-level history for that bottle; nothing is overwritten. Documentation only.",
+  "properties": {
+    "bottle_id": {
+      "type": "string",
+      "description": "Id of the Bottle this record belongs to"
+    },
+    "bottle_name": {
+      "type": "string",
+      "description": "Snapshot of the bottle name at the time of the record"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the fill level was observed"
+    },
+    "fill_percent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Documented fill level as a percentage of the bottle"
+    },
+    "fill_level": {
+      "type": "string",
+      "enum": [
+        "Full",
+        "High",
+        "Medium",
+        "Low",
+        "Empty"
+      ],
+      "enumColors": [
+        "green",
+        "green",
+        "yellow",
+        "yellow",
+        "gray"
+      ],
+      "description": "Optional descriptive fill level recorded alongside the percentage"
+    },
+    "volume_ml": {
+      "type": "number",
+      "description": "Optional remaining volume in millilitres"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sealed",
+        "opened",
+        "in_use",
+        "empty",
+        "unknown"
+      ],
+      "enumColors": [
+        "green",
+        "blue",
+        "yellow",
+        "gray",
+        "gray"
+      ],
+      "default": "opened",
+      "description": "Documented state of the bottle at the time of the record"
+    },
+    "note": {
+      "type": "string",
+      "description": "Optional note recorded with the observation"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "estimate",
+        "import"
+      ],
+      "enumColors": [
+        "blue",
+        "yellow",
+        "gray"
+      ],
+      "default": "manual",
+      "description": "How the observation was captured"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the collector who recorded the observation"
+    }
+  },
+  "required": [
+    "bottle_id",
+    "recorded_at",
+    "fill_percent"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
