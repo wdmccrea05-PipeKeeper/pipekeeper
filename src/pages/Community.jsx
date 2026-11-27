@@ -21,6 +21,7 @@ import { useTranslation } from "@/components/i18n/safeTranslation";
 import { SafeText } from "@/components/ui/SafeText";
 import CommunityReferralTab from "@/components/referral/CommunityReferralTab";
 import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
+import { getCanonicalUserProfile } from "@/utils/getCanonicalUserProfile";
 
 function CommunityPageInner() {
   const { t } = useTranslation();
@@ -51,30 +52,19 @@ function CommunityPageInner() {
     // Key must match Profile page so cache is shared and invalidated together
     queryKey: ['user-profile', user?.id, user?.email],
     queryFn: async () => {
-      // PK_SAFE_QUERY: Current user's profile lookup by email — returns single record
-      const byEmail = await base44.entities.UserProfile.filter({ user_email: user?.email }).catch(() => []);
-      // PK_SAFE_QUERY: Current user's profile lookup by created_by — returns single record
-      const byCreated = await base44.entities.UserProfile.filter({ created_by: user?.email }).catch(() => []);
-      // Deduplicate and pick most recently updated
-      const seen = new Set();
-      const all = [...byEmail, ...byCreated].filter(r => {
-        if (!r?.id || seen.has(r.id)) return false;
-        seen.add(r.id);
-        return true;
+      // Canonical read: normalizes the email, checks user_id and email rows, returns the newest record
+      const { profile: foundProfile } = await getCanonicalUserProfile({
+        userId: user?.id,
+        userEmail: user?.email,
       });
-      const sorted = all.sort((a, b) => {
-        const ad = Date.parse(a?.updated_date || a?.created_date || '') || 0;
-        const bd = Date.parse(b?.updated_date || b?.created_date || '') || 0;
-        return bd - ad;
-      });
-      const foundProfile = sorted[0] || null;
-      setProfile(foundProfile);
-      return foundProfile;
+      setProfile(foundProfile || null);
+      return foundProfile || null;
     },
     enabled: !!user?.email,
-    staleTime: 30_000,   // 30s to prevent refresh loops while keeping messaging toggle reasonably fresh
+    staleTime: 0,
     gcTime: 60_000,
-    refetchOnMount: false,
+    // Always re-read on mount so a visibility change saved on the Profile page is reflected here
+    refetchOnMount: 'always',
     refetchOnWindowFocus: false,
   });
 
