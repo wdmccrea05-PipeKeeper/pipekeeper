@@ -9,6 +9,7 @@ import {
   loadUserRecord,
   evaluateEligibility,
   resolveGrantState,
+  resolveRedemptionWindow,
   syncUserMirror,
 } from "../../shared/appreciationCampaign.ts";
 
@@ -38,8 +39,25 @@ export default async function (req) {
     const eligibility = evaluateEligibility({ config, user, grants, subscriptions });
 
     // Already active → idempotent success, same grant, same expiration.
+    // Checked BEFORE the deadline gate so a grant issued before the deadline
+    // keeps resolving normally, and access continues after the campaign closes.
     if (eligibility.code === "already_active" && eligibility.grant) {
       return Response.json({ ok: true, activated: false, already_active: true, grant: eligibility.grant });
+    }
+
+    // Hard redemption deadline — enforced here, never by the client alone.
+    const redemption = resolveRedemptionWindow(config);
+    if (redemption.closed) {
+      return Response.json(
+        {
+          ok: false,
+          activated: false,
+          code: "redemption_deadline_passed",
+          redemption,
+          grant: eligibility.grant || null,
+        },
+        { status: 410 }
+      );
     }
 
     if (!eligibility.eligible) {

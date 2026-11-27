@@ -9,6 +9,7 @@ import {
   resolveGrantState,
   syncUserMirror,
   publicCampaign,
+  resolveRedemptionWindow,
 } from "../../shared/appreciationCampaign.ts";
 
 /**
@@ -42,6 +43,7 @@ export default async function (req) {
 
     return Response.json({
       campaign: publicCampaign(config),
+      redemption: resolveRedemptionWindow(config),
       eligible: eligibility.eligible,
       reason: eligibility.code,
       welcome_trial_ends_at: eligibility.welcomeTrialEndsAt || null,

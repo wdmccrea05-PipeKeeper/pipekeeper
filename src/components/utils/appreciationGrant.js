@@ -16,6 +16,53 @@ export const APPRECIATION_CAMPAIGN_ID = 'collector_appreciation_black_friday_202
 export const APPRECIATION_GRANT_HOURS = 168;
 export const APPRECIATION_GRANT_MS = APPRECIATION_GRANT_HOURS * 60 * 60 * 1000;
 
+/**
+ * Redemption deadline: Monday, November 30, 2026, 11:59 p.m. Eastern.
+ * Eastern Standard Time (UTC-5) on that date ⇒ 2026-12-01T04:59:00Z.
+ * Mirrors the server constant in base44/shared/appreciationCampaign.ts; the
+ * server is what actually enforces it.
+ */
+export const APPRECIATION_REDEMPTION_DEADLINE_ISO = '2026-12-01T04:59:00.000Z';
+export const APPRECIATION_DEADLINE_TIME_ZONE = 'America/New_York';
+
+/**
+ * Redemption window. `closed` only stops NEW redemptions — grants already
+ * issued run their full 168 hours.
+ */
+export function resolveRedemptionWindow(nowMs = Date.now()) {
+  const deadlineMs = new Date(APPRECIATION_REDEMPTION_DEADLINE_ISO).getTime();
+  const closed = nowMs > deadlineMs;
+  return {
+    deadlineIso: APPRECIATION_REDEMPTION_DEADLINE_ISO,
+    deadlineMs,
+    closed,
+    open: !closed,
+    msRemaining: Math.max(0, deadlineMs - nowMs),
+  };
+}
+
+/**
+ * The deadline rendered in the collector's language but always in Eastern
+ * Time, so every collector sees the same instant and the same "ET" label.
+ */
+export function formatRedemptionDeadline(locale = 'en') {
+  const date = new Date(APPRECIATION_REDEMPTION_DEADLINE_ISO);
+  try {
+    return new Intl.DateTimeFormat(locale || 'en', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: APPRECIATION_DEADLINE_TIME_ZONE,
+      timeZoneName: 'short',
+    }).format(date);
+  } catch {
+    return 'Monday, November 30, 2026, 11:59 PM EST';
+  }
+}
+
 const ACTIVATED_KEYS = ['appreciation_grant_activated_at', 'appreciationGrantActivatedAt'];
 const EXPIRES_KEYS = ['appreciation_grant_expires_at', 'appreciationGrantExpiresAt'];
 const STATUS_KEYS = ['appreciation_grant_status'];

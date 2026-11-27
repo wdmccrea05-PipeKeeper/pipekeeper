@@ -14,7 +14,7 @@ const GOLD = '#D4A574';
  */
 export default function AppreciationOfferCard({ surface = 'profile', className = '' }) {
   const { t } = useTranslation();
-  const { showOffer, activate, activating, activateError, isLoading } = useAppreciationCampaign({ surface });
+  const { showOffer, activate, activating, activateError, isLoading, deadlineLabel } = useAppreciationCampaign({ surface });
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [grant, setGrant] = useState(null);
 
@@ -51,6 +51,12 @@ export default function AppreciationOfferCard({ surface = 'profile', className =
             <p className="text-xs sm:text-sm mt-1 text-wrap-mobile" style={{ color: 'rgba(224,216,200,0.78)' }}>
               {t('appreciation.offerCardBody')}
             </p>
+            <p className="text-[11px] sm:text-xs font-bold mt-2 text-wrap-mobile" style={{ color: GOLD }}>
+              {t('appreciation.deadlineHeadline')}
+            </p>
+            <p className="text-[11px] sm:text-xs mt-0.5 text-wrap-mobile" style={{ color: 'rgba(224,216,200,0.62)' }}>
+              {t('appreciation.deadlineLine', { date: deadlineLabel })}
+            </p>
             <Button
               type="button"
               onClick={handleActivate}
@@ -64,9 +70,11 @@ export default function AppreciationOfferCard({ surface = 'profile', className =
             </Button>
             {activateError && (
               <p className="mt-2 text-[11px]" style={{ color: '#F0B9A8' }}>
-                {activateError === 'activation_failed'
-                  ? t('appreciation.activationFailed')
-                  : t('appreciation.unavailable')}
+                {activateError === 'redemption_deadline_passed'
+                  ? t('appreciation.deadlineClosed', { date: deadlineLabel })
+                  : activateError === 'activation_failed'
+                    ? t('appreciation.activationFailed')
+                    : t('appreciation.unavailable')}
               </p>
             )}
           </div>

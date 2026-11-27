@@ -2,7 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
-import { APPRECIATION_CAMPAIGN_ID } from '@/components/utils/appreciationGrant';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+import {
+  APPRECIATION_CAMPAIGN_ID,
+  resolveRedemptionWindow,
+  formatRedemptionDeadline,
+} from '@/components/utils/appreciationGrant';
 
 const DISMISS_EVENT = 'ck-appreciation-dismissed';
 let impressionSent = false;
@@ -33,6 +38,7 @@ function writeFlag(key) {
  */
 export function useAppreciationCampaign({ surface = 'hub' } = {}) {
   const { user, isLoading: userLoading, hasPaid, refetch, complimentary } = useCurrentUser();
+  const { lang } = useTranslation();
   const queryClient = useQueryClient();
   const email = user?.email || null;
 
@@ -59,10 +65,18 @@ export function useAppreciationCampaign({ surface = 'hub' } = {}) {
     },
     enabled: !!email && !hasPaid,
     staleTime: 60000,
+    // Keeps a tab left open across the deadline in step with the server.
+    refetchInterval: 300000,
   });
 
   const grantActive = Boolean(status?.grant?.active) || Boolean(complimentary?.appreciation?.active);
-  const eligible = Boolean(status?.eligible) && !grantActive && !hasPaid;
+  // Redemption deadline: the server reports the window; the local constant keeps
+  // the UI honest between requests and once the deadline passes.
+  const serverRedemption = status?.redemption;
+  const localRedemption = resolveRedemptionWindow();
+  const redemptionClosed = serverRedemption ? Boolean(serverRedemption.closed) : localRedemption.closed;
+  const deadlineIso = serverRedemption?.deadlineIso || localRedemption.deadlineIso;
+  const eligible = Boolean(status?.eligible) && !grantActive && !hasPaid && !redemptionClosed;
   const isLoading = userLoading || (!!email && !hasPaid && statusLoading);
 
   const record = useCallback(
@@ -91,6 +105,10 @@ export function useAppreciationCampaign({ surface = 'hub' } = {}) {
 
   const activate = useCallback(async () => {
     if (activating) return { ok: false, code: 'in_flight' };
+    if (redemptionClosed) {
+      setActivateError('redemption_deadline_passed');
+      return { ok: false, code: 'redemption_deadline_passed' };
+    }
     setActivating(true);
     setActivateError(null);
     try {
@@ -105,12 +123,14 @@ export function useAppreciationCampaign({ surface = 'hub' } = {}) {
       setActivateError(data.code || 'activation_failed');
       return data;
     } catch (error) {
-      setActivateError('activation_failed');
-      return { ok: false, code: 'activation_failed' };
+      // The server is the authority: a 410 means the deadline has passed.
+      const code = error?.response?.data?.code || error?.data?.code || 'activation_failed';
+      setActivateError(code);
+      return { ok: false, code };
     } finally {
       setActivating(false);
     }
-  }, [activating, email, queryClient, refetch]);
+  }, [activating, email, queryClient, refetch, redemptionClosed]);
 
   const expiredGrant = (() => {
     const fromStatus = status?.grant;
@@ -138,6 +158,9 @@ export function useAppreciationCampaign({ surface = 'hub' } = {}) {
     activateError,
     activating,
     dismissed,
+    redemptionClosed,
+    deadlineIso,
+    deadlineLabel: formatRedemptionDeadline(lang),
     showBanner: eligible && !dismissed,
     showOffer: eligible,
     recordImpression,

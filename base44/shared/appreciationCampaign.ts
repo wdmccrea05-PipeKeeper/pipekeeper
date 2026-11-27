@@ -12,6 +12,13 @@ export const APPRECIATION_CAMPAIGN_ID = "collector_appreciation_black_friday_202
 export const APPRECIATION_GRANT_HOURS = 168;
 export const APPRECIATION_GRANT_MS = APPRECIATION_GRANT_HOURS * 60 * 60 * 1000;
 export const CAMPAIGN_LAUNCH_ISO = "2026-11-27T00:00:00.000Z";
+/**
+ * Redemption deadline: Monday, November 30, 2026, 11:59 p.m. Eastern.
+ * Eastern Standard Time (UTC-5) in effect on that date, so the instant is
+ * 2026-12-01T04:59:00Z. Fixed here so enforcement never depends on a record
+ * existing or on the caller's time zone.
+ */
+export const CAMPAIGN_REDEMPTION_DEADLINE_ISO = "2026-12-01T04:59:00.000Z";
 
 export function normEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -91,7 +98,24 @@ export function defaultConfig() {
     campaign_id: APPRECIATION_CAMPAIGN_ID,
     is_enabled: true,
     eligibility_cutoff: CAMPAIGN_LAUNCH_ISO,
-    redemption_deadline: null,
+    redemption_deadline: CAMPAIGN_REDEMPTION_DEADLINE_ISO,
+  };
+}
+
+/**
+ * Redemption window for the campaign. Closed means no NEW redemption may be
+ * created; grants already issued keep running to their own 168-hour end.
+ */
+export function resolveRedemptionWindow(config, nowMs = Date.now()) {
+  const deadline = toDate(config?.redemption_deadline) || toDate(CAMPAIGN_REDEMPTION_DEADLINE_ISO);
+  const deadlineMs = deadline ? deadline.getTime() : null;
+  const closed = deadlineMs !== null && nowMs > deadlineMs;
+  return {
+    deadlineIso: deadline ? deadline.toISOString() : null,
+    deadlineMs,
+    closed,
+    open: !closed,
+    msRemaining: deadlineMs === null ? null : Math.max(0, deadlineMs - nowMs),
   };
 }
 
@@ -107,7 +131,7 @@ export async function loadCampaignConfig(base44) {
     campaign_id: record.campaign_id || APPRECIATION_CAMPAIGN_ID,
     is_enabled: record.is_enabled !== false,
     eligibility_cutoff: record.eligibility_cutoff || base.eligibility_cutoff,
-    redemption_deadline: record.redemption_deadline || null,
+    redemption_deadline: record.redemption_deadline || base.redemption_deadline,
     record,
   };
 }
@@ -172,8 +196,7 @@ export function evaluateEligibility({ config, user, grants, subscriptions, nowMs
     return { eligible: false, code: "account_created_after_cutoff" };
   }
 
-  const deadline = toDate(config.redemption_deadline);
-  if (deadline && nowMs > deadline.getTime()) {
+  if (resolveRedemptionWindow(config, nowMs).closed) {
     return { eligible: false, code: "redemption_deadline_passed" };
   }
 
@@ -204,6 +227,7 @@ export function publicCampaign(config) {
     id: config?.campaign_id || APPRECIATION_CAMPAIGN_ID,
     is_enabled: config?.is_enabled !== false,
     eligibility_cutoff: config?.eligibility_cutoff || CAMPAIGN_LAUNCH_ISO,
-    redemption_deadline: config?.redemption_deadline || null,
+    redemption_deadline: config?.redemption_deadline || CAMPAIGN_REDEMPTION_DEADLINE_ISO,
+    redemption_closed: resolveRedemptionWindow(config).closed,
   };
 }

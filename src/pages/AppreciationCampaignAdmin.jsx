@@ -124,6 +124,11 @@ export default function AppreciationCampaignAdmin() {
             <label className="text-xs space-y-1 block">
               <span style={{ color: 'rgba(224,216,200,0.7)' }}>{t('appreciation.adminDeadline')}</span>
               <Input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+              {report?.campaign?.redemption_closed && (
+                <span className="block text-[11px]" style={{ color: '#F0B9A8' }}>
+                  {t('appreciation.adminDeadlineClosed')}
+                </span>
+              )}
             </label>
           </div>
           <Button onClick={save} disabled={saving} style={{ background: GOLD, color: '#241811' }}>

@@ -16,7 +16,7 @@ const CREAM = '#F5F1E7';
  */
 export default function AppreciationBanner({ surface = 'hub', className = '', preview = false }) {
   const { t } = useTranslation();
-  const { showBanner, activate, dismiss, activating, activateError, recordImpression, isLoading } =
+  const { showBanner, activate, dismiss, activating, activateError, recordImpression, isLoading, deadlineLabel } =
     useAppreciationCampaign({ surface });
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [grant, setGrant] = useState(null);
@@ -67,6 +67,22 @@ export default function AppreciationBanner({ surface = 'hub', className = '', pr
               <Sparkles className="w-3.5 h-3.5" />
               {t('appreciation.badge')}
             </span>
+          </div>
+
+          <div
+            className="mb-5 rounded-2xl px-4 py-3"
+            style={{
+              background: 'rgba(212,165,116,0.14)',
+              border: '1px solid rgba(212,165,116,0.45)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+            }}
+          >
+            <p className="text-sm sm:text-base font-bold text-wrap-mobile" style={{ color: CREAM }}>
+              {t('appreciation.deadlineHeadline')}
+            </p>
+            <p className="text-xs sm:text-sm mt-1 text-wrap-mobile" style={{ color: GOLD }}>
+              {t('appreciation.deadlineLine', { date: deadlineLabel })}
+            </p>
           </div>
 
           <h2
@@ -128,9 +144,11 @@ export default function AppreciationBanner({ surface = 'hub', className = '', pr
 
           {activateError && (
             <p className="mt-3 text-xs" style={{ color: '#F0B9A8' }}>
-              {activateError === 'activation_failed'
-                ? t('appreciation.activationFailed')
-                : t('appreciation.unavailable')}
+              {activateError === 'redemption_deadline_passed'
+                ? t('appreciation.deadlineClosed', { date: deadlineLabel })
+                : activateError === 'activation_failed'
+                  ? t('appreciation.activationFailed')
+                  : t('appreciation.unavailable')}
             </p>
           )}
 
