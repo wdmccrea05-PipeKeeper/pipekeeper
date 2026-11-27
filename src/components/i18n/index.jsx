@@ -43,7 +43,25 @@ import itExtra from './locales/it.extra.json';
 import itRemaining from './locales/it.remaining.json';
 import itCodeStrings from './locales/it.codeStrings.json';
 import frGenerated from './locales/fr.generated.json';
+import esGenerated from './locales/es.generated.json';
+import deGenerated from './locales/de.generated.json';
+import ptBRGenerated from './locales/pt-BR.generated.json';
+import nlGenerated from './locales/nl.generated.json';
+import plGenerated from './locales/pl.generated.json';
+import jaGenerated from './locales/ja.generated.json';
+import zhHansGenerated from './locales/zh-Hans.generated.json';
 import { docsCurrentTranslations } from './docsCurrent.jsx';
+
+const GENERATED_PACKS = {
+  fr: frGenerated,
+  es: esGenerated,
+  de: deGenerated,
+  'pt-BR': ptBRGenerated,
+  nl: nlGenerated,
+  pl: plGenerated,
+  ja: jaGenerated,
+  'zh-Hans': zhHansGenerated,
+};
 
 const CRITICAL_FALLBACKS = {
   common: { back: 'Back', search: 'Search', share: 'Share', loading: 'Loading...', retry: 'Retry' },
@@ -182,10 +200,11 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
   const withIntel = lang === 'en'
     ? deepMerge(withDocsCurrent, { collectionIntelligence: enCollectionIntelligence })
     : withDocsCurrent;
+  const generatedPack = GENERATED_PACKS[lang];
   const withGenerated = lang === 'it'
     ? deepOverride(deepOverride(deepOverride(deepOverride(withIntel, itGenerated), itExtra), itRemaining), itCodeStrings)
-    : lang === 'fr'
-      ? deepOverride(withIntel, frGenerated)
+    : generatedPack
+      ? deepOverride(withIntel, generatedPack)
       : withIntel;
   const withCriticals = deepMerge(withGenerated, CRITICAL_FALLBACKS);
   return [lang, withCriticals];
