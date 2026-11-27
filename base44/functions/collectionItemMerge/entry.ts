@@ -84,33 +84,37 @@ Deno.serve(async (req) => {
       });
     }
 
+    const activityRows = [
+      {
+        record_entity: entityName,
+        record_id: targetId,
+        record_name: target.name || '',
+        module_key: config.moduleKey,
+        event_type: 'merged',
+        summary: `Merged ${sources.length} duplicate record${sources.length === 1 ? '' : 's'}`,
+        detail: `Surviving record kept. Filled: ${plan.filledFields.join(', ') || 'no blank fields'}`,
+        changed_fields: Object.keys(plan.patch),
+        actor_email: user.email,
+        occurred_at: now,
+        created_by_id: user.id,
+      },
+      ...sources.map((source: any) => ({
+        record_entity: entityName,
+        record_id: source.id,
+        record_name: source.name || '',
+        module_key: config.moduleKey,
+        event_type: 'archived',
+        summary: `Archived after merge into ${target.name || targetId}`,
+        actor_email: user.email,
+        occurred_at: now,
+        created_by_id: user.id,
+      })),
+    ];
+
     try {
-      await base44.asServiceRole.entities.CollectionActivity.bulkCreate([
-        {
-          record_entity: entityName,
-          record_id: targetId,
-          record_name: target.name || '',
-          module_key: config.moduleKey,
-          event_type: 'merged',
-          summary: `Merged ${sources.length} duplicate record${sources.length === 1 ? '' : 's'}`,
-          detail: `Surviving record kept. Filled: ${plan.filledFields.join(', ') || 'no blank fields'}`,
-          changed_fields: Object.keys(plan.patch),
-          actor_email: user.email,
-          occurred_at: now,
-          created_by_id: user.id,
-        },
-        ...sources.map((source: any) => ({
-          record_entity: entityName,
-          record_id: source.id,
-          record_name: source.name || '',
-          module_key: config.moduleKey,
-          event_type: 'archived',
-          summary: `Archived after merge into ${target.name || targetId}`,
-          actor_email: user.email,
-          occurred_at: now,
-          created_by_id: user.id,
-        })),
-      ]);
+      for (const row of activityRows) {
+        await base44.asServiceRole.entities.CollectionActivity.create(row);
+      }
     } catch (logError) {
       console.warn('[collectionItemMerge] activity log failed (non-fatal):', logError?.message);
     }

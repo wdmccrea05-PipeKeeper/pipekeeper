@@ -63,8 +63,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    const updates = authorized.map((record: any) => ({ id: record.id, ...patch }));
-    await base44.asServiceRole.entities[entityName].bulkUpdate(updates);
+    // The backend SDK writes one record at a time; ownership is already verified
+    // for each id above, so this loop only touches authorized records.
+    for (const record of authorized) {
+      await base44.asServiceRole.entities[entityName].update(record.id, patch);
+    }
 
     const now = new Date().toISOString();
     const changedFields = Object.keys(patch);
@@ -82,7 +85,9 @@ Deno.serve(async (req) => {
     }));
 
     try {
-      await base44.asServiceRole.entities.CollectionActivity.bulkCreate(activityRows);
+      for (const row of activityRows) {
+        await base44.asServiceRole.entities.CollectionActivity.create(row);
+      }
     } catch (logError) {
       console.warn('[collectionItemBulkUpdate] activity log failed (non-fatal):', logError?.message);
     }
