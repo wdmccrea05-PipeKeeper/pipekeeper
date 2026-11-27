@@ -356,11 +356,23 @@ export default function ProfilePage() {
         user_email: email || undefined,
       };
 
+      let saved;
       if (profileId) {
-        return safeUpdate("UserProfile", profileId, payload, email);
+        saved = await safeUpdate("UserProfile", profileId, payload, email);
+      } else {
+        saved = await base44.entities.UserProfile.create(payload);
       }
 
-      return base44.entities.UserProfile.create(payload);
+      // Duplicate profile rows can exist for one collector; keep the public flag
+      // identical on every row so the Community page never reads a stale copy.
+      if (email) {
+        await base44.entities.UserProfile.updateMany(
+          { user_email: email },
+          { $set: { is_public: !!formData.is_public } }
+        ).catch(() => {});
+      }
+
+      return saved;
     },
     onSuccess: async (savedData) => {
       console.log("[Profile] Save successful, returned data:", savedData);
@@ -751,6 +763,23 @@ export default function ProfilePage() {
                 {t("profileExtended.publicProfileView")}
               </p>
 
+              <div className="flex items-center justify-between pb-4 mb-4 border-b" style={{ borderColor: 'rgba(224,216,200,0.1)' }}>
+                <div>
+                  <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.publicCommunityProfile")}</span>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.allowOthersToView")}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs" style={{ color: formData.is_public ? 'rgba(163,92,92,0.9)' : 'rgba(224,216,200,0.5)' }}>
+                    {formData.is_public ? t("profileExtended.toggleStatusVisible", "Visible") : t("profileExtended.toggleStatusHidden", "Hidden")}
+                  </span>
+                  <Switch
+                    checked={!!formData.is_public}
+                    onCheckedChange={(v) => setFormData((p) => ({ ...p, is_public: !!v }))}
+                    className="data-[state=checked]:bg-[#A35C5C]"
+                  />
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm" style={{ color: 'rgba(224,216,200,0.7)' }}>{t("profileExtended.hideValues")}</span>
@@ -1041,19 +1070,6 @@ export default function ProfilePage() {
                 </div>
               </FormSection>
             )}
-
-            {/* Public profile toggle */}
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.publicCommunityProfile")}</div>
-                <div className="text-sm" style={{ color: 'rgba(224,216,200,0.6)' }}>{t("profileExtended.allowOthersToView")}</div>
-              </div>
-              <Switch
-                checked={formData.is_public}
-                onCheckedChange={(v) => setFormData((p) => ({ ...p, is_public: !!v }))}
-                className="data-[state=checked]:bg-[#A35C5C]"
-              />
-            </div>
 
             {/* Save & Share */}
             <div className="flex flex-col md:flex-row gap-3">

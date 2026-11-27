@@ -57,8 +57,22 @@ function CommunityPageInner() {
         userId: user?.id,
         userEmail: user?.email,
       });
-      setProfile(foundProfile || null);
-      return foundProfile || null;
+      let resolved = foundProfile || null;
+
+      // A newer row created without the visibility flag (e.g. a bare avatar save)
+      // must not hide a choice the collector already made on an earlier row.
+      if (resolved && typeof resolved.is_public !== "boolean") {
+        const rows = await base44.entities.UserProfile
+          .filter({ user_email: String(user?.email || "").trim().toLowerCase() })
+          .catch(() => []);
+        const withFlag = (Array.isArray(rows) ? rows : [])
+          .filter((r) => typeof r.is_public === "boolean")
+          .sort((a, b) => (Date.parse(b.updated_date || "") || 0) - (Date.parse(a.updated_date || "") || 0));
+        if (withFlag[0]) resolved = { ...resolved, is_public: withFlag[0].is_public };
+      }
+
+      setProfile(resolved);
+      return resolved;
     },
     enabled: !!user?.email,
     staleTime: 0,
