@@ -68,7 +68,12 @@ describe('share and similar parity', () => {
     expect(modalSrc).toContain('onClose');
     expect(modalSrc).toContain("type === 'wine_collection' ? 'wine' : type");
     expect(modalSrc).toContain('CigarShareCard');
-    expect(publicRouteSrc).toContain('moduleType === "cigar"');
-    expect(publicRouteSrc).toContain('buildPublicCigarShareView');
+    // The public route is module-agnostic: it fetches the server-built payload
+    // and renders it, so cigar support lives in the projection, not the page.
+    const projectionSrc = read('base44/shared/shareProjection.ts');
+    expect(publicRouteSrc).toContain('fetchSharePayload');
+    expect(publicRouteSrc).toContain('CollectionShareView');
+    expect(projectionSrc).toContain('"cigar"');
+    expect(projectionSrc).toContain('Cigar');
   });
 });
