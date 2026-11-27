@@ -7,13 +7,14 @@
       "enum": [
         "pipe",
         "blend",
-        "log"
+        "log",
+        "post"
       ],
       "description": "Type of entity being commented on"
     },
     "entity_id": {
       "type": "string",
-      "description": "ID of the pipe, blend, or log"
+      "description": "ID of the pipe, blend, log, or community post"
     },
     "entity_owner_email": {
       "type": "string",

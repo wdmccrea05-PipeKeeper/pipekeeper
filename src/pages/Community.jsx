@@ -10,9 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog, CheckCircle, XCircle, Clock, MapPin, MessageSquare, User, Gift } from "lucide-react";
+import { Search, Users, UserPlus, Mail, UserCheck, UserX, Eye, Settings, UserCog, CheckCircle, XCircle, Clock, MapPin, MessageSquare, User, Gift, Rss } from "lucide-react";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import MessagingPanel from "@/components/community/MessagingPanel";
+import CommunityFeed from "@/components/community/CommunityFeed";
+import MemberDirectory from "@/components/community/MemberDirectory";
 import UpgradePrompt from "@/components/subscription/UpgradePrompt";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -23,7 +25,7 @@ import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 function CommunityPageInner() {
   const { t } = useTranslation();
   const location = window.location;
-  const initialTab = location.state?.referralTab ? 'referral' : 'discover';
+  const initialTab = location.state?.referralTab ? 'referral' : 'feed';
   const [activeTab, setActiveTab] = useState(initialTab);
   const [profile, setProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -291,6 +293,10 @@ function CommunityPageInner() {
                 boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1)"
               }}
             >
+              <TabsTrigger value="feed" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
+                <Rss className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline ml-2">{t("communityFeed.tab", "Feed")}</span>
+              </TabsTrigger>
               <TabsTrigger value="discover" className="flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4">
                 <Search className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline ml-2">{t("communityExtended.discover")}</span>
@@ -332,6 +338,10 @@ function CommunityPageInner() {
             </TabsList>
           </div>
 
+          <TabsContent value="feed" className="space-y-6">
+            <CommunityFeed user={user} profile={userProfile} friends={acceptedFriends} />
+          </TabsContent>
+
           <TabsContent value="discover" className="space-y-6">
             {!profileLoading && !profileFetching && !userProfile?.is_public && (
               <div 
@@ -362,6 +372,14 @@ function CommunityPageInner() {
                 </div>
               </div>
             )}
+
+            <MemberDirectory
+              profiles={allPublicProfiles}
+              currentUser={user}
+              friendships={friendships}
+              onAddFriend={(email) => sendFriendRequestMutation.mutate(email)}
+              isAdding={sendFriendRequestMutation.isPending}
+            />
 
             <div
               className="rounded-lg overflow-hidden"

@@ -1,0 +1,120 @@
+{
+  "name": "CommunityPost",
+  "type": "object",
+  "description": "A post in the collector community feed: a shared acquisition, session note, photo or general update.",
+  "properties": {
+    "author_email": {
+      "type": "string",
+      "description": "Email of the collector who posted"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Display name snapshot at time of posting"
+    },
+    "author_avatar": {
+      "type": "string",
+      "description": "Avatar URL snapshot at time of posting"
+    },
+    "post_type": {
+      "type": "string",
+      "enum": [
+        "acquisition",
+        "session",
+        "photo",
+        "note"
+      ],
+      "enumColors": [
+        "green",
+        "blue",
+        "purple",
+        "gray"
+      ],
+      "default": "note",
+      "description": "Kind of update being shared"
+    },
+    "module_type": {
+      "type": "string",
+      "enum": [
+        "general",
+        "pipe",
+        "tobacco",
+        "whiskey",
+        "cigar",
+        "wine"
+      ],
+      "enumColors": [
+        "gray",
+        "yellow",
+        "green",
+        "blue",
+        "purple",
+        "pink"
+      ],
+      "default": "general",
+      "description": "Which collection module the post relates to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Optional short headline"
+    },
+    "body": {
+      "type": "string",
+      "description": "Post text"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 4,
+      "description": "Photo URLs attached to the post"
+    },
+    "record_id": {
+      "type": "string",
+      "description": "Optional ID of a collection item this post is about"
+    },
+    "record_name": {
+      "type": "string",
+      "description": "Display name of the attached collection item"
+    },
+    "is_hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hidden from the feed by moderation"
+    }
+  },
+  "required": [
+    "author_email",
+    "body"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

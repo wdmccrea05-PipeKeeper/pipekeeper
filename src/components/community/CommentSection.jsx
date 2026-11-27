@@ -19,9 +19,9 @@ import { Textarea as ReportTextarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
-export default function CommentSection({ entityType, entityId, entityOwnerEmail }) {
+export default function CommentSection({ entityType, entityId, entityOwnerEmail, defaultOpen = false }) {
   const { t } = useTranslation();
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(defaultOpen);
   const [newComment, setNewComment] = useState('');
   const [reportingComment, setReportingComment] = useState(null);
   const [reportReason, setReportReason] = useState('');
@@ -94,15 +94,17 @@ export default function CommentSection({ entityType, entityId, entityOwnerEmail 
 
   return (
     <div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setShowComments(!showComments)}
-        className="text-stone-600 hover:text-stone-800"
-      >
-        <MessageSquare className="w-4 h-4 mr-1" />
-        {showComments ? t('comments.hideComments') : t('comments.showComments')} ({comments.length})
-      </Button>
+      {!defaultOpen && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowComments(!showComments)}
+          className="text-stone-600 hover:text-stone-800"
+        >
+          <MessageSquare className="w-4 h-4 mr-1" />
+          {showComments ? t('comments.hideComments') : t('comments.showComments')} ({comments.length})
+        </Button>
+      )}
 
       {showComments && (
         <div className="mt-4 space-y-4">
