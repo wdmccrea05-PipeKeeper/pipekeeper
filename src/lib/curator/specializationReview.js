@@ -145,26 +145,28 @@ export function buildSpecializationReview({ pipe = {}, smokingLogs = [], blends 
   const alternatives = [];
   const seen = new Set();
 
-  // 1. What the pipe's own history points at.
-  if (evidence.dominantFamily) {
-    const ratio = evidence.dominanceRatio;
-    const dominantEntry = evidence.families[0];
+  const MAX_ALTERNATIVES = 4;
+
+  // 1. Every family the pipe's own sessions actually used, strongest first.
+  //    Each one carries its own session count, so a family that has been smoked
+  //    is never later described as having no sessions.
+  evidence.families.forEach((entry) => {
     alternatives.push({
-      classification: evidence.dominantFamily,
-      confidence: confidenceFor({ sessionCount: dominantEntry.count, ratio }),
+      classification: entry.family,
+      confidence: confidenceFor({ sessionCount: entry.count, ratio: entry.ratio }),
       basis: 'session history',
-      rationale: `${dominantEntry.count} of ${evidence.sessionCount} logged sessions used ${evidence.dominantFamily} blends${
-        dominantEntry.blends.length ? ` (${dominantEntry.blends.slice(0, 3).join(', ')})` : ''
-      }. ${characteristicRationale(evidence.dominantFamily, pipe)}.`,
+      rationale: `${entry.count} of ${evidence.sessionCount} logged sessions used ${entry.family} blends${
+        entry.blends.length ? ` (${entry.blends.slice(0, 3).join(', ')})` : ''
+      }. ${characteristicRationale(entry.family, pipe)}.`,
       characteristics: characteristics.map((row) => row.label),
     });
-    seen.add(evidence.dominantFamily);
-  }
+    seen.add(entry.family);
+  });
 
-  // 2. Families in the cellar this pipe has not been used with.
+  // 2. Families in the cellar this pipe has genuinely never been used with.
   const unusedFamilies = [...new Set(blends.map(familyOf).filter(Boolean))]
     .filter((family) => !seen.has(family))
-    .slice(0, 3);
+    .slice(0, Math.max(0, MAX_ALTERNATIVES - alternatives.length));
 
   unusedFamilies.forEach((family) => {
     alternatives.push({
