@@ -141,6 +141,7 @@ function baseItem(module, record) {
     condition: String(record?.condition || ""),
     conditionNotes: String(record?.condition_notes || ""),
     lifecycleStatus: String(record?.lifecycle_status || (record?.is_archived ? "archived" : "active")),
+    retiredAt: record?.archived_at || null,
     favorite: Boolean(record?.is_favorite || record?.favorite),
     tags: listOf(record?.tags),
     flavorNotes: [],

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { classifyIntegrationError } from '../../shared/integrationTelemetry.ts';
+import { resolveCuratorAccess } from '../../shared/curatorAccess.ts';
 
 const RESPONSE_CACHE = new Map<string, { text: string; cachedAt: number }>();
 const CACHE_TTL_MS = 60 * 1000;
@@ -88,6 +89,13 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Curator consumes AI credits and is a Pro capability in the UI. Re-check
+    // server-side so the entitlement is never decided by the browser alone.
+    const access = await resolveCuratorAccess(req);
+    if (!access.ok) {
+      return Response.json({ error: access.error, reason: access.reason }, { status: access.status || 403 });
     }
 
     const { prompt, actionType, contextBlock, requestId } = await req.json();

@@ -5,14 +5,17 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useNavigate } from 'react-router-dom';
-import { Package, Leaf, BarChart3, FileText, Sparkles, User, HelpCircle, CreditCard, GlassWater, Cigarette, Wrench, Wallet, Share2 } from 'lucide-react';
+import { Package, Leaf, BarChart3, FileText, Sparkles, User, HelpCircle, CreditCard, GlassWater, Cigarette, Wrench, Wallet, Share2, ShieldCheck } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 
 export default function FeatureQuickAccess({ isOpen, onClose }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isModuleEnabled } = useModuleVisibility();
+  const { user } = useCurrentUser();
+  const isAdmin = String(user?.role || '').toLowerCase() === 'admin';
   
   const features = [
     isModuleEnabled('pipekeeper') && {
@@ -90,6 +93,12 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
       description: t("quickAccess.accountSettings", "Account settings & preferences"),
       page: "Profile",
     },
+    isAdmin && {
+      icon: ShieldCheck,
+      label: t("admin.diagnostics", "Entitlement Diagnostics"),
+      description: t("admin.diagnosticsDesc", "Subscription health, entitlement matrix and gift redemption"),
+      href: "/AdminDiagnostics",
+    },
     {
       icon: HelpCircle,
       label: t("nav.help", "Help"),
@@ -99,7 +108,7 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
   ].filter(Boolean);
   
   const handleFeatureClick = (feature) => {
-    const url = createPageUrl(feature.page);
+    const url = feature.href || createPageUrl(feature.page);
     navigate(url + (feature.hash || ''));
     onClose();
   };

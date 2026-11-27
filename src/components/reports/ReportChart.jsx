@@ -29,7 +29,9 @@ export default function ReportChart({ chart, onDrill }) {
     );
   }
 
-  const drill = (name) => {
+  const drill = (entry) => {
+    const name = entry?.name || entry?.payload?.name || entry?.payload?.payload?.name;
+    if (!name) return;
     const ids = chart?.drillIds?.[name] || [];
     if (typeof onDrill === "function") onDrill({ title: `${chart.title} · ${name}`, ids });
   };
@@ -57,7 +59,7 @@ export default function ReportChart({ chart, onDrill }) {
                 innerRadius={45}
                 outerRadius={80}
                 paddingAngle={2}
-                onClick={(entry) => isInteractive && drill(entry?.name)}
+                onClick={(entry) => isInteractive && drill(entry)}
                 cursor={isInteractive ? "pointer" : "default"}
               >
                 {data.map((entry, index) => (
@@ -85,7 +87,7 @@ export default function ReportChart({ chart, onDrill }) {
                 fill="#B48C4B"
                 radius={[4, 4, 0, 0]}
                 cursor={isInteractive ? "pointer" : "default"}
-                onClick={(entry) => isInteractive && drill(entry?.name)}
+                onClick={(entry) => isInteractive && drill(entry)}
               />
             </BarChart>
           )}

@@ -11,6 +11,7 @@ import {
   planUndo,
   sanitiseCuratorPatch,
 } from '../../shared/curatorRecordChanges.ts';
+import { resolveCuratorAccess } from '../../shared/curatorAccess.ts';
 
 /**
  * Server-side authority for changes Curator proposes.
@@ -307,6 +308,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (!user?.email) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+    // Writing collection records from Curator is a Pro capability. Ownership is
+    // re-checked per record further down; the entitlement is re-checked here.
+    const access = await resolveCuratorAccess(req);
+    if (!access.ok) {
+      return Response.json({ error: access.error, reason: access.reason }, { status: access.status || 403 });
+    }
 
     const body = await req.json().catch(() => ({}));
     const mode = String(body?.mode || 'apply');

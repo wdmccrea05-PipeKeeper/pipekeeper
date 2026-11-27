@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { resolveCuratorAccess } from '../../shared/curatorAccess.ts';
 
 function unique(arr) {
   return [...new Set(arr)];
@@ -244,6 +245,15 @@ Deno.serve(async (req) => {
 
     if (!me?.email) {
       return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Session recommendations are part of the Pro Curator capability.
+    const access = await resolveCuratorAccess(req);
+    if (!access.ok) {
+      return Response.json(
+        { success: false, error: access.error, reason: access.reason },
+        { status: access.status || 403 }
+      );
     }
 
     const body = await req.json().catch(() => ({}));
