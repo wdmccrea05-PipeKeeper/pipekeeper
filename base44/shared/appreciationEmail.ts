@@ -7,6 +7,7 @@
  */
 
 import { evaluateEligibility, normEmail, resolveRedemptionWindow } from "./appreciationCampaign.ts";
+import buildAppreciationEmailBanner from "./appreciationEmailBanner.ts";
 
 export const EMAIL_TEMPLATE_KEY = "collector_appreciation_email";
 export const EMAIL_TEMPLATE_NAME = "CollectorAppreciation";
@@ -640,7 +641,8 @@ export function buildHtml(lang, options = {}) {
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(copy.preview)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${PAGE_BG};">
 <tr><td align="center" style="padding:0;">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background-color:#ffffff;">
+<!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#ffffff;">
 
 <tr><td style="background-color:${ORANGE};padding:16px 28px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -653,9 +655,7 @@ export function buildHtml(lang, options = {}) {
 </table>
 </td></tr>
 
-<tr><td style="padding:0;line-height:0;">
-<img src="${HERO_URL}" width="600" alt="${esc(copy.headline)}" style="display:block;width:100%;max-width:600px;height:auto;border:0;outline:none;text-decoration:none;" />
-</td></tr>
+${buildAppreciationEmailBanner(HERO_URL, esc(copy.headline))}
 
 <tr><td style="background-color:${CREAM};padding:30px 32px 10px 32px;">
 <div style="font-family:${EMAIL_FONT};font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${ORANGE};padding-bottom:10px;">A thank-you from ${BRAND_NAME}</div>
@@ -706,6 +706,7 @@ export function buildHtml(lang, options = {}) {
 </td></tr>
 
 </table>
+<!--[if mso]></td></tr></table><![endif]-->
 </td></tr>
 </table>
 </body>

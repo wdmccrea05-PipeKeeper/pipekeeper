@@ -15,6 +15,7 @@ const read = (relative) => fs.readFileSync(path.join(process.cwd(), relative), "
 const exists = (relative) => fs.existsSync(path.join(process.cwd(), relative));
 
 const shared = read("base44/shared/appreciationEmail.ts");
+const banner = read("base44/shared/appreciationEmailBanner.ts");
 const campaignRules = read("base44/shared/appreciationCampaign.ts");
 const sendFn = read("base44/functions/adminEmailCampaigns/entry.ts");
 const audienceFn = read("base44/functions/appreciationEmailAudience/entry.ts");
@@ -63,7 +64,7 @@ describe("email rendering", () => {
     expect(shared).toContain("export function buildHtml");
     expect(shared).toContain("<!DOCTYPE html>");
     expect(shared).toContain("<img src=\"${LOGO_URL}\"");
-    expect(shared).toContain("<img src=\"${HERO_URL}\"");
+    expect(shared).toContain("buildAppreciationEmailBanner(HERO_URL, esc(copy.headline))");
     expect(shared).toContain("#ff773c");
     expect(shared).toContain("Georgia");
     expect(shared).not.toContain("{{");
@@ -89,6 +90,31 @@ describe("email rendering", () => {
     expect(shared).toContain("max-width:600px");
     expect(shared).toContain('name="viewport"');
     expect(shared).toContain("x-apple-disable-message-reformatting");
+  });
+
+  it("frames out the white matte built into the square banner artwork", () => {
+    expect(shared).not.toContain('<img src="${HERO_URL}"');
+    expect(banner).toContain('background="${src}"');
+    expect(banner).toContain("background-size:100% auto");
+    expect(banner).toContain('role="img" aria-label="${escapedAlt}"');
+    const sourceSize = Number(banner.match(/const SOURCE_SIZE = (\d+)/)[1]);
+    const top = Number(banner.match(/const PHOTO_TOP = (\d+)/)[1]);
+    const bottom = Number(banner.match(/const PHOTO_BOTTOM = (\d+)/)[1]);
+    expect(sourceSize).toBe(1024);
+    expect(top).toBeGreaterThan(224);
+    expect(bottom).toBeLessThan(768);
+    expect(bottom - top).toBe(540);
+    expect(banner).toContain("padding:0 0 ${ratio * 100}%");
+    expect(banner).toContain("background-position:center ${position}%");
+  });
+
+  it("keeps matching Outlook framing and a fluid mobile email width", () => {
+    expect(banner).toContain("<!--[if mso]>");
+    expect(banner).toContain("<v:image");
+    expect(banner).toContain('croptop="${PHOTO_TOP / SOURCE_SIZE}"');
+    expect(banner).toContain('cropbottom="${1 - PHOTO_BOTTOM / SOURCE_SIZE}"');
+    expect(banner).toContain("<!--[if !mso]><!-->");
+    expect(shared).toContain("width:100%;max-width:600px;background-color:#ffffff");
   });
 
   it("no longer depends on a separate template file", () => {
