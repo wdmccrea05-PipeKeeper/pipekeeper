@@ -21,7 +21,7 @@ export default function WineKeeperModuleNav({ currentPageName }) {
     { path: '/Wines', label: t('wine.collection', 'Wine Collection'), icon: Wine },
     { path: '/SessionHistory?module=wine', label: t('sessionHistory.title', 'Tasting History'), icon: CalendarDays },
     { path: '/WineInsights', label: t('nav.insights', 'Insights'), icon: BarChart3 },
-    { path: '/CollectionReports?module=winekeeper', label: t('nav.reports', 'Reports'), icon: FileBarChart2 },
+    { path: '/ReportingCenter?module=winekeeper', label: t('nav.reports', 'Reports'), icon: FileBarChart2 },
   ];
 
   return (

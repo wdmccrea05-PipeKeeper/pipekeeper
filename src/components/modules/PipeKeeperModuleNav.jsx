@@ -43,7 +43,7 @@ export default function PipeKeeperModuleNav({ currentPageName }) {
     { page: "PipeClub", label: "Pipe Club", icon: Users },
     { page: "SessionHistory", label: t("sessionHistory.title", "Session History"), icon: CalendarDays },
     { page: "Insights", label: t("nav.insights"), icon: TrendingUp },
-    { page: "CollectionReports?module=pipekeeper", label: t("nav.reports", "Reports"), icon: FileBarChart2 },
+    { page: "ReportingCenter?module=pipekeeper", label: t("nav.reports", "Reports"), icon: FileBarChart2 },
   ];
 
   return (
