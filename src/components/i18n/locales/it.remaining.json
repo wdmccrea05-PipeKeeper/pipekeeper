@@ -6,6 +6,7 @@
   "enterBarcodeBelow": "Inserisci qui sotto il codice a barre riportato sull'etichetta della bottiglia.",
   "featureDescription": "Identifica gli articoli tramite codice a barre o foto con l'IA",
   "featureName": "Identificazione IA",
+  "identifyPhotos": "Identifica ${photoUrls.length} foto",
   "lookingUp": "Ricerca codice a barre in corso…",
   "noMatches": "Nessuna corrispondenza trovata.",
   "photoDesc": "Carica o scatta una foto e lascia che l'IA identifichi l'articolo",
@@ -136,7 +137,8 @@
   "diversityCuratorPrompt": "Analizza la varietà della mia cantina di tabacchi e dimmi quali aggiunte migliorerebbero l'equilibrio.",
   "optimizationExplainPrompt": "Spiega le ultime raccomandazioni di ottimizzazione della collezione e il loro impatto.",
   "pairingExplainPrompt": "Spiega cosa è cambiato nella mia matrice di abbinamenti e come dovrei usarla.",
-  "rotationCuratorPrompt": "Aiutami a creare un piano di rotazione per queste pipe poco usate."
+  "rotationCuratorPrompt": "Aiutami a creare un piano di rotazione per queste pipe poco usate.",
+  "updateExplainPrompt": "Spiega l'aggiornamento ${update.title}."
  },
  "collectionReports": {
   "bestMatch": "Miglior abbinamento",
@@ -416,6 +418,7 @@
   "searchTip": "Cerca tra tutorial, funzionalità e guide pratiche",
   "selfDiagnostic": "Diagnostica di sistema",
   "staleInsights": "Insight non aggiornati nelle ultime ore",
+  "stalePairingsMsg": "I tuoi abbinamenti risalgono a ${Math.floor(daysSince)} giorni fa",
   "systemDiagnostic": "Diagnostica di sistema",
   "tobaccoValuation": "Come viene calcolato il valore del tabacco?",
   "tutorialNotFound": "Tutorial non trovato",
@@ -589,7 +592,13 @@
   "manageModules": "Gestisci moduli nel profilo",
   "notAvailable": "Non disponibile",
   "notAvailableInRelease": "{{moduleName}} non è disponibile in questa versione.",
-  "notYetAvailable": "{{moduleName}} non è ancora disponibile."
+  "notYetAvailable": "{{moduleName}} non è ancora disponibile.",
+  "subscribeToAccessModule": "È richiesto un abbonamento Pro ${label} per accedere a questo modulo.",
+  "subscribeToPro": "Abbonati a Pro",
+  "subscriptionRequired": "Abbonamento richiesto",
+  "upgradeRequired": "Aggiornamento richiesto",
+  "upgradeToAddModule": "Il tuo piano attuale non include ${label}. Esegui l'upgrade al Founders Bundle o abbonati separatamente.",
+  "viewUpgradeOptions": "Visualizza le opzioni di upgrade"
  },
  "nav": {
   "cigars": "Sigari",
@@ -934,6 +943,7 @@
   "appleFeaturePro7": "Strumenti di ottimizzazione collezione",
   "appleFeaturePro8": "Accesso anticipato a nuove funzionalità avanzate",
   "canceled": "Annullato",
+  "gracePeriod": "Pagamento scaduto — mancano ${grace.daysRemaining} giorni",
   "noSubscription": "Nessun abbonamento attivo",
   "primaryBilling": "Fatturazione principale",
   "suspended": "Accesso a pagamento sospeso",
