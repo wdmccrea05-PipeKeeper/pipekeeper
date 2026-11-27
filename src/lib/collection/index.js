@@ -22,3 +22,6 @@ export * from './wineSelectors.js';
 export * from './summarySelectors.js';
 export * from './collectionValidator.js';
 export * from './activeFilters.js';
+export * from './boundaries.js';
+export * from './provenance.js';
+export * from './conditionHistory.js';

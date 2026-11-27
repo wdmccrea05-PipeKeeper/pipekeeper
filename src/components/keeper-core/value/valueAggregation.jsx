@@ -6,24 +6,50 @@ import { getEffectiveRates, getCurrentDisplayCurrency } from '@/lib/currency/exc
 import { convertFromBase } from '@/lib/currency/convertCurrency';
 import { formatMoney } from '@/lib/currency/formatCurrency';
 import { calculateCigarValue } from '@/utils/cigarValuation';
+import { computeCurrentValue } from '@/components/valuation/valueEngine';
+
+/**
+ * Collection Intelligence 2.0 — consolidation note.
+ *
+ * Pipe, tobacco, bottle and wine values resolve through the canonical valuation
+ * engine (src/components/valuation/valueEngine.js) so the Hub cannot disagree
+ * with the module dashboards, detail pages and reports. Do not reintroduce
+ * per-module field-order math here.
+ */
 
 export function getPipeValue(pipe) {
   if (!pipe) return 0;
-  return pipe.estimated_value || pipe.purchase_price || 0;
+  return computeCurrentValue(pipe, 'pipekeeper') || 0;
 }
 
 export function getTobaccoValue(blend) {
   if (!blend) return 0;
-  return blend.manual_market_value || blend.ai_estimated_value || 0;
+  // The engine prices tobacco as quantity × per-ounce rate. A blend with no
+  // recorded inventory has no quantity to price, so keep its stored unit
+  // estimate rather than reporting the blend as zero.
+  const storedEstimate = Number(blend.manual_market_value) || Number(blend.ai_estimated_value) || 0;
+  const totalOz =
+    (Number(blend.tin_total_quantity_oz) || 0) +
+    (Number(blend.bulk_total_quantity_oz) || 0) +
+    (Number(blend.pouch_total_quantity_oz) || 0);
+
+  if (totalOz > 0) {
+    return computeCurrentValue(blend, 'pipekeeper') || storedEstimate;
+  }
+  return storedEstimate || computeCurrentValue(blend, 'pipekeeper');
 }
 
 export function getBottleValue(bottle) {
   if (!bottle) return 0;
+  return computeCurrentValue(bottle, 'whiskeykeeper') || 0;
+}
+
+export function getWineValue(wine) {
+  if (!wine) return 0;
   return (
-    bottle.collector_value ||
-    bottle.aftermarket_price ||
-    bottle.retail_price ||
-    bottle.purchase_price ||
+    computeCurrentValue(wine, 'winekeeper') ||
+    Number(wine.estimated_value) ||
+    Number(wine.purchase_price) ||
     0
   );
 }
@@ -50,6 +76,9 @@ export function getValueByModuleType(moduleType, entity) {
       return getBottleValue(entity);
     case 'cigars':
       return getCigarValue(entity);
+    case 'wines':
+    case 'wine':
+      return getWineValue(entity);
     case 'coffee':
       return getCoffeeBeanValue(entity);
     default:
