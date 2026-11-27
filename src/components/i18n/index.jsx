@@ -42,6 +42,7 @@ import itGenerated from './locales/it.generated.json';
 import itExtra from './locales/it.extra.json';
 import itRemaining from './locales/it.remaining.json';
 import itCodeStrings from './locales/it.codeStrings.json';
+import frGenerated from './locales/fr.generated.json';
 import { docsCurrentTranslations } from './docsCurrent.jsx';
 
 const CRITICAL_FALLBACKS = {
@@ -183,7 +184,9 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
     : withDocsCurrent;
   const withGenerated = lang === 'it'
     ? deepOverride(deepOverride(deepOverride(deepOverride(withIntel, itGenerated), itExtra), itRemaining), itCodeStrings)
-    : withIntel;
+    : lang === 'fr'
+      ? deepOverride(withIntel, frGenerated)
+      : withIntel;
   const withCriticals = deepMerge(withGenerated, CRITICAL_FALLBACKS);
   return [lang, withCriticals];
 }));

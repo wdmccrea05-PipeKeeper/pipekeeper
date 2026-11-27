@@ -460,6 +460,12 @@
   "reconUsersWithMultipleActiveSubscriptions": "Utilisateurs avec plusieurs abonnements actifs ({count})",
   "reconVerifiedCancelingPaidThrough": "Annulation vérifiée (payé jusqu'au)"
  },
+ "blendTypes": {
+  "Dark Fired Kentucky": "Dark Fired Kentucky",
+  "Virginia/Burley": "Virginia/Burley",
+  "Virginia/Oriental": "Virginia/Oriental",
+  "Virginia/Perique": "Virginia/Perique"
+ },
  "bottle": {
   "checkpointFailed": "Échec de l'enregistrement du point de valeur. Veuillez réessayer.",
   "deleteBody": "Ceci supprime définitivement cette fiche whiskey et son historique associé (notes de dégustation, inventaire, évaluations et historiques d'achat). Cette action est irréversible.",
@@ -914,6 +920,18 @@
   "topTen": "Top",
   "wines": "vins"
  },
+ "comments": {
+  "commentsCount": "Commentaires ({count})",
+  "hideComments": "Masquer les commentaires",
+  "leavePlaceholder": "Laisser un commentaire…",
+  "noCommentsYet": "Aucun commentaire pour l'instant. Soyez le premier à commenter !",
+  "reportDesc": "Veuillez décrire pourquoi ce commentaire enfreint les règles de la communauté…",
+  "reportPlaceholder": "Expliquez pourquoi ce commentaire est inapproprié…",
+  "reportSubmitted": "Signalement soumis. Merci de nous aider à maintenir la sécurité de notre communauté.",
+  "reportTitle": "Signaler un commentaire inapproprié",
+  "showComments": "Afficher les commentaires",
+  "submitReport": "Soumettre le signalement"
+ },
  "common": {
   "accessDenied": "Accès refusé",
   "add": "Ajouter",
@@ -1232,10 +1250,42 @@
  },
  "docsCurrent": {
   "community": {
+   "feedSteps": [
+    "Ouvrez Communauté et restez sur l'onglet Flux.",
+    "Écrivez une mise à jour ou joignez une photo, puis choisissez le module concerné.",
+    "Publiez. Les autres collectionneurs peuvent aimer et commenter votre publication.",
+    "Utilisez Mes publications pour consulter ou supprimer ce que vous avez partagé."
+   ],
    "feedTitle": "Comment publier sur le fil d'actualité de la communauté ?",
+   "friendsSteps": [
+    "Découvrez les listes de collectionneurs. Recherchez par nom, ou par lieu lorsqu'ils le partagent.",
+    "Envoyez une demande d'ami, ou suivez un collectionneur pour voir ses mises à jour publiques.",
+    "Demandes affiche les requêtes reçues et envoyées ; acceptez-les ou refusez-les ici.",
+    "Vos amis apparaissent dans votre flux et peuvent vous envoyer des messages si vos paramètres de messagerie le permettent."
+   ],
    "friendsTitle": "Comment fonctionnent les amis et le suivi ?",
+   "messagingSteps": [
+    "Ouvrez l'onglet Boîte de réception dans Communauté.",
+    "Choisissez un collectionneur que vous êtes autorisé à contacter, ou répondez à une conversation existante.",
+    "Les messages arrivent dans l'application ; les conversations non lues sont signalées dans la barre d'onglets.",
+    "Si vous désactivez la messagerie, les conversations existantes restent lisibles mais personne ne peut en initier une nouvelle."
+   ],
    "messagingTitle": "Comment fonctionnent les messages ?",
+   "privacySteps": [
+    "Allez dans Profil et ouvrez Confidentialité et visibilité.",
+    "Choisissez qui peut voir votre profil : tout le monde ou uniquement vos amis acceptés.",
+    "Choisissez qui peut vous envoyer des messages : tout le monde, uniquement vos amis ou personne.",
+    "Activez ou désactivez les demandes d'amis, indépendamment de la messagerie.",
+    "Choisissez les collections qui apparaissent sur votre profil : PipeKeeper, tabac, WhiskeyKeeper, CigarKeeper et WineKeeper.",
+    "Enregistrez. Les changements s'appliquent immédiatement à votre profil public."
+   ],
    "privacyTitle": "Comment contrôler ce que voient les autres collectionneurs ?",
+   "referralSteps": [
+    "Ouvrez l'onglet Parrainage dans la Communauté ou utilisez la bannière de parrainage.",
+    "Copiez votre lien ou partagez-le directement.",
+    "Lorsqu'une personne s'abonne avec votre lien, vous gagnez un mois gratuit ; les paliers importants permettent de gagner une année gratuite.",
+    "Lorsqu'une récompense est prête, choisissez le module auquel s'applique votre accès."
+   ],
    "referralTitle": "Comment fonctionne le programme de parrainage ?",
    "title": "Communauté"
   },
@@ -1258,24 +1308,97 @@
    "wineWhatQ": "Qu'est-ce que WineKeeper ?"
   },
   "plans": {
+   "appleSteps": [
+    "Les abonnements achetés dans l'application iOS sont gérés par Apple.",
+    "Utilisez Restaurer les achats si vous changez d'appareil.",
+    "Gérez ou annulez l'abonnement dans les réglages de votre App Store."
+   ],
    "appleTitle": "Puis-je m'abonner depuis l'application iOS ?",
+   "bundlesSteps": [
+    "Abonnez-vous à un seul module, un pack de 3 modules, un pack de 4 modules ou au plan Founders.",
+    "Choisissez une facturation mensuelle ou annuelle lors du paiement.",
+    "Ajoutez ou modifiez des modules plus tard depuis la page Abonnement."
+   ],
    "bundlesTitle": "Comment fonctionnent les formules groupées ?",
+   "freeItems": [
+    "PipeKeeper : 5 pipes, 10 tabacs, 100 sessions par mois et 1 programme de rodage.",
+    "WhiskeyKeeper : 10 bouteilles et 100 dégustations par mois.",
+    "CigarKeeper : 10 cigares et 100 sessions par mois.",
+    "WineKeeper : 10 bouteilles et 100 dégustations par mois."
+   ],
    "freeTitle": "Que comprend l'offre gratuite ?",
+   "proItems": [
+    "Nombre illimité d'objets dans le module.",
+    "Accords par IA et identification par photo.",
+    "Évaluation et recherches sur le marché.",
+    "Analyses et rapports complets.",
+    "Accès à la Communauté."
+   ],
    "proTitle": "Que débloque la version Pro ?",
    "title": "Plans, modules et limites"
   },
   "reports": {
+   "agingSteps": [
+    "Dans les Rapports, choisissez le rapport de vieillissement.",
+    "Sélectionnez le module et la période que vous souhaitez couvrir.",
+    "Choisissez PDF ou Excel/CSV.",
+    "Exportez. Le fichier liste les dates de cave, l'âge et le potentiel de vieillissement."
+   ],
    "agingTitle": "Comment exporter un rapport de vieillissement de cave ?",
+   "collectionSteps": [
+    "Ouvrez les Rapports.",
+    "Choisissez le module et le rapport dont vous avez besoin.",
+    "Choisissez PDF pour un document imprimable, ou Excel/CSV pour un tableur.",
+    "Exportez. Le fichier est téléchargé avec vos objets, valeurs et totaux."
+   ],
    "collectionTitle": "Comment exporter ma collection ?",
+   "insuranceSteps": [
+    "Dans les Rapports, choisissez le rapport de collection incluant les valeurs.",
+    "Sélectionnez le module que vous souhaitez couvrir.",
+    "Choisissez PDF.",
+    "Exportez. Chaque objet est listé avec son fabricant, son prix d'achat et sa valeur estimée actuelle."
+   ],
    "insuranceTitle": "Comment créer un rapport pour l'assurance ?",
    "title": "Rapports et exportations",
+   "usageSteps": [
+    "Dans les Rapports, choisissez le rapport de session ou de dégustation.",
+    "Filtrez par période et par module.",
+    "Choisissez PDF ou Excel/CSV.",
+    "Exportez. Le fichier contient les sessions, notes et commentaires."
+   ],
    "usageTitle": "Comment exporter l'historique de mes sessions ?"
   },
   "winekeeper": {
+   "addSteps": [
+    "Ouvrez WineKeeper depuis le Hub ou la navigation supérieure et choisissez Ajouter un vin.",
+    "Saisissez le producteur, le nom du vin et le millésime. La région, l'appellation, le cépage ou l'assemblage, le style, le format de la bouteille et le degré d'alcool sont facultatifs.",
+    "Définissez la quantité que vous possédez. Zéro est un nombre valide pour une bouteille que vous avez terminée.",
+    "Ajoutez le prix d'achat et la valeur estimée, un lieu de stockage et une fenêtre de dégustation si vous en assurez le suivi.",
+    "Enregistrez la bouteille. Elle apparaît dans votre collection et est comptabilisée dans vos totaux WineKeeper."
+   ],
    "addTitle": "Comment ajouter un vin à ma collection ?",
+   "insightsSteps": [
+    "Ouvrez Perspectives du vin depuis WineKeeper.",
+    "Consultez la valeur de la cave, le nombre de bouteilles par style et région, la note moyenne et les dégustations récentes.",
+    "Utilisez les graphiques pour repérer les manques et les régions surreprésentées.",
+    "Posez une question au Curator sur votre cave pour obtenir des suggestions spécifiques."
+   ],
    "insightsTitle": "Que montrent les Wine Insights ?",
+   "tastingSteps": [
+    "Ouvrez le vin et choisissez Enregistrer une dégustation, ou utilisez Enregistrer une dégustation depuis WineKeeper pour noter une bouteille que vous n'avez pas achetée.",
+    "Choisissez la date, la méthode de service et la note.",
+    "Enregistrez les notes sur les arômes, la bouche et la finale, ainsi que les accords mets-vins, l'occasion et les tags.",
+    "Choisissez la suite : gardez-le dans la collection, ajoutez-le à la Liste de souhaits ou Liste d'achats, ou marquez-le comme « pas pour moi » pour l'exclure des suggestions de l'IA.",
+    "Enregistrez. La dégustation est ajoutée au journal de dégustation du vin et aux Perspectives du vin."
+   ],
    "tastingTitle": "Comment enregistrer une dégustation de vin ?",
    "title": "WineKeeper",
+   "windowSteps": [
+    "Définissez l'année de début et de fin de la fenêtre de dégustation sur le vin.",
+    "WineKeeper signale les bouteilles prêtes à boire, celles qui sont encore en vieillissement ou celles dont la fenêtre est dépassée.",
+    "Perspectives du vin classe votre cave par fenêtre afin que vous sachiez quoi ouvrir ensuite.",
+    "Changez la fenêtre à tout moment ; les dégustations déjà enregistrées restent dans le journal."
+   ],
    "windowTitle": "Comment fonctionnent les fenêtres de dégustation ?"
   }
  },
@@ -1292,9 +1415,11 @@
   "valueLookupFailed": "Échec de la recherche de valeur. Veuillez réessayer."
  },
  "faqExtended": {
+  "earlySubscriberNote": "Note : les premiers abonnés inscrits avant le {date} bénéficient des avantages de membre fondateur à vie.",
   "legacySubscriberNote": "Les abonnés fondateurs ont un accès privilégié à toutes les fonctionnalités Pro.",
   "pageSubtitle": "Définitions, informations générales et mentions légales",
-  "pageTitle": "FAQ"
+  "pageTitle": "FAQ",
+  "proTierDesc": "Toutes les fonctionnalités Premium plus l'évaluation par IA et les perspectives du marché (lancement le {date})"
  },
  "faqFullAdditional": {
   "item1": "pipekeeperapp.com/features",
@@ -1710,6 +1835,181 @@
   "pipeCollectionSubtitle": "Suivez et évaluez vos pipes",
   "tobaccoCellarSubtitle": "Gérez vos mélanges"
  },
+ "howTo": {
+  "addPipeBasicSteps": [
+   "Appuyez sur 'Ajouter une pipe' depuis PipeKeeper, ou utilisez l'accès rapide (⚡ dans l'en-tête) depuis n'importe quelle page.",
+   "Utilisez éventuellement la recherche IA pour pré-remplir les détails par nom de fabricant ou de modèle.",
+   "Remplissez le champ Nom obligatoire, puis ajoutez le fabricant, la forme, le matériau et l'état.",
+   "Téléchargez jusqu'à 5 photos et jusqu'à 2 photos des poinçons.",
+   "Entrez les mesures physiques (longueur, poids, dimensions du foyer) en utilisant le sélecteur métrique/impérial.",
+   "Définissez le prix d'achat, la valeur estimée et toute note supplémentaire.",
+   "Appuyez sur 'Enregistrer la pipe' en bas."
+  ],
+  "addTobaccoSteps": [
+   "Appuyez sur 'Ajouter un mélange' depuis PipeKeeper, ou utilisez l'accès rapide (⚡ dans l'en-tête).",
+   "Recherchez le nom du mélange pour pré-remplir les détails, ou ajoutez-le manuellement.",
+   "Remplissez le fabricant, le type de mélange, la coupe, la force et les notes de dégustation.",
+   "Définissez votre inventaire : nombre de boîtes, grammes en vrac ou sachets.",
+   "Entrez les détails de l'achat et toute note supplémentaire.",
+   "Appuyez sur 'Enregistrer le mélange' pour l'ajouter à votre cave."
+  ],
+  "cancelSteps": [
+   "Allez dans Profil → Abonnement.",
+   "Appuyez sur 'Gérer le forfait' pour ouvrir le portail de facturation.",
+   "Sélectionnez 'Annuler l'abonnement'.",
+   "Vos fonctionnalités Pro restent actives jusqu'à la fin de la période de facturation en cours.",
+   "Pour les abonnements intégrés à Apple, gérez l'annulation via l'App Store iOS → Abonnements."
+  ],
+  "curatorSteps": [
+   "Appuyez sur 'Curator' dans la navigation supérieure.",
+   "Tapez n'importe quelle question sur votre collection dans la boîte de dialogue et appuyez sur Envoyer.",
+   "Le Curator connaît vos pipes, mélanges, bouteilles et l'historique de vos sessions.",
+   "Utilisez les Actions d'expert (sous le chat) pour exécuter des flux de travail structurés comme Planifier une session ou Optimiser la collection.",
+   "Les résultats des Actions d'expert apparaissent sous forme de cartes de recommandation — appuyez sur Appliquer pour confirmer ou Ignorer pour rejeter."
+  ],
+  "deletePipeSteps": [
+   "Ouvrez la page de détails de la pipe.",
+   "Appuyez sur le bouton Supprimer (disponible en haut ou dans le formulaire de modification).",
+   "Confirmez la suppression lorsque vous y êtes invité.",
+   "La pipe et ses données de session associées seront supprimées définitivement."
+  ],
+  "deleteTobaccoSteps": [
+   "Ouvrez la page de détails du mélange.",
+   "Appuyez sur le bouton Supprimer.",
+   "Confirmez la suppression.",
+   "Tous les enregistrements de session et de journal de cave associés à ce mélange resteront, mais la fiche du mélange sera supprimée."
+  ],
+  "exportSteps": [
+   "Allez dans les statistiques de PipeKeeper ou WhiskeyKeeper.",
+   "Recherchez le bouton Exporter (disponible pour les abonnés Pro).",
+   "Choisissez le format d'exportation (rapport CSV ou PDF).",
+   "Le fichier sera téléchargé sur votre appareil."
+  ],
+  "generatePairingsSteps": [
+   "Allez dans PipeKeeper → Insights → Accords.",
+   "Si les accords affichent 'obsolète', appuyez sur 'Régénérer les accords'.",
+   "L'IA analyse vos pipes, mélanges, historique de sessions et préférences.",
+   "Les accords sont affichés sous forme de cartes avec une pipe, le mélange recommandé et une explication.",
+   "Appuyez sur n'importe quelle carte pour ouvrir la page de détails de la pipe ou du mélange."
+  ],
+  "geometrySteps": [
+   "Ouvrez la page de détail d'une pipe et accédez à l'onglet Détails.",
+   "Si les mesures sont enregistrées, l'analyseur de géométrie estime le volume du foyer et les caractéristiques de fumage.",
+   "L'analyse prend en compte le diamètre du fourneau, la profondeur et la longueur totale de la pipe.",
+   "Les résultats sont présentés sous forme de résumé en lecture seule — ils ne remplacent pas vos champs enregistrés."
+  ],
+  "identifyPipeSteps": [
+   "Lors de l'ajout d'une nouvelle pipe, appuyez sur 'Identificateur photo' dans le flux d'ajout.",
+   "Téléchargez une photo de la pipe (vue de face et du marquage recommandées).",
+   "L'IA suggérera le fabricant, la forme, le pays et le modèle probables basés sur l'image.",
+   "Examinez les suggestions et appliquez les champs que vous souhaitez conserver.",
+   "Vous pouvez également utiliser le bouton Identifier depuis le menu Accès rapide du Hub."
+  ],
+  "insightsSteps": [
+   "Allez dans PipeKeeper → onglet Insights, ou WhiskeyKeeper → Insights.",
+   "Les Insights affichent les totaux de votre collection, la répartition des valeurs, vos articles favoris et les tendances.",
+   "La section Accords IA affiche les combinaisons pipe-tabac recommandées.",
+   "Pour WhiskeyKeeper, les Insights montrent la répartition par type de bouteille, par pays et les tendances de dégustation."
+  ],
+  "logSessionSteps": [
+   "Appuyez sur 'Enregistrer une session' depuis PipeKeeper ou utilisez le lancement rapide depuis le Hub.",
+   "Sélectionnez la pipe utilisée (ou choisissez une pipe externe).",
+   "Sélectionnez le mélange de tabac fumé (ou choisissez un mélange externe).",
+   "Pour les pipes à système (ex: Falcon), sélectionnez le foyer interchangeable utilisé.",
+   "Définissez la date et le nombre de bols.",
+   "Ajoutez des notes facultatives sur la session.",
+   "Appuyez sur Enregistrer pour enregistrer la session."
+  ],
+  "manageCellarSteps": [
+   "Ouvrez la page de détails d'un mélange de tabac.",
+   "La section inventaire affiche vos boîtes, quantités en vrac et sachets actuels.",
+   "Modifiez le mélange pour mettre à jour les quantités : réduisez au fur et à mesure que vous fumez, augmentez lors du réapprovisionnement.",
+   "Utilisez l'onglet Journal de cave pour enregistrer formellement les ajouts et retraits avec les dates.",
+   "Les mélanges en cave avec une date de mise en cave sont suivis séparément de l'inventaire ouvert."
+  ],
+  "markFavoriteSteps": [
+   "Ouvrez la page de détails de la pipe.",
+   "Appuyez sur le bouton Modifier.",
+   "Activez l'interrupteur 'Favori'.",
+   "Enregistrez la pipe.",
+   "Les pipes favorites sont mises en évidence dans votre liste de collection."
+  ],
+  "measurePipeSteps": [
+   "Lors de l'ajout ou de la modification d'une pipe, ouvrez la section Caractéristiques physiques.",
+   "Utilisez le commutateur métrique/impérial pour basculer entre mm/g et pouces/oz.",
+   "Saisissez la longueur, le poids, la hauteur du foyer, la largeur du foyer, le diamètre interne du fourneau et la profondeur du foyer.",
+   "Les valeurs sont automatiquement stockées en système métrique, quelle que soit l'unité d'affichage sélectionnée.",
+   "Votre préférence de mesure est enregistrée dans votre profil et appliquée à tous les formulaires futurs."
+  ],
+  "optimizeSteps": [
+   "Allez sur la page Curator.",
+   "Dans le panneau Actions d'expert, appuyez sur 'Optimiser la collection' (pour les pipes) ou 'Optimiser la collection de whiskey'.",
+   "L'IA analyse votre collection pour identifier les manques, les redondances et les opportunités de diversification.",
+   "Examinez les cartes de recommandation générées.",
+   "Appuyez sur Appliquer sur n'importe quelle carte pour confirmer la modification suggérée, ou sur Ignorer pour la rejeter."
+  ],
+  "profileSteps": [
+   "Allez dans Profil (votre avatar ou le lien Profil dans la navigation).",
+   "Trouvez la section Confidentialité.",
+   "Activez 'Profil public'.",
+   "Définissez éventuellement un nom d'affichage, une biographie et un emplacement.",
+   "L'URL de votre profil public peut être partagée avec vos amis."
+  ],
+  "shareSteps": [
+   "Ouvrez la page de détail de l'élément.",
+   "Appuyez sur le bouton Partager (icône de partage près du haut).",
+   "Choisissez d'afficher ou de masquer la valeur et les données d'inventaire dans la vue partagée.",
+   "Copiez le lien partageable, ou générez une carte visuelle à enregistrer ou à publier.",
+   "Les destinataires peuvent consulter la carte partagée sans avoir besoin d'un compte."
+  ],
+  "storyCardSteps": [
+   "Allez sur le Hub.",
+   "Trouvez la carte Récit de la collection et appuyez sur 'Voir le récit' ou sur l'aperçu de la carte.",
+   "Un diaporama en plein écran s'ouvre pour présenter les points forts de votre collection.",
+   "Balayez vers la gauche/droite ou appuyez sur les côtés pour naviguer entre les cartes.",
+   "Appuyez sur X ou appuyez sur Échap pour fermer.",
+   "Appuyez sur 'Régénérer' sur le Hub pour reconstruire le récit à partir de vos dernières données."
+  ],
+  "streaksSteps": [
+   "Chaque session enregistrée est ajoutée à votre historique.",
+   "La page Insights affiche le nombre total de vos sessions et vos combinaisons les plus utilisées.",
+   "Les données de session alimentent également les recommandations d'accords par IA et l'action Planifier une session du Curator.",
+   "Plus vous enregistrez de sessions, plus vos recommandations personnalisées deviennent précises."
+  ],
+  "tierDiffSteps": [
+   "Gratuit : PipeKeeper permet jusqu'à 5 pipes et 10 mélanges ; WhiskeyKeeper permet jusqu'à 10 bouteilles. Fonctionnalités de base, sans IA.",
+   "Pro : Éléments illimités par module, accords par IA, optimisation de collection, identification par IA, programmes de culottage, outils d'évaluation, section Valeur et Stratégie, rapports d'exportation et support prioritaire.",
+   "Chaque module public (PipeKeeper et WhiskeyKeeper) peut faire l'objet d'un abonnement individuel.",
+   "Le pack Fondateurs débloque les deux modules publics à un tarif réduit.",
+   "Les membres fondateurs bénéficient d'un accès Pro à vie acquis."
+  ],
+  "updatePipeSteps": [
+   "Ouvrez la pipe depuis votre liste PipeKeeper.",
+   "Appuyez sur le bouton Modifier (icône crayon) en haut de la page de détails.",
+   "Modifiez les champs que vous souhaitez mettre à jour.",
+   "Appuyez sur 'Enregistrer la pipe' pour confirmer."
+  ],
+  "updateTobaccoSteps": [
+   "Ouvrez le mélange depuis votre liste Tabac.",
+   "Appuyez sur le bouton Modifier sur la page de détails.",
+   "Mettez à jour les champs, y compris les quantités d'inventaire à mesure que vous fumez ou en acquérez de nouveaux.",
+   "Enregistrez les modifications."
+  ],
+  "upgradeSteps": [
+   "Allez sur la page Abonnement (accessible depuis le Profil ou les invites de mise à niveau).",
+   "Choisissez ce que vous souhaitez débloquer : PipeKeeper Pro, WhiskeyKeeper Pro ou le Pack Fondateur.",
+   "Sélectionnez un forfait mensuel ou annuel (l'annuel permet d'économiser environ 17 %).",
+   "Choisissez le Pack Fondateur si vous souhaitez les deux modules publics dans un seul forfait.",
+   "Effectuez le paiement via le système de paiement sécurisé.",
+   "Vos fonctionnalités Pro s'activent immédiatement."
+  ],
+  "viewLogsSteps": [
+   "Allez dans PipeKeeper → onglet Statistiques.",
+   "Faites défiler jusqu'à la section Journal de fumage.",
+   "Toutes les sessions enregistrées sont listées avec la pipe, le mélange, la date et les notes.",
+   "Utilisez les filtres pour restreindre par pipe, mélange ou plage de dates."
+  ]
+ },
  "howToAdditional": {
   "item1": "Pipe Club",
   "item10": "À l'étape",
@@ -1761,7 +2061,7 @@
   "item141": ", le",
   "item142": "Founders Bundle",
   "item143": "(PipeKeeper + WhiskeyKeeper), ou le",
-  "item144": "3-Module Bundle",
+  "item144": "Pack 3 modules",
   "item145": "(PipeKeeper + WhiskeyKeeper + CigarKeeper).",
   "item146": "Sélectionnez un forfait mensuel ou annuel (l'annuel permet d'économiser environ 17 %).",
   "item147": "Effectuez le paiement via le paiement sécurisé.",
@@ -1775,7 +2075,7 @@
   "item154": "Le",
   "item155": "Founders Bundle",
   "item156": "inclut PipeKeeper et WhiskeyKeeper ensemble à un tarif réduit. CigarKeeper n'est pas inclus dans le Founders Bundle.",
-  "item157": "3-Module Bundle",
+  "item157": "Pack 3 modules",
   "item158": "couvre PipeKeeper, WhiskeyKeeper et CigarKeeper ensemble avec une remise supplémentaire.",
   "item159": "Les membres fondateurs bénéficient d'un accès Pro à vie à PipeKeeper et WhiskeyKeeper.",
   "item16": "Tout désélectionner",
@@ -2143,15 +2443,28 @@
   "iapSyncFailed": "Échec de synchronisation de l'abonnement"
  },
  "matching": {
+  "aiTobaccoMatching": "Correspondance de tabac par IA",
+  "applyThisValue": "Appliquer cette valeur",
   "bowlVariant": "Variante de bol",
   "checkAnyBlend": "Vérifier tout mélange",
+  "comparableSales": "Ventes comparables",
+  "estimatedValue": "Valeur estimée",
   "goodMatch": "Bonne correspondance",
+  "importantNotes": "Notes importantes",
+  "lookupCurrentValue": "Rechercher la valeur actuelle",
+  "marketFactors": "Facteurs de marché",
+  "marketValueLookup": "Recherche de valeur marchande",
+  "noDataYet": "Aucune donnée de correspondance pour le moment",
   "regenerate": "Régénérer",
+  "regenerateSuccess": "Données de correspondance régénérées",
   "score": "score",
+  "searchMarketDesc": "Recherchez les annonces actuelles du marché pour estimer la valeur de votre pipe.",
+  "searchingMarkets": "Recherche sur les marchés…",
   "selectBlend": "Sélectionner un mélange…",
   "selectBowl": "Sélectionner un bol…",
   "strongMatch": "Correspondance forte",
-  "top3Matches": "Top 3 des correspondances"
+  "top3Matches": "Top 3 des correspondances",
+  "upgradeDesc": "Passez à la version supérieure pour débloquer les scores de correspondance de tabac par IA."
  },
  "messaging": {
   "inbox": "Boîte de réception",
@@ -2170,7 +2483,8 @@
   "unreadMessages": "Non lu(s)"
  },
  "modules": {
-  "notAvailable": "Non disponible"
+  "notAvailable": "Non disponible",
+  "whiskeykeeper": "WhiskeyKeeper"
  },
  "nav": {
   "cellar": "Cave",
@@ -2182,13 +2496,16 @@
   "privacy": "Confidentialité",
   "reports": "Rapports",
   "terms": "Conditions",
-  "whiskey": "Whiskey"
+  "whiskey": "Whiskey",
+  "whiskeykeeper": "WhiskeyKeeper"
  },
  "onboarding": {
   "moduleSelectionHint": "Sélectionnez au moins un module accessible pour continuer."
  },
  "optimizer": {
+  "analyzeImpact": "Analyser l'impact",
   "changesImproveCollectionCoverage": "Ces changements amélioreraient la couverture de votre collection",
+  "couldntLoadResponse": "Impossible de charger une réponse. Veuillez réessayer.",
   "expectedImprovement": "Amélioration attendue pour {blendTypes}",
   "expectedImprovementGeneral": "Amélioration attendue",
   "noPreviousVersion": "Aucune version précédente à restaurer",
@@ -2422,6 +2739,9 @@
   "reportsExports": "Rapports et exportations",
   "viewPairingsUsageTrends": "Voir les jumelages, l'utilisation et les tendances"
  },
+ "quickActions": {
+  "collectionCurator": "Collection Curator"
+ },
  "quickSearch": {
   "addToCellar": "Ajouter à la cave",
   "avgRating": "Note moy.",
@@ -2491,6 +2811,7 @@
   "blendName": "Nom du tabac",
   "blendType": "Type de tabac",
   "bottleName": "Nom de la bouteille",
+  "combinedSession": "Pipe + Whiskey",
   "externalItem": "Élément externe",
   "ignore": "Ignorer",
   "notForMe": "Pas pour moi",
@@ -2657,6 +2978,14 @@
   "winekeeperFree": "WineKeeper Gratuit",
   "winekeeperPro": "WineKeeper Pro"
  },
+ "subscriptionFull": {
+  "plan": {
+   "cigarkeeperPro": "CigarKeeper Pro",
+   "pipekeeperPro": "PipeKeeper Pro",
+   "whiskeykeeperPro": "WhiskeyKeeper Pro",
+   "winekeeperPro": "WineKeeper Pro"
+  }
+ },
  "subscriptionTest": {
   "accessFlags": "Cohérence des indicateurs d'accès (hasPaid, hasPro, isTrial)",
   "backToHome": "← Retour à l'accueil",
@@ -2715,6 +3044,7 @@
   "yourAssessment": "Votre évaluation personnelle de la valeur marchande de ce tabac"
  },
  "tobacconist": {
+  "acceptAllRecommendations": "Accepter toutes les recommandations",
   "adoptOrAsk": "Examinez chaque pipe ci-dessous pour adopter les changements ou poser des questions de clarification.",
   "adoptThisChange": "Adopter",
   "agingBestFresh": "À déguster frais",
@@ -2726,22 +3056,145 @@
   "agingGoodDeveloping": "En évolution",
   "agingGoodPeak": "À son apogée",
   "agingGoodYoung": "Jeune — continuer le vieillissement",
+  "agingProgress": "Progression du vieillissement",
+  "analyzeImpact": "Analyser l'impact",
+  "analyzing2": "Analyse en cours…",
+  "applyChanges": "Appliquer les changements",
+  "applySuggested": "Appliquer les suggestions",
+  "applyingChanges": "Application des changements…",
   "askClarification": "Demander une clarification",
+  "askFirstToAnalyze": "Posez d'abord une question pour analyser l'impact.",
+  "askTheExpertDesc": "Demandez au Curator de Collection des conseils personnalisés sur votre collection.",
+  "bowlFocusUpdated": "Focus du foyer mis à jour",
+  "changesApplied": "Changements appliqués",
+  "chatWithTobacconist": "Discuter avec le Curator",
   "clarificationHelps": "Aidez l'IA à mieux comprendre vos préférences.",
   "clarificationPlaceholder": "Ex. : 'Cette pipe fume chaud avec les aromatiques', 'Je la préfère pour les mélanges anglais', 'Trop humide pour ce type'...",
+  "collectionAnalysis": "Analyse de la collection",
+  "confirmApplyChanges": "Confirmer l'application des changements",
+  "continueConversation": "Continuer la conversation",
+  "coverageGaps": "Lacunes de couverture",
+  "currentFocus": "Focus actuel",
+  "daysAgo": "Il y a {days} jours",
+  "describeCharacteristics": "Décrivez les caractéristiques…",
+  "disputeAddInfo": "Contester / Ajouter des informations",
+  "feedbackPlaceholder": "Votre retour…",
   "fillsGap": "Comble un vide pour",
   "inRegularRotation": "En rotation régulière",
+  "lastSmokedDaysAgo": "Dernière fumée il y a {days} jours",
+  "loadingOptimization": "Chargement de l'optimisation…",
+  "needsRotation": "Nécessite une rotation",
   "noAgingPotential": "Aucun potentiel de vieillissement défini",
   "noCellaredTobaccoDesc": "Ajoutez du tabac à votre cave pour suivre sa progression de vieillissement.",
   "noCellaredTobaccoYet": "Aucun tabac en cave pour l'instant",
+  "noOptimizationYet": "Aucune optimisation pour le moment. Lancez l'analyse pour commencer.",
+  "noPipesInCollection": "Aucune pipe dans la collection",
+  "noRecommendation": "Aucune recommandation",
+  "noUsageSessionsRecorded": "Aucune session enregistrée",
+  "optimizationApplied": "Optimisation appliquée",
+  "overallAssessment": "Évaluation globale",
+  "pipeDetailsOptional": "Détails de la pipe (facultatif)",
+  "pipeFocusUpdated": "Focus de la pipe mis à jour",
+  "pipeNotFound": "Pipe introuvable",
   "pipesRecommendedForChange": "pipes recommandées pour spécialisation",
+  "recentlyUsed": "Utilisé récemment",
   "recommendationSummary": "Recommandations IA",
+  "recommendedSpecializations": "Spécialisations recommandées",
   "refineRecommendations": "Affiner les recommandations",
+  "reviewApply": "Revoir et appliquer",
+  "reviewApplyDesc": "Examinez les changements recommandés ci-dessous et appliquez-les à votre collection.",
+  "rotationPlanner": "Planificateur de rotation",
   "scoreImprovement": "Amélioration du score",
+  "shareThoughts": "Partagez vos impressions",
+  "specializeFor": "Se spécialiser pour",
+  "startConversation": "Démarrer la conversation",
+  "strategicSpecializations": "Spécialisations stratégiques",
+  "submitReanalyze": "Soumettre et réanalyser",
+  "trophyMatches": "Correspondances trophées",
+  "trophyPairings": "Accords trophées",
+  "updateAnalysis": "Mettre à jour l'analyse",
+  "uploadPhotosOptional": "Ajouter des photos (facultatif)",
+  "usagePattern": "Modèle d'utilisation",
   "whyUnsure": "Pourquoi reconsidérer cette recommandation ?"
  },
  "troubleshooting": {
-  "aiWrongSuggestionIntro": "Les suggestions de l'IA sont basées sur les données de votre collection et peuvent ne pas toujours être parfaites. Vous pouvez :"
+  "aiNotWorkingSteps": [
+   "Assurez-vous d'avoir un abonnement Premium ou Pro actif",
+   "Actualisez la page et réessayez",
+   "Vérifiez que vous avez au moins une pipe et un mélange de tabac dans votre collection",
+   "Contactez l'assistance si le problème persiste"
+  ],
+  "aiSlowSteps": [
+   "Les opérations IA peuvent prendre 10 à 30 secondes selon la taille de la collection",
+   "Assurez-vous d'avoir une connexion internet stable",
+   "Essayez d'actualiser et de réessayer si cela semble bloqué",
+   "Évitez d'exécuter plusieurs opérations IA simultanément"
+  ],
+  "aiWrongSuggestionIntro": "Les suggestions de l'IA sont basées sur les données de votre collection et peuvent ne pas toujours être parfaites. Vous pouvez :",
+  "aiWrongSuggestionSteps": [
+   "Mettez à jour les tags de focalisation de votre pipe pour mieux refléter son usage",
+   "Ajoutez plus de détails à vos entrées de mélange de tabac",
+   "Régénérez les associations après avoir mis à jour vos données",
+   "Utilisez l'option de feedback si elle est disponible pour signaler des résultats inexacts"
+  ],
+  "billingIssueSteps": [
+   "Déconnectez-vous et reconnectez-vous",
+   "Vérifiez le statut de votre abonnement sur la page Profil",
+   "Contactez l'assistance à admin@pipekeeperapp.com avec votre confirmation de paiement"
+  ],
+  "cancelSubscriptionSteps": [
+   "Allez sur la page Profil",
+   "Appuyez sur Gérer l'abonnement",
+   "Suivez les étapes de résiliation dans Stripe (web) ou sur l'App Store/Play Store (mobile)"
+  ],
+  "cantLoginSteps": [
+   "Vérifiez que votre adresse e-mail est correctement orthographiée",
+   "Demandez un nouveau code de vérification depuis la page de connexion",
+   "Vérifiez votre dossier spam/courrier indésirable pour trouver l'e-mail contenant le code",
+   "Effacez le cache et les cookies de votre navigateur, puis réessayez",
+   "Contactez l'assistance à admin@pipekeeperapp.com si le problème persiste"
+  ],
+  "dataNotLoadingSteps": [
+   "Actualisez la page",
+   "Vérifiez votre connexion internet",
+   "Videz le cache du navigateur et rechargez",
+   "Déconnectez-vous et reconnectez-vous"
+  ],
+  "dataNotSavingSteps": [
+   "Vérifiez votre connexion internet",
+   "Essayez d'actualiser la page et de répéter l'action",
+   "Assurez-vous d'avoir appuyé sur Enregistrer après avoir effectué des modifications",
+   "Essayez de vous déconnecter puis de vous reconnecter"
+  ],
+  "deletePhotoSteps": [
+   "Ouvrez la page de détails de la pipe ou du tabac",
+   "Appuyez sur Modifier",
+   "Appuyez sur le X ou l'icône de corbeille sur la photo que vous souhaitez supprimer",
+   "Appuyez sur Enregistrer"
+  ],
+  "photoBlurrySteps": [
+   "Téléchargez une photo de meilleure résolution (800x600 recommandé au minimum)",
+   "Évitez les captures d'écran ; utilisez les photos originales si possible",
+   "Assurez-vous d'avoir un bon éclairage lors de la prise de vue"
+  ],
+  "photoNotUploadingSteps": [
+   "Assurez-vous que le fichier image fait moins de 10 Mo",
+   "Utilisez un format pris en charge : JPG, PNG ou WebP",
+   "Vérifiez votre connexion internet",
+   "Essayez d'actualiser la page et de télécharger à nouveau"
+  ],
+  "sessionExpiredSteps": [
+   "Assurez-vous que votre navigateur autorise les cookies provenant de l'application",
+   "Évitez d'utiliser le mode privé/navigation privée pour les sessions persistantes",
+   "Vérifiez que votre navigateur n'est pas configuré pour effacer les cookies à la fermeture",
+   "Essayez un autre navigateur si le problème persiste"
+  ],
+  "subscriptionNotWorkingSteps": [
+   "Déconnectez-vous et reconnectez-vous pour actualiser le statut de votre compte",
+   "Vérifiez que l'abonnement est actif dans votre portail de paiement",
+   "Sur mobile, utilisez l'option 'Restaurer les achats' si elle est disponible",
+   "Contactez l'assistance avec votre e-mail d'abonnement si le problème persiste"
+  ]
  },
  "troubleshootingAdditional": {
   "item1": "Valeur et stratégie",
@@ -3027,6 +3480,8 @@
   "unauthorized": "Accès administrateur requis.",
   "userTable": {
    "billingContext": "Facturation",
+   "effectiveBillingIntervals": "Intervalles : {{intervals}}",
+   "effectivePlatforms": "Plateformes : {{platforms}}",
    "modules": "Modules",
    "multiPlanLabel": "Plans actifs multiples ({count})",
    "multiPlanRenewalCount": "{{count}} abonnement(s)",
@@ -3035,6 +3490,8 @@
    "noRenewalDate": "Aucune date de renouvellement",
    "planSummary": "Plan",
    "platform": "Plateforme",
+   "primaryBillingProduct": "Produit : {{product}}",
+   "primaryBillingStatus": "Statut : {{status}}",
    "renewalContext": "Renouvellement",
    "totalRenewalAmount": "Total : ${{amount}}"
   },
@@ -3044,10 +3501,12 @@
    "incompleteSourceRecords": "Enregistrements source incomplets",
    "items": {
     "duplicatesRemoved": "{{count}} doublons supprimés",
+    "excludedCoreRecords": "{{count}} enregistrements principaux exclus",
     "missingInterval": "{{count}} enregistrements sans intervalle",
     "missingPlanKey": "{{count}} enregistrements sans clé de plan",
     "missingPlatform": "{{count}} enregistrements sans plateforme",
-    "missingPrice": "{{count}} enregistrements sans prix"
+    "missingPrice": "{{count}} enregistrements sans prix",
+    "unknownProduct": "{{count}} enregistrements avec produit inconnu"
    },
    "title": "Avertissements de données",
    "unknownReason": "Raison inconnue"
@@ -3119,6 +3578,7 @@
   "saveValueCheckpoint": "Enregistrer le point de valeur",
   "tastings": "Dégustations",
   "tastingsLogged": "dégustations enregistrées",
+  "title": "WhiskeyKeeper",
   "valuationNotes": "Notes d'évaluation",
   "valuationNotesPlaceholder": "Notes sur le raisonnement, les sources ou le contexte de la valeur",
   "valueSourceNotes": "Notes sur la source de la valeur",
@@ -3135,7 +3595,8 @@
   "insightsTitle": "Aperçus WhiskeyKeeper",
   "purchaseTrends": "Tendances d'achat",
   "ratingTrends": "Note moyenne par pays",
-  "tastingTrends": "Tendances de dégustation"
+  "tastingTrends": "Tendances de dégustation",
+  "title": "WhiskeyKeeper"
  },
  "wine": {
   "archive": "Archiver",
