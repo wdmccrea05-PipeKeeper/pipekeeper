@@ -6,6 +6,7 @@ single record of what is done, what is next and what is blocked.
 - **Version:** 2.0.0
 - **Opened:** 2026-11-27
 - **Companion:** `AUDIT.md` (findings and evidence)
+- **Readiness review:** `PRODUCTION_READINESS_REVIEW.md` · **Release notes:** `RELEASE_NOTES_2.0.md` · **Rollback:** `ROLLBACK_PLAN.md`
 
 Status values: `done` · `in-progress` · `blocked` · `planned`
 
@@ -59,7 +60,7 @@ Batch E (boundary remediation) — independent of A–D
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| CI2-01 | **P0** RLS rollout for collection entities | blocked | 66 of 75 entities have no `rls`. Needs staged, per-module application with verification. Start with `Pipe`, then `TobaccoBlend`, `Bottle`, `Wine`, `Cigar`. Pattern: read/update/delete owner-or-admin via `created_by`; create for logged-in users. Must be verified against each collection page before the next entity. |
+| CI2-01 | **P0** RLS rollout for collection entities | blocked | 61 of 84 entities still have no `rls`; 23 covered, `StorageLocation` added 2026-11-27. Needs staged, per-module application with verification. Start with `Pipe`, then `TobaccoBlend`, `Bottle`, `Wine`, `Cigar`. Pattern: read/update/delete owner-or-admin via `created_by`; create for logged-in users. Must be verified against each collection page before the next entity. |
 | CI2-02 | RLS for log entities (`PipeMaintenanceLog`, `HumidorMaintenanceLog`, `CellarLog`, `TastingLog`) | blocked | depends on CI2-01 |
 | CI2-03 | RLS for `AcquisitionItem` | blocked | depends on CI2-01 |
 
@@ -105,7 +106,7 @@ is open.
 | CI-081 | Inventory movement history beyond the activity log | planned | needs per-module movement sources |
 | CI-082 | Ownership history as a first-class chain | planned | needs a privacy decision |
 | CI-083 | Merge reassignment of child logs (tastings, sessions, maintenance) | planned | needs per-module foreign-key verification |
-| CI-084 | Translations for the new UI strings in every locale | planned | English fallbacks live now |
+| CI-084 | Translations for the new UI strings in every locale | in-progress | English fallbacks live; four CI 2.0 help articles added 2026-11-27 (English) |
 
 ---
 
@@ -148,7 +149,7 @@ is open.
 | CI2-119 | Feature entitlement matrix and availability indicator | done | `src/lib/entitlements/featureMatrix.js`, `src/components/entitlements/FeatureAvailabilityBadge.jsx` |
 | CI2-120 | Server-side authorization guard test | done | `src/__tests__/serverAuthorizationGuard.test.js` |
 | CI2-121 | Enforce the entitlement guard on report generation | approval pending | two misused call sites documented in the guard test |
-| CI2-122 | Consolidated administrative diagnostics screen | planned | existing surfaces mapped in the report |
+| CI2-122 | Consolidated administrative diagnostics screen | done | `src/pages/AdminDiagnostics.jsx` + route verified 2026-11-27 |
 | CI2-123 | Admin matrix view | planned | matrix is code + badge today |
 
 ---
@@ -189,6 +190,12 @@ is open.
 | CI2-058 | `calculateEcosystemValueMetrics` omits wine | Low | planned (CI2-021) |
 | CI2-059 | Backend SDK has no bulk writer: `bulkUpdate` / `bulkCreate` are not functions on `asServiceRole.entities` | High | done — per-record writes |
 | CI2-060 | `resolveAcquisition` reported an unrecorded acquisition cost as `0` (`Number(null)`) | Medium | done |
+| CI2-061 | Two guard tests asserted superseded source shapes (`invoke(` vs `invoke?.(`, cigar branches in a now module-agnostic public share route) and failed the suite | Medium | done 2026-11-27 |
+| CI2-062 | Orphan-reference count was measured on lists capped at 3,000 records, overstating broken session links as 518 | Medium | done — full pagination gives 63 real orphans, left intact as history |
+| CI2-063 | 17 cigar records carry no `quantity` | Low | open — needs a defaulting decision, no silent backfill |
+| CI2-064 | `StorageLocation` holds no records and no collection record references it (modules use `humidor_id`/`storage_note`) | Low | open — product decision |
+| CI2-065 | Help knowledge base had no article for Collection Tools, Valuation Center, Reporting Center or sharing/privacy | Medium | done 2026-11-27 — four articles + 13 shortcuts |
+| CI2-066 | Retailer domains are hardcoded in image lookup and the AI valuation prompt (`searchQueries.js`, `ValueLookup.jsx`) | Medium | open — Batch E decision, documented in readiness review §10 |
 
 ---
 
@@ -199,6 +206,8 @@ is open.
 | New guard-rail suites (2 files, 41 tests) | 41 passed | 2026-11-27 |
 | Collection regression subset (10 files, 160 tests) | 160 passed | 2026-11-27 |
 | Production build | Clean | 2026-11-27 |
+| **Full suite (211 files)** | **3,630 passed, 0 failed** | 2026-11-27 |
+| Production build after readiness review | Clean (exit 0) | 2026-11-27 |
 
 Rule: every Batch A/B change must leave these green. Add a guard-rail test when a defect is
 fixed so it cannot silently return.

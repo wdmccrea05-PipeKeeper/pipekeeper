@@ -3,6 +3,8 @@
  * Every article has: id, title, module, category, summary, body, keywords, questions, synonyms, relatedArticles
  */
 
+import { COLLECTION_INTELLIGENCE_ARTICLES } from './collectionIntelligenceArticles.jsx';
+
 export const HELP_ARTICLES = [
   // ─── HUB ────────────────────────────────────────────────────────────────────
   {
@@ -982,6 +984,7 @@ export const HELP_ARTICLES = [
    synonyms: ['pricing', 'tiers', 'plans', 'subscription'],
    relatedArticles: ['reports-exports', 'hub-overview'],
    },
+   ...COLLECTION_INTELLIGENCE_ARTICLES,
    ];
 
 // ─── TOPIC SHORTCUTS ──────────────────────────────────────────────────────────
@@ -1017,6 +1020,18 @@ export const TOPIC_SHORTCUTS = {
   'wishlist': 'want-list',
   'wish list': 'want-list',
   'shopping list': 'shopping-list',
+  'collection tools': 'collection-tools',
+  'bulk edit': 'collection-tools',
+  'bulk update': 'collection-tools',
+  'duplicate records': 'collection-tools',
+  'merge records': 'collection-tools',
+  'valuation': 'valuation-center',
+  'valuation center': 'valuation-center',
+  'appraisal': 'valuation-center',
+  'reporting center': 'reporting-center',
+  'saved report': 'reporting-center',
+  'share collection': 'sharing-and-privacy',
+  'share link': 'sharing-and-privacy',
   'pipe detail': 'pipe-detail-features',
   'pipe condition': 'pipe-detail-features',
   'pipe maintenance': 'pipe-detail-features',

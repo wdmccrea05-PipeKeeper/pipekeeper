@@ -93,8 +93,8 @@ describe('Curator — historical conversational context', () => {
     const chat = readSource('src/components/agent/ExpertTobacconistChat.jsx');
     // Optional chaining is used at the persist call site, so match the call
     // shape rather than one exact spelling.
-    expect(chat).toMatch(/functions\??\.invoke\??\(\s*['"]curatorConversationHistory['"]/);
-    expect(chat).toMatch(/functions\??\.invoke\??\(\s*['"]persistCuratorMessage['"]/);
+    expect(chat).toMatch(/functions\??\.invoke\??\.?\(\s*['"]curatorConversationHistory['"]/);
+    expect(chat).toMatch(/functions\??\.invoke\??\.?\(\s*['"]persistCuratorMessage['"]/);
     expect(chat).toContain('ck_curator_thread');
   });
 
