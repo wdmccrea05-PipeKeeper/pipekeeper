@@ -72,7 +72,8 @@ describe('cigar ratings', () => {
     expect(rating.categories.draw).toBe(4);
     expect(rating.categories.flavor).toBe(5);
     expect(rating.categories.burn).toBeNull();
-    expect(ratingCompleteness(rating)).toBeCloseTo(2 / RATING_CATEGORIES.length);
+    expect(ratingCompleteness({ draw: 4, flavor: 5 })).toBeCloseTo(2 / RATING_CATEGORIES.length);
+    expect(ratingCompleteness({})).toBe(0);
   });
 
   it('clamps out-of-range values and ignores blanks', () => {
@@ -134,14 +135,14 @@ describe('humidor environment', () => {
   it('orders the series oldest first and summarises it', () => {
     const readings = [
       { id: 'b', recorded_at: '2026-02-01T10:00:00Z', humidity_rh: 66, temperature_f: 68 },
-      { id: 'a', recorded_at: '2026-01-01T10:00:00Z', humidity_rh: 60, temperature_f: 69 },
+      { id: 'a', recorded_at: '2026-01-01T10:00:00Z', humidity_rh: 55, temperature_f: 69 },
     ];
     const series = buildEnvironmentSeries(readings, { target_humidity_rh: 65 });
     expect(series.map((p) => p.id)).toEqual(['a', 'b']);
 
     const summary = summarizeEnvironment(readings, { target_humidity_rh: 65 });
     expect(summary.readingCount).toBe(2);
-    expect(summary.humidity.average).toBe(63);
+    expect(summary.humidity.average).toBe(60.5);
     expect(summary.outOfRangeCount).toBe(1);
     expect(summary.latest.id).toBe('b');
   });
@@ -222,7 +223,7 @@ describe('humidor inventory and storage', () => {
     expect(aging.buckets.find((b) => b.key === 'aging_0_6').records).toBe(1);
     expect(aging.buckets.find((b) => b.key === 'aging_12_24').records).toBe(1);
     expect(aging.undocumented.records).toBe(1);
-    expect(monthsAged('2025-11-27', NOW)).toBe(12);
+    expect(monthsAged('2025-11-01', NOW)).toBe(12);
     expect(monthsAged(null, NOW)).toBeNull();
   });
 

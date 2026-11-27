@@ -132,6 +132,27 @@ is open.
 
 ---
 
+## Batch H — CigarKeeper preservation & entitlements (landed 2026-11-27)
+
+| ID | Item | Status | Files |
+|---|---|---|---|
+| CI2-110 | Dated structured ratings with optional categories | done | `base44/entities/CigarRating.jsonc`, `src/lib/cigars/cigarRatings.js`, `src/components/cigars/CigarRatingCategories.jsx` |
+| CI2-111 | Humidor readings with history and threshold alerts | done | `base44/entities/HumidorReading.jsonc`, `src/lib/cigars/humidorEnvironment.js` |
+| CI2-112 | Humidor dimensions, shelves and tolerance band | done | `base44/entities/HumidorLocation.jsonc`, `src/components/cigars/HumidorManager.jsx` |
+| CI2-113 | Humidor inventory, reconciliation and movement history | done | `src/lib/cigars/humidorInventory.js`, `src/components/cigars/HumidorDetailDialog.jsx` |
+| CI2-114 | Storage movement logged on every assignment change | done | `src/lib/cigars/logStorageChange.js`, `base44/entities/CollectionActivity.jsonc` |
+| CI2-115 | Redesigned dashboard with metric drill-downs | done | `src/lib/cigars/cigarDashboard.js`, `src/components/cigars/CigarKeeperDashboard.jsx`, `src/pages/CigarKeeper.jsx` |
+| CI2-116 | List drill-down presets (`preset`, `humidor`, `condition`, `q`) | done | `src/lib/cigars/cigarDocumentation.js`, `src/pages/Cigars.jsx` |
+| CI2-117 | Storage and aging panel on the cigar detail | done | `src/components/cigars/CigarStoragePanel.jsx`, `src/pages/CigarDetail.jsx` |
+| CI2-118 | Curator humidor/environment context and cigar guidance | done | `src/lib/curator/cigarPreservationGuidance.js`, `CuratorWorkspace.jsx`, `curatorOperationsEngine.js` |
+| CI2-119 | Feature entitlement matrix and availability indicator | done | `src/lib/entitlements/featureMatrix.js`, `src/components/entitlements/FeatureAvailabilityBadge.jsx` |
+| CI2-120 | Server-side authorization guard test | done | `src/__tests__/serverAuthorizationGuard.test.js` |
+| CI2-121 | Enforce the entitlement guard on report generation | approval pending | two misused call sites documented in the guard test |
+| CI2-122 | Consolidated administrative diagnostics screen | planned | existing surfaces mapped in the report |
+| CI2-123 | Admin matrix view | planned | matrix is code + badge today |
+
+---
+
 ## Defect log
 
 | ID | Defect | Severity | Status |
