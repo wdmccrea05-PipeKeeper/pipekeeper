@@ -1,0 +1,116 @@
+{
+ "addFlowIdentify": {},
+ "admin": {},
+ "agingReport": {},
+ "ai": {},
+ "aiIdentifier": {},
+ "aiUpdates": {},
+ "avatarCropper": {},
+ "batchPipes": {},
+ "breakIn": {},
+ "cellarDrift": {},
+ "cigars": {},
+ "collectionIntelligence": {},
+ "collectionReports": {
+  "cigars": "sigari",
+  "modules": "Moduli"
+ },
+ "common": {
+  "photos": "Foto",
+  "tobacco": "Tabacco"
+ },
+ "community": {},
+ "communityFeed": {},
+ "communityPrivacy": {},
+ "curator": {},
+ "error": {},
+ "faqExtended": {},
+ "faqFull": {},
+ "featureGate": {},
+ "forms": {},
+ "formsExtended": {},
+ "foundingMember": {},
+ "help": {
+  "ai": "Assistenza AI",
+  "tobaccoValuation": "Come viene calcolato il valore del tabacco?"
+ },
+ "helpCenter": {
+  "helpCenter": "Centro Assistenza",
+  "howTo": "Guide pratiche",
+  "privacyPolicy": "Informativa sulla privacy",
+  "termsOfService": "Termini di servizio"
+ },
+ "howTo": {},
+ "hub": {
+  "cigars": "Sigari"
+ },
+ "imageCropper": {},
+ "insights": {
+  "pairingGrid": "Abbinamenti",
+  "reports": "Report",
+  "trends": "Tendenze"
+ },
+ "layout": {
+  "admin": "Amministrazione"
+ },
+ "logoLibraryBrowser": {},
+ "matching": {},
+ "messaging": {},
+ "modules": {},
+ "nav": {
+  "cigars": "Sigari",
+  "reports": "Report",
+  "whiskey": "Whiskey"
+ },
+ "onboarding": {},
+ "optimizer": {},
+ "pairingGrid": {},
+ "photoIdentifier": {},
+ "photos": {},
+ "pipeDetailTabs": {
+  "breakIn": "Rodaggio"
+ },
+ "pipekeeper": {},
+ "pipesExtended": {},
+ "privacyPolicy": {
+  "termsOfService": "Termini di servizio"
+ },
+ "proUpgrade": {},
+ "profile": {},
+ "quickAccess": {
+  "quickAccess": "Accesso rapido"
+ },
+ "quickPipeIdentifier": {},
+ "reports": {
+  "collectionReports": "Report della collezione"
+ },
+ "session": {},
+ "sessionHistory": {},
+ "shareCard": {},
+ "subscription": {
+  "trial": "Periodo di prova attivo"
+ },
+ "subscriptionFull": {},
+ "supportFull": {},
+ "termsOfService": {
+  "privacyPolicy": "Informativa sulla privacy"
+ },
+ "tobacco": {},
+ "tobaccoEstimator": {},
+ "tobaccoValuation": {},
+ "tobacconist": {
+  "aiUpdates": "Aggiornamenti AI"
+ },
+ "topBlendMatches": {},
+ "trends": {
+  "session": "sessione"
+ },
+ "trial": {},
+ "tutorial": {},
+ "usageLogReport": {},
+ "valuation": {},
+ "verificationHelp": {},
+ "whiskey": {},
+ "whiskeykeeper": {},
+ "wine": {}
+}
