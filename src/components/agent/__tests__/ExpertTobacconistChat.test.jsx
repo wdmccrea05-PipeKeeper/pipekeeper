@@ -36,7 +36,9 @@ describe('ExpertTobacconistChat deterministic routing', () => {
     await waitFor(() => {
       expect(screen.getByText('You have 1 unopened bottle.')).toBeTruthy();
     });
-    expect(base44.functions.invoke).not.toHaveBeenCalled();
+    // Deterministic answers must never reach the model. Thread persistence may
+    // still call its own endpoint; that is not a model call.
+    expect(base44.functions.invoke).not.toHaveBeenCalledWith('invokeCuratorLLM', expect.anything());
   });
 
   it('keeps multi-module context available for deterministic collection facts', async () => {
@@ -60,6 +62,8 @@ describe('ExpertTobacconistChat deterministic routing', () => {
     await waitFor(() => {
       expect(screen.getByText('Wines with quantity 0: Wine A.')).toBeTruthy();
     });
-    expect(base44.functions.invoke).not.toHaveBeenCalled();
+    // Deterministic answers must never reach the model. Thread persistence may
+    // still call its own endpoint; that is not a model call.
+    expect(base44.functions.invoke).not.toHaveBeenCalledWith('invokeCuratorLLM', expect.anything());
   });
 });

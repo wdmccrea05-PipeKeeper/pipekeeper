@@ -1728,12 +1728,17 @@ export default function ExpertTobacconistChat({
     if (pending.length === 0) return;
     pending.forEach((m) => {
       persistedRef.current.add(m.id);
-      base44.functions.invoke('persistCuratorMessage', {
-        session_id: sessionIdRef.current,
-        role: m.role,
-        content: m.content,
-        message_index: messages.findIndex((entry) => entry.id === m.id),
-      }).catch(() => {});
+      try {
+        const request = base44?.functions?.invoke?.('persistCuratorMessage', {
+          session_id: sessionIdRef.current,
+          role: m.role,
+          content: m.content,
+          message_index: messages.findIndex((entry) => entry.id === m.id),
+        });
+        if (request && typeof request.catch === 'function') request.catch(() => {});
+      } catch {
+        // Persistence is best-effort; the live conversation never depends on it.
+      }
     });
   }, [messages, historyLoaded]);
 
