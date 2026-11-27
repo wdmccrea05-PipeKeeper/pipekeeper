@@ -9,6 +9,9 @@ const MODULE_COLOR = {
   pipekeeper: 'text-[#a87d52] border-[rgba(168,125,82,0.25)] bg-[rgba(168,125,82,0.07)]',
   whiskeykeeper: 'text-[#c4a35a] border-[rgba(196,163,90,0.25)] bg-[rgba(196,163,90,0.07)]',
   cigarkeeper: 'text-[#b87c5a] border-[rgba(184,124,90,0.25)] bg-[rgba(184,124,90,0.07)]',
+  winekeeper: 'text-[#a4687a] border-[rgba(164,104,122,0.25)] bg-[rgba(164,104,122,0.07)]',
+  community: 'text-[#8fae8a] border-[rgba(143,174,138,0.25)] bg-[rgba(143,174,138,0.07)]',
+  reports: 'text-[#c9a86a] border-[rgba(201,168,106,0.25)] bg-[rgba(201,168,106,0.07)]',
   curator: 'text-[#8ab4c4] border-[rgba(138,180,196,0.25)] bg-[rgba(138,180,196,0.07)]',
 };
 
@@ -17,6 +20,9 @@ const MODULE_LABEL = {
   pipekeeper: 'PipeKeeper',
   whiskeykeeper: 'WhiskeyKeeper',
   cigarkeeper: 'CigarKeeper',
+  winekeeper: 'WineKeeper',
+  community: 'Community',
+  reports: 'Reports',
   curator: 'Curator',
 };
 
@@ -37,7 +43,17 @@ const TUTORIAL_IDS_ORDERED = [
   'add-cigar',
   'log-cigar-session',
   'cigar-humidor',
+  'winekeeper-overview',
+  'add-wine',
+  'log-wine-tasting',
+  'wine-drinking-window',
+  'community-overview',
+  'community-feed',
+  'community-friends-messaging',
+  'community-privacy',
   'collection-insights',
+  'reports-exports',
+  'plans-and-modules',
   'sharing-stories',
   'global-search',
 ];
@@ -109,9 +125,8 @@ export default function TutorialSelector({ user, subscription }) {
       .map(id => getArticleById(id))
       .filter(Boolean)
       .filter(a => {
-        // Always show hub + curator articles
-        if (['hub', 'curator'].includes(a.module)) return true;
-        if (a.module === 'cigarkeeper') return activeModules.includes('cigarkeeper');
+        // Always show hub, curator, community and reports articles
+        if (['hub', 'curator', 'community', 'reports'].includes(a.module)) return true;
         return activeModules.includes(a.module);
       });
   }, [activeModules]);

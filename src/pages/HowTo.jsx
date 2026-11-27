@@ -386,6 +386,80 @@ export default function HowTo() {
           </Q>
         </Section>
 
+        <Section title={t("docsCurrent.winekeeper.title", "WineKeeper")}>
+          <Q id="add-wine" q={t("docsCurrent.winekeeper.addTitle", "How do I add a wine to my collection?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.winekeeper.addSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="wine-tasting" q={t("docsCurrent.winekeeper.tastingTitle", "How do I log a wine tasting?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.winekeeper.tastingSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="wine-window" q={t("docsCurrent.winekeeper.windowTitle", "How do drinking windows work?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.winekeeper.windowSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="wine-insights" q={t("docsCurrent.winekeeper.insightsTitle", "What do Wine Insights show?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.winekeeper.insightsSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+        </Section>
+
+        <Section title={t("docsCurrent.community.title", "Community")}>
+          <Q id="community-feed" q={t("docsCurrent.community.feedTitle", "How do I post to the community feed?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.community.feedSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="community-friends" q={t("docsCurrent.community.friendsTitle", "How do friends and following work?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.community.friendsSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="community-messaging" q={t("docsCurrent.community.messagingTitle", "How does messaging work?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.community.messagingSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="community-privacy" q={t("docsCurrent.community.privacyTitle", "How do I control what other collectors see?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.community.privacySteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="community-referral" q={t("docsCurrent.community.referralTitle", "How does the referral program work?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.community.referralSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+        </Section>
+
+        <Section title={t("docsCurrent.reports.title", "Reports & exports")}>
+          <Q id="report-collection" q={t("docsCurrent.reports.collectionTitle", "How do I export my collection?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.reports.collectionSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="report-aging" q={t("docsCurrent.reports.agingTitle", "How do I export a cellar aging report?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.reports.agingSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="report-usage" q={t("docsCurrent.reports.usageTitle", "How do I export my session history?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.reports.usageSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+          <Q id="report-insurance" q={t("docsCurrent.reports.insuranceTitle", "How do I create an insurance report?")}>
+            <ol className="list-decimal list-inside space-y-2">
+              {tArray("docsCurrent.reports.insuranceSteps").map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </Q>
+        </Section>
+
         <Section title={t("howTo.subscriptions")}>
           <Q id="upgrade" q="How do I upgrade to Pro?">
             <ol className="list-decimal list-inside space-y-2">
@@ -412,6 +486,9 @@ export default function HowTo() {
               <li>A <strong>{t("howToAdditional.item157")}</strong> {t("howToAdditional.item158")}</li>
               <li>{t("howToAdditional.item159")}</li>
             </ol>
+          </Q>
+          <Q id="free-limits" q={t("docsCurrent.faq.limitsQ", "What are the limits on the free tier?")}>
+            <p>{t("docsCurrent.faq.limitsQA")}</p>
           </Q>
         </Section>
       </div>

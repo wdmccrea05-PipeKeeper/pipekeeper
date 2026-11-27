@@ -41,6 +41,7 @@ import zhHansUI from './locales/zh-Hans.ui.jsx';
 import itGenerated from './locales/it.generated.json';
 import itExtra from './locales/it.extra.json';
 import itRemaining from './locales/it.remaining.json';
+import { docsCurrentTranslations } from './docsCurrent.jsx';
 
 const CRITICAL_FALLBACKS = {
   common: { back: 'Back', search: 'Search', share: 'Share', loading: 'Loading...', retry: 'Retry' },
@@ -175,9 +176,10 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
   const withHome = deepMerge(withDocs, homeTranslations[lang] || {});
   const withInsights = deepMerge(withHome, insightsTranslations[lang] || {});
   const withStoryWine = deepMerge(withInsights, storyWineTranslations[lang] || {});
+  const withDocsCurrent = deepMerge(withStoryWine, docsCurrentTranslations[lang] || {});
   const withIntel = lang === 'en'
-    ? deepMerge(withStoryWine, { collectionIntelligence: enCollectionIntelligence })
-    : withStoryWine;
+    ? deepMerge(withDocsCurrent, { collectionIntelligence: enCollectionIntelligence })
+    : withDocsCurrent;
   const withGenerated = lang === 'it'
     ? deepOverride(deepOverride(deepOverride(withIntel, itGenerated), itExtra), itRemaining)
     : withIntel;

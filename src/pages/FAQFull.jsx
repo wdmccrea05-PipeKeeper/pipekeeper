@@ -182,6 +182,9 @@ export default function FAQFull() {
               {t("faqExtended.legacySubscriberNote", { date: "2026", defaultValue: "Founding subscribers have grandfathered access to all Pro features." })}
             </p>
           </Q>
+          <Q id="free-limits" q={t("docsCurrent.faq.limitsQ", "What are the limits on the free tier?")}>
+            <p>{t("docsCurrent.faq.limitsQA")}</p>
+          </Q>
         </Section>
 
         <Section title={t("helpCenter.topicAI")}>
@@ -193,6 +196,36 @@ export default function FAQFull() {
           </Q>
           <Q id="ai-regenerate" q={t("help.aiRegenerate")}>
             <p>{t("helpCenter.aiRegenerateDesc")}</p>
+          </Q>
+        </Section>
+
+        <Section title={t("docsCurrent.winekeeper.title", "WineKeeper")}>
+          <Q id="winekeeper-what" q={t("docsCurrent.faq.wineWhatQ", "What is WineKeeper?")}>
+            <p>{t("docsCurrent.faq.wineWhatA")}</p>
+          </Q>
+          <Q id="winekeeper-window" q={t("docsCurrent.faq.wineTrackQ", "How do I track a bottle and its drinking window?")}>
+            <p>{t("docsCurrent.faq.wineTrackA")}</p>
+          </Q>
+        </Section>
+
+        <Section title={t("docsCurrent.community.title", "Community")}>
+          <Q id="community-what" q={t("docsCurrent.faq.communityWhatQ", "What is the Community?")}>
+            <p>{t("docsCurrent.faq.communityWhatA")}</p>
+          </Q>
+          <Q id="community-privacy" q={t("docsCurrent.faq.communityPrivacyQ", "How do I control what other collectors see?")}>
+            <p>{t("docsCurrent.faq.communityPrivacyA")}</p>
+          </Q>
+          <Q id="community-messaging-off" q={t("docsCurrent.faq.communityMessagingQ", "What happens to my conversations if I turn messaging off?")}>
+            <p>{t("docsCurrent.faq.communityMessagingA")}</p>
+          </Q>
+        </Section>
+
+        <Section title={t("docsCurrent.reports.title", "Reports & exports")}>
+          <Q id="reports-what" q={t("docsCurrent.faq.reportsWhatQ", "What reports can I export?")}>
+            <p>{t("docsCurrent.faq.reportsWhatA")}</p>
+          </Q>
+          <Q id="reports-how" q={t("docsCurrent.faq.reportsHowQ", "How do I export a report?")}>
+            <p>{t("docsCurrent.faq.reportsHowA")}</p>
           </Q>
         </Section>
 
