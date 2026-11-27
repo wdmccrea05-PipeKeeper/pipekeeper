@@ -1,17 +1,74 @@
 import { useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
+import { executeActions, undoActionExecution } from '@/lib/actions/actionClient';
+import { createAction } from '@/lib/actions/actionModel';
 
 /**
  * Confirmation, cancellation and reversal for changes Curator proposes.
  *
- * The proposal a collector sees is never the authority: every action goes back
- * through the backend, which re-checks ownership and field rules, and reports
- * what it actually did. A failure is shown as a failure — never as a success.
+ * Curator no longer has its own write path: a proposal becomes a framework action
+ * and goes through the same executor as every other feature, which re-checks
+ * ownership, the field allowlist and whether the record still holds the value the
+ * proposal was built from. A failure is shown as a failure — never as a success.
  */
 export default function useCuratorRecordProposals({ setMessages, setEntityContext, lastActionRunRef }) {
   const patchMessage = useCallback((messageId, patch) => {
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, ...patch } : m)));
   }, [setMessages]);
+
+  const buildCuratorAction = useCallback((proposal, messageId) => {
+    const change = (proposal.changes || [])[0] || {};
+    const patchFields = Object.keys(proposal.patch || {});
+    const isStorage = patchFields.length > 0
+      && patchFields.every((field) => field === 'storage_location_id' || field === 'humidor_id');
+
+    const type = proposal.actionType === 'merge'
+      ? 'record_merge'
+      : isStorage
+        ? 'storage_assign'
+        : 'record_update';
+
+    const targets = proposal.actionType === 'merge'
+      ? [
+        {
+          entity: proposal.entityName,
+          recordId: proposal.targetId,
+          name: proposal.targetName,
+          role: 'survivor',
+        },
+        ...(proposal.sourceIds || []).map((id, index) => ({
+          entity: proposal.entityName,
+          recordId: id,
+          name: (proposal.sourceNames || [])[index] || '',
+          role: 'source',
+        })),
+      ]
+      : (proposal.ids || []).map((id, index) => ({
+        entity: proposal.entityName,
+        recordId: id,
+        name: (proposal.recordNames || [])[index] || proposal.recordName,
+        // The value the proposal was built against, so a record edited in the
+        // meantime is reported stale instead of being overwritten.
+        expected: change.field && change.fromRaw !== undefined
+          ? { [change.field]: change.fromRaw }
+          : null,
+        patch: proposal.patch,
+      }));
+
+    return createAction({
+      id: `curator_${messageId}`,
+      type,
+      origin: 'curator',
+      module: proposal.moduleKey,
+      title: proposal.summary || '',
+      targets,
+      currentValues: (proposal.changes || []).map((entry) => ({
+        label: entry.label,
+        from: entry.from,
+        to: entry.to,
+      })),
+      undoEligible: proposal.undoable === true,
+    });
+  }, []);
 
   const confirmProposal = useCallback(async (message) => {
     const proposal = message?.proposal;
@@ -20,46 +77,29 @@ export default function useCuratorRecordProposals({ setMessages, setEntityContex
     patchMessage(message.id, { proposalState: 'applying' });
 
     try {
-      let data;
-      if (proposal.actionType === 'merge') {
-        const response = await base44.functions.invoke('collectionItemMerge', {
-          entityName: proposal.entityName,
-          targetId: proposal.targetId,
-          sourceIds: proposal.sourceIds,
-          confirm: true,
-        });
-        data = response?.data || {};
-      } else {
-        const response = await base44.functions.invoke('curatorRecordChange', {
-          mode: 'apply',
-          entityName: proposal.entityName,
-          ids: proposal.ids,
-          patch: proposal.patch,
-        });
-        data = response?.data || {};
-      }
+      const action = buildCuratorAction(proposal, message.id);
+      const outcome = await executeActions([action], { idempotencyKey: `curator_${message.id}` });
 
-      const appliedCount = Array.isArray(data.applied) ? data.applied.length : 0;
-      const succeeded = proposal.actionType === 'merge' ? !data?.error : appliedCount > 0;
-
-      if (!succeeded) {
+      if (!outcome || outcome.completed === 0) {
+        const failure = (outcome?.rows || []).find((row) => row.status === 'failed');
         patchMessage(message.id, {
           proposalState: 'failed',
           proposalResult: {
-            error: data?.error || data?.skipped?.[0]?.reason || 'No record was changed',
+            error: failure?.reason || outcome?.message || 'No record was changed',
           },
         });
         return;
       }
 
-      if (data?.action_run_id) lastActionRunRef.current = data.action_run_id;
+      const runId = (outcome.undoableExecutionIds || [])[0] || null;
+      if (runId) lastActionRunRef.current = runId;
 
       setEntityContext((prev) => ({
         ...prev,
         appliedChanges: [
           ...(Array.isArray(prev?.appliedChanges) ? prev.appliedChanges : []),
           {
-            name: proposal.recordName,
+            name: proposal.recordName || proposal.targetName,
             fields: (proposal.changes || []).map((change) => change.label),
             at: new Date().toISOString(),
           },
@@ -68,8 +108,11 @@ export default function useCuratorRecordProposals({ setMessages, setEntityContex
 
       patchMessage(message.id, {
         proposalState: 'applied',
-        proposalResult: data,
-        actionRunId: data?.action_run_id || null,
+        proposalResult: {
+          applied: (outcome.rows || []).filter((row) => row.status === 'completed'),
+          skipped: (outcome.rows || []).filter((row) => row.status !== 'completed'),
+        },
+        actionRunId: runId,
       });
     } catch (error) {
       patchMessage(message.id, {
@@ -77,7 +120,7 @@ export default function useCuratorRecordProposals({ setMessages, setEntityContex
         proposalResult: { error: error?.message || 'The change could not be saved' },
       });
     }
-  }, [patchMessage, setEntityContext, lastActionRunRef]);
+  }, [buildCuratorAction, patchMessage, setEntityContext, lastActionRunRef]);
 
   const cancelProposal = useCallback((message) => {
     if (!message || message.proposalState !== 'proposed') return;
@@ -97,15 +140,11 @@ export default function useCuratorRecordProposals({ setMessages, setEntityContex
     patchMessage(messageId, { proposalState: 'applying' });
 
     try {
-      const response = await base44.functions.invoke('curatorRecordChange', {
-        mode: 'undo',
-        action_run_id: runId,
-      });
-      const data = response?.data || {};
-      const undone = Array.isArray(data.undone) ? data.undone : [];
+      const data = await undoActionExecution(runId);
+      const reversed = Array.isArray(data?.reversed) ? data.reversed : [];
 
-      if (undone.length === 0) {
-        const reason = data?.error || data?.skipped?.[0]?.reason || 'nothing could be reversed';
+      if (reversed.length === 0) {
+        const reason = data?.skipped?.[0]?.reason || 'nothing could be reversed';
         patchMessage(messageId, {
           proposalState: 'failed',
           content: `I could not reverse that change (${reason}). Your records are unchanged.`,

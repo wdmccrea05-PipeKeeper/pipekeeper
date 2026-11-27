@@ -1,0 +1,147 @@
+{
+  "name": "ActionExecution",
+  "type": "object",
+  "description": "One audit row for every action executed through the Universal Action Framework. Records the action type, its origin, the targets it touched, per-target outcomes and whether it can be undone. Written only by the actionExecute backend function; readable by the collector it belongs to and by administrators.",
+  "properties": {
+    "action_ref": {
+      "type": "string",
+      "description": "Client-side identifier of the proposal this run executed"
+    },
+    "action_type": {
+      "type": "string",
+      "description": "Registered action type (record_update, storage_assign, lifecycle_change, record_merge, valuation_record)"
+    },
+    "origin": {
+      "type": "string",
+      "description": "Feature the action originated from (curator, collection_tools, duplicates, reports, hub, module)"
+    },
+    "module_key": {
+      "type": "string",
+      "description": "Collection module the action applies to"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Collector who executed the action"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Client-supplied key that prevents the same action from being executed twice"
+    },
+    "confirmation_level": {
+      "type": "string",
+      "enum": [
+        "immediate",
+        "review",
+        "explicit"
+      ],
+      "enumColors": [
+        "green",
+        "yellow",
+        "red"
+      ],
+      "description": "Confirmation level the action was executed under"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "executing",
+        "completed",
+        "partial",
+        "failed",
+        "skipped",
+        "blocked",
+        "undone"
+      ],
+      "enumColors": [
+        "blue",
+        "green",
+        "yellow",
+        "red",
+        "gray",
+        "gray",
+        "purple"
+      ],
+      "default": "executing",
+      "description": "Outcome of the whole action"
+    },
+    "targets": {
+      "type": "array",
+      "description": "Records the action was proposed against",
+      "items": {
+        "type": "object"
+      }
+    },
+    "results": {
+      "type": "array",
+      "description": "Per-target outcome with the recorded values before and after, so the change can be reversed and audited",
+      "items": {
+        "type": "object"
+      }
+    },
+    "undo_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this run can be reversed through the framework"
+    },
+    "undone_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the run was reversed"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Reason the action failed, when it did"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When execution started"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When execution finished"
+    }
+  },
+  "required": [
+    "action_ref",
+    "action_type",
+    "user_email",
+    "status",
+    "started_at"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

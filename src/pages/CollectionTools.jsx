@@ -6,6 +6,8 @@ import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import BulkEditPanel from '@/components/collection/BulkEditPanel';
 import DuplicateReviewPanel from '@/components/collection/DuplicateReviewPanel';
 import { Download, Loader2, Search, Copy, PencilLine } from 'lucide-react';
+import { createAction } from '@/lib/actions/actionModel';
+import { executeActions } from '@/lib/actions/actionClient';
 import {
   COLLECTION_ENTITY_NAMES,
   LIFECYCLE_OPTIONS,
@@ -123,15 +125,29 @@ export default function CollectionTools() {
     setBusy(true);
     setMessage('');
     try {
-      const response = await base44.functions.invoke('collectionItemBulkUpdate', {
-        entityName,
-        ids: selected,
-        patch,
+      const fields = Object.keys(patch);
+      const action = createAction({
+        type: fields.every((field) => field === 'storage_location_id' || field === 'humidor_id')
+          ? 'storage_assign'
+          : 'record_update',
+        origin: 'collection_tools',
+        module: entityName,
+        title: `Update ${fields.length} field${fields.length === 1 ? '' : 's'} on ${selected.length} record${selected.length === 1 ? '' : 's'}`,
+        targets: selected.map((id) => ({ entity: entityName, recordId: id, patch })),
+        proposedValues: fields.map((field) => ({
+          label: field.replace(/_/g, ' '),
+          to: Array.isArray(patch[field]) ? patch[field].join(', ') : patch[field],
+        })),
       });
-      const data = response?.data || {};
-      setMessage(`Updated ${data.updated || 0} record(s)${data.skipped ? `, ${data.skipped} skipped` : ''}.`);
-      setSelected([]);
-      await load();
+
+      const outcome = await executeActions([action]);
+      setMessage(
+        `Updated ${outcome.completed} record(s)${outcome.skipped ? `, ${outcome.skipped} unchanged` : ''}${outcome.failed ? `, ${outcome.failed} failed` : ''}.`
+      );
+      if (outcome.completed > 0) {
+        setSelected([]);
+        await load();
+      }
     } catch (bulkError) {
       setMessage(bulkError?.message || 'Bulk update failed');
     } finally {

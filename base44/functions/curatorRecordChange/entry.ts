@@ -12,6 +12,7 @@ import {
   sanitiseCuratorPatch,
 } from '../../shared/curatorRecordChanges.ts';
 import { resolveCuratorAccess } from '../../shared/curatorAccess.ts';
+import { ITEM_TYPE, logActivity, pickFields, recordLabel } from '../../shared/actionHelpers.ts';
 
 /**
  * Server-side authority for changes Curator proposes.
@@ -26,32 +27,6 @@ import { resolveCuratorAccess } from '../../shared/curatorAccess.ts';
  *   apply — write a validated patch to one record or to several owned records
  *   undo  — restore the values a previous run replaced, only while unchanged
  */
-
-const ITEM_TYPE: Record<string, string> = {
-  Pipe: 'pipe',
-  TobaccoBlend: 'tobacco',
-  Bottle: 'bottle',
-  Cigar: 'collection',
-  Wine: 'collection',
-};
-
-function pickFields(record: any, fields: string[]) {
-  const out: Record<string, unknown> = {};
-  for (const field of fields) out[field] = record?.[field] ?? null;
-  return out;
-}
-
-function recordLabel(record: any) {
-  return String(record?.name || record?.wine_name || record?.blend_name || record?.id || '');
-}
-
-async function logActivity(base44: any, payload: Record<string, unknown>) {
-  try {
-    await base44.asServiceRole.entities.CollectionActivity.create(payload);
-  } catch (error) {
-    console.warn('curatorRecordChange activity log failed:', error);
-  }
-}
 
 async function applyChanges(base44: any, user: any, body: any) {
   const entityName = String(body?.entityName || '');

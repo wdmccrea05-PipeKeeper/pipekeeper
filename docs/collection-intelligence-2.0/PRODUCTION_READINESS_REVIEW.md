@@ -153,6 +153,19 @@ the review record is `USABILITY_AUDIT_2026-11-27.md`.
 | U12 | Exactly one reporting surface in navigation, scoped per module | Passing |
 | U13 | Dashboard customization persists across sessions and devices | **Not implemented — see PROMPTS_13_16_VERIFICATION.md §2** |
 
+## 12b. Action framework acceptance (added after the Universal Action Framework)
+
+| Gate | Description | Status |
+|---|---|---|
+| A1 | Exactly one server write path for accepted actions (`actionExecute`) | Passing |
+| A2 | Action types restricted to the registered catalogue | Passing |
+| A3 | Ownership, entitlement, staleness and idempotency re-checked server-side | Passing |
+| A4 | Persistence verified by read-back before success is reported | Passing |
+| A5 | Partial failures reported per record; dependents blocked, independents unaffected | Passing |
+| A6 | Destructive, financial and privacy actions never preselected; explicit confirmation required | Passing |
+| A7 | Undo only where eligible, and only while the record still holds the written values | Passing |
+| A8 | Curator, duplicate merge and bulk edit migrated off their own writers | Passing |
+
 ## 12. Recommended release sequence
 
 1. **Stage 1 (security):** apply owner-or-admin RLS to `Pipe`, `TobaccoBlend`, `Cigar`, `Bottle`, `Wine` one at a time; after each, sign in as a non-owner account and confirm the collection page shows only that account's records, then confirm the owner still sees everything.

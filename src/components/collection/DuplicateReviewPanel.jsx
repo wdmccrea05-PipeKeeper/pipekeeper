@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Loader2, GitMerge, AlertTriangle } from 'lucide-react';
+import ActionReviewDialog from '@/components/actions/ActionReviewDialog';
+import ActionResultSummary from '@/components/actions/ActionResultSummary';
+import { createAction } from '@/lib/actions/actionModel';
+import { executeActions } from '@/lib/actions/actionClient';
 
 /**
- * Duplicate review and controlled merge.
+ * Duplicate review and controlled merge, through the Universal Action Framework.
  *
- * Duplicates are only ever suggested. A merge needs a chosen survivor and an
- * explicit confirmation, and the duplicates are archived with a pointer to the
- * survivor rather than deleted.
+ * Duplicates are only ever suggested. A merge is a high-impact action: it is
+ * built as a framework action, previewed in the shared review dialog, executed by
+ * the single server executor (which re-checks ownership) and reported per record.
+ * The duplicates are archived with a pointer to the survivor rather than deleted.
  */
 export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged }) {
   const [loading, setLoading] = useState(true);
@@ -16,8 +21,9 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
   const [scanned, setScanned] = useState(0);
   const [error, setError] = useState('');
   const [survivors, setSurvivors] = useState({});
-  const [merging, setMerging] = useState('');
-  const [result, setResult] = useState('');
+  const [reviewing, setReviewing] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -39,28 +45,47 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityName]);
 
-  const handleMerge = async (group) => {
+  const buildMergeAction = (group) => {
     const survivorId = survivors[group.signature] || group.records[0]?.id;
-    const sourceIds = group.records.map((record) => record.id).filter((id) => id !== survivorId);
+    const survivor = group.records.find((record) => record.id === survivorId);
+    const duplicates = group.records.filter((record) => record.id !== survivorId);
 
-    setMerging(group.signature);
+    return createAction({
+      type: 'record_merge',
+      origin: 'duplicates',
+      module: entityName,
+      title: `Merge ${duplicates.length} duplicate ${duplicates.length === 1 ? 'record' : 'records'} into "${survivor?.name || 'the selected record'}"`,
+      description: 'The record you keep keeps its identity and takes any documentation the duplicates have. Duplicates are archived, not deleted.',
+      targets: [
+        { entity: entityName, recordId: survivorId, name: survivor?.name || '', role: 'survivor' },
+        ...duplicates.map((record) => ({
+          entity: entityName,
+          recordId: record.id,
+          name: record.name,
+          role: 'source',
+        })),
+      ],
+      recordLinks: [{ label: 'Open collection tools', to: '/CollectionTools' }],
+    });
+  };
+
+  const confirmMerge = async () => {
+    if (!reviewing) return;
+    setBusy(true);
     setError('');
-    setResult('');
+    setResult(null);
     try {
-      const response = await base44.functions.invoke('collectionItemMerge', {
-        entityName,
-        targetId: survivorId,
-        sourceIds,
-        confirm: true,
-      });
-      const data = response?.data || {};
-      setResult(`Merged ${data.mergedCount || sourceIds.length} duplicate record(s).`);
-      await load();
-      if (onMerged) onMerged();
+      const outcome = await executeActions([reviewing]);
+      setResult(outcome);
+      if (outcome.completed > 0) {
+        await load();
+        if (onMerged) onMerged();
+      }
     } catch (mergeError) {
       setError(mergeError?.message || 'Merge failed');
     } finally {
-      setMerging('');
+      setBusy(false);
+      setReviewing(null);
     }
   };
 
@@ -83,7 +108,7 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
       </div>
 
       {error && <p className="text-xs" style={{ color: '#E39A9A' }}>{error}</p>}
-      {result && <p className="text-xs" style={{ color: '#8FCFAF' }}>{result}</p>}
+      {result && <ActionResultSummary result={result} onDismiss={() => setResult(null)} />}
 
       {groups.length === 0 ? (
         <p className="text-sm py-4" style={{ color: 'rgba(224,216,200,0.5)' }}>
@@ -130,25 +155,26 @@ export default function DuplicateReviewPanel({ entityName, entityLabel, onMerged
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                onClick={() => handleMerge(group)}
-                disabled={merging === group.signature}
-              >
-                {merging === group.signature ? (
-                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                ) : (
-                  <GitMerge className="w-3.5 h-3.5 mr-1" />
-                )}
+              <Button size="sm" onClick={() => setReviewing(buildMergeAction(group))}>
+                <GitMerge className="w-3.5 h-3.5 mr-1" />
                 Keep selected, merge the rest
               </Button>
               <span className="text-[11px]" style={{ color: 'rgba(224,216,200,0.45)' }}>
-                Duplicates are archived, not deleted.
+                You will see the merge before it happens. Duplicates are archived, not deleted.
               </span>
             </div>
           </div>
         ))
       )}
+
+      <ActionReviewDialog
+        open={Boolean(reviewing)}
+        actions={reviewing ? [reviewing] : []}
+        busy={busy}
+        error={error}
+        onConfirm={confirmMerge}
+        onCancel={() => setReviewing(null)}
+      />
     </div>
   );
 }
