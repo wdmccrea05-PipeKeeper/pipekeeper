@@ -39,6 +39,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { formatWeight } from "@/components/utils/localeFormatters";
+import PrivateProfileGate from "@/components/community/PrivateProfileGate";
+import {
+  canSendFriendRequest,
+  canViewProfile,
+  hasPendingRequest,
+  isModuleShared,
+  normalizeCommunityPrivacy,
+} from "@/components/utils/communityPrivacy";
 
 const PIPE_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/dd0287dd6_pipe_no_bg.png';
 
@@ -121,8 +129,37 @@ export default function PublicProfilePage() {
     gcTime: 60_000,
   });
 
+  // Friendship link between the viewer and this collector decides whether a
+  // private profile is opened in full or held behind the friends-only gate.
+  const { data: profileFriendships = [] } = useQuery({
+    queryKey: ['profile-friendship-link', currentUser?.email, profileEmail],
+    queryFn: async () => {
+      if (!currentUser?.email || !profileEmail) return [];
+      const [sent, received] = await Promise.all([
+        base44.entities.Friendship
+          .filter({ requester_email: currentUser.email, recipient_email: profileEmail })
+          .catch(() => []),
+        base44.entities.Friendship
+          .filter({ requester_email: profileEmail, recipient_email: currentUser.email })
+          .catch(() => []),
+      ]);
+      return [...(sent || []), ...(received || [])];
+    },
+    enabled: !!currentUser?.email && !!profileEmail,
+    staleTime: 10_000,
+  });
+
+  const privacy = normalizeCommunityPrivacy(profile);
+
+  const viewerCanView = canViewProfile(profile, {
+    viewerEmail: currentUser?.email,
+    ownerEmail: profileEmail,
+    friendships: profileFriendships,
+  });
+
   // NOTE: Intentional sequential waterfall — pipes/blends/logs queries depend on
-  // profile.is_public being confirmed before loading private data.
+  // profile visibility being confirmed before loading private data, and each
+  // collection is only fetched when that module is shared.
   const { data: pipes = [] } = useQuery({
     queryKey: ['public-pipes', profileEmail],
     queryFn: async () => {
@@ -134,7 +171,7 @@ export default function PublicProfilePage() {
         return [];
       }
     },
-    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
+    enabled: !!profileEmail && viewerCanView && isModuleShared(profile, "pipekeeper"),
     retry: 1,
     staleTime: 5000,
   });
@@ -150,7 +187,7 @@ export default function PublicProfilePage() {
         return [];
       }
     },
-    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
+    enabled: !!profileEmail && viewerCanView && isModuleShared(profile, "tobacco"),
     retry: 1,
     staleTime: 5000,
   });
@@ -166,7 +203,7 @@ export default function PublicProfilePage() {
         return [];
       }
     },
-    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
+    enabled: !!profileEmail && viewerCanView && isModuleShared(profile, "pipekeeper"),
     retry: 1,
     staleTime: 5000,
   });
@@ -182,7 +219,7 @@ export default function PublicProfilePage() {
         return [];
       }
     },
-    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
+    enabled: !!profileEmail && viewerCanView && isModuleShared(profile, "whiskeykeeper"),
     retry: 1,
     staleTime: 5000,
   });
@@ -197,13 +234,19 @@ export default function PublicProfilePage() {
         return [];
       }
     },
-    enabled: !!profileEmail && (profile?.is_public === true || isPreview === true),
+    enabled: !!profileEmail && viewerCanView && isModuleShared(profile, "whiskeykeeper"),
     retry: 1,
     staleTime: 5000,
   });
 
   const makePublicMutation = useMutation({
-    mutationFn: (profileId) => safeUpdate('UserProfile', profileId, { is_public: true }, currentUser?.email),
+    mutationFn: (profileId) =>
+      safeUpdate(
+        'UserProfile',
+        profileId,
+        { is_public: true, profile_visibility: 'public' },
+        currentUser?.email
+      ),
     onSuccess: () => {
       invalidateProfileQueries(queryClient, profileEmail);
     },
@@ -236,6 +279,22 @@ export default function PublicProfilePage() {
 
   const isOwnProfile = currentUser?.email === profileEmail;
 
+  const addFriendMutation = useMutation({
+    mutationFn: () =>
+      base44.entities.Friendship.create({
+        requester_email: currentUser.email,
+        recipient_email: profileEmail,
+        status: 'pending',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['profile-friendship-link', currentUser?.email, profileEmail],
+      });
+      toast.success(t('communityPrivacy.requestSent', 'Friend request sent'));
+    },
+    onError: () => toast.error(t('communityPrivacy.requestFailed', 'Could not send the request')),
+  });
+
   if (profileLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center">
@@ -263,21 +322,31 @@ export default function PublicProfilePage() {
     );
   }
 
-  if (!profile.is_public && !isPreview) {
+  if (!viewerCanView && !isPreview) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center">
-        <Card className="bg-white/95 max-w-md">
-          <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold text-stone-800 mb-2">{t("publicProfile.profileNotAvailableTitle")}</h2>
-            <p className="text-stone-600 mb-4">{t("publicProfile.profileNotAvailableDesc")}</p>
-            <a href={createPageUrl('Community')}>
-              <Button variant="outline">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {t("publicProfile.backToCommunity")}
-              </Button>
-            </a>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <a href={createPageUrl('Community')}>
+            <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t("publicProfile.backToCommunity")}
+            </Button>
+          </a>
+          <PrivateProfileGate
+            profile={profile}
+            profileOwner={profileOwner}
+            canRequest={
+              !!currentUser?.email &&
+              canSendFriendRequest(profile, {
+                viewerEmail: currentUser.email,
+                ownerEmail: profileEmail,
+              })
+            }
+            requestPending={hasPendingRequest(profileFriendships, currentUser?.email, profileEmail)}
+            onAddFriend={() => addFriendMutation.mutate()}
+            isAdding={addFriendMutation.isPending}
+          />
+        </div>
       </div>
     );
   }
@@ -330,7 +399,7 @@ export default function PublicProfilePage() {
                     </div>
                   </div>
                 </div>
-                {!profile.is_public && (
+                {privacy.visibility !== "public" && (
                   <div className="flex flex-col gap-2">
                     <Button
                       onClick={() => makePublicMutation.mutate(profile.id)}

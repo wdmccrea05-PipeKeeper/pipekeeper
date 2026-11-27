@@ -22,6 +22,12 @@ import WinePreferencesSection from "@/components/profile/WinePreferencesSection"
 import ModuleVisibilitySettings from "@/components/profile/ModuleVisibilitySettings";
 import CurrencyPreferenceSetting from "@/components/profile/CurrencyPreferenceSetting";
 import FormSection from "@/components/forms/FormSection";
+import PrivacySettingsSection from "@/components/community/PrivacySettingsSection";
+import {
+  ALL_MODULE_KEYS,
+  buildPrivacyPayload,
+  normalizeCommunityPrivacy,
+} from "@/components/utils/communityPrivacy";
 
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { createPageUrl } from "@/components/utils/createPageUrl";
@@ -73,6 +79,10 @@ function consolidateProfiles(rows = []) {
     postal_code: pick(acc.postal_code, row.postal_code),
     show_location: pickBool(acc.show_location, row.show_location),
     is_public: pickBool(acc.is_public, row.is_public),
+    profile_visibility: pick(acc.profile_visibility, row.profile_visibility),
+    messaging_permission: pick(acc.messaging_permission, row.messaging_permission),
+    friend_requests_enabled: pickBool(acc.friend_requests_enabled, row.friend_requests_enabled),
+    shared_modules: pickArray(acc.shared_modules, row.shared_modules),
     allow_comments: pickBool(acc.allow_comments, row.allow_comments),
     allow_web_lookups: pickBool(acc.allow_web_lookups, row.allow_web_lookups),
     privacy_hide_values: pickBool(acc.privacy_hide_values, row.privacy_hide_values),
@@ -116,6 +126,14 @@ function consolidateProfiles(rows = []) {
   for (const field of MASTER_BOOL_FIELDS) {
     if (typeof master[field] === 'boolean') {
       merged[field] = master[field];
+    }
+  }
+
+  // Community privacy choices are authoritative on the master row.
+  for (const field of ['profile_visibility', 'messaging_permission', 'friend_requests_enabled', 'shared_modules']) {
+    const value = master?.[field];
+    if (value !== undefined && value !== null) {
+      merged[field] = value;
     }
   }
 
@@ -219,6 +237,10 @@ export default function ProfilePage() {
     postal_code: "",
     show_location: false,
     is_public: false,
+    profile_visibility: "private",
+    messaging_permission: "disabled",
+    friend_requests_enabled: true,
+    shared_modules: ALL_MODULE_KEYS,
     allow_comments: true,
     enable_messaging: false,
     allow_web_lookups: true,
@@ -301,8 +323,14 @@ export default function ProfilePage() {
       });
     }
 
+    const privacy = normalizeCommunityPrivacy(source);
+
     setFormData((prev) => ({
       ...prev,
+      profile_visibility: privacy.visibility,
+      messaging_permission: privacy.messaging,
+      friend_requests_enabled: privacy.friendRequests,
+      shared_modules: privacy.sharedModules,
       display_name:
         source.display_name ||
         user?.display_name ||
@@ -352,6 +380,12 @@ export default function ProfilePage() {
 
       const payload = {
         ...formData,
+        ...buildPrivacyPayload({
+          visibility: formData.profile_visibility,
+          messaging: formData.messaging_permission,
+          friendRequests: formData.friend_requests_enabled,
+          sharedModules: formData.shared_modules,
+        }),
         user_id: userId || undefined,
         user_email: email || undefined,
       };
@@ -368,7 +402,12 @@ export default function ProfilePage() {
       if (email) {
         await base44.entities.UserProfile.updateMany(
           { user_email: email },
-          { $set: { is_public: !!formData.is_public } }
+          {
+            $set: {
+              is_public: formData.profile_visibility === "public",
+              profile_visibility: formData.profile_visibility === "public" ? "public" : "private",
+            },
+          }
         ).catch(() => {});
       }
 
@@ -763,21 +802,33 @@ export default function ProfilePage() {
                 {t("profileExtended.publicProfileView")}
               </p>
 
-              <div className="flex items-center justify-between pb-4 mb-4 border-b" style={{ borderColor: 'rgba(224,216,200,0.1)' }}>
-                <div>
-                  <span className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("profileExtended.publicCommunityProfile")}</span>
-                  <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profileExtended.allowOthersToView")}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs" style={{ color: formData.is_public ? 'rgba(163,92,92,0.9)' : 'rgba(224,216,200,0.5)' }}>
-                    {formData.is_public ? t("profileExtended.toggleStatusVisible", "Visible") : t("profileExtended.toggleStatusHidden", "Hidden")}
-                  </span>
-                  <Switch
-                    checked={!!formData.is_public}
-                    onCheckedChange={(v) => setFormData((p) => ({ ...p, is_public: !!v }))}
-                    className="data-[state=checked]:bg-[#A35C5C]"
-                  />
-                </div>
+              <div className="pb-4 mb-4 border-b" style={{ borderColor: 'rgba(224,216,200,0.1)' }}>
+                <PrivacySettingsSection
+                  value={{
+                    visibility: formData.profile_visibility,
+                    messaging: formData.messaging_permission,
+                    friendRequests: formData.friend_requests_enabled,
+                    sharedModules: formData.shared_modules,
+                  }}
+                  onChange={(patch) =>
+                    setFormData((p) => ({
+                      ...p,
+                      ...(patch.visibility !== undefined
+                        ? { profile_visibility: patch.visibility, is_public: patch.visibility === "public" }
+                        : {}),
+                      ...(patch.messaging !== undefined
+                        ? {
+                            messaging_permission: patch.messaging,
+                            enable_messaging: patch.messaging !== "disabled",
+                          }
+                        : {}),
+                      ...(patch.friendRequests !== undefined
+                        ? { friend_requests_enabled: patch.friendRequests }
+                        : {}),
+                      ...(patch.sharedModules !== undefined ? { shared_modules: patch.sharedModules } : {}),
+                    }))
+                  }
+                />
               </div>
 
               <div className="flex items-center justify-between">
@@ -831,17 +882,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.8)' }}>{t("profile.enableMessaging")}</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.5)' }}>{t("profile.enableMessagingDesc")}</div>
-                </div>
-                <Switch
-                  checked={formData.enable_messaging}
-                  onCheckedChange={(v) => setFormData((p) => ({ ...p, enable_messaging: !!v }))}
-                  className="data-[state=checked]:bg-[#A35C5C]"
-                />
-              </div>
             </FormSection>
 
 

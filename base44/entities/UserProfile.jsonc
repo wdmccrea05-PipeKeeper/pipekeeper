@@ -42,7 +42,20 @@
     "is_public": {
       "type": "boolean",
       "default": false,
-      "description": "Whether profile is publicly searchable"
+      "description": "Legacy mirror of profile_visibility === 'public'. Kept in sync on save."
+    },
+    "profile_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "enumColors": [
+        "green",
+        "gray"
+      ],
+      "default": "private",
+      "description": "Who can view the full community profile: public (any registered collector) or private (accepted friends only)."
     },
     "allow_comments": {
       "type": "boolean",
@@ -52,7 +65,41 @@
     "enable_messaging": {
       "type": "boolean",
       "default": false,
-      "description": "Whether to enable instant messaging with friends"
+      "description": "Legacy mirror of messaging_permission !== 'disabled'. Kept in sync on save."
+    },
+    "messaging_permission": {
+      "type": "string",
+      "enum": [
+        "everyone",
+        "friends",
+        "disabled"
+      ],
+      "enumColors": [
+        "green",
+        "blue",
+        "gray"
+      ],
+      "default": "disabled",
+      "description": "Who may start a new conversation: everyone, accepted friends only, or nobody. Existing conversations are always retained."
+    },
+    "friend_requests_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether other collectors may send friend requests. Independent of messaging."
+    },
+    "shared_modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "pipekeeper",
+        "tobacco",
+        "whiskeykeeper",
+        "cigarkeeper",
+        "winekeeper"
+      ],
+      "description": "Collection modules whose contents are shown on the community profile."
     },
     "allow_web_lookups": {
       "type": "boolean",

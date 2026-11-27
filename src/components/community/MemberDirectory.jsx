@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, UserPlus, Users } from "lucide-react";
+import { Lock, MapPin, UserPlus, Users } from "lucide-react";
+import {
+  canSendFriendRequest,
+  normalizeCommunityPrivacy,
+} from "@/components/utils/communityPrivacy";
 import { createPageUrl } from "@/components/utils/createPageUrl";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import { SafeText } from "@/components/ui/SafeText";
@@ -58,9 +62,15 @@ export default function MemberDirectory({ profiles = [], currentUser, friendship
       <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {visible.map((profile) => {
           const state = friendState(profile.user_email);
-          const location = profile.show_location
-            ? [profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')
-            : '';
+          // A private profile stays listed so collectors can connect, but its
+          // details are only revealed to accepted friends.
+          const isPrivate = normalizeCommunityPrivacy(profile).visibility === 'private';
+          const detailsVisible = !isPrivate || state === 'accepted';
+          const canRequest = canSendFriendRequest(profile, { viewerEmail: currentUser?.email });
+          const location =
+            detailsVisible && profile.show_location
+              ? [profile.city, profile.state_province, profile.country].filter(Boolean).join(', ')
+              : '';
 
           return (
             <div
@@ -88,10 +98,17 @@ export default function MemberDirectory({ profiles = [], currentUser, friendship
                 </div>
               </div>
 
-              {profile.bio && (
+              {detailsVisible && profile.bio && (
                 <SafeText as="p" className="text-xs text-[#E0D8C8]/65" lines={2}>
                   {profile.bio}
                 </SafeText>
+              )}
+
+              {!detailsVisible && (
+                <p className="text-[11px] text-[#E0D8C8]/50 flex items-center gap-1">
+                  <Lock className="w-3 h-3 flex-shrink-0" />
+                  {t('communityPrivacy.privateProfileShort', 'Private profile')}
+                </p>
               )}
 
               <div className="flex items-center gap-2 mt-auto pt-1">
@@ -111,6 +128,10 @@ export default function MemberDirectory({ profiles = [], currentUser, friendship
                 ) : state === 'pending' ? (
                   <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/40">
                     {t('communityFeed.requestPending', 'Pending')}
+                  </Badge>
+                ) : !canRequest ? (
+                  <Badge variant="outline" className="text-[10px] text-[#E0D8C8]/50 border-[rgba(180,140,75,0.25)]">
+                    {t('communityPrivacy.notAccepting', 'Closed')}
                   </Badge>
                 ) : (
                   <Button

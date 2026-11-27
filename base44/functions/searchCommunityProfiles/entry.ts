@@ -31,12 +31,12 @@ Deno.serve(async (req) => {
     const myProfile = myProfiles?.[0];
     const blocked = Array.isArray(myProfile?.blocked_users) ? myProfile.blocked_users : [];
 
-    // Fetch ALL public profiles server-side using paginated fetch
-    // This runs on the server, so the client only receives matching results
-    // — not the entire public profile population.
+    // Every registered collector is discoverable, whatever their profile
+    // visibility; a private profile simply reveals less when it is opened.
+    // This runs on the server, so the client only receives matching results.
     const allPublic = await fetchAllEntitiesServer(
       base44.asServiceRole.entities.UserProfile,
-      { is_public: true },
+      {},
       '-updated_date',
       5000,
       200,

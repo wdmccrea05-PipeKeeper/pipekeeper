@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Send, Trash2, Save, X, Circle, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/i18n/safeTranslation";
+import { canMessage, normalizeEmail } from "@/components/utils/communityPrivacy";
 
 function getModuleTags(profile) {
   if (!profile) return [];
@@ -23,7 +24,7 @@ function getModuleTags(profile) {
   return tags;
 }
 
-export default function MessagingPanel({ user, friends, publicProfiles }) {
+export default function MessagingPanel({ user, friends, publicProfiles, allowNewMessages = true }) {
   const sheetSafeAreaStyle = { paddingTop: 'max(1rem, env(safe-area-inset-top))' };
   const { t } = useTranslation();
   const [selectedFriend, setSelectedFriend] = useState(null);
@@ -155,6 +156,7 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !selectedFriend || !userEmail) return;
+    if (!canSendTo(selectedFriend)) return;
 
     sendMessageMutation.mutate({
       sender_email: userEmail,
@@ -239,14 +241,32 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
 
   const isBlocked = (friendEmail) => blocked.includes(friendEmail);
 
-  const friendsWithMessaging = friends.filter(f => {
+  const friendProfile = (email) =>
+    (publicProfiles || []).find((p) => normalizeEmail(p.user_email) === normalizeEmail(email));
+
+  const threadExists = (friendEmail) =>
+    filteredMessages.some(
+      (m) =>
+        (normalizeEmail(m.sender_email) === normalizeEmail(friendEmail) &&
+          normalizeEmail(m.recipient_email) === normalizeEmail(userEmail)) ||
+        (normalizeEmail(m.recipient_email) === normalizeEmail(friendEmail) &&
+          normalizeEmail(m.sender_email) === normalizeEmail(userEmail))
+    );
+
+  // New conversations follow the recipient's messaging permission; existing
+  // threads stay available so no history is ever lost.
+  const canSendTo = (friendEmail) =>
+    allowNewMessages &&
+    canMessage(friendProfile(friendEmail), {
+      viewerEmail: userEmail,
+      ownerEmail: friendEmail,
+      friendships: friends,
+    });
+
+  const friendsWithMessaging = friends.filter((f) => {
     const friendEmail = f.requester_email === userEmail ? f.recipient_email : f.requester_email;
     if (blocked.includes(friendEmail)) return false;
-    const profile = publicProfiles.find(p => p.user_email === friendEmail);
-    // If profile not found (non-public), still allow messaging —
-    // the enable_messaging check only applies when we know the profile.
-    if (!profile) return true;
-    return profile.enable_messaging !== false;
+    return canSendTo(friendEmail) || threadExists(friendEmail);
   });
 
   if (!userEmail) {
@@ -499,11 +519,11 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                disabled={isBlocked(selectedFriend)}
+                disabled={isBlocked(selectedFriend) || !canSendTo(selectedFriend)}
               />
               <Button 
                 onClick={handleSendMessage}
-                disabled={!messageText.trim() || sendMessageMutation.isPending || isBlocked(selectedFriend)}
+                disabled={!messageText.trim() || sendMessageMutation.isPending || isBlocked(selectedFriend) || !canSendTo(selectedFriend)}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Send className="w-4 h-4" />
@@ -512,6 +532,18 @@ export default function MessagingPanel({ user, friends, publicProfiles }) {
             {isBlocked(selectedFriend) ? (
               <p className="text-xs text-rose-600 mt-2">
                 {t("messaging.youBlockedUser")}
+              </p>
+            ) : !canSendTo(selectedFriend) ? (
+              <p className="text-xs text-amber-600 mt-2">
+                {allowNewMessages
+                  ? t(
+                      "messaging.recipientNotAccepting",
+                      "This collector isn't accepting new messages. Your history is still here."
+                    )
+                  : t(
+                      "messaging.messagingOffReadOnly",
+                      "Messaging is off, so you can read your history but not send."
+                    )}
               </p>
             ) : !isOnline(selectedFriend) && (
               <p className="text-xs text-emerald-600 mt-2">

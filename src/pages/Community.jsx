@@ -22,6 +22,7 @@ import { SafeText } from "@/components/ui/SafeText";
 import CommunityReferralTab from "@/components/referral/CommunityReferralTab";
 import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 import { getCanonicalUserProfile } from "@/utils/getCanonicalUserProfile";
+import { canSendFriendRequest, normalizeCommunityPrivacy } from "@/components/utils/communityPrivacy";
 
 function CommunityPageInner() {
   const { t } = useTranslation();
@@ -61,14 +62,21 @@ function CommunityPageInner() {
 
       // A newer row created without the visibility flag (e.g. a bare avatar save)
       // must not hide a choice the collector already made on an earlier row.
-      if (resolved && typeof resolved.is_public !== "boolean") {
+      if (resolved && !resolved.profile_visibility) {
         const rows = await base44.entities.UserProfile
           .filter({ user_email: String(user?.email || "").trim().toLowerCase() })
           .catch(() => []);
         const withFlag = (Array.isArray(rows) ? rows : [])
-          .filter((r) => typeof r.is_public === "boolean")
+          .filter((r) => typeof r.profile_visibility === "string" || typeof r.is_public === "boolean")
           .sort((a, b) => (Date.parse(b.updated_date || "") || 0) - (Date.parse(a.updated_date || "") || 0));
-        if (withFlag[0]) resolved = { ...resolved, is_public: withFlag[0].is_public };
+        if (withFlag[0]) {
+          resolved = {
+            ...resolved,
+            profile_visibility:
+              withFlag[0].profile_visibility ||
+              (withFlag[0].is_public === true ? "public" : "private"),
+          };
+        }
       }
 
       setProfile(resolved);
@@ -81,6 +89,9 @@ function CommunityPageInner() {
     refetchOnMount: 'always',
     refetchOnWindowFocus: false,
   });
+
+  // My own community privacy rules, normalized once for every tab below.
+  const myPrivacy = normalizeCommunityPrivacy(userProfile);
 
   useEffect(() => {
     if (userProfile) {
@@ -134,9 +145,11 @@ function CommunityPageInner() {
     retry: false,
   });
 
+  // Every registered collector can use the community, so discovery lists all
+  // collectors; what a private profile reveals is decided when it is opened.
   const { data: allPublicProfiles = [] } = useQuery({
-    queryKey: ['all-public-profiles'],
-    queryFn: () => fetchAllEntities(base44.entities.UserProfile, { is_public: true }, '-updated_date', 5000, 200, 'Community:publicProfiles'),
+    queryKey: ['all-collector-profiles'],
+    queryFn: () => fetchAllEntities(base44.entities.UserProfile, {}, '-updated_date', 5000, 200, 'Community:collectorProfiles'),
     staleTime: 60_000,
   });
 
@@ -347,36 +360,6 @@ function CommunityPageInner() {
           </TabsContent>
 
           <TabsContent value="discover" className="space-y-6">
-            {!profileLoading && !profileFetching && !userProfile?.is_public && (
-              <div 
-                className="rounded-lg p-5"
-                style={{
-                  background: "linear-gradient(145deg, rgba(180, 140, 75, 0.12), rgba(160, 120, 65, 0.18))",
-                  border: "1px solid rgba(180, 140, 75, 0.3)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.3)"
-                }}
-              >
-                <div>
-                  <p className="text-sm mb-3" style={{ color: "rgba(224, 216, 200, 0.9)" }}>
-                    <strong>{t("communityExtended.profilePrivate")}</strong> {t("communityExtended.profilePrivateDesc")}
-                  </p>
-                  <a href={createPageUrl('Profile')}>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      style={{
-                        background: "rgba(60, 42, 28, 0.4)",
-                        borderColor: "rgba(180, 140, 75, 0.4)",
-                        color: "#F5F1E7"
-                      }}
-                    >
-                      {t("communityExtended.updateSettings")}
-                    </Button>
-                  </a>
-                </div>
-              </div>
-            )}
-
             <MemberDirectory
               profiles={allPublicProfiles}
               currentUser={user}
@@ -588,6 +571,10 @@ function CommunityPageInner() {
                               <Clock className="w-3 h-3 mr-1" />
                               {t("communityExtended.pendingStatus")}
                             </Badge>
+                          ) : !canSendFriendRequest(profile, { viewerEmail: user?.email }) ? (
+                            <Badge variant="outline" className="text-stone-500 border-stone-300 whitespace-nowrap text-center">
+                              {t("communityPrivacy.notAccepting", "Closed")}
+                            </Badge>
                           ) : (
                             <Button
                               size="sm"
@@ -645,22 +632,6 @@ function CommunityPageInner() {
                   {t("common.loading")}
                 </CardContent>
               </Card>
-            ) : !userProfile?.enable_messaging ? (
-              <Card className="bg-[#1E2F43] border-amber-500/30">
-                <CardContent className="p-4 flex items-start gap-3">
-                  <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm text-[#E0D8C8]/80 font-medium">{t("messaging.messagingDisabled", "Messaging disabled")}</p>
-                    <p className="text-xs text-[#E0D8C8]/60 mt-1">{t("messaging.enableInProfile", "Enable messaging in your profile settings.")}</p>
-                  </div>
-                  <a href={createPageUrl('Profile')}>
-                    <Button size="sm">
-                      <Settings className="w-4 h-4 mr-2" />
-                      {t("communityExtended.updateSettings", "Go to settings")}
-                    </Button>
-                  </a>
-                </CardContent>
-              </Card>
             ) : acceptedFriends.length === 0 ? (
               <Card className="bg-[#223447] border-[#E0D8C8]/15">
                 <CardContent className="py-12 text-center text-[#E0D8C8]/70">
@@ -670,11 +641,36 @@ function CommunityPageInner() {
                 </CardContent>
               </Card>
             ) : (
-              <MessagingPanel 
-                user={user} 
-                friends={acceptedFriends} 
-                publicProfiles={allPublicProfiles || []}
-              />
+              <>
+                {myPrivacy.messaging === "disabled" && (
+                  <Card className="bg-[#1E2F43] border-amber-500/30">
+                    <CardContent className="p-4 flex items-start gap-3">
+                      <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm text-[#E0D8C8]/80 font-medium">{t("messaging.messagingDisabled", "Messaging disabled")}</p>
+                        <p className="text-xs text-[#E0D8C8]/60 mt-1">
+                          {t(
+                            "communityPrivacy.messagingOffNotice",
+                            "Your existing conversations are kept, but nobody can start a new one."
+                          )}
+                        </p>
+                      </div>
+                      <a href={createPageUrl('Profile')}>
+                        <Button size="sm">
+                          <Settings className="w-4 h-4 mr-2" />
+                          {t("communityExtended.updateSettings", "Go to settings")}
+                        </Button>
+                      </a>
+                    </CardContent>
+                  </Card>
+                )}
+                <MessagingPanel
+                  user={user}
+                  friends={acceptedFriends}
+                  publicProfiles={allPublicProfiles || []}
+                  allowNewMessages={myPrivacy.messaging !== "disabled"}
+                />
+              </>
             )}
           </TabsContent>
 
@@ -982,17 +978,17 @@ function CommunityPageInner() {
                     {t("communityExtended.yourPublicProfile")}
                   </h2>
                 {user?.email && (
-                  <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}${userProfile?.is_public ? '' : '&preview=true'}`)}>
+                  <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(user.email)}${myPrivacy.visibility === "public" ? '' : '&preview=true'}`)}>
                     <Button variant="outline" size="sm">
                       <Eye className="w-4 h-4 mr-2" />
-                      {userProfile?.is_public ? t("communityExtended.viewProfile") : t("communityExtended.previewProfile")}
+                      {myPrivacy.visibility === "public" ? t("communityExtended.viewProfile") : t("communityExtended.previewProfile")}
                     </Button>
                   </a>
                 )}
                 </div>
               </div>
               <div className="p-6 space-y-4">
-                {userProfile?.is_public ? (
+                {myPrivacy.visibility === "public" ? (
                   <>
                     <div 
                       className="p-4 rounded-lg"
@@ -1037,14 +1033,25 @@ function CommunityPageInner() {
                         border: "1px solid rgba(120, 90, 65, 0.2)"
                       }}
                     >
-                      <p className="text-sm mb-2" style={{ color: "rgba(224, 216, 200, 0.8)" }}>
-                        {t("communityExtended.profileCurrentlyPrivate")}
+                      <p className="text-sm mb-1" style={{ color: "rgba(224, 216, 200, 0.8)" }}>
+                        {t(
+                          "communityPrivacy.privateProfileSelf",
+                          "Your profile is visible to accepted friends only."
+                        )}
+                      </p>
+                      <p className="text-xs" style={{ color: "rgba(224, 216, 200, 0.6)" }}>
+                        {t("communityPrivacy.messagingLabel", "Messaging")}:{" "}
+                        {myPrivacy.messaging === "everyone"
+                          ? t("communityPrivacy.messagingEveryone", "Everyone")
+                          : myPrivacy.messaging === "friends"
+                            ? t("communityPrivacy.messagingFriends", "Friends only")
+                            : t("communityPrivacy.messagingDisabled", "Disabled")}
                       </p>
                     </div>
                     <a href={createPageUrl('Profile')}>
                       <Button className="w-full">
                         <Settings className="w-4 h-4 mr-2" />
-                        {t("communityExtended.makeProfilePublic")}
+                        {t("communityExtended.updateSettings", "Update privacy settings")}
                       </Button>
                     </a>
                   </>
