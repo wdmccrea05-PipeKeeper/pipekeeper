@@ -1,0 +1,87 @@
+{
+ "common": {
+  "saved": "salvato"
+ },
+ "cigars": {
+  "line": "Linea",
+  "vitola": "Vitola",
+  "wrapper": "Fascia",
+  "origin": "Origine"
+ },
+ "communityFeed": {
+  "showAllMembers": "Mostra tutti ({{count}})"
+ },
+ "curator": {
+  "whatif": {
+   "balancedRotation": "Cosa dice il mio attuale schema di rotazione sui punti di forza e sui punti ciechi della mia collezione?",
+   "overused": "Cosa dovrei alternare alla pipa che uso di più per darle più riposo?",
+   "foundation": "Che tipo di prossima pipa completerebbe meglio le basi della mia collezione?",
+   "shapeVariety": "Quali forme o formati di pipa aggiungerebbero più varietà alla mia collezione?",
+   "rest": "E se lasciassi riposare per qualche giorno la pipa che uso di più, alternando altre pipe?",
+   "aging": "Quali miscele della mia cantina sono le migliori candidate da aprire ora e quali dovrebbero continuare a invecchiare?",
+   "diversity": "Quali tipi di miscela dovrei aggiungere per migliorare la varietà della mia cantina?",
+   "styleDiscovery": "Quali stili di tabacco amplierebbero la mia cantina nel modo più significativo?",
+   "cellarStorage": "Come posso organizzare e conservare meglio la mia cantina per l'invecchiamento e l'uso quotidiano?",
+   "default": "Dimmi di più su questo consiglio"
+  }
+ },
+ "faqExtended": {
+  "legacySubscriberNote": "Gli abbonati fondatori mantengono l'accesso a tutte le funzioni Pro."
+ },
+ "pipes": {
+  "material": "Materiale",
+  "size": "Dimensione",
+  "origin": "Origine",
+  "year": "Anno"
+ },
+ "share": {
+  "collectorCard": "Scheda da collezionista",
+  "value": "Valore",
+  "inventory": "Inventario",
+  "failedToUpdate": "Impossibile aggiornare le opzioni di condivisione",
+  "linkCopied": "Link copiato",
+  "failedToCopyLink": "Impossibile copiare il link",
+  "failedToOpenPreview": "Impossibile aprire l'anteprima",
+  "failedToExport": "Impossibile esportare la scheda di condivisione",
+  "cardExported": "Scheda di condivisione scaricata",
+  "shareRecord": "Condividi record",
+  "shareDescription": "Scegli cosa includere e come vuoi condividerlo.",
+  "options": "Opzioni",
+  "preview": "Anteprima",
+  "privacy": "Privacy",
+  "includePhotos": "Includi foto",
+  "includeNotes": "Includi note",
+  "includeValue": "Includi valore",
+  "includeInventory": "Includi inventario",
+  "copyLink": "Copia link pubblico",
+  "openPreview": "Apri anteprima pubblica",
+  "downloadCard": "Scarica scheda da collezionista",
+  "previewTip": "Usa l'anteprima per controllare la scheda prima di scaricarla."
+ },
+ "story": {
+  "sessionsLogged": "sessioni di fumata registrate",
+  "pipes": "pipe",
+  "blends": "miscele",
+  "collectorPersonality": "Personalità del collezionista",
+  "collectionGrowth": "Crescita della collezione",
+  "shareYourStory": "Condividi la tua storia",
+  "appName": "PipeKeeper",
+  "tagline": "Traccia. Organizza. Goditi."
+ },
+ "whatsNew": {
+  "title": "Novità",
+  "subtitle": "Sono disponibili alcuni utili aggiornamenti in PipeKeeper.",
+  "quickStartTitle": "Avvio guidato",
+  "quickStartDesc": "Un percorso più chiaro per i collezionisti nuovi e di ritorno, per iniziare più in fretta.",
+  "sharingTitle": "Condivisione record",
+  "sharingDesc": "Condividi singole pipe e miscele di tabacco con schede da collezionista brandizzate e anteprime pubbliche.",
+  "curatorTitle": "Miglioramenti del Curator",
+  "curatorDesc": "Il Curator diventa sempre più operativo, con passaggi più fluidi dagli insights e suggerimenti proattivi.",
+  "dontShowAgain": "Non mostrare più",
+  "dismiss": "Chiudi",
+  "learnMore": "Scopri di più"
+ },
+ "whiskey": {
+  "vintage": "Annata"
+ }
+}

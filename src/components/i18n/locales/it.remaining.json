@@ -214,6 +214,8 @@
   "searching": "Ricerca in corso…",
   "selectPlaceholder": "Seleziona…",
   "selected": "Selezionato",
+  "send": "Invia",
+  "sending": "Invio in corso…",
   "shape": "Forma",
   "share": "Condividi",
   "tip": "Suggerimento:",
@@ -479,17 +481,107 @@
   "subscriptions": "Abbonamenti",
   "updatePipeQ": "Come aggiorno i dettagli di una pipa?",
   "updateTobaccoQ": "Come aggiorno una miscela di tabacco?",
-  "viewLogsQ": "Come visualizzo la mia cronologia di fumata?"
+  "viewLogsQ": "Come visualizzo la mia cronologia di fumata?",
+  "deletePipeSteps": [
+   "Apri la pagina di dettaglio della pipa.",
+   "Tocca il pulsante Elimina (in alto o nel modulo di modifica).",
+   "Conferma l'eliminazione quando richiesto.",
+   "La pipa e i dati delle sessioni associate verranno rimossi definitivamente."
+  ],
+  "manageCellarSteps": [
+   "Apri la pagina di dettaglio di una miscela di tabacco.",
+   "La sezione inventario mostra le latte, le quantità sfuse e le buste attuali.",
+   "Modifica la miscela per aggiornare le quantità: riducile quando fumi, aumentale quando fai scorta.",
+   "Usa la scheda Registro cantina per annotare aggiunte e prelievi con le date.",
+   "Le miscele in cantina con una data di stoccaggio sono conteggiate separatamente dall'inventario aperto."
+  ],
+  "deleteTobaccoSteps": [
+   "Apri la pagina di dettaglio della miscela.",
+   "Tocca il pulsante Elimina.",
+   "Conferma l'eliminazione.",
+   "Le sessioni e le voci del registro cantina collegate resteranno, ma il record della miscela verrà rimosso."
+  ],
+  "streaksSteps": [
+   "Ogni sessione che registri viene aggiunta alla tua cronologia.",
+   "La pagina Insights mostra il numero totale di sessioni e le combinazioni più usate.",
+   "I dati delle sessioni alimentano anche i consigli di abbinamento AI e l'azione Pianifica sessione del Curator.",
+   "Più sessioni registri, più i tuoi consigli personalizzati diventano precisi."
+  ],
+  "insightsSteps": [
+   "Vai su PipeKeeper → scheda Insights, oppure WhiskeyKeeper → Insights.",
+   "Gli Insights mostrano i totali della collezione, la ripartizione del valore, gli articoli preferiti e le tendenze.",
+   "La sezione Abbinamenti AI mostra le combinazioni pipa-tabacco consigliate.",
+   "Per WhiskeyKeeper, Insights mostra la distribuzione delle tipologie di bottiglia, la provenienza e le tendenze di degustazione."
+  ],
+  "curatorSteps": [
+   "Tocca \"Curator\" nella navigazione in alto.",
+   "Scrivi qualsiasi domanda sulla tua collezione nella chat e premi Invia.",
+   "Il Curator conosce le tue pipe, miscele, bottiglie e la cronologia delle sessioni.",
+   "Usa le Azioni esperte (sotto la chat) per avviare flussi strutturati come Pianifica sessione o Ottimizza collezione.",
+   "I risultati delle Azioni esperte appaiono come schede di consiglio: tocca Applica per confermare, Ignora per scartare."
+  ],
+  "storyCardSteps": [
+   "Vai al Hub.",
+   "Trova la scheda Storia della collezione e tocca \"Vedi storia\" o l'anteprima della scheda.",
+   "Si apre una presentazione a schermo intero con i punti salienti della tua collezione.",
+   "Scorri a sinistra o a destra (o tocca i lati) per passare da una scheda all'altra.",
+   "Tocca X o premi Esc per chiudere.",
+   "Tocca \"Rigenera\" nel Hub per ricostruire la storia con i dati più recenti."
+  ],
+  "optimizeSteps": [
+   "Vai alla pagina Curator.",
+   "Nel pannello Azioni esperte, tocca \"Ottimizza collezione\" (per le pipe) o \"Ottimizza collezione whiskey\".",
+   "L'AI analizza la tua collezione per individuare lacune, ridondanze e opportunità di diversificazione.",
+   "Esamina le schede di consiglio restituite.",
+   "Tocca Applica su una scheda per confermare la modifica suggerita, oppure Ignora per scartarla."
+  ],
+  "geometrySteps": [
+   "Apri la pagina di dettaglio di una pipa e vai alla scheda Dettagli.",
+   "Se sono registrate le misure, l'analizzatore di geometria stima il volume della camera e le caratteristiche di fumata.",
+   "L'analisi considera diametro e profondità della camera e la lunghezza complessiva della pipa.",
+   "I risultati sono mostrati come riepilogo di sola lettura: non sovrascrivono i campi salvati."
+  ],
+  "shareSteps": [
+   "Apri la pagina di dettaglio dell'articolo.",
+   "Tocca il pulsante Condividi (icona di condivisione in alto).",
+   "Scegli se mostrare o nascondere valore e inventario nella vista condivisa.",
+   "Copia il link condivisibile oppure genera una scheda visiva da salvare o pubblicare.",
+   "Chi riceve il link può vedere la scheda condivisa senza bisogno di un account."
+  ],
+  "exportSteps": [
+   "Vai su PipeKeeper o WhiskeyKeeper → Insights.",
+   "Cerca il pulsante Esporta (disponibile per gli abbonati Pro).",
+   "Scegli il formato di esportazione (CSV o report PDF).",
+   "Il file verrà scaricato sul tuo dispositivo."
+  ],
+  "profileSteps": [
+   "Vai su Profilo (il tuo avatar o il link Profilo nella navigazione).",
+   "Trova la sezione Privacy.",
+   "Attiva \"Profilo pubblico\".",
+   "Facoltativamente imposta nome visualizzato, biografia e località.",
+   "Puoi condividere l'URL del tuo profilo pubblico con gli amici."
+  ],
+  "tierDiffSteps": [
+   "Free: PipeKeeper consente fino a 5 pipe e 10 miscele; WhiskeyKeeper fino a 10 bottiglie. Funzioni di base, nessuna funzione AI.",
+   "Pro: articoli illimitati per modulo, abbinamenti AI, ottimizzazione della collezione, identificazione AI, programmi di rodaggio, strumenti di valutazione, sezione Valore e strategia, report esportabili e supporto prioritario.",
+   "Ogni modulo pubblico (PipeKeeper e WhiskeyKeeper) può essere sottoscritto singolarmente.",
+   "Il Bundle Founders sblocca entrambi i moduli pubblici a un prezzo scontato.",
+   "I membri fondatori mantengono l'accesso Pro a vita."
+  ]
  },
  "hub": {
   "acrossActiveCollections": "Tra le collezioni attive",
   "cigars": "Sigari",
   "highestValueCigar": "Sigaro di maggior valore",
+  "inCollection": "In collezione",
+  "inHumidor": "In humidor",
   "recentSessions": "Sessioni recenti",
   "sessionsThisWeek": "Sessioni in tutti i moduli questa settimana",
   "topRatedCigar": "Sigaro più votato",
   "topRatedWine": "Vino più votato",
-  "topWine": "Miglior vino"
+  "topWine": "Miglior vino",
+  "trackedBlends": "Miscele tracciate",
+  "trackedTastings": "Degustazioni tracciate"
  },
  "imageCropper": {
   "applyCrop": "Applica ritaglio",
@@ -558,7 +650,9 @@
   "value": "Valore"
  },
  "layout": {
-  "admin": "Amministrazione"
+  "admin": "Amministrazione",
+  "appTitle": "CollectionKeeper",
+  "toggleMenu": "Attiva/disattiva menu"
  },
  "logoLibraryBrowser": {
   "addCustomLogo": "Aggiungi logo personalizzato",
@@ -644,6 +738,7 @@
   "uploadHint": "Carica foto nitide della pipa e di eventuali marchi o segni visibili"
  },
  "photos": {
+  "fromGallery": "Dalla galleria",
   "readError": "Impossibile leggere la foto selezionata.",
   "selected": "Foto selezionata.",
   "uploadFailed": "Caricamento foto fallito.",
@@ -1350,7 +1445,19 @@
   "mostValuable": "Più pregiate",
   "recentlyAdded": "Aggiunte di recente",
   "shareStory": "Condividi storia",
+  "sortDrinkSoon": "Da bere presto",
+  "sortHighestRating": "Valutazione più alta",
+  "sortHighestValue": "Valore più alto",
+  "sortLowestValue": "Valore più basso",
+  "sortMostBottles": "Più bottiglie",
+  "sortNameAsc": "Nome (A–Z)",
+  "sortNameDesc": "Nome (Z–A)",
   "sortNeedsValuation": "Da valutare",
+  "sortProducerAsc": "Produttore (A–Z)",
+  "sortRecentlyAdded": "Aggiunte di recente",
+  "sortRecentlyUpdated": "Aggiornate di recente",
+  "sortVintageNewest": "Annata (più recente)",
+  "sortVintageOldest": "Annata (più vecchia)",
   "topProducer": "Miglior produttore",
   "unarchive": "Ripristina"
  }
