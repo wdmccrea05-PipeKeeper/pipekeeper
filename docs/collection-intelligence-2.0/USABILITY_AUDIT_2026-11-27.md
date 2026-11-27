@@ -34,6 +34,7 @@ Collection data volumes reasoned about: empty, small (1–5 records), moderate (
 | 10 | Tables needed sideways scrolling on phones | Curator answers | Stacked label/value rows under 640px, compact fixed table above |
 | 11 | No way to stop or retry a slow answer | Curator | Stop control while sending, "Try again" on failure |
 | 12 | Chat input sat inside the scrolling page | Curator | Input pinned in the card with `env(safe-area-inset-bottom)` padding |
+| 13 | A brand-new CigarKeeper with no cigars showed a dashboard of zeros | CigarKeeper | Empty state with one action: add your first cigar |
 
 ## 4. Navigation steps (before → after)
 
@@ -64,7 +65,7 @@ No journey requires more than three taps, and none requires analytical knowledge
 | 768 | Module rows and report catalogue move to two columns; dialog and sheet max-height keep actions visible. |
 | 1024 / 1440 | Hub capped at 5xl, Curator at 900px, Reporting Center splits into catalogue + result at `xl`. |
 
-Automated results: build clean; full suite **3,638 tests passing**, including the new `usabilityMobileAcceptance` (8 checks) and `curatorSimpleUi` (8 checks) suites.
+Automated results: build clean; full suite **3,646 tests passing**, including the new `usabilityMobileAcceptance` (8 checks) and `curatorSimpleUi` (8 checks) suites.
 
 ## 6. Requires external browser or device verification
 

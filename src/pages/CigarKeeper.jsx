@@ -16,6 +16,7 @@ import ModuleRecentActivitySection from '@/components/modules/ModuleRecentActivi
 import { useCurrency } from '@/lib/currency/useCurrency';
 import { getCollectionInsights } from '@/platform/cigarInsights';
 import CigarKeeperDashboard from '@/components/cigars/CigarKeeperDashboard';
+import EmptyState from '@/components/EmptyState';
 import { buildCigarCollectionBrief } from '@/lib/cigars/cigarCollectionBrief';
 import { buildDrilldownQuery } from '@/lib/cigars/cigarDashboard';
 import {
@@ -352,19 +353,29 @@ function CigarKeeperInner() {
         </div>
       )}
 
-      <CigarKeeperDashboard
-        cigars={cigars}
-        humidors={humidors}
-        readingsByHumidor={readingsByHumidor}
-        ratings={cigarRatings}
-        formatCurrency={formatFromBase}
-        tier={user?.tier || 'free'}
-        brief={collectionBrief}
-        onDrilldown={(params) => {
-          const query = buildDrilldownQuery(params);
-          navigate(`/Cigars${query ? `?${query}` : ''}`);
-        }}
-      />
+      {cigars.length === 0 ? (
+        <EmptyState
+          icon={Cigarette}
+          title={t('cigars.noCigars')}
+          description={t('cigars.addFirstCigar')}
+          actionLabel={t('cigars.addFirstCigarBtn')}
+          onAction={() => navigate('/Cigars')}
+        />
+      ) : (
+        <CigarKeeperDashboard
+          cigars={cigars}
+          humidors={humidors}
+          readingsByHumidor={readingsByHumidor}
+          ratings={cigarRatings}
+          formatCurrency={formatFromBase}
+          tier={user?.tier || 'free'}
+          brief={collectionBrief}
+          onDrilldown={(params) => {
+            const query = buildDrilldownQuery(params);
+            navigate(`/Cigars${query ? `?${query}` : ''}`);
+          }}
+        />
+      )}
 
       {highlights.length > 0 && (
         <ModuleHighlightsSection highlights={highlights} />
