@@ -9,30 +9,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { toLocalDateYmd } from "@/components/utils/schemaCompatibility";
 import { buildSessionCalendarData } from "@/lib/sessionHistory/calendarData";
+import { resolveSessionModuleFilter } from "@/lib/sessionHistory/moduleFilter";
 import { sortByLabel } from "@/lib/sorting/alphabetical";
 import { X, Star, CalendarDays, List } from "lucide-react";
 import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 
 const BASE_MODULE_FILTERS = ["all", "pipe", "whiskey", "cigar", "pipe_club"];
 
-// Module links arrive as ?module=wine or ?module=winekeeper depending on the caller.
-const MODULE_PARAM_MAP = {
-  pipe: "pipe",
-  pipekeeper: "pipe",
-  whiskey: "whiskey",
-  whiskeykeeper: "whiskey",
-  cigar: "cigar",
-  cigarkeeper: "cigar",
-  wine: "wine",
-  winekeeper: "wine",
-  pipe_club: "pipe_club",
-};
 
-function initialModuleFilter(available) {
-  const param = new URLSearchParams(window.location.search).get("module");
-  const value = param ? MODULE_PARAM_MAP[param.toLowerCase()] : "all";
-  return value && available.includes(value) ? value : "all";
-}
 
 function getModuleLabel(key) {
   if (key === "all") return "All";
@@ -104,7 +88,9 @@ export default function SessionHistory() {
   const { user } = useCurrentUser();
   const wineEnabled = canUserAccessModule('winekeeper', user, true);
   const MODULE_FILTERS = wineEnabled ? [...BASE_MODULE_FILTERS, "wine"] : BASE_MODULE_FILTERS;
-  const [moduleFilter, setModuleFilter] = useState(() => initialModuleFilter(MODULE_FILTERS));
+  const [moduleFilter, setModuleFilter] = useState(() =>
+    resolveSessionModuleFilter(new URLSearchParams(window.location.search).get("module"), MODULE_FILTERS)
+  );
   const [selectedDate, setSelectedDate] = useState(toLocalDateYmd(new Date()));
   const [selectedSession, setSelectedSession] = useState(null);
   const [viewMode, setViewMode] = useState("list");

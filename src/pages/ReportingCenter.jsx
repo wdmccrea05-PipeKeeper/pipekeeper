@@ -19,30 +19,14 @@ import { buildReportContext, runReport, getReport } from "@/lib/reports/reportCa
 import { downloadReportCsv, downloadReportPdf } from "@/lib/reports/reportExport";
 import { buildCollectionReport } from "@/lib/reports/pairingInsightsEngine";
 import { DEFAULT_FILTERS } from "@/lib/reports/reportModel";
+import { filtersForModuleParam } from "@/lib/reports/reportModuleScope";
 import { TEXT_CAPTION, TEXT_SECONDARY } from "@/lib/theme/tokens";
 import "@/components/reports/reportPrint.css";
 
-const MODULE_PARAM_MAP = {
-  pipekeeper: "pipe",
-  whiskeykeeper: "whiskey",
-  cigarkeeper: "cigar",
-  winekeeper: "wine",
-};
-
 function initialFilters() {
   const params = new URLSearchParams(window.location.search);
-  const moduleKey = MODULE_PARAM_MAP[params.get("module")];
   const base = { ...DEFAULT_FILTERS, year: String(new Date().getFullYear()), curatorQuestion: "" };
-  if (!moduleKey) return base;
-  return {
-    ...base,
-    modules: {
-      pipe: moduleKey === "pipe",
-      whiskey: moduleKey === "whiskey",
-      cigar: moduleKey === "cigar",
-      wine: moduleKey === "wine",
-    },
-  };
+  return filtersForModuleParam(params.get("module"), base);
 }
 
 function initialReportId() {

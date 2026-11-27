@@ -149,6 +149,9 @@ the review record is `USABILITY_AUDIT_2026-11-27.md`.
 | U8 | Dialogs and sheets stay inside the viewport | Passing |
 | U9 | Curator keeps one input, at most three suggestions, and Stop / Retry | Passing |
 | U10 | Every journey in the usability audit completes in three taps or fewer | Passing |
+| U11 | Every dashboard drill-down applies the filter it names (param read by the target, preset handled) | Passing |
+| U12 | Exactly one reporting surface in navigation, scoped per module | Passing |
+| U13 | Dashboard customization persists across sessions and devices | **Not implemented — see PROMPTS_13_16_VERIFICATION.md §2** |
 
 ## 12. Recommended release sequence
 
