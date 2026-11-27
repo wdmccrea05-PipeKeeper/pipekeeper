@@ -4955,7 +4955,36 @@
   "stampingText": "Testo punzonato",
   "bowls": "Fornelli",
   "measurements": "Misure",
-  "sessions": "Sessioni"
+  "sessions": "Sessioni",
+  "pricing": "Prezzi",
+  "purchaseType": "Tipo di acquisto",
+  "perTin": "Per barattolo",
+  "perOz": "Per oz",
+  "perPouch": "Per busta",
+  "lotBundle": "Lotto / Confezione",
+  "aiPerOzEstimate": "Stima AI per oz",
+  "valuationSource": "Fonte della valutazione",
+  "valuationConfidence": "Affidabilità della valutazione",
+  "valuationNotes": "Note sulla valutazione",
+  "valuationNotesPlaceholder": "Eventuali note sulla valutazione…",
+  "productionStatus": "Stato di produzione",
+  "inProduction": "In produzione",
+  "discontinued": "Fuori produzione",
+  "limitedRelease": "Edizione limitata",
+  "seasonal": "Stagionale",
+  "manufacturerStatus": "Stato del produttore",
+  "inactiveShort": "Inattivo",
+  "defunct": "Chiuso / Cessato",
+  "seasonalRelease": "Uscita stagionale",
+  "regionalExclusivity": "Esclusiva regionale",
+  "limitedReleaseBatch": "Edizione limitata / Piccolo lotto",
+  "rarityNotes": "Note sulla rarità",
+  "noPhoto": "Nessuna foto",
+  "totalOz": "Totale (oz)",
+  "owned": "Posseduti",
+  "status": "Stato",
+  "aging": "Invecchiamento",
+  "flavorNotes": "Note di sapore"
  },
  "pipeDetail": {
   "valuationEngineNote": "Questi campi alimentano direttamente il motore di valutazione condiviso.",
@@ -4974,5 +5003,13 @@
   "checkpointSaved": "Punto di valore salvato",
   "observationSaved": "Osservazione salvata",
   "valuationUpdated": "Dati di valutazione aggiornati"
+ },
+ "tobaccoDetail": {
+  "deleted": "Miscela eliminata",
+  "deleteFailed": "Eliminazione della miscela non riuscita",
+  "smokingSessions": "Sessioni di fumo",
+  "historySubtitle": "Cronologia di questa miscela, dalla più recente.",
+  "noSessions": "Nessuna sessione di fumo registrata per questa miscela.",
+  "unknownDate": "Data sconosciuta"
  }
 }
