@@ -38,6 +38,7 @@ import nlUI from './locales/nl.ui.jsx';
 import plUI from './locales/pl.ui.jsx';
 import jaUI from './locales/ja.ui.jsx';
 import zhHansUI from './locales/zh-Hans.ui.jsx';
+import itGenerated from './locales/it.generated.json';
 
 const CRITICAL_FALLBACKS = {
   common: { back: 'Back', search: 'Search', share: 'Share', loading: 'Loading...', retry: 'Retry' },
@@ -136,6 +137,16 @@ function deepMerge(target, source) {
   }
   return out;
 }
+function deepOverride(target, source) {
+  if (!isPlainObject(source)) return source;
+  const out = isPlainObject(target) ? { ...target } : {};
+  for (const key of Object.keys(source)) {
+    const src = source[key];
+    if (isPlainObject(src) && isPlainObject(out[key])) out[key] = deepOverride(out[key], src);
+    else out[key] = src;
+  }
+  return out;
+}
 function getNestedValue(obj, path) {
   if (!obj || !path) return undefined;
   return String(path).split('.').reduce((acc, part) => (acc && typeof acc === 'object' && part in acc ? acc[part] : undefined), obj);
@@ -165,7 +176,8 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
   const withIntel = lang === 'en'
     ? deepMerge(withStoryWine, { collectionIntelligence: enCollectionIntelligence })
     : withStoryWine;
-  const withCriticals = deepMerge(withIntel, CRITICAL_FALLBACKS);
+  const withGenerated = lang === 'it' ? deepOverride(withIntel, itGenerated) : withIntel;
+  const withCriticals = deepMerge(withGenerated, CRITICAL_FALLBACKS);
   return [lang, withCriticals];
 }));
 

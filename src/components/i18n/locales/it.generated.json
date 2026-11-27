@@ -1849,7 +1849,83 @@
   "moduleSelectionTitle": "Scegli i tuoi moduli"
  },
  "troubleshooting": {
-  "aiWrongSuggestionIntro": "I suggerimenti dell'IA si basano sui dati della tua collezione e potrebbero non essere sempre perfetti. Puoi:"
+  "aiWrongSuggestionIntro": "I suggerimenti dell'IA si basano sui dati della tua collezione e potrebbero non essere sempre perfetti. Puoi:",
+  "cantLoginSteps": [
+   "Controlla che il tuo indirizzo email sia scritto correttamente",
+   "Richiedi un nuovo codice di verifica dalla pagina di login",
+   "Controlla la cartella spam/posta indesiderata per l'email con il codice",
+   "Svuota la cache e i cookie del browser, poi riprova",
+   "Contatta il supporto all'indirizzo admin@pipekeeperapp.com se il problema persiste"
+  ],
+  "sessionExpiredSteps": [
+   "Assicurati che il tuo browser consenta i cookie dell'app",
+   "Evita di usare la modalità privata/incognito per sessioni persistenti",
+   "Controlla che il browser non sia impostato per eliminare i cookie alla chiusura",
+   "Prova un browser diverso se il problema continua"
+  ],
+  "dataNotSavingSteps": [
+   "Controlla la tua connessione internet",
+   "Prova ad aggiornare la pagina e a ripetere l'azione",
+   "Assicurati di aver premuto Salva dopo aver apportato le modifiche",
+   "Prova a uscire e rientrare"
+  ],
+  "dataNotLoadingSteps": [
+   "Aggiorna la pagina",
+   "Controlla la tua connessione internet",
+   "Svuota la cache del browser e ricarica",
+   "Esci e rientra"
+  ],
+  "photoNotUploadingSteps": [
+   "Assicurati che il file immagine sia inferiore a 10MB",
+   "Usa un formato supportato: JPG, PNG o WebP",
+   "Controlla la tua connessione internet",
+   "Prova ad aggiornare la pagina e a caricare di nuovo"
+  ],
+  "photoBlurrySteps": [
+   "Carica una foto a risoluzione più alta (consigliata almeno 800x600)",
+   "Evita gli screenshot; usa foto originali quando possibile",
+   "Assicurati che ci sia una buona illuminazione quando scatti la foto"
+  ],
+  "deletePhotoSteps": [
+   "Apri la pagina dei dettagli della pipa o del tabacco",
+   "Tocca Modifica",
+   "Tocca la X o l'icona del cestino sulla foto che vuoi rimuovere",
+   "Tocca Salva"
+  ],
+  "aiSlowSteps": [
+   "Le operazioni AI possono richiedere 10-30 secondi a seconda delle dimensioni della collezione",
+   "Assicurati di avere una connessione internet stabile",
+   "Prova ad aggiornare e riprovare se sembra bloccato",
+   "Evita di eseguire più operazioni AI contemporaneamente"
+  ],
+  "aiWrongSuggestionSteps": [
+   "Aggiorna i tag di riferimento della tua pipa per riflettere meglio il suo utilizzo",
+   "Aggiungi più dettagli alle voci della tua miscela di tabacco",
+   "Rigenera gli abbinamenti dopo aver aggiornato i tuoi dati",
+   "Usa l'opzione feedback se disponibile per segnalare risultati inaccurati"
+  ],
+  "aiNotWorkingSteps": [
+   "Assicurati di avere un abbonamento Premium o Pro attivo",
+   "Aggiorna la pagina e riprova",
+   "Controlla di avere almeno una pipa e una miscela di tabacco nella tua collezione",
+   "Contatta il supporto se il problema persiste"
+  ],
+  "subscriptionNotWorkingSteps": [
+   "Esci e rientra per aggiornare lo stato del tuo account",
+   "Controlla che l'abbonamento sia attivo nel tuo portale di pagamento",
+   "Su dispositivo mobile, usa l'opzione 'Ripristina acquisti' se disponibile",
+   "Contatta il supporto con l'email del tuo abbonamento se il problema continua"
+  ],
+  "billingIssueSteps": [
+   "Esci e rientra",
+   "Controlla lo stato del tuo abbonamento nella pagina Profilo",
+   "Contatta il supporto all'indirizzo admin@pipekeeperapp.com con la conferma del pagamento"
+  ],
+  "cancelSubscriptionSteps": [
+   "Vai alla pagina Profilo",
+   "Tocca Gestisci Abbonamento",
+   "Segui i passaggi per la disdetta in Stripe (web) o nell'App Store/Play Store (mobile)"
+  ]
  },
  "faqExtended": {
   "pageTitle": "FAQ",
