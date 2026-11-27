@@ -316,7 +316,7 @@
   "purchaseTypeRetail": "Vendita al dettaglio",
   "purchaseTypeAftermarket": "Mercato secondario",
   "purchaseTypeGift": "Regalo",
-  "purchaseTypeTrade": "Scambio",
+  "purchaseTypeTrade": "Scambio / Permuta",
   "purchaseTypeOther": "Altro",
   "purchasePrice": "Importo pagato ($)",
   "purchaseLocation": "Luogo di acquisto",
@@ -376,7 +376,8 @@
   "noOriginInfo": "Nessun dettaglio di origine",
   "yourCollection": "Esplora collezione",
   "bottles": "Bottiglie",
-  "tastings": "Degustazioni"
+  "tastings": "Degustazioni",
+  "purchaseTypeAftermarketSecondary": "Mercato secondario / Rivendita"
  },
  "winekeeper": {
   "title": "WineKeeper",
@@ -4984,7 +4985,25 @@
   "owned": "Posseduti",
   "status": "Stato",
   "aging": "Invecchiamento",
-  "flavorNotes": "Note di sapore"
+  "flavorNotes": "Note di sapore",
+  "acquisition": "Acquisizione",
+  "howAcquired": "Come acquisita: ",
+  "purchasePrice": "Prezzo di acquisto: ",
+  "location": "Luogo: ",
+  "date": "Data: ",
+  "manageInventory": "Gestisci scorte",
+  "activeOngoing": "Attivo / In corso",
+  "allocated": "Allocato",
+  "limitedEdition": "Edizione limitata",
+  "singleCask": "Botte singola",
+  "vintage": "Annata",
+  "unknown": "Sconosciuto",
+  "autoCompute": "Calcolo automatico",
+  "veryEasyToReplace": "Molto facile da sostituire",
+  "easyToReplace": "Facile da sostituire",
+  "moderatelyDifficult": "Moderatamente difficile",
+  "hardToReplace": "Difficile da sostituire",
+  "veryHardRare": "Molto difficile / Raro"
  },
  "pipeDetail": {
   "valuationEngineNote": "Questi campi alimentano direttamente il motore di valutazione condiviso.",
@@ -5012,5 +5031,25 @@
   "noSessions": "Nessuna sessione di fumo registrata per questa miscela.",
   "unknownDate": "Data sconosciuta",
   "bestPipes": "Migliori pipe"
+ },
+ "bottle": {
+  "deleteTitle": "Eliminare",
+  "deleteBody": "Questa operazione rimuove definitivamente questa scheda whiskey e tutta la cronologia associata (note di degustazione, scorte, valutazioni e acquisti). Non può essere annullata.",
+  "deleteBodyHintLead": "Se semplicemente non possiedi più una bottiglia",
+  "deleteBodyHint": ", porta le scorte a zero (Bottiglia finita) oppure archiviala: entrambe le opzioni conservano la cronologia.",
+  "checkpointFailed": "Salvataggio del punto di valore non riuscito. Riprova.",
+  "observationFailed": "Salvataggio dell'osservazione di prezzo non riuscito. Riprova.",
+  "deleteFailed": "Eliminazione della bottiglia non riuscita. Riprova."
+ },
+ "bottleForm": {
+  "quickAddCatalog": "Aggiunta rapida dal catalogo",
+  "identity": "Identità",
+  "distilleryDetails": "Distilleria e dettagli",
+  "inventoryPurchase": "Scorte e acquisto",
+  "notesTags": "Note e tag",
+  "tastingProfile": "Profilo di degustazione",
+  "photos": "Foto",
+  "manualValueHint": "Se impostato, prevale su tutti i valori calcolati.",
+  "flavorNotesHint": "Descrittori di degustazione separati da virgole, usati per i consigli AI."
  }
 }

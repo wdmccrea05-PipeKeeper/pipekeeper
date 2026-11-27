@@ -258,7 +258,7 @@ export default function BottleForm({
             </div>
 
             {/* QUICK ADD FROM CATALOG */}
-            <FormSection title="Quick Add from Catalog" defaultOpen={true}>
+            <FormSection title={t('bottleForm.quickAddCatalog', 'Quick Add from Catalog')} defaultOpen={true}>
               <BottleCatalogSearch
                 onSelect={(entry) => {
                   setFormData((prev) => ({
@@ -279,7 +279,7 @@ export default function BottleForm({
 
             {/* IDENTITY SECTION */}
             <FormSection
-              title="Identity"
+              title={t('bottleForm.identity', 'Identity')}
               defaultOpen={true}
               summary={[formData.name, formData.distillery].filter(Boolean).join(' · ')}
             >
@@ -365,7 +365,7 @@ export default function BottleForm({
                       <SelectItem value="Single Grain">Single Grain</SelectItem>
                       <SelectItem value="Single Malt">Single Malt</SelectItem>
                       <SelectItem value="Tennessee Whiskey">Tennessee Whiskey</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="Other">{t('common.other', 'Other')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -373,7 +373,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* DISTILLERY & DETAILS SECTION */}
-            <FormSection title="Distillery & Details" defaultOpen={false}>
+            <FormSection title={t('bottleForm.distilleryDetails', 'Distillery & Details')} defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -425,7 +425,7 @@ export default function BottleForm({
                       <SelectItem value="750ml">750ml</SelectItem>
                       <SelectItem value="1L">1L</SelectItem>
                       <SelectItem value="1.75L">1.75L</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="Other">{t('common.other', 'Other')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -433,7 +433,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* INVENTORY & PURCHASE SECTION */}
-            <FormSection title="Inventory & Purchase" defaultOpen={false}>
+            <FormSection title={t('bottleForm.inventoryPurchase', 'Inventory & Purchase')} defaultOpen={false}>
               {/* Initial inventory — explicit, zero is legitimate */}
               <div className="mb-4">
                 <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -466,11 +466,11 @@ export default function BottleForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="aftermarket">Aftermarket / Secondary</SelectItem>
+                      <SelectItem value="retail">{t('whiskey.purchaseTypeRetail', 'Retail')}</SelectItem>
+                      <SelectItem value="aftermarket">{t('whiskey.purchaseTypeAftermarketSecondary', 'Aftermarket / Secondary')}</SelectItem>
                       <SelectItem value="gift">Gift</SelectItem>
-                      <SelectItem value="trade">Trade / Swap</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="trade">{t('whiskey.purchaseTypeTrade', 'Trade / Swap')}</SelectItem>
+                      <SelectItem value="other">{t('common.other', 'Other')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -575,7 +575,7 @@ export default function BottleForm({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="medium">{t('fields.medium', 'Medium')}</SelectItem>
                       <SelectItem value="low">Low</SelectItem>
                     </SelectContent>
                   </Select>
@@ -584,7 +584,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* NOTES & TAGS SECTION */}
-            <FormSection title="Notes & Tags" defaultOpen={false}>
+            <FormSection title={t('bottleForm.notesTags', 'Notes & Tags')} defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -598,13 +598,13 @@ export default function BottleForm({
                       <SelectValue placeholder={t('whiskey.productionStatusPlaceholder', 'e.g. Discontinued')} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value="Active">Active / Ongoing</SelectItem>
-                    <SelectItem value="Allocated">Allocated</SelectItem>
-                    <SelectItem value="Discontinued">Discontinued</SelectItem>
-                    <SelectItem value="Limited Edition">Limited Edition</SelectItem>
-                    <SelectItem value="Single Cask">Single Cask</SelectItem>
-                    <SelectItem value="Vintage">Vintage</SelectItem>
-                    <SelectItem value="_none">Unknown</SelectItem>
+                    <SelectItem value="Active">{t('fields.activeOngoing', 'Active / Ongoing')}</SelectItem>
+                    <SelectItem value="Allocated">{t('fields.allocated', 'Allocated')}</SelectItem>
+                    <SelectItem value="Discontinued">{t('fields.discontinued', 'Discontinued')}</SelectItem>
+                    <SelectItem value="Limited Edition">{t('fields.limitedEdition', 'Limited Edition')}</SelectItem>
+                    <SelectItem value="Single Cask">{t('fields.singleCask', 'Single Cask')}</SelectItem>
+                    <SelectItem value="Vintage">{t('fields.vintage', 'Vintage')}</SelectItem>
+                    <SelectItem value="_none">{t('fields.unknown', 'Unknown')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -635,12 +635,12 @@ export default function BottleForm({
                       <SelectValue placeholder={t('whiskey.replacementDifficultyPlaceholder', 'Auto-computed if blank')} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectItem value="_auto">Auto-Compute</SelectItem>
-                    <SelectItem value="very_easy">Very Easy to Replace</SelectItem>
-                    <SelectItem value="easy">Easy to Replace</SelectItem>
-                    <SelectItem value="moderate">Moderately Difficult</SelectItem>
-                    <SelectItem value="hard">Hard to Replace</SelectItem>
-                    <SelectItem value="very_hard">Very Hard / Rare</SelectItem>
+                    <SelectItem value="_auto">{t('fields.autoCompute', 'Auto-Compute')}</SelectItem>
+                    <SelectItem value="very_easy">{t('fields.veryEasyToReplace', 'Very Easy to Replace')}</SelectItem>
+                    <SelectItem value="easy">{t('fields.easyToReplace', 'Easy to Replace')}</SelectItem>
+                    <SelectItem value="moderate">{t('fields.moderatelyDifficult', 'Moderately Difficult')}</SelectItem>
+                    <SelectItem value="hard">{t('fields.hardToReplace', 'Hard to Replace')}</SelectItem>
+                    <SelectItem value="very_hard">{t('fields.veryHardRare', 'Very Hard / Rare')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -658,7 +658,7 @@ export default function BottleForm({
                     className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"
                   />
                   <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
-                    Takes precedence over all computed values when set.
+                    {t('bottleForm.manualValueHint', 'Takes precedence over all computed values when set.')}
                   </p>
                 </div>
               </div>
@@ -726,7 +726,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* TASTING PROFILE SECTION */}
-            <FormSection title="Tasting Profile" defaultOpen={false}>
+            <FormSection title={t('bottleForm.tastingProfile', 'Tasting Profile')} defaultOpen={false}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <label className="text-sm text-[#D8C7A6] block mb-2">
@@ -770,7 +770,7 @@ export default function BottleForm({
                   className="w-full rounded-xl px-4 py-3 bg-[rgba(255,255,255,0.05)] border border-[rgba(180,140,75,0.2)] text-[#F5F1E7] outline-none"
                 />
                 <p className="text-xs mt-1" style={{ color: 'rgba(224,200,160,0.5)' }}>
-                  Comma-separated tasting descriptors used for AI recommendations.
+                  {t('bottleForm.flavorNotesHint', 'Comma-separated tasting descriptors used for AI recommendations.')}
                 </p>
               </div>
 
@@ -791,7 +791,7 @@ export default function BottleForm({
             </FormSection>
 
             {/* PHOTOS SECTION */}
-            <FormSection title="Photos" defaultOpen={false}>
+            <FormSection title={t('bottleForm.photos', 'Photos')} defaultOpen={false}>
               <div>
                 <label className="text-sm text-[#D8C7A6] block mb-2">
                   {t('whiskey.photo', 'Bottle Photo')}

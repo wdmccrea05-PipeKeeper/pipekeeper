@@ -236,7 +236,7 @@ function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, 
       onSaved();
     } catch (e) {
       console.error('[BottleDetail] failed to save snapshot', e);
-      toast.error('Failed to save value checkpoint. Please try again.');
+      toast.error(t('bottle.checkpointFailed', 'Failed to save value checkpoint. Please try again.'));
     } finally {
       setSaving(false);
     }
@@ -268,25 +268,25 @@ function AddValueSnapshotModal({ bottle, valuationSnapshot, userEmail, onClose, 
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Confidence</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.confidence', 'Confidence')}</label>
             <Select value={form.value_confidence} onValueChange={v => setForm(prev => ({ ...prev, value_confidence: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="medium">{t('fields.medium', 'Medium')}</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Replacement Difficulty</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.replacementDifficulty', 'Replacement Difficulty')}</label>
             <Select value={form.replacement_difficulty} onValueChange={v => setForm(prev => ({ ...prev, replacement_difficulty: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
+                <SelectItem value="moderate">{t('fields.moderate', 'Moderate')}</SelectItem>
                 <SelectItem value="hard">Hard</SelectItem>
-                <SelectItem value="very_hard">Very Hard</SelectItem>
+                <SelectItem value="very_hard">{t('fields.veryHard', 'Very Hard')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -339,7 +339,7 @@ function AddPriceObservationModal({ bottle, userEmail, onClose, onSaved }) {
       onSaved();
     } catch (e) {
       console.error('[BottleDetail] failed to save observation', e);
-      toast.error('Failed to save price observation. Please try again.');
+      toast.error(t('bottle.observationFailed', 'Failed to save price observation. Please try again.'));
     } finally {
       setSaving(false);
     }
@@ -348,7 +348,7 @@ function AddPriceObservationModal({ bottle, userEmail, onClose, onSaved }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(59,130,246,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">Add Market Observation</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('cigars.detail.addMarketObservation', 'Add Market Observation')}</h3>
         <div className="space-y-3">
           {[
             { label: 'Observed Date', field: 'observed_date', type: 'date' },
@@ -371,17 +371,17 @@ function AddPriceObservationModal({ bottle, userEmail, onClose, onSaved }) {
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">Price Type</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('cigars.detail.priceType', 'Price Type')}</label>
             <Select value={form.price_type} onValueChange={v => setForm(prev => ({ ...prev, price_type: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="retail">Retail</SelectItem>
-                <SelectItem value="aftermarket">Aftermarket</SelectItem>
-                <SelectItem value="auction">Auction</SelectItem>
-                <SelectItem value="collector">Collector</SelectItem>
-                <SelectItem value="estimate">Estimate</SelectItem>
-                <SelectItem value="private_sale">Private Sale</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="retail">{t('whiskey.purchaseTypeRetail', 'Retail')}</SelectItem>
+                <SelectItem value="aftermarket">{t('whiskey.purchaseTypeAftermarket', 'Aftermarket')}</SelectItem>
+                <SelectItem value="auction">{t('cigars.detail.priceTypeAuction', 'Auction')}</SelectItem>
+                <SelectItem value="collector">{t('cigars.detail.priceTypeCollector', 'Collector')}</SelectItem>
+                <SelectItem value="estimate">{t('cigars.detail.priceTypeEstimate', 'Estimate')}</SelectItem>
+                <SelectItem value="private_sale">{t('cigars.detail.priceTypePrivateSale', 'Private Sale')}</SelectItem>
+                <SelectItem value="other">{t('common.other', 'Other')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -444,7 +444,7 @@ function BottleDetailInner() {
       navigate("/Whiskey");
     } catch (e) {
       console.error(e);
-      toast.error('Failed to delete bottle. Please try again.');
+      toast.error(t('bottle.deleteFailed', 'Failed to delete bottle. Please try again.'));
       setDeleting(false);
     }
   }
@@ -716,7 +716,7 @@ function BottleDetailInner() {
   if (!bottle) {
     return (
       <div className="p-6 text-[#F5F1E7]">
-        <p>Unable to load record.</p>
+        <p>{t('errors.unableToLoadRecord', 'Unable to load record.')}</p>
       </div>
     );
   }
@@ -740,11 +740,11 @@ function BottleDetailInner() {
               }}
             >
               <Search className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Find Similar</span>
+              <span className="hidden sm:inline">{t('common.findSimilar', 'Find Similar')}</span>
             </Button>
             <Button variant="outline" onClick={() => setShowShareModal(true)}>
               <Share2 className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Share</span>
+              <span className="hidden sm:inline">{t('common.share', 'Share')}</span>
             </Button>
             <EnrichButton itemType="bottle" record={bottle} onEnriched={setBottle} />
             <Button
@@ -793,7 +793,7 @@ function BottleDetailInner() {
                 />
               ) : (
                 <div className="w-full h-[280px] rounded-2xl flex items-center justify-center bg-[rgba(255,255,255,0.03)] text-[#D8C7A6]/55 border border-[rgba(180,140,75,0.14)]">
-                  No photo
+                  {t('fields.noPhoto', 'No photo')}
                 </div>
               )}
 
@@ -905,29 +905,29 @@ function BottleDetailInner() {
                   }}
                 >
                   <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-3">
-                    Acquisition
+                    {t('fields.acquisition', 'Acquisition')}
                   </p>
                   {bottle.how_acquired ? (
                     <p className="text-sm text-[#E0D8C8]">
-                      <span className="text-[#D8C7A6]/60">How acquired: </span>
+                      <span className="text-[#D8C7A6]/60">{t('fields.howAcquired', 'How acquired: ')}</span>
                       {safePrimitive(bottle.how_acquired)}
                     </p>
                   ) : null}
                   {bottle.purchase_price ? (
                     <p className="text-sm text-[#E0D8C8]">
-                      <span className="text-[#D8C7A6]/60">Purchase price: </span>
+                      <span className="text-[#D8C7A6]/60">{t('fields.purchasePrice', 'Purchase price: ')}</span>
                       {formatFromBase(bottle.purchase_price)}
                     </p>
                   ) : null}
                   {bottle.purchase_location ? (
                     <p className="text-sm text-[#E0D8C8]">
-                      <span className="text-[#D8C7A6]/60">Location: </span>
+                      <span className="text-[#D8C7A6]/60">{t('fields.location', 'Location: ')}</span>
                       {safePrimitive(bottle.purchase_location)}
                     </p>
                   ) : null}
                   {bottle.purchase_date ? (
                     <p className="text-sm text-[#E0D8C8]">
-                      <span className="text-[#D8C7A6]/60">Date: </span>
+                      <span className="text-[#D8C7A6]/60">{t('fields.date', 'Date: ')}</span>
                       {formatDate(bottle.purchase_date)}
                     </p>
                   ) : null}
@@ -943,7 +943,7 @@ function BottleDetailInner() {
                   }}
                 >
                   <p className="text-xs uppercase tracking-wider text-[#D4A574] font-semibold mb-2">
-                    Notes
+                    {t('common.notes', 'Notes')}
                   </p>
                   <p className="text-sm text-[#E0D8C8]/90 whitespace-pre-wrap break-words leading-relaxed">
                     {safePrimitive(bottle.notes)}
@@ -978,12 +978,12 @@ function BottleDetailInner() {
                     color: "#1A120D",
                   }}
                 >
-                  Log Tasting
+                  {t('whiskey.logTasting', 'Log Tasting')}
                 </Button>
 
                 <Button variant="outline" onClick={() => setShowInventoryManager(true)}>
                   <Package className="w-4 h-4 mr-2" />
-                  Manage Inventory
+                  {t('fields.manageInventory', 'Manage Inventory')}
                 </Button>
               </div>
 
@@ -1064,11 +1064,11 @@ function BottleDetailInner() {
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete {displayName}?</AlertDialogTitle>
+              <AlertDialogTitle>{t('bottle.deleteTitle', 'Delete')} {displayName}?</AlertDialogTitle>
               <AlertDialogDescription>
-                This permanently removes this whiskey record and its associated history (tasting notes, inventory, valuations, and purchase records). This action cannot be undone.
+                {t('bottle.deleteBody', 'This permanently removes this whiskey record and its associated history (tasting notes, inventory, valuations, and purchase records). This action cannot be undone.')}
                 <br /><br />
-                <strong>If you simply no longer own a bottle</strong>, set inventory to zero (Finish Bottle) or archive it instead — both preserve your history.
+                <strong>{t('bottle.deleteBodyHintLead', 'If you simply no longer own a bottle')}</strong>{t('bottle.deleteBodyHint', ', set inventory to zero (Finish Bottle) or archive it instead — both preserve your history.')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
