@@ -22,9 +22,13 @@ function listOf(value) {
  * @param {object[]} locations    StorageLocation records
  * @param {{ locationKey?: string, getUnits?: (record: object) => number, positionKeys?: string[] }} options
  */
+function defaultUnits() {
+  return 1;
+}
+
 export function buildStorageDistribution(records = [], locations = [], options = {}) {
   const locationKey = options.locationKey || 'storage_location_id';
-  const getUnits = options.getUnits || () => 1;
+  const getUnits = typeof options.getUnits === 'function' ? options.getUnits : defaultUnits;
   const positionKeys = options.positionKeys || [];
   const recordList = listOf(records);
   const locationList = listOf(locations);

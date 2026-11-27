@@ -153,6 +153,27 @@ is open.
 
 ---
 
+## Batch I — Valuation & Documentation Center (landed 2026-11-27)
+
+| ID | Item | Status | Files |
+|---|---|---|---|
+| CI2-130 | Append-only valuation ledger entity with currency, confidence and documents | done | `base44/entities/ValuationRecord.jsonc` |
+| CI2-131 | Shared valuation model: evidence classes, precedence, unknown ≠ zero | done | `src/lib/valuation/valuationCenter.js` |
+| CI2-132 | Currency conversion with documented rate; unconvertible entries excluded | done | `src/lib/valuation/valuationCenter.js` |
+| CI2-133 | Financial privacy: private by default, opt-in for shares | done | `src/lib/valuation/valuationPrivacy.js` |
+| CI2-134 | Cross-module item mapping for dashboards and reports | done | `src/lib/valuation/collectionItems.js` |
+| CI2-135 | Valuation dashboard with drill-downs and value-over-time | done | `src/components/valuation/ValuationDashboard.jsx` |
+| CI2-136 | Ledger and entry form with private document upload | done | `ValuationLedger.jsx`, `ValuationRecordForm.jsx` |
+| CI2-137 | Eight report models with attribution and disclosures | done | `src/lib/valuation/valuationReports.js` |
+| CI2-138 | Printable PDF and CSV rendering | done | `src/lib/valuation/valuationReportPdf.js`, `ValuationReportPanel.jsx` |
+| CI2-139 | Valuation Center page, route and quick-access entry | done | `src/pages/ValuationCenter.jsx`, `src/App.jsx`, `FeatureQuickAccess.jsx` |
+| CI2-140 | Test suite (46 assertions incl. PDF render and boundaries) | done | `src/__tests__/valuationCenter.test.js` |
+| CI2-141 | Apply `EXPORT_REPORTS` to the new reports | approval pending | would remove free access to insurance/estate reports |
+| CI2-142 | Per-record inline valuation editor on module detail pages | planned | center is the single entry point |
+| CI2-143 | Per-date exchange-rate history table | planned | rate at recording time is stored today |
+
+---
+
 ## Defect log
 
 | ID | Defect | Severity | Status |

@@ -1,0 +1,269 @@
+{
+  "name": "ValuationRecord",
+  "type": "object",
+  "description": "One dated valuation entry for any collection record: a recorded acquisition cost, a correction to that cost, an owner estimate, a documented appraisal, an estimated replacement value, or a reference valuation from an independently authorized source. Entries are append-only, so the history of what was believed and when is preserved.",
+  "properties": {
+    "record_entity": {
+      "type": "string",
+      "enum": [
+        "Pipe",
+        "TobaccoBlend",
+        "Cigar",
+        "Bottle",
+        "Wine"
+      ],
+      "enumColors": [
+        "yellow",
+        "green",
+        "purple",
+        "blue",
+        "pink"
+      ],
+      "description": "Entity type of the collection record this valuation belongs to"
+    },
+    "record_id": {
+      "type": "string",
+      "description": "Id of the collection record"
+    },
+    "record_name": {
+      "type": "string",
+      "description": "Snapshot of the record name at the time of the valuation"
+    },
+    "module_key": {
+      "type": "string",
+      "enum": [
+        "pipekeeper",
+        "tobacco",
+        "cigarkeeper",
+        "whiskeykeeper",
+        "winekeeper"
+      ],
+      "enumColors": [
+        "yellow",
+        "green",
+        "purple",
+        "blue",
+        "pink"
+      ],
+      "description": "Collection module the record belongs to"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "acquisition_cost",
+        "acquisition_correction",
+        "user_estimate",
+        "appraisal",
+        "replacement_value",
+        "reference_valuation"
+      ],
+      "enumColors": [
+        "green",
+        "yellow",
+        "blue",
+        "purple",
+        "gray",
+        "gray"
+      ],
+      "description": "What kind of valuation entry this is. The kind is what separates a documented fact from an owner estimate and from a reference figure."
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount as entered, in the currency recorded below"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "description": "ISO currency code the amount was recorded in"
+    },
+    "amount_base": {
+      "type": "number",
+      "description": "Amount converted to the app's base currency using the rate recorded with this entry. Null when no rate was available, so an unconvertible amount is never silently treated as zero."
+    },
+    "base_currency": {
+      "type": "string",
+      "default": "USD",
+      "description": "Base currency the converted amount is expressed in"
+    },
+    "fx_rate": {
+      "type": "number",
+      "description": "Exchange rate used for the conversion at the time of recording"
+    },
+    "fx_rate_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the exchange rate applied to"
+    },
+    "valuation_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the value applies to"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where the figure came from, in the collector's words (auction invoice, dealer receipt, appraiser report number)"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "document",
+        "appraiser",
+        "reference",
+        "ai_estimate",
+        "import"
+      ],
+      "enumColors": [
+        "blue",
+        "green",
+        "purple",
+        "gray",
+        "yellow",
+        "gray"
+      ],
+      "default": "manual",
+      "description": "How the figure was obtained. An ai_estimate is always treated as unverified and low confidence."
+    },
+    "methodology": {
+      "type": "string",
+      "description": "How the figure was arrived at (comparable sales, replacement cost, appraiser methodology)"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ],
+      "enumColors": [
+        "green",
+        "yellow",
+        "red",
+        "gray"
+      ],
+      "default": "unknown",
+      "description": "Documented confidence in the figure"
+    },
+    "range_low": {
+      "type": "number",
+      "description": "Lower bound of the documented uncertainty range"
+    },
+    "range_high": {
+      "type": "number",
+      "description": "Upper bound of the documented uncertainty range"
+    },
+    "appraiser": {
+      "type": "string",
+      "description": "Name of the appraiser or appraisal firm, for documented appraisals"
+    },
+    "appraisal_reference": {
+      "type": "string",
+      "description": "Appraisal report number or reference"
+    },
+    "independent_source": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether a reference valuation came from an independently authorized source that was reviewed for compliance"
+    },
+    "reference_source_name": {
+      "type": "string",
+      "description": "Named source of a reference valuation, when one is authorized"
+    },
+    "supersedes_id": {
+      "type": "string",
+      "description": "Id of the entry this one corrects, for acquisition cost corrections"
+    },
+    "documents": {
+      "type": "array",
+      "description": "Supporting documents and photographs. Files are stored privately; each entry keeps the private file reference, not a public URL.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "receipt",
+              "certificate",
+              "photograph",
+              "document",
+              "appraisal",
+              "other"
+            ]
+          },
+          "file_uri": {
+            "type": "string"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "size": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes recorded with this entry"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email of the collector who recorded this entry"
+    }
+  },
+  "required": [
+    "record_entity",
+    "record_id",
+    "kind",
+    "valuation_date"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
