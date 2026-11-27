@@ -1,0 +1,68 @@
+{
+  "name": "EmailSuppression",
+  "type": "object",
+  "description": "Persistent marketing communication preferences: addresses that must never receive promotional email again. Administrator-only.",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Normalized suppressed email address"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "unsubscribed",
+        "bounced",
+        "complaint",
+        "manual",
+        "invalid"
+      ],
+      "enumColors": [
+        "gray",
+        "red",
+        "red",
+        "blue",
+        "red"
+      ],
+      "description": "Why this address is suppressed"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where the suppression came from (provider, admin, import)"
+    },
+    "note": {
+      "type": "string",
+      "description": "Internal note"
+    },
+    "suppressed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the suppression was recorded"
+    }
+  },
+  "required": [
+    "email",
+    "reason"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

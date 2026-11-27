@@ -1,0 +1,108 @@
+{
+  "name": "EmailCampaignRecipient",
+  "type": "object",
+  "description": "One row per intended recipient of a campaign email. Guarantees a collector can never receive the same campaign email twice and carries click/activation attribution. Administrator-only.",
+  "properties": {
+    "campaign_id": {
+      "type": "string",
+      "description": "EmailCampaign record this recipient belongs to"
+    },
+    "template_key": {
+      "type": "string",
+      "description": "Template identity used for cross-campaign duplicate prevention"
+    },
+    "email": {
+      "type": "string",
+      "description": "Normalized recipient email"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Platform user id of the recipient"
+    },
+    "language": {
+      "type": "string",
+      "description": "Language version delivered to this recipient"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "sent",
+        "failed",
+        "skipped",
+        "bounced",
+        "unsubscribed"
+      ],
+      "enumColors": [
+        "yellow",
+        "green",
+        "red",
+        "gray",
+        "red",
+        "gray"
+      ],
+      "default": "queued",
+      "description": "Delivery state for this recipient"
+    },
+    "detail": {
+      "type": "string",
+      "description": "Provider message or skip reason"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the provider accepted the message"
+    },
+    "click_token": {
+      "type": "string",
+      "description": "Opaque token used by the click-tracking link for this recipient"
+    },
+    "clicked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the recipient clicked through to the app"
+    },
+    "clicked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "First click timestamp"
+    },
+    "activated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this recipient activated the complimentary Pro offer"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Activation timestamp attributed to this email"
+    }
+  },
+  "required": [
+    "campaign_id",
+    "email",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "name": "EmailCampaign",
+  "type": "object",
+  "description": "One promotional email campaign: audience snapshot, approval trail and delivery counters. Read and written by administrators only.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Internal campaign name shown in the admin dashboard"
+    },
+    "campaign_id": {
+      "type": "string",
+      "description": "Promotional campaign this email belongs to (e.g. collector_appreciation_black_friday_2026)"
+    },
+    "template_key": {
+      "type": "string",
+      "description": "Reusable template identity, used for cross-campaign duplicate-send prevention"
+    },
+    "template_name": {
+      "type": "string",
+      "description": "Base44 email template name used to render the message"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "approved",
+        "scheduled",
+        "sending",
+        "sent",
+        "cancelled",
+        "failed"
+      ],
+      "enumColors": [
+        "gray",
+        "blue",
+        "purple",
+        "yellow",
+        "green",
+        "red",
+        "red"
+      ],
+      "default": "draft",
+      "description": "Lifecycle state of the campaign"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Subject line as configured by the administrator (defaults to the localized template subject)"
+    },
+    "mailing_address": {
+      "type": "string",
+      "description": "Business mailing address printed in the email footer. Required before any send."
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Languages to deliver. Empty means every supported language."
+    },
+    "scheduled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When a scheduled campaign becomes due"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email of the administrator who approved distribution"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When distribution was approved"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the final batch completed"
+    },
+    "audience_snapshot": {
+      "type": "object",
+      "description": "Eligible recipient count, exclusions and language breakdown captured when the campaign was prepared"
+    },
+    "queued_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Recipients queued for delivery"
+    },
+    "sent_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Recipients the provider accepted"
+    },
+    "failed_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Recipients whose delivery failed"
+    },
+    "skipped_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Recipients skipped (duplicate, suppressed or no longer eligible)"
+    },
+    "created_by_admin": {
+      "type": "string",
+      "description": "Administrator who created the campaign"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes"
+    }
+  },
+  "required": [
+    "name",
+    "template_key",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

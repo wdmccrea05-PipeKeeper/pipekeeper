@@ -1,0 +1,85 @@
+{
+  "name": "EmailCampaignEvent",
+  "type": "object",
+  "description": "Delivery, engagement and attribution events for a campaign email. Written by backend functions only; administrator-only reads.",
+  "properties": {
+    "campaign_id": {
+      "type": "string",
+      "description": "EmailCampaign record this event belongs to"
+    },
+    "recipient_id": {
+      "type": "string",
+      "description": "EmailCampaignRecipient record this event belongs to"
+    },
+    "email": {
+      "type": "string",
+      "description": "Normalized recipient email"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "sent",
+        "delivered",
+        "failed",
+        "bounced",
+        "complaint",
+        "unsubscribed",
+        "click",
+        "activation",
+        "conversion",
+        "test_sent"
+      ],
+      "enumColors": [
+        "gray",
+        "green",
+        "green",
+        "red",
+        "red",
+        "red",
+        "gray",
+        "blue",
+        "purple",
+        "yellow",
+        "blue"
+      ],
+      "description": "Kind of campaign email event"
+    },
+    "detail": {
+      "type": "string",
+      "description": "Provider message, failure reason or skip reason"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server timestamp of the event"
+    }
+  },
+  "required": [
+    "campaign_id",
+    "event_type",
+    "occurred_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
