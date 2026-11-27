@@ -754,7 +754,7 @@ export default function TobaccoDetail() {
             style={{ background: 'rgba(180,140,75,0.15)', border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574' }}
           >
             <PipeIcon className="w-4 h-4 mr-2" color="#D4A574" />
-            Best Pipes
+            {t('tobaccoDetail.bestPipes', 'Best Pipes')}
           </Button>
 
           <Button
