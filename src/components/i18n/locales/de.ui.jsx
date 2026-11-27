@@ -168,7 +168,7 @@ const deUI = {
     days: "days",
     active: "Active",
     needsRotation: "Needs Rotation",
-    lastSmokedDaysAgo: "Last smoked {days} ago",
+    lastSmokedDaysAgo: "Zuletzt geraucht vor {days} Tagen",
     daysAgo: "{days} days ago",
     today: "Today",
     noPipesInCollection: "No pipes in collection",

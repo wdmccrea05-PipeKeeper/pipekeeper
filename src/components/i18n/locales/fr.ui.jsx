@@ -193,7 +193,7 @@ const frUI = {
     days: "days",
     active: "Active",
     needsRotation: "Needs Rotation",
-    lastSmokedDaysAgo: "Last smoked {days} ago",
+    lastSmokedDaysAgo: "Dernière fois il y a {days} jours",
     daysAgo: "{days} days ago",
     today: "Today",
     noPipesInCollection: "No pipes in collection",

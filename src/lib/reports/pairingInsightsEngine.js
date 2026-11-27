@@ -37,6 +37,36 @@ const DAY_MS = 86400000;
 
 const round1 = (value) => Math.round(Number(value || 0) * 10) / 10;
 
+const GEOMETRY_CAVEAT = /chamber measurements are missing/i;
+
+/**
+ * A pairing explanation that belongs to the blend, not only to the pipe.
+ *
+ * The scorer leads with chamber geometry, which is the same for every blend in
+ * a pipe. When the pipe has no measurements, every row therefore reads
+ * identically and looks like a data-binding fault. Leading with the blend's own
+ * classification, and stating the geometry caveat once inside the explanation,
+ * keeps each row specific to the blend it describes.
+ */
+function buildMatchWhy(blend, result, pipeNormalized) {
+  const raw = Array.isArray(result?.whyList) && result.whyList.length
+    ? result.whyList
+    : (result?.why ? [result.why] : []);
+  const geometryEstimated = !pipeNormalized?.chamberDiameterMm && pipeNormalized?.geometrySource !== "measured";
+  const reasons = raw.filter((line) => !(geometryEstimated && GEOMETRY_CAVEAT.test(String(line))));
+
+  const identity = [
+    blend?.blend_type || blend?.blend_family || "",
+    blend?.strength ? `${blend.strength} strength` : "",
+  ].filter(Boolean).join(" · ");
+
+  const lead = identity
+    ? `${identity}${geometryEstimated ? " (chamber geometry estimated)" : ""}.`
+    : "";
+
+  return [lead, ...reasons].filter(Boolean).join(" ").trim() || result?.why || "";
+}
+
 function cap(value) {
   const text = String(value || "");
   return text ? text.charAt(0).toUpperCase() + text.slice(1) : "";
@@ -200,7 +230,7 @@ export function buildPairingInsights({
         manufacturer: blend.manufacturer || "",
         score: round1(result?.score),
         confidence: result?.confidence ?? null,
-        why: result?.why || "",
+        why: buildMatchWhy(blend, result, normalized),
         sessions: blendUsage.get(blend.id)?.sessions || 0,
       }))
       .sort((a, b) => b.score - a.score || a.blendName.localeCompare(b.blendName));

@@ -601,7 +601,7 @@ const enUI = {
     days: "days",
     active: "Active",
     needsRotation: "Needs Rotation",
-    lastSmokedDaysAgo: "Last smoked {days} ago",
+    lastSmokedDaysAgo: "Last smoked {days} days ago",
     daysAgo: "{days} days ago",
     today: "Today",
     noPipesInCollection: "No pipes in collection",

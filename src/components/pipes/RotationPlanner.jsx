@@ -128,8 +128,14 @@ export default function RotationPlanner({ user, pipe }) {
     return log.bowls_used || log.bowls_smoked || 1;
   };
 
-  // Exclude collection-only (ai_excluded) pipes from rotation analytics
-  const activePipes = (allPipes || []).filter(p => !p.ai_excluded);
+  // Exclude collection-only (ai_excluded) and retired records from rotation
+  // analytics. Archived, merged, transferred and disposed pipes are kept for
+  // history, so they must not be counted as "never smoked" or "in rotation".
+  const activePipes = (allPipes || []).filter((p) => {
+    if (p.ai_excluded || p.is_archived || p.merged_into_id) return false;
+    const lifecycle = String(p.lifecycle_status || 'active').toLowerCase();
+    return lifecycle === 'active';
+  });
 
   const pipeRotation = activePipes.map(p => {
     try {
