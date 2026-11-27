@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { SendHorizontal, History, Plus, Square } from 'lucide-react';
+import { SendHorizontal, History, Plus, Square, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import CuratorMessageContent from '@/components/curator/CuratorMessageContent.jsx';
 import CuratorHistorySheet from '@/components/curator/CuratorHistorySheet.jsx';
 import { base44 } from '@/api/base44Client';
@@ -17,16 +18,20 @@ import { classifyDiagnosticIntent, DIAGNOSTIC_INTENT } from '@/lib/curator/curat
 import { answerCuratorDeterministicQuery, isPipeSpecializationQuery, resolveSpecializationPipe } from '@/lib/curator/curatorDeterministicChat.js';
 import { analyzeWineOptimizationIssues } from '@/lib/curator/wineOptimization.js';
 import { buildWineDrinkingWindowFix } from '@/lib/curator/wineDrinkingWindowFix.js';
-import CuratorChatFixAction from '@/components/curator/CuratorChatFixAction.jsx';
-import CuratorSpecializationAction from '@/components/curator/CuratorSpecializationAction.jsx';
+import CuratorActionSet from '@/components/curator/CuratorActionSet.jsx';
 import { buildSpecializationReview, reviewToPromptBlock } from '@/lib/curator/specializationReview.js';
-import { applySpecializationChange } from '@/lib/collection/specialization.js';
+import {
+  buildActionsFromProposals,
+  buildDrinkingWindowActions,
+  buildSpecializationActions,
+  initialActionState,
+} from '@/lib/curator/curatorActionPresenter.js';
+import { resolveActionReference } from '@/lib/curator/curatorActionReferences.js';
 import {
   detectRejection,
   extractRecommendationsFromResponse,
 } from '@/lib/curator/conversationState.js';
 import { classifyIntent } from '@/lib/curator/curatorChatIntent.js';
-import CuratorChangeProposalCard from '@/components/curator/CuratorChangeProposalCard.jsx';
 import useCuratorRecordProposals from '@/components/curator/useCuratorRecordProposals.js';
 import { routeCuratorRequest } from '@/lib/curator/curatorRequestRouter.js';
 import { buildGroundingBlock } from '@/lib/curator/curatorGrounding.js';
@@ -1620,7 +1625,6 @@ function answerQuestion(message, context = {}, entityContext = {}, isSingleModul
 export default function ExpertTobacconistChat({
   preFillMessage,
   onPreFillConsumed,
-  onApplyFix,
   collectionContext,
   isSingleModuleMode = false,
   activeModules = {},
@@ -1641,11 +1645,15 @@ export default function ExpertTobacconistChat({
   const persistedRef = useRef(new Set());
   const lastActionRunRef = useRef(null);
   const storageCacheRef = useRef(null);
-  const { confirmProposal, cancelProposal, undoProposal, runUndo } = useCuratorRecordProposals({
+  const { applyActions, undoMessage, runUndo } = useCuratorRecordProposals({
     setMessages,
     setEntityContext,
     lastActionRunRef,
   });
+
+  const updateMessage = useCallback((messageId, patch) => {
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, ...patch } : m)));
+  }, [setMessages]);
 
   useEffect(() => {
     if (initialEntityContext) {
@@ -1766,67 +1774,6 @@ export default function ExpertTobacconistChat({
   }, [preFillMessage, onPreFillConsumed]);
 
   /**
-   * Saves a Curator-suggested fix (e.g. estimated drinking windows) straight from
-   * the chat, through the same apply pipeline the optimization board uses.
-   */
-  const applySuggestedFix = useCallback(async (message) => {
-    if (!message?.fix || typeof onApplyFix !== 'function') return;
-
-    setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, fixState: 'applying', fixNote: null } : m)));
-
-    let result = null;
-    try {
-      result = await onApplyFix(message.fix);
-    } catch (err) {
-      result = { ok: false, error: String(err?.message || err) };
-    }
-
-    const appliedCount = result?.ok ? (result.appliedCount || 0) : 0;
-    setMessages((prev) => prev.map((m) => (m.id === message.id
-      ? {
-          ...m,
-          fixState: appliedCount > 0 ? 'applied' : 'failed',
-          fixNote: appliedCount > 0
-            ? `${appliedCount} wine${appliedCount === 1 ? '' : 's'} saved with estimated drink-from and drink-by dates.`
-            : (result?.error || 'Those changes could not be saved.'),
-        }
-      : m)));
-  }, [onApplyFix]);
-
-  /**
-   * Apply a specialization change Curator proposed, only after the collector
-   * confirmed it in the chat. The pipe is re-read first so the change is diffed
-   * against what is stored now, and the result lands in the pipe's history.
-   */
-  const applySpecializationAction = useCallback(async (message) => {
-    const action = message?.specializationAction;
-    if (!action?.pipeId) return;
-    setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, specializationState: 'applying', specializationNote: null } : m)));
-    try {
-      const pipe = await base44.entities.Pipe.get(action.pipeId);
-      const result = await applySpecializationChange({
-        pipe,
-        next: action.focus,
-        note: 'Applied from Curator after confirmation',
-        source: 'curator_chat',
-      });
-      setMessages((prev) => prev.map((m) => (m.id === message.id
-        ? {
-            ...m,
-            specializationState: 'applied',
-            specializationNote: result.recorded
-              ? 'Specialization updated and added to this pipe\'s history.'
-              : 'Specialization updated.',
-          }
-        : m)));
-    } catch (err) {
-      setMessages((prev) => prev.map((m) => (m.id === message.id
-        ? { ...m, specializationState: 'failed', specializationNote: String(err?.message || 'That change could not be saved.') }
-        : m)));
-    }
-  }, []);
-
-  /**
    * Determines if this query should go to the LLM.
    * The LLM is the PRIMARY engine for all intelligence queries.
    * The local rule engine only handles simple structural operations (corrections, constraints, follow-ups).
@@ -1874,6 +1821,79 @@ export default function ExpertTobacconistChat({
     setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content: text }]);
     setInput('');
     try {
+      // ── Answers to a proposal — "apply the second option", "keep the existing
+      // classification", "apply everything except the storage change", "undo the
+      // last change". Resolved against the actions Curator last presented, so a
+      // conversational reply maps onto the same action identifiers the card
+      // holds instead of being guessed at by a model. ──
+      const pending = [...messages].reverse().find((m) => Array.isArray(m.actions) && m.actions.length > 0);
+      const reference = resolveActionReference(text, {
+        actions: pending?.actions || [],
+        selections: pending?.actionSelections || {},
+        alternatives: pending?.actionAlternatives || {},
+      });
+
+      if (reference.kind !== 'none') {
+        const replyId = `assistant-${Date.now()}`;
+
+        if (reference.kind === 'undo') {
+          setMessages((prev) => [...prev, { id: replyId, role: 'assistant', content: 'Reversing that change now.' }]);
+          await runUndo(replyId, pending?.actionRunIds?.[0] || lastActionRunRef.current);
+          return;
+        }
+
+        if (reference.kind === 'explain' || reference.kind === 'clarify') {
+          setMessages((prev) => [...prev, { id: replyId, role: 'assistant', content: reference.message }]);
+          return;
+        }
+
+        if (reference.kind === 'records') {
+          const links = (pending?.actions || [])
+            .filter((action) => (reference.actionIds || []).includes(action.id))
+            .flatMap((action) => action.recordLinks || []);
+          setMessages((prev) => [...prev, { id: replyId, role: 'assistant', content: reference.message, recordLinks: links }]);
+          return;
+        }
+
+        if (pending && reference.selections) {
+          updateMessage(pending.id, { actionSelections: reference.selections });
+        }
+        if (pending && reference.alternativeId && (reference.actionIds || []).length === 1) {
+          updateMessage(pending.id, {
+            actionAlternatives: { ...(pending.actionAlternatives || {}), [reference.actionIds[0]]: reference.alternativeId },
+          });
+        }
+
+        if (reference.kind === 'apply') {
+          const explicit = (pending?.actions || []).filter((action) => (
+            reference.selections?.[action.id] && action.confirmation === 'explicit'
+          ));
+          if (explicit.length > 0) {
+            setMessages((prev) => [...prev, {
+              id: replyId,
+              role: 'assistant',
+              content: `${explicit.map((action) => action.title).join(', ')} ${explicit.length === 1 ? 'is' : 'are'} hard to reverse, so it needs the acknowledgement in the card above before I apply it.`,
+            }]);
+            return;
+          }
+
+          const outcome = await applyActions(pending, { selections: reference.selections });
+          const completed = outcome?.completed || 0;
+          const failed = outcome?.failed || 0;
+          setMessages((prev) => [...prev, {
+            id: replyId,
+            role: 'assistant',
+            content: completed > 0
+              ? `Done — ${completed} change${completed === 1 ? '' : 's'} applied${failed > 0 ? `, ${failed} could not be applied` : ''}. You can undo it from the card above.`
+              : 'Nothing was changed. The card above says why.',
+          }]);
+          return;
+        }
+
+        setMessages((prev) => [...prev, { id: replyId, role: 'assistant', content: reference.message }]);
+        return;
+      }
+
       // ── Routed requests: reversals, boundary refusals, reports, record changes ──
       const routed = routeCuratorRequest({
         text,
@@ -1890,13 +1910,18 @@ export default function ExpertTobacconistChat({
       });
 
       if (routed.kind === 'proposal') {
+        const proposals = Array.isArray(routed.proposals) && routed.proposals.length > 0
+          ? routed.proposals
+          : [routed.proposal];
+        const actions = buildActionsFromProposals(proposals, { storageLocations: storageCacheRef.current || [] });
         setMessages((prev) => [...prev, {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
           content: routed.content,
-          proposal: routed.proposal,
-          proposalState: 'proposed',
-          proposalResult: null,
+          actions,
+          actionState: 'idle',
+          actionResult: null,
+          ...initialActionState(actions),
         }]);
         return;
       }
@@ -1960,13 +1985,18 @@ export default function ExpertTobacconistChat({
         const wines = Array.isArray(collectionContext?.wines) ? collectionContext.wines : [];
         const diagnosticReply = buildWineDiagnosticResponse(diagnosticIntent, wines);
         if (diagnosticReply) {
+          const fixActions = diagnosticReply.fix
+            ? buildDrinkingWindowActions(diagnosticReply.fix, wines)
+            : [];
           setMessages((prev) => [
             ...prev,
             {
               id: `assistant-${Date.now()}`,
               role: 'assistant',
               content: diagnosticReply.text,
-              fix: diagnosticReply.fix,
+              ...(fixActions.length > 0
+                ? { actions: fixActions, actionState: 'idle', actionResult: null, ...initialActionState(fixActions) }
+                : {}),
             },
           ]);
           return;
@@ -2032,19 +2062,16 @@ export default function ExpertTobacconistChat({
               blends: collectionContext?.blends || [],
             })
           : null;
+        const specializationActions = specializationReview
+          ? buildSpecializationActions({ pipe: specializationPipe, review: specializationReview })
+          : [];
         setMessages((prev) => [...prev, {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
           content: cleanReply,
-          specializationAction: specializationReview?.proposed
-            ? {
-                pipeId: specializationPipe.id,
-                pipeName: specializationPipe.name,
-                focus: specializationReview.proposed.focus,
-                confidence: specializationReview.proposed.confidence,
-                current: specializationReview.current,
-              }
-            : null,
+          ...(specializationActions.length > 0
+            ? { actions: specializationActions, actionState: 'idle', actionResult: null, ...initialActionState(specializationActions) }
+            : {}),
         }]);
         return;
       }
@@ -2125,7 +2152,7 @@ export default function ExpertTobacconistChat({
     } finally {
       setIsSending(false);
     }
-  }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules, continueAnalysis, messages, runUndo]);
+  }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules, continueAnalysis, messages, runUndo, applyActions, updateMessage]);
 
   const startNewConversation = useCallback(() => {
     setMessages([]);
@@ -2276,15 +2303,27 @@ export default function ExpertTobacconistChat({
                   >
                     <CuratorMessageContent content={m.content} />
                       </div>
-                      {m.proposal && (
-                        <CuratorChangeProposalCard
-                          proposal={m.proposal}
-                          state={m.proposalState || 'proposed'}
-                          result={m.proposalResult}
-                          onConfirm={() => confirmProposal(m)}
-                          onCancel={() => cancelProposal(m)}
-                          onUndo={() => undoProposal(m)}
+                      {m.actions?.length > 0 && (
+                        <CuratorActionSet
+                          message={m}
+                          onUpdate={(patch) => updateMessage(m.id, patch)}
+                          onApply={({ selections }) => applyActions(m, { selections })}
+                          onUndo={() => undoMessage(m)}
                         />
+                      )}
+                      {m.recordLinks?.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                          {m.recordLinks.slice(0, 4).map((link) => (
+                            <Link
+                              key={link.to}
+                              to={link.to}
+                              className="inline-flex items-center gap-1 text-[12px] font-semibold break-words"
+                              style={{ color: '#C6A15B' }}
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" /> {link.label || 'Open record'}
+                            </Link>
+                          ))}
+                        </div>
                       )}
                       {m.report && (
                         <a
@@ -2295,22 +2334,7 @@ export default function ExpertTobacconistChat({
                           Open {m.report.title}
                         </a>
                       )}
-                      {m.fix && (
-                        <CuratorChatFixAction
-                          count={m.fix.items.length}
-                          state={m.fixState || 'idle'}
-                          note={m.fixNote}
-                          onApply={() => applySuggestedFix(m)}
-                        />
-                      )}
-                      {m.specializationAction && (
-                        <CuratorSpecializationAction
-                          action={m.specializationAction}
-                          state={m.specializationState || 'idle'}
-                          note={m.specializationNote}
-                          onApply={() => applySpecializationAction(m)}
-                        />
-                      )}
+
                       {m.retryText && (
                         <button
                           type="button"

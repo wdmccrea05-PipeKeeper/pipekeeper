@@ -28,7 +28,10 @@ export const CURATOR_EXTRA_FIELDS: Record<string, string[]> = {
   TobaccoBlend: ['storage_location_id', 'packaging_condition', 'condition', 'notes', 'blend_type'],
   Cigar: ['storage_location_id', 'humidor_id', 'condition', 'personal_notes', 'brand'],
   Bottle: ['storage_location_id', 'condition', 'notes', 'distillery'],
-  Wine: ['storage_location_id', 'condition', 'notes', 'producer'],
+  // The drinking window is documentation of an estimate, not a valuation or a
+  // quantity, so Curator may record it — the same fields the drinking-window
+  // guidance already fills in.
+  Wine: ['storage_location_id', 'condition', 'notes', 'producer', 'drink_window_start', 'drink_window_end'],
 };
 
 const ARRAY_FIELDS = new Set(['tags', 'focus']);

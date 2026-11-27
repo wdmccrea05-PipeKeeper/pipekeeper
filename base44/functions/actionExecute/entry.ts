@@ -63,6 +63,16 @@ function sanitiseForAction(definition: any, entityName: string, payload: any) {
   return { patch: sanitised.patch, rejected: [...rejected, ...sanitised.rejected] };
 }
 
+/**
+ * The activity event that describes this write. A specialization change keeps
+ * its own event type so the pipe's history still reads as a classification
+ * change rather than a generic edit.
+ */
+function activityEventType(changed: string[], target: any): string {
+  if (changed.includes('focus')) return 'specialization_changed';
+  return changed.length > 1 || target?.bulk === true ? 'bulk_updated' : 'updated';
+}
+
 /** Does the record still hold what the proposal was built against? */
 function staleFields(record: any, expected: any): string[] {
   if (!expected || typeof expected !== 'object') return [];
@@ -164,7 +174,7 @@ async function executePatchTarget(base44: any, user: any, definition: any, targe
     record_id: recordId,
     record_name: recordLabel(record),
     module_key: COLLECTION_ENTITIES[entityName].moduleKey,
-    event_type: changed.length > 1 || (target?.bulk === true) ? 'bulk_updated' : 'updated',
+    event_type: activityEventType(changed, target),
     summary: activitySummary('updated', 1, COLLECTION_ENTITIES[entityName].label),
     detail: `Accepted action (${definition.id}): ${changed.join(', ')}`,
     changed_fields: changed,

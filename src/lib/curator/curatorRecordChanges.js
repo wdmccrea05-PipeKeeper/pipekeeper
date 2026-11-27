@@ -416,6 +416,40 @@ export function buildChangeProposal({
   };
 }
 
+/**
+ * Split a message that asks for several separate changes ("move X to Cellar B;
+ * tag Y as estate") into one proposal each. Only explicit separators split, so a
+ * record name containing "and" is never broken in two.
+ */
+export function splitChangeClauses(text) {
+  return String(text || '')
+    .split(/;|\n| and also | plus /i)
+    .map((clause) => clause.trim())
+    .filter(Boolean);
+}
+
+/**
+ * One proposal per change clause. A single-clause message returns one entry, so
+ * callers do not need to branch on whether the collector asked for one change or
+ * several.
+ */
+export function buildChangeProposals({ text, collections, storageLocations, enabledModules } = {}) {
+  const clauses = splitChangeClauses(text);
+
+  if (clauses.length <= 1) {
+    const single = buildChangeProposal({ text, collections, storageLocations, enabledModules });
+    return single.ok ? [single] : [];
+  }
+
+  const built = [];
+  for (const clause of clauses) {
+    if (!detectRecordChangeRequest(clause)) continue;
+    const result = buildChangeProposal({ text: clause, collections, storageLocations, enabledModules });
+    if (result.ok) built.push(result);
+  }
+  return built;
+}
+
 /** Narrative preview shown above the confirmation card. */
 export function formatChangePreview(proposal) {
   if (!proposal) return '';
@@ -429,4 +463,12 @@ export function formatAmbiguity(candidates = []) {
   const names = candidates.map((record) => `"${record.name}"`).filter(Boolean);
   if (names.length === 0) return '';
   return `I can make that change, but the name matches more than one record: ${names.join(', ')}. Tell me which one — the full name is enough — and I will show you the change before anything is written.`;
+}
+
+/** Lead-in for one proposal or a set of independent ones. */
+export function formatProposalSet(proposals = []) {
+  if (proposals.length === 0) return '';
+  if (proposals.length === 1) return formatChangePreview(proposals[0]);
+  const lines = proposals.map((proposal, index) => `${index + 1}. ${proposal.summary}`);
+  return `I can make ${proposals.length} separate changes. Nothing is written until you accept them.\n${lines.join('\n')}\nEach one stands on its own — take the ones you want.`;
 }

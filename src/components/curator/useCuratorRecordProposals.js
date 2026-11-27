@@ -1,177 +1,126 @@
 import { useCallback } from 'react';
 import { executeActions, undoActionExecution } from '@/lib/actions/actionClient';
-import { createAction } from '@/lib/actions/actionModel';
 
 /**
- * Confirmation, cancellation and reversal for changes Curator proposes.
+ * Execution, reversal and audit bookkeeping for the actions Curator presents.
  *
- * Curator no longer has its own write path: a proposal becomes a framework action
+ * Curator has no writer of its own: an accepted proposal is a framework action
  * and goes through the same executor as every other feature, which re-checks
- * ownership, the field allowlist and whether the record still holds the value the
- * proposal was built from. A failure is shown as a failure — never as a success.
+ * ownership, entitlement, the field allowlist and whether the record still holds
+ * the value the proposal was built from. A failure is reported as a failure.
+ *
+ * The idempotency key is derived from the message that carries the actions, so
+ * pressing accept twice — or replying "apply" after already applying — cannot
+ * write the same change twice.
  */
 export default function useCuratorRecordProposals({ setMessages, setEntityContext, lastActionRunRef }) {
   const patchMessage = useCallback((messageId, patch) => {
-    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, ...patch } : m)));
+    setMessages((prev) => prev.map((message) => {
+      if (message.id !== messageId) return message;
+      return typeof patch === 'function' ? { ...message, ...patch(message) } : { ...message, ...patch };
+    }));
   }, [setMessages]);
 
-  const buildCuratorAction = useCallback((proposal, messageId) => {
-    const change = (proposal.changes || [])[0] || {};
-    const patchFields = Object.keys(proposal.patch || {});
-    const isStorage = patchFields.length > 0
-      && patchFields.every((field) => field === 'storage_location_id' || field === 'humidor_id');
+  const applyActions = useCallback(async (message, { selections, alternatives } = {}) => {
+    const actions = Array.isArray(message?.actions) ? message.actions : [];
+    if (actions.length === 0) return null;
 
-    const type = proposal.actionType === 'merge'
-      ? 'record_merge'
-      : isStorage
-        ? 'storage_assign'
-        : 'record_update';
-
-    const targets = proposal.actionType === 'merge'
-      ? [
-        {
-          entity: proposal.entityName,
-          recordId: proposal.targetId,
-          name: proposal.targetName,
-          role: 'survivor',
-        },
-        ...(proposal.sourceIds || []).map((id, index) => ({
-          entity: proposal.entityName,
-          recordId: id,
-          name: (proposal.sourceNames || [])[index] || '',
-          role: 'source',
-        })),
-      ]
-      : (proposal.ids || []).map((id, index) => ({
-        entity: proposal.entityName,
-        recordId: id,
-        name: (proposal.recordNames || [])[index] || proposal.recordName,
-        // The value the proposal was built against, so a record edited in the
-        // meantime is reported stale instead of being overwritten.
-        expected: change.field && change.fromRaw !== undefined
-          ? { [change.field]: change.fromRaw }
-          : null,
-        patch: proposal.patch,
-      }));
-
-    return createAction({
-      id: `curator_${messageId}`,
-      type,
-      origin: 'curator',
-      module: proposal.moduleKey,
-      title: proposal.summary || '',
-      targets,
-      currentValues: (proposal.changes || []).map((entry) => ({
-        label: entry.label,
-        from: entry.from,
-        to: entry.to,
-      })),
-      undoEligible: proposal.undoable === true,
-    });
-  }, []);
-
-  const confirmProposal = useCallback(async (message) => {
-    const proposal = message?.proposal;
-    if (!proposal || message.proposalState !== 'proposed') return;
-
-    patchMessage(message.id, { proposalState: 'applying' });
+    patchMessage(message.id, { actionState: 'applying', actionError: '' });
 
     try {
-      const action = buildCuratorAction(proposal, message.id);
-      const outcome = await executeActions([action], { idempotencyKey: `curator_${message.id}` });
+      const outcome = await executeActions(actions, {
+        selections: selections || message.actionSelections || {},
+        alternatives: alternatives || message.actionAlternatives || {},
+        idempotencyKey: `curator_${message.id}`,
+      });
 
-      if (!outcome || outcome.completed === 0) {
-        const failure = (outcome?.rows || []).find((row) => row.status === 'failed');
-        patchMessage(message.id, {
-          proposalState: 'failed',
-          proposalResult: {
-            error: failure?.reason || outcome?.message || 'No record was changed',
-          },
-        });
-        return;
+      if (!outcome || outcome.empty) {
+        patchMessage(message.id, { actionState: 'idle' });
+        return outcome;
       }
 
-      const runId = (outcome.undoableExecutionIds || [])[0] || null;
-      if (runId) lastActionRunRef.current = runId;
+      const runIds = outcome.undoableExecutionIds || [];
+      if (runIds.length > 0) lastActionRunRef.current = runIds[0];
 
-      setEntityContext((prev) => ({
-        ...prev,
-        appliedChanges: [
-          ...(Array.isArray(prev?.appliedChanges) ? prev.appliedChanges : []),
-          {
-            name: proposal.recordName || proposal.targetName,
-            fields: (proposal.changes || []).map((change) => change.label),
-            at: new Date().toISOString(),
-          },
-        ],
-      }));
+      if (outcome.completed > 0) {
+        const applied = (outcome.rows || []).filter((row) => row.status === 'completed');
+        setEntityContext((prev) => ({
+          ...prev,
+          appliedChanges: [
+            ...(Array.isArray(prev?.appliedChanges) ? prev.appliedChanges : []),
+            ...applied.map((row) => ({
+              name: row.name || row.recordId,
+              fields: row.changedFields || [],
+              at: new Date().toISOString(),
+            })),
+          ],
+        }));
+      }
 
       patchMessage(message.id, {
-        proposalState: 'applied',
-        proposalResult: {
-          applied: (outcome.rows || []).filter((row) => row.status === 'completed'),
-          skipped: (outcome.rows || []).filter((row) => row.status !== 'completed'),
-        },
-        actionRunId: runId,
+        actionState: outcome.ok ? 'applied' : 'failed',
+        actionResult: outcome,
+        actionRunIds: runIds,
       });
+
+      return outcome;
     } catch (error) {
       patchMessage(message.id, {
-        proposalState: 'failed',
-        proposalResult: { error: error?.message || 'The change could not be saved' },
+        actionState: 'failed',
+        actionError: error?.message || 'The change could not be saved.',
       });
+      return null;
     }
-  }, [buildCuratorAction, patchMessage, setEntityContext, lastActionRunRef]);
-
-  const cancelProposal = useCallback((message) => {
-    if (!message || message.proposalState !== 'proposed') return;
-    patchMessage(message.id, { proposalState: 'cancelled' });
-  }, [patchMessage]);
+  }, [patchMessage, setEntityContext, lastActionRunRef]);
 
   const runUndo = useCallback(async (messageId, runId) => {
     if (!runId) {
       patchMessage(messageId, {
-        proposalState: 'failed',
-        content: 'There is no change from this conversation for me to reverse. Nothing was touched.',
-        proposalResult: { error: 'There is no change from this conversation to reverse' },
+        actionError: 'There is no change from this conversation for me to reverse. Nothing was touched.',
       });
-      return;
+      return null;
     }
 
-    patchMessage(messageId, { proposalState: 'applying' });
+    patchMessage(messageId, { actionState: 'applying', actionError: '' });
 
     try {
       const data = await undoActionExecution(runId);
       const reversed = Array.isArray(data?.reversed) ? data.reversed : [];
 
       if (reversed.length === 0) {
-        const reason = data?.skipped?.[0]?.reason || 'nothing could be reversed';
+        const reason = String(data?.skipped?.[0]?.reason || 'nothing could be reversed').replace(/_/g, ' ');
         patchMessage(messageId, {
-          proposalState: 'failed',
-          content: `I could not reverse that change (${reason}). Your records are unchanged.`,
-          proposalResult: { error: reason },
+          actionState: 'failed',
+          actionError: `I could not reverse that change (${reason}). Your records are unchanged.`,
         });
-        return;
+        return data;
       }
 
       if (lastActionRunRef.current === runId) lastActionRunRef.current = null;
-      patchMessage(messageId, {
-        proposalState: 'undone',
-        content: 'That change has been reversed — the record holds its previous values again.',
-        proposalResult: data,
-      });
+      patchMessage(messageId, (current) => ({
+        actionState: 'applied',
+        actionRunIds: [],
+        actionError: '',
+        actionResult: {
+          ...(current.actionResult || {}),
+          undone: true,
+          undoMessage: data?.message || 'The change was reversed — the record holds its previous values again.',
+        },
+      }));
+      return data;
     } catch (error) {
       patchMessage(messageId, {
-        proposalState: 'failed',
-        content: 'I could not reach the server to reverse that change, so nothing was altered. Try again in a moment.',
-        proposalResult: { error: error?.message || 'The change could not be reversed' },
+        actionState: 'failed',
+        actionError: 'I could not reach the server to reverse that change, so nothing was altered.',
       });
+      return null;
     }
   }, [patchMessage, lastActionRunRef]);
 
-  const undoProposal = useCallback((message) => {
-    if (!message?.actionRunId) return;
-    return runUndo(message.id, message.actionRunId);
-  }, [runUndo]);
+  const undoMessage = useCallback((message) => {
+    const runId = message?.actionRunIds?.[0] || lastActionRunRef.current;
+    return runUndo(message.id, runId);
+  }, [runUndo, lastActionRunRef]);
 
-  return { confirmProposal, cancelProposal, undoProposal, runUndo };
+  return { applyActions, undoMessage, runUndo };
 }

@@ -15,10 +15,11 @@ import {
 } from './curatorGrounding.js';
 import {
   buildChangeProposal,
+  buildChangeProposals,
   detectRecordChangeRequest,
   detectUndoRequest,
   formatAmbiguity,
-  formatChangePreview,
+  formatProposalSet,
 } from './curatorRecordChanges.js';
 
 const REASON_MESSAGES = {
@@ -52,15 +53,20 @@ export function routeCuratorRequest({
 
   if (!detectRecordChangeRequest(text)) return { kind: 'none' };
 
-  const result = buildChangeProposal({ text, collections, storageLocations, enabledModules });
-
-  if (result.ok) {
+  // A message that asks for several separate changes becomes several
+  // independent actions, each accepted or left on its own.
+  const batch = buildChangeProposals({ text, collections, storageLocations, enabledModules });
+  if (batch.length > 0) {
+    const proposals = batch.map((entry) => entry.proposal);
     return {
       kind: 'proposal',
-      proposal: result.proposal,
-      content: formatChangePreview(result.proposal),
+      proposal: proposals[0],
+      proposals,
+      content: formatProposalSet(proposals),
     };
   }
+
+  const result = buildChangeProposal({ text, collections, storageLocations, enabledModules });
 
   if (result.reason === 'ambiguous') {
     return {

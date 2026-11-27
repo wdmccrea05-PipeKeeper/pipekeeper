@@ -71,6 +71,10 @@ export function createAction(input) {
     defaultSelected: !isHighImpact(type) && confirmationFor(type) !== 'explicit',
     // Navigation targets offered alongside the action.
     recordLinks: Array.isArray(input?.recordLinks) ? input.recordLinks : [],
+    // A field the collector may type their own value for (tags, notes, a
+    // specialization) instead of only choosing among the proposed options.
+    customField: input?.customField || null,
+    customLabel: input?.customLabel || '',
   };
 }
 
