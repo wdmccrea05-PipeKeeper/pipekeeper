@@ -453,6 +453,14 @@ export default function ProfilePage() {
           user_email: email || undefined,
           created_by: email || undefined,
           avatar_url: file_url,
+          // Carry the collector's privacy choices onto the new row so it cannot
+          // silently reset their visibility or messaging settings.
+          ...buildPrivacyPayload({
+            visibility: formData.profile_visibility,
+            messaging: formData.messaging_permission,
+            friendRequests: formData.friend_requests_enabled,
+            sharedModules: formData.shared_modules,
+          }),
         });
       }
       await queryClient.invalidateQueries({ queryKey: ["user-profile-page", email] });

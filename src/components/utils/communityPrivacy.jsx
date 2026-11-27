@@ -47,8 +47,10 @@ export function normalizeCommunityPrivacy(profile) {
   const rawMessaging = profile?.messaging_permission;
   const messaging = ["everyone", "friends", "disabled"].includes(rawMessaging)
     ? rawMessaging
-    : profile?.enable_messaging === true
-      ? "everyone"
+    : // Legacy rows only had a yes/no flag and could only reach accepted
+      // friends, so a legacy "on" maps to friends-only.
+      profile?.enable_messaging === true
+      ? "friends"
       : "disabled";
 
   const friendRequests =

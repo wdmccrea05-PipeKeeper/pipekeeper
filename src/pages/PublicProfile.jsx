@@ -322,7 +322,10 @@ export default function PublicProfilePage() {
     );
   }
 
-  if (!viewerCanView && !isPreview) {
+  // Only the owner may use the preview view of a profile that is not public.
+  const previewingOwn = isPreview && isOwnProfile;
+
+  if (!viewerCanView && !previewingOwn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
