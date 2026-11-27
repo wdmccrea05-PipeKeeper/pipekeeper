@@ -497,7 +497,7 @@ describe('Curator — mobile surfaces', () => {
 
     const set = readSource('src/components/curator/CuratorActionSet.jsx');
     expect(set).toContain('min-w-0');
-    expect(set).toContain('min-h-[40px]');
+    expect(set).toContain('minHeight: 40');
   });
 
   it('keeps the chat bubbles and action card inside the mobile viewport', () => {
