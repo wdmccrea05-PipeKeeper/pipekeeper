@@ -52,6 +52,7 @@ import ReconciliationDashboard from "@/pages/ReconciliationDashboard";
 import AppreciationCampaignAdmin from "@/pages/AppreciationCampaignAdmin";
 import EmailCampaigns from "@/pages/EmailCampaigns";
 import CollectionTools from "@/pages/CollectionTools";
+import ShareCenter from "@/pages/ShareCenter";
 import ValuationCenter from "@/pages/ValuationCenter";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
@@ -498,6 +499,15 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="CollectionTools">
             <CollectionTools />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/ShareCenter"
+        element={
+          <LayoutWrapper currentPageName="ShareCenter">
+            <ShareCenter />
           </LayoutWrapper>
         }
       />

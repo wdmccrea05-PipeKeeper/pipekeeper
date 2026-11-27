@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
-import { Users, History, Plus } from "lucide-react";
+import { Users, History, Plus, Share2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import PipeIcon from "@/components/icons/PipeIcon";
 import PipeClubSessionWizard from "./PipeClubSessionWizard";
 import PipeClubHistory from "./PipeClubHistory";
@@ -21,6 +22,7 @@ const ACCENT = "#D4A574";
  */
 export default function PipeClubHome() {
   const { user } = useCurrentUser();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showWizard, setShowWizard] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -69,6 +71,22 @@ export default function PipeClubHome() {
           </p>
         </div>
       </div>
+
+      {/* Collection presentation — a read-only share the owner builds */}
+      <button
+        type="button"
+        onClick={() => navigate("/ShareCenter")}
+        className="w-full rounded-xl p-4 text-left flex items-center gap-3 transition-all hover:bg-white/5"
+        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(180,140,75,0.25)" }}
+      >
+        <Share2 className="w-5 h-5 flex-shrink-0" style={{ color: ACCENT }} />
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold text-[#F5F1E7]">Present your collection</span>
+          <span className="block text-xs text-[#D8C7A6]/65 mt-0.5">
+            Build a read-only showcase of selected pipes for the club. You choose the items and the fields.
+          </span>
+        </span>
+      </button>
 
       {/* Primary CTA */}
       <button

@@ -1,116 +1,104 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { useTranslation } from "@/components/i18n/safeTranslation";
-import { Button } from "@/components/ui/button";
 import { AlertCircle, ChevronLeft } from "lucide-react";
-import { getShareByToken } from "@/components/share/shareUtils";
-import {
-  buildPublicPipeShareView,
-  buildPublicTobaccoShareView,
-  buildPublicWhiskeyShareView,
-  buildPublicWineShareView,
-  buildPublicCigarShareView,
-} from "@/components/share/shareFieldSelectors";
-import { PipeShareCard, TobaccoShareCard, WhiskeyShareCard, WineShareCard, CigarShareCard } from "@/components/share/ShareCardRenderer";
+import { Button } from "@/components/ui/button";
+import CollectionShareView from "@/components/share/CollectionShareView";
+import { fetchSharePayload } from "@/lib/share/shareClient";
 
-const LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694956e18d119cc497192525/6be04be36_Screenshot2025-12-22at33829PM.png";
+const LOGO = "https://media.base44.com/images/public/694956e18d119cc497192525/b5c3204ab_CollectionKeeperWB.png";
 
-function resolveShareEntityName(moduleType) {
-  if (moduleType === "pipe") return "Pipe";
-  if (moduleType === "tobacco") return "TobaccoBlend";
-  if (moduleType === "whiskey") return "Bottle";
-  if (moduleType === "wine") return "Wine";
-  if (moduleType === "cigar") return "Cigar";
-  return null;
-}
-
-function buildPublicRecord(moduleType, record, shareConfig, profile) {
-  if (moduleType === "pipe") return buildPublicPipeShareView(record, shareConfig, profile);
-  if (moduleType === "tobacco") return buildPublicTobaccoShareView(record, shareConfig, profile);
-  if (moduleType === "whiskey") return buildPublicWhiskeyShareView(record, shareConfig, profile);
-  if (moduleType === "wine") return buildPublicWineShareView(record, shareConfig, profile);
-  if (moduleType === "cigar") return buildPublicCigarShareView(record, shareConfig, profile);
-  return null;
-}
+const ERROR_COPY = {
+  not_found: { title: "This link is not available", message: "The link may be mistyped, or the owner removed it." },
+  revoked: { title: "This link was revoked", message: "The owner is no longer sharing this collection." },
+  expired: { title: "This link has expired", message: "Ask the owner for a new link." },
+  inactive: { title: "This link is not available", message: "The owner turned sharing off for this collection." },
+};
 
 export default function PublicSharedRecord() {
-  const { t } = useTranslation();
-  const { moduleType, shareToken } = useParams();
+  const { shareToken } = useParams();
   const navigate = useNavigate();
-  const [shareRecord, setShareRecord] = useState(null);
-  const [record, setRecord] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [payload, setPayload] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
-      setIsLoading(true);
+      setLoading(true);
       setError(null);
       try {
-        const share = await getShareByToken(shareToken);
-        if (!share) {
-          setError("notFound");
-          return;
-        }
-        setShareRecord(share);
-        const entityName = resolveShareEntityName(moduleType);
-        if (!entityName) {
-          setError("notFound");
-          return;
-        }
-        let found = null;
-        try {
-          found = await base44.entities[entityName].get(share.record_id);
-        } catch {}
-        if (!found) {
-          const records = await base44.entities[entityName].filter({ id: share.record_id });
-          found = Array.isArray(records) && records.length > 0 ? records[0] : null;
-        }
-        if (!found) {
-          setError("recordNotFound");
-          return;
-        }
-        let profile = null;
-        try {
-          const profiles = await base44.entities.UserProfile.filter({ user_email: share.owner_email });
-          profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
-        } catch {}
-        setUserProfile(profile);
-        setRecord(buildPublicRecord(moduleType, found, share.share_config || share, profile || {}));
+        const result = await fetchSharePayload(shareToken);
+        if (cancelled) return;
+        if (result?.items) setPayload(result);
+        else setError(result?.error || "not_found");
       } catch (e) {
-        console.error(e);
-        setError("loadFailed");
+        if (cancelled) return;
+        const code = e?.response?.data?.error || e?.data?.error || "not_found";
+        setError(code);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     load();
-  }, [moduleType, shareToken]);
+    return () => { cancelled = true; };
+  }, [shareToken]);
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#0f0b08" }}><div className="text-center"><div className="w-8 h-8 border-4 border-[rgba(180,140,75,0.3)] border-t-[#D4A574] rounded-full animate-spin mx-auto mb-4" /><p style={{ color: "rgba(224,216,200,0.7)" }}>{t("common.loading")}</p></div></div>;
-
-  if (error || !record || !shareRecord) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#0f0b08" }}><div className="max-w-md mx-auto p-6 text-center"><AlertCircle className="w-12 h-12 mx-auto mb-4" style={{ color: "#D45C5C" }} /><h1 style={{ color: "#FFFFFF", fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>{t(`share.error.${error || 'notFound'}.title`)}</h1><p style={{ color: "rgba(224,216,200,0.7)", marginBottom: 24 }}>{t(`share.error.${error || 'notFound'}.message`)}</p><Button onClick={() => navigate("/")}>{t("share.backHome")}</Button></div></div>;
-
-  return <div className="min-h-screen" style={{ background: "radial-gradient(circle at 30% 20%, rgba(120,85,55,0.15), transparent 40%), radial-gradient(circle at 80% 70%, rgba(70,50,35,0.2), transparent 50%), #0f0b08" }}>
-    <nav className="border-b" style={{ background: "linear-gradient(to bottom, rgba(28, 20, 14, 0.97), rgba(24, 16, 12, 0.99))", borderBottomColor: "rgba(120, 90, 65, 0.35)", backdropFilter: "blur(10px)" }}>
-      <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-[#E0D8C8]"><ChevronLeft className="w-5 h-5" /></Button>
-          <img src={LOGO} alt="PipeKeeper" className="h-6 object-contain" />
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0f0b08" }}>
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-[rgba(180,140,75,0.3)] border-t-[#D4A574] rounded-full animate-spin mx-auto mb-4" />
+          <p style={{ color: "rgba(224,216,200,0.7)" }}>Opening shared collection…</p>
         </div>
       </div>
-    </nav>
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <div className="flex justify-center mb-12">
-        {moduleType === "pipe" ? <PipeShareCard pipe={record} userProfile={userProfile} /> : null}
-        {moduleType === "tobacco" ? <TobaccoShareCard tobacco={record} userProfile={userProfile} /> : null}
-        {moduleType === "whiskey" ? <WhiskeyShareCard bottle={record} userProfile={userProfile} /> : null}
-        {moduleType === "wine" ? <WineShareCard wine={record} userProfile={userProfile} /> : null}
-        {moduleType === "cigar" ? <CigarShareCard cigar={record} userProfile={userProfile} /> : null}
+    );
+  }
+
+  const copy = ERROR_COPY[error] || ERROR_COPY.not_found;
+
+  if (!payload) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0f0b08" }}>
+        <div className="max-w-md mx-auto p-6 text-center">
+          <AlertCircle className="w-12 h-12 mx-auto mb-4" style={{ color: "#D45C5C" }} />
+          <h1 className="text-2xl font-semibold mb-2" style={{ color: "#FFFFFF" }}>{copy.title}</h1>
+          <p style={{ color: "rgba(224,216,200,0.7)", marginBottom: 24 }}>{copy.message}</p>
+          <Button onClick={() => navigate("/")}>Open CollectionKeeper</Button>
+        </div>
       </div>
-      <div className="text-center max-w-md mx-auto"><div className="bg-gradient-to-br from-[#2a1f18] to-[#1f1510] border border-[rgba(180,140,75,0.25)] rounded-lg p-6"><p style={{ color: "rgba(224, 216, 200, 0.8)", marginBottom: 12, fontSize: 14 }}>{t("share.startOwnCollection")}</p><Button onClick={() => navigate("/")} className="w-full bg-[#A35C5C] hover:bg-[#8F4E4E]">{t("share.openPipeKeeper")}</Button><p style={{ color: "rgba(180, 140, 75, 0.6)", fontSize: 11, marginTop: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("share.poweredByPipeKeeper")}</p></div></div>
+    );
+  }
+
+  return (
+    <div
+      className="min-h-screen"
+      style={{
+        background:
+          "radial-gradient(circle at 30% 20%, rgba(120,85,55,0.15), transparent 40%), radial-gradient(circle at 80% 70%, rgba(70,50,35,0.2), transparent 50%), #0f0b08",
+      }}
+    >
+      <nav className="border-b" style={{ background: "rgba(24,16,12,0.98)", borderBottomColor: "rgba(120,90,65,0.35)" }}>
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-[#E0D8C8]">
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <img src={LOGO} alt="CollectionKeeper" className="h-7 object-contain" />
+          </div>
+          <span className="text-[11px] uppercase tracking-wide" style={{ color: "rgba(224,216,200,0.5)" }}>Read-only share</span>
+        </div>
+      </nav>
+
+      <main className="max-w-4xl mx-auto px-4 py-10">
+        <CollectionShareView payload={payload} />
+
+        <div className="mt-10 max-w-md mx-auto rounded-xl p-6 text-center" style={{ background: "linear-gradient(135deg,#2a1f18,#1f1510)", border: "1px solid rgba(180,140,75,0.25)" }}>
+          <p className="text-sm mb-3" style={{ color: "rgba(224,216,200,0.8)" }}>
+            Catalogue your own pipes, tobacco, cigars, whiskey and wine.
+          </p>
+          <Button onClick={() => navigate("/")} className="w-full">Open CollectionKeeper</Button>
+        </div>
+      </main>
     </div>
-  </div>;
+  );
 }

@@ -1,0 +1,128 @@
+{
+  "name": "GiftCode",
+  "type": "object",
+  "description": "A CollectionKeeper software membership gift. One row per code, with its issue, expiry, redemption and revocation trail. Software only: a gift never represents tobacco, alcohol or any physical product. Administrator-only.",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Normalised redemption code"
+    },
+    "months": {
+      "type": "number",
+      "description": "Months of membership the code grants"
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Modules the gift unlocks. Empty means the recipient chooses one at redemption."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "issued",
+        "redeemed",
+        "revoked",
+        "expired"
+      ],
+      "enumColors": [
+        "blue",
+        "green",
+        "red",
+        "gray"
+      ],
+      "default": "issued",
+      "description": "Lifecycle state of the code"
+    },
+    "issued_by": {
+      "type": "string",
+      "description": "Administrator who issued the code"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the code was issued"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the code can no longer be redeemed"
+    },
+    "recipient_hint": {
+      "type": "string",
+      "description": "Optional note about who the gift is intended for. Never an email address is required."
+    },
+    "note": {
+      "type": "string",
+      "description": "Internal note about why the gift was issued"
+    },
+    "redeemed_by_email": {
+      "type": "string",
+      "description": "Email of the collector who redeemed the code"
+    },
+    "redeemed_by_user_id": {
+      "type": "string",
+      "description": "User id of the collector who redeemed the code"
+    },
+    "redeemed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the code was redeemed"
+    },
+    "redeemed_module": {
+      "type": "string",
+      "description": "Module selected at redemption"
+    },
+    "grant_id": {
+      "type": "string",
+      "description": "Id of the access grant created by the redemption"
+    },
+    "grant_end_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the granted access ends"
+    },
+    "revoked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the code was revoked"
+    },
+    "revoked_by": {
+      "type": "string",
+      "description": "Administrator who revoked the code"
+    },
+    "revoke_reason": {
+      "type": "string",
+      "description": "Why the code was revoked"
+    }
+  },
+  "required": [
+    "code",
+    "months",
+    "status",
+    "issued_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

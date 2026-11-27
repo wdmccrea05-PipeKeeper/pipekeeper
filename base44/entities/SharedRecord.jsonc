@@ -1,6 +1,7 @@
 {
   "name": "SharedRecord",
   "type": "object",
+  "description": "A read-only collection share created by its owner. The share row holds the owner's chosen fields and expiry; the public view is produced server-side by the publicShare function, never by reading this table anonymously. Shares are private by default and revocable at any time.",
   "properties": {
     "module_type": {
       "type": "string",
@@ -8,57 +9,168 @@
         "pipe",
         "tobacco",
         "whiskey",
+        "wine",
         "cigar",
         "coffee"
       ],
-      "description": "Type of collection module (pipe, tobacco, whiskey, etc.)"
+      "enumColors": [
+        "yellow",
+        "green",
+        "blue",
+        "pink",
+        "purple",
+        "gray"
+      ],
+      "description": "Collection module the shared records belong to"
+    },
+    "share_kind": {
+      "type": "string",
+      "enum": [
+        "record",
+        "category",
+        "showcase"
+      ],
+      "enumColors": [
+        "blue",
+        "green",
+        "purple"
+      ],
+      "default": "record",
+      "description": "record = one item, category = a selected set of items, showcase = an organised presentation with a title and notes"
     },
     "record_id": {
       "type": "string",
-      "description": "ID of the shared record"
+      "description": "ID of the single shared record, for record shares"
+    },
+    "record_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of the shared records, for category and showcase shares"
     },
     "owner_email": {
       "type": "string",
-      "description": "Email of the record owner"
+      "description": "Email of the collector who owns the shared records"
     },
     "share_token": {
       "type": "string",
-      "description": "Unique token for the public share URL"
+      "description": "Unguessable token used in the public share URL"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title shown to the recipient"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short introduction shown above the shared items"
     },
     "is_active": {
       "type": "boolean",
       "default": true,
-      "description": "Whether this share is currently active"
+      "description": "Whether this share can currently be opened"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the link stops working. Empty means it stays live until revoked."
+    },
+    "revoked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the owner revoked the link"
+    },
+    "visible_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Field keys the owner chose to show. Empty means every non-sensitive catalogue field."
     },
     "include_photos": {
       "type": "boolean",
       "default": true,
-      "description": "Include photos in the shared view"
+      "description": "Include photographs in the shared view"
     },
     "include_notes": {
       "type": "boolean",
       "default": false,
-      "description": "Include user notes in the shared view"
+      "description": "Include the owner's notes, truncated"
+    },
+    "include_rating": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include the owner's personal rating"
     },
     "include_value": {
       "type": "boolean",
       "default": false,
-      "description": "Include estimated value in the shared view"
+      "description": "Include an estimated value. Off by default; acquisition cost is never shared."
     },
     "include_inventory": {
       "type": "boolean",
       "default": false,
-      "description": "Include inventory/cellar quantities in the shared view"
+      "description": "Include inventory quantities in the shared view"
     },
     "share_config": {
       "type": "object",
-      "description": "Additional share configuration options"
+      "description": "Additional share configuration kept for existing links"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times the link has been opened"
+    },
+    "last_viewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time the link was opened"
     }
   },
   "required": [
     "module_type",
-    "record_id",
     "owner_email",
     "share_token"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.owner_email": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
