@@ -1,54 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { X, Loader2, MessageSquare } from 'lucide-react';
+import { groupConversations, formatConversationWhen } from '@/lib/curator/conversationHistory.js';
 
 /**
- * Groups persisted Curator messages into conversations, newest first.
- * The opening question becomes the conversation's title.
+ * Lists the collector's earlier Curator conversations, newest first, so any of
+ * them can be reopened without hunting through the current thread.
  */
-export function groupConversations(rows = []) {
-  const bySession = new Map();
-
-  [...rows].forEach((row) => {
-    const id = row?.session_id;
-    if (!id) return;
-
-    const timestamp = row?.timestamp || row?.created_date || null;
-    const entry = bySession.get(id) || {
-      id,
-      title: '',
-      titleIndex: Number.POSITIVE_INFINITY,
-      lastAt: null,
-      count: 0,
-    };
-
-    entry.count += 1;
-    if (timestamp && (!entry.lastAt || String(timestamp) > String(entry.lastAt))) {
-      entry.lastAt = timestamp;
-    }
-
-    if (row?.role === 'user') {
-      const index = typeof row?.message_index === 'number' ? row.message_index : Number.POSITIVE_INFINITY;
-      if (index <= entry.titleIndex) {
-        entry.titleIndex = index;
-        entry.title = String(row.content || '').replace(/\s+/g, ' ').trim().slice(0, 90);
-      }
-    }
-
-    bySession.set(id, entry);
-  });
-
-  return [...bySession.values()]
-    .filter((session) => session.title)
-    .sort((a, b) => String(b.lastAt || '').localeCompare(String(a.lastAt || '')));
-}
-
-function formatWhen(value) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
+const formatWhen = formatConversationWhen;
 
 export default function CuratorHistorySheet({ open, onClose, currentSessionId, onSelect }) {
   const [loading, setLoading] = useState(false);

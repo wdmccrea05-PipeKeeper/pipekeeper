@@ -18,8 +18,8 @@ export default function HelpCenter() {
   const [activeTab, setActiveTab] = useState('tutorials');
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(90,58,30,0.18),transparent_28%),linear-gradient(180deg,#140f0b_0%,#0b0908_100%)]">
-      <div className="max-w-[1000px] mx-auto px-4 py-10">
+    <div className="min-h-[100dvh] bg-[radial-gradient(circle_at_top,rgba(90,58,30,0.18),transparent_28%),linear-gradient(180deg,#140f0b_0%,#0b0908_100%)]">
+      <div className="max-w-[1000px] mx-auto px-4 py-6 sm:py-10">
         {/* Contact Support Banner — always at top */}
         <div
           className="rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between"
@@ -58,7 +58,7 @@ export default function HelpCenter() {
 
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-[#F5F1E7] mb-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-[#F5F1E7] mb-2">
             {t('help.center', 'Help Center')}
           </h1>
           <p className="text-[#D7C9B2]/80 mb-6">

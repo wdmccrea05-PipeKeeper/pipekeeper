@@ -1,12 +1,14 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
+import AdvancedDetails from '@/components/ui/AdvancedDetails';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { trackAppreciationFeatureUse } from '@/components/campaign/featureUsage';
 
 const CURATOR_ICON = 'https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png';
 
-// ─── Static surfaces (always present) ────────────────────────────────────────
+// ─── Secondary surfaces — one conversation first, these on request ───────────
 
 const SURFACES_BASE = [
   { key: 'record_optimization', labelKey: 'curatorPage.surfaces.recordOptimization' },
@@ -25,41 +27,9 @@ const SURFACES_TAIL = [
   { key: 'chat', labelKey: 'curatorPage.surfaces.chat' },
 ];
 
-// All valid surface keys (used for URL deep-link validation before SURFACES is computed)
-const ALL_VALID_KEYS = new Set([
-  ...SURFACES_BASE,
-  ...MULTI_MODULE_SURFACES,
-  ...SURFACES_TAIL,
-].map((s) => s.key));
-
-function SurfaceTab({ active, label, badge, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="h-[50px] sm:h-[58px] px-4 sm:px-7 rounded-[14px] sm:rounded-[18px] inline-flex items-center gap-2 sm:gap-3 text-[13px] sm:text-[16px] font-medium transition whitespace-nowrap"
-      style={{
-        background: active ? 'rgba(198,161,91,0.18)' : 'transparent',
-        color: active ? '#F5F5F7' : '#C8B898',
-        border: active ? '1px solid rgba(198,161,91,0.35)' : '1px solid transparent',
-      }}
-    >
-      <span>{label}</span>
-      {typeof badge === 'number' && badge > 0 ? (
-        <span
-          className="min-w-[24px] h-[24px] px-2 rounded-full text-[12px] inline-flex items-center justify-center"
-          style={{
-            background: 'rgba(154,67,67,0.45)',
-            color: '#F3C7C7',
-            border: '1px solid rgba(154,67,67,0.28)',
-          }}
-        >
-          {badge}
-        </span>
-      ) : null}
-    </button>
-  );
-}
+const ALL_VALID_KEYS = new Set(
+  [...SURFACES_BASE, ...MULTI_MODULE_SURFACES, ...SURFACES_TAIL].map((s) => s.key)
+);
 
 export default function CuratorPage() {
   const { enabledModuleKeys } = useEnabledModules();
@@ -68,31 +38,29 @@ export default function CuratorPage() {
   // Multi-module mode when 2+ modules are enabled
   const isMultiModuleMode = enabledModuleKeys.length >= 2;
 
-  // Build the active surfaces list depending on module mode
-  const SURFACES = useMemo(() => {
-    return [
-      ...SURFACES_BASE,
-      ...(isMultiModuleMode ? MULTI_MODULE_SURFACES : []),
-      ...SURFACES_TAIL,
-    ].map((surface) => ({
-      ...surface,
-      label: t(surface.labelKey),
-    }));
-  }, [isMultiModuleMode, t]);
+  const SURFACES = useMemo(
+    () =>
+      [...SURFACES_BASE, ...(isMultiModuleMode ? MULTI_MODULE_SURFACES : []), ...SURFACES_TAIL].map(
+        (surface) => ({ ...surface, label: t(surface.labelKey) })
+      ),
+    [isMultiModuleMode, t]
+  );
 
-  // Support URL deep-links like ?surface=pairings — validate against all known keys
+  const tools = useMemo(() => SURFACES.filter((surface) => surface.key !== 'chat'), [SURFACES]);
+
+  // Conversation is the default. Deep links (?surface=pairings) still work.
   const initialSurface = (() => {
     const params = new URLSearchParams(window.location.search);
     const s = params.get('surface');
-    return s && ALL_VALID_KEYS.has(s) ? s : 'record_optimization';
+    return s && ALL_VALID_KEYS.has(s) ? s : 'chat';
   })();
 
   const [surface, setSurface] = useState(initialSurface);
 
-  // If pairings is active but we switched to single-module mode, redirect to plan_session
+  // If pairings is active but we switched to single-module mode, fall back to chat
   useEffect(() => {
     if (!isMultiModuleMode && surface === 'pairings') {
-      setSurface('plan_session');
+      setSurface('chat');
     }
   }, [isMultiModuleMode, surface]);
 
@@ -115,68 +83,80 @@ export default function CuratorPage() {
     setCounts((prev) => ({ ...prev, ...nextCounts }));
   }, []);
 
-  const progressWidth = useMemo(() => {
-    const index = SURFACES.findIndex((s) => s.key === surface);
-    return `${((index + 1) / SURFACES.length) * 100}%`;
-  }, [surface, SURFACES]);
-
   return (
     <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)]" style={{ background: '#0B0B0C' }}>
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-4 sm:py-6 md:py-8">
-        <header className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <img src={CURATOR_ICON} alt="" className="w-9 h-9 object-cover rounded" style={{ filter: 'hue-rotate(35deg) saturate(0.8) brightness(1.1)' }} aria-hidden="true" />
+      <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        <header className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <img
+              src={CURATOR_ICON}
+              alt=""
+              aria-hidden="true"
+              className="w-8 h-8 object-cover rounded shrink-0"
+              style={{ filter: 'hue-rotate(35deg) saturate(0.8) brightness(1.1)' }}
+            />
             <h1
-              className="text-[32px] leading-none font-semibold"
-              style={{ color: '#F5F5F7', letterSpacing: '-0.5px' }}
+              className="text-[22px] sm:text-[26px] leading-tight font-semibold truncate"
+              style={{ color: '#F5F5F7', letterSpacing: '-0.4px' }}
             >
               {t('curatorPage.title')}
             </h1>
           </div>
-          <p className="text-[18px] leading-8" style={{ color: '#9C968C' }}>
-            {t('curatorPage.description')}
-          </p>
+
+          {surface !== 'chat' ? (
+            <button
+              type="button"
+              onClick={() => setSurface('chat')}
+              className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 rounded-lg shrink-0"
+              style={{ color: '#C6A15B', border: '1px solid rgba(198,161,91,0.28)', minHeight: 40 }}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              {t('curatorPage.backToChat')}
+            </button>
+          ) : null}
         </header>
-
-        <div
-          className="rounded-[22px] p-3 mb-9"
-          style={{
-            background: 'linear-gradient(145deg, rgba(23,23,26,0.92) 0%, rgba(17,17,19,0.92) 100%)',
-            border: '1px solid rgba(140,105,65,0.16)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
-          }}
-        >
-          <div className="flex flex-wrap gap-3">
-            {SURFACES.map((tab) => (
-              <SurfaceTab
-                key={tab.key}
-                label={tab.label}
-                badge={counts[tab.key]}
-                active={surface === tab.key}
-                onClick={() => setSurface(tab.key)}
-              />
-            ))}
-          </div>
-
-          <div
-            className="h-[10px] rounded-full mt-3 overflow-hidden"
-            style={{ background: 'rgba(255,255,255,0.04)' }}
-          >
-            <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{
-                width: progressWidth,
-                background: 'linear-gradient(90deg, rgba(198,161,91,0.65) 0%, rgba(198,161,91,0.35) 100%)',
-              }}
-            />
-          </div>
-        </div>
 
         <CuratorWorkspace
           activeSurface={surface}
           onSurfaceChange={setSurface}
           onCountsChange={handleCountsChange}
         />
+
+        {surface === 'chat' ? (
+          <div className="mt-3">
+            <AdvancedDetails label={t('curatorPage.moreTools')} hint={t('curatorPage.moreToolsHint')}>
+              <div className="flex flex-wrap gap-2">
+                {tools.map((tool) => {
+                  const badge = counts[tool.key] || 0;
+                  return (
+                    <button
+                      key={tool.key}
+                      type="button"
+                      onClick={() => setSurface(tool.key)}
+                      className="inline-flex items-center gap-2 px-3 rounded-xl text-[13px] font-medium break-words"
+                      style={{
+                        border: '1px solid rgba(180,140,75,0.24)',
+                        color: '#E0D8C8',
+                        background: 'rgba(255,255,255,0.02)',
+                        minHeight: 44,
+                      }}
+                    >
+                      {tool.label}
+                      {badge > 0 ? (
+                        <span
+                          className="min-w-[20px] h-[20px] px-1.5 rounded-full text-[11px] inline-flex items-center justify-center"
+                          style={{ background: 'rgba(198,161,91,0.22)', color: '#E8D3A8' }}
+                        >
+                          {badge}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </AdvancedDetails>
+          </div>
+        ) : null}
       </div>
     </div>
   );

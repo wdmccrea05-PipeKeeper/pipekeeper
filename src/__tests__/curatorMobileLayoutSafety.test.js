@@ -20,11 +20,13 @@ describe('curator mobile layout safety contracts', () => {
     expect(src.default).not.toContain('min-h-screen');
   });
 
-  it('ExpertTobacconistChat caps chat card/message area by dynamic viewport units', async () => {
+  it('ExpertTobacconistChat keeps the thread dvh-capped and the input clear of the keyboard', async () => {
     const src = await import('../components/agent/ExpertTobacconistChat.jsx?raw').catch(() => null);
     expect(src).toBeTruthy();
 
-    expect(src.default).toContain('max-h-[calc(100dvh-14rem)]');
-    expect(src.default).toContain("maxHeight: 'min(480px, 50dvh)'");
+    expect(src.default).toContain("height: 'min(58dvh, 560px)'");
+    expect(src.default).toContain('env(safe-area-inset-bottom)');
+    expect(src.default).toContain('overscrollBehavior');
+    expect(src.default).toContain('overflow-x-hidden');
   });
 });

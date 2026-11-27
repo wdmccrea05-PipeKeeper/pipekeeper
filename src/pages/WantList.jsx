@@ -588,7 +588,7 @@ function ViewList({ onBack }) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-        <TabsList className="w-full grid grid-cols-5">
+        <TabsList className="w-full grid grid-cols-3 sm:grid-cols-5">
           <TabsTrigger value="all" className="text-xs">{t("wantList.tabs.all")}</TabsTrigger>
           <TabsTrigger value="wishlist" className="text-xs">{t("wantList.tabs.wish")}</TabsTrigger>
           <TabsTrigger value="shopping" className="text-xs">{t("wantList.tabs.shopping")}</TabsTrigger>

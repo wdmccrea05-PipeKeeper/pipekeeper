@@ -885,7 +885,7 @@ export default function PipeDetail() {
                 <p className="text-xs uppercase tracking-[0.12em] font-semibold text-[#D8C7A6]/60">
                   Photo Set ({allPhotos.length})
                 </p>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   {allPhotos.map((photo, idx) => (
                     <button
                       key={idx}

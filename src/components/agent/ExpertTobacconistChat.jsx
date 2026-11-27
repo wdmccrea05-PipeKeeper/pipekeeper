@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { SendHorizontal } from 'lucide-react';
+import { SendHorizontal, History, Plus, Square } from 'lucide-react';
+import CuratorMessageContent from '@/components/curator/CuratorMessageContent.jsx';
+import CuratorHistorySheet from '@/components/curator/CuratorHistorySheet.jsx';
 import { base44 } from '@/api/base44Client';
 import { buildSessionPlan } from '@/lib/curator/sessionPlanner.js';
 import {
@@ -74,6 +76,15 @@ const STARTER_PROMPTS_MULTI = [
   'What is the biggest gap in my collection?',
   'Explain one good pairing from my collection.',
 ];
+
+// The modules the collector actually has switched on — Curator picks context from
+// these automatically, so nobody has to configure an analysis scope before asking.
+const MODULE_LABELS = {
+  pipekeeper: 'Pipes & tobacco',
+  whiskeykeeper: 'Whiskey',
+  winekeeper: 'Wine',
+  cigarkeeper: 'Cigars',
+};
 
 function norm(v) { return String(v || '').trim().toLowerCase(); }
 function daysSince(d) {
@@ -711,7 +722,9 @@ WINE DIAGNOSTICS: When user asks about wines missing drinking window, valuation,
 
 ═══ FORMAT RULES ═══
 - Lead with the direct answer — no preamble or caveats
+- If the user asks for a short answer, keep it to a few sentences. Depth only when they ask for it.
 - Use numbered lists for ranked recommendations (1. Item — reason)
+- Any table: three columns at most, short cell text, so it reads on a phone
 - Conversational but precise, like a trusted expert friend
 - End with one concrete follow-up offer or next step
 - Never use generic filler phrases ("strong directions", "couldn't resolve", "need more info")
@@ -1620,6 +1633,8 @@ export default function ExpertTobacconistChat({
   const [entityContext, setEntityContext] = useState({});
   const [analysisContext, setAnalysisContext] = useState(null);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const cancelRef = useRef(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const sessionIdRef = useRef(null);
@@ -1850,9 +1865,10 @@ export default function ExpertTobacconistChat({
     return { data: { result: result.ok ? result.text : describeCuratorFailure(result) } };
   };
 
-  const sendMessage = useCallback(async () => {
-    const text = input.trim();
+  const sendMessage = useCallback(async (override) => {
+    const text = (typeof override === 'string' ? override : input).trim();
     if (!text || isSending) return;
+    cancelRef.current = false;
     setIsSending(true);
     const userMsgId = `user-${Date.now()}`;
     setMessages((prev) => [...prev, { id: userMsgId, role: 'user', content: text }]);
@@ -1985,6 +2001,7 @@ export default function ExpertTobacconistChat({
         // Use LLM for domain-knowledge queries (similarity, external products, comparison, etc.)
         const llmPrompt = buildLLMPrompt(text, collectionContext, messages, effectiveEntityContext);
         const response = await invokeCuratorWithTimeout(llmPrompt);
+        if (cancelRef.current) return;
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
@@ -2040,6 +2057,7 @@ export default function ExpertTobacconistChat({
       if (!result) {
         const llmPrompt = buildLLMPrompt(text, collectionContext, messages, effectiveEntityContext);
         const response = await invokeCuratorWithTimeout(llmPrompt);
+        if (cancelRef.current) return;
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
@@ -2064,6 +2082,7 @@ export default function ExpertTobacconistChat({
         if (updatedEntityContext) setEntityContext(updatedEntityContext);
         const llmPrompt = buildLLMPrompt(text, collectionContext, messages, ctxForLLM);
         const response = await invokeCuratorWithTimeout(llmPrompt);
+        if (cancelRef.current) return;
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
@@ -2082,6 +2101,7 @@ export default function ExpertTobacconistChat({
         // Escalate to LLM rather than producing filler text
         const llmPrompt = buildLLMPrompt(text, collectionContext, messages, effectiveEntityContext);
         const response = await invokeCuratorWithTimeout(llmPrompt);
+        if (cancelRef.current) return;
         const llmReply = typeof response?.data === 'string'
           ? response.data
           : response?.data?.result || response?.data?.text || response?.data?.content || String(response?.data || '');
@@ -2100,64 +2120,128 @@ export default function ExpertTobacconistChat({
     } catch (err) {
       console.error('[Curator] sendMessage error:', err);
       // Last-resort: still try to give useful guidance
-      const fallback = 'I ran into an issue processing that. Try rephrasing, or ask about a specific item in your collection.';
-      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: fallback }]);
+      const fallback = 'That answer did not come through. Nothing in your collection was changed.';
+      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', content: fallback, retryText: text }]);
     } finally {
       setIsSending(false);
     }
   }, [input, isSending, collectionContext, entityContext, isSingleModuleMode, activeModules, continueAnalysis, messages, runUndo]);
 
+  const startNewConversation = useCallback(() => {
+    setMessages([]);
+    setEntityContext({});
+    setAnalysisContext(null);
+    lastActionRunRef.current = null;
+    persistedRef.current = new Set();
+    const nextThread = `curator-${Date.now()}`;
+    sessionIdRef.current = nextThread;
+    if (typeof window !== 'undefined') window.localStorage.setItem('ck_curator_thread', nextThread);
+    setHistoryOpen(false);
+  }, []);
+
+  const stopSending = useCallback(() => {
+    cancelRef.current = true;
+    setIsSending(false);
+    setMessages((prev) => [
+      ...prev,
+      { id: `assistant-stop-${Date.now()}`, role: 'assistant', content: 'Stopped. Ask again whenever you are ready.' },
+    ]);
+  }, []);
+
+  const loadConversation = useCallback(async (sessionId) => {
+    if (!sessionId) return;
+    setHistoryOpen(false);
+    setMessages([]);
+    setEntityContext({});
+    setAnalysisContext(null);
+    sessionIdRef.current = sessionId;
+    if (typeof window !== 'undefined') window.localStorage.setItem('ck_curator_thread', sessionId);
+    try {
+      const response = await base44.functions.invoke('curatorConversationHistory', {
+        session_id: sessionId,
+        limit: 40,
+      });
+      const restored = response?.data?.messages || [];
+      setMessages(restored.map((m, index) => ({
+        id: `restored-${index}`,
+        role: m.role,
+        content: m.content,
+        restored: true,
+      })));
+    } catch {
+      setMessages([{
+        id: `restored-error-${Date.now()}`,
+        role: 'assistant',
+        content: 'That conversation could not be opened. Ask again here and I will pick it up.',
+      }]);
+    }
+  }, []);
+
+  const retryMessage = useCallback((text) => {
+    setMessages((prev) => prev.filter((m) => !(m.role === 'assistant' && m.retryText === text)));
+    sendMessage(text);
+  }, [sendMessage]);
+
+  const moduleLine = Object.keys(activeModules || {})
+    .filter((key) => activeModules[key])
+    .map((key) => MODULE_LABELS[key])
+    .filter(Boolean)
+    .join(' · ');
+
   const hasCollection = (collectionContext?.blends?.length || 0) + (collectionContext?.bottles?.length || 0) + (collectionContext?.pipes?.length || 0) > 0;
 
   return (
     <div className="rounded-[18px] overflow-hidden flex flex-col" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)', minHeight: 0 }}>
-      {/* Header */}
-      <div className="px-5 sm:px-7 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <h3 className="text-[18px] sm:text-[20px] font-semibold" style={{ color: '#F5F5F7' }}>Curator Console</h3>
-            <p className="text-[13px] sm:text-[14px] mt-0.5" style={{ color: '#6B6860' }}>
-              {hasCollection ? 'Personalized intelligence from your collection' : 'Expert collector advisor — ask anything'}
-            </p>
-          </div>
-          {messages.length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                setMessages([]);
-                setEntityContext({});
-                setAnalysisContext(null);
-                lastActionRunRef.current = null;
-                persistedRef.current = new Set();
-                const nextThread = `curator-${Date.now()}`;
-                sessionIdRef.current = nextThread;
-                if (typeof window !== 'undefined') window.localStorage.setItem('ck_curator_thread', nextThread);
-              }}
-              className="text-[12px] px-3 py-1.5 rounded-lg"
-              style={{ border: '1px solid rgba(255,255,255,0.08)', color: '#71717A' }}
-            >
-              New chat
-            </button>
-          )}
+      {/* One quiet toolbar — the page above already carries the title */}
+      <div
+        className="flex items-center justify-between gap-2 px-3 sm:px-5 py-2 border-b"
+        style={{ borderColor: 'rgba(255,255,255,0.05)' }}
+      >
+        <p className="text-[12px] min-w-0 truncate" style={{ color: '#6B6860' }}>
+          {moduleLine
+            ? `Working in ${moduleLine}`
+            : (hasCollection ? 'Personalized from your collection' : 'Collector advisor')}
+        </p>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            aria-label="Conversation history"
+            className="inline-flex items-center gap-1.5 text-[12px] px-2.5 rounded-lg"
+            style={{ border: '1px solid rgba(255,255,255,0.08)', color: '#9C968C', minHeight: 36 }}
+          >
+            <History className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">History</span>
+          </button>
+          <button
+            type="button"
+            onClick={startNewConversation}
+            aria-label="New conversation"
+            className="inline-flex items-center gap-1.5 text-[12px] px-2.5 rounded-lg"
+            style={{ border: '1px solid rgba(255,255,255,0.08)', color: '#9C968C', minHeight: 36 }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">New</span>
+          </button>
         </div>
-
-        {/* Topic tags */}
-        {messages.length === 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {['Recommendations', 'Pairings', 'Session Planning', 'Collection Gaps', 'Value & Rarity', 'What to Buy'].map((tag) => (
-              <span key={tag} className="px-3 py-1 rounded-full text-[11px] sm:text-[12px]" style={{ border: '1px solid rgba(198,161,91,0.22)', color: '#C6A15B' }}>{tag}</span>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* Messages area */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 sm:px-7 py-5 max-h-[calc(100dvh-14rem)]" style={{ maxHeight: 'min(480px, 50dvh)' }}>
+      {/* Messages area — scrolls on its own so the input stays put */}
+      <div
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-6 py-4"
+        style={{
+          height: 'min(58dvh, 560px)',
+          minHeight: 240,
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
+          scrollPaddingBottom: 16,
+        }}
+      >
         {messages.length === 0 ? (
-          <div>
-            <p className="text-[14px] mb-4" style={{ color: '#6B6860' }}>Ask a question or pick a prompt to get started.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {starterPrompts.map((prompt) => (
+          <div className="py-1">
+            <p className="text-[14px] mb-3" style={{ color: '#8A8578' }}>Ask anything about your collection.</p>
+            <div className="space-y-2">
+              {starterPrompts.slice(0, 3).map((prompt) => (
                 <button
                   key={prompt}
                   type="button"
@@ -2167,7 +2251,7 @@ export default function ExpertTobacconistChat({
                     inputRef.current?.focus();
                     setInput(prompt);
                   }}
-                  className="text-left px-4 py-3 rounded-[12px] text-[13px] sm:text-[14px] transition-colors"
+                  className="w-full text-left px-4 py-3 rounded-[12px] text-[13px] sm:text-[14px] transition-colors break-words"
                   style={{ border: '1px solid rgba(255,255,255,0.07)', color: '#C8B898', background: 'rgba(255,255,255,0.02)' }}
                 >
                   {prompt}
@@ -2190,64 +2274,7 @@ export default function ExpertTobacconistChat({
                       : { background: 'rgba(255,255,255,0.03)', color: '#E8E4DC', border: '1px solid rgba(255,255,255,0.06)' }
                     }
                   >
-                    {/* Render response with markdown formatting including tables */}
-                    {(() => {
-                      const lines = m.content.split('\n');
-                      const output = [];
-                      let i = 0;
-                      while (i < lines.length) {
-                        const line = lines[i];
-                        // Table detection: line with pipes and next line is separator (---|---)
-                        if (/^\|.+\|/.test(line) && i + 1 < lines.length && /^\|[-:| ]+\|/.test(lines[i + 1])) {
-                          const tableLines = [];
-                          while (i < lines.length && /^\|/.test(lines[i])) {
-                            tableLines.push(lines[i]);
-                            i++;
-                          }
-                          const [headerRow, , ...bodyRows] = tableLines;
-                          const headers = headerRow.split('|').map(s => s.trim()).filter(Boolean);
-                          output.push(
-                            <div key={`table-${i}`} className="overflow-x-auto my-3 rounded-lg" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
-                              <table className="w-full text-[13px]">
-                                <thead>
-                                  <tr style={{ background: 'rgba(198,161,91,0.12)' }}>
-                                    {headers.map((h, hi) => (
-                                      <th key={hi} className="px-3 py-2 text-left font-semibold" style={{ color: '#C6A15B', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>{h}</th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {bodyRows.map((row, ri) => {
-                                    const cells = row.split('|').map(s => s.trim()).filter(Boolean);
-                                    return (
-                                      <tr key={ri} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                        {cells.map((cell, ci) => (
-                                          <td key={ci} className="px-3 py-2" style={{ color: '#E8E4DC' }}>{cell}</td>
-                                        ))}
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
-                          );
-                          continue;
-                        }
-                        if (/^#{1,3}\s/.test(line)) {
-                          output.push(<div key={i} className="font-semibold text-[15px] sm:text-[16px] mt-3 mb-1" style={{ color: '#F5F5F7' }}>{line.replace(/^#{1,3}\s/, '')}</div>);
-                        } else if (/^\d+\.\s/.test(line)) {
-                          output.push(<div key={i} className="ml-1 my-1" style={{ color: '#E8E4DC' }}>{line}</div>);
-                        } else if (/^[-•]\s/.test(line)) {
-                          output.push(<div key={i} className="ml-2 my-0.5" style={{ color: '#C8C0B0' }}>{line}</div>);
-                        } else if (line.trim() === '') {
-                          output.push(<div key={i} className="h-2" />);
-                        } else {
-                          output.push(<div key={i}>{line}</div>);
-                        }
-                        i++;
-                      }
-                      return output;
-                      })()}
+                    <CuratorMessageContent content={m.content} />
                       </div>
                       {m.proposal && (
                         <CuratorChangeProposalCard
@@ -2284,6 +2311,16 @@ export default function ExpertTobacconistChat({
                           onApply={() => applySpecializationAction(m)}
                         />
                       )}
+                      {m.retryText && (
+                        <button
+                          type="button"
+                          onClick={() => retryMessage(m.retryText)}
+                          className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-semibold"
+                          style={{ color: '#C6A15B', minHeight: 36 }}
+                        >
+                          Try again
+                        </button>
+                      )}
                       </div>
                       </div>
                       ))}
@@ -2292,11 +2329,21 @@ export default function ExpertTobacconistChat({
                 <div className="max-w-[85%]">
                   <div className="text-[11px] uppercase tracking-[0.10em] mb-1.5" style={{ color: '#4A4840' }}>Curator</div>
                   <div className="rounded-[14px] px-4 py-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span className="inline-flex gap-1.5 items-center">
-                      <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '0ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '150ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '300ms' }} />
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex gap-1.5 items-center">
+                        <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: '#C6A15B', animationDelay: '300ms' }} />
+                      </span>
+                      <button
+                        type="button"
+                        onClick={stopSending}
+                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold"
+                        style={{ color: '#9C968C', minHeight: 32 }}
+                      >
+                        <Square className="w-3 h-3" /> Stop
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2307,7 +2354,14 @@ export default function ExpertTobacconistChat({
       </div>
 
       {/* Input area */}
-      <div className="px-5 sm:px-7 pb-5 pt-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
+      <div
+        className="px-3 sm:px-6 pt-2.5 border-t"
+        style={{
+          borderColor: 'rgba(255,255,255,0.05)',
+          flexShrink: 0,
+          paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
+        }}
+      >
         <div className="flex gap-2 sm:gap-3 items-end">
           <textarea
             ref={inputRef}
@@ -2328,7 +2382,7 @@ export default function ExpertTobacconistChat({
             type="button"
             aria-label="Send message"
             disabled={!canSend}
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             className="shrink-0 h-12 w-12 rounded-[12px] inline-flex items-center justify-center"
             style={{ background: '#C6A15B', color: '#0B0B0C', opacity: canSend ? 1 : 0.45 }}
           >
@@ -2337,6 +2391,13 @@ export default function ExpertTobacconistChat({
         </div>
         <p className="text-[11px] mt-2 hidden sm:block" style={{ color: '#3A3830' }}>Enter to send · Shift+Enter for new line</p>
       </div>
+
+      <CuratorHistorySheet
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        currentSessionId={sessionIdRef.current}
+        onSelect={loadConversation}
+      />
     </div>
   );
 }
