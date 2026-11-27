@@ -44,7 +44,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { safeUpdate } from '@/components/utils/safeUpdate';
-import QuickActions from '@/components/home/QuickActions';
+import PageHeader from '@/components/ui/PageHeader';
+import StatStrip from '@/components/ui/StatStrip';
+import AdvancedDetails from '@/components/ui/AdvancedDetails';
+import ModuleRow from '@/components/modules/ModuleRow';
 import {
   selectWhiskeyMetrics,
   getBottleUnitValue as getBottleValue,
@@ -101,181 +104,7 @@ function SectionTitle({ children, muted = false }) {
   );
 }
 
-function StatCard({ icon: Icon, label, value, sub, accent = '#C89752' }) {
-  return (
-    <div
-      className="rounded-[22px] p-4 sm:p-5 min-h-[120px] sm:min-h-[132px] flex flex-col justify-between"
-      style={{
-        background: 'linear-gradient(145deg, rgba(39,27,18,0.96), rgba(25,17,11,0.98))',
-        border: `1px solid ${accent}40`,
-        boxShadow: '0 10px 26px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
-      }}
-    >
-      <div
-        className="w-10 h-10 rounded-2xl flex items-center justify-center"
-        style={{ background: `${accent}26`, border: `1px solid ${accent}55` }}
-      >
-        <Icon className="w-5 h-5" style={{ color: accent }} />
-      </div>
-      <div>
-        <p
-          className="text-[11px] uppercase tracking-[0.18em] font-semibold mb-2"
-          style={{ color: `${accent}D8` }}
-        >
-          {label}
-        </p>
-        <div
-          className="text-xl sm:text-3xl font-bold leading-none break-words"
-          style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-        >
-          {value}
-        </div>
-        {sub ? (
-          <p className="text-sm mt-2" style={{ color: 'rgba(224,216,200,0.68)' }}>
-            {sub}
-          </p>
-        ) : null}
-      </div>
-    </div>
-  );
-}
 
-function ModuleCard({ moduleKey, stats = [], onOpen }) {
-  const meta = MODULE_META[moduleKey];
-  const icon = MODULE_ICONS?.[moduleKey];
-  const { t } = useTranslation();
-
-  return (
-    <div
-      className="rounded-[26px] p-5 sm:p-6 flex flex-col gap-5"
-      style={{
-        background: `linear-gradient(145deg, ${meta.accent}18, rgba(26,18,12,0.98))`,
-        border: `1px solid ${meta.accent}55`,
-        boxShadow: `0 14px 36px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.05)`,
-      }}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-            style={{ background: `${meta.accent}22`, border: `1px solid ${meta.accent}44` }}
-          >
-            {icon ? (
-              <img
-                src={icon}
-                alt={t(meta.labelKey)}
-                className="w-9 h-9 sm:w-10 sm:h-10 object-contain"
-              />
-            ) : moduleKey === 'pipekeeper' ? (
-              <PipeIcon className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: meta.accent }} />
-            ) : moduleKey === 'whiskeykeeper' ? (
-              <WhiskeyKeeperIcon className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: meta.accent }} />
-            ) : null}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <h3
-              className="text-xl sm:text-3xl font-bold leading-tight truncate"
-              style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-            >
-              {t(meta.labelKey)}
-            </h3>
-            <p className="text-sm mt-0.5" style={{ color: meta.accent }}>{t(meta.taglineKey)}</p>
-          </div>
-        </div>
-
-        <div
-          className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
-          style={{ background: `${meta.accent}18`, border: `1px solid ${meta.accent}44` }}
-        >
-          <ChevronRight className="w-5 h-5" style={{ color: meta.accent }} />
-        </div>
-      </div>
-
-      <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,216,200,0.82)' }}>
-        {t(meta.descriptionKey)}
-      </p>
-
-      {stats.length > 0 ? (
-        <div className="grid grid-cols-3 gap-3 pt-4 border-t" style={{ borderColor: `${meta.accent}26` }}>
-          {stats.map((s) => (
-            <div key={s.label}>
-              <div className="text-xl sm:text-2xl font-bold break-words" style={{ color: '#F5F1E7' }}>
-                {s.value}
-              </div>
-              <div className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.62)' }}>
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={onOpen}
-        className="w-full rounded-2xl py-3 text-sm font-semibold transition-all"
-        style={{
-          background: `linear-gradient(135deg, ${meta.accent}42, ${meta.accent}22)`,
-          border: `1px solid ${meta.accent}58`,
-          color: meta.accent,
-        }}
-      >
-        {t('common.openModule', { module: t(meta.labelKey) })}
-      </button>
-    </div>
-  );
-}
-
-function ExpandingSoonCard({ moduleKey }) {
-  const meta = MODULE_META[moduleKey];
-  const icon = MODULE_ICONS?.[moduleKey];
-  const { t } = useTranslation();
-
-  return (
-    <div
-      className="rounded-[24px] p-5 flex items-center gap-4"
-      style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        opacity: 0.82,
-      }}
-    >
-      <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-        style={{ background: `${meta.accent}1C`, border: `1px solid ${meta.accent}30` }}
-      >
-        {icon ? (
-          <img src={icon} alt={t(meta.labelKey)} className="w-10 h-10 object-contain opacity-70" />
-        ) : null}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <h3
-            className="text-xl font-bold"
-            style={{ color: 'rgba(245,241,231,0.65)', fontFamily: "'Georgia', serif" }}
-          >
-            {t(meta.labelKey)}
-          </h3>
-          <span
-            className="text-[11px] px-2.5 py-1 rounded-full"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'rgba(224,216,200,0.5)',
-            }}
-          >
-            {t('hub.comingSoon')}
-          </span>
-        </div>
-        <p className="text-sm" style={{ color: 'rgba(224,216,200,0.42)' }}>
-          {t(meta.descriptionKey)}
-        </p>
-      </div>
-      <Clock3 className="w-4 h-4 shrink-0" style={{ color: 'rgba(224,216,200,0.28)' }} />
-    </div>
-  );
-}
 
 export default function CollectionHub() {
   const navigate = useNavigate();
@@ -595,32 +424,6 @@ export default function CollectionHub() {
   const openableModuleKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k]?.route);
   const expandingKeys = (enabledModuleKeys || []).filter((k) => MODULE_META[k] && !MODULE_META[k].route);
 
-  const totalBlendOzDisplay = isLoading ? '—' : (metrics.totalBlendOz % 1 === 0 ? String(metrics.totalBlendOz) : metrics.totalBlendOz.toFixed(1)) + ' oz';
-
-  const pipeStats = [
-    { label: t('hub.pipes'), value: isLoading ? '—' : pipes.length },
-    { label: t('hub.blendTypesLabel'), value: isLoading ? '—' : blends.length },
-    { label: t('hub.blendQtyLabel'), value: totalBlendOzDisplay },
-  ];
-
-  const whiskeyStats = [
-    { label: t('hub.bottleTypes'), value: isLoading ? '—' : whiskeyMetrics.bottle_types },
-    { label: t('hub.totalBottles'), value: isLoading ? '—' : whiskeyMetrics.total_bottles },
-    { label: t('whiskey.collectionValue'), value: isLoading ? '—' : formatFromBase(whiskeyMetrics.collection_value) },
-  ];
-
-  const cigarStats = [
-    { label: t('hub.cigarTypesLabel'), value: isLoading ? '—' : cigars.length },
-    { label: t('hub.sticksOwnedLabel'), value: isLoading ? '—' : metrics.totalCigarSticks },
-    { label: t('hub.sessionsLoggedLabel'), value: isLoading ? '—' : cigarSessions.length },
-  ];
-
-  const wineStats = [
-    { label: t('hub.bottleTypes'), value: isLoading ? '—' : selectWineCount(wines) },
-    { label: t('hub.totalBottles'), value: isLoading ? '—' : selectTotalWineBottles(wines) },
-    { label: t('wine.collectionValue'), value: isLoading ? '—' : formatFromBase(metrics.wineValue || 0) },
-  ];
-
   const topHighlights = useMemo(() => buildHubHighlightCandidates({
     pipekeeperOpenable,
     whiskeyOpenable,
@@ -671,57 +474,45 @@ export default function CollectionHub() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+    <div className="max-w-5xl mx-auto space-y-6">
       <ComplimentaryProBanner />
       <AppreciationBanner surface="hub" />
       <AppreciationExpiredDialog />
-      <section
-        className="rounded-[28px] p-5 sm:p-8"
-        style={{
-          background: 'linear-gradient(145deg, rgba(35,24,16,0.94), rgba(22,15,10,0.98))',
-          border: '1px solid rgba(180,140,75,0.16)',
-          boxShadow: '0 18px 46px rgba(0,0,0,0.36)',
-        }}
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-5">
-          <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-            <BrandLogo
-              compact
-              showWordmark={false}
-              imageClassName="w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0"
-            />
-            <div className="min-w-0">
-              <h1
-                className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight"
-                style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-              >
-                {t('hub.title')}
-              </h1>
-              <p
-                className="text-sm sm:text-base lg:text-lg mt-1 sm:mt-2"
-                style={{ color: 'rgba(224,216,200,0.78)' }}
-              >
-                {t('hub.hubDescription')}
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigate(createPageUrl('CollectionReports'))}
-            className="flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all flex-shrink-0"
-            style={{
-              background: 'rgba(180,140,75,0.12)',
-              border: '1px solid rgba(180,140,75,0.32)',
-              color: '#D4A574',
-              minHeight: 44,
-            }}
-          >
-            <FileBarChart2 className="w-4 h-4" />
-            {t('nav.reports')}
-          </button>
-        </div>
-      </section>
+      <PageHeader
+        title={t('hub.title')}
+        subtitle={t('hub.hubDescription')}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => setShowLogSelector(true)}
+              className="flex items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold"
+              style={{
+                background: 'linear-gradient(135deg, rgba(200,151,82,0.92), rgba(163,110,52,0.92))',
+                color: '#1a1109',
+                minHeight: 44,
+              }}
+            >
+              <Flame className="w-4 h-4" />
+              {t('session.recordSession')}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(createPageUrl('ReportingCenter'))}
+              className="flex items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold"
+              style={{
+                background: 'rgba(180,140,75,0.12)',
+                border: '1px solid rgba(180,140,75,0.32)',
+                color: '#D4A574',
+                minHeight: 44,
+              }}
+            >
+              <FileBarChart2 className="w-4 h-4" />
+              {t('nav.reports')}
+            </button>
+          </>
+        }
+      />
 
       {isError ? (
         <div className="rounded-2xl p-5 flex items-center justify-between gap-4" style={{ background: 'rgba(179,95,95,0.12)', border: '1px solid rgba(179,95,95,0.32)' }}>
@@ -736,102 +527,19 @@ export default function CollectionHub() {
       ) : null}
 
       <section className="space-y-4">
-        <SectionTitle>{t('hub.collectionSummary')}</SectionTitle>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <StatCard
-            icon={TrendingUp}
-            label={t('hub.totalValue')}
-            value={isLoading ? '—' : formatFromBase(metrics.totalValue)}
-            sub={t('hub.acrossActiveCollections')}
-            accent="#C89752"
-          />
-          {pipekeeperOpenable ? (
-            <StatCard
-              icon={PipeIcon}
-              label={t('hub.pipes')}
-              value={isLoading ? '—' : pipes.length}
-              sub={t('hub.pipeRecords')}
-              accent="#B48C4B"
-            />
-          ) : null}
-          {pipekeeperOpenable ? (
-            <StatCard
-              icon={Leaf}
-              label={t('hub.blends')}
-              value={isLoading ? '—' : blends.length}
-              sub={isLoading ? '' : `${totalBlendOzDisplay} ${t('hub.blendTotal')}`}
-              accent="#6E8A57"
-            />
-          ) : null}
-          {pipekeeperOpenable || whiskeyOpenable || cigarOpenable ? (
-            <StatCard
-              icon={Flame}
-              label={t('hub.recentSessions')}
-              value={isLoading ? '—' : metrics.recentSessionsCount}
-              sub={t('hub.sessionsThisWeek')}
-              accent="#B56A5F"
-            />
-          ) : null}
-          {whiskeyOpenable ? (
-            <StatCard
-              icon={WhiskeyKeeperIcon}
-              label={t('hub.whiskey')}
-              value={isLoading ? '—' : whiskeyMetrics.bottle_types}
-              sub={isLoading ? '' : `${whiskeyMetrics.total_bottles} ${t('hub.bottlesOwnedLabel')}`}
-              accent="#B66565"
-            />
-          ) : null}
-          {whiskeyOpenable ? (
-            <StatCard
-              icon={GlassWater}
-              label={t('hub.tastings')}
-              value={isLoading ? '—' : tastings.length}
-              sub={t('hub.tastingLogsLabel')}
-              accent="#A35050"
-            />
-          ) : null}
-          {cigarOpenable ? (
-            <StatCard
-              icon={Cigarette}
-              label={t('hub.cigars')}
-              value={isLoading ? '—' : cigars.length}
-              sub={isLoading ? '' : `${metrics.totalCigarSticks} ${t('hub.sticksOwnedLabel')}`}
-              accent="#8C6B3F"
-            />
-          ) : null}
-          {wineOpenable ? (
-            <StatCard
-              icon={Wine}
-              label={t('hub.wine')}
-              value={isLoading ? '—' : selectWineCount(wines)}
-              sub={isLoading ? '' : `${selectTotalWineBottles(wines)} ${t('hub.bottlesOwnedLabel')}`}
-              accent="#8B4B6B"
-            />
-          ) : null}
-          {wineOpenable ? (
-            <StatCard
-              icon={Flame}
-              label={t('hub.wineTastings')}
-              value={isLoading ? '—' : wineTastings.length}
-              sub={isLoading ? '' : `${selectWineReadyToDrinkCount(wines)} ready to drink`}
-              accent="#A35C8B"
-            />
-          ) : null}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <QuickActions
-          onLogSession={() => setShowLogSelector(true)}
-          onIdentify={() => navigate('/PipeKeeper?action=identify')}
-          onOptimize={() => {
-            try {
-              sessionStorage.setItem('pk_curator_context', JSON.stringify({ mode: 'optimize', scope: 'all_modules' }));
-            } catch {}
-            navigate(createPageUrl('Curator'));
-          }}
-          onAskCurator={() => navigate(createPageUrl('Curator?surface=chat'))}
-          onWantList={() => navigate(createPageUrl('WantList'))}
+        <StatStrip
+          items={[
+            {
+              label: t('hub.totalValue'),
+              value: isLoading ? '—' : formatFromBase(metrics.totalValue),
+              onClick: () => navigate(createPageUrl('ValuationCenter')),
+            },
+            {
+              label: t('hub.recentSessions'),
+              value: isLoading ? '—' : metrics.recentSessionsCount,
+              onClick: () => navigate(createPageUrl('SessionHistory')),
+            },
+          ]}
         />
       </section>
 
@@ -853,101 +561,72 @@ export default function CollectionHub() {
       {openableModuleKeys.length > 0 ? (
         <section className="space-y-4">
           <SectionTitle>{t('hub.yourModules')}</SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {openableModuleKeys.map((moduleKey) => (
-              <ModuleCard
-                key={moduleKey}
-                moduleKey={moduleKey}
-                stats={
-                  moduleKey === 'pipekeeper'
-                    ? pipeStats
-                    : moduleKey === 'whiskeykeeper'
-                    ? whiskeyStats
-                    : moduleKey === 'cigarkeeper'
-                    ? cigarStats
-                    : moduleKey === 'winekeeper'
-                    ? wineStats
-                    : []
-                }
-                onOpen={() => navigate(createPageUrl(MODULE_META[moduleKey].route))}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <section className="space-y-4">
-        <SectionTitle>{t('hub.collectionIntelligence')}</SectionTitle>
-        <button
-          type="button"
-          onClick={() => navigate(createPageUrl('Curator'))}
-          className="w-full rounded-[24px] p-5 sm:p-6 flex items-center justify-between gap-4 sm:gap-5 text-left"
-          style={{
-            background: 'linear-gradient(135deg, rgba(163,92,92,0.16), rgba(36,24,17,0.98))',
-            border: '1px solid rgba(163,92,92,0.35)',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
-          }}
-        >
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-              style={{
-                background: 'rgba(163,92,92,0.14)',
-                border: '1px solid rgba(163,92,92,0.30)',
-              }}
-            >
-              <div className="w-7 h-7 rounded-lg overflow-hidden bg-white flex items-center justify-center">
-                <img
-                  src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png"
-                  className="w-full h-full object-cover"
-                  alt={t('hub.curatorTitle')}
+          <div className="space-y-2.5">
+            {openableModuleKeys.map((moduleKey) => {
+              const meta = MODULE_META[moduleKey];
+              const summaries = {
+                pipekeeper: `${pipes.length} ${t('hub.pipes')} · ${blends.length} ${t('hub.blends')}`,
+                whiskeykeeper: `${whiskeyMetrics.total_bottles} ${t('hub.totalBottles')}`,
+                cigarkeeper: `${cigars.length} ${t('hub.cigars')} · ${metrics.totalCigarSticks} ${t('hub.sticksOwnedLabel')}`,
+                winekeeper: `${selectTotalWineBottles(wines)} ${t('hub.totalBottles')}`,
+              };
+              const Icon =
+                moduleKey === 'pipekeeper'
+                  ? PipeIcon
+                  : moduleKey === 'whiskeykeeper'
+                  ? WhiskeyKeeperIcon
+                  : moduleKey === 'cigarkeeper'
+                  ? Cigarette
+                  : Wine;
+              return (
+                <ModuleRow
+                  key={moduleKey}
+                  icon={Icon}
+                  image={MODULE_ICONS?.[moduleKey]}
+                  accent={meta.accent}
+                  label={t(meta.labelKey)}
+                  summary={isLoading ? '' : summaries[moduleKey]}
+                  onOpen={() => navigate(createPageUrl(meta.route))}
                 />
-              </div>
-            </div>
-            <div>
-              <div
-                className="text-2xl font-bold mb-1"
-                style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
-              >
-                {t('hub.curatorTitle')}
-              </div>
-              <p className="text-base leading-relaxed" style={{ color: 'rgba(224,216,200,0.72)' }}>
-                {t('hub.aiCuratorDescription')}
-              </p>
-            </div>
-          </div>
-          <div
-            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
-            style={{
-              background: 'rgba(163,92,92,0.22)',
-              border: '1px solid rgba(163,92,92,0.38)',
-            }}
-          >
-            <ChevronRight className="w-5 h-5" style={{ color: '#D47C7C' }} />
-          </div>
-        </button>
-      </section>
-
-      {hasHighlights ? (
-        <section className="space-y-4">
-          <SectionTitle>{t('hub.topHighlights')}</SectionTitle>
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-            {topHighlights.map((card) => (
-              <CatalogPlate
-                key={card.id}
-                title={card.title}
-                value={card.value}
-                subtitle={card.subtitle}
-                heroImage={card.heroImage}
-                bgImage={card.bgImage}
-                accent={card.accent}
-                objectMode={card.objectMode || 'cover'}
-                onClick={() => navigate(card.route)}
-              />
-            ))}
+              );
+            })}
           </div>
         </section>
       ) : null}
+
+      <button
+        type="button"
+        onClick={() => navigate(createPageUrl('Curator'))}
+        className="w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
+        style={{
+          background: 'linear-gradient(135deg, rgba(163,92,92,0.14), rgba(30,20,15,0.96))',
+          border: '1px solid rgba(163,92,92,0.3)',
+          minHeight: 64,
+        }}
+      >
+        <span
+          className="w-11 h-11 rounded-xl overflow-hidden shrink-0"
+          style={{ border: '1px solid rgba(163,92,92,0.3)' }}
+        >
+          <img
+            src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png"
+            className="w-full h-full object-cover"
+            alt=""
+          />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span
+            className="block text-base font-semibold"
+            style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+          >
+            {t('hub.curatorTitle')}
+          </span>
+          <span className="block text-xs mt-0.5 truncate" style={{ color: 'rgba(224,216,200,0.6)' }}>
+            {t('hub.aiCuratorDescription')}
+          </span>
+        </span>
+        <ChevronRight className="w-4 h-4 shrink-0" style={{ color: '#D47C7C' }} />
+      </button>
 
       {(metrics.recentActivity.length > 0 || allSessionRows.length > 0) ? (
         <section className="space-y-4">
@@ -1150,20 +829,31 @@ export default function CollectionHub() {
         </section>
       ) : null}
 
-      <section className="space-y-4">
-        <SectionTitle>{t('hub.collectionStory')}</SectionTitle>
-        <CollectionStoryCard />
-      </section>
-
-      {expandingKeys.length > 0 ? (
-        <section className="space-y-4">
-          <SectionTitle muted>{t('hub.comingSoon')}</SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {expandingKeys.map((moduleKey) => (
-              <ExpandingSoonCard key={moduleKey} moduleKey={moduleKey} />
+      <AdvancedDetails label={t('hub.topHighlights')} hint={t('hub.collectionStory')}>
+        {hasHighlights ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {topHighlights.map((card) => (
+              <CatalogPlate
+                key={card.id}
+                title={card.title}
+                value={card.value}
+                subtitle={card.subtitle}
+                heroImage={card.heroImage}
+                bgImage={card.bgImage}
+                accent={card.accent}
+                objectMode={card.objectMode || 'cover'}
+                onClick={() => navigate(card.route)}
+              />
             ))}
           </div>
-        </section>
+        ) : null}
+        <CollectionStoryCard />
+      </AdvancedDetails>
+
+      {expandingKeys.length > 0 ? (
+        <p className="text-xs px-1" style={{ color: 'rgba(224,216,200,0.42)' }}>
+          {t('hub.comingSoon')}: {expandingKeys.map((key) => t(MODULE_META[key].labelKey)).join(' · ')}
+        </p>
       ) : null}
 
       <CombinedSessionModal

@@ -16,6 +16,7 @@ import {
   List,
   Cigarette,
   Wine,
+  Zap,
 } from "lucide-react";
 import PipeIcon from "@/components/icons/PipeIcon";
 import WhiskeyKeeperIcon from "@/components/icons/WhiskeyKeeperIcon";
@@ -47,7 +48,7 @@ function NavItem({ item, isActive, onClick, vertical }) {
   );
 }
 
-export default function ModuleNav({ currentPageName, user, vertical = false, onItemClick }) {
+export default function ModuleNav({ currentPageName, user, vertical = false, onItemClick, onQuickAccess }) {
   const location = useLocation();
   const { t } = useTranslation();
   const { enabled } = useEnabledModules();
@@ -104,7 +105,7 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
     ...moduleItems,
     { page: "WantList", label: t("nav.wantList"), icon: List, path: "/WantList" },
     { page: "Curator", label: t("nav.curator"), icon: Target, path: "/Curator" },
-    { page: "CollectionReports", label: t("nav.reports", "Reports"), icon: FileBarChart2, path: "/CollectionReports" },
+    { page: "ReportingCenter", label: t("nav.reports", "Reports"), icon: FileBarChart2, path: "/ReportingCenter" },
     { page: "Community", label: t("nav.community"), icon: Users, path: "/Community" },
     { page: "Profile", label: t("nav.profile"), icon: User, path: "/Profile" },
     { page: "HelpCenter", label: t("nav.help"), icon: HelpCircle, path: "/HelpCenter" },
@@ -163,6 +164,20 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
           />
         );
       })}
+      {onQuickAccess ? (
+        <button
+          type="button"
+          onClick={onQuickAccess}
+          className={cn(
+            "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 border border-transparent hover:bg-white/6 hover:border-[rgba(180,140,75,0.15)]",
+            vertical && "w-full"
+          )}
+          style={{ color: "rgba(224,216,200,0.76)" }}
+        >
+          <Zap className="w-4 h-4 flex-shrink-0" style={{ color: "rgba(180,140,75,0.72)" }} />
+          <span className="line-clamp-1">{t("nav.quickAccess")}</span>
+        </button>
+      ) : null}
     </div>
   );
 }

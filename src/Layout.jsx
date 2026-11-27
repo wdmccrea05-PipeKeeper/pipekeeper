@@ -7,8 +7,7 @@ import BackButton from "@/components/navigation/BackButton";
 import FeatureQuickAccess from "@/components/navigation/FeatureQuickAccess";
 import GlobalReferralBanner from "@/components/referral/GlobalReferralBanner";
 import AppreciationNotificationCenter from "@/components/campaign/AppreciationNotificationCenter";
-import { Button } from "@/components/ui/button";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
@@ -34,19 +33,6 @@ export default function Layout({ children, currentPageName }) {
                 <AppreciationNotificationCenter />
                 <LanguageSwitcher className="min-w-[80px] w-[80px] sm:w-[110px] sm:min-w-[130px]" />
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setQuickAccessOpen(true)}
-                  className="text-[#E0D8C8] hover:bg-white/10"
-                  title={t('nav.quickAccess', 'Quick Access')}
-                  style={{ minHeight: 44 }}
-                >
-                  <Zap className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">{t('nav.quickAccess', 'Quick Access')}</span>
-                </Button>
-
                 {/* Hamburger — mobile/tablet only */}
                 <button
                   type="button"
@@ -62,7 +48,11 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Desktop nav row */}
             <div className="hidden md:block">
-              <ModuleNav currentPageName={currentPageName} user={user} />
+              <ModuleNav
+                currentPageName={currentPageName}
+                user={user}
+                onQuickAccess={() => setQuickAccessOpen(true)}
+              />
             </div>
           </div>
         </div>
@@ -82,6 +72,10 @@ export default function Layout({ children, currentPageName }) {
                 user={user}
                 vertical
                 onItemClick={() => setMenuOpen(false)}
+                onQuickAccess={() => {
+                  setMenuOpen(false);
+                  setQuickAccessOpen(true);
+                }}
               />
             </div>
           </div>
