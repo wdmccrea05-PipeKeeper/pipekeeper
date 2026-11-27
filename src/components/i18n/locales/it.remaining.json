@@ -186,7 +186,9 @@
   "edit": "Modifica",
   "goToNextPage": "Vai alla pagina successiva",
   "goToPreviousPage": "Vai alla pagina precedente",
+  "gridView": "Vista a griglia",
   "lastUpdated": "Ultimo aggiornamento",
+  "listView": "Vista a elenco",
   "loadMore": "Carica altro",
   "loading": "Caricamento…",
   "manufacturer": "Produttore",
@@ -196,6 +198,7 @@
   "next": "Avanti",
   "nextSlide": "Prossima diapositiva",
   "noNotes": "Nessuna nota",
+  "noValue": "Nessun valore",
   "note": "Nota",
   "notes": "Note",
   "off": "Spento",
@@ -203,6 +206,7 @@
   "previous": "Indietro",
   "previousSlide": "Diapositiva precedente",
   "rating": "Valutazione",
+  "retry": "Riprova",
   "search": "Cerca",
   "searchPlaceholder": "Cerca…",
   "searching": "Ricerca in corso…",
@@ -536,6 +540,20 @@
   "totalTastings": "Degustazioni totali",
   "trends": "Tendenze"
  },
+ "insightsShared": {
+  "noRecentTastings": "Nessuna degustazione registrata ancora.",
+  "unknownDate": "Data sconosciuta"
+ },
+ "insightsTabs": {
+  "drinkingWindow": "Finestra di consumo",
+  "reports": "Report",
+  "sessions": "Sessioni",
+  "statistics": "Statistiche",
+  "summary": "Riepilogo",
+  "trends": "Tendenze",
+  "usage": "Utilizzo",
+  "value": "Valore"
+ },
  "layout": {
   "admin": "Amministrazione"
  },
@@ -566,7 +584,12 @@
   "unreadMessages": "Non letti"
  },
  "modules": {
-  "notAvailable": "Non disponibile"
+  "hiddenDescription": "Questo modulo è attualmente nascosto nelle tue preferenze. I tuoi dati sono al sicuro e intatti.",
+  "isHidden": "{{moduleName}} è nascosto",
+  "manageModules": "Gestisci moduli nel profilo",
+  "notAvailable": "Non disponibile",
+  "notAvailableInRelease": "{{moduleName}} non è disponibile in questa versione.",
+  "notYetAvailable": "{{moduleName}} non è ancora disponibile."
  },
  "nav": {
   "cigars": "Sigari",
