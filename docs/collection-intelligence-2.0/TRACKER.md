@@ -182,7 +182,7 @@ is open.
 | CI2-050 | Two divergent valuation implementations produced different totals per surface | High | done (CI2-001) |
 | CI2-051 | Wine missing from hub value aggregation | Medium | done (CI2-002) |
 | CI2-052 | No enforceable product boundary | High | done (CI2-003/004); enforcement partial (CI2-047) |
-| CI2-053 | Campaign sender workflow drains one batch then stalls (`run_due` filters `scheduled`, queue sets `sending`) | High | planned |
+| CI2-053 | Campaign sender workflow drains one batch then stalls (`run_due` filters `scheduled`, queue sets `sending`) | High | done 2026-11-27 — `run_due` also resumes a `sending` campaign while it still has recipients queued; guarded by `campaignSenderResume.test.js` |
 | CI2-054 | 66 of 75 entities have no row-level security | Critical | blocked (CI2-01) |
 | CI2-055 | `src/entities/*.json` duplicates 13 `base44/entities` schemas; 2 have no counterpart | Medium | planned |
 | CI2-056 | ~35 one-off diagnostic backend functions remain reachable | Low | planned |
@@ -229,6 +229,9 @@ is open.
 | Production build after readiness review | Clean (exit 0) | 2026-11-27 |
 | **Full suite after the action-framework audit (218 files)** | **3,758 passed, 0 failed** | 2026-11-27 |
 | Live `actionExecute` probe (execute → replay → stale → undo → undo again) | All five outcomes as specified, production data left clean | 2026-11-27 |
+| **Full suite after the campaign-sender fix (219 files)** | **3,763 passed, 0 failed** | 2026-11-27 |
+| Production build after the campaign-sender fix | Clean (exit 0) | 2026-11-27 |
+| Production data after the audit | No leftover probe records, no `ActionExecution` rows | 2026-11-27 |
 
 Rule: every Batch A/B change must leave these green. Add a guard-rail test when a defect is
 fixed so it cannot silently return.

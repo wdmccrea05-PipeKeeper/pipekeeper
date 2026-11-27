@@ -398,14 +398,30 @@ export default async function (req) {
 
     if (action === "run_due") {
       const nowMs = Date.now();
-      const scheduled = await fetchAllEntitiesServer(
-        base44.asServiceRole.entities.EmailCampaign,
-        { status: "scheduled" },
-        "created_date",
-        100,
-        5
+      const [scheduled, delivering] = await Promise.all([
+        fetchAllEntitiesServer(
+          base44.asServiceRole.entities.EmailCampaign,
+          { status: "scheduled" },
+          "created_date",
+          100,
+          5
+        ),
+        fetchAllEntitiesServer(
+          base44.asServiceRole.entities.EmailCampaign,
+          { status: "sending" },
+          "created_date",
+          100,
+          5
+        ),
+      ]);
+      const dueScheduled = scheduled.filter(
+        (row) => row.scheduled_at && new Date(row.scheduled_at).getTime() <= nowMs && row.approved_by
       );
-      const due = scheduled.filter((row) => row.scheduled_at && new Date(row.scheduled_at).getTime() <= nowMs && row.approved_by);
+      // A campaign that is already delivering only sent its first batch: processQueue
+      // leaves it in "sending" until its queue drains, and it never returns to
+      // "scheduled". Resuming it here is what lets the rest of its audience be mailed.
+      const resume = delivering.filter((row) => row.approved_by && (row.queued_count || 0) > 0);
+      const due = [...resume, ...dueScheduled];
       const processed = [];
       for (const campaign of due.slice(0, 2)) {
         const outcome = await runCampaign(base44, campaign, MAX_BATCH);

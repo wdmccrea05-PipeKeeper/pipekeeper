@@ -122,7 +122,7 @@ Both initial failures were stale source assertions, not product defects: one exp
 | 2 | Product-boundary decisions on existing surfaces (`ShoppingList`, `WantList`, `purchaseRestockEngine`, `upcLookup`, retailer-scoped image queries) | High (decision) | Removing them deletes user-visible functionality and user data; needs an explicit product decision (Batch E) |
 | 3 | AI valuation prompt cites dealer sites and eBay sold listings (`ValueLookup.jsx`) | Medium | Same Batch E decision; the output is labelled an unverified estimate but the research sources need sign-off |
 | 4 | Translations for CI 2.0 strings in non-English locales | Medium | English fallbacks are live; 7 locales incomplete (CI2-084, CI2-105) |
-| 5 | Campaign sender workflow stalls after one batch (CI2-053) | High | Not addressed in this review |
+| 5 | Campaign sender workflow stalls after one batch (CI2-053) | High | Fixed 2026-11-27 — the sender resumes an in-flight campaign on later runs |
 | 6 | 17 cigar records without inventory quantity | Low | Needs a product decision on defaulting, not a silent backfill |
 
 ## 11. Deployment readiness
