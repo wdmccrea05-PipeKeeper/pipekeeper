@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -52,6 +52,21 @@ export default function ReportingCenter() {
   const [activeReportId, setActiveReportId] = useState(initialReportId);
   const [exporting, setExporting] = useState(null);
   const [drill, setDrill] = useState({ open: false, title: "", ids: [] });
+  const reportRef = useRef(null);
+
+  /**
+   * Below the two-column breakpoint the catalogue sits above the report, so a
+   * selection would otherwise change something far off screen and read as a
+   * dead click. Selecting a report always brings that report into view.
+   */
+  const selectReport = (id) => {
+    setActiveReportId(id);
+    const stacked = typeof window !== "undefined" && !window.matchMedia("(min-width: 1280px)").matches;
+    if (!stacked) return;
+    window.requestAnimationFrame(() => {
+      reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   const availableModules = useMemo(() => {
     const list = [];
@@ -182,7 +197,7 @@ export default function ReportingCenter() {
   };
 
   const handleLoadConfig = (config) => {
-    if (config.report_id) setActiveReportId(config.report_id);
+    if (config.report_id) selectReport(config.report_id);
     setFilters({ ...DEFAULT_FILTERS, year: String(new Date().getFullYear()), ...(config.filters || {}) });
     toast.success(t("reporting.configLoaded", "Saved view loaded."));
   };
@@ -214,11 +229,11 @@ export default function ReportingCenter() {
 
       <div className="grid gap-6 xl:grid-cols-[320px_1fr] xl:items-start">
         <div className="space-y-4 xl:sticky xl:top-4 xl:max-h-[calc(100dvh-6rem)] xl:overflow-y-auto no-print">
-          <ReportCatalogGrid activeReportId={activeReportId} onSelect={setActiveReportId} />
+          <ReportCatalogGrid activeReportId={activeReportId} onSelect={selectReport} />
           <SavedReportConfigs user={user} reportId={activeReportId} filters={filters} onLoad={handleLoadConfig} />
         </div>
 
-        <div className="min-w-0 space-y-4">
+        <div ref={reportRef} className="min-w-0 space-y-4" style={{ scrollMarginTop: 96 }}>
           <div className="no-print">
             <ReportFiltersBar
               filters={filters}
@@ -268,7 +283,7 @@ export default function ReportingCenter() {
                   />
                 </div>
               )}
-              <CuratorReportPrompt result={result} onOpenReport={setActiveReportId} />
+              <CuratorReportPrompt result={result} onOpenReport={selectReport} />
             </>
           )}
 
