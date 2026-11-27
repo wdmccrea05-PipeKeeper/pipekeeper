@@ -1,26 +1,32 @@
 /**
- * ModulePageShell — unified module landing page layout system.
+ * ModulePageShell — the shared homepage architecture for every module.
  *
- * Used by PipeKeeper, WhiskeyKeeper, CigarKeeper, WineKeeper.
+ * PipeKeeper, CigarKeeper, WhiskeyKeeper and WineKeeper all render through this
+ * shell so the page hierarchy never drifts again:
+ *
+ *   1. module name, icon and description
+ *   2. module-specific navigation
+ *   3. two to four summary metrics (each may drill into its records)
+ *   4. primary collection shortcuts
+ *   5. notices / modals (children)
+ *   6. collection highlights
+ *   7. optional analytics, behind progressive disclosure
+ *   8. recent activity
  *
  * Props:
- *   title          string
- *   subtitle       string
- *   icon           ReactNode  (icon element already rendered)
- *   accentColor    string     (hex)
- *   onBackToHub    fn
- *   badge          string|null  e.g. "Beta", "Internal", "Pro"
- *   stats          Array<{ label, value }>  — 4 items recommended
- *   moduleNav      ReactNode  (module-specific nav bar)
- *   actions        ReactNode  (ModuleQuickLaunch or custom grid)
- *   children       ReactNode  (smart content section: highlights, alerts, activity)
- *   isEmpty        bool
- *   emptyState     ReactNode
+ *   title, subtitle, icon, accentColor, badge
+ *   moduleNav    ReactNode
+ *   stats        Array<{ label, value, onClick? }>
+ *   actions      ReactNode
+ *   highlights   ReactNode
+ *   analytics    ReactNode  (collapsed by default)
+ *   activity     ReactNode
+ *   children     ReactNode  (notices and modals, rendered before highlights)
+ *   isEmpty      bool
+ *   emptyState   ReactNode
  */
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/components/i18n/safeTranslation';
 import ComplimentaryProBanner from '@/components/subscription/ComplimentaryProBanner';
 import AppreciationOfferCard from '@/components/campaign/AppreciationOfferCard';
 
@@ -35,16 +41,15 @@ function SectionLabel({ children, color }) {
   );
 }
 
-function StatCard({ label, value, accent }) {
-  return (
-    <div
-      className="rounded-2xl p-4 text-center flex flex-col justify-center gap-1"
-      style={{
-        background: `${accent}12`,
-        border: `1px solid ${accent}30`,
-        minHeight: '80px',
-      }}
-    >
+function StatCard({ label, value, accent, onClick }) {
+  const surface = {
+    background: `${accent}12`,
+    border: `1px solid ${accent}30`,
+    minHeight: '80px',
+  };
+
+  const content = (
+    <>
       <div
         className="text-2xl sm:text-3xl font-bold leading-none break-words"
         style={{ color: accent }}
@@ -57,16 +62,45 @@ function StatCard({ label, value, accent }) {
       >
         {label}
       </div>
-    </div>
+    </>
+  );
+
+  if (!onClick) {
+    return (
+      <div className="rounded-2xl p-4 text-center flex flex-col justify-center gap-1" style={surface}>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`${label}: ${value}`}
+      className="rounded-2xl p-4 text-center flex flex-col justify-center gap-1 transition-all hover:brightness-110 active:scale-[0.99]"
+      style={{ ...surface, cursor: 'pointer' }}
+    >
+      {content}
+    </button>
   );
 }
 
 export function ModuleStatsGrid({ stats = [], accent = '#D4A574' }) {
   if (!stats.length) return null;
+  const columns =
+    stats.length === 1
+      ? 'grid-cols-1'
+      : stats.length === 2
+        ? 'grid-cols-2'
+        : stats.length === 3
+          ? 'grid-cols-2 sm:grid-cols-3'
+          : 'grid-cols-2 sm:grid-cols-4';
+
   return (
-    <div className={`grid gap-3 ${stats.length <= 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'}`}>
-      {stats.map(({ label, value }) => (
-        <StatCard key={label} label={label} value={value} accent={accent} />
+    <div className={`grid gap-3 ${columns}`}>
+      {stats.map(({ label, value, onClick }) => (
+        <StatCard key={label} label={label} value={value} accent={accent} onClick={onClick} />
       ))}
     </div>
   );
@@ -81,26 +115,26 @@ export default function ModulePageShell({
   subtitle,
   icon,
   accentColor = '#D4A574',
-  onBackToHub,
   badge,
   stats = [],
   moduleNav,
   actions,
+  highlights,
+  analytics,
+  activity,
   children,
   isEmpty,
   emptyState,
 }) {
-  const { t } = useTranslation();
-
   return (
     <div className="space-y-6 sm:space-y-8">
       <ComplimentaryProBanner />
       <AppreciationOfferCard surface="module_dashboard" />
-      {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-3">
+
+      {/* 1 — Module name, icon and description */}
+      <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            {/* Icon */}
             {icon && (
               <div
                 className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
@@ -112,7 +146,6 @@ export default function ModulePageShell({
                 {icon}
               </div>
             )}
-            {/* Title */}
             <h1
               className="text-2xl sm:text-4xl font-bold tracking-tight leading-tight"
               style={{
@@ -123,7 +156,6 @@ export default function ModulePageShell({
             >
               {title}
             </h1>
-            {/* Badge */}
             {badge && (
               <span
                 className="text-[11px] px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider"
@@ -146,37 +178,33 @@ export default function ModulePageShell({
             </p>
           )}
         </div>
-
-        {onBackToHub && (
-          <Button
-            onClick={onBackToHub}
-            variant="outline"
-            size="sm"
-            className="shrink-0 text-sm"
-          >
-            {t('common.backToHub', 'Hub')}
-          </Button>
-        )}
       </div>
 
-      {/* ── Module Nav ── */}
-      {moduleNav && <div>{moduleNav}</div>}
+      {/* 2 — Module navigation */}
+      {moduleNav && <div className="min-w-0">{moduleNav}</div>}
 
-      {/* ── Stats ── */}
-      {stats.length > 0 && (
-        <ModuleStatsGrid stats={stats} accent={accentColor} />
-      )}
+      {/* 3 — Summary metrics */}
+      {stats.length > 0 && <ModuleStatsGrid stats={stats} accent={accentColor} />}
 
-      {/* ── Actions ── */}
-      {actions && <div>{actions}</div>}
-
-      {/* ── Smart Content / Empty State ── */}
       {isEmpty ? (
-        emptyState ? (
-          <div>{emptyState}</div>
-        ) : null
+        emptyState ? <div>{emptyState}</div> : null
       ) : (
-        children
+        <>
+          {/* 4 — Primary shortcuts */}
+          {actions && <div>{actions}</div>}
+
+          {/* 5 — Notices and modals */}
+          {children}
+
+          {/* 6 — Collection highlights */}
+          {highlights}
+
+          {/* 7 — Optional analytics */}
+          {analytics}
+
+          {/* 8 — Recent activity */}
+          {activity}
+        </>
       )}
     </div>
   );
