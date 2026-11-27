@@ -3,6 +3,7 @@ import ActionCard from './ActionCard';
 import ActionReviewDialog from './ActionReviewDialog';
 import ActionResultSummary from './ActionResultSummary';
 import useActionExecution from '@/hooks/useActionExecution';
+import { applySelectedLabel } from '@/lib/actions/actionLabels';
 
 /**
  * A set of proposals from any feature, handled the same way everywhere.
@@ -170,7 +171,7 @@ export default function ActionList({
             className="rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
             style={{ background: '#A35C5C', color: '#fff', border: 'none' }}
           >
-            Accept {selectedActions.length} selected
+            {applySelectedLabel(selectedActions.length)}
           </button>
           <span className="text-[11.5px]" style={{ color: 'rgba(224,216,200,0.55)' }}>
             You will see exactly what changes before anything is saved.

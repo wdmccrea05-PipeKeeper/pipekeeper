@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, X, Clock, HelpCircle, ChevronDown, AlertTriangle, ExternalLink } from 'lucide-react';
 import { actionTypeLabel, isHighImpact } from '@/lib/actions/actionRegistry';
+import { ACTION_LABELS } from '@/lib/actions/actionLabels';
 
 /**
  * One actionable proposal, in the same shape wherever it appears: Curator, the
@@ -125,7 +126,7 @@ export default function ActionCard({
                   className="w-3.5 h-3.5"
                   style={{ transform: showWhy ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }}
                 />
-                {showWhy ? 'Hide reasoning' : 'Why this is suggested'}
+                {showWhy ? ACTION_LABELS.hideExplanation : ACTION_LABELS.explain}
               </button>
               {showWhy && (
                 <div className="mt-2 space-y-1.5">
@@ -158,7 +159,7 @@ export default function ActionCard({
                 className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
                 style={{ background: '#A35C5C', color: '#fff', border: 'none' }}
               >
-                <Check className="w-3.5 h-3.5" /> Review and accept
+                <Check className="w-3.5 h-3.5" /> {ACTION_LABELS.reviewChanges}
               </button>
             )}
             {onDefer && !inert && (
@@ -168,7 +169,7 @@ export default function ActionCard({
                 className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
                 style={{ background: 'transparent', color: '#E0D8C8', border: '1px solid rgba(180,140,75,0.3)' }}
               >
-                <Clock className="w-3.5 h-3.5" /> Not now
+                <Clock className="w-3.5 h-3.5" /> {ACTION_LABELS.defer}
               </button>
             )}
             {onReject && !inert && (
@@ -178,7 +179,7 @@ export default function ActionCard({
                 className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
                 style={{ background: 'transparent', color: 'rgba(224,216,200,0.7)', border: '1px solid rgba(180,140,75,0.18)' }}
               >
-                <X className="w-3.5 h-3.5" /> Dismiss
+                <X className="w-3.5 h-3.5" /> {ACTION_LABELS.dismiss}
               </button>
             )}
             {(action?.recordLinks || []).slice(0, 2).map((link) => (
@@ -188,7 +189,7 @@ export default function ActionCard({
                 className="inline-flex items-center gap-1 text-[12px] font-semibold"
                 style={{ color: '#C6A15B' }}
               >
-                <ExternalLink className="w-3.5 h-3.5" /> {link.label || 'Open record'}
+                <ExternalLink className="w-3.5 h-3.5" /> {link.label || ACTION_LABELS.viewRecords}
               </Link>
             ))}
           </div>

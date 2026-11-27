@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle2, XCircle, MinusCircle, Ban, Undo2, Loader2 } from 'lucide-react';
 import { describeReason } from '@/lib/actions/actionModel';
+import { ACTION_LABELS } from '@/lib/actions/actionLabels';
 
 /**
  * What actually happened, per record.
@@ -73,7 +74,7 @@ export default function ActionResultSummary({ result, onUndo, undoBusy = false, 
             style={{ background: 'transparent', color: '#E0D8C8', border: '1px solid rgba(180,140,75,0.35)' }}
           >
             {undoBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Undo2 className="w-3.5 h-3.5" />}
-            Undo this change
+            {ACTION_LABELS.undo}
           </button>
         ))}
         {onDismiss && (
@@ -83,7 +84,7 @@ export default function ActionResultSummary({ result, onUndo, undoBusy = false, 
             className="text-[12px] font-semibold"
             style={{ color: 'rgba(224,216,200,0.6)', background: 'transparent', border: 'none' }}
           >
-            Done
+            {ACTION_LABELS.done}
           </button>
         )}
       </div>

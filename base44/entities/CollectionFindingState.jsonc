@@ -1,0 +1,100 @@
+{
+  "name": "CollectionFindingState",
+  "type": "object",
+  "description": "One collector's decision about a collection health finding: deferred, dismissed or resolved. Findings themselves are derived from the records on every load, so this stores only the decision. It keeps the review list short without changing, hiding or deleting any collection record.",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Collector the decision belongs to"
+    },
+    "finding_key": {
+      "type": "string",
+      "description": "Stable identifier of the finding, for example storage:Pipe:abc123"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "deferred",
+        "dismissed",
+        "resolved"
+      ],
+      "enumColors": [
+        "yellow",
+        "gray",
+        "green"
+      ],
+      "description": "What the collector decided: set aside, not applicable, or fixed"
+    },
+    "module_key": {
+      "type": "string",
+      "description": "Collection module the finding belongs to (pipekeeper, tobacco, cigarkeeper, whiskeykeeper, winekeeper)"
+    },
+    "finding_type": {
+      "type": "string",
+      "description": "Kind of finding (storage, classification, documentation, valuation, condition, duplicate)"
+    },
+    "record_entity": {
+      "type": "string",
+      "description": "Entity type of the record the finding is about, when it is about one record"
+    },
+    "record_id": {
+      "type": "string",
+      "description": "Id of the record the finding is about, when it is about one record"
+    },
+    "note": {
+      "type": "string",
+      "description": "Optional note the collector added when setting the finding aside"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the finding was resolved"
+    }
+  },
+  "required": [
+    "user_email",
+    "finding_key",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

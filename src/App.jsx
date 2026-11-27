@@ -54,6 +54,7 @@ import EmailCampaigns from "@/pages/EmailCampaigns";
 import CollectionTools from "@/pages/CollectionTools";
 import ShareCenter from "@/pages/ShareCenter";
 import ReportingCenter from "@/pages/ReportingCenter";
+import CollectionHealth from "@/pages/CollectionHealth";
 import AdminDiagnostics from "@/pages/AdminDiagnostics";
 import ValuationCenter from "@/pages/ValuationCenter";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
@@ -537,6 +538,15 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="AdminDiagnostics">
             <AdminDiagnostics />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/CollectionHealth"
+        element={
+          <LayoutWrapper currentPageName="CollectionHealth">
+            <CollectionHealth />
           </LayoutWrapper>
         }
       />

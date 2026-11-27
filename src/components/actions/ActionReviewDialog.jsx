@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { effectiveTargets, requiresExplicitConfirm } from '@/lib/actions/actionModel';
 import { actionTypeLabel } from '@/lib/actions/actionRegistry';
+import { ACTION_LABELS } from '@/lib/actions/actionLabels';
 
 /**
  * The confirmation step for accepted actions.
@@ -113,11 +114,11 @@ export default function ActionReviewDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onCancel} disabled={busy}>
-            Cancel
+            {ACTION_LABELS.cancel}
           </Button>
           <Button onClick={onConfirm} disabled={busy || blocked}>
             {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            {busy ? 'Applying…' : 'Apply change'}
+            {busy ? 'Applying…' : ACTION_LABELS.accept}
           </Button>
         </DialogFooter>
       </DialogContent>

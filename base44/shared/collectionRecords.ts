@@ -104,6 +104,30 @@ export const COLLECTION_ENTITIES: Record<string, CollectionEntityConfig> = {
     ],
     mergeArrays: ['tags', 'documents', 'photos'],
   },
+  // Tobacco blends follow the same documentation contract as the other four
+  // modules, so a classification, a storage assignment or a duplicate review
+  // reaches them through the same validated path.
+  TobaccoBlend: {
+    moduleKey: 'tobacco',
+    label: 'Tobacco blend',
+    makerFields: ['manufacturer'],
+    identityFields: ['manufacturer', 'blend_type', 'cut', 'production_status'],
+    documentationFields: [
+      'purchase_date',
+      'purchase_price',
+      'purchase_source',
+      'original_owner',
+      'production_date',
+      'serial_number',
+      'batch_number',
+      'condition_notes',
+      'provenance_notes',
+      'tags',
+      'lifecycle_status',
+      'lifecycle_note',
+    ],
+    mergeArrays: ['tags', 'documents', 'photos'],
+  },
 };
 
 export const LIFECYCLE_STATES = [

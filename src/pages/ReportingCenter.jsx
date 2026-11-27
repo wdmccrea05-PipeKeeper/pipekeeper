@@ -14,6 +14,10 @@ import ReportFiltersBar from "@/components/reports/ReportFiltersBar";
 import ReportResultView from "@/components/reports/ReportResultView";
 import ReportDrilldownDialog from "@/components/reports/ReportDrilldownDialog";
 import SavedReportConfigs from "@/components/reports/SavedReportConfigs";
+import FindingsReviewPanel from "@/components/actions/FindingsReviewPanel";
+import useFindingStates from "@/hooks/useFindingStates";
+import useScrollRestoration from "@/hooks/useScrollRestoration";
+import { buildFindings } from "@/lib/actions/collectionFindings";
 import CuratorReportPrompt from "@/components/reports/CuratorReportPrompt";
 import { buildReportContext, runReport, getReport } from "@/lib/reports/reportCatalog";
 import { downloadReportCsv, downloadReportPdf } from "@/lib/reports/reportExport";
@@ -40,6 +44,9 @@ export default function ReportingCenter() {
   const { user } = useCurrentUser();
   const { enabled, isLoading: modulesLoading } = useEnabledModules();
   const entitlements = useEntitlements();
+  const { states: findingStates, setState: setFindingState } = useFindingStates(user);
+
+  useScrollRestoration("reporting");
 
   const [filters, setFilters] = useState(initialFilters);
   const [activeReportId, setActiveReportId] = useState(initialReportId);
@@ -114,6 +121,41 @@ export default function ReportingCenter() {
   );
 
   const result = useMemo(() => runReport(activeReportId, context), [activeReportId, context]);
+
+  // Findings for the records this report is showing, from the same builder the
+  // Collection Health review uses, scoped by the report's own filters. A change
+  // made here recalculates the report from the stored records.
+  const reportFindings = useMemo(() => {
+    const inScope = new Set((context.items || []).map((item) => item.id));
+    const scoped = (records) => (records || []).filter((record) => inScope.has(record.id));
+    const collections = [];
+
+    if (effectiveModules.pipe) {
+      collections.push({ moduleKey: "pipekeeper", records: scoped(data.pipes) });
+      collections.push({ moduleKey: "tobacco", records: scoped(data.blends) });
+    }
+    if (effectiveModules.cigar) collections.push({ moduleKey: "cigarkeeper", records: scoped(data.cigars) });
+    if (effectiveModules.whiskey) collections.push({ moduleKey: "whiskeykeeper", records: scoped(data.bottles) });
+    if (effectiveModules.wine) collections.push({ moduleKey: "winekeeper", records: scoped(data.wines) });
+
+    return buildFindings({
+      collections,
+      locations: data.locations,
+      humidors: data.humidors,
+      valuations: data.valuations,
+    });
+  }, [
+    context,
+    effectiveModules,
+    data.pipes,
+    data.blends,
+    data.cigars,
+    data.bottles,
+    data.wines,
+    data.locations,
+    data.humidors,
+    data.valuations,
+  ]);
 
   const drillItems = useMemo(
     () => context.items.filter((item) => drill.ids.includes(item.id)),
@@ -211,6 +253,21 @@ export default function ReportingCenter() {
                 exporting={exporting}
                 canExport={canExport}
               />
+              {reportFindings.length > 0 && (
+                <div className="no-print">
+                  <FindingsReviewPanel
+                    title={t("reporting.actionsTitle", "Actions for these findings")}
+                    description={t(
+                      "reporting.actionsBody",
+                      "Fix what a finding points to without leaving the report. The report recalculates from your records afterwards."
+                    )}
+                    findings={reportFindings}
+                    states={findingStates}
+                    onStateChange={setFindingState}
+                    emptyMessage=""
+                  />
+                </div>
+              )}
               <CuratorReportPrompt result={result} onOpenReport={setActiveReportId} />
             </>
           )}

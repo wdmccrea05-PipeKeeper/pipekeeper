@@ -1,0 +1,302 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import { useEnabledModules } from '@/components/hooks/useEnabledKeeperModules';
+import useReportCenterData from '@/components/reports/useReportCenterData';
+import { InsightsHeader, InsightsPageShell } from '@/components/insights/InsightsShell';
+import StatStrip from '@/components/ui/StatStrip';
+import FindingsReviewPanel from '@/components/actions/FindingsReviewPanel';
+import useFindingStates from '@/hooks/useFindingStates';
+import useScrollRestoration from '@/hooks/useScrollRestoration';
+import {
+  buildFindings,
+  summarizeFindings,
+  FINDING_TYPES,
+  FINDING_TYPE_LABELS,
+} from '@/lib/actions/collectionFindings';
+import { resolveReturn } from '@/lib/navigation/returnTo';
+import { TEXT_CAPTION, TEXT_SECONDARY } from '@/lib/theme/tokens';
+
+const MODULE_TABS = [
+  { key: '', label: 'All modules' },
+  { key: 'pipekeeper', label: 'Pipes' },
+  { key: 'tobacco', label: 'Tobacco' },
+  { key: 'cigarkeeper', label: 'Cigars' },
+  { key: 'whiskeykeeper', label: 'Whiskey' },
+  { key: 'winekeeper', label: 'Wine' },
+];
+
+const DUPLICATE_ENTITIES = [
+  { moduleKey: 'pipekeeper', entity: 'Pipe' },
+  { moduleKey: 'tobacco', entity: 'TobaccoBlend' },
+  { moduleKey: 'cigarkeeper', entity: 'Cigar' },
+  { moduleKey: 'whiskeykeeper', entity: 'Bottle' },
+  { moduleKey: 'winekeeper', entity: 'Wine' },
+];
+
+function initialParam(key) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(key) || '';
+}
+
+function Chip({ active, children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-full px-3 py-2 text-[12.5px] font-semibold whitespace-nowrap min-h-[40px]"
+      style={{
+        background: active ? 'rgba(198,161,91,0.2)' : 'rgba(255,255,255,0.04)',
+        border: `1px solid ${active ? 'rgba(198,161,91,0.5)' : 'rgba(180,140,75,0.18)'}`,
+        color: active ? '#F5F1E7' : 'rgba(224,216,200,0.75)',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
+ * Collection health: the findings from the collector's own records, in one
+ * review list.
+ *
+ * Every finding that can be fixed without inventing data carries the same action
+ * card used everywhere else, so a correction here is validated, executed,
+ * audited and undoable exactly like a Curator proposal. Findings that need the
+ * collector's own information open the record instead.
+ */
+export default function CollectionHealth() {
+  const { user } = useCurrentUser();
+  const { enabled, isLoading: modulesLoading } = useEnabledModules();
+  const { states, setState } = useFindingStates(user);
+
+  const [moduleFilter, setModuleFilter] = useState(() => initialParam('module'));
+  const [typeFilter, setTypeFilter] = useState(() => initialParam('type'));
+  const [duplicates, setDuplicates] = useState({ groups: [], scanning: false, scanned: false });
+
+  const origin = initialParam('origin');
+  const report = initialParam('report');
+  const returnLink = resolveReturn(origin, report ? { report } : {});
+
+  useScrollRestoration(`collection-health:${moduleFilter}:${typeFilter}`);
+
+  const effectiveModules = useMemo(
+    () => ({
+      pipe: Boolean(enabled.pipekeeper),
+      whiskey: Boolean(enabled.whiskeykeeper),
+      cigar: Boolean(enabled.cigarkeeper),
+      wine: Boolean(enabled.winekeeper),
+    }),
+    [enabled]
+  );
+
+  const data = useReportCenterData({ user, modules: effectiveModules });
+
+  const collections = useMemo(() => {
+    const wants = (key) => !moduleFilter || moduleFilter === key;
+    const list = [];
+    if (enabled.pipekeeper && wants('pipekeeper')) list.push({ moduleKey: 'pipekeeper', records: data.pipes });
+    if (enabled.pipekeeper && wants('tobacco')) list.push({ moduleKey: 'tobacco', records: data.blends });
+    if (enabled.cigarkeeper && wants('cigarkeeper')) list.push({ moduleKey: 'cigarkeeper', records: data.cigars });
+    if (enabled.whiskeykeeper && wants('whiskeykeeper')) list.push({ moduleKey: 'whiskeykeeper', records: data.bottles });
+    if (enabled.winekeeper && wants('winekeeper')) list.push({ moduleKey: 'winekeeper', records: data.wines });
+    return list;
+  }, [enabled, moduleFilter, data.pipes, data.blends, data.cigars, data.bottles, data.wines]);
+
+  const scanDuplicates = useCallback(async () => {
+    setDuplicates((prev) => ({ ...prev, scanning: true }));
+    const wanted = new Set(collections.map((entry) => entry.moduleKey));
+    const targets = DUPLICATE_ENTITIES.filter((entry) => wanted.has(entry.moduleKey));
+
+    const groups = [];
+    for (const target of targets) {
+      const response = await base44.functions.invoke('collectionItemDuplicates', {
+        entityName: target.entity,
+      });
+      for (const group of response?.data?.groups || []) {
+        groups.push({ moduleKey: target.moduleKey, entity: target.entity, ...group });
+      }
+    }
+    setDuplicates({ groups, scanning: false, scanned: true });
+  }, [collections]);
+
+  // A duplicates drill-down opens the scan it was pointing at.
+  useEffect(() => {
+    if (typeFilter !== 'duplicate') return;
+    if (duplicates.scanned || duplicates.scanning) return;
+    scanDuplicates();
+  }, [typeFilter, duplicates.scanned, duplicates.scanning, scanDuplicates]);
+
+  const findings = useMemo(
+    () =>
+      buildFindings({
+        collections,
+        locations: data.locations,
+        humidors: data.humidors,
+        valuations: data.valuations,
+        duplicateGroups: duplicates.groups,
+      }),
+    [collections, data.locations, data.humidors, data.valuations, duplicates.groups]
+  );
+
+  const summary = useMemo(() => summarizeFindings(findings), [findings]);
+  const visibleFindings = useMemo(
+    () => (typeFilter ? findings.filter((finding) => finding.type === typeFilter) : findings),
+    [findings, typeFilter]
+  );
+
+  // Filters stay in the address bar, so a refresh, a return or a share keeps them.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (moduleFilter) params.set('module', moduleFilter);
+    else params.delete('module');
+    if (typeFilter) params.set('type', typeFilter);
+    else params.delete('type');
+    const query = params.toString();
+    window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+  }, [moduleFilter, typeFilter]);
+
+  const resolvedCount = Object.values(states || {}).filter((entry) => entry?.status === 'resolved').length;
+  const isLoading = modulesLoading || data.isLoading;
+  const hasModules = enabled.pipekeeper || enabled.whiskeykeeper || enabled.cigarkeeper || enabled.winekeeper;
+
+  return (
+    <InsightsPageShell>
+      <InsightsHeader
+        title="Collection health"
+        subtitle="What is missing or inconsistent in your records, in one list. Fix what can be fixed here; open the record when only you can fill it in."
+      />
+
+      {returnLink && (
+        <p className="mb-4 text-xs">
+          <Link to={returnLink.to} className="underline decoration-dotted underline-offset-2" style={{ color: '#D4A574' }}>
+            Back to {returnLink.label}
+          </Link>
+        </p>
+      )}
+
+      {data.isError && (
+        <p className="mb-4 text-sm" role="alert" style={{ color: '#E0A0A0' }}>
+          Some collection data could not be loaded, so this list may be incomplete.
+        </p>
+      )}
+
+      {!isLoading && !hasModules ? (
+        <div className="rounded-2xl p-8 text-center" style={{ border: '1px solid rgba(180,140,75,0.18)' }}>
+          <p className="text-sm" style={{ color: TEXT_SECONDARY }}>
+            No collection modules are open yet. Add a module and its records to review them here.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4 min-w-0">
+          <StatStrip
+            items={[
+              { label: 'Needs review', value: isLoading ? '—' : summary.total, onClick: () => setTypeFilter('') },
+              {
+                label: 'Storage',
+                value: isLoading ? '—' : summary.byType.storage,
+                onClick: () => setTypeFilter('storage'),
+              },
+              {
+                label: 'Classification',
+                value: isLoading ? '—' : summary.byType.classification,
+                onClick: () => setTypeFilter('classification'),
+              },
+              {
+                label: 'Documentation',
+                value: isLoading ? '—' : summary.byType.documentation,
+                onClick: () => setTypeFilter('documentation'),
+              },
+            ]}
+          />
+
+          <div className="-mx-1 overflow-x-auto nav-scroll-bar">
+            <div className="flex gap-2 px-1 py-1">
+              {MODULE_TABS.filter(
+                (tab) =>
+                  !tab.key ||
+                  (tab.key === 'tobacco' ? enabled.pipekeeper : Boolean(enabled[tab.key]))
+              ).map((tab) => (
+                <Chip key={tab.key || 'all'} active={moduleFilter === tab.key} onClick={() => setModuleFilter(tab.key)}>
+                  {tab.label}
+                </Chip>
+              ))}
+            </div>
+          </div>
+
+          <div className="-mx-1 overflow-x-auto nav-scroll-bar">
+            <div className="flex gap-2 px-1 py-1">
+              <Chip active={!typeFilter} onClick={() => setTypeFilter('')}>
+                All findings {summary.total > 0 ? `(${summary.total})` : ''}
+              </Chip>
+              {FINDING_TYPES.map((type) => (
+                <Chip
+                  key={type.key}
+                  active={typeFilter === type.key}
+                  onClick={() => setTypeFilter(type.key)}
+                >
+                  {FINDING_TYPE_LABELS[type.key]} {summary.byType[type.key] > 0 ? `(${summary.byType[type.key]})` : ''}
+                </Chip>
+              ))}
+            </div>
+          </div>
+
+          {typeFilter === 'duplicate' && duplicates.scanning && (
+            <p className="text-[12.5px] flex items-center gap-2" style={{ color: TEXT_SECONDARY }}>
+              <span className="w-4 h-4 border-2 border-[rgba(180,140,75,0.3)] border-t-[#D4A574] rounded-full animate-spin" />
+              Checking for duplicates…
+            </p>
+          )}
+
+          {typeFilter === 'duplicate' && !duplicates.scanning && duplicates.scanned && duplicates.groups.length === 0 && (
+            <p className="text-[12.5px]" style={{ color: TEXT_SECONDARY }}>
+              No records in this scope share an identity.
+            </p>
+          )}
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
+              <div className="w-8 h-8 border-4 border-[rgba(180,140,75,0.25)] border-t-[#D4A574] rounded-full animate-spin" />
+              <span className="sr-only">Loading your collection</span>
+            </div>
+          ) : (
+            <FindingsReviewPanel
+              findings={visibleFindings}
+              states={states}
+              onStateChange={setState}
+              emptyMessage={
+                typeFilter === 'duplicate' && !duplicates.scanned
+                  ? 'Check for duplicates to review them here.'
+                  : 'Nothing needs your attention in this scope.'
+              }
+            />
+          )}
+
+          {typeFilter === 'duplicate' && !duplicates.scanning && (
+            <button
+              type="button"
+              onClick={scanDuplicates}
+              className="rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
+              style={{ background: 'transparent', color: '#E0D8C8', border: '1px solid rgba(180,140,75,0.3)' }}
+            >
+              {duplicates.scanned ? 'Check again' : 'Check for duplicates'}
+            </button>
+          )}
+
+          {resolvedCount > 0 && (
+            <p className="text-[11.5px]" style={{ color: TEXT_CAPTION }}>
+              {resolvedCount} resolved finding{resolvedCount === 1 ? '' : 's'} hidden. Resolving records a decision only;
+              your records and their history are unchanged.
+            </p>
+          )}
+
+          <p className="text-[11.5px]" style={{ color: TEXT_CAPTION }}>
+            Optional fields left blank are never counted against you. Defer what you will come back to, and dismiss what
+            does not apply.
+          </p>
+        </div>
+      )}
+    </InsightsPageShell>
+  );
+}

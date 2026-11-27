@@ -48,8 +48,14 @@ function toCsv(rows) {
  */
 export default function CollectionTools() {
   const { user, isLoading: userLoading } = useCurrentUser();
-  const [entityName, setEntityName] = useState('Pipe');
-  const [tab, setTab] = useState('bulk');
+  // A drill-down from a finding opens the tab and module it pointed at.
+  const [entityName, setEntityName] = useState(() => {
+    const requested = new URLSearchParams(window.location.search).get('module');
+    return ['Pipe', 'TobaccoBlend', 'Cigar', 'Bottle', 'Wine'].includes(requested) ? requested : 'Pipe';
+  });
+  const [tab, setTab] = useState(() =>
+    new URLSearchParams(window.location.search).get('tab') === 'duplicates' ? 'duplicates' : 'bulk'
+  );
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
