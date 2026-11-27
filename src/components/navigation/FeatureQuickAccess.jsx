@@ -5,7 +5,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useNavigate } from 'react-router-dom';
-import { Package, Leaf, BarChart3, FileText, Sparkles, User, HelpCircle, CreditCard, GlassWater, Cigarette } from 'lucide-react';
+import { Package, Leaf, BarChart3, FileText, Sparkles, User, HelpCircle, CreditCard, GlassWater, Cigarette, Wrench } from 'lucide-react';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useModuleVisibility } from '@/components/hooks/useModuleVisibility';
 
@@ -52,6 +52,12 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
       description: t("quickAccess.generatePDFCSV", "Generate PDF & CSV reports"),
       page: "Home",
       hash: "#insights",
+    },
+    {
+      icon: Wrench,
+      label: t("quickAccess.collectionTools", "Collection Tools"),
+      description: t("quickAccess.collectionToolsDesc", "Bulk edit, duplicates, provenance & export"),
+      page: "CollectionTools",
     },
     {
       icon: Sparkles,

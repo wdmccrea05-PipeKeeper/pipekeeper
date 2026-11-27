@@ -20,6 +20,7 @@ import EnrichButton from '@/components/shared/EnrichButton';
 import InlinePhotoEditor from '@/components/shared/InlinePhotoEditor';
 import AddToWantListModal from '@/components/wantlist/AddToWantListModal';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
+import CollectionRecordDetails from '@/components/collection/CollectionRecordDetails';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
 import WineLifecycleControls from '@/components/wine/WineLifecycleControls';
@@ -825,6 +826,8 @@ export default function WineDetail() {
         record={wine}
         userProfile={{ email: user?.email }}
       />
+
+      <CollectionRecordDetails entityName="Wine" record={wine} />
 
       <SimilarItemsDrawer
         isOpen={showSimilar}

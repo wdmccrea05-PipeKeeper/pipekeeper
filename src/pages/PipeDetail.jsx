@@ -60,6 +60,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import EnrichButton from '@/components/shared/EnrichButton';
 import { safeUpdate } from '@/components/utils/safeUpdate';
 import PipePhotoGallery from '@/components/pipes/PipePhotoGallery';
+import CollectionRecordDetails from '@/components/collection/CollectionRecordDetails';
 import BreakInSchedule from '@/components/pipes/BreakInSchedule';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
@@ -1428,6 +1429,12 @@ export default function PipeDetail() {
           }}
         />
       )}
+
+      <CollectionRecordDetails
+        entityName="Pipe"
+        record={pipe}
+        onRecordUpdated={(patch) => setPipe((prev) => ({ ...prev, ...patch }))}
+      />
 
       <PipePhotoGallery
         photos={allPhotos}

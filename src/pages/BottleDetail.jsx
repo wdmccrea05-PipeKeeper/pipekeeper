@@ -37,6 +37,7 @@ import InventoryManager from "@/components/whiskey/InventoryManager";
 import BottleLifecycleControls from "@/components/whiskey/BottleLifecycleControls";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import CollectionRecordDetails from "@/components/collection/CollectionRecordDetails";
 import {
   resolveBottleTotalValue,
   resolveBottleUnitValue,
@@ -1108,6 +1109,11 @@ function BottleDetailInner() {
           onSaved={() => { setShowObservationModal(false); loadPriceObservations(); }}
         />
       ) : null}
+      <CollectionRecordDetails
+        entityName="Bottle"
+        record={bottle}
+        onRecordUpdated={(patch) => setBottle((prev) => ({ ...prev, ...patch }))}
+      />
       </LockedModuleGuard>
       );
       }

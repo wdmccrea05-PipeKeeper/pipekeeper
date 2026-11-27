@@ -3,6 +3,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
+import CollectionRecordDetails from '@/components/collection/CollectionRecordDetails';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -1462,6 +1463,8 @@ function CigarDetailInner() {
           onSaved={() => { setShowObservationModal(false); loadPriceObservations(cigar.id); }}
         />
       )}
+
+      <CollectionRecordDetails entityName="Cigar" record={cigar} />
     </div>
   );
 }

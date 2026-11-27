@@ -134,7 +134,9 @@ export function resolveAcquisition(record) {
   const rawSource =
     record.purchase_source || record.purchase_location || record.acquisition_source || null;
 
-  const cost = Number(rawCost);
+  // A missing cost must stay missing. Number(null) is 0, which would report an
+  // unrecorded acquisition as having cost nothing.
+  const cost = isBlank(rawCost) ? null : Number(rawCost);
 
   return {
     date: rawDate || null,
