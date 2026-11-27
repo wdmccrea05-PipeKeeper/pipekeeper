@@ -48,7 +48,12 @@ export default function SavedReportConfigs({ user, reportId, filters, onLoad }) 
 
   const handleSave = () => {
     const label = name.trim() || `${reportId}`;
-    create.mutate({ name: label, report_id: reportId, filters: { ...filters, curatorQuestion: filters.curatorQuestion || "" } });
+    create.mutate({
+      name: label,
+      report_id: reportId,
+      filters: { ...filters, curatorQuestion: filters.curatorQuestion || "" },
+      created_by: email,
+    });
   };
 
   return (

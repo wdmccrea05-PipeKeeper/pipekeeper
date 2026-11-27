@@ -23,6 +23,7 @@ import AgingReportExporter from "@/components/export/AgingReportExporter";
 import CollectionReportExporter from "@/components/export/CollectionReportExporter";
 import PipeCollectionReportPanel from "@/components/reports/PipeCollectionReportPanel";
 import PipeCharacteristicsCompare from "@/components/pipes/PipeCharacteristicsCompare";
+import { Link } from "react-router-dom";
 
 const DEFAULT_OPTIONS = {
   modules: { pipe: true, whiskey: true, cigar: true, wine: true },
@@ -186,6 +187,14 @@ export default function CollectionReports() {
           "Printable pairing insights, top matches and complementary suggestions built from your own collection.",
         )}
       />
+
+      <p className="text-xs mb-4" style={{ color: TEXT_CAPTION }}>
+        {t("collectionReports.centerLink", "Composition, documentation, preservation, history and value reports are in the")}{" "}
+        <Link to="/ReportingCenter" className="underline decoration-dotted underline-offset-2" style={{ color: "#D4A574" }}>
+          {t("collectionReports.centerCta", "Collection Intelligence and Reporting Center")}
+        </Link>
+        .
+      </p>
 
       <div className="grid gap-6 xl:grid-cols-[340px_1fr] xl:items-start">
         <div className="xl:sticky xl:top-4">
