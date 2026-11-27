@@ -340,7 +340,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name?.trim()) {
-      toast.error('Cigar name is required');
+      toast.error(t('cigarForm.nameRequired', 'Cigar name is required'));
       return;
     }
     setSaving(true);
@@ -354,18 +354,18 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           ...payload,
           created_by: cigar.created_by || user?.email,
         });
-        toast.success('Cigar updated');
+        toast.success(t('cigarForm.updated', 'Cigar updated'));
       } else {
         result = await base44.entities.Cigar.create({
           ...payload,
           created_by: user?.email,
         });
-        toast.success('Cigar added to collection');
+        toast.success(t('cigarForm.added', 'Cigar added to collection'));
       }
       if (typeof onSubmit === 'function') onSubmit(result || payload);
     } catch (err) {
       console.error('[CigarForm] save error:', err);
-      toast.error('Failed to save cigar');
+      toast.error(t('cigarForm.saveFailed', 'Failed to save cigar'));
     } finally {
       setSaving(false);
     }
@@ -385,7 +385,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {/* Section 1: Identity — open by default */}
-      <FormSection title="Identity" summary={identitySummary} defaultOpen>
+      <FormSection title={t('cigarForm.identity', 'Identity')} summary={identitySummary} defaultOpen>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Name *">
             <StyledInput value={form.name} onChange={set('name')} placeholder="e.g. Serie V" />
@@ -403,7 +403,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       </FormSection>
 
       {/* Section 2: Construction */}
-      <FormSection title="Construction" summary={constructionSummary}>
+      <FormSection title={t('cigarForm.construction', 'Construction')} summary={constructionSummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Wrapper">
             <StyledInput value={form.wrapper} onChange={set('wrapper')} placeholder="e.g. Maduro" />
@@ -432,10 +432,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       </FormSection>
 
       {/* Section 3: Profile */}
-      <FormSection title="Profile" summary={profileSummary}>
+      <FormSection title={t('cigarForm.profile', 'Profile')} summary={profileSummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Body">
-            <StyledSelect value={form.body} onValueChange={set('body')} placeholder="Select body">
+            <StyledSelect value={form.body} onValueChange={set('body')} placeholder={t('cigarForm.selectBody', 'Select body')}>
               {['mild', 'mild_medium', 'medium', 'medium_full', 'full'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace('_', '-').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -444,7 +444,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             </StyledSelect>
           </FormField>
           <FormField label="Strength">
-            <StyledSelect value={form.strength} onValueChange={set('strength')} placeholder="Select strength">
+            <StyledSelect value={form.strength} onValueChange={set('strength')} placeholder={t('cigarForm.selectStrength', 'Select strength')}>
               {['mild', 'mild_medium', 'medium', 'medium_full', 'full'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace('_', '-').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -453,7 +453,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             </StyledSelect>
           </FormField>
           <FormField label="Production Status">
-            <StyledSelect value={form.production_status} onValueChange={set('production_status')} placeholder="Select status">
+            <StyledSelect value={form.production_status} onValueChange={set('production_status')} placeholder={t('cigarForm.selectStatus', 'Select status')}>
               {['discontinued', 'limited', 'regular_production', 'seasonal', 'unknown'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -462,7 +462,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             </StyledSelect>
           </FormField>
           <FormField label="Release Type">
-            <StyledSelect value={form.release_type} onValueChange={set('release_type')} placeholder="Select release type">
+            <StyledSelect value={form.release_type} onValueChange={set('release_type')} placeholder={t('cigarForm.selectReleaseType', 'Select release type')}>
               {['annual_release', 'collaboration', 'limited_edition', 'regular', 'special_release'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -475,12 +475,12 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           label="Flavor Notes"
           values={form.flavor_notes}
           onChange={(val) => setForm((f) => ({ ...f, flavor_notes: val }))}
-          placeholder="Add a note (press Enter)"
+          placeholder={t('cigarForm.addNotePlaceholder', 'Add a note (press Enter)')}
         />
       </FormSection>
 
       {/* Section 4: Acquisition */}
-      <FormSection title="Acquisition">
+      <FormSection title={t('cigarForm.acquisition', 'Acquisition')}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Purchase Source">
             <StyledInput value={form.purchase_source} onChange={set('purchase_source')} placeholder="e.g. Famous Smoke Shop" />
@@ -492,7 +492,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             <StyledInput type="number" value={form.purchase_price} onChange={set('purchase_price')} placeholder="0.00" />
           </FormField>
           <FormField label="Purchase Price Type">
-            <StyledSelect value={form.purchase_price_type} onValueChange={set('purchase_price_type')} placeholder="Select type">
+            <StyledSelect value={form.purchase_price_type} onValueChange={set('purchase_price_type')} placeholder={t('cigarForm.selectType', 'Select type')}>
               {['single', 'pack', 'box', 'bundle', 'total_paid'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -503,7 +503,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
         </div>
       </FormSection>
 
-      <FormSection title="Valuation" summary={valuationSummary}>
+      <FormSection title={t('cigarForm.valuation', 'Valuation')} summary={valuationSummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Estimated Unit Value ($)">
             <StyledInput
@@ -526,10 +526,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             <StyledInput type="date" value={form.valuation_updated_at} onChange={set('valuation_updated_at')} />
           </FormField>
           <FormField label="Valuation Source">
-            <StyledInput value={form.valuation_source} onChange={set('valuation_source')} placeholder="Receipt, retailer, manual estimate…" />
+            <StyledInput value={form.valuation_source} onChange={set('valuation_source')} placeholder={t('cigarForm.valueSourcePlaceholder', 'Receipt, retailer, manual estimate…')} />
           </FormField>
           <FormField label="Valuation Confidence">
-            <StyledSelect value={form.valuation_confidence} onValueChange={set('valuation_confidence')} placeholder="Select confidence">
+            <StyledSelect value={form.valuation_confidence} onValueChange={set('valuation_confidence')} placeholder={t('cigarForm.selectConfidence', 'Select confidence')}>
               {['high', 'medium', 'low'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -549,15 +549,15 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           </FormField>
         </div>
         <FormField label="Valuation Notes">
-          <StyledTextarea value={form.valuation_notes} onChange={set('valuation_notes')} placeholder="Notes about how this valuation was determined…" rows={3} />
+          <StyledTextarea value={form.valuation_notes} onChange={set('valuation_notes')} placeholder={t('cigarForm.valuationNotesPlaceholder', 'Notes about how this valuation was determined…')} rows={3} />
         </FormField>
       </FormSection>
 
       {/* Section 5: Inventory */}
-      <FormSection title="Inventory" summary={inventorySummary}>
+      <FormSection title={t('cigarForm.inventory', 'Inventory')} summary={inventorySummary}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Unit Type">
-            <StyledSelect value={form.unit_type} onValueChange={handleUnitTypeChange} placeholder="Select unit">
+            <StyledSelect value={form.unit_type} onValueChange={handleUnitTypeChange} placeholder={t('cigarForm.selectUnit', 'Select unit')}>
               {['single', '5pack', 'pack', 'box', 'bundle', 'partial_pack', 'partial_box'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
                   {v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -588,7 +588,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
               <CheckToggle label="Package open" checked={form.package_open} onChange={(v) => setForm((f) => ({ ...f, package_open: v }))} />
             </FormField>
             <FormField label="Humidor">
-            <StyledSelect value={form.humidor_id || 'none'} onValueChange={handleHumidorChange} placeholder="Select humidor">
+            <StyledSelect value={form.humidor_id || 'none'} onValueChange={handleHumidorChange} placeholder={t('cigarForm.selectHumidor', 'Select humidor')}>
               <SelectItem value="none" style={selectItemStyle}>None</SelectItem>
               {[...humidors].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((h) => (
                 <SelectItem key={h.id} value={h.id} style={selectItemStyle}>
@@ -617,17 +617,17 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
           </FormField>
         </div>
         <FormField label="Storage Notes">
-          <StyledTextarea value={form.storage_notes} onChange={set('storage_notes')} placeholder="Storage conditions, shelf placement…" rows={2} />
+          <StyledTextarea value={form.storage_notes} onChange={set('storage_notes')} placeholder={t('cigarForm.storagePlaceholder', 'Storage conditions, shelf placement…')} rows={2} />
         </FormField>
       </FormSection>
 
       {/* Section 6: Notes & Tags */}
-      <FormSection title="Notes & Tags">
+      <FormSection title={t('cigarForm.notesTags', 'Notes & Tags')}>
         <FormField label="Personal Notes">
-          <StyledTextarea value={form.personal_notes} onChange={set('personal_notes')} placeholder="Tasting impressions, context…" rows={4} />
+          <StyledTextarea value={form.personal_notes} onChange={set('personal_notes')} placeholder={t('cigarForm.tastingPlaceholder', 'Tasting impressions, context…')} rows={4} />
         </FormField>
         <div>
-          <FieldLabel>Rating</FieldLabel>
+          <FieldLabel>{t('cigarForm.rating', 'Rating')}</FieldLabel>
           <StarRating value={form.rating} onChange={(val) => setForm((f) => ({ ...f, rating: val }))} />
         </div>
         <div className="flex flex-wrap gap-4 pt-1">
@@ -640,10 +640,10 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       </FormSection>
 
       {/* Section 7: Identifiers */}
-      <FormSection title="Identifiers">
+      <FormSection title={t('cigarForm.identifiers', 'Identifiers')}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <FormField label="Barcode">
-            <StyledInput value={form.barcode} onChange={set('barcode')} placeholder="Barcode" />
+            <StyledInput value={form.barcode} onChange={set('barcode')} placeholder={t('cigarForm.barcodePlaceholder', 'Barcode')} />
           </FormField>
           <FormField label="UPC">
             <StyledInput value={form.upc} onChange={set('upc')} placeholder="UPC" />
@@ -657,13 +657,13 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
             value={aliasInput}
             onChange={(e) => setAliasInput(e.target.value)}
             onBlur={handleAliasBlur}
-            placeholder="Alternate names, SKUs…"
+            placeholder={t('cigarForm.alternateNamesPlaceholder', 'Alternate names, SKUs…')}
           />
         </FormField>
       </FormSection>
 
       {/* Section 8: Photos */}
-      <FormSection title="Photos">
+      <FormSection title={t('cigarForm.photos', 'Photos')}>
         <PhotoUploader
           existingPhotos={form.photos}
           onPhotosSelected={handlePhotos}
@@ -677,7 +677,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       <div className="ck-action-footer">
         {typeof onCancel === 'function' && (
           <Button type="button" variant="ghost" onClick={onCancel} style={{ color: 'rgba(224,216,200,0.7)' }}>
-            Cancel
+            {t('common.cancel', 'Cancel')}
           </Button>
         )}
         <Button

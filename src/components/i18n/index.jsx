@@ -39,6 +39,7 @@ import plUI from './locales/pl.ui.jsx';
 import jaUI from './locales/ja.ui.jsx';
 import zhHansUI from './locales/zh-Hans.ui.jsx';
 import itGenerated from './locales/it.generated.json';
+import itExtra from './locales/it.extra.json';
 
 const CRITICAL_FALLBACKS = {
   common: { back: 'Back', search: 'Search', share: 'Share', loading: 'Loading...', retry: 'Retry' },
@@ -176,7 +177,7 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
   const withIntel = lang === 'en'
     ? deepMerge(withStoryWine, { collectionIntelligence: enCollectionIntelligence })
     : withStoryWine;
-  const withGenerated = lang === 'it' ? deepOverride(withIntel, itGenerated) : withIntel;
+  const withGenerated = lang === 'it' ? deepOverride(deepOverride(withIntel, itGenerated), itExtra) : withIntel;
   const withCriticals = deepMerge(withGenerated, CRITICAL_FALLBACKS);
   return [lang, withCriticals];
 }));

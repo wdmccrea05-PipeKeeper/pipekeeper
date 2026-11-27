@@ -13,6 +13,7 @@ import { computeSessionDecrement, getAvailableQuantity } from '@/platform/cigarI
 import { CIGAR_STRENGTH_VALUES, formatCigarStrengthLabel } from '@/platform/cigarCatalog';
 import { sortByLabel } from '@/lib/sorting/alphabetical';
 import { QUERY_KEYS } from '@/lib/queryKeys';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 const TODAY = new Date().toISOString().split('T')[0];
 
@@ -140,6 +141,7 @@ function StarRating({ value, onChange, max = 5 }) {
 }
 
 function SourceToggle({ value, onChange }) {
+  const { t } = useTranslation();
   return (
     <div
       className="flex rounded-xl overflow-hidden mb-3"
@@ -156,7 +158,9 @@ function SourceToggle({ value, onChange }) {
             color: value === mode ? '#F5F1E7' : 'rgba(224,216,200,0.55)',
           }}
         >
-          {mode === 'collection' ? 'From Collection' : 'Out of Collection'}
+          {mode === 'collection'
+            ? t('cigarSession.fromCollection', 'From Collection')
+            : t('cigarSession.outOfCollection', 'Out of Collection')}
         </button>
       ))}
     </div>
@@ -164,6 +168,7 @@ function SourceToggle({ value, onChange }) {
 }
 
 function CigarPicker({ cigars, selectedId, onSelect }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   const cigarList = Array.isArray(cigars) ? cigars : [];
@@ -185,7 +190,7 @@ function CigarPicker({ cigars, selectedId, onSelect }) {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search your cigars…"
+          placeholder={t('cigarSession.searchPlaceholder', 'Search your cigars…')}
           className="pl-9"
           style={{
             background: 'rgba(255,255,255,0.05)',
@@ -197,7 +202,7 @@ function CigarPicker({ cigars, selectedId, onSelect }) {
       </div>
       <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
         {sorted.length === 0 ? (
-          <p className="text-xs text-[#E0D8C8]/40 text-center py-4">No cigars found</p>
+          <p className="text-xs text-[#E0D8C8]/40 text-center py-4">{t('cigarSession.noCigars', 'No cigars found')}</p>
         ) : (
           sorted.map((c) => {
             const isSelected = c.id === selectedId;
@@ -254,6 +259,7 @@ function CheckToggle({ label, checked, onChange }) {
 }
 
 export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSessionSaved, editSession }) {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
   const isEditMode = !!editSession;
@@ -333,7 +339,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
     try {
       const isExternal = cigarMode === 'external';
       if (!isExternal && !selectedCigar?.id) {
-        toast.error('Select a cigar from your collection');
+        toast.error(t('cigarSession.selectCigar', 'Select a cigar from your collection'));
         setSaving(false);
         return;
       }
@@ -356,7 +362,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
       if (isEditMode && editSession?.id) {
         // Update existing session
         await base44.entities.CigarSession.update(editSession.id, payload);
-        toast.success('Session updated!');
+        toast.success(t('cigarSession.sessionUpdated', 'Session updated!'));
       } else {
         // Create new session
         payload.created_by = user?.email;
@@ -397,13 +403,15 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
           }
         }
 
-        toast.success('Session logged!');
+        toast.success(t('cigarSession.sessionLogged', 'Session logged!'));
       }
 
       if (typeof onSessionSaved === 'function') onSessionSaved();
       onClose();
     } catch {
-      toast.error(isEditMode ? 'Failed to update session' : 'Failed to save session');
+      toast.error(isEditMode
+        ? t('cigarSession.updateFailed', 'Failed to update session')
+        : t('cigarSession.saveFailed', 'Failed to save session'));
     } finally {
       setSaving(false);
     }
@@ -423,7 +431,9 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
       >
         <DialogHeader>
           <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-            {isEditMode ? 'Edit Cigar Session' : 'Log Cigar Session'}
+            {isEditMode
+              ? t('cigarSession.titleEdit', 'Edit Cigar Session')
+              : t('cigarSession.titleLog', 'Log Cigar Session')}
           </DialogTitle>
         </DialogHeader>
 
@@ -431,18 +441,18 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
           {/* Date & Duration */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <FieldLabel>Date</FieldLabel>
+              <FieldLabel>{t('fields.date', 'Date')}</FieldLabel>
               <StyledInput type="date" value={form.date} onChange={set('date')} />
             </div>
             <div>
-              <FieldLabel>Duration (min)</FieldLabel>
+              <FieldLabel>{t('cigarSession.durationMin', 'Duration (min)')}</FieldLabel>
               <StyledInput type="number" value={form.duration_minutes} onChange={set('duration_minutes')} placeholder="60" />
             </div>
           </div>
 
           {/* Cigar selection */}
           <div>
-            <FieldLabel>Cigar</FieldLabel>
+            <FieldLabel>{t('cigarSession.cigar', 'Cigar')}</FieldLabel>
             <SourceToggle value={cigarMode} onChange={setCigarMode} />
             {cigarMode === 'collection' ? (
               <CigarPicker
@@ -453,16 +463,16 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <FieldLabel>Brand</FieldLabel>
-                  <StyledInput value={form.external_cigar_brand} onChange={set('external_cigar_brand')} placeholder="Brand" />
+                  <FieldLabel>{t('cigarSession.brand', 'Brand')}</FieldLabel>
+                  <StyledInput value={form.external_cigar_brand} onChange={set('external_cigar_brand')} placeholder={t('cigarSession.brand', 'Brand')} />
                 </div>
                 <div>
-                  <FieldLabel>Name</FieldLabel>
-                  <StyledInput value={form.external_cigar_name} onChange={set('external_cigar_name')} placeholder="Name" />
+                  <FieldLabel>{t('cigarSession.name', 'Name')}</FieldLabel>
+                  <StyledInput value={form.external_cigar_name} onChange={set('external_cigar_name')} placeholder={t('cigarSession.name', 'Name')} />
                 </div>
                 <div>
-                  <FieldLabel>Vitola</FieldLabel>
-                  <StyledInput value={form.external_cigar_vitola} onChange={set('external_cigar_vitola')} placeholder="e.g. Robusto" />
+                  <FieldLabel>{t('cigarSession.vitola', 'Vitola')}</FieldLabel>
+                  <StyledInput value={form.external_cigar_vitola} onChange={set('external_cigar_vitola')} placeholder={t('cigarSession.vitolaPlaceholder', 'e.g. Robusto')} />
                 </div>
               </div>
             )}
@@ -470,47 +480,47 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
 
           {/* Pairing */}
           <div>
-            <FieldLabel>Pairing</FieldLabel>
-            <StyledInput value={form.pairing} onChange={set('pairing')} placeholder="e.g. Bourbon, Coffee, Port…" />
+            <FieldLabel>{t('cigarSession.pairing', 'Pairing')}</FieldLabel>
+            <StyledInput value={form.pairing} onChange={set('pairing')} placeholder={t('cigarSession.pairingPlaceholder', 'e.g. Bourbon, Coffee, Port…')} />
           </div>
 
           {/* Smoke notes */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <FieldLabel>Construction Notes</FieldLabel>
-              <StyledTextarea value={form.construction_notes} onChange={set('construction_notes')} placeholder="Cap, foot, overall construction…" />
+              <FieldLabel>{t('cigarSession.constructionNotes', 'Construction Notes')}</FieldLabel>
+              <StyledTextarea value={form.construction_notes} onChange={set('construction_notes')} placeholder={t('cigarSession.constructionPlaceholder', 'Cap, foot, overall construction…')} />
             </div>
             <div>
-              <FieldLabel>Burn Notes</FieldLabel>
-              <StyledTextarea value={form.burn_notes} onChange={set('burn_notes')} placeholder="Even, wavy, tunneling…" />
+              <FieldLabel>{t('cigarSession.burnNotes', 'Burn Notes')}</FieldLabel>
+              <StyledTextarea value={form.burn_notes} onChange={set('burn_notes')} placeholder={t('cigarSession.burnPlaceholder', 'Even, wavy, tunneling…')} />
             </div>
             <div>
-              <FieldLabel>Draw Notes</FieldLabel>
-              <StyledTextarea value={form.draw_notes} onChange={set('draw_notes')} placeholder="Open, tight, perfect…" />
+              <FieldLabel>{t('cigarSession.drawNotes', 'Draw Notes')}</FieldLabel>
+              <StyledTextarea value={form.draw_notes} onChange={set('draw_notes')} placeholder={t('cigarSession.drawPlaceholder', 'Open, tight, perfect…')} />
             </div>
             <div>
-              <FieldLabel>Flavor Progression</FieldLabel>
-              <StyledTextarea value={form.flavor_progression} onChange={set('flavor_progression')} placeholder="First third → second → final…" />
+              <FieldLabel>{t('cigarSession.flavorProgression', 'Flavor Progression')}</FieldLabel>
+              <StyledTextarea value={form.flavor_progression} onChange={set('flavor_progression')} placeholder={t('cigarSession.progressionPlaceholder', 'First third → second → final…')} />
             </div>
             <div>
-              <FieldLabel>First Third</FieldLabel>
-              <StyledTextarea value={form.first_third_notes} onChange={set('first_third_notes')} placeholder="Opening notes…" />
+              <FieldLabel>{t('cigarSession.firstThird', 'First Third')}</FieldLabel>
+              <StyledTextarea value={form.first_third_notes} onChange={set('first_third_notes')} placeholder={t('cigarSession.openingNotesPlaceholder', 'Opening notes…')} />
             </div>
             <div>
-              <FieldLabel>Second Third</FieldLabel>
-              <StyledTextarea value={form.second_third_notes} onChange={set('second_third_notes')} placeholder="Midpoint notes…" />
+              <FieldLabel>{t('cigarSession.secondThird', 'Second Third')}</FieldLabel>
+              <StyledTextarea value={form.second_third_notes} onChange={set('second_third_notes')} placeholder={t('cigarSession.midpointNotesPlaceholder', 'Midpoint notes…')} />
             </div>
             <div>
-              <FieldLabel>Final Third</FieldLabel>
-              <StyledTextarea value={form.final_third_notes} onChange={set('final_third_notes')} placeholder="Final third notes…" />
+              <FieldLabel>{t('cigarSession.finalThird', 'Final Third')}</FieldLabel>
+              <StyledTextarea value={form.final_third_notes} onChange={set('final_third_notes')} placeholder={t('cigarSession.finalThirdPlaceholder', 'Final third notes…')} />
             </div>
           </div>
 
           {/* Strength impression */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-            <FieldLabel>Strength Impression</FieldLabel>
-              <StyledSelect value={form.strength_impression} onValueChange={set('strength_impression')} placeholder="Select impression">
+            <FieldLabel>{t('cigarSession.strengthImpression', 'Strength Impression')}</FieldLabel>
+              <StyledSelect value={form.strength_impression} onValueChange={set('strength_impression')} placeholder={t('cigarSession.selectImpression', 'Select impression')}>
                 {CIGAR_STRENGTH_VALUES.map((v) => (
                   <SelectItem key={v} value={v} style={selectItemStyle}>
                     {formatCigarStrengthLabel(v)}
@@ -519,34 +529,34 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
               </StyledSelect>
             </div>
             <div>
-              <FieldLabel>Actual Duration (min)</FieldLabel>
-              <StyledInput type="number" value={form.duration_actual_minutes} onChange={set('duration_actual_minutes')} placeholder="Actual time smoked" />
+              <FieldLabel>{t('cigarSession.actualDuration', 'Actual Duration (min)')}</FieldLabel>
+              <StyledInput type="number" value={form.duration_actual_minutes} onChange={set('duration_actual_minutes')} placeholder={t('cigarSession.actualTimePlaceholder', 'Actual time smoked')} />
             </div>
             <div>
-              <FieldLabel>Burn Quality</FieldLabel>
-              <StyledSelect value={form.burn_quality} onValueChange={set('burn_quality')} placeholder="Select quality">
-                {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{v}</SelectItem>)}
+              <FieldLabel>{t('cigarSession.burnQuality', 'Burn Quality')}</FieldLabel>
+              <StyledSelect value={form.burn_quality} onValueChange={set('burn_quality')} placeholder={t('cigarSession.selectQuality', 'Select quality')}>
+                {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{t(`cigarSession.quality.${v}`, v)}</SelectItem>)}
               </StyledSelect>
             </div>
             <div>
-              <FieldLabel>Draw Quality</FieldLabel>
-              <StyledSelect value={form.draw_quality} onValueChange={set('draw_quality')} placeholder="Select quality">
-                {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{v}</SelectItem>)}
+              <FieldLabel>{t('cigarSession.drawQuality', 'Draw Quality')}</FieldLabel>
+              <StyledSelect value={form.draw_quality} onValueChange={set('draw_quality')} placeholder={t('cigarSession.selectQuality', 'Select quality')}>
+                {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{t(`cigarSession.quality.${v}`, v)}</SelectItem>)}
               </StyledSelect>
             </div>
             <div>
-              <FieldLabel>Ash Quality</FieldLabel>
-              <StyledSelect value={form.ash_quality} onValueChange={set('ash_quality')} placeholder="Select quality">
-                {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{v}</SelectItem>)}
+              <FieldLabel>{t('cigarSession.ashQuality', 'Ash Quality')}</FieldLabel>
+              <StyledSelect value={form.ash_quality} onValueChange={set('ash_quality')} placeholder={t('cigarSession.selectQuality', 'Select quality')}>
+                {['poor', 'fair', 'good', 'excellent'].map((v) => <SelectItem key={v} value={v} style={selectItemStyle}>{t(`cigarSession.quality.${v}`, v)}</SelectItem>)}
               </StyledSelect>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <FieldLabel>Touch-ups</FieldLabel>
+                <FieldLabel>{t('cigarSession.touchUps', 'Touch-ups')}</FieldLabel>
                 <StyledInput type="number" value={form.touch_ups} onChange={set('touch_ups')} placeholder="0" />
               </div>
               <div>
-                <FieldLabel>Relights</FieldLabel>
+                <FieldLabel>{t('cigarSession.relights', 'Relights')}</FieldLabel>
                 <StyledInput type="number" value={form.relights} onChange={set('relights')} placeholder="0" />
               </div>
             </div>
@@ -554,7 +564,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
 
           {/* Overall enjoyment */}
           <div>
-            <FieldLabel>Overall Enjoyment</FieldLabel>
+            <FieldLabel>{t('cigarSession.overallEnjoyment', 'Overall Enjoyment')}</FieldLabel>
             <StarRating
               value={form.overall_enjoyment}
               onChange={(val) => setForm((f) => ({ ...f, overall_enjoyment: val }))}
@@ -563,11 +573,11 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
 
           {/* Would buy again */}
           <div>
-            <FieldLabel>Would Buy Again?</FieldLabel>
-            <StyledSelect value={form.would_buy_again} onValueChange={set('would_buy_again')} placeholder="Select…">
+            <FieldLabel>{t('cigarSession.wouldBuyAgain', 'Would Buy Again?')}</FieldLabel>
+            <StyledSelect value={form.would_buy_again} onValueChange={set('would_buy_again')} placeholder={t('cigarSession.selectPlaceholder', 'Select…')}>
               {['yes', 'maybe', 'no'].map((v) => (
                 <SelectItem key={v} value={v} style={selectItemStyle}>
-                  {v.charAt(0).toUpperCase() + v.slice(1)}
+                  {t(`cigarSession.buyAgain.${v}`, v)}
                 </SelectItem>
               ))}
             </StyledSelect>
@@ -576,31 +586,33 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
           {/* Occasion & Location */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <FieldLabel>Occasion</FieldLabel>
-              <StyledInput value={form.occasion} onChange={set('occasion')} placeholder="e.g. Celebration, Evening…" />
+              <FieldLabel>{t('cigarSession.occasion', 'Occasion')}</FieldLabel>
+              <StyledInput value={form.occasion} onChange={set('occasion')} placeholder={t('cigarSession.occasionPlaceholder', 'e.g. Celebration, Evening…')} />
             </div>
             <div>
-              <FieldLabel>Location</FieldLabel>
-              <StyledInput value={form.location} onChange={set('location')} placeholder="e.g. Back porch, Lounge…" />
+              <FieldLabel>{t('fields.location', 'Location')}</FieldLabel>
+              <StyledInput value={form.location} onChange={set('location')} placeholder={t('cigarSession.locationPlaceholder', 'e.g. Back porch, Lounge…')} />
             </div>
           </div>
 
           {/* Notes */}
           <div>
-            <FieldLabel>Session Notes</FieldLabel>
-            <StyledTextarea value={form.notes} onChange={set('notes')} placeholder="Overall impressions…" rows={3} />
+            <FieldLabel>{t('cigarSession.sessionNotes', 'Session Notes')}</FieldLabel>
+            <StyledTextarea value={form.notes} onChange={set('notes')} placeholder={t('cigarSession.notesPlaceholder', 'Overall impressions…')} rows={3} />
           </div>
 
           {/* Flags */}
           <div className="flex flex-wrap gap-4 pt-1">
             <CheckToggle
-              label="Not for me"
+              label={t('cigarSession.notForMe', 'Not for me')}
               checked={form.not_for_me}
               onChange={(v) => setForm((f) => ({ ...f, not_for_me: v }))}
             />
             {(cigarMode === 'external' || cigarMode === 'collection') && (
               <CheckToggle
-                label={cigarMode === 'external' ? 'Add to wishlist after' : 'Add to wishlist'}
+                label={cigarMode === 'external'
+                  ? t('cigarSession.wishlistAfter', 'Add to wishlist after')
+                  : t('cigarSession.addToWishlist', 'Add to wishlist')}
                 checked={form.wishlist_after}
                 onChange={(v) => setForm((f) => ({ ...f, wishlist_after: v }))}
               />
@@ -608,12 +620,12 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
             {cigarMode === 'collection' && (
               <>
                 <CheckToggle
-                  label="Mark restock"
+                  label={t('cigarSession.markRestock', 'Mark restock')}
                   checked={form.restock_after}
                   onChange={(v) => setForm((f) => ({ ...f, restock_after: v }))}
                 />
                 <CheckToggle
-                  label="Mark favorite"
+                  label={t('cigarSession.markFavorite', 'Mark favorite')}
                   checked={form.favorite_after}
                   onChange={(v) => setForm((f) => ({ ...f, favorite_after: v }))}
                 />
@@ -632,10 +644,14 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
             >
               <div className="min-w-0">
                 <p className="text-sm font-medium" style={{ color: '#F5F1E7' }}>
-                  Deduct from inventory
+                  {t('cigarSession.deductFromInventory', 'Deduct from inventory')}
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
-                  Removes 1 stick from "{selectedCigar.name}" · {getAvailableQuantity(selectedCigar)} remaining
+                  {t('cigarSession.deductHint', {
+                    defaultValue: 'Removes 1 stick from "{{name}}" · {{count}} remaining',
+                    name: selectedCigar.name,
+                    count: getAvailableQuantity(selectedCigar),
+                  })}
                 </p>
               </div>
               <CheckToggle
@@ -654,7 +670,7 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
               onClick={onClose}
               style={{ color: 'rgba(224,216,200,0.6)' }}
             >
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               type="submit"
@@ -666,7 +682,11 @@ export default function CigarSessionModal({ isOpen, onClose, defaultCigar, onSes
                 fontWeight: 600,
               }}
             >
-              {saving ? 'Saving…' : isEditMode ? 'Update Session' : 'Log Session'}
+              {saving
+                ? t('common.saving', 'Saving…')
+                : isEditMode
+                  ? t('cigarSession.updateSession', 'Update Session')
+                  : t('cigarSession.logSession', 'Log Session')}
             </Button>
           </div>
         </form>

@@ -351,9 +351,9 @@ function CigarsInner() {
       invalidateCigars();
       setAssignDialogOpen(false);
       setAssignTargetCigar(null);
-      toast.success('Humidor assignment updated');
+      toast.success(t('cigars.humidorAssigned', 'Humidor assignment updated'));
     } catch {
-      toast.error('Failed to assign humidor');
+      toast.error(t('cigars.humidorAssignFailed', 'Failed to assign humidor'));
     }
   };
 
@@ -368,7 +368,7 @@ function CigarsInner() {
       invalidateCigars();
       toast.success(getCigarQuickActionSuccessMessage(normalizedAction, cigar, patch));
     } catch {
-      toast.error('Failed to apply action');
+      toast.error(t('cigars.actionFailed', 'Failed to apply action'));
     }
   };
 
@@ -425,9 +425,9 @@ function CigarsInner() {
       setSelectedCigarIds([]);
       setSelectMode(false);
       invalidateCigars();
-      toast.success('Bulk action applied');
+      toast.success(t('cigars.bulkApplied', 'Bulk action applied'));
     } catch {
-      toast.error('Failed to apply bulk action');
+      toast.error(t('cigars.bulkFailed', 'Failed to apply bulk action'));
     }
   };
 
@@ -574,7 +574,7 @@ function CigarsInner() {
                 border: '1px solid rgba(140,107,63,0.2)',
                 color: displayMode ? 'rgba(140, 107, 63, 1)' : 'rgba(224, 216, 200, 0.7)',
               }}
-              title="Collector Display Mode"
+              title={t('cigars.collectorDisplayMode', 'Collector Display Mode')}
             >
               <Package2 className="w-4 h-4" />
             </button>
@@ -610,21 +610,21 @@ function CigarsInner() {
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(140,107,63,0.2)' }}
             >
               <span className="text-sm text-[#E0D8C8]/80 min-w-24 col-span-2 sm:col-span-1">
-                {selectedCount} selected
+                {t('cigars.selectedCount', { defaultValue: '{{count}} selected', count: selectedCount })}
               </span>
-              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('wishlist')}>Wishlist</Button>
-              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('shopping')}>Shopping</Button>
-              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('restock')}>Restock</Button>
-              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('clear_flags')}>Clear Flags</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('wishlist')}>{t('cigars.bulkWishlist', 'Wishlist')}</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('shopping')}>{t('cigars.bulkShopping', 'Shopping')}</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('restock')}>{t('cigars.bulkRestock', 'Restock')}</Button>
+              <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('clear_flags')}>{t('cigars.bulkClearFlags', 'Clear Flags')}</Button>
               <Select
                 value={bulkAssignHumidorId || 'unassigned'}
                 onValueChange={setBulkAssignHumidorId}
               >
                 <SelectTrigger className="w-full sm:w-44 h-8 text-xs col-span-2 sm:col-span-1">
-                  <SelectValue placeholder="Assign Humidor" />
+                  <SelectValue placeholder={t('cigars.assignHumidor', 'Assign Humidor')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="unassigned">Assign: Unassigned</SelectItem>
+                  <SelectItem value="unassigned">{t('cigars.assignUnassigned', 'Assign: Unassigned')}</SelectItem>
                   {sortedHumidors.map((h) => (
                     <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                   ))}
@@ -636,10 +636,10 @@ function CigarsInner() {
                 disabled={!selectedCount}
                 onClick={() => handleBulkAction('assign_humidor', bulkAssignHumidorId === 'unassigned' ? null : bulkAssignHumidorId)}
               >
-                Assign
+                {t('cigars.assign', 'Assign')}
               </Button>
               <Button size="sm" variant="outline" disabled={!selectedCount} onClick={() => handleBulkAction('delete')} style={{ color: '#E05555' }}>
-                Delete
+                {t('common.delete', 'Delete')}
               </Button>
             </div>
           )}
@@ -756,13 +756,13 @@ function CigarsInner() {
 
           {(search || filterBody || filterStrength || filterOrigin || filterHumidor || filterFavoritesOnly || filterLowStockOnly || filterRecentlySmokedOnly) && (
             <div className="flex flex-wrap gap-1.5">
-              {filterBody && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Body: {formatCigarStrengthLabel(filterBody)}</span>}
-              {filterStrength && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Strength: {formatCigarStrengthLabel(filterStrength)}</span>}
-              {filterOrigin && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Origin: {filterOrigin}</span>}
-              {filterHumidor && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Humidor: {(humidors.find((h) => h.id === filterHumidor)?.name) || 'Assigned'}</span>}
-              {filterFavoritesOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Favorites</span>}
-              {filterLowStockOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Low stock</span>}
-              {filterRecentlySmokedOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>Recently smoked</span>}
+              {filterBody && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t('cigars.filterBody', 'Body:')} {formatCigarStrengthLabel(filterBody)}</span>}
+              {filterStrength && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t('cigars.filterStrength', 'Strength:')} {formatCigarStrengthLabel(filterStrength)}</span>}
+              {filterOrigin && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t('cigars.filterOrigin', 'Origin:')} {filterOrigin}</span>}
+              {filterHumidor && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t('cigars.filterHumidor', 'Humidor:')} {(humidors.find((h) => h.id === filterHumidor)?.name) || t('cigars.assigned', 'Assigned')}</span>}
+              {filterFavoritesOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t('cigars.filterFavorites', 'Favorites')}</span>}
+              {filterLowStockOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t('cigars.filterLowStock', 'Low stock')}</span>}
+              {filterRecentlySmokedOnly && <span className="px-2 py-1 rounded-full text-xs" style={{ background: 'rgba(180,140,75,0.18)', color: '#E0D8C8' }}>{t('cigars.filterRecentlySmoked', 'Recently smoked')}</span>}
             </div>
           )}
 
@@ -851,9 +851,9 @@ function CigarsInner() {
                     try {
                       await base44.entities.Cigar.delete(target.id);
                       invalidateCigars();
-                      toast.success('Cigar deleted');
+                      toast.success(t('cigars.deleted', 'Cigar deleted'));
                     } catch {
-                      toast.error('Failed to delete cigar');
+                      toast.error(t('cigars.deleteFailed', 'Failed to delete cigar'));
                     }
                   }}
                   onAssignHumidor={openAssignHumidorDialog}
@@ -882,9 +882,9 @@ function CigarsInner() {
                     try {
                       await base44.entities.Cigar.delete(target.id);
                       invalidateCigars();
-                      toast.success('Cigar deleted');
+                      toast.success(t('cigars.deleted', 'Cigar deleted'));
                     } catch {
-                      toast.error('Failed to delete cigar');
+                      toast.error(t('cigars.deleteFailed', 'Failed to delete cigar'));
                     }
                   }}
                   onAssignHumidor={openAssignHumidorDialog}
@@ -915,7 +915,7 @@ function CigarsInner() {
         <DialogContent className="max-w-md" style={{ background: 'rgba(27,19,13,0.98)', border: '1px solid rgba(140,107,63,0.35)' }}>
           <DialogHeader>
             <DialogTitle style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}>
-              Assign Humidor
+              {t('cigars.assignHumidor', 'Assign Humidor')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
@@ -924,18 +924,18 @@ function CigarsInner() {
             </p>
             <Select value={assignHumidorId || 'unassigned'} onValueChange={setAssignHumidorId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select humidor" />
+                <SelectValue placeholder={t('cigars.selectHumidor', 'Select humidor')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
+                <SelectItem value="unassigned">{t('cigars.unassigned', 'Unassigned')}</SelectItem>
                 {sortedHumidors.map((h) => (
                   <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="ghost" onClick={() => setAssignDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleAssignHumidor}>Save</Button>
+              <Button variant="ghost" onClick={() => setAssignDialogOpen(false)}>{t('common.cancel', 'Cancel')}</Button>
+              <Button onClick={handleAssignHumidor}>{t('common.save', 'Save')}</Button>
             </div>
           </div>
         </DialogContent>
