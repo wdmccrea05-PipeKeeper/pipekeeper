@@ -8,6 +8,7 @@ import {
   resolveRedemptionWindow,
   formatRedemptionDeadline,
 } from '@/components/utils/appreciationGrant';
+import { resolveActivationChannel } from '@/components/campaign/activationChannel';
 
 const DISMISS_EVENT = 'ck-appreciation-dismissed';
 let impressionSent = false;
@@ -112,7 +113,9 @@ export function useAppreciationCampaign({ surface = 'hub' } = {}) {
     setActivating(true);
     setActivateError(null);
     try {
-      const response = await base44.functions.invoke('activateAppreciationCampaign', {});
+      const response = await base44.functions.invoke('activateAppreciationCampaign', {
+        channel: resolveActivationChannel(),
+      });
       const data = response?.data || {};
       if (data.ok) {
         setActivatedGrant(data.grant || null);

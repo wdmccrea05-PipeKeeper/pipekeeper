@@ -37,6 +37,35 @@
       "default": "none",
       "description": "Mirror of the grant status for display; the grant record stays authoritative"
     },
+    "preferred_language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es",
+        "fr",
+        "de",
+        "it",
+        "pt-BR",
+        "nl",
+        "pl",
+        "ja",
+        "zh-Hans"
+      ],
+      "enumColors": [
+        "blue",
+        "yellow",
+        "purple",
+        "gray",
+        "green",
+        "pink",
+        "blue",
+        "red",
+        "purple",
+        "yellow"
+      ],
+      "default": "en",
+      "description": "Language the collector uses in the app. Drives the language version of campaign email."
+    },
     "isFreeGrandfathered": {
       "type": "boolean",
       "default": false,

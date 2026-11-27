@@ -12,6 +12,7 @@ import {
   resolveRedemptionWindow,
   syncUserMirror,
 } from "../../shared/appreciationCampaign.ts";
+import { attributeEmailActivation, resolveActivationSurface } from "../../shared/appreciationEmailServer.ts";
 
 /**
  * Redeem the existing-collector appreciation offer.
@@ -27,6 +28,7 @@ export default async function (req) {
     const me = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
     if (!me) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
+    const body = await req.json().catch(() => ({}));
     const email = normEmail(me.email);
     const config = await loadCampaignConfig(base44);
     const [userRecord, grants, subscriptions] = await Promise.all([
@@ -105,12 +107,16 @@ export default async function (req) {
     const state = resolveGrantState(keeper);
     await syncUserMirror(base44, user.id, state);
 
+    // Attribution only — marks the email that led here. Never touches the grant.
+    const emailAttribution = await attributeEmailActivation(base44, email, activatedAt).catch(() => null);
+    const surface = resolveActivationSurface(body?.channel, emailAttribution);
+
     await base44.asServiceRole.entities.AppreciationCampaignEvent.create({
       campaign_id: APPRECIATION_CAMPAIGN_ID,
       user_email: email,
       event_type: "activation",
       module: "account",
-      surface: "campaign_activation",
+      surface,
       occurred_at: activatedAt,
       grant_id: keeper.id,
     }).catch(() => {});

@@ -50,6 +50,7 @@ import ReferralDashboard from "@/pages/ReferralDashboard";
 import ReferralAdminReport from "@/pages/ReferralAdminReport";
 import ReconciliationDashboard from "@/pages/ReconciliationDashboard";
 import AppreciationCampaignAdmin from "@/pages/AppreciationCampaignAdmin";
+import EmailCampaigns from "@/pages/EmailCampaigns";
 import LockedModuleGuard from "@/components/modules/LockedModuleGuard";
 import { MeasurementProvider } from "@/components/utils/measurementConversion";
 import ModuleSelectionModal from "@/components/onboarding/ModuleSelectionModal";
@@ -477,6 +478,15 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="AppreciationCampaignAdmin">
             <AppreciationCampaignAdmin />
+          </LayoutWrapper>
+        }
+      />
+
+      <Route
+        path="/EmailCampaigns"
+        element={
+          <LayoutWrapper currentPageName="EmailCampaigns">
+            <EmailCampaigns />
           </LayoutWrapper>
         }
       />

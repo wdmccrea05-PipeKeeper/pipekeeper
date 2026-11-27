@@ -1,0 +1,47 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/10 * * * *",
+      "one_time_date": null,
+      "timezone": "America/Chicago",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "appreciation_email_campaign_sender",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_due_batches": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "adminEmailCampaigns",
+            "args": {
+              "action": "run_due"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Send due campaign batches",
+            "description": "Processes scheduled campaigns in batches of 60"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Delivers scheduled collector appreciation email campaigns in batches, every 10 minutes.",
+  "name": "Appreciation Email Campaign Sender"
+}

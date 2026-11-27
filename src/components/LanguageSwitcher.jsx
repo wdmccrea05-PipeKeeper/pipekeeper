@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useTranslation, SUPPORTED_LANGS, setLanguage } from "@/components/i18n/safeTranslation";
 import { normalizeLng } from "@/components/i18n/normalizeLng";
+import { rememberPreferredLanguage } from "@/components/campaign/activationChannel";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -20,7 +21,9 @@ export default function LanguageSwitcher({ className = "" }) {
 
   const handleLanguageChange = (code) => {
     try {
-      setLanguage(normalizeLng(code));
+      const normalized = normalizeLng(code);
+      setLanguage(normalized);
+      rememberPreferredLanguage(normalized);
     } catch (error) {
       console.error("[LanguageSwitcher] Failed to change language:", error);
     }
