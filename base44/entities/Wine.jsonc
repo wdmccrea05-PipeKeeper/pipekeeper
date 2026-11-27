@@ -1,7 +1,7 @@
 {
   "name": "Wine",
   "type": "object",
-  "description": "A wine bottle in a user's WineKeeper collection. Supports zero-inventory (quantity=0) as a valid state and non-destructive archiving.",
+  "description": "A wine bottle in a user's WineKeeper collection. Supports zero-inventory (quantity=0) as a valid state and non-destructive archiving. Acquisition, provenance, identity and document fields are shared with every other collection module and are all optional.",
   "properties": {
     "name": {
       "type": "string",
@@ -78,6 +78,15 @@
       "type": "number",
       "description": "Price paid at purchase"
     },
+    "purchase_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the bottle was acquired (historical record)"
+    },
+    "purchase_source": {
+      "type": "string",
+      "description": "User-entered historical acquisition source. A record of where the bottle came from, never a live link."
+    },
     "estimated_value": {
       "type": "number",
       "description": "Current estimated market value"
@@ -117,6 +126,114 @@
       "type": "string",
       "format": "date-time",
       "description": "When this wine was archived. Null when not archived."
+    },
+    "original_owner": {
+      "type": "string",
+      "description": "Documented original owner, if the bottle was not acquired new"
+    },
+    "provenance_notes": {
+      "type": "string",
+      "description": "Free-text provenance documentation: prior owners, cellar history, authentication notes"
+    },
+    "serial_number": {
+      "type": "string",
+      "description": "Serial, bottle or lot number where applicable"
+    },
+    "batch_number": {
+      "type": "string",
+      "description": "Batch, lot or disgorgement identifier where applicable"
+    },
+    "production_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Recorded production or bottling date, when known"
+    },
+    "condition": {
+      "type": "string",
+      "description": "Documented condition of the bottle (fill level, label, capsule, seal)"
+    },
+    "condition_notes": {
+      "type": "string",
+      "description": "Free-text condition documentation"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Custom tags and classifications for filtering"
+    },
+    "documents": {
+      "type": "array",
+      "description": "Supporting documents (receipts, certificates, photographs). Files are stored privately; each entry keeps the private file reference, not a public URL.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "receipt",
+              "certificate",
+              "photograph",
+              "document",
+              "appraisal",
+              "other"
+            ]
+          },
+          "file_uri": {
+            "type": "string"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "size": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "lifecycle_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived",
+        "transferred",
+        "gifted",
+        "sold",
+        "lost",
+        "disposed"
+      ],
+      "enumColors": [
+        "green",
+        "gray",
+        "blue",
+        "purple",
+        "yellow",
+        "red",
+        "red"
+      ],
+      "default": "active",
+      "description": "Lifecycle state of the record. Non-active states retain the record and its history."
+    },
+    "lifecycle_note": {
+      "type": "string",
+      "description": "Why the record is inactive, and to whom it went when transferred or gifted"
+    },
+    "merged_into_id": {
+      "type": "string",
+      "description": "When this record was merged into another, the surviving record's id"
+    },
+    "merged_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this record was merged"
     },
     "created_by": {
       "type": "string",

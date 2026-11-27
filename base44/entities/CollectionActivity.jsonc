@@ -1,0 +1,132 @@
+{
+  "name": "CollectionActivity",
+  "type": "object",
+  "description": "Append-only record-level activity and change history for any collection record across every module. One row per change, written by the app and by the collection record functions. Records are never edited or deleted except by an administrator.",
+  "properties": {
+    "record_entity": {
+      "type": "string",
+      "enum": [
+        "Pipe",
+        "TobaccoBlend",
+        "Cigar",
+        "Bottle",
+        "Wine"
+      ],
+      "enumColors": [
+        "yellow",
+        "green",
+        "purple",
+        "blue",
+        "pink"
+      ],
+      "description": "Entity type of the record this activity belongs to"
+    },
+    "record_id": {
+      "type": "string",
+      "description": "Id of the collection record"
+    },
+    "record_name": {
+      "type": "string",
+      "description": "Display name of the record at the time of the event"
+    },
+    "module_key": {
+      "type": "string",
+      "description": "Collection module the record belongs to (pipekeeper, cigarkeeper, whiskeykeeper, winekeeper)"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "created",
+        "updated",
+        "acquisition_recorded",
+        "ownership_transfer",
+        "condition_change",
+        "maintenance",
+        "storage_change",
+        "attachment_added",
+        "attachment_removed",
+        "bulk_updated",
+        "merged",
+        "archived",
+        "restored",
+        "transferred",
+        "gifted"
+      ],
+      "enumColors": [
+        "green",
+        "blue",
+        "green",
+        "purple",
+        "yellow",
+        "blue",
+        "blue",
+        "gray",
+        "gray",
+        "yellow",
+        "purple",
+        "gray",
+        "green",
+        "blue",
+        "pink"
+      ],
+      "description": "Kind of change that was recorded"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short human-readable description of the change"
+    },
+    "detail": {
+      "type": "string",
+      "description": "Longer description or note supplied with the change"
+    },
+    "changed_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Field names that changed in this event"
+    },
+    "actor_email": {
+      "type": "string",
+      "description": "Email of the collector or administrator who made the change"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the change happened"
+    }
+  },
+  "required": [
+    "record_entity",
+    "record_id",
+    "event_type",
+    "occurred_at"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
