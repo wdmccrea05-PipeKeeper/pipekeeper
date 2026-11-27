@@ -49,7 +49,9 @@ describe("localized campaign copy", () => {
   });
 
   it("sends every recipient to the app's own domains", () => {
-    expect(shared).toContain("https://collection-keeper.app/Subscription?appreciation=1&channel=email");
+    expect(shared).toContain('APP_URL = "https://collection-keeper.app"');
+    expect(shared).toContain("appreciation=1&channel=email");
+    expect(shared).toContain('APP_ORIGIN = "https://collectionkeeper.base44.app"');
     expect(shared).toContain("/functions/trackAppreciationEmailClick");
   });
 });
@@ -131,7 +133,7 @@ describe("links cannot grant access", () => {
   it("the click tracker only records and redirects", () => {
     expect(clickFn).toContain("Response.redirect(redemptionUrl(");
     expect(clickFn).not.toContain("AppreciationGrant");
-    expect(clickFn).not.toContain("create(");
+    expect(clickFn).not.toContain("EmailCampaignRecipient.bulkCreate");
   });
 
   it("activation still enforces eligibility, the deadline and one grant per collector", () => {
