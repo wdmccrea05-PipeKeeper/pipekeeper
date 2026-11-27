@@ -238,6 +238,9 @@ export default {
       growExpand: "Grow & Expand",
       chat: "Chat",
     },
+    moreTools: "More from Curator",
+    moreToolsHint: "Optimisation, pairings and planning",
+    backToChat: "Back to conversation",
   },
 
   pipekeeper: {
