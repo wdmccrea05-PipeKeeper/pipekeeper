@@ -12,14 +12,14 @@
  */
 import React from 'react';
 
-export default function ModuleRecentActivitySection({ title, accent, children }) {
+export default function ModuleRecentActivitySection({ title, children }) {
   if (!children) return null;
 
   return (
     <div>
       <h2
         className="text-xs font-semibold uppercase tracking-[0.14em] mb-4"
-        style={{ color: accent || 'rgba(180,140,75,0.8)' }}
+        style={{ color: '#6b4c29' }}
       >
         {title}
       </h2>

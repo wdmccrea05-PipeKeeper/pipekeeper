@@ -288,13 +288,13 @@ function WineKeeperInner() {
       emptyState={
         <div
           className="rounded-2xl p-10 text-center"
-          style={{ background: 'rgba(139,58,58,0.07)', border: '1px solid rgba(139,58,58,0.22)' }}
+          style={{ background: '#fbf5e9', border: '1px solid rgba(167,124,63,0.28)' }}
         >
-          <Wine className="w-12 h-12 mx-auto mb-4" style={{ color: 'rgba(139,58,58,0.5)' }} />
-          <h3 className="text-lg font-semibold mb-2" style={{ color: '#F5F1E7' }}>
+          <Wine className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--ck-antique-brass)' }} />
+          <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--ck-espresso)' }}>
             {t('wine.noBottlesYet')}
           </h3>
-          <p className="text-sm mb-6" style={{ color: 'rgba(224,216,200,0.6)' }}>
+          <p className="text-sm mb-6" style={{ color: 'rgba(52,37,29,0.72)' }}>
             {t('wine.startTracking')}
           </p>
           <Button onClick={() => setShowAddModal(true)} style={{ background: '#8B3A3A', color: '#F5F1E7' }}>

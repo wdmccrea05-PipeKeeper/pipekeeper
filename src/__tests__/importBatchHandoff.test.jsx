@@ -39,7 +39,7 @@ vi.mock('@/components/i18n/safeTranslation', () => ({
       const translations = {
         'import.bulkImport': 'Bulk Import',
         'import.curatorReviewBatch': 'Ask Curator to review this batch',
-        'import.batchSaved': 'This batch is saved in this browser session.',
+        'import.batchSaved': 'This batch is saved across browser sessions in this browser, scoped to your account.',
         'import.duplicatePolicy': 'Add new items only.',
         'import.confirmImportRows': 'Confirm and import {count} row(s)',
       };
@@ -77,6 +77,7 @@ function renderImport(path) {
 
 describe('Curator import batch handoff', () => {
   beforeEach(() => {
+    window.localStorage.clear();
     window.sessionStorage.clear();
     Object.values(mocks.entities).forEach((entity) => entity.filter?.mockReset().mockResolvedValue([]));
     mocks.scoped.Pipe.create.mockReset();
@@ -89,8 +90,9 @@ describe('Curator import batch handoff', () => {
     const page = renderImport(path);
     await screen.findByText(`Batch ${batchId}`);
 
-    const file = new File(['maker,shape\nPeterson,Billiard\n'], 'pipes.csv', { type: 'text/csv' });
-    Object.defineProperty(file, 'text', { value: async () => 'maker,shape\nPeterson,Billiard\n' });
+    const csvText = 'maker,shape\nPeterson,Billiard\n,Shape\n';
+    const file = new File([csvText], 'pipes.csv', { type: 'text/csv' });
+    Object.defineProperty(file, 'text', { value: async () => csvText });
     const fileInput = page.container.querySelector('input[type="file"]');
     await waitFor(() => expect(fileInput.disabled).toBe(false));
     fireEvent.change(fileInput, { target: { files: [file] } });
@@ -98,7 +100,14 @@ describe('Curator import batch handoff', () => {
     await screen.findByText('Import Preview');
     const handoff = await screen.findByRole('link', { name: 'Ask Curator to review this batch' });
     await waitFor(() => {
-      expect(loadImportBatch(window.sessionStorage, 'collector@example.com', batchId)?.fileName).toBe('pipes.csv');
+      expect(loadImportBatch(window.localStorage, 'collector@example.com', batchId)).toMatchObject({
+        fileName: 'pipes.csv',
+        mappings: [
+          { source: 'maker', target: 'maker' },
+          { source: 'shape', target: 'shape' },
+        ],
+        unresolvedRows: [3],
+      });
     });
 
     fireEvent.click(handoff);

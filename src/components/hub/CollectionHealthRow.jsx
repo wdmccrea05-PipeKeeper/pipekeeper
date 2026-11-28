@@ -8,21 +8,26 @@ import { useTranslation } from '@/components/i18n/safeTranslation';
  * One row, one number, one destination: the findings the collector can act on,
  * opening the filtered review list. Nothing is listed on the dashboard itself.
  */
-export default function CollectionHealthRow({ count = 0, isLoading = false, onOpen }) {
+export default function CollectionHealthRow({ count = 0, isLoading = false, onOpen, variant = 'dark' }) {
   const { t } = useTranslation();
+  const isPaper = variant === 'paper';
 
   return (
     <button
       type="button"
       onClick={onOpen}
       className="w-full flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(180,140,75,0.22)', minHeight: 56 }}
+      style={{
+        background: isPaper ? '#fbf5e9' : 'rgba(255,255,255,0.04)',
+        border: `1px solid ${isPaper ? 'rgba(167,124,63,0.30)' : 'rgba(180,140,75,0.22)'}`,
+        minHeight: 56,
+      }}
     >
       <span className="min-w-0">
-        <span className="block text-sm font-semibold break-words" style={{ color: '#F5F1E7' }}>
+        <span className="block text-sm font-semibold break-words" style={{ color: isPaper ? 'var(--ck-espresso)' : '#F5F1E7' }}>
           {t('hub.collectionHealth')}
         </span>
-        <span className="block text-xs break-words" style={{ color: 'rgba(224,216,200,0.6)' }}>
+        <span className="block text-xs break-words" style={{ color: isPaper ? 'rgba(52,37,29,0.72)' : 'rgba(224,216,200,0.6)' }}>
           {isLoading
             ? '—'
             : count > 0
@@ -30,7 +35,7 @@ export default function CollectionHealthRow({ count = 0, isLoading = false, onOp
             : t('hub.noFindings')}
         </span>
       </span>
-      <ChevronRight className="w-4 h-4 shrink-0" style={{ color: '#D4A574' }} />
+      <ChevronRight className="w-4 h-4 shrink-0" style={{ color: 'var(--ck-antique-brass)' }} />
     </button>
   );
 }

@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Target } from "lucide-react";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 import {
   buildCuratorHubContext,
@@ -18,6 +18,7 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { moduleStates } = useEnabledKeeperModules();
+  const [curatorIconFailed, setCuratorIconFailed] = useState(false);
 
   const curatorContext = useMemo(
     () => buildCuratorHubContext(summary, recentActivities, {}, moduleStates),
@@ -62,13 +63,19 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
             border: "1px solid rgba(212, 164, 116, 0.25)",
           }}
         >
-          <img
-            src={curatorAsset.src}
-            alt={t("hub.curatorTitle")}
-            className="w-10 h-10 object-contain bg-transparent"
-            style={getAssetImageStyle("curator")}
-            draggable={false}
-          />
+          {curatorIconFailed ? (
+            <Target className="w-7 h-7" style={{ color: "#D4A574" }} aria-hidden="true" />
+          ) : (
+            <img
+              src={curatorAsset.src}
+              alt=""
+              aria-hidden="true"
+              className="w-10 h-10 object-contain bg-transparent"
+              style={getAssetImageStyle("curator")}
+              draggable={false}
+              onError={() => setCuratorIconFailed(true)}
+            />
+          )}
         </div>
 
         <div>

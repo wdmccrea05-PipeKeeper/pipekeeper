@@ -16,7 +16,7 @@ export function appGuidance(text, enabledModules = {}, context = {}) {
     && /\b(review|resume|continue|preview)\b/i.test(question)
   ) {
     return {
-      content: 'Your import preview is saved in this browser session. Open the same batch to review validation, duplicates, conflicts, and the confirmation step.',
+      content: 'Your import preview is saved in this browser and scoped to your account. Open the same batch to review validation, duplicates, conflicts, and the confirmation step.',
       recordLinks: [{
         to: `/Import?batch=${encodeURIComponent(batch.batchId)}&type=${encodeURIComponent(batch.importType)}`,
         label: 'Open import preview',

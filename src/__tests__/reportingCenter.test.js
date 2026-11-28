@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   REPORTS,
   REPORT_GROUPS,
@@ -11,6 +11,7 @@ import {
 import { buildReportItems, filterItems, DEFAULT_FILTERS, buildFilterOptions } from "@/lib/reports/reportModel";
 import { buildReportCsv, createReportPdf } from "@/lib/reports/reportExport";
 import { detectReportingRequest, explainReport, listReportsForModule } from "@/lib/curator/curatorReporting";
+import { fetchAllEntities } from "@/lib/base44/fetchAllEntities";
 import fs from "fs";
 import path from "path";
 
@@ -260,6 +261,36 @@ describe("exports carry the same metadata as the screen", () => {
     expect(supportingRows[0].detailPath).toContain("pipe1");
     expect(csv).toContain("Billiard One");
     expect(csv).not.toContain("Lagavulin 16");
+  });
+
+  it("keeps multi-page report scope, supporting rows, and CSV totals aligned", async () => {
+    const records = Array.from({ length: 5001 }, (_, index) => ({
+      id: `page-pipe-${index}`,
+      name: index === 5000 ? "Pipe needing specialization" : `Pipe ${index}`,
+      maker: "Peterson",
+      shape: "Billiard",
+      focus: index === 5000 ? [] : ["Virginia"],
+      condition: "Good",
+    }));
+    const filter = vi.fn(async (_criteria, _sort, pageSize, skip) => records.slice(skip, skip + pageSize));
+    const pipes = await fetchAllEntities(
+      { filter },
+      { created_by: "collector@example.com" },
+      "-updated_date"
+    );
+    const result = runReport(
+      "specialization",
+      buildReportContext({ data: { pipes }, filters: DEFAULT_FILTERS })
+    );
+    const supportingRows = result.tables.find((table) => table.id === "unspecialized").rows;
+    const csv = buildReportCsv(result);
+
+    expect(filter.mock.calls.map(([, , , skip]) => skip)).toEqual([0, 5000]);
+    expect(result.recordCount).toBe(5001);
+    expect(supportingRows.map((row) => row.name)).toEqual(["Pipe needing specialization"]);
+    expect(csv).toContain('"Records in scope","5001"');
+    expect(csv).toContain("Pipe needing specialization");
+    expect(csv).not.toContain("Pipe 4999");
   });
 });
 

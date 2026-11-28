@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { analyzeImportRows, executeImportRows, importDefinitionList, importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
+import { analyzeImportRows, executeImportRows, importDefinitionList, importDefinitions, downloadImportTemplate, inferImportMappings } from '@/lib/imports/importDefinitions';
 import { parseCsvText } from '@/lib/imports/csvImportUtils';
 import { createImportBatchId, loadImportBatch, saveImportBatch } from '@/lib/imports/importBatchStore';
 import { TOBACCO_IMPORT_ENUMS } from '@/components/tobacco/tobaccoConstants';
@@ -70,7 +70,7 @@ function formatRowNotes(row, t) {
   return '—';
 }
 
-function ImportPreview({ analysis, t }) {
+function ImportPreview({ analysis, mappings, t }) {
   if (!analysis) return null;
 
   return (
@@ -94,6 +94,19 @@ function ImportPreview({ analysis, t }) {
         {analysis.unknownColumns.length > 0 && (
           <div className="rounded-lg border border-yellow-600/60 bg-yellow-900/20 p-3 text-sm text-yellow-100">
             Unsupported columns found: {analysis.unknownColumns.join(', ')}
+          </div>
+        )}
+
+        {mappings?.length > 0 && (
+          <div className="rounded-lg border border-stone-700 bg-stone-900/40 p-3 text-xs text-stone-300">
+            <p className="font-semibold text-stone-100 mb-2">{t('import.detectedMappings')}</p>
+            <ul className="grid gap-1 sm:grid-cols-2">
+              {mappings.map(({ source, target }, index) => (
+                <li key={`${source}-${index}`}>
+                  {source} → {target || t('import.notImported')}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -172,6 +185,9 @@ export default function ImportPage() {
   const [batchId, setBatchId] = useState(() => buildBatchIdFromLocation(location.search));
   const [fileName, setFileName] = useState('');
   const [csvText, setCsvText] = useState('');
+  const [mappings, setMappings] = useState({});
+  const [reconciliationDecisions, setReconciliationDecisions] = useState({});
+  const [unresolvedRows, setUnresolvedRows] = useState([]);
   const [analysis, setAnalysis] = useState(null);
   const [importResult, setImportResult] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -216,12 +232,17 @@ export default function ImportPage() {
     setImportResult(null);
     setFileName('');
     setCsvText('');
+    setMappings({});
+    setReconciliationDecisions({});
+    setUnresolvedRows([]);
     setDuplicateMode('create_only');
     setBatchStorageError('');
 
     let snapshot;
     try {
-      snapshot = loadImportBatch(window.sessionStorage, user.email, batchId);
+      snapshot = loadImportBatch(window.localStorage, user.email, batchId, {
+        fallbackStorage: window.sessionStorage,
+      });
     } catch (error) {
       setBatchStorageError(error.message);
       setBatchReady(true);
@@ -246,6 +267,9 @@ export default function ImportPage() {
 
     setFileName(snapshot.fileName);
     setCsvText(snapshot.csvText);
+    setMappings(snapshot.mappings);
+    setReconciliationDecisions(snapshot.reconciliationDecisions);
+    setUnresolvedRows(snapshot.unresolvedRows);
     setImportResult(snapshot.result);
     setDuplicateMode(snapshot.duplicateMode);
     const restoredDefinition = importDefinitions[snapshot.importType];
@@ -259,7 +283,12 @@ export default function ImportPage() {
         duplicateHeaders: parsed.duplicateHeaders,
         parseErrors: parsed.parseErrors,
         userEmail: user.email,
-      }).then(setAnalysis).catch((error) => {
+      }).then((nextAnalysis) => {
+        setAnalysis(nextAnalysis);
+        setUnresolvedRows(nextAnalysis.rows
+          .filter((row) => row.status === 'error' || row.duplicateState !== 'none')
+          .map((row) => row.rowNumber));
+      }).catch((error) => {
         setBatchRecoveryError(`The saved CSV could not be revalidated: ${error.message}`);
       }).finally(() => {
         setBatchDataKey(dataKey);
@@ -277,12 +306,15 @@ export default function ImportPage() {
       : '';
     if (!batchReady || !user?.email || !resolvedImportType || batchDataKey !== dataKey || activeBatchKey.current !== dataKey) return;
     try {
-      saveImportBatch(window.sessionStorage, {
+      saveImportBatch(window.localStorage, {
         batchId,
         userEmail: user.email,
         importType: resolvedImportType,
         fileName,
         csvText,
+        mappings,
+        reconciliationDecisions,
+        unresolvedRows,
         analysis,
         result: importResult,
         duplicateMode,
@@ -293,7 +325,7 @@ export default function ImportPage() {
       setBatchSaved(false);
       setBatchStorageError(error.message);
     }
-  }, [analysis, batchDataKey, batchId, batchReady, csvText, duplicateMode, fileName, importResult, resolvedImportType, user?.email]);
+  }, [analysis, batchDataKey, batchId, batchReady, csvText, duplicateMode, fileName, importResult, mappings, reconciliationDecisions, resolvedImportType, unresolvedRows, user?.email]);
 
   const importableRows = useMemo(() => {
     if (!analysis) return [];
@@ -345,6 +377,7 @@ export default function ImportPage() {
       setFileName(file.name);
       setCsvText(text);
       const parsed = parseCsvText(text);
+      setMappings(inferImportMappings(definition, parsed.headers, parsed.rawHeaders));
       const nextAnalysis = await analyzeImportRows({
         definition,
         headers: parsed.headers,
@@ -355,6 +388,9 @@ export default function ImportPage() {
         userEmail: user.email,
       });
       setAnalysis(nextAnalysis);
+      setUnresolvedRows(nextAnalysis.rows
+        .filter((row) => row.status === 'error' || row.duplicateState !== 'none')
+        .map((row) => row.rowNumber));
       if (nextAnalysis.totalRows === 0) toast.warning('No data rows detected.');
     } catch (error) {
       console.error('[Import] Analysis failed:', error);
@@ -390,6 +426,9 @@ export default function ImportPage() {
         userEmail: user.email,
       });
       setAnalysis(currentAnalysis);
+      setUnresolvedRows(currentAnalysis.rows
+        .filter((row) => row.status === 'error' || row.duplicateState !== 'none')
+        .map((row) => row.rowNumber));
       if (currentAnalysis.blockingHeaderErrors.length > 0) {
         toast.error('The import preview changed. Fix the file errors before continuing.');
         return;
@@ -415,6 +454,9 @@ export default function ImportPage() {
     setBatchId(createImportBatchId());
     setFileName('');
     setCsvText('');
+    setMappings({});
+    setReconciliationDecisions({});
+    setUnresolvedRows([]);
     setAnalysis(null);
     setImportResult(null);
     setDuplicateMode('create_only');
@@ -527,6 +569,7 @@ export default function ImportPage() {
             <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
               <p className="font-semibold mb-1">How this import works</p>
               <ul className="list-disc list-inside space-y-1">
+                <li>{t('import.csvOnlyNotice')}</li>
                 <li>Use the template and keep one record per row.</li>
                 <li>Required fields: {definition?.requiredColumns.join(', ')}.</li>
                 <li>Optional fields help enrich records and improve matching.</li>
@@ -534,7 +577,9 @@ export default function ImportPage() {
               </ul>
             </div>
 
-            <p className="text-xs text-stone-400">Batch {batchId}{fileName ? ` · ${fileName}` : ''}</p>
+            <p className="text-xs text-stone-400">
+              Batch {batchId}{fileName ? ` · ${fileName}` : ''}{unresolvedRows.length > 0 ? ` · ${unresolvedRows.length} unresolved row(s)` : ''}
+            </p>
             {(batchStorageError || batchRecoveryError) && (
               <p role="alert" className="rounded-lg border border-red-500/60 bg-red-950/40 p-3 text-sm text-red-100">
                 {batchStorageError || batchRecoveryError}
@@ -567,7 +612,7 @@ export default function ImportPage() {
           </CardContent>
         </Card>
 
-        <ImportPreview analysis={analysis} t={t} />
+        <ImportPreview analysis={analysis} mappings={mappings} t={t} />
 
         {analysis && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#b89255]/50 bg-[#241b16] p-4">

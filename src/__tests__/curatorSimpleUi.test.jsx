@@ -57,6 +57,8 @@ describe('curator simple conversation surface', () => {
     expect(PAGE).toContain("return s && ALL_VALID_KEYS.has(s) ? s : 'chat';");
     expect(PAGE).toContain('curatorPage.moreTools');
     expect(PAGE).toContain('curatorPage.backToChat');
+    expect(PAGE).toContain('variant="paper"');
+    expect(PAGE).toContain('onError={() => setCuratorIconFailed(true)}');
   });
 
   it('offers at most three suggested questions on an empty conversation', () => {

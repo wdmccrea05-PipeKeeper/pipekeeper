@@ -17,16 +17,19 @@ export function createImportBatchId() {
 }
 
 export function saveImportBatch(storage, batch) {
-  if (!storage?.setItem) throw new Error('Session storage is unavailable; this import cannot be resumed after navigation.');
+  if (!storage?.setItem) throw new Error('Persistent browser storage is unavailable; this import cannot be resumed.');
   const owner = normalizedOwner(batch?.userEmail);
   if (!batch?.batchId || !batch?.importType) throw new Error('The import batch is missing its ID or record type.');
   const snapshot = {
-    version: 1,
+    version: 2,
     userEmail: owner,
     batchId: batch.batchId,
     importType: batch.importType,
     fileName: batch.fileName || '',
     csvText: batch.csvText || '',
+    mappings: batch.mappings || {},
+    reconciliationDecisions: batch.reconciliationDecisions || {},
+    unresolvedRows: Array.isArray(batch.unresolvedRows) ? batch.unresolvedRows : [],
     analysis: batch.analysis || null,
     result: batch.result || null,
     duplicateMode: batch.duplicateMode || 'create_only',
@@ -36,12 +39,8 @@ export function saveImportBatch(storage, batch) {
   return snapshot;
 }
 
-export function loadImportBatch(storage, userEmail, batchId) {
-  if (!storage?.getItem) throw new Error('Session storage is unavailable; this import cannot be resumed.');
-  const owner = normalizedOwner(userEmail);
-  const serialized = storage.getItem(storageKey(owner, batchId));
+function parseSnapshot(serialized, owner, batchId) {
   if (serialized == null) return null;
-
   let snapshot;
   try {
     snapshot = JSON.parse(serialized);
@@ -49,7 +48,7 @@ export function loadImportBatch(storage, userEmail, batchId) {
     throw new Error('This saved import batch is damaged and cannot be resumed.');
   }
   if (
-    snapshot?.version !== 1
+    ![1, 2].includes(snapshot?.version)
     || snapshot.userEmail !== owner
     || snapshot.batchId !== batchId
     || typeof snapshot.importType !== 'string'
@@ -57,5 +56,30 @@ export function loadImportBatch(storage, userEmail, batchId) {
   ) {
     throw new Error('This saved import batch is incomplete or belongs to a different account.');
   }
-  return snapshot;
+  return {
+    ...snapshot,
+    version: 2,
+    mappings: snapshot.mappings || {},
+    reconciliationDecisions: snapshot.reconciliationDecisions || {},
+    unresolvedRows: Array.isArray(snapshot.unresolvedRows) ? snapshot.unresolvedRows : [],
+  };
+}
+
+export function loadImportBatch(storage, userEmail, batchId, { fallbackStorage } = {}) {
+  if (!storage?.getItem) throw new Error('Persistent browser storage is unavailable; this import cannot be resumed.');
+  const owner = normalizedOwner(userEmail);
+  const key = storageKey(owner, batchId);
+  const storedSnapshot = parseSnapshot(storage.getItem(key), owner, batchId);
+  if (storedSnapshot) return storedSnapshot;
+
+  const legacySnapshot = fallbackStorage?.getItem
+    ? parseSnapshot(fallbackStorage.getItem(key), owner, batchId)
+    : null;
+  if (!legacySnapshot) return null;
+
+  saveImportBatch(storage, legacySnapshot);
+  if (fallbackStorage?.removeItem) {
+    fallbackStorage.removeItem(key);
+  }
+  return legacySnapshot;
 }

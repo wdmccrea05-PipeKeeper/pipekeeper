@@ -848,6 +848,17 @@ function mapRowToCanonical(headers, values, definition) {
   return row;
 }
 
+export function inferImportMappings(definition, headers, rawHeaders = []) {
+  const allowed = new Set(definition.allowedColumns);
+  return headers.map((header, index) => {
+    const mapped = mapKey(definition.aliases[header] || header);
+    return {
+      source: rawHeaders[index] || header,
+      target: allowed.has(mapped) ? mapped : null,
+    };
+  });
+}
+
 export async function analyzeImportRows({
   definition,
   headers,

@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Target } from 'lucide-react';
 import CuratorWorkspace from '@/components/curator/CuratorWorkspace';
 import AdvancedDetails from '@/components/ui/AdvancedDetails';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
@@ -34,6 +34,7 @@ const ALL_VALID_KEYS = new Set(
 export default function CuratorPage() {
   const { enabledModuleKeys } = useEnabledModules();
   const { t } = useTranslation();
+  const [curatorIconFailed, setCuratorIconFailed] = useState(false);
 
   // Multi-module mode when 2+ modules are enabled
   const isMultiModuleMode = enabledModuleKeys.length >= 2;
@@ -100,13 +101,24 @@ export default function CuratorPage() {
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <header className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
           <div className="flex items-center gap-2.5 min-w-0">
-            <img
-              src={CURATOR_ICON}
-              alt=""
-              aria-hidden="true"
-              className="w-8 h-8 object-cover rounded shrink-0"
-              style={{ filter: 'hue-rotate(35deg) saturate(0.8) brightness(1.1)' }}
-            />
+            {curatorIconFailed ? (
+              <span
+                className="w-8 h-8 rounded shrink-0 flex items-center justify-center"
+                style={{ background: 'rgba(167,124,63,0.16)', color: 'var(--ck-antique-brass)' }}
+                aria-hidden="true"
+              >
+                <Target className="w-5 h-5" />
+              </span>
+            ) : (
+              <img
+                src={CURATOR_ICON}
+                alt=""
+                aria-hidden="true"
+                className="w-8 h-8 object-cover rounded shrink-0"
+                style={{ filter: 'hue-rotate(35deg) saturate(0.8) brightness(1.1)' }}
+                onError={() => setCuratorIconFailed(true)}
+              />
+            )}
             <h1
               className="text-[22px] sm:text-[26px] leading-tight font-semibold truncate"
               style={{ color: 'var(--ck-espresso)', letterSpacing: '-0.4px', fontFamily: 'var(--ck-font-display)' }}
@@ -138,7 +150,7 @@ export default function CuratorPage() {
 
         {surface === 'chat' ? (
           <div className="mt-3">
-            <AdvancedDetails label={t('curatorPage.moreTools')} hint={t('curatorPage.moreToolsHint')}>
+            <AdvancedDetails label={t('curatorPage.moreTools')} hint={t('curatorPage.moreToolsHint')} variant="paper">
               <div className="flex flex-wrap gap-2">
                 {tools.map((tool) => {
                   const badge = counts[tool.key] || 0;

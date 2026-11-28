@@ -23,7 +23,7 @@ import React from 'react';
 import InsightHighlightCard from '@/components/insights/InsightHighlightCard';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
-export default function ModuleHighlightsSection({ title, highlights = [], accent }) {
+export default function ModuleHighlightsSection({ title, highlights = [] }) {
   const { t } = useTranslation();
   if (!highlights.length) return null;
 
@@ -33,7 +33,7 @@ export default function ModuleHighlightsSection({ title, highlights = [], accent
     <div>
       <h2
         className="text-xs font-semibold uppercase tracking-[0.14em] mb-4"
-        style={{ color: accent || 'rgba(180,140,75,0.8)' }}
+        style={{ color: '#6b4c29' }}
       >
         {sectionTitle}
       </h2>

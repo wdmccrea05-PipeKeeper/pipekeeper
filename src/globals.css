@@ -182,10 +182,25 @@ body {
   background: #fbf5e9;
 }
 
+.ck-module-nav-surface {
+  padding: 0.5rem;
+  border: 1px solid rgba(167, 124, 63, 0.28);
+  border-radius: var(--ck-radius-md);
+  background: #34251d;
+}
+
+.ck-module-home .ck-module-nav-surface > div {
+  flex-wrap: wrap;
+}
+
 @media (max-width: 639px) {
   .ck-paper-workspace {
     border-radius: var(--ck-radius-md);
     padding: 1rem 0.875rem;
+  }
+
+  .ck-module-nav-surface > div {
+    align-items: flex-start;
   }
 }
 

@@ -23,10 +23,11 @@ let parseCsvText;
 let analyzeImportRows;
 let executeImportRows;
 let importDefinitions;
+let inferImportMappings;
 
 beforeAll(async () => {
   ({ parseCsvText } = await import('../csvImportUtils'));
-  ({ analyzeImportRows, executeImportRows, importDefinitions } = await import('../importDefinitions'));
+  ({ analyzeImportRows, executeImportRows, importDefinitions, inferImportMappings } = await import('../importDefinitions'));
 });
 
 describe('bulk import system', () => {
@@ -49,6 +50,15 @@ describe('bulk import system', () => {
     expect(parsed.rows).toHaveLength(1);
     expect(parsed.rows[0].values[0]).toBe('Peterson, Ltd');
     expect(parsed.duplicateHeaders).toEqual(['maker']);
+  });
+
+  test('infers and names supported and unsupported column mappings for a saved batch', () => {
+    const parsed = parseCsvText('maker,shape,custom_note\nPeterson,Billiard,Keep\n');
+    expect(inferImportMappings(importDefinitions.pipekeeper_pipes, parsed.headers, parsed.rawHeaders)).toEqual([
+      { source: 'maker', target: 'maker' },
+      { source: 'shape', target: 'shape' },
+      { source: 'custom_note', target: null },
+    ]);
   });
 
   test('analyzes rows for pipes with warnings and errors', async () => {
