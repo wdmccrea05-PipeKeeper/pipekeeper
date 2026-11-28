@@ -11,7 +11,6 @@ import WhiskeyKeeperModuleNav from '@/components/modules/WhiskeyKeeperModuleNav'
 import ModuleQuickLaunch from '@/components/modules/ModuleQuickLaunch';
 import ModulePageShell from '@/components/modules/ModulePageShell';
 import { getWhiskeyHighlights } from '@/components/whiskey/getWhiskeyHighlights';
-import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import { useCurrency } from '@/lib/currency/useCurrency';
 import ModuleHighlightsSection from '@/components/modules/ModuleHighlightsSection';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';

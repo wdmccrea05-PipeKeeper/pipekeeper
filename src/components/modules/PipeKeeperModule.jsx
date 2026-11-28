@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { Leaf, BookOpen, TrendingUp, Sparkles, List } from 'lucide-react';
-import PipeIcon from '@/components/icons/PipeIcon';
 import PipeIdentifier from '@/components/ai/PipeIdentifier';
 import { createPageUrl } from '@/components/utils/createPageUrl';
 import { base44 } from '@/api/base44Client';
