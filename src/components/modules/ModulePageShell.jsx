@@ -14,7 +14,7 @@
  *   8. recent activity
  *
  * Props:
- *   title, subtitle, icon, accentColor, badge
+ *   title, subtitle, moduleKey, accentColor, badge
  *   moduleNav    ReactNode
  *   stats        Array<{ label, value, onClick? }>
  *   actions      ReactNode
@@ -27,6 +27,7 @@
  */
 
 import React from 'react';
+import { MODULE_ASSETS } from '@/components/branding/moduleAssets';
 import ComplimentaryProBanner from '@/components/subscription/ComplimentaryProBanner';
 import AppreciationOfferCard from '@/components/campaign/AppreciationOfferCard';
 
@@ -58,7 +59,7 @@ function StatCard({ label, value, onClick }) {
       </div>
       <div
         className="text-[11px] uppercase tracking-[0.1em] font-medium mt-1"
-        style={{ color: 'rgba(52,37,29,0.72)' }}
+        style={{ color: 'var(--ck-paper-muted)' }}
       >
         {label}
       </div>
@@ -113,7 +114,7 @@ export function ModuleSectionTitle({ children, accent }) {
 export default function ModulePageShell({
   title,
   subtitle,
-  icon,
+  moduleKey,
   accentColor = '#D4A574',
   badge,
   stats = [],
@@ -126,6 +127,7 @@ export default function ModulePageShell({
   isEmpty,
   emptyState,
 }) {
+  const logo = MODULE_ASSETS[moduleKey];
   return (
     <div className="ck-paper-workspace ck-module-home space-y-6 sm:space-y-8">
       <ComplimentaryProBanner />
@@ -135,16 +137,8 @@ export default function ModulePageShell({
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            {icon && (
-              <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                style={{
-                  background: `${accentColor}26`,
-                  border: `1px solid ${accentColor}45`,
-                }}
-              >
-                {icon}
-              </div>
+            {logo && (
+              <img src={logo.src} alt="" className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14" />
             )}
             <h1
               className="text-2xl sm:text-4xl font-bold tracking-tight leading-tight"
@@ -170,8 +164,8 @@ export default function ModulePageShell({
           </div>
           {subtitle && (
             <p
-              className="text-sm sm:text-base sm:pl-14"
-              style={{ color: 'rgba(52,37,29,0.72)' }}
+              className="text-sm sm:text-base sm:pl-[4.25rem]"
+              style={{ color: 'var(--ck-paper-muted)' }}
             >
               {subtitle}
             </p>

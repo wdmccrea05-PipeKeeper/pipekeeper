@@ -90,7 +90,7 @@ function WhiskeyKeeperInner() {
     <ModulePageShell
       title={t('whiskeykeeper.title')}
       subtitle={t('whiskeykeeper.description')}
-      icon={<WhiskeyKeeperIcon className="w-6 h-6" style={{ color: '#D47C7C' }} />}
+      moduleKey="whiskeykeeper"
       accentColor="#B66565"
       stats={whiskeyStats}
       moduleNav={<WhiskeyKeeperModuleNav currentPageName="WhiskeyKeeper" />}

@@ -135,7 +135,7 @@ export default function PipeKeeperInsights() {
   return (
     <InsightsPageShell variant="paper">
       <div className="ck-module-nav-surface"><PipeKeeperModuleNav currentPageName="PipeKeeperInsights" /></div>
-      <InsightsHeader variant="paper"
+      <InsightsHeader moduleKey="pipekeeper" variant="paper"
         title={t('pipekeeper.insightsTitle', 'Pipe Collection Insights')}
         subtitle={t('pipekeeper.insightsSubtitle', 'Analytics and trends from your pipe collection and smoking sessions')}
       />

@@ -133,7 +133,7 @@ export default function WineInsights() {
   return (
     <InsightsPageShell variant="paper">
       <div className="ck-module-nav-surface"><WineKeeperModuleNav currentPageName="WineInsights" /></div>
-      <InsightsHeader variant="paper"
+      <InsightsHeader moduleKey="winekeeper" variant="paper"
         title={t('wine.insights', { defaultValue: DEFAULT_WINE_INSIGHTS_TITLE })}
         subtitle={t('wine.analyzeCellarSubtitle')}
       />

@@ -231,7 +231,7 @@ export default function PipeKeeperModule() {
     <ModulePageShell
       title={t('pipekeeper.title')}
       subtitle={t('pipekeeper.description')}
-      icon={<PipeIcon className="w-6 h-6" style={{ color: '#C89752' }} />}
+      moduleKey="pipekeeper"
       accentColor="#C89752"
       stats={pipeStats}
       moduleNav={<PipeKeeperModuleNav currentPageName="PipeKeeper" />}

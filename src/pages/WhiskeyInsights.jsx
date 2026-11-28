@@ -201,7 +201,7 @@ export default function WhiskeyInsightsPage() {
       <LockedModuleGuard moduleKey="whiskeykeeper">
         <InsightsPageShell variant="paper">
           <div className="ck-module-nav-surface"><WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" /></div>
-          <InsightsHeader variant="paper" title={t('whiskeykeeper.insightsTitle', 'WhiskeyKeeper Insights')} subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')} />
+          <InsightsHeader moduleKey="whiskeykeeper" variant="paper" title={t('whiskeykeeper.insightsTitle', 'WhiskeyKeeper Insights')} subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')} />
           <InsightsEmptyState message="Add bottles to reveal trends, value, and opportunities." />
         </InsightsPageShell>
       </LockedModuleGuard>
@@ -212,7 +212,7 @@ export default function WhiskeyInsightsPage() {
     <LockedModuleGuard moduleKey="whiskeykeeper">
       <InsightsPageShell variant="paper">
         <div className="ck-module-nav-surface"><WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" /></div>
-        <InsightsHeader variant="paper"
+        <InsightsHeader moduleKey="whiskeykeeper" variant="paper"
           title={t('whiskeykeeper.insightsTitle', 'WhiskeyKeeper Insights')}
           subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')}
         />

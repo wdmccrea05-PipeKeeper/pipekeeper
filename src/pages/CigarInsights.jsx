@@ -359,7 +359,7 @@ function CigarInsightsInner() {
   return (
     <InsightsPageShell variant="paper">
       <div className="ck-module-nav-surface"><CigarKeeperModuleNav currentPageName="CigarInsights" /></div>
-      <InsightsHeader variant="paper"
+      <InsightsHeader moduleKey="cigarkeeper" variant="paper"
         title="CigarKeeper Insights"
         subtitle="Analytics and trends from your cigar collection and sessions"
       />

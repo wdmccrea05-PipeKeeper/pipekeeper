@@ -267,7 +267,7 @@ function WineKeeperInner() {
     <ModulePageShell
       title={t('winekeeper.title')}
       subtitle={t('winekeeper.description')}
-      icon={<Wine className="w-6 h-6" style={{ color: '#C47070' }} />}
+      moduleKey="winekeeper"
       accentColor="#8B3A3A"
       stats={wineStats}
       moduleNav={<WineKeeperModuleNav currentPageName="WineKeeper" />}

@@ -4,6 +4,7 @@
  * Provides: header, tab bar, KPI grid, and panel wrapper.
  */
 import React from 'react';
+import { MODULE_ASSETS } from '@/components/branding/moduleAssets';
 import InsightHighlightCard from './InsightHighlightCard';
 import {
   BORDER_GOLD_MEDIUM,
@@ -30,12 +31,15 @@ export function InsightsPageShell({ children, variant = 'dark' }) {
 
 // ── Header ───────────────────────────────────────────────────────────────────
 
-export function InsightsHeader({ title, subtitle, variant = 'dark' }) {
+export function InsightsHeader({ title, subtitle, moduleKey, variant = 'dark' }) {
   const isPaper = variant === 'paper';
+  const logo = MODULE_ASSETS[moduleKey];
   return (
     <div>
+      <div className="mb-2 flex items-center gap-3">
+        {logo && <img src={logo.src} alt="" className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14" />}
       <h1
-        className="text-3xl sm:text-4xl font-bold tracking-tight mb-2 break-words"
+        className="text-3xl sm:text-4xl font-bold tracking-tight break-words"
         style={{
           color: isPaper ? 'var(--ck-espresso)' : TEXT_PRIMARY,
           fontFamily: 'var(--ck-font-display)',
@@ -44,6 +48,7 @@ export function InsightsHeader({ title, subtitle, variant = 'dark' }) {
       >
         {title}
       </h1>
+      </div>
       <p style={{ color: isPaper ? 'rgba(52,37,29,0.72)' : TEXT_SECONDARY, fontSize: '0.9375rem' }}>
         {subtitle}
       </p>
