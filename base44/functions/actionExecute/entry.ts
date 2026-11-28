@@ -14,6 +14,7 @@ import {
 } from '../../shared/actionRegistry.ts';
 import { resolveCuratorAccess } from '../../shared/curatorAccess.ts';
 import { comparable, logActivity, pickFields, recordLabel } from '../../shared/actionHelpers.ts';
+import { validateStorageReferences } from '../../shared/actionStorageAuthorization.ts';
 
 /**
  * The single executor for the Universal Action Framework.
@@ -132,6 +133,14 @@ async function executePatchTarget(base44: any, user: any, definition: any, targe
       reason: 'no_supported_fields',
       rejected_fields: rejected,
     };
+  }
+
+  try {
+    const reason = await validateStorageReferences(base44.asServiceRole.entities, user, patch);
+    if (reason) return { recordId, entity: entityName, name: recordLabel(record), status: 'failed', reason };
+  } catch (error) {
+    console.error('[actionExecute] storage authorization failed', error);
+    return { recordId, entity: entityName, name: recordLabel(record), status: 'failed', reason: 'storage_lookup_failed' };
   }
 
   const before = pickFields(record, fields);

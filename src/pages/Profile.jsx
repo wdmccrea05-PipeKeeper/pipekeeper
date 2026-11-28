@@ -896,15 +896,15 @@ export default function ProfilePage() {
 
 
             {/* Pipe / Tobacco Preferences */}
-            <FormSection title={t("profile.pipeTobaccoPreferences", "Pipe & Tobacco Preferences")}>
+            <FormSection title={t("profile.pipeTobaccoPreferences")}>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="ck-field-label">{t("profileExtended.clenchingPreference")}</Label>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { value: "Yes", label: t("profilePreferences.yes", "Yes") },
-                      { value: "No", label: t("profilePreferences.no", "No") },
-                      { value: "Sometimes", label: t("profilePreferences.sometimes", "Sometimes") },
+                      { value: "Yes", label: t("profilePreferences.yes") },
+                      { value: "No", label: t("profilePreferences.no") },
+                      { value: "Sometimes", label: t("profilePreferences.sometimes") },
                     ].map(({ value, label }) => {
                       const active = formData.clenching_preference === value;
                       return (
@@ -926,10 +926,10 @@ export default function ProfilePage() {
                   <Label className="ck-field-label">{t("profileExtended.smokeDurationPreference")}</Label>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { value: "Short (15-30 min)", label: t("profilePreferences.durationShort", "Short (15-30 min)") },
-                      { value: "Medium (30-60 min)", label: t("profilePreferences.durationMedium", "Medium (30-60 min)") },
-                      { value: "Long (60+ min)", label: t("profilePreferences.durationLong", "Long (60+ min)") },
-                      { value: "No Preference", label: t("profilePreferences.noPreference", "No Preference") },
+                      { value: "Short (15-30 min)", label: t("profilePreferences.durationShort") },
+                      { value: "Medium (30-60 min)", label: t("profilePreferences.durationMedium") },
+                      { value: "Long (60+ min)", label: t("profilePreferences.durationLong") },
+                      { value: "No Preference", label: t("profilePreferences.noPreference") },
                     ].map(({ value, label }) => {
                       const active = formData.smoke_duration_preference === value;
                       return (
@@ -951,11 +951,11 @@ export default function ProfilePage() {
                   <Label className="ck-field-label">{t("profileExtended.pipeSizePreference")}</Label>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { value: "Small", label: t("profilePreferences.sizeSmall", "Small") },
-                      { value: "Medium", label: t("profilePreferences.sizeMedium", "Medium") },
-                      { value: "Large", label: t("profilePreferences.sizeLarge", "Large") },
-                      { value: "Extra Large", label: t("profilePreferences.sizeExtraLarge", "Extra Large") },
-                      { value: "No Preference", label: t("profilePreferences.noPreference", "No Preference") },
+                      { value: "Small", label: t("profilePreferences.sizeSmall") },
+                      { value: "Medium", label: t("profilePreferences.sizeMedium") },
+                      { value: "Large", label: t("profilePreferences.sizeLarge") },
+                      { value: "Extra Large", label: t("profilePreferences.sizeExtraLarge") },
+                      { value: "No Preference", label: t("profilePreferences.noPreference") },
                     ].map(({ value, label }) => {
                       const active = formData.pipe_size_preference === value;
                       return (
@@ -977,12 +977,12 @@ export default function ProfilePage() {
                   <Label className="ck-field-label">{t("profileExtended.strengthPreference")}</Label>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { value: "Mild", label: t("profilePreferences.strengthMild", "Mild") },
-                      { value: "Mild-Medium", label: t("profilePreferences.strengthMildMedium", "Mild-Medium") },
-                      { value: "Medium", label: t("profilePreferences.strengthMedium", "Medium") },
-                      { value: "Medium-Full", label: t("profilePreferences.strengthMediumFull", "Medium-Full") },
-                      { value: "Full", label: t("profilePreferences.strengthFull", "Full") },
-                      { value: "No Preference", label: t("profilePreferences.noPreference", "No Preference") },
+                      { value: "Mild", label: t("profilePreferences.strengthMild") },
+                      { value: "Mild-Medium", label: t("profilePreferences.strengthMildMedium") },
+                      { value: "Medium", label: t("profilePreferences.strengthMedium") },
+                      { value: "Medium-Full", label: t("profilePreferences.strengthMediumFull") },
+                      { value: "Full", label: t("profilePreferences.strengthFull") },
+                      { value: "No Preference", label: t("profilePreferences.noPreference") },
                     ].map(({ value, label }) => {
                       const active = formData.strength_preference === value;
                       return (
@@ -1042,14 +1042,14 @@ export default function ProfilePage() {
                     value={formData.notes}
                     onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
                     rows={3}
-                    placeholder={t("profile.pipeNotesPlaceholder", "Any guidance for pipe and tobacco recommendations...")}
+                    placeholder={t("profile.pipeNotesPlaceholder")}
                   />
                 </div>
               </div>
             </FormSection>
 
             {/* Whiskey Preferences */}
-            <FormSection title={t("profile.whiskeyPreferences", "Whiskey Preferences")}>
+            <FormSection title={t("profile.whiskeyPreferences")}>
               <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.48)' }}>
                 {t("profile.usedByCuratorWhiskey", "Used by Curator to personalize pairing recommendations and cross-collection insights.")}
               </p>
@@ -1058,7 +1058,7 @@ export default function ProfilePage() {
                 onChange={(updated) => setFormData((p) => ({ ...p, whiskey_preferences: updated }))}
               />
               <div className="mt-4">
-                <Label className="ck-field-label">{t("profile.whiskeyNotesLabel", "Whiskey Notes for Recommendations")}</Label>
+                <Label className="ck-field-label">{t("profile.whiskeyNotesLabel")}</Label>
                 <Textarea
                   value={formData.whiskey_notes}
                   onChange={(e) => setFormData((p) => ({ ...p, whiskey_notes: e.target.value }))}
@@ -1066,7 +1066,7 @@ export default function ProfilePage() {
                   placeholder={t("profile.whiskeyNotesPlaceholder", "e.g. Love smoky Islays, prefer aged single malts, enjoy pairing with dark chocolate or cigars...")}
                 />
                 <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.4)' }}>
-                  {t("profile.whiskeyNotesHint", "This note is shared with the Curator AI to improve whiskey recommendations.")}
+                  {t("profile.whiskeyNotesHint")}
                 </p>
               </div>
               <div className="mt-4">
@@ -1075,7 +1075,7 @@ export default function ProfilePage() {
             </FormSection>
 
             {/* Cigar Preferences */}
-            <FormSection title={t("profile.cigarPreferences", "Cigar Preferences")}>
+            <FormSection title={t("profile.cigarPreferences")}>
               <p className="text-xs mb-3" style={{ color: 'rgba(224,216,200,0.48)' }}>
                 {t("profile.usedByCuratorCigar", "Used by Curator to personalize cigar recommendations, humidor guidance, and cross-collection pairing suggestions.")}
               </p>
@@ -1084,7 +1084,7 @@ export default function ProfilePage() {
                 onChange={(updated) => setFormData((p) => ({ ...p, cigar_preferences: updated }))}
               />
               <div className="mt-4">
-                <Label className="ck-field-label">{t("profile.cigarNotesLabel", "Cigar Notes for Recommendations")}</Label>
+                <Label className="ck-field-label">{t("profile.cigarNotesLabel")}</Label>
                 <Textarea
                   value={formData.cigar_notes}
                   onChange={(e) => setFormData((p) => ({ ...p, cigar_notes: e.target.value }))}

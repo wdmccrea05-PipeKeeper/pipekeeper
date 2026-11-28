@@ -15,7 +15,7 @@ export default function WhiskeyKeeperModuleNav({ currentPageName }) {
     { page: "Tastings", label: t("whiskey.tastings"), icon: BookOpen },
     { page: "SessionHistory", label: t("sessionHistory.title", "Session History"), icon: CalendarDays },
     { page: "WhiskeyInsights", label: t("nav.insights"), icon: TrendingUp },
-    { page: "ReportingCenter?module=whiskeykeeper", label: t("nav.reports", "Reports"), icon: FileBarChart2 },
+    { page: "ReportingCenter?module=whiskeykeeper", label: t("nav.reports"), icon: FileBarChart2 },
   ];
 
   return (

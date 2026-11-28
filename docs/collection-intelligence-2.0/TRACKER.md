@@ -12,6 +12,291 @@ Status values: `done` · `in-progress` · `blocked` · `planned`
 
 ---
 
+## Draft continuation — persistent imports, reports, and visual pass
+
+Implementation source tested on the PR branch: **`b0d9ca6749e4b976d810fd10fa708857f3659674`**.
+The commit passed the installed pre-commit hook; it ran the unchanged
+localization gate at 2,573 findings / 2,666.
+
+| Area | Change and local evidence | Remaining gap |
+|---|---|---|
+| Resumable CSV imports | Import snapshots now persist in browser `localStorage`, scoped by normalized account email and batch ID, and migrate older session snapshots when possible. Saved batch state includes source CSV, inferred mappings, results and unresolved row identifiers; revalidation recomputes unresolved rows. The Import Center states CSV-only support and directs Excel users to save as CSV. Tests cover storage scoping, legacy migration, mappings, unresolved rows and Curator handoff. | This is browser-local persistence, not a server-side batch or cross-device recovery guarantee. Mappings are displayed as inferred, not editable. Reconciliation decision storage is present, but complete conflict decision controls, transactional idempotency and concurrent-import protection remain unimplemented/unverified. |
+| Curator report journey | A UI interaction test follows a plain-language Curator request to the shared Reporting Center, checks the exact supporting record route, and exercises CSV export. A separate 5,001-record fixture test verifies pagination, report scope, supporting rows and exported totals across two fetch pages. | These are local fixture/mock tests, not an authenticated Base44 report or export acceptance run. |
+| Workspace facelift | Applied shared parchment workspace, espresso text, restrained brass accents and display typography to the hub and shared module shell; Quick Access remains available for empty collections. Collection Health and Curator use paper surfaces; CigarKeeper's empty state is aligned with the other modules. Fixed contrast in Curator's collapsed tools disclosure and added fallbacks for unavailable Curator artwork. | Local preview used empty unauthenticated collections. No authenticated two-account acceptance was possible; module-specific content and every report drill-down still need live review. |
+| Existing logo/wordmark assets | Kept the tracked CollectionKeeper, PipeKeeper, WhiskeyKeeper, CigarKeeper and WineKeeper image assets and existing asset mappings. Local screenshots show those original CollectionKeeper/module marks; only missing remote Curator artwork uses a brass Target fallback. | These screenshots are local-preview evidence only, not the authenticated Base44 preview. |
+
+Validation on implementation source `b0d9ca6749e4b976d810fd10fa708857f3659674`:
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: **234
+  files, 3,819 passed, 0 failed**.
+- `npm run build`: **passed**; existing chunk and mixed dynamic/static import
+  warnings remain. `VITE_BASE44_APP_ID` and `VITE_BASE44_APP_BASE_URL` are
+  unset, so the build is not connected to Base44.
+- `npm run lint`: **passed**.
+- `npm run typecheck`: **passed**.
+- `npm run i18n:check -- --max-findings=2666`: **passed**, 2,573 findings /
+  2,666 budget. English and German import guidance is included.
+- Normal commit hook: **passed**, using the same i18n budget.
+- Local responsive preview checks: hub, CigarKeeper, Curator and Collection
+  Health were inspected at 390px and 1,440px; document width matched viewport.
+  Screenshots are local-only; the local preview had no authenticated collection
+  data. Test-generated certification timestamp/benchmark changes were restored.
+
+No authorized Base44 preview or two distinct test accounts are configured.
+Server-side isolation, entitlements, cross-account batch visibility, import
+write persistence/retry, live report/export parity, and authenticated mobile
+acceptance remain blocked. Keep PR #511 in draft; do not merge or publish.
+
+---
+
+## Draft continuation — resumable import and report handoffs
+
+Implementation source tested and committed to PR #511: **`4116acfd9ad4a3e4ea7866fdde9a062564b12b21`**.
+The commit was made through the installed pre-commit hook; the hook ran the
+unchanged i18n gate and passed at 2,573 findings / 2,666.
+
+| Area | Change and local evidence | Remaining gap |
+|---|---|---|
+| Curator-assisted CSV import | Import batches retain their ID, owner, file contents, parsed/validated rows, and results in account-keyed browser `sessionStorage`. Curator can open the same batch and return to it. The import review displays existing/incoming values for conflicts and requires confirmation; writes recheck the full owner-scoped collection and skip exact duplicates/conflicts. Tests cover upload → Curator handoff → return/reload, account-keyed storage, damaged snapshots, later-page duplicate lookup, conflict preservation, and retry after a create response is lost. | The supported engine is CSV-only; Excel must be saved as CSV. Batch state is limited to the same browser session and is not server-backed/cross-device. No transactional idempotency or concurrent-import lock exists. |
+| Curator reports | Supported report intents link to the shared Reporting Center with the selected report in the URL. Tests exercise the route and verify filtered table rows and CSV export use the same report result. | This is mocked interaction coverage, not authenticated browser acceptance; report calculations, pagination, and actual download behavior were not verified against a live collection. |
+| Shared workspace styling | Extended parchment/espresso styling to Curator and Collection Health, with shared paper variants for Insights and StatStrip and consistent display typography in the hub. | Full approved facelift, CigarKeeper comparison, and desktop/mobile visual acceptance remain open. |
+
+Validation on the committed implementation source:
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: **232
+  files, 3,814 passed, 0 failed**.
+- `npm run build`: **passed**; existing chunk warnings remain. Base44 app ID
+  and API proxy URL are unset, so the build is not connected to Base44.
+- `npm run lint`: **passed**.
+- `npm run typecheck`: **passed**.
+- `npm run i18n:check -- --max-findings=2666`: **passed**, 2,573 findings /
+  2,666 budget. English and German copy was added for the new batch controls.
+- The full test run rewrites certification timestamps/benchmarks; generated
+  changes were restored and excluded from the commit.
+
+No authorized Base44 preview or test accounts are configured. Two-account
+isolation, backend authorization/entitlements, persisted writes after reload,
+partial failures against the real service, desktop/mobile browser journeys, and
+screenshots remain blocked. Keep PR #511 in draft; do not merge or publish.
+
+---
+
+## Draft continuation — Curator handoffs and shared typography
+
+This increment was implemented and validated on the PR branch from
+`a710509d2c5a2d98f39c390b38ce516d34fcc56e`. The tested source commit is
+`872a75387b09421bb89c53a7f93ac5bef27f2323`; its normal commit hook passed.
+Subsequent changes to this tracker are documentation-only.
+
+| Area | Change and evidence | Remaining gap |
+|---|---|---|
+| Collection Health → Curator | Each finding group now offers a localized Curator action. Clicking it opens the single Curator workspace with the group and a prefilled, unsent prompt; the group review action still opens its exact records. An interaction test checks the destination and prompt, and verifies Spanish copy. | No live collection or authorized preview was available to verify that Curator's response identifies the same underlying records. |
+| Curator help | New FAQ, how-to and troubleshooting questions are handled in the live send path, with links to the existing `FAQFull`, `HowTo` and `TroubleshootingFull` pages. Existing targeted CSV import and duplicate-review routes remain. Regression tests cover link targets, restored help links, import ambiguity, report intent, and a deterministic “How many…” query. | Responses are concise route guidance, not a fully sourced answer engine; contextual forms/settings, diagnostic execution and complete import reconciliation are still open. Import execution is not idempotent on server retries. |
+| Shared visual system | Added Cormorant Garamond / Instrument Sans font tokens and loaded the fonts with system fallbacks. Shared module and insights headings now consume the display token; body text and controls use the UI stack. | The parchment workspace, full hub/Curator/Health/module facelift, CigarKeeper comparison and desktop/mobile screenshot review remain incomplete. |
+
+Validation on the working tree after the above changes:
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: **230 test
+  files, 3,805 passed, 0 failed or skipped**.
+- `npm run build`: **passed**. Existing Vite chunk warnings remain; Base44
+  app-id and proxy URL are unset, so the build cannot make Base44 API calls.
+- `npm run lint` and `npm run typecheck`: **passed**.
+- `npm run i18n:check -- --max-findings=2666`: **passed**, 2,574 findings;
+  configured budget and exclusions unchanged.
+- Focused handoff tests: **9 passed** across Curator chat routing, guidance
+  restore, Spanish action text and the 240-finding Collection Health view.
+- The test suite regenerates certification snapshots; generated-only changes
+  were restored and are not part of this increment.
+
+No authorized Base44 preview or test accounts are configured (`VITE_BASE44_APP_ID`
+and `VITE_BASE44_APP_BASE_URL` are absent). Two-account read/write isolation,
+persisted imports/actions, entitlements, browser acceptance and desktop/mobile
+screenshots remain blocked. Core entity RLS, retry-safe import execution and the
+full approved visual treatment remain release blockers. Keep PR #511 in draft.
+
+---
+
+## Draft continuation — release remains blocked
+
+The continuation starts from PR head `b0e6fac2ab21e7007d3228d83b110e2fd302fe5b`.
+The changes below are not deployed. Consult the PR for the tested commit and do
+not confuse mocked checks with an authenticated Base44 preview.
+
+| Requirement | Continuation code | Evidence and remaining work |
+|---|---|---|
+| Owned storage references | `actionStorageAuthorization.ts`, `actionExecute/entry.ts` | The executor checks both storage and humidor references against the current user's access for all allowed patches. Helper tests cover owned, foreign, invalid and failed lookups. Live service-role execution and Base44 RLS remain unverified. |
+| Curator conversation ownership | `curatorMessageOwnership.ts`, `persistCuratorMessage/entry.ts`, `curatorConversationHistory/entry.ts` | Duplicate lookup includes user email; returned history and duplicates are rechecked by owner and session. Helper tests use mocked responses. Real account switching and server rules remain unverified. |
+| Grouped Health storage review | `FindingsReviewPanel.jsx`, `ActionReviewDialog.jsx` | A mocked interaction selects 202 records, excludes one, chooses a shared location, cancels and then confirms; the 201 targets are split into 200 and 1 while retaining expected values and module context. The confirmation can show all affected names. No real records were written; persisted results, refreshed counts, partial failures, undo, mobile behavior and live authorization remain unverified. |
+| Translation and release gate | `src/components/i18n/locales/collectionHealthBulk.jsx`, `en.migratedFallbacks.json` | The same checker reports 3,275 findings on the PR baseline and 2,574 after migrating 701 inline fallback calls. The budget and exclusions are unchanged. Existing translated keys continue to take precedence; newly added English fallbacks preserve prior behavior, but missing non-English translations remain. All 7,010 migrated call/locale combinations matched their former output; mocked English and Spanish Quick Access interactions passed. |
+| Curator, imports, reports and visual direction | Existing workspace and module pages | Full requested journeys, two-click verification, facade, navigation, visual changes and authenticated screenshots remain open. No signed-in preview or two distinct authorized test accounts were available. |
+
+Curator follow-up: `curatorAppGuidance.js` handles narrowly scoped English how-to
+questions about importing one record type or reviewing duplicates. It links directly
+to the existing CSV import type or duplicate-review tab, describes the preview
+and access limitations, and restores links for matching saved turns. Disabled
+modules link to profile instead. Mocked chat interactions verify the two direct
+links; real imports, reconciliation, backend entitlements and other FAQ,
+troubleshooting and multi-part questions remain unverified. These new guidance
+responses are English only.
+
+Shared shell follow-up: `Layout.jsx` and `globals.css` now use the same oxblood
+navigation token on desktop and in the mobile drawer. A mocked navigation test
+checks the Curator link and expanded state; non-active text against the token
+calculates to 6.66:1. This is only a navigation foundation, not the requested
+parchment workspace, typography, full-surface facelift, or a visual acceptance
+of the hub and module homepages.
+
+Core collection entity schemas still have no declared RLS; frontend filtering and
+the additional executor checks are not evidence of server-side isolation. An
+authorized Base44 preview must verify reads, writes, report exports, import batches,
+selectors and conversations across two accounts, including account switching and
+multiple pages. Base44 preview divergence and execution history remain unknown.
+No release or production publishing is authorized.
+
+Previous local worktree validation (not a tested PR commit):
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: 226 files,
+  3,792 tests passed; 0 failed or skipped. Tests use fixtures and mocks.
+- `npm run build`, `npm run lint`, `npm run typecheck`: passed. The build warned
+  that `VITE_BASE44_APP_ID` is unset, so its API calls will not work as built.
+- The previous normal commit attempt was blocked by the 3,275-finding i18n gate.
+  The migration above retains the original gate; it does not clear all findings.
+- Desktop/mobile authenticated acceptance, screenshots, deployed backend checks,
+  pricing and entitlement matrix: not run; an authorized preview and accounts
+  were unavailable.
+
+Continuation worktree validation before commit:
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: 227 files,
+  3,794 tests passed; 0 failed or skipped.
+- `npm run build`, `npm run lint`, `npm run typecheck`: passed. The build again
+  warned that `VITE_BASE44_APP_ID` is unset.
+- `npm run i18n:check -- --max-findings=2666`: passed, 2,574 findings. The
+  initial full suite had ten profile-test failures because its translation mock
+  returned only inline fallbacks; it was corrected to use the real translator
+  before the passing full rerun.
+
+## Independent follow-up audit — 2026-11-27
+
+**Release recommendation: do not release.** This is a partial repair, not acceptance of
+Collection Intelligence 2.0, the Collection Health reconciliation workflow, the app-wide
+Curator upgrade, or the approved facelift. The existing RLS blocker remains. No production
+data, prices, entitlements, deployment, or payment transactions were changed.
+
+Baseline reviewed: `d0ead49c355639326b5122499d8e0fb00ec7d0fc` on default branch
+`main`, authored by `base44-builder[bot]`. GitHub reported that same commit as the
+latest synced main when checked; the checkout is shallow. GitHub returned no releases
+or tags, so the latest published version cannot be established; the tracker's 2.0.0
+is a development label, not evidence of publication. No `AGENTS.md` was present.
+The available instructions were `README.md`, `TESTING_GUIDE.md`, `docs/RELEASE_CHECK.md`
+and the CI 2.0 tracker, readiness review, prompt 13–16 verification, reporting and
+action framework documents. There was no PR template.
+
+Accessible GitHub history includes `25cd0ec` (ownership/query filtering), `d9b3b73`
+(Quick Access), `ceec8e6` (report scrolling), `74d8d1c` (CigarKeeper layout),
+and `d0ead49` (session counts). These are commits, not proof of acceptance. Original
+Base44 prompts, execution/retry/requeue history, prior screenshots and unsynced
+Base44 state were not accessible. The user-supplied desktop/mobile mockup is a design
+reference, not a screenshot of the running app.
+
+| Requirement | Code path | Status and evidence / next step |
+|---|---|---|
+| Collection Tools ownership, switching, pagination, exports and pickers | `CollectionTools.jsx`, `fetchAllEntities.js` | **Partial:** SDK returns arrays, not `{items}`; corrected with paginated, email-keyed queries and stale-account protection. Mocked React tests cover switching, empty account, 501 owned rows and foreign rows. Live two-account RLS, exports and other pickers remain unverified. |
+| Duplicate detection and ownership | `collectionItemDuplicates/entry.ts`, `collectionRecords.ts` | **Partial:** replaced global 2,000-row list with owner-filtered, paginated email/id queries and ownership recheck; mocked shared-function test covers overlapping names, legacy id and empty owner. Deployed backend and real account isolation unverified. |
+| Quick Access, direct links, hidden modules and back navigation | `FeatureQuickAccess.jsx`, module pages | **Open:** recent navigation commit identified; full shortcut inventory and browser journeys not verified. |
+| Report clicks, exact drill-downs, filters and exports | `ReportingCenter.jsx`, `src/components/reports`, `reportCatalog*.js` | **Open:** catalog/fixture tests are not real clicks, taps, export parity, or authorization evidence. Overview's largest-module calculation fixed and fixture-tested; all other interactions remain unverified. |
+| CigarKeeper and other module homepages; mobile screenshots | `CigarKeeper.jsx`, other module pages | **Open:** recent layout commit identified; no authenticated desktop/mobile comparison or screenshots. |
+| Health grouped landing and 200+ findings | `CollectionHealth.jsx`, `collectionHealthGroups.test.jsx` | **Partial:** groups and on-demand details; mocked 240-finding/two-module render and filtering test. Not the approved parchment/oxblood facelift, guided Curator entry, or complete group reconciliation. |
+| Health decisions, preferences, restore and condition/valuation | `findingState.js`, `useFindingStates.js`, `collectionFindings.js` | **Partial:** fixed array query and duplicate decision creation, paginated reads and account-keyed state; deferred/dismissed/resolved tracking preferences and restore remain incomplete. No values are invented. |
+| Storage selection and action confirmation | `FindingRow.jsx`, `FindingsReviewPanel.jsx`, `ActionReviewDialog.jsx` | **Partial:** explicit per-record location choice before review; selected destination appears in confirmation; corrections no longer save a separate resolved decision that would hide the finding after undo. Test uses mocked executor. Bulk same-location selection, inline creation, live undo, stale preview and partial-failure verification remain open. |
+| Curator expertise, context, history, help, import, reports, troubleshooting, two-click actions | `Curator.jsx`, `CuratorWorkspace.jsx`, `src/lib/curator` | **Open:** app-wide expert, context handoff, complete import/reconciliation journeys and two-click acceptance not implemented or verified in this follow-up. Prior documentation is not evidence of current runtime behavior. |
+| Universal Action lifecycle, entitlements and authorization | `actionExecute/entry.ts`, `useActionExecution.js` | **Open:** existing tests exercise parts of the framework; no live two-account execution, stale/partial/replay/undo or entitlement matrix verification. |
+| Dashboards, navigation, responsive, a11y, Help and Tips | hub/module pages, `src/components/help` | **Partial:** Help describes this change. Personalization, all routes, labels, touch/keyboard/overflow, Tips & Tricks and live responsive checks remain open. |
+| Inventory, migrations, photos, documents and history | `src/components/collection`, entity schemas | **Open:** no mutation, migration, legacy, attachment persistence or large-live-collection acceptance performed. |
+| Sharing, Pipe Club, privacy and attachments | `publicShare`, `ShareCenter`, `PipeClub*` | **Open:** live expiration, revocation, selected-field privacy, attachment and two-account checks not performed. |
+| Memberships, gifting, administration and payments | `src/lib/entitlements`, `base44/shared`, `AdminDiagnostics` | **Open:** no signed-in tier matrix, provider sandbox, gifting, expiry, restoration or diagnostics acceptance; no rights or prices changed. |
+| Approved app-wide visual direction | `src/Layout.jsx`, theme and module pages | **Open:** design tokens, fonts and full app facelift not implemented or visually validated. |
+
+### Reporting requirements: traceability, not acceptance
+
+The report definitions are in `src/lib/reports/reportCatalogCore.js` (1–10) and
+`reportCatalogIntelligence.js` (11–20); renderer and export paths are under
+`src/components/reports` and `src/lib/reports`. The existing `reportingCenter.test.js`
+exercises a fixture for the catalog. Except for the targeted overview calculation
+above, calculations, exact record drill-downs, filters, saved views, print/PDF/CSV,
+entitlements and responsive browser interactions are **unverified** for every row:
+
+| # | Requested report | Status / remaining evidence |
+|---|---|---|
+| 1 | Collection Overview | Partial: largest-module fixture regression; full report unverified. |
+| 2 | Composition and Balance | Open: fixture catalog smoke only. |
+| 3 | Characteristics Distribution | Open: fixture catalog smoke only. |
+| 4 | Pipe Specialization | Open: calculations and printable owned matches. |
+| 5 | Pairing Insights | Open: 3–5 owned matches, ranking, explanations and print. |
+| 6 | Historical Preference | Open: fixture catalog smoke only. |
+| 7 | Collection Discovery | Open: collector-owned basis and rankings. |
+| 8 | Overlooked Items | Open: top-10 and underlying records. |
+| 9 | Documentation Completeness | Open: filters and supporting records. |
+| 10 | Health and Condition | Open: condition and record drill-down. |
+| 11 | Aging and Preservation | Open: calculations and empty states. |
+| 12 | Storage Distribution | Open: counts and exclusions against inventory. |
+| 13 | Maker/Producer/Distillery | Open: ranking and supporting records. |
+| 14 | Historical Personal Ratings | Open: calculations and data sufficiency. |
+| 15 | Acquisition and Provenance | Open: privacy and underlying records. |
+| 16 | Insurance and Estate | Open: disclosures, privacy and export parity. |
+| 17 | Annual Review | Open: filtered year and calculations. |
+| 18 | Cross-Collection Characteristics | Open: cross-module permissions and data. |
+| 19 | Historical Valuation | Open: attribution, dates and disclosures. |
+| 20 | Custom Curator reports | Open: authorized generated answers and supporting records. |
+
+### Confirmed defects and deployment dependencies
+
+1. Collection Tools treated an SDK array as `{items}` and passed an options object
+   where positional arguments are required; it therefore displayed an empty list.
+   The replacement uses positional pagination, reports errors, and separates query
+   caches by email and entity. It does not repair missing server RLS.
+2. Finding decisions had the same SDK shape error, causing saved states not to load
+   and existing decisions to be recreated. The fixed path reads arrays and uses the
+   existing matching row. State queries are keyed by user.
+3. Duplicate scanning loaded only the first 2,000 records globally before filtering,
+   missing owned records and unnecessarily loading other owners into the function.
+   The server now queries owner identifiers and pages before grouping.
+4. Finding review silently selected the first storage alternative. It now requires an
+   explicit choice and shows it at confirmation. Automatic resolved-decision writes
+   were removed so undo can expose a reappearing finding.
+5. Overview identified the first module in display order as the largest. It now
+   chooses the module with the most records; `reportingCenter.test.js` checks a
+   larger later module.
+
+The backend duplicate fix requires deployment of the function and shared module;
+frontend fixes require the app build. No schema migration or data backfill is in this
+change. Deployment must wait for RLS and the open acceptance gates. If approved
+later, deploy to a test environment, verify two accounts and affected workflows,
+then deploy backend before frontend. Roll back by reverting the repair commit and
+redeploying both; stored decisions and collection records are not automatically
+reverted. Existing missing RLS and other release blockers persist after rollback.
+
+### Validation and evidence
+
+| Check | Result |
+|---|---|
+| Initial `npm run build`, `npm run lint`, `npm run typecheck`, `npm test` | Could not run: dependencies absent. Installed the lockfile with `npm ci --no-audit --no-fund`. |
+| Baseline `npm run build`; `npm run typecheck` | Pass. |
+| Baseline `npm run lint` | Fail: 11 existing unused-import errors across `accessSummary`, `ShareBuilder`, `CollectionHub`, `Insights` and `ShareCenter`. Final lint has the same 11. |
+| Baseline `timeout 300s npm test` under Node 26.13.0 | 206 files passed, 15 failed; 3,649 tests passed, 18 failed. Seven suites could not start because Node's experimental `localStorage` was undefined; remaining failures also included storage-dependent tests. |
+| Final `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test` | 223 files, 3,785 tests passed, 0 failed or skipped; Node's experimental Web Storage was disabled so jsdom provides storage. |
+| `NODE_OPTIONS=--no-experimental-webstorage npx vitest run src/__tests__/collectionHealthGroups.test.jsx src/__tests__/collectionOwnershipAndDecisions.test.jsx src/__tests__/reportingCenter.test.js` | 3 files, 34 tests passed after the final Health wording change. These are fixture/mocked React tests, not live browser or backend tests. |
+| Final `npm run build`, `npm run typecheck` and ESLint on changed frontend files | Pass; build emits pre-existing chunk warnings. |
+| `NODE_OPTIONS=--no-experimental-webstorage npm run release:check` | Fail before tests: i18n findings 3,275 exceed the 2,666 budget. A separate baseline scan of the reviewed commit found 3,271. New UI copy is not fully localized. |
+| Browser, manual and external checks | **Not performed:** no authenticated Base44 test accounts or authorized sandbox credentials were available. No before/after screenshots, live Curator/import/entitlement flow, real cross-account authorization, payment/provider, mobile keyboard, touch or deployment checks. The user supplied a design mockup only. |
+
+The full suite also updates three tracked certification artifacts as a side effect;
+those test-generated timestamp and timing changes were discarded. Passing mocks and a build do
+not prove server authorization, an actual save, a mobile flow, or release readiness.
+The installed pre-commit hook uses the same already-failing i18n budget and blocked a
+normal commit. It was bypassed solely to publish this explicitly blocked draft for
+review; the failure and additional untranslated strings remain release blockers.
+
 ## Batches and dependencies
 
 Work is grouped so that batches can run without waiting on each other. Arrows mean "depends on".

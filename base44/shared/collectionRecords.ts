@@ -168,6 +168,30 @@ export function isAuthorizedForRecord(record: any, user: any): boolean {
   return false;
 }
 
+/** Fetch only the collector's candidates, including legacy id-only records. */
+export async function listOwnedCollectionRecords(entity: any, user: any, pageSize = 500, maxPages = 200): Promise<any[]> {
+  const filters: Record<string, string>[] = [{ created_by: user.email }];
+  if (user.id) filters.push({ created_by_id: user.id });
+  const owner = { ...user, role: 'user' };
+  const records = new Map<string, any>();
+  for (const filter of filters) {
+    let finished = false;
+    for (let pageIndex = 0; pageIndex < maxPages; pageIndex += 1) {
+      const page = await entity.filter(filter, '-created_date', pageSize, pageIndex * pageSize);
+      if (!Array.isArray(page)) throw new Error('Collection query returned an invalid page');
+      for (const record of page) {
+        if (record?.id && isAuthorizedForRecord(record, owner)) records.set(record.id, record);
+      }
+      if (page.length < pageSize) {
+        finished = true;
+        break;
+      }
+    }
+    if (!finished) throw new Error('Collection query exceeded the pagination limit');
+  }
+  return [...records.values()];
+}
+
 /**
  * Reduce an arbitrary payload to the fields this layer is allowed to write.
  * Anything not on the allowlist is dropped rather than trusted.

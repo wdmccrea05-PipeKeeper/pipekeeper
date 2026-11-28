@@ -16,6 +16,8 @@ import { homeTranslations } from './homeContent.jsx';
 import { insightsTranslations } from './insightsContent.jsx';
 import { storyWineTranslations } from './storyWineTranslations.jsx';
 import enCollectionIntelligence from './locales/en.collectionIntelligence.jsx';
+import enMigratedFallbacks from './locales/en.migratedFallbacks.json';
+import collectionHealthBulk from './locales/collectionHealthBulk.jsx';
 import enDocs from './locales/en.docs.jsx';
 import esDocs from './locales/es.docs.jsx';
 import frDocs from './locales/fr.docs.jsx';
@@ -199,9 +201,9 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
   const withInsights = deepMerge(withHome, insightsTranslations[lang] || {});
   const withStoryWine = deepMerge(withInsights, storyWineTranslations[lang] || {});
   const withDocsCurrent = deepMerge(withStoryWine, docsCurrentTranslations[lang] || {});
-  const withIntel = lang === 'en'
-    ? deepMerge(withDocsCurrent, { collectionIntelligence: enCollectionIntelligence })
-    : withDocsCurrent;
+  const withIntel = deepMerge(withDocsCurrent, {
+    collectionIntelligence: lang === 'en' ? enCollectionIntelligence : collectionHealthBulk[lang],
+  });
   const generatedPack = GENERATED_PACKS[lang];
   const withGenerated = lang === 'it'
     ? deepOverride(deepOverride(deepOverride(deepOverride(withIntel, itGenerated), itExtra), itRemaining), itCodeStrings)
@@ -214,7 +216,7 @@ export const translations = Object.fromEntries(Object.entries(rawLocales).map(([
   const withProTrial = deepOverride(withCriticals, proTrialTranslations[lang] || {});
   // Collector appreciation campaign copy, applied last in every language.
   const withAppreciation = deepOverride(withProTrial, appreciationTranslations[lang] || {});
-  return [lang, withAppreciation];
+  return [lang, lang === 'en' ? deepMerge(withAppreciation, enMigratedFallbacks) : withAppreciation];
 }));
 
 const I18nContext = createContext(null);

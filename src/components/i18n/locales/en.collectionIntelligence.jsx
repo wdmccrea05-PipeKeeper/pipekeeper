@@ -12,6 +12,13 @@ const collectionIntelligence = {
   healthStrong: "Strong",
   healthModerate: "Moderate",
   healthLow: "Low",
+  selectFindings: "Select all eligible records",
+  clearFindings: "Clear selection",
+  locationForSelected: "Location for selected records",
+  chooseLocation: "Select a location",
+  storageBatchTitle: "Assign storage ({count})",
+  storageLabel: "Storage",
+  reviewTargetList: "View affected records",
 
   // Insights section
   insightsTitle: "Insights",
@@ -50,6 +57,7 @@ const collectionIntelligence = {
   viewPairings: "View Pairings",
   viewOptimization: "View Analysis",
   askCurator: "Ask Curator",
+  reviewFindingsPrompt: "Help me review the {group} findings in Collection Health and choose a safe next step.",
   exploreCurator: "Explore with Curator",
   reviewOnePipe: "Review 1 Pipe",
   reviewPipes: "Review {count} Pipes",

@@ -53,13 +53,13 @@ export default function FAQFull() {
             <Link to={createPageUrl("HowTo")}>
               <Button variant="outline" className="border-[rgba(140,105,65,0.35)] bg-[rgba(28,21,16,0.72)] text-[#F5F1E7] hover:bg-[rgba(163,92,92,0.12)]">
                 <BookOpen className="mr-2 h-4 w-4" />
-                {t("help.howTo", "How-To")}
+                {t("help.howTo")}
               </Button>
             </Link>
             <Link to={createPageUrl("TroubleshootingFull")}>
               <Button variant="outline" className="border-[rgba(140,105,65,0.35)] bg-[rgba(28,21,16,0.72)] text-[#F5F1E7] hover:bg-[rgba(163,92,92,0.12)]">
                 <Wrench className="mr-2 h-4 w-4" />
-                {t("help.troubleshooting", "Troubleshooting")}
+                {t("help.troubleshooting")}
               </Button>
             </Link>
             <Button 
@@ -68,7 +68,7 @@ export default function FAQFull() {
               variant="outline"
             >
               <Play className="mr-2 h-4 w-4" />
-              {t("help.launchTutorial", "Launch Tutorial")}
+              {t("help.launchTutorial")}
             </Button>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function FAQFull() {
               {t("faqExtended.legacySubscriberNote", { date: "2026", defaultValue: "Founding subscribers have grandfathered access to all Pro features." })}
             </p>
           </Q>
-          <Q id="free-limits" q={t("docsCurrent.faq.limitsQ", "What are the limits on the free tier?")}>
+          <Q id="free-limits" q={t("docsCurrent.faq.limitsQ")}>
             <p>{t("docsCurrent.faq.limitsQA")}</p>
           </Q>
         </Section>
@@ -199,32 +199,32 @@ export default function FAQFull() {
           </Q>
         </Section>
 
-        <Section title={t("docsCurrent.winekeeper.title", "WineKeeper")}>
-          <Q id="winekeeper-what" q={t("docsCurrent.faq.wineWhatQ", "What is WineKeeper?")}>
+        <Section title={t("docsCurrent.winekeeper.title")}>
+          <Q id="winekeeper-what" q={t("docsCurrent.faq.wineWhatQ")}>
             <p>{t("docsCurrent.faq.wineWhatA")}</p>
           </Q>
-          <Q id="winekeeper-window" q={t("docsCurrent.faq.wineTrackQ", "How do I track a bottle and its drinking window?")}>
+          <Q id="winekeeper-window" q={t("docsCurrent.faq.wineTrackQ")}>
             <p>{t("docsCurrent.faq.wineTrackA")}</p>
           </Q>
         </Section>
 
-        <Section title={t("docsCurrent.community.title", "Community")}>
-          <Q id="community-what" q={t("docsCurrent.faq.communityWhatQ", "What is the Community?")}>
+        <Section title={t("docsCurrent.community.title")}>
+          <Q id="community-what" q={t("docsCurrent.faq.communityWhatQ")}>
             <p>{t("docsCurrent.faq.communityWhatA")}</p>
           </Q>
-          <Q id="community-privacy" q={t("docsCurrent.faq.communityPrivacyQ", "How do I control what other collectors see?")}>
+          <Q id="community-privacy" q={t("docsCurrent.faq.communityPrivacyQ")}>
             <p>{t("docsCurrent.faq.communityPrivacyA")}</p>
           </Q>
-          <Q id="community-messaging-off" q={t("docsCurrent.faq.communityMessagingQ", "What happens to my conversations if I turn messaging off?")}>
+          <Q id="community-messaging-off" q={t("docsCurrent.faq.communityMessagingQ")}>
             <p>{t("docsCurrent.faq.communityMessagingA")}</p>
           </Q>
         </Section>
 
-        <Section title={t("docsCurrent.reports.title", "Reports & exports")}>
-          <Q id="reports-what" q={t("docsCurrent.faq.reportsWhatQ", "What reports can I export?")}>
+        <Section title={t("docsCurrent.reports.title")}>
+          <Q id="reports-what" q={t("docsCurrent.faq.reportsWhatQ")}>
             <p>{t("docsCurrent.faq.reportsWhatA")}</p>
           </Q>
-          <Q id="reports-how" q={t("docsCurrent.faq.reportsHowQ", "How do I export a report?")}>
+          <Q id="reports-how" q={t("docsCurrent.faq.reportsHowQ")}>
             <p>{t("docsCurrent.faq.reportsHowA")}</p>
           </Q>
         </Section>

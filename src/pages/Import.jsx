@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, AlertCircle, CheckCircle, Download, FileSpreadsheet, Upload } from 'lucide-react';
 import { toast } from 'sonner';
@@ -13,8 +13,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { analyzeImportRows, executeImportRows, importDefinitionList, importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
+import { analyzeImportRows, executeImportRows, importDefinitionList, importDefinitions, downloadImportTemplate, inferImportMappings } from '@/lib/imports/importDefinitions';
 import { parseCsvText } from '@/lib/imports/csvImportUtils';
+import { createImportBatchId, loadImportBatch, saveImportBatch } from '@/lib/imports/importBatchStore';
 import { TOBACCO_IMPORT_ENUMS } from '@/components/tobacco/tobaccoConstants';
 
 // Maps each import definition id prefix to a module key
@@ -48,13 +49,28 @@ function buildImportTypeFromLocation(locationSearch) {
   return importDefinitionList[0]?.id;
 }
 
-function formatRowNotes(row) {
+function buildBatchIdFromLocation(locationSearch) {
+  const requested = new URLSearchParams(locationSearch || '').get('batch');
+  return requested && /^[A-Za-z0-9_-]{8,80}$/.test(requested) ? requested : createImportBatchId();
+}
+
+function formatRowNotes(row, t) {
   if (row.errors.length > 0) return `Errors: ${row.errors.join(' • ')}`;
+  if (row.duplicateKind === 'conflict' && row.conflictingValues?.length) {
+    const differences = row.conflictingValues
+      .map(({ field, existing, incoming }) => t('import.conflictValues', {
+        field,
+        existing: existing ?? '—',
+        incoming: incoming ?? '—',
+      }))
+      .join('; ');
+    return t('import.conflictSummary', { differences });
+  }
   if (row.warnings.length > 0) return `Warnings: ${row.warnings.join(' • ')}`;
   return '—';
 }
 
-function ImportPreview({ analysis }) {
+function ImportPreview({ analysis, mappings, t }) {
   if (!analysis) return null;
 
   return (
@@ -81,10 +97,25 @@ function ImportPreview({ analysis }) {
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {mappings?.length > 0 && (
+          <div className="rounded-lg border border-stone-700 bg-stone-900/40 p-3 text-xs text-stone-300">
+            <p className="font-semibold text-stone-100 mb-2">{t('import.detectedMappings')}</p>
+            <ul className="grid gap-1 sm:grid-cols-2">
+              {mappings.map(({ source, target }, index) => (
+                <li key={`${source}-${index}`}>
+                  {source} → {target || t('import.notImported')}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
           <SummaryBadge label="Rows" value={analysis.totalRows} />
           <SummaryBadge tone="success" label="Valid" value={analysis.counts.valid} />
           <SummaryBadge tone="warning" label="Warnings" value={analysis.counts.warning} />
+          <SummaryBadge tone="warning" label="Duplicates" value={analysis.counts.duplicates} />
+          <SummaryBadge tone="danger" label="Conflicts" value={analysis.counts.conflicts} />
           <SummaryBadge tone="danger" label="Blocked" value={analysis.counts.error} />
         </div>
 
@@ -115,7 +146,7 @@ function ImportPreview({ analysis }) {
                     </span>
                   </td>
                   <td className="p-2 text-xs text-stone-300">
-                    {formatRowNotes(row)}
+                    {formatRowNotes(row, t)}
                   </td>
                 </tr>
               ))}
@@ -135,6 +166,7 @@ function ImportPreview({ analysis }) {
 export default function ImportPage() {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, hasPaid: isPaidUser } = useCurrentUser();
   const { accessible, isLoading: modulesLoading } = useEnabledModules(user, user);
@@ -150,10 +182,27 @@ export default function ImportPage() {
   );
 
   const [importType, setImportType] = useState(() => buildImportTypeFromLocation(location.search));
+  const [batchId, setBatchId] = useState(() => buildBatchIdFromLocation(location.search));
+  const [fileName, setFileName] = useState('');
+  const [csvText, setCsvText] = useState('');
+  const [mappings, setMappings] = useState({});
+  const [reconciliationDecisions, setReconciliationDecisions] = useState({});
+  const [unresolvedRows, setUnresolvedRows] = useState([]);
   const [analysis, setAnalysis] = useState(null);
   const [importResult, setImportResult] = useState(null);
   const [busy, setBusy] = useState(false);
   const [duplicateMode, setDuplicateMode] = useState('create_only');
+  const [batchReady, setBatchReady] = useState(false);
+  const [batchDataKey, setBatchDataKey] = useState('');
+  const [batchSaved, setBatchSaved] = useState(false);
+  const activeBatchKey = useRef('');
+  const [batchStorageError, setBatchStorageError] = useState('');
+  const [batchRecoveryError, setBatchRecoveryError] = useState(() => {
+    const requested = new URLSearchParams(location.search || '').get('batch');
+    return requested && !/^[A-Za-z0-9_-]{8,80}$/.test(requested)
+      ? 'The import batch link is invalid. A new batch has been started.'
+      : '';
+  });
 
   // Ensure the selected import type is valid for available definitions
   const resolvedImportType = useMemo(() => {
@@ -163,6 +212,120 @@ export default function ImportPage() {
   }, [availableDefinitions, importType]);
 
   const definition = resolvedImportType ? importDefinitions[resolvedImportType] : null;
+
+  useEffect(() => {
+    if (!resolvedImportType) return;
+    const params = new URLSearchParams(location.search || '');
+    const changed = params.get('batch') !== batchId || params.get('type') !== resolvedImportType;
+    if (!changed) return;
+    params.set('batch', batchId);
+    params.set('type', resolvedImportType);
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+  }, [batchId, location.pathname, location.search, navigate, resolvedImportType]);
+
+  useEffect(() => {
+    if (!user?.email || !resolvedImportType) return;
+    const dataKey = `${user.email.trim().toLowerCase()}|${batchId}|${resolvedImportType}`;
+    activeBatchKey.current = dataKey;
+    setBatchReady(false);
+    setAnalysis(null);
+    setImportResult(null);
+    setFileName('');
+    setCsvText('');
+    setMappings({});
+    setReconciliationDecisions({});
+    setUnresolvedRows([]);
+    setDuplicateMode('create_only');
+    setBatchStorageError('');
+
+    let snapshot;
+    try {
+      snapshot = loadImportBatch(window.localStorage, user.email, batchId, {
+        fallbackStorage: window.sessionStorage,
+      });
+    } catch (error) {
+      setBatchStorageError(error.message);
+      setBatchReady(true);
+      return;
+    }
+
+    if (snapshot && snapshot.importType !== resolvedImportType) {
+      if (!availableDefinitions.some((item) => item.id === snapshot.importType)) {
+        setBatchRecoveryError('This batch belongs to a module that is not available to the signed-in account.');
+        setBatchReady(true);
+        return;
+      }
+      setImportType(snapshot.importType);
+      return;
+    }
+
+    if (!snapshot) {
+      setBatchDataKey(dataKey);
+      setBatchReady(true);
+      return;
+    }
+
+    setFileName(snapshot.fileName);
+    setCsvText(snapshot.csvText);
+    setMappings(snapshot.mappings);
+    setReconciliationDecisions(snapshot.reconciliationDecisions);
+    setUnresolvedRows(snapshot.unresolvedRows);
+    setImportResult(snapshot.result);
+    setDuplicateMode(snapshot.duplicateMode);
+    const restoredDefinition = importDefinitions[snapshot.importType];
+    if (snapshot.csvText && restoredDefinition) {
+      const parsed = parseCsvText(snapshot.csvText);
+      analyzeImportRows({
+        definition: restoredDefinition,
+        headers: parsed.headers,
+        rawHeaders: parsed.rawHeaders,
+        rows: parsed.rows,
+        duplicateHeaders: parsed.duplicateHeaders,
+        parseErrors: parsed.parseErrors,
+        userEmail: user.email,
+      }).then((nextAnalysis) => {
+        setAnalysis(nextAnalysis);
+        setUnresolvedRows(nextAnalysis.rows
+          .filter((row) => row.status === 'error' || row.duplicateState !== 'none')
+          .map((row) => row.rowNumber));
+      }).catch((error) => {
+        setBatchRecoveryError(`The saved CSV could not be revalidated: ${error.message}`);
+      }).finally(() => {
+        setBatchDataKey(dataKey);
+        setBatchReady(true);
+      });
+    } else {
+      setBatchDataKey(dataKey);
+      setBatchReady(true);
+    }
+  }, [availableDefinitions, batchId, resolvedImportType, user?.email]);
+
+  useEffect(() => {
+    const dataKey = user?.email && resolvedImportType
+      ? `${user.email.trim().toLowerCase()}|${batchId}|${resolvedImportType}`
+      : '';
+    if (!batchReady || !user?.email || !resolvedImportType || batchDataKey !== dataKey || activeBatchKey.current !== dataKey) return;
+    try {
+      saveImportBatch(window.localStorage, {
+        batchId,
+        userEmail: user.email,
+        importType: resolvedImportType,
+        fileName,
+        csvText,
+        mappings,
+        reconciliationDecisions,
+        unresolvedRows,
+        analysis,
+        result: importResult,
+        duplicateMode,
+      });
+      setBatchSaved(true);
+      setBatchStorageError('');
+    } catch (error) {
+      setBatchSaved(false);
+      setBatchStorageError(error.message);
+    }
+  }, [analysis, batchDataKey, batchId, batchReady, csvText, duplicateMode, fileName, importResult, mappings, reconciliationDecisions, resolvedImportType, unresolvedRows, user?.email]);
 
   const importableRows = useMemo(() => {
     if (!analysis) return [];
@@ -205,12 +368,16 @@ export default function ImportPage() {
     if (!file || !definition || !user?.email) return;
 
     setBusy(true);
+    setBatchSaved(false);
     setImportResult(null);
     setAnalysis(null);
 
     try {
       const text = await file.text();
+      setFileName(file.name);
+      setCsvText(text);
       const parsed = parseCsvText(text);
+      setMappings(inferImportMappings(definition, parsed.headers, parsed.rawHeaders));
       const nextAnalysis = await analyzeImportRows({
         definition,
         headers: parsed.headers,
@@ -221,10 +388,13 @@ export default function ImportPage() {
         userEmail: user.email,
       });
       setAnalysis(nextAnalysis);
+      setUnresolvedRows(nextAnalysis.rows
+        .filter((row) => row.status === 'error' || row.duplicateState !== 'none')
+        .map((row) => row.rowNumber));
       if (nextAnalysis.totalRows === 0) toast.warning('No data rows detected.');
     } catch (error) {
-      console.error('[Import] Parse failed:', error);
-      toast.error(t('import.csvParseFailed', 'CSV parse failed.'));
+      console.error('[Import] Analysis failed:', error);
+      toast.error(error.message || t('import.csvParseFailed'));
     } finally {
       setBusy(false);
       event.target.value = '';
@@ -243,21 +413,58 @@ export default function ImportPage() {
     }
 
     setBusy(true);
+    setBatchSaved(false);
     try {
+      const parsed = parseCsvText(csvText);
+      const currentAnalysis = await analyzeImportRows({
+        definition,
+        headers: parsed.headers,
+        rawHeaders: parsed.rawHeaders,
+        rows: parsed.rows,
+        duplicateHeaders: parsed.duplicateHeaders,
+        parseErrors: parsed.parseErrors,
+        userEmail: user.email,
+      });
+      setAnalysis(currentAnalysis);
+      setUnresolvedRows(currentAnalysis.rows
+        .filter((row) => row.status === 'error' || row.duplicateState !== 'none')
+        .map((row) => row.rowNumber));
+      if (currentAnalysis.blockingHeaderErrors.length > 0) {
+        toast.error('The import preview changed. Fix the file errors before continuing.');
+        return;
+      }
       const result = await executeImportRows({
         definition,
-        analyzedRows: analysis.rows,
+        analyzedRows: currentAnalysis.rows,
         duplicateMode,
+        userEmail: user.email,
       });
       setImportResult(result);
       refreshModuleCaches();
       toast.success(`Imported ${result.imported} row(s).`);
     } catch (error) {
       console.error('[Import] Execute failed:', error);
-      toast.error('Import failed. Please try again.');
+      toast.error(error.message || 'Import failed. Please try again.');
     } finally {
       setBusy(false);
     }
+  };
+
+  const startNewImportBatch = () => {
+    setBatchId(createImportBatchId());
+    setFileName('');
+    setCsvText('');
+    setMappings({});
+    setReconciliationDecisions({});
+    setUnresolvedRows([]);
+    setAnalysis(null);
+    setImportResult(null);
+    setDuplicateMode('create_only');
+    setBatchDataKey('');
+    setBatchSaved(false);
+    setBatchReady(false);
+    setBatchStorageError('');
+    setBatchRecoveryError('');
   };
 
   if (!isPaidUser) {
@@ -270,7 +477,7 @@ export default function ImportPage() {
               {t('supportFull.backToHome')}
             </Button>
           </a>
-          <UpgradePrompt featureName={t('import.bulkImport', 'Bulk Import')} description={t('import.upgradeDesc')} />
+          <UpgradePrompt featureName={t('import.bulkImport')} description={t('import.upgradeDesc')} />
         </div>
       </div>
     );
@@ -283,7 +490,7 @@ export default function ImportPage() {
           <a href={createPageUrl('Home')}>
             <Button variant="ghost" className="mb-6 text-[#e8d5b7] hover:text-[#e8d5b7]/80">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('common.backToHome', 'Back to home')}
+              {t('common.backToHome')}
             </Button>
           </a>
             <Card className="border-[#e8d5b7]/30">
@@ -305,7 +512,7 @@ export default function ImportPage() {
         <a href={createPageUrl('Home')}>
           <Button variant="ghost" className="text-[#e8d5b7] hover:text-[#e8d5b7]/80">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {t('common.backToHome', 'Back to home')}
+            {t('common.backToHome')}
           </Button>
         </a>
 
@@ -313,7 +520,7 @@ export default function ImportPage() {
           <CardHeader>
             <CardTitle className="text-3xl text-stone-100 flex items-center gap-3">
               <FileSpreadsheet className="w-8 h-8 text-[#8b3a3a]" />
-              {t('import.bulkImport', 'Bulk Import')}
+              {t('import.bulkImport')}
             </CardTitle>
             <CardDescription className="text-stone-300">
               {t(
@@ -328,10 +535,15 @@ export default function ImportPage() {
                 <label className="text-sm text-stone-300 mb-2 block">Import type</label>
                 <Select
                   value={resolvedImportType ?? ''}
+                  disabled={!batchReady || busy || Boolean(batchRecoveryError)}
                   onValueChange={(value) => {
                     setImportType(value);
+                    setBatchId(createImportBatchId());
+                    setFileName('');
+                    setCsvText('');
                     setAnalysis(null);
                     setImportResult(null);
+                    setBatchReady(true);
                   }}
                 >
                   <SelectTrigger>
@@ -357,12 +569,25 @@ export default function ImportPage() {
             <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
               <p className="font-semibold mb-1">How this import works</p>
               <ul className="list-disc list-inside space-y-1">
+                <li>{t('import.csvOnlyNotice')}</li>
                 <li>Use the template and keep one record per row.</li>
                 <li>Required fields: {definition?.requiredColumns.join(', ')}.</li>
                 <li>Optional fields help enrich records and improve matching.</li>
                 <li>Warnings can import; errors are blocked until corrected.</li>
               </ul>
             </div>
+
+            <p className="text-xs text-stone-400">
+              Batch {batchId}{fileName ? ` · ${fileName}` : ''}{unresolvedRows.length > 0 ? ` · ${unresolvedRows.length} unresolved row(s)` : ''}
+            </p>
+            {(batchStorageError || batchRecoveryError) && (
+              <p role="alert" className="rounded-lg border border-red-500/60 bg-red-950/40 p-3 text-sm text-red-100">
+                {batchStorageError || batchRecoveryError}
+                <Button type="button" variant="outline" className="ml-3" onClick={startNewImportBatch}>
+                  {t('import.startNewBatch')}
+                </Button>
+              </p>
+            )}
 
             {definition?.entity === 'TobaccoBlend' && (
               <div className="rounded-lg border border-stone-600 bg-stone-900/40 p-4 text-sm text-stone-200">
@@ -382,12 +607,26 @@ export default function ImportPage() {
             <div className="border-2 border-dashed border-stone-500/60 rounded-lg p-6 text-center space-y-3">
               <Upload className="w-10 h-10 text-stone-400 mx-auto" />
               <p className="text-stone-300">Upload your completed CSV file</p>
-              <Input type="file" accept=".csv" onChange={handleFileUpload} disabled={busy} className="max-w-sm mx-auto" />
+              <Input type="file" accept=".csv" onChange={handleFileUpload} disabled={busy || !batchReady || Boolean(batchRecoveryError)} className="max-w-sm mx-auto" />
             </div>
           </CardContent>
         </Card>
 
-        <ImportPreview analysis={analysis} />
+        <ImportPreview analysis={analysis} mappings={mappings} t={t} />
+
+        {analysis && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#b89255]/50 bg-[#241b16] p-4">
+            <p className="text-sm text-stone-200">
+              {t('import.batchSaved')}
+            </p>
+            {batchSaved && !batchStorageError && <Link
+              className="inline-flex min-h-10 items-center rounded-md border border-[#b89255] px-4 text-sm font-medium text-[#ecd7ad] hover:bg-[#b89255]/15"
+              to={`${createPageUrl('Curator')}?batch=${encodeURIComponent(batchId)}&type=${encodeURIComponent(resolvedImportType)}&prompt=${encodeURIComponent('Review this import batch')}`}
+            >
+              {t('import.curatorReviewBatch')}
+            </Link>}
+          </div>
+        )}
 
         {analysis && (
           <Card className="border-[#e8d5b7]/30">
@@ -398,29 +637,16 @@ export default function ImportPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm text-stone-300 mb-2 block">Duplicate handling</label>
-                  <Select value={duplicateMode} onValueChange={setDuplicateMode}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="create_only">Create new only (default safe mode)</SelectItem>
-                      <SelectItem value="skip_duplicates">Create + skip detected duplicates</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    className="w-full"
-                    onClick={handleExecuteImport}
-                    disabled={busy || hasBlockingErrors || importableRows.length === 0}
-                  >
-                    {busy ? 'Importing…' : `Import ${importableRows.length} row(s)`}
-                  </Button>
-                </div>
-              </div>
+              <p className="text-sm text-stone-300">
+                {t('import.duplicatePolicy')}
+              </p>
+              <Button
+                className="w-full"
+                onClick={handleExecuteImport}
+                disabled={busy || hasBlockingErrors || importableRows.length === 0 || !batchReady}
+              >
+                {busy ? 'Importing…' : importResult?.failed ? t('import.retryUnfinishedRows') : t('import.confirmImportRows', { count: importableRows.length })}
+              </Button>
 
               {importResult && (
                 <div className="rounded-lg border border-stone-700 bg-stone-900/40 p-4">

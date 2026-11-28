@@ -562,7 +562,7 @@ export default function MessagingPanel({ user, friends, publicProfiles, allowNew
         <SheetContent className="w-full sm:max-w-lg" style={sheetSafeAreaStyle}>
           <SheetHeader>
             <SheetTitle className="text-[#F5F1E7]">{t("messaging.messageInbox", "Message Inbox")}</SheetTitle>
-            <SheetDescription className="sr-only">{t("messaging.inboxDescription", "Your messages")}</SheetDescription>
+            <SheetDescription className="sr-only">{t("messaging.inboxDescription")}</SheetDescription>
           </SheetHeader>
           <ScrollArea className="h-full mt-6">
             <div className="space-y-4">

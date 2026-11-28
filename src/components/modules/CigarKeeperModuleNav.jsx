@@ -15,7 +15,7 @@ export default function CigarKeeperModuleNav({ currentPageName, onLogSession }) 
     { page: 'Cigars', label: t('cigars.collection'), Icon: Cigarette },
     { page: 'SessionHistory', label: t('sessionHistory.title', 'Session History'), Icon: CalendarDays },
     { page: 'CigarInsights', label: t('nav.insights'), Icon: TrendingUp },
-    { page: 'ReportingCenter?module=cigarkeeper', label: t('nav.reports', 'Reports'), Icon: FileBarChart2 },
+    { page: 'ReportingCenter?module=cigarkeeper', label: t('nav.reports'), Icon: FileBarChart2 },
   ];
 
   return (

@@ -6,6 +6,7 @@ const mockBase44 = {
     TobaccoBlend: { filter: vi.fn(), create: vi.fn() },
     Bottle: { filter: vi.fn(), create: vi.fn() },
     Cigar: { filter: vi.fn(), create: vi.fn() },
+    Wine: { filter: vi.fn(), create: vi.fn() },
     HumidorLocation: { filter: vi.fn() },
   },
 };
@@ -22,10 +23,11 @@ let parseCsvText;
 let analyzeImportRows;
 let executeImportRows;
 let importDefinitions;
+let inferImportMappings;
 
 beforeAll(async () => {
   ({ parseCsvText } = await import('../csvImportUtils'));
-  ({ analyzeImportRows, executeImportRows, importDefinitions } = await import('../importDefinitions'));
+  ({ analyzeImportRows, executeImportRows, importDefinitions, inferImportMappings } = await import('../importDefinitions'));
 });
 
 describe('bulk import system', () => {
@@ -35,6 +37,7 @@ describe('bulk import system', () => {
     mockBase44.entities.TobaccoBlend.filter.mockResolvedValue([]);
     mockBase44.entities.Bottle.filter.mockResolvedValue([]);
     mockBase44.entities.Cigar.filter.mockResolvedValue([]);
+    mockBase44.entities.Wine.filter.mockResolvedValue([]);
     mockBase44.entities.HumidorLocation.filter.mockResolvedValue([]);
     mockScoped.Pipe.create.mockResolvedValue({ id: 'p1' });
     mockScoped.TobaccoBlend.create.mockResolvedValue({ id: 'b1' });
@@ -47,6 +50,15 @@ describe('bulk import system', () => {
     expect(parsed.rows).toHaveLength(1);
     expect(parsed.rows[0].values[0]).toBe('Peterson, Ltd');
     expect(parsed.duplicateHeaders).toEqual(['maker']);
+  });
+
+  test('infers and names supported and unsupported column mappings for a saved batch', () => {
+    const parsed = parseCsvText('maker,shape,custom_note\nPeterson,Billiard,Keep\n');
+    expect(inferImportMappings(importDefinitions.pipekeeper_pipes, parsed.headers, parsed.rawHeaders)).toEqual([
+      { source: 'maker', target: 'maker' },
+      { source: 'shape', target: 'shape' },
+      { source: 'custom_note', target: null },
+    ]);
   });
 
   test('analyzes rows for pipes with warnings and errors', async () => {
@@ -95,7 +107,7 @@ describe('bulk import system', () => {
     }
   });
 
-  test('supports duplicate detection and skip mode', async () => {
+  test('the default add-new-only mode skips detected duplicates', async () => {
     const definition = importDefinitions.whiskeykeeper_bottles;
     mockBase44.entities.Bottle.filter.mockResolvedValueOnce([
       { distillery: 'Lagavulin', name: '16 Year', bottle_size: '750ml', purchase_date: '2025-03-01' },
@@ -119,11 +131,113 @@ describe('bulk import system', () => {
     const result = await executeImportRows({
       definition,
       analyzedRows: analysis.rows,
-      duplicateMode: 'skip_duplicates',
+      duplicateMode: 'create_only',
     });
 
     expect(result.imported).toBe(0);
     expect(result.skipped).toBe(1);
+  });
+
+  test('finds owned duplicate candidates on later pages', async () => {
+    const records = Array.from({ length: 1001 }, (_, index) => ({
+      id: `pipe-${index}`,
+      created_by: 'user@example.com',
+      maker: `Maker${index}`,
+      name: `Maker${index} Billiard`,
+      shape: 'Billiard',
+    }));
+    mockBase44.entities.Pipe.filter.mockImplementation(async (filter, _sort, limit, skip) => (
+      records.filter((record) => record.created_by === filter.created_by).slice(skip, skip + limit)
+    ));
+
+    const parsed = parseCsvText('maker,shape\nMaker1000,Billiard\n');
+    const analysis = await analyzeImportRows({
+      definition: importDefinitions.pipekeeper_pipes,
+      headers: parsed.headers,
+      rawHeaders: parsed.rawHeaders,
+      rows: parsed.rows,
+      userEmail: 'user@example.com',
+    });
+
+    expect(analysis.rows[0].duplicateState).toBe('existing');
+    expect(mockBase44.entities.Pipe.filter).toHaveBeenCalledWith(
+      { created_by: 'user@example.com' },
+      '-created_date',
+      1000,
+      1000
+    );
+  });
+
+  test('shows existing and incoming values for conflicting duplicate fields', async () => {
+    const definition = importDefinitions.pipekeeper_pipes;
+    const parsed = parseCsvText('maker,shape,purchase_date,notes\nPeterson,Billiard,2025-01-15,Incoming note\n');
+    const initial = await analyzeImportRows({
+      definition,
+      headers: parsed.headers,
+      rawHeaders: parsed.rawHeaders,
+      rows: parsed.rows,
+      userEmail: 'user@example.com',
+    });
+    const existing = { id: 'existing-pipe', ...initial.rows[0].payload, notes: 'Saved note' };
+    mockBase44.entities.Pipe.filter.mockResolvedValue([existing]);
+
+    const refreshed = await analyzeImportRows({
+      definition,
+      headers: parsed.headers,
+      rawHeaders: parsed.rawHeaders,
+      rows: parsed.rows,
+      userEmail: 'user@example.com',
+    });
+
+    expect(refreshed.rows[0].duplicateKind).toBe('conflict');
+    expect(refreshed.rows[0].conflictingValues).toContainEqual({
+      field: 'notes',
+      existing: 'Saved note',
+      incoming: 'Incoming note',
+    });
+    const result = await executeImportRows({
+      definition,
+      analyzedRows: refreshed.rows,
+      userEmail: 'user@example.com',
+    });
+    expect(result).toMatchObject({ imported: 0, skipped: 1, failed: 0 });
+    expect(mockScoped.Pipe.create).not.toHaveBeenCalled();
+  });
+
+  test('retry after a lost create response does not create a duplicate', async () => {
+    const definition = importDefinitions.pipekeeper_pipes;
+    const persisted = [];
+    mockBase44.entities.Pipe.filter.mockImplementation(async (filter, _sort, limit, skip) => (
+      persisted.filter((record) => record.created_by === filter.created_by).slice(skip, skip + limit)
+    ));
+    mockScoped.Pipe.create.mockImplementationOnce(async (payload) => {
+      persisted.push({ id: 'created-before-timeout', ...payload });
+      throw new Error('response lost');
+    });
+    const parsed = parseCsvText('maker,shape,purchase_date\nPeterson,Billiard,2025-01-15\n');
+    const analysis = await analyzeImportRows({
+      definition,
+      headers: parsed.headers,
+      rawHeaders: parsed.rawHeaders,
+      rows: parsed.rows,
+      userEmail: 'user@example.com',
+    });
+
+    const first = await executeImportRows({
+      definition,
+      analyzedRows: analysis.rows,
+      userEmail: 'user@example.com',
+    });
+    const retry = await executeImportRows({
+      definition,
+      analyzedRows: analysis.rows,
+      userEmail: 'user@example.com',
+    });
+
+    expect(first).toMatchObject({ imported: 0, skipped: 0, failed: 1 });
+    expect(retry).toMatchObject({ imported: 0, skipped: 1, failed: 0 });
+    expect(persisted).toHaveLength(1);
+    expect(mockScoped.Pipe.create).toHaveBeenCalledTimes(1);
   });
 
   test('resolves humidor by exact name for cigar imports', async () => {

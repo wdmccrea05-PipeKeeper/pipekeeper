@@ -382,6 +382,7 @@ function CigarKeeperInner() {
       isEmpty={cigars.length === 0}
       emptyState={
         <EmptyState
+          variant="paper"
           icon={Cigarette}
           title={t('cigars.noCigars')}
           description={t('cigars.addFirstCigar')}

@@ -821,7 +821,7 @@ export default function CombinedSessionModal({
                         placeholder="Smoke Wagon Bourbon"
                       />
                       <TextField
-                        label={t('whiskey.distillery', 'Distillery')}
+                        label={t('whiskey.distillery')}
                         value={externalBottle.distillery}
                         onChange={(value) =>
                           setExternalBottle((prev) => ({
@@ -832,7 +832,7 @@ export default function CombinedSessionModal({
                         placeholder="Smoke Wagon"
                       />
                       <TextField
-                        label={t('common.type', 'Type')}
+                        label={t('common.type')}
                         value={externalBottle.type}
                         onChange={(value) =>
                           setExternalBottle((prev) => ({ ...prev, type: value }))

@@ -133,7 +133,7 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
         if (!choice || choice === "ignore") continue;
 
         const item = buildAcquisitionItem(ei.item_type, ei.itemData, choice, userEmail, {
-            unknownBlend: t('common.unknownBlend', 'Unknown Blend'),
+            unknownBlend: t('common.unknownBlend'),
             unknownBottle: t('session.unknownBottle', 'Unknown Bottle'),
             unknownPipe: t('session.unknownPipe', 'Unknown Pipe'),
           });

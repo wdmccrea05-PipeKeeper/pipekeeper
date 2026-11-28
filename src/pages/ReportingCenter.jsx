@@ -44,7 +44,7 @@ export default function ReportingCenter() {
   const { user } = useCurrentUser();
   const { enabled, isLoading: modulesLoading } = useEnabledModules();
   const entitlements = useEntitlements();
-  const { states: findingStates, setState: setFindingState } = useFindingStates(user);
+  const { states: findingStates, setState: setFindingState, error: findingStateError } = useFindingStates(user);
 
   useScrollRestoration("reporting");
 
@@ -224,6 +224,11 @@ export default function ReportingCenter() {
       {data.isError && (
         <p role="alert" className="mb-4 text-sm" style={{ color: "#E0A0A0" }}>
           {t("reporting.loadError", "Some report data could not be loaded. Counts below may be incomplete until you reload.")}
+        </p>
+      )}
+      {findingStateError && (
+        <p role="alert" className="mb-4 text-sm" style={{ color: "#E0A0A0" }}>
+          Finding decisions could not be loaded. Please reload before reviewing them.
         </p>
       )}
 

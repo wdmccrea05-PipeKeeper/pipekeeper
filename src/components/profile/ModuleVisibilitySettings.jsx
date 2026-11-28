@@ -58,8 +58,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
   const MODULE_CONFIG = [
     {
       id: "pipekeeper",
-      label: t("hub.pipekeeper", "PipeKeeper"),
-      description: t("pipekeeper.description", "Pipe collection, tobacco, smoking logs, and pairings."),
+      label: t("hub.pipekeeper"),
+      description: t("pipekeeper.description"),
       icon: MODULE_ICONS.pipekeeper,
       launched: isModuleLaunched("pipekeeper", effectiveUser),
       internalModule: isModuleInternal("pipekeeper", effectiveUser),
@@ -69,8 +69,8 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     },
     {
       id: "whiskeykeeper",
-      label: t("hub.whiskeykeeper", "WhiskeyKeeper"),
-      description: t("whiskeykeeper.description", "Whiskey collection, tasting notes, and inventory."),
+      label: t("hub.whiskeykeeper"),
+      description: t("whiskeykeeper.description"),
       icon: MODULE_ICONS.whiskeykeeper,
       launched: isModuleLaunched("whiskeykeeper", effectiveUser),
       internalModule: isModuleInternal("whiskeykeeper", effectiveUser),
@@ -81,7 +81,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     },
     {
       id: "winekeeper",
-      label: t("hub.winekeeper", "WineKeeper"),
+      label: t("hub.winekeeper"),
       description: t("profile.winekeeperDescription", "Wine cellar management and bottle tracking."),
       icon: MODULE_ICONS.winekeeper,
       launched: isModuleLaunched("winekeeper", effectiveUser),
@@ -99,7 +99,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
     },
     {
       id: "cigarkeeper",
-      label: t("hub.cigarkeeper", "CigarKeeper"),
+      label: t("hub.cigarkeeper"),
       description: t("profile.cigarkeeperDescription", "Cigar collection curation and tasting."),
       icon: MODULE_ICONS.cigarkeeper,
       launched: isModuleLaunched("cigarkeeper", effectiveUser),
@@ -180,7 +180,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
           <div className="flex items-center gap-2 mb-1">
             <Eye className="w-4 h-4 text-amber-600" />
             <span className="font-semibold text-stone-100 text-base">
-              {t("hub.activeModules", "Active Modules")}
+              {t("hub.activeModules")}
             </span>
           </div>
           <p className="text-xs text-stone-400 mb-3">
@@ -228,7 +228,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
                       </Badge>
                     ) : mod.blocked ? (
                       <Badge className="text-[10px] bg-stone-200 text-stone-600 border-0 px-1.5 py-0">
-                        {t("modules.notAvailable", "Not Available")}
+                        {t("modules.notAvailable")}
                       </Badge>
                     ) : null}
 
@@ -241,7 +241,7 @@ export default function ModuleVisibilitySettings({ profile = null, user: passedU
 
                   <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">
                     {mod.blocked
-                      ? `${mod.description} (${t("modules.notAvailable", "Not Available")})`
+                      ? `${mod.description} (${t("modules.notAvailable")})`
                       : mod.description}
                   </p>
                 </div>

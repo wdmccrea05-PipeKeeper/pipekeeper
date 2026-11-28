@@ -13,7 +13,9 @@ export default function EmptyState({
   onAction,
   secondaryActionLabel,
   onSecondaryAction,
+  variant = 'dark',
 }) {
+  const isPaper = variant === 'paper';
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -42,7 +44,7 @@ export default function EmptyState({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.18 }}
         className="text-2xl font-bold mb-3 tracking-tight"
-        style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}
+        style={{ color: isPaper ? 'var(--ck-espresso)' : '#F5F1E7', fontFamily: 'var(--ck-font-display)' }}
       >
         {title}
       </motion.h3>
@@ -52,7 +54,7 @@ export default function EmptyState({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.26 }}
         className="text-base leading-relaxed mb-9 max-w-sm"
-        style={{ color: "rgba(224,216,200,0.68)" }}
+        style={{ color: isPaper ? 'rgba(52,37,29,0.72)' : 'rgba(224,216,200,0.68)' }}
       >
         {description}
       </motion.p>

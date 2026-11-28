@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { effectiveTargets, requiresExplicitConfirm } from '@/lib/actions/actionModel';
 import { actionTypeLabel } from '@/lib/actions/actionRegistry';
 import { ACTION_LABELS } from '@/lib/actions/actionLabels';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 
 /**
  * The confirmation step for accepted actions.
@@ -30,6 +31,7 @@ export default function ActionReviewDialog({
   onConfirm,
   onCancel,
 }) {
+  const { t } = useTranslation();
   const [acknowledged, setAcknowledged] = useState(false);
 
   useEffect(() => {
@@ -62,6 +64,12 @@ export default function ActionReviewDialog({
                   {action.title || actionTypeLabel(action.type)}
                 </p>
 
+                {alternatives[action.id] && (
+                  <p className="mt-1 text-[12.5px]" style={{ color: '#C6A15B' }}>
+                    Chosen: {(action.alternatives || []).find((entry) => entry.id === alternatives[action.id])?.label}
+                  </p>
+                )}
+
                 {(action.proposedValues || []).length > 0 && (
                   <div className="mt-1.5 space-y-1">
                     {action.proposedValues.map((row, index) => (
@@ -85,6 +93,18 @@ export default function ActionReviewDialog({
                     ? `: ${targets.map((target) => target.name || target.recordId).join(', ')}`
                     : ''}
                 </p>
+                {targets.length > 3 && (
+                  <details className="mt-2 text-[12px]" style={{ color: '#E0D8C8' }}>
+                    <summary className="cursor-pointer">{t('collectionIntelligence.reviewTargetList')}</summary>
+                    <ul className="mt-1 space-y-1">
+                      {targets.map((target) => (
+                        <li key={`${target.entity}:${target.recordId}`} className="break-words">
+                          {target.name || target.recordId}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
               </div>
             );
           })}

@@ -1,5 +1,6 @@
 import { base44 } from '@/api/base44Client';
 import { scopedEntities } from '@/components/api/scopedEntities';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 import {
   BLEND_TYPES,
   TOBACCO_CUTS,
@@ -36,6 +37,21 @@ const CIGAR_PRODUCTION = ['regular_production', 'limited', 'seasonal', 'disconti
 const GRAMS_PER_OUNCE = 28.3495;
 const PROOF_TO_ABV_DIVISOR = 2;
 const OPTIONAL_MISSING_WARNING_THRESHOLD = 0.5;
+
+async function listUserImportRecords(entityName, userEmail) {
+  if (!entityName || !userEmail) throw new Error('A signed-in owner is required to check import duplicates.');
+  const entity = base44.entities[entityName];
+  if (!entity) throw new Error(`Import entity "${entityName}" is unavailable.`);
+  return fetchAllEntities(
+    entity,
+    { created_by: userEmail },
+    '-created_date',
+    1000,
+    200,
+    `Import:${entityName}`,
+    { strict: true }
+  );
+}
 
 function mapKey(raw) {
   const key = normalizeHeader(raw);
@@ -563,7 +579,7 @@ const IMPORT_DEFINITIONS = [
     },
     parseRow: coercePipePayload,
     create: (payload) => scopedEntities.Pipe.create(payload),
-    listForUser: (userEmail) => base44.entities.Pipe.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
+    listForUser: (userEmail) => listUserImportRecords('Pipe', userEmail),
     duplicateKey: duplicateKeyPipe,
   },
   {
@@ -614,7 +630,7 @@ const IMPORT_DEFINITIONS = [
     },
     parseRow: coerceBlendPayload,
     create: (payload) => scopedEntities.TobaccoBlend.create(payload),
-    listForUser: (userEmail) => base44.entities.TobaccoBlend.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
+    listForUser: (userEmail) => listUserImportRecords('TobaccoBlend', userEmail),
     duplicateKey: duplicateKeyBlend,
   },
   {
@@ -659,7 +675,7 @@ const IMPORT_DEFINITIONS = [
     },
     parseRow: coerceBottlePayload,
     create: (payload) => base44.entities.Bottle.create(payload),
-    listForUser: (userEmail) => base44.entities.Bottle.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
+    listForUser: (userEmail) => listUserImportRecords('Bottle', userEmail),
     duplicateKey: duplicateKeyBottle,
   },
   {
@@ -727,7 +743,7 @@ const IMPORT_DEFINITIONS = [
     },
     parseRow: coerceCigarPayload,
     create: (payload) => base44.entities.Cigar.create(payload),
-    listForUser: (userEmail) => base44.entities.Cigar.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
+    listForUser: (userEmail) => listUserImportRecords('Cigar', userEmail),
     duplicateKey: duplicateKeyCigar,
   },
   {
@@ -781,7 +797,7 @@ const IMPORT_DEFINITIONS = [
     },
     parseRow: coerceWinePayload,
     create: (payload) => base44.entities.Wine.create(payload),
-    listForUser: (userEmail) => base44.entities.Wine.filter({ created_by: userEmail }, '-created_date', 1000).catch(() => []),
+    listForUser: (userEmail) => listUserImportRecords('Wine', userEmail),
     duplicateKey: duplicateKeyWine,
   },
 ];
@@ -832,6 +848,17 @@ function mapRowToCanonical(headers, values, definition) {
   return row;
 }
 
+export function inferImportMappings(definition, headers, rawHeaders = []) {
+  const allowed = new Set(definition.allowedColumns);
+  return headers.map((header, index) => {
+    const mapped = mapKey(definition.aliases[header] || header);
+    return {
+      source: rawHeaders[index] || header,
+      target: allowed.has(mapped) ? mapped : null,
+    };
+  });
+}
+
 export async function analyzeImportRows({
   definition,
   headers,
@@ -853,6 +880,11 @@ export async function analyzeImportRows({
   ];
 
   const existingRows = await definition.listForUser(userEmail);
+  const existingRowsByKey = new Map(
+    (Array.isArray(existingRows) ? existingRows : [])
+      .map((record) => [definition.duplicateKey(record), record])
+      .filter(([key]) => Boolean(key))
+  );
   const existingDuplicateKeys = new Set(
     (Array.isArray(existingRows) ? existingRows : [])
       .map((existing) => definition.duplicateKey(existing))
@@ -861,7 +893,7 @@ export async function analyzeImportRows({
 
   const humidorMap = {};
   if (definition.id === 'cigarkeeper_cigars') {
-    const humidors = await base44.entities.HumidorLocation.filter({ created_by: userEmail }).catch(() => []);
+    const humidors = await listUserImportRecords('HumidorLocation', userEmail);
     humidors.forEach((humidor) => {
       if (!humidor?.name) return;
       humidorMap[compactString(humidor.name)] = humidor.id;
@@ -905,8 +937,34 @@ export async function analyzeImportRows({
       seenBatchKeys.set(dupeKey, rowNumber);
     }
 
+    const existingRecord = duplicateState === 'existing' ? existingRowsByKey.get(dupeKey) : null;
+    const conflictingValues = existingRecord
+      ? Object.entries(payload)
+          .filter(([field, incoming]) => {
+            if (field === 'created_by' || incoming == null || incoming === '') return false;
+            if (Array.isArray(incoming) && incoming.length === 0) return false;
+            return JSON.stringify(incoming) !== JSON.stringify(existingRecord[field]);
+          })
+          .map(([field, incoming]) => ({
+            field,
+            existing: existingRecord[field] ?? null,
+            incoming,
+          }))
+      : [];
+    const duplicateKind = duplicateState === 'batch'
+      ? 'in_file'
+      : conflictingValues.length
+        ? 'conflict'
+        : duplicateState === 'existing'
+          ? 'exact'
+          : null;
+
     if (duplicateState !== 'none') {
-      warnings.push(duplicateState === 'existing' ? 'Possible duplicate of existing record' : 'Possible duplicate in uploaded file');
+      warnings.push(duplicateState === 'existing'
+        ? duplicateKind === 'conflict'
+          ? 'Conflicting values found; existing record will be kept'
+          : 'Exact duplicate of existing record'
+        : 'Possible duplicate in uploaded file');
     }
 
     const status = errors.length > 0 ? 'error' : warnings.length > 0 ? 'warning' : 'valid';
@@ -922,7 +980,9 @@ export async function analyzeImportRows({
         created_by: userEmail,
       },
       duplicateState,
+      duplicateKind,
       duplicateKey: dupeKey,
+      conflictingValues,
       previewName: payload.name || payload.blend_name || payload.expression || payload.brand || 'Imported item',
     };
   });
@@ -934,6 +994,8 @@ export async function analyzeImportRows({
     },
     { valid: 0, warning: 0, error: 0 }
   );
+  counts.duplicates = analyzedRows.filter((row) => row.duplicateState !== 'none').length;
+  counts.conflicts = analyzedRows.filter((row) => row.duplicateKind === 'conflict').length;
 
   return {
     definitionId: definition.id,
@@ -949,7 +1011,20 @@ export async function executeImportRows({
   definition,
   analyzedRows,
   duplicateMode = 'create_only',
+  userEmail,
 }) {
+  if (!['create_only', 'skip_duplicates'].includes(duplicateMode)) {
+    throw new Error(`Unsupported duplicate handling mode "${duplicateMode}".`);
+  }
+  const ownerEmail = userEmail || analyzedRows.find((row) => row.payload?.created_by)?.payload.created_by;
+  if (!ownerEmail) throw new Error('A signed-in owner is required to execute an import.');
+  const existingRows = await definition.listForUser(ownerEmail);
+  const knownKeys = new Set(
+    (Array.isArray(existingRows) ? existingRows : [])
+      .map((record) => definition.duplicateKey(record))
+      .filter(Boolean)
+  );
+
   const result = {
     processed: analyzedRows.length,
     imported: 0,
@@ -965,9 +1040,12 @@ export async function executeImportRows({
       continue;
     }
 
-    if (duplicateMode === 'skip_duplicates' && row.duplicateState !== 'none') {
+    const duplicateKey = definition.duplicateKey(row.payload);
+    if (row.duplicateState !== 'none' || (duplicateKey && knownKeys.has(duplicateKey))) {
       result.skipped += 1;
-      result.details.push(`Row ${row.rowNumber}: skipped duplicate (${row.previewName})`);
+      result.details.push(
+        `Row ${row.rowNumber}: skipped ${row.duplicateKind === 'conflict' ? 'conflict' : 'duplicate'}; existing record kept (${row.previewName})`
+      );
       continue;
     }
 
@@ -977,6 +1055,7 @@ export async function executeImportRows({
         : row.payload;
       await definition.create(payload);
       result.imported += 1;
+      if (duplicateKey) knownKeys.add(duplicateKey);
     } catch (error) {
       result.failed += 1;
       result.details.push(`Row ${row.rowNumber}: failed to import (${error?.message || 'unknown error'})`);

@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -50,8 +52,6 @@ export default function CollectionTools() {
   const [tab, setTab] = useState(() =>
     new URLSearchParams(window.location.search).get('tab') === 'duplicates' ? 'duplicates' : 'bulk'
   );
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [lifecycleFilter, setLifecycleFilter] = useState('active');
   const [sort, setSort] = useState('newest');
@@ -60,33 +60,24 @@ export default function CollectionTools() {
   const [message, setMessage] = useState('');
 
   const config = MODULE_CONFIG[entityName];
-
-  const load = async () => {
-    if (!user) return;
-    setLoading(true);
-    setMessage('');
-    try {
-      // Scoped to the signed-in collector: an administrator reviewing collection
-      // tools must never see or bulk-edit another collector's records here.
-      const page = await base44.entities[entityName].filter(
-        { created_by: user.email },
-        { sort: '-created_date', limit: 300 }
+  const email = user?.email;
+  const { data: records = [], isLoading: loading, error: loadError, refetch: load } = useQuery({
+    queryKey: ['collection-tools', email, entityName],
+    enabled: Boolean(email),
+    queryFn: async () => {
+      const rows = await fetchAllEntities(
+        base44.entities[entityName], { created_by: email }, '-created_date', 500, 200, undefined, { strict: true }
       );
-      setRecords(page?.items || []);
-    } catch (loadError) {
-      setMessage(loadError?.message || 'Could not load records');
-      setRecords([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return rows.filter((record) => record.created_by === email);
+    },
+  });
 
   useEffect(() => {
     setSelected([]);
     setSearch('');
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entityName, user?.id]);
+    setPendingAction(null);
+    setMessage('');
+  }, [entityName, email]);
 
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -134,7 +125,7 @@ export default function CollectionTools() {
     const fields = Object.keys(patch);
     setMessage('');
     setPendingAction(
-      createAction({
+      { ...createAction({
         type: fields.every((field) => field === 'storage_location_id' || field === 'humidor_id')
           ? 'storage_assign'
           : 'record_update',
@@ -146,12 +137,12 @@ export default function CollectionTools() {
           label: field.replace(/_/g, ' '),
           to: Array.isArray(patch[field]) ? patch[field].join(', ') : patch[field],
         })),
-      })
+      }), scope: `${email}:${entityName}` }
     );
   };
 
   const confirmBulk = async () => {
-    if (!pendingAction) return;
+    if (!pendingAction || pendingAction.scope !== `${email}:${entityName}`) return;
     const outcome = await execute([pendingAction], { selections: { [pendingAction.id]: true } });
     setPendingAction(null);
     if (outcome && outcome.completed > 0) setSelected([]);
@@ -310,9 +301,9 @@ export default function CollectionTools() {
 
           {result && <ActionResultSummary result={result} onUndo={undo} onDismiss={reset} />}
 
-          {(message || error) && (
-            <p className="text-xs" style={{ color: error ? '#E0A0A0' : 'rgba(224,216,200,0.75)' }} role={error ? 'alert' : undefined}>
-              {error || message}
+          {(message || error || loadError) && (
+            <p className="text-xs" style={{ color: error || loadError ? '#E0A0A0' : 'rgba(224,216,200,0.75)' }} role={error || loadError ? 'alert' : undefined}>
+              {error || loadError?.message || message}
             </p>
           )}
 
@@ -366,7 +357,7 @@ export default function CollectionTools() {
           <BulkEditPanel selectedCount={selected.length} onApply={reviewBulk} busy={busy} />
 
           <ActionReviewDialog
-            open={Boolean(pendingAction)}
+            open={Boolean(pendingAction && pendingAction.scope === `${email}:${entityName}`)}
             actions={pendingAction ? [pendingAction] : []}
             busy={busy}
             error={error}

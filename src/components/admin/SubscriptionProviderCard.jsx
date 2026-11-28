@@ -156,7 +156,7 @@ export default function SubscriptionProviderCard({ me }) {
 
         <div className="space-y-2 text-xs text-[#E0D8C8]/80">
           <div>
-            <span className="font-semibold text-[#E0D8C8]">{t("subscription.activeAccess", "Effective Access")}:</span>{" "}
+            <span className="font-semibold text-[#E0D8C8]">{t("subscription.activeAccess")}:</span>{" "}
             {effectiveModules.length > 0 ? effectiveModules.map(toModuleName).join(", ") : "—"}
           </div>
           <div>

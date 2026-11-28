@@ -83,7 +83,7 @@ export default function CommunityFeed({ user, profile, friends = [] }) {
           disabled={loading}
         >
           <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-          {t('common.refresh', 'Refresh')}
+          {t('common.refresh')}
         </Button>
       </div>
 

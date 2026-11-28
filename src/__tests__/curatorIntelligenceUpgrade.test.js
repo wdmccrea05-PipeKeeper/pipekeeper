@@ -408,9 +408,15 @@ describe('Curator — grounding in records', () => {
 });
 
 describe('Curator — conversational reports', () => {
-  it('recognises a report request and points at the printable area', () => {
-    expect(detectReportRequest('build me a valuation report')).toMatchObject({ route: '/ValuationCenter' });
-    expect(detectReportRequest('I need a collection report')).toMatchObject({ route: '/CollectionReports' });
+  it('opens the shared report engine with the requested report selected', () => {
+    expect(detectReportRequest('build me a valuation report')).toMatchObject({
+      reportId: 'valuation-history',
+      route: '/ReportingCenter?report=valuation-history',
+    });
+    expect(detectReportRequest('I need a collection report')).toMatchObject({
+      reportId: 'overview',
+      route: '/ReportingCenter?report=overview',
+    });
     expect(detectReportRequest('what should I smoke tonight?')).toBeNull();
   });
 
@@ -422,7 +428,8 @@ describe('Curator — conversational reports', () => {
     expect(summary).toContain('1 in PipeKeeper');
     expect(summary).toContain('1 in WhiskeyKeeper');
     expect(summary).toContain('documentation gaps');
-    expect(summary).toContain('printable version');
+    expect(summary).toContain('filters and result');
+    expect(summary).toContain('CSV/PDF export');
   });
 
   it('routes the request through the chat as a message with a report link', () => {
@@ -432,7 +439,7 @@ describe('Curator — conversational reports', () => {
       context: { pipes },
     });
     expect(routed.kind).toBe('message');
-    expect(routed.report?.route).toBe('/CollectionReports');
+    expect(routed.report?.route).toBe('/ReportingCenter?report=overview');
   });
 });
 

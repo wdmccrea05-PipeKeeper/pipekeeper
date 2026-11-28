@@ -34,7 +34,7 @@ function SectionLabel({ children, color }) {
   return (
     <h2
       className="text-xs font-semibold uppercase tracking-[0.14em]"
-      style={{ color: color || 'rgba(180,140,75,0.8)' }}
+      style={{ color: color || '#6b4c29' }}
     >
       {children}
     </h2>
@@ -43,8 +43,8 @@ function SectionLabel({ children, color }) {
 
 function StatCard({ label, value, accent, onClick }) {
   const surface = {
-    background: `${accent}12`,
-    border: `1px solid ${accent}30`,
+    background: '#fbf5e9',
+    border: '1px solid rgba(167,124,63,0.28)',
     minHeight: '80px',
   };
 
@@ -58,7 +58,7 @@ function StatCard({ label, value, accent, onClick }) {
       </div>
       <div
         className="text-[11px] uppercase tracking-[0.1em] font-medium mt-1"
-        style={{ color: 'rgba(224,216,200,0.6)' }}
+        style={{ color: 'rgba(52,37,29,0.72)' }}
       >
         {label}
       </div>
@@ -127,7 +127,7 @@ export default function ModulePageShell({
   emptyState,
 }) {
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="ck-paper-workspace ck-module-home space-y-6 sm:space-y-8">
       <ComplimentaryProBanner />
       <AppreciationOfferCard surface="module_dashboard" />
 
@@ -149,9 +149,8 @@ export default function ModulePageShell({
             <h1
               className="text-2xl sm:text-4xl font-bold tracking-tight leading-tight"
               style={{
-                color: '#F5F1E7',
-                fontFamily: "'Georgia', serif",
-                textShadow: '0 2px 6px rgba(0,0,0,0.6)',
+                color: 'var(--ck-espresso)',
+                fontFamily: 'var(--ck-font-display)',
               }}
             >
               {title}
@@ -172,7 +171,7 @@ export default function ModulePageShell({
           {subtitle && (
             <p
               className="text-sm sm:text-base sm:pl-14"
-              style={{ color: 'rgba(224,216,200,0.75)' }}
+              style={{ color: 'rgba(52,37,29,0.72)' }}
             >
               {subtitle}
             </p>
@@ -181,21 +180,21 @@ export default function ModulePageShell({
       </div>
 
       {/* 2 — Module navigation */}
-      {moduleNav && <div className="min-w-0">{moduleNav}</div>}
+      {moduleNav && <div className="ck-module-nav-surface min-w-0">{moduleNav}</div>}
 
       {/* 3 — Summary metrics */}
       {stats.length > 0 && <ModuleStatsGrid stats={stats} accent={accentColor} />}
+
+      {/* 4 — Primary shortcuts stay available for empty collections too */}
+      {actions && <div>{actions}</div>}
+
+      {/* 5 — Notices and stateful overlays */}
+      {children}
 
       {isEmpty ? (
         emptyState ? <div>{emptyState}</div> : null
       ) : (
         <>
-          {/* 4 — Primary shortcuts */}
-          {actions && <div>{actions}</div>}
-
-          {/* 5 — Notices and modals */}
-          {children}
-
           {/* 6 — Collection highlights */}
           {highlights}
 

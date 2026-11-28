@@ -15,7 +15,7 @@ import {
   getEffectiveModuleReleaseState,
   isInternalModuleTester,
 } from '@/components/utils/moduleReleaseState';
-import { getEntitlementTier, getAccessSource } from '@/components/utils/premiumAccess';
+import { getAccessSource } from '@/components/utils/premiumAccess';
 import { getProTrialModules } from '@/components/utils/proTrial';
 import { resolveComplimentaryPro } from '@/components/utils/appreciationGrant';
 

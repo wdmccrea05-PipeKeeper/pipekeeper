@@ -34,6 +34,7 @@ import {
 import { classifyIntent } from '@/lib/curator/curatorChatIntent.js';
 import useCuratorRecordProposals from '@/components/curator/useCuratorRecordProposals.js';
 import { routeCuratorRequest } from '@/lib/curator/curatorRequestRouter.js';
+import { restoreAppGuidance } from '@/lib/curator/curatorAppGuidance.js';
 import { buildGroundingBlock } from '@/lib/curator/curatorGrounding.js';
 import { describeCuratorFailure, invokeCuratorWithTimeout as invokeCuratorRequest } from '@/lib/curator/curatorInvocation.js';
 
@@ -1629,6 +1630,7 @@ export default function ExpertTobacconistChat({
   isSingleModuleMode = false,
   activeModules = {},
   initialEntityContext = null,
+  initialImportBatchContext = null,
   userEmail = '',
 }) {
   const [messages, setMessages] = useState([]);
@@ -1727,10 +1729,11 @@ export default function ExpertTobacconistChat({
         }
         const restored = response?.data?.messages || [];
         if (!cancelled && restored.length > 0) {
-          setMessages((prev) => (prev.length > 0 ? prev : restored.map((m, index) => ({
+          setMessages((prev) => (prev.length > 0 ? prev : restoreAppGuidance(restored, activeModules).map((m, index) => ({
             id: `restored-${index}`,
             role: m.role,
             content: m.content,
+            recordLinks: m.recordLinks,
             restored: true,
           }))));
         }
@@ -1906,7 +1909,7 @@ export default function ExpertTobacconistChat({
         },
         storageLocations: storageCacheRef.current || [],
         enabledModules: activeModules || {},
-        context: collectionContext,
+        context: { ...collectionContext, importBatchContext: initialImportBatchContext },
       });
 
       if (routed.kind === 'proposal') {
@@ -1944,6 +1947,7 @@ export default function ExpertTobacconistChat({
           role: 'assistant',
           content: routed.content,
           report: routed.report || null,
+          recordLinks: routed.recordLinks || [],
         }]);
         return;
       }
@@ -2189,10 +2193,11 @@ export default function ExpertTobacconistChat({
         limit: 40,
       });
       const restored = response?.data?.messages || [];
-      setMessages(restored.map((m, index) => ({
+      setMessages(restoreAppGuidance(restored, activeModules).map((m, index) => ({
         id: `restored-${index}`,
         role: m.role,
         content: m.content,
+        recordLinks: m.recordLinks,
         restored: true,
       })));
     } catch {
@@ -2202,7 +2207,7 @@ export default function ExpertTobacconistChat({
         content: 'That conversation could not be opened. Ask again here and I will pick it up.',
       }]);
     }
-  }, []);
+  }, [activeModules]);
 
   const retryMessage = useCallback((text) => {
     setMessages((prev) => prev.filter((m) => !(m.role === 'assistant' && m.retryText === text)));
@@ -2218,7 +2223,7 @@ export default function ExpertTobacconistChat({
   const hasCollection = (collectionContext?.blends?.length || 0) + (collectionContext?.bottles?.length || 0) + (collectionContext?.pipes?.length || 0) > 0;
 
   return (
-    <div className="rounded-[18px] overflow-hidden flex flex-col" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)', minHeight: 0 }}>
+    <div className="rounded-[18px] overflow-hidden flex flex-col" style={{ background: 'linear-gradient(145deg, #34251d 0%, #211812 100%)', border: '1px solid rgba(167,124,63,0.35)', minHeight: 0 }}>
       {/* One quiet toolbar — the page above already carries the title */}
       <div
         className="flex items-center justify-between gap-2 px-3 sm:px-5 py-2 border-b"
@@ -2326,13 +2331,13 @@ export default function ExpertTobacconistChat({
                         </div>
                       )}
                       {m.report && (
-                        <a
-                          href={m.report.route}
+                        <Link
+                          to={m.report.route}
                           className="inline-flex items-center gap-2 mt-3 text-[13px] font-semibold break-words"
                           style={{ color: '#C6A15B' }}
                         >
                           Open {m.report.title}
-                        </a>
+                        </Link>
                       )}
 
                       {m.retryText && (

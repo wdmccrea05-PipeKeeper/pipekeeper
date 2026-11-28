@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { ownedCuratorMessages } from '../../shared/curatorMessageOwnership.ts';
 
 /**
  * Restore the collector's recent Curator conversation.
@@ -29,8 +30,8 @@ Deno.serve(async (req) => {
     if (sessionId) query.session_id = sessionId;
 
     const rows = await base44.asServiceRole.entities.CuratorMessage.filter(query);
-    const usable = (Array.isArray(rows) ? rows : []).filter(
-      (row: any) => row?.content && (row.role === 'user' || row.role === 'assistant')
+    const usable = ownedCuratorMessages(rows, user.email, sessionId).filter(
+      (row) => row.content && (row.role === 'user' || row.role === 'assistant')
     );
 
     const ordered = usable

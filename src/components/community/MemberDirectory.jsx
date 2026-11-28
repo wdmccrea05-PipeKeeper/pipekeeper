@@ -123,7 +123,7 @@ export default function MemberDirectory({ profiles = [], currentUser, friendship
 
                 {state === 'accepted' ? (
                   <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/40">
-                    {t('communityExtended.friends', 'Friends')}
+                    {t('communityExtended.friends')}
                   </Badge>
                 ) : state === 'pending' ? (
                   <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/40">

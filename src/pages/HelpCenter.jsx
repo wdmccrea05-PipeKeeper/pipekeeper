@@ -131,13 +131,13 @@ export default function HelpCenter() {
                 <Link to={createPageUrl('FAQFull')}>
                   <Button variant="outline" className="w-full justify-start">
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    {t('help.faq', 'FAQ')}
+                    {t('help.faq')}
                   </Button>
                 </Link>
                 <Link to={createPageUrl('TroubleshootingFull')}>
                   <Button variant="outline" className="w-full justify-start">
                     <AlertCircle className="w-4 h-4 mr-2" />
-                    {t('help.troubleshooting', 'Troubleshooting')}
+                    {t('help.troubleshooting')}
                   </Button>
                 </Link>
                 <a href="/ReferralDashboard">

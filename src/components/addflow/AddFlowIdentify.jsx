@@ -112,7 +112,7 @@ function ModeSelector({ onSelectUPC, onSelectPhoto, onManual, onBack, typeLabel 
           style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
         >
           <PenLine className="w-3.5 h-3.5" />
-          <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
+          <span className="text-sm">{t('addFlow.addManually')}</span>
         </button>
       </div>
       <div className="pb-2" />
@@ -255,7 +255,7 @@ function UPCPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
             style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
           >
             <PenLine className="w-3.5 h-3.5" />
-            <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
+            <span className="text-sm">{t('addFlow.addManually')}</span>
           </button>
         </div>
         <div className="pb-2" />
@@ -342,7 +342,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
           >
             {uploading ? <Loader2 className="w-7 h-7 animate-spin" /> : <Camera className="w-7 h-7" />}
             <span className="text-sm font-medium">
-              {uploading ? t('common.uploading', 'Uploading…') : t('common.takePhoto', 'Take Photo')}
+              {uploading ? t('common.uploading') : t('common.takePhoto')}
             </span>
             <input
               type="file"
@@ -363,7 +363,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
           >
             {uploading ? <Loader2 className="w-7 h-7 animate-spin" /> : <Upload className="w-7 h-7" />}
             <span className="text-sm font-medium">
-              {uploading ? t('common.uploading', 'Uploading…') : t('common.uploadPhoto', 'Upload Photo')}
+              {uploading ? t('common.uploading') : t('common.uploadPhoto', 'Upload Photo')}
             </span>
             <input
               type="file"
@@ -432,7 +432,7 @@ function PhotoPanel({ itemType, typeLabel, onResult, onBack, onManual }) {
           style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
         >
           <PenLine className="w-3.5 h-3.5" />
-          <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
+          <span className="text-sm">{t('addFlow.addManually')}</span>
         </button>
       </div>
       <div className="pb-2" />
@@ -652,7 +652,7 @@ function ResultsPanel({ result, quickSearchMatches, quickSearchQuery, searchingQ
           style={{ border: '1px dashed rgba(180,140,75,0.25)', color: 'rgba(180,140,75,0.7)' }}
         >
           <PenLine className="w-3.5 h-3.5" />
-          <span className="text-sm">{t('addFlow.addManually', 'Add Manually Instead')}</span>
+          <span className="text-sm">{t('addFlow.addManually')}</span>
         </button>
       </div>
       <div className="pb-2" />

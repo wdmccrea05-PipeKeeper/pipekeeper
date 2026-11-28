@@ -149,7 +149,7 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
     if (enabled.winekeeper) {
       items.push({
         page: "WineKeeper",
-        label: t("nav.winekeeper", "WineKeeper"),
+        label: t("nav.winekeeper"),
         icon: Wine,
         path: "/WineKeeper",
       });
@@ -163,7 +163,7 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
     ...moduleItems,
     { page: "WantList", label: t("nav.wantList"), icon: List, path: "/WantList" },
     { page: "Curator", label: t("nav.curator"), icon: Target, path: "/Curator" },
-    { page: "ReportingCenter", label: t("nav.reports", "Reports"), icon: FileBarChart2, path: "/ReportingCenter" },
+    { page: "ReportingCenter", label: t("nav.reports"), icon: FileBarChart2, path: "/ReportingCenter" },
     { page: "Community", label: t("nav.community"), icon: Users, path: "/Community" },
     { page: "Profile", label: t("nav.profile"), icon: User, path: "/Profile" },
     { page: "HelpCenter", label: t("nav.help"), icon: HelpCircle, path: "/HelpCenter" },

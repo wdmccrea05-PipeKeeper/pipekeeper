@@ -18,6 +18,8 @@ export default function FindingRow({
   busy = false,
   onDefer,
   onDismiss,
+  alternatives = {},
+  onAlternative,
 }) {
   const [showWhy, setShowWhy] = useState(false);
   const actionable = (finding?.actions || []).length > 0;
@@ -78,6 +80,27 @@ export default function FindingRow({
             <p className="text-[12px] leading-5 mt-1 break-words" style={{ color: 'rgba(224,216,200,0.55)' }}>
               {finding.hint}
             </p>
+          )}
+
+          {selected && (finding.actions || []).map((action) =>
+            action.alternatives?.length ? (
+              <label key={action.id} className="mt-2 block text-[12px]" style={{ color: '#E0D8C8' }}>
+                Choose a location
+                <select
+                  aria-label={`Location for ${finding.recordName}`}
+                  value={alternatives[action.id] || ''}
+                  onChange={(event) => onAlternative?.(action.id, event.target.value)}
+                  disabled={busy}
+                  className="mt-1 block w-full rounded-lg p-2 text-sm"
+                  style={{ background: '#241913', color: '#F5F1E7', border: '1px solid rgba(180,140,75,0.3)' }}
+                >
+                  <option value="">Select a location</option>
+                  {action.alternatives.map((alternative) => (
+                    <option key={alternative.id} value={alternative.id}>{alternative.label}</option>
+                  ))}
+                </select>
+              </label>
+            ) : null
           )}
 
           {actionable && (

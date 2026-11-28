@@ -11,17 +11,14 @@ import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
 import LogSessionSelector from '@/components/session/LogSessionSelector';
 import {
   ChevronRight,
-  Leaf,
   Flame,
-  Clock3,
   Activity,
-  TrendingUp,
-  GlassWater,
   Cigarette,
   CalendarDays,
   List,
   Wine,
   FileBarChart2,
+  Target,
 } from 'lucide-react';
 import WhiskeyKeeperIcon from '@/components/icons/WhiskeyKeeperIcon';
 import PipeIcon from '@/components/icons/PipeIcon';
@@ -30,7 +27,6 @@ import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
-import BrandLogo from '@/components/branding/BrandLogo';
 import ComplimentaryProBanner from '@/components/subscription/ComplimentaryProBanner';
 import AppreciationBanner from '@/components/campaign/AppreciationBanner';
 import AppreciationExpiredDialog from '@/components/campaign/AppreciationExpiredDialog';
@@ -58,7 +54,7 @@ import {
 import { selectTotalSticks, selectCigarCollectionValue, getCigarAvailableQuantity, getCigarUnitValue } from '@/lib/collection/cigarSelectors';
 import { selectCellarValue as calculateTobaccoCollectionValue } from '@/lib/collection/tobaccoSelectors';
 import { selectPipeCollectionValue } from '@/lib/collection/pipeSelectors';
-import { selectWineCollectionValue, selectTotalWineBottles, selectWineCount, getWineTotalValue, selectWineReadyToDrinkCount, getWinePrimaryImage } from '@/lib/collection/wineSelectors';
+import { selectWineCollectionValue, selectTotalWineBottles, getWineTotalValue, getWinePrimaryImage } from '@/lib/collection/wineSelectors';
 import { buildHubHighlightCandidates } from '@/components/hub/highlightSelection';
 import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 
@@ -115,6 +111,7 @@ export default function CollectionHub() {
   const { user } = useCurrentUser();
   const { t } = useTranslation();
   const { formatFromBase } = useCurrency();
+  const [curatorIconFailed, setCuratorIconFailed] = useState(false);
 
   const [showLogSelector, setShowLogSelector] = useState(false);
   const [showCombinedModal, setShowCombinedModal] = useState(false);
@@ -492,13 +489,14 @@ export default function CollectionHub() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="ck-paper-workspace ck-hub-workspace max-w-5xl mx-auto space-y-6">
       <ComplimentaryProBanner />
       <AppreciationBanner surface="hub" />
       <AppreciationExpiredDialog />
       <PageHeader
         title={t('hub.title')}
         subtitle={t('hub.hubDescription')}
+        variant="paper"
         actions={
           <>
             <button
@@ -546,6 +544,7 @@ export default function CollectionHub() {
 
       <section className="space-y-4">
         <StatStrip
+          variant="paper"
           items={[
             {
               label: t('hub.totalValue'),
@@ -561,6 +560,7 @@ export default function CollectionHub() {
         />
 
         <CollectionHealthRow
+          variant="paper"
           count={healthCount}
           isLoading={isLoading}
           onOpen={() => navigate(healthUrl({ origin: 'hub' }))}
@@ -632,16 +632,21 @@ export default function CollectionHub() {
           className="w-11 h-11 rounded-xl overflow-hidden shrink-0"
           style={{ border: '1px solid rgba(163,92,92,0.3)' }}
         >
-          <img
-            src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png"
-            className="w-full h-full object-cover"
-            alt=""
-          />
+          {curatorIconFailed ? (
+            <Target className="w-6 h-6 m-auto mt-2.5" style={{ color: 'var(--ck-antique-brass)' }} aria-hidden="true" />
+          ) : (
+            <img
+              src="https://media.base44.com/images/public/694956e18d119cc497192525/0ece2e1f0_inappcurator.png"
+              className="w-full h-full object-cover"
+              alt=""
+              onError={() => setCuratorIconFailed(true)}
+            />
+          )}
         </span>
         <span className="flex-1 min-w-0">
           <span
             className="block text-base font-semibold"
-            style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+            style={{ color: '#F5F1E7', fontFamily: 'var(--ck-font-display)' }}
           >
             {t('hub.curatorTitle')}
           </span>
@@ -798,7 +803,7 @@ export default function CollectionHub() {
                 <div className="flex-1 min-w-0">
                   <p
                     className="text-base font-bold break-words line-clamp-1"
-                    style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+                    style={{ color: '#F5F1E7', fontFamily: 'var(--ck-font-display)' }}
                   >
                     {activity.title}
                   </p>

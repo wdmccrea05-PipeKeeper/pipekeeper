@@ -109,14 +109,14 @@ function MaintenanceStatusBadge({ status }) {
   if (status === 'disabled' || status === 'on_track') return null;
   const cfg = {
     overdue: {
-      label: t('humidor.overdue', 'Overdue'),
+      label: t('humidor.overdue'),
       color: '#E05555',
       bg: 'rgba(224,85,85,0.12)',
       border: 'rgba(224,85,85,0.35)',
       Icon: AlertTriangle,
     },
     due_soon: {
-      label: t('humidor.dueSoon', 'Due Soon'),
+      label: t('humidor.dueSoon'),
       color: '#D4A574',
       bg: 'rgba(212,165,116,0.12)',
       border: 'rgba(212,165,116,0.35)',
@@ -210,14 +210,14 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
       {/* Basic fields */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className={labelCls} style={labelColor}>{t('humidor.nameRequired', 'Name *')}</label>
-          <Input value={form.name} onChange={set('name')} placeholder={t('humidor.namePlaceholder', 'My Desktop Humidor')} style={inputStyle} />
+          <label className={labelCls} style={labelColor}>{t('humidor.nameRequired')}</label>
+          <Input value={form.name} onChange={set('name')} placeholder={t('humidor.namePlaceholder')} style={inputStyle} />
         </div>
         <div>
-          <label className={labelCls} style={labelColor}>{t('humidor.type', 'Type')}</label>
+          <label className={labelCls} style={labelColor}>{t('humidor.type')}</label>
           <Select value={selectValue(form.humidor_type)} onValueChange={(v) => set('humidor_type')(fromSelectValue(v))}>
             <SelectTrigger style={{ ...inputStyle, color: form.humidor_type ? '#F5F1E7' : 'rgba(224,216,200,0.4)' }}>
-              <SelectValue placeholder={t('humidor.selectType', 'Select type')} />
+              <SelectValue placeholder={t('humidor.selectType')} />
             </SelectTrigger>
             <SelectContent style={{ background: 'rgba(40,28,18,0.98)', border: '1px solid rgba(180,140,75,0.3)' }}>
               <SelectItem value="none" style={{ color: 'rgba(224,216,200,0.5)' }}>— None —</SelectItem>
@@ -230,40 +230,40 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
           </Select>
         </div>
         <div>
-          <label className={labelCls} style={labelColor}>{t('humidor.capacityCigars', 'Capacity (cigars)')}</label>
+          <label className={labelCls} style={labelColor}>{t('humidor.capacityCigars')}</label>
           <Input type="number" value={form.capacity_count} onChange={set('capacity_count')} placeholder="50" style={inputStyle} />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className={labelCls} style={labelColor}>{t('humidor.targetRh', 'Target RH%')}</label>
+            <label className={labelCls} style={labelColor}>{t('humidor.targetRh')}</label>
             <Input type="number" value={form.target_humidity_rh} onChange={set('target_humidity_rh')} placeholder="65" style={inputStyle} />
           </div>
           <div>
-            <label className={labelCls} style={labelColor}>{t('humidor.targetTemp', 'Target °F')}</label>
+            <label className={labelCls} style={labelColor}>{t('humidor.targetTemp')}</label>
             <Input type="number" value={form.target_temp_f} onChange={set('target_temp_f')} placeholder="68" style={inputStyle} />
           </div>
         </div>
       </div>
 
       <div>
-        <label className={labelCls} style={labelColor}>{t('fields.notes', 'Notes')}</label>
-        <Textarea value={form.notes} onChange={set('notes')} placeholder={t('humidor.notesPlaceholder', 'Optional notes…')} rows={2} className="resize-none" style={inputStyle} />
+        <label className={labelCls} style={labelColor}>{t('fields.notes')}</label>
+        <Textarea value={form.notes} onChange={set('notes')} placeholder={t('humidor.notesPlaceholder')} rows={2} className="resize-none" style={inputStyle} />
       </div>
 
       {/* Current readings */}
       <div>
-        <label className={labelCls} style={labelColor}>{t('humidor.currentReadings', 'Current Readings')}</label>
+        <label className={labelCls} style={labelColor}>{t('humidor.currentReadings')}</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('humidor.humidityPercent', 'Humidity %')}</label>
+            <label className="block text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('humidor.humidityPercent')}</label>
             <Input type="number" value={form.last_humidity_reading} onChange={set('last_humidity_reading')} placeholder="e.g. 65" style={inputStyle} />
           </div>
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('humidor.tempF', 'Temp °F')}</label>
+            <label className="block text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('humidor.tempF')}</label>
             <Input type="number" value={form.last_temperature_reading} onChange={set('last_temperature_reading')} placeholder="e.g. 68" style={inputStyle} />
           </div>
           <div>
-            <label className="block text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('humidor.readingDate', 'Reading Date')}</label>
+            <label className="block text-xs mb-1" style={{ color: 'rgba(224,216,200,0.5)' }}>{t('humidor.readingDate')}</label>
             <Input type="date" value={form.last_reading_date} onChange={set('last_reading_date')} style={inputStyle} />
           </div>
         </div>
@@ -278,22 +278,22 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
       >
         <Settings2 style={{ width: 13, height: 13 }} />
         {showAdvanced
-          ? t('humidor.hideAdvanced', 'Hide advanced settings')
-          : t('humidor.showAdvanced', 'Show humidity aid & reminder settings')}
+          ? t('humidor.hideAdvanced')
+          : t('humidor.showAdvanced')}
         {showAdvanced ? <ChevronUp style={{ width: 12, height: 12 }} /> : <ChevronDown style={{ width: 12, height: 12 }} />}
       </button>
 
       {showAdvanced && (
         <div className="space-y-4 rounded-lg p-3" style={{ background: 'rgba(180,140,75,0.05)', border: '1px solid rgba(180,140,75,0.15)' }}>
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.65)' }}>
-            {t('humidor.humidityAid', 'Humidity Aid')}
+            {t('humidor.humidityAid')}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.aidType', 'Aid Type')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.aidType')}</label>
               <Select value={selectValue(form.aid_type)} onValueChange={(v) => set('aid_type')(fromSelectValue(v))}>
                 <SelectTrigger style={{ ...inputStyle, color: form.aid_type ? '#F5F1E7' : 'rgba(224,216,200,0.4)' }}>
-                  <SelectValue placeholder={t('humidor.selectType', 'Select type')} />
+                  <SelectValue placeholder={t('humidor.selectType')} />
                 </SelectTrigger>
                 <SelectContent style={{ background: 'rgba(40,28,18,0.98)', border: '1px solid rgba(180,140,75,0.3)' }}>
                   <SelectItem value="none" style={{ color: 'rgba(224,216,200,0.5)' }}>— None —</SelectItem>
@@ -304,85 +304,85 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
               </Select>
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('cigarSession.brand', 'Brand')}</label>
-              <Input value={form.aid_brand} onChange={set('aid_brand')} placeholder={t('humidor.aidBrandPlaceholder', 'e.g. Boveda, Xikar')} style={inputStyle} />
+              <label className={labelCls} style={labelColor}>{t('cigarSession.brand')}</label>
+              <Input value={form.aid_brand} onChange={set('aid_brand')} placeholder={t('humidor.aidBrandPlaceholder')} style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.specification', 'Specification')}</label>
-              <Input value={form.aid_specification} onChange={set('aid_specification')} placeholder={t('humidor.specPlaceholder', 'e.g. 69%, 60g, 320g')} style={inputStyle} />
+              <label className={labelCls} style={labelColor}>{t('humidor.specification')}</label>
+              <Input value={form.aid_specification} onChange={set('aid_specification')} placeholder={t('humidor.specPlaceholder')} style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.quantity', 'Quantity')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.quantity')}</label>
               <Input type="number" value={form.aid_quantity} onChange={set('aid_quantity')} placeholder="1" style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.dateInstalled', 'Date Installed')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.dateInstalled')}</label>
               <Input type="date" value={form.aid_date_installed} onChange={set('aid_date_installed')} style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.dateLastReplaced', 'Date Last Replaced')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.dateLastReplaced')}</label>
               <Input type="date" value={form.aid_date_last_replaced} onChange={set('aid_date_last_replaced')} style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.replaceEveryDays', 'Replace Every (days)')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.replaceEveryDays')}</label>
               <Input type="number" value={form.aid_replacement_interval_days} onChange={set('aid_replacement_interval_days')} placeholder="e.g. 60" style={inputStyle} />
             </div>
           </div>
           <div>
-            <label className={labelCls} style={labelColor}>{t('humidor.aidNotes', 'Aid Notes')}</label>
-            <Input value={form.aid_notes} onChange={set('aid_notes')} placeholder={t('humidor.aidNotesPlaceholder', 'Optional aid notes…')} style={inputStyle} />
+            <label className={labelCls} style={labelColor}>{t('humidor.aidNotes')}</label>
+            <Input value={form.aid_notes} onChange={set('aid_notes')} placeholder={t('humidor.aidNotesPlaceholder')} style={inputStyle} />
           </div>
 
           <p className="text-xs font-semibold uppercase tracking-wider pt-1" style={{ color: 'rgba(180,140,75,0.65)' }}>
-            {t('humidor.dimensions', 'Dimensions and tolerance band')}
+            {t('humidor.dimensions')}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.widthIn', 'Width (in)')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.widthIn')}</label>
               <Input type="number" inputMode="decimal" value={form.interior_width_in} onChange={set('interior_width_in')} placeholder="e.g. 12" style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.depthIn', 'Depth (in)')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.depthIn')}</label>
               <Input type="number" inputMode="decimal" value={form.interior_depth_in} onChange={set('interior_depth_in')} placeholder="e.g. 9" style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.heightIn', 'Height (in)')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.heightIn')}</label>
               <Input type="number" inputMode="decimal" value={form.interior_height_in} onChange={set('interior_height_in')} placeholder="e.g. 5" style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.shelves', 'Shelves / trays')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.shelves')}</label>
               <Input type="number" inputMode="numeric" value={form.shelf_count} onChange={set('shelf_count')} placeholder="e.g. 2" style={inputStyle} />
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.minRh', 'Min RH%')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.minRh')}</label>
               <Input type="number" inputMode="decimal" value={form.min_humidity_rh} onChange={set('min_humidity_rh')} placeholder="e.g. 62" style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.maxRh', 'Max RH%')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.maxRh')}</label>
               <Input type="number" inputMode="decimal" value={form.max_humidity_rh} onChange={set('max_humidity_rh')} placeholder="e.g. 72" style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.minTemp', 'Min °F')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.minTemp')}</label>
               <Input type="number" inputMode="decimal" value={form.min_temp_f} onChange={set('min_temp_f')} placeholder="e.g. 65" style={inputStyle} />
             </div>
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.maxTemp', 'Max °F')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.maxTemp')}</label>
               <Input type="number" inputMode="decimal" value={form.max_temp_f} onChange={set('max_temp_f')} placeholder="e.g. 75" style={inputStyle} />
             </div>
           </div>
           <div>
-            <label className={labelCls} style={labelColor}>{t('humidor.locationNotes', 'Layout and placement notes')}</label>
+            <label className={labelCls} style={labelColor}>{t('humidor.locationNotes')}</label>
             <Input value={form.location_notes} onChange={set('location_notes')} placeholder="e.g. Study shelf, two trays, bottom drawer for boxes" style={inputStyle} />
           </div>
 
           <p className="text-xs font-semibold uppercase tracking-wider pt-1" style={{ color: 'rgba(180,140,75,0.65)' }}>
-            {t('humidor.reminders', 'Reminders')}
+            {t('humidor.reminders')}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className={labelCls} style={labelColor}>{t('humidor.checkEveryDays', 'Check Humidity Every (days)')}</label>
+              <label className={labelCls} style={labelColor}>{t('humidor.checkEveryDays')}</label>
               <Input type="number" value={form.check_interval_days} onChange={set('check_interval_days')} placeholder="e.g. 7" style={inputStyle} />
             </div>
             <div className="flex items-center gap-2 mt-5">
@@ -394,7 +394,7 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
                 className="w-4 h-4 accent-amber-500"
               />
               <label htmlFor="alerts_enabled" className="text-sm cursor-pointer" style={{ color: 'rgba(224,216,200,0.75)' }}>
-                {t('humidor.showAlerts', 'Show due/overdue alerts')}
+                {t('humidor.showAlerts')}
               </label>
             </div>
           </div>
@@ -403,7 +403,7 @@ function HumidorFormInline({ initial, onSave, onCancel, saving }) {
 
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} style={{ color: 'rgba(224,216,200,0.6)' }}>
-          {t('common.cancel', 'Cancel')}
+          {t('common.cancel')}
         </Button>
         <Button
           type="button"
@@ -453,8 +453,8 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, onOpenDetail, u
       .slice(0, 3)
     : [];
   const alertState = humidor?.alerts_enabled === false
-    ? t('humidor.alertsOff', 'Alerts off')
-    : (status === 'overdue' ? t('humidor.alertActive', 'Alert active') : t('humidor.alertsOn', 'Alerts on'));
+    ? t('humidor.alertsOff')
+    : (status === 'overdue' ? t('humidor.alertActive') : t('humidor.alertsOn'));
 
   return (
     <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(180,140,75,0.18)' }}>
@@ -493,16 +493,16 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, onOpenDetail, u
             }}
             className="px-2.5 h-7 rounded-lg transition-all hover:bg-[rgba(180,140,75,0.15)] text-xs font-semibold"
             style={{ border: '1px solid rgba(180,140,75,0.35)', color: '#D4A574' }}
-            aria-label={t('humidor.logMaintenance', 'Log maintenance')}
+            aria-label={t('humidor.logMaintenance')}
           >
-            {t('humidor.logMaintenanceCta', 'Log Maintenance')}
+            {t('humidor.logMaintenanceCta')}
           </button>
           <button
             type="button"
             onClick={onEdit}
             className="p-1.5 rounded-lg transition-all hover:bg-[rgba(180,140,75,0.15)]"
             style={{ color: 'rgba(180,140,75,0.7)' }}
-            aria-label={t('humidor.editHumidor', 'Edit humidor')}
+            aria-label={t('humidor.editHumidor')}
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
@@ -511,7 +511,7 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, onOpenDetail, u
             onClick={onDelete}
             className="p-1.5 rounded-lg transition-all hover:bg-[rgba(224,85,85,0.15)]"
             style={{ color: 'rgba(224,85,85,0.6)' }}
-            aria-label={t('humidor.deleteHumidor', 'Delete humidor')}
+            aria-label={t('humidor.deleteHumidor')}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -525,30 +525,30 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, onOpenDetail, u
         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(180,140,75,0.14)' }}
       >
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.latestRh', 'Latest RH')}</p>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.latestRh')}</p>
           <p className="text-sm font-semibold text-[#F5F1E7]">{humidor.last_humidity_reading != null ? `${humidor.last_humidity_reading}%` : '—'}</p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.latestTemp', 'Latest Temp')}</p>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.latestTemp')}</p>
           <p className="text-sm font-semibold text-[#F5F1E7]">{humidor.last_temperature_reading != null ? `${humidor.last_temperature_reading}°F` : '—'}</p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.targetRange', 'Target Range')}</p>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.targetRange')}</p>
           <p className="text-sm font-semibold text-[#F5F1E7]">
             {humidor.target_humidity_rh != null ? `${humidor.target_humidity_rh}% RH` : '—'}
             {humidor.target_temp_f != null ? ` · ${humidor.target_temp_f}°F` : ''}
           </p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.lastReading', 'Last Reading')}</p>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.lastReading')}</p>
           <p className="text-sm font-semibold text-[#F5F1E7]">{formatDate(humidor.last_reading_date) || '—'}</p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.lastMaintenance', 'Last Maintenance')}</p>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.lastMaintenance')}</p>
           <p className="text-sm font-semibold text-[#F5F1E7]">{formatDate(humidor.last_maintenance_date) || '—'}</p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.alertState', 'Alert State')}</p>
+          <p className="text-[11px] uppercase tracking-wide text-[#E0D8C8]/55">{t('humidor.alertState')}</p>
           <p className="text-sm font-semibold" style={{ color: humidor?.alerts_enabled !== false && status === 'overdue' ? '#E08232' : 'rgba(224,216,200,0.8)' }}>{alertState}</p>
         </div>
       </div>
@@ -564,7 +564,7 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, onOpenDetail, u
           minHeight: 40,
         }}
       >
-        {t('humidor.openDetail', 'Environment, inventory and movement')}
+        {t('humidor.openDetail')}
       </button>
 
       {/* Environment snapshot */}
@@ -596,7 +596,7 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, onOpenDetail, u
       {recentReadings.length > 0 && (
         <div className="mt-2 rounded-lg p-2.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(180,140,75,0.12)' }}>
           <p className="text-[11px] uppercase tracking-wide mb-1.5" style={{ color: 'rgba(224,216,200,0.55)' }}>
-            {t('humidor.recentReadingTrend', 'Recent Reading Trend')}
+            {t('humidor.recentReadingTrend')}
           </p>
           <div className="space-y-1">
             {recentReadings.map((entry, index) => (
@@ -670,7 +670,7 @@ function HumidorCard({ humidor, assignedCount, onEdit, onDelete, onOpenDetail, u
           style={{ color: 'rgba(180,140,75,0.65)' }}
         >
           <Clock className="w-3.5 h-3.5" />
-          {t('humidor.maintenanceHistory', 'Maintenance History')}
+          {t('humidor.maintenanceHistory')}
           {showMaintenance ? <ChevronUp className="w-3.5 h-3.5 ml-auto" /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" />}
         </button>
         {showMaintenance && (
@@ -720,14 +720,14 @@ export default function HumidorManager({ cigars = [], onRefresh, focusHumidorId 
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.HumidorLocation.create({ ...cleanHumidorPayload(data), created_by: user?.email }),
-    onSuccess: () => { toast.success(t('humidor.added', 'Humidor added')); invalidate(); setShowForm(false); },
-    onError: () => toast.error(t('humidor.addFailed', 'Failed to add humidor')),
+    onSuccess: () => { toast.success(t('humidor.added')); invalidate(); setShowForm(false); },
+    onError: () => toast.error(t('humidor.addFailed')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.HumidorLocation.update(id, cleanHumidorPayload(data)),
-    onSuccess: () => { toast.success(t('humidor.updated', 'Humidor updated')); invalidate(); setEditTarget(null); },
-    onError: () => toast.error(t('humidor.updateFailed', 'Failed to update humidor')),
+    onSuccess: () => { toast.success(t('humidor.updated')); invalidate(); setEditTarget(null); },
+    onError: () => toast.error(t('humidor.updateFailed')),
   });
 
   const deleteMutation = useMutation({
@@ -748,8 +748,8 @@ export default function HumidorManager({ cigars = [], onRefresh, focusHumidorId 
       }
       return base44.entities.HumidorLocation.delete(id);
     },
-    onSuccess: () => { toast.success(t('humidor.deleted', 'Humidor deleted')); invalidate(); setDeleteConfirm(null); },
-    onError: () => toast.error(t('humidor.deleteFailed', 'Failed to delete humidor')),
+    onSuccess: () => { toast.success(t('humidor.deleted')); invalidate(); setDeleteConfirm(null); },
+    onError: () => toast.error(t('humidor.deleteFailed')),
   });
 
   const cigarsByHumidor = cigars.reduce((acc, c) => {
@@ -763,7 +763,7 @@ export default function HumidorManager({ cigars = [], onRefresh, focusHumidorId 
       {/* Header */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h2 style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif", fontSize: '1.1rem', fontWeight: 700 }}>
-          {t('humidor.title', 'Humidors')}
+          {t('humidor.title')}
         </h2>
         {!showForm && !editTarget && (
           <Button
@@ -774,7 +774,7 @@ export default function HumidorManager({ cigars = [], onRefresh, focusHumidorId 
             style={{ border: '1px solid rgba(180,140,75,0.3)', color: '#D4A574', gap: '0.25rem' }}
           >
             <Plus className="w-4 h-4" />
-            {t('humidor.addHumidor', 'Add Humidor')}
+            {t('humidor.addHumidor')}
           </Button>
         )}
       </div>
@@ -791,14 +791,14 @@ export default function HumidorManager({ cigars = [], onRefresh, focusHumidorId 
 
       {/* Humidor list */}
       {isLoading ? (
-        <div className="text-center py-8 text-[#E0D8C8]/40 text-sm">{t('humidor.loading', 'Loading humidors…')}</div>
+        <div className="text-center py-8 text-[#E0D8C8]/40 text-sm">{t('humidor.loading')}</div>
       ) : humidors.length === 0 && !showForm ? (
         <div
           className="rounded-xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(180,140,75,0.15)' }}
         >
           <Box className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(180,140,75,0.3)' }} />
-          <p className="text-sm text-[#E0D8C8]/45">{t('humidor.empty', 'No humidors yet. Add one to organize your collection.')}</p>
+          <p className="text-sm text-[#E0D8C8]/45">{t('humidor.empty')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -835,7 +835,7 @@ export default function HumidorManager({ cigars = [], onRefresh, focusHumidorId 
                     <div className="flex items-center gap-2 mb-3">
                       <AlertTriangle className="w-4 h-4 text-red-400" />
                         <p className="text-sm text-[#F5F1E7]">
-                          {t('humidor.deleteConfirmPrefix', 'Delete')} <strong>{humidor.name}</strong>? {t('humidor.deleteConfirmUndo', 'This cannot be undone.')}
+                          {t('humidor.deleteConfirmPrefix')} <strong>{humidor.name}</strong>? {t('humidor.deleteConfirmUndo')}
                           {assignedToHumidor > 0 ? ` ${t('humidor.deleteConfirmMoved', {
                             defaultValue: '{{count}} cigars will be moved to Unassigned and tray/shelf/drawer/section metadata will be cleared.',
                             count: assignedToHumidor,
@@ -859,7 +859,7 @@ export default function HumidorManager({ cigars = [], onRefresh, focusHumidorId 
                         onClick={() => deleteMutation.mutate(humidor.id)}
                         style={{ background: 'rgba(163,50,50,0.85)', color: '#fff', border: '1px solid rgba(224,85,85,0.4)' }}
                       >
-                        {deleteMutation.isPending ? t('common.deleting', 'Deleting…') : t('common.delete', 'Delete')}
+                        {deleteMutation.isPending ? t('common.deleting') : t('common.delete')}
                       </Button>
                     </div>
                   </div>

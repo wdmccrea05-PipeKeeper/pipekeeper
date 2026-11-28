@@ -150,6 +150,8 @@ export default function CuratorWorkspace({
   activeSurface,
   onSurfaceChange,
   onCountsChange,
+  initialPrompt = '',
+  initialImportBatchContext = null,
 }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
@@ -171,7 +173,7 @@ export default function CuratorWorkspace({
   const [pairings, setPairings] = useState([]);
   const [planSessionCandidates, setPlanSessionCandidates] = useState([]);
   const [threadId, setThreadId] = useState(null);
-  const [preFillMessage, setPreFillMessage] = useState('');
+  const [preFillMessage, setPreFillMessage] = useState(initialPrompt);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSpecializationReview, setShowSpecializationReview] = useState(false);
   const [chatEntityContext, setChatEntityContext] = useState(null);
@@ -686,7 +688,7 @@ export default function CuratorWorkspace({
 
     case 'chat':
       return (
-        <>{modals}<ExpertTobacconistChat threadId={threadId} setThreadId={setThreadId} preFillMessage={preFillMessage} onPreFillConsumed={() => setPreFillMessage('')} collectionContext={ctx} isSingleModuleMode={isSingleModuleMode} activeModules={moduleEnabled} initialEntityContext={chatEntityContext} userEmail={userEmail} /></>
+        <>{modals}<ExpertTobacconistChat threadId={threadId} setThreadId={setThreadId} preFillMessage={preFillMessage} onPreFillConsumed={() => setPreFillMessage('')} collectionContext={ctx} isSingleModuleMode={isSingleModuleMode} activeModules={moduleEnabled} initialEntityContext={chatEntityContext} initialImportBatchContext={initialImportBatchContext} userEmail={userEmail} /></>
       );
 
     default:

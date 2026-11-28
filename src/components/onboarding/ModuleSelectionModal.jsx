@@ -78,7 +78,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
           boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
         }}
       >
-        <h2 className="text-2xl font-bold mb-2 text-[#F5F1E7]">{t("onboarding.welcomeModuleTitle", "Welcome to CollectionKeeper")}</h2>
+        <h2 className="text-2xl font-bold mb-2 text-[#F5F1E7]">{t("onboarding.welcomeModuleTitle")}</h2>
         <p className="text-sm text-[#E0D8C8] mb-6">
           {t("onboarding.moduleSelectionDesc", "Choose which collection modules you'd like to start with. You can enable or upgrade these anytime.")}
         </p>

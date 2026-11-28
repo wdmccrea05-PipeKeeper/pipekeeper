@@ -28,7 +28,6 @@ import {
   Clock,
   X,
   Sparkles,
-  FileText,
 } from "lucide-react";
 import { useCurrency } from "@/lib/currency/useCurrency";
 import {
@@ -1310,7 +1309,7 @@ export default function Insights() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl font-bold tracking-tight" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
-                    {t("insights.topHighlights", "Top Highlights")}
+                    {t("insights.topHighlights")}
                   </h2>
                   <p className="text-xs uppercase tracking-[0.12em] font-semibold mt-0.5" style={{ color: "rgba(180, 140, 75, 0.75)" }}>
                     {t("insights.topHighlightsSub", "Your collection's best moments")}
@@ -1490,7 +1489,7 @@ export default function Insights() {
         <ProFeatureLock featureName={t('insights.reports')}>
           <div className="space-y-4">
             <div className="p-4 rounded-xl" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
-              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('insights.collectionReports', 'Collection Reports')}</h4>
+              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('insights.collectionReports')}</h4>
               <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
                 {pipes.length} pipe{pipes.length !== 1 ? 's' : ''}, {blends.length} tobacco blend{blends.length !== 1 ? 's' : ''} — printable summaries, PDF and CSV exports.
               </p>
@@ -1498,17 +1497,17 @@ export default function Insights() {
             </div>
 
             <div className="p-4 rounded-xl" style={{ background: 'rgba(100,130,180,0.08)', border: '1px solid rgba(100,130,180,0.22)' }}>
-              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('insights.pairingReport', 'Pipe & Tobacco Pairing Report')}</h4>
+              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('insights.pairingReport')}</h4>
               <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
-                {t('insights.pairingReportDesc', 'Export every pipe-to-blend match with scores and reasoning.')}
+                {t('insights.pairingReportDesc')}
               </p>
               <PairingExporter pipes={pipes} blends={blends} />
             </div>
 
             <div className="p-4 rounded-xl" style={{ background: 'rgba(46,125,92,0.08)', border: '1px solid rgba(46,125,92,0.22)' }}>
-              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('insights.agingReport', 'Cellar Aging Report')}</h4>
+              <h4 className="font-semibold text-[#F5F1E7] mb-1">{t('insights.agingReport')}</h4>
               <p className="text-sm mb-3" style={{ color: 'rgba(216,199,166,0.8)' }}>
-                {t('insights.agingReportDesc', 'Export cellar ages, readiness and projected value.')}
+                {t('insights.agingReportDesc')}
               </p>
               <AgingReportExporter user={user} />
             </div>

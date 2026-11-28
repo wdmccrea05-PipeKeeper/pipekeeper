@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

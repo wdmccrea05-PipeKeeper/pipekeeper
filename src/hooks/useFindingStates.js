@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { loadFindingStates, saveFindingState } from '@/lib/actions/findingState';
 
 /**
@@ -8,40 +10,32 @@ import { loadFindingStates, saveFindingState } from '@/lib/actions/findingState'
  */
 export function useFindingStates(user) {
   const email = user?.email;
-  const [states, setStates] = useState({});
-  const [loading, setLoading] = useState(false);
-
-  const reload = useCallback(async () => {
-    if (!email) {
-      setStates({});
-      return;
-    }
-    setLoading(true);
-    try {
-      setStates(await loadFindingStates(email));
-    } finally {
-      setLoading(false);
-    }
-  }, [email]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
+  const queryClient = useQueryClient();
+  const { data: states = {}, isLoading: loading, error, refetch: reload } = useQuery({
+    queryKey: ['finding-states', email],
+    queryFn: () => loadFindingStates(email),
+    enabled: Boolean(email),
+  });
 
   const setState = useCallback(
     async (finding, status) => {
       if (!email || !finding?.key) return null;
-      const row = await saveFindingState({ email, finding, status });
-      setStates((prev) => ({
-        ...prev,
-        [finding.key]: { id: row?.id, status, note: row?.note || '', resolved_at: row?.resolved_at || null },
-      }));
-      return row;
+      try {
+        const row = await saveFindingState({ email, finding, status });
+        queryClient.setQueryData(['finding-states', email], (prev = {}) => ({
+          ...prev,
+          [finding.key]: { id: row?.id, status, note: row?.note || '', resolved_at: row?.resolved_at || null },
+        }));
+        return row;
+      } catch (error) {
+        toast.error(error?.message || 'Could not save the finding decision.');
+        return null;
+      }
     },
-    [email]
+    [email, queryClient]
   );
 
-  return { states, loading, reload, setState };
+  return { states, loading, error, reload, setState };
 }
 
 export default useFindingStates;

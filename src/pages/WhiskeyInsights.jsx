@@ -398,7 +398,7 @@ export default function WhiskeyInsightsPage() {
         {/* REPORTS */}
         {activeTab === 'reports' && (
           <InsightPanel>
-            <InsightSectionHeading>{t('insights.reports', 'Export Reports')}</InsightSectionHeading>
+            <InsightSectionHeading>{t('insights.reports')}</InsightSectionHeading>
             <div className="space-y-4">
               <div className="p-4 rounded-xl" style={{ background: 'rgba(180,140,75,0.08)', border: '1px solid rgba(180,140,75,0.2)' }}>
                 <h4 className="font-semibold text-[#F5F1E7] mb-1">Collection Summary</h4>

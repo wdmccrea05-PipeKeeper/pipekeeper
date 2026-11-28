@@ -677,7 +677,7 @@ export default function CigarForm({ cigar, onSubmit, onCancel }) {
       <div className="ck-action-footer">
         {typeof onCancel === 'function' && (
           <Button type="button" variant="ghost" onClick={onCancel} style={{ color: 'rgba(224,216,200,0.7)' }}>
-            {t('common.cancel', 'Cancel')}
+            {t('common.cancel')}
           </Button>
         )}
         <Button

@@ -201,14 +201,14 @@ function AddItemValueSnapshotModal({ item, itemType, moduleKey, valuationSnapsho
         <h3 className="text-lg font-bold text-[#F5F1E7]">{t('whiskey.saveValueCheckpoint', 'Save Value Checkpoint')}</h3>
         <div className="space-y-3">
           {[
-            { label: t('valuation.snapshotDate', 'Snapshot Date'), field: 'snapshot_date', type: 'date' },
-            { label: t('valuation.currentValue', 'Current Value'), field: 'computed_current_value', type: 'number' },
-            { label: t('valuation.retailValue', 'Retail Value'), field: 'retail_value', type: 'number' },
-            { label: t('valuation.marketValue', 'Market Value'), field: 'market_value', type: 'number' },
-            { label: t('valuation.collectorValue', 'Collector Value'), field: 'collector_value', type: 'number' },
-            { label: t('valuation.source', 'Source'), field: 'source', type: 'text' },
-            { label: t('valuation.rarityScore', 'Rarity Score (0–100)'), field: 'rarity_score', type: 'number' },
-            { label: t('common.notes', 'Notes'), field: 'notes', type: 'text' },
+            { label: t('valuation.snapshotDate'), field: 'snapshot_date', type: 'date' },
+            { label: t('valuation.currentValue'), field: 'computed_current_value', type: 'number' },
+            { label: t('valuation.retailValue'), field: 'retail_value', type: 'number' },
+            { label: t('valuation.marketValue'), field: 'market_value', type: 'number' },
+            { label: t('valuation.collectorValue'), field: 'collector_value', type: 'number' },
+            { label: t('valuation.source'), field: 'source', type: 'text' },
+            { label: t('valuation.rarityScore'), field: 'rarity_score', type: 'number' },
+            { label: t('common.notes'), field: 'notes', type: 'text' },
           ].map(({ label, field, type }) => (
             <div key={field}>
               <label className="text-xs text-[#D8C7A6] block mb-1">{label}</label>
@@ -245,9 +245,9 @@ function AddItemValueSnapshotModal({ item, itemType, moduleKey, valuationSnapsho
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(163,92,92,1),rgba(140,74,74,1))', color: '#F5F1E7' }}>
-            {saving ? t('common.saving', 'Saving…') : t('whiskey.saveValueCheckpoint', 'Save Value Checkpoint')}
+            {saving ? t('common.saving') : t('whiskey.saveValueCheckpoint', 'Save Value Checkpoint')}
           </Button>
         </div>
       </div>
@@ -301,7 +301,7 @@ function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onCl
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(59,130,246,0.25)' }}>
-        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('cigars.detail.addMarketObservation', 'Add Market Observation')}</h3>
+        <h3 className="text-lg font-bold text-[#F5F1E7]">{t('cigars.detail.addMarketObservation')}</h3>
         <div className="space-y-3">
           {[
             { label: 'Observed Date', field: 'observed_date', type: 'date' },
@@ -323,25 +323,25 @@ function AddPriceObservationModal({ itemId, itemType, moduleKey, userEmail, onCl
             </div>
           ))}
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">{t('cigars.detail.priceType', 'Price Type')}</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('cigars.detail.priceType')}</label>
             <Select value={form.price_type} onValueChange={v => setForm(prev => ({ ...prev, price_type: v }))}>
               <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="retail">{t('whiskey.purchaseTypeRetail', 'Retail')}</SelectItem>
-                <SelectItem value="aftermarket">{t('whiskey.purchaseTypeAftermarket', 'Aftermarket')}</SelectItem>
-                <SelectItem value="auction">{t('cigars.detail.priceTypeAuction', 'Auction')}</SelectItem>
-                <SelectItem value="collector">{t('cigars.detail.priceTypeCollector', 'Collector')}</SelectItem>
-                <SelectItem value="estimate">{t('cigars.detail.priceTypeEstimate', 'Estimate')}</SelectItem>
-                <SelectItem value="private_sale">{t('cigars.detail.priceTypePrivateSale', 'Private Sale')}</SelectItem>
-                <SelectItem value="other">{t('common.other', 'Other')}</SelectItem>
+                <SelectItem value="retail">{t('whiskey.purchaseTypeRetail')}</SelectItem>
+                <SelectItem value="aftermarket">{t('whiskey.purchaseTypeAftermarket')}</SelectItem>
+                <SelectItem value="auction">{t('cigars.detail.priceTypeAuction')}</SelectItem>
+                <SelectItem value="collector">{t('cigars.detail.priceTypeCollector')}</SelectItem>
+                <SelectItem value="estimate">{t('cigars.detail.priceTypeEstimate')}</SelectItem>
+                <SelectItem value="private_sale">{t('cigars.detail.priceTypePrivateSale')}</SelectItem>
+                <SelectItem value="other">{t('common.other')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} disabled={saving || !form.observed_price} style={{ background: 'linear-gradient(135deg,rgba(59,130,246,0.8),rgba(37,99,235,0.9))', color: '#F5F1E7' }}>
-            {saving ? t('common.saving', 'Saving…') : t('whiskey.saveObservation', 'Save Observation')}
+            {saving ? t('common.saving') : t('whiskey.saveObservation', 'Save Observation')}
           </Button>
         </div>
       </div>
@@ -392,72 +392,72 @@ function EditPipeValuationModal({ pipe, onClose, onSaved }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-4 overflow-y-auto max-h-[90vh]" style={{ background: 'linear-gradient(135deg,rgba(38,26,18,0.98),rgba(25,17,12,1))', border: '1px solid rgba(251,191,36,0.25)' }}>
         <h3 className="text-lg font-bold text-[#F5F1E7]">{t('valuation.editInputs', 'Edit Valuation Inputs')}</h3>
-        <p className="text-xs text-[#D8C7A6]/60">{t('pipeDetail.valuationEngineNote', 'These fields feed directly into the shared valuation engine.')}</p>
+        <p className="text-xs text-[#D8C7A6]/60">{t('pipeDetail.valuationEngineNote')}</p>
         <div className="space-y-3">
           <div>
             <label className="text-xs text-[#D8C7A6] block mb-1">Estimated Value ($)</label>
             <Input type="number" value={form.estimated_value} onChange={e => setForm(p => ({ ...p, estimated_value: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" />
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.makerStatus', 'Maker Status')}</label>
-            <Select value={form.maker_status || '__none__'} onValueChange={v => setForm(p => ({ ...p, maker_status: v === '__none__' ? '' : v }))}>              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t('fields.select', 'Select…')} /></SelectTrigger>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.makerStatus')}</label>
+            <Select value={form.maker_status || '__none__'} onValueChange={v => setForm(p => ({ ...p, maker_status: v === '__none__' ? '' : v }))}>              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t('fields.select')} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">— Not set —</SelectItem>
-                <SelectItem value="active">{t('fields.active', 'Active')}</SelectItem>
-                <SelectItem value="limited_production">{t('fields.limitedProduction', 'Limited Production')}</SelectItem>
-                <SelectItem value="retired">{t('fields.retired', 'Retired / No Longer Producing')}</SelectItem>
-                <SelectItem value="inactive">{t('fields.inactive', 'Inactive / Company Closed')}</SelectItem>
-                <SelectItem value="deceased">{t('fields.deceased', 'Deceased')}</SelectItem>
+                <SelectItem value="active">{t('fields.active')}</SelectItem>
+                <SelectItem value="limited_production">{t('fields.limitedProduction')}</SelectItem>
+                <SelectItem value="retired">{t('fields.retired')}</SelectItem>
+                <SelectItem value="inactive">{t('fields.inactive')}</SelectItem>
+                <SelectItem value="deceased">{t('fields.deceased')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.productionType', 'Production Type')}</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.productionType')}</label>
             <Select value={form.production_type || '__none__'} onValueChange={v => setForm(p => ({ ...p, production_type: v === '__none__' ? '' : v }))}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t('fields.select', 'Select…')} /></SelectTrigger>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t('fields.select')} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">— Not set —</SelectItem>
-                <SelectItem value="factory">{t('fields.factoryProduction', 'Factory Production')}</SelectItem>
-                <SelectItem value="standard_artisan">{t('fields.standardArtisan', 'Standard Artisan')}</SelectItem>
-                <SelectItem value="limited_artisan_batch">{t('fields.limitedArtisanBatch', 'Limited Artisan Batch')}</SelectItem>
-                <SelectItem value="one_off">{t('fields.oneOff', 'One-off / Commissioned')}</SelectItem>
+                <SelectItem value="factory">{t('fields.factoryProduction')}</SelectItem>
+                <SelectItem value="standard_artisan">{t('fields.standardArtisan')}</SelectItem>
+                <SelectItem value="limited_artisan_batch">{t('fields.limitedArtisanBatch')}</SelectItem>
+                <SelectItem value="one_off">{t('fields.oneOff')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.artisanTier', 'Artisan Tier')}</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.artisanTier')}</label>
             <Select value={form.artisan_tier || '__none__'} onValueChange={v => setForm(p => ({ ...p, artisan_tier: v === '__none__' ? '' : v }))}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t('fields.select', 'Select…')} /></SelectTrigger>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t('fields.select')} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">— Not set —</SelectItem>
-                <SelectItem value="factory">{t('fields.factoryMassProduction', 'Factory / Mass Production')}</SelectItem>
-                <SelectItem value="emerging">{t('fields.emergingArtisan', 'Emerging Artisan')}</SelectItem>
-                <SelectItem value="established">{t('fields.establishedArtisan', 'Established Artisan')}</SelectItem>
-                <SelectItem value="master">{t('fields.masterCarver', 'Master Carver')}</SelectItem>
-                <SelectItem value="prestige">{t('fields.prestigeCollectorTier', 'Prestige / Collector Tier')}</SelectItem>
+                <SelectItem value="factory">{t('fields.factoryMassProduction')}</SelectItem>
+                <SelectItem value="emerging">{t('fields.emergingArtisan')}</SelectItem>
+                <SelectItem value="established">{t('fields.establishedArtisan')}</SelectItem>
+                <SelectItem value="master">{t('fields.masterCarver')}</SelectItem>
+                <SelectItem value="prestige">{t('fields.prestigeCollectorTier')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm text-[#E0D8C8] cursor-pointer">
               <input type="checkbox" checked={form.one_of_a_kind} onChange={e => setForm(p => ({ ...p, one_of_a_kind: e.target.checked }))} className="rounded" />
-              <span>{t('fields.oneOfAKind', 'One of a Kind / Commissioned')}</span>
+              <span>{t('fields.oneOfAKind')}</span>
             </label>
           </div>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm text-[#E0D8C8] cursor-pointer">
               <input type="checkbox" checked={form.is_limited_run} onChange={e => setForm(p => ({ ...p, is_limited_run: e.target.checked }))} className="rounded" />
-              <span>{t('fields.limitedRun', 'Limited Run / Special Edition')}</span>
+              <span>{t('fields.limitedRun')}</span>
             </label>
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.provenanceNotes', 'Provenance / Certification Notes')}</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.provenanceNotes')}</label>
             <Input type="text" value={form.provenance_notes} onChange={e => setForm(p => ({ ...p, provenance_notes: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder="e.g. original box, dated receipt…" />
           </div>
           <div>
-            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.replacementDifficultyOverride', 'Replacement Difficulty Override')}</label>
+            <label className="text-xs text-[#D8C7A6] block mb-1">{t('fields.replacementDifficultyOverride')}</label>
             <Select value={form.replacement_difficulty_override || '__none__'} onValueChange={v => setForm(p => ({ ...p, replacement_difficulty_override: v === '__none__' ? '' : v }))}>
-              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t('fields.engineAutoComputes', 'Engine auto-computes')} /></SelectTrigger>
+              <SelectTrigger className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]"><SelectValue placeholder={t('fields.engineAutoComputes')} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">— Auto (engine) —</SelectItem>
                 <SelectItem value="easy">Easy</SelectItem>
@@ -469,13 +469,13 @@ function EditPipeValuationModal({ pipe, onClose, onSaved }) {
           </div>
           <div>
             <label className="text-xs text-[#D8C7A6] block mb-1">Rarity Score Override (0–100, blank = auto)</label>
-            <Input type="number" min="0" max="100" value={form.rarity_score_override} onChange={e => setForm(p => ({ ...p, rarity_score_override: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder={t('fields.leaveBlankForAuto', 'Leave blank for auto')} />
+            <Input type="number" min="0" max="100" value={form.rarity_score_override} onChange={e => setForm(p => ({ ...p, rarity_score_override: e.target.value }))} className="bg-[rgba(255,255,255,0.05)] border-[rgba(180,140,75,0.2)] text-[#F5F1E7]" placeholder={t('fields.leaveBlankForAuto')} />
           </div>
         </div>
         <div className="flex gap-3 justify-end pt-2">
-          <Button variant="outline" onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg,rgba(251,191,36,0.8),rgba(217,160,32,0.9))', color: '#1a120d' }}>
-            {saving ? t('common.saving', 'Saving…') : t('common.save', 'Save Inputs')}
+            {saving ? t('common.saving') : t('common.save')}
           </Button>
         </div>
       </div>
@@ -640,10 +640,10 @@ export default function PipeDetail() {
     setDeleting(true);
     try {
       await base44.entities.Pipe.delete(pipe.id);
-      toast.success(t('pipeDetail.deleted', 'Pipe deleted'));
+      toast.success(t('pipeDetail.deleted'));
       navigate('/Pipes');
     } catch (e) {
-      toast.error(t('pipeDetail.deleteFailed', 'Failed to delete pipe'));
+      toast.error(t('pipeDetail.deleteFailed'));
       setDeleting(false);
     }
   };
@@ -802,7 +802,7 @@ export default function PipeDetail() {
             }}
           >
             <Share2 className="w-4 h-4 mr-2" />
-            {t('common.share', 'Share')}
+            {t('common.share')}
           </Button>
 
           <EnrichButton itemType="pipe" record={pipe} onEnriched={setPipe} />
@@ -841,8 +841,8 @@ export default function PipeDetail() {
         }}
       >
         <div className="px-6 py-5 border-b border-[rgba(180,140,75,0.15)]">
-          <p className="text-2xl font-semibold text-[#F5F1E7]">{t('pipeDetail.snapshotTitle', 'Pipe Snapshot')}</p>
-          <p className="text-sm text-[#D8C7A6]/70 mt-1">{t('pipeDetail.snapshotSubtitle', 'Quick overview of the pipe record')}</p>
+          <p className="text-2xl font-semibold text-[#F5F1E7]">{t('pipeDetail.snapshotTitle')}</p>
+          <p className="text-sm text-[#D8C7A6]/70 mt-1">{t('pipeDetail.snapshotSubtitle')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
@@ -853,7 +853,7 @@ export default function PipeDetail() {
                 onClick={() => handlePhotoClick(0)}
                 className="max-h-[440px] w-full rounded-xl overflow-hidden hover:opacity-90 transition-opacity group relative"
                 style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.45))' }}
-                title={t('pipeDetail.viewGallery', 'Click to view full gallery')}
+                title={t('pipeDetail.viewGallery')}
               >
                 <img
                   src={mainPhoto}
@@ -995,38 +995,38 @@ export default function PipeDetail() {
                   <p className="text-2xl font-semibold mt-2">{normalized.sizeClass || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('fields.length', 'Length')}</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('fields.length')}</p>
                   <p className="text-2xl font-semibold mt-2">
                     {normalized.lengthValue != null ? (formatLength(Number(normalized.lengthValue)) || `${normalized.lengthValue} mm`) : '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('pipesExtended.weight', 'Weight')}</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('pipesExtended.weight')}</p>
                   <p className="text-2xl font-semibold mt-2">
                     {normalized.weightValue != null ? (formatWeight(Number(normalized.weightValue)) || `${normalized.weightValue} g`) : '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('pipeDetailTabs.condition', 'Condition')}</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('pipeDetailTabs.condition')}</p>
                   <p className="text-2xl font-semibold mt-2">{conditionSummary}</p>
                 </div>
               </div>
               {(normalized.bowlHeightValue != null || normalized.bowlWidthValue != null || normalized.bowlDiameterValue != null || normalized.bowlDepthValue != null) && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-[rgba(180,140,75,0.12)]">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('pipesExtended.bowlHeight', 'Bowl Height')}</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('pipesExtended.bowlHeight')}</p>
                     <p className="text-xl font-semibold mt-2">{normalized.bowlHeightValue != null ? (formatLength(Number(normalized.bowlHeightValue)) || `${normalized.bowlHeightValue} mm`) : '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('pipesExtended.bowlWidth', 'Bowl Width')}</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('pipesExtended.bowlWidth')}</p>
                     <p className="text-xl font-semibold mt-2">{normalized.bowlWidthValue != null ? (formatLength(Number(normalized.bowlWidthValue)) || `${normalized.bowlWidthValue} mm`) : '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('fields.bowlDiameter', 'Bowl Diameter')}</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('fields.bowlDiameter')}</p>
                     <p className="text-xl font-semibold mt-2">{normalized.bowlDiameterValue != null ? (formatLength(Number(normalized.bowlDiameterValue)) || `${normalized.bowlDiameterValue} mm`) : '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('fields.bowlDepth', 'Bowl Depth')}</p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#D8C7A6]/68">{t('fields.bowlDepth')}</p>
                     <p className="text-xl font-semibold mt-2">{normalized.bowlDepthValue != null ? (formatLength(Number(normalized.bowlDepthValue)) || `${normalized.bowlDepthValue} mm`) : '—'}</p>
                   </div>
                 </div>
@@ -1041,7 +1041,7 @@ export default function PipeDetail() {
                   border: '1px solid rgba(180,140,75,0.14)',
                 }}
               >
-                <p className="text-sm font-semibold mb-2">{t('common.notes', 'Notes')}</p>
+                <p className="text-sm font-semibold mb-2">{t('common.notes')}</p>
                 <p className="text-[#E0D8C8]/80 whitespace-pre-wrap">{pipe.notes}</p>
               </div>
             )}
@@ -1063,9 +1063,9 @@ export default function PipeDetail() {
           className="w-full flex items-center justify-between px-5 py-4 border-b border-[rgba(180,140,75,0.15)] text-left"
         >
           <div>
-            <p className="text-lg font-semibold text-[#F5F1E7]">{t('pipeDetail.functionsTitle', 'Pipe Functions & Details')}</p>
+            <p className="text-lg font-semibold text-[#F5F1E7]">{t('pipeDetail.functionsTitle')}</p>
             <p className="text-sm text-[#D8C7A6]/70 mt-1">
-              {t('pipeDetail.functionsSubtitle', 'Condition, rotation, specialization, maintenance, and full record details')}
+              {t('pipeDetail.functionsSubtitle')}
             </p>
           </div>
           <div className="flex items-center gap-2 text-[#D4A574]">
@@ -1082,25 +1082,25 @@ export default function PipeDetail() {
             <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2">
               <TabsList className="bg-transparent gap-0.5">
                 <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  {t('pipeDetailTabs.condition', 'Condition')}
+                  {t('pipeDetailTabs.condition')}
                 </TabsTrigger>
                 <TabsTrigger value="rotation" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  {t('insights.rotation', 'Rotation')}
+                  {t('insights.rotation')}
                 </TabsTrigger>
                 <TabsTrigger value="specialization" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  {t('pipeDetailTabs.specialization', 'Specialization')}
+                  {t('pipeDetailTabs.specialization')}
                 </TabsTrigger>
                 <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  {t('pipeDetailTabs.maintenance', 'Maintenance')}
+                  {t('pipeDetailTabs.maintenance')}
                 </TabsTrigger>
                 <TabsTrigger value="bowls" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  {t('fields.bowls', 'Bowls')}
+                  {t('fields.bowls')}
                 </TabsTrigger>
                 <TabsTrigger value="breakin" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  {t('pipeDetailTabs.breakIn', 'Break-In')}
+                  {t('pipeDetailTabs.breakIn')}
                 </TabsTrigger>
                 <TabsTrigger value="details" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
-                  {t('wine.detailsSection', 'Details')}
+                  {t('wine.detailsSection')}
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -1151,7 +1151,7 @@ export default function PipeDetail() {
 
             <TabsContent value="details" className="p-4 md:p-5 m-0">
               <div className="space-y-4">
-                <SectionCard title={t('pipesExtended.pipeGeometry', 'Pipe Geometry')} icon={Info}>
+                <SectionCard title={t('pipesExtended.pipeGeometry')} icon={Info}>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     <MetaRow label="Shape" value={showText(normalized.shape)} />
                     <MetaRow label="Bowl Style" value={showText(normalized.bowlStyle)} />
@@ -1162,7 +1162,7 @@ export default function PipeDetail() {
                   </div>
                 </SectionCard>
 
-                <SectionCard title={t('formsExtended.physicalCharacteristics', 'Physical Characteristics')} icon={Info}>
+                <SectionCard title={t('formsExtended.physicalCharacteristics')} icon={Info}>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     <MetaRow label="Bowl Material" value={showText(normalized.bowlMaterial)} />
                     <MetaRow label="Stem Material" value={showText(normalized.stemMaterial)} />
@@ -1173,7 +1173,7 @@ export default function PipeDetail() {
                   </div>
                 </SectionCard>
 
-                <SectionCard title={t('fields.measurements', 'Measurements')} icon={Ruler}>
+                <SectionCard title={t('fields.measurements')} icon={Ruler}>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     <MetaRow label="Length" value={normalized.lengthValue != null ? (formatLength(Number(normalized.lengthValue)) || `${normalized.lengthValue} mm`) : '—'} />
                     <MetaRow label="Weight" value={normalized.weightValue != null ? (formatWeight(Number(normalized.weightValue)) || `${normalized.weightValue} g`) : '—'} />
@@ -1184,7 +1184,7 @@ export default function PipeDetail() {
                   </div>
                 </SectionCard>
 
-                <SectionCard title={t('pipesExtended.stamping', 'Stamping')} icon={Info}>
+                <SectionCard title={t('pipesExtended.stamping')} icon={Info}>
                   {pipe.stamping ? (
                     <div
                       className="rounded-xl p-4 mb-4"
@@ -1194,7 +1194,7 @@ export default function PipeDetail() {
                       }}
                     >
                       <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">
-                        {t('fields.stampingText', 'Stamping Text')}
+                        {t('fields.stampingText')}
                       </p>
                       <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">{pipe.stamping}</p>
                     </div>
@@ -1209,7 +1209,7 @@ export default function PipeDetail() {
                   />
                 </SectionCard>
 
-                <SectionCard title={t('formsExtended.valueNotes', 'Value & Notes')} icon={CircleDollarSign}>
+                <SectionCard title={t('formsExtended.valueNotes')} icon={CircleDollarSign}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                     <MetaRow label="Purchase Price" value={money(normalized.purchasePrice)} />
                     <MetaRow label="Estimated Value" value={money(normalized.estimatedValue)} />
@@ -1228,7 +1228,7 @@ export default function PipeDetail() {
                       }}
                     >
                       <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">
-                        {t('pipesExtended.usageCharacteristics', 'Usage Characteristics')}
+                        {t('pipesExtended.usageCharacteristics')}
                       </p>
                       <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">
                         {showText(normalized.smokingCharacteristics)}
@@ -1243,7 +1243,7 @@ export default function PipeDetail() {
                       }}
                     >
                       <p className="text-[11px] uppercase tracking-[0.14em] text-[#D8C7A6]/60 mb-2">
-                        {t('common.notes', 'Notes')}
+                        {t('common.notes')}
                       </p>
                       <p className="text-sm text-[#F5F1E7] whitespace-pre-wrap">
                         {showText(normalized.notes)}
@@ -1283,7 +1283,7 @@ export default function PipeDetail() {
                   onClick={() => setSessionsOpen((v) => !v)}
                 >
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-[#F5F1E7]">{t('fields.sessions', 'Sessions')}</p>
+                    <p className="text-sm font-semibold text-[#F5F1E7]">{t('fields.sessions')}</p>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-[rgba(180,140,75,0.18)] text-[#D4A574] font-medium">
                       {smokingLogs.length}
                     </span>
@@ -1299,7 +1299,7 @@ export default function PipeDetail() {
                   <div className="mt-4 space-y-4">
                     <div className="flex gap-2">
                       <Button size="sm" variant={sessionViewMode === 'list' ? 'default' : 'outline'} onClick={() => setSessionViewMode('list')}>List</Button>
-                      <Button size="sm" variant={sessionViewMode === 'calendar' ? 'default' : 'outline'} onClick={() => setSessionViewMode('calendar')}>{t('hub.calendarView', 'Calendar')}</Button>
+                      <Button size="sm" variant={sessionViewMode === 'calendar' ? 'default' : 'outline'} onClick={() => setSessionViewMode('calendar')}>{t('hub.calendarView')}</Button>
                     </div>
                     {sessionViewMode === 'list' ? (
                       <div className="space-y-2">
@@ -1309,7 +1309,7 @@ export default function PipeDetail() {
                               <div>
                                 <p className="text-sm font-medium text-[#F5F1E7]">{log.itemLabel}</p>
                                 <p className="text-xs text-[#D8C7A6]/60 mt-1">{parseDisplayDate(log.date).toLocaleDateString()}</p>
-                                {log.notes ? <p className="text-xs text-[#E0D8C8]/70 mt-2 whitespace-pre-wrap">{log.notes}</p> : <p className="text-xs text-[#E0D8C8]/40 mt-2 italic">{t('pipeDetail.noSessionNotes', 'No session notes recorded.')}</p>}
+                                {log.notes ? <p className="text-xs text-[#E0D8C8]/70 mt-2 whitespace-pre-wrap">{log.notes}</p> : <p className="text-xs text-[#E0D8C8]/40 mt-2 italic">{t('pipeDetail.noSessionNotes')}</p>}
                               </div>
                               {log.rating != null && <span className="text-xs text-[#D4A574]">★ {log.rating}</span>}
                             </div>
@@ -1334,7 +1334,7 @@ export default function PipeDetail() {
                           {selectedKey}
                         </p>
                         {dayLogs.length === 0 ? (
-                          <p className="text-sm text-[#E0D8C8]/50">{t('pipeDetail.noSessionsOnDay', 'No sessions on this day.')}</p>
+                          <p className="text-sm text-[#E0D8C8]/50">{t('pipeDetail.noSessionsOnDay')}</p>
                         ) : (
                           dayLogs.map((log, i) => (
                             <div
@@ -1382,13 +1382,13 @@ export default function PipeDetail() {
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('pipeDetail.deleteConfirmTitle', 'Delete this pipe?')}</AlertDialogTitle>
+            <AlertDialogTitle>{t('pipeDetail.deleteConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('pipeDetail.deleteConfirmBody', 'This will permanently delete')} <strong>{pipe?.name}</strong>. {t('pipeDetail.cannotUndo', 'This action cannot be undone.')}
+              {t('pipeDetail.deleteConfirmBody')} <strong>{pipe?.name}</strong>. {t('pipeDetail.cannotUndo')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>{t('common.cancel', 'Cancel')}</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
@@ -1419,7 +1419,7 @@ export default function PipeDetail() {
           valuationSnapshot={pipeStrategy}
           userEmail={user?.email}
           onClose={() => setShowSnapshotModal(false)}
-          onSaved={() => { setShowSnapshotModal(false); reloadSnapshots(); toast.success(t('pipeDetail.checkpointSaved', 'Value checkpoint saved')); }}
+          onSaved={() => { setShowSnapshotModal(false); reloadSnapshots(); toast.success(t('pipeDetail.checkpointSaved')); }}
         />
       )}
 
@@ -1430,7 +1430,7 @@ export default function PipeDetail() {
           moduleKey="pipekeeper"
           userEmail={user?.email}
           onClose={() => setShowObservationModal(false)}
-          onSaved={() => { setShowObservationModal(false); reloadObservations(); toast.success(t('pipeDetail.observationSaved', 'Observation saved')); }}
+          onSaved={() => { setShowObservationModal(false); reloadObservations(); toast.success(t('pipeDetail.observationSaved')); }}
         />
       )}
 
@@ -1441,7 +1441,7 @@ export default function PipeDetail() {
           onSaved={(updates) => {
             setPipe(prev => ({ ...prev, ...updates }));
             setShowEditValuationModal(false);
-            toast.success(t('pipeDetail.valuationUpdated', 'Valuation inputs updated'));
+            toast.success(t('pipeDetail.valuationUpdated'));
             // Reload snapshots so Value History reflects the new inputs
             reloadSnapshots();
           }}

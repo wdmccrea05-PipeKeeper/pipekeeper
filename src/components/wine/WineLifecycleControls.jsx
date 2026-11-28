@@ -112,7 +112,7 @@ export default function WineLifecycleControls({ wine, onUpdated, onDelete }) {
         }}
       >
         <Plus className="w-4 h-4" />
-        {t('wine.addBottle', 'Add Bottle')}
+        {t('wine.addBottle')}
       </button>
 
       {/* Archive / Unarchive */}

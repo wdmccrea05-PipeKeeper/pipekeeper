@@ -20,13 +20,13 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
   const features = [
     isModuleEnabled('pipekeeper') && {
       icon: Package,
-      label: t("nav.pipes", "Pipes"),
+      label: t("nav.pipes"),
       description: t("quickAccess.catalogPipes", "Catalog and manage your pipes"),
       page: "Pipes",
     },
     isModuleEnabled('pipekeeper') && {
       icon: Leaf,
-      label: t("nav.tobacco", "Tobacco"),
+      label: t("nav.tobacco"),
       description: t("quickAccess.manageBlendsAndCellar", "Manage blends and cellar"),
       page: "Tobacco",
     },
@@ -80,13 +80,13 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
     },
     {
       icon: CreditCard,
-      label: t("subscription.title", "Subscriptions"),
+      label: t("subscription.title"),
       description: t("quickAccess.manageSubscription", "Manage your subscription"),
       page: "Subscription",
     },
     {
       icon: User,
-      label: t("nav.profile", "Profile"),
+      label: t("nav.profile"),
       description: t("quickAccess.accountSettings", "Account settings & preferences"),
       page: "Profile",
     },
@@ -98,8 +98,8 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
     },
     {
       icon: HelpCircle,
-      label: t("nav.help", "Help"),
-      description: t("nav.faq", "FAQ & support resources"),
+      label: t("nav.help"),
+      description: t("nav.faq"),
       page: "HelpCenter",
     },
   ].filter(Boolean);
