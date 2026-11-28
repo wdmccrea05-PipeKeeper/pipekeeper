@@ -15,8 +15,9 @@ Status values: `done` · `in-progress` · `blocked` · `planned`
 ## Draft continuation — Curator handoffs and shared typography
 
 This increment was implemented and validated on the PR branch from
-`a710509d2c5a2d98f39c390b38ce516d34fcc56e`; the new commit is pending the
-normal commit hook.
+`a710509d2c5a2d98f39c390b38ce516d34fcc56e`. The tested source commit is
+`872a75387b09421bb89c53a7f93ac5bef27f2323`; its normal commit hook passed.
+Subsequent changes to this tracker are documentation-only.
 
 | Area | Change and evidence | Remaining gap |
 |---|---|---|
