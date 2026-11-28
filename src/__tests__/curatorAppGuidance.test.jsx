@@ -53,6 +53,46 @@ describe('Curator app guidance', () => {
     expect(appGuidance('Merge duplicate blends', { pipekeeper: true })).toBeNull();
   });
 
+  it('resumes the exact saved import batch from Curator', async () => {
+    const batch = { batchId: 'batch-12345678', importType: 'pipekeeper_pipes' };
+    const guidance = appGuidance('Review this import batch', {}, { importBatchContext: batch });
+    expect(guidance.recordLinks[0]).toMatchObject({
+      to: '/Import?batch=batch-12345678&type=pipekeeper_pipes',
+      label: 'Open import preview',
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/Curator']}>
+        <ExpertTobacconistChat
+          collectionContext={{}}
+          activeModules={{ pipekeeper: true }}
+          initialImportBatchContext={batch}
+          userEmail="a@example.com"
+        />
+        <Location />
+      </MemoryRouter>
+    );
+    fireEvent.change(screen.getByPlaceholderText('Ask about your collection…'), { target: { value: 'Review this import batch' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
+    fireEvent.click(await screen.findByRole('link', { name: 'Open import preview' }));
+    expect(screen.getByTestId('location').textContent).toBe('/Import?batch=batch-12345678&type=pipekeeper_pipes');
+    expect(invoke.mock.calls.some(([name]) => name === 'invokeCuratorLLM')).toBe(false);
+  });
+
+  it('opens the requested shared report from the Curator response', async () => {
+    render(
+      <MemoryRouter initialEntries={['/Curator']}>
+        <ExpertTobacconistChat collectionContext={{}} activeModules={{ pipekeeper: true }} userEmail="a@example.com" />
+        <Location />
+      </MemoryRouter>
+    );
+    fireEvent.change(screen.getByPlaceholderText('Ask about your collection…'), { target: { value: 'I need a collection report' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
+    fireEvent.click(await screen.findByRole('link', { name: 'Open Collection Overview' }));
+    expect(screen.getByTestId('location').textContent).toBe('/ReportingCenter?report=overview');
+    expect(invoke.mock.calls.some(([name]) => name === 'invokeCuratorLLM')).toBe(false);
+  });
+
   it('restores links only for matching guidance answers under current module access', () => {
     const question = 'How do I import cigars?';
     const guidance = appGuidance(question, { cigarkeeper: true });

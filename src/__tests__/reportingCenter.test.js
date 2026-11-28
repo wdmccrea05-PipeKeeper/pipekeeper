@@ -244,6 +244,23 @@ describe("exports carry the same metadata as the screen", () => {
     const doc = createReportPdf(emptyResult);
     expect(doc.getNumberOfPages()).toBeGreaterThan(0);
   });
+
+  it("exports the same filtered supporting records shown in the report result", () => {
+    const filters = {
+      ...DEFAULT_FILTERS,
+      modules: { pipe: true, whiskey: false, cigar: false, wine: false },
+      makers: ["Savinelli"],
+    };
+    const filteredResult = runReport("documentation", contextFor({ filters }));
+    const supportingRows = filteredResult.tables.find((table) => table.id === "weakest").rows;
+    const csv = buildReportCsv(filteredResult);
+
+    expect(filteredResult.recordCount).toBe(1);
+    expect(supportingRows.map((row) => row.name)).toEqual(["Billiard One"]);
+    expect(supportingRows[0].detailPath).toContain("pipe1");
+    expect(csv).toContain("Billiard One");
+    expect(csv).not.toContain("Lagavulin 16");
+  });
 });
 
 describe("authorization", () => {

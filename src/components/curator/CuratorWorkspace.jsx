@@ -151,6 +151,7 @@ export default function CuratorWorkspace({
   onSurfaceChange,
   onCountsChange,
   initialPrompt = '',
+  initialImportBatchContext = null,
 }) {
   const { t } = useTranslation();
   const { user } = useCurrentUser();
@@ -687,7 +688,7 @@ export default function CuratorWorkspace({
 
     case 'chat':
       return (
-        <>{modals}<ExpertTobacconistChat threadId={threadId} setThreadId={setThreadId} preFillMessage={preFillMessage} onPreFillConsumed={() => setPreFillMessage('')} collectionContext={ctx} isSingleModuleMode={isSingleModuleMode} activeModules={moduleEnabled} initialEntityContext={chatEntityContext} userEmail={userEmail} /></>
+        <>{modals}<ExpertTobacconistChat threadId={threadId} setThreadId={setThreadId} preFillMessage={preFillMessage} onPreFillConsumed={() => setPreFillMessage('')} collectionContext={ctx} isSingleModuleMode={isSingleModuleMode} activeModules={moduleEnabled} initialEntityContext={chatEntityContext} initialImportBatchContext={initialImportBatchContext} userEmail={userEmail} /></>
       );
 
     default:

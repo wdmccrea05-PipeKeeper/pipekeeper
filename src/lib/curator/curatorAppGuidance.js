@@ -6,8 +6,23 @@ const TYPES = [
   { pattern: /\bwines?\b/i, entity: 'Wine', module: 'winekeeper', importType: 'winekeeper_wines', label: 'wines' },
 ];
 
-export function appGuidance(text, enabledModules = {}) {
+export function appGuidance(text, enabledModules = {}, context = {}) {
   const question = String(text || '').trim();
+  const batch = context?.importBatchContext;
+  if (
+    batch?.batchId
+    && /^[A-Za-z0-9_-]{8,80}$/.test(batch.batchId)
+    && TYPES.some((type) => type.importType === batch.importType)
+    && /\b(review|resume|continue|preview)\b/i.test(question)
+  ) {
+    return {
+      content: 'Your import preview is saved in this browser session. Open the same batch to review validation, duplicates, conflicts, and the confirmation step.',
+      recordLinks: [{
+        to: `/Import?batch=${encodeURIComponent(batch.batchId)}&type=${encodeURIComponent(batch.importType)}`,
+        label: 'Open import preview',
+      }],
+    };
+  }
   if (!/\b(how|where|steps?|help|start|why|troubleshoot|troubleshooting|faq|frequently asked)\b/i.test(question)) return null;
   const duplicate = /\b(duplicate|duplicates)\b/i.test(question) && /\b(merge|review|find|manage)\b/i.test(question);
   const importing = /\b(import|upload)\b/i.test(question) && !duplicate;

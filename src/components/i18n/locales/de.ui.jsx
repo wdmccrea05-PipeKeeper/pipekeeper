@@ -2489,6 +2489,14 @@ const deUI = {
     blendsImportedSuccess: "{count} Mischung(en) erfolgreich importiert",
     importFailed: "{count} konnten nicht importiert werden",
     csvParseFailed: "CSV-Datei konnte nicht gelesen werden. Bitte prüfe das Format und versuche es erneut.",
+    conflictSummary: "Konflikt — der vorhandene Datensatz bleibt erhalten. {differences}",
+    conflictValues: "{field}: vorhanden „{existing}“, importiert „{incoming}“",
+    batchSaved: "Dieser Stapel ist in dieser Browsersitzung gespeichert. Exakte Duplikate und Konflikte bleiben unverändert.",
+    curatorReviewBatch: "Curator um Prüfung dieses Stapels bitten",
+    duplicatePolicy: "Duplikatbehandlung: Nur neue Einträge hinzufügen. Exakte Duplikate und Konflikte werden angezeigt; vorhandene Datensätze werden nicht überschrieben.",
+    retryUnfinishedRows: "Unvollständige Zeilen erneut versuchen",
+    confirmImportRows: "{count} Zeile(n) bestätigen und importieren",
+    startNewBatch: "Neuen Stapel starten",
   },
 
   termsGate: {

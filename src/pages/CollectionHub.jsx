@@ -636,7 +636,7 @@ export default function CollectionHub() {
         <span className="flex-1 min-w-0">
           <span
             className="block text-base font-semibold"
-            style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+            style={{ color: '#F5F1E7', fontFamily: 'var(--ck-font-display)' }}
           >
             {t('hub.curatorTitle')}
           </span>
@@ -793,7 +793,7 @@ export default function CollectionHub() {
                 <div className="flex-1 min-w-0">
                   <p
                     className="text-base font-bold break-words line-clamp-1"
-                    style={{ color: '#F5F1E7', fontFamily: "'Georgia', serif" }}
+                    style={{ color: '#F5F1E7', fontFamily: 'var(--ck-font-display)' }}
                   >
                     {activity.title}
                   </p>

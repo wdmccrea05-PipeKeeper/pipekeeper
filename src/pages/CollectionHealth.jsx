@@ -17,7 +17,6 @@ import {
   FINDING_TYPE_LABELS,
 } from '@/lib/actions/collectionFindings';
 import { resolveReturn } from '@/lib/navigation/returnTo';
-import { TEXT_CAPTION, TEXT_SECONDARY } from '@/lib/theme/tokens';
 
 const MODULE_TABS = [
   { key: '', label: 'All modules' },
@@ -41,16 +40,17 @@ function initialParam(key) {
   return params.get(key) || '';
 }
 
-function Chip({ active, children, onClick }) {
+function Chip({ active, children, onClick, variant = 'dark' }) {
+  const isPaper = variant === 'paper';
   return (
     <button
       type="button"
       onClick={onClick}
       className="rounded-full px-3 py-2 text-[12.5px] font-semibold whitespace-nowrap min-h-[40px]"
       style={{
-        background: active ? 'rgba(198,161,91,0.2)' : 'rgba(255,255,255,0.04)',
-        border: `1px solid ${active ? 'rgba(198,161,91,0.5)' : 'rgba(180,140,75,0.18)'}`,
-        color: active ? '#F5F1E7' : 'rgba(224,216,200,0.75)',
+        background: active ? (isPaper ? 'rgba(167,124,63,0.18)' : 'rgba(198,161,91,0.2)') : (isPaper ? '#fbf5e9' : 'rgba(255,255,255,0.04)'),
+        border: `1px solid ${active ? 'rgba(167,124,63,0.55)' : isPaper ? 'rgba(167,124,63,0.28)' : 'rgba(180,140,75,0.18)'}`,
+        color: isPaper ? 'var(--ck-espresso)' : active ? '#F5F1E7' : 'rgba(224,216,200,0.75)',
       }}
     >
       {children}
@@ -169,10 +169,11 @@ export default function CollectionHealth() {
   const hasModules = enabled.pipekeeper || enabled.whiskeykeeper || enabled.cigarkeeper || enabled.winekeeper;
 
   return (
-    <InsightsPageShell>
+    <InsightsPageShell variant="paper">
       <InsightsHeader
         title="Collection health"
         subtitle="What is missing or inconsistent in your records, in one list. Fix what can be fixed here; open the record when only you can fill it in."
+        variant="paper"
       />
 
       {returnLink && (
@@ -195,14 +196,15 @@ export default function CollectionHealth() {
       )}
 
       {!isLoading && !hasModules ? (
-        <div className="rounded-2xl p-8 text-center" style={{ border: '1px solid rgba(180,140,75,0.18)' }}>
-          <p className="text-sm" style={{ color: TEXT_SECONDARY }}>
+        <div className="ck-paper-panel rounded-2xl p-8 text-center" style={{ border: '1px solid rgba(167,124,63,0.28)' }}>
+          <p className="text-sm" style={{ color: 'rgba(52,37,29,0.72)' }}>
             No collection modules are open yet. Add a module and its records to review them here.
           </p>
         </div>
       ) : (
         <div className="space-y-4 min-w-0">
           <StatStrip
+            variant="paper"
             items={[
               { label: 'Needs review', value: isLoading ? '—' : summary.total, onClick: () => { setTypeFilter(''); setShowDetails(true); } },
               {
@@ -228,20 +230,20 @@ export default function CollectionHealth() {
               {FINDING_TYPES.filter((type) => summary.byType[type.key] > 0).map((type) => (
                 <div
                   key={type.key}
-                  className="rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-2"
-                  style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(180,140,75,0.18)', color: '#F5F1E7' }}
+                  className="ck-paper-panel rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-2"
+                  style={{ background: '#fbf5e9', border: '1px solid rgba(167,124,63,0.28)', color: 'var(--ck-espresso)' }}
                 >
                   <button
                     type="button"
                     onClick={() => { setTypeFilter(type.key); setShowDetails(true); }}
                     className="text-left min-h-[44px] flex-1"
                   >
-                    {type.label}: {summary.byType[type.key]} <span style={{ color: TEXT_SECONDARY }}>· {['storage', 'documentation', 'valuation'].includes(type.key) ? 'Optional information' : 'Review'} · View records</span>
+                    {type.label}: {summary.byType[type.key]} <span style={{ color: 'rgba(52,37,29,0.68)' }}>· {['storage', 'documentation', 'valuation'].includes(type.key) ? 'Optional information' : 'Review'} · View records</span>
                   </button>
                   <Link
                     to={`/Curator?findingType=${encodeURIComponent(type.key)}&prompt=${encodeURIComponent(t('collectionIntelligence.reviewFindingsPrompt', { group: type.label }))}`}
                     className="inline-flex items-center justify-center rounded-lg px-3 text-sm font-semibold min-h-[44px]"
-                    style={{ color: '#E8D3A8', border: '1px solid rgba(198,161,91,0.35)' }}
+                    style={{ color: 'var(--ck-espresso)', border: '1px solid rgba(167,124,63,0.45)' }}
                   >
                     {t('collectionIntelligence.askCurator')}
                   </Link>
@@ -257,7 +259,7 @@ export default function CollectionHealth() {
                   !tab.key ||
                   (tab.key === 'tobacco' ? enabled.pipekeeper : Boolean(enabled[tab.key]))
               ).map((tab) => (
-                <Chip key={tab.key || 'all'} active={moduleFilter === tab.key} onClick={() => setModuleFilter(tab.key)}>
+                <Chip key={tab.key || 'all'} active={moduleFilter === tab.key} onClick={() => setModuleFilter(tab.key)} variant="paper">
                   {tab.label}
                 </Chip>
               ))}
@@ -265,14 +267,14 @@ export default function CollectionHealth() {
           </div>
 
           <button type="button" onClick={() => setShowDetails((value) => !value)} aria-expanded={showDetails}
-            className="text-sm font-semibold min-h-[44px]" style={{ color: '#D4A574' }}>
+            className="text-sm font-semibold min-h-[44px]" style={{ color: 'var(--ck-antique-brass)' }}>
             {showDetails ? 'Hide detailed findings' : 'View detailed findings and filters'}
           </button>
 
           {showDetails && <div className="space-y-4">
           <div className="-mx-1 overflow-x-auto nav-scroll-bar">
             <div className="flex gap-2 px-1 py-1">
-              <Chip active={!typeFilter} onClick={() => setTypeFilter('')}>
+              <Chip active={!typeFilter} onClick={() => setTypeFilter('')} variant="paper">
                 All findings {summary.total > 0 ? `(${summary.total})` : ''}
               </Chip>
               {FINDING_TYPES.map((type) => (
@@ -280,6 +282,7 @@ export default function CollectionHealth() {
                   key={type.key}
                   active={typeFilter === type.key}
                   onClick={() => setTypeFilter(type.key)}
+                  variant="paper"
                 >
                   {FINDING_TYPE_LABELS[type.key]} {summary.byType[type.key] > 0 ? `(${summary.byType[type.key]})` : ''}
                 </Chip>
@@ -288,14 +291,14 @@ export default function CollectionHealth() {
           </div>
 
           {typeFilter === 'duplicate' && duplicates.scanning && (
-            <p className="text-[12.5px] flex items-center gap-2" style={{ color: TEXT_SECONDARY }}>
+            <p className="text-[12.5px] flex items-center gap-2" style={{ color: 'rgba(52,37,29,0.72)' }}>
               <span className="w-4 h-4 border-2 border-[rgba(180,140,75,0.3)] border-t-[#D4A574] rounded-full animate-spin" />
               Checking for duplicates…
             </p>
           )}
 
           {typeFilter === 'duplicate' && !duplicates.scanning && duplicates.scanned && duplicates.groups.length === 0 && (
-            <p className="text-[12.5px]" style={{ color: TEXT_SECONDARY }}>
+            <p className="text-[12.5px]" style={{ color: 'rgba(52,37,29,0.72)' }}>
               No records in this scope share an identity.
             </p>
           )}
@@ -323,7 +326,7 @@ export default function CollectionHealth() {
               type="button"
               onClick={scanDuplicates}
               className="rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
-              style={{ background: 'transparent', color: '#E0D8C8', border: '1px solid rgba(180,140,75,0.3)' }}
+              style={{ background: '#fbf5e9', color: 'var(--ck-espresso)', border: '1px solid rgba(167,124,63,0.35)' }}
             >
               {duplicates.scanned ? 'Check again' : 'Check for duplicates'}
             </button>
@@ -331,13 +334,13 @@ export default function CollectionHealth() {
           </div>}
 
           {resolvedCount > 0 && (
-            <p className="text-[11.5px]" style={{ color: TEXT_CAPTION }}>
+            <p className="text-[11.5px]" style={{ color: 'rgba(52,37,29,0.7)' }}>
               {resolvedCount} resolved finding{resolvedCount === 1 ? '' : 's'} hidden. Resolving records a decision only;
               your records and their history are unchanged.
             </p>
           )}
 
-          <p className="text-[11.5px]" style={{ color: TEXT_CAPTION }}>
+          <p className="text-[11.5px]" style={{ color: 'rgba(52,37,29,0.7)' }}>
             Some findings concern optional information. Defer what you will come back to, and dismiss what does not
             apply; neither changes the underlying record.
           </p>

@@ -20,9 +20,9 @@ export { InsightHighlightCard };
 
 // ── Page Shell ──────────────────────────────────────────────────────────────
 
-export function InsightsPageShell({ children }) {
+export function InsightsPageShell({ children, variant = 'dark' }) {
   return (
-    <div className="space-y-6" style={{ color: TEXT_PRIMARY }}>
+    <div className={`space-y-6${variant === 'paper' ? ' ck-paper-workspace' : ''}`} style={{ color: variant === 'paper' ? 'var(--ck-espresso)' : TEXT_PRIMARY }}>
       {children}
     </div>
   );
@@ -30,20 +30,21 @@ export function InsightsPageShell({ children }) {
 
 // ── Header ───────────────────────────────────────────────────────────────────
 
-export function InsightsHeader({ title, subtitle }) {
+export function InsightsHeader({ title, subtitle, variant = 'dark' }) {
+  const isPaper = variant === 'paper';
   return (
     <div>
       <h1
         className="text-3xl sm:text-4xl font-bold tracking-tight mb-2 break-words"
         style={{
-          color: TEXT_PRIMARY,
+          color: isPaper ? 'var(--ck-espresso)' : TEXT_PRIMARY,
           fontFamily: 'var(--ck-font-display)',
-          textShadow: '0 2px 6px rgba(0,0,0,0.7)',
+          textShadow: isPaper ? 'none' : '0 2px 6px rgba(0,0,0,0.7)',
         }}
       >
         {title}
       </h1>
-      <p style={{ color: TEXT_SECONDARY, fontSize: '0.9375rem' }}>
+      <p style={{ color: isPaper ? 'rgba(52,37,29,0.72)' : TEXT_SECONDARY, fontSize: '0.9375rem' }}>
         {subtitle}
       </p>
     </div>

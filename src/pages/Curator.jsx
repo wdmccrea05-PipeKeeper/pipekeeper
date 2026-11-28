@@ -58,6 +58,14 @@ export default function CuratorPage() {
     const prompt = new URLSearchParams(window.location.search).get('prompt') || '';
     return prompt.trim().slice(0, 800);
   })();
+  const initialImportBatchContext = (() => {
+    const params = new URLSearchParams(window.location.search);
+    const batchId = params.get('batch') || '';
+    const importType = params.get('type') || '';
+    return /^[A-Za-z0-9_-]{8,80}$/.test(batchId) && importType
+      ? { batchId, importType }
+      : null;
+  })();
 
   const [surface, setSurface] = useState(initialSurface);
 
@@ -88,7 +96,7 @@ export default function CuratorPage() {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)]" style={{ background: '#0B0B0C' }}>
+    <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)]" style={{ background: 'var(--ck-parchment)', color: 'var(--ck-espresso)' }}>
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <header className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -101,7 +109,7 @@ export default function CuratorPage() {
             />
             <h1
               className="text-[22px] sm:text-[26px] leading-tight font-semibold truncate"
-              style={{ color: '#F5F5F7', letterSpacing: '-0.4px' }}
+              style={{ color: 'var(--ck-espresso)', letterSpacing: '-0.4px', fontFamily: 'var(--ck-font-display)' }}
             >
               {t('curatorPage.title')}
             </h1>
@@ -112,7 +120,7 @@ export default function CuratorPage() {
               type="button"
               onClick={() => setSurface('chat')}
               className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-3 rounded-lg shrink-0"
-              style={{ color: '#C6A15B', border: '1px solid rgba(198,161,91,0.28)', minHeight: 40 }}
+              style={{ color: 'var(--ck-espresso)', border: '1px solid rgba(167,124,63,0.45)', minHeight: 40, background: '#fbf5e9' }}
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               {t('curatorPage.backToChat')}
@@ -125,6 +133,7 @@ export default function CuratorPage() {
           onSurfaceChange={setSurface}
           onCountsChange={handleCountsChange}
           initialPrompt={initialPrompt}
+          initialImportBatchContext={initialImportBatchContext}
         />
 
         {surface === 'chat' ? (
@@ -141,8 +150,8 @@ export default function CuratorPage() {
                       className="inline-flex items-center gap-2 px-3 rounded-xl text-[13px] font-medium break-words"
                       style={{
                         border: '1px solid rgba(180,140,75,0.24)',
-                        color: '#E0D8C8',
-                        background: 'rgba(255,255,255,0.02)',
+                        color: 'var(--ck-espresso)',
+                        background: '#fbf5e9',
                         minHeight: 44,
                       }}
                     >
@@ -150,7 +159,7 @@ export default function CuratorPage() {
                       {badge > 0 ? (
                         <span
                           className="min-w-[20px] h-[20px] px-1.5 rounded-full text-[11px] inline-flex items-center justify-center"
-                          style={{ background: 'rgba(198,161,91,0.22)', color: '#E8D3A8' }}
+                          style={{ background: 'rgba(167,124,63,0.16)', color: 'var(--ck-espresso)' }}
                         >
                           {badge}
                         </span>

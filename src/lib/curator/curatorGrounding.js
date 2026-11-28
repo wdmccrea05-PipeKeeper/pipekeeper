@@ -10,6 +10,7 @@
  */
 
 import { isWithinBoundaries } from '@/lib/collection/boundaries.js';
+import { getReport } from '@/lib/reports/reportCatalog.js';
 
 const MODULE_LABELS = {
   pipes: 'PipeKeeper',
@@ -187,10 +188,10 @@ export function buildHistoryBlock(history = [], limit = 8, maxChars = 400) {
 }
 
 const REPORT_INTENTS = [
-  { pattern: /\bvaluation report\b|\binsurance (report|documentation|summary)\b/i, report: 'valuation', title: 'Valuation report', route: '/ValuationCenter' },
-  { pattern: /\bcollection report\b|\binventory report\b|\bcollection summary report\b/i, report: 'collection', title: 'Collection report', route: '/CollectionReports' },
-  { pattern: /\baging report\b|\bcellar report\b/i, report: 'aging', title: 'Aging report', route: '/CollectionReports' },
-  { pattern: /\bpipe report\b|\bpipe collection report\b/i, report: 'pipe', title: 'Pipe collection report', route: '/CollectionReports' },
+  { pattern: /\bvaluation report\b|\binsurance (report|documentation|summary)\b/i, reportId: 'valuation-history', report: 'valuation' },
+  { pattern: /\bcollection report\b|\binventory report\b|\bcollection summary report\b/i, reportId: 'overview', report: 'collection' },
+  { pattern: /\baging report\b|\bcellar report\b/i, reportId: 'aging', report: 'aging' },
+  { pattern: /\bpipe report\b|\bpipe collection report\b/i, reportId: 'specialization', report: 'pipe' },
 ];
 
 /** Detect a request to produce a report conversationally. */
@@ -198,7 +199,14 @@ export function detectReportRequest(text) {
   const value = String(text || '');
   if (!/\breport\b|\bdocumentation pack\b|\bexport\b/i.test(value)) return null;
   const matched = REPORT_INTENTS.find((entry) => entry.pattern.test(value));
-  return matched ? { report: matched.report, title: matched.title, route: matched.route } : null;
+  if (!matched) return null;
+  const definition = getReport(matched.reportId);
+  return {
+    report: matched.report,
+    reportId: definition.id,
+    title: definition.title,
+    route: `/ReportingCenter?report=${encodeURIComponent(definition.id)}`,
+  };
 }
 
 const PURCHASE_INTENT = [
@@ -244,7 +252,8 @@ export function buildConversationalReport(context = {}, reportRequest = {}) {
     inconsistent.length
       ? `I would also flag ${inconsistent.length} record${inconsistent.length === 1 ? '' : 's'} where the entries disagree with each other.`
       : '',
-    `The printable version, with the same records and its generation date, is in the reports area.`,
+    "This is a preview of the records loaded for Curator; the report opens with the account's enabled modules and default filters, which you can review or change before drilling down.",
+    `Open the report to review its filters and result. Its record and chart drill-downs open the supporting items, and CSV/PDF export uses the same filtered result and generation date.`,
   ].filter(Boolean);
 
   return parts.join(' ');

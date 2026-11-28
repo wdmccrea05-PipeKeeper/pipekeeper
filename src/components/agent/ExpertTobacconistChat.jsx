@@ -1630,6 +1630,7 @@ export default function ExpertTobacconistChat({
   isSingleModuleMode = false,
   activeModules = {},
   initialEntityContext = null,
+  initialImportBatchContext = null,
   userEmail = '',
 }) {
   const [messages, setMessages] = useState([]);
@@ -1908,7 +1909,7 @@ export default function ExpertTobacconistChat({
         },
         storageLocations: storageCacheRef.current || [],
         enabledModules: activeModules || {},
-        context: collectionContext,
+        context: { ...collectionContext, importBatchContext: initialImportBatchContext },
       });
 
       if (routed.kind === 'proposal') {
@@ -2222,7 +2223,7 @@ export default function ExpertTobacconistChat({
   const hasCollection = (collectionContext?.blends?.length || 0) + (collectionContext?.bottles?.length || 0) + (collectionContext?.pipes?.length || 0) > 0;
 
   return (
-    <div className="rounded-[18px] overflow-hidden flex flex-col" style={{ background: 'linear-gradient(145deg, #17171A 0%, #111113 100%)', border: '1px solid rgba(140,105,65,0.16)', minHeight: 0 }}>
+    <div className="rounded-[18px] overflow-hidden flex flex-col" style={{ background: 'linear-gradient(145deg, #34251d 0%, #211812 100%)', border: '1px solid rgba(167,124,63,0.35)', minHeight: 0 }}>
       {/* One quiet toolbar — the page above already carries the title */}
       <div
         className="flex items-center justify-between gap-2 px-3 sm:px-5 py-2 border-b"
@@ -2330,13 +2331,13 @@ export default function ExpertTobacconistChat({
                         </div>
                       )}
                       {m.report && (
-                        <a
-                          href={m.report.route}
+                        <Link
+                          to={m.report.route}
                           className="inline-flex items-center gap-2 mt-3 text-[13px] font-semibold break-words"
                           style={{ color: '#C6A15B' }}
                         >
                           Open {m.report.title}
-                        </a>
+                        </Link>
                       )}
 
                       {m.retryText && (

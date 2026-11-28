@@ -49,7 +49,7 @@ export function routeCuratorRequest({
   const boundary = detectPurchaseBoundaryRequest(text);
   if (boundary) return { kind: 'message', content: BOUNDARY_REFUSAL, boundary: true };
 
-  const guidance = appGuidance(text, enabledModules);
+  const guidance = appGuidance(text, enabledModules, context);
   if (guidance) return { kind: 'message', ...guidance };
 
   const report = detectReportRequest(text);
