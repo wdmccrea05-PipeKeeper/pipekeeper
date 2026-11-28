@@ -45,13 +45,22 @@ export default function PostCard({ post, currentUser, friends = [], onChanged })
   const [shareOpen, setShareOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const { data: likes = [] } = useQuery({
-    queryKey: ['post-likes', post.id],
-    queryFn: () => base44.entities.CommunityPostLike.filter({ post_id: post.id }),
+  const { data: likeData } = useQuery({
+    queryKey: ['post-likes', post.id, currentUser?.email],
+    queryFn: async () => {
+      const [total, mine] = await Promise.all([
+        base44.entities.CommunityPostLike.count({ post_id: post.id }),
+        currentUser?.email
+          ? base44.entities.CommunityPostLike.filter({ post_id: post.id, user_email: currentUser.email })
+          : Promise.resolve([]),
+      ]);
+      return { total, myLike: mine?.[0] || null };
+    },
     staleTime: 15_000,
   });
 
-  const myLike = likes.find((like) => like.user_email === currentUser?.email);
+  const likeCount = likeData?.total ?? 0;
+  const myLike = likeData?.myLike || null;
   const isMine = post.author_email === currentUser?.email;
   const typeInfo = TYPE_LABELS[post.post_type] || TYPE_LABELS.note;
   const moduleInfo = MODULE_LABELS[post.module_type] || MODULE_LABELS.general;
@@ -163,7 +172,7 @@ export default function PostCard({ post, currentUser, friends = [], onChanged })
             className={myLike ? 'text-[#A35C5C]' : 'text-[#E0D8C8]/70'}
           >
             <Heart className={`w-4 h-4 mr-1 ${myLike ? 'fill-current' : ''}`} />
-            {likes.length}
+            {likeCount}
           </Button>
 
           <Button

@@ -18,9 +18,13 @@ export default function InventoryMigrator() {
 
     (async () => {
       try {
-        // Find unmigrated bottles with bottle_count > 0
-        const bottles = await base44.entities.Bottle.filter({ created_by: user.email });
-        const unmigrated = bottles.filter(b => !b.inventory_migrated && (b.bottle_count || 1) >= 1);
+        // Find unmigrated bottles — the migration flag is filtered in the read,
+        // while a missing bottle_count still counts as 1 in JavaScript
+        const bottles = await base44.entities.Bottle.filter({
+          created_by: user.email,
+          inventory_migrated: { $ne: true },
+        });
+        const unmigrated = bottles.filter(b => (b.bottle_count || 1) >= 1);
 
         // One batched read for the inventory units of every bottle being checked
         const bottleIdsWithUnits = new Set();

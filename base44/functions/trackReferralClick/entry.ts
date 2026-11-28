@@ -48,8 +48,9 @@ Deno.serve(async (req) => {
       const recentClicks = await base44.asServiceRole.entities.ReferralEvent.filter({
         referral_code: referralCode,
         status: 'clicked',
-      });
-      const veryRecent = recentClicks.find(e => !e.referred_user_id && e.link_clicked_at > recentCutoff);
+        link_clicked_at: { $gt: recentCutoff },
+      }, '-link_clicked_at', 50, 0);
+      const veryRecent = (recentClicks || []).find(e => !e.referred_user_id);
 
       if (!veryRecent) {
         await base44.asServiceRole.entities.ReferralEvent.create({

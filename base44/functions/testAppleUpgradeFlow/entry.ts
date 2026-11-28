@@ -184,6 +184,10 @@ Deno.serve(async (req) => {
       const finalSubs = await base44.asServiceRole.entities.Subscription.filter({
         user_email: normEmail(testEmail)
       });
+      const finalAppleSubs = await base44.asServiceRole.entities.Subscription.filter({
+        user_email: normEmail(testEmail),
+        provider: 'apple'
+      });
 
       results.steps.push({
         step: 6,
@@ -193,7 +197,7 @@ Deno.serve(async (req) => {
           user_tier: updatedUser[0]?.data?.data?.entitlement_tier,
           user_status: updatedUser[0]?.data?.data?.subscription_status,
           subscription_count: finalSubs.length,
-          apple_subscriptions: finalSubs.filter(s => s.provider === 'apple').length
+          apple_subscriptions: finalAppleSubs.length
         }
       });
 
