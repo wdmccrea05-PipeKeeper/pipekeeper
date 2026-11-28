@@ -1,3 +1,6 @@
+import RecordPhoto from '@/components/ui/RecordPhoto';
+import { MODULE_ASSETS } from '@/components/branding/moduleAssets';
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMeasurement } from '@/components/utils/measurementConversion';
@@ -67,7 +70,6 @@ import BreakInSchedule from '@/components/pipes/BreakInSchedule';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
 import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
-import { getItemPhoto } from '@/lib/images/getItemPhoto';
 
 function DetailStat({ label, value, icon: Icon }) {
   return (
@@ -750,7 +752,7 @@ export default function PipeDetail() {
     );
   }
 
-  const mainPhoto = getItemPhoto(pipe);
+  const recordPhotos = getHighlightPhotos(pipe);
   const allPhotos = [
     ...(pipe.photos || []),
     ...(pipe.stamping_photos || [])
@@ -771,7 +773,7 @@ export default function PipeDetail() {
     : '—';
 
   return (
-    <div className="p-6 md:p-8 space-y-6 text-[#F5F1E7]">
+    <div className="ck-record-workspace space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -811,7 +813,7 @@ export default function PipeDetail() {
             onClick={() => navigate(`/Pipes?edit=${encodeURIComponent(pipe.id)}`)}
             className="flex-1 sm:flex-none"
             style={{
-              background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))',
+              background: '#514323',
               color: '#fff',
             }}
           >
@@ -835,7 +837,7 @@ export default function PipeDetail() {
       <div
         className="rounded-3xl overflow-hidden"
         style={{
-          background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))',
+          background: '#303436',
           border: '1px solid rgba(180,140,75,0.18)',
           boxShadow: '0 14px 40px rgba(0,0,0,0.4)',
         }}
@@ -847,7 +849,7 @@ export default function PipeDetail() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
           <div className="p-6 flex flex-col items-center gap-4 border-r border-[rgba(180,140,75,0.12)]">
-            {mainPhoto ? (
+            {recordPhotos.length ? (
               <button
                 type="button"
                 onClick={() => handlePhotoClick(0)}
@@ -855,8 +857,8 @@ export default function PipeDetail() {
                 style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.45))' }}
                 title={t('pipeDetail.viewGallery')}
               >
-                <img
-                  src={mainPhoto}
+                <RecordPhoto
+                  photos={recordPhotos}
                   alt={pipe.name}
                   className="max-h-[440px] w-full object-contain"
                 />
@@ -923,7 +925,7 @@ export default function PipeDetail() {
               <h1
                 className="text-3xl md:text-5xl font-bold leading-tight break-words"
                 style={{ fontFamily: "'Georgia', serif" }}
-              >
+              ><img src={MODULE_ASSETS.pipekeeper.src} alt="" className="ck-record-logo" />
                 {pipe.name}
               </h1>
               <p className="text-base md:text-lg text-[#D8C7A6]/84 mt-3 break-words">
@@ -1052,7 +1054,7 @@ export default function PipeDetail() {
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))',
+          background: '#303436',
           border: '1px solid rgba(180,140,75,0.18)',
           boxShadow: '0 14px 40px rgba(0,0,0,0.4)',
         }}

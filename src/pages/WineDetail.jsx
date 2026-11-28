@@ -1,3 +1,6 @@
+import RecordPhoto from '@/components/ui/RecordPhoto';
+import { MODULE_ASSETS } from '@/components/branding/moduleAssets';
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -9,7 +12,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import {
   getWineTotalValue, getWineUnitValue, getWineQuantity,
-  getWineDrinkWindowStatus, getWineRarityScore, getWineRarityResult, getWinePrimaryImage,
+  getWineDrinkWindowStatus, getWineRarityScore, getWineRarityResult,
   hasWineValuation, getWineValuationSource, getWineValuationConfidence,
   getWineRegionDisplay,
 } from '@/lib/collection/wineSelectors';
@@ -557,13 +560,13 @@ export default function WineDetail() {
   const totalValue = getWineTotalValue(wine);
   const qty = getWineQuantity(wine);
   const rarityScore = getWineRarityScore(wine);
-  const photo = getWinePrimaryImage(wine);
+  const recordPhotos = getHighlightPhotos(wine);
   const regionDisplay = getWineRegionDisplay(wine);
   const dwLabel = dwStatus ? t(`wine.${dwStatus === 'drink_now' ? 'drinkNow' : dwStatus === 'too_young' ? 'tooYoung' : 'pastPeak'}`) : null;
   const dwColor = dwStatus ? DRINK_WINDOW_COLORS[dwStatus] : null;
 
   return (
-    <div className="space-y-6">
+    <div className="ck-record-workspace space-y-6">
       <WineKeeperModuleNav currentPageName="Wines" />
 
       {/* Back + actions */}
@@ -624,11 +627,11 @@ export default function WineDetail() {
         {/* ── Left column: hero + quick metrics ── */}
         <div className="lg:col-span-1 space-y-4">
           {/* Hero card */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(42,28,20,0.9)', border: '1px solid rgba(139,58,58,0.3)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: '#303436', border: '1px solid rgba(139,58,58,0.3)' }}>
             {/* Hero image — object-contain so full bottle shows, same treatment as WhiskeyKeeper */}
-            <div className="w-full bg-gradient-to-b from-[#3d2020] to-[#200f0f]" style={{ minHeight: '280px' }}>
-              {photo ? (
-                <img src={photo} alt={wine.name} className="w-full object-contain" style={{ maxHeight: '360px', minHeight: '280px' }} />
+            <div className="w-full bg-[#34383a]" style={{ minHeight: '280px' }}>
+              {recordPhotos.length ? (
+                <RecordPhoto photos={recordPhotos} alt={wine.name} className="w-full object-contain" style={{ maxHeight: '360px', minHeight: '280px' }} />
               ) : (
                 <div className="w-full flex items-center justify-center" style={{ minHeight: '280px', background: 'rgba(139,58,58,0.06)' }}>
                   <Wine className="w-20 h-20" style={{ color: 'rgba(139,58,58,0.25)' }} />
@@ -650,7 +653,7 @@ export default function WineDetail() {
               />
             </div>
             <div className="p-5 space-y-2">
-              <h1 className="text-xl font-bold leading-snug" style={{ color: '#F5F1E7' }}>{wine.name}</h1>
+              <h1 className="text-xl font-bold leading-snug" style={{ color: '#F5F1E7' }}><img src={MODULE_ASSETS.winekeeper.src} alt="" className="ck-record-logo" />{wine.name}</h1>
               <p className="text-sm font-medium" style={{ color: 'rgba(224,216,200,0.75)' }}>{wine.producer}</p>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {wine.vintage && (

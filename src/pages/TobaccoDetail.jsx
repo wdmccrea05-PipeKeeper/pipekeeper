@@ -1,3 +1,6 @@
+import RecordPhoto from '@/components/ui/RecordPhoto';
+import { MODULE_ASSETS } from '@/components/branding/moduleAssets';
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -733,7 +736,7 @@ export default function TobaccoDetail() {
     );
   }
 
-  const mainPhoto = blend.photos?.[0] || blend.logo;
+  const recordPhotos = getHighlightPhotos(blend, true);
   const totalOz =
     (Number(blend.tin_total_quantity_oz) || 0) +
     (Number(blend.bulk_total_quantity_oz) || 0) +
@@ -741,7 +744,7 @@ export default function TobaccoDetail() {
   const flavorProfile = normalizeFlavorProfile(blend.flavor_profile ?? blend.flavor_notes);
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 text-[#F5F1E7]">
+    <div className="ck-record-workspace space-y-6">
       <div className="flex items-center justify-between gap-3">
         <Button variant="outline" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -777,7 +780,7 @@ export default function TobaccoDetail() {
           <Button
             onClick={() => navigate(`/Tobacco?edit=${encodeURIComponent(blend.id)}`)}
             size="sm"
-            style={{ background: 'linear-gradient(135deg, rgba(163,92,92,1), rgba(143,78,78,1))', color: '#fff' }}
+            style={{ background: '#514323', color: '#fff' }}
           >
             <Pencil className="w-4 h-4 mr-2" />
             Edit
@@ -797,16 +800,16 @@ export default function TobaccoDetail() {
       <div
         className="rounded-3xl overflow-hidden"
         style={{
-          background: 'linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))',
+          background: '#303436',
           border: '1px solid rgba(180,140,75,0.18)',
           boxShadow: '0 14px 40px rgba(0,0,0,0.4)',
         }}
       >
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
           <div className="p-6 flex flex-col items-center gap-4 border-r border-[rgba(180,140,75,0.12)]">
-            {mainPhoto ? (
-              <img
-                src={mainPhoto}
+            {recordPhotos.length ? (
+              <RecordPhoto
+                photos={recordPhotos}
                 alt={blend.name}
                 className="max-h-[440px] w-full object-contain"
                 style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.45))' }}
@@ -860,7 +863,7 @@ export default function TobaccoDetail() {
               <h1
                 className="text-3xl md:text-5xl font-bold leading-tight break-words"
                 style={{ fontFamily: "'Georgia', serif" }}
-              >
+              ><img src={MODULE_ASSETS.pipekeeper.src} alt="" className="ck-record-logo" />
                 {blend.name}
               </h1>
               <p className="text-base md:text-lg text-[#D8C7A6]/84 mt-3 break-words">

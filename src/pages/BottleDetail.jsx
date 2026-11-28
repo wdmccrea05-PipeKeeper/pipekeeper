@@ -1,3 +1,6 @@
+import RecordPhoto from '@/components/ui/RecordPhoto';
+import { MODULE_ASSETS } from '@/components/branding/moduleAssets';
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "@/components/i18n/safeTranslation";
@@ -56,7 +59,6 @@ import {
 import { toast } from "sonner";
 import EnrichButton from "@/components/shared/EnrichButton";
 import { useCurrency } from "@/lib/currency/useCurrency";
-import { getItemPhoto } from '@/lib/images/getItemPhoto';
 import { formatDate as formatLocalizedDate } from '@/components/utils/localeFormatters';
 
 function safePrimitive(value, fallback = "—") {
@@ -671,7 +673,7 @@ function BottleDetailInner() {
     };
   }, [bottleId, userEmail, userLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const photo = useMemo(() => getItemPhoto(bottle), [bottle]);
+  const recordPhotos = getHighlightPhotos(bottle);
   const displayName = useMemo(
     () => safePrimitive(bottle?.name, "Untitled Bottle"),
     [bottle]
@@ -725,7 +727,7 @@ function BottleDetailInner() {
 
   return (
     <LockedModuleGuard moduleKey="whiskeykeeper">
-      <div className="p-6 md:p-8 space-y-6 text-[#F5F1E7]">
+      <div className="ck-record-workspace space-y-6">
         <div className="flex items-center justify-between gap-3">
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -755,7 +757,7 @@ function BottleDetailInner() {
               }
               style={{
                 background:
-                  "linear-gradient(135deg, rgba(201,110,110,1), rgba(168,84,84,1))",
+                  "#514323",
                 color: "#fff",
               }}
             >
@@ -779,16 +781,16 @@ function BottleDetailInner() {
           className="rounded-3xl overflow-hidden"
           style={{
             background:
-              "linear-gradient(145deg, rgba(38,26,18,0.98), rgba(25,17,12,1))",
+              "#303436",
             border: "1px solid rgba(180,140,75,0.18)",
             boxShadow: "0 14px 40px rgba(0,0,0,0.4)",
           }}
         >
           <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
             <div className="p-6 flex flex-col items-center gap-4 border-r border-[rgba(180,140,75,0.12)]">
-              {photo ? (
-                <img
-                  src={photo}
+              {recordPhotos.length ? (
+                <RecordPhoto
+                  photos={recordPhotos}
                   alt={displayName}
                   className="max-h-[440px] w-full object-contain"
                   style={{ filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.45))" }}
@@ -818,7 +820,7 @@ function BottleDetailInner() {
 
             <div className="p-6 space-y-6">
               <div>
-                <h1 className="text-3xl font-bold text-[#F5F1E7] break-words leading-tight">
+                <h1 className="text-3xl font-bold text-[#F5F1E7] break-words leading-tight"><img src={MODULE_ASSETS.whiskeykeeper.src} alt="" className="ck-record-logo" />
                   {displayName}
                 </h1>
 

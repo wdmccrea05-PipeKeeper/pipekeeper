@@ -1,3 +1,6 @@
+import RecordPhoto from '@/components/ui/RecordPhoto';
+import { MODULE_ASSETS } from '@/components/branding/moduleAssets';
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import { parseDisplayDate } from '@/shared/utils/calculations/parseDisplayDate';
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -72,7 +75,6 @@ import { getCigarRarityResult } from '@/lib/collection/cigarSelectors';
 import SimilarItemsDrawer from '@/components/recommendations/SimilarItemsDrawer';
 import { runFindSimilar } from '@/components/recommendations/FindSimilarEngine';
 import ShareRecordModal from '@/components/share/ShareRecordModal';
-import { getItemPhoto } from '@/lib/images/getItemPhoto';
 import { QUERY_KEYS } from '@/lib/queryKeys';
 import { useTranslation } from '@/components/i18n/safeTranslation';
 
@@ -558,7 +560,6 @@ function CigarDetailInner() {
   const [sessionModalOpen, setSessionModalOpen] = useState(false);
   const [editingSession, setEditingSession] = useState(null);
   const [valuationModalOpen, setValuationModalOpen] = useState(false);
-  const [imageFailed, setImageFailed] = useState(false);
 
   const saveField = async (field, value) => {
     await base44.entities.Cigar.update(cigar.id, { [field]: value, created_by: cigar.created_by || user?.email });
@@ -804,7 +805,7 @@ function CigarDetailInner() {
     }
   };
 
-  const photo = getItemPhoto(cigar);
+  const recordPhotos = getHighlightPhotos(cigar);
   const actionLabels = getTranslatedQuickActionLabels(t, cigar);
   const locationMeta = [
     cigar?.humidor_tray ? t('cigars.detail.locationTray', { value: cigar.humidor_tray }) : null,
@@ -850,7 +851,7 @@ function CigarDetailInner() {
   ];
 
   return (
-    <div className="space-y-6 text-[#F5F1E7]">
+    <div className="ck-record-workspace space-y-6">
       {/* Action bar */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <Button
@@ -969,19 +970,19 @@ function CigarDetailInner() {
       <div
         className="rounded-2xl p-4 sm:p-6 flex gap-4 sm:gap-6 flex-col sm:flex-row"
         style={{
-          background: 'linear-gradient(145deg, rgba(40,28,18,0.95), rgba(27,19,13,0.98))',
+          background: '#303436',
           border: '1px solid rgba(140,107,63,0.35)',
         }}
       >
-        {photo && !imageFailed && (
+        {recordPhotos.length > 0 && (
           <div
             className="w-24 h-32 rounded-xl overflow-hidden shrink-0 flex items-center justify-center"
             style={{ background: 'rgba(58,40,28,0.6)', border: '1px solid rgba(140,107,63,0.2)' }}
           >
-            <img src={photo} alt={cigar.name || t('cigars.detail.cigarAlt')} className="w-full h-full object-cover" onError={() => setImageFailed(true)} />
+            <RecordPhoto photos={recordPhotos} alt={cigar.name || t('cigars.detail.cigarAlt')} className="w-full h-full object-cover" />
           </div>
         )}
-        {(!photo || imageFailed) && (
+        {recordPhotos.length === 0 && (
           <div
             className="w-20 h-20 rounded-xl shrink-0 flex items-center justify-center"
             style={{ background: 'rgba(58,40,28,0.6)', border: '1px solid rgba(140,107,63,0.2)' }}
@@ -993,7 +994,7 @@ function CigarDetailInner() {
           <p className="text-sm font-medium mb-1" style={{ color: '#B48C4B' }}>
             {safePrimitive(cigar.brand)}
           </p>
-          <h1 className="text-3xl font-bold" style={{ fontFamily: "'Georgia', serif" }}>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: "'Georgia', serif" }}><img src={MODULE_ASSETS.cigarkeeper.src} alt="" className="ck-record-logo" />
             {safePrimitive(cigar.name, t('cigars.unnamedCigar'))}
           </h1>
           {cigar.line && (
@@ -1092,7 +1093,7 @@ function CigarDetailInner() {
           'rgba(224,216,200,0.55)';
         const confColor = rarity.confidence === 'high' ? '#6FCF97' : rarity.confidence === 'medium' ? '#D4A574' : 'rgba(224,216,200,0.45)';
         return (
-          <div className="rounded-2xl p-5" style={{ background: 'linear-gradient(145deg, rgba(40,28,18,0.95), rgba(27,19,13,0.98))', border: '1px solid rgba(140,107,63,0.25)' }}>
+          <div className="rounded-2xl p-5" style={{ background: '#303436', border: '1px solid rgba(140,107,63,0.25)' }}>
             <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
               <span className="text-xs uppercase tracking-[0.12em] font-semibold" style={{ color: 'rgba(224,216,200,0.55)' }}>{t('cigars.detail.collectibility')}</span>
               <div className="flex items-center gap-2">
@@ -1143,7 +1144,7 @@ function CigarDetailInner() {
       <div
         className="rounded-2xl p-5"
         style={{
-          background: 'linear-gradient(145deg, rgba(40,28,18,0.95), rgba(27,19,13,0.98))',
+          background: '#303436',
           border: '1px solid rgba(140,107,63,0.25)',
         }}
       >
@@ -1394,7 +1395,7 @@ function CigarDetailInner() {
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent
           style={{
-            background: 'linear-gradient(145deg, rgba(40,28,18,0.98), rgba(27,19,13,0.99))',
+            background: '#303436',
             border: '1px solid rgba(140,107,63,0.35)',
             color: '#F5F1E7',
           }}
