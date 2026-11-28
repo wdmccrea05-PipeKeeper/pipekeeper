@@ -46,6 +46,7 @@ export default function ModuleHighlightsSection({ title, highlights = [] }) {
             subtitle={h.subtitle}
             accent={h.accent}
             photo={h.photo}
+            photos={h.photos}
             onClick={h.onClick}
           />
         ))}

@@ -41,7 +41,7 @@ function SectionLabel({ children, color }) {
   );
 }
 
-function StatCard({ label, value, accent, onClick }) {
+function StatCard({ label, value, onClick }) {
   const surface = {
     background: '#fbf5e9',
     border: '1px solid rgba(167,124,63,0.28)',
@@ -86,7 +86,7 @@ function StatCard({ label, value, accent, onClick }) {
   );
 }
 
-export function ModuleStatsGrid({ stats = [], accent = '#D4A574' }) {
+export function ModuleStatsGrid({ stats = [] }) {
   if (!stats.length) return null;
   const columns =
     stats.length === 1
@@ -100,7 +100,7 @@ export function ModuleStatsGrid({ stats = [], accent = '#D4A574' }) {
   return (
     <div className={`grid gap-3 ${columns}`}>
       {stats.map(({ label, value, onClick }) => (
-        <StatCard key={label} label={label} value={value} accent={accent} onClick={onClick} />
+        <StatCard key={label} label={label} value={value} onClick={onClick} />
       ))}
     </div>
   );
@@ -183,7 +183,7 @@ export default function ModulePageShell({
       {moduleNav && <div className="ck-module-nav-surface min-w-0">{moduleNav}</div>}
 
       {/* 3 — Summary metrics */}
-      {stats.length > 0 && <ModuleStatsGrid stats={stats} accent={accentColor} />}
+      {stats.length > 0 && <ModuleStatsGrid stats={stats} />}
 
       {/* 4 — Primary shortcuts stay available for empty collections too */}
       {actions && <div>{actions}</div>}

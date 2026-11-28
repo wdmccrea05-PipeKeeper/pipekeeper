@@ -22,7 +22,7 @@ import LogSessionModal from '@/components/home/LogSessionModal';
 import FreeTierUpgradePrompt from '@/components/subscription/FreeTierUpgradePrompt';
 import { hasModuleProAccess } from '@/components/utils/moduleEntitlements';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
-import { getItemPhoto } from '@/lib/images/getItemPhoto';
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 
 const CURATOR_ICON = "https://media.base44.com/images/public/694956e18d119cc497192525/dda113b4e_inappcurator.png";
@@ -132,7 +132,7 @@ export default function PipeKeeperModule() {
         value: mostSmokedPipe.name,
         subtitle: mostSmokedPipe.maker,
         accent: '#C87941',
-        photo: getItemPhoto(mostSmokedPipe),
+        photos: getHighlightPhotos(mostSmokedPipe),
         onClick: () => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostSmokedPipe.id)}`)),
       });
     }
@@ -143,7 +143,7 @@ export default function PipeKeeperModule() {
         value: formatFromBase(mostValuablePipe.estimated_value),
         subtitle: mostValuablePipe.name,
         accent: '#B4824B',
-        photo: getItemPhoto(mostValuablePipe),
+        photos: getHighlightPhotos(mostValuablePipe),
         onClick: () => navigate(createPageUrl(`PipeDetail?id=${encodeURIComponent(mostValuablePipe.id)}`)),
       });
     }
@@ -154,7 +154,7 @@ export default function PipeKeeperModule() {
         value: favoriteBlends[0].name,
         subtitle: favoriteBlends[0].manufacturer,
         accent: '#5A7C5A',
-        photo: favoriteBlends[0].logo || favoriteBlends[0].photo || null,
+        photos: getHighlightPhotos(favoriteBlends[0], true),
         onClick: () => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(favoriteBlends[0].id)}`)),
       });
     }
