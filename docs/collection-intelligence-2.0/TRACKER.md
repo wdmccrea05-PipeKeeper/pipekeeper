@@ -12,6 +12,43 @@ Status values: `done` · `in-progress` · `blocked` · `planned`
 
 ---
 
+## Draft continuation — persistent imports, reports, and visual pass
+
+Implementation source tested on the PR branch: **`b0d9ca6749e4b976d810fd10fa708857f3659674`**.
+The commit passed the installed pre-commit hook; it ran the unchanged
+localization gate at 2,573 findings / 2,666.
+
+| Area | Change and local evidence | Remaining gap |
+|---|---|---|
+| Resumable CSV imports | Import snapshots now persist in browser `localStorage`, scoped by normalized account email and batch ID, and migrate older session snapshots when possible. Saved batch state includes source CSV, inferred mappings, results and unresolved row identifiers; revalidation recomputes unresolved rows. The Import Center states CSV-only support and directs Excel users to save as CSV. Tests cover storage scoping, legacy migration, mappings, unresolved rows and Curator handoff. | This is browser-local persistence, not a server-side batch or cross-device recovery guarantee. Mappings are displayed as inferred, not editable. Reconciliation decision storage is present, but complete conflict decision controls, transactional idempotency and concurrent-import protection remain unimplemented/unverified. |
+| Curator report journey | A UI interaction test follows a plain-language Curator request to the shared Reporting Center, checks the exact supporting record route, and exercises CSV export. A separate 5,001-record fixture test verifies pagination, report scope, supporting rows and exported totals across two fetch pages. | These are local fixture/mock tests, not an authenticated Base44 report or export acceptance run. |
+| Workspace facelift | Applied shared parchment workspace, espresso text, restrained brass accents and display typography to the hub and shared module shell; Quick Access remains available for empty collections. Collection Health and Curator use paper surfaces; CigarKeeper's empty state is aligned with the other modules. Fixed contrast in Curator's collapsed tools disclosure and added fallbacks for unavailable Curator artwork. | Local preview used empty unauthenticated collections. No authenticated two-account acceptance was possible; module-specific content and every report drill-down still need live review. |
+| Existing logo/wordmark assets | Kept the tracked CollectionKeeper, PipeKeeper, WhiskeyKeeper, CigarKeeper and WineKeeper image assets and existing asset mappings. Local screenshots show those original CollectionKeeper/module marks; only missing remote Curator artwork uses a brass Target fallback. | These screenshots are local-preview evidence only, not the authenticated Base44 preview. |
+
+Validation on implementation source `b0d9ca6749e4b976d810fd10fa708857f3659674`:
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: **234
+  files, 3,819 passed, 0 failed**.
+- `npm run build`: **passed**; existing chunk and mixed dynamic/static import
+  warnings remain. `VITE_BASE44_APP_ID` and `VITE_BASE44_APP_BASE_URL` are
+  unset, so the build is not connected to Base44.
+- `npm run lint`: **passed**.
+- `npm run typecheck`: **passed**.
+- `npm run i18n:check -- --max-findings=2666`: **passed**, 2,573 findings /
+  2,666 budget. English and German import guidance is included.
+- Normal commit hook: **passed**, using the same i18n budget.
+- Local responsive preview checks: hub, CigarKeeper, Curator and Collection
+  Health were inspected at 390px and 1,440px; document width matched viewport.
+  Screenshots are local-only; the local preview had no authenticated collection
+  data. Test-generated certification timestamp/benchmark changes were restored.
+
+No authorized Base44 preview or two distinct test accounts are configured.
+Server-side isolation, entitlements, cross-account batch visibility, import
+write persistence/retry, live report/export parity, and authenticated mobile
+acceptance remain blocked. Keep PR #511 in draft; do not merge or publish.
+
+---
+
 ## Draft continuation — resumable import and report handoffs
 
 Implementation source tested and committed to PR #511: **`4116acfd9ad4a3e4ea7866fdde9a062564b12b21`**.
