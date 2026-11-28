@@ -52,7 +52,7 @@ export default function TroubleshootingFull() {
       <div className="max-w-[980px] mx-auto px-4 py-10">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#F5F1E7] mb-2">
-            {t("help.troubleshooting", "Troubleshooting")}
+            {t("help.troubleshooting")}
           </h1>
           <p className="text-[#D7C9B2]/80 mb-4">
             {t("helpCenter.troubleshootingSubtitle", "Common issues and solutions")}
@@ -65,7 +65,7 @@ export default function TroubleshootingFull() {
                 className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)]"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
-                {t("help.howTo", "How-To Guides")}
+                {t("help.howTo")}
               </Button>
             </Link>
 
@@ -75,7 +75,7 @@ export default function TroubleshootingFull() {
                 className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)]"
               >
                 <CircleHelp className="w-4 h-4 mr-2" />
-                {t("help.faq", "FAQ")}
+                {t("help.faq")}
               </Button>
             </Link>
           </div>

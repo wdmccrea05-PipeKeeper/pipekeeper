@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { ownedCuratorMessages } from '../../shared/curatorMessageOwnership.ts';
 
 /**
  * CRITICAL HARDENING: Persist every Curator message to CuratorMessage entity.
@@ -33,15 +34,18 @@ Deno.serve(async (req) => {
     // Idempotency check: avoid duplicate writes for same message_index
     if (typeof message_index === 'number') {
       const existing = await base44.entities.CuratorMessage.filter({
+        user_email: user.email,
         session_id,
         message_index,
         role,
       });
 
-      if (existing.length > 0) {
+      const duplicate = ownedCuratorMessages(existing, user.email, session_id)
+        .find((row) => row.message_index === message_index && row.role === role);
+      if (duplicate) {
         return Response.json({ 
           success: true, 
-          message_id: existing[0].id,
+          message_id: duplicate.id,
           duplicate_prevented: true 
         });
       }

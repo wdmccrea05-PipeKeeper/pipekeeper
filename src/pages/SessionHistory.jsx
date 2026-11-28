@@ -169,7 +169,7 @@ export default function SessionHistory() {
       {viewMode === "list" ? (
         <div className="rounded-2xl border border-[rgba(180,140,75,0.2)] bg-[rgba(25,17,11,0.7)] p-4">
           {isLoading ? (
-            <p className="text-[#D8C7A6]/75">{t("common.loading", "Loading...")}</p>
+            <p className="text-[#D8C7A6]/75">{t("common.loading")}</p>
           ) : chronologicalRows.length === 0 ? (
             <p className="text-[#D8C7A6]/75">No sessions logged.</p>
           ) : (

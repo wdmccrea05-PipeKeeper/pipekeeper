@@ -158,7 +158,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
                 textShadow: "0 1px 2px rgba(0,0,0,0.5)"
               }}
             >
-              {key === "wantList" ? t("nav.wantList", "Want List") : t(`quickActions.${key}`)}
+              {key === "wantList" ? t("nav.wantList") : t(`quickActions.${key}`)}
             </span>
           </button>
         ))}

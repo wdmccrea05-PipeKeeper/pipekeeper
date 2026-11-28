@@ -87,7 +87,7 @@ function TastingsInner() {
                 className="text-4xl font-bold"
                 style={{ fontFamily: "'Georgia', serif" }}
               >
-                {t('whiskey.tastings', 'Tasting Notes')}
+                {t('whiskey.tastings')}
               </h1>
               <p className="text-[#D8C7A6]/78 mt-2">
                 {tastings.length} {t('whiskey.tastingsLogged', 'tastings logged')}

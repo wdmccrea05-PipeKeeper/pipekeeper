@@ -12,6 +12,13 @@ const collectionIntelligence = {
   healthStrong: "Strong",
   healthModerate: "Moderate",
   healthLow: "Low",
+  selectFindings: "Select all eligible records",
+  clearFindings: "Clear selection",
+  locationForSelected: "Location for selected records",
+  chooseLocation: "Select a location",
+  storageBatchTitle: "Assign storage ({count})",
+  storageLabel: "Storage",
+  reviewTargetList: "View affected records",
 
   // Insights section
   insightsTitle: "Insights",

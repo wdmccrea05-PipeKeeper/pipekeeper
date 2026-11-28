@@ -11,12 +11,8 @@ import { toLocalDateYmd } from '@/components/utils/schemaCompatibility';
 import LogSessionSelector from '@/components/session/LogSessionSelector';
 import {
   ChevronRight,
-  Leaf,
   Flame,
-  Clock3,
   Activity,
-  TrendingUp,
-  GlassWater,
   Cigarette,
   CalendarDays,
   List,
@@ -30,7 +26,6 @@ import { createPageUrl } from '@/components/utils/createPageUrl';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledModules } from '@/components/hooks/useEnabledModules';
 import { MODULE_ICONS } from '@/components/branding/moduleAssets';
-import BrandLogo from '@/components/branding/BrandLogo';
 import ComplimentaryProBanner from '@/components/subscription/ComplimentaryProBanner';
 import AppreciationBanner from '@/components/campaign/AppreciationBanner';
 import AppreciationExpiredDialog from '@/components/campaign/AppreciationExpiredDialog';
@@ -58,7 +53,7 @@ import {
 import { selectTotalSticks, selectCigarCollectionValue, getCigarAvailableQuantity, getCigarUnitValue } from '@/lib/collection/cigarSelectors';
 import { selectCellarValue as calculateTobaccoCollectionValue } from '@/lib/collection/tobaccoSelectors';
 import { selectPipeCollectionValue } from '@/lib/collection/pipeSelectors';
-import { selectWineCollectionValue, selectTotalWineBottles, selectWineCount, getWineTotalValue, selectWineReadyToDrinkCount, getWinePrimaryImage } from '@/lib/collection/wineSelectors';
+import { selectWineCollectionValue, selectTotalWineBottles, getWineTotalValue, getWinePrimaryImage } from '@/lib/collection/wineSelectors';
 import { buildHubHighlightCandidates } from '@/components/hub/highlightSelection';
 import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 

@@ -234,6 +234,12 @@ export function describeReason(reason) {
       return 'This record changed since the suggestion was made, so nothing was written.';
     case 'not_authorized':
       return 'You do not have permission to change this record.';
+    case 'storage_location_not_authorized':
+      return 'That storage location is unavailable to this account.';
+    case 'invalid_storage_location':
+      return 'The storage location is not valid.';
+    case 'storage_lookup_failed':
+      return 'The storage location could not be checked. Nothing was changed.';
     case 'record_not_found':
       return 'This record no longer exists.';
     case 'already_matches':

@@ -46,9 +46,9 @@ export default function TutorialsPage() {
             
             const firstTutorial = modDocs.tutorials[0];
             const moduleTitle = {
-              hub: t('nav.hub', 'Hub'),
-              pipekeeper: t('nav.pipekeeper', 'PipeKeeper'),
-              whiskeykeeper: t('nav.whiskeykeeper', 'WhiskeyKeeper'),
+              hub: t('nav.hub'),
+              pipekeeper: t('nav.pipekeeper'),
+              whiskeykeeper: t('nav.whiskeykeeper'),
               bundle: t('help.bundle', 'Bundle'),
             }[module] || module;
             

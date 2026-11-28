@@ -4,6 +4,10 @@ import ActionReviewDialog from './ActionReviewDialog';
 import ActionResultSummary from './ActionResultSummary';
 import useActionExecution from '@/hooks/useActionExecution';
 import { applySelectedLabel } from '@/lib/actions/actionLabels';
+import { createAction, effectiveTargets } from '@/lib/actions/actionModel';
+import { useTranslation } from '@/components/i18n/safeTranslation';
+
+const MAX_ACTION_TARGETS = 200;
 
 /**
  * Reviewing findings, wherever they were found: collection health, a report or a
@@ -23,6 +27,7 @@ export default function FindingsReviewPanel({
   description = '',
   emptyMessage = 'Nothing needs your attention here.',
 }) {
+  const { t } = useTranslation();
   const [selections, setSelections] = useState({});
   const [alternatives, setAlternatives] = useState({});
   const [reviewing, setReviewing] = useState([]);
@@ -56,12 +61,78 @@ export default function FindingsReviewPanel({
   }, [visible]);
 
   const selected = visible.filter((finding) => selections[finding.key] && finding.actions?.length > 0);
+  const eligible = visible.filter((finding) => finding.actions?.length > 0);
   const needsChoice = selected.some((finding) =>
-    finding.actions.some((action) => action.alternatives?.length && !alternatives[action.id])
+    finding.actions.some((action) => action.alternatives?.length &&
+      !action.alternatives.some((entry) => entry.id === alternatives[action.id]))
   );
 
+  const storageActions = selected.flatMap((finding) => finding.actions || []);
+  const sharedLocations = storageActions.length > 1 && storageActions.every((action) => action.type === 'storage_assign')
+    ? (storageActions[0].alternatives || []).filter((alternative) =>
+        storageActions.every((action) => action.alternatives?.some(
+          (entry) => JSON.stringify(entry.patch) === JSON.stringify(alternative.patch)
+        ))
+      )
+    : [];
+
+  const applyLocationToSelection = (value) => {
+    const selectedLocation = sharedLocations.find((entry) => entry.id === value);
+    setAlternatives((previous) => {
+      const next = { ...previous };
+      for (const action of storageActions) {
+        const match = selectedLocation && action.alternatives.find(
+          (entry) => JSON.stringify(entry.patch) === JSON.stringify(selectedLocation.patch)
+        );
+        if (match) next[action.id] = match.id;
+        else delete next[action.id];
+      }
+      return next;
+    });
+  };
+
+  const sharedChoice = sharedLocations.find((location) =>
+    storageActions.every((action) => action.alternatives.some((entry) =>
+      entry.id === alternatives[action.id] && JSON.stringify(entry.patch) === JSON.stringify(location.patch)
+    ))
+  );
+
+  const review = () => {
+    const actions = selected.flatMap((finding) => finding.actions || []);
+    const firstAlternative = actions[0]?.alternatives?.find((entry) => entry.id === alternatives[actions[0].id]);
+    const sameStorage = actions.length > 1 && firstAlternative && actions.every((action) => {
+      const choice = action.alternatives?.find((entry) => entry.id === alternatives[action.id]);
+      return action.type === 'storage_assign' && choice?.patch && !choice.targets &&
+        !action.customField && !action.dependsOn?.length &&
+        JSON.stringify(choice.patch) === JSON.stringify(firstAlternative.patch);
+    });
+    if (!sameStorage) {
+      setReviewing(actions);
+      return;
+    }
+
+    const batches = [];
+    const modules = new Set(actions.map((action) => action.module));
+    for (const module of modules) {
+      const targets = actions.filter((action) => action.module === module)
+        .flatMap((action) => effectiveTargets(action, alternatives[action.id]));
+      for (let index = 0; index < targets.length; index += MAX_ACTION_TARGETS) {
+        const batch = targets.slice(index, index + MAX_ACTION_TARGETS);
+        batches.push(createAction({
+          type: 'storage_assign',
+          origin: 'collection_health',
+          module,
+          title: t('collectionIntelligence.storageBatchTitle', { count: batch.length }),
+          proposedValues: [{ label: t('collectionIntelligence.storageLabel'), to: firstAlternative.label }],
+          targets: batch,
+        }));
+      }
+    }
+    setReviewing(batches);
+  };
+
   const confirm = async () => {
-    const actions = reviewing.flatMap((finding) => finding.actions || []);
+    const actions = reviewing;
     if (actions.length === 0 || needsChoice) {
       setReviewing([]);
       return;
@@ -103,6 +174,34 @@ export default function FindingsReviewPanel({
         </p>
       )}
 
+      {eligible.length > 1 && (
+        <button type="button" disabled={busy} onClick={() => {
+          const allSelected = eligible.every((finding) => selections[finding.key]);
+          setSelections(allSelected ? {} : Object.fromEntries(eligible.map((finding) => [finding.key, true])));
+        }} className="rounded-xl px-3 py-2 text-[12.5px] min-h-[40px]"
+        style={{ color: '#E0D8C8', border: '1px solid rgba(180,140,75,0.3)' }}>
+          {eligible.every((finding) => selections[finding.key])
+            ? t('collectionIntelligence.clearFindings')
+            : t('collectionIntelligence.selectFindings')}
+        </button>
+      )}
+
+      {sharedLocations.length > 0 && (
+        <label className="block text-[12.5px]" style={{ color: '#E0D8C8' }}>
+          {t('collectionIntelligence.locationForSelected')}
+          <select
+            value={sharedChoice?.id || ''}
+            onChange={(event) => applyLocationToSelection(event.target.value)}
+            disabled={busy}
+            className="mt-1 block w-full rounded-lg p-2 text-sm"
+            style={{ background: '#241913', color: '#F5F1E7', border: '1px solid rgba(180,140,75,0.3)' }}
+          >
+            <option value="">{t('collectionIntelligence.chooseLocation')}</option>
+            {sharedLocations.map((location) => <option key={location.id} value={location.id}>{location.label}</option>)}
+          </select>
+        </label>
+      )}
+
       {visible.length === 0 ? (
         <p className="text-[13px] py-3 break-words" style={{ color: 'rgba(224,216,200,0.55)' }}>
           {emptyMessage}
@@ -135,7 +234,7 @@ export default function FindingsReviewPanel({
         >
           <button
             type="button"
-            onClick={() => setReviewing(selected)}
+            onClick={review}
             disabled={busy || needsChoice}
             className="rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
             style={{ background: '#A35C5C', color: '#fff', border: 'none' }}
@@ -150,7 +249,7 @@ export default function FindingsReviewPanel({
 
       <ActionReviewDialog
         open={reviewing.length > 0}
-        actions={reviewing.flatMap((finding) => finding.actions || [])}
+        actions={reviewing}
         alternatives={alternatives}
         busy={busy}
         error={error}

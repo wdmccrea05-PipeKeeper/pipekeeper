@@ -78,13 +78,13 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
   };
 
   const maintenanceTypes = {
-    cleaning: t("maintenanceLog.cleaning", "Cleaning"),
-    restoration: t("maintenanceLog.restoration", "Restoration"),
-    repair: t("maintenanceLog.repair", "Repair"),
-    reaming: t("maintenanceLog.reaming", "Reaming"),
-    polishing: t("maintenanceLog.polishing", "Polishing"),
-    stem_work: t("maintenanceLog.stemWork", "Stem Work"),
-    other: t("maintenanceLog.other", "Other"),
+    cleaning: t("maintenanceLog.cleaning"),
+    restoration: t("maintenanceLog.restoration"),
+    repair: t("maintenanceLog.repair"),
+    reaming: t("maintenanceLog.reaming"),
+    polishing: t("maintenanceLog.polishing"),
+    stem_work: t("maintenanceLog.stemWork"),
+    other: t("maintenanceLog.other"),
   };
 
   return (
@@ -97,7 +97,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
             <Wrench className="w-5 h-5" style={{ color: "rgba(180,140,75,0.9)" }} />
-            {t("maintenanceLog.maintenanceLog", "Maintenance Log")}
+            {t("maintenanceLog.maintenanceLog")}
           </CardTitle>
           <Button onClick={() => setShowDialog(true)} size="sm" style={{
             background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
@@ -105,7 +105,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
             color: "#E0D8C8"
           }}>
             <Plus className="w-4 h-4 mr-1" />
-            {t("maintenanceLog.addEntry", "Add Entry")}
+            {t("maintenanceLog.addEntry")}
           </Button>
         </div>
       </CardHeader>
@@ -113,7 +113,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
          {logs.length === 0 ? (
            <div className="text-center py-8 space-y-2">
              <Wrench className="w-8 h-8 mx-auto" style={{ color: "rgba(140,105,65,0.4)" }} />
-             <p style={{ color: "rgba(224,216,200,0.5)" }}>{t("maintenanceLog.noRecordsYet", "No maintenance records yet.")}</p>
+             <p style={{ color: "rgba(224,216,200,0.5)" }}>{t("maintenanceLog.noRecordsYet")}</p>
            </div>
          ) : (
            <div className="space-y-3">
@@ -145,7 +145,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
                 </div>
                 <div className="flex items-center gap-4 text-xs" style={{ color: "rgba(180, 140, 75, 0.8)" }}>
                   {log.performed_by && (
-                    <span>{t("maintenanceLog.by", "by")} {log.performed_by}</span>
+                    <span>{t("maintenanceLog.by")} {log.performed_by}</span>
                   )}
                   {log.cost && (
                     <span className="flex items-center gap-1">
@@ -163,11 +163,11 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("maintenanceLog.addMaintenanceEntry", "Add Maintenance Entry")}</DialogTitle>
+            <DialogTitle>{t("maintenanceLog.addMaintenanceEntry")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label>{t("maintenanceLog.type", "Type")}</Label>
+              <Label>{t("maintenanceLog.type")}</Label>
               <Select 
                 value={formData.maintenance_type}
                 onValueChange={(value) => setFormData({ ...formData, maintenance_type: value })}
@@ -184,7 +184,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
             </div>
 
             <div>
-              <Label>{t("maintenanceLog.date", "Date")}</Label>
+              <Label>{t("maintenanceLog.date")}</Label>
               <Input
                 type="date"
                 value={formData.date}
@@ -194,26 +194,26 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
             </div>
 
             <div>
-              <Label>{t("maintenanceLog.description", "Description")}</Label>
+              <Label>{t("maintenanceLog.description")}</Label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder={t("maintenanceLog.descriptionPlaceholder", "Describe the maintenance performed…")}
+                placeholder={t("maintenanceLog.descriptionPlaceholder")}
                 rows={3}
               />
             </div>
 
             <div>
-              <Label>{t("maintenanceLog.performedBy", "Performed By")}</Label>
+              <Label>{t("maintenanceLog.performedBy")}</Label>
               <Input
                 value={formData.performed_by}
                 onChange={(e) => setFormData({ ...formData, performed_by: e.target.value })}
-                placeholder={t("maintenanceLog.performedByPlaceholder", "e.g. Self, Professional")}
+                placeholder={t("maintenanceLog.performedByPlaceholder")}
               />
             </div>
 
             <div>
-              <Label>{t("maintenanceLog.costOptional", "Cost (Optional)")}</Label>
+              <Label>{t("maintenanceLog.costOptional")}</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -227,7 +227,7 @@ export default function MaintenanceLog({ pipeId, pipeName }) {
               <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
                 {t("forms.cancel")}
               </Button>
-              <Button type="submit">{t("maintenanceLog.saveEntry", "Save Entry")}</Button>
+              <Button type="submit">{t("maintenanceLog.saveEntry")}</Button>
             </div>
           </form>
         </DialogContent>

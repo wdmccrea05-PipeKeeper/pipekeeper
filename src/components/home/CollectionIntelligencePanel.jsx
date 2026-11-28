@@ -89,8 +89,7 @@ function RotationDrillDownModal({ pipes, latestLogByPipe, open, onClose }) {
   });
 
   const handleBuildRotation = () => {
-    const prompt = t("collectionIntelligence.rotationCuratorPrompt", 
-      "Help me create a rotation plan for these underused pipes."
+    const prompt = t("collectionIntelligence.rotationCuratorPrompt"
     );
     const params = new URLSearchParams();
     params.set('prompt', prompt);
@@ -293,9 +292,9 @@ function UpdateFeedItem({ update }) {
   const handleExplain = () => {
     let prompt = "";
     if (update.id === "pairing_matrix") {
-      prompt = t("collectionIntelligence.pairingExplainPrompt", "Explain what changed in my pairing matrix and how I should use it.");
+      prompt = t("collectionIntelligence.pairingExplainPrompt");
     } else if (update.id === "optimization") {
-      prompt = t("collectionIntelligence.optimizationExplainPrompt", "Explain the latest collection optimization recommendations and their impact.");
+      prompt = t("collectionIntelligence.optimizationExplainPrompt");
     } else {
       prompt = t("collectionIntelligence.updateExplainPrompt", `Explain the ${update.title} update.`);
     }
@@ -434,7 +433,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, bottles = [
           : t("collectionIntelligence.reviewPipes", { count: overduePipes.length }),
         actionUrl: null,
         isDrillDown: true,
-        curatorPrompt: t("collectionIntelligence.rotationCuratorPrompt", "Help me create a rotation plan for the pipes I have not used in over 60 days."),
+        curatorPrompt: t("collectionIntelligence.rotationCuratorPrompt"),
       });
     }
 
@@ -463,7 +462,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, bottles = [
           : t("collectionIntelligence.insightCellarDesc", { count: peakBlends.length }),
         actionLabel: t("collectionIntelligence.askCurator"),
         actionUrl: null,
-        curatorPrompt: t("collectionIntelligence.cellarCuratorPrompt", "Which of my aged blends should I review or open first, and why?"),
+        curatorPrompt: t("collectionIntelligence.cellarCuratorPrompt"),
       });
     }
 
@@ -556,7 +555,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, bottles = [
           description: t("collectionIntelligence.insightDiversityHighDesc", { count: blendTypes.size }),
           actionLabel: t("collectionIntelligence.askCurator"),
           actionUrl: null,
-          curatorPrompt: t("collectionIntelligence.diversityAnalysisCuratorPrompt", "Explain how my tobacco cellar variety supports different smoking experiences."),
+          curatorPrompt: t("collectionIntelligence.diversityAnalysisCuratorPrompt"),
         });
       }
     }

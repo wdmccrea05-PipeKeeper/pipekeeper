@@ -51,7 +51,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
       action: () => {
         navigate(createPageUrl("Pipes?action=add"));
       },
-      actionLabel: t("common.next", "Next"),
+      actionLabel: t("common.next"),
     },
     {
       id: "add-tobacco",
@@ -62,7 +62,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
       action: () => {
         navigate(createPageUrl("Tobacco?action=add"));
       },
-      actionLabel: t("common.next", "Next"),
+      actionLabel: t("common.next"),
     },
     {
       id: "log-session",
@@ -74,7 +74,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
         setIsVisible(false);
         onTutorialClose?.();
       },
-      actionLabel: t("common.done", "Done"),
+      actionLabel: t("common.done"),
     },
   ];
 
@@ -93,7 +93,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="text-xs uppercase tracking-wider text-[#D8C7A6]/70 mb-2">
-                {t("tutorial.quickstart.title", "Quick Start")} · {currentStep + 1} {t("common.of", "of")} {steps.length}
+                {t("tutorial.quickstart.title", "Quick Start")} · {currentStep + 1} {t("common.of")} {steps.length}
               </div>
               <h2 className="text-2xl font-bold text-[#F5F1E7] mb-1">{step.title}</h2>
               <p className="text-sm text-[#D8C7A6]/80">{step.description}</p>
@@ -158,7 +158,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
                 className="border-[rgba(140,105,65,0.35)] text-[#F5F1E7] gap-1"
               >
                 <ChevronLeft className="w-4 h-4" />
-                {t("common.back", "Back")}
+                {t("common.back")}
               </Button>
             )}
             <Button

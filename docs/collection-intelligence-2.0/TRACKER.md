@@ -12,6 +12,50 @@ Status values: `done` · `in-progress` · `blocked` · `planned`
 
 ---
 
+## Draft continuation — release remains blocked
+
+The continuation starts from PR head `b0e6fac2ab21e7007d3228d83b110e2fd302fe5b`.
+The changes below are not deployed. Consult the PR for the tested commit and do
+not confuse mocked checks with an authenticated Base44 preview.
+
+| Requirement | Continuation code | Evidence and remaining work |
+|---|---|---|
+| Owned storage references | `actionStorageAuthorization.ts`, `actionExecute/entry.ts` | The executor checks both storage and humidor references against the current user's access for all allowed patches. Helper tests cover owned, foreign, invalid and failed lookups. Live service-role execution and Base44 RLS remain unverified. |
+| Curator conversation ownership | `curatorMessageOwnership.ts`, `persistCuratorMessage/entry.ts`, `curatorConversationHistory/entry.ts` | Duplicate lookup includes user email; returned history and duplicates are rechecked by owner and session. Helper tests use mocked responses. Real account switching and server rules remain unverified. |
+| Grouped Health storage review | `FindingsReviewPanel.jsx`, `ActionReviewDialog.jsx` | A mocked interaction selects 202 records, excludes one, chooses a shared location, cancels and then confirms; the 201 targets are split into 200 and 1 while retaining expected values and module context. The confirmation can show all affected names. No real records were written; persisted results, refreshed counts, partial failures, undo, mobile behavior and live authorization remain unverified. |
+| Translation and release gate | `src/components/i18n/locales/collectionHealthBulk.jsx`, `en.migratedFallbacks.json` | The same checker reports 3,275 findings on the PR baseline and 2,574 after migrating 701 inline fallback calls. The budget and exclusions are unchanged. Existing translated keys continue to take precedence; newly added English fallbacks preserve prior behavior, but missing non-English translations remain. All 7,010 migrated call/locale combinations matched their former output; mocked English and Spanish Quick Access interactions passed. |
+| Curator, imports, reports and visual direction | Existing workspace and module pages | Full requested journeys, two-click verification, facade, navigation, visual changes and authenticated screenshots remain open. No signed-in preview or two distinct authorized test accounts were available. |
+
+Core collection entity schemas still have no declared RLS; frontend filtering and
+the additional executor checks are not evidence of server-side isolation. An
+authorized Base44 preview must verify reads, writes, report exports, import batches,
+selectors and conversations across two accounts, including account switching and
+multiple pages. Base44 preview divergence and execution history remain unknown.
+No release or production publishing is authorized.
+
+Previous local worktree validation (not a tested PR commit):
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: 226 files,
+  3,792 tests passed; 0 failed or skipped. Tests use fixtures and mocks.
+- `npm run build`, `npm run lint`, `npm run typecheck`: passed. The build warned
+  that `VITE_BASE44_APP_ID` is unset, so its API calls will not work as built.
+- The previous normal commit attempt was blocked by the 3,275-finding i18n gate.
+  The migration above retains the original gate; it does not clear all findings.
+- Desktop/mobile authenticated acceptance, screenshots, deployed backend checks,
+  pricing and entitlement matrix: not run; an authorized preview and accounts
+  were unavailable.
+
+Continuation worktree validation before commit:
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: 227 files,
+  3,794 tests passed; 0 failed or skipped.
+- `npm run build`, `npm run lint`, `npm run typecheck`: passed. The build again
+  warned that `VITE_BASE44_APP_ID` is unset.
+- `npm run i18n:check -- --max-findings=2666`: passed, 2,574 findings. The
+  initial full suite had ten profile-test failures because its translation mock
+  returned only inline fallbacks; it was corrected to use the real translator
+  before the passing full rerun.
+
 ## Independent follow-up audit — 2026-11-27
 
 **Release recommendation: do not release.** This is a partial repair, not acceptance of
