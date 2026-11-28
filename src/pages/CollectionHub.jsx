@@ -96,7 +96,7 @@ function SectionTitle({ children, muted = false }) {
   return (
     <h2
       className="text-xs font-semibold uppercase tracking-[0.18em] px-1"
-      style={{ color: muted ? 'rgba(224,216,200,0.34)' : '#8B6239' }}
+      style={{ color: muted ? 'var(--ck-paper-muted)' : 'var(--ck-paper-action)' }}
     >
       {children}
     </h2>
@@ -519,7 +519,7 @@ export default function CollectionHub() {
               style={{
                 background: 'rgba(180,140,75,0.12)',
                 border: '1px solid rgba(180,140,75,0.32)',
-                color: '#D4A574',
+                color: 'var(--ck-paper-action)',
                 minHeight: 44,
               }}
             >
@@ -623,7 +623,7 @@ export default function CollectionHub() {
         onClick={() => navigate(createPageUrl('Curator'))}
         className="w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
         style={{
-          background: 'linear-gradient(135deg, rgba(163,92,92,0.14), rgba(30,20,15,0.96))',
+          background: 'linear-gradient(135deg, #401c24, #25171a)',
           border: '1px solid rgba(163,92,92,0.3)',
           minHeight: 64,
         }}
@@ -650,7 +650,7 @@ export default function CollectionHub() {
           >
             {t('hub.curatorTitle')}
           </span>
-          <span className="block text-xs mt-0.5 truncate" style={{ color: 'rgba(224,216,200,0.6)' }}>
+          <span className="block text-xs mt-0.5 break-words" style={{ color: 'var(--ck-nav-text)' }}>
             {t('hub.aiCuratorDescription')}
           </span>
         </span>
@@ -665,10 +665,11 @@ export default function CollectionHub() {
               <button
                 type="button"
                 onClick={() => setActivityView('list')}
+                aria-pressed={activityView === 'list'}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all"
                 style={{
                   background: activityView === 'list' ? 'rgba(180,140,75,0.22)' : 'transparent',
-                  color: activityView === 'list' ? '#D4A574' : 'rgba(224,216,200,0.5)',
+                  color: 'var(--ck-paper-action)',
                 }}
               >
                 <List className="w-3.5 h-3.5" />
@@ -677,10 +678,11 @@ export default function CollectionHub() {
               <button
                 type="button"
                 onClick={() => setActivityView('calendar')}
+                aria-pressed={activityView === 'calendar'}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all"
                 style={{
                   background: activityView === 'calendar' ? 'rgba(180,140,75,0.22)' : 'transparent',
-                  color: activityView === 'calendar' ? '#D4A574' : 'rgba(224,216,200,0.5)',
+                  color: 'var(--ck-paper-action)',
                 }}
               >
                 <CalendarDays className="w-3.5 h-3.5" />
@@ -858,7 +860,7 @@ export default function CollectionHub() {
         </section>
       ) : null}
 
-      <AdvancedDetails label={t('hub.topHighlights')} hint={t('hub.collectionStory')}>
+      <AdvancedDetails variant="paper" label={t('hub.topHighlights')} hint={t('hub.collectionStory')}>
         {hasHighlights ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {topHighlights.map((card) => (
@@ -880,7 +882,7 @@ export default function CollectionHub() {
       </AdvancedDetails>
 
       {expandingKeys.length > 0 ? (
-        <p className="text-xs px-1" style={{ color: 'rgba(224,216,200,0.42)' }}>
+        <p className="text-xs px-1" style={{ color: 'var(--ck-paper-muted)' }}>
           {t('hub.comingSoon')}: {expandingKeys.map((key) => t(MODULE_META[key].labelKey)).join(' · ')}
         </p>
       ) : null}

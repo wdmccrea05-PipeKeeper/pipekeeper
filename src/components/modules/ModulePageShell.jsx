@@ -52,7 +52,7 @@ function StatCard({ label, value, accent, onClick }) {
     <>
       <div
         className="text-2xl sm:text-3xl font-bold leading-none break-words"
-        style={{ color: accent }}
+        style={{ color: 'var(--ck-paper-action)' }}
       >
         {value}
       </div>
@@ -161,7 +161,7 @@ export default function ModulePageShell({
                 style={{
                   background: `${accentColor}20`,
                   border: `1px solid ${accentColor}40`,
-                  color: accentColor,
+                  color: 'var(--ck-paper-action)',
                 }}
               >
                 {badge}

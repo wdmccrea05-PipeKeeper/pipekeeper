@@ -3,7 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --ck-nav-bg: #451820;
+  --ck-nav-bg: #2b1017;
+  --ck-nav-text: #f1e7db;
+  --ck-nav-icon: #dfb77e;
+  --ck-paper-muted: #59463a;
+  --ck-paper-action: #67411e;
   --ck-nav-border: rgba(180, 140, 75, 0.35);
   --ck-parchment: #f3ead7;
   --ck-espresso: #34251d;
@@ -175,6 +179,12 @@ body {
   border-radius: var(--ck-radius-xl);
   padding: clamp(1rem, 3vw, 2rem);
   box-shadow: 0 12px 32px rgba(20, 15, 12, 0.18);
+}
+
+.ck-paper-workspace :focus-visible {
+  outline: 2px solid #8c572a;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px #fff8ed;
 }
 
 .ck-paper-panel {

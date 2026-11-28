@@ -45,12 +45,12 @@ function NavItem({ item, isActive, onClick, vertical }) {
           ? "bg-[rgba(100,66,34,0.55)] border border-[rgba(180,140,75,0.38)]"
           : "border border-transparent hover:bg-white/6 hover:border-[rgba(180,140,75,0.15)]"
       )}
-      style={{ color: isActive ? "#F5F1E7" : "rgba(224,216,200,0.76)" }}
+      style={{ color: isActive ? "#F5F1E7" : "var(--ck-nav-text)" }}
     >
       {item.icon ? (
         <item.icon
           className="w-4 h-4 flex-shrink-0"
-          style={{ color: isActive ? "#D4A574" : "rgba(180,140,75,0.72)" }}
+          style={{ color: isActive ? "#D4A574" : "var(--ck-nav-icon)" }}
         />
       ) : null}
       <span className="line-clamp-1">{item.label}</span>
@@ -77,14 +77,14 @@ function AdministrationMenu({ items, vertical, onItemClick, label }) {
             ? "bg-[rgba(100,66,34,0.55)] border border-[rgba(180,140,75,0.38)]"
             : "border border-transparent hover:bg-white/6 hover:border-[rgba(180,140,75,0.15)]"
         )}
-        style={{ color: isActive ? "#F5F1E7" : "rgba(224,216,200,0.76)" }}
+        style={{ color: isActive ? "#F5F1E7" : "var(--ck-nav-text)" }}
       >
         <Shield
           className="w-4 h-4 flex-shrink-0"
-          style={{ color: isActive ? "#D4A574" : "rgba(180,140,75,0.72)" }}
+          style={{ color: isActive ? "#D4A574" : "var(--ck-nav-icon)" }}
         />
         <span className="line-clamp-1">{label}</span>
-        <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "rgba(180,140,75,0.72)" }} />
+        <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--ck-nav-icon)" }} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align={vertical ? "start" : "end"} className="w-60">
         <DropdownMenuLabel>Administration</DropdownMenuLabel>
@@ -242,9 +242,9 @@ export default function ModuleNav({ currentPageName, user, vertical = false, onI
             "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 border border-transparent hover:bg-white/6 hover:border-[rgba(180,140,75,0.15)]",
             vertical && "w-full"
           )}
-          style={{ color: "rgba(224,216,200,0.76)" }}
+          style={{ color: "var(--ck-nav-text)" }}
         >
-          <Zap className="w-4 h-4 flex-shrink-0" style={{ color: "rgba(180,140,75,0.72)" }} />
+          <Zap className="w-4 h-4 flex-shrink-0" style={{ color: "var(--ck-nav-icon)" }} />
           <span className="line-clamp-1">{t("nav.quickAccess")}</span>
         </button>
       ) : null}
