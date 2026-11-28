@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { fetchAllEntitiesServer } from '../../shared/fetchAllEntitiesServer.ts';
 
 /**
  * Build comprehensive collector context for Curator across all modules
@@ -16,15 +17,15 @@ Deno.serve(async (req) => {
     const { question } = await req.json();
 
     // Fetch user profile
-    const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+    const profiles = await base44.entities.UserProfile.filter({ user_email: user.email }, '-created_date', 1, 0);
     const profile = profiles[0];
 
     // Fetch collection data
-    // The pipe and blend lists feed the usage comparison below, which depends on a
-    // per-item count the query cannot express.
-    const pipes = await base44.entities.Pipe.filter({});
-    const blends = await base44.entities.TobaccoBlend.filter({});
-    const logs = await base44.entities.SmokingLog.filter({});
+    // The pipe, blend and log lists feed the usage comparison below, which depends on a
+    // per-item count the query cannot express, so every page of each list is fetched.
+    const pipes = await fetchAllEntitiesServer(base44.entities.Pipe, {});
+    const blends = await fetchAllEntitiesServer(base44.entities.TobaccoBlend, {});
+    const logs = await fetchAllEntitiesServer(base44.entities.SmokingLog, {});
 
     // Sizes come straight from the read
     const pipeCount = await base44.entities.Pipe.count({});

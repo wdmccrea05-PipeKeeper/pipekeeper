@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { fetchAllEntitiesServer } from '../../shared/fetchAllEntitiesServer.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -19,12 +20,15 @@ Deno.serve(async (req) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Fetch all new data from yesterday
-    const [pipes, blends, logs, profiles] = await Promise.all([
-      base44.asServiceRole.entities.Pipe.list(),
-      base44.asServiceRole.entities.TobaccoBlend.list(),
-      base44.asServiceRole.entities.SmokingLog.list(),
-      base44.asServiceRole.entities.UserProfile.list()
+    // Only yesterday's records are needed: the date range is filtered in the read
+    // and every page of it is fetched, instead of loading the whole tables
+    const yesterdayRange = {
+      created_date: { $gte: yesterday.toISOString(), $lt: today.toISOString() },
+    };
+    const [pipes, blends, logs] = await Promise.all([
+      fetchAllEntitiesServer(base44.asServiceRole.entities.Pipe, yesterdayRange),
+      fetchAllEntitiesServer(base44.asServiceRole.entities.TobaccoBlend, yesterdayRange),
+      fetchAllEntitiesServer(base44.asServiceRole.entities.SmokingLog, yesterdayRange)
     ]);
 
     // Ensure all results are arrays
@@ -139,8 +143,10 @@ Deno.serve(async (req) => {
     }
 
     // Check for existing knowledge and update or create
-    const existingKnowledgeResult = await base44.asServiceRole.entities.TobacconistKnowledge.list();
-    const existingKnowledge = Array.isArray(existingKnowledgeResult) ? existingKnowledgeResult : [];
+    const existingKnowledge = await fetchAllEntitiesServer(
+      base44.asServiceRole.entities.TobacconistKnowledge,
+      {}
+    );
     const created = [];
     const updated = [];
 

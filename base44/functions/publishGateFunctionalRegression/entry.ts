@@ -3,7 +3,7 @@
  * Tests all critical user flows without browser automation
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
 Deno.serve(async (req) => {
   const results = {
@@ -43,8 +43,10 @@ Deno.serve(async (req) => {
 
     // PIPES CRUD + UI
     console.log('\n[PIPES]');
-    const pipes = await base44.entities.Pipe.list();
-    log('Pipes List Load', pipes?.length > 0 ? 'PASS' : 'FAIL', { pipe_count: pipes?.length || 0 });
+    // One page supplies the sample record; the total comes from the count
+    const pipeTotal = await base44.entities.Pipe.count();
+    const pipes = await base44.entities.Pipe.list(null, 1, 0);
+    log('Pipes List Load', pipes?.length > 0 ? 'PASS' : 'FAIL', { pipe_count: pipeTotal });
 
     if (pipes?.length > 0) {
       const samplePipe = pipes[0];
@@ -63,8 +65,10 @@ Deno.serve(async (req) => {
 
     // TOBACCO CRUD + UI
     console.log('\n[TOBACCO]');
-    const blends = await base44.entities.TobaccoBlend.list();
-    log('Tobacco List Load', blends?.length > 0 ? 'PASS' : 'FAIL', { blend_count: blends?.length || 0 });
+    // One page supplies the sample record; the total comes from the count
+    const blendTotal = await base44.entities.TobaccoBlend.count();
+    const blends = await base44.entities.TobaccoBlend.list(null, 1, 0);
+    log('Tobacco List Load', blends?.length > 0 ? 'PASS' : 'FAIL', { blend_count: blendTotal });
 
     if (blends?.length > 0) {
       const sampleBlend = Array.isArray(blends) ? blends[0] : blends;
@@ -83,8 +87,10 @@ Deno.serve(async (req) => {
 
     // COLLECTION INSIGHTS
     console.log('\n[COLLECTION INSIGHTS]');
-    const logs = await base44.entities.SmokingLog.list();
-    log('Insights: Smoking Log Load', logs ? 'PASS' : 'FAIL', { log_count: logs?.length || 0 });
+    // One page supplies the sample record; the total comes from the count
+    const logTotal = await base44.entities.SmokingLog.count();
+    const logs = await base44.entities.SmokingLog.list(null, 1, 0);
+    log('Insights: Smoking Log Load', logs ? 'PASS' : 'FAIL', { log_count: logTotal });
 
     const pairings = await base44.entities.PairingMatrix.filter({ is_active: true });
     log('Insights: Pairing Matrix Load', pairings ? 'PASS' : 'FAIL', { active_pairings: pairings?.length || 0 });

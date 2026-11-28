@@ -52,8 +52,10 @@ Deno.serve(async (req) => {
     log('AUTH', 'Profile loads', 'PASS');
 
     // PIPES CRUD
-    const pipes = await base44.entities.Pipe.list();
-    log('PIPES', 'List loads with data', pipes?.length > 0 ? 'PASS' : 'FAIL', { count: pipes?.length || 0 });
+    // One page supplies the sample record; the total comes from the count
+    const pipeTotal = await base44.entities.Pipe.count();
+    const pipes = await base44.entities.Pipe.list(null, 1, 0);
+    log('PIPES', 'List loads with data', pipes?.length > 0 ? 'PASS' : 'FAIL', { count: pipeTotal });
 
     const pipesByShape = await base44.entities.Pipe.filter({ shape: 'Billiard' });
     log('PIPES', 'Filter works', pipesByShape?.length >= 0 ? 'PASS' : 'FAIL', { results: pipesByShape?.length || 0 });
@@ -82,8 +84,9 @@ Deno.serve(async (req) => {
     }
 
     // COLLECTION INSIGHTS
-    const logs = await base44.entities.SmokingLog.list();
-    log('INSIGHTS', 'Usage Log loads', logs ? 'PASS' : 'FAIL', { count: logs?.length || 0 });
+    const logTotal = await base44.entities.SmokingLog.count();
+    const logs = await base44.entities.SmokingLog.list(null, 1, 0);
+    log('INSIGHTS', 'Usage Log loads', logs ? 'PASS' : 'FAIL', { count: logTotal });
     log('INSIGHTS', 'Log Session works', 'PASS');
     log('INSIGHTS', 'Pairing Grid loads', 'PASS');
     log('INSIGHTS', 'Rotation Planner accessible', 'PASS');
@@ -128,7 +131,7 @@ Deno.serve(async (req) => {
     // ENTITY INTEGRITY CHECKS
     // ========================================
     console.log('\n=== ENTITY INTEGRITY CHECKS ===');
-    log('ENTITIES', 'Pipe entity integrity', pipes?.length > 0 ? 'PASS' : 'FAIL', { count: pipes?.length || 0 });
+    log('ENTITIES', 'Pipe entity integrity', pipes?.length > 0 ? 'PASS' : 'FAIL', { count: pipeTotal });
     log('ENTITIES', 'TobaccoBlend entity integrity', blends?.length > 0 ? 'PASS' : 'FAIL', { count: blends?.length || 0 });
 
     const profileCount = await base44.entities.UserProfile.count();

@@ -4,6 +4,7 @@ if (typeof Deno?.serve !== "function") {
 }
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { fetchAllEntitiesServer } from '../../shared/fetchAllEntitiesServer.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -91,7 +92,8 @@ Deno.serve(async (req) => {
     // TEST 2: Check Subscription entity linkage
     console.log('[E2E Test] Test 2: Subscription linkage');
     try {
-      const allSubs = await base44.asServiceRole.entities.Subscription.list();
+      // Every subscription is needed for the counts below, so all pages are read
+      const allSubs = await fetchAllEntitiesServer(base44.asServiceRole.entities.Subscription, {});
       
       let subsWithoutUserId = 0;
       let subsWithoutUserEmail = 0;
@@ -251,7 +253,8 @@ Deno.serve(async (req) => {
     // TEST 6: Check for orphaned subscriptions
     console.log('[E2E Test] Test 6: Orphaned subscriptions');
     try {
-      const allSubs = await base44.asServiceRole.entities.Subscription.list();
+      // Every subscription is needed for the orphan check, so all pages are read
+      const allSubs = await fetchAllEntitiesServer(base44.asServiceRole.entities.Subscription, {});
       const allUsers = await base44.asServiceRole.entities.User.list();
       const userEmails = new Set(allUsers.map(u => u.email?.toLowerCase()));
       
@@ -292,7 +295,8 @@ Deno.serve(async (req) => {
     console.log('[E2E Test] Test 7: Entitlement mismatch');
     try {
       const allUsers = await base44.asServiceRole.entities.User.list();
-      const allSubs = await base44.asServiceRole.entities.Subscription.list();
+      // Every subscription is needed for the mismatch check, so all pages are read
+      const allSubs = await fetchAllEntitiesServer(base44.asServiceRole.entities.Subscription, {});
       
       const subsByEmail = {};
       for (const sub of allSubs) {
