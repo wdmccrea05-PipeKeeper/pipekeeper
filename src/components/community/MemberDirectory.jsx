@@ -41,7 +41,7 @@ export default function MemberDirectory({ profiles = [], currentUser, friendship
     <div
       className="rounded-lg overflow-hidden"
       style={{
-        background: "linear-gradient(145deg, rgba(52, 37, 24, 0.72), rgba(42, 30, 20, 0.88))",
+        background: "linear-gradient(145deg, rgba(54,58,60, 0.72), rgba(45,48,50, 0.88))",
         border: "1px solid rgba(120, 90, 65, 0.3)",
         boxShadow: "0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1)"
       }}
@@ -81,7 +81,7 @@ export default function MemberDirectory({ profiles = [], currentUser, friendship
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="w-10 h-10 flex-shrink-0">
                   <AvatarImage src={profile.avatar_url} />
-                  <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8] text-sm">
+                  <AvatarFallback className="bg-[#705d39] text-[#E0D8C8] text-sm">
                     {profile.display_name?.[0]?.toUpperCase() || profile.user_email?.[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>

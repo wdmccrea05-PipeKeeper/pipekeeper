@@ -378,7 +378,7 @@ function HighlightCard({
       className="relative rounded-2xl overflow-hidden flex flex-col justify-between min-h-[220px] cursor-default group hover:-translate-y-1 transition-transform duration-300"
       style={{
         background:
-          "linear-gradient(155deg, rgba(38, 26, 18, 0.96), rgba(32, 22, 15, 0.99))",
+          "linear-gradient(155deg, rgba(38, 26, 18, 0.96), rgba(45,48,50, 0.99))",
         border: "1px solid rgba(120, 90, 65, 0.42)",
         boxShadow:
           "0 5px 20px rgba(0,0,0,0.75), inset 0 1px 0 rgba(180,140,100,0.14), inset 0 -3px 4px rgba(0,0,0,0.3)",
@@ -483,7 +483,7 @@ function HighlightCard({
         style={{
           background: artifactImage || heroImage
             ? "linear-gradient(to right, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.72) 45%, rgba(28,18,10,0.28) 75%, transparent 100%)"
-            : "linear-gradient(155deg, rgba(32,22,15,0.72) 0%, rgba(28,18,10,0.52) 45%, rgba(100,70,45,0.15) 100%)",
+            : "linear-gradient(155deg, rgba(45,48,50,0.72) 0%, rgba(28,18,10,0.52) 45%, rgba(70,75,77,0.15) 100%)",
         }}
       />
 
@@ -535,7 +535,7 @@ function HighlightCard({
               width: "3.5rem",
               height: "3.5rem",
               background:
-                "linear-gradient(135deg, rgba(100, 70, 45, 0.5) 0%, rgba(80, 55, 35, 0.6) 100%)",
+                "linear-gradient(135deg, rgba(70,75,77, 0.5) 0%, rgba(60,64,66, 0.6) 100%)",
               border: "1px solid rgba(120, 90, 65, 0.45)",
               boxShadow:
                 "0 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.22)",
@@ -637,7 +637,7 @@ function HighlightCard({
             style={{
               color: "rgba(180,140,75,0.9)",
               border: "1px solid rgba(120,90,65,0.3)",
-              background: "rgba(100,70,45,0.15)",
+              background: "rgba(70,75,77,0.15)",
             }}
           >
             <Share2 className="w-2.5 h-2.5" />
@@ -693,7 +693,7 @@ function StoryCardModal({
           height: "min(560px, 85vh)",
           borderRadius: "16px",
           background:
-            "linear-gradient(165deg, rgba(32, 22, 15, 0.98), rgba(42, 30, 20, 0.95))",
+            "linear-gradient(165deg, rgba(45,48,50, 0.98), rgba(45,48,50, 0.95))",
           border: "1px solid rgba(120, 90, 65, 0.4)",
           boxShadow:
             "0 4px 16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(180,140,100,0.1)",
@@ -785,7 +785,7 @@ function StoryCardModal({
           style={{
             background: artifactImage
               ? "linear-gradient(165deg, rgba(28,18,10,0.92) 0%, rgba(28,18,10,0.70) 30%, rgba(28,18,10,0.35) 60%, transparent 90%)"
-              : "linear-gradient(165deg, rgba(32,22,15,0.85) 0%, rgba(35,24,16,0.65) 30%, rgba(40,28,18,0.3) 70%, transparent 100%)",
+              : "linear-gradient(165deg, rgba(45,48,50,0.85) 0%, rgba(35,24,16,0.65) 30%, rgba(40,28,18,0.3) 70%, transparent 100%)",
           }}
         />
 
@@ -868,7 +868,7 @@ function StoryCardModal({
           <div
             className="text-[9px] uppercase tracking-[0.14em] font-semibold px-2 py-0.5 rounded-full"
             style={{
-              background: "rgba(100,70,45,0.2)",
+              background: "rgba(70,75,77,0.2)",
               border: "1px solid rgba(120,90,65,0.35)",
               color: "rgba(180,140,75,0.9)",
             }}
@@ -893,7 +893,7 @@ function StoryCardModal({
               height: heroImage ? "64px" : "90px",
               borderRadius: "20px",
               background:
-                "linear-gradient(135deg, rgba(100,70,45,0.5) 0%, rgba(80,55,35,0.6) 100%)",
+                "linear-gradient(135deg, rgba(70,75,77,0.5) 0%, rgba(60,64,66,0.6) 100%)",
               border: "1.5px solid rgba(120,90,65,0.5)",
               boxShadow:
                 "0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.2)",
@@ -1302,7 +1302,7 @@ export default function Insights() {
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
                   style={{
-                    background: "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
+                    background: "linear-gradient(135deg, rgba(70,75,77, 0.45), rgba(60,64,66, 0.55))",
                     border: "1px solid rgba(120, 90, 65, 0.45)",
                   }}
                 >

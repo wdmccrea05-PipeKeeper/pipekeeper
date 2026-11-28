@@ -94,7 +94,7 @@ export default function CommunityFeed({ user, profile, friends = [] }) {
       ) : posts.length === 0 ? (
         <div
           className="rounded-lg p-8 text-center"
-          style={{ background: 'rgba(42,30,20,0.6)', border: '1px solid rgba(120,90,65,0.25)' }}
+          style={{ background: 'rgba(45,48,50,0.6)', border: '1px solid rgba(120,90,65,0.25)' }}
         >
           <Rss className="w-8 h-8 mx-auto mb-3 text-[#D4A574]/70" />
           <p className="text-sm text-[#E0D8C8]/75">

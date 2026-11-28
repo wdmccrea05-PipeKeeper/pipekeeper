@@ -279,7 +279,7 @@ export default function CommunityReferralTab() {
               type="submit"
               disabled={sending || emailFields.every(e => !e.trim())}
               className="w-full gap-2"
-              style={{ background: '#A35C5C', color: '#fff' }}
+              style={{ background: '#705d39', color: '#fff' }}
             >
               <Mail className="w-4 h-4" />
               {sending ? 'Sending…' : 'Send Invites with My Referral Link'}

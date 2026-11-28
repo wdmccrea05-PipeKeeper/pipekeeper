@@ -18,12 +18,12 @@ export default function VerificationHelp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#242729] via-[#292c2e] to-[#242729] flex items-center justify-center p-4">
       <div className="w-full max-w-2xl space-y-6">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <AlertCircle className="w-8 h-8 text-[#A35C5C]" />
+              <AlertCircle className="w-8 h-8 text-[#705d39]" />
               <CardTitle className="text-2xl">{t('verificationHelp.pageTitle')}</CardTitle>
             </div>
           </CardHeader>
@@ -35,7 +35,7 @@ export default function VerificationHelp() {
               </p>
 
               <div className="space-y-3">
-                <div className="p-4 bg-[#1A2B3A]/50 rounded-lg border border-[#A35C5C]/30">
+                <div className="p-4 bg-[#1A2B3A]/50 rounded-lg border border-[#705d39]/30">
                   <h4 className="font-semibold text-[#E0D8C8] mb-2 flex items-center gap-2">
                     <RefreshCw className="w-4 h-4" />
                     {t('verificationHelp.option1Title')}
@@ -53,7 +53,7 @@ export default function VerificationHelp() {
                   </p>
                 </div>
 
-                <div className="p-4 bg-[#1A2B3A]/50 rounded-lg border border-[#A35C5C]/30">
+                <div className="p-4 bg-[#1A2B3A]/50 rounded-lg border border-[#705d39]/30">
                   <h4 className="font-semibold text-[#E0D8C8] mb-2 flex items-center gap-2">
                     <Mail className="w-4 h-4" />
                     {t('verificationHelp.option2Title')}
@@ -64,7 +64,7 @@ export default function VerificationHelp() {
                   <div className="space-y-2">
                     <a
                       href="mailto:admin@pipekeeperapp.com"
-                      className="block w-full text-center px-4 py-2 bg-[#A35C5C] text-[#E0D8C8] rounded-lg hover:bg-[#8F4E4E] transition-colors"
+                      className="block w-full text-center px-4 py-2 bg-[#705d39] text-[#E0D8C8] rounded-lg hover:bg-[#604e30] transition-colors"
                     >
                       admin@pipekeeperapp.com
                     </a>

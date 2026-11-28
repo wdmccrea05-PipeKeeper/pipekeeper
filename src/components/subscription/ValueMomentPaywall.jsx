@@ -94,12 +94,12 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
                 </div>
 
                 {/* Premium Tier - Emphasized */}
-                <div className="border-2 border-[#A35C5C] rounded-xl p-4 bg-[#1A2B3A]/80 relative">
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#A35C5C] text-white px-3 py-1 rounded-full text-xs font-semibold">
+                <div className="border-2 border-[#705d39] rounded-xl p-4 bg-[#1A2B3A]/80 relative">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#705d39] text-white px-3 py-1 rounded-full text-xs font-semibold">
                     {t("valueMomentPaywall.recommended")}
                   </div>
                   <h3 className="text-lg font-semibold text-[#E0D8C8] mb-1">{t("valueMomentPaywall.premiumTier")}</h3>
-                  <p className="text-xs text-[#A35C5C] font-semibold mb-2">{t("valueMomentPaywall.premiumSubtitle")}</p>
+                  <p className="text-xs text-[#705d39] font-semibold mb-2">{t("valueMomentPaywall.premiumSubtitle")}</p>
                   <p className="text-sm text-[#E0D8C8]/70 mb-3">
                     {t("valueMomentPaywall.premiumDescription")}
                   </p>
@@ -121,9 +121,9 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
                       <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.premiumFeature4")}</span>
                     </div>
                   </div>
-                  <p className="text-lg font-bold text-[#A35C5C] mb-1">{t("valueMomentPaywall.premiumPrice")}</p>
+                  <p className="text-lg font-bold text-[#705d39] mb-1">{t("valueMomentPaywall.premiumPrice")}</p>
                   <p className="text-xs text-emerald-500 mb-2">{t("valueMomentPaywall.annualSaves")}</p>
-                  <Button onClick={handleContinuePremium} className="w-full bg-[#A35C5C] hover:bg-[#8F4E4E] mb-2">
+                  <Button onClick={handleContinuePremium} className="w-full bg-[#705d39] hover:bg-[#604e30] mb-2">
                     {t("subscription.continueWithPremium")}
                   </Button>
                   <p className="text-xs text-[#E0D8C8]/60 text-center">
@@ -136,7 +136,7 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
                 {/* Pro Tier */}
                 <div className="border border-[#E0D8C8]/20 rounded-xl p-4 bg-[#112133]/40">
                   <h3 className="text-lg font-semibold text-[#E0D8C8] mb-1">{t("valueMomentPaywall.proTier")}</h3>
-                  <p className="text-xs text-[#A35C5C] font-semibold mb-2">{t("valueMomentPaywall.proSubtitle")}</p>
+                  <p className="text-xs text-[#705d39] font-semibold mb-2">{t("valueMomentPaywall.proSubtitle")}</p>
                   <p className="text-sm text-[#E0D8C8]/70 mb-4">
                     {t("valueMomentPaywall.proDescription")}
                   </p>
@@ -154,7 +154,7 @@ export default function ValueMomentPaywall({ onDismiss, user, daysRemaining }) {
                       <span className="text-sm text-[#E0D8C8]/80">{t("valueMomentPaywall.proFeature3")}</span>
                     </div>
                   </div>
-                  <p className="text-lg font-bold text-[#A35C5C] mb-3">{t("valueMomentPaywall.proPrice")}</p>
+                  <p className="text-lg font-bold text-[#705d39] mb-3">{t("valueMomentPaywall.proPrice")}</p>
                   <Button variant="outline" onClick={handleUpgradePro} className="w-full">
                     {t("valueMomentPaywall.upgradeToPro")}
                   </Button>

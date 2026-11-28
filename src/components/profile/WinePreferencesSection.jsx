@@ -178,7 +178,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
               value={prefs.budget_everyday_min}
               onChange={(e) => setField('budget_everyday_min', e.target.value ? Number(e.target.value) : '')}
               className="w-full h-9 rounded-lg px-3 text-sm"
-              style={{ background: 'rgba(20,14,10,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+              style={{ background: 'rgba(35,38,40,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
               placeholder="e.g. 15"
             />
           </div>
@@ -190,7 +190,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
               value={prefs.budget_everyday_max}
               onChange={(e) => setField('budget_everyday_max', e.target.value ? Number(e.target.value) : '')}
               className="w-full h-9 rounded-lg px-3 text-sm"
-              style={{ background: 'rgba(20,14,10,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+              style={{ background: 'rgba(35,38,40,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
               placeholder="e.g. 40"
             />
           </div>
@@ -202,7 +202,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
               value={prefs.budget_special_min}
               onChange={(e) => setField('budget_special_min', e.target.value ? Number(e.target.value) : '')}
               className="w-full h-9 rounded-lg px-3 text-sm"
-              style={{ background: 'rgba(20,14,10,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+              style={{ background: 'rgba(35,38,40,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
               placeholder="e.g. 50"
             />
           </div>
@@ -214,7 +214,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
               value={prefs.budget_special_max}
               onChange={(e) => setField('budget_special_max', e.target.value ? Number(e.target.value) : '')}
               className="w-full h-9 rounded-lg px-3 text-sm"
-              style={{ background: 'rgba(20,14,10,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+              style={{ background: 'rgba(35,38,40,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
               placeholder="e.g. 150"
             />
           </div>
@@ -226,7 +226,7 @@ export default function WinePreferencesSection({ preferences = {}, onChange }) {
               value={prefs.max_recommendation_price}
               onChange={(e) => setField('max_recommendation_price', e.target.value ? Number(e.target.value) : '')}
               className="w-full h-9 rounded-lg px-3 text-sm"
-              style={{ background: 'rgba(20,14,10,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+              style={{ background: 'rgba(35,38,40,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
               placeholder="e.g. 200"
             />
           </div>

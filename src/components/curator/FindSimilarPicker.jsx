@@ -112,7 +112,7 @@ export default function FindSimilarPicker({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: "rgba(0,0,0,0.5)" }}>
-      <div className="rounded-xl p-6 max-w-md w-full mx-4" style={{ background: "rgba(32,22,15,0.95)", border: "1px solid rgba(140,105,65,0.35)" }}>
+      <div className="rounded-xl p-6 max-w-md w-full mx-4" style={{ background: "rgba(45,48,50,0.95)", border: "1px solid rgba(140,105,65,0.35)" }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold" style={{ color: "#E0D8C8" }}>
             {config.label}
@@ -152,7 +152,7 @@ export default function FindSimilarPicker({
             value={displaySelected || ""}
             onChange={(e) => setSelected(e.target.value)}
             className="w-full px-3 py-2 rounded-lg mb-4 text-sm"
-            style={{ background: "rgba(20,14,10,0.6)", border: "1px solid rgba(140,105,65,0.3)", color: "#E0D8C8" }}
+            style={{ background: "rgba(35,38,40,0.6)", border: "1px solid rgba(140,105,65,0.3)", color: "#E0D8C8" }}
           >
             <option value="" disabled>
               Select an item

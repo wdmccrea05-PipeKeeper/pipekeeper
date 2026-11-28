@@ -57,7 +57,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite, onEdit }
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 rounded-full shadow-lg"
-                style={{ background: "rgba(20, 14, 10, 0.85)", border: "1px solid rgba(120, 90, 65, 0.3)" }}
+                style={{ background: "rgba(35,38,40, 0.85)", border: "1px solid rgba(120, 90, 65, 0.3)" }}
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(blend); }}
               >
                 <Pencil className="w-3.5 h-3.5 text-[#D4A574]" />
@@ -68,7 +68,7 @@ export default function TobaccoCard({ blend, onClick, onToggleFavorite, onEdit }
               size="icon"
               className="h-7 w-7 rounded-full shadow-lg"
               style={{
-                background: "rgba(20, 14, 10, 0.85)",
+                background: "rgba(35,38,40, 0.85)",
                 border: "1px solid rgba(120, 90, 65, 0.3)",
               }}
               onClick={(e) => {

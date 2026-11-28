@@ -88,7 +88,7 @@ export default function SubscriptionReconciliationSummary({ totals, multiSubUser
           </p>
           <div className="overflow-auto">
             <table className="w-full text-xs">
-              <thead className="bg-[#2a1f18]">
+              <thead className="bg-[#34383a]">
                 <tr>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">{translate("billingReconciliation.reconEmail")}</th>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">{translate("billingReconciliation.reconActiveSubs")}</th>

@@ -16,7 +16,7 @@ const FIELD = {
   width: '100%',
   borderRadius: 12,
   border: '1px solid rgba(180,140,75,0.28)',
-  background: 'rgba(20,14,10,0.7)',
+  background: 'rgba(35,38,40,0.7)',
   color: '#F5F1E7',
   padding: '10px 12px',
   fontSize: 14,

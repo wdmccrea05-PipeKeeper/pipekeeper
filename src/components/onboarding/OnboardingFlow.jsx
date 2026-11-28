@@ -84,7 +84,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
            <img 
              src={PIPE_ICON}
              alt="PipeKeeper"
-             className="w-24 h-24 mx-auto object-contain bg-[#2a1f18] rounded-lg p-2"
+             className="w-24 h-24 mx-auto object-contain bg-[#34383a] rounded-lg p-2"
            />
           <p className="text-[#E0D8C8]/70 text-lg">
             {t("onboarding.welcomeBody")}

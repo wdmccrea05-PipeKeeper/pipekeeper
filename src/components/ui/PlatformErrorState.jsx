@@ -20,12 +20,12 @@ export default function PlatformErrorState({
   return (
     <div
       className={`flex items-center justify-center p-6 ${fullScreen ? 'min-h-screen' : 'min-h-[60vh]'}`}
-      style={{ background: fullScreen ? 'linear-gradient(135deg, #0f0b08 0%, #1a1410 50%, #0f0b08 100%)' : undefined }}
+      style={{ background: fullScreen ? 'linear-gradient(135deg, #242729 0%, #292c2e 50%, #242729 100%)' : undefined }}
     >
       <div
         className="max-w-sm w-full rounded-2xl p-8 text-center"
         style={{
-          background: 'linear-gradient(145deg, rgba(42,30,20,0.96), rgba(28,18,12,0.98))',
+          background: 'linear-gradient(145deg, rgba(45,48,50,0.96), rgba(28,18,12,0.98))',
           border: '1px solid rgba(120,90,65,0.35)',
           boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
         }}

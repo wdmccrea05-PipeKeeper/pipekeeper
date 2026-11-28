@@ -56,7 +56,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
         <div
           className="max-w-sm w-full rounded-2xl p-8 text-center"
           style={{
-            background: 'linear-gradient(145deg, rgba(42,30,20,0.96), rgba(28,18,12,0.98))',
+            background: 'linear-gradient(145deg, rgba(45,48,50,0.96), rgba(28,18,12,0.98))',
             border: '1px solid rgba(120,90,65,0.35)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
           }}
@@ -89,7 +89,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
         <div
           className="max-w-sm w-full rounded-2xl p-8 text-center"
           style={{
-            background: 'linear-gradient(145deg, rgba(42,30,20,0.96), rgba(28,18,12,0.98))',
+            background: 'linear-gradient(145deg, rgba(45,48,50,0.96), rgba(28,18,12,0.98))',
             border: '1px solid rgba(120,90,65,0.35)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
           }}
@@ -131,7 +131,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
         <div
           className="max-w-sm w-full rounded-2xl p-8 text-center"
           style={{
-            background: 'linear-gradient(145deg, rgba(42,30,20,0.96), rgba(28,18,12,0.98))',
+            background: 'linear-gradient(145deg, rgba(45,48,50,0.96), rgba(28,18,12,0.98))',
             border: '1px solid rgba(180,140,75,0.35)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
           }}
@@ -187,7 +187,7 @@ export default function LockedModuleGuard({ moduleKey, children }) {
         <div
           className="rounded-2xl p-8 text-center max-w-sm w-full"
           style={{
-            background: 'linear-gradient(145deg, rgba(42,30,20,0.9), rgba(28,18,12,0.95))',
+            background: 'linear-gradient(145deg, rgba(45,48,50,0.9), rgba(28,18,12,0.95))',
             border: '1px solid rgba(180,140,75,0.2)',
             boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
           }}

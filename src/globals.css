@@ -39,8 +39,8 @@
   /* ── Accent colors ── */
   --ck-gold: #d4a574;
   --ck-gold-muted: rgba(212, 165, 116, 0.75);
-  --ck-rose: #a35c5c;
-  --ck-rose-hover: #8f4e4e;
+  --ck-rose: #705d39;
+  --ck-rose-hover: #604e30;
   --ck-success: #2e7d5c;
   --ck-danger: #b35f5f;
   --ck-info: rgba(100, 130, 180, 0.85);
@@ -178,7 +178,7 @@ body {
   border: 1px solid rgba(167, 124, 63, 0.30);
   border-radius: var(--ck-radius-xl);
   padding: clamp(1rem, 3vw, 2rem);
-  box-shadow: 0 12px 32px rgba(20, 15, 12, 0.18);
+  box-shadow: 0 12px 32px rgba(37,40,42, 0.18);
 }
 
 .ck-paper-workspace :focus-visible {

@@ -32,7 +32,7 @@ export function HeritageStatCard({ icon: Icon, label, value, accent = "#B48C4B",
     <div
       className={cn("rounded-lg p-5", className)}
       style={{
-        background: "linear-gradient(145deg, rgba(52, 37, 24, 0.68), rgba(44, 31, 21, 0.80))",
+        background: "linear-gradient(145deg, rgba(54,58,60, 0.68), rgba(44, 31, 21, 0.80))",
         border: "1px solid rgba(120, 90, 65, 0.28)",
         boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1), inset 0 -1px 2px rgba(0,0,0,0.2)",
       }}
@@ -41,7 +41,7 @@ export function HeritageStatCard({ icon: Icon, label, value, accent = "#B48C4B",
         <div
           className="w-11 h-11 flex items-center justify-center rounded-lg shrink-0"
           style={{
-            background: "linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))",
+            background: "linear-gradient(135deg, rgba(70,75,77, 0.45), rgba(60,64,66, 0.55))",
             border: "1px solid rgba(120, 90, 65, 0.4)",
             boxShadow: "0 3px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.18)",
           }}
@@ -90,7 +90,7 @@ export function HeritageSection({ title, children, className }) {
 export function HeritageButton({ children, onClick, href, variant = "primary", className, icon: Icon }) {
   const baseStyles = {
     primary: {
-      background: "linear-gradient(135deg, rgba(100, 70, 45, 0.7), rgba(80, 55, 35, 0.8))",
+      background: "linear-gradient(135deg, rgba(70,75,77, 0.7), rgba(60,64,66, 0.8))",
       border: "1px solid rgba(120, 90, 65, 0.5)",
       color: "#F5F1E7",
       boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.15)",

@@ -243,7 +243,7 @@ export default function BreakInSchedule({ pipe, blends = [] }) {
            <Button
              onClick={generateSchedule}
              disabled={generating || blends.length === 0}
-             className="bg-[#A35C5C] hover:bg-[#8B4A4A]"
+             className="bg-[#705d39] hover:bg-[#8B4A4A]"
            >
               {generating ? (
                 <>
@@ -271,7 +271,7 @@ export default function BreakInSchedule({ pipe, blends = [] }) {
               size="sm"
               onClick={generateSchedule}
               disabled={generating}
-              className="bg-[#A35C5C] text-[#FFF7ED] hover:bg-[#8B4A4A]"
+              className="bg-[#705d39] text-[#FFF7ED] hover:bg-[#8B4A4A]"
              >
               {t("optimizer.regenerate")}
              </Button>
@@ -284,7 +284,7 @@ export default function BreakInSchedule({ pipe, blends = [] }) {
           {progress < 100 && (
             <div className="mb-4 bg-[#223447]/10 rounded-full h-2 overflow-hidden">
               <div 
-                className="bg-[#A35C5C] h-full transition-all duration-500"
+                className="bg-[#705d39] h-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>

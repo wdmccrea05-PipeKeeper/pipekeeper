@@ -186,7 +186,7 @@ export default function ValuationCredibility({ valuation, compact = false }) {
     <div
       className="rounded-lg p-4 space-y-3"
       style={{
-        background: 'linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))',
+        background: 'linear-gradient(135deg, rgba(45,48,50, 0.7), rgba(35, 24, 16, 0.85))',
         border: '1px solid rgba(120, 90, 65, 0.3)',
       }}
     >

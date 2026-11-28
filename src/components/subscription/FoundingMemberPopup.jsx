@@ -11,8 +11,8 @@ export default function FoundingMemberPopup({ isOpen, onClose }) {
       <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 rounded-full bg-[#A35C5C]/20 flex items-center justify-center">
-              <Heart className="w-6 h-6 text-[#A35C5C] fill-current" />
+            <div className="w-12 h-12 rounded-full bg-[#705d39]/20 flex items-center justify-center">
+              <Heart className="w-6 h-6 text-[#705d39] fill-current" />
             </div>
           </div>
           <DialogTitle className="text-center text-xl">

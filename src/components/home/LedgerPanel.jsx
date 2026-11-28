@@ -52,7 +52,7 @@ export default function LedgerPanel({ label, value, sub, icon: Icon, accent = "#
              <div
                className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
                style={{
-                 background: `linear-gradient(135deg, rgba(100, 70, 45, 0.4), rgba(80, 55, 35, 0.5))`,
+                 background: `linear-gradient(135deg, rgba(70,75,77, 0.4), rgba(60,64,66, 0.5))`,
                  border: `1px solid rgba(120, 90, 65, 0.4)`,
                  boxShadow: `0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
                }}

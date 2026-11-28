@@ -223,7 +223,7 @@ export default function SubscriptionSuccessFlow() {
 
   if (phase === 'loading') {
     return (
-      <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]">
+      <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex items-center justify-center bg-gradient-to-br from-[#242729] via-[#292c2e] to-[#242729]">
         <div className="text-center">
           <Loader className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: '#D4A574' }} />
           <p style={{ color: '#E0D8C8' }}>{t('subscription.activating')}</p>
@@ -234,7 +234,7 @@ export default function SubscriptionSuccessFlow() {
 
   if (phase === 'error') {
     return (
-      <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-4">
+      <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex items-center justify-center bg-gradient-to-br from-[#242729] via-[#292c2e] to-[#242729] p-4">
         <div
           className="max-w-md w-full rounded-2xl p-8 text-center shadow-2xl"
           style={{
@@ -267,7 +267,7 @@ export default function SubscriptionSuccessFlow() {
   }
 
   return (
-    <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex items-center justify-center bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08] p-4">
+    <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex items-center justify-center bg-gradient-to-br from-[#242729] via-[#292c2e] to-[#242729] p-4">
       <div
         className="max-w-md w-full rounded-2xl p-8 text-center shadow-2xl"
         style={{
@@ -321,7 +321,7 @@ export default function SubscriptionSuccessFlow() {
           onClick={() => navigate(targetUrl)}
           className="w-full"
           style={{
-            background: 'linear-gradient(135deg, #a35c5c, #8f4e4e)',
+            background: 'linear-gradient(135deg, #705d39, #604e30)',
             color: '#F5F1E7',
           }}
         >

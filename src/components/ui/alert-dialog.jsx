@@ -30,7 +30,7 @@ const AlertDialogContent = React.forwardRef(({ className, ...props }, ref) => (
         "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
         "w-[calc(100%-2rem)] max-w-md",
         "rounded-3xl border border-[rgba(180,140,75,0.22)]",
-        "bg-[linear-gradient(180deg,rgba(32,22,16,0.98),rgba(20,15,12,0.99))]",
+        "bg-[linear-gradient(180deg,rgba(32,22,16,0.98),rgba(37,40,42,0.99))]",
         "p-7 shadow-[0_32px_80px_rgba(0,0,0,0.65)]",
         "outline-none",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",

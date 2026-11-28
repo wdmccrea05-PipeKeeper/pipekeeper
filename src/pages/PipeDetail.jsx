@@ -1083,25 +1083,25 @@ export default function PipeDetail() {
           <Tabs defaultValue="condition" className="w-full">
             <div className="border-b border-[rgba(180,140,75,0.15)] px-2 pt-2">
               <TabsList className="bg-transparent gap-0.5">
-                <TabsTrigger value="condition" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
+                <TabsTrigger value="condition" className="rounded-lg text-xs px-3">
                   {t('pipeDetailTabs.condition')}
                 </TabsTrigger>
-                <TabsTrigger value="rotation" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
+                <TabsTrigger value="rotation" className="rounded-lg text-xs px-3">
                   {t('insights.rotation')}
                 </TabsTrigger>
-                <TabsTrigger value="specialization" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
+                <TabsTrigger value="specialization" className="rounded-lg text-xs px-3">
                   {t('pipeDetailTabs.specialization')}
                 </TabsTrigger>
-                <TabsTrigger value="maintenance" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
+                <TabsTrigger value="maintenance" className="rounded-lg text-xs px-3">
                   {t('pipeDetailTabs.maintenance')}
                 </TabsTrigger>
-                <TabsTrigger value="bowls" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
+                <TabsTrigger value="bowls" className="rounded-lg text-xs px-3">
                   {t('fields.bowls')}
                 </TabsTrigger>
-                <TabsTrigger value="breakin" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
+                <TabsTrigger value="breakin" className="rounded-lg text-xs px-3">
                   {t('pipeDetailTabs.breakIn')}
                 </TabsTrigger>
-                <TabsTrigger value="details" className="data-[state=active]:bg-[rgba(180,140,75,0.15)] data-[state=active]:text-[#D4A574] text-[#E0D8C8]/70 rounded-lg text-xs px-3">
+                <TabsTrigger value="details" className="rounded-lg text-xs px-3">
                   {t('wine.detailsSection')}
                 </TabsTrigger>
               </TabsList>

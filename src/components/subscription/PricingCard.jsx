@@ -125,7 +125,7 @@ export default function PricingCard({
         style={{
           background: highlighted && (priceMonthly && priceAnnual)
             ? 'linear-gradient(135deg, rgba(163,92,92,1), rgba(140,74,74,1))'
-            : 'rgba(100, 70, 45, 0.6)',
+            : 'rgba(70,75,77, 0.6)',
           color: '#F5F1E7',
           border: '1px solid rgba(180, 140, 75, 0.3)',
           opacity: priceMonthly && priceAnnual ? 1 : 0.5,

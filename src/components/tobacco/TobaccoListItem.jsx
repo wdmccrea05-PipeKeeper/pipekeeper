@@ -33,7 +33,7 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite, onEd
         <div className="flex items-center gap-4">
           {/* Photo */}
           <div className="relative w-24 h-24 rounded-lg border overflow-hidden shrink-0" style={{
-            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))",
+            background: "linear-gradient(135deg, rgba(45,48,50, 0.5), rgba(35, 24, 16, 0.7))",
             borderColor: "rgba(120, 90, 65, 0.2)"
           }}>
             {blend.photos?.[0] || blend.logo || blend.photo ? (
@@ -48,7 +48,7 @@ export default function TobaccoListItem({ blend, onClick, onToggleFavorite, onEd
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center p-2" style={{
-                background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
+                background: "linear-gradient(135deg, rgba(45,48,50, 0.5), rgba(35, 24, 16, 0.7))"
               }}>
                <img 
                   src={getTobaccoLogo(blend.manufacturer)} 

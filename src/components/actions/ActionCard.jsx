@@ -157,7 +157,7 @@ export default function ActionCard({
                 onClick={() => onReview(action)}
                 disabled={disabled}
                 className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
-                style={{ background: '#A35C5C', color: '#fff', border: 'none' }}
+                style={{ background: '#705d39', color: '#fff', border: 'none' }}
               >
                 <Check className="w-3.5 h-3.5" /> {ACTION_LABELS.reviewChanges}
               </button>

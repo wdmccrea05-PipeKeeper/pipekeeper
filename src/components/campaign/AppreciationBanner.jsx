@@ -41,7 +41,7 @@ export default function AppreciationBanner({ surface = 'hub', className = '', pr
         className={`relative overflow-hidden rounded-[26px] ${className}`}
         style={{
           background:
-            'radial-gradient(120% 140% at 12% 0%, rgba(212,165,116,0.22) 0%, rgba(38,26,18,0.96) 46%, rgba(20,15,12,0.99) 100%)',
+            'radial-gradient(120% 140% at 12% 0%, rgba(212,165,116,0.22) 0%, rgba(38,26,18,0.96) 46%, rgba(37,40,42,0.99) 100%)',
           border: '1px solid rgba(212,165,116,0.34)',
           boxShadow: '0 22px 60px rgba(0,0,0,0.42)',
         }}

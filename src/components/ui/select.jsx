@@ -20,7 +20,7 @@ const SelectTrigger = React.forwardRef(function SelectTrigger(
         // Typography
         "text-base text-[#F5F1E7]",
         // Surface
-        "bg-[rgba(20,14,10,0.70)] border border-[rgba(180,140,75,0.25)]",
+        "bg-[rgba(35,38,40,0.70)] border border-[rgba(180,140,75,0.25)]",
         "shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
         // Placeholder
         "placeholder:text-[rgba(224,216,200,0.38)]",
@@ -83,7 +83,7 @@ const SelectContent = React.forwardRef(function SelectContent(
         className={cn(
           "relative z-50 max-h-96 min-w-[8rem] overflow-hidden",
           "rounded-2xl border border-[rgba(180,140,75,0.28)]",
-          "bg-[rgba(24,17,13,0.98)] text-[#F5F1E7]",
+          "bg-[rgba(43,47,49,0.98)] text-[#F5F1E7]",
           "shadow-[0_20px_56px_rgba(0,0,0,0.55)]",
           "backdrop-blur-sm",
           position === "popper" &&

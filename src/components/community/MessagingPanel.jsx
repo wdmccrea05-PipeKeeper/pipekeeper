@@ -292,7 +292,7 @@ export default function MessagingPanel({ user, friends, publicProfiles, allowNew
       <div
         className="rounded-xl overflow-hidden"
         style={{
-          background: 'linear-gradient(145deg, rgba(52,37,24,0.88), rgba(42,30,20,0.95))',
+          background: 'linear-gradient(145deg, rgba(54,58,60,0.88), rgba(45,48,50,0.95))',
           border: '1px solid rgba(120,90,65,0.32)',
         }}
       >
@@ -344,7 +344,7 @@ export default function MessagingPanel({ user, friends, publicProfiles, allowNew
                     <div className="relative flex-shrink-0">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={profile?.avatar_url} />
-                        <AvatarFallback className="bg-[#A35C5C] text-[#F5F1E7] text-sm font-semibold">
+                        <AvatarFallback className="bg-[#705d39] text-[#F5F1E7] text-sm font-semibold">
                           {profile?.display_name?.[0] || friendEmail?.[0]?.toUpperCase() || '?'}
                         </AvatarFallback>
                       </Avatar>
@@ -390,7 +390,7 @@ export default function MessagingPanel({ user, friends, publicProfiles, allowNew
               <div className="relative">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={publicProfiles.find(p => p.user_email === selectedFriend)?.avatar_url} />
-                  <AvatarFallback className="bg-[#A35C5C] text-[#F5F1E7] font-semibold">
+                  <AvatarFallback className="bg-[#705d39] text-[#F5F1E7] font-semibold">
                     {publicProfiles.find(p => p.user_email === selectedFriend)?.display_name?.[0] || selectedFriend?.[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
@@ -579,7 +579,7 @@ export default function MessagingPanel({ user, friends, publicProfiles, allowNew
                           <div className="flex items-start gap-3">
                             <Avatar className="w-8 h-8">
                               <AvatarImage src={profile?.avatar_url} />
-                              <AvatarFallback className="bg-[#A35C5C] text-[#F5F1E7] text-xs font-semibold">
+                              <AvatarFallback className="bg-[#705d39] text-[#F5F1E7] text-xs font-semibold">
                                 {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
@@ -624,7 +624,7 @@ export default function MessagingPanel({ user, friends, publicProfiles, allowNew
                           <div className="flex items-start gap-3">
                             <Avatar className="w-8 h-8">
                               <AvatarImage src={profile?.avatar_url} />
-                              <AvatarFallback className="bg-[#A35C5C] text-[#F5F1E7] text-xs font-semibold">
+                              <AvatarFallback className="bg-[#705d39] text-[#F5F1E7] text-xs font-semibold">
                                 {profile?.display_name?.[0] || message.sender_email?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>

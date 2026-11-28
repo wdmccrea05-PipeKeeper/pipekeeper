@@ -16,13 +16,13 @@ import { X, ChevronDown, Plus } from 'lucide-react';
 import { VARIETAL_GROUPS, normalizeVarietalName } from '@/lib/wine/wineTaxonomy';
 
 const DROPDOWN_STYLE = {
-  background: 'rgba(20,14,10,0.97)',
+  background: 'rgba(35,38,40,0.97)',
   border: '1px solid rgba(180,140,75,0.3)',
   color: '#F5F1E7',
 };
 
 const INPUT_STYLE = {
-  background: 'rgba(20,14,10,0.70)',
+  background: 'rgba(35,38,40,0.70)',
   border: '1px solid rgba(180,140,75,0.25)',
   color: '#F5F1E7',
 };

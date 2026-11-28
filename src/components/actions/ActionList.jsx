@@ -175,7 +175,7 @@ export default function ActionList({
             onClick={() => setReviewing(selectedActions)}
             disabled={status === 'executing'}
             className="rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
-            style={{ background: '#A35C5C', color: '#fff', border: 'none' }}
+            style={{ background: '#705d39', color: '#fff', border: 'none' }}
           >
             {applySelectedLabel(selectedActions.length)}
           </button>

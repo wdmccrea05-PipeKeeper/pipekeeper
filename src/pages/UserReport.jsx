@@ -327,7 +327,7 @@ function ExcludedRecordsTable({ records }) {
       <p className="text-sm font-semibold text-yellow-300">Records excluded or flagged ({records.length} shown, max 50)</p>
       <div className="rounded-xl border border-yellow-800/30 overflow-auto">
         <table className="w-full text-xs">
-          <thead className="bg-[#2a1f18]">
+          <thead className="bg-[#34383a]">
             <tr>
               <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Record ID</th>
               <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Email</th>
@@ -443,7 +443,7 @@ function FirstTimePaidEvidenceTable({ rows }) {
   return (
     <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
       <table className="w-full text-xs">
-        <thead className="bg-[#2a1f18]">
+        <thead className="bg-[#34383a]">
           <tr>
             {cols.map((c) => <th key={c} className="text-left px-2 py-2 text-[#E0D8C8]/70 whitespace-nowrap">{c}</th>)}
           </tr>

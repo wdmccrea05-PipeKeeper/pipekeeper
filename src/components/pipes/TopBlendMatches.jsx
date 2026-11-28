@@ -250,7 +250,7 @@ For each of the 3 recommendations, provide:
   )};
 
   return (
-    <Card className="border-[#A35C5C]/30 bg-[#223447]">
+    <Card className="border-[#705d39]/30 bg-[#223447]">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -282,7 +282,7 @@ For each of the 3 recommendations, provide:
                 <Button
                   onClick={findAiSuggestions}
                   disabled={loading}
-                  className="w-full bg-[#A35C5C] hover:bg-[#8B4A4A]"
+                  className="w-full bg-[#705d39] hover:bg-[#8B4A4A]"
                 >
                   {loading ? (
                     <>

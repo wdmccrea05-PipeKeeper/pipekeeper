@@ -38,7 +38,7 @@ import {
 import { toast } from 'sonner';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 
-const DRINK_WINDOW_COLORS = { drink_now: '#2E7D5C', too_young: '#6B8FC4', past_peak: '#A35C5C' };
+const DRINK_WINDOW_COLORS = { drink_now: '#2E7D5C', too_young: '#6B8FC4', past_peak: '#705d39' };
 
 // ─── Tiny section card wrapper ──────────────────────────────────────────────
 function SectionCard({ title, children, defaultOpen = true }) {
@@ -177,7 +177,7 @@ function ValuationPanel({ wine, formatFromBase, onSaved }) {
                 value={manualValue}
                 onChange={(e) => setManualValue(e.target.value)}
                 className="w-full rounded-xl px-4 py-2.5 text-base"
-                style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+                style={{ background: 'rgba(35,38,40,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
                 placeholder="0.00"
               />
             </div>
@@ -604,7 +604,7 @@ export default function WineDetail() {
             <Edit2 className="w-4 h-4 mr-1" />
             {t('common.edit')}
           </Button>
-          <Button size="sm" variant="ghost" onClick={handleDelete} style={{ color: '#A35C5C' }}>
+          <Button size="sm" variant="ghost" onClick={handleDelete} style={{ color: '#705d39' }}>
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>

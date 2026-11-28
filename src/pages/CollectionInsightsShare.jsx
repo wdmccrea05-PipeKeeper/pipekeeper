@@ -94,7 +94,7 @@ function CoverCard({ summary, userProfile, cardRef }) {
         </div>
         <Divider />
         <div className="grid grid-cols-2 gap-3">
-          {pipes > 0 && <StatPill label="Pipes" value={pipes} color="#A35C5C" />}
+          {pipes > 0 && <StatPill label="Pipes" value={pipes} color="#705d39" />}
           {blends > 0 && <StatPill label="Blends" value={blends} color="#5A7C5A" />}
           {bottles > 0 && <StatPill label="Bottles" value={bottles} color="#C87941" />}
           {cigars > 0 && <StatPill label="Cigars" value={cigars} color="#8C6B3F" />}
@@ -135,7 +135,7 @@ function PipeCard({ summary, cardRef }) {
         </div>
         <Divider />
         <div className="grid grid-cols-3 gap-2">
-          <StatPill label="Pipes" value={pipes} color="#A35C5C" />
+          <StatPill label="Pipes" value={pipes} color="#705d39" />
           <StatPill label="Blends" value={blends} color="#5A7C5A" />
           <StatPill label="Sessions" value={sessions} color="#8B5CF6" />
         </div>

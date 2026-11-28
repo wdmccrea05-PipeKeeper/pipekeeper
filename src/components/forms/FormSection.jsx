@@ -26,7 +26,7 @@ export default function FormSection({ title, summary, defaultOpen = false, child
     <div
       className="rounded-xl overflow-hidden"
       style={{
-        background: open ? 'rgba(42,30,22,0.55)' : 'rgba(30,22,16,0.4)',
+        background: open ? 'rgba(42,30,22,0.55)' : 'rgba(49,53,55,0.4)',
         border: `1px solid ${open ? 'rgba(180,140,75,0.22)' : 'rgba(180,140,75,0.13)'}`,
         transition: 'background 0.18s ease, border-color 0.18s ease',
       }}

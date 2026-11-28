@@ -69,11 +69,11 @@ export default function SharePostToFriend({ open, onOpenChange, post, friends = 
               <div
                 key={email}
                 className="flex items-center gap-3 p-2 rounded-md"
-                style={{ background: 'rgba(42,30,20,0.7)', border: '1px solid rgba(120,90,65,0.25)' }}
+                style={{ background: 'rgba(45,48,50,0.7)', border: '1px solid rgba(120,90,65,0.25)' }}
               >
                 <Avatar className="w-9 h-9">
                   <AvatarImage src="" />
-                  <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8] text-xs">
+                  <AvatarFallback className="bg-[#705d39] text-[#E0D8C8] text-xs">
                     {email[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

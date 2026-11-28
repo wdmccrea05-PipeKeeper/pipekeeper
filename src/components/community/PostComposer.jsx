@@ -89,7 +89,7 @@ export default function PostComposer({ user, profile, onPosted }) {
     <div
       className="rounded-lg overflow-hidden"
       style={{
-        background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+        background: "linear-gradient(145deg, rgba(54,58,60, 0.78), rgba(45,48,50, 0.90))",
         border: "1px solid rgba(120, 90, 65, 0.32)",
         boxShadow: "0 3px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.1)"
       }}
@@ -98,7 +98,7 @@ export default function PostComposer({ user, profile, onPosted }) {
         <div className="flex gap-3">
           <Avatar className="w-10 h-10 flex-shrink-0">
             <AvatarImage src={profile?.avatar_url} />
-            <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8] text-sm">
+            <AvatarFallback className="bg-[#705d39] text-[#E0D8C8] text-sm">
               {displayName?.[0]?.toUpperCase() || '?'}
             </AvatarFallback>
           </Avatar>
@@ -127,7 +127,7 @@ export default function PostComposer({ user, profile, onPosted }) {
                       type="button"
                       onClick={() => setPhotos((prev) => prev.filter((p) => p !== url))}
                       className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{ background: '#3a281c', border: '1px solid rgba(180,140,75,0.4)', color: '#E0D8C8' }}
+                      style={{ background: '#3b4042', border: '1px solid rgba(180,140,75,0.4)', color: '#E0D8C8' }}
                       aria-label={t('communityFeed.removePhoto', 'Remove photo')}
                     >
                       <X className="w-3 h-3" />

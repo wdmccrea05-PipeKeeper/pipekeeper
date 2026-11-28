@@ -33,7 +33,7 @@ export default function CombinedSummary({ pipeCount, tobaccoCount, bottleCount, 
         {stats.map((stat, idx) => (
           <div
             key={idx}
-            className="bg-[#1a1410]/60 rounded-lg p-4 border border-[#8b6239]/15"
+            className="bg-[#292c2e]/60 rounded-lg p-4 border border-[#8b6239]/15"
           >
             <p className="text-sm text-[#E0D8C8]/70 mb-2">{stat.label}</p>
             <p className="text-2xl font-bold text-[#D4A574]">{stat.value}</p>

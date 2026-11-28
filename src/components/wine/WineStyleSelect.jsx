@@ -10,7 +10,7 @@ import { STYLE_GROUPS, getStyleDisplay } from '@/lib/wine/wineTaxonomy';
 import { Input } from '@/components/ui/input';
 
 const SELECT_STYLE = {
-  background: 'rgba(20,14,10,0.70)',
+  background: 'rgba(35,38,40,0.70)',
   border: '1px solid rgba(180,140,75,0.25)',
   color: '#F5F1E7',
 };

@@ -5,7 +5,7 @@ import { Flame, Loader2 } from 'lucide-react';
 
 export default function SmokingLogLoadingState() {
   return (
-    <Card className="border-[rgba(140,105,65,0.35)] bg-[linear-gradient(145deg,rgba(40,28,20,0.95),rgba(32,22,15,0.95))] shadow-[0_10px_28px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(200,160,110,0.12)]">
+    <Card className="border-[rgba(140,105,65,0.35)] bg-[linear-gradient(145deg,rgba(54,58,60,0.95),rgba(45,48,50,0.95))] shadow-[0_10px_28px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(200,160,110,0.12)]">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

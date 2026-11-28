@@ -125,7 +125,7 @@ export default function CanonicalBillingSections({ billing }) {
                 key={plan}
                 onClick={() => count > 0 && setDrilldown(isActive ? null : `hist-${plan}`)}
                 className={`rounded-xl border p-4 cursor-pointer transition-colors ${
-                  isActive ? 'border-[#D4A574] bg-[#2a1f18]' :
+                  isActive ? 'border-[#D4A574] bg-[#34383a]' :
                   isUnknown && count > 0 ? 'border-yellow-700/40 bg-yellow-900/10 hover:border-yellow-600/60' :
                   isBundle && count > 0 ? 'border-[#D4A574]/40 bg-[#1f1712]/70 hover:border-[#D4A574]/70' :
                   'border-[#8b6239]/25 bg-[#1f1712]/70 hover:border-[#8b6239]/50'
@@ -171,7 +171,7 @@ export default function CanonicalBillingSections({ billing }) {
             {multiItemAnalysis.multi_item_rows?.length > 0 && (
               <div className="mt-2 overflow-auto max-h-40">
                 <table className="w-full text-xs">
-                  <thead className="bg-[#2a1f18] sticky top-0">
+                  <thead className="bg-[#34383a] sticky top-0">
                     <tr>
                       <th className="text-left px-2 py-1 text-[#E0D8C8]/70">Email</th>
                       <th className="text-left px-2 py-1 text-[#E0D8C8]/70">Items</th>
@@ -205,7 +205,7 @@ export default function CanonicalBillingSections({ billing }) {
           return (
             <div className="mt-3 rounded-xl border border-[#D4A574]/30 overflow-auto max-h-96">
               <table className="w-full text-xs">
-                <thead className="bg-[#2a1f18] sticky top-0">
+                <thead className="bg-[#34383a] sticky top-0">
                   <tr>
                     <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Email</th>
                     <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Provider</th>
@@ -285,7 +285,7 @@ export default function CanonicalBillingSections({ billing }) {
                 {drilldown === `${a.type}-${i}` && a.detail && (
                   <div className="mt-2 overflow-auto max-h-60">
                     <table className="w-full text-xs">
-                      <thead className="bg-[#2a1f18] sticky top-0">
+                      <thead className="bg-[#34383a] sticky top-0">
                         <tr>
                           <th className="text-left px-2 py-1 text-[#E0D8C8]/70">Email</th>
                           <th className="text-left px-2 py-1 text-[#E0D8C8]/70">Detail</th>
@@ -323,7 +323,7 @@ export default function CanonicalBillingSections({ billing }) {
         ) : (
           <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
             <table className="w-full text-xs">
-              <thead className="bg-[#2a1f18]">
+              <thead className="bg-[#34383a]">
                 <tr>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Product ID</th>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Product Name</th>
@@ -364,7 +364,7 @@ export default function CanonicalBillingSections({ billing }) {
         ) : (
           <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
             <table className="w-full text-xs">
-              <thead className="bg-[#2a1f18]">
+              <thead className="bg-[#34383a]">
                 <tr>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Price ID</th>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Product ID</th>
@@ -411,7 +411,7 @@ export default function CanonicalBillingSections({ billing }) {
         {bundleProof.detail?.length > 0 ? (
           <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
             <table className="w-full text-xs">
-              <thead className="bg-[#2a1f18]">
+              <thead className="bg-[#34383a]">
                 <tr>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Email</th>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Bundle</th>
@@ -472,7 +472,7 @@ function UserLedgerTable({ ledger }) {
     <div>
       <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
         <table className="w-full text-xs">
-          <thead className="bg-[#2a1f18]">
+          <thead className="bg-[#34383a]">
             <tr>
               <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Email</th>
               <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Current Plans</th>

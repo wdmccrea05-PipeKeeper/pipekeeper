@@ -21,26 +21,26 @@ import { cn } from "@/lib/utils";
  * muted gold borders, and burgundy accents.
  */
 export const PK_COLORS = {
-  surface: "#2a1f18",          // primary card surface - warm brown
-  surface2: "#1f1510",         // deeper panel surface - darker espresso
+  surface: "#34383a",          // primary card surface - warm brown
+  surface2: "#292c2e",         // deeper panel surface - darker espresso
   border: "rgba(139, 98, 57, 0.25)",  // muted gold/brown borders
 
   text: "#F5F1E7",
   textMuted: "rgba(180, 140, 75, 0.8)",
 
-  accent: "#A35C5C",           // burgundy accent
-  accent2: "#8F4E4E",          // darker burgundy for active/focus
+  accent: "#705d39",           // burgundy accent
+  accent2: "#604e30",          // darker burgundy for active/focus
 };
 
 export const PK_TW = {
   // Primary card surface - collector theme
-  card: "rounded-2xl border border-[#8b6239]/25 bg-gradient-to-br from-[#2a1f18] to-[#1f1510] text-[#F5F1E7] shadow-lg",
+  card: "rounded-2xl border border-[#8b6239]/25 bg-gradient-to-br from-[#34383a] to-[#292c2e] text-[#F5F1E7] shadow-lg",
 
   // Secondary panel surface - deeper collector tone
-  panel: "rounded-2xl border border-[#8b6239]/20 bg-gradient-to-br from-[#1f1510] to-[#1a100a] text-[#F5F1E7] shadow-lg",
+  panel: "rounded-2xl border border-[#8b6239]/20 bg-gradient-to-br from-[#292c2e] to-[#292c2e] text-[#F5F1E7] shadow-lg",
 
   // Inner "slot" surface for list items
-  item: "rounded-xl border border-[#8b6239]/15 bg-[#3a2a20]/30 hover:bg-[#3a2a20]/50 transition-colors",
+  item: "rounded-xl border border-[#8b6239]/15 bg-[#3b4042]/30 hover:bg-[#3b4042]/50 transition-colors",
 
   // Headings - warm ivory
   h1: "text-2xl md:text-3xl font-semibold tracking-tight text-[#F5F1E7]",
@@ -54,7 +54,7 @@ export const PK_TW = {
   divider: "border-t border-[#8b6239]/20",
 
   // Field surface for custom controls
-  field: "w-full rounded-xl border border-[#8b6239]/25 bg-[#1a1510] px-3 py-2 text-[#E0D8C8] placeholder:text-[#8b6239]/50 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50 focus:border-[#8b6239]/40",
+  field: "w-full rounded-xl border border-[#8b6239]/25 bg-[#232628] px-3 py-2 text-[#E0D8C8] placeholder:text-[#8b6239]/50 focus:outline-none focus:ring-2 focus:ring-[#705d39]/50 focus:border-[#8b6239]/40",
 };
 
 export function PKCard({ className, children, ...props }) {

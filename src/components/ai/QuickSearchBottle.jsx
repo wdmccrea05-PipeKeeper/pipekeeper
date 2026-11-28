@@ -178,7 +178,7 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="w-[calc(100vw-2rem)] max-w-lg flex flex-col" style={{
-        background: "linear-gradient(145deg, rgba(40,28,20,0.98), rgba(30,20,14,0.99))",
+        background: "linear-gradient(145deg, rgba(54,58,60,0.98), rgba(30,20,14,0.99))",
         border: "1px solid rgba(140,105,65,0.4)",
         maxHeight: "85vh",
       }}>
@@ -236,7 +236,7 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
                   key={i}
                   className="p-4 rounded-lg"
                   style={{
-                    background: "linear-gradient(135deg, rgba(52,37,24,0.6), rgba(42,30,18,0.75))",
+                    background: "linear-gradient(135deg, rgba(54,58,60,0.6), rgba(42,30,18,0.75))",
                     border: "1px solid rgba(140,105,65,0.25)"
                   }}
                 >
@@ -251,9 +251,9 @@ Prioritize well-known, commonly available bottles. Return a JSON object with a "
                           <Badge className="text-xs bg-emerald-900/60 text-emerald-200 border-emerald-700/50" style={{ fontWeight: '600' }}>✓ Exact Match</Badge>
                         )}
                         {bottle.type && <Badge className="text-xs bg-amber-900/50 text-amber-200 border-amber-700/40">{bottle.type}</Badge>}
-                        {bottle.region && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.region}</Badge>}
-                        {bottle.age_years && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.age_years}yr</Badge>}
-                        {bottle.abv && <Badge className="text-xs bg-[#3a2a20]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.abv}%</Badge>}
+                        {bottle.region && <Badge className="text-xs bg-[#3b4042]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.region}</Badge>}
+                        {bottle.age_years && <Badge className="text-xs bg-[#3b4042]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.age_years}yr</Badge>}
+                        {bottle.abv && <Badge className="text-xs bg-[#3b4042]/60 text-[#E0D8C8]/80 border-[#8b6239]/30">{bottle.abv}%</Badge>}
                         {bottle.typical_price_usd && <Badge className="text-xs bg-emerald-900/40 text-emerald-300 border-emerald-700/40">${bottle.typical_price_usd}</Badge>}
                       </div>
                       {bottle.description && (

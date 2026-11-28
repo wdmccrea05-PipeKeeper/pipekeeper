@@ -197,7 +197,7 @@ export default function ReferralAdminReport() {
                 <p className="text-xs text-[#E0D8C8]/50">These referrals have a fraud score of 40–79. They have not been auto-rejected and require admin review before reward fulfillment.</p>
                 <div className="rounded-xl border border-amber-800/30 overflow-auto">
                   <table className="w-full text-xs">
-                    <thead className="bg-[#2a1f18]">
+                    <thead className="bg-[#34383a]">
                       <tr>
                         {['Referrer', 'Referred', 'Score', 'Reason', 'Status'].map(h => (
                           <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/60">{h}</th>
@@ -229,7 +229,7 @@ export default function ReferralAdminReport() {
                 <p className="text-xs text-[#E0D8C8]/50">Note: iOS referrals are never penalized for null subscription amount — this is expected since iOS client sync does not provide transaction amounts.</p>
                 <div className="rounded-xl border border-yellow-800/30 overflow-auto">
                   <table className="w-full text-xs">
-                    <thead className="bg-[#2a1f18]">
+                    <thead className="bg-[#34383a]">
                       <tr>
                         {['Referrer', 'Referred', 'Score', 'Reason', 'Status', 'Manual'].map(h => (
                           <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/60">{h}</th>
@@ -260,7 +260,7 @@ export default function ReferralAdminReport() {
               </h2>
               <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#2a1f18]">
+                  <thead className="bg-[#34383a]">
                     <tr>
                       {['Email', 'Invites Sent', 'Recipient Clicks', 'Qualified', 'Rewarded'].map(h => (
                        <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/70 font-semibold">{h}</th>
@@ -359,7 +359,7 @@ export default function ReferralAdminReport() {
                 <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">Reward Audit Trail</h2>
                 <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
                   <table className="w-full text-xs">
-                    <thead className="bg-[#2a1f18]">
+                    <thead className="bg-[#34383a]">
                       <tr>
                         {['User', 'Type', 'Fixed Value', 'Provider', 'Status', 'Granted', 'Applied/Redeemed', 'Ref', 'Attempts', 'Failure'].map(h => (
                           <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/60">{h}</th>
@@ -444,7 +444,7 @@ export default function ReferralAdminReport() {
               <h2 className="text-sm font-semibold text-[#D4A574] uppercase tracking-wide border-b border-[#8b6239]/25 pb-1">All Referral Programs</h2>
               <div className="rounded-xl border border-[#8b6239]/25 overflow-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#2a1f18]">
+                  <thead className="bg-[#34383a]">
                     <tr>
                       {['Email', 'Code', 'Invites Sent', 'Links Copied', 'Shares', 'Clicks', 'Qualified', 'Free Months', 'Pending'].map(h => (
                         <th key={h} className="text-left px-3 py-2 text-[#E0D8C8]/70 font-semibold text-xs">{h}</th>

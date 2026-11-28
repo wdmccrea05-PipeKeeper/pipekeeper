@@ -43,7 +43,7 @@ export default function CollectorDisplayCard({
         className
       )}
       style={{
-        background: "linear-gradient(155deg, rgba(52, 37, 24, 0.88), rgba(38, 26, 18, 0.96))",
+        background: "linear-gradient(155deg, rgba(54,58,60, 0.88), rgba(38, 26, 18, 0.96))",
         border: "1px solid rgba(120, 90, 65, 0.35)",
         boxShadow: `
           0 4px 16px rgba(0,0,0,0.65),

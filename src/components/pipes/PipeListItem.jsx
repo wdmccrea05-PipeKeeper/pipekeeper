@@ -23,7 +23,7 @@ export default function PipeListItem({ pipe, onClick, onToggleFavorite, onEdit }
         <div className="flex items-center gap-4">
           {/* Photo */}
           <div className="relative w-20 h-16 sm:w-32 sm:h-20 rounded-lg overflow-hidden shrink-0" style={{
-            background: "linear-gradient(135deg, rgba(42, 30, 20, 0.5), rgba(35, 24, 16, 0.7))"
+            background: "linear-gradient(135deg, rgba(45,48,50, 0.5), rgba(35, 24, 16, 0.7))"
           }}>
             {mainPhoto ? (
               <img 

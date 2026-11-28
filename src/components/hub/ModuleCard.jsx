@@ -82,7 +82,7 @@ export default function ModuleCard({
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(135deg, rgba(100,70,45,0.08) 0%, transparent 40%, rgba(0,0,0,0.25) 100%)",
+            "linear-gradient(135deg, rgba(70,75,77,0.08) 0%, transparent 40%, rgba(0,0,0,0.25) 100%)",
           pointerEvents: "none",
         }}
       />
@@ -180,7 +180,7 @@ export default function ModuleCard({
             onClick={handleOpen}
             className="w-full justify-between group"
             style={{
-              background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
+              background: "linear-gradient(135deg, rgba(70,75,77,0.5), rgba(60,64,66,0.6))",
               border: "1px solid rgba(139,98,57,0.4)",
               color: "#E0D8C8",
             }}

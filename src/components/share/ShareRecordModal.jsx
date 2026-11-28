@@ -173,7 +173,7 @@ export default function ShareRecordModal({
 
   return (
     <Dialog open={resolvedOpen} onOpenChange={resolvedOnOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", border: "1px solid rgba(180, 140, 75, 0.25)" }}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" style={{ background: "linear-gradient(135deg, #34383a 0%, #292c2e 100%)", border: "1px solid rgba(180, 140, 75, 0.25)" }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2" style={{ color: "#FFFFFF" }}>
             <Share2 className="w-5 h-5" />

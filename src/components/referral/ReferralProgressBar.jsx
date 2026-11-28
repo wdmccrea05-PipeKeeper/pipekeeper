@@ -37,7 +37,7 @@ export default function ReferralProgressBar({ program }) {
             className="h-full rounded-full transition-all duration-500"
             style={{
               width: `${Math.min(progressToNextMonth * 100, 100)}%`,
-              background: 'linear-gradient(90deg, #D4A574, #A35C5C)',
+              background: 'linear-gradient(90deg, #D4A574, #705d39)',
             }}
           />
         </div>

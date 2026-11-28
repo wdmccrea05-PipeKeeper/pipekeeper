@@ -19,7 +19,7 @@ export const PipeShareCard = React.forwardRef(({ pipe }, ref) => {
   const { formatFromBase } = useCurrency();
   const photo = pipe?.photos?.[0] || pipe?.primary_photo || pipe?.image;
   return (
-    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
+    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #34383a 0%, #292c2e 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
         <img src={LOGO} alt="PipeKeeper" className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard", { defaultValue: "Collector Card" })}</span>
@@ -51,7 +51,7 @@ export const WhiskeyShareCard = React.forwardRef(({ bottle }, ref) => {
   const { formatFromBase } = useCurrency();
   const photo = bottle?.photo || bottle?.image || bottle?.image_url;
   return (
-    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
+    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #34383a 0%, #292c2e 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
         <img src={LOGO} alt="CollectionKeeper" className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard", { defaultValue: "Collector Card" })}</span>
@@ -83,7 +83,7 @@ export const WineShareCard = React.forwardRef(({ wine }, ref) => {
   const { formatFromBase } = useCurrency();
   const photo = wine?.photo || wine?.image || wine?.image_url || wine?.photos?.[0];
   return (
-    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
+    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #34383a 0%, #292c2e 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
         <img src={LOGO} alt="CollectionKeeper" className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard", { defaultValue: "Collector Card" })}</span>
@@ -115,7 +115,7 @@ export const CigarShareCard = React.forwardRef(({ cigar }, ref) => {
   const { formatFromBase } = useCurrency();
   const photo = cigar?.photo || cigar?.image || cigar?.image_url || cigar?.photos?.[0];
   return (
-    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
+    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #34383a 0%, #292c2e 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
         <img src={LOGO} alt="CollectionKeeper" className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard", { defaultValue: "Collector Card" })}</span>
@@ -145,7 +145,7 @@ export const TobaccoShareCard = React.forwardRef(({ tobacco }, ref) => {
   const { formatFromBase } = useCurrency();
   const photo = tobacco?.photo || tobacco?.logo || tobacco?.tin_image || tobacco?.brand_logo;
   return (
-    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #2a1f18 0%, #1f1510 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
+    <div ref={ref} className="w-full max-w-sm mx-auto p-8" style={{ background: "linear-gradient(135deg, #34383a 0%, #292c2e 100%)", borderRadius: 16, border: "1px solid rgba(180, 140, 75, 0.25)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)" }}>
       <div className="flex items-center justify-between mb-6">
         <img src={LOGO} alt="PipeKeeper" className="h-6 object-contain" />
         <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(180, 140, 75, 0.7)" }}>{t("share.collectorCard", { defaultValue: "Collector Card" })}</span>

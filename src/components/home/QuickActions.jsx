@@ -85,7 +85,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
     <div
       className="relative rounded-lg overflow-hidden p-6"
       style={{
-        background: "linear-gradient(145deg, rgba(52, 37, 24, 0.75), rgba(42, 30, 20, 0.88))",
+        background: "linear-gradient(145deg, rgba(54,58,60, 0.75), rgba(45,48,50, 0.88))",
         border: "1px solid rgba(120, 90, 65, 0.32)",
         boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
       }}
@@ -133,7 +133,7 @@ export default function QuickActions({ onLogSession, onIdentify, onOptimize, onA
             <div
               className="w-11 h-11 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110"
               style={{
-                background: "linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))",
+                background: "linear-gradient(135deg, rgba(70,75,77, 0.5), rgba(60,64,66, 0.6))",
                 border: "1px solid rgba(120, 90, 65, 0.45)",
                 borderRadius: "0.5rem",
                 boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",

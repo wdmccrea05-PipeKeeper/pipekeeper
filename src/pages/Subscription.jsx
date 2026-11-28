@@ -210,8 +210,8 @@ function AppleSubscription() {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/40 border-[#A35C5C] relative overflow-visible">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#A35C5C] text-white px-3 py-1 rounded-full text-xs font-semibold">
+        <Card className="bg-black/40 border-[#705d39] relative overflow-visible">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#705d39] text-white px-3 py-1 rounded-full text-xs font-semibold">
             {t("subscriptionFull.recommended")}
           </div>
           <CardHeader>

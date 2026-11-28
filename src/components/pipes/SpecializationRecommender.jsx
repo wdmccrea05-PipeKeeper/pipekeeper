@@ -281,7 +281,7 @@ export default function SpecializationRecommender({ pipe, onApplyRecommendation 
               <div className="flex gap-3 pt-4">
                 <Button
                   onClick={handleApply}
-                  className="flex-1 bg-[#A35C5C] hover:bg-[#8B4A4A]"
+                  className="flex-1 bg-[#705d39] hover:bg-[#8B4A4A]"
                 >
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   {t("specializationRec.applySpecializations")}

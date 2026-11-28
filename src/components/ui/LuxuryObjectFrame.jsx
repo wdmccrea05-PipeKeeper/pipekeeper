@@ -37,7 +37,7 @@ export default function LuxuryObjectFrame({
     <div 
       className={cn("relative overflow-hidden", aspectClass, className)}
       style={{
-        background: "linear-gradient(145deg, rgba(25, 18, 12, 0.95), rgba(20, 14, 10, 0.98))",
+        background: "linear-gradient(145deg, rgba(25, 18, 12, 0.95), rgba(35,38,40, 0.98))",
         ...style
       }}
     >

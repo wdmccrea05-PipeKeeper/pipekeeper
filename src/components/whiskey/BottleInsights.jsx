@@ -83,7 +83,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
     };
   }, [bottles, tastingLogs]);
 
-  const StatCard = ({ icon: Icon, label, value, accent = '#A35C5C' }) => (
+  const StatCard = ({ icon: Icon, label, value, accent = '#705d39' }) => (
      <div
        className="rounded-xl p-4"
        style={{
@@ -111,7 +111,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
           <div
             className="w-11 h-11 rounded-xl flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))',
+              background: 'linear-gradient(135deg, rgba(70,75,77, 0.45), rgba(60,64,66, 0.55))',
               border: '1px solid rgba(120, 90, 65, 0.45)',
             }}
           >
@@ -131,7 +131,7 @@ export default function BottleInsights({ bottles = [], tastingLogs = [] }) {
 
       {/* Top Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <StatCard icon={WhiskeyKeeperIcon} label="Bottles" value={insights.totalBottles} accent="#A35C5C" />
+        <StatCard icon={WhiskeyKeeperIcon} label="Bottles" value={insights.totalBottles} accent="#705d39" />
         <StatCard icon={BarChart3} label="Collected" value={insights.totalCollected} accent="#C87941" />
         <StatCard icon={Flame} label="Tastings" value={insights.logsCount} accent="#D4AF37" />
       </div>

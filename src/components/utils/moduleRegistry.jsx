@@ -77,7 +77,7 @@ export const KEEPER_MODULES = [
     shortName: 'Whiskey',
     singularName: 'Bottle',
     pageRoute: '/WhiskeyKeeper',
-    accent: '#A35C5C',
+    accent: '#705d39',
     accentSoft: 'rgba(163,92,92,0.18)',
     border: 'rgba(163,92,92,0.30)',
     lucideIcon: WhiskeyKeeperIcon,

@@ -96,7 +96,7 @@ export default function DrawerRow({
           <div
             className="w-10 h-10 rounded flex items-center justify-center overflow-hidden flex-shrink-0"
             style={{
-              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))`,
+              background: `linear-gradient(135deg, rgba(70,75,77, 0.5), rgba(60,64,66, 0.6))`,
               border: `1px solid rgba(120, 90, 65, 0.45)`,
               boxShadow: `0 3px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.18)`,
             }}
@@ -161,7 +161,7 @@ export default function DrawerRow({
             <div
               className="w-8 h-8 rounded flex items-center justify-center transition-transform group-hover:translate-x-1"
               style={{
-                background: `linear-gradient(135deg, rgba(100, 70, 45, 0.25), rgba(80, 55, 35, 0.35))`,
+                background: `linear-gradient(135deg, rgba(70,75,77, 0.25), rgba(60,64,66, 0.35))`,
                 border: `1px solid rgba(120, 90, 65, 0.3)`,
               }}
             >

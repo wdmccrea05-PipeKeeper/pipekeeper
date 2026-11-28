@@ -66,7 +66,7 @@ export default function QuickStartChecklist({ pipes, blends, hasNotes, hasViewed
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
       >
-        <Card className="bg-gradient-to-br from-[#1A2B3A]/60 to-[#112133]/60 border-[#A35C5C]/30">
+        <Card className="bg-gradient-to-br from-[#1A2B3A]/60 to-[#112133]/60 border-[#705d39]/30">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>

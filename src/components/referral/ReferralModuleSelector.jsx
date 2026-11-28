@@ -77,7 +77,7 @@ export default function ReferralModuleSelector({ accessRecord, onActivated }) {
         onClick={activate}
         disabled={!selected || saving}
         className="w-full"
-        style={{ background: '#A35C5C', color: '#fff' }}
+        style={{ background: '#705d39', color: '#fff' }}
       >
         {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
         {saving ? 'Activating…' : `Activate ${selected ? MODULES.find(m => m.key === selected)?.label : 'Module'}`}

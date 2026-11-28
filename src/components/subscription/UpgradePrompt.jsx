@@ -11,10 +11,10 @@ export default function UpgradePrompt({ featureName, description }) {
   const { t } = useTranslation();
 
   return (
-    <Card className="border-[#A35C5C]/50 bg-[#243548]/70" variant="default">
+    <Card className="border-[#705d39]/50 bg-[#243548]/70" variant="default">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#A35C5C]/20 border border-[#A35C5C]/40">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#705d39]/20 border border-[#705d39]/40">
             <Lock className="w-5 h-5 text-[#E0D8C8]" />
           </span>
           <span className="text-[#E0D8C8]">{t("subscription.premiumFeature")}</span>
@@ -30,7 +30,7 @@ export default function UpgradePrompt({ featureName, description }) {
         {shouldShowPurchaseUI() ? (
           <>
             <a href={createPageUrl("Subscription")}>
-              <Button className="w-full bg-gradient-to-r from-[#A35C5C] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#7A3E3E] text-[#E0D8C8]">
+              <Button className="w-full bg-gradient-to-r from-[#705d39] to-[#8B4A4A] hover:from-[#8B4A4A] hover:to-[#7A3E3E] text-[#E0D8C8]">
                 <Crown className="w-4 h-4 mr-2" />
                 {t("subscription.continueWithPremium")}
               </Button>

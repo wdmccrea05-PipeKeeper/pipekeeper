@@ -49,7 +49,7 @@ export default function PrivateProfileGate({
           <Button
             onClick={onAddFriend}
             disabled={isAdding}
-            className="bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] w-full"
+            className="bg-[#705d39] hover:bg-[#8C4A4A] text-[#F5F1E7] w-full"
           >
             <UserPlus className="w-4 h-4 mr-2" />
             {t("communityPrivacy.addFriend", "Add friend")}

@@ -77,7 +77,7 @@ export async function exportShareCardAsImage(cardElement, fileName = "share-card
     const html2canvas = (await import("html2canvas")).default;
     const canvas = await html2canvas(cardElement, {
       scale: 2,
-      backgroundColor: "#0f0b08",
+      backgroundColor: "#242729",
       logging: false,
       useCORS: true,
     });

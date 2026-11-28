@@ -421,7 +421,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
     <div className="space-y-4">
       {/* ✅ NEW: Reclassify Blends card (this is what was missing) */}
       <div className="rounded-lg p-4" style={{
-        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
         border: "1px solid rgba(140,105,65,0.25)"
       }}>
         <div className="flex items-start gap-3 mb-3">
@@ -449,7 +449,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
       </div>
 
       <div className="rounded-lg p-4" style={{
-        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
         border: "1px solid rgba(140,105,65,0.25)"
       }}>
         <div className="flex items-start gap-3 mb-3">
@@ -500,7 +500,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
       </div>
 
       <div className="rounded-lg p-4" style={{
-        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
         border: "1px solid rgba(140,105,65,0.25)"
       }}>
         <div className="flex items-start gap-3 mb-3">
@@ -551,7 +551,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
       </div>
 
       <div className="rounded-lg p-4" style={{
-        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
         border: "1px solid rgba(140,105,65,0.25)"
       }}>
         <div className="flex items-start gap-3 mb-3">
@@ -617,7 +617,7 @@ CRITICAL: Only provide verified manufacturer/retailer specifications. Do NOT est
       </div>
 
       <div className="rounded-lg p-4" style={{
-        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+        background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
         border: "1px solid rgba(140,105,65,0.25)"
       }}>
         <div className="flex items-start gap-3">

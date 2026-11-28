@@ -98,7 +98,7 @@ export default function HelpCenter() {
 
           {/* Tutorials Tab */}
           <TabsContent value="tutorials" className="space-y-6">
-            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
+            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#34383a] to-[#292c2e]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
                   {t('help.moduleAwareTutorials', 'Module-Specific Tutorials')}
@@ -115,7 +115,7 @@ export default function HelpCenter() {
               </CardContent>
             </Card>
 
-            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
+            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#34383a] to-[#292c2e]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
                   {t('help.quickLinks', 'Quick Links')}
@@ -152,7 +152,7 @@ export default function HelpCenter() {
 
           {/* Search Tab */}
           <TabsContent value="search" className="space-y-6">
-            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
+            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#34383a] to-[#292c2e]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
                   {t('help.searchDocumentation', 'Search Documentation')}
@@ -169,7 +169,7 @@ export default function HelpCenter() {
 
           {/* AI Help Tab */}
           <TabsContent value="ai" className="space-y-6">
-            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
+            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#34383a] to-[#292c2e]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
                   {t('help.aiAssistant', 'AI Help Assistant')}
@@ -183,7 +183,7 @@ export default function HelpCenter() {
 
           {/* Tips & Tricks Tab */}
           <TabsContent value="tips" className="space-y-6">
-            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
+            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#34383a] to-[#292c2e]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7] flex items-center gap-2">
                   <Lightbulb className="w-5 h-5" /> {t("helpCenterAdditional.item6")}
@@ -224,7 +224,7 @@ export default function HelpCenter() {
 
           {/* Diagnostic Tab */}
           <TabsContent value="diagnostic" className="space-y-6">
-            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#2a1f18] to-[#1f1510]">
+            <Card className="border-[rgba(180,140,75,0.15)] bg-gradient-to-br from-[#34383a] to-[#292c2e]">
               <CardHeader>
                 <CardTitle className="text-[#F5F1E7]">
                   {t('help.systemDiagnostic', 'System Diagnostic')}

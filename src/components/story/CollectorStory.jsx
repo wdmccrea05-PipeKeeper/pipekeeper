@@ -144,7 +144,7 @@ function StorySlide({ card, current, total, slideRef }) {
         width: "min(340px, 90vw)",
         height: "min(560px, 85vh)",
         borderRadius: "20px",
-        background: "linear-gradient(165deg, rgba(32, 22, 15, 0.98), rgba(42, 30, 20, 0.95))",
+        background: "linear-gradient(165deg, rgba(45,48,50, 0.98), rgba(45,48,50, 0.95))",
         border: "1px solid rgba(120, 90, 65, 0.42)",
         boxShadow: "0 8px 26px rgba(0,0,0,0.72), inset 0 1px 0 rgba(180,140,100,0.12)",
         display: "flex",
@@ -259,7 +259,7 @@ function StorySlide({ card, current, total, slideRef }) {
         <div
           className="text-[10px] font-semibold px-3 py-1 rounded-full"
           style={{
-            background: "rgba(100,70,45,0.16)",
+            background: "rgba(70,75,77,0.16)",
             border: "1px solid rgba(120,90,65,0.35)",
             color: "rgba(180,140,75,0.92)",
           }}
@@ -275,7 +275,7 @@ function StorySlide({ card, current, total, slideRef }) {
             width: "76px",
             height: "76px",
             borderRadius: "20px",
-            background: "linear-gradient(135deg, rgba(100,70,45,0.5) 0%, rgba(80,55,35,0.6) 100%)",
+            background: "linear-gradient(135deg, rgba(70,75,77,0.5) 0%, rgba(60,64,66,0.6) 100%)",
             border: "1.5px solid rgba(120,90,65,0.5)",
             boxShadow: "0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.2)",
           }}

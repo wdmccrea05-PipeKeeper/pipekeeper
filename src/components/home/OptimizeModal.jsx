@@ -127,7 +127,7 @@ function InsightCard({ card, onApplyFix, onReviewInCurator }) {
     <div
       className="rounded-xl p-4 space-y-3"
       style={{
-        background: 'linear-gradient(145deg, rgba(42,30,20,0.95), rgba(28,19,13,0.98))',
+        background: 'linear-gradient(145deg, rgba(45,48,50,0.95), rgba(28,19,13,0.98))',
         border: `1px solid ${color}35`,
         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
       }}
@@ -471,7 +471,7 @@ export default function OptimizeModal({
                 style={{
                   background: isActive
                     ? 'linear-gradient(135deg, rgba(74,124,156,0.28), rgba(74,124,156,0.14))'
-                    : 'linear-gradient(145deg, rgba(52,37,24,0.6), rgba(38,27,18,0.75))',
+                    : 'linear-gradient(145deg, rgba(54,58,60,0.6), rgba(38,27,18,0.75))',
                   border: isActive
                     ? '1px solid rgba(74,124,156,0.55)'
                     : '1px solid rgba(120,90,65,0.28)',
@@ -480,7 +480,7 @@ export default function OptimizeModal({
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                   style={{
-                    background: isActive ? 'rgba(74,124,156,0.25)' : 'rgba(100,70,45,0.4)',
+                    background: isActive ? 'rgba(74,124,156,0.25)' : 'rgba(70,75,77,0.4)',
                     border: isActive
                       ? '1px solid rgba(74,124,156,0.45)'
                       : '1px solid rgba(120,90,65,0.3)',
@@ -535,7 +535,7 @@ export default function OptimizeModal({
                   background:
                     activeModule === m.key
                       ? 'rgba(74,124,156,0.25)'
-                      : 'rgba(52,37,24,0.6)',
+                      : 'rgba(54,58,60,0.6)',
                   border:
                     activeModule === m.key
                       ? '1px solid rgba(74,124,156,0.5)'
@@ -557,7 +557,7 @@ export default function OptimizeModal({
               className="rounded-xl p-6 text-center"
               style={{
                 background:
-                  'linear-gradient(145deg, rgba(42,30,20,0.9), rgba(28,19,13,0.95))',
+                  'linear-gradient(145deg, rgba(45,48,50,0.9), rgba(28,19,13,0.95))',
                 border: '1px solid rgba(180,140,75,0.16)',
               }}
             >

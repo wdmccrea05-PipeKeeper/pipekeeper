@@ -141,7 +141,7 @@ export default function ComplimentaryProBanner({ className = '' }) {
     <div
       className={`rounded-2xl p-4 sm:p-5 mb-4 ${className}`}
       style={{
-        background: 'linear-gradient(135deg, rgba(212,165,116,0.16), rgba(42,30,20,0.9))',
+        background: 'linear-gradient(135deg, rgba(212,165,116,0.16), rgba(45,48,50,0.9))',
         border: '1px solid rgba(180,140,75,0.35)',
       }}
     >

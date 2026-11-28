@@ -31,7 +31,7 @@ const STATUS_CONFIG = {
   },
   open: {
     label: 'Open',
-    color: '#A35C5C',
+    color: '#705d39',
     bg: 'rgba(163,92,92,0.12)',
     border: 'rgba(163,92,92,0.3)',
     Icon: Droplets,
@@ -253,7 +253,7 @@ export default function InventoryManager({ bottle, onClose }) {
             { label: 'Total', value: units.length, color: '#D4A574' },
             { label: 'Reserve', value: reserveCount, color: '#D4AF37' },
             { label: 'Drinking', value: drinkingCount, color: '#7B9B5B' },
-            { label: 'Open', value: openCount, color: '#A35C5C' },
+            { label: 'Open', value: openCount, color: '#705d39' },
           ].map(({ label, value, color }) => (
             <div key={label} className="text-center">
               <p className="text-xl font-bold" style={{ color }}>{value}</p>

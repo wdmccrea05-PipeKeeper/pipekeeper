@@ -617,7 +617,7 @@ export default function ProfilePage() {
               <Card>
               <CardHeader>
               <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(100,70,45,0.4), rgba(80,55,35,0.5))', border: '1px solid rgba(120,90,65,0.45)' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(70,75,77,0.4), rgba(60,64,66,0.5))', border: '1px solid rgba(120,90,65,0.45)' }}>
                 <User className="w-6 h-6" style={{ color: '#D4A574' }} />
               </div>
               <div className="flex-1">
@@ -648,7 +648,7 @@ export default function ProfilePage() {
             <AppreciationOfferCard surface="profile" />
             {/* Badges */}
             <div className="flex gap-2 flex-wrap">
-              <Badge className={hasPro ? "bg-purple-600 text-white border-0" : "bg-[#A35C5C] text-white border-0"}>
+              <Badge className={hasPro ? "bg-purple-600 text-white border-0" : "bg-[#705d39] text-white border-0"}>
                 {planLabel.toUpperCase()}
               </Badge>
               {provider === "stripe" && (
@@ -737,7 +737,7 @@ export default function ProfilePage() {
                 <Switch
                   checked={formData.show_location}
                   onCheckedChange={(v) => setFormData((p) => ({ ...p, show_location: !!v }))}
-                  className="data-[state=checked]:bg-[#A35C5C]"
+                  className="data-[state=checked]:bg-[#705d39]"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -785,7 +785,7 @@ export default function ProfilePage() {
                       <Switch
                         checked={!!formData.personal_hide_totals}
                         onCheckedChange={(v) => setFormData((p) => ({ ...p, personal_hide_totals: !!v }))}
-                        className="data-[state=checked]:bg-[#A35C5C]"
+                        className="data-[state=checked]:bg-[#705d39]"
                       />
                     </div>
                   </div>
@@ -801,7 +801,7 @@ export default function ProfilePage() {
                       <Switch
                         checked={!!formData.home_hide_collection_values}
                         onCheckedChange={(v) => setFormData((p) => ({ ...p, home_hide_collection_values: !!v }))}
-                        className="data-[state=checked]:bg-[#A35C5C]"
+                        className="data-[state=checked]:bg-[#705d39]"
                       />
                     </div>
                   </div>
@@ -854,7 +854,7 @@ export default function ProfilePage() {
                   <Switch
                     checked={!!formData.privacy_hide_values}
                     onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_values: !!v }))}
-                    className="data-[state=checked]:bg-[#A35C5C]"
+                    className="data-[state=checked]:bg-[#705d39]"
                   />
                 </div>
               </div>
@@ -871,7 +871,7 @@ export default function ProfilePage() {
                   <Switch
                     checked={!!formData.privacy_hide_inventory}
                     onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_inventory: !!v }))}
-                    className="data-[state=checked]:bg-[#A35C5C]"
+                    className="data-[state=checked]:bg-[#705d39]"
                   />
                 </div>
               </div>
@@ -888,7 +888,7 @@ export default function ProfilePage() {
                   <Switch
                     checked={!!formData.privacy_hide_collection_counts}
                     onCheckedChange={(v) => setFormData((p) => ({ ...p, privacy_hide_collection_counts: !!v }))}
-                    className="data-[state=checked]:bg-[#A35C5C]"
+                    className="data-[state=checked]:bg-[#705d39]"
                   />
                 </div>
               </div>
@@ -914,7 +914,7 @@ export default function ProfilePage() {
                           onClick={() => setFormData((p) => ({ ...p, clenching_preference: value }))}
                           variant={active ? "default" : "outline"}
                           size="sm"
-                          className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
+                          className={active ? "bg-[#705d39] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
                         >
                           {label}
                         </Button>
@@ -939,7 +939,7 @@ export default function ProfilePage() {
                           onClick={() => setFormData((p) => ({ ...p, smoke_duration_preference: value }))}
                           variant={active ? "default" : "outline"}
                           size="sm"
-                          className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
+                          className={active ? "bg-[#705d39] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
                         >
                           {label}
                         </Button>
@@ -965,7 +965,7 @@ export default function ProfilePage() {
                           onClick={() => setFormData((p) => ({ ...p, pipe_size_preference: value }))}
                           variant={active ? "default" : "outline"}
                           size="sm"
-                          className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
+                          className={active ? "bg-[#705d39] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
                         >
                           {label}
                         </Button>
@@ -992,7 +992,7 @@ export default function ProfilePage() {
                           onClick={() => setFormData((p) => ({ ...p, strength_preference: value }))}
                           variant={active ? "default" : "outline"}
                           size="sm"
-                          className={active ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
+                          className={active ? "bg-[#705d39] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent" : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"} style={{color: active ? undefined : "rgba(224,216,200,0.65)"}}
                         >
                           {label}
                         </Button>
@@ -1010,7 +1010,7 @@ export default function ProfilePage() {
                         <Badge
                           key={bt}
                           onClick={() => toggleBlendType(bt)}
-                          className={`cursor-pointer border ${active ? "bg-[#A35C5C] text-[#F5F1E7] border-[#A35C5C]" : "border-[rgba(140,105,65,0.3)] text-[rgba(224,216,200,0.65)] hover:bg-[rgba(180,140,75,0.1)]"}`}
+                          className={`cursor-pointer border ${active ? "bg-[#705d39] text-[#F5F1E7] border-[#705d39]" : "border-[rgba(140,105,65,0.3)] text-[rgba(224,216,200,0.65)] hover:bg-[rgba(180,140,75,0.1)]"}`}
                         >
                           {bt}
                         </Badge>
@@ -1028,7 +1028,7 @@ export default function ProfilePage() {
                         <Badge
                           key={sh}
                           onClick={() => toggleShape(sh)}
-                          className={`cursor-pointer border ${active ? "bg-[#A35C5C] text-[#F5F1E7] border-[#A35C5C]" : "border-[rgba(140,105,65,0.3)] text-[rgba(224,216,200,0.65)] hover:bg-[rgba(180,140,75,0.1)]"}`}
+                          className={`cursor-pointer border ${active ? "bg-[#705d39] text-[#F5F1E7] border-[#705d39]" : "border-[rgba(140,105,65,0.3)] text-[rgba(224,216,200,0.65)] hover:bg-[rgba(180,140,75,0.1)]"}`}
                         >
                           {sh}
                         </Badge>
@@ -1113,7 +1113,7 @@ export default function ProfilePage() {
                     onChange={(e) => setFormData((p) => ({ ...p, wine_notes: e.target.value }))}
                     rows={3}
                     placeholder={t("profile.wineNotesPlaceholder", "e.g. Love aged Burgundy, prefer dry reds, enjoy pairing with cigars or fine cheese...")}
-                    className="flex w-full rounded-xl px-4 py-2.5 text-base text-[#F5F1E7] bg-[rgba(20,14,10,0.70)] border border-[rgba(180,140,75,0.25)] placeholder:text-[rgba(224,216,200,0.55)] focus:outline-none focus:ring-2 focus:ring-[rgba(180,140,75,0.40)] transition-colors duration-150 min-h-[5rem]"
+                    className="flex w-full rounded-xl px-4 py-2.5 text-base text-[#F5F1E7] bg-[rgba(35,38,40,0.70)] border border-[rgba(180,140,75,0.25)] placeholder:text-[rgba(224,216,200,0.55)] focus:outline-none focus:ring-2 focus:ring-[rgba(180,140,75,0.40)] transition-colors duration-150 min-h-[5rem]"
                   />
                   <p className="text-xs mt-1" style={{ color: 'rgba(224,216,200,0.4)' }}>
                     {t("profile.wineNotesHint", "This note is shared with the Curator AI to improve wine recommendations.")}
@@ -1127,7 +1127,7 @@ export default function ProfilePage() {
               <Button
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending}
-                className="bg-[#A35C5C] hover:bg-[#8C4A4A]"
+                className="bg-[#705d39] hover:bg-[#8C4A4A]"
               >
                 {saveMutation.isPending ? t("profileExtended.saving") : t("common.save")}
               </Button>

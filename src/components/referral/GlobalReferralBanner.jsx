@@ -158,7 +158,7 @@ export default function GlobalReferralBanner() {
               size="sm"
               className="whitespace-nowrap"
               style={{
-                background: '#A35C5C',
+                background: '#705d39',
                 color: '#fff',
               }}
             >

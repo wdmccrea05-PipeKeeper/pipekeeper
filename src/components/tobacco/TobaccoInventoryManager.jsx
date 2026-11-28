@@ -191,7 +191,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
 
   return (
     <div className="space-y-4 rounded-2xl p-5" style={{
-      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
       border: "1px solid rgba(140,105,65,0.35)",
       boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
     }}>
@@ -204,7 +204,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
           size="sm" 
           onClick={handleSave}
           disabled={isUpdating}
-          className="bg-[#A35C5C] hover:bg-[#8B4A4A] text-white font-semibold"
+          className="bg-[#705d39] hover:bg-[#8B4A4A] text-white font-semibold"
         >
           {isUpdating ? t("common.saving") : t("inventory.saveChanges")}
         </Button>
@@ -312,7 +312,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                   size="sm"
                   onClick={() => addToCellarLog('tin', formData.tin_tins_cellared, formData.tin_cellared_date)}
                   disabled={!formData.tin_tins_cellared || !formData.tin_cellared_date || addingToCellar === 'tin'}
-                  className="bg-[#A35C5C] hover:bg-[#8B4A4A] flex-shrink-0"
+                  className="bg-[#705d39] hover:bg-[#8B4A4A] flex-shrink-0"
                 >
                   {addingToCellar === 'tin' ? '...' : <Plus className="w-4 h-4" />}
                 </Button>
@@ -373,7 +373,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                   size="sm"
                   onClick={() => addToCellarLog('bulk', formData.bulk_cellared, formData.bulk_cellared_date)}
                   disabled={!formData.bulk_cellared || !formData.bulk_cellared_date || addingToCellar === 'bulk'}
-                  className="bg-[#A35C5C] hover:bg-[#8B4A4A] flex-shrink-0"
+                  className="bg-[#705d39] hover:bg-[#8B4A4A] flex-shrink-0"
                 >
                   {addingToCellar === 'bulk' ? '...' : <Plus className="w-4 h-4" />}
                 </Button>
@@ -455,7 +455,7 @@ export default function TobaccoInventoryManager({ blend, onUpdate, isUpdating })
                   size="sm"
                   onClick={() => addToCellarLog('pouch', formData.pouch_pouches_cellared, formData.pouch_cellared_date)}
                   disabled={!formData.pouch_pouches_cellared || !formData.pouch_cellared_date || addingToCellar === 'pouch'}
-                  className="bg-[#A35C5C] hover:bg-[#8B4A4A] flex-shrink-0"
+                  className="bg-[#705d39] hover:bg-[#8B4A4A] flex-shrink-0"
                 >
                   {addingToCellar === 'pouch' ? '...' : <Plus className="w-4 h-4" />}
                 </Button>

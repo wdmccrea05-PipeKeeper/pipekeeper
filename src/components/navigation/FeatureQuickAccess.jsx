@@ -125,8 +125,8 @@ export default function FeatureQuickAccess({ isOpen, onClose }) {
               onClick={() => handleFeatureClick(feature)}
               className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors text-left"
             >
-              <div className="w-10 h-10 rounded-lg bg-[#A35C5C]/20 flex items-center justify-center flex-shrink-0">
-                <feature.icon className="w-5 h-5 text-[#A35C5C]" />
+              <div className="w-10 h-10 rounded-lg bg-[#705d39]/20 flex items-center justify-center flex-shrink-0">
+                <feature.icon className="w-5 h-5 text-[#705d39]" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-[#E0D8C8] text-sm">{feature.label}</p>

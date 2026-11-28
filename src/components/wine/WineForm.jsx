@@ -95,7 +95,7 @@ export default function WineForm({ wine, onSaved, onCancel }) {
             value={form.style}
             onChange={(e) => set('style', e.target.value)}
             className="flex h-11 w-full rounded-xl px-4 text-base"
-            style={{ background: 'rgba(20,14,10,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+            style={{ background: 'rgba(35,38,40,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
           >
             {STYLES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
           </select>
@@ -127,7 +127,7 @@ export default function WineForm({ wine, onSaved, onCancel }) {
               value={form.bottle_size}
               onChange={(e) => set('bottle_size', e.target.value)}
               className="flex h-11 w-full rounded-xl px-4 text-base"
-              style={{ background: 'rgba(20,14,10,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+              style={{ background: 'rgba(35,38,40,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
             >
               {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -201,7 +201,7 @@ export default function WineForm({ wine, onSaved, onCancel }) {
             rows={3}
             placeholder={t('wine.notesPlaceholder')}
             className="flex w-full rounded-xl px-4 py-2.5 text-base resize-none"
-            style={{ background: 'rgba(20,14,10,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+            style={{ background: 'rgba(35,38,40,0.70)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
           />
         </Field>
 

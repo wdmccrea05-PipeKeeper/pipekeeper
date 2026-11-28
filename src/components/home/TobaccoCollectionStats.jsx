@@ -114,7 +114,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <Card style={{
-          background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+          background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
           border: "1px solid rgba(140,105,65,0.35)",
           boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
         }}>
@@ -138,7 +138,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between items-center py-1.5 px-3 rounded-lg" style={{
-                background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
                 border: "1px solid rgba(140,105,65,0.2)",
                 color: "#E0D8C8"
               }}>
@@ -149,7 +149,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 onClick={() => handleDrillDown('brands', brandBreakdown)}
                 className="w-full flex justify-between items-center py-1.5 px-3 rounded-lg transition-colors group"
                 style={{
-                  background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                  background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
                   border: "1px solid rgba(140,105,65,0.2)",
                   color: "#E0D8C8"
                 }}
@@ -164,7 +164,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 onClick={() => handleDrillDown('favorites', favoriteBlends)}
                 className="w-full flex justify-between items-center py-1.5 px-3 rounded-lg transition-colors group"
                 style={{
-                  background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                  background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
                   border: "1px solid rgba(140,105,65,0.2)",
                   color: "#E0D8C8"
                 }}
@@ -186,7 +186,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 <button
                   onClick={() => handleDrillDown('tinInventory', { blends: blends.filter(b => (b.tin_total_tins || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                 style={{ background: "rgba(50,40,30,0.3)" }}
+                 style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.totalTins")}</span>
                   <div className="flex items-center gap-2">
@@ -197,7 +197,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 <button
                   onClick={() => handleDrillDown('tinInventory', { blends: blends.filter(b => (b.tin_total_quantity_oz || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                  style={{ background: "rgba(50,40,30,0.3)" }}
+                  style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 <button
                   onClick={() => handleDrillDown('tinOpen', { blends: blends.filter(b => (b.tin_tins_open || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                  style={{ background: "rgba(50,40,30,0.3)" }}
+                  style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.open")}</span>
                   <div className="flex items-center gap-2">
@@ -227,7 +227,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 <button
                   onClick={() => handleDrillDown('bulkInventory', { blends: blends.filter(b => (b.bulk_total_quantity_oz || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                  style={{ background: "rgba(50,40,30,0.3)" }}
+                  style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
@@ -238,7 +238,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 <button
                   onClick={() => handleDrillDown('bulkOpen', { blends: blends.filter(b => (b.bulk_open || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                  style={{ background: "rgba(50,40,30,0.3)" }}
+                  style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.open")}</span>
                   <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 <button
                   onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_pouches || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                  style={{ background: "rgba(50,40,30,0.3)" }}
+                  style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.totalPouches")}</span>
                   <div className="flex items-center gap-2">
@@ -268,7 +268,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 <button
                   onClick={() => handleDrillDown('pouchInventory', { blends: blends.filter(b => (b.pouch_total_quantity_oz || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                  style={{ background: "rgba(50,40,30,0.3)" }}
+                  style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.total")}</span>
                   <div className="flex items-center gap-2">
@@ -279,7 +279,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 <button
                   onClick={() => handleDrillDown('pouchOpen', { blends: blends.filter(b => (b.pouch_pouches_open || 0) > 0) })}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                  style={{ background: "rgba(50,40,30,0.3)" }}
+                  style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.open")}</span>
                   <div className="flex items-center gap-2">
@@ -300,7 +300,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                     (b.tin_total_quantity_oz || 0) > 0 || (b.bulk_total_quantity_oz || 0) > 0 || (b.pouch_total_quantity_oz || 0) > 0
                   )})}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                  style={{ background: "rgba(50,40,30,0.3)" }}
+                  style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.totalWeight")}</span>
                   <div className="flex items-center gap-2">
@@ -313,7 +313,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                     (b.tin_tins_open || 0) > 0 || (b.bulk_open || 0) > 0 || (b.pouch_pouches_open || 0) > 0
                   )})}
                   className="w-full flex justify-between items-center py-1 px-2 rounded transition-colors group"
-                  style={{ background: "rgba(50,40,30,0.3)" }}
+                  style={{ background: "rgba(69,74,76,0.3)" }}
                 >
                   <span className="text-xs" style={{ color: "rgba(224,216,200,0.7)" }}>{t("stats.totalOpen")}</span>
                   <div className="flex items-center gap-2">
@@ -415,7 +415,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                   .sort(([, a], [, b]) => b.length - a.length)
                   .map(([brand, brandBlends]) => (
                     <div key={brand} className="rounded-lg p-4" style={{
-                      background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                      background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
                       border: "1px solid rgba(140,105,65,0.2)"
                     }}>
                       <div className="flex items-center justify-between mb-3">
@@ -451,7 +451,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 {drillDown.data.map(blend => (
                   <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                     <div className="flex items-center gap-3 p-3 rounded-lg transition-colors" style={{
-                      background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                      background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
                       border: "1px solid rgba(140,105,65,0.2)"
                     }}>
                       <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0" style={{
@@ -483,7 +483,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 {drillDown.data.map(blend => (
                   <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                     <div className="flex items-center gap-3 p-3 rounded-lg transition-colors" style={{
-                      background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                      background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
                       border: "1px solid rgba(140,105,65,0.2)"
                     }}>
                       <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0" style={{
@@ -519,7 +519,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                 {drillDown.data.blends.map(blend => (
                 <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                   <div className="flex items-center gap-3 p-3 rounded-lg transition-colors" style={{
-                    background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                    background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
                     border: "1px solid rgba(140,105,65,0.2)"
                   }}>
                     <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0" style={{
@@ -589,7 +589,7 @@ export default function TobaccoCollectionStats({ user: userProp }) {
                   return (
                     <a key={blend.id} href={createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`)}>
                       <div className="flex items-center gap-3 p-3 rounded-lg transition-colors" style={{
-                        background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                        background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
                         border: "1px solid rgba(140,105,65,0.2)"
                       }}>
                         <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0" style={{

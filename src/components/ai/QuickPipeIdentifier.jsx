@@ -462,8 +462,8 @@ Return JSON:
     <Card className="bg-[#223447] border-[#E0D8C8]/15">
       <CardContent className="p-6">
         <div className="flex items-start gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-[#A35C5C]/20 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-[#A35C5C]" />
+          <div className="w-10 h-10 rounded-lg bg-[#705d39]/20 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-[#705d39]" />
           </div>
           <div>
             <p className="font-semibold text-[#E0D8C8] text-lg">AI Pipe Identification</p>
@@ -532,7 +532,7 @@ Return JSON:
           {/* Photo Upload Section */}
           <div className="grid grid-cols-2 gap-3">
             <label className="cursor-pointer">
-              <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#E0D8C8]/20 rounded-lg hover:border-[#A35C5C]/50 transition-colors bg-[#1E2F43]">
+              <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#E0D8C8]/20 rounded-lg hover:border-[#705d39]/50 transition-colors bg-[#1E2F43]">
                 <Upload className="w-5 h-5 text-[#E0D8C8]/60 mb-1" />
                 <span className="text-xs text-[#E0D8C8]/60 font-medium">{t("aiIdentifier.uploadPhotos")}</span>
               </div>
@@ -547,7 +547,7 @@ Return JSON:
             </label>
 
             <label className="cursor-pointer">
-              <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#E0D8C8]/20 rounded-lg hover:border-[#A35C5C]/50 transition-colors bg-[#1E2F43]">
+              <div className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#E0D8C8]/20 rounded-lg hover:border-[#705d39]/50 transition-colors bg-[#1E2F43]">
                 <Camera className="w-5 h-5 text-[#E0D8C8]/60 mb-1" />
                 <span className="text-xs text-[#E0D8C8]/60 font-medium">{t("aiIdentifier.takePhoto")}</span>
               </div>
@@ -638,12 +638,12 @@ Return JSON:
 
               <div className="flex flex-wrap gap-2 mt-3">
                 {identified.shape && (
-                  <span className="text-xs px-2 py-1 bg-[#A35C5C]/20 text-[#E0D8C8] border border-[#A35C5C]/30 rounded font-medium">
+                  <span className="text-xs px-2 py-1 bg-[#705d39]/20 text-[#E0D8C8] border border-[#705d39]/30 rounded font-medium">
                     {identified.shape}
                   </span>
                 )}
                 {identified.bowl_material && (
-                  <span className="text-xs px-2 py-1 bg-[#A35C5C]/20 text-[#E0D8C8] border border-[#A35C5C]/30 rounded font-medium">
+                  <span className="text-xs px-2 py-1 bg-[#705d39]/20 text-[#E0D8C8] border border-[#705d39]/30 rounded font-medium">
                     {identified.bowl_material}
                   </span>
                 )}
@@ -665,7 +665,7 @@ Return JSON:
             {impactAnalysis && (
               <div className="bg-[#1E2F43] rounded-lg p-4 border border-[#E0D8C8]/15 space-y-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-[#A35C5C]" />
+                  <TrendingUp className="w-4 h-4 text-[#705d39]" />
                   <span className="font-semibold text-[#E0D8C8] text-sm">{t("aiIdentifier.collectionImpact")}</span>
                 </div>
 
@@ -687,7 +687,7 @@ Return JSON:
                       <span className="text-[#E0D8C8]/70 font-medium">{t("aiIdentifier.bestForLabel")}</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {impactAnalysis.recommended_for.map((blend, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-[#A35C5C]/20 text-[#E0D8C8] border border-[#A35C5C]/30 rounded text-xs font-medium">
+                          <span key={idx} className="px-2 py-0.5 bg-[#705d39]/20 text-[#E0D8C8] border border-[#705d39]/30 rounded text-xs font-medium">
                             {blend}
                           </span>
                         ))}

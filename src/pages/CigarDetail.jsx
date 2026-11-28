@@ -423,7 +423,7 @@ function EditableInfoRow({ label, value, displayValue, onSave, type = 'text', op
               ref={inputRef}
               value={draft}
               onChange={e => setDraft(e.target.value)}
-              className="flex-1 rounded-lg px-2 py-1 text-sm bg-[rgba(20,15,12,0.8)] border"
+              className="flex-1 rounded-lg px-2 py-1 text-sm bg-[rgba(37,40,42,0.8)] border"
               style={{ color: '#F5F1E7', borderColor: 'rgba(140,107,63,0.4)', outline: 'none' }}
             >
               <option value="">—</option>
@@ -438,7 +438,7 @@ function EditableInfoRow({ label, value, displayValue, onSave, type = 'text', op
               value={draft}
               onChange={e => setDraft(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
-              className="flex-1 rounded-lg px-2 py-1 text-sm bg-[rgba(20,15,12,0.8)] border"
+              className="flex-1 rounded-lg px-2 py-1 text-sm bg-[rgba(37,40,42,0.8)] border"
               style={{ color: '#F5F1E7', borderColor: 'rgba(140,107,63,0.4)', outline: 'none' }}
             />
           )}
@@ -1322,7 +1322,7 @@ function CigarDetailInner() {
                 }}
                 className="flex-1 rounded-lg px-2 py-1.5 text-sm"
                 style={{
-                  background: 'rgba(20,15,12,0.8)',
+                  background: 'rgba(37,40,42,0.8)',
                   border: '1px solid rgba(140,107,63,0.35)',
                   color: '#F5F1E7',
                   outline: 'none',

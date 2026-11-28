@@ -237,7 +237,7 @@ export default function FindingsReviewPanel({
             onClick={review}
             disabled={busy || needsChoice}
             className="rounded-xl px-3 py-2 text-[12.5px] font-semibold min-h-[40px]"
-            style={{ background: '#A35C5C', color: '#fff', border: 'none' }}
+            style={{ background: '#705d39', color: '#fff', border: 'none' }}
           >
             {applySelectedLabel(selected.length)}
           </button>

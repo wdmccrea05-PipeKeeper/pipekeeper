@@ -232,7 +232,7 @@ export default function ShoppingListSearch({ onAdded }) {
                 }}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${
                   effectiveItemType === t.value
-                    ? "bg-[#A35C5C] border-[#A35C5C] text-white"
+                    ? "bg-[#705d39] border-[#705d39] text-white"
                     : "border-[rgba(180,140,75,0.25)] text-[#E0D8C8]/70 hover:bg-white/5"
                 }`}
               >

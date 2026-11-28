@@ -166,7 +166,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
       className="mb-6 p-4 rounded-lg"
       style={{
         background: 'rgba(160, 100, 100, 0.1)',
-        borderLeft: '3px solid #A35C5C',
+        borderLeft: '3px solid #705d39',
       }}
     >
       <p style={{ color: '#E0D8C8' }}>
@@ -196,8 +196,8 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
           requiresMigration ? 'cursor-not-allowed opacity-75' : 'cursor-pointer',
           selectedOption?.type === path.type &&
             selectedOption?.modules.join(',') === path.modules.join(',')
-            ? 'bg-[#A35C5C]/20 border-[#A35C5C]'
-            : 'bg-[#2a1f18]/50 border-[#8b6239]/30 hover:border-[#A35C5C]/50'
+            ? 'bg-[#705d39]/20 border-[#705d39]'
+            : 'bg-[#34383a]/50 border-[#8b6239]/30 hover:border-[#705d39]/50'
         )}
       >
         <div className="flex items-start justify-between mb-2 gap-3">
@@ -283,8 +283,8 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
             className={cn(
               'px-5 py-2 rounded-lg font-semibold transition-all',
               billingPeriod === period
-                ? 'bg-[#A35C5C] text-white'
-                : 'bg-[#3a2a20]/50 text-[#E0D8C8]/70 hover:bg-[#3a2a20]'
+                ? 'bg-[#705d39] text-white'
+                : 'bg-[#3b4042]/50 text-[#E0D8C8]/70 hover:bg-[#3b4042]'
             )}
           >
             {period === 'monthly' ? t('subscription.monthlyLabel') : t('subscription.annualLabel')}
@@ -336,7 +336,7 @@ export default function ModuleUpgradeFlow({ user, onUpgradeComplete }) {
               <Button
                 onClick={handleProceedToCheckout}
                 disabled={isProcessing}
-                className="bg-[#A35C5C] hover:bg-[#8F4E4E]"
+                className="bg-[#705d39] hover:bg-[#604e30]"
               >
                 {isProcessing ? t('subscription.processingCheckout') : t('subscription.proceedToCheckout')}
               </Button>

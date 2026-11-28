@@ -348,7 +348,7 @@ export default function LogWineTastingModal({
                     setSelectedWineId(e.target.value);
                     setSelectedWineName(selected?.name || '');
                   }}
-                  className="w-full rounded-xl px-3 py-2.5 bg-[rgba(20,15,12,0.6)] border border-[rgba(130,65,65,0.28)] text-[#F5F1E7] text-sm"
+                  className="w-full rounded-xl px-3 py-2.5 bg-[rgba(37,40,42,0.6)] border border-[rgba(130,65,65,0.28)] text-[#F5F1E7] text-sm"
                 >
                   <option value="" className="bg-[#1A120D]">{t('wine.collection')}</option>
                   {sortedWines.map((w) => (
@@ -400,7 +400,7 @@ export default function LogWineTastingModal({
                     <select
                       value={newWine.style}
                       onChange={(e) => setNew('style', e.target.value)}
-                      className="w-full rounded-lg px-3 py-2.5 bg-[rgba(20,15,12,0.6)] border border-[rgba(130,65,65,0.28)] text-[#F5F1E7] text-sm"
+                      className="w-full rounded-lg px-3 py-2.5 bg-[rgba(37,40,42,0.6)] border border-[rgba(130,65,65,0.28)] text-[#F5F1E7] text-sm"
                     >
                       <option value="" className="bg-[#1A120D]">{t('wine.style')}</option>
                       {WINE_STYLES.map((s) => (

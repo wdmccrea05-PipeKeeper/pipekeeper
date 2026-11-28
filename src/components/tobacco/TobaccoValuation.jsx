@@ -24,13 +24,13 @@ const URL_RE = /(https?:\/\/[^\s)]+)/i;
 const DOMAIN_RE = /(?:^|\/\/)?(?:www\.)?([a-z0-9-]+(?:\.[a-z0-9-]+)+)/i;
 
 const CARD_STYLE = {
-  background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+  background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
   border: "1px solid rgba(140,105,65,0.35)",
   boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)",
 };
 
 const INNER_PANEL_STYLE = {
-  background: "linear-gradient(145deg, rgba(30,22,17,0.92), rgba(22,17,13,0.92))",
+  background: "linear-gradient(145deg, rgba(45,48,50,0.92), rgba(22,17,13,0.92))",
   border: "1px solid rgba(140,105,65,0.24)",
   boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
 };
@@ -92,7 +92,7 @@ function ReplacementDifficultyPanel({ blend }) {
 
   return (
     <Card style={{
-      background: 'linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))',
+      background: 'linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))',
       border: '1px solid rgba(140,105,65,0.35)',
       boxShadow: '0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)',
     }}>

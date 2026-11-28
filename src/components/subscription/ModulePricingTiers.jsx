@@ -113,8 +113,8 @@ export default function ModulePricingTiers({
             className={cn(
               'px-6 py-2 rounded-lg font-semibold transition-all',
               billingPeriod === period
-                ? 'bg-[#A35C5C] text-white'
-                : 'bg-[#3a2a20]/50 text-[#E0D8C8]/70 hover:bg-[#3a2a20]'
+                ? 'bg-[#705d39] text-white'
+                : 'bg-[#3b4042]/50 text-[#E0D8C8]/70 hover:bg-[#3b4042]'
             )}
           >
             {period === 'monthly' ? t('subscriptionFull.monthly') : t('subscriptionFull.annualSave')}
@@ -151,8 +151,8 @@ export default function ModulePricingTiers({
               className={cn(
                 'relative rounded-xl p-6 border-2 transition-all duration-200 cursor-pointer hover:shadow-xl',
                 option.isSelected
-                  ? 'bg-gradient-to-br from-[#A35C5C]/20 to-[#8F4E4E]/20 border-[#A35C5C]'
-                  : 'bg-[#2a1f18]/50 border-[#8b6239]/30 hover:border-[#A35C5C]/50'
+                  ? 'bg-gradient-to-br from-[#705d39]/20 to-[#604e30]/20 border-[#705d39]'
+                  : 'bg-[#34383a]/50 border-[#8b6239]/30 hover:border-[#705d39]/50'
               )}
               onClick={() => {
                 if (onSelectPlan) {
@@ -165,7 +165,7 @@ export default function ModulePricingTiers({
               >
                 {/* Best value badge */}
                 {option.isBest && (
-                  <div className="absolute top-0 right-0 bg-[#D4A574] text-[#0f0b08] px-3 py-1 rounded-bl-lg text-xs font-bold flex items-center gap-1">
+                  <div className="absolute top-0 right-0 bg-[#D4A574] text-[#242729] px-3 py-1 rounded-bl-lg text-xs font-bold flex items-center gap-1">
                     <Zap className="w-3 h-3" />
                     {option.type === 'bundle_founders' ? t('subscription.mostPopular') : t('subscription.bestValue')}
                   </div>
@@ -223,8 +223,8 @@ export default function ModulePricingTiers({
                 className={cn(
                   'w-full py-2 rounded-lg font-semibold transition-all duration-200',
                   option.isSelected
-                    ? 'bg-[#A35C5C] text-white cursor-default'
-                    : 'bg-[#A35C5C]/80 text-white hover:bg-[#A35C5C] active:scale-95'
+                    ? 'bg-[#705d39] text-white cursor-default'
+                    : 'bg-[#705d39]/80 text-white hover:bg-[#705d39] active:scale-95'
                 )}
                 >
                   {getSelectButtonLabel(option)}

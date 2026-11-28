@@ -14,7 +14,7 @@ export default function AppleBlockedFeature({
   const resolvedMessage = message ?? t("appleBlocked.defaultMessage");
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <Card className="bg-[#243548]/60 border border-[#A35C5C]/35">
+      <Card className="bg-[#243548]/60 border border-[#705d39]/35">
         <CardHeader>
           <CardTitle className="text-[#E0D8C8]">{resolvedTitle}</CardTitle>
         </CardHeader>

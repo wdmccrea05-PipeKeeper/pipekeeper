@@ -7,11 +7,11 @@
  */
 export const PK_THEME = {
   // Page background (handled by Layout, kept for reference)
-  pageBg: "bg-gradient-to-br from-[#0f0b08] via-[#1a1410] to-[#0f0b08]",
+  pageBg: "bg-gradient-to-br from-[#242729] via-[#292c2e] to-[#242729]",
 
   // Card surfaces - collector theme only
-  card: "bg-gradient-to-br from-[#2a1f18] to-[#1f1510] border border-[#8b6239]/25 rounded-xl shadow-lg",
-  cardSoft: "bg-gradient-to-br from-[#2a1f18]/90 to-[#1f1510]/90 border border-[#8b6239]/20 rounded-xl shadow-lg",
+  card: "bg-gradient-to-br from-[#34383a] to-[#292c2e] border border-[#8b6239]/25 rounded-xl shadow-lg",
+  cardSoft: "bg-gradient-to-br from-[#34383a]/90 to-[#292c2e]/90 border border-[#8b6239]/20 rounded-xl shadow-lg",
 
   // Text colors - warm ivory/cream palette
   textTitle: "#F5F1E7",
@@ -25,15 +25,15 @@ export const PK_THEME = {
   accentBg: "bg-[#D4A574]/12",
 
   // Buttons - burgundy/maroon primary, collector secondary
-  buttonPrimary: "bg-[#A35C5C] hover:bg-[#8F4E4E] text-[#F5F1E7]",
-  buttonSecondary: "bg-gradient-to-br from-[#3a2a20] to-[#2a1a10] border border-[#8b6239]/30 text-[#E0D8C8] hover:from-[#4a3a2a] hover:to-[#3a2a1a]",
+  buttonPrimary: "bg-[#705d39] hover:bg-[#604e30] text-[#F5F1E7]",
+  buttonSecondary: "bg-gradient-to-br from-[#3b4042] to-[#303436] border border-[#8b6239]/30 text-[#E0D8C8] hover:from-[#464c4e] hover:to-[#3b4042]",
   buttonDanger: "bg-[#D45C5C] hover:bg-[#C44A4A] text-[#F5F1E7]",
 
   // Forms - collector input style
-  input: "bg-[#1a1510] border border-[#8b6239]/25 text-[#FFFFFF] placeholder:text-[#E0D8C8]/60 rounded-lg",
-  inputFocus: "focus:outline-none focus:ring-2 focus:ring-[#A35C5C]/50 focus:border-[#8b6239]/40",
+  input: "bg-[#232628] border border-[#8b6239]/25 text-[#FFFFFF] placeholder:text-[#E0D8C8]/60 rounded-lg",
+  inputFocus: "focus:outline-none focus:ring-2 focus:ring-[#705d39]/50 focus:border-[#8b6239]/40",
 
   // Tabs - burgundy accent for active
   tabInactive: "text-[#8b6239]/70 border-b-2 border-transparent",
-  tabActive: "text-[#E0D8C8] border-b-2 border-[#A35C5C] bg-[#A35C5C]/10 rounded-t-md",
+  tabActive: "text-[#E0D8C8] border-b-2 border-[#705d39] bg-[#705d39]/10 rounded-t-md",
 };

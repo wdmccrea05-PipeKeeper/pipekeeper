@@ -540,13 +540,13 @@ function CommunityPageInner() {
                       <div className="flex items-center gap-4">
                         <Avatar className="w-12 h-12 flex-shrink-0">
                           <AvatarImage src={profile.avatar_url} />
-                          <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
+                          <AvatarFallback className="bg-[#705d39] text-[#E0D8C8]">
                             {profile.display_name?.[0] || profile.user_email?.[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                            <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(profile.user_email)}`)}>
-                             <SafeText as="h3" className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C]" truncate>
+                             <SafeText as="h3" className="font-semibold text-[#E0D8C8] hover:text-[#705d39]" truncate>
                                {profile.display_name || profile.user_email}
                              </SafeText>
                            </a>
@@ -734,13 +734,13 @@ function CommunityPageInner() {
                           <div className="flex items-center gap-3">
                             <Avatar className="w-12 h-12 flex-shrink-0">
                               <AvatarImage src={profile?.avatar_url} />
-                              <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
+                              <AvatarFallback className="bg-[#705d39] text-[#E0D8C8]">
                                 {profile?.display_name?.[0] || friendEmail?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(friendEmail)}`)}>
-                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C] truncate">
+                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#705d39] truncate">
                                   {profile?.display_name || friendEmail}
                                 </h3>
                               </a>
@@ -837,13 +837,13 @@ function CommunityPageInner() {
                           <div className="flex items-center gap-3">
                             <Avatar className="w-12 h-12 flex-shrink-0">
                               <AvatarImage src={profile?.avatar_url} />
-                              <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
+                              <AvatarFallback className="bg-[#705d39] text-[#E0D8C8]">
                                 {profile?.display_name?.[0] || request.requester_email?.[0]?.toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(request.requester_email)}`)}>
-                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C] truncate">
+                                <h3 className="font-semibold text-[#E0D8C8] hover:text-[#705d39] truncate">
                                   {profile?.display_name || request.requester_email}
                                 </h3>
                               </a>
@@ -919,13 +919,13 @@ function CommunityPageInner() {
                       <div className="flex items-center gap-3">
                         <Avatar className="w-12 h-12 flex-shrink-0">
                           <AvatarImage src={profile?.avatar_url} />
-                          <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8]">
+                          <AvatarFallback className="bg-[#705d39] text-[#E0D8C8]">
                             {profile?.display_name?.[0] || connection.following_email?.[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <a href={createPageUrl(`PublicProfile?email=${encodeURIComponent(connection.following_email)}`)}>
-                            <h3 className="font-semibold text-[#E0D8C8] hover:text-[#A35C5C] truncate">
+                            <h3 className="font-semibold text-[#E0D8C8] hover:text-[#705d39] truncate">
                               {profile?.display_name || connection.following_email}
                             </h3>
                           </a>

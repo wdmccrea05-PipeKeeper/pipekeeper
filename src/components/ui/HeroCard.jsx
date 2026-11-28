@@ -155,7 +155,7 @@ export function HeroCard({
             style={{
               width: "3.5rem",
               height: "3.5rem",
-              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.48) 0%, rgba(80, 55, 35, 0.58) 100%)`,
+              background: `linear-gradient(135deg, rgba(70,75,77, 0.48) 0%, rgba(60,64,66, 0.58) 100%)`,
               border: `1px solid rgba(120, 90, 65, 0.45)`,
               boxShadow: `0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
             }}
@@ -234,7 +234,7 @@ export function StatusCard({
         className
       )}
       style={{
-        background: `linear-gradient(145deg, rgba(52, 37, 24, 0.82), rgba(42, 30, 20, 0.92))`,
+        background: `linear-gradient(145deg, rgba(54,58,60, 0.82), rgba(45,48,50, 0.92))`,
         border: `1px solid rgba(120, 90, 65, 0.32)`,
         boxShadow: `0 3px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 2px rgba(0,0,0,0.25)`,
         minWidth: "140px"
@@ -282,7 +282,7 @@ export function StatusCard({
          <div
            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
            style={{
-             background: `linear-gradient(135deg, rgba(100, 70, 45, 0.48) 0%, rgba(80, 55, 35, 0.58) 100%)`,
+             background: `linear-gradient(135deg, rgba(70,75,77, 0.48) 0%, rgba(60,64,66, 0.58) 100%)`,
              border: `1px solid rgba(120, 90, 65, 0.45)`,
              boxShadow: `0 3px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.2)`,
            }}

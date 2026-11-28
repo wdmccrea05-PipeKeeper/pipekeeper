@@ -9,7 +9,7 @@ function Card({ className = "", ...props }) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-[rgba(180,140,75,0.18)] bg-gradient-to-b from-[rgba(46,32,22,0.97)] to-[rgba(30,22,17,0.99)] shadow-[0_8px_32px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.04)]",
+        "rounded-2xl border border-[rgba(180,140,75,0.18)] bg-gradient-to-b from-[rgba(54,58,60,0.97)] to-[rgba(45,48,50,0.99)] shadow-[0_8px_32px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.04)]",
         className
       )}
       {...props}

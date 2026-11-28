@@ -184,7 +184,7 @@ export default function RotationPlanner({ user, pipe }) {
   return (
     <div className="space-y-4">
       <Card style={{
-        background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+        background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
         border: "1px solid rgba(140,105,65,0.35)",
         boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
       }}>
@@ -369,7 +369,7 @@ export default function RotationPlanner({ user, pipe }) {
                       className="block"
                     >
                       <div className="flex items-center justify-between p-3 rounded-lg transition-colors" style={{
-                        background: "linear-gradient(135deg, rgba(50,40,30,0.3), rgba(40,30,20,0.5))",
+                        background: "linear-gradient(135deg, rgba(69,74,76,0.3), rgba(40,30,20,0.5))",
                         border: "1px solid rgba(140,105,65,0.3)"
                       }}>
                         <div>

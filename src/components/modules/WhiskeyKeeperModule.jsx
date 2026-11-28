@@ -209,7 +209,7 @@ export default function WhiskeyKeeperModule({
             <Button
               type="button"
               onClick={onAddBottle}
-              className="bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
+              className="bg-[#705d39] hover:bg-[#604e30] text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               {t('whiskey.addBottle')}
@@ -316,7 +316,7 @@ export default function WhiskeyKeeperModule({
               type="button"
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               onClick={() => setViewMode('grid')}
-              className={viewMode === 'grid' ? 'bg-[#A35C5C] hover:bg-[#8F4E4E]' : ''}
+              className={viewMode === 'grid' ? 'bg-[#705d39] hover:bg-[#604e30]' : ''}
             >
               <LayoutGrid className="w-4 h-4 mr-2" />
               {t('common.grid')}
@@ -325,7 +325,7 @@ export default function WhiskeyKeeperModule({
               type="button"
               variant={viewMode === 'list' ? 'default' : 'outline'}
               onClick={() => setViewMode('list')}
-              className={viewMode === 'list' ? 'bg-[#A35C5C] hover:bg-[#8F4E4E]' : ''}
+              className={viewMode === 'list' ? 'bg-[#705d39] hover:bg-[#604e30]' : ''}
             >
               <List className="w-4 h-4 mr-2" />
               {t('common.list')}
@@ -359,7 +359,7 @@ export default function WhiskeyKeeperModule({
             <Button
               type="button"
               onClick={onAddBottle}
-              className="mt-4 bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
+              className="mt-4 bg-[#705d39] hover:bg-[#604e30] text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               {t('whiskey.addBottle')}

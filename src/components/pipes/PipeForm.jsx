@@ -410,7 +410,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
       {/* ===== SECTION: AI Search (new pipes only) ===== */}
       {!pipe && (
         <>
-          <Card className="border-[#A35C5C]/50" variant="elevated">
+          <Card className="border-[#705d39]/50" variant="elevated">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg text-[#E0D8C8] flex items-center gap-2">
                 <Search className="w-5 h-5" />
@@ -452,7 +452,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <button
                   type="button"
                   onClick={() => editPhoto(idx, false)}
-                  className="bg-[#A35C5C]/80 rounded-full p-1.5 hover:bg-[#A35C5C]"
+                  className="bg-[#705d39]/80 rounded-full p-1.5 hover:bg-[#705d39]"
                 >
                   <Edit className="w-3.5 h-3.5 text-[#E0D8C8]" />
                 </button>
@@ -466,7 +466,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               </div>
             </div>
           ))}
-          <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
+          <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#705d39]/50 transition-colors flex items-center justify-center p-3">
             <PhotoUploader
               onPhotosSelected={(photoUrls) => {
                 handleChange('photos', Array.isArray(photoUrls) ? photoUrls : []);
@@ -496,7 +496,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
                 <button
                   type="button"
                   onClick={() => editPhoto(idx, true)}
-                  className="bg-[#A35C5C]/80 rounded-full p-1.5 hover:bg-[#A35C5C]"
+                  className="bg-[#705d39]/80 rounded-full p-1.5 hover:bg-[#705d39]"
                 >
                   <Edit className="w-3.5 h-3.5 text-[#E0D8C8]" />
                 </button>
@@ -510,7 +510,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
               </div>
             </div>
           ))}
-          <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#A35C5C]/50 transition-colors flex items-center justify-center p-3">
+          <div className="aspect-[16/9] rounded-lg border-2 border-dashed border-[#E0D8C8]/20 hover:border-[#705d39]/50 transition-colors flex items-center justify-center p-3">
             <PhotoUploader
               onPhotosSelected={(photoUrls) => {
                 handleChange('stamping_photos', Array.isArray(photoUrls) ? photoUrls : []);
@@ -1050,7 +1050,7 @@ export default function PipeForm({ pipe, onSave, onCancel, isLoading }) {
         <Button 
           type="submit" 
           disabled={isLoading || isSubmitting}
-          className="bg-[#A35C5C] hover:bg-[#8F4E4E] text-white"
+          className="bg-[#705d39] hover:bg-[#604e30] text-white"
         >
           {(isLoading || isSubmitting) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           {pipe ? t("pipesExtended.updatePipe") : t("pipesExtended.addPipe")}

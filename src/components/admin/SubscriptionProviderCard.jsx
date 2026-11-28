@@ -72,7 +72,7 @@ export default function SubscriptionProviderCard({ me }) {
 
   if (isLoading) {
     return (
-      <Card className="border-[#A35C5C]/30">
+      <Card className="border-[#705d39]/30">
         <CardContent className="p-6 flex items-center justify-center">
           <RefreshCw className="w-6 h-6 animate-spin text-[#E0D8C8]" />
         </CardContent>
@@ -82,7 +82,7 @@ export default function SubscriptionProviderCard({ me }) {
 
   if (fetchError || (!summary?.ok && summary !== undefined)) {
     return (
-      <Card className="border-[#A35C5C]/30">
+      <Card className="border-[#705d39]/30">
         <CardContent className="p-6 space-y-3">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -123,7 +123,7 @@ export default function SubscriptionProviderCard({ me }) {
   };
 
   return (
-    <Card className="border-[#A35C5C]/30">
+    <Card className="border-[#705d39]/30">
       <CardContent className="p-6 space-y-4">
         <div className="flex items-start justify-between">
           <div>

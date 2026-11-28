@@ -326,7 +326,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
             <div
               className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
               style={{
-                background: 'linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))',
+                background: 'linear-gradient(135deg, rgba(70,75,77, 0.45), rgba(60,64,66, 0.55))',
                 border: '1px solid rgba(120, 90, 65, 0.45)',
                 boxShadow: '0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)',
               }}
@@ -353,7 +353,7 @@ Only update bottles where the correct type is clearly different from "Other". Re
       <div
         className="rounded-lg p-4 flex items-center gap-4"
         style={{
-          background: 'linear-gradient(135deg, rgba(42, 30, 20, 0.7), rgba(35, 24, 16, 0.85))',
+          background: 'linear-gradient(135deg, rgba(45,48,50, 0.7), rgba(35, 24, 16, 0.85))',
           border: '1px solid rgba(120, 90, 65, 0.3)',
         }}
       >

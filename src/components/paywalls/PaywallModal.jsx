@@ -55,8 +55,8 @@ function UpgradeOptionCard({ option, isSelected, isLoading, onSelect, t }) {
       onClick={() => !isLoading && onSelect(option)}
       className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
         isSelected
-          ? 'border-[#A35C5C] bg-[#A35C5C]/10'
-          : 'border-[#8b6239]/30 hover:border-[#A35C5C]/50 bg-[#2a1f18]/50'
+          ? 'border-[#705d39] bg-[#705d39]/10'
+          : 'border-[#8b6239]/30 hover:border-[#705d39]/50 bg-[#34383a]/50'
       } ${isLoading ? 'opacity-60 pointer-events-none' : ''}`}
     >
       <div className="flex items-start gap-3 mb-2">
@@ -253,7 +253,7 @@ function ExistingSubscriberView({
           disabled={isProcessing}
           className="w-full py-3 rounded-xl font-semibold text-sm transition-all"
           style={{
-            background: isProcessing ? 'rgba(163,92,92,0.5)' : '#A35C5C',
+            background: isProcessing ? 'rgba(163,92,92,0.5)' : '#705d39',
             color: '#F5F1E7',
           }}
         >

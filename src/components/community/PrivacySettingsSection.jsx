@@ -22,7 +22,7 @@ function ChoiceRow({ options, value, onSelect }) {
             onClick={() => onSelect(option.value)}
             className={
               active
-                ? "bg-[#A35C5C] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent"
+                ? "bg-[#705d39] hover:bg-[#8C4A4A] text-[#F5F1E7] border-transparent"
                 : "border-[rgba(140,105,65,0.3)] hover:bg-[rgba(180,140,75,0.1)]"
             }
             style={active ? undefined : { color: "rgba(224,216,200,0.7)" }}
@@ -127,7 +127,7 @@ export default function PrivacySettingsSection({ value, onChange }) {
         <Switch
           checked={friendRequests}
           onCheckedChange={(v) => onChange({ friendRequests: !!v })}
-          className="data-[state=checked]:bg-[#A35C5C]"
+          className="data-[state=checked]:bg-[#705d39]"
         />
       </div>
 
@@ -162,7 +162,7 @@ export default function PrivacySettingsSection({ value, onChange }) {
                   <Switch
                     checked={shared}
                     onCheckedChange={() => toggleModule(module.key)}
-                    className="data-[state=checked]:bg-[#A35C5C]"
+                    className="data-[state=checked]:bg-[#705d39]"
                   />
                 </div>
               </div>

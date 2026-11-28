@@ -193,7 +193,7 @@ export default function FeedbackModal({ isOpen, onClose, reviewContext, onStateU
                     rows={4}
                     className="w-full rounded-xl px-4 py-3 text-sm resize-none outline-none focus:ring-1"
                     style={{
-                      background: 'rgba(20,14,10,0.7)',
+                      background: 'rgba(35,38,40,0.7)',
                       border: '1px solid rgba(180,140,75,0.22)',
                       color: '#F5F1E7',
                       focusRingColor: 'rgba(180,140,75,0.5)',

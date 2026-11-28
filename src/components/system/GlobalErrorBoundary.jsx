@@ -56,14 +56,14 @@ class GlobalErrorBoundary extends React.Component {
           className="min-h-screen flex items-center justify-center p-6"
           style={{
             background:
-              "linear-gradient(135deg, #0f0b08 0%, #1a1410 50%, #0f0b08 100%)",
+              "linear-gradient(135deg, #242729 0%, #292c2e 50%, #242729 100%)",
           }}
         >
           <div
             className="max-w-md w-full rounded-2xl p-8 text-center"
             style={{
               background:
-                "linear-gradient(145deg, rgba(42,30,20,0.96), rgba(28,18,12,0.98))",
+                "linear-gradient(145deg, rgba(45,48,50,0.96), rgba(28,18,12,0.98))",
               border: "1px solid rgba(120,90,65,0.35)",
               boxShadow: "0 18px 52px rgba(0,0,0,0.55)",
             }}

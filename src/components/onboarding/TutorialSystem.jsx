@@ -84,7 +84,7 @@ export default function TutorialSystem({ user, pipes = [], blends = [], forceTut
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-gradient-to-br from-[#2a1f18] to-[#1f1510] rounded-2xl border border-[rgba(140,105,65,0.35)] overflow-hidden shadow-2xl">
+      <div className="w-full max-w-2xl bg-gradient-to-br from-[#34383a] to-[#292c2e] rounded-2xl border border-[rgba(140,105,65,0.35)] overflow-hidden shadow-2xl">
         {/* Header with step indicator */}
         <div 
           className="px-8 py-6 border-b border-[rgba(140,105,65,0.25)]"

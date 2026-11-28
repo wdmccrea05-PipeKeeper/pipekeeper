@@ -16,7 +16,7 @@ function Input({ className = "", disabled, type, ...props }) {
         // Typography
         "text-base text-[#F5F1E7]",
         // Surface
-        "bg-[rgba(20,14,10,0.70)] border border-[rgba(180,140,75,0.25)]",
+        "bg-[rgba(35,38,40,0.70)] border border-[rgba(180,140,75,0.25)]",
         "shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
         // Placeholder
         "placeholder:text-[rgba(224,216,200,0.55)]",

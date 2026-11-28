@@ -564,7 +564,7 @@ export default function LogSessionModal({
 
           {isLoading ? (
             <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-16 gap-4 px-7 pb-[calc(env(safe-area-inset-bottom)+2.5rem)]">
-              <div aria-hidden="true" className="w-8 h-8 border-2 border-[#A35C5C] border-t-transparent rounded-full animate-spin" />
+              <div aria-hidden="true" className="w-8 h-8 border-2 border-[#705d39] border-t-transparent rounded-full animate-spin" />
               <p className="text-sm text-[#E0D8C8]/60">Loading your collection…</p>
             </div>
           ) : (
@@ -869,7 +869,7 @@ export default function LogSessionModal({
                   />
                   <Label className="flex items-center gap-2 text-[#E0D8C8]">
                     {t("smokingLog.autoReduce")}
-                    <Badge className="bg-[#A35C5C] text-[#F3EBDD] text-xs">
+                    <Badge className="bg-[#705d39] text-[#F3EBDD] text-xs">
                       <Crown className="w-3 h-3 mr-1" />
                       {t("subscription.premium")}
                     </Badge>

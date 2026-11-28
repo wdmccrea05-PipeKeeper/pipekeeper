@@ -7,7 +7,7 @@ import { getWineDrinkWindowStatus, getWinePrimaryImage, getWineQuantity, getWine
 const DRINK_WINDOW_COLORS = {
   drink_now: '#2E7D5C',
   too_young: '#6B8FC4',
-  past_peak: '#A35C5C',
+  past_peak: '#705d39',
 };
 
 function MiniBadge({ children, tone = 'default' }) {
@@ -74,7 +74,7 @@ export default function WineListItem({
         <div
           className="w-full lg:w-28 h-32 rounded-xl overflow-hidden flex-shrink-0"
           style={{
-            background: 'linear-gradient(180deg, rgba(35,25,18,0.96), rgba(20,14,10,0.98))',
+            background: 'linear-gradient(180deg, rgba(35,25,18,0.96), rgba(35,38,40,0.98))',
             border: '1px solid rgba(139,58,58,0.16)',
           }}
         >

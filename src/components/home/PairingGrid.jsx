@@ -170,7 +170,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
 
   return (
     <Card style={{
-      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
       border: "1px solid rgba(140,105,65,0.35)",
       boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
     }}>
@@ -188,7 +188,7 @@ export default function PairingGrid({ user, pipes, blends, profile }) {
               variant="ghost"
               size="sm"
               onClick={() => setCollapsed(!collapsed)}
-              className="text-white hover:text-white hover:bg-[#A35C5C]/30"
+              className="text-white hover:text-white hover:bg-[#705d39]/30"
             >
               {collapsed ? t("tobacconist.show") : t("tobacconist.hide")}
             </Button>
@@ -320,7 +320,7 @@ function PipeCard({ row, allBlends, userProfile }) {
 
   return (
     <div className="border rounded-lg p-3" style={{
-      background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+      background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
       border: "1px solid rgba(140,105,65,0.25)"
     }}>
       <div className="font-semibold text-white">{row.name}</div>
@@ -350,7 +350,7 @@ function PipeCard({ row, allBlends, userProfile }) {
       <div className="mt-3 space-y-2">
         <div className="text-xs font-semibold text-white">{t("pairingGrid.checkAnyBlend")}</div>
         <Select value={selectedBlendId} onValueChange={setSelectedBlendId}>
-          <SelectTrigger className="text-sm text-[#E0D8C8] border-[#8b6239]/30 bg-[#3a2a20]/50 hover:bg-[#3a2a20]/70">
+          <SelectTrigger className="text-sm text-[#E0D8C8] border-[#8b6239]/30 bg-[#3b4042]/50 hover:bg-[#3b4042]/70">
             <SelectValue placeholder={t("pairingGrid.selectABlend")} />
           </SelectTrigger>
           <SelectContent>
@@ -374,7 +374,7 @@ function PipeCard({ row, allBlends, userProfile }) {
                 size="sm"
                 variant="outline"
                 onClick={calculateScore}
-                className="w-full text-[#E0D8C8] border-[#8b6239]/30 hover:bg-[#3a2a20]/50"
+                className="w-full text-[#E0D8C8] border-[#8b6239]/30 hover:bg-[#3b4042]/50"
               >
                 {t("pairingGrid.getScore")}
               </Button>

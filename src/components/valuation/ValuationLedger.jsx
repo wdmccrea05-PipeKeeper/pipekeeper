@@ -44,7 +44,7 @@ export default function ValuationLedger({ entries = [], formatCurrency, onDelete
             type="button"
             onClick={onAdd}
             className="rounded-lg px-3 py-1.5 text-xs font-semibold"
-            style={{ background: '#A35C5C', color: '#fff', minHeight: 40 }}
+            style={{ background: '#705d39', color: '#fff', minHeight: 40 }}
           >
             Add valuation
           </button>

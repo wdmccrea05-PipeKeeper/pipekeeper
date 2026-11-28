@@ -116,7 +116,7 @@ function WhiskeyAnalyticsInner() {
             <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(180, 140, 75, 0.6)' }}>
               {t('whiskeykeeper.openBottles') || 'Open Bottles'}
             </p>
-            <p className="text-3xl font-bold" style={{ color: '#A35C5C' }}>
+            <p className="text-3xl font-bold" style={{ color: '#705d39' }}>
               {openBottles}
             </p>
           </div>

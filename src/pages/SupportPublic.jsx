@@ -72,7 +72,7 @@ export default function SupportPublic() {
   return (
     <div className="min-h-screen pb-16" style={{ backgroundColor: "#140f0c" }}>
       {/* Header bar */}
-      <div className="border-b border-[rgba(180,140,75,0.15)] bg-[rgba(20,15,12,0.9)] px-4 py-4 flex items-center gap-3">
+      <div className="border-b border-[rgba(180,140,75,0.15)] bg-[rgba(37,40,42,0.9)] px-4 py-4 flex items-center gap-3">
         <span className="text-[#D4A574] font-bold text-lg tracking-tight">CollectionKeeper</span>
       </div>
 
@@ -91,7 +91,7 @@ export default function SupportPublic() {
           <a
             href="mailto:admin@pipekeeperapp.com?subject=CollectionKeeper Support"
             className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-xl font-bold text-white text-base mb-3"
-            style={{ background: 'linear-gradient(135deg, #a35c5c, #8f4e4e)', fontSize: '1rem' }}
+            style={{ background: 'linear-gradient(135deg, #705d39, #604e30)', fontSize: '1rem' }}
           >
             <Mail className="w-5 h-5" />
             Email Support
@@ -134,7 +134,7 @@ export default function SupportPublic() {
                 <select
                   value={form.topic}
                   onChange={(e) => setForm({ ...form, topic: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm focus:outline-none focus:ring-2 focus:ring-[#A35C5C]"
+                  className="w-full h-10 px-3 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm focus:outline-none focus:ring-2 focus:ring-[#705d39]"
                 >
                   <option>Billing</option>
                   <option>Account</option>
@@ -152,7 +152,7 @@ export default function SupportPublic() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Your name"
-                  className="w-full h-10 px-3 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]"
+                  className="w-full h-10 px-3 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-2 focus:ring-[#705d39]"
                 />
               </div>
 
@@ -164,7 +164,7 @@ export default function SupportPublic() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="you@example.com"
-                  className="w-full h-10 px-3 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-2 focus:ring-[#A35C5C]"
+                  className="w-full h-10 px-3 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-2 focus:ring-[#705d39]"
                 />
               </div>
 
@@ -176,7 +176,7 @@ export default function SupportPublic() {
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
                   placeholder="Describe your issue or question..."
-                  className="w-full px-3 py-2.5 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-2 focus:ring-[#A35C5C] resize-none"
+                  className="w-full px-3 py-2.5 rounded-xl bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.3)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-2 focus:ring-[#705d39] resize-none"
                 />
               </div>
 
@@ -191,7 +191,7 @@ export default function SupportPublic() {
                 type="submit"
                 disabled={status === "sending"}
                 className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-all disabled:opacity-60"
-                style={{ background: "linear-gradient(135deg, #a35c5c, #8f4e4e)" }}
+                style={{ background: "linear-gradient(135deg, #705d39, #604e30)" }}
               >
                 {status === "sending" ? "Sending…" : "Send Request"}
               </button>

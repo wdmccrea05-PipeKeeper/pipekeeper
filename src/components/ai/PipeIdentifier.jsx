@@ -19,7 +19,7 @@ import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry'
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 const COLLECTOR_CARD_STYLE = {
-  background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+  background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
   border: "1px solid rgba(140,105,65,0.35)",
   boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)",
 };
@@ -318,7 +318,7 @@ Rules:
                 />
                 <button
                   onClick={() => removePhoto(i)}
-                  className="absolute -top-2 -right-2 w-5 h-5 bg-[#A35C5C] rounded-full flex items-center justify-center text-white"
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-[#705d39] rounded-full flex items-center justify-center text-white"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -358,7 +358,7 @@ Rules:
         <Button
           onClick={handleIdentify}
           disabled={loading || photos.length === 0}
-          className="w-full bg-gradient-to-r from-[#A35C5C] to-[#8C4B4B] hover:from-[#B26666] hover:to-[#995454] text-[#F8EBDD] border border-[rgba(255,255,255,0.06)]"
+          className="w-full bg-gradient-to-r from-[#705d39] to-[#8C4B4B] hover:from-[#B26666] hover:to-[#995454] text-[#F8EBDD] border border-[rgba(255,255,255,0.06)]"
         >
           {loading ? (
             <>

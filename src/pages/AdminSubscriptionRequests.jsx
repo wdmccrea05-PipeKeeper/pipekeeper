@@ -146,7 +146,7 @@ export default function AdminSubscriptionRequests() {
   if (!userLoading && user?.role !== "admin") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] flex items-center justify-center">
-        <Card className="max-w-md w-full bg-[#1A2B3A] border-[#A35C5C]/50">
+        <Card className="max-w-md w-full bg-[#1A2B3A] border-[#705d39]/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-red-500 mb-4">
               <AlertCircle className="w-5 h-5" />
@@ -163,7 +163,7 @@ export default function AdminSubscriptionRequests() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] py-12">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-center gap-2">
-          <Loader2 className="w-5 h-5 text-[#A35C5C] animate-spin" />
+          <Loader2 className="w-5 h-5 text-[#705d39] animate-spin" />
           <span className="text-[#E0D8C8]">{t("admin.loading")}</span>
         </div>
       </div>
@@ -181,7 +181,7 @@ export default function AdminSubscriptionRequests() {
         </div>
 
         {/* Search */}
-        <Card className="mb-6 bg-[#1A2B3A] border-[#A35C5C]/50">
+        <Card className="mb-6 bg-[#1A2B3A] border-[#705d39]/50">
           <CardContent className="p-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 w-4 h-4 text-[#E0D8C8]/40" />
@@ -189,7 +189,7 @@ export default function AdminSubscriptionRequests() {
                 placeholder={t("admin.searchByEmail")}
                 value={searchEmail}
                 onChange={(e) => setSearchEmail(e.target.value)}
-                className="pl-10 bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]"
+                className="pl-10 bg-[#243548] border-[#705d39]/30 text-[#E0D8C8]"
               />
             </div>
           </CardContent>
@@ -197,7 +197,7 @@ export default function AdminSubscriptionRequests() {
 
         {/* Requests Table */}
         {filteredRequests.length === 0 ? (
-          <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">
+          <Card className="bg-[#1A2B3A] border-[#705d39]/50">
             <CardContent className="pt-12 pb-12 text-center">
               <Search className="w-8 h-8 text-[#E0D8C8]/40 mx-auto mb-2" />
               <p className="text-[#E0D8C8]/70">
@@ -206,10 +206,10 @@ export default function AdminSubscriptionRequests() {
             </CardContent>
           </Card>
         ) : (
-          <div className="bg-[#1A2B3A] border border-[#A35C5C]/50 rounded-lg overflow-hidden">
+          <div className="bg-[#1A2B3A] border border-[#705d39]/50 rounded-lg overflow-hidden">
             <Table>
               <TableHeader className="bg-[#243548]">
-                <TableRow className="border-[#A35C5C]/20">
+                <TableRow className="border-[#705d39]/20">
                   <TableHead className="text-[#E0D8C8]">{t("admin.emailLabel")}</TableHead>
                   <TableHead className="text-[#E0D8C8]">{t("admin.tierTerm")}</TableHead>
                   <TableHead className="text-[#E0D8C8]">{t("admin.paymentRef")}</TableHead>
@@ -220,7 +220,7 @@ export default function AdminSubscriptionRequests() {
               <TableBody>
                 {filteredRequests.map((req) => (
                   <React.Fragment key={req.id}>
-                    <TableRow className="border-[#A35C5C]/20 hover:bg-[#243548]/50 transition-colors">
+                    <TableRow className="border-[#705d39]/20 hover:bg-[#243548]/50 transition-colors">
                       <TableCell className="text-[#E0D8C8] font-medium">{req.user_email}</TableCell>
                       <TableCell className="text-[#E0D8C8]/80">
                         {req.requested_tier} / {req.requested_term}
@@ -241,7 +241,7 @@ export default function AdminSubscriptionRequests() {
                           onClick={() =>
                             setExpandedId(expandedId === req.id ? null : req.id)
                           }
-                          className="text-[#A35C5C] hover:bg-[#A35C5C]/20"
+                          className="text-[#705d39] hover:bg-[#705d39]/20"
                         >
                           {expandedId === req.id ? t("admin.hide") : t("admin.show")}
                         </Button>
@@ -250,7 +250,7 @@ export default function AdminSubscriptionRequests() {
 
                     {/* Expanded Details */}
                     {expandedId === req.id && (
-                      <TableRow className="bg-[#243548] border-[#A35C5C]/20">
+                      <TableRow className="bg-[#243548] border-[#705d39]/20">
                         <TableCell colSpan="5" className="p-4">
                           <div className="space-y-4">
                             {/* User Message */}
@@ -295,7 +295,7 @@ export default function AdminSubscriptionRequests() {
 
                             {/* Action Buttons */}
                             {req.status === "new" || req.status === "paid_confirmed" ? (
-                              <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#A35C5C]/20">
+                              <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#705d39]/20">
                                 <Button
                                   size="sm"
                                   onClick={() =>
@@ -321,13 +321,13 @@ export default function AdminSubscriptionRequests() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => setRejectingId(req.id)}
-                                  className="border-[#A35C5C]/30 text-[#E0D8C8] hover:bg-[#A35C5C]/20 flex-1"
+                                  className="border-[#705d39]/30 text-[#E0D8C8] hover:bg-[#705d39]/20 flex-1"
                                 >
                                   {t("admin.reject")}
                                 </Button>
                               </div>
                             ) : (
-                              <div className="flex gap-2 pt-2 border-t border-[#A35C5C]/20">
+                              <div className="flex gap-2 pt-2 border-t border-[#705d39]/20">
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -335,7 +335,7 @@ export default function AdminSubscriptionRequests() {
                                     resolveMutation.mutate(req.id)
                                   }
                                   disabled={resolveMutation.isPending}
-                                  className="text-[#A35C5C] hover:bg-[#A35C5C]/20 flex-1"
+                                  className="text-[#705d39] hover:bg-[#705d39]/20 flex-1"
                                 >
                                   {resolveMutation.isPending ? t("admin.resolving") : t("admin.markResolved")}
                                 </Button>

@@ -239,7 +239,7 @@ export default function PostSessionPrompt({ externalItems = [], onDone }) {
             }}
             disabled={!allDecided || saving || !userEmail}
             className="flex-1 h-9 rounded-lg text-sm font-semibold text-white disabled:opacity-40 transition-all"
-            style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
+            style={{ background: "linear-gradient(135deg,#705d39,#604e30)" }}
           >
             {saving ? "Saving…" : "Confirm"}
           </button>

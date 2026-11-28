@@ -239,7 +239,7 @@ export default function LogTastingModal({ bottle, bottles = [], editLog = null, 
                         updateField('bottle_id', e.target.value);
                         updateField('bottle_name', selected?.name || '');
                       }}
-                      className="w-full rounded-xl px-3 py-2.5 bg-[rgba(20,15,12,0.6)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm"
+                      className="w-full rounded-xl px-3 py-2.5 bg-[rgba(37,40,42,0.6)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm"
                     >
                       <option value="" className="bg-[#1A120D]">Select a bottle...</option>
                       {sortedBottles.map((b) => (

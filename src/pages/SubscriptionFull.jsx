@@ -32,7 +32,7 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
   return (
     <Card
       className={`cursor-pointer transition-all ${
-        isSelected ? "border-[#A35C5C] bg-[#1A2B3A]/60" : "border-white/10 hover:border-white/20"
+        isSelected ? "border-[#705d39] bg-[#1A2B3A]/60" : "border-white/10 hover:border-white/20"
       }`}
       onClick={onSelect}
     >
@@ -40,7 +40,7 @@ function TierCard({ tier, interval, price, features, isSelected, onSelect, isLoa
         <CardTitle className="text-[#e8d5b7]">
           {({ free: t("subscription.free"), pro: t("subscription.pro") }[tier] ?? (tier.charAt(0).toUpperCase() + tier.slice(1)))}
         </CardTitle>
-        <div className="text-2xl font-bold text-[#A35C5C] mt-2">${price}</div>
+        <div className="text-2xl font-bold text-[#705d39] mt-2">${price}</div>
         <div className="text-sm text-[#e8d5b7]/60">{t("subscriptionFull.per")} {interval}</div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -457,8 +457,8 @@ export default function SubscriptionFull() {
                   onClick={() => !isUpgrading && setSelectedUpgradeOption(selectedUpgradeOption?.action === option.action ? null : option)}
                   className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
                     selectedUpgradeOption?.action === option.action
-                      ? "border-[#A35C5C] bg-[#A35C5C]/10"
-                      : "border-[#8b6239]/30 hover:border-[#A35C5C]/50 bg-[#2a1f18]/50"
+                      ? "border-[#705d39] bg-[#705d39]/10"
+                      : "border-[#8b6239]/30 hover:border-[#705d39]/50 bg-[#34383a]/50"
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -601,8 +601,8 @@ export default function SubscriptionFull() {
               onClick={() => setSelectedPlanKey(plan.key)}
               className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
                 isSelected
-                  ? "border-[#A35C5C] bg-[#A35C5C]/10"
-                  : "border-[#8b6239]/30 hover:border-[#A35C5C]/50 bg-[#2a1f18]/50"
+                  ? "border-[#705d39] bg-[#705d39]/10"
+                  : "border-[#8b6239]/30 hover:border-[#705d39]/50 bg-[#34383a]/50"
               }`}
             >
               <div className="flex items-start justify-between gap-3">

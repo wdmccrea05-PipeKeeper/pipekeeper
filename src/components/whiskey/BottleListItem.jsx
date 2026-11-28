@@ -74,7 +74,7 @@ export default function BottleListItem({
         <div
           className="w-full lg:w-28 h-32 rounded-xl overflow-hidden flex-shrink-0"
           style={{
-            background: 'linear-gradient(180deg, rgba(35,25,18,0.96), rgba(20,14,10,0.98))',
+            background: 'linear-gradient(180deg, rgba(35,25,18,0.96), rgba(35,38,40,0.98))',
             border: '1px solid rgba(180,140,75,0.12)',
           }}
         >

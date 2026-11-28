@@ -20,7 +20,7 @@ function StatCard({ icon: Icon, label, value, sub, alert }) {
         style={{
           background: alert
             ? 'linear-gradient(135deg, rgba(180,50,50,0.5), rgba(140,40,40,0.6))'
-            : 'linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))',
+            : 'linear-gradient(135deg, rgba(70,75,77,0.5), rgba(60,64,66,0.6))',
           border: alert ? '1px solid rgba(200,80,80,0.45)' : '1px solid rgba(120,90,65,0.45)',
         }}
       >

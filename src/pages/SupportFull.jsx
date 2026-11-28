@@ -51,7 +51,7 @@ const TOPIC_CARD_KEYS = [
   { icon: CreditCard, labelKey: 'support.cardBillingLabel', descKey: 'support.cardBillingDesc', color: "#d4a574" },
   { icon: User,       labelKey: 'support.cardAccountLabel', descKey: 'support.cardAccountDesc', color: "#6fcf97" },
   { icon: RefreshCw,  labelKey: 'support.cardDataLabel',    descKey: 'support.cardDataDesc',    color: "#56b4e0" },
-  { icon: Bug,        labelKey: 'support.cardBugLabel',     descKey: 'support.cardBugDesc',     color: "#a35c5c" },
+  { icon: Bug,        labelKey: 'support.cardBugLabel',     descKey: 'support.cardBugDesc',     color: "#705d39" },
   { icon: Smartphone, labelKey: 'support.cardPerfLabel',    descKey: 'support.cardPerfDesc',    color: "#b48c4b" },
   { icon: HelpCircle, labelKey: 'support.cardHelpLabel',    descKey: 'support.cardHelpDesc',    color: "#9b8ecf" },
 ];
@@ -238,7 +238,7 @@ ${formData.message}
                     onValueChange={(v) => setFormData(p => ({ ...p, topic: v }))}
                     required
                   >
-                    <SelectTrigger className="mt-1.5" style={{ background: "rgba(20,15,12,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}>
+                    <SelectTrigger className="mt-1.5" style={{ background: "rgba(37,40,42,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}>
                       <SelectValue placeholder={t('support.topicPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -258,7 +258,7 @@ ${formData.message}
                       placeholder={t('support.namePlaceholder')}
                       required
                       className="mt-1.5"
-                      style={{ background: "rgba(20,15,12,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}
+                      style={{ background: "rgba(37,40,42,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}
                     />
                   </div>
                   <div>
@@ -270,7 +270,7 @@ ${formData.message}
                       placeholder={t('support.emailPlaceholder')}
                       required
                       className="mt-1.5"
-                      style={{ background: "rgba(20,15,12,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}
+                      style={{ background: "rgba(37,40,42,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}
                     />
                   </div>
                 </div>
@@ -283,7 +283,7 @@ ${formData.message}
                     placeholder={t('support.messagePlaceholder')}
                     required
                     className="mt-1.5 min-h-[140px]"
-                    style={{ background: "rgba(20,15,12,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}
+                    style={{ background: "rgba(37,40,42,0.6)", border: "1px solid rgba(180,140,75,0.28)", color: "#F5F1E7" }}
                   />
                 </div>
 
@@ -297,7 +297,7 @@ ${formData.message}
                   type="submit"
                   disabled={!canSubmit}
                   className="w-full"
-                  style={{ background: "linear-gradient(135deg, #a35c5c, #8f4e4e)", color: "#fff" }}
+                  style={{ background: "linear-gradient(135deg, #705d39, #604e30)", color: "#fff" }}
                 >
                   <Mail className="w-4 h-4 mr-2" />
                   {isSubmitting ? t('support.sending') : t('support.sendMessage')}

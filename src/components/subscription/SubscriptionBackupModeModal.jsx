@@ -103,7 +103,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
       className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto"
       style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
     >
-      <Card className="max-w-2xl w-full bg-[#1A2B3A] border-[#A35C5C]/50 my-8 sm:my-0">
+      <Card className="max-w-2xl w-full bg-[#1A2B3A] border-[#705d39]/50 my-8 sm:my-0">
         <CardHeader className="pt-6 sm:pt-8 px-4 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -126,7 +126,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
         <CardContent className="space-y-6 px-4 sm:px-6 pb-6">
           {/* Plans unavailable notice */}
           {!hasAnyPlan && (
-            <div className="rounded-lg bg-[#A35C5C]/10 border border-[#A35C5C]/30 px-4 py-3 text-sm text-[#E0D8C8]/80">
+            <div className="rounded-lg bg-[#705d39]/10 border border-[#705d39]/30 px-4 py-3 text-sm text-[#E0D8C8]/80">
               {t('subscription.checkoutManualReviewNotice')}{" "}
               <a href={`mailto:${SUPPORT_EMAIL}`} className="underline text-[#D4A574]">
                 {SUPPORT_EMAIL}
@@ -158,7 +158,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                         variant="outline"
                         disabled={disabled}
                         onClick={() => !disabled && setSelectedTerm(term)}
-                        className="border-[#A35C5C]/30 text-[#E0D8C8]"
+                        className="border-[#705d39]/30 text-[#E0D8C8]"
                         style={{
                           background:
                             selectedTerm === term ? "rgba(163,92,92,0.22)" : "transparent",
@@ -187,7 +187,7 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                   placeholder={t("subscriptionBackup.paymentProofPlaceholder")}
                   value={paymentReference}
                   onChange={(e) => setPaymentReference(e.target.value)}
-                  className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40"
+                  className="bg-[#243548] border-[#705d39]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40"
                 />
                 <p className="text-xs text-[#E0D8C8]/50 mt-1">
                   {t("subscriptionBackup.helpsVerify")}
@@ -202,14 +202,14 @@ export default function SubscriptionBackupModeModal({ isOpen, onClose, user }) {
                   placeholder={t("subscriptionBackup.messagePlaceholder")}
                   value={userMessage}
                   onChange={(e) => setUserMessage(e.target.value)}
-                  className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40 min-h-20"
+                  className="bg-[#243548] border-[#705d39]/30 text-[#E0D8C8] placeholder:text-[#E0D8C8]/40 min-h-20"
                 />
               </div>
 
               <Button
                 onClick={handleRequestReview}
                 disabled={submitting}
-                className="w-full bg-[#A35C5C] hover:bg-[#8F4E4E] text-[#F3EBDD]"
+                className="w-full bg-[#705d39] hover:bg-[#604e30] text-[#F3EBDD]"
               >
                 {submitting ? (
                   <>

@@ -247,14 +247,14 @@ export default function ExternalItemPicker({ itemType, selectedItem, onSelect, m
               onChange={(e) => setUpcCode(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleUPCLookup()}
               placeholder="e.g. 012345678901"
-              className="flex-1 h-9 px-3 rounded-lg bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-1 focus:ring-[#A35C5C]"
+              className="flex-1 h-9 px-3 rounded-lg bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-1 focus:ring-[#705d39]"
             />
             <button
               type="button"
               onClick={handleUPCLookup}
               disabled={upcLoading || !upcCode.trim()}
               className="px-3 h-9 rounded-lg text-sm font-medium text-white disabled:opacity-50 transition-all flex items-center gap-1.5"
-              style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
+              style={{ background: "linear-gradient(135deg,#705d39,#604e30)" }}
             >
               {upcLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

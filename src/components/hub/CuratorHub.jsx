@@ -104,7 +104,7 @@ export default function CuratorHub({ summary = null, recentActivities = [] }) {
         className="flex items-center gap-2 flex-shrink-0 relative z-10"
         style={{
           background: "linear-gradient(135deg, #D4A574, #C99A66)",
-          color: "#1a1410",
+          color: "#292c2e",
           fontWeight: 600,
         }}
       >

@@ -154,7 +154,7 @@ export default function ModuleSelectionStep({
           disabled={enabledCount === 0}
           className="px-4 py-2 rounded-xl font-semibold disabled:opacity-50"
           style={{
-            background: "linear-gradient(135deg, #a35c5c, #8f4e4e)",
+            background: "linear-gradient(135deg, #705d39, #604e30)",
             color: "#F5F1E7",
           }}
         >

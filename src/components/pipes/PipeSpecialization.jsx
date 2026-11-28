@@ -101,7 +101,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
   if (!editing && (!designations || designations.length === 0)) {
     return (
       <Card style={{
-        background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+        background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
         border: "1px solid rgba(140,105,65,0.35)",
         boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
       }}>
@@ -116,7 +116,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
               variant="outline"
               onClick={() => setEditing(true)}
               style={{
-                background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
+                background: "linear-gradient(135deg, rgba(70,75,77,0.5), rgba(60,64,66,0.6))",
                 border: "1px solid rgba(140,105,65,0.4)",
                 color: "#E0D8C8"
               }}
@@ -132,7 +132,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
 
   return (
     <Card style={{
-      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
       border: "1px solid rgba(140,105,65,0.35)",
       boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
     }}>
@@ -240,7 +240,7 @@ export default function PipeSpecialization({ pipe, blends, onUpdate, isPaidUser 
                 onClick={handleAddCustom}
                 disabled={!customText.trim()}
                 style={{
-                  background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
+                  background: "linear-gradient(135deg, rgba(70,75,77,0.5), rgba(60,64,66,0.6))",
                   border: "1px solid rgba(140,105,65,0.4)",
                   color: "#E0D8C8"
                 }}

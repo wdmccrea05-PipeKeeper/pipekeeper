@@ -133,7 +133,7 @@ function ManualForm({ itemType, onSubmit, onBack }) {
           <div key={f.key}>
             <label className="text-xs text-[#E0D8C8]/60 mb-1 block">{f.label}</label>
             <textarea
-              className="w-full bg-[rgba(20,13,8,0.7)] border border-[rgba(180,140,75,0.3)] text-[#F5F1E7] rounded-xl px-3 py-2 text-sm resize-none h-20 focus:outline-none focus:ring-1 focus:ring-[#A35C5C]"
+              className="w-full bg-[rgba(20,13,8,0.7)] border border-[rgba(180,140,75,0.3)] text-[#F5F1E7] rounded-xl px-3 py-2 text-sm resize-none h-20 focus:outline-none focus:ring-1 focus:ring-[#705d39]"
               value={form[f.key] || ""}
               onChange={(e) => set(f.key, e.target.value)}
               placeholder={f.label}
@@ -675,7 +675,7 @@ export default function WantList() {
                 className="flex flex-col items-start gap-3 p-6 rounded-2xl border border-[rgba(180,140,75,0.25)] bg-[rgba(255,255,255,0.03)] hover:bg-white/5 hover:border-[#D4A574]/40 transition-all text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-[rgba(163,92,92,0.18)] flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-[#A35C5C]" />
+                  <Plus className="w-5 h-5 text-[#705d39]" />
                 </div>
                 <div>
                   <div className="font-semibold text-[#F5F1E7]">{t("wantList.page.addItemToWantList")}</div>

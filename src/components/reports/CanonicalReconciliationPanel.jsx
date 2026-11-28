@@ -115,7 +115,7 @@ export default function CanonicalReconciliationPanel() {
           </p>
           <div className="overflow-auto max-h-48 rounded-lg border border-[#8b6239]/25">
             <table className="w-full text-xs">
-              <thead className="bg-[#2a1f18] sticky top-0">
+              <thead className="bg-[#34383a] sticky top-0">
                 <tr>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Email</th>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Provider</th>
@@ -146,7 +146,7 @@ export default function CanonicalReconciliationPanel() {
           <p className="text-sm font-semibold text-[#D4A574] mb-2">StripeProductRegistry Usage Proof</p>
           <div className="overflow-auto max-h-48 rounded-lg border border-[#8b6239]/25">
             <table className="w-full text-xs">
-              <thead className="bg-[#2a1f18] sticky top-0">
+              <thead className="bg-[#34383a] sticky top-0">
                 <tr>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Product ID</th>
                   <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Price ID</th>
@@ -188,7 +188,7 @@ export default function CanonicalReconciliationPanel() {
             <summary className="px-4 py-2 text-xs text-[#E0D8C8]/70 cursor-pointer">Show all rows</summary>
             <div className="overflow-auto max-h-96">
               <table className="w-full text-xs">
-                <thead className="bg-[#2a1f18] sticky top-0">
+                <thead className="bg-[#34383a] sticky top-0">
                   <tr>
                     <th className="text-left px-2 py-2 text-[#E0D8C8]/70">User</th>
                     <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Provider</th>
@@ -242,7 +242,7 @@ export default function CanonicalReconciliationPanel() {
             <summary className="px-4 py-2 text-xs text-[#E0D8C8]/70 cursor-pointer">Detail ({entAnom.detail?.length} users)</summary>
             <div className="overflow-auto max-h-64">
               <table className="w-full text-xs">
-                <thead className="bg-[#2a1f18] sticky top-0">
+                <thead className="bg-[#34383a] sticky top-0">
                   <tr>
                     <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Email</th>
                     <th className="text-left px-2 py-2 text-[#E0D8C8]/70">Classification</th>

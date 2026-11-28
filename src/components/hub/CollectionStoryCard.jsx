@@ -258,7 +258,7 @@ export default function CollectionStoryCard() {
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: 'linear-gradient(155deg, rgba(38,26,18,0.96), rgba(32,22,15,0.99))',
+        background: 'linear-gradient(155deg, rgba(38,26,18,0.96), rgba(45,48,50,0.99))',
         border: '1px solid rgba(120,90,65,0.42)',
         boxShadow: '0 5px 20px rgba(0,0,0,0.75)',
       }}

@@ -159,7 +159,7 @@ export default function CellarAgingDashboard({ user }) {
   if (cellarBlends.length === 0) {
     return (
       <div className="text-center py-12 space-y-3">
-        <Wine className="w-12 h-12 mx-auto text-[#A35C5C]/40" />
+        <Wine className="w-12 h-12 mx-auto text-[#705d39]/40" />
         <h3 className="text-lg font-semibold text-[#E0D8C8]">{t("tobacconist.noCellaredTobaccoYet")}</h3>
         <p className="text-sm text-[#E0D8C8]/70 max-w-md mx-auto">
           {t("tobacconist.noCellaredTobaccoDesc")}
@@ -188,7 +188,7 @@ export default function CellarAgingDashboard({ user }) {
     <div className="space-y-6">
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 p-4">
+        <Card className="bg-[#5a6a7a]/90 border-[#705d39]/30 p-4">
           <div className="flex items-center gap-3">
             <Package className="w-8 h-8 text-[#E0D8C8]" />
             <div>
@@ -198,7 +198,7 @@ export default function CellarAgingDashboard({ user }) {
           </div>
         </Card>
 
-        <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 p-4">
+        <Card className="bg-[#5a6a7a]/90 border-[#705d39]/30 p-4">
           <div className="flex items-center gap-3">
             <TrendingUp className="w-8 h-8 text-[#E0D8C8]" />
             <div>
@@ -208,7 +208,7 @@ export default function CellarAgingDashboard({ user }) {
           </div>
         </Card>
 
-        <Card className="bg-[#5a6a7a]/90 border-[#A35C5C]/30 p-4">
+        <Card className="bg-[#5a6a7a]/90 border-[#705d39]/30 p-4">
           <div className="flex items-center gap-3">
             <Clock className="w-8 h-8 text-[#E0D8C8]" />
             <div>
@@ -236,7 +236,7 @@ export default function CellarAgingDashboard({ user }) {
             return (
               <Card 
                 key={blend.id} 
-                className="bg-[#5a6a7a]/70 border-[#A35C5C]/30 p-4 cursor-pointer hover:bg-[#5a6a7a]/90 hover:border-[#A35C5C]/50 transition-all duration-200"
+                className="bg-[#5a6a7a]/70 border-[#705d39]/30 p-4 cursor-pointer hover:bg-[#5a6a7a]/90 hover:border-[#705d39]/50 transition-all duration-200"
                 onClick={() => navigate(createPageUrl(`TobaccoDetail?id=${encodeURIComponent(blend.id)}`))}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">

@@ -510,7 +510,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card className="border-[rgba(140,105,65,0.35)] bg-[linear-gradient(145deg,rgba(40,28,20,0.95),rgba(32,22,15,0.95))] shadow-[0_10px_28px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(200,160,110,0.12)]">
+        <Card className="border-[rgba(140,105,65,0.35)] bg-[linear-gradient(145deg,rgba(54,58,60,0.95),rgba(45,48,50,0.95))] shadow-[0_10px_28px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(200,160,110,0.12)]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-70 transition-opacity">
@@ -545,7 +545,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
               {logs.map((log) => (
                 <div 
                   key={log.id}
-                  className="flex items-start justify-between p-3 rounded-lg bg-[linear-gradient(145deg,rgba(36,25,18,0.94),rgba(28,20,15,0.94))] border border-[rgba(140,105,65,0.24)] hover:border-[#A35C5C]/50 transition-colors group"
+                  className="flex items-start justify-between p-3 rounded-lg bg-[linear-gradient(145deg,rgba(36,25,18,0.94),rgba(28,20,15,0.94))] border border-[rgba(140,105,65,0.24)] hover:border-[#705d39]/50 transition-colors group"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -565,7 +565,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                   </div>
                   <div className="flex items-center gap-2">
                     {log.is_break_in && (
-                      <Badge className="bg-[#A35C5C]/30 text-[#E0D8C8] border-[#A35C5C]/50 shrink-0">
+                      <Badge className="bg-[#705d39]/30 text-[#E0D8C8] border-[#705d39]/50 shrink-0">
                         {t("smokingLog.breakIn")}
                       </Badge>
                     )}
@@ -724,7 +724,7 @@ export default function SmokingLogPanel({ pipes, blends, user }) {
                 />
                 <Label className="flex items-center gap-2 text-[#E0D8C8]">
                   {t("smokingLog.autoReduce")}
-                  <Badge className="bg-[#A35C5C] text-[#F3EBDD] text-xs">
+                  <Badge className="bg-[#705d39] text-[#F3EBDD] text-xs">
                     <Crown className="w-3 h-3 mr-1" />
                     {t("subscription.premium")}
                   </Badge>

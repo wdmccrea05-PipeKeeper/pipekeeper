@@ -57,7 +57,7 @@ export default function PricingBreakdown({ bottle }) {
   }
 
   return (
-    <div className="rounded-lg p-6" style={{ background: 'rgba(42,30,20,0.5)', border: '1px solid rgba(180,140,75,0.15)' }}>
+    <div className="rounded-lg p-6" style={{ background: 'rgba(45,48,50,0.5)', border: '1px solid rgba(180,140,75,0.15)' }}>
       <h2 className="text-lg font-bold mb-4" style={{ color: '#F5F1E7' }}>
         {t('whiskey.pricingBreakdown')}
       </h2>
@@ -65,7 +65,7 @@ export default function PricingBreakdown({ bottle }) {
       <div className="space-y-3">
         {/* You Paid */}
         {bottle.purchase_price && (
-          <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(100,70,45,0.1)', border: '1px solid rgba(180,140,75,0.15)' }}>
+          <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(70,75,77,0.1)', border: '1px solid rgba(180,140,75,0.15)' }}>
             <div>
               <p className="text-xs uppercase tracking-wider" style={{ color: 'rgba(180,140,75,0.6)' }}>
                 {t('whiskey.actualPaid')}

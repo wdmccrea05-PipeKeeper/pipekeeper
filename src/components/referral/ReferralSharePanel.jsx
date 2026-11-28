@@ -97,7 +97,7 @@ export default function ReferralSharePanel({ program, onInviteClick }) {
         <Button
           onClick={onInviteClick}
           className="flex-1 gap-2 text-sm"
-          style={{ background: '#A35C5C', color: '#fff' }}
+          style={{ background: '#705d39', color: '#fff' }}
         >
           <Mail className="w-4 h-4" />
           Send Email Invite

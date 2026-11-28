@@ -270,7 +270,7 @@ export default function ProactiveCuratorPanel({
     <div
       className="rounded-lg p-6 space-y-4 relative"
       style={{
-        background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+        background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
         border: "1px solid rgba(140,105,65,0.35)",
         boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)",
       }}
@@ -280,7 +280,7 @@ export default function ProactiveCuratorPanel({
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden"
             style={{
-              background: "linear-gradient(135deg, rgba(100, 70, 45, 0.5), rgba(80, 55, 35, 0.6))",
+              background: "linear-gradient(135deg, rgba(70,75,77, 0.5), rgba(60,64,66, 0.6))",
               border: "1px solid rgba(120, 90, 65, 0.45)",
               boxShadow: "0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180, 140, 100, 0.2)",
             }}
@@ -360,7 +360,7 @@ export default function ProactiveCuratorPanel({
             size="sm"
             className="mx-auto"
             style={{
-              background: "linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))",
+              background: "linear-gradient(135deg, rgba(70,75,77,0.5), rgba(60,64,66,0.6))",
               border: "1px solid rgba(120,90,65,0.4)",
             }}
           >
@@ -381,7 +381,7 @@ export default function ProactiveCuratorPanel({
                 onClick={() => handleClick(insight)}
                 className="w-full rounded-lg p-4 text-left transition-all hover:scale-[1.02] cursor-pointer"
                 style={{
-                  background: "linear-gradient(135deg, rgba(50,35,25,0.6), rgba(40,28,20,0.8))",
+                  background: "linear-gradient(135deg, rgba(50,35,25,0.6), rgba(54,58,60,0.8))",
                   border: `1px solid ${accent}30`,
                 }}
               >

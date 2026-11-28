@@ -100,7 +100,7 @@ export default function TopPipeMatches({ blend, pipes }) {
 
   return (
     <Card style={{
-      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      background: "linear-gradient(145deg, rgba(54,58,60,0.95), rgba(45,48,50,0.95))",
       border: "1px solid rgba(140,105,65,0.35)",
       boxShadow: "0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(200,160,110,0.12)"
     }}>
@@ -158,11 +158,11 @@ export default function TopPipeMatches({ blend, pipes }) {
                 return (
                   <a key={match.pipe_id} href={createPageUrl(`PipeDetail?id=${encodeURIComponent(pipe.id)}`)}>
                     <div className="flex items-start gap-3 p-3 rounded-lg transition-all cursor-pointer" style={{
-                    background: "linear-gradient(135deg, rgba(50,40,30,0.4), rgba(40,30,20,0.6))",
+                    background: "linear-gradient(135deg, rgba(69,74,76,0.4), rgba(40,30,20,0.6))",
                     border: "1px solid rgba(140,105,65,0.25)"
                   }}>
                       <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center shrink-0" style={{
-                        background: "linear-gradient(135deg, rgba(50,40,30,0.5), rgba(40,30,20,0.7))",
+                        background: "linear-gradient(135deg, rgba(69,74,76,0.5), rgba(40,30,20,0.7))",
                         border: "1px solid rgba(140,105,65,0.2)"
                       }}>
                         {pipe.photos?.[0] ? (

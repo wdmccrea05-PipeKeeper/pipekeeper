@@ -146,7 +146,7 @@ export default function FoundersBundleOffer({ onSuccess }) {
             style={{
               background: 'linear-gradient(135deg, rgba(212,175,116,0.9), rgba(180,140,75,1))',
               border: 'none',
-              color: '#0f0b08',
+              color: '#242729',
             }}
           >
             {loading ? (

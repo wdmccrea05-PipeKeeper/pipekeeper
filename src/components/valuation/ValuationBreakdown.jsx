@@ -159,7 +159,7 @@ export default function ValuationBreakdown({ item, itemType, compact = false }) 
     <div
       className="rounded-xl p-4 space-y-3"
       style={{
-        background: 'linear-gradient(135deg, rgba(42,30,20,0.70), rgba(35,24,16,0.85))',
+        background: 'linear-gradient(135deg, rgba(45,48,50,0.70), rgba(35,24,16,0.85))',
         border: '1px solid rgba(120,90,65,0.30)',
       }}
     >

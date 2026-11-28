@@ -7,7 +7,7 @@ import BrandLogo from '@/components/branding/BrandLogo';
 import { useCurrency } from '@/lib/currency/useCurrency';
 
 const TONE = {
-  pipes: '#A35C5C',
+  pipes: '#705d39',
   blends: '#5A7C5A',
   bottles: '#C87941',
   cigars: '#8C6B3F',
@@ -158,7 +158,7 @@ const CollectionInsightsCard = forwardRef(({ summary, userProfile, variant = 'hu
       <div
         className="w-full max-w-sm rounded-2xl overflow-hidden"
         style={{
-          background: 'linear-gradient(160deg, #2a1f18 0%, #1a1210 60%, #1f1510 100%)',
+          background: 'linear-gradient(160deg, #34383a 0%, #1a1210 60%, #292c2e 100%)',
           border: '2px solid rgba(180,140,75,0.28)',
           boxShadow: '0 12px 48px rgba(0,0,0,0.7), inset 0 1px 0 rgba(180,140,75,0.1)',
         }}
@@ -293,7 +293,7 @@ export function CollectionInsightsShareModal({ isOpen, onClose, summary, userPro
       <div
         className="w-full max-w-xl rounded-2xl p-6 space-y-5"
         style={{
-          background: 'linear-gradient(145deg, rgba(42,30,20,0.97), rgba(22,14,10,0.99))',
+          background: 'linear-gradient(145deg, rgba(45,48,50,0.97), rgba(22,14,10,0.99))',
           border: '1px solid rgba(180,140,75,0.2)',
           boxShadow: '0 16px 64px rgba(0,0,0,0.8)',
         }}

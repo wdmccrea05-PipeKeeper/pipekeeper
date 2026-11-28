@@ -161,7 +161,7 @@ export default function WineLifecycleControls({ wine, onUpdated, onDelete }) {
           ...btnBase,
           background: 'transparent',
           border: '1px solid rgba(163,92,92,0.25)',
-          color: '#A35C5C',
+          color: '#705d39',
           opacity: busy !== null ? 0.5 : 1,
           padding: '0 14px',
         }}

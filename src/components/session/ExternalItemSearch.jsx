@@ -319,7 +319,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && doSearch()}
             placeholder={PLACEHOLDER_BY_TYPE[itemType] || "Search…"}
-            className="w-full h-9 pl-9 pr-3 rounded-lg bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-1 focus:ring-[#A35C5C]"
+            className="w-full h-9 pl-9 pr-3 rounded-lg bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.28)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-1 focus:ring-[#705d39]"
             disabled={!itemTypeAllowed}
           />
         </div>
@@ -328,7 +328,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
           onClick={doSearch}
           disabled={loading || !query.trim() || !itemTypeAllowed}
           className="px-3 h-9 rounded-lg text-sm font-medium text-white disabled:opacity-50 transition-all"
-          style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
+          style={{ background: "linear-gradient(135deg,#705d39,#604e30)" }}
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
         </button>
@@ -389,7 +389,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
                 type="text"
                 value={manual[key]}
                 onChange={(e) => setManual((prev) => ({ ...prev, [key]: e.target.value }))}
-                className="w-full h-8 px-2.5 rounded-lg bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.25)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-1 focus:ring-[#A35C5C]"
+                className="w-full h-8 px-2.5 rounded-lg bg-[rgba(28,21,16,0.8)] border border-[rgba(140,105,65,0.25)] text-[#F5F1E7] text-sm placeholder:text-[#D8C7A6]/40 focus:outline-none focus:ring-1 focus:ring-[#705d39]"
               />
             </div>
           ))}
@@ -398,7 +398,7 @@ export default function ExternalItemSearch({ itemType = "blend", onSelect, initi
             onClick={handleManualSubmit}
             disabled={itemType === "pipe" ? !manual.b.trim() && !manual.a.trim() : !manual.a.trim()}
             className="w-full h-8 rounded-lg text-sm font-medium text-white disabled:opacity-40 mt-1"
-            style={{ background: "linear-gradient(135deg,#a35c5c,#8f4e4e)" }}
+            style={{ background: "linear-gradient(135deg,#705d39,#604e30)" }}
           >
             Use This
           </button>

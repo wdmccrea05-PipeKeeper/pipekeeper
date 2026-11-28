@@ -73,7 +73,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
         className="max-w-2xl w-full rounded-2xl p-6 overflow-y-auto"
         style={{
           maxHeight: 'calc(100vh - 2rem)',
-          background: 'linear-gradient(135deg, rgba(42,30,20,0.98), rgba(28,18,12,0.98))',
+          background: 'linear-gradient(135deg, rgba(45,48,50,0.98), rgba(28,18,12,0.98))',
           border: '1px solid rgba(180,140,75,0.2)',
           boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
         }}
@@ -105,7 +105,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                   <img
                     src={MODULE_ICONS.pipekeeper}
                     alt="PipeKeeper"
-                    className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
+                    className="w-5 h-5 object-contain bg-[#34383a] rounded p-0.5"
                   />
                   PipeKeeper
                 </h3>
@@ -140,7 +140,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                   <img
                     src={MODULE_ICONS.whiskeykeeper}
                     alt="WhiskeyKeeper"
-                    className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
+                    className="w-5 h-5 object-contain bg-[#34383a] rounded p-0.5"
                   />
                   WhiskeyKeeper
                 </h3>
@@ -175,7 +175,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                     <img
                       src={MODULE_ICONS.cigarkeeper}
                       alt="CigarKeeper"
-                      className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
+                      className="w-5 h-5 object-contain bg-[#34383a] rounded p-0.5"
                     />
                     CigarKeeper
                   </h3>
@@ -211,7 +211,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
                     <img
                       src={MODULE_ICONS.winekeeper}
                       alt="WineKeeper"
-                      className="w-5 h-5 object-contain bg-[#2a1f18] rounded p-0.5"
+                      className="w-5 h-5 object-contain bg-[#34383a] rounded p-0.5"
                     />
                     WineKeeper
                   </h3>
@@ -233,7 +233,7 @@ export default function ModuleSelectionModal({ onComplete, isOpen = true }) {
           <Button
             onClick={handleContinue}
             disabled={saving || !hasAnySelected}
-            className="bg-[#A35C5C] hover:bg-[#8F4E4E] w-full sm:w-auto text-base py-3"
+            className="bg-[#705d39] hover:bg-[#604e30] w-full sm:w-auto text-base py-3"
           >
             {saving ? 'Saving...' : 'Continue →'}
           </Button>

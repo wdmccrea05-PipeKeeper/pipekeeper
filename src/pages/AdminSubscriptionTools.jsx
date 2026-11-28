@@ -39,7 +39,7 @@ export default function AdminSubscriptionTools() {
   if (!isLoading && user?.role !== "admin") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] flex items-center justify-center">
-        <Card className="max-w-md w-full bg-[#1A2B3A] border-[#A35C5C]/50">
+        <Card className="max-w-md w-full bg-[#1A2B3A] border-[#705d39]/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-red-500 mb-4">
               <AlertCircle className="w-5 h-5" />
@@ -148,7 +148,7 @@ export default function AdminSubscriptionTools() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">
+          <Card className="bg-[#1A2B3A] border-[#705d39]/50">
             <CardHeader>
               <CardTitle className="text-[#E0D8C8]">{t("admin.manageUserSubscription")}</CardTitle>
             </CardHeader>
@@ -159,7 +159,7 @@ export default function AdminSubscriptionTools() {
                   placeholder={t("admin.userEmailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]"
+                  className="bg-[#243548] border-[#705d39]/30 text-[#E0D8C8]"
                   disabled={loading}
                 />
               </div>
@@ -167,7 +167,7 @@ export default function AdminSubscriptionTools() {
               <div>
                 <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.provider")}</label>
                 <Select value={provider} onValueChange={setProvider} disabled={loading}>
-                  <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
+                  <SelectTrigger className="bg-[#243548] border-[#705d39]/30 text-[#E0D8C8]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -181,7 +181,7 @@ export default function AdminSubscriptionTools() {
               <div>
                 <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.status")}</label>
                 <Select value={status} onValueChange={setStatus} disabled={loading}>
-                  <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
+                  <SelectTrigger className="bg-[#243548] border-[#705d39]/30 text-[#E0D8C8]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -198,7 +198,7 @@ export default function AdminSubscriptionTools() {
               <div>
                 <label className="block text-sm font-medium text-[#E0D8C8] mb-2">{t("admin.billingInterval")}</label>
                 <Select value={billingInterval} onValueChange={setBillingInterval} disabled={loading}>
-                  <SelectTrigger className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8]">
+                  <SelectTrigger className="bg-[#243548] border-[#705d39]/30 text-[#E0D8C8]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -233,7 +233,7 @@ export default function AdminSubscriptionTools() {
                   placeholder={t("admin.adminNotes")}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="bg-[#243548] border-[#A35C5C]/30 text-[#E0D8C8] min-h-20"
+                  className="bg-[#243548] border-[#705d39]/30 text-[#E0D8C8] min-h-20"
                   disabled={loading}
                 />
               </div>
@@ -274,7 +274,7 @@ export default function AdminSubscriptionTools() {
           </Card>
 
           {updatedUser && (
-            <Card className="bg-[#1A2B3A] border-[#A35C5C]/50">
+            <Card className="bg-[#1A2B3A] border-[#705d39]/50">
               <CardHeader>
                 <CardTitle className="text-[#E0D8C8] flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-500" />

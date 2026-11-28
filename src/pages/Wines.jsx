@@ -49,7 +49,7 @@ const SORT_OPTIONS = [
 ];
 
 const STYLES = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'orange', 'other'];
-const DRINK_WINDOW_COLORS = { drink_now: '#2E7D5C', too_young: '#6B8FC4', past_peak: '#A35C5C' };
+const DRINK_WINDOW_COLORS = { drink_now: '#2E7D5C', too_young: '#6B8FC4', past_peak: '#705d39' };
 
 function WineCard({ wine, onEdit, onDelete, onLogTasting, onEnriched, onAddToWantList, formatFromBase, navigate }) {
   const { t } = useTranslation();
@@ -314,14 +314,14 @@ export default function Wines() {
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           className="rounded-xl px-3 py-2 text-sm"
-          style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+          style={{ background: 'rgba(35,38,40,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
         >
           {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{t(o.labelKey)}</option>)}
         </select>
         <button
           onClick={() => setShowFilters((v) => !v)}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm"
-          style={{ background: Object.keys(filters).length > 0 ? 'rgba(139,58,58,0.25)' : 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
+          style={{ background: Object.keys(filters).length > 0 ? 'rgba(139,58,58,0.25)' : 'rgba(35,38,40,0.7)', border: '1px solid rgba(180,140,75,0.25)', color: '#F5F1E7' }}
         >
           <Filter className="w-4 h-4" />
           {t('common.filters')} {Object.keys(filters).length > 0 ? `(${Object.keys(filters).length})` : ''}
@@ -358,14 +358,14 @@ export default function Wines() {
         <div className="rounded-xl p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" style={{ background: 'rgba(42,28,20,0.7)', border: '1px solid rgba(180,140,75,0.15)' }}>
           <div>
             <label className="ck-field-label">{t('wine.style')}</label>
-            <select value={filters.style || ''} onChange={(e) => setFilter('style', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
+            <select value={filters.style || ''} onChange={(e) => setFilter('style', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(35,38,40,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
               <option value="">{t('common.all')}</option>
               {STYLES.map((s) => <option key={s} value={s}>{t(`wine.styles.${s}`, s)}</option>)}
             </select>
           </div>
           <div>
             <label className="ck-field-label">{t('wine.drinkingWindowSummary')}</label>
-            <select value={filters.drink_window || ''} onChange={(e) => setFilter('drink_window', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
+            <select value={filters.drink_window || ''} onChange={(e) => setFilter('drink_window', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(35,38,40,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
               <option value="">{t('common.all')}</option>
               <option value="drink_now">{t('wine.drinkNow')}</option>
               <option value="too_young">{t('wine.tooYoung')}</option>
@@ -374,7 +374,7 @@ export default function Wines() {
           </div>
           <div>
             <label className="ck-field-label">{t('wine.valuationSection')}</label>
-            <select value={filters.valued || ''} onChange={(e) => setFilter('valued', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(20,14,10,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
+            <select value={filters.valued || ''} onChange={(e) => setFilter('valued', e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm" style={{ background: 'rgba(35,38,40,0.7)', border: '1px solid rgba(180,140,75,0.2)', color: '#F5F1E7' }}>
               <option value="">{t('common.all')}</option>
               <option value="valued">{t('wine.collectionValue')}</option>
               <option value="unvalued">{t('wine.sortNeedsValuation')}</option>

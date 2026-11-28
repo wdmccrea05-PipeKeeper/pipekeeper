@@ -45,7 +45,7 @@ export default function PublicSharedRecord() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0f0b08" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#242729" }}>
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-[rgba(180,140,75,0.3)] border-t-[#D4A574] rounded-full animate-spin mx-auto mb-4" />
           <p style={{ color: "rgba(224,216,200,0.7)" }}>Opening shared collection…</p>
@@ -58,7 +58,7 @@ export default function PublicSharedRecord() {
 
   if (!payload) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0f0b08" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#242729" }}>
         <div className="max-w-md mx-auto p-6 text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4" style={{ color: "#D45C5C" }} />
           <h1 className="text-2xl font-semibold mb-2" style={{ color: "#FFFFFF" }}>{copy.title}</h1>
@@ -74,7 +74,7 @@ export default function PublicSharedRecord() {
       className="min-h-screen"
       style={{
         background:
-          "radial-gradient(circle at 30% 20%, rgba(120,85,55,0.15), transparent 40%), radial-gradient(circle at 80% 70%, rgba(70,50,35,0.2), transparent 50%), #0f0b08",
+          "radial-gradient(circle at 30% 20%, rgba(120,85,55,0.15), transparent 40%), radial-gradient(circle at 80% 70%, rgba(70,50,35,0.2), transparent 50%), #242729",
       }}
     >
       <nav className="border-b" style={{ background: "rgba(24,16,12,0.98)", borderBottomColor: "rgba(120,90,65,0.35)" }}>
@@ -92,7 +92,7 @@ export default function PublicSharedRecord() {
       <main className="max-w-4xl mx-auto px-4 py-10">
         <CollectionShareView payload={payload} />
 
-        <div className="mt-10 max-w-md mx-auto rounded-xl p-6 text-center" style={{ background: "linear-gradient(135deg,#2a1f18,#1f1510)", border: "1px solid rgba(180,140,75,0.25)" }}>
+        <div className="mt-10 max-w-md mx-auto rounded-xl p-6 text-center" style={{ background: "linear-gradient(135deg,#34383a,#292c2e)", border: "1px solid rgba(180,140,75,0.25)" }}>
           <p className="text-sm mb-3" style={{ color: "rgba(224,216,200,0.8)" }}>
             Catalogue your own pipes, tobacco, cigars, whiskey and wine.
           </p>

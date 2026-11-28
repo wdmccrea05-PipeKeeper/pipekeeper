@@ -344,7 +344,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
     try {
       const canvas = await html2canvas(shareImageRef, {
-        backgroundColor: '#0f0b08',
+        backgroundColor: '#242729',
         scale: 2
       });
       
@@ -500,7 +500,7 @@ export default function TrendsReport({ logs, pipes, blends, user }) {
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-[#3a2a20]/40 border border-[#8b6239]/25">
+        <TabsList className="grid w-full grid-cols-4 bg-[#3b4042]/40 border border-[#8b6239]/25">
           <TabsTrigger value="overview" className="text-[#E0D8C8] data-[state=active]:text-[#F5F1E7] data-[state=active]:bg-[#8b6239]/30">{t("trends.overview")}</TabsTrigger>
           <TabsTrigger value="usage" className="text-[#E0D8C8] data-[state=active]:text-[#F5F1E7] data-[state=active]:bg-[#8b6239]/30">{t("trends.usage")}</TabsTrigger>
           <TabsTrigger value="taste" className="text-[#E0D8C8] data-[state=active]:text-[#F5F1E7] data-[state=active]:bg-[#8b6239]/30">{t("trends.taste")}</TabsTrigger>

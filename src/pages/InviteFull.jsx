@@ -148,7 +148,7 @@ If you didn't expect this invitation, you can safely ignore this email.`;
           </p>
         )}
         <div className="flex gap-3 justify-center">
-          <Button onClick={() => setSubmitted(false)} style={{ background: '#A35C5C', color: '#fff' }}>
+          <Button onClick={() => setSubmitted(false)} style={{ background: '#705d39', color: '#fff' }}>
             Invite More
           </Button>
           {hasPaid && (
@@ -264,7 +264,7 @@ If you didn't expect this invitation, you can safely ignore this email.`;
             type="submit"
             disabled={isSubmitting || emailFields.every(email => email.trim() === '')}
             className="w-full"
-            style={{ background: '#A35C5C', color: '#fff' }}
+            style={{ background: '#705d39', color: '#fff' }}
           >
             <Mail className="w-4 h-4 mr-2" />
             {isSubmitting ? 'Sending…' : hasPaid ? 'Send Referral Invites' : 'Send Invitations'}

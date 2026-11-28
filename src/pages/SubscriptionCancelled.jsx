@@ -11,7 +11,7 @@ export default function SubscriptionCancelled() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0B1320] via-[#112133] to-[#0B1320] flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-[#1A2B3A] border border-[#A35C5C]/50 rounded-2xl p-8 shadow-xl">
+      <div className="max-w-md w-full bg-[#1A2B3A] border border-[#705d39]/50 rounded-2xl p-8 shadow-xl">
         <div className="flex justify-center mb-6">
           <XCircle className="w-12 h-12 text-amber-500" />
         </div>

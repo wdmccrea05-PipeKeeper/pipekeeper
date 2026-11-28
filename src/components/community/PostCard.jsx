@@ -98,7 +98,7 @@ export default function PostCard({ post, currentUser, friends = [], onChanged })
         <div className="flex items-start gap-3">
           <Avatar className="w-10 h-10 flex-shrink-0">
             <AvatarImage src={post.author_avatar} />
-            <AvatarFallback className="bg-[#A35C5C] text-[#E0D8C8] text-sm">
+            <AvatarFallback className="bg-[#705d39] text-[#E0D8C8] text-sm">
               {(post.author_name || post.author_email)?.[0]?.toUpperCase() || '?'}
             </AvatarFallback>
           </Avatar>
@@ -169,7 +169,7 @@ export default function PostCard({ post, currentUser, friends = [], onChanged })
             variant="ghost"
             size="sm"
             onClick={toggleLike}
-            className={myLike ? 'text-[#A35C5C]' : 'text-[#E0D8C8]/70'}
+            className={myLike ? 'text-[#705d39]' : 'text-[#E0D8C8]/70'}
           >
             <Heart className={`w-4 h-4 mr-1 ${myLike ? 'fill-current' : ''}`} />
             {likeCount}

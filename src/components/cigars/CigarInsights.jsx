@@ -32,7 +32,7 @@ function StatTile({ icon: Icon, label, value }) {
       <div
         className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
         style={{
-          background: 'linear-gradient(135deg, rgba(100,70,45,0.5), rgba(80,55,35,0.6))',
+          background: 'linear-gradient(135deg, rgba(70,75,77,0.5), rgba(60,64,66,0.6))',
           border: '1px solid rgba(120,90,65,0.45)',
         }}
       >

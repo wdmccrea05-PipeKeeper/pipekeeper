@@ -191,7 +191,7 @@ function InsightCard({ insight, onAction }) {
         style={{
           color: "rgba(180, 140, 75, 1)",
           border: "1px solid rgba(120, 90, 65, 0.4)",
-          background: "rgba(100, 70, 45, 0.15)",
+          background: "rgba(70,75,77, 0.15)",
         }}
       >
         {insight.actionLabel}
@@ -205,7 +205,7 @@ function InsightCard({ insight, onAction }) {
         style={{
           color: "rgba(180, 140, 75, 1)",
           border: "1px solid rgba(120, 90, 65, 0.4)",
-          background: "rgba(100, 70, 45, 0.15)",
+          background: "rgba(70,75,77, 0.15)",
         }}
       >
         <MessageSquare className="w-3 h-3" />
@@ -219,7 +219,7 @@ function InsightCard({ insight, onAction }) {
         style={{
           color: "rgba(180, 140, 75, 1)",
           border: "1px solid rgba(120, 90, 65, 0.4)",
-          background: "rgba(100, 70, 45, 0.15)",
+          background: "rgba(70,75,77, 0.15)",
         }}
       >
         {insight.actionLabel}
@@ -325,7 +325,7 @@ function UpdateFeedItem({ update }) {
           style={{
             color: "rgba(180, 140, 75, 1)",
             border: "1px solid rgba(120, 90, 65, 0.4)",
-            background: "rgba(100, 70, 45, 0.15)",
+            background: "rgba(70,75,77, 0.15)",
           }}
         >
           <MessageSquare className="w-3 h-3" />
@@ -669,7 +669,7 @@ export default function CollectionIntelligencePanel({ pipes, blends, bottles = [
           <div
             className="w-9 h-9 rounded flex items-center justify-center"
             style={{
-              background: `linear-gradient(135deg, rgba(100, 70, 45, 0.45), rgba(80, 55, 35, 0.55))`,
+              background: `linear-gradient(135deg, rgba(70,75,77, 0.45), rgba(60,64,66, 0.55))`,
               border: `1px solid rgba(120, 90, 65, 0.4)`,
               boxShadow: `0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180, 140, 100, 0.15)`,
             }}

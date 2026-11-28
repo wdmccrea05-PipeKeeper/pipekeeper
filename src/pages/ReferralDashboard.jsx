@@ -121,7 +121,7 @@ export default function ReferralDashboard() {
               {t('referral.lockedDesc')}
             </p>
             <Link to="/Subscription">
-              <Button style={{ background: '#A35C5C', color: '#fff' }}>{t('referral.viewPlans')}</Button>
+              <Button style={{ background: '#705d39', color: '#fff' }}>{t('referral.viewPlans')}</Button>
             </Link>
           </div>
         </div>
@@ -257,7 +257,7 @@ export default function ReferralDashboard() {
                 type="submit"
                 disabled={sending || emailFields.every(e => !e.trim())}
                 className="w-full gap-2"
-                style={{ background: '#A35C5C', color: '#fff' }}
+                style={{ background: '#705d39', color: '#fff' }}
               >
                 <Mail className="w-4 h-4" />
                 {sending ? t('referral.sending') : t('referral.sendInvites')}
