@@ -12,6 +12,38 @@ Status values: `done` · `in-progress` · `blocked` · `planned`
 
 ---
 
+## Draft continuation — resumable import and report handoffs
+
+Implementation source tested and committed to PR #511: **`4116acfd9ad4a3e4ea7866fdde9a062564b12b21`**.
+The commit was made through the installed pre-commit hook; the hook ran the
+unchanged i18n gate and passed at 2,573 findings / 2,666.
+
+| Area | Change and local evidence | Remaining gap |
+|---|---|---|
+| Curator-assisted CSV import | Import batches retain their ID, owner, file contents, parsed/validated rows, and results in account-keyed browser `sessionStorage`. Curator can open the same batch and return to it. The import review displays existing/incoming values for conflicts and requires confirmation; writes recheck the full owner-scoped collection and skip exact duplicates/conflicts. Tests cover upload → Curator handoff → return/reload, account-keyed storage, damaged snapshots, later-page duplicate lookup, conflict preservation, and retry after a create response is lost. | The supported engine is CSV-only; Excel must be saved as CSV. Batch state is limited to the same browser session and is not server-backed/cross-device. No transactional idempotency or concurrent-import lock exists. |
+| Curator reports | Supported report intents link to the shared Reporting Center with the selected report in the URL. Tests exercise the route and verify filtered table rows and CSV export use the same report result. | This is mocked interaction coverage, not authenticated browser acceptance; report calculations, pagination, and actual download behavior were not verified against a live collection. |
+| Shared workspace styling | Extended parchment/espresso styling to Curator and Collection Health, with shared paper variants for Insights and StatStrip and consistent display typography in the hub. | Full approved facelift, CigarKeeper comparison, and desktop/mobile visual acceptance remain open. |
+
+Validation on the committed implementation source:
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: **232
+  files, 3,814 passed, 0 failed**.
+- `npm run build`: **passed**; existing chunk warnings remain. Base44 app ID
+  and API proxy URL are unset, so the build is not connected to Base44.
+- `npm run lint`: **passed**.
+- `npm run typecheck`: **passed**.
+- `npm run i18n:check -- --max-findings=2666`: **passed**, 2,573 findings /
+  2,666 budget. English and German copy was added for the new batch controls.
+- The full test run rewrites certification timestamps/benchmarks; generated
+  changes were restored and excluded from the commit.
+
+No authorized Base44 preview or test accounts are configured. Two-account
+isolation, backend authorization/entitlements, persisted writes after reload,
+partial failures against the real service, desktop/mobile browser journeys, and
+screenshots remain blocked. Keep PR #511 in draft; do not merge or publish.
+
+---
+
 ## Draft continuation — Curator handoffs and shared typography
 
 This increment was implemented and validated on the PR branch from
