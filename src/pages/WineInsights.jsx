@@ -1,3 +1,4 @@
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -10,7 +11,7 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import { useLocaleFormatting } from '@/components/utils/localeFormatters';
 import WineInsuranceExporter from '@/components/export/WineInsuranceExporter';
 import { importDefinitions, downloadImportTemplate } from '@/lib/imports/importDefinitions';
-import { hasWineValuation, getWinePrimaryImage, getWineTotalValue, selectWineMetrics, getWineDrinkWindowStatus } from '@/lib/collection/wineSelectors';
+import { hasWineValuation, getWineTotalValue, selectWineMetrics, getWineDrinkWindowStatus } from '@/lib/collection/wineSelectors';
 import { selectBreakdownByField } from '@/lib/analytics/breakdownUtils';
 import { Calendar } from '@/components/ui/calendar';
 import { buildSessionCalendarData } from '@/lib/sessionHistory/calendarData';
@@ -130,14 +131,15 @@ export default function WineInsights() {
   const wineImportDef = importDefinitions['winekeeper_wines'];
 
   return (
-    <InsightsPageShell>
-      <WineKeeperModuleNav currentPageName="WineInsights" />
-      <InsightsHeader
+    <InsightsPageShell variant="paper">
+      <div className="ck-module-nav-surface"><WineKeeperModuleNav currentPageName="WineInsights" /></div>
+      <InsightsHeader variant="paper"
         title={t('wine.insights', { defaultValue: DEFAULT_WINE_INSIGHTS_TITLE })}
         subtitle={t('wine.analyzeCellarSubtitle')}
       />
 
       <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.winekeeper} />
+        <div className="ck-insights-detail space-y-6">
 
       <CollectionQueryError
         isError={hasQueryError}
@@ -165,7 +167,7 @@ export default function WineInsights() {
                   value={stats.topByRating[0].name}
                   subtitle={`${stats.topByRating[0].rating}/5 · ${stats.topByRating[0].producer || ''}`}
                   accent={ACCENT}
-                  photo={getWinePrimaryImage(stats.topByRating[0])}
+                  photos={getHighlightPhotos(stats.topByRating[0])}
                 />
               )}
               {stats.topByValue[0] && getWineTotalValue(stats.topByValue[0]) > 0 && (
@@ -174,7 +176,7 @@ export default function WineInsights() {
                   value={stats.topByValue[0].name}
                   subtitle={formatFromBase(getWineTotalValue(stats.topByValue[0]))}
                   accent="#2E7D5C"
-                  photo={getWinePrimaryImage(stats.topByValue[0])}
+                  photos={getHighlightPhotos(stats.topByValue[0])}
                 />
               )}
               {stats.drinkingNowWines?.[0] && (() => {
@@ -186,7 +188,7 @@ export default function WineInsights() {
                     value={dw.name}
                     subtitle={sub}
                     accent={WINE_GOLD}
-                    photo={getWinePrimaryImage(dw)}
+                    photos={getHighlightPhotos(dw)}
                   />
                 );
               })()}
@@ -447,6 +449,7 @@ export default function WineInsights() {
           {wines.length === 0 && <InsightsEmptyState message={t('wine.addWinesWithDrinkingWindows')} icon={Wine} />}
         </div>
       )}
-    </InsightsPageShell>
+    </div>
+      </InsightsPageShell>
   );
 }

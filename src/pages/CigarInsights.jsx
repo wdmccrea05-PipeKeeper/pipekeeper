@@ -1,3 +1,4 @@
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -356,14 +357,15 @@ function CigarInsightsInner() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <InsightsPageShell>
-      <CigarKeeperModuleNav currentPageName="CigarInsights" />
-      <InsightsHeader
+    <InsightsPageShell variant="paper">
+      <div className="ck-module-nav-surface"><CigarKeeperModuleNav currentPageName="CigarInsights" /></div>
+      <InsightsHeader variant="paper"
         title="CigarKeeper Insights"
         subtitle="Analytics and trends from your cigar collection and sessions"
       />
 
       <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.cigarkeeper} />
+        <div className="ck-insights-detail space-y-6">
 
       <CollectionQueryError
         isError={hasQueryError}
@@ -390,7 +392,7 @@ function CigarInsightsInner() {
                     value={[topValueCigar.cigar.brand, topValueCigar.cigar.name].filter(Boolean).join(' ')}
                     subtitle={formatFromBase(topValueCigar.valuation.estimatedTotalValue || 0)}
                     accent="#D4A574"
-                    photo={topValueCigar.cigar.photos?.[0]}
+                    photos={getHighlightPhotos(topValueCigar.cigar)}
                   />
                 )}
                 {favCigar && (
@@ -399,7 +401,7 @@ function CigarInsightsInner() {
                     value={[favCigar.brand, favCigar.name].filter(Boolean).join(' ')}
                     subtitle={favCigar.wrapper ? `Wrapper: ${favCigar.wrapper}` : undefined}
                     accent="#f87171"
-                    photo={favCigar.photos?.[0]}
+                    photos={getHighlightPhotos(favCigar)}
                   />
                 )}
                 {lowStockFav && (
@@ -408,7 +410,7 @@ function CigarInsightsInner() {
                     value={[lowStockFav.brand, lowStockFav.name].filter(Boolean).join(' ')}
                     subtitle={`${Number(lowStockFav.singles_equivalent ?? lowStockFav.quantity ?? 0)} cigars left`}
                     accent="#E0B450"
-                    photo={lowStockFav.photos?.[0]}
+                    photos={getHighlightPhotos(lowStockFav)}
                   />
                 )}
                 {mostSmokedCigar && (
@@ -417,7 +419,7 @@ function CigarInsightsInner() {
                     value={[mostSmokedCigar.brand, mostSmokedCigar.name].filter(Boolean).join(' ')}
                     subtitle={`${sessionCountByCigarId[mostSmokedCigar.id] || 0} sessions logged`}
                     accent="#B48C4B"
-                    photo={mostSmokedCigar.photos?.[0]}
+                    photos={getHighlightPhotos(mostSmokedCigar)}
                   />
                 )}
                 {readinessSummary.readyNow > 0 && (
@@ -760,7 +762,8 @@ function CigarInsightsInner() {
           />
         )
       )}
-    </InsightsPageShell>
+    </div>
+      </InsightsPageShell>
   );
 }
 

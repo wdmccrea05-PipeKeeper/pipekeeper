@@ -1,3 +1,4 @@
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -15,7 +16,6 @@ import { useCurrency } from '@/lib/currency/useCurrency';
 import AddFlowModal from '@/components/addflow/AddFlowModal';
 import { QUERY_KEYS, STALE_TIME } from '@/lib/queryKeys';
 import {
-  getWinePrimaryImage,
   getWineTotalValue,
   getWineDisplayName,
   getWineProducer,
@@ -119,7 +119,7 @@ function WineKeeperInner() {
           ? `${getWineProducer(mostVal)}${mostVal.vintage ? ` · ${mostVal.vintage}` : ''}`
           : mostVal.vintage || formatFromBase(mostVal._tv),
         accent: '#8B3A3A',
-        photo: getWinePrimaryImage(mostVal),
+        photos: getHighlightPhotos(mostVal),
         onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(mostVal.id)}`),
       });
     }
@@ -140,7 +140,7 @@ function WineKeeperInner() {
         value: getWineDisplayName(dw),
         subtitle: [getWineProducer(dw), dw.vintage].filter(Boolean).join(' · ') || t('wine.drinkingNowSubtitle'),
         accent: '#2E7D5C',
-        photo: getWinePrimaryImage(dw),
+        photos: getHighlightPhotos(dw),
         onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(dw.id)}`),
       });
     }
@@ -154,7 +154,7 @@ function WineKeeperInner() {
         value: getWineDisplayName(rated[0]),
         subtitle: `★ ${rated[0].rating}/5${getWineProducer(rated[0]) ? ` · ${getWineProducer(rated[0])}` : ''}`,
         accent: '#8B4B6B',
-        photo: getWinePrimaryImage(rated[0]),
+        photos: getHighlightPhotos(rated[0]),
         onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(rated[0].id)}`),
       });
     }
@@ -193,7 +193,7 @@ function WineKeeperInner() {
           value: producer,
           subtitle: `${count} ${count === 1 ? t('wine.bottleSingular', 'bottle') : t('wine.bottlePlural', 'bottles')}`,
           accent: '#7B5EA7',
-          photo: getWinePrimaryImage(sample),
+          photos: getHighlightPhotos(sample),
           onClick: () => navigate('/Wines'),
         });
       }
@@ -209,7 +209,7 @@ function WineKeeperInner() {
           value: getWineDisplayName(favorites[0]),
           subtitle: getWineProducer(favorites[0]) || '',
           accent: '#8B3A3A',
-          photo: getWinePrimaryImage(favorites[0]),
+          photos: getHighlightPhotos(favorites[0]),
           onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(favorites[0].id)}`),
         });
       }
@@ -226,7 +226,7 @@ function WineKeeperInner() {
           value: getWineDisplayName(recent),
           subtitle: getWineProducer(recent) || (recent.vintage ? String(recent.vintage) : ''),
           accent: '#3A6B8B',
-          photo: getWinePrimaryImage(recent),
+          photos: getHighlightPhotos(recent),
           onClick: () => navigate(`/Wines?highlight=${encodeURIComponent(recent.id)}`),
         });
       }

@@ -1,3 +1,4 @@
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
@@ -132,14 +133,15 @@ export default function PipeKeeperInsights() {
   );
 
   return (
-    <InsightsPageShell>
-      <PipeKeeperModuleNav currentPageName="PipeKeeperInsights" />
-      <InsightsHeader
+    <InsightsPageShell variant="paper">
+      <div className="ck-module-nav-surface"><PipeKeeperModuleNav currentPageName="PipeKeeperInsights" /></div>
+      <InsightsHeader variant="paper"
         title={t('pipekeeper.insightsTitle', 'Pipe Collection Insights')}
         subtitle={t('pipekeeper.insightsSubtitle', 'Analytics and trends from your pipe collection and smoking sessions')}
       />
 
       <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="ck-insights-detail space-y-6">
 
       <CollectionQueryError
         isError={hasQueryError}
@@ -164,7 +166,7 @@ export default function PipeKeeperInsights() {
                   value={mostSmoked.pipe.name || mostSmoked.pipe.maker || 'Unnamed'}
                   subtitle={`${mostSmoked.count} bowl${mostSmoked.count !== 1 ? 's' : ''}`}
                   accent="#B48C4B"
-                  photo={mostSmoked.pipe.photos?.[0] || null}
+                  photos={getHighlightPhotos(mostSmoked.pipe)}
                 />
               )}
               {mostValuedPipe && mostValuedPipe.purchase_price > 0 && (
@@ -173,7 +175,7 @@ export default function PipeKeeperInsights() {
                   value={mostValuedPipe.name || mostValuedPipe.maker || 'Unnamed'}
                   subtitle={formatFromBase(Number(mostValuedPipe.purchase_price))}
                   accent="#C0392B"
-                  photo={mostValuedPipe.photos?.[0] || null}
+                  photos={getHighlightPhotos(mostValuedPipe)}
                 />
               )}
               {favBlend && (
@@ -292,6 +294,7 @@ export default function PipeKeeperInsights() {
           emptyLabel="No sessions logged for this day."
         />
       )}
-    </InsightsPageShell>
+    </div>
+      </InsightsPageShell>
   );
 }

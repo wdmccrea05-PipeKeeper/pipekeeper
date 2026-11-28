@@ -56,12 +56,14 @@ export function InsightsHeader({ title, subtitle, variant = 'dark' }) {
 export function InsightsTabBar({ tabs, activeTab, onTabChange, activeAccent = MODULE_GOLD }) {
   return (
     <div
-      className="flex gap-1 flex-wrap"
+      className="ck-insights-tabs flex gap-1 flex-wrap"
       style={{ borderBottom: `1px solid ${BORDER_GOLD_MEDIUM}` }}
     >
       {tabs.map(({ key, label }) => (
         <button
           key={key}
+          type="button"
+          aria-pressed={activeTab === key}
           onClick={() => onTabChange(key)}
           className="px-4 py-2 rounded-t-lg font-medium transition-all text-sm"
           style={{
@@ -92,7 +94,7 @@ export function InsightsKpiGrid({ children }) {
 export function InsightStatCard({ label, value, sub, icon: Icon, accent = '#D4A574' }) {
   return (
     <div
-      className="rounded-xl p-4 flex flex-col gap-2"
+      className="ck-insights-stat rounded-xl p-4 flex flex-col gap-2"
       style={{
         background: CARD_BG,
         border: `1px solid ${CARD_BORDER_GOLD}`,

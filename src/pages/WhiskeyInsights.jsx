@@ -1,3 +1,4 @@
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import React, { useState, useMemo, useCallback } from 'react';
 import jsPDF from 'jspdf';
 import LockedModuleGuard from '@/components/modules/LockedModuleGuard';
@@ -198,25 +199,26 @@ export default function WhiskeyInsightsPage() {
   if (bottles.length === 0 && tastingLogs.length === 0 && inventoryUnits.length === 0 && !isDataLoading) {
     return (
       <LockedModuleGuard moduleKey="whiskeykeeper">
-        <div className="space-y-6">
-          <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
-          <InsightsHeader title={t('whiskeykeeper.insightsTitle', 'WhiskeyKeeper Insights')} subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')} />
+        <InsightsPageShell variant="paper">
+          <div className="ck-module-nav-surface"><WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" /></div>
+          <InsightsHeader variant="paper" title={t('whiskeykeeper.insightsTitle', 'WhiskeyKeeper Insights')} subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')} />
           <InsightsEmptyState message="Add bottles to reveal trends, value, and opportunities." />
-        </div>
+        </InsightsPageShell>
       </LockedModuleGuard>
     );
   }
 
   return (
     <LockedModuleGuard moduleKey="whiskeykeeper">
-      <InsightsPageShell>
-        <WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" />
-        <InsightsHeader
+      <InsightsPageShell variant="paper">
+        <div className="ck-module-nav-surface"><WhiskeyKeeperModuleNav currentPageName="WhiskeyInsights" /></div>
+        <InsightsHeader variant="paper"
           title={t('whiskeykeeper.insightsTitle', 'WhiskeyKeeper Insights')}
           subtitle={t('whiskeykeeper.insightsSubtitle', 'Analyze your whiskey collection')}
         />
 
         <InsightsTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} activeAccent={MODULE_ACCENTS.whiskeykeeper} />
+        <div className="ck-insights-detail space-y-6">
 
         <CollectionQueryError
           isError={hasQueryError}
@@ -238,10 +240,10 @@ export default function WhiskeyInsightsPage() {
 
             <InsightsHighlightGrid>
               {mostTastedBottle && (
-                <InsightsHighlightCard title={t('insights.mostTastedBottle', 'Most Tasted Bottle')} value={mostTastedBottle.name} subtitle={`${mostTastedBottle.count} tastings`} accent="#C87941" photo={mostTastedBottle.photo} />
+                <InsightsHighlightCard title={t('insights.mostTastedBottle', 'Most Tasted Bottle')} value={mostTastedBottle.name} subtitle={`${mostTastedBottle.count} tastings`} accent="#C87941" photos={getHighlightPhotos(mostTastedBottle)} />
               )}
               {mostValuedBottle && (
-                <InsightsHighlightCard title={t('insights.mostValuedBottle', 'Most Valued Bottle')} value={mostValuedBottle.name} subtitle={formatCurrency(getBottleValue(mostValuedBottle))} accent="#C0392B" photo={mostValuedBottle.photo} />
+                <InsightsHighlightCard title={t('insights.mostValuedBottle', 'Most Valued Bottle')} value={mostValuedBottle.name} subtitle={formatCurrency(getBottleValue(mostValuedBottle))} accent="#C0392B" photos={getHighlightPhotos(mostValuedBottle)} />
               )}
               {oldestBottle && (
                 <InsightsHighlightCard
@@ -249,7 +251,7 @@ export default function WhiskeyInsightsPage() {
                   value={oldestBottle.name}
                   subtitle={oldestBottle.purchase_date && !Number.isNaN(new Date(oldestBottle.purchase_date).getTime()) ? new Date(oldestBottle.purchase_date).getFullYear().toString() : 'Unknown'}
                   accent="#10B981"
-                  photo={oldestBottle.photo}
+                  photos={getHighlightPhotos(oldestBottle)}
                 />
               )}
             </InsightsHighlightGrid>
@@ -426,6 +428,7 @@ export default function WhiskeyInsightsPage() {
             </div>
           </InsightPanel>
         )}
+      </div>
       </InsightsPageShell>
     </LockedModuleGuard>
   );

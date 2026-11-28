@@ -369,3 +369,21 @@ body {
   min-width: 0;
   max-width: 100%;
 }
+.ck-paper-workspace .ck-insights-tabs button {
+  color: var(--ck-paper-muted) !important;
+  min-height: 44px;
+}
+.ck-paper-workspace .ck-insights-tabs button[aria-pressed="true"] {
+  color: var(--ck-espresso) !important;
+  background: #eadbc3 !important;
+  border-bottom-color: var(--ck-paper-action) !important;
+}
+.ck-insights-detail {
+  background: #201612;
+  color: var(--ck-text);
+  padding: clamp(0.75rem, 2vw, 1.25rem);
+  border-radius: var(--ck-radius-md);
+}
+.ck-insights-detail .ck-insights-stat p {
+  color: #f3e8db !important;
+}
