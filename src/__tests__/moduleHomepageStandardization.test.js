@@ -123,9 +123,9 @@ describe('Module homepage standardization', () => {
       expect(src, 'WineKeeper must use getWineProducer').toContain('getWineProducer');
     });
 
-    it('WineKeeper uses getWinePrimaryImage selector', () => {
+    it('WineKeeper uses getHighlightPhotos selector', () => {
       const src = readPage('WineKeeper.jsx');
-      expect(src, 'WineKeeper must use getWinePrimaryImage').toContain('getWinePrimaryImage');
+      expect(src, 'WineKeeper must use getHighlightPhotos').toContain('getHighlightPhotos');
     });
   });
 

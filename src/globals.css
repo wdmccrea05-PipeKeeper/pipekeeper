@@ -3,20 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --ck-nav-bg: #2b1017;
-  --ck-nav-text: #f1e7db;
-  --ck-nav-icon: #dfb77e;
-  --ck-paper-muted: #59463a;
-  --ck-paper-action: #67411e;
+  --ck-nav-bg: #242729;
+  --ck-nav-text: #f4f3ef;
+  --ck-nav-icon: #d8bc87;
+  --ck-paper-muted: #494d4e;
+  --ck-paper-action: #514323;
   --ck-nav-border: rgba(180, 140, 75, 0.35);
-  --ck-parchment: #f3ead7;
-  --ck-espresso: #34251d;
+  --ck-parchment: #eae9e4;
+  --ck-espresso: #282b2d;
   --ck-antique-brass: #a77c3f;
   --ck-font-display: "Cormorant Garamond", Georgia, serif;
   --ck-font-ui: "Instrument Sans", Inter, ui-sans-serif, system-ui, sans-serif;
 
   /* ── Backgrounds ── */
-  --ck-bg-0: #140f0c;
+  --ck-bg-0: #242729;
   --ck-bg-1: #1d1511;
   --ck-bg-2: #241913;
 
@@ -87,7 +87,7 @@ html {
 
 body {
   min-height: 100%;
-  background-color: #140f0c;
+  background-color: #242729;
 }
 
 #root {
@@ -189,14 +189,14 @@ body {
 
 .ck-paper-panel {
   color: var(--ck-espresso);
-  background: #fbf5e9;
+  background: #f5f4f0;
 }
 
 .ck-module-nav-surface {
   padding: 0.5rem;
   border: 1px solid rgba(167, 124, 63, 0.28);
   border-radius: var(--ck-radius-md);
-  background: #34251d;
+  background: #282b2d;
 }
 
 .ck-module-home .ck-module-nav-surface > div {
@@ -375,11 +375,11 @@ body {
 }
 .ck-paper-workspace .ck-insights-tabs button[aria-pressed="true"] {
   color: var(--ck-espresso) !important;
-  background: #eadbc3 !important;
+  background: #dcd9cf !important;
   border-bottom-color: var(--ck-paper-action) !important;
 }
 .ck-insights-detail {
-  background: #201612;
+  background: #292c2e;
   color: var(--ck-text);
   padding: clamp(0.75rem, 2vw, 1.25rem);
   border-radius: var(--ck-radius-md);
