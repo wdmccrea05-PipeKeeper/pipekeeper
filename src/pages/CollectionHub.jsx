@@ -504,8 +504,8 @@ export default function CollectionHub() {
               onClick={() => setShowLogSelector(true)}
               className="flex items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold"
               style={{
-                background: 'linear-gradient(135deg, rgba(200,151,82,0.92), rgba(163,110,52,0.92))',
-                color: '#1a1109',
+                background: '#303436',
+                color: '#f4f3ef',
                 minHeight: 44,
               }}
             >

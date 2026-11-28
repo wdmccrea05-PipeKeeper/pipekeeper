@@ -138,7 +138,7 @@ export function InsightPanel({ children, className = '' }) {
     <div
       className={`rounded-2xl p-5 ${className}`}
       style={{
-        background: 'linear-gradient(135deg, rgba(42,31,24,0.5), rgba(31,21,16,0.5))',
+        background: '#303436',
         border: `1px solid ${CARD_BORDER_GOLD}`,
       }}
     >
@@ -169,7 +169,7 @@ export function InsightsChartTooltip({ active, payload, label, valueFormatter })
   return (
     <div
       className="rounded-xl px-3 py-2 text-sm"
-      style={{ background: 'rgba(40,28,18,0.98)', border: `1px solid ${BORDER_GOLD_MEDIUM}`, color: TEXT_PRIMARY }}
+      style={{ background: '#292c2e', border: `1px solid ${BORDER_GOLD_MEDIUM}`, color: TEXT_PRIMARY }}
     >
       <p className="font-semibold">{resolvedLabel}</p>
       <p style={{ color: MODULE_GOLD }}>{resolvedValue}</p>
@@ -205,7 +205,7 @@ export function InsightsEmptyState({ message = 'No data yet. Add items to see in
     <div
       className="rounded-2xl p-12 text-center"
       style={{
-        background: 'linear-gradient(145deg, rgba(38,22,12,0.65) 0%, rgba(25,15,10,0.9) 100%)',
+        background: '#303436',
         border: `1px solid ${CARD_BORDER_GOLD}`,
       }}
     >

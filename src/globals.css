@@ -17,11 +17,11 @@
 
   /* ── Backgrounds ── */
   --ck-bg-0: #242729;
-  --ck-bg-1: #1d1511;
-  --ck-bg-2: #241913;
+  --ck-bg-1: #292c2e;
+  --ck-bg-2: #303436;
 
   /* ── Surfaces ── */
-  --ck-surface-1: rgba(42, 31, 24, 0.96);
+  --ck-surface-1: #303436;
   --ck-surface-2: rgba(255, 255, 255, 0.05);
   --ck-surface-3: rgba(255, 255, 255, 0.075);
 
