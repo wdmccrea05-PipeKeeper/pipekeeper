@@ -132,6 +132,13 @@
       },
       "description": "Flavor characteristics"
     },
+    "flavor_profile": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Flavor profile chosen in the tobacco form. Saved alongside flavor_notes."
+    },
     "tin_size_oz": {
       "type": "number",
       "description": "Size of individual tin in ounces"
@@ -235,9 +242,21 @@
       "maxItems": 2,
       "description": "URLs of blend label photos (max 2)"
     },
+    "photo": {
+      "type": "string",
+      "description": "Primary blend photo URL, used as a fallback when no label photo or logo is set"
+    },
     "logo": {
       "type": "string",
       "description": "URL of manufacturer/blend logo or label image"
+    },
+    "image_source_type": {
+      "type": "string",
+      "description": "How the record's image was obtained (user upload, suggestion, logo library)"
+    },
+    "image_verified_by_user": {
+      "type": "boolean",
+      "description": "Whether the collector confirmed the image attached to this record"
     },
     "is_favorite": {
       "type": "boolean",

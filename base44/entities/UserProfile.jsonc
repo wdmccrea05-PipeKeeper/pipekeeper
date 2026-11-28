@@ -6,6 +6,10 @@
       "type": "string",
       "description": "User's email"
     },
+    "user_id": {
+      "type": "string",
+      "description": "Base44 account id of the profile owner. Written by the profile and module-visibility saves and used by the canonical profile lookup."
+    },
     "display_name": {
       "type": "string",
       "description": "Public display name"

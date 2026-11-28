@@ -31,6 +31,10 @@
       "type": "string",
       "description": "Legacy: Stripe subscription ID (use provider_subscription_id instead)"
     },
+    "price_id": {
+      "type": "string",
+      "description": "Provider price identifier the subscription is billed at (Stripe price ID). Used to resolve the granted modules."
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -88,6 +92,10 @@
       "type": "number",
       "description": "Subscription amount in USD"
     },
+    "renewal_amount": {
+      "type": "number",
+      "description": "Amount the subscription renews at, in the account currency"
+    },
     "billing_interval": {
       "type": "string",
       "enum": [
@@ -95,6 +103,10 @@
         "year"
       ],
       "description": "Billing interval - monthly or yearly"
+    },
+    "billing_period": {
+      "type": "string",
+      "description": "Billing period recorded by the provider (month or year), kept alongside billing_interval"
     },
     "product_id": {
       "type": "string",
@@ -115,6 +127,10 @@
     "product_kind": {
       "type": "string",
       "description": "Product kind: single, founders, bundle_3, bundle_4"
+    },
+    "bundle_name": {
+      "type": "string",
+      "description": "Human-readable bundle name recorded with the subscription, used when resolving granted modules"
     },
     "checkout_type": {
       "type": "string",

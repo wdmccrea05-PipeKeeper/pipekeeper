@@ -200,19 +200,6 @@ Deno.serve(async (req) => {
       return null;
     }
 
-    function productLabelFromKey(key: string | null, modules: string[]): string {
-      if (!key) return modules.length > 0 ? modules[0] : 'Unknown';
-      if (key.includes('founders')) return 'Founders Bundle (PK+WK)';
-      if (key.includes('three_module')) return '3-Module Bundle';
-      if (key.includes('four_module')) return '4-Module Bundle';
-      const m = modules[0];
-      if (m === 'pipekeeper') return 'PipeKeeper';
-      if (m === 'whiskeykeeper') return 'WhiskeyKeeper';
-      if (m === 'cigarkeeper') return 'CigarKeeper';
-      if (m === 'winekeeper') return 'WineKeeper';
-      return modules[0] || 'Unknown';
-    }
-
     // Upsert each qualifying Stripe subscription row
     const modulesBySubscription = new Map<string, string[]>();
     for (const candidate of candidates) {
@@ -248,7 +235,7 @@ Deno.serve(async (req) => {
         price_id: priceId,
         status: mapStripeStatus(subscription.status),
         tier: subHasPaidAccess ? 'pro' : 'free',
-        planKey,
+        plan_key: planKey,
         current_period_start: currentPeriodStart,
         current_period_end: currentPeriodEnd,
         billing_interval: billingIntervalRaw,
@@ -258,7 +245,6 @@ Deno.serve(async (req) => {
         product_kind: productKind,
         primary_module: subModules[0] || null,
         bundle_name: bundleName,
-        product_label: productLabelFromKey(planKey, subModules),
         checkout_type: subscription.metadata?.checkout_type || (isBundle ? `bundle_${subModules.length}` : 'single_module'),
         renewal_amount: renewalAmount,
         updated_date: new Date().toISOString(),

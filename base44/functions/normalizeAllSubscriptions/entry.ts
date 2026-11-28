@@ -217,7 +217,7 @@ async function resolveCanonical(raw, priceMap, stripe) {
   const needsPatch =
     (modules.length > 0 && existingModules !== modulesCsv) ||
     (interval && raw.billing_interval !== interval && raw.billing_interval !== 'month' && raw.billing_interval !== 'year') ||
-    (planKey && raw.planKey !== planKey) ||
+    (planKey && raw.plan_key !== planKey) ||
     (productKind !== 'unknown' && raw.product_kind !== productKind) ||
     (finalAmount && (!raw.amount || Number(raw.amount) === 0)) ||
     // Always patch if modules are still missing regardless of other fields
@@ -226,7 +226,7 @@ async function resolveCanonical(raw, priceMap, stripe) {
   if (!needsPatch) return null;
 
   const patch = {
-    ...(planKey      ? { planKey }                        : {}),
+    ...(planKey      ? { plan_key: planKey }              : {}),
     ...(modulesCsv   ? { modules_csv: modulesCsv }        : {}),
     ...(modules[0]   ? { primary_module: modules[0] }     : {}),
     ...(modules.length > 0 ? { module_count: modules.length } : {}),
