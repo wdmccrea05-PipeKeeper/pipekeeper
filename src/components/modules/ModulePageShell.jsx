@@ -150,7 +150,7 @@ export default function ModulePageShell({
               className="text-2xl sm:text-4xl font-bold tracking-tight leading-tight"
               style={{
                 color: '#F5F1E7',
-                fontFamily: "'Georgia', serif",
+                fontFamily: 'var(--ck-font-display)',
                 textShadow: '0 2px 6px rgba(0,0,0,0.6)',
               }}
             >

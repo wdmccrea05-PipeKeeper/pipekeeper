@@ -12,6 +12,40 @@ Status values: `done` · `in-progress` · `blocked` · `planned`
 
 ---
 
+## Draft continuation — Curator handoffs and shared typography
+
+This increment was implemented and validated on the PR branch from
+`a710509d2c5a2d98f39c390b38ce516d34fcc56e`; the new commit is pending the
+normal commit hook.
+
+| Area | Change and evidence | Remaining gap |
+|---|---|---|
+| Collection Health → Curator | Each finding group now offers a localized Curator action. Clicking it opens the single Curator workspace with the group and a prefilled, unsent prompt; the group review action still opens its exact records. An interaction test checks the destination and prompt, and verifies Spanish copy. | No live collection or authorized preview was available to verify that Curator's response identifies the same underlying records. |
+| Curator help | New FAQ, how-to and troubleshooting questions are handled in the live send path, with links to the existing `FAQFull`, `HowTo` and `TroubleshootingFull` pages. Existing targeted CSV import and duplicate-review routes remain. Regression tests cover link targets, restored help links, import ambiguity, report intent, and a deterministic “How many…” query. | Responses are concise route guidance, not a fully sourced answer engine; contextual forms/settings, diagnostic execution and complete import reconciliation are still open. Import execution is not idempotent on server retries. |
+| Shared visual system | Added Cormorant Garamond / Instrument Sans font tokens and loaded the fonts with system fallbacks. Shared module and insights headings now consume the display token; body text and controls use the UI stack. | The parchment workspace, full hub/Curator/Health/module facelift, CigarKeeper comparison and desktop/mobile screenshot review remain incomplete. |
+
+Validation on the working tree after the above changes:
+
+- `NODE_OPTIONS=--no-experimental-webstorage timeout 300s npm test`: **230 test
+  files, 3,805 passed, 0 failed or skipped**.
+- `npm run build`: **passed**. Existing Vite chunk warnings remain; Base44
+  app-id and proxy URL are unset, so the build cannot make Base44 API calls.
+- `npm run lint` and `npm run typecheck`: **passed**.
+- `npm run i18n:check -- --max-findings=2666`: **passed**, 2,574 findings;
+  configured budget and exclusions unchanged.
+- Focused handoff tests: **9 passed** across Curator chat routing, guidance
+  restore, Spanish action text and the 240-finding Collection Health view.
+- The test suite regenerates certification snapshots; generated-only changes
+  were restored and are not part of this increment.
+
+No authorized Base44 preview or test accounts are configured (`VITE_BASE44_APP_ID`
+and `VITE_BASE44_APP_BASE_URL` are absent). Two-account read/write isolation,
+persisted imports/actions, entitlements, browser acceptance and desktop/mobile
+screenshots remain blocked. Core entity RLS, retry-safe import execution and the
+full approved visual treatment remain release blockers. Keep PR #511 in draft.
+
+---
+
 ## Draft continuation — release remains blocked
 
 The continuation starts from PR head `b0e6fac2ab21e7007d3228d83b110e2fd302fe5b`.

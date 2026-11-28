@@ -57,6 +57,7 @@ const collectionIntelligence = {
   viewPairings: "View Pairings",
   viewOptimization: "View Analysis",
   askCurator: "Ask Curator",
+  reviewFindingsPrompt: "Help me review the {group} findings in Collection Health and choose a safe next step.",
   exploreCurator: "Explore with Curator",
   reviewOnePipe: "Review 1 Pipe",
   reviewPipes: "Review {count} Pipes",

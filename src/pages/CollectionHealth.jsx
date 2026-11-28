@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useCurrentUser } from '@/components/hooks/useCurrentUser';
 import { useEnabledModules } from '@/components/hooks/useEnabledKeeperModules';
+import { useTranslation } from '@/components/i18n/safeTranslation';
 import useReportCenterData from '@/components/reports/useReportCenterData';
 import { InsightsHeader, InsightsPageShell } from '@/components/insights/InsightsShell';
 import StatStrip from '@/components/ui/StatStrip';
@@ -67,6 +68,7 @@ function Chip({ active, children, onClick }) {
  * collector's own information open the record instead.
  */
 export default function CollectionHealth() {
+  const { t } = useTranslation();
   const { user } = useCurrentUser();
   const { enabled, isLoading: modulesLoading } = useEnabledModules();
   const { states, setState, error: stateError } = useFindingStates(user);
@@ -224,15 +226,26 @@ export default function CollectionHealth() {
           {!isLoading && (
             <section aria-label="Finding groups" className="space-y-2">
               {FINDING_TYPES.filter((type) => summary.byType[type.key] > 0).map((type) => (
-                <button
-                  type="button"
+                <div
                   key={type.key}
-                  onClick={() => { setTypeFilter(type.key); setShowDetails(true); }}
-                  className="w-full rounded-xl px-4 py-3 text-left min-h-[44px]"
+                  className="rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-2"
                   style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(180,140,75,0.18)', color: '#F5F1E7' }}
                 >
-                  {type.label}: {summary.byType[type.key]} <span style={{ color: TEXT_SECONDARY }}>· {['storage', 'documentation', 'valuation'].includes(type.key) ? 'Optional information' : 'Review'} · View records</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => { setTypeFilter(type.key); setShowDetails(true); }}
+                    className="text-left min-h-[44px] flex-1"
+                  >
+                    {type.label}: {summary.byType[type.key]} <span style={{ color: TEXT_SECONDARY }}>· {['storage', 'documentation', 'valuation'].includes(type.key) ? 'Optional information' : 'Review'} · View records</span>
+                  </button>
+                  <Link
+                    to={`/Curator?findingType=${encodeURIComponent(type.key)}&prompt=${encodeURIComponent(t('collectionIntelligence.reviewFindingsPrompt', { group: type.label }))}`}
+                    className="inline-flex items-center justify-center rounded-lg px-3 text-sm font-semibold min-h-[44px]"
+                    style={{ color: '#E8D3A8', border: '1px solid rgba(198,161,91,0.35)' }}
+                  >
+                    {t('collectionIntelligence.askCurator')}
+                  </Link>
+                </div>
               ))}
             </section>
           )}

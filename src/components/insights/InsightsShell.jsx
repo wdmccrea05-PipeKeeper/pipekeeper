@@ -37,7 +37,7 @@ export function InsightsHeader({ title, subtitle }) {
         className="text-3xl sm:text-4xl font-bold tracking-tight mb-2 break-words"
         style={{
           color: TEXT_PRIMARY,
-          fontFamily: "'Georgia', serif",
+          fontFamily: 'var(--ck-font-display)',
           textShadow: '0 2px 6px rgba(0,0,0,0.7)',
         }}
       >
@@ -150,7 +150,7 @@ export function InsightSectionHeading({ children, accent }) {
   return (
     <h3
       className="text-base font-semibold mb-3"
-      style={{ color: accent || TEXT_PRIMARY, fontFamily: "'Georgia', serif" }}
+      style={{ color: accent || TEXT_PRIMARY, fontFamily: 'var(--ck-font-display)' }}
     >
       {children}
     </h3>

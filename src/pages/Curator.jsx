@@ -54,6 +54,10 @@ export default function CuratorPage() {
     const s = params.get('surface');
     return s && ALL_VALID_KEYS.has(s) ? s : 'chat';
   })();
+  const initialPrompt = (() => {
+    const prompt = new URLSearchParams(window.location.search).get('prompt') || '';
+    return prompt.trim().slice(0, 800);
+  })();
 
   const [surface, setSurface] = useState(initialSurface);
 
@@ -120,6 +124,7 @@ export default function CuratorPage() {
           activeSurface={surface}
           onSurfaceChange={setSurface}
           onCountsChange={handleCountsChange}
+          initialPrompt={initialPrompt}
         />
 
         {surface === 'chat' ? (
