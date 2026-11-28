@@ -22,19 +22,37 @@ export default function InventoryMigrator() {
         const bottles = await base44.entities.Bottle.filter({ created_by: user.email });
         const unmigrated = bottles.filter(b => !b.inventory_migrated && (b.bottle_count || 1) >= 1);
 
+        // One batched read for the inventory units of every bottle being checked
+        const bottleIdsWithUnits = new Set();
+        const bottleIds = unmigrated.map((b) => b.id);
+        if (bottleIds.length > 0) {
+          let cursor = null;
+          do {
+            const page = await base44.entities.WhiskeyInventoryUnit.filter(
+              { bottle_id: { $in: bottleIds } },
+              { limit: 5000, ...(cursor ? { cursor } : {}) }
+            );
+            const units = page?.items || [];
+            units.forEach((u) => bottleIdsWithUnits.add(u.bottle_id));
+            cursor = page?.has_more ? page.next_cursor : null;
+          } while (cursor);
+        }
+
+        const bottleUpdates = [];
+
         for (const bottle of unmigrated) {
           if (cancelled) break;
           const count = Number(bottle.bottle_count) || 1;
           const hasOpen = bottle.fill_level && bottle.fill_level !== 'Full' && bottle.fill_level !== 'Empty';
+          const migratedValues = {
+            inventory_migrated: true,
+            average_market_value: bottle.average_market_value || bottle.purchase_price || null,
+          };
 
           // Check if any inventory units already exist for this bottle
-          const existing = await base44.entities.WhiskeyInventoryUnit.filter({ bottle_id: bottle.id });
-          if (existing.length > 0) {
+          if (bottleIdsWithUnits.has(bottle.id)) {
             // Already has units, just mark migrated
-            await base44.entities.Bottle.update(bottle.id, {
-              inventory_migrated: true,
-              average_market_value: bottle.average_market_value || bottle.purchase_price || null,
-            });
+            bottleUpdates.push({ id: bottle.id, ...migratedValues });
             continue;
           }
 
@@ -75,10 +93,12 @@ export default function InventoryMigrator() {
           }
 
           await base44.entities.WhiskeyInventoryUnit.bulkCreate(units);
-          await base44.entities.Bottle.update(bottle.id, {
-            inventory_migrated: true,
-            average_market_value: bottle.average_market_value || bottle.purchase_price || null,
-          });
+          bottleUpdates.push({ id: bottle.id, ...migratedValues });
+        }
+
+        // One batched write per 500 bottles instead of one request per bottle
+        for (let i = 0; i < bottleUpdates.length; i += 500) {
+          await base44.entities.Bottle.bulkUpdate(bottleUpdates.slice(i, i + 500));
         }
 
         if (!cancelled) {

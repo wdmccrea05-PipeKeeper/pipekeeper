@@ -180,9 +180,12 @@ export default function MessagingPanel({ user, friends, publicProfiles, allowNew
     let cancelled = false;
     (async () => {
       try {
-        await Promise.all(
-          unreadMessages.map((m) => base44.entities.Message.update(m.id, { is_read: true }))
-        );
+        // One batched write per 500 messages instead of one request per message
+        for (let i = 0; i < unreadMessages.length; i += 500) {
+          await base44.entities.Message.bulkUpdate(
+            unreadMessages.slice(i, i + 500).map((m) => ({ id: m.id, is_read: true }))
+          );
+        }
         if (!cancelled) {
           queryClient.invalidateQueries({ queryKey: ['messages', userEmail] });
         }
