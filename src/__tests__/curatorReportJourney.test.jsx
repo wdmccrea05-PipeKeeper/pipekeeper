@@ -81,9 +81,9 @@ function LocationOutput() {
   return <output data-testid="location">{pathname}{search}</output>;
 }
 
-function renderJourney() {
+function renderJourney(path = '/Curator') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  window.history.replaceState({}, '', '/Curator');
+  window.history.replaceState({}, '', path);
   return render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -151,6 +151,21 @@ describe('Curator report controls', () => {
     Object.entries(mocks.entities).forEach(([name, entity]) => {
       if (name !== 'Pipe') entity.filter.mockResolvedValue([]);
     });
+  });
+
+  it('replaces the catalog with the selected report and returns to the catalog', async () => {
+    renderJourney('/ReportingCenter?module=pipe');
+    const catalog = screen.getByRole('navigation', { name: 'Report catalogue' });
+    expect(screen.queryByRole('button', { name: 'CSV' })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: /Collection Overview/ }));
+    expect(window.location.search).toBe('?module=pipe&report=overview');
+    expect(catalog.isConnected).toBe(false);
+    await screen.findByRole('heading', { name: 'Collection Overview' });
+
+    fireEvent.click(screen.getByRole('link', { name: 'Reports' }));
+    expect(window.location.search).toBe('?module=pipe');
+    expect(screen.getByRole('navigation', { name: 'Report catalogue' })).toBeTruthy();
   });
 
   it('opens the filtered report, exact supporting pipe, and CSV export from Curator controls', async () => {
