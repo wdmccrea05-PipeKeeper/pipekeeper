@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -57,9 +57,17 @@ export default function AdminSubscriptionRequests() {
       );
       return Array.isArray(result) ? result : [];
     },
-    staleTime: 5000,
-    refetchInterval: 10000,
+    staleTime: 30000,
   });
+
+  // New requests arrive as events, so the queue refreshes when one does
+  // instead of polling every few seconds while the screen is open.
+  useEffect(() => {
+    const unsubscribe = base44.entities.SubscriptionSupportRequest.subscribe(() => {
+      queryClient.invalidateQueries({ queryKey: ["subscription-requests"] });
+    });
+    return unsubscribe;
+  }, [queryClient]);
 
   // Grant access mutation
   const grantMutation = useMutation({
