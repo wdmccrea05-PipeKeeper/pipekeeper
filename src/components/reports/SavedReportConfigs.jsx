@@ -65,7 +65,7 @@ export default function SavedReportConfigs({ user, reportId, filters, onLoad }) 
         </h2>
       </div>
 
-      <div className="flex gap-2">
+      {reportId && <div className="flex gap-2">
         <Input
           value={name}
           onChange={(event) => setName(event.target.value)}
@@ -76,7 +76,7 @@ export default function SavedReportConfigs({ user, reportId, filters, onLoad }) 
         <Button onClick={handleSave} disabled={!email || create.isPending} style={{ minHeight: 44 }}>
           {create.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("reporting.save", "Save")}
         </Button>
-      </div>
+      </div>}
 
       {saved.isLoading ? (
         <p className="text-xs" style={{ color: TEXT_CAPTION }}>{t("reporting.loadingConfigs", "Loading…")}</p>

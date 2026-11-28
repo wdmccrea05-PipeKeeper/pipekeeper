@@ -1,5 +1,5 @@
-import React, { useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
@@ -16,7 +16,7 @@ import ReportDrilldownDialog from "@/components/reports/ReportDrilldownDialog";
 import SavedReportConfigs from "@/components/reports/SavedReportConfigs";
 import FindingsReviewPanel from "@/components/actions/FindingsReviewPanel";
 import useFindingStates from "@/hooks/useFindingStates";
-import useScrollRestoration from "@/hooks/useScrollRestoration";
+import { restoreScrollPosition, saveScrollPosition } from "@/lib/navigation/returnTo";
 import { buildFindings } from "@/lib/actions/collectionFindings";
 import CuratorReportPrompt from "@/components/reports/CuratorReportPrompt";
 import { buildReportContext, runReport, getReport } from "@/lib/reports/reportCatalog";
@@ -27,16 +27,9 @@ import { filtersForModuleParam } from "@/lib/reports/reportModuleScope";
 import { TEXT_CAPTION, TEXT_SECONDARY } from "@/lib/theme/tokens";
 import "@/components/reports/reportPrint.css";
 
-function initialFilters() {
-  const params = new URLSearchParams(window.location.search);
+function initialFilters(module) {
   const base = { ...DEFAULT_FILTERS, year: String(new Date().getFullYear()), curatorQuestion: "" };
-  return filtersForModuleParam(params.get("module"), base);
-}
-
-function initialReportId() {
-  const params = new URLSearchParams(window.location.search);
-  const requested = params.get("report");
-  return requested && getReport(requested).id === requested ? requested : "overview";
+  return filtersForModuleParam(module, base);
 }
 
 export default function ReportingCenter() {
@@ -46,27 +39,41 @@ export default function ReportingCenter() {
   const entitlements = useEntitlements();
   const { states: findingStates, setState: setFindingState, error: findingStateError } = useFindingStates(user);
 
-  useScrollRestoration("reporting");
-
-  const [filters, setFilters] = useState(initialFilters);
-  const [activeReportId, setActiveReportId] = useState(initialReportId);
+  const [params, setParams] = useSearchParams();
+  const requestedReportId = params.get("report");
+  const activeReportId = requestedReportId && getReport(requestedReportId).id === requestedReportId
+    ? requestedReportId
+    : null;
+  const [filters, setFilters] = useState(() => initialFilters(params.get("module")));
   const [exporting, setExporting] = useState(null);
   const [drill, setDrill] = useState({ open: false, title: "", ids: [] });
-  const reportRef = useRef(null);
+  const catalogScrollSaved = useRef(false);
 
-  /**
-   * Below the two-column breakpoint the catalogue sits above the report, so a
-   * selection would otherwise change something far off screen and read as a
-   * dead click. Selecting a report always brings that report into view.
-   */
+  useEffect(() => {
+    if (activeReportId) {
+      const scroller = document.querySelector("main") || document.scrollingElement;
+      if (scroller) scroller.scrollTop = 0;
+    } else if (catalogScrollSaved.current) {
+      restoreScrollPosition("report-catalog");
+    }
+  }, [activeReportId]);
+
   const selectReport = (id) => {
-    setActiveReportId(id);
-    const stacked = typeof window !== "undefined" && !window.matchMedia("(min-width: 1280px)").matches;
-    if (!stacked) return;
-    window.requestAnimationFrame(() => {
-      reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!activeReportId) {
+      saveScrollPosition("report-catalog");
+      catalogScrollSaved.current = true;
+    }
+    setDrill({ open: false, title: "", ids: [] });
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("report", id);
+      return next;
     });
   };
+
+  const catalogParams = new URLSearchParams(params);
+  catalogParams.delete("report");
+  const catalogUrl = catalogParams.size ? `?${catalogParams}` : "/ReportingCenter";
 
   const availableModules = useMemo(() => {
     const list = [];
@@ -135,7 +142,7 @@ export default function ReportingCenter() {
     [data, filters, pairing, currency]
   );
 
-  const result = useMemo(() => runReport(activeReportId, context), [activeReportId, context]);
+  const result = useMemo(() => runReport(activeReportId || "overview", context), [activeReportId, context]);
 
   // Findings for the records this report is showing, from the same builder the
   // Collection Health review uses, scoped by the report's own filters. A change
@@ -206,6 +213,7 @@ export default function ReportingCenter() {
 
   return (
     <InsightsPageShell>
+      {!activeReportId ? <>
       <InsightsHeader
         title={t("reporting.title", "Collection Intelligence and Reporting Center")}
         subtitle={t(
@@ -221,6 +229,13 @@ export default function ReportingCenter() {
         </Link>
       </p>
 
+      <ReportCatalogGrid onSelect={selectReport} />
+      <SavedReportConfigs user={user} filters={filters} onLoad={handleLoadConfig} />
+      </> : <>
+      <Link to={catalogUrl} className="no-print inline-flex min-h-11 items-center font-semibold text-[#e0c99b] underline underline-offset-4">
+        <span aria-hidden="true" className="mr-2">←</span>{t("nav.reports")}
+      </Link>
+
       {data.isError && (
         <p role="alert" className="mb-4 text-sm" style={{ color: "#E0A0A0" }}>
           {t("reporting.loadError", "Some report data could not be loaded. Counts below may be incomplete until you reload.")}
@@ -232,13 +247,7 @@ export default function ReportingCenter() {
         </p>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[320px_1fr] xl:items-start">
-        <div className="space-y-4 xl:sticky xl:top-4 xl:max-h-[calc(100dvh-6rem)] xl:overflow-y-auto no-print">
-          <ReportCatalogGrid activeReportId={activeReportId} onSelect={selectReport} />
-          <SavedReportConfigs user={user} reportId={activeReportId} filters={filters} onLoad={handleLoadConfig} />
-        </div>
-
-        <div ref={reportRef} className="min-w-0 space-y-4" style={{ scrollMarginTop: 96 }}>
+      <div className="min-w-0 space-y-4">
           <div className="no-print">
             <ReportFiltersBar
               filters={filters}
@@ -292,6 +301,8 @@ export default function ReportingCenter() {
             </>
           )}
 
+          <div className="no-print"><SavedReportConfigs user={user} reportId={activeReportId} filters={filters} onLoad={handleLoadConfig} /></div>
+
           {!isLoading && access.data && !access.data.canExport && (
             <p className="text-xs no-print" style={{ color: TEXT_CAPTION }}>
               {t(
@@ -300,7 +311,6 @@ export default function ReportingCenter() {
               )}
             </p>
           )}
-        </div>
       </div>
 
       <ReportDrilldownDialog
@@ -309,6 +319,7 @@ export default function ReportingCenter() {
         title={drill.title}
         items={drillItems}
       />
+      </>}
     </InsightsPageShell>
   );
 }
