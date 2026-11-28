@@ -21,6 +21,7 @@ import {
   formatAmbiguity,
   formatProposalSet,
 } from './curatorRecordChanges.js';
+import { appGuidance } from './curatorAppGuidance.js';
 
 const REASON_MESSAGES = {
   module_locked: 'That module is not enabled on this account, so I cannot change its records. Turn it on and I will show you the change first.',
@@ -47,6 +48,9 @@ export function routeCuratorRequest({
 
   const boundary = detectPurchaseBoundaryRequest(text);
   if (boundary) return { kind: 'message', content: BOUNDARY_REFUSAL, boundary: true };
+
+  const guidance = appGuidance(text, enabledModules);
+  if (guidance) return { kind: 'message', ...guidance };
 
   const report = detectReportRequest(text);
   if (report) return { kind: 'message', content: buildConversationalReport(context, report), report };

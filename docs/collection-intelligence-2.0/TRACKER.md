@@ -26,6 +26,15 @@ not confuse mocked checks with an authenticated Base44 preview.
 | Translation and release gate | `src/components/i18n/locales/collectionHealthBulk.jsx`, `en.migratedFallbacks.json` | The same checker reports 3,275 findings on the PR baseline and 2,574 after migrating 701 inline fallback calls. The budget and exclusions are unchanged. Existing translated keys continue to take precedence; newly added English fallbacks preserve prior behavior, but missing non-English translations remain. All 7,010 migrated call/locale combinations matched their former output; mocked English and Spanish Quick Access interactions passed. |
 | Curator, imports, reports and visual direction | Existing workspace and module pages | Full requested journeys, two-click verification, facade, navigation, visual changes and authenticated screenshots remain open. No signed-in preview or two distinct authorized test accounts were available. |
 
+Curator follow-up: `curatorAppGuidance.js` handles narrowly scoped English how-to
+questions about importing one record type or reviewing duplicates. It links directly
+to the existing CSV import type or duplicate-review tab, describes the preview
+and access limitations, and restores links for matching saved turns. Disabled
+modules link to profile instead. Mocked chat interactions verify the two direct
+links; real imports, reconciliation, backend entitlements and other FAQ,
+troubleshooting and multi-part questions remain unverified. These new guidance
+responses are English only.
+
 Core collection entity schemas still have no declared RLS; frontend filtering and
 the additional executor checks are not evidence of server-side isolation. An
 authorized Base44 preview must verify reads, writes, report exports, import batches,

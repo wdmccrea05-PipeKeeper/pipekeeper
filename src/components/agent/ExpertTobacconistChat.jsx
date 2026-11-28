@@ -34,6 +34,7 @@ import {
 import { classifyIntent } from '@/lib/curator/curatorChatIntent.js';
 import useCuratorRecordProposals from '@/components/curator/useCuratorRecordProposals.js';
 import { routeCuratorRequest } from '@/lib/curator/curatorRequestRouter.js';
+import { restoreAppGuidance } from '@/lib/curator/curatorAppGuidance.js';
 import { buildGroundingBlock } from '@/lib/curator/curatorGrounding.js';
 import { describeCuratorFailure, invokeCuratorWithTimeout as invokeCuratorRequest } from '@/lib/curator/curatorInvocation.js';
 
@@ -1727,10 +1728,11 @@ export default function ExpertTobacconistChat({
         }
         const restored = response?.data?.messages || [];
         if (!cancelled && restored.length > 0) {
-          setMessages((prev) => (prev.length > 0 ? prev : restored.map((m, index) => ({
+          setMessages((prev) => (prev.length > 0 ? prev : restoreAppGuidance(restored, activeModules).map((m, index) => ({
             id: `restored-${index}`,
             role: m.role,
             content: m.content,
+            recordLinks: m.recordLinks,
             restored: true,
           }))));
         }
@@ -1944,6 +1946,7 @@ export default function ExpertTobacconistChat({
           role: 'assistant',
           content: routed.content,
           report: routed.report || null,
+          recordLinks: routed.recordLinks || [],
         }]);
         return;
       }
@@ -2189,10 +2192,11 @@ export default function ExpertTobacconistChat({
         limit: 40,
       });
       const restored = response?.data?.messages || [];
-      setMessages(restored.map((m, index) => ({
+      setMessages(restoreAppGuidance(restored, activeModules).map((m, index) => ({
         id: `restored-${index}`,
         role: m.role,
         content: m.content,
+        recordLinks: m.recordLinks,
         restored: true,
       })));
     } catch {
@@ -2202,7 +2206,7 @@ export default function ExpertTobacconistChat({
         content: 'That conversation could not be opened. Ask again here and I will pick it up.',
       }]);
     }
-  }, []);
+  }, [activeModules]);
 
   const retryMessage = useCallback((text) => {
     setMessages((prev) => prev.filter((m) => !(m.role === 'assistant' && m.retryText === text)));
