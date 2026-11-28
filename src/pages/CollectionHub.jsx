@@ -623,7 +623,7 @@ export default function CollectionHub() {
         onClick={() => navigate(createPageUrl('Curator'))}
         className="w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
         style={{
-          background: 'linear-gradient(135deg, #401c24, #25171a)',
+          background: '#303436',
           border: '1px solid rgba(163,92,92,0.3)',
           minHeight: 64,
         }}
@@ -767,7 +767,7 @@ export default function CollectionHub() {
                 key={activity.id}
                 className="w-full rounded-[22px] p-5 flex items-center gap-4"
                 style={{
-                  background: 'linear-gradient(145deg, rgba(40,28,18,0.92), rgba(24,17,11,0.98))',
+                  background: '#303436',
                   border: `1px solid ${
                     activity.type === 'tasting'
                       ? 'rgba(182,101,101,0.24)'

@@ -21,10 +21,10 @@ export default function InsightHighlightCard({
   return (
     <Card
       {...(onClick ? { type: 'button', onClick } : {})}
-      className={`block w-full overflow-hidden rounded-2xl border bg-[#241713] text-left text-[#fff7ea] shadow-md ${onClick ? 'hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2' : ''} ${className}`}
+      className={`block w-full overflow-hidden rounded-2xl border bg-[#292c2e] text-left text-[#f7f6f2] shadow-md ${onClick ? 'hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2' : ''} ${className}`}
       style={{ borderColor: accent }}
     >
-      <div className="relative aspect-[16/9] bg-[#31221d]">
+      <div className="relative aspect-[16/9] bg-[#34383a]">
         {image ? (
           <img
             key={image}
@@ -41,11 +41,11 @@ export default function InsightHighlightCard({
         )}
       </div>
       <div className="space-y-1 p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-[#e9c698]">{title}</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-[#e0c99b]">{title}</p>
         <p className="break-words text-xl font-bold leading-tight" style={{ fontFamily: 'var(--ck-font-display)' }}>
           {value || '—'}
         </p>
-        {subtitle && <p className="break-words text-sm text-[#e9ddd1]">{subtitle}</p>}
+        {subtitle && <p className="break-words text-sm text-[#e1e0da]">{subtitle}</p>}
       </div>
     </Card>
   );

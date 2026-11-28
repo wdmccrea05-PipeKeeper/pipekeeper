@@ -20,7 +20,7 @@ export default function AdvancedDetails({ label, hint, defaultOpen = false, chil
       className="rounded-2xl overflow-hidden"
       style={{
         border: `1px solid ${isPaper ? 'rgba(167,124,63,0.28)' : 'rgba(180,140,75,0.16)'}`,
-        background: isPaper ? '#fbf5e9' : 'rgba(255,255,255,0.02)',
+        background: isPaper ? '#f5f4f0' : 'rgba(255,255,255,0.02)',
       }}
     >
       <button
@@ -33,7 +33,7 @@ export default function AdvancedDetails({ label, hint, defaultOpen = false, chil
         <span className="text-sm font-semibold min-w-0" style={{ color: isPaper ? 'var(--ck-espresso)' : 'rgba(224,216,200,0.85)' }}>
           {label}
           {!open && hint ? (
-            <span className="ml-2 text-xs font-normal" style={{ color: isPaper ? 'rgba(52,37,29,0.72)' : 'rgba(224,216,200,0.42)' }}>
+            <span className="ml-2 text-xs font-normal" style={{ color: isPaper ? 'var(--ck-paper-muted)' : 'rgba(224,216,200,0.42)' }}>
               {hint}
             </span>
           ) : null}

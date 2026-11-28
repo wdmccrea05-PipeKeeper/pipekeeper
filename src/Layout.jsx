@@ -18,7 +18,7 @@ export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-[100dvh] max-h-[100dvh] flex flex-col" style={{ backgroundColor: '#140f0c' }}>
+    <div className="min-h-[100dvh] max-h-[100dvh] flex flex-col" style={{ backgroundColor: 'var(--ck-nav-bg)' }}>
       <header className="sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)]" style={{ backgroundColor: 'var(--ck-nav-bg)', borderColor: 'var(--ck-nav-border)' }}>
         <div className="ck-page-shell">
           <div className="flex flex-col gap-3 py-3 md:py-4">
