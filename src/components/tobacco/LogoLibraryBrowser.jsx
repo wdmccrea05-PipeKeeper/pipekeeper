@@ -20,6 +20,9 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
   const { data: customLogos = [] } = useQuery({
     queryKey: ['custom-tobacco-logos'],
     queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
+    // The shared logo library changes only when a logo is added or removed,
+    // and those mutations invalidate this key, so a short reuse window is safe
+    staleTime: 5 * 60 * 1000,
   });
   
   const deleteMutation = useMutation({
