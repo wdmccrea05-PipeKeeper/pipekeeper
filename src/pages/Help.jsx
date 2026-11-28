@@ -62,15 +62,15 @@ export default function Help() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, rgba(15,11,8,0.95), rgba(20,15,10,0.95))" }}>
-      <div className="max-w-5xl mx-auto px-4 py-12">
+    <div className="ck-paper-workspace ck-secondary-workspace max-w-5xl mx-auto">
+      <div className="space-y-7">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#8b3a3a]/20 mb-6">
-            <HelpCircle className="w-10 h-10" style={{ color: "rgba(180,140,75,0.9)" }} />
+        <div className="mb-6">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#e1ded4] mb-6">
+            <HelpCircle className="w-6 h-6" style={{ color: "rgba(180,140,75,0.9)" }} />
           </div>
-          <h1 className="text-5xl font-bold text-[#E0D8C8] mb-4">{t("helpCenter.helpCenter")}</h1>
-          <p className="text-xl text-[#E0D8C8]/80 max-w-2xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">{t("helpCenter.helpCenter")}</h1>
+          <p className="text-base text-[var(--ck-paper-muted)] max-w-2xl">
             {t("helpCenter.findAnswers")}
           </p>
         </div>
@@ -82,24 +82,24 @@ export default function Help() {
             return (
               <Link key={idx} to={category.link}>
                 <Card 
-                  className={`h-full border-2 ${category.borderColor} ${category.bgColor} hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105`}
+                  className="ck-help-card h-full border transition-shadow hover:shadow-md"
                 >
                   <CardHeader className="text-center pb-4">
                     <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${category.bgColor} mx-auto mb-4`}>
                       <Icon className={`w-8 h-8 ${category.color}`} />
                     </div>
-                    <CardTitle className="text-2xl text-[#E0D8C8] mb-2">
+                    <CardTitle className="text-2xl text-[var(--ck-espresso)] mb-2">
                       {category.title}
                      </CardTitle>
-                     <CardDescription className="text-[#E0D8C8]/80">
+                     <CardDescription className="text-[var(--ck-paper-muted)]">
                       {category.description}
                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                     <ul className="space-y-2">
                       {category.topicsKeys.map((topicKey, topicIdx) => (
-                        <li key={topicIdx} className="flex items-start gap-2 text-sm text-[#E0D8C8]/80">
-                          <span className="text-[#E0D8C8]/60 mt-1">•</span>
+                        <li key={topicIdx} className="flex items-start gap-2 text-sm text-[var(--ck-paper-muted)]">
+                          <span className="text-[var(--ck-paper-muted)] mt-1">•</span>
                            <span>{t(topicKey)}</span>
                          </li>
                        ))}
@@ -113,23 +113,23 @@ export default function Help() {
 
         {/* Quick Links */}
         <Card style={{
-          background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+          background: "#f5f4f0",
           border: "1px solid rgba(140,105,65,0.35)"
         }}>
            <CardHeader>
-             <CardTitle className="text-[#E0D8C8]">{t("helpCenter.quickLinks")}</CardTitle>
+             <CardTitle className="text-[var(--ck-espresso)]">{t("helpCenter.quickLinks")}</CardTitle>
            </CardHeader>
            <CardContent className="grid sm:grid-cols-2 gap-4">
-             <Link to={createPageUrl("Support")} className="text-[#E0D8C8]/80 hover:text-[#E0D8C8] hover:underline">
+             <Link to={createPageUrl("Support")} className="text-[var(--ck-paper-muted)] hover:text-[var(--ck-espresso)] hover:underline">
                → {t("helpCenter.contactSupport")}
              </Link>
-             <Link to={createPageUrl("TermsOfService")} className="text-[#E0D8C8]/80 hover:text-[#E0D8C8] hover:underline">
+             <Link to={createPageUrl("TermsOfService")} className="text-[var(--ck-paper-muted)] hover:text-[var(--ck-espresso)] hover:underline">
                → {t("helpCenter.termsOfService")}
              </Link>
-             <Link to={createPageUrl("PrivacyPolicy")} className="text-[#E0D8C8]/80 hover:text-[#E0D8C8] hover:underline">
+             <Link to={createPageUrl("PrivacyPolicy")} className="text-[var(--ck-paper-muted)] hover:text-[var(--ck-espresso)] hover:underline">
                → {t("helpCenter.privacyPolicy")}
              </Link>
-             <Link to={createPageUrl("Subscription")} className="text-[#E0D8C8]/80 hover:text-[#E0D8C8] hover:underline">
+             <Link to={createPageUrl("Subscription")} className="text-[var(--ck-paper-muted)] hover:text-[var(--ck-espresso)] hover:underline">
                → {t("helpCenter.subscriptionBilling")}
              </Link>
            </CardContent>
@@ -137,11 +137,11 @@ export default function Help() {
 
         {/* Contact Section */}
         <div className="mt-12 text-center">
-          <p className="text-[#E0D8C8]/80 mb-4">
+          <p className="text-[var(--ck-paper-muted)] mb-4">
             {t("helpCenter.cantFind")}
           </p>
           <Link to={createPageUrl("Support")}>
-            <button className="px-6 py-3 bg-[#A35C5C] text-white rounded-lg hover:bg-[#8F4E4E] transition-colors font-semibold">
+            <button className="px-6 py-3 bg-[#303436] text-white rounded-lg hover:bg-[#44494b] transition-colors font-semibold">
               {t("helpCenter.contactSupport")}
             </button>
           </Link>

@@ -44,7 +44,7 @@ export default function FAQFull() {
   );
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(78,48,24,0.18),transparent_24%),linear-gradient(180deg,#0d0806_0%,#160f0b_50%,#0b0705_100%)]">
+    <div className="ck-help-detail rounded-2xl">
       <div className="mx-auto max-w-[980px] px-4 py-10">
         <div className="mb-8 text-center">
           <h1 className="mb-2 text-4xl font-bold text-[#F5F1E7]">{t("helpCenter.howToTitle")}</h1>

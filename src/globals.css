@@ -387,3 +387,36 @@ body {
 .ck-insights-detail .ck-insights-stat p {
   color: #f3e8db !important;
 }
+
+.ck-secondary-workspace h1,
+.ck-help-detail h1 {
+  font-family: var(--ck-font-display);
+}
+.ck-secondary-content,
+.ck-help-detail {
+  min-width: 0;
+  background: #292c2e;
+  color: #f4f3ef;
+  border-radius: var(--ck-radius-md);
+}
+.ck-secondary-content {
+  padding: clamp(.75rem, 2vw, 1.25rem);
+}
+.ck-secondary-content [role="tablist"] {
+  background: #34383a !important;
+  height: auto;
+  box-shadow: none !important;
+}
+.ck-secondary-content [role="tab"] {
+  min-height: 44px;
+  color: #e3e2dc !important;
+}
+.ck-secondary-content [role="tab"][data-state="active"] {
+  background: #eae9e4 !important;
+  color: #282b2d !important;
+}
+.ck-help-card {
+  background: #f5f4f0 !important;
+  border-color: #c9c7be !important;
+  box-shadow: none;
+}

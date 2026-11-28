@@ -18,7 +18,7 @@ export default function HelpCenter() {
   const [activeTab, setActiveTab] = useState('tutorials');
 
   return (
-    <div className="min-h-[100dvh] bg-[radial-gradient(circle_at_top,rgba(90,58,30,0.18),transparent_28%),linear-gradient(180deg,#140f0b_0%,#0b0908_100%)]">
+    <div className="ck-help-detail rounded-2xl">
       <div className="max-w-[1000px] mx-auto px-4 py-6 sm:py-10">
         {/* Contact Support Banner — always at top */}
         <div

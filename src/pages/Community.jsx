@@ -283,29 +283,28 @@ function CommunityPageInner() {
 
   return (
     <div className="min-h-[100dvh]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+      <div className="ck-paper-workspace ck-secondary-workspace max-w-6xl mx-auto">
         <div className="mb-6 sm:mb-8">
           <h1 
             className="text-2xl sm:text-3xl font-bold mb-2" 
             style={{ 
-              color: "#F5F1E7",
-              fontFamily: "'Georgia', serif",
-              textShadow: "0 2px 4px rgba(0,0,0,0.6)"
+              color: "var(--ck-espresso)",
+              fontFamily: "var(--ck-font-display)"
             }}
           >
             {t("nav.community")}
           </h1>
-          <p className="text-base" style={{ color: "rgba(224, 216, 200, 0.75)" }}>
+          <p className="text-base" style={{ color: "var(--ck-paper-muted)" }}>
             {communitySubtitle}
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="ck-secondary-content space-y-6">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <TabsList 
               className="inline-flex min-w-full sm:w-auto"
               style={{
-                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.75), rgba(42, 30, 20, 0.88))",
+                background: "#303436",
                 border: "1px solid rgba(120, 90, 65, 0.32)",
                 boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.1)"
               }}
@@ -371,7 +370,7 @@ function CommunityPageInner() {
             <div
               className="rounded-lg overflow-hidden"
               style={{
-                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                background: "#303436",
                 border: "1px solid rgba(120, 90, 65, 0.32)",
                 boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)",
               }}
@@ -380,7 +379,7 @@ function CommunityPageInner() {
                 className="px-6 py-5 border-b"
                 style={{
                   borderBottomColor: "rgba(120, 90, 65, 0.25)",
-                  background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+                  background: "none"
                 }}
               >
                 <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
@@ -414,7 +413,7 @@ function CommunityPageInner() {
                   <div 
                    className="space-y-3 p-5 rounded-lg"
                    style={{
-                     background: "rgba(35, 24, 16, 0.6)",
+                     background: "#292c2e",
                      border: "1px solid rgba(120, 90, 65, 0.25)",
                      boxShadow: "inset 0 1px 2px rgba(0,0,0,0.2)"
                    }}
@@ -533,7 +532,7 @@ function CommunityPageInner() {
                      key={profile.id} 
                      className="p-5 rounded-lg transition-all duration-200 hover:-translate-y-0.5"
                      style={{
-                       background: "linear-gradient(145deg, rgba(48, 34, 22, 0.65), rgba(38, 26, 18, 0.78))",
+                       background: "#303436",
                        border: "1px solid rgba(120, 90, 65, 0.28)",
                        boxShadow: "0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.08)"
                      }}
@@ -679,7 +678,7 @@ function CommunityPageInner() {
               <div 
                 className="rounded-lg"
                 style={{
-                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  background: "#303436",
                   border: "1px solid rgba(120, 90, 65, 0.28)",
                   boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
                 }}
@@ -694,7 +693,7 @@ function CommunityPageInner() {
               <div
                 className="rounded-lg overflow-hidden"
                 style={{
-                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                  background: "#303436",
                   border: "1px solid rgba(120, 90, 65, 0.32)",
                   boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
                 }}
@@ -703,7 +702,7 @@ function CommunityPageInner() {
                   className="px-6 py-5 border-b"
                   style={{
                     borderBottomColor: "rgba(120, 90, 65, 0.28)",
-                    background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
+                    background: "none"
                   }}
                 >
                   <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
@@ -726,7 +725,7 @@ function CommunityPageInner() {
                         key={friendship.id}
                         className="p-5 rounded-lg"
                         style={{
-                         background: "linear-gradient(145deg, rgba(45, 32, 22, 0.65), rgba(35, 24, 16, 0.78))",
+                         background: "#303436",
                          border: "1px solid rgba(120, 90, 65, 0.25)",
                          boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
                          }}
@@ -790,7 +789,7 @@ function CommunityPageInner() {
               <div 
                 className="rounded-lg"
                 style={{
-                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  background: "#303436",
                   border: "1px solid rgba(120, 90, 65, 0.28)",
                   boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
                 }}
@@ -805,7 +804,7 @@ function CommunityPageInner() {
               <div
                 className="rounded-lg overflow-hidden"
                 style={{
-                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                  background: "#303436",
                   border: "1px solid rgba(120, 90, 65, 0.32)",
                   boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
                 }}
@@ -814,7 +813,7 @@ function CommunityPageInner() {
                   className="px-6 py-5 border-b"
                   style={{
                     borderBottomColor: "rgba(120, 90, 65, 0.28)",
-                    background: "linear-gradient(to bottom, rgba(62, 44, 30, 0.4), transparent)"
+                    background: "none"
                   }}
                 >
                   <h2 className="text-lg font-semibold" style={{ color: "#F5F1E7", fontFamily: "'Georgia', serif" }}>
@@ -829,7 +828,7 @@ function CommunityPageInner() {
                         key={request.id}
                         className="p-5 rounded-lg"
                         style={{
-                         background: "linear-gradient(145deg, rgba(45, 32, 22, 0.65), rgba(35, 24, 16, 0.78))",
+                         background: "#303436",
                          border: "1px solid rgba(120, 90, 65, 0.25)",
                          boxShadow: "0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(180,140,100,0.08)"
                         }}
@@ -886,7 +885,7 @@ function CommunityPageInner() {
               <div 
                 className="rounded-lg"
                 style={{
-                  background: "linear-gradient(145deg, rgba(52, 37, 24, 0.7), rgba(42, 30, 20, 0.84))",
+                  background: "#303436",
                   border: "1px solid rgba(120, 90, 65, 0.28)",
                   boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,140,100,0.08)"
                 }}
@@ -911,7 +910,7 @@ function CommunityPageInner() {
                     key={connection.id}
                     className="p-5 rounded-lg"
                     style={{
-                      background: "linear-gradient(145deg, rgba(48, 34, 22, 0.68), rgba(38, 26, 18, 0.82))",
+                      background: "#303436",
                       border: "1px solid rgba(120, 90, 65, 0.28)",
                       boxShadow: "0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(180,140,100,0.08)"
                     }}
@@ -961,7 +960,7 @@ function CommunityPageInner() {
             <div
               className="rounded-lg overflow-hidden"
               style={{
-                background: "linear-gradient(145deg, rgba(52, 37, 24, 0.78), rgba(42, 30, 20, 0.90))",
+                background: "#303436",
                 border: "1px solid rgba(120, 90, 65, 0.32)",
                 boxShadow: "0 3px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(180,140,100,0.12), inset 0 -2px 3px rgba(0,0,0,0.25)"
               }}
@@ -970,7 +969,7 @@ function CommunityPageInner() {
                 className="px-6 py-5 border-b"
                 style={{
                   borderBottomColor: "rgba(120, 90, 65, 0.25)",
-                  background: "linear-gradient(to bottom, rgba(60, 42, 28, 0.35), transparent)"
+                  background: "none"
                 }}
               >
                 <div className="flex items-center justify-between">
@@ -1029,7 +1028,7 @@ function CommunityPageInner() {
                     <div 
                       className="p-4 rounded-lg"
                       style={{
-                        background: "rgba(30, 20, 15, 0.6)",
+                        background: "#292c2e",
                         border: "1px solid rgba(120, 90, 65, 0.2)"
                       }}
                     >

@@ -48,7 +48,7 @@ export default function TroubleshootingFull() {
   const [openItems, setOpenItems] = useState({});
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(90,58,30,0.18),transparent_28%),linear-gradient(180deg,#140f0b_0%,#0b0908_100%)]">
+    <div className="ck-help-detail rounded-2xl">
       <div className="max-w-[980px] mx-auto px-4 py-10">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#F5F1E7] mb-2">

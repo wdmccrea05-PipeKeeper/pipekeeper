@@ -27,7 +27,7 @@ export default function HowTo() {
 
   const Q = ({ id, q, children }) => (
     <Card style={{
-      background: "linear-gradient(145deg, rgba(40,28,20,0.95), rgba(32,22,15,0.95))",
+      background: "#303436",
       border: "1px solid rgba(140,105,65,0.25)"
     }} className="overflow-hidden">
       <button

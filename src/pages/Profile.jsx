@@ -549,8 +549,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className={`min-h-screen ${PK_THEME.pageBg}`}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="ck-paper-workspace ck-secondary-workspace max-w-4xl mx-auto">
+      <h1 className="mb-5 text-3xl sm:text-4xl font-bold">{t("nav.profile")}</h1>
+      <div className="ck-secondary-content space-y-6">
 
         {/* Subscription Status / Management */}
         <Card>
@@ -716,7 +717,7 @@ export default function ProfilePage() {
               </div>
               <div>
                <Label className="font-medium" style={{ color: 'rgba(224,216,200,0.85)' }}>{t("common.email")}</Label>
-               <Input value={user?.email || ""} disabled style={{ color: 'rgba(224,216,200,0.4)', backgroundColor: 'rgba(0,0,0,0.2)' }} className="cursor-not-allowed" />
+               <Input value={user?.email || ""} disabled style={{ color: '#d4d3ce', backgroundColor: '#292c2e' }} className="cursor-not-allowed" />
               </div>
             </div>
 
@@ -1186,7 +1187,7 @@ export default function ProfilePage() {
         {/* Delete Profile Confirmation Dialog */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-            <div className="rounded-2xl p-8 max-w-md w-full space-y-5" style={{ background: 'linear-gradient(145deg, #1d1511, #140f0c)', border: '1px solid rgba(180,60,60,0.35)' }}>
+            <div className="rounded-2xl p-8 max-w-md w-full space-y-5" style={{ background: '#303436', border: '1px solid rgba(180,60,60,0.35)' }}>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(180,60,60,0.15)', border: '1px solid rgba(180,60,60,0.35)' }}>
                   <AlertTriangle className="w-6 h-6 text-red-400" />

@@ -1250,8 +1250,8 @@ export default function Insights() {
   };
 
   return (
-    <InsightsPageShell>
-      <PipeKeeperModuleNav currentPageName="Insights" />
+    <InsightsPageShell variant="paper">
+      <div className="ck-module-nav-surface"><PipeKeeperModuleNav currentPageName="Insights" /></div>
 
       {activeStory && (
         <StoryCardModal
@@ -1268,13 +1268,14 @@ export default function Insights() {
         storyCards={fullStoryCards}
       />
 
-      <InsightsHeader
+      <InsightsHeader variant="paper" moduleKey="pipekeeper"
         title={t("pipekeeper.insightsTitle", "PipeKeeper Insights")}
         subtitle={t("pipekeeper.insightsSubtitle", "Explore your pipe and tobacco collection data")}
       />
 
       <InsightsTabBar tabs={[...TABS, { key: 'reports', label: t('insights.reports') }]} activeTab={activeInsightsTab} onTabChange={setActiveInsightsTab} activeAccent={MODULE_ACCENTS.pipekeeper} />
 
+      <div className="ck-insights-detail space-y-6">
       {/* SUMMARY */}
       {activeInsightsTab === 'summary' && (
         <div className="space-y-6">
@@ -1514,6 +1515,7 @@ export default function Insights() {
           </div>
         </ProFeatureLock>
       )}
+      </div>
     </InsightsPageShell>
   );
 }
