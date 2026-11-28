@@ -19,7 +19,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-[100dvh] max-h-[100dvh] flex flex-col" style={{ backgroundColor: '#140f0c' }}>
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(20,15,12,0.88)] backdrop-blur-md pt-[env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)]" style={{ backgroundColor: 'var(--ck-nav-bg)', borderColor: 'var(--ck-nav-border)' }}>
         <div className="ck-page-shell">
           <div className="flex flex-col gap-3 py-3 md:py-4">
             <div className="flex items-center justify-between gap-3">
@@ -40,6 +40,8 @@ export default function Layout({ children, currentPageName }) {
                   style={{ width: 48, height: 48, minWidth: 48, minHeight: 48, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#E0D8C8', padding: 0 }}
                   className="md:hidden"
                   aria-label={menuOpen ? t('nav.closeMenu', 'Close menu') : t('nav.openMenu', 'Open menu')}
+                  aria-expanded={menuOpen}
+                  aria-controls="mobile-module-navigation"
                 >
                   {menuOpen ? <X style={{ width: 30, height: 30, display: 'block' }} /> : <Menu style={{ width: 30, height: 30, display: 'block' }} />}
                 </button>
@@ -60,8 +62,11 @@ export default function Layout({ children, currentPageName }) {
         {/* Mobile / tablet nav drawer */}
         {menuOpen && (
           <div
-            className="md:hidden fixed left-0 right-0 z-50 border-t border-white/10 bg-[#140f0c] shadow-2xl overflow-y-auto"
+            id="mobile-module-navigation"
+            className="md:hidden fixed left-0 right-0 z-50 border-t shadow-2xl overflow-y-auto"
             style={{
+              backgroundColor: 'var(--ck-nav-bg)',
+              borderColor: 'var(--ck-nav-border)',
               top: 'calc(env(safe-area-inset-top) + 72px)',
               maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 72px)',
             }}

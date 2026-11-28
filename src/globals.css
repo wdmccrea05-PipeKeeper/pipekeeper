@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 :root {
+  --ck-nav-bg: #451820;
+  --ck-nav-border: rgba(180, 140, 75, 0.35);
+
   /* ── Backgrounds ── */
   --ck-bg-0: #140f0c;
   --ck-bg-1: #1d1511;

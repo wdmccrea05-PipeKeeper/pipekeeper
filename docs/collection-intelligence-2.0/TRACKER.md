@@ -35,6 +35,13 @@ links; real imports, reconciliation, backend entitlements and other FAQ,
 troubleshooting and multi-part questions remain unverified. These new guidance
 responses are English only.
 
+Shared shell follow-up: `Layout.jsx` and `globals.css` now use the same oxblood
+navigation token on desktop and in the mobile drawer. A mocked navigation test
+checks the Curator link and expanded state; non-active text against the token
+calculates to 6.66:1. This is only a navigation foundation, not the requested
+parchment workspace, typography, full-surface facelift, or a visual acceptance
+of the hub and module homepages.
+
 Core collection entity schemas still have no declared RLS; frontend filtering and
 the additional executor checks are not evidence of server-side isolation. An
 authorized Base44 preview must verify reads, writes, report exports, import batches,
