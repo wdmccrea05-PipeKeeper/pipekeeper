@@ -58,10 +58,15 @@ export async function getStripeSecretKeyLive(req?: Request): Promise<{
 
     console.log("[remoteConfig] Fetching from RemoteConfig via asServiceRole (backup)...");
     
-    const recs = await srv.entities.RemoteConfig.list();
-    console.log("[remoteConfig] Total RemoteConfig records:", recs?.length || 0);
+    const recs = await srv.entities.RemoteConfig.filter({
+      key: "STRIPE_SECRET_KEY",
+      environment: "live",
+      is_active: true,
+    });
+    const matching = Array.isArray(recs) ? recs : (recs?.items || []);
+    console.log("[remoteConfig] Matching RemoteConfig records:", matching.length);
 
-    const rec0 = recs?.find((r) => r.key === "STRIPE_SECRET_KEY" && r.environment === "live" && r.is_active);
+    const rec0 = matching[0];
     const remoteVal = rec0?.value ? String(rec0.value).trim() : "";
 
     // Validate it's a real Stripe key (not test/invalid)

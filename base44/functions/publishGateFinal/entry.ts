@@ -4,7 +4,7 @@
  * Produces authoritative PUBLISH_GO / PUBLISH_NO_GO decision
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
 Deno.serve(async (req) => {
   const results = {
@@ -69,13 +69,13 @@ Deno.serve(async (req) => {
     }
 
     // TOBACCO CRUD
-    const blends = await base44.entities.TobaccoBlend.list();
-    log('TOBACCO', 'List loads with data', blends?.length > 0 ? 'PASS' : 'FAIL', { count: blends?.length || 0 });
+    const blendCount = await base44.entities.TobaccoBlend.count();
+    log('TOBACCO', 'List loads with data', blendCount > 0 ? 'PASS' : 'FAIL', { count: blendCount });
 
     const blendsByType = await base44.entities.TobaccoBlend.filter({ blend_type: 'English' });
     log('TOBACCO', 'Filter works', blendsByType?.length >= 0 ? 'PASS' : 'FAIL', { results: blendsByType?.length || 0 });
 
-    if (blends?.length > 0) {
+    if (blendCount > 0) {
       log('TOBACCO', 'Detail page accessible', 'PASS');
       log('TOBACCO', 'Valuation fields load', 'PASS');
       log('TOBACCO', 'Aging fields load', 'PASS');
@@ -129,13 +129,13 @@ Deno.serve(async (req) => {
     // ========================================
     console.log('\n=== ENTITY INTEGRITY CHECKS ===');
     log('ENTITIES', 'Pipe entity integrity', pipes?.length > 0 ? 'PASS' : 'FAIL', { count: pipes?.length || 0 });
-    log('ENTITIES', 'TobaccoBlend entity integrity', blends?.length > 0 ? 'PASS' : 'FAIL', { count: blends?.length || 0 });
+    log('ENTITIES', 'TobaccoBlend entity integrity', blendCount > 0 ? 'PASS' : 'FAIL', { count: blendCount });
 
-    const profiles = await base44.entities.UserProfile.list();
-    log('ENTITIES', 'UserProfile entity integrity', profiles?.length >= 0 ? 'PASS' : 'FAIL', { count: profiles?.length || 0 });
+    const profileCount = await base44.entities.UserProfile.count();
+    log('ENTITIES', 'UserProfile entity integrity', profileCount >= 0 ? 'PASS' : 'FAIL', { count: profileCount });
 
-    const smokingLogs = await base44.entities.SmokingLog.list();
-    log('ENTITIES', 'SmokingLog entity integrity', smokingLogs?.length >= 0 ? 'PASS' : 'FAIL', { count: smokingLogs?.length || 0 });
+    const smokingLogCount = await base44.entities.SmokingLog.count();
+    log('ENTITIES', 'SmokingLog entity integrity', smokingLogCount >= 0 ? 'PASS' : 'FAIL', { count: smokingLogCount });
 
     const pairings = await base44.entities.PairingMatrix.filter({ is_active: true });
     log('ENTITIES', 'PairingMatrix entity integrity', pairings?.length >= 0 ? 'PASS' : 'FAIL', { count: pairings?.length || 0 });

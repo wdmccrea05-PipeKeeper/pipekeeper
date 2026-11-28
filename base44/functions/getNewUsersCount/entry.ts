@@ -12,15 +12,17 @@ Deno.serve(async (req) => {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const cutoffDate = sevenDaysAgo.toISOString();
 
-    // Fetch all users and filter client-side
-    const allUsers = await base44.asServiceRole.entities.User.list();
-    const newUsers = allUsers.filter(u => {
-      const userDate = new Date(u.created_date);
-      return userDate >= sevenDaysAgo;
-    });
+    // The cutoff is applied in the read itself (count is not available on User)
+    const newUsers = await base44.asServiceRole.entities.User.filter(
+      { created_date: { $gte: cutoffDate } },
+      '-created_date',
+      5000,
+      0
+    );
+    const newUserCount = Array.isArray(newUsers) ? newUsers.length : 0;
 
     return Response.json({ 
-      count: newUsers.length,
+      count: newUserCount,
       cutoffDate
     });
   } catch (error) {

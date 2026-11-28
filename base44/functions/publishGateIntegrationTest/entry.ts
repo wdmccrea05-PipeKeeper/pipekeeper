@@ -4,7 +4,7 @@
  * Does not require write access to filesystem
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
 const BASE_URL = 'https://preview-sandbox--8a55ff16cb73dd321783eefd093ae016.base44.app';
 
@@ -110,11 +110,11 @@ async function testBackendCRUD(req) {
     
     // Test Pipe entity read
     try {
-      const pipes = await base44.entities.Pipe.list();
+      const pipeCount = await base44.entities.Pipe.count();
       testResults.results.push({
         test: 'Backend - Pipe Read',
         status: 'PASS',
-        pipeCount: pipes?.length || 0,
+        pipeCount,
       });
       testResults.passed++;
     } catch (err) {
@@ -129,11 +129,11 @@ async function testBackendCRUD(req) {
     
     // Test TobaccoBlend entity read
     try {
-      const blends = await base44.entities.TobaccoBlend.list();
+      const blendCount = await base44.entities.TobaccoBlend.count();
       testResults.results.push({
         test: 'Backend - TobaccoBlend Read',
         status: 'PASS',
-        blendCount: blends?.length || 0,
+        blendCount,
       });
       testResults.passed++;
     } catch (err) {
@@ -148,11 +148,11 @@ async function testBackendCRUD(req) {
     
     // Test UserProfile read
     try {
-      const profiles = await base44.entities.UserProfile.list();
+      const profileCount = await base44.entities.UserProfile.count();
       testResults.results.push({
         test: 'Backend - UserProfile Read',
         status: 'PASS',
-        profileCount: profiles?.length || 0,
+        profileCount,
       });
       testResults.passed++;
     } catch (err) {

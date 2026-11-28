@@ -6,7 +6,7 @@
  * - No unhandled errors logged
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
 const REASONABLE_LIMITS = {
   pipes: { min: 0, max: 50000 },
@@ -61,8 +61,7 @@ Deno.serve(async (req) => {
     // Check 2: Pipe entity integrity
     console.log('[ENTITY] Checking Pipe entity...');
     try {
-      const pipes = await base44.entities.Pipe.list();
-      const count = pipes?.length || 0;
+      const count = await base44.entities.Pipe.count();
       const isReasonable = count >= REASONABLE_LIMITS.pipes.min && count <= REASONABLE_LIMITS.pipes.max;
       
       results.checks.push({
@@ -90,8 +89,7 @@ Deno.serve(async (req) => {
     // Check 3: TobaccoBlend entity integrity
     console.log('[ENTITY] Checking TobaccoBlend entity...');
     try {
-      const blends = await base44.entities.TobaccoBlend.list();
-      const count = blends?.length || 0;
+      const count = await base44.entities.TobaccoBlend.count();
       const isReasonable = count >= REASONABLE_LIMITS.blends.min && count <= REASONABLE_LIMITS.blends.max;
       
       results.checks.push({
@@ -119,8 +117,7 @@ Deno.serve(async (req) => {
     // Check 4: UserProfile entity integrity
     console.log('[ENTITY] Checking UserProfile entity...');
     try {
-      const profiles = await base44.entities.UserProfile.list();
-      const count = profiles?.length || 0;
+      const count = await base44.entities.UserProfile.count();
       const isReasonable = count >= REASONABLE_LIMITS.profiles.min && count <= REASONABLE_LIMITS.profiles.max;
       
       results.checks.push({

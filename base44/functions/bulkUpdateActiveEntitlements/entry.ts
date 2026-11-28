@@ -16,12 +16,21 @@ Deno.serve(async (req) => {
 
     console.log('[bulkUpdate] Starting bulk entitlement update');
 
-    // Get all active subscriptions
-    const allSubs = await base44.asServiceRole.entities.Subscription.list();
-    const activeSubs = allSubs.filter(s => {
-      const status = (s.data?.status || s.status || '').toLowerCase();
-      return ['active', 'trialing', 'trial'].includes(status);
-    });
+    // Get all active subscriptions — the status filter runs in the read, paged to the end
+    const activeSubs = [];
+    const subPageSize = 500;
+    let subSkip = 0;
+    while (true) {
+      const batch = await base44.asServiceRole.entities.Subscription.filter(
+        { status: { $in: ['active', 'trialing', 'trial'] } },
+        '-created_date',
+        subPageSize,
+        subSkip
+      );
+      activeSubs.push(...batch);
+      if (batch.length < subPageSize) break;
+      subSkip += subPageSize;
+    }
 
     console.log(`[bulkUpdate] Found ${activeSubs.length} active subscriptions`);
 

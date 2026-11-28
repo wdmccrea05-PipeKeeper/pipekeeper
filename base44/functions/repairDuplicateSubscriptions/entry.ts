@@ -48,7 +48,7 @@ export default async function(req: Request): Promise<Response> {
     }
 
     // 1. Find user by email
-    const users = await base44.asServiceRole.entities.User.filter({});
+    const users = await base44.asServiceRole.entities.User.filter({ email });
     const targetUser = users.find((u: any) => normEmail(u.email) === email);
     if (!targetUser) {
       return Response.json({ error: `No user found with email ${email}` }, { status: 404 });
