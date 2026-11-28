@@ -5,6 +5,7 @@ import { Search, Check, Upload, Loader2, Trash2 } from "lucide-react";
 import { getAvailableBrands } from "@/components/tobacco/TobaccoLogoLibrary";
 import { base44 } from "@/api/base44Client";
 import { trackedUploadFile } from '@/lib/integrationTelemetry';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@/components/i18n/safeTranslation";
 
@@ -19,7 +20,8 @@ export default function LogoLibraryBrowser({ open, onClose, onSelect, currentLog
   
   const { data: customLogos = [] } = useQuery({
     queryKey: ['custom-tobacco-logos'],
-    queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
+    // The browser searches and groups the whole library, so every page is read
+    queryFn: () => fetchAllEntities(base44.entities.TobaccoLogoLibrary, {}),
     // The shared logo library changes only when a logo is added or removed,
     // and those mutations invalidate this key, so a short reuse window is safe
     staleTime: 5 * 60 * 1000,

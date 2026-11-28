@@ -1,6 +1,7 @@
 // Admin-only: Get subscription funnel metrics (last 7 days)
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import Stripe from 'npm:stripe@14.21.0';
+import { fetchAllEntitiesServer } from '../../shared/fetchAllEntitiesServer.ts';
 
 function getStripeClient() {
   const key = Deno.env.get('STRIPE_SECRET_KEY');
@@ -52,8 +53,11 @@ Deno.serve(async (req) => {
 
     // Entitlements applied (successful events in last 7 days)
     const threshold = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const eventsRaw = await base44.asServiceRole.entities.SubscriptionIntegrationEvent.filter({});
-    const events = Array.isArray(eventsRaw) ? eventsRaw : (eventsRaw?.results || []);
+    // Only the last 7 days are needed: the date range runs in the read, paged to the end
+    const events = await fetchAllEntitiesServer(
+      base44.asServiceRole.entities.SubscriptionIntegrationEvent,
+      { created_date: { $gte: threshold.toISOString() } }
+    );
     const recentEvents = events.filter(e => new Date(e.created_date) >= threshold);
     const entitlementsApplied = recentEvents.filter(e => 
       e.success && (

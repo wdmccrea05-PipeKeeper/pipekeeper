@@ -1,6 +1,7 @@
 // Scheduled function: Compute entitlement drift daily
 // Detects users with mismatched/stale entitlement state
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.6";
+import { fetchAllEntitiesServer } from "../../shared/fetchAllEntitiesServer.ts";
 
 Deno.serve(async (req) => {
   try {
@@ -16,8 +17,11 @@ Deno.serve(async (req) => {
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Clear old drift records
-    const oldDrifts = await base44.asServiceRole.entities.EntitlementDriftCache.filter({});
+    // Clear old drift records — every cached row is needed, so all pages are read
+    const oldDrifts = await fetchAllEntitiesServer(
+      base44.asServiceRole.entities.EntitlementDriftCache,
+      {}
+    );
     for (const drift of oldDrifts) {
       await base44.asServiceRole.entities.EntitlementDriftCache.delete(drift.id);
     }

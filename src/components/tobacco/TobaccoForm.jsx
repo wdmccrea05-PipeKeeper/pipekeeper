@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Loader2, Plus, Search, Check, Edit, Library } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { trackedInvokeLLM, trackedUploadFile } from '@/lib/integrationTelemetry';
+import { fetchAllEntities } from '@/lib/base44/fetchAllEntities';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTobaccoLogo, getMatchingLogos } from "@/components/tobacco/TobaccoLogoLibrary";
 import ImageCropper from "@/components/pipes/ImageCropper";
@@ -126,7 +127,8 @@ export default function TobaccoForm({ blend, onSave, onCancel, isLoading }) {
 
   const { data: customLogos = [] } = useQuery({
     queryKey: ['custom-tobacco-logos'],
-    queryFn: () => base44.entities.TobaccoLogoLibrary.list(),
+    // Logo matching needs the whole library, so every page is read
+    queryFn: () => fetchAllEntities(base44.entities.TobaccoLogoLibrary, {}),
     // The shared logo library changes only when a logo is added or removed,
     // and those mutations invalidate this key, so a short reuse window is safe
     staleTime: 5 * 60 * 1000,
