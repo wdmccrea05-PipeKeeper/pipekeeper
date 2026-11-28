@@ -240,7 +240,7 @@ export default function WhiskeyInsightsPage() {
 
             <InsightsHighlightGrid>
               {mostTastedBottle && (
-                <InsightsHighlightCard title={t('insights.mostTastedBottle', 'Most Tasted Bottle')} value={mostTastedBottle.name} subtitle={`${mostTastedBottle.count} tastings`} accent="#C87941" photos={getHighlightPhotos(mostTastedBottle)} />
+                <InsightsHighlightCard title={t('insights.mostTastedBottle', 'Most Tasted Bottle')} value={mostTastedBottle.name} subtitle={`${mostTastedBottle.count} tastings`} accent="#C87941" photos={getHighlightPhotos(mostTastedBottle.bottle)} />
               )}
               {mostValuedBottle && (
                 <InsightsHighlightCard title={t('insights.mostValuedBottle', 'Most Valued Bottle')} value={mostValuedBottle.name} subtitle={formatCurrency(getBottleValue(mostValuedBottle))} accent="#C0392B" photos={getHighlightPhotos(mostValuedBottle)} />

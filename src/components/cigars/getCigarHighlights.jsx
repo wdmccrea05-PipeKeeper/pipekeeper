@@ -7,10 +7,7 @@
  * { key, title, value, subtitle, accent, photo }
  */
 
-function getCigarPhoto(cigar) {
-  if (Array.isArray(cigar?.photos) && cigar.photos.length > 0) return cigar.photos[0];
-  return cigar?.photo || null;
-}
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 
 function isDuplicate(candidate, existing) {
   if (!candidate.cigarId) return false;
@@ -33,7 +30,7 @@ function findMostValuable(cigars, fmt) {
     value: fmt(c.__val),
     subtitle: [c.brand, c.name].filter(Boolean).join(' '),
     accent: '#B4824B',
-    photo: getCigarPhoto(c),
+    photos: getHighlightPhotos(c),
     cigarId: c.id,
   };
 }
@@ -52,7 +49,7 @@ function findHighestRated(cigars) {
     value: `${c.rating.toFixed(1)} / 5`,
     subtitle: [c.brand, c.name].filter(Boolean).join(' '),
     accent: '#D4A574',
-    photo: getCigarPhoto(c),
+    photos: getHighlightPhotos(c),
     cigarId: c.id,
   };
 }
@@ -69,7 +66,7 @@ function findFavorite(cigars) {
     value: '★',
     subtitle: [c.brand, c.name].filter(Boolean).join(' '),
     accent: '#D4AF37',
-    photo: getCigarPhoto(c),
+    photos: getHighlightPhotos(c),
     cigarId: c.id,
   };
 }
@@ -101,7 +98,7 @@ function findRecentAddition(cigars) {
     value: timeLabel,
     subtitle: [c.brand, c.name].filter(Boolean).join(' '),
     accent: '#C9A876',
-    photo: getCigarPhoto(c),
+    photos: getHighlightPhotos(c),
     cigarId: c.id,
   };
 }
@@ -120,7 +117,7 @@ function findLargestInventory(cigars) {
     value: `${c.quantity} Sticks`,
     subtitle: [c.brand, c.name].filter(Boolean).join(' '),
     accent: '#9B7B5F',
-    photo: getCigarPhoto(c),
+    photos: getHighlightPhotos(c),
     cigarId: c.id,
   };
 }

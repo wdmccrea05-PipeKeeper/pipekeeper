@@ -1,3 +1,4 @@
+import { getHighlightPhotos } from '@/lib/images/getItemPhoto';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
@@ -284,8 +285,7 @@ export default function WhiskeyKeeperModule({
           title={t('home.mostValuable')}
           value={formatFromBase(mostValuableBottle.__unitValue || 0)}
           subtitle={mostValuableBottle.name}
-          heroImage={mostValuableBottle.photo}
-          bgImage={mostValuableBottle.photo}
+          photos={getHighlightPhotos(mostValuableBottle)}
           accent="#B4824B"
           onClick={() =>
             navigate(`/Whiskey?highlight=${encodeURIComponent(mostValuableBottle.id)}`)
